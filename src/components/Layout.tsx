@@ -23,6 +23,7 @@ export const Content = styled(Container)`
   align-items: flex-end;
   justify-content: flex-start;
   height: 100%;
+  padding: 0 3rem;
 `;
 
 export const Footer = styled.footer`
@@ -40,10 +41,17 @@ export const Footer = styled.footer`
 `;
 
 export const StickyHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   background: white;
   position: sticky;
   top: 0;
   width: 100%;
-  padding: 0.75rem 1rem 1rem;
+  padding: 0.75rem 1rem 0.9rem;
   border-bottom: 1px solid lightgray;
+
+  > *:not(h1) {
+    min-width: 20em;
+  }
 `;
