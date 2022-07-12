@@ -7,17 +7,16 @@ import {
   SelectChangeEvent,
   FormControl,
   InputLabel,
+  Button,
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
 import { H1, LI, OL } from "src/components/Typography";
 import debounce from "lodash.debounce";
-import Router from "next/router";
 import { Release } from "src/components/ReleaseCard";
-import styled from "styled-components";
 import Image from "next/image";
 
 const headers = { Accept: "application/json" };
@@ -28,27 +27,29 @@ interface ReleaseJson {
 }
 
 interface Collection {
-  pagination: Record<string, unknown>;
+  pagination: {
+    items: number;
+    urls: {
+      next: string;
+      prev: string;
+    };
+    [key: string]: unknown;
+  };
   releases: Release[];
 }
-
-const ReleaseButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-`;
 
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
-  const [filteredReleases, setFilteredReleases] = useState<Release[]>();
+  const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
+  const [loadMoreText, setLoadMoreText] = useState<string>("");
 
   useEffect(() => {
     setFetchingCollection(true);
+    setLoadMoreText("Load next 500 releases");
 
     (async () => {
       const fetchDiscogsCollection = fetch(
@@ -99,6 +100,15 @@ const Home: FC = () => {
     }
   }, [collection, selectedStyle]);
 
+  useEffect(() => {
+    if (
+      collection &&
+      filteredReleases.length >= collection?.pagination?.items
+    ) {
+      setLoadMoreText("All releases loaded!");
+    }
+  }, [collection?.pagination?.items, filteredReleases.length, collection]);
+
   const handleStyleChange = (e: SelectChangeEvent) => {
     const { value } = e.target;
 
@@ -127,10 +137,32 @@ const Home: FC = () => {
       const releaseJson: ReleaseJson = await fetchedRelease.json();
 
       if (releaseJson) {
-        Router.push(releaseJson.uri);
+        window.open(releaseJson.uri, "_blank");
       }
     }
   };
+
+  const handleLoadMore = useCallback(async () => {
+    setLoadMoreText("Loading releases...");
+
+    if (collection) {
+      const fetchNext = fetch(collection.pagination.urls.next, {
+        headers,
+        method: "GET",
+      });
+
+      const fetchedNext = await fetchNext;
+
+      if (fetchedNext.ok) {
+        const nextReleases: Collection = await fetchedNext.json();
+
+        if (nextReleases) {
+          setFilteredReleases([...filteredReleases, ...nextReleases.releases]);
+          setLoadMoreText("Load next 500 releases");
+        }
+      }
+    }
+  }, [collection, filteredReleases]);
 
   return (
     <Page>
@@ -142,24 +174,39 @@ const Home: FC = () => {
             onChange={handleUserChange}
           />
           {styles && !fetchingCollection && (
-            <FormControl>
-              <InputLabel id="style-select">Style</InputLabel>
-              <Select
-                labelId="style-select"
-                id="style-select"
-                value={selectedStyle}
-                label="Styles"
-                onChange={handleStyleChange}
-                disabled={!collection}
-              >
-                <MenuItem value="All">All</MenuItem>
-                {styles.map((style) => (
-                  <MenuItem key={style} value={style}>
-                    {style}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <>
+              <FormControl>
+                <InputLabel id="style-select">Style</InputLabel>
+                <Select
+                  labelId="style-select"
+                  id="style-select"
+                  value={selectedStyle}
+                  label="Styles"
+                  onChange={handleStyleChange}
+                  disabled={!collection}
+                >
+                  {styles.map((style) => (
+                    <MenuItem key={style} value={style}>
+                      {style}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {collection && collection?.pagination?.urls?.next ? (
+                <Box display="flex">
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleLoadMore}
+                    disabled={
+                      filteredReleases.length >= collection?.pagination?.items
+                    }
+                  >
+                    {loadMoreText}
+                  </Button>
+                </Box>
+              ) : null}
+            </>
           )}
         </StickyHeader>
 
@@ -179,7 +226,13 @@ const Home: FC = () => {
 
                   return (
                     <LI key={release.instance_id}>
-                      <ReleaseButton
+                      <Button
+                        style={{
+                          display: "flex",
+                          gap: "1rem",
+                          padding: "0.75rem",
+                        }}
+                        variant="outlined"
                         onClick={() => handleReleaseClick(release)}
                       >
                         {thumbUrl && (
@@ -196,7 +249,7 @@ const Home: FC = () => {
                         &nbsp;&mdash;&nbsp;
                         {release.basic_information.artists[0].name}
                         <span>→</span>
-                      </ReleaseButton>
+                      </Button>
                     </LI>
                   );
                 })}
