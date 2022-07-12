@@ -33,6 +33,7 @@ export const GlobalStyles = createGlobalStyle`
     background: ${theme.colors.white};
     color: ${theme.colors.black};
     font-size: 14px;
+    font-family: "Helvetica", 'Courier New', Courier, monospace, sans-serif;
 
     @media ${device.tablet} {
       font-size: 16px;
@@ -49,5 +50,8 @@ export const GlobalStyles = createGlobalStyle`
   }
   strong, b {
     font-weight: bold;
+  }
+  button {
+    cursor: pointer;
   }
 `;

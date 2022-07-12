@@ -10,29 +10,19 @@ import {
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import Link from "next/link";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
-import { H1, UL, LI } from "src/components/Typography";
+import { H1, LI, OL } from "src/components/Typography";
 import debounce from "lodash.debounce";
+import Router from "next/router";
+import { Release } from "src/components/ReleaseCard";
+import styled from "styled-components";
 
 const headers = { Accept: "application/json" };
 
-interface Release {
-  instance_id: string;
-  basic_information: {
-    title: string;
-    resource_url: string;
-    styles: string[];
-    labels: {
-      name: string;
-    }[];
-    artists: {
-      name: string;
-    }[];
-    [key: string]: unknown;
-  };
+interface ReleaseJson {
+  uri: string;
   [key: string]: unknown;
 }
 
@@ -40,6 +30,13 @@ interface Collection {
   pagination: Record<string, unknown>;
   releases: Release[];
 }
+
+const ReleaseButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+`;
 
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
@@ -54,7 +51,7 @@ const Home: FC = () => {
 
     (async () => {
       const fetchDiscogsCollection = fetch(
-        `https://api.discogs.com/users/${user}/collection/folders/0/releases?per_page=500`,
+        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
         { headers, method: "GET" }
       );
 
@@ -65,6 +62,7 @@ const Home: FC = () => {
 
         setFetchingCollection(false);
         setFilteredReleases(json.releases);
+        setSelectedStyle("All");
         setCollection(json);
       }
     })();
@@ -116,6 +114,23 @@ const Home: FC = () => {
     }
   }, 500);
 
+  const handleReleaseClick = async (release: Release) => {
+    const fetchRelease = fetch(release.basic_information.resource_url, {
+      headers,
+      method: "GET",
+    });
+
+    const fetchedRelease = await fetchRelease;
+
+    if (fetchedRelease.ok) {
+      const releaseJson: ReleaseJson = await fetchedRelease.json();
+
+      if (releaseJson) {
+        Router.push(releaseJson.uri);
+      }
+    }
+  };
+
   return (
     <Page>
       <Box display="flex" flexDirection="column" gap={5} width="100%">
@@ -150,26 +165,29 @@ const Home: FC = () => {
         <Content>
           {collection && filteredReleases && !fetchingCollection ? (
             <Box display="flex" flexDirection="column" gap={3}>
-              <h2>{user}'s collection (showing 500)</h2>
-              <UL>
+              <h2>
+                <b>
+                  {user}'s collection (showing {filteredReleases.length})
+                </b>
+              </h2>
+              <OL>
                 {filteredReleases.map((release) => {
-                  const releaseUrl = release.basic_information.resource_url;
-
                   return (
                     <LI key={release.instance_id}>
-                      <Link href={releaseUrl}>
-                        <a target="_blank">
-                          {release.basic_information.labels[0].name}
-                          &nbsp;&mdash;&nbsp;
-                          {release.basic_information.title}
-                          &nbsp;&mdash;&nbsp;
-                          {release.basic_information.artists[0].name}
-                        </a>
-                      </Link>
+                      <ReleaseButton
+                        onClick={() => handleReleaseClick(release)}
+                      >
+                        {release.basic_information.labels[0].name}
+                        &nbsp;&mdash;&nbsp;
+                        {release.basic_information.title}
+                        &nbsp;&mdash;&nbsp;
+                        {release.basic_information.artists[0].name}
+                        <span>→</span>
+                      </ReleaseButton>
                     </LI>
                   );
                 })}
-              </UL>
+              </OL>
             </Box>
           ) : (
             <CircularProgress />
