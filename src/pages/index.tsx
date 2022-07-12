@@ -35,7 +35,7 @@ interface Sort {
 
 const ALL_RELEASES_LOADED = "All releases loaded!";
 const LOAD_RELEASES_TEXT = "Loading releases...";
-const LOAD_MORE_RELEASES_TEXT = "Loading more releases...";
+const LOAD_MORE_RELEASES_TEXT = "Loading next 250 releases...";
 
 const headers = { Accept: "application/json" };
 
@@ -105,6 +105,22 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
   }
 };
 
+const Loader: FC<{ isLoaded: boolean; text: string }> = ({
+  isLoaded = false,
+  text = LOAD_MORE_RELEASES_TEXT,
+}) => {
+  if (isLoaded) {
+    return <span>{text}</span>;
+  } else {
+    return (
+      <Box display="inline-flex" flexDirection="row" gap="0.75rem">
+        <CircularProgress size={20} />
+        <span>{text}</span>
+      </Box>
+    );
+  }
+};
+
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [page, setPage] = useState<number>(1);
@@ -126,7 +142,7 @@ const Home: FC = () => {
 
     (async () => {
       const fetchDiscogsCollection = fetch(
-        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
+        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=250`,
         { headers, method: "GET" }
       );
 
@@ -229,7 +245,7 @@ const Home: FC = () => {
     if (value) {
       setUser(value);
     }
-  }, 500);
+  }, 1000);
 
   const handleReleaseClick = async (release: Release) => {
     const fetchRelease = fetch(release.basic_information.resource_url, {
@@ -254,7 +270,7 @@ const Home: FC = () => {
         <StickyHeader>
           <H1>Filter My Disco.gs</H1>
           <OutlinedInput
-            placeholder="Discogs username"
+            placeholder="Type your Discogs username..."
             onChange={handleUserChange}
           />
           {styles && !fetchingCollection && (
@@ -296,7 +312,12 @@ const Home: FC = () => {
               </FormControl>
             </>
           )}
-          {!fetchingCollection && <span>{loadMoreText}</span>}
+          {!fetchingCollection && collection && (
+            <Loader
+              isLoaded={releases.length >= collection.pagination.items}
+              text={loadMoreText}
+            />
+          )}
         </StickyHeader>
 
         <Content>
