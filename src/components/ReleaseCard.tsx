@@ -4,6 +4,8 @@ import { FC } from "react";
 
 export interface Release {
   instance_id: string;
+  date_added: string;
+  rating: string;
   basic_information: {
     resource_url: string;
     styles: string[];
