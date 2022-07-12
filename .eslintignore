@@ -1,0 +1,4 @@
+node_modules
+next.config.js
+make_sitemap.js
+public/scripts/*

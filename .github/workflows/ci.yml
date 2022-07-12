@@ -1,0 +1,43 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - staging
+jobs:
+  ci:
+    name: Lint/Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout code
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.15.0
+      - name: Get Yarn cache directory
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Cache yarn and node_modules
+        uses: actions/cache@v2
+        id: node-cache
+        with:
+          path: |
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+            /home/runner/work/rhythm-marketing/rhythm-marketing/node_modules/
+          key: ${{ runner.os }}-yarn-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Install dependencies
+        run: sudo yarn install --prefer-offline --immutable --frozen-lockfile
+        if: steps.node-cache.outputs.cache-hit != 'true'
+      - name: Run TSC
+        run: sudo yarn tsc:ci
+      - name: Run ESLint
+        run: sudo yarn lint:ci
+      - name: Run Stylelint
+        run: sudo yarn lint:css
+      - name: Run Jest
+        run: sudo yarn test:ci
