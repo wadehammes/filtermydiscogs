@@ -19,11 +19,40 @@ import debounce from "lodash.debounce";
 import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
 
+enum SortingValues {
+  AZLabel = "AZLabel",
+  ZALabel = "ZALabel",
+  DateAddedNew = "DateAddedNew",
+  DateAddedOld = "DateAddedOld",
+  RatingHigh = "RatingHigh",
+  RatingLow = "RatingLow",
+}
+
+interface Sort {
+  name: string;
+  value: SortingValues;
+}
+
 const ALL_RELEASES_LOADED = "All releases loaded!";
 const LOAD_RELEASES_TEXT = "Loading releases...";
 const LOAD_MORE_RELEASES_TEXT = "Loading more releases...";
 
 const headers = { Accept: "application/json" };
+
+const SORTING_OPTIONS: Sort[] = [
+  {
+    name: "A-Z (Label)",
+    value: SortingValues.AZLabel,
+  },
+  {
+    name: "Date Added (New to Old)",
+    value: SortingValues.DateAddedNew,
+  },
+  {
+    name: "Date Added (Old to New)",
+    value: SortingValues.DateAddedOld,
+  },
+];
 
 interface ReleaseJson {
   uri: string;
@@ -42,6 +71,23 @@ interface Collection {
   releases: Release[];
 }
 
+const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
+  switch (sort) {
+    case SortingValues.DateAddedNew:
+      return releases.sort(
+        (a, b) =>
+          new Date(b.date_added).getTime() - new Date(a.date_added).getTime()
+      );
+    case SortingValues.DateAddedOld:
+      return releases.sort(
+        (a, b) =>
+          new Date(a.date_added).getTime() - new Date(b.date_added).getTime()
+      );
+    default:
+      return releases;
+  }
+};
+
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
@@ -51,6 +97,9 @@ const Home: FC = () => {
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
   const [loadMoreText, setLoadMoreText] = useState<string>(LOAD_RELEASES_TEXT);
+  const [selectedSort, setSelectedSort] = useState<SortingValues>(
+    SortingValues.DateAddedNew
+  );
 
   useEffect(() => {
     setFetchingCollection(true);
@@ -88,7 +137,7 @@ const Home: FC = () => {
   }, [collection]);
 
   useEffect(() => {
-    if (collection && collection?.releases) {
+    if (releases) {
       if (selectedStyle !== "All") {
         const filteredReleasesByStyle = releases.filter((release) =>
           release.basic_information.styles.includes(selectedStyle)
@@ -99,7 +148,7 @@ const Home: FC = () => {
         setFilteredReleases(releases);
       }
     }
-  }, [collection, selectedStyle, releases]);
+  }, [selectedStyle, releases, selectedSort]);
 
   useEffect(() => {
     if (
@@ -144,6 +193,14 @@ const Home: FC = () => {
     }
   };
 
+  const handleSortChange = (e: SelectChangeEvent) => {
+    const { value } = e.target;
+
+    if (value) {
+      setSelectedSort(value as SortingValues);
+    }
+  };
+
   const handleUserChange = debounce((e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
 
@@ -179,26 +236,45 @@ const Home: FC = () => {
             onChange={handleUserChange}
           />
           {styles && !fetchingCollection && (
-            <FormControl>
-              <InputLabel id="style-select">Style</InputLabel>
-              <Select
-                labelId="style-select"
-                id="style-select"
-                value={selectedStyle}
-                label="Styles"
-                onChange={handleStyleChange}
-                disabled={!collection}
-              >
-                <MenuItem value="All">All</MenuItem>
-                {styles.map((style) => (
-                  <MenuItem key={style} value={style}>
-                    {style}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <>
+              <FormControl>
+                <InputLabel id="style-select">Style</InputLabel>
+                <Select
+                  labelId="style-select"
+                  id="style-select"
+                  value={selectedStyle}
+                  label="Styles"
+                  onChange={handleStyleChange}
+                  disabled={!collection}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  {styles.map((style) => (
+                    <MenuItem key={style} value={style}>
+                      {style}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl>
+                <InputLabel id="sort-select">Sort</InputLabel>
+                <Select
+                  labelId="sort-select"
+                  id="sort-select"
+                  value={selectedSort}
+                  label="sort"
+                  onChange={handleSortChange}
+                  disabled={fetchingCollection}
+                >
+                  {SORTING_OPTIONS.map((sort) => (
+                    <MenuItem key={sort.name} value={sort.value}>
+                      {sort.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </>
           )}
-          <span>{loadMoreText}</span>
+          {!fetchingCollection && <span>{loadMoreText}</span>}
         </StickyHeader>
 
         <Content>
@@ -210,7 +286,7 @@ const Home: FC = () => {
                 </b>
               </h2>
               <OL>
-                {filteredReleases.map((release) => {
+                {sortReleases(filteredReleases, selectedSort).map((release) => {
                   const thumbUrl =
                     release?.basic_information?.thumb ??
                     "https://placehold.jp/50x50.png";
@@ -220,8 +296,11 @@ const Home: FC = () => {
                       <Button
                         style={{
                           display: "flex",
-                          gap: "1rem",
+                          gap: "1.5rem",
                           padding: "0.75rem",
+                          textAlign: "left",
+                          lineHeight: 1.1,
+                          minWidth: "32rem",
                         }}
                         variant="outlined"
                         onClick={() => handleReleaseClick(release)}
@@ -234,11 +313,14 @@ const Home: FC = () => {
                             quality={100}
                           />
                         )}
-                        {release.basic_information.labels[0].name}
-                        &nbsp;&mdash;&nbsp;
-                        {release.basic_information.title}
-                        &nbsp;&mdash;&nbsp;
-                        {release.basic_information.artists[0].name}
+                        <span style={{ flex: 1 }}>
+                          {release.basic_information.labels[0].name}
+                          <br />
+                          {release.basic_information.title}
+                          <br />
+                          {release.basic_information.artists[0].name}
+                        </span>
+
                         <span>→</span>
                       </Button>
                     </LI>
