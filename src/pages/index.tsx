@@ -19,6 +19,10 @@ import debounce from "lodash.debounce";
 import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
 
+const ALL_RELEASES_LOADED = "All releases loaded!";
+const LOAD_RELEASES_TEXT = "Loading releases...";
+const LOAD_MORE_RELEASES_TEXT = "Loading more releases...";
+
 const headers = { Accept: "application/json" };
 
 interface ReleaseJson {
@@ -45,13 +49,11 @@ const Home: FC = () => {
   const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
-  const [loadMoreText, setLoadMoreText] = useState<string>(
-    "Loading releases..."
-  );
+  const [loadMoreText, setLoadMoreText] = useState<string>(LOAD_RELEASES_TEXT);
 
   useEffect(() => {
     setFetchingCollection(true);
-    setLoadMoreText("Load next 500 releases");
+    setLoadMoreText(LOAD_RELEASES_TEXT);
 
     (async () => {
       const fetchDiscogsCollection = fetch(
@@ -108,7 +110,7 @@ const Home: FC = () => {
       collection.pagination.urls.next &&
       filteredReleases.length < collection.pagination.items
     ) {
-      setLoadMoreText("Loading releases...");
+      setLoadMoreText(LOAD_RELEASES_TEXT);
 
       (async () => {
         const fetchNext = fetch(collection.pagination.urls.next, {
@@ -134,9 +136,9 @@ const Home: FC = () => {
 
   useEffect(() => {
     if (collection && filteredReleases.length >= collection.pagination.items) {
-      setLoadMoreText("All releases loaded!");
+      setLoadMoreText(ALL_RELEASES_LOADED);
     } else {
-      setLoadMoreText("Loading releases...");
+      setLoadMoreText(LOAD_MORE_RELEASES_TEXT);
     }
   }, [collection, filteredReleases.length]);
 
