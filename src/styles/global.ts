@@ -1,4 +1,3 @@
-import { FontWeight } from "src/interfaces/common.interfaces";
 import { device, theme } from "src/styles/theme";
 import { createGlobalStyle } from "styled-components";
 
@@ -49,7 +48,7 @@ export const GlobalStyles = createGlobalStyle`
     color: ${theme.colors.white};
     font-family: inherit;
     text-decoration: underline;
-    font-weight: ${FontWeight.Bold};
+    font-weight: bold;
 
     &:hover {
       background-color: ${theme.colors.white};
@@ -68,6 +67,6 @@ export const GlobalStyles = createGlobalStyle`
     display: none;
   }
   strong, b {
-    font-weight: ${FontWeight.Bold};
+    font-weight: bold;
   }
 `;
