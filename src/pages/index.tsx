@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
 import { H1, LI, OL } from "src/components/Typography";
@@ -42,11 +42,12 @@ const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
-  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
-  const [loadMoreText, setLoadMoreText] = useState<string>("");
+  const [loadMoreText, setLoadMoreText] = useState<string>(
+    "Loading releases..."
+  );
 
   useEffect(() => {
     setFetchingCollection(true);
@@ -104,11 +105,40 @@ const Home: FC = () => {
   useEffect(() => {
     if (
       collection &&
-      filteredReleases.length >= collection?.pagination?.items
+      collection.pagination.urls.next &&
+      filteredReleases.length < collection.pagination.items
     ) {
-      setLoadMoreText("All releases loaded!");
+      setLoadMoreText("Loading releases...");
+
+      (async () => {
+        const fetchNext = fetch(collection.pagination.urls.next, {
+          headers,
+          method: "GET",
+        });
+
+        const fetchedNext = await fetchNext;
+
+        if (fetchedNext.ok) {
+          const nextReleases: Collection = await fetchedNext.json();
+
+          if (nextReleases) {
+            setFilteredReleases([
+              ...filteredReleases,
+              ...nextReleases.releases,
+            ]);
+          }
+        }
+      })();
     }
-  }, [collection?.pagination?.items, filteredReleases.length, collection]);
+  }, [collection, collection?.pagination?.urls?.next, filteredReleases]);
+
+  useEffect(() => {
+    if (collection && filteredReleases.length >= collection.pagination.items) {
+      setLoadMoreText("All releases loaded!");
+    } else {
+      setLoadMoreText("Loading releases...");
+    }
+  }, [collection, filteredReleases.length]);
 
   const handleStyleChange = (e: SelectChangeEvent) => {
     const { value } = e.target;
@@ -143,30 +173,6 @@ const Home: FC = () => {
     }
   };
 
-  const handleLoadMore = useCallback(async () => {
-    setLoadMoreText("Loading releases...");
-    setLoadingMore(true);
-
-    if (collection) {
-      const fetchNext = fetch(collection.pagination.urls.next, {
-        headers,
-        method: "GET",
-      });
-
-      const fetchedNext = await fetchNext;
-
-      if (fetchedNext.ok) {
-        const nextReleases: Collection = await fetchedNext.json();
-
-        if (nextReleases) {
-          setFilteredReleases([...filteredReleases, ...nextReleases.releases]);
-          setLoadMoreText("Load next 500 releases");
-          setLoadingMore(false);
-        }
-      }
-    }
-  }, [collection, filteredReleases]);
-
   return (
     <Page>
       <Box display="flex" flexDirection="column" gap={5} width="100%">
@@ -177,41 +183,25 @@ const Home: FC = () => {
             onChange={handleUserChange}
           />
           {styles && !fetchingCollection && (
-            <>
-              <FormControl>
-                <InputLabel id="style-select">Style</InputLabel>
-                <Select
-                  labelId="style-select"
-                  id="style-select"
-                  value={selectedStyle}
-                  label="Styles"
-                  onChange={handleStyleChange}
-                  disabled={!collection}
-                >
-                  {styles.map((style) => (
-                    <MenuItem key={style} value={style}>
-                      {style}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              {collection && collection?.pagination?.urls?.next ? (
-                <Box display="flex">
-                  <Button
-                    type="button"
-                    variant="contained"
-                    onClick={handleLoadMore}
-                    disabled={
-                      filteredReleases.length >=
-                        collection?.pagination?.items || loadingMore
-                    }
-                  >
-                    {loadMoreText}
-                  </Button>
-                </Box>
-              ) : null}
-            </>
+            <FormControl>
+              <InputLabel id="style-select">Style</InputLabel>
+              <Select
+                labelId="style-select"
+                id="style-select"
+                value={selectedStyle}
+                label="Styles"
+                onChange={handleStyleChange}
+                disabled={!collection}
+              >
+                {styles.map((style) => (
+                  <MenuItem key={style} value={style}>
+                    {style}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           )}
+          <span>{loadMoreText}</span>
         </StickyHeader>
 
         <Content>
