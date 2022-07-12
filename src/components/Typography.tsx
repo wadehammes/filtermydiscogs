@@ -2,14 +2,10 @@ import { device } from "src/styles/theme";
 import styled from "styled-components";
 
 export const H1 = styled.h1`
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: bold;
-  padding-bottom: 1.5rem;
-  line-height: 1.1;
-
-  @media ${device.tablet} {
-    font-size: 3rem;
-  }
+  line-height: 1;
+  font-family: Sans-serif;
 `;
 
 export const P = styled.p`
@@ -26,4 +22,10 @@ export const P = styled.p`
     display: none;
     padding: 0;
   }
+`;
+
+export const UL = styled.ul``;
+
+export const LI = styled.li`
+  line-height: 1.5;
 `;

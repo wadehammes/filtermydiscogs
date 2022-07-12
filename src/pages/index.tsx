@@ -1,15 +1,21 @@
 import {
+  Box,
   CircularProgress,
+  OutlinedInput,
   MenuItem,
   Select,
   SelectChangeEvent,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
+import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
-import { StickyHeader } from "src/components/Layout";
+import { Content, StickyHeader } from "src/components/Layout";
+import { H1, UL, LI } from "src/components/Typography";
+import debounce from "lodash.debounce";
 
 const headers = { Accept: "application/json" };
 
@@ -38,21 +44,14 @@ interface Collection {
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
+  const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
   const [filteredReleases, setFilteredReleases] = useState<Release[]>();
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    setFetchingCollection(true);
 
-    const userParam = params.get("user");
-
-    if (userParam) {
-      setUser(userParam);
-    }
-  }, []);
-
-  useEffect(() => {
     (async () => {
       const fetchDiscogsCollection = fetch(
         `https://api.discogs.com/users/${user}/collection/folders/0/releases?per_page=500`,
@@ -64,6 +63,8 @@ const Home: FC = () => {
       if (fetched.ok) {
         const json = await fetched.json();
 
+        setFetchingCollection(false);
+        setFilteredReleases(json.releases);
         setCollection(json);
       }
     })();
@@ -107,50 +108,74 @@ const Home: FC = () => {
     }
   };
 
+  const handleUserChange = debounce((e: ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+
+    if (value) {
+      setUser(value);
+    }
+  }, 500);
+
   return (
     <Page>
-      {collection && filteredReleases ? (
-        <div style={{ width: "100%" }}>
-          <StickyHeader>
-            {styles && (
+      <Box display="flex" flexDirection="column" gap={5} width="100%">
+        <StickyHeader>
+          <H1>Filter My Disco.gs</H1>
+          <OutlinedInput
+            placeholder="Discogs username"
+            onChange={handleUserChange}
+          />
+          {styles && !fetchingCollection && (
+            <FormControl>
+              <InputLabel id="style-select">Style</InputLabel>
               <Select
                 labelId="style-select"
                 id="style-select"
                 value={selectedStyle}
                 label="Styles"
                 onChange={handleStyleChange}
+                disabled={!collection}
               >
-                <MenuItem disabled value="All">
-                  <em>Select style...</em>
-                </MenuItem>
+                <MenuItem value="All">All</MenuItem>
                 {styles.map((style) => (
                   <MenuItem key={style} value={style}>
                     {style}
                   </MenuItem>
                 ))}
               </Select>
-            )}
-          </StickyHeader>
+            </FormControl>
+          )}
+        </StickyHeader>
 
-          <ul>
-            {filteredReleases.map((release) => (
-              <li key={release.instance_id}>
-                <Link href={release.basic_information.resource_url}>
-                  <a target="_blank">
-                    {release.basic_information.labels[0].name}
-                    &nbsp;&mdash;&nbsp;
-                    {release.basic_information.title}
-                    &nbsp;&mdash;&nbsp;
-                    {release.basic_information.artists[0].name}
-                  </a>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <CircularProgress />
-      )}
+        <Content>
+          {collection && filteredReleases && !fetchingCollection ? (
+            <Box display="flex" flexDirection="column" gap={3}>
+              <h2>{user}'s collection (showing 500)</h2>
+              <UL>
+                {filteredReleases.map((release) => {
+                  const releaseUrl = release.basic_information.resource_url;
+
+                  return (
+                    <LI key={release.instance_id}>
+                      <Link href={releaseUrl}>
+                        <a target="_blank">
+                          {release.basic_information.labels[0].name}
+                          &nbsp;&mdash;&nbsp;
+                          {release.basic_information.title}
+                          &nbsp;&mdash;&nbsp;
+                          {release.basic_information.artists[0].name}
+                        </a>
+                      </Link>
+                    </LI>
+                  );
+                })}
+              </UL>
+            </Box>
+          ) : (
+            <CircularProgress />
+          )}
+        </Content>
+      </Box>
     </Page>
   );
 };

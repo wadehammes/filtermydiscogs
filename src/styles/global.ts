@@ -29,9 +29,9 @@ export const GlobalStyles = createGlobalStyle`
   }
   html,
   body {
-    background: ${theme.colors.black};
-    color: ${theme.colors.white};
-    font-family: 'Space Mono', monospace;
+    padding: 0;
+    background: ${theme.colors.white};
+    color: ${theme.colors.black};
     font-size: 14px;
 
     @media ${device.tablet} {
@@ -43,25 +43,6 @@ export const GlobalStyles = createGlobalStyle`
   }
   img {
     max-width: 100%;
-  }
-  a {
-    color: ${theme.colors.white};
-    font-family: inherit;
-    text-decoration: underline;
-    font-weight: bold;
-
-    &:hover {
-      background-color: ${theme.colors.white};
-      text-decoration: none;
-      color: ${theme.colors.black};
-      cursor: pointer;
-    }
-
-    &:focus {
-      background-color: ${theme.colors.white};
-      text-decoration: none;
-      color: ${theme.colors.black};
-    }
   }
   [hidden], .hidden {
     display: none;
