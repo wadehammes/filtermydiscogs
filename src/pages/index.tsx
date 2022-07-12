@@ -42,6 +42,7 @@ const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
@@ -144,6 +145,7 @@ const Home: FC = () => {
 
   const handleLoadMore = useCallback(async () => {
     setLoadMoreText("Loading releases...");
+    setLoadingMore(true);
 
     if (collection) {
       const fetchNext = fetch(collection.pagination.urls.next, {
@@ -159,6 +161,7 @@ const Home: FC = () => {
         if (nextReleases) {
           setFilteredReleases([...filteredReleases, ...nextReleases.releases]);
           setLoadMoreText("Load next 500 releases");
+          setLoadingMore(false);
         }
       }
     }
@@ -199,7 +202,8 @@ const Home: FC = () => {
                     variant="contained"
                     onClick={handleLoadMore}
                     disabled={
-                      filteredReleases.length >= collection?.pagination?.items
+                      filteredReleases.length >=
+                        collection?.pagination?.items || loadingMore
                     }
                   >
                     {loadMoreText}
