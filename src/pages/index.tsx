@@ -45,6 +45,10 @@ const SORTING_OPTIONS: Sort[] = [
     value: SortingValues.AZLabel,
   },
   {
+    name: "Z-A (Label)",
+    value: SortingValues.ZALabel,
+  },
+  {
     name: "Date Added (New to Old)",
     value: SortingValues.DateAddedNew,
   },
@@ -82,6 +86,18 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
       return releases.sort(
         (a, b) =>
           new Date(a.date_added).getTime() - new Date(b.date_added).getTime()
+      );
+    case SortingValues.AZLabel:
+      return releases.sort((a, b) =>
+        a.basic_information.labels[0].name.localeCompare(
+          b.basic_information.labels[0].name
+        )
+      );
+    case SortingValues.ZALabel:
+      return releases.sort((a, b) =>
+        b.basic_information.labels[0].name.localeCompare(
+          a.basic_information.labels[0].name
+        )
       );
     default:
       return releases;
