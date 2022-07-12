@@ -7,6 +7,9 @@ module.exports = {
     styledComponents: true,
     reactRemoveProperties: false,
   },
+  images: {
+    domains: ["placehold.jp", "i.discogs.com"],
+  },
   async headers() {
     return [
       {
@@ -61,7 +64,7 @@ const ContentSecurityPolicy = `
   script-src ${scriptSrc.join(" ")};
   child-src *.youtube.com *.google.com;
   style-src 'self' 'unsafe-inline' *.googleapis.com *.google.com *.googletagmanager.com;
-  img-src * blob: data:;
+  img-src * blob: data: i.discogs.com;
   object-src * blob: data:;
   media-src 'self';
   connect-src *;

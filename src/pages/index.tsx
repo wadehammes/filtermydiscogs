@@ -13,28 +13,13 @@ import { GetStaticProps } from "next";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
-import { H1, UL, LI } from "src/components/Typography";
+import { H1, LI, OL } from "src/components/Typography";
 import debounce from "lodash.debounce";
 import Router from "next/router";
+import { Release } from "src/components/ReleaseCard";
+import styled from "styled-components";
 
 const headers = { Accept: "application/json" };
-
-interface Release {
-  instance_id: string;
-  basic_information: {
-    title: string;
-    resource_url: string;
-    styles: string[];
-    labels: {
-      name: string;
-    }[];
-    artists: {
-      name: string;
-    }[];
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
 
 interface ReleaseJson {
   uri: string;
@@ -45,6 +30,13 @@ interface Collection {
   pagination: Record<string, unknown>;
   releases: Release[];
 }
+
+const ReleaseButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+`;
 
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
@@ -59,7 +51,7 @@ const Home: FC = () => {
 
     (async () => {
       const fetchDiscogsCollection = fetch(
-        `https://api.discogs.com/users/${user}/collection/folders/0/releases?per_page=500`,
+        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
         { headers, method: "GET" }
       );
 
@@ -177,19 +169,24 @@ const Home: FC = () => {
                   {user}'s collection (showing {filteredReleases.length})
                 </b>
               </h2>
-              <UL>
-                {filteredReleases.map((release) => (
-                  <LI key={release.instance_id}>
-                    <button onClick={() => handleReleaseClick(release)}>
-                      {release.basic_information.labels[0].name}
-                      &nbsp;&mdash;&nbsp;
-                      {release.basic_information.title}
-                      &nbsp;&mdash;&nbsp;
-                      {release.basic_information.artists[0].name}
-                    </button>
-                  </LI>
-                ))}
-              </UL>
+              <OL>
+                {filteredReleases.map((release) => {
+                  return (
+                    <LI key={release.instance_id}>
+                      <ReleaseButton
+                        onClick={() => handleReleaseClick(release)}
+                      >
+                        {release.basic_information.labels[0].name}
+                        &nbsp;&mdash;&nbsp;
+                        {release.basic_information.title}
+                        &nbsp;&mdash;&nbsp;
+                        {release.basic_information.artists[0].name}
+                        <span>→</span>
+                      </ReleaseButton>
+                    </LI>
+                  );
+                })}
+              </OL>
             </Box>
           ) : (
             <CircularProgress />
