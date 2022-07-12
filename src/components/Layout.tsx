@@ -51,6 +51,7 @@ export const StickyHeader = styled.div`
   width: 100%;
   padding: 0.75rem 1rem 0.9rem;
   border-bottom: 1px solid lightgray;
+  z-index: 999;
 
   > *:not(h1) {
     min-width: 20em;
