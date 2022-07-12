@@ -27,5 +27,5 @@ export const P = styled.p`
 export const UL = styled.ul``;
 
 export const LI = styled.li`
-  line-height: 1.5;
+  line-height: 1.75;
 `;

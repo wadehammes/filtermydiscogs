@@ -10,12 +10,12 @@ import {
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import Link from "next/link";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
 import { H1, UL, LI } from "src/components/Typography";
 import debounce from "lodash.debounce";
+import Router from "next/router";
 
 const headers = { Accept: "application/json" };
 
@@ -33,6 +33,11 @@ interface Release {
     }[];
     [key: string]: unknown;
   };
+  [key: string]: unknown;
+}
+
+interface ReleaseJson {
+  uri: string;
   [key: string]: unknown;
 }
 
@@ -116,6 +121,23 @@ const Home: FC = () => {
     }
   }, 500);
 
+  const handleReleaseClick = async (release: Release) => {
+    const fetchRelease = fetch(release.basic_information.resource_url, {
+      headers,
+      method: "GET",
+    });
+
+    const fetchedRelease = await fetchRelease;
+
+    if (fetchedRelease.ok) {
+      const releaseJson: ReleaseJson = await fetchedRelease.json();
+
+      if (releaseJson) {
+        Router.push(releaseJson.uri);
+      }
+    }
+  };
+
   return (
     <Page>
       <Box display="flex" flexDirection="column" gap={5} width="100%">
@@ -150,25 +172,23 @@ const Home: FC = () => {
         <Content>
           {collection && filteredReleases && !fetchingCollection ? (
             <Box display="flex" flexDirection="column" gap={3}>
-              <h2>{user}'s collection (showing 500)</h2>
+              <h2>
+                <b>
+                  {user}'s collection (showing {filteredReleases.length})
+                </b>
+              </h2>
               <UL>
-                {filteredReleases.map((release) => {
-                  const releaseUrl = release.basic_information.resource_url;
-
-                  return (
-                    <LI key={release.instance_id}>
-                      <Link href={releaseUrl}>
-                        <a target="_blank">
-                          {release.basic_information.labels[0].name}
-                          &nbsp;&mdash;&nbsp;
-                          {release.basic_information.title}
-                          &nbsp;&mdash;&nbsp;
-                          {release.basic_information.artists[0].name}
-                        </a>
-                      </Link>
-                    </LI>
-                  );
-                })}
+                {filteredReleases.map((release) => (
+                  <LI key={release.instance_id}>
+                    <button onClick={() => handleReleaseClick(release)}>
+                      {release.basic_information.labels[0].name}
+                      &nbsp;&mdash;&nbsp;
+                      {release.basic_information.title}
+                      &nbsp;&mdash;&nbsp;
+                      {release.basic_information.artists[0].name}
+                    </button>
+                  </LI>
+                ))}
               </UL>
             </Box>
           ) : (
