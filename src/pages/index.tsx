@@ -7,6 +7,7 @@ import {
   SelectChangeEvent,
   FormControl,
   InputLabel,
+  Button,
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
@@ -15,10 +16,12 @@ import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
 import { H1, LI, OL } from "src/components/Typography";
 import debounce from "lodash.debounce";
-import Router from "next/router";
 import { Release } from "src/components/ReleaseCard";
-import styled from "styled-components";
 import Image from "next/image";
+
+const ALL_RELEASES_LOADED = "All releases loaded!";
+const LOAD_RELEASES_TEXT = "Loading releases...";
+const LOAD_MORE_RELEASES_TEXT = "Loading more releases...";
 
 const headers = { Accept: "application/json" };
 
@@ -28,27 +31,30 @@ interface ReleaseJson {
 }
 
 interface Collection {
-  pagination: Record<string, unknown>;
+  pagination: {
+    items: number;
+    urls: {
+      next: string;
+      prev: string;
+    };
+    [key: string]: unknown;
+  };
   releases: Release[];
 }
-
-const ReleaseButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-`;
 
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
-  const [filteredReleases, setFilteredReleases] = useState<Release[]>();
+  const [releases, setReleases] = useState<Release[]>([]);
+  const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
+  const [loadMoreText, setLoadMoreText] = useState<string>(LOAD_RELEASES_TEXT);
 
   useEffect(() => {
     setFetchingCollection(true);
+    setLoadMoreText(LOAD_RELEASES_TEXT);
 
     (async () => {
       const fetchDiscogsCollection = fetch(
@@ -62,7 +68,7 @@ const Home: FC = () => {
         const json = await fetched.json();
 
         setFetchingCollection(false);
-        setFilteredReleases(json.releases);
+        setReleases(json.releases);
         setSelectedStyle("All");
         setCollection(json);
       }
@@ -82,22 +88,53 @@ const Home: FC = () => {
   }, [collection]);
 
   useEffect(() => {
-    if (collection) {
-      const { releases } = collection;
+    if (collection && collection?.releases) {
+      if (selectedStyle !== "All") {
+        const filteredReleasesByStyle = releases.filter((release) =>
+          release.basic_information.styles.includes(selectedStyle)
+        );
 
-      if (releases) {
-        if (selectedStyle !== "All") {
-          const filteredReleasesByStyle = releases.filter((release) =>
-            release.basic_information.styles.includes(selectedStyle)
-          );
-
-          setFilteredReleases(filteredReleasesByStyle);
-        } else {
-          setFilteredReleases(releases);
-        }
+        setFilteredReleases(filteredReleasesByStyle);
+      } else {
+        setFilteredReleases(releases);
       }
     }
-  }, [collection, selectedStyle]);
+  }, [collection, selectedStyle, releases]);
+
+  useEffect(() => {
+    if (
+      collection &&
+      collection.pagination.urls.next &&
+      releases.length < collection.pagination.items
+    ) {
+      setLoadMoreText(LOAD_RELEASES_TEXT);
+
+      (async () => {
+        const fetchNext = fetch(collection.pagination.urls.next, {
+          headers,
+          method: "GET",
+        });
+
+        const fetchedNext = await fetchNext;
+
+        if (fetchedNext.ok) {
+          const nextReleases: Collection = await fetchedNext.json();
+
+          if (nextReleases) {
+            setReleases([...releases, ...nextReleases.releases]);
+          }
+        }
+      })();
+    }
+  }, [collection, collection?.pagination?.urls?.next, releases]);
+
+  useEffect(() => {
+    if (collection && releases.length >= collection.pagination.items) {
+      setLoadMoreText(ALL_RELEASES_LOADED);
+    } else {
+      setLoadMoreText(LOAD_MORE_RELEASES_TEXT);
+    }
+  }, [collection, releases.length]);
 
   const handleStyleChange = (e: SelectChangeEvent) => {
     const { value } = e.target;
@@ -127,7 +164,7 @@ const Home: FC = () => {
       const releaseJson: ReleaseJson = await fetchedRelease.json();
 
       if (releaseJson) {
-        Router.push(releaseJson.uri);
+        window.open(releaseJson.uri, "_blank");
       }
     }
   };
@@ -161,6 +198,7 @@ const Home: FC = () => {
               </Select>
             </FormControl>
           )}
+          <span>{loadMoreText}</span>
         </StickyHeader>
 
         <Content>
@@ -168,7 +206,7 @@ const Home: FC = () => {
             <Box display="flex" flexDirection="column" gap={3}>
               <h2>
                 <b>
-                  {user}'s collection (showing {filteredReleases.length})
+                  {user}'s collection (showing {releases.length})
                 </b>
               </h2>
               <OL>
@@ -179,7 +217,13 @@ const Home: FC = () => {
 
                   return (
                     <LI key={release.instance_id}>
-                      <ReleaseButton
+                      <Button
+                        style={{
+                          display: "flex",
+                          gap: "1rem",
+                          padding: "0.75rem",
+                        }}
+                        variant="outlined"
                         onClick={() => handleReleaseClick(release)}
                       >
                         {thumbUrl && (
@@ -196,7 +240,7 @@ const Home: FC = () => {
                         &nbsp;&mdash;&nbsp;
                         {release.basic_information.artists[0].name}
                         <span>→</span>
-                      </ReleaseButton>
+                      </Button>
                     </LI>
                   );
                 })}
