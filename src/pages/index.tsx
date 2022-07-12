@@ -315,7 +315,7 @@ const Home: FC = () => {
                           gap: "1.5rem",
                           padding: "0 1rem 0 0",
                           textAlign: "left",
-                          lineHeight: 1.1,
+                          lineHeight: 1.2,
                           minWidth: "32rem",
                           overflow: "hidden",
                         }}
