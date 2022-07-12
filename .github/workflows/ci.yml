@@ -5,30 +5,30 @@ on:
       - staging
 jobs:
   ci:
-    name: Lint/Test
+    name: Lint & Test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout code
         with:
           fetch-depth: 0
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 16.15.0
       - name: Get Yarn cache directory
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
       - name: Cache yarn and node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: node-cache
         with:
           path: |
             ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            /home/runner/work/rhythm-marketing/rhythm-marketing/node_modules/
+            /home/runner/work/discogs-collection-filter/discogs-collection-filter/node_modules/
           key: ${{ runner.os }}-yarn-node-${{ hashFiles('**/yarn.lock') }}
       - name: Install dependencies
         run: sudo yarn install --prefer-offline --immutable --frozen-lockfile
