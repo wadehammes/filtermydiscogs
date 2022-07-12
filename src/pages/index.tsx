@@ -18,6 +18,7 @@ import debounce from "lodash.debounce";
 import Router from "next/router";
 import { Release } from "src/components/ReleaseCard";
 import styled from "styled-components";
+import Image from "next/image";
 
 const headers = { Accept: "application/json" };
 
@@ -172,11 +173,23 @@ const Home: FC = () => {
               </h2>
               <OL>
                 {filteredReleases.map((release) => {
+                  const thumbUrl =
+                    release?.basic_information?.thumb ??
+                    "https://placehold.jp/50x50.png";
+
                   return (
                     <LI key={release.instance_id}>
                       <ReleaseButton
                         onClick={() => handleReleaseClick(release)}
                       >
+                        {thumbUrl && (
+                          <Image
+                            src={thumbUrl}
+                            height="50"
+                            width="50"
+                            quality={100}
+                          />
+                        )}
                         {release.basic_information.labels[0].name}
                         &nbsp;&mdash;&nbsp;
                         {release.basic_information.title}
