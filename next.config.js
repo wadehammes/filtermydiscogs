@@ -54,11 +54,7 @@ module.exports = {
 };
 
 // https://securityheaders.com
-const scriptSrc = [
-  "'self'",
-  "'unsafe-eval'",
-  "'unsafe-inline'",
-];
+const scriptSrc = ["'self'", "'unsafe-eval'", "'unsafe-inline'", "polyfill.io"];
 
 const ContentSecurityPolicy = `
   default-src 'self';

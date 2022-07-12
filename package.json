@@ -3,9 +3,9 @@
   "version": "0.0.386",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--inspect' next dev -p 1337",
+    "dev": "NODE_OPTIONS='--inspect' next dev -p 7777",
     "build": "next build",
-    "start": "next start -p 1337",
+    "start": "next start -p 7777",
     "export": "next export",
     "prettier:fix": "prettier --write 'src/**/*.{ts,tsx}'",
     "tsc:ci": "tsc --strict",
@@ -23,7 +23,6 @@
     "@mui/styled-engine-sc": "^5.8.0",
     "@testing-library/react": "^13.3.0",
     "@types/rosie": "^0.0.40",
-    
     "classnames": "^2.3.1",
     "csstype": "^3.1.0",
     "dashify": "^2.0.0",

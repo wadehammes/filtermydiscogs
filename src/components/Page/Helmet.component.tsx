@@ -12,16 +12,10 @@ export const Helmet: FC = () => {
 
   return (
     <Head>
-      <title>Wade Hammes | Home</title>
+      <title>Discogs Collection Filter</title>
       <meta name="viewport" content="width=device-width, minimum-scale=1.0" />
-      <meta
-        name="description"
-        content="Wade Hammes is a senior software engineer based in Washington, D.C., currently working for Rhythm."
-      />
-      <meta
-        property="og:description"
-        content="Wade Hammes is a senior software engineer based in Washington, D.C., currently working for Rhythm."
-      />
+      <meta name="description" content="Discogs Collection Filter" />
+      <meta property="og:description" content="Discogs Collection Filter" />
       <meta property="og:image" content="/images/fractal.png" />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:site" content="@nthoftype" />

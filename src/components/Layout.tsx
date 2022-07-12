@@ -1,4 +1,3 @@
-import { device } from "src/styles/theme";
 import styled from "styled-components";
 import { P } from "src/components/Typography";
 
@@ -16,12 +15,7 @@ export const Grid = styled.div<GridProps>`
 `;
 
 export const Container = styled.div`
-  padding: ${({ theme }) => theme.sizing.mobilePadding};
   width: 100%;
-
-  @media ${device.tablet} {
-    padding: ${({ theme }) => theme.sizing.desktopPadding};
-  }
 `;
 
 export const Content = styled(Container)`
@@ -43,4 +37,13 @@ export const Footer = styled.footer`
   ${P} {
     max-width: 70ch;
   }
+`;
+
+export const StickyHeader = styled.div`
+  background: white;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: 0.75rem 1rem 1rem;
+  border-bottom: 1px solid lightgray;
 `;
