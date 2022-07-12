@@ -46,6 +46,7 @@ const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
+  const [releases, setReleases] = useState<Release[]>([]);
   const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("All");
@@ -67,7 +68,7 @@ const Home: FC = () => {
         const json = await fetched.json();
 
         setFetchingCollection(false);
-        setFilteredReleases(json.releases);
+        setReleases(json.releases);
         setSelectedStyle("All");
         setCollection(json);
       }
@@ -87,28 +88,24 @@ const Home: FC = () => {
   }, [collection]);
 
   useEffect(() => {
-    if (collection) {
-      const { releases } = collection;
+    if (collection && collection?.releases) {
+      if (selectedStyle !== "All") {
+        const filteredReleasesByStyle = releases.filter((release) =>
+          release.basic_information.styles.includes(selectedStyle)
+        );
 
-      if (releases) {
-        if (selectedStyle !== "All") {
-          const filteredReleasesByStyle = releases.filter((release) =>
-            release.basic_information.styles.includes(selectedStyle)
-          );
-
-          setFilteredReleases(filteredReleasesByStyle);
-        } else {
-          setFilteredReleases(releases);
-        }
+        setFilteredReleases(filteredReleasesByStyle);
+      } else {
+        setFilteredReleases(releases);
       }
     }
-  }, [collection, selectedStyle]);
+  }, [collection, selectedStyle, releases]);
 
   useEffect(() => {
     if (
       collection &&
       collection.pagination.urls.next &&
-      filteredReleases.length < collection.pagination.items
+      releases.length < collection.pagination.items
     ) {
       setLoadMoreText(LOAD_RELEASES_TEXT);
 
@@ -124,23 +121,20 @@ const Home: FC = () => {
           const nextReleases: Collection = await fetchedNext.json();
 
           if (nextReleases) {
-            setFilteredReleases([
-              ...filteredReleases,
-              ...nextReleases.releases,
-            ]);
+            setReleases([...releases, ...nextReleases.releases]);
           }
         }
       })();
     }
-  }, [collection, collection?.pagination?.urls?.next, filteredReleases]);
+  }, [collection, collection?.pagination?.urls?.next, releases]);
 
   useEffect(() => {
-    if (collection && filteredReleases.length >= collection.pagination.items) {
+    if (collection && releases.length >= collection.pagination.items) {
       setLoadMoreText(ALL_RELEASES_LOADED);
     } else {
       setLoadMoreText(LOAD_MORE_RELEASES_TEXT);
     }
-  }, [collection, filteredReleases.length]);
+  }, [collection, releases.length]);
 
   const handleStyleChange = (e: SelectChangeEvent) => {
     const { value } = e.target;
@@ -195,6 +189,7 @@ const Home: FC = () => {
                 onChange={handleStyleChange}
                 disabled={!collection}
               >
+                <MenuItem value="All">All</MenuItem>
                 {styles.map((style) => (
                   <MenuItem key={style} value={style}>
                     {style}
@@ -211,7 +206,7 @@ const Home: FC = () => {
             <Box display="flex" flexDirection="column" gap={3}>
               <h2>
                 <b>
-                  {user}'s collection (showing {filteredReleases.length})
+                  {user}'s collection (showing {releases.length})
                 </b>
               </h2>
               <OL>
