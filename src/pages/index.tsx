@@ -171,7 +171,7 @@ const Home: FC = () => {
     if (
       collection &&
       collection.pagination.urls.next &&
-      releases.length <= collection.pagination.items &&
+      releases.length < collection.pagination.items &&
       page <= collection.pagination.pages
     ) {
       setLoadMoreText(LOAD_RELEASES_TEXT);
