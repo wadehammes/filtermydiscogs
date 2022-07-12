@@ -65,6 +65,7 @@ interface ReleaseJson {
 
 interface Collection {
   pagination: {
+    pages: number;
     items: number;
     urls: {
       next: string;
@@ -106,6 +107,8 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
 
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
+  const [page, setPage] = useState<number>(1);
+  const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
   const [releases, setReleases] = useState<Release[]>([]);
@@ -133,6 +136,8 @@ const Home: FC = () => {
         const json = await fetched.json();
 
         setFetchingCollection(false);
+        setFilteredReleases([]);
+        setNextLink(json.pagination.urls.next);
         setReleases(json.releases);
         setSelectedStyle("All");
         setCollection(json);
@@ -141,16 +146,14 @@ const Home: FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (collection) {
+    if (releases) {
       const uniqueStyles = new Set(
-        flatten(
-          collection.releases.map((release) => release.basic_information.styles)
-        )
+        flatten(releases.map((release) => release.basic_information.styles))
       );
 
       setStyles(Array.from(uniqueStyles));
     }
-  }, [collection]);
+  }, [releases]);
 
   useEffect(() => {
     if (releases) {
@@ -169,13 +172,14 @@ const Home: FC = () => {
   useEffect(() => {
     if (
       collection &&
-      collection.pagination.urls.next &&
-      releases.length < collection.pagination.items
+      nextLink &&
+      releases.length < collection.pagination.items &&
+      page <= collection.pagination.pages
     ) {
       setLoadMoreText(LOAD_RELEASES_TEXT);
 
       (async () => {
-        const fetchNext = fetch(collection.pagination.urls.next, {
+        const fetchNext = fetch(nextLink, {
           headers,
           method: "GET",
         });
@@ -187,11 +191,13 @@ const Home: FC = () => {
 
           if (nextReleases) {
             setReleases([...releases, ...nextReleases.releases]);
+            setNextLink(nextReleases.pagination.urls.next);
+            setPage(page + 1);
           }
         }
       })();
     }
-  }, [collection, collection?.pagination?.urls?.next, releases]);
+  }, [collection, releases, page, nextLink]);
 
   useEffect(() => {
     if (collection && releases.length >= collection.pagination.items) {
@@ -298,7 +304,8 @@ const Home: FC = () => {
             <Box display="flex" flexDirection="column" gap={3}>
               <h2>
                 <b>
-                  {user}'s collection (showing {releases.length})
+                  {user}'s collection (showing {releases.length} of{" "}
+                  {collection.pagination.items} releases)
                 </b>
               </h2>
               <OL>
@@ -308,7 +315,7 @@ const Home: FC = () => {
                     "https://placehold.jp/50x50.png";
 
                   return (
-                    <LI key={release.instance_id}>
+                    <LI key={`${release.instance_id}-${release.date_added}`}>
                       <Button
                         style={{
                           display: "flex",
