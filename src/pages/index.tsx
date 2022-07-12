@@ -35,7 +35,7 @@ interface Sort {
 
 const ALL_RELEASES_LOADED = "All releases loaded!";
 const LOAD_RELEASES_TEXT = "Loading releases...";
-const LOAD_MORE_RELEASES_TEXT = "Loading next 250 releases...";
+const LOAD_MORE_RELEASES_TEXT = "Loading next 500 releases...";
 
 const headers = { Accept: "application/json" };
 
@@ -142,7 +142,7 @@ const Home: FC = () => {
 
     (async () => {
       const fetchDiscogsCollection = fetch(
-        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=250`,
+        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
         { headers, method: "GET" }
       );
 
