@@ -62,6 +62,7 @@ const Home: FC = () => {
 
         setFetchingCollection(false);
         setFilteredReleases(json.releases);
+        setSelectedStyle("All");
         setCollection(json);
       }
     })();
