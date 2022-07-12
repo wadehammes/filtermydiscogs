@@ -313,10 +313,11 @@ const Home: FC = () => {
                         style={{
                           display: "flex",
                           gap: "1.5rem",
-                          padding: "0.75rem",
+                          padding: "0 1rem 0 0",
                           textAlign: "left",
                           lineHeight: 1.1,
                           minWidth: "32rem",
+                          overflow: "hidden",
                         }}
                         variant="outlined"
                         onClick={() => handleReleaseClick(release)}
@@ -324,8 +325,8 @@ const Home: FC = () => {
                         {thumbUrl && (
                           <Image
                             src={thumbUrl}
-                            height="50"
-                            width="50"
+                            height="80"
+                            width="80"
                             quality={100}
                           />
                         )}
