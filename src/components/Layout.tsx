@@ -23,7 +23,7 @@ export const Content = styled(Container)`
   align-items: flex-end;
   justify-content: flex-start;
   height: 100%;
-  padding: 0 3rem;
+  padding: 0 4rem 3rem;
 `;
 
 export const Footer = styled.footer`
