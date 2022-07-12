@@ -7,7 +7,7 @@ import {
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
 import Link from "next/link";
-import { FC, ReactElement, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { StickyHeader } from "src/components/Layout";
 
