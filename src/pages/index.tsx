@@ -108,6 +108,7 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
 const Home: FC = () => {
   const [user, setUser] = useState<string>("wadehammes");
   const [page, setPage] = useState<number>(1);
+  const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
   const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
   const [releases, setReleases] = useState<Release[]>([]);
@@ -136,6 +137,7 @@ const Home: FC = () => {
 
         setFetchingCollection(false);
         setFilteredReleases([]);
+        setNextLink(json.pagination.urls.next);
         setReleases(json.releases);
         setSelectedStyle("All");
         setCollection(json);
@@ -170,14 +172,14 @@ const Home: FC = () => {
   useEffect(() => {
     if (
       collection &&
-      collection.pagination.urls.next &&
+      nextLink &&
       releases.length < collection.pagination.items &&
       page <= collection.pagination.pages
     ) {
       setLoadMoreText(LOAD_RELEASES_TEXT);
 
       (async () => {
-        const fetchNext = fetch(collection?.pagination.urls.next, {
+        const fetchNext = fetch(nextLink, {
           headers,
           method: "GET",
         });
@@ -189,12 +191,13 @@ const Home: FC = () => {
 
           if (nextReleases) {
             setReleases([...releases, ...nextReleases.releases]);
+            setNextLink(nextReleases.pagination.urls.next);
             setPage(page + 1);
           }
         }
       })();
     }
-  }, [collection, releases, page]);
+  }, [collection, releases, page, nextLink]);
 
   useEffect(() => {
     if (collection && releases.length >= collection.pagination.items) {
