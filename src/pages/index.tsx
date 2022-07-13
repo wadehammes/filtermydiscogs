@@ -264,7 +264,7 @@ const FilterMyDiscogs: FC = () => {
       dispatchUser(value);
     } else {
       dispatchUser(null);
-      dispatchFetchingCollection(false);
+      dispatchFetchingCollection(true);
       dispatchReleases([]);
       dispatchFilteredReleases([]);
       dispatchLoadMoreReleaseText(AWAITING_USERNAME);
