@@ -25,7 +25,7 @@ export const Helmet: FC = () => {
       />
       <meta
         property="og:image"
-        content="https://filtermydisco.gs/images/app-ui.png"
+        content="https://www.filtermydisco.gs/images/app-ui.png"
       />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:creator" content="@nthoftype" />
@@ -36,7 +36,7 @@ export const Helmet: FC = () => {
       />
       <meta
         name="twitter:image"
-        content="https://filtermydisco.gs/images/app-ui.png"
+        content="https://www.filtermydisco.gs/images/app-ui.png"
       />
       <meta property="og:locale" content="en-US" />
       {pageUrl && (
