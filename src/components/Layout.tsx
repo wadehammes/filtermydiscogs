@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { P } from "src/components/Typography";
+import { device } from "src/styles/theme";
 
 interface GridProps {
   gridHeight?: number | null;
@@ -55,7 +56,7 @@ export const StickyHeader = styled.div`
   border-bottom: 1px solid lightgray;
   z-index: 999;
 
-  @media screen and (min-width: 600px) {
+  @media ${device.tablet} {
     padding: 0.75rem 2rem 0.85rem;
     flex-flow: row wrap;
     align-items: center;

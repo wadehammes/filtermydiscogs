@@ -20,6 +20,7 @@ import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import { breakpoints } from "src/styles/theme";
 
 enum SortingValues {
   AZLabel = "AZLabel",
@@ -131,7 +132,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 );
 
 const Home: FC = () => {
-  const isMobile = useMediaQuery("(max-width: 600px)");
+  const isMobile = useMediaQuery(breakpoints.tablet);
   const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
@@ -292,11 +293,11 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
-            fullWidth={isMobile}
+            fullWidth={!isMobile}
           />
           {styles && !fetchingCollection && !error && (
             <>
-              <FormControl fullWidth={isMobile}>
+              <FormControl fullWidth={!isMobile}>
                 <InputLabel id="style-select">Style</InputLabel>
                 <Select
                   labelId="style-select"
@@ -314,7 +315,7 @@ const Home: FC = () => {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl fullWidth={isMobile}>
+              <FormControl fullWidth={!isMobile}>
                 <InputLabel id="sort-select">Sort</InputLabel>
                 <Select
                   labelId="sort-select"
