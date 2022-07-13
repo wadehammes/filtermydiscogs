@@ -369,12 +369,14 @@ const Home: FC = () => {
                             {thumbUrl && (
                               <Image
                                 src={thumbUrl}
-                                height={isMobile ? 75 : 100}
-                                width={isMobile ? 75 : 100}
+                                height={100}
+                                width={100}
                                 quality={100}
                               />
                             )}
-                            <span style={{ flex: 1 }}>
+                            <span
+                              style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}
+                            >
                               <b>{release.basic_information.labels[0].name}</b>
                               <br />
                               {release.basic_information.title}

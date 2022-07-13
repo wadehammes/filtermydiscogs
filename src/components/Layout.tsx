@@ -46,7 +46,7 @@ export const StickyHeader = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   flex-flow: column wrap;
-  gap: 1.5rem;
+  gap: 1rem;
   background: white;
   position: sticky;
   top: 0;
