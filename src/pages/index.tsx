@@ -135,7 +135,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 );
 
 const Home: FC = () => {
-  const isMobile = useMediaQuery(device.tablet);
+  const isTablet = useMediaQuery(device.tablet);
   const isLaptop = useMediaQuery(device.laptop);
   const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
@@ -297,11 +297,16 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
-            fullWidth={!isMobile}
+            fullWidth={!isTablet}
           />
           {styles && !fetchingCollection && !error && (
-            <>
-              <FormControl fullWidth={!isMobile}>
+            <Box
+              display="flex"
+              flexDirection="row"
+              gap={isTablet ? 5 : 1}
+              width="100%"
+            >
+              <FormControl fullWidth>
                 <InputLabel id="style-select">Style</InputLabel>
                 <Select
                   labelId="style-select"
@@ -319,7 +324,7 @@ const Home: FC = () => {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl fullWidth={!isMobile}>
+              <FormControl fullWidth>
                 <InputLabel id="sort-select">Sort</InputLabel>
                 <Select
                   labelId="sort-select"
@@ -336,7 +341,7 @@ const Home: FC = () => {
                   ))}
                 </Select>
               </FormControl>
-            </>
+            </Box>
           )}
           {!fetchingCollection && collection && (
             <Loader
