@@ -335,7 +335,7 @@ const FilterMyDiscogs: FC = () => {
         {username ? (
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
-              <Box display="flex" flexDirection="column" gap={3}>
+              <Box display="flex" flexDirection="column" gap={4} width="100%">
                 <header style={{ lineHeight: 1.5 }}>
                   <h2>
                     <b>
