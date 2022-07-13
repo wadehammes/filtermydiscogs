@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { ChangeEvent, FC, useEffect, useRef, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
 import { H1, LI, OL, P } from "src/components/Typography";
@@ -150,6 +150,7 @@ const Home: FC = () => {
   const [selectedSort, setSelectedSort] = useState<SortingValues>(
     SortingValues.DateAddedNew
   );
+  const usernameRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -269,6 +270,8 @@ const Home: FC = () => {
 
     if (value) {
       setUser(value);
+    } else {
+      setUser(null);
     }
   }, 1000);
 
@@ -300,6 +303,7 @@ const Home: FC = () => {
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
             fullWidth={!isTablet}
+            inputRef={usernameRef}
           />
           {styles && !fetchingCollection && !error && (
             <Box display="flex" flexDirection="row" gap={2} width="100%">
@@ -427,7 +431,16 @@ const Home: FC = () => {
               </b>
             </P>
             <P>
-              <Button variant="contained" onClick={() => setUser("wadehammes")}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setUser("wadehammes");
+
+                  if (usernameRef?.current) {
+                    usernameRef.current.value = "wadehammes";
+                  }
+                }}
+              >
                 Or try mine
               </Button>
             </P>
