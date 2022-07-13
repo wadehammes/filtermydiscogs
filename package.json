@@ -60,6 +60,7 @@
     "@types/analytics-node": "^3.1.9",
     "@types/dashify": "^1.0.1",
     "@types/detect-node": "^2.0.0",
+    "@types/gtag.js": "^0.0.10",
     "@types/humps": "^2.0.2",
     "@types/i18n": "^0.13.4",
     "@types/jest": "^28.1.4",

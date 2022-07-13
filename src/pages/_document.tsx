@@ -41,6 +41,24 @@ export default class MyDocument extends Document {
             strategy="beforeInteractive"
             src="https://polyfill.io/v3/polyfill.min.js?features=ResizeObserver%2CIntl.RelativeTimeFormat%2CIntl%2Cdefault%2Cwindow.scroll%2CIntersectionObserver%2CIntersectionObserverEntry%2CIntl.DateTimeFormat%2CIntl.DateTimeFormat.prototype.formatToParts%2CIntl.DisplayNames%2CIntl.ListFormat%2CIntl.Locale%2CIntl.NumberFormat%2CIntl.PluralRules%2CIntl.getCanonicalLocales"
           />
+          <Script
+            id="gtm"
+            strategy="beforeInteractive"
+            src="https://www.googletagmanager.com/gtag/js?id=G-WK4TL04HL0"
+          />
+          <Script
+            id="gtag"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+
+              gtag('config', 'G-WK4TL04HL0');
+            `,
+            }}
+          />
         </Head>
         <body>
           <Main />
