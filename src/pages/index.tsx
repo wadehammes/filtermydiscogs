@@ -14,10 +14,11 @@ import { GetStaticProps } from "next";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
-import { H1, LI, OL } from "src/components/Typography";
+import { H1, LI, OL, P } from "src/components/Typography";
 import debounce from "lodash.debounce";
 import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 
 enum SortingValues {
   AZLabel = "AZLabel",
@@ -124,6 +125,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 };
 
 const Home: FC = () => {
+  const isMobile = useMediaQuery("(max-width: 600px)");
   const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
@@ -284,10 +286,11 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
+            fullWidth={isMobile}
           />
           {styles && !fetchingCollection && !error && (
             <>
-              <FormControl>
+              <FormControl fullWidth={isMobile}>
                 <InputLabel id="style-select">Style</InputLabel>
                 <Select
                   labelId="style-select"
@@ -305,7 +308,7 @@ const Home: FC = () => {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl>
+              <FormControl fullWidth={isMobile}>
                 <InputLabel id="sort-select">Sort</InputLabel>
                 <Select
                   labelId="sort-select"
@@ -360,7 +363,8 @@ const Home: FC = () => {
                               padding: "0 1rem 0 0",
                               textAlign: "left",
                               lineHeight: 1.2,
-                              minWidth: "32rem",
+                              minWidth: "100%",
+                              maxWidth: "32rem",
                               overflow: "hidden",
                             }}
                             variant="outlined"
@@ -391,17 +395,21 @@ const Home: FC = () => {
                 </OL>
               </Box>
             ) : error ? (
-              <b>{ERROR_FETCHING}</b>
+              <P>
+                <b>{ERROR_FETCHING}</b>
+              </P>
             ) : (
               <CircularProgress />
             )}
           </Content>
         ) : (
           <Content>
-            <b>
-              Type your Discogs username above to fetch your collection. Note:
-              it must be publically available for this to work currently.
-            </b>
+            <P>
+              <b>
+                Type your Discogs username above to fetch your collection. Note:
+                it must be publically available for this to work currently.
+              </b>
+            </P>
           </Content>
         )}
       </Box>

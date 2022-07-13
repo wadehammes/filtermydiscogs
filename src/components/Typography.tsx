@@ -26,12 +26,13 @@ export const P = styled.p`
 
 export const UL = styled.ul``;
 export const OL = styled.ol`
-  padding-left: 2rem;
+  padding-left: 0;
+  list-style-type: none;
 `;
 
 export const LI = styled.li`
   line-height: 2.25;
-  padding: 1.5rem 0 0 1rem;
+  padding: 1.25rem 0 0 0;
   text-align: left;
   font-weight: normal;
 `;
