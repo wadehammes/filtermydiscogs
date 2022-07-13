@@ -5,8 +5,17 @@ import { ThemeProvider } from "styled-components";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { GlobalStyles } from "src/styles/global";
 import { CollectionContextProvider } from "src/context/collection.context";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { trackPageView } from "src/analytics/analytics";
 
-const DiscogsCollectionFilter = ({ Component, pageProps }: AppProps) => {
+const App = ({ Component, pageProps }: AppProps) => {
+  const { asPath } = useRouter();
+
+  useEffect(() => {
+    trackPageView(asPath);
+  }, [asPath]);
+
   return (
     <MuiThemeProvider theme={muiTheme}>
       <ThemeProvider theme={theme}>
@@ -19,4 +28,4 @@ const DiscogsCollectionFilter = ({ Component, pageProps }: AppProps) => {
   );
 };
 
-export default DiscogsCollectionFilter;
+export default App;
