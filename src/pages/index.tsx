@@ -124,7 +124,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 };
 
 const Home: FC = () => {
-  const [user, setUser] = useState<string>("wadehammes");
+  const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
@@ -164,6 +164,7 @@ const Home: FC = () => {
           setSelectedStyle("All");
           setCollection(json);
         } else {
+          setFetchingCollection(false);
           setError(ERROR_FETCHING);
         }
       })();
@@ -283,9 +284,8 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
-            defaultValue={user}
           />
-          {styles && !fetchingCollection && (
+          {styles && !fetchingCollection && !error && (
             <>
               <FormControl>
                 <InputLabel id="style-select">Style</InputLabel>
@@ -390,12 +390,19 @@ const Home: FC = () => {
                   )}
                 </OL>
               </Box>
+            ) : error ? (
+              <b>{ERROR_FETCHING}</b>
             ) : (
               <CircularProgress />
             )}
           </Content>
         ) : (
-          <Content>{error && <b>{ERROR_FETCHING}</b>}</Content>
+          <Content>
+            <b>
+              Type your Discogs username above to fetch your collection. Note:
+              it must be publically available for this to work currently.
+            </b>
+          </Content>
         )}
       </Box>
     </Page>
