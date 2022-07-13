@@ -11,97 +11,74 @@ import {
 } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import { ChangeEvent, FC, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, useEffect, useRef } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
 import { H1, LI, OL, P } from "src/components/Typography";
 import debounce from "lodash.debounce";
-import { Release } from "src/components/ReleaseCard";
-import Image from "next/image";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import Chevron from "src/styles/icons/chevron-right-solid.svg";
-import Check from "src/styles/icons/check-solid.svg";
 import { device } from "src/styles/theme";
+import {
+  ALL_RELEASES_LOADED,
+  ALL_STYLE,
+  AWAITING_USERNAME,
+  DEFAULT_COLLECTION,
+  ERROR_FETCHING,
+  LOAD_MORE_RELEASES_TEXT,
+  LOAD_RELEASES_TEXT,
+} from "src/constants";
+import {
+  CollectionSortingValues,
+  SortMenuItem,
+  Release,
+  Collection,
+  useCollectionContext,
+} from "src/context/collection.context";
+import { headers } from "src/api/helpers";
+import ReleaseCard from "src/components/ReleaseCard/ReleaseCard.component";
+import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 
-enum SortingValues {
-  AZLabel = "AZLabel",
-  ZALabel = "ZALabel",
-  DateAddedNew = "DateAddedNew",
-  DateAddedOld = "DateAddedOld",
-  RatingHigh = "RatingHigh",
-  RatingLow = "RatingLow",
-}
-
-interface Sort {
-  name: string;
-  value: SortingValues;
-}
-
-const ALL_RELEASES_LOADED = "All releases loaded!";
-const LOAD_RELEASES_TEXT = "Loading releases...";
-const LOAD_MORE_RELEASES_TEXT = "Loading next 500 releases...";
-const AWAITING_USERNAME = "";
-const ERROR_FETCHING =
-  "Failed to fetch collection. Check spelling or this collection could be private.";
-
-const headers = { Accept: "application/json" };
-
-const SORTING_OPTIONS: Sort[] = [
+const SORTING_OPTIONS: SortMenuItem[] = [
   {
     name: "A-Z (Label)",
-    value: SortingValues.AZLabel,
+    value: CollectionSortingValues.AZLabel,
   },
   {
     name: "Z-A (Label)",
-    value: SortingValues.ZALabel,
+    value: CollectionSortingValues.ZALabel,
   },
   {
     name: "Date Added (New to Old)",
-    value: SortingValues.DateAddedNew,
+    value: CollectionSortingValues.DateAddedNew,
   },
   {
     name: "Date Added (Old to New)",
-    value: SortingValues.DateAddedOld,
+    value: CollectionSortingValues.DateAddedOld,
   },
 ];
 
-interface ReleaseJson {
-  uri: string;
-  [key: string]: unknown;
-}
-
-interface Collection {
-  pagination: {
-    pages: number;
-    items: number;
-    urls: {
-      next: string;
-      prev: string;
-    };
-    [key: string]: unknown;
-  };
-  releases: Release[];
-}
-
-const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
+const sortReleases = (
+  releases: Release[],
+  sort: CollectionSortingValues
+): Release[] => {
   switch (sort) {
-    case SortingValues.DateAddedNew:
+    case CollectionSortingValues.DateAddedNew:
       return releases.sort(
         (a, b) =>
           new Date(b.date_added).getTime() - new Date(a.date_added).getTime()
       );
-    case SortingValues.DateAddedOld:
+    case CollectionSortingValues.DateAddedOld:
       return releases.sort(
         (a, b) =>
           new Date(a.date_added).getTime() - new Date(b.date_added).getTime()
       );
-    case SortingValues.AZLabel:
+    case CollectionSortingValues.AZLabel:
       return releases.sort((a, b) =>
         a.basic_information.labels[0].name.localeCompare(
           b.basic_information.labels[0].name
         )
       );
-    case SortingValues.ZALabel:
+    case CollectionSortingValues.ZALabel:
       return releases.sort((a, b) =>
         b.basic_information.labels[0].name.localeCompare(
           a.basic_information.labels[0].name
@@ -112,117 +89,121 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
   }
 };
 
-const Loader: FC<{ isLoaded: boolean; text: string }> = ({
-  isLoaded = false,
-  text = LOAD_MORE_RELEASES_TEXT,
-}) => (
-  <Box
-    display="inline-flex"
-    flexDirection="row"
-    justifyContent="flex-end"
-    gap="0.75rem"
-  >
-    {isLoaded ? (
-      <span>
-        <Check /> {text}
-      </span>
-    ) : (
-      <>
-        <CircularProgress size={20} />
-        <span>{text}</span>
-      </>
-    )}
-  </Box>
-);
-
-const Home: FC = () => {
-  const isTablet = useMediaQuery(device.tablet);
-  const isLaptop = useMediaQuery(device.laptop);
-  const [user, setUser] = useState<string | null>(null);
-  const [page, setPage] = useState<number>(1);
-  const [nextLink, setNextLink] = useState<string>("");
-  const [collection, setCollection] = useState<Collection>();
-  const [fetchingCollection, setFetchingCollection] = useState<boolean>(true);
-  const [releases, setReleases] = useState<Release[]>([]);
-  const [filteredReleases, setFilteredReleases] = useState<Release[]>([]);
-  const [styles, setStyles] = useState<string[]>([]);
-  const [selectedStyle, setSelectedStyle] = useState<string>("All");
-  const [loadMoreText, setLoadMoreText] = useState<string>(LOAD_RELEASES_TEXT);
-  const [selectedSort, setSelectedSort] = useState<SortingValues>(
-    SortingValues.DateAddedNew
-  );
+const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string | null>(null);
+  const isTablet = useMediaQuery(device.tablet);
+  const {
+    state,
+    dispatchUser,
+    dispatchPage,
+    dispatchNextPageLink,
+    dispatchFetchingCollection,
+    dispatchCollection,
+    dispatchReleases,
+    dispatchFilteredReleases,
+    dispatchReleaseStyles,
+    dispatchSelectedReleaseStyle,
+    dispatchSelectedReleaseSort,
+    dispatchLoadMoreReleaseText,
+    dispatchError,
+  } = useCollectionContext();
+
+  const {
+    username,
+    page,
+    nextPageLink,
+    collection,
+    releases,
+    fetchingCollection,
+    filteredReleases,
+    releaseStyles,
+    selectedReleaseStyle,
+    loadMoreReleasesText,
+    selectedReleaseSort,
+    error,
+  } = state;
 
   useEffect(() => {
-    if (user) {
-      setFetchingCollection(true);
-      setReleases([]);
-      setLoadMoreText(LOAD_RELEASES_TEXT);
-      setError(null);
+    if (username) {
+      dispatchFetchingCollection(true);
+      dispatchReleases([]);
+      dispatchFilteredReleases([]);
+      dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
+      dispatchError(null);
 
       (async () => {
         const fetchDiscogsCollection = fetch(
-          `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
+          `https://api.discogs.com/users/${username}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
           { headers, method: "GET" }
         );
 
         const fetched = await fetchDiscogsCollection;
 
         if (fetched.ok) {
-          const json = await fetched.json();
+          const collectionJson = await fetched.json();
 
-          setFetchingCollection(false);
-          setFilteredReleases([]);
-          setNextLink(json.pagination.urls.next);
-          setReleases(json.releases);
-          setSelectedStyle("All");
-          setCollection(json);
+          dispatchFetchingCollection(false);
+          dispatchNextPageLink(collectionJson.pagination.urls.next);
+          dispatchReleases(collectionJson.releases);
+          dispatchSelectedReleaseStyle(ALL_STYLE);
+          dispatchCollection(collectionJson);
         } else {
-          setFetchingCollection(false);
-          setError(ERROR_FETCHING);
+          dispatchFetchingCollection(false);
+          dispatchError(ERROR_FETCHING);
         }
       })();
     }
-  }, [user]);
+  }, [
+    dispatchCollection,
+    dispatchError,
+    dispatchFetchingCollection,
+    dispatchFilteredReleases,
+    dispatchLoadMoreReleaseText,
+    dispatchNextPageLink,
+    dispatchReleases,
+    dispatchSelectedReleaseStyle,
+    username,
+  ]);
 
   useEffect(() => {
     if (releases) {
       const uniqueStyles = new Set(
-        flatten(
-          releases.map((release) => release.basic_information.styles)
-        ).sort((a, b) => a.localeCompare(b))
+        flatten(releases.map((release) => release.basic_information.styles))
       );
 
-      setStyles(Array.from(uniqueStyles));
+      const sortedStyles: string[] = Array.from(uniqueStyles).sort((a, b) =>
+        a.localeCompare(b)
+      );
+
+      dispatchReleaseStyles(sortedStyles);
     }
-  }, [releases]);
+  }, [dispatchReleaseStyles, releases]);
 
   useEffect(() => {
     if (releases) {
-      if (selectedStyle !== "All") {
+      if (selectedReleaseStyle !== ALL_STYLE) {
         const filteredReleasesByStyle = releases.filter((release) =>
-          release.basic_information.styles.includes(selectedStyle)
+          release.basic_information.styles.includes(selectedReleaseStyle)
         );
 
-        setFilteredReleases(filteredReleasesByStyle);
+        dispatchFilteredReleases(filteredReleasesByStyle);
       } else {
-        setFilteredReleases(releases);
+        dispatchFilteredReleases(releases);
       }
     }
-  }, [selectedStyle, releases, selectedSort]);
+  }, [selectedReleaseStyle, releases, dispatchFilteredReleases]);
 
   useEffect(() => {
     if (
       collection &&
-      nextLink &&
+      nextPageLink &&
       releases.length < collection.pagination.items &&
       page <= collection.pagination.pages
     ) {
-      setLoadMoreText(LOAD_RELEASES_TEXT);
+      dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
 
       (async () => {
-        const fetchNext = fetch(nextLink, {
+        const fetchNext = fetch(nextPageLink, {
           headers,
           method: "GET",
         });
@@ -233,28 +214,37 @@ const Home: FC = () => {
           const nextReleases: Collection = await fetchedNext.json();
 
           if (nextReleases) {
-            setReleases([...releases, ...nextReleases.releases]);
-            setNextLink(nextReleases.pagination.urls.next);
-            setPage(page + 1);
+            dispatchReleases([...releases, ...nextReleases.releases]);
+            dispatchNextPageLink(nextReleases.pagination.urls.next);
+            dispatchPage(page + 1);
           }
         }
       })();
     }
-  }, [collection, releases, page, nextLink]);
+  }, [
+    collection,
+    releases,
+    page,
+    nextPageLink,
+    dispatchLoadMoreReleaseText,
+    dispatchReleases,
+    dispatchNextPageLink,
+    dispatchPage,
+  ]);
 
   useEffect(() => {
     if (collection && releases.length >= collection.pagination.items) {
-      setLoadMoreText(ALL_RELEASES_LOADED);
+      dispatchLoadMoreReleaseText(ALL_RELEASES_LOADED);
     } else {
-      setLoadMoreText(LOAD_MORE_RELEASES_TEXT);
+      dispatchLoadMoreReleaseText(LOAD_MORE_RELEASES_TEXT);
     }
-  }, [collection, releases.length]);
+  }, [collection, dispatchLoadMoreReleaseText, releases.length]);
 
   const handleStyleChange = (e: SelectChangeEvent) => {
     const { value } = e.target;
 
     if (value) {
-      setSelectedStyle(value);
+      dispatchSelectedReleaseStyle(value);
     }
   };
 
@@ -262,7 +252,7 @@ const Home: FC = () => {
     const { value } = e.target;
 
     if (value) {
-      setSelectedSort(value as SortingValues);
+      dispatchSelectedReleaseSort(value as CollectionSortingValues);
     }
   };
 
@@ -270,37 +260,18 @@ const Home: FC = () => {
     const { value } = e.target;
 
     if (value) {
-      setUser(value);
+      dispatchUser(value);
     } else {
-      setUser(null);
-      setFetchingCollection(false);
-      setReleases([]);
-      setFilteredReleases([]);
-      setLoadMoreText(AWAITING_USERNAME);
-      setSelectedStyle("All");
-      setSelectedSort(SortingValues.DateAddedNew);
-      setError(null);
+      dispatchUser(null);
+      dispatchFetchingCollection(false);
+      dispatchReleases([]);
+      dispatchFilteredReleases([]);
+      dispatchLoadMoreReleaseText(AWAITING_USERNAME);
+      dispatchSelectedReleaseStyle(ALL_STYLE);
+      dispatchSelectedReleaseStyle(CollectionSortingValues.DateAddedNew);
+      dispatchError(null);
     }
   }, 1000);
-
-  const handleReleaseClick = async (release: Release) => {
-    const windowReference = window.open("about:blank", "_blank");
-
-    const fetchRelease = fetch(release.basic_information.resource_url, {
-      headers,
-      method: "GET",
-    });
-
-    const fetchedRelease = await fetchRelease;
-
-    if (fetchedRelease.ok) {
-      const releaseJson: ReleaseJson = await fetchedRelease.json();
-
-      if (releaseJson && windowReference) {
-        windowReference.location = releaseJson.uri;
-      }
-    }
-  };
 
   return (
     <Page>
@@ -313,20 +284,20 @@ const Home: FC = () => {
             fullWidth={!isTablet}
             inputRef={usernameRef}
           />
-          {styles && !fetchingCollection && !error && (
+          {releaseStyles && !fetchingCollection && !error && (
             <Box display="flex" flexDirection="row" gap={2} width="100%">
               <FormControl fullWidth>
                 <InputLabel id="style-select">Style</InputLabel>
                 <Select
                   labelId="style-select"
                   id="style-select"
-                  value={selectedStyle}
+                  value={selectedReleaseStyle}
                   label="Styles"
                   onChange={handleStyleChange}
                   disabled={!collection}
                 >
-                  <MenuItem value="All">All</MenuItem>
-                  {styles.map((style) => (
+                  <MenuItem value={ALL_STYLE}>All</MenuItem>
+                  {releaseStyles.map((style) => (
                     <MenuItem key={style} value={style}>
                       {style}
                     </MenuItem>
@@ -338,7 +309,7 @@ const Home: FC = () => {
                 <Select
                   labelId="sort-select"
                   id="sort-select"
-                  value={selectedSort}
+                  value={selectedReleaseSort}
                   label="sort"
                   onChange={handleSortChange}
                   disabled={fetchingCollection}
@@ -353,22 +324,22 @@ const Home: FC = () => {
             </Box>
           )}
           {!fetchingCollection && collection && (
-            <Loader
+            <ReleasesLoading
               isLoaded={releases.length >= collection.pagination.items}
-              text={loadMoreText}
+              text={loadMoreReleasesText}
             />
           )}
         </StickyHeader>
 
-        {user ? (
+        {username ? (
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
               <Box display="flex" flexDirection="column" gap={3}>
                 <header style={{ lineHeight: 1.5 }}>
                   <h2>
                     <b>
-                      {user}
-                      {user.endsWith("s") ? "'" : "'s"} collection
+                      {username}
+                      {username.endsWith("s") ? "'" : "'s"} collection
                     </b>
                   </h2>
                   <p>
@@ -378,47 +349,12 @@ const Home: FC = () => {
                 </header>
 
                 <OL>
-                  {sortReleases(filteredReleases, selectedSort).map(
-                    (release) => {
-                      const thumbUrl =
-                        release?.basic_information?.thumb ??
-                        "https://placehold.jp/50x50.png";
-
-                      return (
-                        <LI
-                          key={`${release.instance_id}-${release.date_added}`}
-                        >
-                          <Button
-                            variant="outlined"
-                            onClick={() => handleReleaseClick(release)}
-                          >
-                            {thumbUrl && (
-                              <Image
-                                src={thumbUrl}
-                                height={isLaptop ? 150 : 100}
-                                width={isLaptop ? 150 : 100}
-                                quality={100}
-                              />
-                            )}
-                            <span
-                              style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}
-                            >
-                              <b>{release.basic_information.labels[0].name}</b>
-                              <br />
-                              {release.basic_information.title}
-                              <br />
-                              {release.basic_information.artists
-                                .map((artist) => artist.name)
-                                .join(", ")}
-                            </span>
-
-                            <span>
-                              <Chevron />
-                            </span>
-                          </Button>
-                        </LI>
-                      );
-                    }
+                  {sortReleases(filteredReleases, selectedReleaseSort).map(
+                    (release) => (
+                      <LI key={`${release.instance_id}-${release.date_added}`}>
+                        <ReleaseCard release={release} />
+                      </LI>
+                    )
                   )}
                 </OL>
               </Box>
@@ -442,10 +378,10 @@ const Home: FC = () => {
               <Button
                 variant="contained"
                 onClick={() => {
-                  setUser("wadehammes");
+                  dispatchUser(DEFAULT_COLLECTION);
 
                   if (usernameRef?.current) {
-                    usernameRef.current.value = "wadehammes";
+                    usernameRef.current.value = DEFAULT_COLLECTION;
                   }
                 }}
               >
@@ -464,4 +400,4 @@ export const getStaticProps: GetStaticProps = () => ({
   revalidate: 60,
 });
 
-export default Home;
+export default FilterMyDiscogs;
