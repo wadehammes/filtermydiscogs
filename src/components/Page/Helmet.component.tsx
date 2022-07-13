@@ -15,13 +15,12 @@ export const Helmet: FC = () => {
       <title>Filter My Disco.gs - a Discogs collection management tool</title>
       <link rel="icon" type="image/x-icon" href="/favicon.ico"></link>
       <meta name="viewport" content="width=device-width, minimum-scale=1.0" />
-      <meta
-        name="description"
-        content="Filter My Disco.gs - a Discogs collection management tool"
-      />
+      <meta name="description" content="a Discogs collection management tool" />
+      <meta property="og:title" content="Filter My Disco.gs" />
+      <meta property="og:type" content="website" />
       <meta
         property="og:description"
-        content="Filter My Disco.gs - a Discogs collection management tool"
+        content="a Discogs collection management tool"
       />
       <meta
         property="og:image"
