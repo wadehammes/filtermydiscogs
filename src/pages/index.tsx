@@ -423,7 +423,7 @@ const Home: FC = () => {
             <P>
               <b>
                 Type your Discogs username above to fetch your collection. Note:
-                it must be publically available for this to work currently.
+                it must be publicly available for this to work currently.
               </b>
             </P>
             <P>
