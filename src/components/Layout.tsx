@@ -2,19 +2,6 @@ import styled from "styled-components";
 import { P } from "src/components/Typography";
 import { device } from "src/styles/theme";
 
-interface GridProps {
-  gridHeight?: number | null;
-}
-
-export const Grid = styled.div<GridProps>`
-  display: grid;
-  grid-template-rows: 8em 1fr;
-  grid-gap: 0;
-  height: ${({ gridHeight = 500 }) =>
-    gridHeight ? `${gridHeight}px` : "100vh"};
-  width: 100%;
-`;
-
 export const Container = styled.div`
   width: 100%;
 `;
