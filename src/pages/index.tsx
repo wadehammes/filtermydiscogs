@@ -300,12 +300,7 @@ const Home: FC = () => {
             fullWidth={!isTablet}
           />
           {styles && !fetchingCollection && !error && (
-            <Box
-              display="flex"
-              flexDirection="row"
-              gap={isTablet ? 5 : 1}
-              width="100%"
-            >
+            <Box display="flex" flexDirection="row" gap={2} width="100%">
               <FormControl fullWidth>
                 <InputLabel id="style-select">Style</InputLabel>
                 <Select
