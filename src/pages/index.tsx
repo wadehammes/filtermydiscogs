@@ -395,7 +395,16 @@ const Home: FC = () => {
             )}
           </Content>
         ) : (
-          <Content>{error && <b>{ERROR_FETCHING}</b>}</Content>
+          <Content>
+            {error ? (
+              <b>{ERROR_FETCHING}</b>
+            ) : (
+              <b>
+                Type your Discogs username above to fetch your collection. Note:
+                it must be publically available for this to work currently.
+              </b>
+            )}
+          </Content>
         )}
       </Box>
     </Page>
