@@ -164,7 +164,9 @@ const Home: FC = () => {
   useEffect(() => {
     if (releases) {
       const uniqueStyles = new Set(
-        flatten(releases.map((release) => release.basic_information.styles))
+        flatten(
+          releases.map((release) => release.basic_information.styles)
+        ).sort((a, b) => a.localeCompare(b))
       );
 
       setStyles(Array.from(uniqueStyles));
