@@ -344,8 +344,8 @@ const FilterMyDiscogs: FC = () => {
                     </b>
                   </h2>
                   <p>
-                    (showing {filteredReleases.length} of{" "}
-                    {collection.pagination.items} releases)
+                    viewing {filteredReleases.length} of{" "}
+                    {collection.pagination.items} releases
                   </p>
                 </header>
 
