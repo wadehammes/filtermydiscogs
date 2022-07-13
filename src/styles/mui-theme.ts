@@ -39,6 +39,10 @@ export const themeOptions: ThemeOptions = {
           background: "rgba(255,255,255,0.25)",
           backdropFilter: "blur(5px)",
         },
+        contained: {
+          lineHeight: 2,
+          padding: "6px 16px 5px",
+        },
       },
     },
   },

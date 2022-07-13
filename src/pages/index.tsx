@@ -26,6 +26,7 @@ import {
   ERROR_FETCHING,
   LOAD_MORE_RELEASES_TEXT,
   LOAD_RELEASES_TEXT,
+  LOAD_SAMPLE_COLLECTION,
 } from "src/constants";
 import {
   CollectionSortingValues,
@@ -275,7 +276,7 @@ const FilterMyDiscogs: FC = () => {
 
   return (
     <Page>
-      <Box display="flex" flexDirection="column" gap={5} width="100%">
+      <Box display="flex" flexDirection="column" gap={4} width="100%">
         <StickyHeader>
           <H1>Filter My Disco.gs</H1>
           <OutlinedInput
@@ -385,7 +386,7 @@ const FilterMyDiscogs: FC = () => {
                   }
                 }}
               >
-                Or try mine
+                {LOAD_SAMPLE_COLLECTION}
               </Button>
             </P>
           </Content>
