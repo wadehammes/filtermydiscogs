@@ -337,7 +337,7 @@ const Home: FC = () => {
               <Box display="flex" flexDirection="column" gap={3}>
                 <h2>
                   <b>
-                    {user}'s collection (showing {releases.length} of{" "}
+                    {user}'s collection (showing {filteredReleases.length} of{" "}
                     {collection.pagination.items} releases)
                   </b>
                 </h2>
