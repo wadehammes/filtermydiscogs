@@ -14,10 +14,14 @@ import { GetStaticProps } from "next";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import Page from "src/components/Page/Page.component";
 import { Content, StickyHeader } from "src/components/Layout";
-import { H1, LI, OL } from "src/components/Typography";
+import { H1, LI, OL, P } from "src/components/Typography";
 import debounce from "lodash.debounce";
 import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import Check from "src/styles/icons/check-solid.svg";
+import { device } from "src/styles/theme";
 
 enum SortingValues {
   AZLabel = "AZLabel",
@@ -110,20 +114,29 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
 const Loader: FC<{ isLoaded: boolean; text: string }> = ({
   isLoaded = false,
   text = LOAD_MORE_RELEASES_TEXT,
-}) => {
-  if (isLoaded) {
-    return <span>{text}</span>;
-  } else {
-    return (
-      <Box display="inline-flex" flexDirection="row" gap="0.75rem">
+}) => (
+  <Box
+    display="inline-flex"
+    flexDirection="row"
+    justifyContent="flex-end"
+    gap="0.75rem"
+  >
+    {isLoaded ? (
+      <span>
+        <Check /> {text}
+      </span>
+    ) : (
+      <>
         <CircularProgress size={20} />
         <span>{text}</span>
-      </Box>
-    );
-  }
-};
+      </>
+    )}
+  </Box>
+);
 
 const Home: FC = () => {
+  const isMobile = useMediaQuery(device.tablet);
+  const isLaptop = useMediaQuery(device.laptop);
   const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
@@ -284,10 +297,11 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
+            fullWidth={!isMobile}
           />
           {styles && !fetchingCollection && !error && (
             <>
-              <FormControl>
+              <FormControl fullWidth={!isMobile}>
                 <InputLabel id="style-select">Style</InputLabel>
                 <Select
                   labelId="style-select"
@@ -305,7 +319,7 @@ const Home: FC = () => {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl>
+              <FormControl fullWidth={!isMobile}>
                 <InputLabel id="sort-select">Sort</InputLabel>
                 <Select
                   labelId="sort-select"
@@ -338,8 +352,10 @@ const Home: FC = () => {
               <Box display="flex" flexDirection="column" gap={3}>
                 <h2>
                   <b>
-                    {user}'s collection (showing {filteredReleases.length} of{" "}
-                    {collection.pagination.items} releases)
+                    {user}
+                    {user.endsWith("s") ? "'" : "'s"} collection (showing{" "}
+                    {filteredReleases.length} of {collection.pagination.items}{" "}
+                    releases)
                   </b>
                 </h2>
                 <OL>
@@ -354,35 +370,32 @@ const Home: FC = () => {
                           key={`${release.instance_id}-${release.date_added}`}
                         >
                           <Button
-                            style={{
-                              display: "flex",
-                              gap: "1.5rem",
-                              padding: "0 1rem 0 0",
-                              textAlign: "left",
-                              lineHeight: 1.2,
-                              minWidth: "32rem",
-                              overflow: "hidden",
-                            }}
                             variant="outlined"
                             onClick={() => handleReleaseClick(release)}
                           >
                             {thumbUrl && (
                               <Image
                                 src={thumbUrl}
-                                height="80"
-                                width="80"
+                                height={isLaptop ? 150 : 100}
+                                width={isLaptop ? 150 : 100}
                                 quality={100}
                               />
                             )}
-                            <span style={{ flex: 1 }}>
-                              {release.basic_information.labels[0].name}
+                            <span
+                              style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}
+                            >
+                              <b>{release.basic_information.labels[0].name}</b>
                               <br />
                               {release.basic_information.title}
                               <br />
-                              {release.basic_information.artists[0].name}
+                              {release.basic_information.artists
+                                .map((artist) => artist.name)
+                                .join(", ")}
                             </span>
 
-                            <span>→</span>
+                            <span>
+                              <Chevron />
+                            </span>
                           </Button>
                         </LI>
                       );
@@ -391,17 +404,26 @@ const Home: FC = () => {
                 </OL>
               </Box>
             ) : error ? (
-              <b>{ERROR_FETCHING}</b>
+              <P>
+                <b>{ERROR_FETCHING}</b>
+              </P>
             ) : (
               <CircularProgress />
             )}
           </Content>
         ) : (
           <Content>
-            <b>
-              Type your Discogs username above to fetch your collection. Note:
-              it must be publically available for this to work currently.
-            </b>
+            <P>
+              <b>
+                Type your Discogs username above to fetch your collection. Note:
+                it must be publically available for this to work currently.
+              </b>
+            </P>
+            <P>
+              <Button variant="contained" onClick={() => setUser("wadehammes")}>
+                Or try mine
+              </Button>
+            </P>
           </Content>
         )}
       </Box>

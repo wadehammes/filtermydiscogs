@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { P } from "src/components/Typography";
+import { device } from "src/styles/theme";
 
 interface GridProps {
   gridHeight?: number | null;
@@ -43,17 +44,25 @@ export const Footer = styled.footer`
 
 export const StickyHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-flow: column wrap;
   gap: 1rem;
   background: white;
   position: sticky;
   top: 0;
   width: 100%;
-  padding: 0.75rem 2rem 0.85rem;
+  padding: 1rem 2rem;
   border-bottom: 1px solid lightgray;
   z-index: 999;
 
+  @media ${device.tablet} {
+    padding: 0.75rem 2rem 0.85rem;
+    flex-flow: row wrap;
+    align-items: center;
+  }
+
   > *:not(h1) {
-    min-width: 20em;
+    flex: 1;
   }
 `;

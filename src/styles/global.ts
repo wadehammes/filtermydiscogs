@@ -30,7 +30,6 @@ export const GlobalStyles = createGlobalStyle`
   html,
   body {
     padding: 0;
-    background: ${theme.colors.white};
     color: ${theme.colors.black};
     font-size: 14px;
     font-family: "Helvetica", 'Courier New', Courier, monospace, sans-serif;
@@ -41,6 +40,8 @@ export const GlobalStyles = createGlobalStyle`
   }
   body {
     line-height: 1;
+    background-color: #dcf8ef;
+    min-height: 100vh;
   }
   img {
     max-width: 100%;
