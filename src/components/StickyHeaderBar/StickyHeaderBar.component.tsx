@@ -184,7 +184,7 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
             </FormControl>
           </Box>
         )}
-        {!fetchingCollection && collection && (
+        {!fetchingCollection && collection && !error && (
           <ReleasesLoading
             isLoaded={releases.length >= collection.pagination.items}
             text={loadMoreReleasesText}

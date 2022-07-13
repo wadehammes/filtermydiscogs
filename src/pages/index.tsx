@@ -40,6 +40,7 @@ const FilterMyDiscogs: FC = () => {
     dispatchSelectedReleaseStyle,
     dispatchLoadMoreReleaseText,
     dispatchError,
+    dispatchResetState,
   } = useCollectionContext();
 
   const {
@@ -56,13 +57,13 @@ const FilterMyDiscogs: FC = () => {
   } = state;
 
   useEffect(() => {
-    if (username) {
-      dispatchFetchingCollection(true);
-      dispatchReleases([]);
-      dispatchFilteredReleases([]);
-      dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
-      dispatchError(null);
+    dispatchFetchingCollection(true);
+    dispatchReleases([]);
+    dispatchFilteredReleases([]);
+    dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
+    dispatchError(null);
 
+    if (username) {
       (async () => {
         const fetchDiscogsCollection = fetch(
           `https://api.discogs.com/users/${username}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
@@ -182,7 +183,7 @@ const FilterMyDiscogs: FC = () => {
         height="100%"
       >
         <StickyHeaderBar ref={usernameRef} />
-        {username ? (
+        {username && !error && (
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
               <Box display="flex" flexDirection="column" gap={4} width="100%">
@@ -209,15 +210,13 @@ const FilterMyDiscogs: FC = () => {
                   )}
                 </OL>
               </Box>
-            ) : error ? (
-              <P>
-                <b>{ERROR_FETCHING}</b>
-              </P>
             ) : (
               <CircularProgress />
             )}
           </Content>
-        ) : (
+        )}
+
+        {!username && !error && (
           <Content>
             <P>
               <b>
@@ -237,6 +236,28 @@ const FilterMyDiscogs: FC = () => {
                 }}
               >
                 {LOAD_SAMPLE_COLLECTION}
+              </Button>
+            </P>
+          </Content>
+        )}
+
+        {error && (
+          <Content>
+            <P>
+              <b>{ERROR_FETCHING}</b>
+            </P>
+            <P>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  dispatchResetState();
+
+                  if (usernameRef?.current) {
+                    usernameRef.current.value = "";
+                  }
+                }}
+              >
+                Reset
               </Button>
             </P>
           </Content>

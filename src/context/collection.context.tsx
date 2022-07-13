@@ -211,6 +211,11 @@ export const CollectionReducer = (
         ...state,
         error: action.payload,
       };
+    case CollectionActionTypes.ResetState:
+      return {
+        ...state,
+        ...action.payload,
+      };
     default:
       return state;
   }
