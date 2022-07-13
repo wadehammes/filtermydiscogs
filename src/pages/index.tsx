@@ -20,6 +20,7 @@ import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import Check from "src/styles/icons/check-solid.svg";
 import { breakpoints } from "src/styles/theme";
 
 enum SortingValues {
@@ -121,7 +122,9 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
     gap="0.75rem"
   >
     {isLoaded ? (
-      <span>{text}</span>
+      <span>
+        <Check /> {text}
+      </span>
     ) : (
       <>
         <CircularProgress size={20} />
@@ -348,8 +351,10 @@ const Home: FC = () => {
               <Box display="flex" flexDirection="column" gap={3}>
                 <h2>
                   <b>
-                    {user}'s collection (showing {filteredReleases.length} of{" "}
-                    {collection.pagination.items} releases)
+                    {user}
+                    {user.endsWith("s") ? "'" : "'s"} collection (showing{" "}
+                    {filteredReleases.length} of {collection.pagination.items}{" "}
+                    releases)
                   </b>
                 </h2>
                 <OL>
@@ -412,6 +417,11 @@ const Home: FC = () => {
                 Type your Discogs username above to fetch your collection. Note:
                 it must be publically available for this to work currently.
               </b>
+            </P>
+            <P>
+              <Button variant="contained" onClick={() => setUser("wadehammes")}>
+                Or try mine
+              </Button>
             </P>
           </Content>
         )}

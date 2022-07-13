@@ -28,7 +28,7 @@ export const themeOptions: ThemeOptions = {
     },
     MuiButton: {
       styleOverrides: {
-        root: {
+        outlined: {
           display: "flex",
           gap: "1.5rem",
           padding: "0 1rem 0 0",
