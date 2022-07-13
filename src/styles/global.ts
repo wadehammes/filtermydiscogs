@@ -40,8 +40,7 @@ export const GlobalStyles = createGlobalStyle`
   }
   body {
     line-height: 1;
-    background-color: #fee2f8;
-    background-image: linear-gradient(315deg, #fee2f8 0%, #dcf8ef 74%);
+    background-color: #dcf8ef;
     min-height: 100vh;
   }
   img {
