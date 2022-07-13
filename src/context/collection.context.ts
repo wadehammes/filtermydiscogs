@@ -137,7 +137,7 @@ export type CollectionActions =
       payload: CollectionSortingValues;
     };
 
-export interface ReleaseProviderProps {
+export interface CollectionProviderProps {
   state: CollectionStateStore;
   dispatch: Dispatch<SetStateAction<CollectionActionTypes>>;
 }
@@ -221,19 +221,18 @@ const initialState: CollectionStateStore = {
   selectedReleaseSort: CollectionSortingValues.DateAddedNew,
 };
 
-export const CollectionContext = createContext({} as CollectionStateStore);
+export const CollectionContext = createContext({} as CollectionProviderProps);
 
 export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   children,
 }) => {
-  // Initiate reducer
   const [state, dispatch] = useReducer(CollectionReducer, initialState);
 
-  return (
+  return children ? (
     <CollectionContext.Provider value={{ state, dispatch }}>
       {children}
     </CollectionContext.Provider>
-  );
+  ) : null;
 };
 
 export const useReleasesContext = () => useContext(CollectionContext);
