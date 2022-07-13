@@ -1,27 +1,13 @@
-import {
-  Box,
-  CircularProgress,
-  OutlinedInput,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  FormControl,
-  InputLabel,
-  Button,
-} from "@mui/material";
+import { Box, CircularProgress, Button } from "@mui/material";
 import flatten from "lodash.flatten";
 import { GetStaticProps } from "next";
-import { ChangeEvent, FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
 import Page from "src/components/Page/Page.component";
-import { Content, StickyHeader } from "src/components/Layout";
-import { H1, LI, OL, P } from "src/components/Typography";
-import debounce from "lodash.debounce";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { device } from "src/styles/theme";
+import { Content } from "src/components/Layout";
+import { LI, OL, P } from "src/components/Typography";
 import {
   ALL_RELEASES_LOADED,
   ALL_STYLE,
-  AWAITING_USERNAME,
   DEFAULT_COLLECTION,
   ERROR_FETCHING,
   LOAD_MORE_RELEASES_TEXT,
@@ -29,70 +15,18 @@ import {
   LOAD_SAMPLE_COLLECTION,
 } from "src/constants";
 import {
-  CollectionSortingValues,
-  SortMenuItem,
-  Release,
   Collection,
   useCollectionContext,
 } from "src/context/collection.context";
 import { headers } from "src/api/helpers";
 import ReleaseCard from "src/components/ReleaseCard/ReleaseCard.component";
-import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
-
-const SORTING_OPTIONS: SortMenuItem[] = [
-  {
-    name: "A-Z (Label)",
-    value: CollectionSortingValues.AZLabel,
-  },
-  {
-    name: "Z-A (Label)",
-    value: CollectionSortingValues.ZALabel,
-  },
-  {
-    name: "Date Added (New to Old)",
-    value: CollectionSortingValues.DateAddedNew,
-  },
-  {
-    name: "Date Added (Old to New)",
-    value: CollectionSortingValues.DateAddedOld,
-  },
-];
-
-const sortReleases = (
-  releases: Release[],
-  sort: CollectionSortingValues
-): Release[] => {
-  switch (sort) {
-    case CollectionSortingValues.DateAddedNew:
-      return releases.sort(
-        (a, b) =>
-          new Date(b.date_added).getTime() - new Date(a.date_added).getTime()
-      );
-    case CollectionSortingValues.DateAddedOld:
-      return releases.sort(
-        (a, b) =>
-          new Date(a.date_added).getTime() - new Date(b.date_added).getTime()
-      );
-    case CollectionSortingValues.AZLabel:
-      return releases.sort((a, b) =>
-        a.basic_information.labels[0].name.localeCompare(
-          b.basic_information.labels[0].name
-        )
-      );
-    case CollectionSortingValues.ZALabel:
-      return releases.sort((a, b) =>
-        b.basic_information.labels[0].name.localeCompare(
-          a.basic_information.labels[0].name
-        )
-      );
-    default:
-      return releases;
-  }
-};
+import {
+  sortReleases,
+  StickyHeaderBar,
+} from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 
 const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
-  const isTablet = useMediaQuery(device.tablet);
   const {
     state,
     dispatchUser,
@@ -104,7 +38,6 @@ const FilterMyDiscogs: FC = () => {
     dispatchFilteredReleases,
     dispatchReleaseStyles,
     dispatchSelectedReleaseStyle,
-    dispatchSelectedReleaseSort,
     dispatchLoadMoreReleaseText,
     dispatchError,
   } = useCollectionContext();
@@ -117,9 +50,7 @@ const FilterMyDiscogs: FC = () => {
     releases,
     fetchingCollection,
     filteredReleases,
-    releaseStyles,
     selectedReleaseStyle,
-    loadMoreReleasesText,
     selectedReleaseSort,
     error,
   } = state;
@@ -241,39 +172,6 @@ const FilterMyDiscogs: FC = () => {
     }
   }, [collection, dispatchLoadMoreReleaseText, releases.length]);
 
-  const handleStyleChange = (e: SelectChangeEvent) => {
-    const { value } = e.target;
-
-    if (value) {
-      dispatchSelectedReleaseStyle(value);
-    }
-  };
-
-  const handleSortChange = (e: SelectChangeEvent) => {
-    const { value } = e.target;
-
-    if (value) {
-      dispatchSelectedReleaseSort(value as CollectionSortingValues);
-    }
-  };
-
-  const handleUserChange = debounce((e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-
-    if (value) {
-      dispatchUser(value);
-    } else {
-      dispatchUser(null);
-      dispatchFetchingCollection(true);
-      dispatchReleases([]);
-      dispatchFilteredReleases([]);
-      dispatchLoadMoreReleaseText(AWAITING_USERNAME);
-      dispatchSelectedReleaseStyle(ALL_STYLE);
-      dispatchSelectedReleaseStyle(CollectionSortingValues.DateAddedNew);
-      dispatchError(null);
-    }
-  }, 1000);
-
   return (
     <Page>
       <Box
@@ -283,61 +181,7 @@ const FilterMyDiscogs: FC = () => {
         width="100%"
         height="100%"
       >
-        <StickyHeader>
-          <H1>Filter My Disco.gs</H1>
-          <OutlinedInput
-            placeholder="Type your Discogs username..."
-            onChange={handleUserChange}
-            fullWidth={!isTablet}
-            inputRef={usernameRef}
-          />
-          {releaseStyles && !fetchingCollection && !error && (
-            <Box display="flex" flexDirection="row" gap={2} width="100%">
-              <FormControl fullWidth>
-                <InputLabel id="style-select">Style</InputLabel>
-                <Select
-                  labelId="style-select"
-                  id="style-select"
-                  value={selectedReleaseStyle}
-                  label="Styles"
-                  onChange={handleStyleChange}
-                  disabled={!collection}
-                >
-                  <MenuItem value={ALL_STYLE}>All</MenuItem>
-                  {releaseStyles.map((style) => (
-                    <MenuItem key={style} value={style}>
-                      {style}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel id="sort-select">Sort</InputLabel>
-                <Select
-                  labelId="sort-select"
-                  id="sort-select"
-                  value={selectedReleaseSort}
-                  label="sort"
-                  onChange={handleSortChange}
-                  disabled={fetchingCollection}
-                >
-                  {SORTING_OPTIONS.map((sort) => (
-                    <MenuItem key={sort.name} value={sort.value}>
-                      {sort.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-          )}
-          {!fetchingCollection && collection && (
-            <ReleasesLoading
-              isLoaded={releases.length >= collection.pagination.items}
-              text={loadMoreReleasesText}
-            />
-          )}
-        </StickyHeader>
-
+        <StickyHeaderBar ref={usernameRef} />
         {username ? (
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
