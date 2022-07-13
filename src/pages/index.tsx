@@ -124,7 +124,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 };
 
 const Home: FC = () => {
-  const [user, setUser] = useState<string>("");
+  const [user, setUser] = useState<string>("wadehammes");
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
@@ -283,6 +283,7 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
+            defaultValue={user}
           />
           {styles && !fetchingCollection && (
             <>
@@ -394,15 +395,7 @@ const Home: FC = () => {
             )}
           </Content>
         ) : (
-          <Content>
-            {error ? (
-              <b>{ERROR_FETCHING}</b>
-            ) : (
-              <b>
-                Type in your Discogs username above to fetch your collection.
-              </b>
-            )}
-          </Content>
+          <Content>{error && <b>{ERROR_FETCHING}</b>}</Content>
         )}
       </Box>
     </Page>
