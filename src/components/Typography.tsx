@@ -25,7 +25,9 @@ export const P = styled.p`
 `;
 
 export const UL = styled.ul``;
-export const OL = styled.ol``;
+export const OL = styled.ol`
+  padding-left: 2rem;
+`;
 
 export const LI = styled.li`
   line-height: 2.25;
