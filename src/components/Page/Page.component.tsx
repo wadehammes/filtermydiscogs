@@ -33,7 +33,7 @@ const PageBackground = styled.div`
       #61c0bf 100%
     );
   background-blend-mode: overlay, overlay, exclusion, normal;
-  opacity: 0.8;
+  opacity: 0.4;
   z-index: -1;
   height: 100vh;
   width: 100vw;
