@@ -164,6 +164,7 @@ const Home: FC = () => {
           setSelectedStyle("All");
           setCollection(json);
         } else {
+          setFetchingCollection(false);
           setError(ERROR_FETCHING);
         }
       })();
