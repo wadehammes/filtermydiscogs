@@ -124,7 +124,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 };
 
 const Home: FC = () => {
-  const [user, setUser] = useState<string>("");
+  const [user, setUser] = useState<string>("wadehammes");
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
