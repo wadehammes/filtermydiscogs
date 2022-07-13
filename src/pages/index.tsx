@@ -21,7 +21,7 @@ import Image from "next/image";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import Check from "src/styles/icons/check-solid.svg";
-import { breakpoints } from "src/styles/theme";
+import { device } from "src/styles/theme";
 
 enum SortingValues {
   AZLabel = "AZLabel",
@@ -135,7 +135,8 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 );
 
 const Home: FC = () => {
-  const isMobile = useMediaQuery(breakpoints.tablet);
+  const isMobile = useMediaQuery(device.tablet);
+  const isLaptop = useMediaQuery(device.laptop);
   const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
@@ -375,8 +376,8 @@ const Home: FC = () => {
                             {thumbUrl && (
                               <Image
                                 src={thumbUrl}
-                                height={100}
-                                width={100}
+                                height={isLaptop ? 150 : 100}
+                                width={isLaptop ? 150 : 100}
                                 quality={100}
                               />
                             )}
