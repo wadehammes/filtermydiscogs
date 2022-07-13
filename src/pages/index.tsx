@@ -273,6 +273,8 @@ const Home: FC = () => {
   }, 1000);
 
   const handleReleaseClick = async (release: Release) => {
+    const windowReference = window.open("about:blank", "_blank");
+
     const fetchRelease = fetch(release.basic_information.resource_url, {
       headers,
       method: "GET",
@@ -283,8 +285,8 @@ const Home: FC = () => {
     if (fetchedRelease.ok) {
       const releaseJson: ReleaseJson = await fetchedRelease.json();
 
-      if (releaseJson) {
-        window.open(releaseJson.uri, "_blank");
+      if (releaseJson && windowReference) {
+        windowReference.location = releaseJson.uri;
       }
     }
   };
