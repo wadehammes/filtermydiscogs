@@ -124,7 +124,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 };
 
 const Home: FC = () => {
-  const [user, setUser] = useState<string>("wadehammes");
+  const [user, setUser] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
@@ -284,7 +284,6 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
-            defaultValue={user}
           />
           {styles && !fetchingCollection && (
             <>
