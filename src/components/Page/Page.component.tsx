@@ -7,7 +7,7 @@ const PageBackground = styled.div`
   position: fixed;
   inset: 0;
   background-image: linear-gradient(315deg, #fee2f8 0%, #dcf8ef 74%);
-  z-index: 0;
+  z-index: -1;
   height: 100vh;
   width: 100vw;
 `;
