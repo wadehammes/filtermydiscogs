@@ -283,6 +283,7 @@ const Home: FC = () => {
           <OutlinedInput
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
+            defaultValue={user}
           />
           {styles && !fetchingCollection && (
             <>
@@ -394,15 +395,7 @@ const Home: FC = () => {
             )}
           </Content>
         ) : (
-          <Content>
-            {error ? (
-              <b>{ERROR_FETCHING}</b>
-            ) : (
-              <b>
-                Type in your Discogs username above to fetch your collection.
-              </b>
-            )}
-          </Content>
+          <Content>{error && <b>{ERROR_FETCHING}</b>}</Content>
         )}
       </Box>
     </Page>
