@@ -40,6 +40,7 @@ interface Sort {
 const ALL_RELEASES_LOADED = "All releases loaded!";
 const LOAD_RELEASES_TEXT = "Loading releases...";
 const LOAD_MORE_RELEASES_TEXT = "Loading next 500 releases...";
+const AWAITING_USERNAME = "";
 const ERROR_FETCHING =
   "Failed to fetch collection. Check spelling or this collection could be private.";
 
@@ -272,6 +273,13 @@ const Home: FC = () => {
       setUser(value);
     } else {
       setUser(null);
+      setFetchingCollection(false);
+      setReleases([]);
+      setFilteredReleases([]);
+      setLoadMoreText(AWAITING_USERNAME);
+      setSelectedStyle("All");
+      setSelectedSort(SortingValues.DateAddedNew);
+      setError(null);
     }
   }, 1000);
 
