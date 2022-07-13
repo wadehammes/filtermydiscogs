@@ -36,6 +36,8 @@ interface Sort {
 const ALL_RELEASES_LOADED = "All releases loaded!";
 const LOAD_RELEASES_TEXT = "Loading releases...";
 const LOAD_MORE_RELEASES_TEXT = "Loading next 500 releases...";
+const ERROR_FETCHING =
+  "Failed to fetch collection. Check spelling or this collection could be private.";
 
 const headers = { Accept: "application/json" };
 
@@ -122,7 +124,7 @@ const Loader: FC<{ isLoaded: boolean; text: string }> = ({
 };
 
 const Home: FC = () => {
-  const [user, setUser] = useState<string>("wadehammes");
+  const [user, setUser] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [nextLink, setNextLink] = useState<string>("");
   const [collection, setCollection] = useState<Collection>();
@@ -135,30 +137,37 @@ const Home: FC = () => {
   const [selectedSort, setSelectedSort] = useState<SortingValues>(
     SortingValues.DateAddedNew
   );
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setFetchingCollection(true);
-    setLoadMoreText(LOAD_RELEASES_TEXT);
+    if (user) {
+      setFetchingCollection(true);
+      setReleases([]);
+      setLoadMoreText(LOAD_RELEASES_TEXT);
+      setError(null);
 
-    (async () => {
-      const fetchDiscogsCollection = fetch(
-        `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
-        { headers, method: "GET" }
-      );
+      (async () => {
+        const fetchDiscogsCollection = fetch(
+          `https://api.discogs.com/users/${user}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
+          { headers, method: "GET" }
+        );
 
-      const fetched = await fetchDiscogsCollection;
+        const fetched = await fetchDiscogsCollection;
 
-      if (fetched.ok) {
-        const json = await fetched.json();
+        if (fetched.ok) {
+          const json = await fetched.json();
 
-        setFetchingCollection(false);
-        setFilteredReleases([]);
-        setNextLink(json.pagination.urls.next);
-        setReleases(json.releases);
-        setSelectedStyle("All");
-        setCollection(json);
-      }
-    })();
+          setFetchingCollection(false);
+          setFilteredReleases([]);
+          setNextLink(json.pagination.urls.next);
+          setReleases(json.releases);
+          setSelectedStyle("All");
+          setCollection(json);
+        } else {
+          setError(ERROR_FETCHING);
+        }
+      })();
+    }
   }, [user]);
 
   useEffect(() => {
@@ -322,63 +331,79 @@ const Home: FC = () => {
           )}
         </StickyHeader>
 
-        <Content>
-          {collection && filteredReleases && !fetchingCollection ? (
-            <Box display="flex" flexDirection="column" gap={3}>
-              <h2>
-                <b>
-                  {user}'s collection (showing {releases.length} of{" "}
-                  {collection.pagination.items} releases)
-                </b>
-              </h2>
-              <OL>
-                {sortReleases(filteredReleases, selectedSort).map((release) => {
-                  const thumbUrl =
-                    release?.basic_information?.thumb ??
-                    "https://placehold.jp/50x50.png";
+        {user ? (
+          <Content>
+            {collection && filteredReleases && !fetchingCollection ? (
+              <Box display="flex" flexDirection="column" gap={3}>
+                <h2>
+                  <b>
+                    {user}'s collection (showing {releases.length} of{" "}
+                    {collection.pagination.items} releases)
+                  </b>
+                </h2>
+                <OL>
+                  {sortReleases(filteredReleases, selectedSort).map(
+                    (release) => {
+                      const thumbUrl =
+                        release?.basic_information?.thumb ??
+                        "https://placehold.jp/50x50.png";
 
-                  return (
-                    <LI key={`${release.instance_id}-${release.date_added}`}>
-                      <Button
-                        style={{
-                          display: "flex",
-                          gap: "1.5rem",
-                          padding: "0 1rem 0 0",
-                          textAlign: "left",
-                          lineHeight: 1.2,
-                          minWidth: "32rem",
-                          overflow: "hidden",
-                        }}
-                        variant="outlined"
-                        onClick={() => handleReleaseClick(release)}
-                      >
-                        {thumbUrl && (
-                          <Image
-                            src={thumbUrl}
-                            height="80"
-                            width="80"
-                            quality={100}
-                          />
-                        )}
-                        <span style={{ flex: 1 }}>
-                          {release.basic_information.labels[0].name}
-                          <br />
-                          {release.basic_information.title}
-                          <br />
-                          {release.basic_information.artists[0].name}
-                        </span>
+                      return (
+                        <LI
+                          key={`${release.instance_id}-${release.date_added}`}
+                        >
+                          <Button
+                            style={{
+                              display: "flex",
+                              gap: "1.5rem",
+                              padding: "0 1rem 0 0",
+                              textAlign: "left",
+                              lineHeight: 1.2,
+                              minWidth: "32rem",
+                              overflow: "hidden",
+                            }}
+                            variant="outlined"
+                            onClick={() => handleReleaseClick(release)}
+                          >
+                            {thumbUrl && (
+                              <Image
+                                src={thumbUrl}
+                                height="80"
+                                width="80"
+                                quality={100}
+                              />
+                            )}
+                            <span style={{ flex: 1 }}>
+                              {release.basic_information.labels[0].name}
+                              <br />
+                              {release.basic_information.title}
+                              <br />
+                              {release.basic_information.artists[0].name}
+                            </span>
 
-                        <span>→</span>
-                      </Button>
-                    </LI>
-                  );
-                })}
-              </OL>
-            </Box>
-          ) : (
-            <CircularProgress />
-          )}
-        </Content>
+                            <span>→</span>
+                          </Button>
+                        </LI>
+                      );
+                    }
+                  )}
+                </OL>
+              </Box>
+            ) : (
+              <CircularProgress />
+            )}
+          </Content>
+        ) : (
+          <Content>
+            {error ? (
+              <b>{ERROR_FETCHING}</b>
+            ) : (
+              <b>
+                Type in your Discogs username above to fetch your collection.
+              </b>
+            )}
+          </Content>
+        )}
       </Box>
     </Page>
   );

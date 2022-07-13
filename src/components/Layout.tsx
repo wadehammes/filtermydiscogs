@@ -24,7 +24,7 @@ export const Content = styled(Container)`
   justify-content: flex-start;
   flex-flow: column nowrap;
   height: 100%;
-  padding: 0 4rem 3rem;
+  padding: 0 2rem 4rem;
 `;
 
 export const Footer = styled.footer`
@@ -49,7 +49,7 @@ export const StickyHeader = styled.div`
   position: sticky;
   top: 0;
   width: 100%;
-  padding: 0.75rem 1rem 0.9rem;
+  padding: 0.75rem 2rem 0.85rem;
   border-bottom: 1px solid lightgray;
   z-index: 999;
 
