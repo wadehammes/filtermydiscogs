@@ -23,7 +23,10 @@ export const Helmet: FC = () => {
         property="og:description"
         content="FilterMyDisco.gs - a Discogs collection management tool"
       />
-      <meta property="og:image" content="/images/app-ui.png" />
+      <meta
+        property="og:image"
+        content="https://filtermydisco.gs/images/app-ui.png"
+      />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:creator" content="@nthoftype" />
       <meta property="og:locale" content="en-US" />
