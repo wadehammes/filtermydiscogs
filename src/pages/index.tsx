@@ -285,7 +285,7 @@ const Home: FC = () => {
             placeholder="Type your Discogs username..."
             onChange={handleUserChange}
           />
-          {styles && !fetchingCollection && (
+          {styles && !fetchingCollection && !error && (
             <>
               <FormControl>
                 <InputLabel id="style-select">Style</InputLabel>
@@ -390,20 +390,18 @@ const Home: FC = () => {
                   )}
                 </OL>
               </Box>
+            ) : error ? (
+              <b>{ERROR_FETCHING}</b>
             ) : (
               <CircularProgress />
             )}
           </Content>
         ) : (
           <Content>
-            {error ? (
-              <b>{ERROR_FETCHING}</b>
-            ) : (
-              <b>
-                Type your Discogs username above to fetch your collection. Note:
-                it must be publically available for this to work currently.
-              </b>
-            )}
+            <b>
+              Type your Discogs username above to fetch your collection. Note:
+              it must be publically available for this to work currently.
+            </b>
           </Content>
         )}
       </Box>
