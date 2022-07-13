@@ -19,6 +19,7 @@ import debounce from "lodash.debounce";
 import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import Chevron from "src/styles/icons/chevron-right-solid.svg";
 
 enum SortingValues {
   AZLabel = "AZLabel",
@@ -111,18 +112,23 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
 const Loader: FC<{ isLoaded: boolean; text: string }> = ({
   isLoaded = false,
   text = LOAD_MORE_RELEASES_TEXT,
-}) => {
-  if (isLoaded) {
-    return <span>{text}</span>;
-  } else {
-    return (
-      <Box display="inline-flex" flexDirection="row" gap="0.75rem">
+}) => (
+  <Box
+    display="inline-flex"
+    flexDirection="row"
+    justifyContent="flex-end"
+    gap="0.75rem"
+  >
+    {isLoaded ? (
+      <span>{text}</span>
+    ) : (
+      <>
         <CircularProgress size={20} />
         <span>{text}</span>
-      </Box>
-    );
-  }
-};
+      </>
+    )}
+  </Box>
+);
 
 const Home: FC = () => {
   const isMobile = useMediaQuery("(max-width: 600px)");
@@ -369,14 +375,18 @@ const Home: FC = () => {
                               />
                             )}
                             <span style={{ flex: 1 }}>
-                              {release.basic_information.labels[0].name}
+                              <b>{release.basic_information.labels[0].name}</b>
                               <br />
                               {release.basic_information.title}
                               <br />
-                              {release.basic_information.artists[0].name}
+                              {release.basic_information.artists
+                                .map((artist) => artist.name)
+                                .join(", ")}
                             </span>
 
-                            <span>→</span>
+                            <span>
+                              <Chevron />
+                            </span>
                           </Button>
                         </LI>
                       );
