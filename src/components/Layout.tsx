@@ -46,7 +46,7 @@ export const StickyHeader = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   flex-flow: column wrap;
-  gap: 1rem;
+  gap: 1.5rem;
   background: white;
   position: sticky;
   top: 0;
@@ -62,6 +62,6 @@ export const StickyHeader = styled.div`
   }
 
   > *:not(h1) {
-    min-width: 20em;
+    flex: 1;
   }
 `;

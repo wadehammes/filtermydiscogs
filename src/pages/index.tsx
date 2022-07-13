@@ -357,24 +357,14 @@ const Home: FC = () => {
                           key={`${release.instance_id}-${release.date_added}`}
                         >
                           <Button
-                            style={{
-                              display: "flex",
-                              gap: "1.5rem",
-                              padding: "0 1rem 0 0",
-                              textAlign: "left",
-                              lineHeight: 1.2,
-                              minWidth: "100%",
-                              maxWidth: "32rem",
-                              overflow: "hidden",
-                            }}
                             variant="outlined"
                             onClick={() => handleReleaseClick(release)}
                           >
                             {thumbUrl && (
                               <Image
                                 src={thumbUrl}
-                                height="80"
-                                width="80"
+                                height={isMobile ? 75 : 100}
+                                width={isMobile ? 75 : 100}
                                 quality={100}
                               />
                             )}

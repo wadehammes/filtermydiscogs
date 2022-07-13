@@ -26,13 +26,22 @@ export const P = styled.p`
 
 export const UL = styled.ul``;
 export const OL = styled.ol`
+  display: flex;
+  flex-flow: column wrap;
+  align-items: stretch;
+  gap: 1.25rem;
   padding-left: 0;
   list-style-type: none;
+
+  @media ${device.tablet} {
+    flex-flow: row wrap;
+  }
 `;
 
 export const LI = styled.li`
   line-height: 2.25;
-  padding: 1.25rem 0 0 0;
+  padding: 0;
   text-align: left;
   font-weight: normal;
+  width: 100%;
 `;

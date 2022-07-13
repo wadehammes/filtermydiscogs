@@ -26,6 +26,20 @@ export const themeOptions: ThemeOptions = {
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          display: "flex",
+          gap: "1.5rem",
+          padding: "0 1rem 0 0",
+          textAlign: "left",
+          lineHeight: 1.2,
+          minWidth: "100%",
+          overflow: "hidden",
+          background: "rgba(255,255,255,0.15)",
+        },
+      },
+    },
   },
 };
 
