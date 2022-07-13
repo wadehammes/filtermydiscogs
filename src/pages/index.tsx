@@ -350,14 +350,19 @@ const Home: FC = () => {
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
               <Box display="flex" flexDirection="column" gap={3}>
-                <h2>
-                  <b>
-                    {user}
-                    {user.endsWith("s") ? "'" : "'s"} collection (showing{" "}
-                    {filteredReleases.length} of {collection.pagination.items}{" "}
-                    releases)
-                  </b>
-                </h2>
+                <header style={{ lineHeight: 1.5 }}>
+                  <h2>
+                    <b>
+                      {user}
+                      {user.endsWith("s") ? "'" : "'s"} collection
+                    </b>
+                  </h2>
+                  <p>
+                    (showing {filteredReleases.length} of{" "}
+                    {collection.pagination.items} releases)
+                  </p>
+                </header>
+
                 <OL>
                   {sortReleases(filteredReleases, selectedSort).map(
                     (release) => {
