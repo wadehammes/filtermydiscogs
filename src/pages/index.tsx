@@ -276,7 +276,13 @@ const FilterMyDiscogs: FC = () => {
 
   return (
     <Page>
-      <Box display="flex" flexDirection="column" gap={4} width="100%">
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap={4}
+        width="100%"
+        height="100%"
+      >
         <StickyHeader>
           <H1>Filter My Disco.gs</H1>
           <OutlinedInput

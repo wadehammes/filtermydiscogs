@@ -30,9 +30,9 @@ export const GlobalStyles = createGlobalStyle`
   html,
   body {
     padding: 0;
-    color: ${theme.colors.black};
+    color: ${theme.colors.trueBlack};
     font-size: 14px;
-    font-family: "Helvetica", 'Courier New', Courier, monospace, sans-serif;
+    font-family: "Assistant", sans-serif;
 
     @media ${device.tablet} {
       font-size: 16px;

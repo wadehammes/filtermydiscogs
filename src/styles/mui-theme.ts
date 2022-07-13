@@ -16,6 +16,9 @@ export const themeOptions: ThemeOptions = {
       primary: "#171717",
     },
   },
+  typography: {
+    fontFamily: ["Assistant", "sans-serif"].join(","),
+  },
   components: {
     MuiFormControlLabel: {
       styleOverrides: {
@@ -28,6 +31,10 @@ export const themeOptions: ThemeOptions = {
     },
     MuiButton: {
       styleOverrides: {
+        root: {
+          fontSize: "1rem",
+          letterSpacing: "1px",
+        },
         outlined: {
           display: "flex",
           gap: "1.5rem",

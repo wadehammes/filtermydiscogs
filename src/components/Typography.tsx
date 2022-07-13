@@ -2,10 +2,10 @@ import { device } from "src/styles/theme";
 import styled from "styled-components";
 
 export const H1 = styled.h1`
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: bold;
   line-height: 1;
-  font-family: Sans-serif;
+  font-family: inherit;
 `;
 
 export const P = styled.p`

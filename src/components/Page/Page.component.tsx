@@ -1,7 +1,9 @@
+import { Box } from "@mui/material";
 import { forwardRef, Ref } from "react";
 import { PropsWithChildrenOnly } from "src/@types/react";
 import { Helmet } from "src/components/Page/Helmet.component";
 import styled from "styled-components";
+import Heart from "src/styles/icons/heart-solid.svg";
 
 const PageBackground = styled.div`
   position: fixed;
@@ -18,14 +20,39 @@ const PageBackground = styled.div`
   width: 100vw;
 `;
 
+const PageContent = styled.div`
+  flex: 1;
+`;
+
+const Footer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 2rem;
+`;
+
 export const Page = forwardRef(
   ({ children }: PropsWithChildrenOnly, ref: Ref<HTMLDivElement>) => {
     return (
-      <>
+      <Box display="flex" flexDirection="column" height="100vh" width="100vw">
         <Helmet />
         <PageBackground />
-        {children}
-      </>
+        <PageContent>{children}</PageContent>
+        <Footer>
+          <>
+            <Heart />{" "}
+            <span>
+              made with love by{" "}
+              <a href="https://wadehammes.com" target="_blank" rel="noreferrer">
+                Wade Hammes
+              </a>
+            </span>
+            <span>&copy; {new Date().getFullYear()}</span>
+          </>
+        </Footer>
+      </Box>
     );
   }
 );
