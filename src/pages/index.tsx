@@ -18,6 +18,7 @@ import { H1, LI, OL } from "src/components/Typography";
 import debounce from "lodash.debounce";
 import { Release } from "src/components/ReleaseCard";
 import Image from "next/image";
+import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 
 enum SortingValues {
   AZLabel = "AZLabel",
@@ -32,12 +33,6 @@ interface Sort {
   name: string;
   value: SortingValues;
 }
-
-const ALL_RELEASES_LOADED = "All releases loaded!";
-const LOAD_RELEASES_TEXT = "Loading releases...";
-const LOAD_MORE_RELEASES_TEXT = "Loading next 500 releases...";
-const ERROR_FETCHING =
-  "Failed to fetch collection. Check spelling or this collection could be private.";
 
 const headers = { Accept: "application/json" };
 
@@ -107,22 +102,6 @@ const sortReleases = (releases: Release[], sort: SortingValues): Release[] => {
   }
 };
 
-const Loader: FC<{ isLoaded: boolean; text: string }> = ({
-  isLoaded = false,
-  text = LOAD_MORE_RELEASES_TEXT,
-}) => {
-  if (isLoaded) {
-    return <span>{text}</span>;
-  } else {
-    return (
-      <Box display="inline-flex" flexDirection="row" gap="0.75rem">
-        <CircularProgress size={20} />
-        <span>{text}</span>
-      </Box>
-    );
-  }
-};
-
 const Home: FC = () => {
   const [user, setUser] = useState<string>("");
   const [page, setPage] = useState<number>(1);
@@ -164,6 +143,7 @@ const Home: FC = () => {
           setSelectedStyle("All");
           setCollection(json);
         } else {
+          setFetchingCollection(false);
           setError(ERROR_FETCHING);
         }
       })();
@@ -324,7 +304,7 @@ const Home: FC = () => {
             </>
           )}
           {!fetchingCollection && collection && (
-            <Loader
+            <ReleasesLoading
               isLoaded={releases.length >= collection.pagination.items}
               text={loadMoreText}
             />
