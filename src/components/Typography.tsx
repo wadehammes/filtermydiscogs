@@ -31,7 +31,7 @@ export const OL = styled.ol`
 
 export const LI = styled.li`
   line-height: 2.25;
-  padding: 0.5rem 0 0 1rem;
+  padding: 1.5rem 0 0 1rem;
   text-align: left;
   font-weight: normal;
 `;
