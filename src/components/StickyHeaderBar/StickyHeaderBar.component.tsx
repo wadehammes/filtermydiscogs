@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -119,7 +118,6 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       dispatchSelectedReleaseSort,
       dispatchFilteredReleases,
       dispatchError,
-      dispatchResetState,
     } = useCollectionContext();
 
     const {
@@ -152,6 +150,8 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
 
       if (value) {
         dispatchUser(value);
+
+        window.localStorage.setItem("fmd_username", value);
       } else {
         dispatchUser(null);
         dispatchFetchingCollection(true);
@@ -161,6 +161,8 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
         dispatchSelectedReleaseStyle(ALL_STYLE);
         dispatchSelectedReleaseSort(CollectionSortingValues.DateAddedNew);
         dispatchError(null);
+
+        window.localStorage.removeItem("fmd_username");
       }
     }, 1000);
 
@@ -210,24 +212,6 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
                 ))}
               </Select>
             </FormControl>
-          </Box>
-        )}
-        {!fetchingCollection && collection && !error && (
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            gap={4}
-          >
-            <Button
-              onClick={() => {
-                window.localStorage.removeItem("fmd_username");
-
-                dispatchResetState();
-              }}
-            >
-              Reset
-            </Button>
           </Box>
         )}
       </StickyHeader>
