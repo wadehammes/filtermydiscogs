@@ -27,6 +27,15 @@ import {
 } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useUrlParam } from "src/hooks/useUrlParam.hook";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
+import styled from "styled-components";
+import { trackEvent } from "src/analytics/analytics";
+
+const ClearButton = styled.button`
+  background: white;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  margin-left: 0.75rem;
+`;
 
 const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
@@ -87,8 +96,6 @@ const FilterMyDiscogs: FC = () => {
     }
 
     if (username) {
-      window.localStorage.setItem(USERNAME_STORAGE_PARAM, username);
-
       if (usernameRef?.current) {
         usernameRef.current.value = username;
       }
@@ -110,8 +117,6 @@ const FilterMyDiscogs: FC = () => {
           dispatchSelectedReleaseStyle(ALL_STYLE);
           dispatchCollection(collectionJson);
         } else {
-          window.localStorage.removeItem(USERNAME_STORAGE_PARAM);
-
           dispatchFetchingCollection(false);
           dispatchError(ERROR_FETCHING);
         }
@@ -218,15 +223,36 @@ const FilterMyDiscogs: FC = () => {
         {username && !error && (
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
-              <Box display="flex" flexDirection="column" gap={4} width="100%">
+              <Box display="flex" flexDirection="column" gap={5} width="100%">
                 <header style={{ lineHeight: 1.5 }}>
                   <h2>
                     <b>
                       {username}
                       {username.endsWith("s") ? "'" : "'s"} collection
                     </b>
+                    <span>
+                      <ClearButton
+                        type="button"
+                        onClick={() => {
+                          dispatchResetState();
+
+                          trackEvent("clearedCollection", {
+                            action: "clearCollectionClicked",
+                            category: "home",
+                            label: "Clear Collection Clicked",
+                            value: true,
+                          });
+
+                          if (usernameRef?.current) {
+                            usernameRef.current.focus();
+                          }
+                        }}
+                      >
+                        Clear Collection
+                      </ClearButton>
+                    </span>
                   </h2>
-                  <Box component="p" display="flex" alignItems="center" gap={2}>
+                  <Box display="flex" alignItems="center" gap={2}>
                     <span>
                       viewing {filteredReleases.length} of{" "}
                       {collection.pagination.items} releases
@@ -310,12 +336,20 @@ const FilterMyDiscogs: FC = () => {
                 onClick={() => {
                   dispatchResetState();
 
+                  trackEvent("resetApp", {
+                    action: "resetAppClicked",
+                    category: "home",
+                    label: "Reset App Clicked",
+                    value: true,
+                  });
+
                   if (usernameRef?.current) {
                     usernameRef.current.value = "";
+                    usernameRef.current.focus();
                   }
                 }}
               >
-                Reset
+                Reset App
               </Button>
             </P>
           </Content>
