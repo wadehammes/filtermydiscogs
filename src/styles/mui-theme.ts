@@ -43,7 +43,7 @@ export const themeOptions: ThemeOptions = {
           lineHeight: 1.5,
           minWidth: "100%",
           overflow: "hidden",
-          background: "rgba(255,255,255,0.35)",
+          background: "rgba(255,255,255,0.5)",
           backdropFilter: "blur(5px)",
         },
         contained: {

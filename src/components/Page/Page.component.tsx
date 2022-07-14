@@ -8,32 +8,13 @@ import Heart from "src/styles/icons/heart-solid.svg";
 const PageBackground = styled.div`
   position: fixed;
   inset: 0;
-  background: linear-gradient(125deg, #fdff9c 0%, #0500ff 100%),
-    linear-gradient(180deg, #d3d3d3 0%, #161616 100%),
-    linear-gradient(
-      310deg,
-      #00f0ff 0%,
-      #00f0ff 20%,
-      #0017e3 calc(20% + 1px),
-      #0017e3 40%,
-      #000f8f calc(40% + 1px),
-      #000f8f 70%,
-      #00073f calc(70% + 1px),
-      #00073f 100%
-    ),
-    linear-gradient(
-      285deg,
-      #ffb6b9 0%,
-      #ffb6b9 35%,
-      #fae3d9 calc(35% + 1px),
-      #fae3d9 45%,
-      #bbded6 calc(45% + 1px),
-      #bbded6 65%,
-      #61c0bf calc(65% + 1px),
-      #61c0bf 100%
-    );
-  background-blend-mode: overlay, overlay, exclusion, normal;
-  opacity: 0.4;
+  background: linear-gradient(180deg, #ffb7b7 0%, #727272 100%),
+    radial-gradient(60.91% 100% at 50% 0%, #ffd1d1 0%, #260000 100%),
+    linear-gradient(127.43deg, #00ffff 0%, #ffffff 100%),
+    radial-gradient(100.22% 100% at 70.57% 0%, #ff0000 0%, #00ffe0 100%),
+    linear-gradient(64.82deg, #dbff00 0%, #3300ff 100%);
+  background-blend-mode: screen, overlay, color-burn, color-dodge, normal;
+  opacity: 0.5;
   z-index: -1;
   height: 100vh;
   width: 100vw;
