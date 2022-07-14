@@ -6,4 +6,4 @@ export const ERROR_FETCHING =
   "Failed to fetch collection. Check spelling or this collection could be private.";
 export const ALL_STYLE = "All";
 export const DEFAULT_COLLECTION = "wadehammes";
-export const LOAD_SAMPLE_COLLECTION = "View Sample Collection";
+export const LOAD_SAMPLE_COLLECTION = "View Wade's Collection";

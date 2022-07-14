@@ -218,26 +218,46 @@ const FilterMyDiscogs: FC = () => {
 
         {!username && !error && (
           <Content>
-            <P>
-              <b>
-                Type your Discogs username above to fetch your collection. Note:
-                it must be publicly available for this to work currently.
-              </b>
-            </P>
-            <P>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  dispatchUser(DEFAULT_COLLECTION);
+            <Box display="flex" flexDirection="column" maxWidth="50rem">
+              <P>
+                FilterMyDisco.gs as it stands now is the beginning of a
+                fully-featured Discogs collection management app. It was born
+                out of the necessity to filter my collection by genre and sort
+                by various criteria to prepare for an upcoming gig. Discogs
+                unfortunately removes that ability for collections over a
+                certain size (which is weird). Follow along on{" "}
+                <a
+                  href="https://twitter.com/nthoftype"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Twitter
+                </a>{" "}
+                for project updates.
+              </P>
+              <P>
+                <b>
+                  Type your Discogs username above to fetch your collection.
+                  Note: it must be publicly available for this to work
+                  currently...or click the button below to try out the features
+                  with my collection.
+                </b>
+              </P>
+              <P>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    dispatchUser(DEFAULT_COLLECTION);
 
-                  if (usernameRef?.current) {
-                    usernameRef.current.value = DEFAULT_COLLECTION;
-                  }
-                }}
-              >
-                {LOAD_SAMPLE_COLLECTION}
-              </Button>
-            </P>
+                    if (usernameRef?.current) {
+                      usernameRef.current.value = DEFAULT_COLLECTION;
+                    }
+                  }}
+                >
+                  {LOAD_SAMPLE_COLLECTION}
+                </Button>
+              </P>
+            </Box>
           </Content>
         )}
 
