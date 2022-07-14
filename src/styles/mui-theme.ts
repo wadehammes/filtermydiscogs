@@ -33,7 +33,7 @@ export const themeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           fontSize: "1rem",
-          letterSpacing: "1px",
+          textTransform: "none",
         },
         outlined: {
           display: "flex",
@@ -45,10 +45,13 @@ export const themeOptions: ThemeOptions = {
           overflow: "hidden",
           background: "rgba(255,255,255,0.5)",
           backdropFilter: "blur(5px)",
+          letterSpacing: "1px",
         },
         contained: {
           lineHeight: 2,
           padding: "6px 16px 5px",
+          textTransform: "uppercase",
+          letterSpacing: "1px",
         },
       },
     },

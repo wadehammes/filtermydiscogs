@@ -25,6 +25,7 @@ import {
   StickyHeaderBar,
 } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useUrlParam } from "src/hooks/useUrlParam.hook";
+import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 
 const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
@@ -60,6 +61,7 @@ const FilterMyDiscogs: FC = () => {
     selectedReleaseStyle,
     selectedReleaseSort,
     error,
+    loadMoreReleasesText,
   } = state;
 
   useEffect(() => {
@@ -219,10 +221,16 @@ const FilterMyDiscogs: FC = () => {
                       {username.endsWith("s") ? "'" : "'s"} collection
                     </b>
                   </h2>
-                  <p>
-                    viewing {filteredReleases.length} of{" "}
-                    {collection.pagination.items} releases
-                  </p>
+                  <Box component="p" display="flex" alignItems="center" gap={2}>
+                    <span>
+                      viewing {filteredReleases.length} of{" "}
+                      {collection.pagination.items} releases
+                    </span>
+                    <ReleasesLoading
+                      isLoaded={releases.length >= collection.pagination.items}
+                      text={loadMoreReleasesText}
+                    />
+                  </Box>
                 </header>
 
                 <OL>

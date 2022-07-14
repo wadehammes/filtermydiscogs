@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -20,7 +21,6 @@ import { ALL_STYLE, AWAITING_USERNAME } from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { device } from "src/styles/theme";
-import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 
 interface StickyHeaderBarProps {
   ref: Ref<HTMLInputElement>;
@@ -119,6 +119,7 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       dispatchSelectedReleaseSort,
       dispatchFilteredReleases,
       dispatchError,
+      dispatchResetState,
     } = useCollectionContext();
 
     const {
@@ -128,8 +129,6 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       collection,
       error,
       selectedReleaseSort,
-      releases,
-      loadMoreReleasesText,
     } = state;
 
     const handleStyleChange = (e: SelectChangeEvent) => {
@@ -214,10 +213,22 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
           </Box>
         )}
         {!fetchingCollection && collection && !error && (
-          <ReleasesLoading
-            isLoaded={releases.length >= collection.pagination.items}
-            text={loadMoreReleasesText}
-          />
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            gap={4}
+          >
+            <Button
+              onClick={() => {
+                window.localStorage.removeItem("fmd_username");
+
+                dispatchResetState();
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         )}
       </StickyHeader>
     );
