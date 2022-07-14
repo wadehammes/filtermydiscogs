@@ -40,7 +40,7 @@ export const GlobalStyles = createGlobalStyle`
   }
   body {
     line-height: 1;
-    background-color: #dcf8ef;
+    background-color: ${theme.colors.white};
     min-height: 100vh;
   }
   img {
