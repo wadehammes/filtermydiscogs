@@ -7,3 +7,4 @@ export const ERROR_FETCHING =
 export const ALL_STYLE = "All";
 export const DEFAULT_COLLECTION = "wadehammes";
 export const LOAD_SAMPLE_COLLECTION = "View Wade's Collection";
+export const USERNAME_STORAGE_PARAM = "fmd_username";

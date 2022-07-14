@@ -13,6 +13,7 @@ import {
   LOAD_MORE_RELEASES_TEXT,
   LOAD_RELEASES_TEXT,
   LOAD_SAMPLE_COLLECTION,
+  USERNAME_STORAGE_PARAM,
 } from "src/constants";
 import {
   Collection,
@@ -31,7 +32,7 @@ const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const usernameFromUrl = useUrlParam({
     queryParam: "username",
-    storageParam: "fmd_username",
+    storageParam: USERNAME_STORAGE_PARAM,
     persist: true,
   });
   const {
@@ -86,6 +87,8 @@ const FilterMyDiscogs: FC = () => {
     }
 
     if (username) {
+      window.localStorage.setItem(USERNAME_STORAGE_PARAM, username);
+
       if (usernameRef?.current) {
         usernameRef.current.value = username;
       }
@@ -107,6 +110,8 @@ const FilterMyDiscogs: FC = () => {
           dispatchSelectedReleaseStyle(ALL_STYLE);
           dispatchCollection(collectionJson);
         } else {
+          window.localStorage.removeItem(USERNAME_STORAGE_PARAM);
+
           dispatchFetchingCollection(false);
           dispatchError(ERROR_FETCHING);
         }

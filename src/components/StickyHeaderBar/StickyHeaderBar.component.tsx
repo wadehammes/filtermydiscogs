@@ -16,7 +16,11 @@ import {
   useCollectionContext,
 } from "src/context/collection.context";
 import { StickyHeader } from "src/components/Layout";
-import { ALL_STYLE, AWAITING_USERNAME } from "src/constants";
+import {
+  ALL_STYLE,
+  AWAITING_USERNAME,
+  USERNAME_STORAGE_PARAM,
+} from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { device } from "src/styles/theme";
@@ -151,7 +155,7 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       if (value) {
         dispatchUser(value);
 
-        window.localStorage.setItem("fmd_username", value);
+        window.localStorage.setItem(USERNAME_STORAGE_PARAM, value);
       } else {
         dispatchUser(null);
         dispatchFetchingCollection(true);
@@ -162,7 +166,7 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
         dispatchSelectedReleaseSort(CollectionSortingValues.DateAddedNew);
         dispatchError(null);
 
-        window.localStorage.removeItem("fmd_username");
+        window.localStorage.removeItem(USERNAME_STORAGE_PARAM);
       }
     }, 1000);
 
