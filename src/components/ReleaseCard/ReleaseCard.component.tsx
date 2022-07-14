@@ -46,7 +46,8 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
         <Box
           display="flex"
           alignItems="center"
-          height="100%"
+          height={isLaptop ? "150px" : "125px"}
+          width={isLaptop ? "150px" : "125px"}
           style={{ backgroundColor: theme.colors.trueBlack }}
         >
           <Image
