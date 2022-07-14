@@ -33,8 +33,9 @@ const handleReleaseClick = async (release: Release) => {
 export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
   const isLaptop = useMediaQuery(device.laptop);
 
-  const thumbUrl =
-    release?.basic_information?.thumb ?? "https://placehold.jp/100x100.png";
+  const thumbUrl = release.basic_information.thumb
+    ? release.basic_information.thumb
+    : "https://placehold.jp/effbf2/ffffff/150x150.png?text=%20";
 
   return release ? (
     <Button variant="outlined" onClick={() => handleReleaseClick(release)}>
