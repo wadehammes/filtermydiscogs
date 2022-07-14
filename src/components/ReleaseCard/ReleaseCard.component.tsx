@@ -6,6 +6,7 @@ import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import { headers } from "src/api/helpers";
 import { device, theme } from "src/styles/theme";
+import parse from "html-react-parser";
 
 interface ReleaseProps {
   release: Release;
@@ -59,7 +60,7 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
       )}
       <span style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
         <b>
-          {labels[0].name} {year !== 0 ? `&mdash; ${year}` : ""}
+          {labels[0].name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
         </b>
         <br />
         {title}
