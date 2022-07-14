@@ -7,6 +7,7 @@ import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import { headers } from "src/api/helpers";
 import { device, theme } from "src/styles/theme";
 import { trackEvent } from "src/analytics/analytics";
+import parse from "html-react-parser";
 
 interface ReleaseProps {
   release: Release;
@@ -43,8 +44,10 @@ const handleReleaseClick = async (release: Release) => {
 export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
   const isLaptop = useMediaQuery(device.laptop);
 
-  const thumbUrl = release.basic_information.thumb
-    ? release.basic_information.thumb
+  const { labels, year, artists, title, thumb } = release.basic_information;
+
+  const thumbUrl = thumb
+    ? thumb
     : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
   return release ? (
@@ -53,7 +56,8 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
         <Box
           display="flex"
           alignItems="center"
-          height="100%"
+          height={isLaptop ? "150px" : "125px"}
+          width={isLaptop ? "150px" : "125px"}
           style={{ backgroundColor: theme.colors.trueBlack }}
         >
           <Image
@@ -67,15 +71,12 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
       )}
       <span style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
         <b>
-          {release.basic_information.labels[0].name} &mdash;{" "}
-          {release.basic_information.year}
+          {labels[0].name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
         </b>
         <br />
-        {release.basic_information.title}
+        {title}
         <br />
-        {release.basic_information.artists
-          .map((artist) => artist.name)
-          .join(", ")}
+        {artists.map((artist) => artist.name).join(", ")}
       </span>
 
       <span>

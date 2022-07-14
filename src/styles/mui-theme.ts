@@ -46,6 +46,7 @@ export const themeOptions: ThemeOptions = {
           background: "rgba(255,255,255,0.5)",
           backdropFilter: "blur(5px)",
           letterSpacing: "1px",
+          textTransform: "uppercase",
         },
         contained: {
           lineHeight: 2,

@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, FC, useCallback } from "react";
 import { PropsWithChildrenOnly } from "src/@types/react";
-import { LOAD_RELEASES_TEXT } from "src/constants";
+import { LOAD_RELEASES_TEXT, USERNAME_STORAGE_PARAM } from "src/constants";
 
 export enum CollectionSortingValues {
   AZLabel = "AZLabel",
@@ -375,6 +375,8 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
 
   const dispatchResetState = useCallback(() => {
     dispatch({ type: CollectionActionTypes.ResetState, payload: initialState });
+
+    window.localStorage.removeItem(USERNAME_STORAGE_PARAM);
   }, [dispatch]);
 
   return children ? (

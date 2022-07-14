@@ -13,6 +13,7 @@ import {
   LOAD_MORE_RELEASES_TEXT,
   LOAD_RELEASES_TEXT,
   LOAD_SAMPLE_COLLECTION,
+  USERNAME_STORAGE_PARAM,
 } from "src/constants";
 import {
   Collection,
@@ -26,12 +27,20 @@ import {
 } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useUrlParam } from "src/hooks/useUrlParam.hook";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
+import styled from "styled-components";
+
+const ClearButton = styled.button`
+  background: white;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  margin-left: 0.75rem;
+`;
 
 const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const usernameFromUrl = useUrlParam({
     queryParam: "username",
-    storageParam: "fmd_username",
+    storageParam: USERNAME_STORAGE_PARAM,
     persist: true,
   });
   const {
@@ -213,13 +222,27 @@ const FilterMyDiscogs: FC = () => {
         {username && !error && (
           <Content>
             {collection && filteredReleases && !fetchingCollection ? (
-              <Box display="flex" flexDirection="column" gap={4} width="100%">
+              <Box display="flex" flexDirection="column" gap={5} width="100%">
                 <header style={{ lineHeight: 1.5 }}>
                   <h2>
                     <b>
                       {username}
                       {username.endsWith("s") ? "'" : "'s"} collection
                     </b>
+                    <span>
+                      <ClearButton
+                        type="button"
+                        onClick={() => {
+                          dispatchResetState();
+
+                          if (usernameRef?.current) {
+                            usernameRef.current.focus();
+                          }
+                        }}
+                      >
+                        Clear Collection
+                      </ClearButton>
+                    </span>
                   </h2>
                   <Box display="flex" alignItems="center" gap={2}>
                     <span>
