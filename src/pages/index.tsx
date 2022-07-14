@@ -28,6 +28,7 @@ import {
 import { useUrlParam } from "src/hooks/useUrlParam.hook";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 import styled from "styled-components";
+import { trackEvent } from "src/analytics/analytics";
 
 const ClearButton = styled.button`
   background: white;
@@ -235,6 +236,13 @@ const FilterMyDiscogs: FC = () => {
                         onClick={() => {
                           dispatchResetState();
 
+                          trackEvent("clearedCollection", {
+                            action: "clearCollectionClicked",
+                            category: "home",
+                            label: "Clear Collection Clicked",
+                            value: true,
+                          });
+
                           if (usernameRef?.current) {
                             usernameRef.current.focus();
                           }
@@ -328,12 +336,20 @@ const FilterMyDiscogs: FC = () => {
                 onClick={() => {
                   dispatchResetState();
 
+                  trackEvent("resetApp", {
+                    action: "resetAppClicked",
+                    category: "home",
+                    label: "Reset App Clicked",
+                    value: true,
+                  });
+
                   if (usernameRef?.current) {
                     usernameRef.current.value = "";
+                    usernameRef.current.focus();
                   }
                 }}
               >
-                Reset
+                Reset App
               </Button>
             </P>
           </Content>
