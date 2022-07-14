@@ -44,11 +44,11 @@ const SORTING_OPTIONS: SortMenuItem[] = [
     value: CollectionSortingValues.DateAddedOld,
   },
   {
-    name: "Album Year (New to Old)",
+    name: "Release Year (New to Old)",
     value: CollectionSortingValues.AlbumYearNew,
   },
   {
-    name: "Album Year (Old to New)",
+    name: "Release Year (Old to New)",
     value: CollectionSortingValues.AlbumYearOld,
   },
   {
