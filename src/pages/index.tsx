@@ -68,6 +68,10 @@ const FilterMyDiscogs: FC = () => {
     }
 
     if (username) {
+      if (usernameRef?.current) {
+        usernameRef.current.value = username;
+      }
+
       (async () => {
         const fetchDiscogsCollection = fetch(
           `https://api.discogs.com/users/${username}/collection/folders/0/releases?token=NyQClxOGhZKdrUdiLocTrirpfMylQTtWrJlGSeLU&per_page=500`,
