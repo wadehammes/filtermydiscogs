@@ -29,6 +29,7 @@ import { useUrlParam } from "src/hooks/useUrlParam.hook";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 import styled from "styled-components";
 import { trackEvent } from "src/analytics/analytics";
+import Router from "next/router";
 
 const ClearButton = styled.button`
   background: white;
@@ -96,6 +97,16 @@ const FilterMyDiscogs: FC = () => {
     }
 
     if (username) {
+      const {
+        location: { href },
+      } = window;
+
+      const url = new URL(href);
+
+      url.searchParams.set("username", username);
+
+      Router.replace(url);
+
       if (usernameRef?.current) {
         usernameRef.current.value = username;
       }
