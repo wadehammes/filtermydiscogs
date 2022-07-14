@@ -33,6 +33,8 @@ const handleReleaseClick = async (release: Release) => {
 export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
   const isLaptop = useMediaQuery(device.laptop);
 
+  const { labels, year, artists, title } = release.basic_information;
+
   const thumbUrl = release.basic_information.thumb
     ? release.basic_information.thumb
     : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
@@ -57,15 +59,12 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
       )}
       <span style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
         <b>
-          {release.basic_information.labels[0].name} &mdash;{" "}
-          {release.basic_information.year}
+          {labels[0].name} {year !== 0 ? `&mdash; ${year}` : ""}
         </b>
         <br />
-        {release.basic_information.title}
+        {title}
         <br />
-        {release.basic_information.artists
-          .map((artist) => artist.name)
-          .join(", ")}
+        {artists.map((artist) => artist.name).join(", ")}
       </span>
 
       <span>
