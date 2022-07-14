@@ -108,6 +108,7 @@ export const sortReleases = (
 export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
   (props, ref: Ref<HTMLInputElement>) => {
     const isTablet = useMediaQuery(device.tablet);
+
     const {
       state,
       dispatchUser,

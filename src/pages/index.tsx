@@ -24,9 +24,15 @@ import {
   sortReleases,
   StickyHeaderBar,
 } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
+import { useUrlParam } from "src/hooks/useUrlParam.hook";
 
 const FilterMyDiscogs: FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
+  const usernameFromUrl = useUrlParam({
+    queryParam: "username",
+    storageParam: "fmd_username",
+    persist: true,
+  });
   const {
     state,
     dispatchUser,
@@ -55,6 +61,16 @@ const FilterMyDiscogs: FC = () => {
     selectedReleaseSort,
     error,
   } = state;
+
+  useEffect(() => {
+    if (usernameFromUrl) {
+      dispatchUser(usernameFromUrl);
+
+      if (usernameRef?.current) {
+        usernameRef.current.value = usernameFromUrl;
+      }
+    }
+  }, [usernameFromUrl, dispatchUser]);
 
   useEffect(() => {
     dispatchFetchingCollection(true);
@@ -104,6 +120,7 @@ const FilterMyDiscogs: FC = () => {
     dispatchReleases,
     dispatchSelectedReleaseStyle,
     username,
+    usernameFromUrl,
   ]);
 
   useEffect(() => {
