@@ -35,7 +35,7 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
 
   const thumbUrl = release.basic_information.thumb
     ? release.basic_information.thumb
-    : "https://placehold.jp/effbf2/ffffff/150x150.png?text=%20";
+    : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
   return release ? (
     <Button variant="outlined" onClick={() => handleReleaseClick(release)}>
