@@ -1,11 +1,11 @@
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import Image from "next/image";
 import { FC } from "react";
 import { Release, ReleaseJson } from "src/context/collection.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import { headers } from "src/api/helpers";
-import { device } from "src/styles/theme";
+import { device, theme } from "src/styles/theme";
 
 interface ReleaseProps {
   release: Release;
@@ -40,12 +40,14 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
   return release ? (
     <Button variant="outlined" onClick={() => handleReleaseClick(release)}>
       {thumbUrl && (
-        <Image
-          src={thumbUrl}
-          height={isLaptop ? 150 : 125}
-          width={isLaptop ? 150 : 125}
-          quality={100}
-        />
+        <Box height="100%" style={{ backgroundColor: theme.colors.trueBlack }}>
+          <Image
+            src={thumbUrl}
+            height={isLaptop ? 150 : 125}
+            width={isLaptop ? 150 : 125}
+            quality={100}
+          />
+        </Box>
       )}
       <span style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
         <b>

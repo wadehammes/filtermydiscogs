@@ -4,6 +4,7 @@ import { PropsWithChildrenOnly } from "src/@types/react";
 import { Helmet } from "src/components/Page/Helmet.component";
 import styled from "styled-components";
 import Heart from "src/styles/icons/heart-solid.svg";
+import { device } from "src/styles/theme";
 
 const PageBackground = styled.div`
   position: fixed;
@@ -27,10 +28,15 @@ const PageContent = styled.div`
 const Footer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  flex-direction: column;
   gap: 0.5rem;
   width: 100%;
   padding: 2rem;
+
+  @media ${device.tablet} {
+    flex-direction: row;
+  }
 `;
 
 export const Page = forwardRef(
