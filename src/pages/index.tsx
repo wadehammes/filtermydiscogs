@@ -63,6 +63,10 @@ const FilterMyDiscogs: FC = () => {
     dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
     dispatchError(null);
 
+    if (usernameRef?.current) {
+      usernameRef.current.value = "";
+    }
+
     if (username) {
       (async () => {
         const fetchDiscogsCollection = fetch(
