@@ -47,7 +47,10 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
         />
       )}
       <span style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
-        <b>{release.basic_information.labels[0].name}</b>
+        <b>
+          {release.basic_information.labels[0].name} &mdash;{" "}
+          {release.basic_information.year}
+        </b>
         <br />
         {release.basic_information.title}
         <br />

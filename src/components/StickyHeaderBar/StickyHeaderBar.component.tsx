@@ -43,6 +43,22 @@ const SORTING_OPTIONS: SortMenuItem[] = [
     name: "Date Added (Old to New)",
     value: CollectionSortingValues.DateAddedOld,
   },
+  {
+    name: "Album Year (New to Old)",
+    value: CollectionSortingValues.AlbumYearNew,
+  },
+  {
+    name: "Album Year (Old to New)",
+    value: CollectionSortingValues.AlbumYearOld,
+  },
+  {
+    name: "Rating (High to Low)",
+    value: CollectionSortingValues.RatingHigh,
+  },
+  {
+    name: "Rating (Low to High)",
+    value: CollectionSortingValues.RatingLow,
+  },
 ];
 
 export const sortReleases = (
@@ -72,6 +88,18 @@ export const sortReleases = (
           a.basic_information.labels[0].name
         )
       );
+    case CollectionSortingValues.AlbumYearNew:
+      return releases.sort(
+        (a, b) => b.basic_information.year - a.basic_information.year
+      );
+    case CollectionSortingValues.AlbumYearOld:
+      return releases.sort(
+        (a, b) => a.basic_information.year - b.basic_information.year
+      );
+    case CollectionSortingValues.RatingHigh:
+      return releases.sort((a, b) => b.rating - a.rating);
+    case CollectionSortingValues.RatingLow:
+      return releases.sort((a, b) => a.rating - b.rating);
     default:
       return releases;
   }

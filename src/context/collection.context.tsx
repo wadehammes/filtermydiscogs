@@ -9,6 +9,8 @@ export enum CollectionSortingValues {
   DateAddedOld = "DateAddedOld",
   RatingHigh = "RatingHigh",
   RatingLow = "RatingLow",
+  AlbumYearNew = "AlbumYearNew",
+  AlbumYearOld = "AlbumYearOld",
 }
 
 export interface SortMenuItem {
@@ -19,7 +21,7 @@ export interface SortMenuItem {
 export interface Release {
   instance_id: string;
   date_added: string;
-  rating: string;
+  rating: number;
   basic_information: {
     resource_url: string;
     styles: string[];
