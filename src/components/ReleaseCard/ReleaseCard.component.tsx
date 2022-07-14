@@ -40,12 +40,18 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
   return release ? (
     <Button variant="outlined" onClick={() => handleReleaseClick(release)}>
       {thumbUrl && (
-        <Box height="100%" style={{ backgroundColor: theme.colors.trueBlack }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          height="100%"
+          style={{ backgroundColor: theme.colors.trueBlack }}
+        >
           <Image
             src={thumbUrl}
             height={isLaptop ? 150 : 125}
             width={isLaptop ? 150 : 125}
             quality={100}
+            objectFit="cover"
           />
         </Box>
       )}
