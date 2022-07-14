@@ -49,6 +49,15 @@ export const Page = forwardRef(
                 Wade Hammes
               </a>
             </span>
+            <span>
+              <a
+                href="https://github.com/wadehammes/filtermydiscogs"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Contribute to the project
+              </a>
+            </span>
             <span>&copy; {new Date().getFullYear()}</span>
           </>
         </Footer>
