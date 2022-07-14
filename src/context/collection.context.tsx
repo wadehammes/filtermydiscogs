@@ -1,7 +1,7 @@
 import Router from "next/router";
 import { createContext, useContext, useReducer, FC, useCallback } from "react";
 import { PropsWithChildrenOnly } from "src/@types/react";
-import { LOAD_RELEASES_TEXT, USERNAME_STORAGE_PARAM } from "src/constants";
+import { USERNAME_STORAGE_PARAM } from "src/constants";
 
 export enum CollectionSortingValues {
   AZLabel = "AZLabel",
@@ -74,7 +74,6 @@ export interface CollectionStateStore {
   filteredReleases: Release[];
   releaseStyles: string[];
   selectedReleaseStyle: string;
-  loadMoreReleasesText: string;
   selectedReleaseSort: CollectionSortingValues;
   error: string | null;
 }
@@ -90,7 +89,6 @@ export enum CollectionActionTypes {
   SetFilteredReleases = "SetFilteredReleases",
   SetReleaseStyles = "SetReleaseStyles",
   SetSelectedReleaseStyle = "SetSelectedReleaseStyle",
-  SetLoadMoreReleasesText = "SetLoadMoreReleasesText",
   SetSelectedReleaseSort = "SetSelectedReleaseSort",
   ResetState = "ResetState",
 }
@@ -130,10 +128,6 @@ export type CollectionActions =
     }
   | {
       type: CollectionActionTypes.SetSelectedReleaseStyle;
-      payload: string;
-    }
-  | {
-      type: CollectionActionTypes.SetLoadMoreReleasesText;
       payload: string;
     }
   | {
@@ -199,11 +193,6 @@ export const CollectionReducer = (
         ...state,
         selectedReleaseStyle: action.payload,
       };
-    case CollectionActionTypes.SetLoadMoreReleasesText:
-      return {
-        ...state,
-        loadMoreReleasesText: action.payload,
-      };
     case CollectionActionTypes.SetSelectedReleaseSort:
       return {
         ...state,
@@ -234,7 +223,6 @@ const initialState: CollectionStateStore = {
   filteredReleases: [],
   releaseStyles: [],
   selectedReleaseStyle: "All",
-  loadMoreReleasesText: LOAD_RELEASES_TEXT,
   selectedReleaseSort: CollectionSortingValues.DateAddedNew,
   error: null,
 };
@@ -250,7 +238,6 @@ export interface CollectionProviderProps {
   dispatchFilteredReleases: (releases: Release[]) => void;
   dispatchReleaseStyles: (styles: string[]) => void;
   dispatchSelectedReleaseStyle: (style: string) => void;
-  dispatchLoadMoreReleaseText: (text: string) => void;
   dispatchSelectedReleaseSort: (sort: CollectionSortingValues) => void;
   dispatchError: (error: string | null) => void;
   dispatchResetState: () => void;
@@ -354,16 +341,6 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
     [dispatch]
   );
 
-  const dispatchLoadMoreReleaseText = useCallback(
-    (text: string) => {
-      dispatch({
-        type: CollectionActionTypes.SetLoadMoreReleasesText,
-        payload: text,
-      });
-    },
-    [dispatch]
-  );
-
   const dispatchError = useCallback(
     (error: string | null) => {
       dispatch({
@@ -406,7 +383,6 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
         dispatchReleaseStyles,
         dispatchSelectedReleaseStyle,
         dispatchSelectedReleaseSort,
-        dispatchLoadMoreReleaseText,
         dispatchError,
       }}
     >

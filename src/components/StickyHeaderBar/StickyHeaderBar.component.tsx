@@ -16,11 +16,7 @@ import {
   useCollectionContext,
 } from "src/context/collection.context";
 import { StickyHeader } from "src/components/Layout";
-import {
-  ALL_STYLE,
-  AWAITING_USERNAME,
-  USERNAME_STORAGE_PARAM,
-} from "src/constants";
+import { ALL_STYLE, USERNAME_STORAGE_PARAM } from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { device } from "src/styles/theme";
@@ -119,7 +115,6 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       dispatchFetchingCollection,
       dispatchReleases,
       dispatchSelectedReleaseStyle,
-      dispatchLoadMoreReleaseText,
       dispatchSelectedReleaseSort,
       dispatchFilteredReleases,
       dispatchError,
@@ -183,7 +178,6 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
         dispatchFetchingCollection(true);
         dispatchReleases([]);
         dispatchFilteredReleases([]);
-        dispatchLoadMoreReleaseText(AWAITING_USERNAME);
         dispatchSelectedReleaseStyle(ALL_STYLE);
         dispatchSelectedReleaseSort(CollectionSortingValues.DateAddedNew);
         dispatchError(null);

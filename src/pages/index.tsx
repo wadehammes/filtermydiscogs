@@ -6,12 +6,9 @@ import Page from "src/components/Page/Page.component";
 import { Content } from "src/components/Layout";
 import { LI, OL, P } from "src/components/Typography";
 import {
-  ALL_RELEASES_LOADED,
   ALL_STYLE,
   DEFAULT_COLLECTION,
   ERROR_FETCHING,
-  LOAD_MORE_RELEASES_TEXT,
-  LOAD_RELEASES_TEXT,
   LOAD_SAMPLE_COLLECTION,
   USERNAME_STORAGE_PARAM,
 } from "src/constants";
@@ -56,7 +53,6 @@ const FilterMyDiscogs: FC = () => {
     dispatchFilteredReleases,
     dispatchReleaseStyles,
     dispatchSelectedReleaseStyle,
-    dispatchLoadMoreReleaseText,
     dispatchError,
     dispatchResetState,
   } = useCollectionContext();
@@ -72,7 +68,6 @@ const FilterMyDiscogs: FC = () => {
     selectedReleaseStyle,
     selectedReleaseSort,
     error,
-    loadMoreReleasesText,
   } = state;
 
   useEffect(() => {
@@ -89,7 +84,6 @@ const FilterMyDiscogs: FC = () => {
     dispatchFetchingCollection(true);
     dispatchReleases([]);
     dispatchFilteredReleases([]);
-    dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
     dispatchError(null);
 
     if (usernameRef?.current) {
@@ -138,7 +132,6 @@ const FilterMyDiscogs: FC = () => {
     dispatchError,
     dispatchFetchingCollection,
     dispatchFilteredReleases,
-    dispatchLoadMoreReleaseText,
     dispatchNextPageLink,
     dispatchReleases,
     dispatchSelectedReleaseStyle,
@@ -181,8 +174,6 @@ const FilterMyDiscogs: FC = () => {
       releases.length < collection.pagination.items &&
       page <= collection.pagination.pages
     ) {
-      dispatchLoadMoreReleaseText(LOAD_RELEASES_TEXT);
-
       (async () => {
         const fetchNext = fetch(nextPageLink, {
           headers,
@@ -207,19 +198,10 @@ const FilterMyDiscogs: FC = () => {
     releases,
     page,
     nextPageLink,
-    dispatchLoadMoreReleaseText,
     dispatchReleases,
     dispatchNextPageLink,
     dispatchPage,
   ]);
-
-  useEffect(() => {
-    if (collection && releases.length >= collection.pagination.items) {
-      dispatchLoadMoreReleaseText(ALL_RELEASES_LOADED);
-    } else {
-      dispatchLoadMoreReleaseText(LOAD_MORE_RELEASES_TEXT);
-    }
-  }, [collection, dispatchLoadMoreReleaseText, releases.length]);
 
   return (
     <Page>
@@ -241,27 +223,29 @@ const FilterMyDiscogs: FC = () => {
                       {username}
                       {username.endsWith("s") ? "'" : "'s"} collection
                     </b>
-                    <span>
-                      <ClearButton
-                        type="button"
-                        onClick={() => {
-                          dispatchResetState();
+                    {releases.length >= collection.pagination.items && (
+                      <span>
+                        <ClearButton
+                          type="button"
+                          onClick={() => {
+                            dispatchResetState();
 
-                          trackEvent("clearedCollection", {
-                            action: "clearCollectionClicked",
-                            category: "home",
-                            label: "Clear Collection Clicked",
-                            value: true,
-                          });
+                            trackEvent("clearedCollection", {
+                              action: "clearCollectionClicked",
+                              category: "home",
+                              label: "Clear Collection Clicked",
+                              value: true,
+                            });
 
-                          if (usernameRef?.current) {
-                            usernameRef.current.focus();
-                          }
-                        }}
-                      >
-                        Clear Collection
-                      </ClearButton>
-                    </span>
+                            if (usernameRef?.current) {
+                              usernameRef.current.focus();
+                            }
+                          }}
+                        >
+                          Clear Collection
+                        </ClearButton>
+                      </span>
+                    )}
                   </h2>
                   <Box display="flex" alignItems="center" gap={2}>
                     <span>
@@ -270,7 +254,6 @@ const FilterMyDiscogs: FC = () => {
                     </span>
                     <ReleasesLoading
                       isLoaded={releases.length >= collection.pagination.items}
-                      text={loadMoreReleasesText}
                     />
                   </Box>
                 </header>
