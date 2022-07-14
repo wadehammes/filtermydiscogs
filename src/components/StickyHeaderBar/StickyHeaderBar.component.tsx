@@ -20,6 +20,7 @@ import { ALL_STYLE, AWAITING_USERNAME } from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { device } from "src/styles/theme";
+import { trackEvent } from "src/analytics/analytics";
 
 interface StickyHeaderBarProps {
   ref: Ref<HTMLInputElement>;
@@ -133,6 +134,13 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       const { value } = e.target;
 
       if (value) {
+        trackEvent("releaseStyle", {
+          action: "releaseStyleChanged",
+          category: "home",
+          label: "Release Style Changed",
+          value,
+        });
+
         dispatchSelectedReleaseStyle(value);
       }
     };
@@ -141,6 +149,13 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       const { value } = e.target;
 
       if (value) {
+        trackEvent("releaseSort", {
+          action: "releaseSortChanged",
+          category: "home",
+          label: "Release Sort Changed",
+          value,
+        });
+
         dispatchSelectedReleaseSort(value as CollectionSortingValues);
       }
     };
@@ -150,6 +165,13 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
 
       if (value) {
         dispatchUser(value);
+
+        trackEvent("usernameInput", {
+          action: "usernameChanged",
+          category: "home",
+          label: "Username Set/Changed",
+          value,
+        });
 
         window.localStorage.setItem("fmd_username", value);
       } else {

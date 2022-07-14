@@ -221,7 +221,7 @@ const FilterMyDiscogs: FC = () => {
                       {username.endsWith("s") ? "'" : "'s"} collection
                     </b>
                   </h2>
-                  <Box component="p" display="flex" alignItems="center" gap={2}>
+                  <Box display="flex" alignItems="center" gap={2}>
                     <span>
                       viewing {filteredReleases.length} of{" "}
                       {collection.pagination.items} releases

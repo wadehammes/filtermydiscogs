@@ -6,6 +6,7 @@ import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import { headers } from "src/api/helpers";
 import { device, theme } from "src/styles/theme";
+import { trackEvent } from "src/analytics/analytics";
 
 interface ReleaseProps {
   release: Release;
@@ -25,7 +26,16 @@ const handleReleaseClick = async (release: Release) => {
     const releaseJson: ReleaseJson = await fetchedRelease.json();
 
     if (releaseJson && windowReference) {
-      windowReference.location = releaseJson.uri;
+      trackEvent("releaseClicked", {
+        action: "releaseClicked",
+        category: "home",
+        label: "Release Clicked",
+        value: release.basic_information.resource_url,
+      });
+
+      setTimeout(() => {
+        windowReference.location = releaseJson.uri;
+      }, 200);
     }
   }
 };
