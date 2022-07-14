@@ -36,6 +36,7 @@ const Footer = styled.div`
 
   @media ${device.tablet} {
     flex-direction: row;
+    justify-content: flex-end;
   }
 `;
 
