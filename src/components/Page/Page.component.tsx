@@ -22,6 +22,7 @@ const PageBackground = styled.div`
 
 const PageContent = styled.div`
   flex: 1;
+  height: calc(100vh - 3em);
 `;
 
 const Footer = styled.div`
