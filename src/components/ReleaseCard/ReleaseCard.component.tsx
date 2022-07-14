@@ -33,10 +33,10 @@ const handleReleaseClick = async (release: Release) => {
 export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
   const isLaptop = useMediaQuery(device.laptop);
 
-  const { labels, year, artists, title } = release.basic_information;
+  const { labels, year, artists, title, thumb } = release.basic_information;
 
-  const thumbUrl = release.basic_information.thumb
-    ? release.basic_information.thumb
+  const thumbUrl = thumb
+    ? thumb
     : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
   return release ? (
