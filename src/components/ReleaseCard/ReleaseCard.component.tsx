@@ -42,8 +42,8 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
       {thumbUrl && (
         <Image
           src={thumbUrl}
-          height={isLaptop ? 150 : 100}
-          width={isLaptop ? 150 : 100}
+          height={isLaptop ? 150 : 125}
+          width={isLaptop ? 150 : 125}
           quality={100}
         />
       )}
