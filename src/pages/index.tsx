@@ -6,7 +6,6 @@ import Page from "src/components/Page/Page.component";
 import { Content } from "src/components/Layout";
 import { LI, OL, P } from "src/components/Typography";
 import {
-  ALL_STYLE,
   DEFAULT_COLLECTION,
   ERROR_FETCHING,
   LOAD_SAMPLE_COLLECTION,
@@ -119,7 +118,8 @@ const FilterMyDiscogs: FC = () => {
           dispatchFetchingCollection(false);
           dispatchNextPageLink(collectionJson.pagination.urls.next);
           dispatchReleases(collectionJson.releases);
-          dispatchSelectedReleaseStyle(ALL_STYLE);
+          dispatchFilteredReleases(collectionJson.releases);
+          dispatchSelectedReleaseStyle([]);
           dispatchCollection(collectionJson);
         } else {
           dispatchFetchingCollection(false);
@@ -155,9 +155,11 @@ const FilterMyDiscogs: FC = () => {
 
   useEffect(() => {
     if (releases) {
-      if (selectedReleaseStyle !== ALL_STYLE) {
+      if (selectedReleaseStyle.length > 0) {
         const filteredReleasesByStyle = releases.filter((release) =>
-          release.basic_information.styles.includes(selectedReleaseStyle)
+          release.basic_information.styles.some((value) =>
+            selectedReleaseStyle.includes(value)
+          )
         );
 
         dispatchFilteredReleases(filteredReleasesByStyle);
