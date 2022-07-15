@@ -37,7 +37,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".jest/setupTests.ts",
-    "i18next.config.ts"
   ],
   "exclude": [
     "node_modules",
