@@ -21,7 +21,7 @@ import { StickyHeader } from "src/components/Layout";
 import { USERNAME_STORAGE_PARAM } from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { device } from "src/styles/theme";
+import { device } from "src/styles/device";
 import { trackEvent } from "src/analytics/analytics";
 
 interface StickyHeaderBarProps {

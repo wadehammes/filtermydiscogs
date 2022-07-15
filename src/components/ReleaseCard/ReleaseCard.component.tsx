@@ -5,7 +5,7 @@ import { Release, ReleaseJson } from "src/context/collection.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import { headers } from "src/api/helpers";
-import { device, theme } from "src/styles/theme";
+import { device } from "src/styles/device";
 import { trackEvent } from "src/analytics/analytics";
 import parse from "html-react-parser";
 import { Span } from "src/components/Typography";
@@ -59,7 +59,7 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
           alignItems="center"
           height="100%"
           width={isLaptop ? "150px" : "125px"}
-          style={{ backgroundColor: theme.colors.trueBlack }}
+          style={{ backgroundColor: "var(--black)" }}
         >
           <Image
             src={thumbUrl}

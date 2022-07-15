@@ -1,23 +1,3 @@
-export const theme = {
-  colors: {
-    gray: "#7E888C",
-    black: "#393d3f",
-    white: "#fdfdff",
-    silver: "#c6c5b9",
-    teal: "#62929e",
-    blue: "#546a7b",
-    green: "hsla(145,55%,58%,1)",
-    red: "hsla(350,95%,58%,0.83)",
-    purple: "hsla(229,94%,76%,0.915)",
-    trueBlack: "hsla(5,92%,1%,0.83)",
-    alphaBlack: "rgba(0, 0, 0, 0.25)",
-  },
-  sizing: {
-    mobilePadding: "1.75em",
-    desktopPadding: "5em",
-  },
-};
-
 export const breakpoints = {
   mobileS: "384px",
   mobileM: "576px",
