@@ -5,5 +5,5 @@ export const AWAITING_USERNAME = "";
 export const ERROR_FETCHING =
   "Failed to fetch collection. Check spelling or this collection could be private.";
 export const DEFAULT_COLLECTION = "wadehammes";
-export const LOAD_SAMPLE_COLLECTION = "View Wade's Collection";
+export const LOAD_SAMPLE_COLLECTION = "View My Collection";
 export const USERNAME_STORAGE_PARAM = "fmd_username";
