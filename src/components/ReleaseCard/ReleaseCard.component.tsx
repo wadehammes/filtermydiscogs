@@ -8,6 +8,7 @@ import { headers } from "src/api/helpers";
 import { device, theme } from "src/styles/theme";
 import { trackEvent } from "src/analytics/analytics";
 import parse from "html-react-parser";
+import { Span } from "src/components/Typography";
 
 interface ReleaseProps {
   release: Release;
@@ -56,7 +57,7 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
         <Box
           display="flex"
           alignItems="center"
-          height={isLaptop ? "150px" : "125px"}
+          height="100%"
           width={isLaptop ? "150px" : "125px"}
           style={{ backgroundColor: theme.colors.trueBlack }}
         >
@@ -69,19 +70,19 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
           />
         </Box>
       )}
-      <span style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
-        <b>
-          {labels[0].name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
-        </b>
-        <br />
-        {title}
-        <br />
-        {artists.map((artist) => artist.name).join(", ")}
-      </span>
+      <Box style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
+        <Span>
+          <b>
+            {labels[0].name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
+          </b>
+        </Span>
+        <Span>{title}</Span>
+        <Span>{artists.map((artist) => artist.name).join(", ")}</Span>
+      </Box>
 
-      <span>
+      <Span>
         <Chevron />
-      </span>
+      </Span>
     </Button>
   ) : null;
 };

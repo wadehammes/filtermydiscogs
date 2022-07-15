@@ -45,3 +45,9 @@ export const LI = styled.li`
   font-weight: normal;
   width: 100%;
 `;
+
+export const Span = styled.span`
+  display: flex;
+  padding: 0.2rem 0;
+  line-height: 1.25;
+`;
