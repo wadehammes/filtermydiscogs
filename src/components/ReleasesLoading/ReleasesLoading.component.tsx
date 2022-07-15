@@ -1,16 +1,14 @@
 import { Box, CircularProgress } from "@mui/material";
 import { FC, useEffect, useState } from "react";
-import { LOAD_MORE_RELEASES_TEXT } from "src/constants";
+import { ALL_RELEASES_LOADED } from "src/constants";
 import Check from "src/styles/icons/check-solid.svg";
 
 interface RelasesLoadingProps {
   isLoaded: boolean;
-  text: string;
 }
 
 export const ReleasesLoading: FC<RelasesLoadingProps> = ({
   isLoaded = false,
-  text = LOAD_MORE_RELEASES_TEXT,
 }) => {
   const [hide, setHide] = useState<boolean>(false);
 
@@ -36,13 +34,10 @@ export const ReleasesLoading: FC<RelasesLoadingProps> = ({
     >
       {isLoaded ? (
         <span>
-          <Check /> {text}
+          <Check /> {ALL_RELEASES_LOADED}
         </span>
       ) : (
-        <>
-          <CircularProgress size={16} />
-          <span>{text}</span>
-        </>
+        <CircularProgress size={16} />
       )}
     </Box>
   ) : null;

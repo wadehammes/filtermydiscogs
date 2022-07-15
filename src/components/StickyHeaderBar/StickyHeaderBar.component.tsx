@@ -1,7 +1,9 @@
 import {
   Box,
+  Checkbox,
   FormControl,
   InputLabel,
+  ListItemText,
   MenuItem,
   OutlinedInput,
   Select,
@@ -16,14 +18,11 @@ import {
   useCollectionContext,
 } from "src/context/collection.context";
 import { StickyHeader } from "src/components/Layout";
-import {
-  ALL_STYLE,
-  AWAITING_USERNAME,
-  USERNAME_STORAGE_PARAM,
-} from "src/constants";
+import { USERNAME_STORAGE_PARAM } from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { device } from "src/styles/device";
+import { trackEvent } from "src/analytics/analytics";
 
 interface StickyHeaderBarProps {
   ref: Ref<HTMLInputElement>;
@@ -115,13 +114,9 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
     const {
       state,
       dispatchUser,
-      dispatchFetchingCollection,
-      dispatchReleases,
       dispatchSelectedReleaseStyle,
-      dispatchLoadMoreReleaseText,
       dispatchSelectedReleaseSort,
-      dispatchFilteredReleases,
-      dispatchError,
+      dispatchResetState,
     } = useCollectionContext();
 
     const {
@@ -133,11 +128,21 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       selectedReleaseSort,
     } = state;
 
-    const handleStyleChange = (e: SelectChangeEvent) => {
+    const handleStyleChange = (e: SelectChangeEvent<string[]>) => {
       const { value } = e.target;
 
+      const formattedValue =
+        typeof value === "string" ? value.split(",") : value;
+
       if (value) {
-        dispatchSelectedReleaseStyle(value);
+        trackEvent("releaseStyle", {
+          action: "releaseStyleChanged",
+          category: "home",
+          label: "Release Style Changed",
+          value: formattedValue.join(","),
+        });
+
+        dispatchSelectedReleaseStyle(formattedValue);
       }
     };
 
@@ -145,6 +150,13 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       const { value } = e.target;
 
       if (value) {
+        trackEvent("releaseSort", {
+          action: "releaseSortChanged",
+          category: "home",
+          label: "Release Sort Changed",
+          value,
+        });
+
         dispatchSelectedReleaseSort(value as CollectionSortingValues);
       }
     };
@@ -155,18 +167,16 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
       if (value) {
         dispatchUser(value);
 
+        trackEvent("usernameInput", {
+          action: "usernameChanged",
+          category: "home",
+          label: "Username Set/Changed",
+          value,
+        });
+
         window.localStorage.setItem(USERNAME_STORAGE_PARAM, value);
       } else {
-        dispatchUser(null);
-        dispatchFetchingCollection(true);
-        dispatchReleases([]);
-        dispatchFilteredReleases([]);
-        dispatchLoadMoreReleaseText(AWAITING_USERNAME);
-        dispatchSelectedReleaseStyle(ALL_STYLE);
-        dispatchSelectedReleaseSort(CollectionSortingValues.DateAddedNew);
-        dispatchError(null);
-
-        window.localStorage.removeItem(USERNAME_STORAGE_PARAM);
+        dispatchResetState();
       }
     }, 1000);
 
@@ -190,11 +200,13 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
                 label="Styles"
                 onChange={handleStyleChange}
                 disabled={!collection}
+                multiple
+                renderValue={(selected) => selected.join(", ")}
               >
-                <MenuItem value={ALL_STYLE}>All</MenuItem>
                 {releaseStyles.map((style) => (
                   <MenuItem key={style} value={style}>
-                    {style}
+                    <Checkbox checked={selectedReleaseStyle.includes(style)} />
+                    <ListItemText primary={style} />
                   </MenuItem>
                 ))}
               </Select>

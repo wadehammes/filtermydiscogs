@@ -1,6 +1,7 @@
+import Router from "next/router";
 import { createContext, useContext, useReducer, FC, useCallback } from "react";
 import { PropsWithChildrenOnly } from "src/@types/react";
-import { LOAD_RELEASES_TEXT } from "src/constants";
+import { USERNAME_STORAGE_PARAM } from "src/constants";
 
 export enum CollectionSortingValues {
   AZLabel = "AZLabel",
@@ -72,8 +73,7 @@ export interface CollectionStateStore {
   fetchingCollection: boolean;
   filteredReleases: Release[];
   releaseStyles: string[];
-  selectedReleaseStyle: string;
-  loadMoreReleasesText: string;
+  selectedReleaseStyle: string[];
   selectedReleaseSort: CollectionSortingValues;
   error: string | null;
 }
@@ -89,7 +89,6 @@ export enum CollectionActionTypes {
   SetFilteredReleases = "SetFilteredReleases",
   SetReleaseStyles = "SetReleaseStyles",
   SetSelectedReleaseStyle = "SetSelectedReleaseStyle",
-  SetLoadMoreReleasesText = "SetLoadMoreReleasesText",
   SetSelectedReleaseSort = "SetSelectedReleaseSort",
   ResetState = "ResetState",
 }
@@ -129,11 +128,7 @@ export type CollectionActions =
     }
   | {
       type: CollectionActionTypes.SetSelectedReleaseStyle;
-      payload: string;
-    }
-  | {
-      type: CollectionActionTypes.SetLoadMoreReleasesText;
-      payload: string;
+      payload: string[];
     }
   | {
       type: CollectionActionTypes.SetSelectedReleaseSort;
@@ -198,11 +193,6 @@ export const CollectionReducer = (
         ...state,
         selectedReleaseStyle: action.payload,
       };
-    case CollectionActionTypes.SetLoadMoreReleasesText:
-      return {
-        ...state,
-        loadMoreReleasesText: action.payload,
-      };
     case CollectionActionTypes.SetSelectedReleaseSort:
       return {
         ...state,
@@ -232,8 +222,7 @@ const initialState: CollectionStateStore = {
   fetchingCollection: true,
   filteredReleases: [],
   releaseStyles: [],
-  selectedReleaseStyle: "All",
-  loadMoreReleasesText: LOAD_RELEASES_TEXT,
+  selectedReleaseStyle: [],
   selectedReleaseSort: CollectionSortingValues.DateAddedNew,
   error: null,
 };
@@ -248,8 +237,7 @@ export interface CollectionProviderProps {
   dispatchFetchingCollection: (fetching: boolean) => void;
   dispatchFilteredReleases: (releases: Release[]) => void;
   dispatchReleaseStyles: (styles: string[]) => void;
-  dispatchSelectedReleaseStyle: (style: string) => void;
-  dispatchLoadMoreReleaseText: (text: string) => void;
+  dispatchSelectedReleaseStyle: (style: string[]) => void;
   dispatchSelectedReleaseSort: (sort: CollectionSortingValues) => void;
   dispatchError: (error: string | null) => void;
   dispatchResetState: () => void;
@@ -334,7 +322,7 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   );
 
   const dispatchSelectedReleaseStyle = useCallback(
-    (style: string) => {
+    (style: string[]) => {
       dispatch({
         type: CollectionActionTypes.SetSelectedReleaseStyle,
         payload: style,
@@ -353,16 +341,6 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
     [dispatch]
   );
 
-  const dispatchLoadMoreReleaseText = useCallback(
-    (text: string) => {
-      dispatch({
-        type: CollectionActionTypes.SetLoadMoreReleasesText,
-        payload: text,
-      });
-    },
-    [dispatch]
-  );
-
   const dispatchError = useCallback(
     (error: string | null) => {
       dispatch({
@@ -374,7 +352,20 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   );
 
   const dispatchResetState = useCallback(() => {
+    const {
+      location: { href },
+      localStorage,
+    } = window;
+
+    const url = new URL(href);
+
+    url.searchParams.delete("username");
+
+    Router.replace(url);
+
     dispatch({ type: CollectionActionTypes.ResetState, payload: initialState });
+
+    localStorage.removeItem(USERNAME_STORAGE_PARAM);
   }, [dispatch]);
 
   return children ? (
@@ -392,7 +383,6 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
         dispatchReleaseStyles,
         dispatchSelectedReleaseStyle,
         dispatchSelectedReleaseSort,
-        dispatchLoadMoreReleaseText,
         dispatchError,
       }}
     >
