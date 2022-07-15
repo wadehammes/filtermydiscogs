@@ -73,7 +73,7 @@ export interface CollectionStateStore {
   fetchingCollection: boolean;
   filteredReleases: Release[];
   releaseStyles: string[];
-  selectedReleaseStyle: string;
+  selectedReleaseStyle: string[];
   selectedReleaseSort: CollectionSortingValues;
   error: string | null;
 }
@@ -128,7 +128,7 @@ export type CollectionActions =
     }
   | {
       type: CollectionActionTypes.SetSelectedReleaseStyle;
-      payload: string;
+      payload: string[];
     }
   | {
       type: CollectionActionTypes.SetSelectedReleaseSort;
@@ -222,7 +222,7 @@ const initialState: CollectionStateStore = {
   fetchingCollection: true,
   filteredReleases: [],
   releaseStyles: [],
-  selectedReleaseStyle: "All",
+  selectedReleaseStyle: [],
   selectedReleaseSort: CollectionSortingValues.DateAddedNew,
   error: null,
 };
@@ -237,7 +237,7 @@ export interface CollectionProviderProps {
   dispatchFetchingCollection: (fetching: boolean) => void;
   dispatchFilteredReleases: (releases: Release[]) => void;
   dispatchReleaseStyles: (styles: string[]) => void;
-  dispatchSelectedReleaseStyle: (style: string) => void;
+  dispatchSelectedReleaseStyle: (style: string[]) => void;
   dispatchSelectedReleaseSort: (sort: CollectionSortingValues) => void;
   dispatchError: (error: string | null) => void;
   dispatchResetState: () => void;
@@ -322,7 +322,7 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   );
 
   const dispatchSelectedReleaseStyle = useCallback(
-    (style: string) => {
+    (style: string[]) => {
       dispatch({
         type: CollectionActionTypes.SetSelectedReleaseStyle,
         payload: style,
