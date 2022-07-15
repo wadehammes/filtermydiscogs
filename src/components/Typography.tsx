@@ -1,4 +1,4 @@
-import { device } from "src/styles/theme";
+import { device } from "src/styles/device";
 import styled from "styled-components";
 
 export const H1 = styled.h1`

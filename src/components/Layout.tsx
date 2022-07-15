@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { P } from "src/components/Typography";
-import { device } from "src/styles/theme";
+import { device } from "src/styles/device";
 
 export const Container = styled.div`
   width: 100%;
@@ -35,12 +35,12 @@ export const StickyHeader = styled.div`
   justify-content: flex-start;
   flex-flow: column wrap;
   gap: 1rem;
-  background: white;
+  background: var(--white);
   position: sticky;
   top: 0;
   width: 100%;
   padding: 1rem 2rem;
-  border-bottom: 1px solid lightgray;
+  border-bottom: 1px solid var(--gray);
   z-index: 999;
 
   @media ${device.tablet} {

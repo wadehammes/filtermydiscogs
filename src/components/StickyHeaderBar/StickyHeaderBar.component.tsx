@@ -23,7 +23,7 @@ import {
 } from "src/constants";
 import debounce from "lodash.debounce";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { device } from "src/styles/theme";
+import { device } from "src/styles/device";
 
 interface StickyHeaderBarProps {
   ref: Ref<HTMLInputElement>;

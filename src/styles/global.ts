@@ -1,5 +1,5 @@
-import { device, theme } from "src/styles/theme";
 import { createGlobalStyle } from "styled-components";
+import { device } from "src/styles/device";
 
 export const GlobalStyles = createGlobalStyle`
   *,
@@ -30,7 +30,7 @@ export const GlobalStyles = createGlobalStyle`
   html,
   body {
     padding: 0;
-    color: ${theme.colors.trueBlack};
+    color: var(--black);
     font-size: 14px;
     font-family: "Assistant", sans-serif;
 
@@ -40,7 +40,7 @@ export const GlobalStyles = createGlobalStyle`
   }
   body {
     line-height: 1;
-    background-color: ${theme.colors.white};
+    background-color: var(--white);
     min-height: 100vh;
   }
   img {
@@ -54,5 +54,21 @@ export const GlobalStyles = createGlobalStyle`
   }
   button {
     cursor: pointer;
+  }
+
+  :root {
+    --white: #FFFFFF;
+    --black: #171717;
+    --gray: #CFCFCF;
+    --trueBlack: hsla(5,92%,1%,0.83);
+    --gradientPink: #ffb7b7;
+    --gradientLightPink: #ffd1d1;
+    --gradientGray:#727272;
+    --gradientBurgundy: #260000;
+    --gradientTeal: #00ffff;
+    --gradientRed: #ff0000;
+    --gradientCyan: #00ffe0;
+    --gradientYellow: #dbff00;
+    --gradientBlue: #3300ff;
   }
 `;
