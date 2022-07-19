@@ -234,3 +234,6 @@ export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
     );
   }
 );
+
+export default StickyHeaderBar;
+StickyHeaderBar.displayName = "StickyHeaderBar";

@@ -36,7 +36,8 @@
     "prettier",
     "plugin:@next/next/recommended",
     "plugin:testing-library/react",
-    "plugin:jest-formatting/strict"
+    "plugin:jest-formatting/strict",
+    "next/core-web-vitals"
   ],
   "overrides": [
     {
