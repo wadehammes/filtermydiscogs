@@ -90,3 +90,4 @@ export const Page = forwardRef(
 );
 
 export default Page;
+Page.displayName = "Page";
