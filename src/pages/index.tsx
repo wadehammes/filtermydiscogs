@@ -309,6 +309,13 @@ const FilterMyDiscogs: FC = () => {
                   onClick={() => {
                     dispatchUser(DEFAULT_COLLECTION);
 
+                    trackEvent("loadSampleCollection", {
+                      action: "loadSampleCollectionClicked",
+                      category: "home",
+                      label: "Loaded Sample Collection",
+                      value: true,
+                    });
+
                     if (usernameRef?.current) {
                       usernameRef.current.value = DEFAULT_COLLECTION;
                     }
