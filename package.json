@@ -71,7 +71,7 @@
     "@types/lodash.kebabcase": "^4.1.7",
     "@types/lodash.memoize": "^4.1.7",
     "@types/lodash.uniqby": "^4.7.7",
-    "@types/node": "^18.0.6",
+    "@types/node": "^18.7.4",
     "@types/react": "^18.0.15",
     "@types/styled-components": "^5.1.25",
     "@types/uuid": "^8.3.4",
