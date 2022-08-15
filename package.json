@@ -18,7 +18,7 @@
     "scaffold": "scripts/scaffold.sh"
   },
   "dependencies": {
-    "@faker-js/faker": "^7.3.0",
+    "@faker-js/faker": "^7.4.0",
     "@mui/material": "^5.9.1",
     "@mui/styled-engine-sc": "^5.8.0",
     "@svgr/webpack": "^6.3.0",
