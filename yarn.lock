@@ -1370,11 +1370,12 @@
     "@mui/utils" "^5.9.1"
     prop-types "^15.8.1"
 
-"@mui/styled-engine-sc@^5.8.0":
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/@mui/styled-engine-sc/-/styled-engine-sc-5.8.0.tgz#20bc536dce25739e38fcd2586f100e70fbf02065"
-  integrity sha512-46eRLWxjTF0d50Q1Q9tj96cgF41r7lesbXAy6kKocCdUfJ8rbIo36C4Ws8Pd7nfVsvaitTb7tmCbVQzDT3niJQ==
+"@mui/styled-engine-sc@^5.10.0":
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/@mui/styled-engine-sc/-/styled-engine-sc-5.10.0.tgz#243261971498fe4873b42bf004de44f06d2b7baa"
+  integrity sha512-pTfk2fpusN9YZJFDowiXqCBkcGwVFjNjUicyIwzUJfwZeF13XRzU+Yids9WzQcYSA5n8fpFcTADV43+C3NZj7Q==
   dependencies:
+    "@babel/runtime" "^7.17.2"
     prop-types "^15.8.1"
 
 "@mui/styled-engine@^5.8.7", "@mui/styled-engine@npm:@mui/styled-engine-sc@next":
