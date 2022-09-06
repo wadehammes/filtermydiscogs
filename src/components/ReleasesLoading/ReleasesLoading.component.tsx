@@ -14,11 +14,11 @@ export const ReleasesLoading: FC<RelasesLoadingProps> = ({
 
   useEffect(() => {
     if (isLoaded) {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setHide(true);
       }, 1000);
 
-      return () => clearTimeout();
+      return () => clearTimeout(timeout);
     } else {
       setHide(false);
     }
