@@ -4611,10 +4611,10 @@ isarray@~1.0.0:
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
 
-isbot@^3.5.2:
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/isbot/-/isbot-3.5.2.tgz#eb33c40c0db53a0dd10d4a24dfb0d67f9978f344"
-  integrity sha512-7iXQPDK1GBKvWS9N71bNnQ2KMcqwlMhdLkPma/EBn+8ZRkCbhun3yqqS1hmRqysTwJLGvJrUTmRIHibLWrXQQA==
+isbot@^3.5.4:
+  version "3.5.4"
+  resolved "https://registry.yarnpkg.com/isbot/-/isbot-3.5.4.tgz#6aeee9fae357e6f766dc5236bba15c0a5d898437"
+  integrity sha512-3frSf4rchMimsc8MGwcARqsycEp3abECficImpmCtPz5f6tNHnjKp+n4QstI326CF4NmVkB+yFh0tMeX5eb0NQ==
 
 isexe@^2.0.0:
   version "2.0.0"
