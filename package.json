@@ -101,7 +101,7 @@
     "jest-location-mock": "^1.0.9",
     "jest-mock": "^29.1.2",
     "jest-styled-components": "^7.1.1",
-    "jest-when": "^3.5.1",
+    "jest-when": "^3.5.2",
     "json-loader": "^0.5.7",
     "postcss": "^8.4.17",
     "postcss-jsx": "^0.36.4",
