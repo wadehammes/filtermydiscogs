@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
-    "@emotion/styled": "^11.10.4",
+    "@emotion/styled": "^11.10.5",
     "@faker-js/faker": "^7.5.0",
     "@mui/material": "^5.10.8",
     "@svgr/webpack": "^6.4.0",
