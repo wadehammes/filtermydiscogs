@@ -66,7 +66,6 @@ export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
             height={isLaptop ? 150 : 125}
             width={isLaptop ? 150 : 125}
             quality={100}
-            objectFit="cover"
             alt={release.basic_information.title}
           />
         </Box>
