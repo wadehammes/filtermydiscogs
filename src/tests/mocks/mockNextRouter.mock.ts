@@ -22,4 +22,5 @@ export const mockedUseRouterReturnValue: NextRouter = {
   isLocaleDomain: true,
   isReady: true,
   isPreview: false,
+  forward: jest.fn(() => Promise.resolve(true)),
 };
