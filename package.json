@@ -21,7 +21,7 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@faker-js/faker": "^7.6.0",
-    "@mui/material": "^5.10.14",
+    "@mui/material": "^5.10.17",
     "@svgr/webpack": "^6.5.1",
     "@testing-library/react": "^13.4.0",
     "@types/rosie": "^0.0.40",
