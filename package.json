@@ -75,7 +75,7 @@
     "@types/node": "^18.11.9",
     "@types/react": "^18.0.25",
     "@types/styled-components": "^5.1.26",
-    "@types/uuid": "^8.3.4",
+    "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "eslint": "8.27.0",
