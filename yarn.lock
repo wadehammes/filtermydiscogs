@@ -1956,10 +1956,10 @@
   resolved "https://registry.yarnpkg.com/@types/humps/-/humps-2.0.2.tgz#6643e2beb13e0e7a22c65b2128b4315a727ecbe0"
   integrity sha512-FuyQoVNSW6mjSLxLVRq8YK1pi8P5zyL2pahEuCtMqlbmV4jyWYITz4eE2fZIErNovIfKU32tPbCl44VbOUaEiw==
 
-"@types/i18n@^0.13.5":
-  version "0.13.5"
-  resolved "https://registry.yarnpkg.com/@types/i18n/-/i18n-0.13.5.tgz#ad75889324185be7a93801c81bac2bcad337bb45"
-  integrity sha512-pEtMt7iBkPBFMcB4TG6NuJIz/3Osp530o3R/3Qci94d59J4ienHyWnC7/AKUoTWqqnK0nG6gd6I2g8aOGdlwIg==
+"@types/i18n@^0.13.6":
+  version "0.13.6"
+  resolved "https://registry.yarnpkg.com/@types/i18n/-/i18n-0.13.6.tgz#54199ca55c7b25cb45040ac566e90c94a57fdfa8"
+  integrity sha512-LLbimAA0oQilgP4PJBFH7sRdBUjWLo6R1rf46SUgVzsUZeXH3PT1piXj4LNX5ECDi0bLg9RmQMmY1K2qawqJqA==
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"
