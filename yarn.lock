@@ -1878,10 +1878,10 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.2.tgz#423c77877d0569db20e1fc80885ac4118314010e"
   integrity sha512-eZxlbI8GZscaGS7kkc/trHTT5xgrjH3/1n2JDwusC9iahPKWMRvRjJSAN5mCXviuTGQ/lHnhvv8Q1YTpnfz9gA==
 
-"@types/analytics-node@^3.1.9":
-  version "3.1.9"
-  resolved "https://registry.yarnpkg.com/@types/analytics-node/-/analytics-node-3.1.9.tgz#1b71e485658dc5501f72a35fdcf30b857a90db9c"
-  integrity sha512-C7L7/Dd/CmBST7AvgoCnf4yI9h6W5aYfCOcfUZS5GHlXDQjnXLVOUDpTdwTIZjW4lKECeil6+G+Ul6Xzwv/P0g==
+"@types/analytics-node@^3.1.10":
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/@types/analytics-node/-/analytics-node-3.1.10.tgz#6845a605e5ce720f9cea37eaf405100fdbc5b841"
+  integrity sha512-dvn8iy2EQZDlQGgRNT9SW2Ljn9L3VgwcrpJvonufnNygZWB1XEufXNvDhUtwNUqNyHhD0hbDCCFb9j+B7vE5cA==
 
 "@types/aria-query@^5.0.1":
   version "5.0.1"
