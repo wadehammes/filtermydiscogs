@@ -30,7 +30,7 @@
     "dashify": "^2.0.0",
     "detect-node": "^2.1.0",
     "global": "^4.4.0",
-    "html-react-parser": "^3.0.6",
+    "html-react-parser": "^3.0.9",
     "humps": "^2.0.1",
     "isbot": "^3.6.5",
     "lodash.camelcase": "^4.3.0",
