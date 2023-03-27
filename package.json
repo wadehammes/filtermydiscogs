@@ -55,7 +55,7 @@
     "@next/eslint-plugin-next": "^13.1.1",
     "@sentry/webpack-plugin": "^1.20.0",
     "@stylelint/postcss-css-in-js": "^0.38.0",
-    "@testing-library/dom": "^8.19.1",
+    "@testing-library/dom": "^9.2.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/user-event": "^14.4.3",
     "@types/analytics-node": "^3.1.9",
