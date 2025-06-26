@@ -1,0 +1,118 @@
+/* ===== HEADER LAYOUT ===== */
+.headerContent {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-4);
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  padding: var(--space-1) 0;
+}
+
+.title {
+  color: var(--gray-900);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.filtersContainer {
+  display: none;
+
+  @media (min-width: 769px) {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    gap: var(--space-4);
+    justify-content: flex-start;
+    margin: 0 var(--space-4);
+  }
+}
+
+/* ===== MOBILE ACTIONS ===== */
+.mobileActions {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+/* ===== DESKTOP CRATE BUTTON ===== */
+.desktopCrateButton {
+  display: none;
+
+  @media (min-width: 769px) {
+    display: flex;
+  }
+}
+
+/* ===== DESKTOP USER SECTION ===== */
+.userSection {
+  align-items: center;
+  display: none;
+  gap: var(--space-3);
+
+  @media (min-width: 769px) {
+    display: flex;
+  }
+}
+
+.username {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+/* ===== CRATE COUNT BADGE ===== */
+.crateCount {
+  align-items: center;
+  background: var(--white);
+  border-radius: 50%;
+  color: var(--primary-600);
+  display: flex;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  height: 20px;
+  justify-content: center;
+  min-width: 20px;
+  padding: 0;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .headerContent {
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+  }
+
+  .title {
+    font-size: var(--text-lg);
+  }
+
+  .mobileActions {
+    gap: var(--space-1);
+  }
+
+  .crateCount {
+    font-size: 10px;
+    height: 18px;
+    min-width: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerContent {
+    gap: var(--space-1);
+  }
+
+  .title {
+    font-size: var(--text-base);
+  }
+}

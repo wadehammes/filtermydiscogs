@@ -1,0 +1,70 @@
+.container {
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    var(--gradientPink) 0%,
+    var(--gradientTeal) 100%
+  );
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  padding: 1rem;
+  width: 100%;
+}
+
+.loadingCard {
+  align-items: center;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
+  padding: 2rem;
+  text-align: center;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    padding: 3rem;
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border: 3px solid #f3f4f6;
+  border-radius: 50%;
+  border-top-color: #3b82f6;
+  height: 40px;
+  width: 40px;
+}
+
+.title {
+  color: var(--black);
+  font-family: "Assistant", sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.description {
+  color: var(--gray-500);
+  font-family: "Assistant", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 1.1rem;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

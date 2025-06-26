@@ -1,239 +1,184 @@
-import {
-  Box,
-  Checkbox,
-  FormControl,
-  InputLabel,
-  ListItemText,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  SelectChangeEvent,
-} from "@mui/material";
-import { ChangeEvent, FC, forwardRef, Ref } from "react";
-import { H1 } from "src/components/Typography";
-import {
-  CollectionSortingValues,
-  Release,
-  SortMenuItem,
-  useCollectionContext,
-} from "src/context/collection.context";
-import { StickyHeader } from "src/components/Layout";
-import { USERNAME_STORAGE_PARAM } from "src/constants";
-import debounce from "lodash.debounce";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { device } from "src/styles/device";
+import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSelect.component";
+import Button from "src/components/Button/Button.component";
+import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
+import Select from "src/components/Select/Select.component";
+import { SORTING_OPTIONS } from "src/constants/sorting";
+import { useAuth } from "src/context/auth.context";
+import { useCollectionContext } from "src/context/collection.context";
+import { useCrate } from "src/context/crate.context";
+import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
+import styles from "./StickyHeaderBar.module.css";
 
 interface StickyHeaderBarProps {
-  ref: Ref<HTMLInputElement>;
+  allReleasesLoaded?: boolean;
 }
 
-const SORTING_OPTIONS: SortMenuItem[] = [
-  {
-    name: "A-Z (Label)",
-    value: CollectionSortingValues.AZLabel,
-  },
-  {
-    name: "Z-A (Label)",
-    value: CollectionSortingValues.ZALabel,
-  },
-  {
-    name: "Date Added (New to Old)",
-    value: CollectionSortingValues.DateAddedNew,
-  },
-  {
-    name: "Date Added (Old to New)",
-    value: CollectionSortingValues.DateAddedOld,
-  },
-  {
-    name: "Release Year (New to Old)",
-    value: CollectionSortingValues.AlbumYearNew,
-  },
-  {
-    name: "Release Year (Old to New)",
-    value: CollectionSortingValues.AlbumYearOld,
-  },
-  {
-    name: "Rating (High to Low)",
-    value: CollectionSortingValues.RatingHigh,
-  },
-  {
-    name: "Rating (Low to High)",
-    value: CollectionSortingValues.RatingLow,
-  },
-];
+export const StickyHeaderBar = ({
+  allReleasesLoaded = true,
+}: StickyHeaderBarProps) => {
+  const { state: collectionState } = useCollectionContext();
+  const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
 
-export const sortReleases = (
-  releases: Release[],
-  sort: CollectionSortingValues
-): Release[] => {
-  switch (sort) {
-    case CollectionSortingValues.DateAddedNew:
-      return releases.sort(
-        (a, b) =>
-          new Date(b.date_added).getTime() - new Date(a.date_added).getTime()
-      );
-    case CollectionSortingValues.DateAddedOld:
-      return releases.sort(
-        (a, b) =>
-          new Date(a.date_added).getTime() - new Date(b.date_added).getTime()
-      );
-    case CollectionSortingValues.AZLabel:
-      return releases.sort((a, b) =>
-        a.basic_information.labels[0].name.localeCompare(
-          b.basic_information.labels[0].name
-        )
-      );
-    case CollectionSortingValues.ZALabel:
-      return releases.sort((a, b) =>
-        b.basic_information.labels[0].name.localeCompare(
-          a.basic_information.labels[0].name
-        )
-      );
-    case CollectionSortingValues.AlbumYearNew:
-      return releases.sort(
-        (a, b) => b.basic_information.year - a.basic_information.year
-      );
-    case CollectionSortingValues.AlbumYearOld:
-      return releases.sort(
-        (a, b) => a.basic_information.year - b.basic_information.year
-      );
-    case CollectionSortingValues.RatingHigh:
-      return releases.sort((a, b) => b.rating - a.rating);
-    case CollectionSortingValues.RatingLow:
-      return releases.sort((a, b) => a.rating - b.rating);
-    default:
-      return releases;
-  }
+  const { state: authState, logout } = useAuth();
+  const { selectedReleases, openDrawer } = useCrate();
+  const {
+    handleStyleChange,
+    handleSortChange,
+    styleOptions,
+    selectedStyles,
+    selectedSort,
+  } = useFilterHandlers("home");
+
+  const { fetchingCollection, collection, error } = collectionState;
+  const { username } = authState;
+
+  const handleLogout = async () => {
+    await logout();
+    trackEvent("logout", {
+      action: "userLoggedOut",
+      category: "auth",
+      label: "User Logged Out",
+      value: username || "unknown",
+    });
+  };
+
+  const handleCrateClick = () => {
+    openDrawer();
+    trackEvent("crateOpened", {
+      action: "crateOpenedFromHeader",
+      category: "crate",
+      label: "Crate Opened from Header",
+      value: selectedReleases.length.toString(),
+    });
+  };
+
+  const handleFiltersClick = () => {
+    setIsFiltersDrawerOpen(true);
+    trackEvent("filtersOpened", {
+      action: "filtersOpenedFromHeader",
+      category: "mobile_filters",
+      label: "Filters Opened from Header",
+      value: "mobile",
+    });
+  };
+
+  const closeFiltersDrawer = () => {
+    setIsFiltersDrawerOpen(false);
+  };
+
+  const sortOptions = SORTING_OPTIONS.map((sort) => ({
+    value: sort.value,
+    label: sort.name,
+  }));
+
+  return (
+    <>
+      <div className="layout-sticky-header">
+        <div className={styles.headerContent}>
+          <h1 className={`typography-h1 ${styles.title || ""}`}>
+            <span>Filter My Disco.gs</span>
+          </h1>
+
+          {styleOptions.length > 0 &&
+            !fetchingCollection &&
+            !error &&
+            allReleasesLoaded && (
+              <div className={styles.filtersContainer}>
+                <AutocompleteSelect
+                  label="Style"
+                  options={styleOptions}
+                  value={selectedStyles}
+                  onChange={handleStyleChange}
+                  disabled={!collection}
+                  multiple={true}
+                  placeholder="Select styles..."
+                />
+                <Select
+                  label="Sort by"
+                  options={sortOptions}
+                  value={selectedSort}
+                  onChange={handleSortChange}
+                  disabled={fetchingCollection}
+                  placeholder="Select sort option..."
+                />
+              </div>
+            )}
+
+          {selectedReleases.length > 0 &&
+            !fetchingCollection &&
+            collection &&
+            allReleasesLoaded && (
+              <Button
+                className={styles.desktopCrateButton || ""}
+                variant="primary"
+                size="md"
+                onPress={handleCrateClick}
+                aria-label={`Open crate with ${selectedReleases.length} items`}
+              >
+                <span>My Crate</span>
+                <span className={styles.crateCount}>
+                  {selectedReleases.length}
+                </span>
+              </Button>
+            )}
+
+          {/* Mobile actions - horizontal layout */}
+          <div className={styles.mobileActions}>
+            {allReleasesLoaded && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={handleFiltersClick}
+                aria-label="Open filters"
+              >
+                <span>⚙️</span>
+                <span>Filters</span>
+              </Button>
+            )}
+
+            {selectedReleases.length > 0 &&
+              !fetchingCollection &&
+              collection &&
+              allReleasesLoaded && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onPress={handleCrateClick}
+                  aria-label={`Open crate with ${selectedReleases.length} items`}
+                >
+                  <span>My Crate</span>
+                  <span className={styles.crateCount}>
+                    {selectedReleases.length}
+                  </span>
+                </Button>
+              )}
+
+            <Button variant="danger" size="sm" onPress={handleLogout}>
+              Logout
+            </Button>
+          </div>
+
+          {/* Desktop user section - hidden on mobile */}
+          <div className={styles.userSection}>
+            {username && (
+              <span className={styles.username}>Welcome, {username}</span>
+            )}
+            <Button variant="danger" size="md" onPress={handleLogout}>
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile filters drawer */}
+      <FiltersDrawer
+        isOpen={isFiltersDrawerOpen}
+        onClose={closeFiltersDrawer}
+      />
+    </>
+  );
 };
 
-export const StickyHeaderBar: FC<StickyHeaderBarProps> = forwardRef(
-  (props, ref: Ref<HTMLInputElement>) => {
-    const isTablet = useMediaQuery(device.tablet);
-
-    const {
-      state,
-      dispatchUser,
-      dispatchSelectedReleaseStyle,
-      dispatchSelectedReleaseSort,
-      dispatchResetState,
-    } = useCollectionContext();
-
-    const {
-      releaseStyles,
-      fetchingCollection,
-      selectedReleaseStyle,
-      collection,
-      error,
-      selectedReleaseSort,
-    } = state;
-
-    const handleStyleChange = (e: SelectChangeEvent<string[]>) => {
-      const { value } = e.target;
-
-      const formattedValue =
-        typeof value === "string" ? value.split(",") : value;
-
-      if (value) {
-        trackEvent("releaseStyle", {
-          action: "releaseStyleChanged",
-          category: "home",
-          label: "Release Style Changed",
-          value: formattedValue.join(","),
-        });
-
-        dispatchSelectedReleaseStyle(formattedValue);
-      }
-    };
-
-    const handleSortChange = (e: SelectChangeEvent) => {
-      const { value } = e.target;
-
-      if (value) {
-        trackEvent("releaseSort", {
-          action: "releaseSortChanged",
-          category: "home",
-          label: "Release Sort Changed",
-          value,
-        });
-
-        dispatchSelectedReleaseSort(value as CollectionSortingValues);
-      }
-    };
-
-    const handleUserChange = debounce((e: ChangeEvent<HTMLInputElement>) => {
-      const { value } = e.target;
-
-      if (value) {
-        dispatchUser(value);
-
-        trackEvent("usernameInput", {
-          action: "usernameChanged",
-          category: "home",
-          label: "Username Set/Changed",
-          value,
-        });
-
-        window.localStorage.setItem(USERNAME_STORAGE_PARAM, value);
-      } else {
-        dispatchResetState();
-      }
-    }, 1000);
-
-    return (
-      <StickyHeader>
-        <H1>Filter My Disco.gs</H1>
-        <OutlinedInput
-          placeholder="Type your Discogs username..."
-          onChange={handleUserChange}
-          fullWidth={!isTablet}
-          inputRef={ref}
-        />
-        {releaseStyles && !fetchingCollection && !error && (
-          <Box display="flex" flexDirection="row" gap={2} width="100%">
-            <FormControl fullWidth>
-              <InputLabel id="style-select">Style</InputLabel>
-              <Select
-                labelId="style-select"
-                id="style-select"
-                value={selectedReleaseStyle}
-                label="Styles"
-                onChange={handleStyleChange}
-                disabled={!collection}
-                multiple
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {releaseStyles.map((style) => (
-                  <MenuItem key={style} value={style}>
-                    <Checkbox checked={selectedReleaseStyle.includes(style)} />
-                    <ListItemText primary={style} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel id="sort-select">Sort</InputLabel>
-              <Select
-                labelId="sort-select"
-                id="sort-select"
-                value={selectedReleaseSort}
-                label="sort"
-                onChange={handleSortChange}
-                disabled={fetchingCollection}
-              >
-                {SORTING_OPTIONS.map((sort) => (
-                  <MenuItem key={sort.name} value={sort.value}>
-                    {sort.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        )}
-      </StickyHeader>
-    );
-  }
-);
-
 export default StickyHeaderBar;
-StickyHeaderBar.displayName = "StickyHeaderBar";

@@ -1,0 +1,26 @@
+.pageContainer {
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.pageContent {
+  flex: 1;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 2rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}

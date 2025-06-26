@@ -4,19 +4,17 @@
 create_component_file() {
   touch "$component_name.component.tsx"
   {
-    echo 'import React, { FC } from "react";'
-    echo 'import styled from "styled-components";'
+    echo 'import React from "react";'
+    echo 'import styles from "./'$component_name'.module.css";'
     echo
     echo "interface ${component_name}Props {"
     echo "  myProperty: string;"
     echo "};"
     echo
-    echo "const ${component_name}Wrapper = styled.div<${component_name}Props>\`\`;"
-    echo
-    echo "export const ${component_name}: FC<${component_name}Props> = ({ children, myProperty }) => ("
-    echo "  <${component_name}Wrapper myProperty={myProperty} data-testid=\"rh${component_name}\">"
+    echo "export const ${component_name} = ({ children, myProperty }: ${component_name}Props) => ("
+    echo "  <div className={styles.wrapper} data-testid=\"rh${component_name}\">"
     echo "    {children}"
-    echo "  </${component_name}Wrapper>"
+    echo "  </div>"
     echo ");"
     echo
     echo "export default ${component_name};"
@@ -85,6 +83,15 @@ create_factory_file() {
   } >> "$component_name.factory.ts"
 }
 
+create_css_module_file() {
+  touch "$component_name.module.css"
+  {
+    echo ".wrapper {"
+    echo "  /* Add your styles here */"
+    echo "}"
+  } >> "$component_name.module.css"
+}
+
 create_page_object_file() {
   touch "$component_name.po.tsx"
   {
@@ -142,6 +149,7 @@ if [ ! -d $dir ]; then
   mkdir "$dir"
   pushd $dir > /dev/null
   create_component_file
+  create_css_module_file
   create_interfaces_file
   create_normalizer_file
   create_spec_file

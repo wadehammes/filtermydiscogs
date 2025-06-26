@@ -25,11 +25,6 @@ export const useUrlParam = ({
     const urlParam = currentSearchParams.get(queryParam);
     const localParam = storageParam && localStorage.getItem(storageParam);
 
-    // if persist is true, it should pull value from localStorage or set to
-    // defaultValue even if the URL contains no search params
-    // (useful for referral code for example)
-    //
-    // If not, pull param from url if it exists
     if (urlParam && localParam !== urlParam) {
       setParam(urlParam);
     } else if (persist && localParam) {

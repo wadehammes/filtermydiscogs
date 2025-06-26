@@ -1,6 +1,5 @@
-// jest.config.ts
 import type { Config } from "@jest/types";
-import nextJest from "next/jest";
+import nextJest from "next/jest.js";
 
 // Sync object
 const customJestConfig: Config.InitialOptions = {
@@ -16,7 +15,7 @@ const customJestConfig: Config.InitialOptions = {
 // Providing the path to your Next.js app which will enable loading next.config.js and .env files
 const createJestConfig = nextJest({ dir: "./" })(customJestConfig);
 
-module.exports = async () => {
+export default async () => {
   // Create Next.js jest configuration presets
   const jestConfig = await createJestConfig();
 

@@ -1,4 +1,3 @@
-import { jest } from "@jest/globals";
 import "@testing-library/jest-dom/extend-expect";
 import "jest-canvas-mock";
 import "jest-fetch-mock";

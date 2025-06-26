@@ -5,39 +5,37 @@ on:
       - staging
 jobs:
   ci:
-    name: Lint & Test
+    name: Lint/Test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout code
         with:
           fetch-depth: 0
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          package_json_file: package.json
+      - name: Read Node.js version from .tool-versions
+        id: get_node_version
+        run: |
+          echo "$(awk '/nodejs/ {print $2}' .tool-versions)"
+          echo "node_version=$(awk '/nodejs/ {print $2}' .tool-versions)" >> $GITHUB_OUTPUT
+        shell: bash
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.15.0
-      - name: Get Yarn cache directory
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-      - name: Cache yarn and node_modules
-        uses: actions/cache@v3
-        id: node-cache
-        with:
-          path: |
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            /home/runner/work/discogs-collection-filter/discogs-collection-filter/node_modules/
-          key: ${{ runner.os }}-yarn-node-${{ hashFiles('**/yarn.lock') }}
+          node-version: ${{ steps.get_node_version.outputs.node_version }}
+          cache: "pnpm"
       - name: Install dependencies
-        run: sudo yarn install --prefer-offline --immutable --frozen-lockfile
-        if: steps.node-cache.outputs.cache-hit != 'true'
+        run: pnpm install
       - name: Run TSC
-        run: sudo yarn tsc:ci
-      - name: Run ESLint
-        run: sudo yarn lint:ci
-      - name: Run Stylelint
-        run: sudo yarn lint:css
+        run: pnpm tsc:ci
+      - name: Run Biome
+        run: pnpm lint:ci
       - name: Run Jest
-        run: sudo yarn test:ci
+        run: pnpm test:ci
+

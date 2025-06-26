@@ -3,6 +3,7 @@ import { isBrowser } from "src/utils/helpers";
 interface GTMPageEventProps {
   event: string;
   page: string;
+  [key: string]: unknown;
 }
 
 interface EventProps {
@@ -13,15 +14,21 @@ interface EventProps {
   [key: string]: string | number | boolean;
 }
 
+// Define a proper type for Google Analytics dataLayer
+type DataLayerItem = Record<string, unknown>;
+
+// Extend Window interface to include dataLayer
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- needed for GA datalayer
-    dataLayer: any[];
+    dataLayer?: DataLayerItem[];
   }
 }
 
-export const addDataLayer = () =>
-  isBrowser() && (window.dataLayer = window.dataLayer || []);
+export const addDataLayer = () => {
+  if (isBrowser()) {
+    window.dataLayer = window.dataLayer || [];
+  }
+};
 
 export const trackEvent = (event: string, properties: EventProps) => {
   window.dataLayer?.push({ event, ...properties });

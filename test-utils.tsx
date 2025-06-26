@@ -1,22 +1,14 @@
-import { RenderOptions, render } from "@testing-library/react";
-import { RouterContext } from "next/dist/shared/lib/router-context";
-import React, { FC, ReactElement } from "react";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import { muiTheme } from "src/styles/mui-theme";
-import { PropsWithChildrenOnly } from "src/@types/react";
-import { mockedUseRouterReturnValue } from "src/tests/mocks/mockNextRouter.mock";
+import { type RenderOptions, render } from "@testing-library/react";
+import type React from "react";
+import type { FC, ReactElement } from "react";
 
-const Providers: FC<PropsWithChildrenOnly> = ({ children }) => {
-  return (
-    <RouterContext.Provider value={mockedUseRouterReturnValue}>
-      <MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
-    </RouterContext.Provider>
-  );
+const Providers: FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <>{children}</>;
 };
 
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, "queries">
+  options?: Omit<RenderOptions, "queries">,
 ) => render(ui, { wrapper: Providers, ...options });
 
 export * from "@testing-library/react";

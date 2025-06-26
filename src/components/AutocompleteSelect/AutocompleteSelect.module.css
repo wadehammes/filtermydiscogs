@@ -1,0 +1,252 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  flex: 1;
+}
+
+.trigger {
+  align-items: center;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: 14px;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 8px 12px;
+  text-align: left;
+
+  &:hover:not(:disabled) {
+    border-color: #999;
+  }
+
+  &:focus {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+  }
+}
+
+.valueContainer {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  min-height: 20px;
+}
+
+.value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  flex: 1;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.pillsContainer {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 24px;
+  overflow: hidden;
+}
+
+.pill {
+  align-items: center;
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  border-radius: 12px;
+  color: var(--primary-700);
+  display: inline-flex;
+  font-size: 12px;
+  height: 20px;
+  max-width: 120px;
+  padding: 2px 2px 2px 6px;
+}
+
+.pillLabel {
+  margin-right: var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pillClear {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--primary-700);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  height: 14px;
+  justify-content: center;
+  line-height: 1;
+  margin-left: 4px;
+  padding: 0;
+  text-align: center;
+  transition: all var(--transition-normal);
+  width: 14px;
+  vertical-align: middle;
+
+  &:hover {
+    background: var(--primary-200);
+    color: var(--primary-800);
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 1px;
+  }
+}
+
+.icon {
+  color: #666;
+  font-size: 12px;
+  margin-left: 8px;
+  transform: rotate(90deg); /* Start pointing down */
+  transition: transform 0.2s;
+
+  &.iconOpen {
+    transform: rotate(270deg); /* Point up when open */
+  }
+}
+
+.trigger[aria-expanded="true"] .icon {
+  transform: rotate(270deg); /* Point up when open */
+}
+
+.dropdown {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+}
+
+.searchContainer {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 12px;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  padding: 4px 0;
+  width: 100%;
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+.listbox {
+  list-style: none;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.option {
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 12px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover,
+  &.focused {
+    background: #f5f5f5;
+  }
+
+  &.selected {
+    background: #e3f2fd;
+    color: #1976d2;
+
+    &:hover,
+    &.focused {
+      background: #bbdefb;
+    }
+  }
+}
+
+.optionContent {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.checkmark {
+  align-items: center;
+  color: currentColor;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  flex: 1;
+}
+
+.clearButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 2px;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  font-size: 16px;
+  font-weight: bold;
+  height: 20px;
+  justify-content: center;
+  line-height: 1;
+  margin-left: 8px;
+  min-width: 20px;
+  padding: 2px 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  &:focus {
+    outline: 2px solid #1976d2;
+    outline-offset: 1px;
+  }
+}
+
+.noResults {
+  color: #999;
+  font-size: 14px;
+  padding: 16px;
+  text-align: center;
+}

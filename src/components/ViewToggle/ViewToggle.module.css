@@ -1,0 +1,37 @@
+.container {
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+}
+
+.toggleButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--gray-600);
+  cursor: pointer;
+  display: flex;
+  gap: var(--space-1);
+  justify-content: center;
+  padding: var(--space-2);
+  transition: var(--transition-fast);
+
+  &:hover:not(.active) {
+    background: var(--gray-50);
+    color: var(--gray-700);
+  }
+
+  &.active {
+    background: var(--primary-600);
+    color: var(--white);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 2px;
+  }
+}
