@@ -7,10 +7,14 @@ export const getUsernameFromCookies = (): string | null => {
   if (typeof document === "undefined") return null;
 
   const cookies = document.cookie.split(";");
+  console.log("All cookies:", cookies);
   const usernameCookie = cookies.find((cookie) =>
     cookie.trim().startsWith("discogs_username="),
   );
-  return usernameCookie ? usernameCookie.split("=")[1] || null : null;
+  console.log("Username cookie:", usernameCookie);
+  const username = usernameCookie ? usernameCookie.split("=")[1] || null : null;
+  console.log("Extracted username:", username);
+  return username;
 };
 
 export const clearUrlParams = (): void => {
