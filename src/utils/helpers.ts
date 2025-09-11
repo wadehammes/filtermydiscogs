@@ -1,4 +1,4 @@
-import isbot from "isbot";
+import { isbot } from "isbot";
 
 export const isBot = (): boolean => {
   const userAgent = isBrowser()
@@ -10,4 +10,10 @@ export const isBot = (): boolean => {
 
 export const isBrowser = () => {
   return Boolean(typeof window !== "undefined");
+};
+
+export const envUrl = () => {
+  return process.env.NODE_ENV === "production"
+    ? "https://filtermydisco.gs"
+    : "http://localhost:7777";
 };

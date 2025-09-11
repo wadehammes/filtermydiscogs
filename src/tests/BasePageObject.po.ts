@@ -1,7 +1,7 @@
 // eslint-disable testing-library/no-node-access
 import {
-  BoundFunctions,
-  Queries,
+  type BoundFunctions,
+  type Queries,
   screen,
   within,
 } from "@testing-library/react";
@@ -24,7 +24,7 @@ export class BasePageObject {
     { debug, raiseOnFind }: BasePageObjectProps = {
       debug: false,
       raiseOnFind: false,
-    }
+    },
   ) {
     this.debug = Boolean(debug);
     this.raiseOnFind = Boolean(raiseOnFind);
@@ -32,18 +32,21 @@ export class BasePageObject {
 
   findByRole<T = HTMLElement>(role: string, name?: string): T {
     this.debugLog(
-      `trying to find an element with ${role} that has the text "${name}"`
+      `trying to find an element with ${role} that has the text "${name}"`,
     );
 
-    return screen.getByRole(role, { name }) as unknown as T;
+    return screen.getByRole(role, name ? { name } : undefined) as unknown as T;
   }
 
   findAllByRole<T = HTMLElement>(role: string, name?: string): T[] {
     this.debugLog(
-      `trying to find all elements with ${role} that has the text "${name}"`
+      `trying to find all elements with ${role} that has the text "${name}"`,
     );
 
-    return screen.getAllByRole(role, { name }) as unknown as T[];
+    return screen.getAllByRole(
+      role,
+      name ? { name } : undefined,
+    ) as unknown as T[];
   }
 
   findButtons(name: string): HTMLButtonElement[] {
@@ -54,7 +57,7 @@ export class BasePageObject {
 
   findButton(
     name: string | RegExp,
-    opts: { exact?: boolean } = {}
+    opts: { exact?: boolean } = {},
   ): HTMLButtonElement {
     this.debugLog(`trying to find a button with text "${name}"`);
 
@@ -63,7 +66,7 @@ export class BasePageObject {
 
   findLink(
     name: string | RegExp,
-    opts: { exact?: boolean } = {}
+    opts: { exact?: boolean } = {},
   ): HTMLLinkElement {
     this.debugLog(`trying to find a link with text "${name}"`);
 
@@ -99,7 +102,7 @@ export class BasePageObject {
 
   find(
     txt: string | RegExp,
-    opts: { exact?: boolean } = {}
+    opts: { exact?: boolean } = {},
   ): HTMLElement | null {
     this.debugLog(`trying to find "${txt}"`);
     try {
@@ -137,14 +140,15 @@ export class BasePageObject {
    * Finds a heading in the virtual testing screen with the given text.
    * @memberof BasePageObject
    */
-  public findHeadingWithText(text: string, level?: number) {
+  public findHeadingWithText(text: string, level?: number): HTMLElement | null {
     this.debugLog(`trying to find a heading with text "${text}"`);
     try {
-      return screen.getByRole("heading", { name: text, level });
+      return screen.getByRole("heading", { name: text, level: level || 1 });
     } catch (err) {
       if (this.raiseOnFind) {
         throw err;
       }
+      return null;
     }
   }
 
@@ -158,7 +162,7 @@ export class BasePageObject {
 
   within(
     element: HTMLElement,
-    cb: (subsection: BoundFunctions<Queries>) => void
+    cb: (subsection: BoundFunctions<Queries>) => void,
   ) {
     return cb(within(element));
   }

@@ -1,7 +1,16 @@
-import Router from "next/router";
-import { createContext, useContext, useReducer, FC, useCallback } from "react";
-import { PropsWithChildrenOnly } from "src/@types/react";
+"use client";
+
+import { useRouter } from "next/navigation";
+import {
+  createContext,
+  type FC,
+  useCallback,
+  useContext,
+  useReducer,
+} from "react";
+import type { PropsWithChildrenOnly } from "src/@types/react";
 import { USERNAME_STORAGE_PARAM } from "src/constants";
+import type { DiscogsCollection, DiscogsRelease } from "src/types";
 
 export enum CollectionSortingValues {
   AZLabel = "AZLabel",
@@ -14,83 +23,37 @@ export enum CollectionSortingValues {
   AlbumYearOld = "AlbumYearOld",
 }
 
-export interface SortMenuItem {
-  name: string;
-  value: CollectionSortingValues;
+export enum CollectionActionTypes {
+  SetUser = "SET_USER",
+  SetPage = "SET_PAGE",
+  SetNextPageLink = "SET_NEXT_PAGE_LINK",
+  SetCollection = "SET_COLLECTION",
+  SetReleases = "SET_RELEASES",
+  SetFetchingCollection = "SET_FETCHING_COLLECTION",
+  SetFilteredReleases = "SET_FILTERED_RELEASES",
+  SetReleaseStyles = "SET_RELEASE_STYLES",
+  SetSelectedReleaseStyle = "SET_SELECTED_RELEASE_STYLE",
+  SetSelectedReleaseSort = "SET_SELECTED_RELEASE_SORT",
+  SetError = "SET_ERROR",
+  ResetState = "RESET_STATE",
 }
 
-export interface Release {
-  instance_id: string;
-  date_added: string;
-  rating: number;
-  basic_information: {
-    resource_url: string;
-    styles: string[];
-    master_id: number;
-    master_url: null;
-    thumb: string;
-    cover_image: string;
-    title: string;
-    year: number;
-    formats: {
-      name: string;
-    }[];
-    labels: {
-      name: string;
-    }[];
-    artists: {
-      name: string;
-    }[];
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
-
-export interface ReleaseJson {
-  uri: string;
-  [key: string]: unknown;
-}
-
-export interface Collection {
-  pagination: {
-    pages: number;
-    items: number;
-    urls: {
-      next: string;
-      prev: string;
-    };
-    [key: string]: unknown;
-  };
-  releases: Release[];
-}
+// Re-export types for backward compatibility
+export type Release = DiscogsRelease;
+export type Collection = DiscogsCollection;
 
 export interface CollectionStateStore {
   username: string | null;
   page: number;
   nextPageLink: string | null;
-  collection: Collection | null;
-  releases: Release[];
+  collection: DiscogsCollection | null;
+  releases: DiscogsRelease[];
   fetchingCollection: boolean;
-  filteredReleases: Release[];
+  filteredReleases: DiscogsRelease[];
   releaseStyles: string[];
   selectedReleaseStyle: string[];
   selectedReleaseSort: CollectionSortingValues;
   error: string | null;
-}
-
-export enum CollectionActionTypes {
-  SetUser = "SetUser",
-  SetPage = "SetPage",
-  SetError = "SetError",
-  SetNextPageLink = "SetNextPageLink",
-  SetCollection = "SetCollection",
-  SetReleases = "SetReleases",
-  SetFetchingCollection = "SetFetchingCollection",
-  SetFilteredReleases = "SetFilteredReleases",
-  SetReleaseStyles = "SetReleaseStyles",
-  SetSelectedReleaseStyle = "SetSelectedReleaseStyle",
-  SetSelectedReleaseSort = "SetSelectedReleaseSort",
-  ResetState = "ResetState",
 }
 
 export type CollectionActions =
@@ -108,11 +71,11 @@ export type CollectionActions =
     }
   | {
       type: CollectionActionTypes.SetCollection;
-      payload: Collection;
+      payload: DiscogsCollection;
     }
   | {
       type: CollectionActionTypes.SetReleases;
-      payload: Release[];
+      payload: DiscogsRelease[];
     }
   | {
       type: CollectionActionTypes.SetFetchingCollection;
@@ -120,7 +83,7 @@ export type CollectionActions =
     }
   | {
       type: CollectionActionTypes.SetFilteredReleases;
-      payload: Release[];
+      payload: DiscogsRelease[];
     }
   | {
       type: CollectionActionTypes.SetReleaseStyles;
@@ -145,7 +108,7 @@ export type CollectionActions =
 
 export const CollectionReducer = (
   state: CollectionStateStore,
-  action: CollectionActions
+  action: CollectionActions,
 ) => {
   switch (action.type) {
     case CollectionActionTypes.SetUser:
@@ -232,10 +195,10 @@ export interface CollectionProviderProps {
   dispatchUser: (user: string | null) => void;
   dispatchPage: (page: number) => void;
   dispatchNextPageLink: (link: string | null) => void;
-  dispatchCollection: (collection: Collection) => void;
-  dispatchReleases: (releases: Release[]) => void;
+  dispatchCollection: (collection: DiscogsCollection) => void;
+  dispatchReleases: (releases: DiscogsRelease[]) => void;
   dispatchFetchingCollection: (fetching: boolean) => void;
-  dispatchFilteredReleases: (releases: Release[]) => void;
+  dispatchFilteredReleases: (releases: DiscogsRelease[]) => void;
   dispatchReleaseStyles: (styles: string[]) => void;
   dispatchSelectedReleaseStyle: (style: string[]) => void;
   dispatchSelectedReleaseSort: (sort: CollectionSortingValues) => void;
@@ -249,87 +212,61 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(CollectionReducer, initialState);
+  const router = useRouter();
 
-  const dispatchUser = useCallback(
-    (user: string | null) => {
-      dispatch({ type: CollectionActionTypes.SetUser, payload: user });
-    },
-    [dispatch]
-  );
+  const dispatchUser = useCallback((user: string | null) => {
+    dispatch({ type: CollectionActionTypes.SetUser, payload: user });
+  }, []);
 
-  const dispatchPage = useCallback(
-    (page: number) => {
-      dispatch({ type: CollectionActionTypes.SetPage, payload: page });
-    },
-    [dispatch]
-  );
+  const dispatchPage = useCallback((page: number) => {
+    dispatch({ type: CollectionActionTypes.SetPage, payload: page });
+  }, []);
 
-  const dispatchNextPageLink = useCallback(
-    (link: string | null) => {
-      dispatch({ type: CollectionActionTypes.SetNextPageLink, payload: link });
-    },
-    [dispatch]
-  );
+  const dispatchNextPageLink = useCallback((link: string | null) => {
+    dispatch({ type: CollectionActionTypes.SetNextPageLink, payload: link });
+  }, []);
 
-  const dispatchCollection = useCallback(
-    (collection: Collection) => {
-      dispatch({
-        type: CollectionActionTypes.SetCollection,
-        payload: collection,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchCollection = useCallback((collection: DiscogsCollection) => {
+    dispatch({
+      type: CollectionActionTypes.SetCollection,
+      payload: collection,
+    });
+  }, []);
 
-  const dispatchFetchingCollection = useCallback(
-    (fetching: boolean) => {
-      dispatch({
-        type: CollectionActionTypes.SetFetchingCollection,
-        payload: fetching,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchFetchingCollection = useCallback((fetching: boolean) => {
+    dispatch({
+      type: CollectionActionTypes.SetFetchingCollection,
+      payload: fetching,
+    });
+  }, []);
 
-  const dispatchFilteredReleases = useCallback(
-    (releases: Release[]) => {
-      dispatch({
-        type: CollectionActionTypes.SetFilteredReleases,
-        payload: releases,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchFilteredReleases = useCallback((releases: DiscogsRelease[]) => {
+    dispatch({
+      type: CollectionActionTypes.SetFilteredReleases,
+      payload: releases,
+    });
+  }, []);
 
-  const dispatchReleases = useCallback(
-    (releases: Release[]) => {
-      dispatch({
-        type: CollectionActionTypes.SetReleases,
-        payload: releases,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchReleases = useCallback((releases: DiscogsRelease[]) => {
+    dispatch({
+      type: CollectionActionTypes.SetReleases,
+      payload: releases,
+    });
+  }, []);
 
-  const dispatchReleaseStyles = useCallback(
-    (styles: string[]) => {
-      dispatch({
-        type: CollectionActionTypes.SetReleaseStyles,
-        payload: styles,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchReleaseStyles = useCallback((styles: string[]) => {
+    dispatch({
+      type: CollectionActionTypes.SetReleaseStyles,
+      payload: styles,
+    });
+  }, []);
 
-  const dispatchSelectedReleaseStyle = useCallback(
-    (style: string[]) => {
-      dispatch({
-        type: CollectionActionTypes.SetSelectedReleaseStyle,
-        payload: style,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchSelectedReleaseStyle = useCallback((style: string[]) => {
+    dispatch({
+      type: CollectionActionTypes.SetSelectedReleaseStyle,
+      payload: style,
+    });
+  }, []);
 
   const dispatchSelectedReleaseSort = useCallback(
     (sort: CollectionSortingValues) => {
@@ -338,18 +275,15 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
         payload: sort,
       });
     },
-    [dispatch]
+    [],
   );
 
-  const dispatchError = useCallback(
-    (error: string | null) => {
-      dispatch({
-        type: CollectionActionTypes.SetError,
-        payload: error,
-      });
-    },
-    [dispatch]
-  );
+  const dispatchError = useCallback((error: string | null) => {
+    dispatch({
+      type: CollectionActionTypes.SetError,
+      payload: error,
+    });
+  }, []);
 
   const dispatchResetState = useCallback(() => {
     const {
@@ -361,12 +295,12 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
 
     url.searchParams.delete("username");
 
-    Router.replace(url);
+    router.replace(url.toString());
 
     dispatch({ type: CollectionActionTypes.ResetState, payload: initialState });
 
     localStorage.removeItem(USERNAME_STORAGE_PARAM);
-  }, [dispatch]);
+  }, [router]);
 
   return children ? (
     <CollectionContext.Provider

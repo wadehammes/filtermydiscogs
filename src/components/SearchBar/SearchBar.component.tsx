@@ -1,5 +1,3 @@
-import { FC } from "react";
-
-export const SearchBar: FC = () => {
+export const SearchBar = () => {
   return null;
 };

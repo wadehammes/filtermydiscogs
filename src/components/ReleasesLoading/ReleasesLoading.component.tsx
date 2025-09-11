@@ -1,15 +1,22 @@
-import { Box, CircularProgress } from "@mui/material";
-import { FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ALL_RELEASES_LOADED } from "src/constants";
 import Check from "src/styles/icons/check-solid.svg";
+import styles from "./ReleasesLoading.module.css";
 
-interface RelasesLoadingProps {
+interface ReleasesLoadingProps {
   isLoaded: boolean;
+  progress?:
+    | {
+        current: number;
+        total?: number;
+      }
+    | undefined;
 }
 
-export const ReleasesLoading: FC<RelasesLoadingProps> = ({
+export const ReleasesLoading = ({
   isLoaded = false,
-}) => {
+  progress,
+}: ReleasesLoadingProps) => {
   const [hide, setHide] = useState<boolean>(false);
 
   useEffect(() => {
@@ -19,26 +26,39 @@ export const ReleasesLoading: FC<RelasesLoadingProps> = ({
       }, 1000);
 
       return () => clearTimeout(timeout);
-    } else {
-      setHide(false);
     }
+    setHide(false);
+    return undefined;
   }, [isLoaded]);
 
   return !hide ? (
-    <Box
-      display="inline-flex"
-      flexDirection="row"
-      alignItems="center"
-      justifyContent="flex-end"
-      gap="0.75rem"
-    >
+    <div className={styles.loadingContainer}>
       {isLoaded ? (
         <span>
           <Check /> {ALL_RELEASES_LOADED}
         </span>
       ) : (
-        <CircularProgress size={16} />
+        <>
+          <div className={styles.spinner} />
+          <div className={styles.loadingText}>
+            Loading your collection...
+            {progress && (
+              <div className={styles.progressText}>
+                {progress.total
+                  ? `${progress.current} of ${progress.total} releases loaded`
+                  : `${progress.current} releases loaded`}
+                {progress.current > 1000 && (
+                  <div className={styles.largeCollectionNote}>
+                    Large collections may take a while to load completely
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       )}
-    </Box>
+    </div>
   ) : null;
 };
+
+export default ReleasesLoading;

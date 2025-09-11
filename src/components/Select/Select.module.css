@@ -1,0 +1,126 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  flex: 1;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  min-height: 40px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: #999;
+}
+
+.trigger:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.trigger:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #666;
+  transition: transform 0.2s;
+  transform: rotate(90deg); /* Start pointing down */
+}
+
+.iconOpen {
+  transform: rotate(270deg); /* Point up when open */
+}
+
+.trigger[aria-expanded="true"] .icon {
+  transform: rotate(270deg); /* Point up when open */
+}
+
+.listbox {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.optionContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkmark {
+  display: flex;
+  align-items: center;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  flex: 1;
+}
+
+.option:last-child {
+  border-bottom: none;
+}
+
+.option:hover,
+.option.focused {
+  background: #f5f5f5;
+}
+
+.option.selected {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.option.selected:hover,
+.option.selected.focused {
+  background: #bbdefb;
+}

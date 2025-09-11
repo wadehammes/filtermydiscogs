@@ -43,3 +43,4 @@ public/generated-sitemap-*.xml
 .vercel
 
 tsconfig.tsbuildinfo
+.env*.local

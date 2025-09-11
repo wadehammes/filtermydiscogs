@@ -1,90 +1,194 @@
-import { Box, Button } from "@mui/material";
-import Image from "next/image";
-import { FC } from "react";
-import { Release, ReleaseJson } from "src/context/collection.context";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import Chevron from "src/styles/icons/chevron-right-solid.svg";
-import { headers } from "src/api/helpers";
-import { device } from "src/styles/device";
-import { trackEvent } from "src/analytics/analytics";
+import classNames from "classnames";
 import parse from "html-react-parser";
-import { Span } from "src/components/Typography";
+import Image from "next/image";
+import type React from "react";
+import { memo, useCallback, useEffect, useState } from "react";
+import { trackEvent } from "src/analytics/analytics";
+import { LoadingOverlay } from "src/components/LoadingOverlay/LoadingOverlay.component";
+import { useCrate } from "src/context/crate.context";
+import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
+import type { ReleaseCardProps } from "src/types";
+import styles from "./ReleaseCard.module.css";
 
-interface ReleaseProps {
-  release: Release;
-}
-
-const handleReleaseClick = async (release: Release) => {
-  const windowReference = window.open("about:blank", "_blank");
-
-  const fetchRelease = fetch(release.basic_information.resource_url, {
-    headers,
-    method: "GET",
-  });
-
-  const fetchedRelease = await fetchRelease;
-
-  if (fetchedRelease.ok) {
-    const releaseJson: ReleaseJson = await fetchedRelease.json();
-
-    if (releaseJson && windowReference) {
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "home",
-        label: "Release Clicked",
-        value: release.basic_information.resource_url,
-      });
-
-      setTimeout(() => {
-        windowReference.location = releaseJson.uri;
-      }, 200);
-    }
-  }
-};
-
-export const ReleaseCard: FC<ReleaseProps> = ({ release }) => {
-  const isLaptop = useMediaQuery(device.laptop);
-
-  const { labels, year, artists, title, thumb } = release.basic_information;
-
+const ReleaseCardComponent = ({
+  release,
+  isHighlighted = false,
+}: ReleaseCardProps) => {
+  const [isClicked, setIsClicked] = useState(false);
+  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+  const {
+    labels,
+    year,
+    artists,
+    title,
+    thumb,
+    styles: releaseStyles,
+    resource_url,
+  } = release.basic_information;
   const thumbUrl = thumb
     ? thumb
     : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
-  return release ? (
-    <Button variant="outlined" onClick={() => handleReleaseClick(release)}>
-      {thumbUrl && (
-        <Box
-          display="flex"
-          alignItems="center"
-          height="100%"
-          width={isLaptop ? "150px" : "125px"}
-          style={{ backgroundColor: "var(--black)" }}
-        >
-          <Image
-            src={thumbUrl}
-            height={isLaptop ? 150 : 125}
-            width={isLaptop ? 150 : 125}
-            quality={100}
-            alt={release.basic_information.title}
-          />
-        </Box>
-      )}
-      <Box style={{ flex: 1, padding: "1rem 1rem 1rem 0" }}>
-        <Span>
-          <b>
-            {labels[0].name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
-          </b>
-        </Span>
-        <Span>{title}</Span>
-        <Span>{artists.map((artist) => artist.name).join(", ")}</Span>
-      </Box>
+  // Extract release ID from resource_url
+  const releaseId = resource_url.split("/").pop() || "";
+  const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
 
-      <Span>
-        <Chevron />
-      </Span>
-    </Button>
+  // Only fetch release data when clicked
+  const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
+    releaseId,
+    isClicked, // Only enable query when clicked
+  );
+
+  const handleReleaseClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+
+      setIsClicked(true);
+
+      trackEvent("releaseClicked", {
+        action: "releaseClicked",
+        category: "home",
+        label: "Release Clicked",
+        value: resource_url,
+      });
+
+      // If we already have the data, open immediately
+      if (releaseData?.uri) {
+        window.open(releaseData.uri, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      // Otherwise, wait for the query to complete
+      // The useEffect below will handle opening the URL once data is loaded
+    },
+    [releaseData?.uri, resource_url],
+  );
+
+  // Open URL once we have the release data
+  const handleUrlOpen = useCallback(() => {
+    if (releaseData?.uri) {
+      window.open(releaseData.uri, "_blank", "noopener,noreferrer");
+    } else if (!isLoading) {
+      // If query failed, use fallback
+      window.open(fallbackUri, "_blank", "noopener,noreferrer");
+    }
+  }, [releaseData?.uri, isLoading, fallbackUri]);
+
+  const handleCrateToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (isInCrate(release.instance_id)) {
+        removeFromCrate(release.instance_id);
+      } else {
+        addToCrate(release);
+        openDrawer();
+      }
+    },
+    [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
+  );
+
+  useEffect(() => {
+    if (isClicked && releaseData?.uri) {
+      handleUrlOpen();
+      setIsClicked(false);
+    }
+  }, [isClicked, releaseData?.uri, handleUrlOpen]);
+
+  return release ? (
+    <>
+      <div
+        className={classNames(styles.releaseCard, {
+          [styles.highlighted as string]: isHighlighted,
+          [styles.inCrate as string]: isInCrate(release.instance_id),
+        })}
+      >
+        <div
+          className={styles.imageContainer}
+          style={{
+            backgroundImage: thumbUrl ? `url(${thumbUrl})` : "none",
+          }}
+        >
+          {thumbUrl && (
+            <Image
+              src={thumbUrl}
+              height={200}
+              width={200}
+              quality={85}
+              alt={release.basic_information.title}
+              loading="lazy"
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+              style={{ position: "relative", zIndex: 2 }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          )}
+          <button
+            type="button"
+            className={styles.listButton}
+            onClick={handleCrateToggle}
+            aria-label={
+              isInCrate(release.instance_id)
+                ? "Remove from crate"
+                : "Add to crate"
+            }
+          >
+            <span className={styles.listButtonIcon}>
+              {isInCrate(release.instance_id) ? "−" : "+"}
+            </span>
+            <span className={styles.listButtonText}>
+              {isInCrate(release.instance_id)
+                ? "Remove from Crate"
+                : "Add to Crate"}
+            </span>
+          </button>
+        </div>
+        <div className={styles.contentContainer}>
+          <div className={styles.mainContent}>
+            <span className="typography-span">
+              <b>
+                {artists.map((artist) => artist.name).join(", ")} - {title}
+              </b>
+            </span>
+            <span className="typography-span typography-span-small">
+              {labels[0]?.name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
+            </span>
+            <span className="typography-span typography-span-small">
+              {release?.notes?.map((note) => note.value).join(", ")}
+            </span>
+          </div>
+          <div className={styles.genresContainer}>
+            {releaseStyles && releaseStyles.length > 0 && (
+              <div className={styles.stylesContainer}>
+                {releaseStyles.map((style: string) => (
+                  <span key={style} className={styles.stylePill}>
+                    {style}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className={styles.quickLinks}>
+            <button
+              type="button"
+              className={styles.discogsButton}
+              onClick={handleReleaseClick}
+              disabled={isLoading}
+            >
+              View on Discogs
+            </button>
+          </div>
+        </div>
+      </div>
+      <LoadingOverlay
+        message="Fetching Discogs Release URL"
+        isVisible={isLoading}
+      />
+    </>
   ) : null;
 };
+
+export const ReleaseCard = memo(ReleaseCardComponent);
 
 export default ReleaseCard;
