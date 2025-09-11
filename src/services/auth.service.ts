@@ -1,3 +1,5 @@
+import Cookies from "js-cookie";
+
 export interface AuthStatus {
   isAuthenticated: boolean;
   username: string | null;
@@ -5,12 +7,18 @@ export interface AuthStatus {
 
 export const getUsernameFromCookies = (): string | null => {
   if (typeof document === "undefined") return null;
+  return Cookies.get("discogs_username") || null;
+};
 
-  const cookies = document.cookie.split(";");
-  const usernameCookie = cookies.find((cookie) =>
-    cookie.trim().startsWith("discogs_username="),
-  );
-  return usernameCookie ? usernameCookie.split("=")[1] || null : null;
+export const clearAuthCookies = (): void => {
+  if (typeof document === "undefined") return;
+
+  // Clear all auth-related cookies
+  Cookies.remove("discogs_username");
+  Cookies.remove("discogs_access_token");
+  Cookies.remove("discogs_access_token_secret");
+  Cookies.remove("oauth_token");
+  Cookies.remove("oauth_token_secret");
 };
 
 export const clearUrlParams = (): void => {
