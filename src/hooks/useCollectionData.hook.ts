@@ -33,32 +33,9 @@ export const useCollectionData = (
     isFetchingNextPage,
   } = useDiscogsCollectionQuery(username || "", queryEnabled);
 
-  // Debug logging
-  useEffect(() => {
-    console.log("Collection query state:", {
-      isAuthenticated,
-      username,
-      queryEnabled,
-      isLoading,
-      isError,
-      hasData: !!collectionData,
-    });
-  }, [
-    isAuthenticated,
-    username,
-    queryEnabled,
-    isLoading,
-    isError,
-    collectionData,
-  ]);
-
   // Force refetch collection when user becomes authenticated
   useEffect(() => {
     if (isAuthenticated && username) {
-      console.log(
-        "User authenticated, forcing collection refetch for:",
-        username,
-      );
       queryClient.refetchQueries({
         queryKey: ["discogsCollection", username],
       });
