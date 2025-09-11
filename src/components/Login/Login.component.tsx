@@ -58,6 +58,25 @@ export const Login = () => {
           </ul>
         </div>
       </div>
+
+      <div className={styles.footer}>
+        <span>
+          made by{" "}
+          <a href="https://wadehammes.com" target="_blank" rel="noreferrer">
+            Wade Hammes
+          </a>
+        </span>
+        <span>
+          <a
+            href="https://github.com/wadehammes/filtermydiscogs"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Contribute to the project
+          </a>
+        </span>
+        <span>&copy; {new Date().getFullYear()}</span>
+      </div>
     </div>
   );
 };

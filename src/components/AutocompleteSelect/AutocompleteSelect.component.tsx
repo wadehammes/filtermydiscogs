@@ -109,7 +109,7 @@ const AutocompleteSelectComponent = ({
   );
 
   const handleClearOption = useCallback(
-    (optionValue: string, event: React.MouseEvent) => {
+    (optionValue: string, event: React.MouseEvent | React.KeyboardEvent) => {
       event.stopPropagation();
       if (multiple) {
         const currentValue = Array.isArray(value) ? value : [];
@@ -197,15 +197,15 @@ const AutocompleteSelectComponent = ({
 
   return (
     <div ref={containerRef} className={classNames(styles.container, className)}>
-      <button
-        className={styles.trigger}
-        type="button"
+      <div
+        className={classNames(styles.trigger, disabled && styles.disabled)}
+        role="combobox"
         aria-label={label}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={handleTriggerClick}
         onKeyDown={handleKeyDown}
-        disabled={disabled}
+        tabIndex={disabled ? -1 : 0}
       >
         <div className={styles.valueContainer}>
           {multiple && Array.isArray(value) && value.length > 0 ? (
@@ -218,6 +218,7 @@ const AutocompleteSelectComponent = ({
                     className={styles.pillClear}
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
                       handleClearOption(option.value, e);
                     }}
                     aria-label={`Remove ${option.label}`}
@@ -234,7 +235,7 @@ const AutocompleteSelectComponent = ({
         <span className={classNames(styles.icon, isOpen && styles.iconOpen)}>
           <Chevron />
         </span>
-      </button>
+      </div>
       {isOpen && (
         <div className={styles.dropdown}>
           <div className={styles.searchContainer}>
@@ -274,16 +275,6 @@ const AutocompleteSelectComponent = ({
                       </span>
                     )}
                     <span className={styles.optionLabel}>{option.label}</span>
-                    {isOptionSelected(option.value) && multiple && (
-                      <button
-                        type="button"
-                        className={styles.clearButton}
-                        onClick={(e) => handleClearOption(option.value, e)}
-                        aria-label={`Remove ${option.label}`}
-                      >
-                        ×
-                      </button>
-                    )}
                   </span>
                 </li>
               ))}
