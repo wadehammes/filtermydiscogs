@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import flatten from "lodash.flatten";
 import { useCallback, useEffect, useMemo } from "react";
 import { ERROR_FETCHING } from "src/constants";
@@ -10,6 +11,7 @@ export const useCollectionData = (
   username: string | null,
   isAuthenticated: boolean,
 ) => {
+  const queryClient = useQueryClient();
   const {
     dispatchFetchingCollection,
     dispatchCollection,
@@ -28,6 +30,15 @@ export const useCollectionData = (
     hasNextPage,
     isFetchingNextPage,
   } = useDiscogsCollectionQuery(username || "", isAuthenticated && !!username);
+
+  // Invalidate and refetch collection when user becomes authenticated
+  useEffect(() => {
+    if (isAuthenticated && username) {
+      queryClient.invalidateQueries({
+        queryKey: ["discogsCollection", username],
+      });
+    }
+  }, [isAuthenticated, username, queryClient]);
 
   useEffect(() => {
     if (isAuthenticated && username && hasNextPage && !isFetchingNextPage) {
