@@ -121,11 +121,11 @@
   color: #666;
   font-size: 12px;
   margin-left: 8px;
-  transform: rotate(90deg); /* Start pointing down */
+  transform: rotate(90deg);
   transition: transform 0.2s;
 
   &.iconOpen {
-    transform: rotate(270deg); /* Point up when open */
+    transform: rotate(270deg);
   }
 }
 

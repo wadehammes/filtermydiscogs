@@ -1,5 +1,6 @@
 .container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
@@ -9,6 +10,17 @@
     var(--gradientPink) 0%,
     var(--gradientTeal) 100%
   );
+  gap: 2rem;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  text-wrap: balance;
 }
 
 .loginCard {

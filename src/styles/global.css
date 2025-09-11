@@ -342,7 +342,6 @@ button {
   padding: var(--space-3) var(--space-6);
 }
 
-/* ===== MODERN BUTTON VARIANTS ===== */
 .btn-modern {
   align-items: center;
   border: 1px solid var(--gray-300);
