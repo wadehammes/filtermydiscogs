@@ -81,9 +81,9 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    // Store user info
+    // Store user info (not httpOnly so it can be read by client-side JS)
     response.cookies.set("discogs_username", identity.username, {
-      httpOnly: true,
+      httpOnly: false,
       secure: secureFlag,
       sameSite: "lax",
       path: "/",

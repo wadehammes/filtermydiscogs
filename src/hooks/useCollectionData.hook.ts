@@ -21,6 +21,8 @@ export const useCollectionData = (
 
   const { dispatch: filtersDispatch } = useFilters();
 
+  const queryEnabled = isAuthenticated && !!username;
+
   const {
     data: collectionData,
     isLoading,
@@ -29,12 +31,35 @@ export const useCollectionData = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useDiscogsCollectionQuery(username || "", isAuthenticated && !!username);
+  } = useDiscogsCollectionQuery(username || "", queryEnabled);
 
-  // Invalidate and refetch collection when user becomes authenticated
+  // Debug logging
+  useEffect(() => {
+    console.log("Collection query state:", {
+      isAuthenticated,
+      username,
+      queryEnabled,
+      isLoading,
+      isError,
+      hasData: !!collectionData,
+    });
+  }, [
+    isAuthenticated,
+    username,
+    queryEnabled,
+    isLoading,
+    isError,
+    collectionData,
+  ]);
+
+  // Force refetch collection when user becomes authenticated
   useEffect(() => {
     if (isAuthenticated && username) {
-      queryClient.invalidateQueries({
+      console.log(
+        "User authenticated, forcing collection refetch for:",
+        username,
+      );
+      queryClient.refetchQueries({
         queryKey: ["discogsCollection", username],
       });
     }

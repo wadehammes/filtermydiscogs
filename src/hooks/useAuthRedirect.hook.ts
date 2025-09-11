@@ -22,6 +22,7 @@ export const useAuthRedirect = () => {
 
     if (authStatus === "success") {
       const username = getUsernameFromCookies();
+      console.log("OAuth success, setting auth state:", { username });
 
       authDispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
       authDispatch({ type: AuthActionTypes.SetUsername, payload: username });
@@ -29,6 +30,7 @@ export const useAuthRedirect = () => {
 
       clearUrlParams();
     } else if (errorStatus) {
+      console.log("OAuth error:", errorStatus);
       authDispatch({
         type: AuthActionTypes.SetError,
         payload: `Authentication failed: ${errorStatus}`,
