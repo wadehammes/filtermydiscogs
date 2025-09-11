@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   type FC,
@@ -91,6 +92,7 @@ const AuthContext = createContext<{
 
 export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const queryClient = useQueryClient();
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -103,16 +105,21 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
             type: AuthActionTypes.SetUsername,
             payload: authStatus.username,
           });
+        } else {
+          // If not authenticated, clear any cached data to prevent data leakage
+          queryClient.clear();
         }
       } catch (error) {
         console.error("Error checking auth:", error);
+        // On error, also clear cache to be safe
+        queryClient.clear();
       } finally {
         dispatch({ type: AuthActionTypes.SetLoading, payload: false });
       }
     };
 
     checkAuth();
-  }, []);
+  }, [queryClient]);
 
   const login = () => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
