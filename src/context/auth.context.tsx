@@ -6,7 +6,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { checkAuthStatus } from "src/services/auth.service";
+import { checkAuthStatus, clearAuthCookies } from "src/services/auth.service";
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -128,6 +128,9 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
       // Call logout API
       await fetch("/api/auth/logout", { method: "POST" });
+
+      // Clear client-side cookies as well
+      clearAuthCookies();
 
       dispatch({ type: AuthActionTypes.Logout, payload: undefined });
     } catch (_error) {
