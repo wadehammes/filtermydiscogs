@@ -27,10 +27,12 @@ export function Providers({ children }: ProvidersProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes
-            gcTime: 10 * 60 * 1000, // 10 minutes
+            staleTime: 10 * 60 * 1000, // 10 minutes - collection data doesn't change often
+            gcTime: 30 * 60 * 1000, // 30 minutes - keep in memory longer
             retry: 1,
             refetchOnWindowFocus: false,
+            refetchOnMount: false, // Don't refetch if data is fresh
+            refetchOnReconnect: false, // Don't refetch on reconnect if data is fresh
           },
         },
       }),

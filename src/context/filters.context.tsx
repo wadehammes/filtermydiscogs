@@ -25,19 +25,25 @@ export enum SortValues {
 
 export interface FiltersState {
   selectedStyles: string[];
+  selectedYears: number[];
   selectedSort: SortValues;
   availableStyles: string[];
+  availableYears: number[];
   filteredReleases: DiscogsRelease[];
   allReleases: DiscogsRelease[];
 }
 
 export enum FiltersActionTypes {
   SetAvailableStyles = "SET_AVAILABLE_STYLES",
+  SetAvailableYears = "SET_AVAILABLE_YEARS",
   SetAllReleases = "SET_ALL_RELEASES",
   ToggleStyle = "TOGGLE_STYLE",
+  ToggleYear = "TOGGLE_YEAR",
   SetSort = "SET_SORT",
   ClearStyles = "CLEAR_STYLES",
   SetStyles = "SET_STYLES",
+  ClearYears = "CLEAR_YEARS",
+  SetYears = "SET_YEARS",
 }
 
 export type FiltersActions =
@@ -46,12 +52,20 @@ export type FiltersActions =
       payload: string[];
     }
   | {
+      type: FiltersActionTypes.SetAvailableYears;
+      payload: number[];
+    }
+  | {
       type: FiltersActionTypes.SetAllReleases;
       payload: DiscogsRelease[];
     }
   | {
       type: FiltersActionTypes.ToggleStyle;
       payload: string;
+    }
+  | {
+      type: FiltersActionTypes.ToggleYear;
+      payload: number;
     }
   | {
       type: FiltersActionTypes.SetSort;
@@ -64,87 +78,57 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.SetStyles;
       payload: string[];
+    }
+  | {
+      type: FiltersActionTypes.ClearYears;
+      payload: undefined;
+    }
+  | {
+      type: FiltersActionTypes.SetYears;
+      payload: number[];
     };
 
-const filterReleasesByStyles = (
+const filterReleases = (
   releases: DiscogsRelease[],
   selectedStyles: string[],
+  selectedYears: number[],
 ): DiscogsRelease[] => {
-  if (selectedStyles.length === 0) {
+  // Early return if no filters applied
+  if (selectedStyles.length === 0 && selectedYears.length === 0) {
     return releases;
   }
 
-  const selectedStylesSet = new Set(selectedStyles);
+  const selectedStylesSet =
+    selectedStyles.length > 0 ? new Set(selectedStyles) : null;
+  const selectedYearsSet =
+    selectedYears.length > 0 ? new Set(selectedYears) : null;
+
   return releases.filter((release) => {
-    const releaseStyles = release.basic_information.styles;
-    return releaseStyles.some((style) => selectedStylesSet.has(style));
+    // Check style filter
+    if (selectedStylesSet) {
+      const releaseStyles = release.basic_information.styles;
+      const hasMatchingStyle = releaseStyles.some((style) =>
+        selectedStylesSet.has(style),
+      );
+      if (!hasMatchingStyle) return false;
+    }
+
+    // Check year filter
+    if (selectedYearsSet) {
+      const releaseYear = release.basic_information.year;
+      if (!selectedYearsSet.has(releaseYear)) return false;
+    }
+
+    return true;
   });
 };
 
-const sortReleases = (
-  releases: DiscogsRelease[],
-  sort: SortValues,
-): DiscogsRelease[] => {
-  const releasesCopy = [...releases];
-
-  switch (sort) {
-    case SortValues.DateAddedNew:
-      return releasesCopy.sort(
-        (a, b) =>
-          new Date(b.date_added).getTime() - new Date(a.date_added).getTime(),
-      );
-    case SortValues.DateAddedOld:
-      return releasesCopy.sort(
-        (a, b) =>
-          new Date(a.date_added).getTime() - new Date(b.date_added).getTime(),
-      );
-    case SortValues.AZLabel:
-      return releasesCopy.sort((a, b) =>
-        (a.basic_information.labels[0]?.name || "").localeCompare(
-          b.basic_information.labels[0]?.name || "",
-        ),
-      );
-    case SortValues.ZALabel:
-      return releasesCopy.sort((a, b) =>
-        (b.basic_information.labels[0]?.name || "").localeCompare(
-          a.basic_information.labels[0]?.name || "",
-        ),
-      );
-    case SortValues.AZArtist:
-      return releasesCopy.sort((a, b) =>
-        (a.basic_information.artists[0]?.name || "").localeCompare(
-          b.basic_information.artists[0]?.name || "",
-        ),
-      );
-    case SortValues.ZAArtist:
-      return releasesCopy.sort((a, b) =>
-        (b.basic_information.artists[0]?.name || "").localeCompare(
-          a.basic_information.artists[0]?.name || "",
-        ),
-      );
-    case SortValues.AZTitle:
-      return releasesCopy.sort((a, b) =>
-        a.basic_information.title.localeCompare(b.basic_information.title),
-      );
-    case SortValues.ZATitle:
-      return releasesCopy.sort((a, b) =>
-        b.basic_information.title.localeCompare(a.basic_information.title),
-      );
-    case SortValues.AlbumYearNew:
-      return releasesCopy.sort(
-        (a, b) => b.basic_information.year - a.basic_information.year,
-      );
-    case SortValues.AlbumYearOld:
-      return releasesCopy.sort(
-        (a, b) => a.basic_information.year - b.basic_information.year,
-      );
-    case SortValues.RatingHigh:
-      return releasesCopy.sort((a, b) => b.rating - a.rating);
-    case SortValues.RatingLow:
-      return releasesCopy.sort((a, b) => a.rating - b.rating);
-    default:
-      return releasesCopy;
-  }
+// Client-side sorting is now handled by the Discogs API
+// This function is kept for backward compatibility but returns releases as-is
+const sortReleases = (releases: DiscogsRelease[]): DiscogsRelease[] => {
+  // Server-side sorting is now handled by the Discogs API
+  // No need to sort client-side anymore
+  return releases;
 };
 
 const filtersReducer = (
@@ -158,12 +142,19 @@ const filtersReducer = (
         availableStyles: action.payload,
       };
 
+    case FiltersActionTypes.SetAvailableYears:
+      return {
+        ...state,
+        availableYears: action.payload,
+      };
+
     case FiltersActionTypes.SetAllReleases: {
-      const filteredByStyles = filterReleasesByStyles(
+      const filteredReleases = filterReleases(
         action.payload,
         state.selectedStyles,
+        state.selectedYears,
       );
-      const sortedReleases = sortReleases(filteredByStyles, state.selectedSort);
+      const sortedReleases = sortReleases(filteredReleases);
 
       return {
         ...state,
@@ -177,14 +168,12 @@ const filtersReducer = (
         ? state.selectedStyles.filter((style) => style !== action.payload)
         : [...state.selectedStyles, action.payload];
 
-      const newFilteredByStyles = filterReleasesByStyles(
+      const newFilteredReleases = filterReleases(
         state.allReleases,
         newSelectedStyles,
+        state.selectedYears,
       );
-      const newSortedReleases = sortReleases(
-        newFilteredByStyles,
-        state.selectedSort,
-      );
+      const newSortedReleases = sortReleases(newFilteredReleases);
 
       return {
         ...state,
@@ -193,11 +182,27 @@ const filtersReducer = (
       };
     }
 
-    case FiltersActionTypes.SetSort: {
-      const sortedFilteredReleases = sortReleases(
-        state.filteredReleases,
-        action.payload,
+    case FiltersActionTypes.ToggleYear: {
+      const newSelectedYears = state.selectedYears.includes(action.payload)
+        ? state.selectedYears.filter((year) => year !== action.payload)
+        : [...state.selectedYears, action.payload];
+
+      const newFilteredReleases = filterReleases(
+        state.allReleases,
+        state.selectedStyles,
+        newSelectedYears,
       );
+      const newSortedReleases = sortReleases(newFilteredReleases);
+
+      return {
+        ...state,
+        selectedYears: newSelectedYears,
+        filteredReleases: newSortedReleases,
+      };
+    }
+
+    case FiltersActionTypes.SetSort: {
+      const sortedFilteredReleases = sortReleases(state.filteredReleases);
 
       return {
         ...state,
@@ -207,31 +212,61 @@ const filtersReducer = (
     }
 
     case FiltersActionTypes.ClearStyles: {
-      const releasesWithoutStyleFilter = sortReleases(
+      const newFilteredReleases = filterReleases(
         state.allReleases,
-        state.selectedSort,
+        [],
+        state.selectedYears,
       );
+      const sortedReleases = sortReleases(newFilteredReleases);
 
       return {
         ...state,
         selectedStyles: [],
-        filteredReleases: releasesWithoutStyleFilter,
+        filteredReleases: sortedReleases,
       };
     }
 
     case FiltersActionTypes.SetStyles: {
-      const newFilteredByStyles = filterReleasesByStyles(
+      const newFilteredReleases = filterReleases(
         state.allReleases,
         action.payload,
+        state.selectedYears,
       );
-      const newSortedReleases = sortReleases(
-        newFilteredByStyles,
-        state.selectedSort,
-      );
+      const newSortedReleases = sortReleases(newFilteredReleases);
 
       return {
         ...state,
         selectedStyles: action.payload,
+        filteredReleases: newSortedReleases,
+      };
+    }
+
+    case FiltersActionTypes.ClearYears: {
+      const newFilteredReleases = filterReleases(
+        state.allReleases,
+        state.selectedStyles,
+        [],
+      );
+      const sortedReleases = sortReleases(newFilteredReleases);
+
+      return {
+        ...state,
+        selectedYears: [],
+        filteredReleases: sortedReleases,
+      };
+    }
+
+    case FiltersActionTypes.SetYears: {
+      const newFilteredReleases = filterReleases(
+        state.allReleases,
+        state.selectedStyles,
+        action.payload,
+      );
+      const newSortedReleases = sortReleases(newFilteredReleases);
+
+      return {
+        ...state,
+        selectedYears: action.payload,
         filteredReleases: newSortedReleases,
       };
     }
@@ -243,8 +278,10 @@ const filtersReducer = (
 
 const initialState: FiltersState = {
   selectedStyles: [],
+  selectedYears: [],
   selectedSort: SortValues.DateAddedNew,
   availableStyles: [],
+  availableYears: [],
   filteredReleases: [],
   allReleases: [],
 };
@@ -274,12 +311,12 @@ export const useFilters = () => {
 
 export const useMemoizedFilteredReleases = () => {
   const { state } = useFilters();
-  const { allReleases, selectedStyles, selectedSort } = state;
+  const { allReleases, selectedStyles, selectedYears } = state;
 
   const filteredReleases = useMemo(() => {
-    const filtered = filterReleasesByStyles(allReleases, selectedStyles);
-    return sortReleases(filtered, selectedSort);
-  }, [allReleases, selectedStyles, selectedSort]);
+    const filtered = filterReleases(allReleases, selectedStyles, selectedYears);
+    return sortReleases(filtered);
+  }, [allReleases, selectedStyles, selectedYears]);
 
   return filteredReleases;
 };

@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     const username = searchParams.get("username");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const perPage = parseInt(searchParams.get("per_page") || "500", 10);
+    const sort = searchParams.get("sort") || "added";
+    const sortOrder = searchParams.get("sort_order") || "desc";
 
     if (!username) {
       return NextResponse.json(
@@ -33,6 +35,8 @@ export async function GET(request: NextRequest) {
       accessTokenSecret,
       page,
       perPage,
+      sort,
+      sortOrder,
     );
 
     return NextResponse.json(collection);
