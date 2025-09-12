@@ -268,8 +268,10 @@ class DiscogsOAuthService {
     oauthTokenSecret: string,
     page: number = 1,
     perPage: number = 500,
+    sort: string = "added",
+    sortOrder: string = "desc",
   ): Promise<DiscogsCollection> {
-    const url = `https://api.discogs.com/users/${username}/collection/folders/0/releases?page=${page}&per_page=${perPage}`;
+    const url = `https://api.discogs.com/users/${username}/collection/folders/0/releases`;
 
     try {
       const result = await this.makeAuthenticatedRequest(
@@ -277,6 +279,12 @@ class DiscogsOAuthService {
         "GET",
         oauthToken,
         oauthTokenSecret,
+        {
+          page: page.toString(),
+          per_page: perPage.toString(),
+          sort,
+          sort_order: sortOrder,
+        },
       );
 
       return result as DiscogsCollection;

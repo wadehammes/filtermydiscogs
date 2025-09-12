@@ -3,16 +3,22 @@ import type { DiscogsCollection, DiscogsReleaseJson } from "src/types";
 export const fetchDiscogsCollection = async (
   username: string,
   page: number = 1,
+  sort: string = "added",
+  sortOrder: string = "desc",
 ): Promise<DiscogsCollection> => {
-  const response = await fetch(
-    `/api/collection?username=${username}&page=${page}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const params = new URLSearchParams({
+    username,
+    page: page.toString(),
+    sort,
+    sort_order: sortOrder,
+  });
+
+  const response = await fetch(`/api/collection?${params}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

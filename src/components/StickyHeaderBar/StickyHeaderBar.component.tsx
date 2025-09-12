@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
@@ -21,19 +21,21 @@ export const StickyHeaderBar = ({
   const { state: collectionState } = useCollectionContext();
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
 
-  const { state: authState, logout } = useAuth();
+  const { logout, state: authState } = useAuth();
+  const { username } = authState;
   const { selectedReleases, openDrawer } = useCrate();
   const {
     handleStyleChange,
+    handleYearChange,
     handleSortChange,
     styleOptions,
+    yearOptions,
     selectedStyles,
+    selectedYears,
     selectedSort,
   } = useFilterHandlers("home");
 
   const { fetchingCollection, collection, error } = collectionState;
-  const { username } = authState;
-
   const handleLogout = async () => {
     await logout();
     trackEvent("logout", {
@@ -68,10 +70,14 @@ export const StickyHeaderBar = ({
     setIsFiltersDrawerOpen(false);
   };
 
-  const sortOptions = SORTING_OPTIONS.map((sort) => ({
-    value: sort.value,
-    label: sort.name,
-  }));
+  const sortOptions = useMemo(
+    () =>
+      SORTING_OPTIONS.map((sort) => ({
+        value: sort.value,
+        label: sort.name,
+      })),
+    [],
+  );
 
   return (
     <>
@@ -94,6 +100,15 @@ export const StickyHeaderBar = ({
                   disabled={!collection}
                   multiple={true}
                   placeholder="Select styles..."
+                />
+                <AutocompleteSelect
+                  label="Year"
+                  options={yearOptions}
+                  value={selectedYears.map((year) => year.toString())}
+                  onChange={handleYearChange}
+                  disabled={!collection}
+                  multiple={true}
+                  placeholder="All years"
                 />
                 <Select
                   label="Sort by"

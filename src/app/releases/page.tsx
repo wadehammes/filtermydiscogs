@@ -11,7 +11,10 @@ import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
-import { useMemoizedFilteredReleases } from "src/context/filters.context";
+import {
+  useFilters,
+  useMemoizedFilteredReleases,
+} from "src/context/filters.context";
 import { useView, ViewActionTypes } from "src/context/view.context";
 import { useAuthRedirect } from "src/hooks/useAuthRedirect.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
@@ -27,11 +30,15 @@ export default function ReleasesPage() {
   const { username, isAuthenticated } = authState;
   const { isDrawerOpen, closeDrawer } = useCrate();
   const { state: viewState, dispatch: viewDispatch } = useView();
+  const { state: filtersState } = useFilters();
+  const { selectedSort } = filtersState;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [highlightedReleaseId, setHighlightedReleaseId] = useState<
     string | null
   >(null);
+  const [isSorting, setIsSorting] = useState(false);
+  const [previousSort, setPreviousSort] = useState(selectedSort);
 
   const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useCollectionData(username, isAuthenticated);
@@ -40,10 +47,25 @@ export default function ReleasesPage() {
   const filteredReleases = useMemoizedFilteredReleases();
   const releaseCount = filteredReleases.length;
 
+  // Detect when sorting changes and reset loading state
+  useEffect(() => {
+    if (selectedSort !== previousSort) {
+      setIsSorting(true);
+      setPreviousSort(selectedSort);
+    }
+  }, [selectedSort, previousSort]);
+
+  // Reset sorting state when we start getting new data
+  useEffect(() => {
+    if (isSorting && releaseCount > 0) {
+      setIsSorting(false);
+    }
+  }, [isSorting, releaseCount]);
+
   // Calculate progress for loading indicator
   const loadingProgress = hasReleases
     ? {
-        current: releaseCount,
+        current: isSorting ? 0 : releaseCount,
       }
     : undefined;
 
