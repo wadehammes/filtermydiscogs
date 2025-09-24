@@ -47,7 +47,6 @@ export default function ReleasesPage() {
   const filteredReleases = useMemoizedFilteredReleases();
   const releaseCount = filteredReleases.length;
 
-  // Detect when sorting changes and reset loading state
   useEffect(() => {
     if (selectedSort !== previousSort) {
       setIsSorting(true);
@@ -55,14 +54,12 @@ export default function ReleasesPage() {
     }
   }, [selectedSort, previousSort]);
 
-  // Reset sorting state when we start getting new data
   useEffect(() => {
     if (isSorting && releaseCount > 0) {
       setIsSorting(false);
     }
   }, [isSorting, releaseCount]);
 
-  // Calculate progress for loading indicator
   const loadingProgress = hasReleases
     ? {
         current: isSorting ? 0 : releaseCount,
@@ -73,19 +70,6 @@ export default function ReleasesPage() {
     threshold: 0,
     rootMargin: "100px",
   });
-
-  const handleScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-      const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
-
-      // Fetch more releases from API when user scrolls to 80% of the container
-      if (scrollPercentage > 0.8 && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
-    [hasNextPage, isFetchingNextPage, fetchNextPage],
-  );
 
   const handleReleaseClick = useCallback((instanceId: string) => {
     const element = document.getElementById(`release-${instanceId}`);
@@ -162,11 +146,7 @@ export default function ReleasesPage() {
       <div
         className={`${styles.container} ${isDrawerOpen ? styles.withSidebar : ""}`}
       >
-        <div
-          ref={mainContentRef}
-          className={styles.mainContent}
-          onScroll={handleScroll}
-        >
+        <div ref={mainContentRef} className={styles.mainContent}>
           {hasReleases && (
             <div className={styles.releasesHeader}>
               <p>

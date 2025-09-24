@@ -1,29 +1,39 @@
 import { useEffect, useState } from "react";
 
 export const useMediaQuery = (query: string, defaultValue = false) => {
-  const [matches, setMatches] = useState(defaultValue);
+  // Guard for SSR: initialize from defaultValue, then sync on mount
+  const [matches, setMatches] = useState<boolean>(() => {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
+      return defaultValue;
+    }
+    return window.matchMedia(query).matches;
+  });
 
   useEffect(() => {
-    const media = window.matchMedia(query);
-
-    if (!media) {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return;
     }
+    const mediaQueryList = window.matchMedia(query);
 
-    if (media.matches !== matches) {
-      setMatches(media.matches);
+    // Set initial match on mount in case defaultValue differs
+    setMatches(mediaQueryList.matches);
+
+    const handleChange = () => setMatches(mediaQueryList.matches);
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", handleChange);
+      return () => mediaQueryList.removeEventListener("change", handleChange);
     }
-
-    const listener = () => setMatches(media.matches);
-
-    if (media.addEventListener) {
-      media.addEventListener("change", listener);
-      return () => media.removeEventListener("change", listener);
-    } else {
-      media.addListener(listener);
-      return () => media.removeListener(listener);
-    }
-  }, [matches, query]);
+    // Fallback for older browsers
+    mediaQueryList.addListener(handleChange);
+    return () => mediaQueryList.removeListener(handleChange);
+  }, [query]);
 
   return matches;
 };

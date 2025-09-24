@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import parse from "html-react-parser";
 import Image from "next/image";
 import type React from "react";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -118,8 +117,6 @@ const ReleaseCardComponent = ({
               quality={85}
               alt={release.basic_information.title}
               loading="lazy"
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
               style={{ position: "relative", zIndex: 2 }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
@@ -152,7 +149,7 @@ const ReleaseCardComponent = ({
               </b>
             </span>
             <span className="typography-span typography-span-small">
-              {labels[0]?.name} {year !== 0 ? parse(`&mdash; ${year}`) : ""}
+              {labels[0]?.name} {year !== 0 ? `— ${year}` : ""}
             </span>
             <span className="typography-span typography-span-small">
               {release?.notes?.map((note) => note.value).join(", ")}
@@ -176,7 +173,7 @@ const ReleaseCardComponent = ({
               onClick={handleReleaseClick}
               disabled={isLoading}
             >
-              View on Discogs
+              View on Discogs &rarr;
             </button>
           </div>
         </div>
