@@ -81,6 +81,8 @@
   grid-template-columns: 1fr;
   justify-content: stretch;
   width: 100%;
+  content-visibility: visible;
+  contain-intrinsic-size: 400px 300px;
 
   & > div {
     scroll-margin-top: 150px;
@@ -97,6 +99,8 @@
   flex-direction: column;
   gap: var(--space-3);
   width: 100%;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 800px;
 
   & > div {
     scroll-margin-top: 150px;

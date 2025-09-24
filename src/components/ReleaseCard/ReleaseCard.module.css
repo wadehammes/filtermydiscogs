@@ -50,8 +50,10 @@
   }
 
   &:hover {
+    border-color: var(--gray-300);
     box-shadow: var(--shadow-lg);
-    transform: translateY(-4px) scale(1.005);
+    transform: translateY(-4px);
+    cursor: pointer;
     text-decoration: none;
     color: inherit;
 
@@ -205,9 +207,9 @@
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-full);
   color: var(--gray-600);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-3) 0.3rem;
   transition: all var(--transition-normal);
 
   &:hover {
@@ -219,19 +221,18 @@
 .discogsButton {
   background: none;
   border: none;
-  color: var(--purple-600);
+  color: var(--color-black);
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   padding: var(--space-2) 0;
-  text-decoration: underline;
+  text-decoration: none;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
   transition: all var(--transition-normal);
 
   &:hover {
-    color: var(--purple-700);
-    text-decoration-thickness: 2px;
+    text-decoration: underline;
   }
 
   &:disabled {
