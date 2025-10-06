@@ -39,7 +39,7 @@
     "react-intersection-observer": "^9.4.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.4",
+    "@biomejs/biome": "^2.2.5",
     "@jest/types": "^30.0.5",
     "@next/bundle-analyzer": "^15.5.4",
     "@next/eslint-plugin-next": "^15.5.4",
