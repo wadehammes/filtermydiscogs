@@ -34,7 +34,7 @@
     "lodash.flatten": "^4.4.0",
     "next": "15.5.4",
     "oauth-1.0a": "^2.2.6",
-    "react": "^19.1.1",
+    "react": "^19.2.0",
     "react-dom": "^19.1.1",
     "react-intersection-observer": "^9.4.1"
   },
@@ -52,7 +52,7 @@
     "@types/js-cookie": "^3.0.6",
     "@types/lodash.flatten": "^4.4.9",
     "@types/node": "^24.5.2",
-    "@types/react": "^19.1.13",
+    "@types/react": "^19.2.0",
     "critters": "^0.0.25",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.1.3",
