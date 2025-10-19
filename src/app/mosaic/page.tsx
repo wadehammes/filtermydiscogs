@@ -438,19 +438,22 @@ export default function MosaicPage() {
         </div>
 
         <div className={styles.mosaicContainer}>
-          <div
-            className={styles.mosaicGrid}
-            style={{
-              gridTemplateColumns: `repeat(${gridDimensions.cols}, ${gridDimensions.cellSize}px)`,
-              gridTemplateRows: `repeat(${gridDimensions.rows}, ${gridDimensions.cellSize}px)`,
-              aspectRatio: `${gridDimensions.cols} / ${gridDimensions.rows}`,
-              maxWidth: "100%",
-            }}
-          >
-            {releasesToDisplay.map((release) => (
-              <MosaicItem key={release.instance_id} release={release} />
-            ))}
-          </div>
+          {gridDimensions.cols > 0 &&
+            gridDimensions.cellSize &&
+            gridDimensions.cellSize > 0 && (
+              <div
+                className={styles.mosaicGrid}
+                style={{
+                  gridTemplateColumns: `repeat(${gridDimensions.cols}, ${gridDimensions.cellSize}px)`,
+                  gridTemplateRows: `repeat(${gridDimensions.rows}, ${gridDimensions.cellSize}px)`,
+                  maxWidth: "100%",
+                }}
+              >
+                {releasesToDisplay.map((release) => (
+                  <MosaicItem key={release.instance_id} release={release} />
+                ))}
+              </div>
+            )}
         </div>
 
         {/* Hidden canvas for image generation */}
