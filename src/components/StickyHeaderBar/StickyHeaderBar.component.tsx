@@ -1,3 +1,4 @@
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSelect.component";
@@ -13,13 +14,18 @@ import styles from "./StickyHeaderBar.module.css";
 
 interface StickyHeaderBarProps {
   allReleasesLoaded?: boolean;
+  hideFilters?: boolean;
+  hideCrate?: boolean;
 }
 
 export const StickyHeaderBar = ({
   allReleasesLoaded = true,
+  hideFilters = false,
+  hideCrate = false,
 }: StickyHeaderBarProps) => {
   const { state: collectionState } = useCollectionContext();
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
+  const router = useRouter();
 
   const { logout, state: authState } = useAuth();
   const { username } = authState;
@@ -70,6 +76,16 @@ export const StickyHeaderBar = ({
     setIsFiltersDrawerOpen(false);
   };
 
+  const handleMosaicClick = () => {
+    trackEvent("mosaicNavigation", {
+      action: "mosaicNavigation",
+      category: "navigation",
+      label: "Navigate to Mosaic",
+      value: "header",
+    });
+    router.push("/mosaic");
+  };
+
   const sortOptions = useMemo(
     () =>
       SORTING_OPTIONS.map((sort) => ({
@@ -87,7 +103,8 @@ export const StickyHeaderBar = ({
             <span>Filter My Disco.gs</span>
           </h1>
 
-          {styleOptions.length > 0 &&
+          {!hideFilters &&
+            styleOptions.length > 0 &&
             !fetchingCollection &&
             !error &&
             allReleasesLoaded && (
@@ -121,7 +138,8 @@ export const StickyHeaderBar = ({
               </div>
             )}
 
-          {selectedReleases.length > 0 &&
+          {!hideCrate &&
+            selectedReleases.length > 0 &&
             !fetchingCollection &&
             collection &&
             allReleasesLoaded && (
@@ -141,7 +159,7 @@ export const StickyHeaderBar = ({
 
           {/* Mobile actions - horizontal layout */}
           <div className={styles.mobileActions}>
-            {allReleasesLoaded && (
+            {!hideFilters && allReleasesLoaded && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -150,6 +168,18 @@ export const StickyHeaderBar = ({
               >
                 <span>⚙️</span>
                 <span>Filters</span>
+              </Button>
+            )}
+
+            {allReleasesLoaded && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={handleMosaicClick}
+                aria-label="View mosaic"
+              >
+                <span>🖼️</span>
+                <span>Mosaic</span>
               </Button>
             )}
 
@@ -177,6 +207,17 @@ export const StickyHeaderBar = ({
 
           {/* Desktop user section - hidden on mobile */}
           <div className={styles.userSection}>
+            {allReleasesLoaded && (
+              <Button
+                variant="secondary"
+                size="md"
+                onPress={handleMosaicClick}
+                aria-label="View mosaic"
+              >
+                <span>🖼️</span>
+                <span>Mosaic</span>
+              </Button>
+            )}
             {username && (
               <span className={styles.username}>Welcome, {username}</span>
             )}
