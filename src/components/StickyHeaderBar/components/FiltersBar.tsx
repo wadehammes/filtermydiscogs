@@ -4,6 +4,7 @@ import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSe
 import Button from "src/components/Button/Button.component";
 import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
 import Select from "src/components/Select/Select.component";
+import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { useCrate } from "src/context/crate.context";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
@@ -92,7 +93,10 @@ export const FiltersBar = ({
           />
           <Select
             label="Sort by"
-            options={[]} // Will be populated by parent
+            options={SORTING_OPTIONS.map((option) => ({
+              value: option.value,
+              label: option.name,
+            }))}
             value={selectedSort}
             onChange={handleSortChange}
             disabled={fetchingCollection}

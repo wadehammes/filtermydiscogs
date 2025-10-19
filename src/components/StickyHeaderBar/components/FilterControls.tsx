@@ -1,5 +1,6 @@
 import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Select from "src/components/Select/Select.component";
+import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FilterControls.module.css";
@@ -55,7 +56,10 @@ export const FilterControls = ({
       />
       <Select
         label="Sort by"
-        options={[]} // Will be populated by parent
+        options={SORTING_OPTIONS.map((option) => ({
+          value: option.value,
+          label: option.name,
+        }))}
         value={selectedSort}
         onChange={handleSortChange}
         disabled={fetchingCollection}
