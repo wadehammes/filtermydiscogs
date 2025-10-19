@@ -13,6 +13,11 @@
   gap: 2rem;
 }
 
+.logo {
+  width: 300px;
+  margin-bottom: 1rem;
+}
+
 .footer {
   display: flex;
   flex-direction: column;

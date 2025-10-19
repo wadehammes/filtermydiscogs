@@ -1,0 +1,27 @@
+.desktopCrateButton {
+  display: none;
+
+  @media (min-width: 769px) {
+    display: flex;
+  }
+}
+
+.crateCount {
+  align-items: center;
+  background: var(--white);
+  border-radius: 50%;
+  color: var(--primary-600);
+  display: flex;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  height: 18px;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0;
+
+  @media (min-width: 769px) {
+    font-size: var(--text-xs);
+    height: 20px;
+    min-width: 20px;
+  }
+}
