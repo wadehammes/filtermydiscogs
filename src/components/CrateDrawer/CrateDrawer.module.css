@@ -19,7 +19,7 @@
 
   @media (min-width: 1024px) {
     position: sticky;
-    top: 70px;
+    top: 139px;
     transform: translateX(0);
     z-index: auto;
   }
