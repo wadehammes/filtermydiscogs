@@ -7,6 +7,7 @@ import {
   useReducer,
 } from "react";
 import type { DiscogsRelease } from "src/types";
+import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 
 export enum SortValues {
   AZLabel = "AZLabel",
@@ -31,6 +32,8 @@ export interface FiltersState {
   availableYears: number[];
   filteredReleases: DiscogsRelease[];
   allReleases: DiscogsRelease[];
+  isRandomMode: boolean;
+  randomRelease: DiscogsRelease | null;
 }
 
 export enum FiltersActionTypes {
@@ -44,6 +47,9 @@ export enum FiltersActionTypes {
   SetStyles = "SET_STYLES",
   ClearYears = "CLEAR_YEARS",
   SetYears = "SET_YEARS",
+  ToggleRandomMode = "TOGGLE_RANDOM_MODE",
+  SetRandomRelease = "SET_RANDOM_RELEASE",
+  ClearAllFilters = "CLEAR_ALL_FILTERS",
 }
 
 export type FiltersActions =
@@ -86,42 +92,30 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.SetYears;
       payload: number[];
+    }
+  | {
+      type: FiltersActionTypes.ToggleRandomMode;
+      payload: undefined;
+    }
+  | {
+      type: FiltersActionTypes.SetRandomRelease;
+      payload: DiscogsRelease | null;
+    }
+  | {
+      type: FiltersActionTypes.ClearAllFilters;
+      payload: undefined;
     };
 
-const filterReleases = (
+const getRandomRelease = (
   releases: DiscogsRelease[],
-  selectedStyles: string[],
-  selectedYears: number[],
-): DiscogsRelease[] => {
-  // Early return if no filters applied
-  if (selectedStyles.length === 0 && selectedYears.length === 0) {
-    return releases;
-  }
-
-  const selectedStylesSet =
-    selectedStyles.length > 0 ? new Set(selectedStyles) : null;
-  const selectedYearsSet =
-    selectedYears.length > 0 ? new Set(selectedYears) : null;
-
-  return releases.filter((release) => {
-    // Check style filter
-    if (selectedStylesSet) {
-      const releaseStyles = release.basic_information.styles;
-      const hasMatchingStyle = releaseStyles.some((style) =>
-        selectedStylesSet.has(style),
-      );
-      if (!hasMatchingStyle) return false;
-    }
-
-    // Check year filter
-    if (selectedYearsSet) {
-      const releaseYear = release.basic_information.year;
-      if (!selectedYearsSet.has(releaseYear)) return false;
-    }
-
-    return true;
-  });
+): DiscogsRelease | null => {
+  if (releases.length === 0) return null;
+  const randomIndex = Math.floor(Math.random() * releases.length);
+  return releases[randomIndex] || null;
 };
+
+// Use the shared filterReleases utility
+const filterReleases = filterReleasesUtil;
 
 // Client-side sorting is now handled by the Discogs API
 // This function is kept for backward compatibility but returns releases as-is
@@ -223,6 +217,8 @@ const filtersReducer = (
         ...state,
         selectedStyles: [],
         filteredReleases: sortedReleases,
+        isRandomMode: false,
+        randomRelease: null,
       };
     }
 
@@ -238,6 +234,8 @@ const filtersReducer = (
         ...state,
         selectedStyles: action.payload,
         filteredReleases: newSortedReleases,
+        isRandomMode: false,
+        randomRelease: null,
       };
     }
 
@@ -253,6 +251,8 @@ const filtersReducer = (
         ...state,
         selectedYears: [],
         filteredReleases: sortedReleases,
+        isRandomMode: false,
+        randomRelease: null,
       };
     }
 
@@ -268,6 +268,67 @@ const filtersReducer = (
         ...state,
         selectedYears: action.payload,
         filteredReleases: newSortedReleases,
+        isRandomMode: false,
+        randomRelease: null,
+      };
+    }
+
+    case FiltersActionTypes.ToggleRandomMode: {
+      const newIsRandomMode = !state.isRandomMode;
+      let newFilteredReleases = state.filteredReleases;
+      let newRandomRelease = state.randomRelease;
+
+      if (newIsRandomMode) {
+        // Entering random mode - get a random release from current filtered releases
+        const currentFiltered = filterReleases(
+          state.allReleases,
+          state.selectedStyles,
+          state.selectedYears,
+        );
+        newRandomRelease = getRandomRelease(currentFiltered);
+        newFilteredReleases = newRandomRelease ? [newRandomRelease] : [];
+      } else {
+        // Exiting random mode - restore all filtered releases
+        newFilteredReleases = filterReleases(
+          state.allReleases,
+          state.selectedStyles,
+          state.selectedYears,
+        );
+        newRandomRelease = null;
+      }
+
+      return {
+        ...state,
+        isRandomMode: newIsRandomMode,
+        randomRelease: newRandomRelease,
+        filteredReleases: newFilteredReleases,
+      };
+    }
+
+    case FiltersActionTypes.SetRandomRelease: {
+      const newRandomRelease = action.payload;
+      const newFilteredReleases = newRandomRelease
+        ? [newRandomRelease]
+        : state.filteredReleases;
+
+      return {
+        ...state,
+        randomRelease: newRandomRelease,
+        filteredReleases: newFilteredReleases,
+      };
+    }
+
+    case FiltersActionTypes.ClearAllFilters: {
+      const newFilteredReleases = filterReleases(state.allReleases, [], []);
+      const sortedReleases = sortReleases(newFilteredReleases);
+
+      return {
+        ...state,
+        selectedStyles: [],
+        selectedYears: [],
+        filteredReleases: sortedReleases,
+        isRandomMode: false,
+        randomRelease: null,
       };
     }
 
@@ -284,6 +345,8 @@ const initialState: FiltersState = {
   availableYears: [],
   filteredReleases: [],
   allReleases: [],
+  isRandomMode: false,
+  randomRelease: null,
 };
 
 const FiltersContext = createContext<{

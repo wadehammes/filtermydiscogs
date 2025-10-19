@@ -5,16 +5,19 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.component";
 import { useCrate } from "src/context/crate.context";
+import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
-import type { ReleaseCardProps } from "src/types";
+import type { ReleaseListItemProps } from "src/types";
 import styles from "./ReleaseListItem.module.css";
 
 const ReleaseListItemComponent = ({
   release,
   isHighlighted = false,
-}: ReleaseCardProps) => {
+  onExitRandomMode,
+}: ReleaseListItemProps) => {
   const [isClicked, setIsClicked] = useState(false);
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
   const {
     labels,
     year,
@@ -64,6 +67,36 @@ const ReleaseListItemComponent = ({
       window.open(fallbackUri, "_blank", "noopener,noreferrer");
     }
   }, [releaseData?.uri, isLoading, fallbackUri]);
+
+  const handleStylePillClick = useCallback(
+    (e: React.MouseEvent, style: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      trackEvent("stylePillClicked", {
+        action: "stylePillClicked",
+        category: "releaseListItem",
+        label: "Style Pill Clicked",
+        value: style,
+      });
+
+      // Exit random mode when clicking a style pill
+      if (filtersState.isRandomMode) {
+        filtersDispatch({
+          type: FiltersActionTypes.ToggleRandomMode,
+          payload: undefined,
+        });
+        // Call the callback to change view back to card
+        onExitRandomMode?.();
+      }
+
+      filtersDispatch({
+        type: FiltersActionTypes.ToggleStyle,
+        payload: style,
+      });
+    },
+    [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
+  );
 
   const handleCrateToggle = useCallback(
     (e: React.MouseEvent) => {
@@ -127,9 +160,18 @@ const ReleaseListItemComponent = ({
               {releaseStyles && releaseStyles.length > 0 && (
                 <div className={styles.stylesContainer}>
                   {releaseStyles.slice(0, 3).map((style: string) => (
-                    <span key={style} className={styles.stylePill}>
+                    <button
+                      key={style}
+                      type="button"
+                      className={classNames(styles.stylePill, {
+                        [styles.stylePillSelected as string]:
+                          filtersState.selectedStyles.includes(style),
+                      })}
+                      onClick={(e) => handleStylePillClick(e, style)}
+                      aria-label={`Filter by ${style} style`}
+                    >
                       {style}
-                    </span>
+                    </button>
                   ))}
                   {releaseStyles.length > 3 && (
                     <span className={styles.moreStyles}>

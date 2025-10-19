@@ -13,6 +13,7 @@ import styles from "./ReleaseCard.module.css";
 const ReleaseCardComponent = ({
   release,
   isHighlighted = false,
+  onExitRandomMode,
 }: ReleaseCardProps) => {
   const [isClicked, setIsClicked] = useState(false);
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
@@ -102,12 +103,26 @@ const ReleaseCardComponent = ({
         value: style,
       });
 
+      // Exit random mode when clicking a style pill
+      if (filtersState.isRandomMode) {
+        filtersDispatch({
+          type: FiltersActionTypes.ToggleRandomMode,
+          payload: undefined,
+        });
+        // Call the callback to change view back to card
+        onExitRandomMode?.();
+      }
+
       filtersDispatch({
         type: FiltersActionTypes.ToggleStyle,
         payload: style,
       });
     },
-    [filtersDispatch],
+    [
+      filtersDispatch,
+      filtersState.isRandomMode, // Call the callback to change view back to card
+      onExitRandomMode,
+    ],
   );
 
   useEffect(() => {
