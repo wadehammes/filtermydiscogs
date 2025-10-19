@@ -10,23 +10,38 @@ export type ViewMode = "card" | "list" | "random";
 
 interface ViewState {
   currentView: ViewMode;
+  previousView: ViewMode;
 }
 
 export enum ViewActionTypes {
   SetView = "SET_VIEW",
+  RestorePreviousView = "RESTORE_PREVIOUS_VIEW",
 }
 
-export type ViewActions = {
-  type: ViewActionTypes.SetView;
-  payload: ViewMode;
-};
+export type ViewActions =
+  | {
+      type: ViewActionTypes.SetView;
+      payload: ViewMode;
+    }
+  | {
+      type: ViewActionTypes.RestorePreviousView;
+    };
 
 const viewReducer = (state: ViewState, action: ViewActions): ViewState => {
   switch (action.type) {
     case ViewActionTypes.SetView:
       return {
         ...state,
+        previousView:
+          state.currentView === "random"
+            ? state.previousView
+            : state.currentView,
         currentView: action.payload,
+      };
+    case ViewActionTypes.RestorePreviousView:
+      return {
+        ...state,
+        currentView: state.previousView,
       };
     default:
       return state;
@@ -35,6 +50,7 @@ const viewReducer = (state: ViewState, action: ViewActions): ViewState => {
 
 const initialState: ViewState = {
   currentView: "card",
+  previousView: "card",
 };
 
 const ViewContext = createContext<{
