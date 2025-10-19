@@ -57,6 +57,15 @@ export default function ReleasesClient() {
     }
   }, [isSorting, releaseCount]);
 
+  // Restore previous view when random mode is exited through filter actions
+  useEffect(() => {
+    if (!isRandomMode && viewState.currentView === "random") {
+      viewDispatch({
+        type: ViewActionTypes.RestorePreviousView,
+      });
+    }
+  }, [isRandomMode, viewState.currentView, viewDispatch]);
+
   const loadingProgress = hasReleases
     ? {
         current: isSorting ? 0 : releaseCount,
@@ -136,10 +145,9 @@ export default function ReleasesClient() {
   }, [filtersState, filtersDispatch, getRandomRelease]);
 
   const handleExitRandomMode = useCallback(() => {
-    // Change view back to card when exiting random mode
+    // Restore the previous view when exiting random mode
     viewDispatch({
-      type: ViewActionTypes.SetView,
-      payload: "card",
+      type: ViewActionTypes.RestorePreviousView,
     });
   }, [viewDispatch]);
 
