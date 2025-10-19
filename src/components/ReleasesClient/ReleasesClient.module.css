@@ -45,6 +45,12 @@
   padding-top: var(--space-4);
 }
 
+.headerControls {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+}
+
 .releasesHeader p {
   align-items: center;
   color: var(--gray-500);

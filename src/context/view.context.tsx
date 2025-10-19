@@ -6,7 +6,7 @@ import {
   useReducer,
 } from "react";
 
-export type ViewMode = "card" | "list";
+export type ViewMode = "card" | "list" | "random";
 
 interface ViewState {
   currentView: ViewMode;

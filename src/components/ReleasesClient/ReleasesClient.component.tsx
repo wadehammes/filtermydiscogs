@@ -11,10 +11,7 @@ import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
-import {
-  useFilters,
-  useMemoizedFilteredReleases,
-} from "src/context/filters.context";
+import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useView, ViewActionTypes } from "src/context/view.context";
 import { useAuthRedirect } from "src/hooks/useAuthRedirect.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
@@ -22,6 +19,7 @@ import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
 import Check from "src/styles/icons/check-solid.svg";
 import type { DiscogsRelease } from "src/types";
+import { filterReleases } from "src/utils/filterReleases";
 import styles from "./ReleasesClient.module.css";
 
 export default function ReleasesClient() {
@@ -30,8 +28,8 @@ export default function ReleasesClient() {
   const { username, isAuthenticated } = authState;
   const { isDrawerOpen, closeDrawer } = useCrate();
   const { state: viewState, dispatch: viewDispatch } = useView();
-  const { state: filtersState } = useFilters();
-  const { selectedSort } = filtersState;
+  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
+  const { selectedSort, filteredReleases, isRandomMode } = filtersState;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [highlightedReleaseId, setHighlightedReleaseId] = useState<
@@ -44,7 +42,6 @@ export default function ReleasesClient() {
     useCollectionData(username, isAuthenticated);
 
   const { error, hasReleases, hasError } = useReleasesDisplay();
-  const filteredReleases = useMemoizedFilteredReleases();
   const releaseCount = filteredReleases.length;
 
   useEffect(() => {
@@ -90,14 +87,61 @@ export default function ReleasesClient() {
   }, []);
 
   const handleViewChange = useCallback(
-    (view: "card" | "list") => {
+    (view: "card" | "list" | "random") => {
       viewDispatch({
         type: ViewActionTypes.SetView,
         payload: view,
       });
+
+      // Handle random mode
+      if (view === "random") {
+        // Enter random mode
+        filtersDispatch({
+          type: FiltersActionTypes.ToggleRandomMode,
+          payload: undefined,
+        });
+      } else if (isRandomMode) {
+        // Exit random mode when switching to card or list
+        filtersDispatch({
+          type: FiltersActionTypes.ToggleRandomMode,
+          payload: undefined,
+        });
+      }
     },
-    [viewDispatch],
+    [viewDispatch, filtersDispatch, isRandomMode],
   );
+
+  const getRandomRelease = useCallback((releases: DiscogsRelease[]) => {
+    if (releases.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * releases.length);
+    return releases[randomIndex] || null;
+  }, []);
+
+  const handleRandomClick = useCallback(() => {
+    // Get another random release when already in random mode
+    const { allReleases, selectedStyles, selectedYears } = filtersState;
+    const currentFiltered = filterReleases(
+      allReleases,
+      selectedStyles,
+      selectedYears,
+    );
+    const randomRelease = getRandomRelease(currentFiltered);
+
+    if (randomRelease) {
+      filtersDispatch({
+        type: FiltersActionTypes.SetRandomRelease,
+        payload: randomRelease,
+      });
+    }
+  }, [filtersState, filtersDispatch, getRandomRelease]);
+
+  const handleExitRandomMode = useCallback(() => {
+    // Change view back to card when exiting random mode
+    viewDispatch({
+      type: ViewActionTypes.SetView,
+      payload: "card",
+    });
+  }, [viewDispatch]);
 
   // Load more when intersection observer triggers
   useEffect(() => {
@@ -166,8 +210,9 @@ export default function ReleasesClient() {
               </p>
               {!isMobile && (
                 <ViewToggle
-                  currentView={viewState.currentView}
+                  currentView={isRandomMode ? "random" : viewState.currentView}
                   onViewChange={handleViewChange}
+                  onRandomClick={handleRandomClick}
                 />
               )}
             </div>
@@ -176,7 +221,7 @@ export default function ReleasesClient() {
           {hasReleases ? (
             <div
               className={
-                viewState.currentView === "card"
+                viewState.currentView === "card" || isRandomMode
                   ? styles.releasesGrid
                   : styles.releasesList
               }
@@ -186,12 +231,15 @@ export default function ReleasesClient() {
                   key={release.instance_id}
                   id={`release-${release.instance_id}`}
                 >
-                  {viewState.currentView === "card" || isMobile ? (
+                  {viewState.currentView === "card" ||
+                  isMobile ||
+                  isRandomMode ? (
                     <ReleaseCard
                       release={release}
                       isHighlighted={
                         highlightedReleaseId === release.instance_id
                       }
+                      onExitRandomMode={handleExitRandomMode}
                     />
                   ) : (
                     <ReleaseListItem
@@ -199,6 +247,7 @@ export default function ReleasesClient() {
                       isHighlighted={
                         highlightedReleaseId === release.instance_id
                       }
+                      onExitRandomMode={handleExitRandomMode}
                     />
                   )}
                 </div>

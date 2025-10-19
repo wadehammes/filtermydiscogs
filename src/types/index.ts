@@ -96,6 +96,13 @@ export interface InfiniteQueryResult<T> extends QueryResult<T> {
 export interface ReleaseCardProps {
   release: DiscogsRelease;
   isHighlighted?: boolean;
+  onExitRandomMode?: () => void;
+}
+
+export interface ReleaseListItemProps {
+  release: DiscogsRelease;
+  isHighlighted?: boolean;
+  onExitRandomMode?: () => void;
 }
 
 export interface SelectOption {
