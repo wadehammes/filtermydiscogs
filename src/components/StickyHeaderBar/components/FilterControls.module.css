@@ -1,0 +1,13 @@
+.filtersContainer {
+  display: none;
+
+  @media (min-width: 769px) {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    gap: var(--space-4);
+    justify-content: flex-start;
+    margin: 0 var(--space-4);
+  }
+}

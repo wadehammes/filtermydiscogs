@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { LoadingOverlay } from "src/components/LoadingOverlay/LoadingOverlay.component";
 import { useCrate } from "src/context/crate.context";
+import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { ReleaseCardProps } from "src/types";
 import styles from "./ReleaseCard.module.css";
@@ -15,6 +16,7 @@ const ReleaseCardComponent = ({
 }: ReleaseCardProps) => {
   const [isClicked, setIsClicked] = useState(false);
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
   const {
     labels,
     year,
@@ -88,6 +90,26 @@ const ReleaseCardComponent = ({
     [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
   );
 
+  const handleStylePillClick = useCallback(
+    (e: React.MouseEvent, style: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      trackEvent("stylePillClicked", {
+        action: "stylePillClicked",
+        category: "releaseCard",
+        label: "Style Pill Clicked",
+        value: style,
+      });
+
+      filtersDispatch({
+        type: FiltersActionTypes.ToggleStyle,
+        payload: style,
+      });
+    },
+    [filtersDispatch],
+  );
+
   useEffect(() => {
     if (isClicked && releaseData?.uri) {
       handleUrlOpen();
@@ -159,9 +181,18 @@ const ReleaseCardComponent = ({
             {releaseStyles && releaseStyles.length > 0 && (
               <div className={styles.stylesContainer}>
                 {releaseStyles.map((style: string) => (
-                  <span key={style} className={styles.stylePill}>
+                  <button
+                    key={style}
+                    type="button"
+                    className={classNames(styles.stylePill, {
+                      [styles.stylePillSelected as string]:
+                        filtersState.selectedStyles.includes(style),
+                    })}
+                    onClick={(e) => handleStylePillClick(e, style)}
+                    aria-label={`Filter by ${style} style`}
+                  >
                     {style}
-                  </span>
+                  </button>
                 ))}
               </div>
             )}

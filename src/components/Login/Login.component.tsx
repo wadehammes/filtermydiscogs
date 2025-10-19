@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useAuth } from "src/context/auth.context";
+import Logo from "src/styles/icons/fmd-stacked.svg";
 import styles from "./Login.module.css";
 
 export const Login = () => {
@@ -20,7 +21,8 @@ export const Login = () => {
           />
         </div>
 
-        <h1 className={styles.title}>Filter My Disco.gs</h1>
+        <Logo className={styles.logo} />
+
         <p className={styles.description}>
           Connect your Discogs account to filter and explore your vinyl
           collection

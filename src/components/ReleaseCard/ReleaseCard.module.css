@@ -53,7 +53,6 @@
     border-color: var(--gray-300);
     box-shadow: var(--shadow-lg);
     transform: translateY(-4px);
-    cursor: pointer;
     text-decoration: none;
     color: inherit;
 
@@ -207,6 +206,7 @@
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-full);
   color: var(--gray-600);
+  cursor: pointer;
   font-size: 0.85rem;
   font-weight: var(--font-medium);
   padding: var(--space-1) var(--space-3) 0.3rem;
@@ -215,6 +215,17 @@
   &:hover {
     background: var(--gray-200);
     border-color: var(--gray-300);
+  }
+
+  &.stylePillSelected {
+    background: var(--primary-500);
+    border-color: var(--primary-600);
+    color: var(--white);
+
+    &:hover {
+      background: var(--primary-600);
+      border-color: var(--primary-700);
+    }
   }
 }
 

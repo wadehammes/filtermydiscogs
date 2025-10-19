@@ -18,91 +18,19 @@
   }
 }
 
-.title {
-  color: var(--gray-900);
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  margin: 0;
-  white-space: nowrap;
-
-  @media (min-width: 481px) {
-    font-size: var(--text-lg);
-  }
-
-  @media (min-width: 769px) {
-    font-size: var(--text-xl);
-  }
-}
-
-.filtersContainer {
+.desktopNav {
   display: none;
 
   @media (min-width: 769px) {
-    align-items: center;
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    gap: var(--space-4);
-    justify-content: flex-start;
-    margin: 0 var(--space-4);
+    display: block;
   }
 }
 
-.mobileActions {
-  align-items: center;
-  display: flex;
-  gap: var(--space-1);
+.mobileMenu {
+  display: block;
   margin-left: auto;
-
-  @media (min-width: 481px) {
-    gap: var(--space-2);
-  }
 
   @media (min-width: 769px) {
     display: none;
-  }
-}
-
-.desktopCrateButton {
-  display: none;
-
-  @media (min-width: 769px) {
-    display: flex;
-  }
-}
-
-.userSection {
-  align-items: center;
-  display: none;
-  gap: var(--space-3);
-
-  @media (min-width: 769px) {
-    display: flex;
-  }
-}
-
-.username {
-  color: var(--gray-600);
-  font-size: var(--text-sm);
-  white-space: nowrap;
-}
-
-.crateCount {
-  align-items: center;
-  background: var(--white);
-  border-radius: 50%;
-  color: var(--primary-600);
-  display: flex;
-  font-size: 10px;
-  font-weight: var(--font-bold);
-  height: 18px;
-  justify-content: center;
-  min-width: 18px;
-  padding: 0;
-
-  @media (min-width: 769px) {
-    font-size: var(--text-xs);
-    height: 20px;
-    min-width: 20px;
   }
 }

@@ -1,0 +1,30 @@
+.mobileActions {
+  align-items: center;
+  display: flex;
+  gap: var(--space-1);
+  margin-left: auto;
+
+  @media (min-width: 481px) {
+    gap: var(--space-2);
+  }
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.userSection {
+  align-items: center;
+  display: none;
+  gap: var(--space-3);
+
+  @media (min-width: 769px) {
+    display: flex;
+  }
+}
+
+.username {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}

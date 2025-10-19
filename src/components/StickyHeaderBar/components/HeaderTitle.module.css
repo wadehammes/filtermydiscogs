@@ -1,0 +1,12 @@
+.title {
+  margin: 0;
+  white-space: nowrap;
+
+  > svg {
+    width: 230px;
+
+    @media (max-width: 768px) {
+      width: 36px;
+    }
+  }
+}
