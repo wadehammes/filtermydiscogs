@@ -22,14 +22,22 @@ export const ReleasesGrid = ({
 }: ReleasesGridProps) => {
   const isCardView = view === "card" || isMobile || isRandomMode;
 
+  const getGridClassName = () => {
+    if (isRandomMode) {
+      return styles.releasesGridRandom;
+    }
+    return isCardView ? styles.releasesGrid : styles.releasesList;
+  };
+
   return (
-    <div className={isCardView ? styles.releasesGrid : styles.releasesList}>
+    <div className={getGridClassName()}>
       {releases.map((release: DiscogsRelease) => (
         <div key={release.instance_id} id={`release-${release.instance_id}`}>
           {isCardView ? (
             <ReleaseCard
               release={release}
               isHighlighted={highlightedReleaseId === release.instance_id}
+              isRandomMode={isRandomMode}
               onExitRandomMode={onExitRandomMode}
             />
           ) : (
