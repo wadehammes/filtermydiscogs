@@ -323,14 +323,8 @@ const filtersReducer = (
       let newRandomRelease = state.randomRelease;
 
       if (newIsRandomMode) {
-        // Entering random mode - get a random release from current filtered releases
-        const currentFiltered = filterReleases(
-          state.allReleases,
-          state.selectedStyles,
-          state.selectedYears,
-          state.searchQuery,
-        );
-        newRandomRelease = getRandomRelease(currentFiltered);
+        // Entering random mode - get a random release from the FULL collection
+        newRandomRelease = getRandomRelease(state.allReleases);
         newFilteredReleases = newRandomRelease ? [newRandomRelease] : [];
       } else {
         // Exiting random mode - restore all filtered releases
@@ -343,11 +337,16 @@ const filtersReducer = (
         newRandomRelease = null;
       }
 
+      const availableStyles = getAvailableStyles(newFilteredReleases);
+      const availableYears = getAvailableYears(newFilteredReleases);
+
       return {
         ...state,
         isRandomMode: newIsRandomMode,
         randomRelease: newRandomRelease,
         filteredReleases: newFilteredReleases,
+        availableStyles,
+        availableYears,
       };
     }
 
@@ -357,10 +356,15 @@ const filtersReducer = (
         ? [newRandomRelease]
         : state.filteredReleases;
 
+      const availableStyles = getAvailableStyles(newFilteredReleases);
+      const availableYears = getAvailableYears(newFilteredReleases);
+
       return {
         ...state,
         randomRelease: newRandomRelease,
         filteredReleases: newFilteredReleases,
+        availableStyles,
+        availableYears,
       };
     }
 

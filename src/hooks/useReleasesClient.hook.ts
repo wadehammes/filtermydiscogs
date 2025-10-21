@@ -15,7 +15,8 @@ export const useReleasesClient = () => {
   const { username, isAuthenticated } = authState;
   const { state: viewState, dispatch: viewDispatch } = useView();
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { selectedSort, filteredReleases, isRandomMode } = filtersState;
+  const { selectedSort, filteredReleases, isRandomMode, allReleases } =
+    filtersState;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -137,11 +138,15 @@ export const useReleasesClient = () => {
   }, []);
 
   const handleRandomClick = useCallback(() => {
-    const randomRelease = getRandomRelease(filteredReleases);
+    // Always get a new random release from the full collection
+    const randomRelease = getRandomRelease(allReleases);
     if (randomRelease) {
-      handleReleaseClick(randomRelease.instance_id);
+      filtersDispatch({
+        type: FiltersActionTypes.SetRandomRelease,
+        payload: randomRelease,
+      });
     }
-  }, [filteredReleases, getRandomRelease, handleReleaseClick]);
+  }, [allReleases, filtersDispatch, getRandomRelease]);
 
   const handleExitRandomMode = useCallback(() => {
     filtersDispatch({
