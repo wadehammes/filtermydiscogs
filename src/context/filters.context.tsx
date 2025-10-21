@@ -37,6 +37,7 @@ export interface FiltersState {
   isRandomMode: boolean;
   randomRelease: DiscogsRelease | null;
   searchQuery: string;
+  isSearching: boolean;
 }
 
 export enum FiltersActionTypes {
@@ -54,6 +55,7 @@ export enum FiltersActionTypes {
   SetRandomRelease = "SET_RANDOM_RELEASE",
   ClearAllFilters = "CLEAR_ALL_FILTERS",
   SetSearchQuery = "SET_SEARCH_QUERY",
+  SetSearching = "SET_SEARCHING",
 }
 
 export type FiltersActions =
@@ -112,6 +114,10 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.SetSearchQuery;
       payload: string;
+    }
+  | {
+      type: FiltersActionTypes.SetSearching;
+      payload: boolean;
     };
 
 const getRandomRelease = (
@@ -481,8 +487,15 @@ const filtersReducer = (
         availableStyles,
         availableYears,
         randomRelease: newRandomRelease,
+        isSearching: false, // Clear searching state when search completes
       };
     }
+
+    case FiltersActionTypes.SetSearching:
+      return {
+        ...state,
+        isSearching: action.payload,
+      };
 
     default:
       return state;
@@ -500,6 +513,7 @@ const initialState: FiltersState = {
   isRandomMode: false,
   randomRelease: null,
   searchQuery: "",
+  isSearching: false,
 };
 
 const FiltersContext = createContext<{
