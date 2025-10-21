@@ -12,12 +12,14 @@ export const filterReleases = (
   releases: DiscogsRelease[],
   selectedStyles: string[],
   selectedYears: number[],
+  selectedFormats: string[],
   searchQuery?: string,
 ): DiscogsRelease[] => {
   // Early return if no filters applied
   if (
     selectedStyles.length === 0 &&
     selectedYears.length === 0 &&
+    selectedFormats.length === 0 &&
     !searchQuery?.trim()
   ) {
     return releases;
@@ -27,6 +29,8 @@ export const filterReleases = (
     selectedStyles.length > 0 ? new Set(selectedStyles) : null;
   const selectedYearsSet =
     selectedYears.length > 0 ? new Set(selectedYears) : null;
+  const selectedFormatsSet =
+    selectedFormats.length > 0 ? new Set(selectedFormats) : null;
   const searchTerm = searchQuery?.trim().toLowerCase();
 
   return releases.filter((release) => {
@@ -43,6 +47,15 @@ export const filterReleases = (
         selectedStylesSet.has(style),
       );
       if (!hasMatchingStyle) return false;
+    }
+
+    // Check format filter third (medium speed - array iteration)
+    if (selectedFormatsSet) {
+      const releaseFormats = release.basic_information.formats;
+      const hasMatchingFormat = releaseFormats.some((format) =>
+        selectedFormatsSet.has(format.name),
+      );
+      if (!hasMatchingFormat) return false;
     }
 
     // Check search filter last (slowest - string processing)

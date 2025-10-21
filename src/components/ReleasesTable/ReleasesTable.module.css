@@ -256,6 +256,57 @@
   font-style: italic;
 }
 
+/* Formats cell */
+.formatsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+}
+
+.formatPill {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-full);
+  color: var(--gray-600);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: var(--font-medium);
+  padding: var(--space-1) var(--space-2);
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--gray-200);
+    border-color: var(--gray-300);
+  }
+
+  &.formatPillSelected {
+    background: var(--primary-500);
+    border-color: var(--primary-600);
+    color: var(--white);
+  }
+
+  &.formatPillSelected:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-700);
+  }
+}
+
+.moreFormats {
+  color: var(--gray-500);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Mobile formats */
+.mobileFormats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: var(--space-2);
+}
+
 /* Mobile styles */
 .mobileContainer {
   display: flex;
