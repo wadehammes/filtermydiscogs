@@ -1,5 +1,6 @@
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
+import { ReleasesTable } from "src/components/ReleasesTable/ReleasesTable.component";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
 
@@ -21,6 +22,7 @@ export const ReleasesGrid = ({
   onExitRandomMode,
 }: ReleasesGridProps) => {
   const isCardView = view === "card" || isMobile || isRandomMode;
+  const isListView = view === "list" && !isMobile && !isRandomMode;
 
   const getGridClassName = () => {
     if (isRandomMode) {
@@ -28,6 +30,19 @@ export const ReleasesGrid = ({
     }
     return isCardView ? styles.releasesGrid : styles.releasesList;
   };
+
+  // Use table component for list view
+  if (isListView) {
+    return (
+      <ReleasesTable
+        releases={releases}
+        isMobile={isMobile}
+        isRandomMode={isRandomMode}
+        highlightedReleaseId={highlightedReleaseId}
+        onExitRandomMode={onExitRandomMode}
+      />
+    );
+  }
 
   return (
     <div className={getGridClassName()}>

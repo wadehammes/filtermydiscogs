@@ -17,6 +17,7 @@ export const SearchBar = ({
 }: SearchBarProps) => {
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
   const [inputValue, setInputValue] = useState(filtersState.searchQuery);
+  const { isSearching } = filtersState;
 
   // Sync input value with external state changes
   useEffect(() => {
@@ -25,15 +26,20 @@ export const SearchBar = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Optimized debounced search with cleanup
+  // Optimized debounced search with cleanup and loading state
   const debouncedSearch = useCallback(
     (query: string) => {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
 
-      // Only dispatch if query actually changed
+      // Set searching state immediately to prevent UI flickering
       if (query !== filtersState.searchQuery) {
+        filtersDispatch({
+          type: FiltersActionTypes.SetSearching,
+          payload: true,
+        });
+
         debounceTimeoutRef.current = setTimeout(() => {
           filtersDispatch({
             type: FiltersActionTypes.SetSearchQuery,
@@ -56,6 +62,10 @@ export const SearchBar = ({
 
   const handleClear = useCallback(() => {
     setInputValue("");
+    filtersDispatch({
+      type: FiltersActionTypes.SetSearching,
+      payload: false,
+    });
     filtersDispatch({
       type: FiltersActionTypes.SetSearchQuery,
       payload: "",
@@ -91,8 +101,8 @@ export const SearchBar = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={disabled}
-          className={styles.input}
+          disabled={disabled || isSearching}
+          className={`${styles.input} ${isSearching ? styles.searching : ""}`}
           aria-label="Search collection"
         />
 

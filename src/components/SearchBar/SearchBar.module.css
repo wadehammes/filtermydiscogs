@@ -46,6 +46,12 @@
     cursor: not-allowed;
   }
 
+  &.searching {
+    background: var(--gray-50);
+    border-color: var(--primary-300);
+    color: var(--gray-600);
+  }
+
   &::placeholder {
     color: var(--gray-500);
   }
