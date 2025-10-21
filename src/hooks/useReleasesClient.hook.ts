@@ -8,6 +8,7 @@ import { useCollectionData } from "src/hooks/useCollectionData.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
 import type { DiscogsRelease } from "src/types";
+import { filterReleases } from "src/utils/filterReleases";
 
 export const useReleasesClient = () => {
   const { authLoading } = useAuthRedirect();
@@ -137,15 +138,27 @@ export const useReleasesClient = () => {
   }, []);
 
   const handleRandomClick = useCallback(() => {
-    // Always get a new random release from the filtered collection
-    const randomRelease = getRandomRelease(filteredReleases);
+    // Get a new random release from the current filtered collection
+    // We need to recalculate the filtered releases to get the full collection
+    // (not just the single random release currently shown)
+    const { allReleases, selectedStyles, selectedYears, searchQuery } =
+      filtersState;
+
+    const currentFilteredReleases = filterReleases(
+      allReleases,
+      selectedStyles,
+      selectedYears,
+      searchQuery,
+    );
+
+    const randomRelease = getRandomRelease(currentFilteredReleases);
     if (randomRelease) {
       filtersDispatch({
         type: FiltersActionTypes.SetRandomRelease,
         payload: randomRelease,
       });
     }
-  }, [filteredReleases, filtersDispatch, getRandomRelease]);
+  }, [filtersState, filtersDispatch, getRandomRelease]);
 
   const handleExitRandomMode = useCallback(() => {
     filtersDispatch({
