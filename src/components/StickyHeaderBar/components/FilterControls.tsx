@@ -21,11 +21,14 @@ export const FilterControls = ({
   const {
     handleStyleChange,
     handleYearChange,
+    handleFormatChange,
     handleSortChange,
     styleOptions,
     yearOptions,
+    formatOptions,
     selectedStyles,
     selectedYears,
+    selectedFormats,
     selectedSort,
   } = useFilterHandlers(category);
 
@@ -59,6 +62,15 @@ export const FilterControls = ({
         disabled={!collection}
         multiple={true}
         placeholder="All years"
+      />
+      <AutocompleteSelect
+        label="Format"
+        options={formatOptions}
+        value={selectedFormats}
+        onChange={handleFormatChange}
+        disabled={!collection}
+        multiple={true}
+        placeholder="All formats"
       />
       <Select
         label="Sort by"

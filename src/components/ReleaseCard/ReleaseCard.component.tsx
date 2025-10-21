@@ -26,6 +26,7 @@ const ReleaseCardComponent = ({
     title,
     thumb,
     styles: releaseStyles,
+    formats: releaseFormats,
     resource_url,
   } = release.basic_information;
   const thumbUrl = thumb
@@ -126,6 +127,36 @@ const ReleaseCardComponent = ({
     ],
   );
 
+  const handleFormatPillClick = useCallback(
+    (e: React.MouseEvent, format: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      trackEvent("formatPillClicked", {
+        action: "formatPillClicked",
+        category: "releaseCard",
+        label: "Format Pill Clicked",
+        value: format,
+      });
+
+      // Exit random mode when clicking a format pill
+      if (filtersState.isRandomMode) {
+        filtersDispatch({
+          type: FiltersActionTypes.ToggleRandomMode,
+          payload: undefined,
+        });
+        // Call the callback to change view back to card
+        onExitRandomMode?.();
+      }
+
+      filtersDispatch({
+        type: FiltersActionTypes.ToggleFormat,
+        payload: format,
+      });
+    },
+    [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
+  );
+
   useEffect(() => {
     if (isClicked && releaseData?.uri) {
       handleUrlOpen();
@@ -195,6 +226,26 @@ const ReleaseCardComponent = ({
             </span>
           </div>
           <div className={styles.genresContainer}>
+            {releaseFormats && releaseFormats.length > 0 && (
+              <div className={styles.formatsContainer}>
+                {Array.from(
+                  new Set(releaseFormats.map((format) => format.name)),
+                ).map((formatName) => (
+                  <button
+                    key={formatName}
+                    type="button"
+                    className={classNames(styles.formatPill, {
+                      [styles.formatPillSelected as string]:
+                        filtersState.selectedFormats.includes(formatName),
+                    })}
+                    onClick={(e) => handleFormatPillClick(e, formatName)}
+                    aria-label={`Filter by ${formatName} format`}
+                  >
+                    {formatName}
+                  </button>
+                ))}
+              </div>
+            )}
             {releaseStyles && releaseStyles.length > 0 && (
               <div className={styles.stylesContainer}>
                 {releaseStyles.map((style: string) => (

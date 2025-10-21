@@ -18,9 +18,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
   const {
     handleStyleChange,
+    handleYearChange,
+    handleFormatChange,
     handleSortChange,
     styleOptions,
+    yearOptions,
+    formatOptions,
     selectedStyles,
+    selectedYears,
+    selectedFormats,
     selectedSort,
   } = useFilterHandlers("mobile_filters");
 
@@ -93,6 +99,36 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
                 disabled={!collection}
                 multiple={true}
                 placeholder="Select styles..."
+              />
+            </div>
+          )}
+
+          {yearOptions.length > 0 && !fetchingCollection && !error && (
+            <div className={styles.filterSection}>
+              <h3 className={styles.sectionTitle}>Year</h3>
+              <Select
+                label="Year"
+                options={yearOptions}
+                value={selectedYears.map((year) => year.toString())}
+                onChange={handleYearChange}
+                disabled={!collection}
+                multiple={true}
+                placeholder="All years"
+              />
+            </div>
+          )}
+
+          {formatOptions.length > 0 && !fetchingCollection && !error && (
+            <div className={styles.filterSection}>
+              <h3 className={styles.sectionTitle}>Format</h3>
+              <Select
+                label="Format"
+                options={formatOptions}
+                value={selectedFormats}
+                onChange={handleFormatChange}
+                disabled={!collection}
+                multiple={true}
+                placeholder="All formats"
               />
             </div>
           )}

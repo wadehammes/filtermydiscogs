@@ -141,13 +141,19 @@ export const useReleasesClient = () => {
     // Get a new random release from the current filtered collection
     // We need to recalculate the filtered releases to get the full collection
     // (not just the single random release currently shown)
-    const { allReleases, selectedStyles, selectedYears, searchQuery } =
-      filtersState;
+    const {
+      allReleases,
+      selectedStyles,
+      selectedYears,
+      selectedFormats,
+      searchQuery,
+    } = filtersState;
 
     const currentFilteredReleases = filterReleases(
       allReleases,
       selectedStyles,
       selectedYears,
+      selectedFormats,
       searchQuery,
     );
 

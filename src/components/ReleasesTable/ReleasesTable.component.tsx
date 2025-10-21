@@ -203,6 +203,51 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           },
           size: 60,
         }),
+        columnHelper.accessor("basic_information.formats", {
+          id: "formats",
+          header: "Format",
+          cell: ({ getValue }) => {
+            const releaseFormats = getValue();
+            if (!releaseFormats || releaseFormats.length === 0) return null;
+
+            const uniqueFormats = Array.from(
+              new Set(releaseFormats.map((format) => format.name)),
+            );
+
+            return (
+              <div className={styles.formatsCell}>
+                {uniqueFormats.slice(0, 2).map((formatName) => (
+                  <button
+                    key={formatName}
+                    type="button"
+                    className={classNames(styles.formatPill, {
+                      [styles.formatPillSelected as string]:
+                        filtersState.selectedFormats.includes(formatName),
+                    })}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      filtersDispatch({
+                        type: FiltersActionTypes.ToggleFormat,
+                        payload: formatName,
+                      });
+                    }}
+                    aria-label={`Filter by ${formatName} format`}
+                  >
+                    {formatName}
+                  </button>
+                ))}
+                {uniqueFormats.length > 2 && (
+                  <span className={styles.moreFormats}>
+                    +{uniqueFormats.length - 2}
+                  </span>
+                )}
+              </div>
+            );
+          },
+          size: 120,
+          enableSorting: false,
+        }),
         columnHelper.accessor("basic_information.styles", {
           id: "styles",
           header: "Styles",
@@ -240,6 +285,8 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       ],
       [
         filtersState.selectedStyles,
+        filtersState.selectedFormats,
+        filtersDispatch,
         handleStylePillClick,
         isInCrate,
         openDrawer,
@@ -351,6 +398,7 @@ const MobileReleaseCard = memo<{
     title,
     thumb,
     styles: releaseStyles,
+    formats: releaseFormats,
     resource_url,
   } = release.basic_information;
 
@@ -426,6 +474,46 @@ const MobileReleaseCard = memo<{
             <p className={styles.mobileDetails}>
               {labels[0]?.name} {year !== 0 ? `— ${year}` : ""}
             </p>
+            {releaseFormats && releaseFormats.length > 0 && (
+              <div className={styles.mobileFormats}>
+                {Array.from(
+                  new Set(releaseFormats.map((format) => format.name)),
+                )
+                  .slice(0, 2)
+                  .map((formatName) => (
+                    <button
+                      key={formatName}
+                      type="button"
+                      className={classNames(styles.formatPill, {
+                        [styles.formatPillSelected as string]:
+                          filtersState.selectedFormats.includes(formatName),
+                      })}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        filtersDispatch({
+                          type: FiltersActionTypes.ToggleFormat,
+                          payload: formatName,
+                        });
+                      }}
+                      aria-label={`Filter by ${formatName} format`}
+                    >
+                      {formatName}
+                    </button>
+                  ))}
+                {Array.from(
+                  new Set(releaseFormats.map((format) => format.name)),
+                ).length > 2 && (
+                  <span className={styles.moreFormats}>
+                    +
+                    {Array.from(
+                      new Set(releaseFormats.map((format) => format.name)),
+                    ).length - 2}{" "}
+                    more
+                  </span>
+                )}
+              </div>
+            )}
             {releaseStyles && releaseStyles.length > 0 && (
               <div className={styles.mobileStyles}>
                 {releaseStyles.slice(0, 3).map((style: string) => (

@@ -11,8 +11,10 @@ export const useFilterHandlers = (category: string) => {
   const {
     availableStyles,
     availableYears,
+    availableFormats,
     selectedStyles,
     selectedYears,
+    selectedFormats,
     selectedSort,
   } = filtersState;
 
@@ -50,6 +52,25 @@ export const useFilterHandlers = (category: string) => {
       filtersDispatch({
         type: FiltersActionTypes.SetYears,
         payload: selectedYears,
+      });
+    },
+    [category, filtersDispatch],
+  );
+
+  const handleFormatChange = useCallback(
+    (value: string | string[]) => {
+      const selectedOptions = Array.isArray(value) ? value : [value];
+
+      trackEvent("releaseFormat", {
+        action: "releaseFormatChanged",
+        category,
+        label: "Release Format Changed",
+        value: selectedOptions.join(","),
+      });
+
+      filtersDispatch({
+        type: FiltersActionTypes.SetFormats,
+        payload: selectedOptions,
       });
     },
     [category, filtersDispatch],
@@ -94,14 +115,26 @@ export const useFilterHandlers = (category: string) => {
     [availableYears],
   );
 
+  const formatOptions = useMemo(
+    () =>
+      availableFormats.map((format) => ({
+        value: format,
+        label: format,
+      })),
+    [availableFormats],
+  );
+
   return {
     handleStyleChange,
     handleYearChange,
+    handleFormatChange,
     handleSortChange,
     styleOptions,
     yearOptions,
+    formatOptions,
     selectedStyles,
     selectedYears,
+    selectedFormats,
     selectedSort,
   };
 };
