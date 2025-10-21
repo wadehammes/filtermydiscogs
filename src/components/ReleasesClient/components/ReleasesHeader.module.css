@@ -1,0 +1,43 @@
+.releasesHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: 0 var(--space-4);
+
+  p {
+    align-items: center;
+    color: var(--gray-600);
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+    margin: 0;
+  }
+}
+
+.loadingIcon {
+  align-items: center;
+  color: var(--primary-600);
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-1);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border: 2px solid var(--gray-200);
+  border-top: 2px solid var(--primary-600);
+  border-radius: 50%;
+  height: 16px;
+  width: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

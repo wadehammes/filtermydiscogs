@@ -8,6 +8,8 @@ import {
 } from "react";
 import type { DiscogsRelease } from "src/types";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
+import { getAvailableStyles } from "src/utils/getAvailableStyles";
+import { getAvailableYears } from "src/utils/getAvailableYears";
 
 export enum SortValues {
   AZLabel = "AZLabel",
@@ -34,6 +36,7 @@ export interface FiltersState {
   allReleases: DiscogsRelease[];
   isRandomMode: boolean;
   randomRelease: DiscogsRelease | null;
+  searchQuery: string;
 }
 
 export enum FiltersActionTypes {
@@ -50,6 +53,7 @@ export enum FiltersActionTypes {
   ToggleRandomMode = "TOGGLE_RANDOM_MODE",
   SetRandomRelease = "SET_RANDOM_RELEASE",
   ClearAllFilters = "CLEAR_ALL_FILTERS",
+  SetSearchQuery = "SET_SEARCH_QUERY",
 }
 
 export type FiltersActions =
@@ -104,6 +108,10 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.ClearAllFilters;
       payload: undefined;
+    }
+  | {
+      type: FiltersActionTypes.SetSearchQuery;
+      payload: string;
     };
 
 const getRandomRelease = (
@@ -147,13 +155,18 @@ const filtersReducer = (
         action.payload,
         state.selectedStyles,
         state.selectedYears,
+        state.searchQuery,
       );
       const sortedReleases = sortReleases(filteredReleases);
+      const availableStyles = getAvailableStyles(sortedReleases);
+      const availableYears = getAvailableYears(sortedReleases);
 
       return {
         ...state,
         allReleases: action.payload,
         filteredReleases: sortedReleases,
+        availableStyles,
+        availableYears,
       };
     }
 
@@ -166,13 +179,18 @@ const filtersReducer = (
         state.allReleases,
         newSelectedStyles,
         state.selectedYears,
+        state.searchQuery,
       );
       const newSortedReleases = sortReleases(newFilteredReleases);
+      const availableStyles = getAvailableStyles(newSortedReleases);
+      const availableYears = getAvailableYears(newSortedReleases);
 
       return {
         ...state,
         selectedStyles: newSelectedStyles,
         filteredReleases: newSortedReleases,
+        availableStyles,
+        availableYears,
       };
     }
 
@@ -185,13 +203,18 @@ const filtersReducer = (
         state.allReleases,
         state.selectedStyles,
         newSelectedYears,
+        state.searchQuery,
       );
       const newSortedReleases = sortReleases(newFilteredReleases);
+      const availableStyles = getAvailableStyles(newSortedReleases);
+      const availableYears = getAvailableYears(newSortedReleases);
 
       return {
         ...state,
         selectedYears: newSelectedYears,
         filteredReleases: newSortedReleases,
+        availableStyles,
+        availableYears,
       };
     }
 
@@ -210,6 +233,7 @@ const filtersReducer = (
         state.allReleases,
         [],
         state.selectedYears,
+        state.searchQuery,
       );
       const sortedReleases = sortReleases(newFilteredReleases);
 
@@ -227,6 +251,7 @@ const filtersReducer = (
         state.allReleases,
         action.payload,
         state.selectedYears,
+        state.searchQuery,
       );
       const newSortedReleases = sortReleases(newFilteredReleases);
 
@@ -244,6 +269,7 @@ const filtersReducer = (
         state.allReleases,
         state.selectedStyles,
         [],
+        state.searchQuery,
       );
       const sortedReleases = sortReleases(newFilteredReleases);
 
@@ -261,6 +287,7 @@ const filtersReducer = (
         state.allReleases,
         state.selectedStyles,
         action.payload,
+        state.searchQuery,
       );
       const newSortedReleases = sortReleases(newFilteredReleases);
 
@@ -284,6 +311,7 @@ const filtersReducer = (
           state.allReleases,
           state.selectedStyles,
           state.selectedYears,
+          state.searchQuery,
         );
         newRandomRelease = getRandomRelease(currentFiltered);
         newFilteredReleases = newRandomRelease ? [newRandomRelease] : [];
@@ -293,6 +321,7 @@ const filtersReducer = (
           state.allReleases,
           state.selectedStyles,
           state.selectedYears,
+          state.searchQuery,
         );
         newRandomRelease = null;
       }
@@ -319,14 +348,37 @@ const filtersReducer = (
     }
 
     case FiltersActionTypes.ClearAllFilters: {
-      const newFilteredReleases = filterReleases(state.allReleases, [], []);
+      const newFilteredReleases = filterReleases(state.allReleases, [], [], "");
       const sortedReleases = sortReleases(newFilteredReleases);
 
       return {
         ...state,
         selectedStyles: [],
         selectedYears: [],
+        searchQuery: "",
         filteredReleases: sortedReleases,
+        isRandomMode: false,
+        randomRelease: null,
+      };
+    }
+
+    case FiltersActionTypes.SetSearchQuery: {
+      const newFilteredReleases = filterReleases(
+        state.allReleases,
+        state.selectedStyles,
+        state.selectedYears,
+        action.payload,
+      );
+      const sortedReleases = sortReleases(newFilteredReleases);
+      const availableStyles = getAvailableStyles(sortedReleases);
+      const availableYears = getAvailableYears(sortedReleases);
+
+      return {
+        ...state,
+        searchQuery: action.payload,
+        filteredReleases: sortedReleases,
+        availableStyles,
+        availableYears,
         isRandomMode: false,
         randomRelease: null,
       };
@@ -347,6 +399,7 @@ const initialState: FiltersState = {
   allReleases: [],
   isRandomMode: false,
   randomRelease: null,
+  searchQuery: "",
 };
 
 const FiltersContext = createContext<{
@@ -374,12 +427,17 @@ export const useFilters = () => {
 
 export const useMemoizedFilteredReleases = () => {
   const { state } = useFilters();
-  const { allReleases, selectedStyles, selectedYears } = state;
+  const { allReleases, selectedStyles, selectedYears, searchQuery } = state;
 
   const filteredReleases = useMemo(() => {
-    const filtered = filterReleases(allReleases, selectedStyles, selectedYears);
+    const filtered = filterReleases(
+      allReleases,
+      selectedStyles,
+      selectedYears,
+      searchQuery,
+    );
     return sortReleases(filtered);
-  }, [allReleases, selectedStyles, selectedYears]);
+  }, [allReleases, selectedStyles, selectedYears, searchQuery]);
 
   return filteredReleases;
 };

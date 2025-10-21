@@ -3,7 +3,7 @@
   grid-template-columns: 1fr;
   grid-template-areas: "main";
   width: 100%;
-  min-height: calc(100vh - 60px); /* Subtract header height */
+  min-height: calc(100vh - 89px); /* Subtract header height */
 
   &.withSidebar {
     grid-template-columns: 1fr 400px;

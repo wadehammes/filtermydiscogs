@@ -164,6 +164,43 @@ export type PropsWithChildren = {
   children: React.ReactNode;
   className?: string;
 };
+// Search-related types
+export interface DiscogsSearchResult {
+  id: number;
+  type: string;
+  title: string;
+  uri: string;
+  resource_url: string;
+  thumb: string;
+  cover_image: string;
+  master_id?: number;
+  master_url?: string;
+  year?: number;
+  format?: string[];
+  country?: string;
+  barcode?: string[];
+  label?: string[];
+  genre?: string[];
+  style?: string[];
+  [key: string]: unknown;
+}
+
+export interface DiscogsSearchResponse {
+  pagination: DiscogsPagination;
+  results: DiscogsSearchResult[];
+}
+
+export interface SearchParams {
+  query: string;
+  page?: number;
+  perPage?: number;
+  type?: string;
+  format?: string;
+  year?: string;
+  genre?: string;
+  style?: string;
+}
+
 export type Release = DiscogsRelease;
 export type Collection = DiscogsCollection;
 export type ReleaseJson = DiscogsReleaseJson;
