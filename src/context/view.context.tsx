@@ -3,6 +3,7 @@ import {
   type FC,
   type PropsWithChildren,
   useContext,
+  useEffect,
   useReducer,
 } from "react";
 
@@ -12,6 +13,37 @@ interface ViewState {
   currentView: ViewMode;
   previousView: ViewMode;
 }
+
+const VIEW_STORAGE_KEY = "filtermydiscogs_view_state";
+
+// Helper functions for localStorage
+const saveViewState = (state: ViewState) => {
+  try {
+    localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn("Failed to save view state to localStorage:", error);
+  }
+};
+
+const loadViewState = (): ViewState | null => {
+  try {
+    const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Validate that the parsed state has the expected structure
+      if (
+        parsed &&
+        typeof parsed.currentView === "string" &&
+        typeof parsed.previousView === "string"
+      ) {
+        return parsed as ViewState;
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to load view state from localStorage:", error);
+  }
+  return null;
+};
 
 export enum ViewActionTypes {
   SetView = "SET_VIEW",
@@ -48,9 +80,14 @@ const viewReducer = (state: ViewState, action: ViewActions): ViewState => {
   }
 };
 
-const initialState: ViewState = {
-  currentView: "card",
-  previousView: "card",
+const getInitialState = (): ViewState => {
+  const saved = loadViewState();
+  return (
+    saved || {
+      currentView: "card",
+      previousView: "card",
+    }
+  );
 };
 
 const ViewContext = createContext<{
@@ -59,7 +96,12 @@ const ViewContext = createContext<{
 } | null>(null);
 
 export const ViewProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [state, dispatch] = useReducer(viewReducer, initialState);
+  const [state, dispatch] = useReducer(viewReducer, getInitialState());
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    saveViewState(state);
+  }, [state]);
 
   return (
     <ViewContext.Provider value={{ state, dispatch }}>

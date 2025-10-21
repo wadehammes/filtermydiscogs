@@ -1,12 +1,51 @@
 .loadingTrigger {
+  min-height: 60px;
+  position: relative;
+}
+
+.overlay {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  bottom: var(--space-4);
+  box-shadow: var(--shadow-lg);
   display: flex;
   justify-content: center;
-  align-items: center;
-  margin-top: var(--space-4);
-  height: calc(100vh - 150px);
-  flex: 1;
+  left: 50%;
+  padding: var(--space-4);
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 100;
+}
 
-  > * {
-    margin: auto;
+.content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border: 2px solid var(--gray-200);
+  border-radius: 50%;
+  border-top-color: var(--primary-600);
+  height: 24px;
+  width: 24px;
+}
+
+.message {
+  color: var(--gray-700);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

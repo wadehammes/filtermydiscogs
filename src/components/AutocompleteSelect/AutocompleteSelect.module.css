@@ -1,23 +1,23 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  position: relative;
   flex: 1;
+  gap: var(--space-2);
+  position: relative;
 }
 
 .trigger {
   align-items: center;
-  background: white;
+  background: var(--white);
   border: 1px solid var(--gray-300);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--text-sm);
   justify-content: space-between;
-  min-height: 40px;
-  padding: 8px 12px;
+  min-height: var(--input-height);
+  padding: var(--space-2) var(--space-3);
   text-align: left;
 
   &:hover:not(:disabled) {
@@ -61,7 +61,7 @@
   display: flex;
   flex: 1;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
   max-height: 24px;
   overflow: hidden;
 }
@@ -73,7 +73,7 @@
   border-radius: 12px;
   color: var(--primary-700);
   display: inline-flex;
-  font-size: 12px;
+  font-size: var(--text-xs);
   height: 20px;
   max-width: 120px;
   padding: 2px 2px 2px 6px;
@@ -118,11 +118,11 @@
 }
 
 .icon {
-  color: #666;
-  font-size: 12px;
-  margin-left: 8px;
+  color: var(--gray-500);
+  font-size: var(--text-xs);
+  margin-left: var(--space-2);
   transform: rotate(90deg);
-  transition: transform 0.2s;
+  transition: transform var(--transition-normal);
 
   &.iconOpen {
     transform: rotate(270deg);
@@ -134,15 +134,15 @@
 }
 
 .dropdown {
-  background: white;
+  background: var(--white);
   border: 1px solid var(--gray-300);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
   left: 0;
   position: absolute;
   right: 0;
   top: 100%;
-  z-index: 1000;
+  z-index: var(--z-dropdown);
 }
 
 .searchContainer {
