@@ -13,6 +13,7 @@ import styles from "./ReleaseCard.module.css";
 const ReleaseCardComponent = ({
   release,
   isHighlighted = false,
+  isRandomMode = false,
   onExitRandomMode,
 }: ReleaseCardProps) => {
   const [isClicked, setIsClicked] = useState(false);
@@ -138,6 +139,7 @@ const ReleaseCardComponent = ({
         className={classNames(styles.releaseCard, {
           [styles.highlighted as string]: isHighlighted,
           [styles.inCrate as string]: isInCrate(release.instance_id),
+          [styles.randomMode as string]: isRandomMode,
         })}
       >
         <div

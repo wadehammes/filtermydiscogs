@@ -5,6 +5,16 @@
   padding: 0 var(--space-4);
 }
 
+.releasesGridRandom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--space-8);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 .releasesList {
   display: flex;
   flex-direction: column;
