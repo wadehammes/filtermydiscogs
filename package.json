@@ -36,7 +36,8 @@
     "oauth-1.0a": "^2.2.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-intersection-observer": "^9.4.1"
+    "react-intersection-observer": "^9.4.1",
+    "sharp": "^0.34.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.6",
@@ -51,7 +52,7 @@
     "@types/jest-when": "^3.5.2",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash.flatten": "^4.4.9",
-    "@types/node": "^24.8.1",
+    "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
     "critters": "^0.0.25",
     "identity-obj-proxy": "^3.0.0",
