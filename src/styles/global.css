@@ -1,3 +1,6 @@
+/* Import pill styles */
+@import "./pills.css";
+
 :root {
   --white: #ffffff;
   --black: #171717;

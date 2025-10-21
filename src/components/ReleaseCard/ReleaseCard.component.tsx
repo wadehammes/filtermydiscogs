@@ -234,10 +234,15 @@ const ReleaseCardComponent = ({
                   <button
                     key={formatName}
                     type="button"
-                    className={classNames(styles.formatPill, {
-                      [styles.formatPillSelected as string]:
-                        filtersState.selectedFormats.includes(formatName),
-                    })}
+                    className={classNames(
+                      "pill",
+                      "pillFormat",
+                      styles.formatPill,
+                      {
+                        pillSelected:
+                          filtersState.selectedFormats.includes(formatName),
+                      },
+                    )}
                     onClick={(e) => handleFormatPillClick(e, formatName)}
                     aria-label={`Filter by ${formatName} format`}
                   >
@@ -252,10 +257,15 @@ const ReleaseCardComponent = ({
                   <button
                     key={style}
                     type="button"
-                    className={classNames(styles.stylePill, {
-                      [styles.stylePillSelected as string]:
-                        filtersState.selectedStyles.includes(style),
-                    })}
+                    className={classNames(
+                      "pill",
+                      "pillStyle",
+                      styles.stylePill,
+                      {
+                        pillSelected:
+                          filtersState.selectedStyles.includes(style),
+                      },
+                    )}
                     onClick={(e) => handleStylePillClick(e, style)}
                     aria-label={`Filter by ${style} style`}
                   >

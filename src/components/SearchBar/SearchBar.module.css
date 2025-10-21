@@ -58,23 +58,23 @@
 }
 
 .clearButton {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.5rem;
-  height: 1.5rem;
-  border: none;
+  align-items: center;
   background: none;
+  border: none;
+  border-radius: 50%;
   color: var(--gray-500);
-  font-size: 1.25rem;
-  line-height: 1;
   cursor: pointer;
   display: flex;
-  align-items: center;
+  font-size: var(--text-xl);
+  height: 1.5rem;
   justify-content: center;
-  border-radius: 50%;
+  line-height: 1;
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
   transition: all var(--transition-normal);
+  width: 1.5rem;
 
   &:hover {
     background-color: var(--gray-100);
@@ -82,30 +82,30 @@
   }
 
   &:focus {
-    outline: none;
     background-color: var(--gray-100);
     box-shadow: 0 0 0 2px var(--gray-400);
+    outline: none;
   }
 }
 
 .loadingIndicator {
+  align-items: center;
+  display: flex;
+  height: 1.5rem;
+  justify-content: center;
   position: absolute;
-  right: 0.75rem;
+  right: var(--space-3);
   top: 50%;
   transform: translateY(-50%);
   width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
   .spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid var(--gray-200);
-    border-top: 2px solid var(--gray-600);
-    border-radius: 50%;
     animation: spin 1s linear infinite;
+    border: 2px solid var(--gray-200);
+    border-radius: 50%;
+    border-top: 2px solid var(--gray-600);
+    height: 1rem;
+    width: 1rem;
   }
 }
 
@@ -119,21 +119,21 @@
 }
 
 .errorMessage {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
   background-color: var(--red-50);
+  border-radius: var(--radius-sm);
   color: var(--red-700);
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  padding: var(--space-2);
   text-align: center;
 }
 
 .noResults {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
   background-color: var(--gray-50);
+  border-radius: var(--radius-sm);
   color: var(--gray-600);
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  padding: var(--space-2);
   text-align: center;
 }

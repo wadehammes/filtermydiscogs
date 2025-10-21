@@ -16,7 +16,7 @@
   overflow: hidden;
   position: relative;
   min-height: 0;
-  scroll-margin-top: 150px;
+  scroll-margin-top: 250px;
 
   &.highlighted {
     border: 2px solid var(--primary-500);
@@ -136,6 +136,11 @@
 
 .genresContainer {
   padding: 0 var(--space-3) var(--space-1);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
 }
 
 .quickLinks {
@@ -162,12 +167,12 @@
   color: var(--white);
   cursor: pointer;
   display: flex;
-  font-size: 0.5rem;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
   gap: var(--space-1);
   height: 24px;
   justify-content: center;
-  padding: 0.15rem var(--space-3);
+  padding: var(--space-1) var(--space-3);
   position: absolute;
   right: var(--space-3);
   top: var(--space-3);
@@ -201,72 +206,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-2);
-  justify-content: flex-start;
-}
-
-.stylePill {
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-full);
-  color: var(--gray-600);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-3) 0.3rem;
-  transition: all var(--transition-normal);
-
-  &:hover {
-    background: var(--gray-200);
-    border-color: var(--gray-300);
-  }
-
-  &.stylePillSelected {
-    background: var(--primary-500);
-    border-color: var(--primary-600);
-    color: var(--white);
-
-    &:hover {
-      background: var(--primary-600);
-      border-color: var(--primary-700);
-    }
-  }
+  align-items: center;
 }
 
 .formatsContainer {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-2);
-  justify-content: flex-start;
-}
-
-.formatPill {
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-full);
-  color: var(--gray-600);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-3) 0.3rem;
-  transition: all var(--transition-normal);
-
-  &:hover {
-    background: var(--gray-200);
-    border-color: var(--gray-300);
-  }
-
-  &.formatPillSelected {
-    background: var(--primary-500);
-    border-color: var(--primary-600);
-    color: var(--white);
-
-    &:hover {
-      background: var(--primary-600);
-      border-color: var(--primary-700);
-    }
-  }
+  align-items: center;
 }
 
 .discogsButton {
@@ -294,6 +241,6 @@
   }
 
   @media (min-width: 768px) {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
   }
 }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "src/components/Providers";
 import "../styles/global.css";
+import "../styles/pills.css";
 import { GoogleTagManager } from "@next/third-parties/google";
 
 export const metadata: Metadata = {

@@ -39,7 +39,7 @@
 .headerCell {
   border-right: 1px solid var(--gray-200);
   color: var(--gray-700);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   letter-spacing: 0.025em;
   padding: var(--space-1) var(--space-2);
@@ -47,33 +47,18 @@
   text-transform: uppercase;
   transition: var(--transition-fast);
 
-  &.sortable {
-    cursor: pointer;
-    user-select: none;
-  }
-
-  &.sortable:hover {
-    background: var(--gray-100);
-  }
-
   &:last-child {
     border-right: none;
   }
 
   @media (min-width: 640px) {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     padding: var(--space-4);
   }
 
   @media (min-width: 768px) {
     padding: var(--space-5);
   }
-}
-
-.sortIcon {
-  color: var(--gray-500);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
 }
 
 .tbody {
@@ -177,7 +162,7 @@
 /* Ensure first column (checkbox) is narrow */
 .table td:first-child,
 .table th:first-child {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   letter-spacing: 0.025em;
   text-align: center;
@@ -217,42 +202,14 @@
 .stylesCell {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: var(--space-2);
+  align-items: center;
   padding: var(--space-1) var(--space-2);
-}
-
-.stylePill {
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-full);
-  color: var(--gray-600);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-2);
-  transition: all var(--transition-normal);
-  white-space: nowrap;
-
-  &:hover {
-    background: var(--gray-200);
-    border-color: var(--gray-300);
-  }
-
-  &.stylePillSelected {
-    background: var(--primary-500);
-    border-color: var(--primary-600);
-    color: var(--white);
-  }
-
-  &.stylePillSelected:hover {
-    background: var(--primary-600);
-    border-color: var(--primary-700);
-  }
 }
 
 .moreStyles {
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-style: italic;
 }
 
@@ -260,42 +217,16 @@
 .formatsCell {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: var(--space-2);
+  align-items: center;
   padding: var(--space-1) var(--space-2);
 }
 
-.formatPill {
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-full);
-  color: var(--gray-600);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-2);
-  transition: all var(--transition-normal);
-  white-space: nowrap;
-
-  &:hover {
-    background: var(--gray-200);
-    border-color: var(--gray-300);
-  }
-
-  &.formatPillSelected {
-    background: var(--primary-500);
-    border-color: var(--primary-600);
-    color: var(--white);
-  }
-
-  &.formatPillSelected:hover {
-    background: var(--primary-600);
-    border-color: var(--primary-700);
-  }
-}
+/* Base pill styles are in global pills.css */
 
 .moreFormats {
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-style: italic;
 }
 
@@ -303,7 +234,7 @@
 .mobileFormats {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
   margin-top: var(--space-2);
 }
 

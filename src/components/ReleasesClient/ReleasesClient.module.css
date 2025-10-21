@@ -92,7 +92,7 @@
   contain-intrinsic-size: 400px 300px;
 
   & > div {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 250px;
   }
 
   @media (min-width: 620px) {
@@ -110,7 +110,7 @@
   contain-intrinsic-size: 1px 800px;
 
   & > div {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 250px;
   }
 }
 

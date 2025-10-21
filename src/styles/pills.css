@@ -1,0 +1,68 @@
+/* Base pill styles */
+.pill {
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: var(--font-medium);
+  padding: 0.2rem var(--space-2) 0.2rem;
+  transition: all var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Format pill styles */
+.pillFormat {
+  background: var(--warning-50);
+  border: 1px solid var(--warning-500);
+  color: var(--warning-600);
+
+  &:hover {
+    background: var(--warning-500);
+    border-color: var(--warning-600);
+    color: var(--white);
+  }
+
+  &.pillSelected {
+    background: var(--warning-500);
+    border-color: var(--warning-600);
+    color: var(--white);
+
+    &:hover {
+      background: var(--warning-600);
+      border-color: var(--warning-600);
+    }
+  }
+}
+
+/* Style pill styles */
+.pillStyle {
+  background: var(--success-50);
+  border: 1px solid var(--success-500);
+  color: var(--success-600);
+
+  &:hover {
+    background: var(--success-500);
+    border-color: var(--success-600);
+    color: var(--white);
+  }
+
+  &.pillSelected {
+    background: var(--success-500);
+    border-color: var(--success-600);
+    color: var(--white);
+
+    &:hover {
+      background: var(--success-600);
+      border-color: var(--success-600);
+    }
+  }
+}
+
+/* Container for pills */
+.pillsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}

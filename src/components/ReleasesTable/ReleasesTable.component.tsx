@@ -4,8 +4,6 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel,
-  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import classNames from "classnames";
@@ -14,6 +12,7 @@ import type React from "react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.component";
+import ReleaseCard from "src/components/ReleaseCard/ReleaseCard.component";
 import { useCrate } from "src/context/crate.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
@@ -31,10 +30,15 @@ interface ReleasesTableProps {
 const columnHelper = createColumnHelper<DiscogsRelease>();
 
 export const ReleasesTable = memo<ReleasesTableProps>(
-  ({ releases, isMobile, highlightedReleaseId, onExitRandomMode }) => {
+  ({
+    releases,
+    isMobile,
+    isRandomMode,
+    highlightedReleaseId,
+    onExitRandomMode,
+  }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
     const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-    const [sorting, setSorting] = useState<SortingState>([]);
 
     const handleStylePillClick = useCallback(
       (e: React.MouseEvent, style: string) => {
@@ -65,11 +69,8 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
     );
 
-    const _handleCrateToggle = useCallback(
-      (e: React.MouseEvent, release: DiscogsRelease) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+    const handleCheckboxChange = useCallback(
+      (release: DiscogsRelease) => {
         if (isInCrate(release.instance_id)) {
           removeFromCrate(release.instance_id);
         } else {
@@ -93,15 +94,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   type="checkbox"
                   className={styles.crateCheckbox}
                   checked={isInCrate(release.instance_id)}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    if (isInCrate(release.instance_id)) {
-                      removeFromCrate(release.instance_id);
-                    } else {
-                      addToCrate(release);
-                      openDrawer();
-                    }
-                  }}
+                  onChange={() => handleCheckboxChange(release)}
                   aria-label={
                     isInCrate(release.instance_id)
                       ? "Remove from crate"
@@ -169,6 +162,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             );
           },
           size: 180,
+          enableSorting: false,
         }),
         columnHelper.accessor("basic_information.title", {
           id: "title",
@@ -178,6 +172,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             return <div className={styles.titleCell}>{title}</div>;
           },
           size: 220,
+          enableSorting: false,
         }),
         columnHelper.accessor("basic_information.labels", {
           id: "label",
@@ -191,6 +186,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             );
           },
           size: 120,
+          enableSorting: false,
         }),
         columnHelper.accessor("basic_information.year", {
           id: "year",
@@ -202,6 +198,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             );
           },
           size: 60,
+          enableSorting: false,
         }),
         columnHelper.accessor("basic_information.formats", {
           id: "formats",
@@ -220,10 +217,15 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   <button
                     key={formatName}
                     type="button"
-                    className={classNames(styles.formatPill, {
-                      [styles.formatPillSelected as string]:
-                        filtersState.selectedFormats.includes(formatName),
-                    })}
+                    className={classNames(
+                      "pill",
+                      "pillFormat",
+                      styles.formatPill,
+                      {
+                        pillSelected:
+                          filtersState.selectedFormats.includes(formatName),
+                      },
+                    )}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -261,10 +263,15 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   <button
                     key={style}
                     type="button"
-                    className={classNames(styles.stylePill, {
-                      [styles.stylePillSelected as string]:
-                        filtersState.selectedStyles.includes(style),
-                    })}
+                    className={classNames(
+                      "pill",
+                      "pillStyle",
+                      styles.stylePill,
+                      {
+                        pillSelected:
+                          filtersState.selectedStyles.includes(style),
+                      },
+                    )}
                     onClick={(e) => handleStylePillClick(e, style)}
                     aria-label={`Filter by ${style} style`}
                   >
@@ -288,32 +295,26 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         filtersState.selectedFormats,
         filtersDispatch,
         handleStylePillClick,
+        handleCheckboxChange,
         isInCrate,
-        openDrawer,
-        removeFromCrate,
-        addToCrate,
       ],
     );
 
     const table = useReactTable({
       data: releases,
       columns,
-      state: {
-        sorting,
-      },
-      onSortingChange: setSorting,
       getCoreRowModel: getCoreRowModel(),
-      getSortedRowModel: getSortedRowModel(),
     });
 
     if (isMobile) {
       return (
         <div className={styles.mobileContainer}>
           {releases.map((release) => (
-            <MobileReleaseCard
+            <ReleaseCard
               key={release.instance_id}
               release={release}
               isHighlighted={highlightedReleaseId === release.instance_id}
+              isRandomMode={isRandomMode}
               onExitRandomMode={onExitRandomMode}
             />
           ))}
@@ -330,26 +331,13 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className={classNames(styles.headerCell, {
-                      [styles.sortable as string]: header.column.getCanSort(),
-                    })}
+                    className={styles.headerCell}
                     style={{ width: header.getSize() }}
-                    onClick={header.column.getToggleSortingHandler()}
                   >
-                    <div className={styles.headerContent}>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                      {header.column.getCanSort() && (
-                        <span className={styles.sortIcon}>
-                          {{
-                            asc: "↑",
-                            desc: "↓",
-                          }[header.column.getIsSorted() as string] ?? "↕"}
-                        </span>
-                      )}
-                    </div>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                   </th>
                 ))}
               </tr>
@@ -380,203 +368,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     );
   },
 );
-
-// Mobile card component for small screens
-const MobileReleaseCard = memo<{
-  release: DiscogsRelease;
-  isHighlighted: boolean;
-  onExitRandomMode: () => void;
-}>(({ release, isHighlighted }) => {
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const [isClicked, setIsClicked] = useState(false);
-
-  const {
-    labels,
-    year,
-    artists,
-    title,
-    thumb,
-    styles: releaseStyles,
-    formats: releaseFormats,
-    resource_url,
-  } = release.basic_information;
-
-  const thumbUrl = thumb
-    ? thumb
-    : "https://placehold.jp/effbf2/000/60x60.png?text=%F0%9F%98%B5";
-
-  const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
-    resource_url.split("/").pop() || "",
-    isClicked,
-  );
-
-  const handleReleaseClick = useCallback(
-    async (e: React.MouseEvent) => {
-      e.preventDefault();
-      setIsClicked(true);
-
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "home",
-        label: "Release Clicked (Mobile Table View)",
-        value: resource_url,
-      });
-
-      if (releaseData?.uri) {
-        window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-        return;
-      }
-    },
-    [releaseData?.uri, resource_url],
-  );
-
-  const handleCrateToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (isInCrate(release.instance_id)) {
-        removeFromCrate(release.instance_id);
-      } else {
-        addToCrate(release);
-        openDrawer();
-      }
-    },
-    [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
-  );
-
-  return (
-    <>
-      <div
-        className={classNames(styles.mobileCard, {
-          [styles.highlighted as string]: isHighlighted,
-          [styles.inCrate as string]: isInCrate(release.instance_id),
-        })}
-      >
-        <div className={styles.mobileImageContainer}>
-          <Image
-            src={thumbUrl}
-            height={60}
-            width={60}
-            quality={85}
-            alt={title}
-            loading="lazy"
-            sizes="60px"
-          />
-        </div>
-
-        <div className={styles.mobileContent}>
-          <div className={styles.mobileMainInfo}>
-            <h3 className={styles.mobileTitle}>
-              {artists.map((artist) => artist.name).join(", ")} - {title}
-            </h3>
-            <p className={styles.mobileDetails}>
-              {labels[0]?.name} {year !== 0 ? `— ${year}` : ""}
-            </p>
-            {releaseFormats && releaseFormats.length > 0 && (
-              <div className={styles.mobileFormats}>
-                {Array.from(
-                  new Set(releaseFormats.map((format) => format.name)),
-                )
-                  .slice(0, 2)
-                  .map((formatName) => (
-                    <button
-                      key={formatName}
-                      type="button"
-                      className={classNames(styles.formatPill, {
-                        [styles.formatPillSelected as string]:
-                          filtersState.selectedFormats.includes(formatName),
-                      })}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        filtersDispatch({
-                          type: FiltersActionTypes.ToggleFormat,
-                          payload: formatName,
-                        });
-                      }}
-                      aria-label={`Filter by ${formatName} format`}
-                    >
-                      {formatName}
-                    </button>
-                  ))}
-                {Array.from(
-                  new Set(releaseFormats.map((format) => format.name)),
-                ).length > 2 && (
-                  <span className={styles.moreFormats}>
-                    +
-                    {Array.from(
-                      new Set(releaseFormats.map((format) => format.name)),
-                    ).length - 2}{" "}
-                    more
-                  </span>
-                )}
-              </div>
-            )}
-            {releaseStyles && releaseStyles.length > 0 && (
-              <div className={styles.mobileStyles}>
-                {releaseStyles.slice(0, 3).map((style: string) => (
-                  <button
-                    key={style}
-                    type="button"
-                    className={classNames(styles.stylePill, {
-                      [styles.stylePillSelected as string]:
-                        filtersState.selectedStyles.includes(style),
-                    })}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      filtersDispatch({
-                        type: FiltersActionTypes.ToggleStyle,
-                        payload: style,
-                      });
-                    }}
-                    aria-label={`Filter by ${style} style`}
-                  >
-                    {style}
-                  </button>
-                ))}
-                {releaseStyles.length > 3 && (
-                  <span className={styles.moreStyles}>
-                    +{releaseStyles.length - 3} more
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.mobileActions}>
-            <button
-              type="button"
-              className={styles.crateButton}
-              onClick={handleCrateToggle}
-              aria-label={
-                isInCrate(release.instance_id)
-                  ? "Remove from crate"
-                  : "Add to crate"
-              }
-            >
-              {isInCrate(release.instance_id) ? "− Remove" : "+ Add"}
-            </button>
-            <button
-              type="button"
-              className={styles.discogsButton}
-              onClick={handleReleaseClick}
-              disabled={isLoading}
-            >
-              View on Discogs
-            </button>
-          </div>
-        </div>
-      </div>
-      <LoadingOverlay
-        message="Fetching Discogs Release URL"
-        isVisible={isLoading}
-      />
-    </>
-  );
-});
 
 // Release link button component
 const ReleaseLinkButton = memo<{ release: DiscogsRelease }>(({ release }) => {
@@ -635,7 +426,6 @@ const ReleaseLinkButton = memo<{ release: DiscogsRelease }>(({ release }) => {
 });
 
 ReleasesTable.displayName = "ReleasesTable";
-MobileReleaseCard.displayName = "MobileReleaseCard";
 ReleaseLinkButton.displayName = "ReleaseLinkButton";
 
 export default ReleasesTable;
