@@ -237,10 +237,15 @@ const filtersReducer = (
       );
       const sortedReleases = sortReleases(newFilteredReleases);
 
+      const availableStyles = getAvailableStyles(sortedReleases);
+      const availableYears = getAvailableYears(sortedReleases);
+
       return {
         ...state,
         selectedStyles: [],
         filteredReleases: sortedReleases,
+        availableStyles,
+        availableYears,
         isRandomMode: false,
         randomRelease: null,
       };
@@ -254,11 +259,15 @@ const filtersReducer = (
         state.searchQuery,
       );
       const newSortedReleases = sortReleases(newFilteredReleases);
+      const availableStyles = getAvailableStyles(newSortedReleases);
+      const availableYears = getAvailableYears(newSortedReleases);
 
       return {
         ...state,
         selectedStyles: action.payload,
         filteredReleases: newSortedReleases,
+        availableStyles,
+        availableYears,
         isRandomMode: false,
         randomRelease: null,
       };
@@ -272,11 +281,15 @@ const filtersReducer = (
         state.searchQuery,
       );
       const sortedReleases = sortReleases(newFilteredReleases);
+      const availableStyles = getAvailableStyles(sortedReleases);
+      const availableYears = getAvailableYears(sortedReleases);
 
       return {
         ...state,
         selectedYears: [],
         filteredReleases: sortedReleases,
+        availableStyles,
+        availableYears,
         isRandomMode: false,
         randomRelease: null,
       };
@@ -290,11 +303,15 @@ const filtersReducer = (
         state.searchQuery,
       );
       const newSortedReleases = sortReleases(newFilteredReleases);
+      const availableStyles = getAvailableStyles(newSortedReleases);
+      const availableYears = getAvailableYears(newSortedReleases);
 
       return {
         ...state,
         selectedYears: action.payload,
         filteredReleases: newSortedReleases,
+        availableStyles,
+        availableYears,
         isRandomMode: false,
         randomRelease: null,
       };
