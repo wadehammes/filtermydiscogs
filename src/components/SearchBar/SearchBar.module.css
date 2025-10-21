@@ -1,0 +1,133 @@
+.searchBar {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+
+  @media (min-width: 640px) {
+    max-width: 500px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 600px;
+  }
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  padding-right: 3rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: var(--input-height);
+  background-color: var(--white);
+  color: var(--gray-900);
+  transition: all var(--transition-normal);
+
+  &:hover:not(:disabled) {
+    border-color: var(--gray-400);
+  }
+
+  &:focus {
+    outline: 1px solid var(--primary-600);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    background: var(--gray-50);
+    color: var(--gray-400);
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: var(--gray-500);
+  }
+}
+
+.clearButton {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  background: none;
+  color: var(--gray-500);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--transition-normal);
+
+  &:hover {
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+  }
+
+  &:focus {
+    outline: none;
+    background-color: var(--gray-100);
+    box-shadow: 0 0 0 2px var(--gray-400);
+  }
+}
+
+.loadingIndicator {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--gray-200);
+    border-top: 2px solid var(--gray-600);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.errorMessage {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--red-50);
+  color: var(--red-700);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.noResults {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--gray-50);
+  color: var(--gray-600);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  text-align: center;
+}

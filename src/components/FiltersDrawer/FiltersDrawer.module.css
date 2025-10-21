@@ -105,3 +105,7 @@
   font-weight: var(--font-semibold);
   margin: 0;
 }
+
+.searchBar {
+  width: 100%;
+}

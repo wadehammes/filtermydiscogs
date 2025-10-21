@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import OAuth from "oauth-1.0a";
-import type { DiscogsCollection } from "src/types";
+import type { DiscogsCollection, DiscogsSearchResponse } from "src/types";
 
 interface OAuthHeaders {
   Authorization: string;
@@ -10,6 +10,14 @@ interface FetchOptions {
   method: string;
   headers: Record<string, string>;
   body?: string;
+}
+
+interface DiscogsIdentity {
+  id: number;
+  username: string;
+  resource_url: string;
+  consumer_name: string;
+  [key: string]: unknown;
 }
 
 interface DiscogsTokens {
@@ -83,7 +91,7 @@ class DiscogsOAuthService {
     oauthToken: string,
     oauthTokenSecret: string,
     additionalData: Record<string, string> = {},
-  ): Promise<any> {
+  ): Promise<unknown> {
     try {
       // For GET requests, add additional data as query parameters
       let requestUrl = url;
@@ -253,13 +261,13 @@ class DiscogsOAuthService {
   async getIdentity(
     oauthToken: string,
     oauthTokenSecret: string,
-  ): Promise<any> {
+  ): Promise<DiscogsIdentity> {
     return this.makeAuthenticatedRequest(
       "https://api.discogs.com/oauth/identity",
       "GET",
       oauthToken,
       oauthTokenSecret,
-    );
+    ) as Promise<DiscogsIdentity>;
   }
 
   async getCollection(
@@ -290,6 +298,49 @@ class DiscogsOAuthService {
       return result as DiscogsCollection;
     } catch (error) {
       console.error("getCollection error:", error);
+      throw error;
+    }
+  }
+
+  async searchReleases(
+    oauthToken: string,
+    oauthTokenSecret: string,
+    query: string,
+    page: number = 1,
+    perPage: number = 100,
+    type: string = "release",
+    format?: string,
+    year?: string,
+    genre?: string,
+    style?: string,
+  ): Promise<DiscogsSearchResponse> {
+    const url = "https://api.discogs.com/database/search";
+
+    const searchParams: Record<string, string> = {
+      q: query,
+      type,
+      page: page.toString(),
+      per_page: perPage.toString(),
+    };
+
+    // Add optional filters
+    if (format) searchParams.format = format;
+    if (year) searchParams.year = year;
+    if (genre) searchParams.genre = genre;
+    if (style) searchParams.style = style;
+
+    try {
+      const result = await this.makeAuthenticatedRequest(
+        url,
+        "GET",
+        oauthToken,
+        oauthTokenSecret,
+        searchParams,
+      );
+
+      return result as DiscogsSearchResponse;
+    } catch (error) {
+      console.error("searchReleases error:", error);
       throw error;
     }
   }

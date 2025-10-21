@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
@@ -72,6 +73,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
         </div>
 
         <div className={styles.content}>
+          <div className={styles.filterSection}>
+            <h3 className={styles.sectionTitle}>Search</h3>
+            <SearchBar
+              placeholder="Search your collection..."
+              disabled={!collection}
+              className={styles.searchBar || ""}
+            />
+          </div>
+
           {styleOptions.length > 0 && !fetchingCollection && !error && (
             <div className={styles.filterSection}>
               <h3 className={styles.sectionTitle}>Style</h3>

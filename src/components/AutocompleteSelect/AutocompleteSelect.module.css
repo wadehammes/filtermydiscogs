@@ -9,7 +9,7 @@
 .trigger {
   align-items: center;
   background: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--gray-300);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -21,17 +21,17 @@
   text-align: left;
 
   &:hover:not(:disabled) {
-    border-color: #999;
+    border-color: var(--gray-400);
   }
 
   &:focus {
-    outline: 2px solid #1976d2;
-    outline-offset: 2px;
+    outline: 1px solid var(--primary-600);
+    outline-offset: 1px;
   }
 
   &:disabled {
-    background: #f5f5f5;
-    color: #999;
+    background: var(--gray-50);
+    color: var(--gray-400);
     cursor: not-allowed;
   }
 }
@@ -135,7 +135,7 @@
 
 .dropdown {
   background: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--gray-300);
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   left: 0;
@@ -160,7 +160,7 @@
   width: 100%;
 
   &::placeholder {
-    color: #999;
+    color: var(--gray-400);
   }
 }
 
@@ -245,7 +245,7 @@
 }
 
 .noResults {
-  color: #999;
+  color: var(--gray-400);
   font-size: 14px;
   padding: 16px;
   text-align: center;

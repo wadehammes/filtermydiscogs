@@ -1,4 +1,5 @@
 import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSelect.component";
+import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
@@ -36,6 +37,11 @@ export const FilterControls = ({
 
   return (
     <div className={styles.filtersContainer}>
+      <SearchBar
+        placeholder="Search your collection..."
+        disabled={!collection}
+        className={styles.searchBar || ""}
+      />
       <AutocompleteSelect
         label="Style"
         options={styleOptions}

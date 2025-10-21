@@ -1,0 +1,12 @@
+.loadingTrigger {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--space-4);
+  height: calc(100vh - 150px);
+  flex: 1;
+
+  > * {
+    margin: auto;
+  }
+}
