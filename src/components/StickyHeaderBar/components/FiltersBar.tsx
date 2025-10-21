@@ -8,6 +8,7 @@ import Select from "src/components/Select/Select.component";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { useCrate } from "src/context/crate.context";
+import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
 
@@ -63,6 +64,21 @@ export const FiltersBar = ({
     });
   };
 
+  const { dispatch: filtersDispatch } = useFilters();
+
+  const handleClearAllFilters = () => {
+    filtersDispatch({
+      type: FiltersActionTypes.ClearAllFilters,
+      payload: undefined,
+    });
+    trackEvent("filtersCleared", {
+      action: "clearAllFilters",
+      category: "filters",
+      label: "Clear All Filters",
+      value: "desktop",
+    });
+  };
+
   const isDisabled = disabled || fetchingCollection || !collection || error;
 
   if (styleOptions.length === 0 || isDisabled) {
@@ -108,6 +124,15 @@ export const FiltersBar = ({
             disabled={fetchingCollection}
             placeholder="Select sort option..."
           />
+          <Button
+            variant="secondary"
+            size="md"
+            onPress={handleClearAllFilters}
+            disabled={!collection}
+            aria-label="Clear all filters"
+          >
+            Clear All
+          </Button>
 
           {/* Crate button in desktop filters */}
           {showCrate && selectedReleases.length > 0 && (
