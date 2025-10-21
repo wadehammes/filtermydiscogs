@@ -16,39 +16,28 @@ export const SearchBar = ({
   disabled = false,
 }: SearchBarProps) => {
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const [inputValue, setInputValue] = useState(filtersState.searchQuery);
+  const [inputValue, setInputValue] = useState("");
   const { isSearching } = filtersState;
 
-  // Sync input value with external state changes
-  useEffect(() => {
-    setInputValue(filtersState.searchQuery);
-  }, [filtersState.searchQuery]);
+  // No need to sync with external state - let the input be controlled locally
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Optimized debounced search with cleanup and loading state
+  // Optimized debounced search with cleanup
   const debouncedSearch = useCallback(
     (query: string) => {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
 
-      // Set searching state immediately to prevent UI flickering
-      if (query !== filtersState.searchQuery) {
+      debounceTimeoutRef.current = setTimeout(() => {
         filtersDispatch({
-          type: FiltersActionTypes.SetSearching,
-          payload: true,
+          type: FiltersActionTypes.SetSearchQuery,
+          payload: query,
         });
-
-        debounceTimeoutRef.current = setTimeout(() => {
-          filtersDispatch({
-            type: FiltersActionTypes.SetSearchQuery,
-            payload: query,
-          });
-        }, 300);
-      }
+      }, 300);
     },
-    [filtersDispatch, filtersState.searchQuery],
+    [filtersDispatch],
   );
 
   const handleInputChange = useCallback(
@@ -101,7 +90,7 @@ export const SearchBar = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={disabled || isSearching}
+          disabled={disabled}
           className={`${styles.input} ${isSearching ? styles.searching : ""}`}
           aria-label="Search collection"
         />

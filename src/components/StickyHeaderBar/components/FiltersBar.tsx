@@ -84,7 +84,7 @@ export const FiltersBar = ({
 
   const isDisabled = disabled || fetchingCollection || !collection || error;
 
-  if (styleOptions.length === 0 || isDisabled) {
+  if (isDisabled) {
     return null;
   }
 
