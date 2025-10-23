@@ -29,9 +29,9 @@ export default function MosaicClient() {
   const [imageFormat, setImageFormat] = useState<"jpeg" | "png">(
     MOSAIC_CONSTANTS.DEFAULT_FORMAT,
   );
-  const [imageQuality, setImageQuality] = useState<number>(
-    MOSAIC_CONSTANTS.DEFAULT_QUALITY,
-  );
+  const imageQuality = 90; // Fixed quality at 90%
+  const [aspectRatio, setAspectRatio] =
+    useState<keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS>("SQUARE");
 
   // Use filtered releases from the filters context
   const releasesToDisplay = useMemoizedFilteredReleases();
@@ -43,9 +43,9 @@ export default function MosaicClient() {
   const { isGenerating, generationProgress, canvasRef, downloadMosaic } =
     useMosaicGenerator({
       releases: releasesToDisplay,
-      gridDimensions,
       imageFormat,
       imageQuality,
+      aspectRatio,
     });
 
   if (authLoading || state.isLoading) {
@@ -103,11 +103,11 @@ export default function MosaicClient() {
 
           <MosaicControls
             imageFormat={imageFormat}
-            imageQuality={imageQuality}
+            aspectRatio={aspectRatio}
             isGenerating={isGenerating}
             generationProgress={generationProgress}
             onFormatChange={setImageFormat}
-            onQualityChange={(quality) => setImageQuality(quality)}
+            onAspectRatioChange={setAspectRatio}
             onDownload={downloadMosaic}
           />
 

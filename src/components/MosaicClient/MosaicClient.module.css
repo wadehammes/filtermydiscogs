@@ -77,6 +77,23 @@
   }
 }
 
+.aspectRatioGroup {
+  min-width: 200px; /* Fixed width to prevent wrapping */
+
+  /* Ensure left alignment for the Select component */
+  :global(.container) {
+    text-align: left;
+  }
+
+  :global(.trigger) {
+    text-align: left;
+  }
+
+  :global(.value) {
+    text-align: left;
+  }
+}
+
 .controlLabel {
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
