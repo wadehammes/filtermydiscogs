@@ -1,34 +1,90 @@
 import { useCallback, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
+import { calculateOptimalGrid, MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import type { DiscogsRelease } from "src/types";
-import { createOptimizedImageLoader } from "src/utils/imageLoader";
-import type { GridDimensions } from "./useGridDimensions.hook";
+import {
+  createOptimizedImageLoader,
+  getCacheMemoryUsage,
+  getCircuitBreakerStatus,
+} from "src/utils/imageLoader";
+
+// URL validation function
+function isValidImageUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    const hasValidProtocol = ["http:", "https:"].includes(parsedUrl.protocol);
+    const hasImageExtension = !!parsedUrl.pathname
+      .toLowerCase()
+      .match(/\.(jpg|jpeg|png|gif|webp)$/);
+    const isTrustedHost =
+      parsedUrl.hostname.includes("discogs") ||
+      parsedUrl.hostname.includes("amazon");
+
+    return hasValidProtocol && (hasImageExtension || isTrustedHost);
+  } catch {
+    return false;
+  }
+}
 
 interface UseMosaicGeneratorOptions {
   releases: DiscogsRelease[];
-  gridDimensions: GridDimensions;
   imageFormat: "jpeg" | "png";
   imageQuality: number;
+  aspectRatio?: keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS;
 }
 
 interface MosaicGenerationState {
   isGenerating: boolean;
   generationProgress: number;
+  error: string | null;
+  isCancelled: boolean;
+  failedImages: number;
+  successfulImages: number;
+}
+
+interface MosaicGenerationStats {
+  totalImages: number;
+  successfulImages: number;
+  failedImages: number;
+  cacheHits: number;
+  retryCount: number;
+  circuitBreakerStatus: ReturnType<typeof getCircuitBreakerStatus>;
+  memoryUsage: number;
 }
 
 export function useMosaicGenerator({
   releases,
-  gridDimensions,
   imageFormat,
   imageQuality,
+  aspectRatio = "SQUARE",
 }: UseMosaicGeneratorOptions) {
   const [state, setState] = useState<MosaicGenerationState>({
     isGenerating: false,
     generationProgress: 0,
+    error: null,
+    isCancelled: false,
+    failedImages: 0,
+    successfulImages: 0,
   });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const statsRef = useRef<MosaicGenerationStats>({
+    totalImages: 0,
+    successfulImages: 0,
+    failedImages: 0,
+    cacheHits: 0,
+    retryCount: 0,
+    circuitBreakerStatus: getCircuitBreakerStatus(),
+    memoryUsage: 0,
+  });
+
+  const cancelGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setState((prev) => ({ ...prev, isCancelled: true, isGenerating: false }));
+    }
+  }, []);
 
   const downloadMosaic = useCallback(async () => {
     console.log("Download mosaic button clicked");
@@ -37,8 +93,51 @@ export function useMosaicGenerator({
       return;
     }
 
+    // Create abort controller for cancellation
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     console.log("Starting mosaic generation...");
-    setState({ isGenerating: true, generationProgress: 0 });
+    setState({
+      isGenerating: true,
+      generationProgress: 0,
+      error: null,
+      isCancelled: false,
+      failedImages: 0,
+      successfulImages: 0,
+    });
+
+    // Reset stats
+    statsRef.current = {
+      totalImages: releases.length,
+      successfulImages: 0,
+      failedImages: 0,
+      cacheHits: 0,
+      retryCount: 0,
+      circuitBreakerStatus: getCircuitBreakerStatus(),
+      memoryUsage: getCacheMemoryUsage(),
+    };
+
+    // Performance monitoring and warnings
+    const startTime = performance.now();
+    const isLargeCollection =
+      releases.length > MOSAIC_CONSTANTS.LARGE_COLLECTION_THRESHOLD;
+    const isVeryLargeCollection =
+      releases.length > MOSAIC_CONSTANTS.MAX_RECOMMENDED_COLLECTION_SIZE;
+
+    if (isVeryLargeCollection) {
+      console.warn(
+        `Very large collection detected (${releases.length} items). Performance may be degraded.`,
+      );
+      setState((prev) => ({
+        ...prev,
+        error: `Warning: Very large collection (${releases.length} items) may cause performance issues. Consider using filters to reduce the number of items.`,
+      }));
+    } else if (isLargeCollection) {
+      console.log(
+        `Large collection detected (${releases.length} items). Using optimized settings.`,
+      );
+    }
 
     try {
       trackEvent("mosaicDownload", {
@@ -55,15 +154,24 @@ export function useMosaicGenerator({
         return;
       }
 
-      const { cols, rows } = gridDimensions;
+      // Calculate optimal grid dimensions based on aspect ratio
+      const aspectRatioConfig = MOSAIC_CONSTANTS.ASPECT_RATIOS[aspectRatio];
+      const optimalGrid = calculateOptimalGrid(
+        releases.length,
+        aspectRatioConfig,
+      );
 
-      // Set canvas size (optimized for file size vs quality balance)
-      const cellSize = MOSAIC_CONSTANTS.CANVAS_CELL_SIZE;
-      const canvasWidth = cols * cellSize;
-      const canvasHeight = rows * cellSize;
+      const { cols, rows, cellSize, canvasWidth, canvasHeight } = optimalGrid;
 
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
+
+      console.log(
+        `Grid calculation: ${cols}x${rows} grid, cell size: ${cellSize}px, canvas: ${canvasWidth}x${canvasHeight}px`,
+      );
+      console.log(
+        `Grid coverage: ${cols * cellSize}x${rows * cellSize}px (should fill ${canvasWidth}x${canvasHeight}px)`,
+      );
 
       // Fill background
       ctx.fillStyle = MOSAIC_CONSTANTS.CANVAS_BACKGROUND_COLOR;
@@ -81,6 +189,11 @@ export function useMosaicGenerator({
         release: DiscogsRelease,
         index: number,
       ): Promise<void> => {
+        // Check for cancellation
+        if (signal.aborted) {
+          throw new Error("Generation cancelled");
+        }
+
         const col = index % cols;
         const row = Math.floor(index / cols);
         const x = col * cellSize;
@@ -107,9 +220,28 @@ export function useMosaicGenerator({
           );
         };
 
+        // Validate and sanitize image URL
+        if (originalImageUrl && !isValidImageUrl(originalImageUrl)) {
+          console.warn(
+            `Invalid image URL for ${release.basic_information.title}: ${originalImageUrl}`,
+          );
+          drawPlaceholder();
+          statsRef.current.failedImages++;
+          setState((prev) => ({
+            ...prev,
+            failedImages: prev.failedImages + 1,
+          }));
+          return;
+        }
+
         // If no image URL, draw placeholder immediately
         if (!originalImageUrl) {
           drawPlaceholder();
+          statsRef.current.failedImages++;
+          setState((prev) => ({
+            ...prev,
+            failedImages: prev.failedImages + 1,
+          }));
           return;
         }
 
@@ -121,8 +253,18 @@ export function useMosaicGenerator({
             imageFormat,
           });
 
+          // Update stats
+          if (result.retryCount) {
+            statsRef.current.retryCount += result.retryCount;
+          }
+
           if (result.success && result.image) {
             ctx.drawImage(result.image, x, y, cellSize, cellSize);
+            statsRef.current.successfulImages++;
+            setState((prev) => ({
+              ...prev,
+              successfulImages: prev.successfulImages + 1,
+            }));
             console.log(
               `Successfully drew image for ${release.basic_information.title}`,
             );
@@ -131,6 +273,11 @@ export function useMosaicGenerator({
               `Failed to load image for ${release.basic_information.title}: ${result.error}`,
             );
             drawPlaceholder();
+            statsRef.current.failedImages++;
+            setState((prev) => ({
+              ...prev,
+              failedImages: prev.failedImages + 1,
+            }));
           }
         } catch (error) {
           console.warn(
@@ -138,11 +285,24 @@ export function useMosaicGenerator({
             error,
           );
           drawPlaceholder();
+          statsRef.current.failedImages++;
+          setState((prev) => ({
+            ...prev,
+            failedImages: prev.failedImages + 1,
+          }));
         }
       };
 
       // Process images in smaller batches for faster processing
-      const batchSize = MOSAIC_CONSTANTS.BATCH_SIZE;
+      // Adaptive batch sizing based on collection size
+      let batchSize: number = MOSAIC_CONSTANTS.BATCH_SIZE;
+      if (isLargeCollection) {
+        batchSize = Math.max(3, Math.floor(MOSAIC_CONSTANTS.BATCH_SIZE / 2)); // Smaller batches for large collections
+      }
+      if (isVeryLargeCollection) {
+        batchSize = Math.max(2, Math.floor(MOSAIC_CONSTANTS.BATCH_SIZE / 3)); // Even smaller batches
+      }
+
       const totalBatches = Math.ceil(releases.length / batchSize);
 
       console.log(
@@ -150,6 +310,12 @@ export function useMosaicGenerator({
       );
 
       for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        // Check for cancellation before each batch
+        if (signal.aborted) {
+          console.log("Generation cancelled during batch processing");
+          throw new Error("Generation cancelled");
+        }
+
         const startIndex = batchIndex * batchSize;
         const endIndex = Math.min(startIndex + batchSize, releases.length);
         const batch = releases.slice(startIndex, endIndex);
@@ -166,9 +332,29 @@ export function useMosaicGenerator({
           await Promise.all(batchPromises);
           console.log(`Completed batch ${batchIndex + 1}/${totalBatches}`);
 
-          // Update progress
+          // Update progress with more granular tracking
           const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
-          setState((prev) => ({ ...prev, generationProgress: progress }));
+          const currentImageCount = (batchIndex + 1) * batchSize;
+          const processedImages = Math.min(currentImageCount, releases.length);
+
+          setState((prev) => ({
+            ...prev,
+            generationProgress: progress,
+            error: null, // Clear any previous errors on successful batch
+          }));
+
+          // Log detailed progress for large collections
+          if (
+            isLargeCollection &&
+            batchIndex % Math.ceil(totalBatches / 10) === 0
+          ) {
+            console.log(
+              `Progress: ${progress}% (${processedImages}/${releases.length} images processed)`,
+            );
+          }
+
+          // Update memory usage stats
+          statsRef.current.memoryUsage = getCacheMemoryUsage();
 
           // Small delay between batches to prevent overwhelming the server
           if (batchIndex < totalBatches - 1) {
@@ -178,9 +364,25 @@ export function useMosaicGenerator({
           }
         } catch (error) {
           console.error(`Error in batch ${batchIndex + 1}:`, error);
-          // Continue with next batch even if this one fails
+
+          // If it's a cancellation error, re-throw it
+          if (
+            error instanceof Error &&
+            error.message === "Generation cancelled"
+          ) {
+            throw error;
+          }
+
+          // For other errors, continue with next batch but track the error
+          setState((prev) => ({
+            ...prev,
+            error: `Batch ${batchIndex + 1} failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          }));
         }
       }
+
+      // Add watermark footer
+      addWatermarkFooter(ctx, canvasWidth, canvasHeight);
 
       // Convert to blob and download with optimization
       console.log("Canvas size:", canvas.width, "x", canvas.height);
@@ -195,6 +397,29 @@ export function useMosaicGenerator({
           console.log("Canvas toBlob callback called, blob:", blob);
           if (blob) {
             console.log("Blob size:", blob.size, "bytes");
+
+            // Performance tracking
+            const endTime = performance.now();
+            const generationTime = endTime - startTime;
+            const performanceMetrics = {
+              totalTime: generationTime,
+              imagesPerSecond: releases.length / (generationTime / 1000),
+              averageTimePerImage: generationTime / releases.length,
+              successRate:
+                (statsRef.current.successfulImages / releases.length) * 100,
+              memoryUsage: getCacheMemoryUsage(),
+            };
+
+            console.log("Performance metrics:", performanceMetrics);
+
+            // Track performance analytics
+            trackEvent("mosaicPerformance", {
+              action: "mosaicPerformance",
+              category: "mosaic",
+              label: "Generation Complete",
+              value: Math.round(performanceMetrics.totalTime).toString(),
+            });
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -213,15 +438,73 @@ export function useMosaicGenerator({
       );
     } catch (error) {
       console.error("Error generating mosaic:", error);
+
+      // Set comprehensive error state
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      setState((prev) => ({
+        ...prev,
+        error: errorMessage,
+        isGenerating: false,
+      }));
+
+      // Track error analytics
+      trackEvent("mosaicError", {
+        action: "mosaicError",
+        category: "mosaic",
+        label: "Generation Failed",
+        value: errorMessage,
+      });
     } finally {
       console.log("Mosaic generation completed, setting isGenerating to false");
-      setState({ isGenerating: false, generationProgress: 0 });
+      setState((prev) => ({
+        ...prev,
+        isGenerating: false,
+        generationProgress: 0,
+      }));
     }
-  }, [releases, gridDimensions, imageFormat, imageQuality]);
+  }, [releases, imageFormat, imageQuality, aspectRatio]);
 
   return {
     ...state,
     canvasRef,
     downloadMosaic,
+    cancelGeneration,
+    stats: statsRef.current,
   };
+}
+
+// Watermark function
+function addWatermarkFooter(
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+): void {
+  const watermarkText = "https://filtermydisco.gs/mosaic";
+  const fontSize = Math.max(12, canvasWidth * 0.015); // Responsive font size
+  const padding = 8;
+
+  // Set font properties
+  ctx.font = `${fontSize}px Arial, sans-serif`;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; // Semi-transparent white
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+
+  // Add subtle background for better readability
+  const textMetrics = ctx.measureText(watermarkText);
+  const textWidth = textMetrics.width;
+  const textHeight = fontSize;
+
+  // Draw background rectangle
+  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+  ctx.fillRect(
+    canvasWidth - textWidth - padding * 2,
+    canvasHeight - textHeight - padding,
+    textWidth + padding * 2,
+    textHeight + padding,
+  );
+
+  // Draw watermark text
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.fillText(watermarkText, canvasWidth - padding, canvasHeight - padding);
 }

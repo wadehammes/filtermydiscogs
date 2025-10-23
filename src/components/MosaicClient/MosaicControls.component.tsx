@@ -1,63 +1,62 @@
 "use client";
 
-import { useId } from "react";
+import Select from "src/components/Select/Select.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import styles from "./MosaicClient.module.css";
 
 interface MosaicControlsProps {
   imageFormat: "jpeg" | "png";
-  imageQuality: number;
+  aspectRatio: keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS;
   isGenerating: boolean;
   generationProgress: number;
   onFormatChange: (format: "jpeg" | "png") => void;
-  onQualityChange: (quality: number) => void;
+  onAspectRatioChange: (
+    aspectRatio: keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS,
+  ) => void;
   onDownload: () => void;
 }
 
 export default function MosaicControls({
   imageFormat,
-  imageQuality,
+  aspectRatio,
   isGenerating,
   generationProgress,
   onFormatChange,
-  onQualityChange,
+  onAspectRatioChange,
   onDownload,
 }: MosaicControlsProps) {
-  const formatSelectId = useId();
-  const qualityRangeId = useId();
-
   return (
     <div className={styles.controls}>
       <div className={styles.controlsLeft}>
         <div className={styles.controlGroup}>
-          <label htmlFor={formatSelectId} className={styles.controlLabel}>
-            Format:
-          </label>
-          <select
-            id={formatSelectId}
+          <Select
+            label="Format"
+            options={[
+              { value: "jpeg", label: "JPEG (Smaller file)" },
+              { value: "png", label: "PNG (Higher quality)" },
+            ]}
             value={imageFormat}
-            onChange={(e) => onFormatChange(e.target.value as "jpeg" | "png")}
-            className={styles.controlSelect}
+            onChange={(value) => onFormatChange(value as "jpeg" | "png")}
             disabled={isGenerating}
-          >
-            <option value="jpeg">JPEG (Smaller file)</option>
-            <option value="png">PNG (Higher quality)</option>
-          </select>
+          />
         </div>
 
-        <div className={styles.controlGroup}>
-          <label htmlFor={qualityRangeId} className={styles.controlLabel}>
-            Quality: {imageQuality}%
-          </label>
-          <input
-            id={qualityRangeId}
-            type="range"
-            min={MOSAIC_CONSTANTS.MIN_QUALITY}
-            max={MOSAIC_CONSTANTS.MAX_QUALITY}
-            value={imageQuality}
-            onChange={(e) => onQualityChange(parseInt(e.target.value, 10))}
-            className={styles.controlRange}
-            disabled={isGenerating || imageFormat === "png"}
+        <div className={`${styles.controlGroup} ${styles.aspectRatioGroup}`}>
+          <Select
+            label="Aspect Ratio"
+            options={Object.entries(MOSAIC_CONSTANTS.ASPECT_RATIOS).map(
+              ([key, config]) => ({
+                value: key,
+                label: config.name,
+              }),
+            )}
+            value={aspectRatio}
+            onChange={(value) =>
+              onAspectRatioChange(
+                value as keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS,
+              )
+            }
+            disabled={isGenerating}
           />
         </div>
       </div>
@@ -69,21 +68,9 @@ export default function MosaicControls({
           onClick={onDownload}
           disabled={isGenerating}
         >
-          {isGenerating ? (
-            <div className={styles.generatingContent}>
-              <div className={styles.generatingText}>
-                Generating... {generationProgress}%
-              </div>
-              <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${generationProgress}%` }}
-                />
-              </div>
-            </div>
-          ) : (
-            "Download Mosaic"
-          )}
+          {isGenerating
+            ? `Generating... ${generationProgress}%`
+            : "Download Mosaic"}
         </button>
       </div>
     </div>
