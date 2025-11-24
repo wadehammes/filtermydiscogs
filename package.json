@@ -54,7 +54,7 @@
     "@types/js-cookie": "^3.0.6",
     "@types/lodash.flatten": "^4.4.9",
     "@types/node": "^24.9.1",
-    "@types/react": "^19.2.2",
+    "@types/react": "^19.2.7",
     "critters": "^0.0.25",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.2.0",
