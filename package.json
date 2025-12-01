@@ -67,7 +67,7 @@
     "lighthouse": "^13.0.0",
     "postcss": "^8.4.20",
     "react-is": "^19.2.0",
-    "ts-jest": "^29.4.5",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.1",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3"
