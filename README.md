@@ -1,4 +1,4 @@
-# Filter My Disco.gs
+# Filter My Disco.gs App
 
 A web application to filter and explore your Discogs vinyl collection.
 
