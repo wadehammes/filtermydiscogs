@@ -40,7 +40,8 @@ class DiscogsOAuthService {
     this.consumerKey = process.env.DISCOGS_CONSUMER_KEY || "";
     this.consumerSecret = process.env.DISCOGS_CONSUMER_SECRET || "";
     this.callbackUrl =
-      process.env.DISCOGS_CALLBACK_URL || "http://localhost:7777/auth/callback";
+      process.env.DISCOGS_CALLBACK_URL ||
+      "http://localhost:6767/api/auth/callback";
 
     if (!(this.consumerKey && this.consumerSecret)) {
       throw new Error("Discogs OAuth credentials not configured");
@@ -139,18 +140,19 @@ class DiscogsOAuthService {
     }
   }
 
-  async getRequestToken(): Promise<DiscogsTokens> {
+  async getRequestToken(callbackUrl?: string): Promise<DiscogsTokens> {
     const url = "https://api.discogs.com/oauth/request_token";
     const method = "POST";
+    const callback = callbackUrl || this.callbackUrl;
 
     const body = new URLSearchParams({
-      oauth_callback: this.callbackUrl,
+      oauth_callback: callback,
     });
 
     const request_data = {
       url,
       method,
-      data: { oauth_callback: this.callbackUrl },
+      data: { oauth_callback: callback },
     };
 
     const oauthHeaders = this.oauth.toHeader(

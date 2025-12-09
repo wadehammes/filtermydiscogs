@@ -15,5 +15,5 @@ export const isBrowser = () => {
 export const envUrl = () => {
   return process.env.NODE_ENV === "production"
     ? "https://filtermydisco.gs"
-    : "http://localhost:7777";
+    : "http://localhost:6767";
 };

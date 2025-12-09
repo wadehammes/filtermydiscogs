@@ -70,12 +70,7 @@ const nextConfig: NextConfig = {
     DISCOGS_CONSUMER_SECRET: process.env.DISCOGS_CONSUMER_SECRET,
     DISCOGS_CALLBACK_URL:
       process.env.DISCOGS_CALLBACK_URL ||
-      "http://localhost:7777/api/auth/callback",
-  },
-  compiler: {
-    // ssr and displayName are configured by default
-    styledComponents: true,
-    reactRemoveProperties: false,
+      "http://localhost:6767/api/auth/callback",
   },
   images: {
     domains: ["placehold.jp", "i.discogs.com"],
@@ -85,6 +80,14 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ["lodash.flatten"],
+  },
+  turbopack: {
+    rules: {
+      "*.svg": {
+        as: "*.js",
+        loaders: ["@svgr/webpack"],
+      },
+    },
   },
   webpack(config, { dev, isServer }) {
     config.module.rules.push({

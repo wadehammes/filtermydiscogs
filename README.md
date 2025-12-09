@@ -23,7 +23,7 @@ A web application to filter and explore your Discogs vinyl collection.
 
 1. Go to [Discogs Settings > Developers](https://www.discogs.com/settings/developers)
 2. Create a new application
-3. Set the callback URL to `http://localhost:7777/auth/callback` for development
+3. Set the callback URL to `http://localhost:6767/auth/callback` for development
 4. Copy your Consumer Key and Consumer Secret
 
 ### Environment Variables
@@ -36,7 +36,7 @@ DISCOGS_CONSUMER_KEY=your_consumer_key_here
 DISCOGS_CONSUMER_SECRET=your_consumer_secret_here
 
 # OAuth Callback URL
-DISCOGS_CALLBACK_URL=http://localhost:7777/auth/callback
+DISCOGS_CALLBACK_URL=http://localhost:6767/auth/callback
 ```
 
 ### Installation
@@ -49,7 +49,7 @@ pnpm install
 pnpm dev
 ```
 
-The app will be available at `http://localhost:7777`.
+The app will be available at `http://localhost:6767`.
 
 ## Usage
 
