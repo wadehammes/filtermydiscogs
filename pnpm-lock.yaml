@@ -61,8 +61,8 @@ importers:
         specifier: ^30.2.0
         version: 30.2.0
       '@next/bundle-analyzer':
-        specifier: ^16.0.8
-        version: 16.0.8
+        specifier: ^16.0.10
+        version: 16.0.10
       '@next/eslint-plugin-next':
         specifier: ^16.0.8
         version: 16.0.8
@@ -1175,8 +1175,8 @@ packages:
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
-  '@next/bundle-analyzer@16.0.8':
-    resolution: {integrity: sha512-LFWHAWdurTCpqLq1ZRUah1nuDK8cti6kN8vj4wqIW3yAnq3BDgJeNgMMUmeLLzR9C81AnVKfSZFBEhn+aUpe/g==}
+  '@next/bundle-analyzer@16.0.10':
+    resolution: {integrity: sha512-AHA6ZomhQuRsJtkoRvsq+hIuwA6F26mQzQT8ICcc2dL3BvHRcWOA+EiFr+BgWFY++EE957xVDqMIJjLApyxnwA==}
 
   '@next/env@16.0.8':
     resolution: {integrity: sha512-xP4WrQZuj9MdmLJy3eWFHepo+R3vznsMSS8Dy3wdA7FKpjCiesQ6DxZvdGziQisj0tEtCgBKJzjcAc4yZOgLEQ==}
@@ -3026,6 +3026,7 @@ packages:
   next@16.0.8:
     resolution: {integrity: sha512-LmcZzG04JuzNXi48s5P+TnJBsTGPJunViNKV/iE4uM6kstjTQsQhvsAv+xF6MJxU2Pr26tl15eVbp0jQnsv6/g==}
     engines: {node: '>=20.9.0'}
+    deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
@@ -5102,7 +5103,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@next/bundle-analyzer@16.0.8':
+  '@next/bundle-analyzer@16.0.10':
     dependencies:
       webpack-bundle-analyzer: 4.10.1
     transitivePeerDependencies:
