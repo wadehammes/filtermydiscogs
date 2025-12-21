@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
 import Login from "src/components/Login/Login.component";
 import MosaicControls from "src/components/MosaicClient/MosaicControls.component";
@@ -9,15 +9,18 @@ import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
-import { useMemoizedFilteredReleases } from "src/context/filters.context";
-import { useAuthRedirect } from "src/hooks/useAuthRedirect.hook";
+import {
+  FiltersActionTypes,
+  useFilters,
+  useMemoizedFilteredReleases,
+} from "src/context/filters.context";
+import { useView, ViewActionTypes } from "src/context/view.context";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
 import { useGridDimensions } from "src/hooks/useGridDimensions.hook";
 import { useMosaicGenerator } from "src/hooks/useMosaicGenerator.hook";
 import styles from "./MosaicClient.module.css";
 
 export default function MosaicClient() {
-  const { authLoading } = useAuthRedirect();
   const { state } = useAuth();
   const { state: collectionState } = useCollectionContext();
   const { releases } = collectionState;
@@ -25,18 +28,36 @@ export default function MosaicClient() {
     state.username,
     state.isAuthenticated,
   );
+  const { state: viewState, dispatch: viewDispatch } = useView();
+  const { dispatch: filtersDispatch, state: filtersState } = useFilters();
+
+  useEffect(() => {
+    if (viewState.currentView === "random") {
+      viewDispatch({
+        type: ViewActionTypes.SetView,
+        payload: "card",
+      });
+    }
+  }, [viewState.currentView, viewDispatch]);
+
+  useEffect(() => {
+    if (filtersState.isRandomMode) {
+      filtersDispatch({
+        type: FiltersActionTypes.ToggleRandomMode,
+        payload: undefined,
+      });
+    }
+  }, [filtersState.isRandomMode, filtersDispatch]);
 
   const [imageFormat, setImageFormat] = useState<"jpeg" | "png">(
     MOSAIC_CONSTANTS.DEFAULT_FORMAT,
   );
-  const imageQuality = 90; // Fixed quality at 90%
+  const imageQuality = 90;
   const [aspectRatio, setAspectRatio] =
     useState<keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS>("SQUARE");
 
-  // Use filtered releases from the filters context
   const releasesToDisplay = useMemoizedFilteredReleases();
 
-  // Use custom hooks for grid dimensions and mosaic generation
   const gridDimensions = useGridDimensions({
     itemCount: releasesToDisplay.length,
   });
@@ -48,7 +69,7 @@ export default function MosaicClient() {
       aspectRatio,
     });
 
-  if (authLoading || state.isLoading) {
+  if (!state.isAuthenticated && state.isLoading) {
     return <AuthLoading />;
   }
 

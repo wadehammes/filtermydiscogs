@@ -3,7 +3,6 @@ import { useInView } from "react-intersection-observer";
 import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useView, ViewActionTypes } from "src/context/view.context";
-import { useAuthRedirect } from "src/hooks/useAuthRedirect.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
@@ -11,16 +10,16 @@ import type { DiscogsRelease } from "src/types";
 import { filterReleases } from "src/utils/filterReleases";
 
 export const useReleasesClient = () => {
-  const { authLoading } = useAuthRedirect();
   const { state: authState } = useAuth();
+  const authLoading = !authState.isAuthenticated && authState.isLoading;
   const { username, isAuthenticated } = authState;
   const { state: viewState, dispatch: viewDispatch } = useView();
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { selectedSort, filteredReleases, isRandomMode } = filtersState;
+  const { selectedSort, filteredReleases, isRandomMode, randomRelease } =
+    filtersState;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
-  // State management
   const [showAllLoadedMessage, setShowAllLoadedMessage] = useState(false);
   const [highlightedReleaseId, setHighlightedReleaseId] = useState<
     string | null
@@ -28,21 +27,17 @@ export const useReleasesClient = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [previousSort, setPreviousSort] = useState(selectedSort);
 
-  // Data hooks
   const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useCollectionData(username, isAuthenticated);
   const { error, hasReleases, hasError } = useReleasesDisplay();
 
-  // Intersection observer for infinite scroll
   const { ref, inView } = useInView({
     threshold: 0,
     rootMargin: "100px",
   });
 
-  // Derived values
   const releaseCount = filteredReleases.length;
 
-  // Effects
   useEffect(() => {
     if (selectedSort !== previousSort) {
       setIsSorting(true);
@@ -58,11 +53,21 @@ export const useReleasesClient = () => {
 
   useEffect(() => {
     if (!isRandomMode && viewState.currentView === "random") {
+      const previousView =
+        viewState.previousView === "list"
+          ? "card"
+          : viewState.previousView || "card";
       viewDispatch({
-        type: ViewActionTypes.RestorePreviousView,
+        type: ViewActionTypes.SetView,
+        payload: previousView,
       });
     }
-  }, [isRandomMode, viewState.currentView, viewDispatch]);
+  }, [
+    isRandomMode,
+    viewState.currentView,
+    viewState.previousView,
+    viewDispatch,
+  ]);
 
   useEffect(() => {
     const allLoaded = !(hasNextPage || isFetchingNextPage) && hasReleases;
@@ -84,14 +89,12 @@ export const useReleasesClient = () => {
     };
   }, [hasNextPage, isFetchingNextPage, hasReleases]);
 
-  // Infinite scroll effect
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Callbacks
   const handleReleaseClick = useCallback((instanceId: string) => {
     const element = document.getElementById(`release-${instanceId}`);
     if (element) {
@@ -138,9 +141,6 @@ export const useReleasesClient = () => {
   }, []);
 
   const handleRandomClick = useCallback(() => {
-    // Get a new random release from the current filtered collection
-    // We need to recalculate the filtered releases to get the full collection
-    // (not just the single random release currently shown)
     const {
       allReleases,
       selectedStyles,
@@ -174,7 +174,6 @@ export const useReleasesClient = () => {
   }, [filtersDispatch]);
 
   return {
-    // Loading states
     authLoading,
     isLoading,
     hasError,
@@ -183,22 +182,19 @@ export const useReleasesClient = () => {
     isFetchingNextPage,
     showAllLoadedMessage,
 
-    // Data
     filteredReleases,
     releaseCount,
     isRandomMode,
+    randomRelease,
 
-    // UI state
     isMobile,
     viewState,
     highlightedReleaseId,
     isSorting,
 
-    // Refs
     mainContentRef,
     infiniteScrollRef: ref,
 
-    // Callbacks
     handleReleaseClick,
     handleViewChange,
     handleRandomClick,

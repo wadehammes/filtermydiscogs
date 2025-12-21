@@ -33,10 +33,9 @@ export const useCollectionData = (
     isFetchingNextPage,
   } = useDiscogsCollectionQuery(username || "", queryEnabled, selectedSort);
 
-  // Force refetch collection when user becomes authenticated
   useEffect(() => {
     if (isAuthenticated && username) {
-      queryClient.refetchQueries({
+      queryClient.invalidateQueries({
         queryKey: ["discogsCollection", username],
       });
     }
@@ -54,6 +53,7 @@ export const useCollectionData = (
     isFetchingNextPage,
     fetchNextPage,
   ]);
+
   const processedData = useMemo(() => {
     if (!collectionData?.pages) return null;
 
@@ -66,12 +66,10 @@ export const useCollectionData = (
     const uniqueYears = new Set<number>();
 
     for (const release of allReleases) {
-      // Extract styles
       for (const style of release.basic_information.styles) {
         uniqueStyles.add(style);
       }
 
-      // Extract year (filter invalid years)
       const year = release.basic_information.year;
       if (year > 0) {
         uniqueYears.add(year);

@@ -1,8 +1,23 @@
+import dynamic from "next/dynamic";
+import { useMemo } from "react";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
-import { ReleasesTable } from "src/components/ReleasesTable/ReleasesTable.component";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
+
+const ReleasesTable = dynamic(
+  () =>
+    import("src/components/ReleasesTable/ReleasesTable.component").then(
+      (mod) => mod.ReleasesTable,
+    ),
+  {
+    loading: () => (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <p>Loading table view...</p>
+      </div>
+    ),
+  },
+);
 
 interface ReleasesGridProps {
   releases: DiscogsRelease[];
@@ -11,6 +26,7 @@ interface ReleasesGridProps {
   isRandomMode: boolean;
   highlightedReleaseId: string | null;
   onExitRandomMode: () => void;
+  randomRelease?: DiscogsRelease | null;
 }
 
 export const ReleasesGrid = ({
@@ -20,18 +36,46 @@ export const ReleasesGrid = ({
   isRandomMode,
   highlightedReleaseId,
   onExitRandomMode,
+  randomRelease,
 }: ReleasesGridProps) => {
-  const isCardView = view === "card" || isMobile || isRandomMode;
-  const isListView = view === "list" && !isMobile && !isRandomMode;
+  const isActuallyRandomMode = isRandomMode && view === "random";
+  const isCardView = view === "card" || isMobile || isActuallyRandomMode;
+  const isListView = view === "list" && !isMobile && !isActuallyRandomMode;
 
-  const getGridClassName = () => {
-    if (isRandomMode) {
+  const releasesToShow =
+    isActuallyRandomMode && randomRelease
+      ? [randomRelease]
+      : isActuallyRandomMode && releases.length > 1
+        ? releases.slice(0, 1)
+        : releases;
+
+  const gridClassName = useMemo(() => {
+    if (isActuallyRandomMode) {
       return styles.releasesGridRandom;
     }
-    return isCardView ? styles.releasesGrid : styles.releasesList;
-  };
+    if (isCardView) {
+      return styles.releasesGrid;
+    }
+    return styles.releasesList;
+  }, [isActuallyRandomMode, isCardView]);
 
-  // Use table component for list view
+  const gridStyle = useMemo(() => {
+    if (isActuallyRandomMode) {
+      return undefined;
+    }
+
+    if (isCardView) {
+      return {
+        display: "grid",
+        gap: "var(--space-4)",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        padding: "0 var(--space-4)",
+      };
+    }
+
+    return undefined;
+  }, [isActuallyRandomMode, isCardView]);
+
   if (isListView) {
     return (
       <ReleasesTable
@@ -45,14 +89,18 @@ export const ReleasesGrid = ({
   }
 
   return (
-    <div className={getGridClassName()}>
-      {releases.map((release: DiscogsRelease) => (
+    <div
+      className={gridClassName}
+      style={gridStyle}
+      key={`grid-${view}-${isRandomMode}`}
+    >
+      {releasesToShow.map((release: DiscogsRelease) => (
         <div key={release.instance_id} id={`release-${release.instance_id}`}>
           {isCardView ? (
             <ReleaseCard
               release={release}
               isHighlighted={highlightedReleaseId === release.instance_id}
-              isRandomMode={isRandomMode}
+              isRandomMode={isActuallyRandomMode}
               onExitRandomMode={onExitRandomMode}
             />
           ) : (

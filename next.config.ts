@@ -65,6 +65,13 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: true,
+  poweredByHeader: false,
+  compress: true,
+  logging: {
+    fetches: {
+      fullUrl: process.env.NODE_ENV === "development",
+    },
+  },
   env: {
     DISCOGS_CONSUMER_KEY: process.env.DISCOGS_CONSUMER_KEY,
     DISCOGS_CONSUMER_SECRET: process.env.DISCOGS_CONSUMER_SECRET,
@@ -73,13 +80,29 @@ const nextConfig: NextConfig = {
       "http://localhost:6767/api/auth/callback",
   },
   images: {
-    domains: ["placehold.jp", "i.discogs.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "placehold.jp",
+      },
+      {
+        protocol: "https",
+        hostname: "i.discogs.com",
+      },
+    ],
     formats: ["image/webp", "image/avif"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    qualities: [75, 80, 85, 90, 95, 100],
   },
   experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ["lodash.flatten"],
+    // optimizePackageImports is still experimental in Next.js 16.1
+    optimizePackageImports: [
+      "lodash.flatten",
+      "@tanstack/react-query",
+      "@tanstack/react-table",
+    ],
   },
   turbopack: {
     rules: {
@@ -95,7 +118,6 @@ const nextConfig: NextConfig = {
       use: ["@svgr/webpack"],
     });
 
-    // Bundle analyzer
     if (process.env.ANALYZE === "true") {
       const { BundleAnalyzerPlugin } = require("@next/bundle-analyzer");
       config.plugins.push(
@@ -106,7 +128,6 @@ const nextConfig: NextConfig = {
       );
     }
 
-    // Optimize bundle splitting
     if (!(dev || isServer)) {
       config.optimization.splitChunks = {
         chunks: "all",

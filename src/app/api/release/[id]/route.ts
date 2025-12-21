@@ -15,7 +15,6 @@ export async function GET(
       );
     }
 
-    // Get OAuth tokens from cookies
     const accessToken = request.cookies.get("discogs_access_token")?.value;
     const accessTokenSecret = request.cookies.get(
       "discogs_access_token_secret",
@@ -25,7 +24,6 @@ export async function GET(
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Fetch release using OAuth
     const release = await discogsOAuthService.makeAuthenticatedRequest(
       `https://api.discogs.com/releases/${releaseId}`,
       "GET",
@@ -33,7 +31,11 @@ export async function GET(
       accessTokenSecret,
     );
 
-    return NextResponse.json(release);
+    return NextResponse.json(release, {
+      headers: {
+        "Cache-Control": "private, max-age=3600, stale-while-revalidate=7200",
+      },
+    });
   } catch (error) {
     console.error("Release API error:", error);
     return NextResponse.json(

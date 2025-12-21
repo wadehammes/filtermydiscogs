@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import {
   createContext,
   type FC,
@@ -7,7 +8,13 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { checkAuthStatus, clearAuthCookies } from "src/services/auth.service";
+import {
+  checkAuthStatus,
+  clearAuthCookies,
+  clearUrlParams,
+  getUsernameFromCookies,
+  parseAuthUrlParams,
+} from "src/services/auth.service";
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -93,6 +100,7 @@ const AuthContext = createContext<{
 export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -121,6 +129,30 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     checkAuth();
   }, [queryClient]);
 
+  useEffect(() => {
+    const { authStatus, errorStatus } = parseAuthUrlParams();
+
+    if (authStatus === "success") {
+      const username = getUsernameFromCookies();
+      if (username) {
+        dispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
+        dispatch({ type: AuthActionTypes.SetUsername, payload: username });
+        dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+        queryClient.invalidateQueries({
+          queryKey: ["discogsCollection"],
+        });
+        clearUrlParams();
+      }
+    } else if (errorStatus) {
+      dispatch({
+        type: AuthActionTypes.SetError,
+        payload: `Authentication failed: ${errorStatus}`,
+      });
+      dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+      clearUrlParams();
+    }
+  }, [queryClient]);
+
   const login = () => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
     dispatch({ type: AuthActionTypes.SetError, payload: null });
@@ -133,13 +165,14 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     try {
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: true });
 
-      // Call logout API
       await fetch("/api/auth/logout", { method: "POST" });
 
-      // Clear client-side cookies as well
       clearAuthCookies();
+      queryClient.clear();
 
       dispatch({ type: AuthActionTypes.Logout, payload: undefined });
+
+      router.replace("/");
     } catch (_error) {
       dispatch({ type: AuthActionTypes.SetError, payload: "Logout failed" });
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: false });

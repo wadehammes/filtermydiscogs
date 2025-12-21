@@ -42,7 +42,11 @@ export async function GET(request: NextRequest) {
       style,
     );
 
-    return NextResponse.json(searchResults);
+    return NextResponse.json(searchResults, {
+      headers: {
+        "Cache-Control": "private, max-age=180, stale-while-revalidate=360",
+      },
+    });
   } catch (error) {
     console.error("Search API error:", error);
     return NextResponse.json(
