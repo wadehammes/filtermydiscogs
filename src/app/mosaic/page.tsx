@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import MosaicClient from "src/components/MosaicClient/MosaicClient.component";
+import MosaicClientWrapper from "src/components/MosaicClient/MosaicClientWrapper.component";
 
 export const metadata: Metadata = {
   title: "Mosaic | FilterMyDisco.gs",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function MosaicPage() {
-  return <MosaicClient />;
+  return <MosaicClientWrapper />;
 }

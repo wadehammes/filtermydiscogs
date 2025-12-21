@@ -8,7 +8,6 @@ import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
 import { ViewProvider } from "src/context/view.context";
-import { usePerformanceMonitoring } from "src/hooks/usePerformanceMonitoring.hook";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -20,19 +19,17 @@ function LogoutOverlayWrapper() {
 }
 
 export function Providers({ children }: ProvidersProps) {
-  usePerformanceMonitoring();
-
   const queryClient = useMemo(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 10 * 60 * 1000, // 10 minutes - collection data doesn't change often
-            gcTime: 30 * 60 * 1000, // 30 minutes - keep in memory longer
+            staleTime: 10 * 60 * 1000,
+            gcTime: 30 * 60 * 1000,
             retry: 1,
             refetchOnWindowFocus: false,
-            refetchOnMount: false, // Don't refetch if data is fresh
-            refetchOnReconnect: false, // Don't refetch on reconnect if data is fresh
+            refetchOnMount: false,
+            refetchOnReconnect: false,
           },
         },
       }),

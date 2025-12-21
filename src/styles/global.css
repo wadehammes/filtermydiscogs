@@ -1,4 +1,3 @@
-/* Import pill styles */
 @import "./pills.css";
 
 :root {
@@ -238,7 +237,7 @@ body {
   padding: 0;
   color: var(--black);
   font-size: 14px;
-  font-family: "Assistant", sans-serif;
+  font-family: var(--font-assistant), sans-serif;
 }
 
 @media (min-width: 768px) {

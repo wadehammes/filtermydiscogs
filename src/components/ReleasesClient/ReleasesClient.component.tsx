@@ -1,9 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
+import Login from "src/components/Login/Login.component";
 import { Page } from "src/components/Page/Page.component";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
+import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { EmptyState } from "./components/EmptyState.component";
@@ -13,6 +17,8 @@ import { ReleasesHeader } from "./components/ReleasesHeader.component";
 import styles from "./ReleasesClient.module.css";
 
 export default function ReleasesClient() {
+  const router = useRouter();
+  const { state: authState } = useAuth();
   const { isDrawerOpen, closeDrawer } = useCrate();
   const {
     // Loading states
@@ -28,6 +34,7 @@ export default function ReleasesClient() {
     filteredReleases,
     releaseCount,
     isRandomMode,
+    randomRelease,
 
     // UI state
     isMobile,
@@ -46,11 +53,21 @@ export default function ReleasesClient() {
     handleExitRandomMode,
   } = useReleasesClient();
 
+  useEffect(() => {
+    if (!(authState.isLoading || authState.isAuthenticated)) {
+      router.replace("/");
+    }
+  }, [authState.isAuthenticated, authState.isLoading, router]);
+
   const loadingProgress = hasReleases
     ? {
         current: isSorting ? 0 : releaseCount,
       }
     : undefined;
+
+  if (!(authState.isAuthenticated || authState.isLoading)) {
+    return <Login />;
+  }
 
   if (authLoading || isLoading) {
     return (
@@ -103,6 +120,7 @@ export default function ReleasesClient() {
               isRandomMode={isRandomMode}
               highlightedReleaseId={highlightedReleaseId}
               onExitRandomMode={handleExitRandomMode}
+              randomRelease={randomRelease}
             />
           ) : (
             <EmptyState />

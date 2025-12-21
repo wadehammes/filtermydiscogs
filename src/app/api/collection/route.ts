@@ -39,7 +39,11 @@ export async function GET(request: NextRequest) {
       sortOrder,
     );
 
-    return NextResponse.json(collection);
+    return NextResponse.json(collection, {
+      headers: {
+        "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+      },
+    });
   } catch (_error) {
     return NextResponse.json(
       { error: "Failed to fetch collection" },

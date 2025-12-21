@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Validate that the URL is from a trusted source (Discogs)
     if (
       !(
         imageUrl.startsWith("https://i.discogs.com/") ||
@@ -23,7 +22,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch the image from Discogs
     const response = await fetch(imageUrl, {
       headers: {
         "User-Agent": "FilterMyDiscogs/1.0 (https://filtermydiscogs.com)",
@@ -41,17 +39,14 @@ export async function GET(request: NextRequest) {
     const originalContentType =
       response.headers.get("content-type") || "image/jpeg";
 
-    // Get optimization parameters from query string
     const width = searchParams.get("w");
     const height = searchParams.get("h");
-    const quality = searchParams.get("q") || "85"; // Default 85% quality
-    const format = searchParams.get("f") || "jpeg"; // Default to JPEG for better compression
+    const quality = searchParams.get("q") || "85";
+    const format = searchParams.get("f") || "jpeg";
 
     try {
-      // Use Sharp to optimize the image
       let sharpInstance = sharp(Buffer.from(imageBuffer));
 
-      // Resize if dimensions are provided
       if (width || height) {
         const resizeOptions: {
           width?: number;
@@ -68,7 +63,6 @@ export async function GET(request: NextRequest) {
         sharpInstance = sharpInstance.resize(resizeOptions);
       }
 
-      // Convert and optimize based on format
       let optimizedBuffer: Buffer;
       let contentType: string;
 
@@ -76,29 +70,28 @@ export async function GET(request: NextRequest) {
         optimizedBuffer = await sharpInstance
           .png({
             quality: parseInt(quality, 10),
-            compressionLevel: 9, // Maximum compression
+            compressionLevel: 9,
             progressive: true,
           })
           .toBuffer();
         contentType = "image/png";
       } else {
-        // Default to JPEG for better compression
         optimizedBuffer = await sharpInstance
           .jpeg({
             quality: parseInt(quality, 10),
             progressive: true,
-            mozjpeg: true, // Use mozjpeg encoder for better compression
+            mozjpeg: true,
           })
           .toBuffer();
         contentType = "image/jpeg";
       }
 
-      // Return the optimized image with proper CORS headers
       return new NextResponse(optimizedBuffer as BodyInit, {
         status: 200,
         headers: {
           "Content-Type": contentType,
-          "Cache-Control": "public, max-age=86400", // Cache for 24 hours
+          "Cache-Control":
+            "public, max-age=86400, stale-while-revalidate=172800",
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "GET",
           "Access-Control-Allow-Headers": "Content-Type",
@@ -109,7 +102,6 @@ export async function GET(request: NextRequest) {
         "Sharp optimization failed, returning original image:",
         sharpError,
       );
-      // Fallback to original image if Sharp fails
       return new NextResponse(imageBuffer as BodyInit, {
         status: 200,
         headers: {
