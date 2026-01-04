@@ -1,25 +1,15 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchDiscogsCollection } from "src/api/helpers";
-import { SortValues } from "src/context/filters.context";
 import type { DiscogsCollection } from "src/types";
-import { mapSortToDiscogsParams } from "src/utils/sortMapping";
 
 export const useDiscogsCollectionQuery = (
   username: string,
   enabled: boolean = false,
-  sort: SortValues = SortValues.DateAddedNew,
 ) => {
-  const { sort: discogsSort, sortOrder } = mapSortToDiscogsParams(sort);
-
   return useInfiniteQuery({
-    queryKey: ["discogsCollection", username, discogsSort, sortOrder],
+    queryKey: ["discogsCollection", username],
     queryFn: ({ pageParam = 1 }) => {
-      return fetchDiscogsCollection(
-        username,
-        pageParam as number,
-        discogsSort,
-        sortOrder,
-      );
+      return fetchDiscogsCollection(username, pageParam as number);
     },
     getNextPageParam: (lastPage: DiscogsCollection) => {
       if (lastPage.pagination?.urls?.next) {

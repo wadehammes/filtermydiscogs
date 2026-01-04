@@ -15,8 +15,7 @@ export const useReleasesClient = () => {
   const { username, isAuthenticated } = authState;
   const { state: viewState, dispatch: viewDispatch } = useView();
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { selectedSort, filteredReleases, isRandomMode, randomRelease } =
-    filtersState;
+  const { filteredReleases, isRandomMode, randomRelease } = filtersState;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -24,8 +23,6 @@ export const useReleasesClient = () => {
   const [highlightedReleaseId, setHighlightedReleaseId] = useState<
     string | null
   >(null);
-  const [isSorting, setIsSorting] = useState(false);
-  const [previousSort, setPreviousSort] = useState(selectedSort);
 
   const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useCollectionData(username, isAuthenticated);
@@ -37,19 +34,6 @@ export const useReleasesClient = () => {
   });
 
   const releaseCount = filteredReleases.length;
-
-  useEffect(() => {
-    if (selectedSort !== previousSort) {
-      setIsSorting(true);
-      setPreviousSort(selectedSort);
-    }
-  }, [selectedSort, previousSort]);
-
-  useEffect(() => {
-    if (isSorting && releaseCount > 0) {
-      setIsSorting(false);
-    }
-  }, [isSorting, releaseCount]);
 
   useEffect(() => {
     if (!isRandomMode && viewState.currentView === "random") {
@@ -190,7 +174,6 @@ export const useReleasesClient = () => {
     isMobile,
     viewState,
     highlightedReleaseId,
-    isSorting,
 
     mainContentRef,
     infiniteScrollRef: ref,

@@ -213,7 +213,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
 
             return (
               <div className={styles.formatsCell}>
-                {uniqueFormats.slice(0, 2).map((formatName) => (
+                {uniqueFormats.map((formatName) => (
                   <button
                     key={formatName}
                     type="button"
@@ -239,11 +239,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                     {formatName}
                   </button>
                 ))}
-                {uniqueFormats.length > 2 && (
-                  <span className={styles.moreFormats}>
-                    +{uniqueFormats.length - 2}
-                  </span>
-                )}
               </div>
             );
           },
@@ -259,7 +254,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
 
             return (
               <div className={styles.stylesCell}>
-                {releaseStyles.slice(0, 2).map((style: string) => (
+                {releaseStyles.map((style: string) => (
                   <button
                     key={style}
                     type="button"
@@ -278,11 +273,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                     {style}
                   </button>
                 ))}
-                {releaseStyles.length > 2 && (
-                  <span className={styles.moreStyles}>
-                    +{releaseStyles.length - 2}
-                  </span>
-                )}
               </div>
             );
           },

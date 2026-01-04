@@ -54,6 +54,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <script
+          // biome-ignore lint: Theme initialization script must run before React hydration
           dangerouslySetInnerHTML={{
             __html: `
               (function() {

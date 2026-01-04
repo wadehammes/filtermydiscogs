@@ -28,7 +28,7 @@
 
   .filterIcon {
     font-size: var(--text-lg);
-    color: black;
+    color: var(--foreground);
     width: 32px;
     height: 32px;
   }
@@ -68,7 +68,7 @@
 }
 
 .overlay {
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--background) 50%, transparent);
   bottom: 0;
   left: 0;
   position: fixed;

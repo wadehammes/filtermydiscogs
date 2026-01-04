@@ -40,7 +40,6 @@ export default function ReleasesClient() {
     isMobile,
     viewState,
     highlightedReleaseId,
-    isSorting,
 
     // Refs
     mainContentRef,
@@ -61,7 +60,7 @@ export default function ReleasesClient() {
 
   const loadingProgress = hasReleases
     ? {
-        current: isSorting ? 0 : releaseCount,
+        current: releaseCount,
       }
     : undefined;
 
