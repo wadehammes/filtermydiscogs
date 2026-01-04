@@ -171,6 +171,18 @@
       font-weight: var(--font-semibold);
     }
 
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
     .menuIcon {
       font-size: var(--text-lg);
     }

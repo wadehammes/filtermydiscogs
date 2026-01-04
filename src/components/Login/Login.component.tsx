@@ -56,6 +56,10 @@ export const Login = () => {
               "Connect with Discogs"
             )}
           </button>
+
+          <a href="/about" className={styles.aboutLink}>
+            Terms & Privacy
+          </a>
         </div>
 
         <div className={`${styles.bentoCard} ${styles.featuresCard}`}>
@@ -77,6 +81,9 @@ export const Login = () => {
           <a href="https://wadehammes.com" target="_blank" rel="noreferrer">
             Wade Hammes
           </a>
+        </span>
+        <span>
+          <a href="/about">About</a>
         </span>
         <span>
           <a

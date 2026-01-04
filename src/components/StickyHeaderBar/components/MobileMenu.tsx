@@ -13,6 +13,7 @@ interface MobileMenuProps {
   showMosaic?: boolean;
   showReleases?: boolean;
   showFilters?: boolean;
+  isDisabled?: boolean;
 }
 
 export const MobileMenu = ({
@@ -20,6 +21,7 @@ export const MobileMenu = ({
   showMosaic = true,
   showReleases = true,
   showFilters = true,
+  isDisabled = false,
 }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
@@ -31,6 +33,7 @@ export const MobileMenu = ({
   const { fetchingCollection, collection, error } = collectionState;
 
   const handleNavigation = (page: string, label: string) => {
+    if (isDisabled) return;
     trackEvent("pageNavigation", {
       action: "pageNavigation",
       category: "navigation",
@@ -150,8 +153,9 @@ export const MobileMenu = ({
                   type="button"
                   className={`${styles.menuItem} ${
                     currentPage === "releases" ? styles.active : ""
-                  }`}
+                  } ${isDisabled ? styles.disabled : ""}`}
                   onClick={() => handleNavigation("releases", "Releases")}
+                  disabled={isDisabled}
                 >
                   <span className={styles.menuIcon}>📀</span>
                   <span>Releases</span>
@@ -163,13 +167,25 @@ export const MobileMenu = ({
                   type="button"
                   className={`${styles.menuItem} ${
                     currentPage === "mosaic" ? styles.active : ""
-                  }`}
+                  } ${isDisabled ? styles.disabled : ""}`}
                   onClick={() => handleNavigation("mosaic", "Mosaic")}
+                  disabled={isDisabled}
                 >
                   <span className={styles.menuIcon}>🖼️</span>
                   <span>Mosaic</span>
                 </button>
               )}
+
+              <button
+                type="button"
+                className={`${styles.menuItem} ${
+                  currentPage === "about" ? styles.active : ""
+                }`}
+                onClick={() => handleNavigation("about", "About")}
+              >
+                <span className={styles.menuIcon}>ℹ️</span>
+                <span>About</span>
+              </button>
             </nav>
 
             <div className={styles.menuFooter}>

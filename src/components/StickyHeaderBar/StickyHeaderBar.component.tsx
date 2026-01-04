@@ -40,8 +40,9 @@ export const StickyHeaderBar = ({
           <div className={styles.desktopNav}>
             <PageNavigation
               currentPage={currentPage}
-              showMosaic={allReleasesLoaded}
-              showReleases={allReleasesLoaded}
+              showMosaic={true}
+              showReleases={true}
+              isDisabled={!allReleasesLoaded}
             />
           </div>
 
@@ -49,9 +50,10 @@ export const StickyHeaderBar = ({
           <div className={styles.mobileMenu}>
             <MobileMenu
               currentPage={currentPage}
-              showMosaic={allReleasesLoaded}
-              showReleases={allReleasesLoaded}
+              showMosaic={true}
+              showReleases={true}
               showFilters={!hideFilters}
+              isDisabled={!allReleasesLoaded}
             />
           </div>
 

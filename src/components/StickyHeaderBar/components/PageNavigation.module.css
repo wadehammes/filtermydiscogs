@@ -11,6 +11,14 @@
   @media (min-width: 769px) {
     margin: 0 var(--space-6);
   }
+
+  &.disabled {
+    .navItem:not(.active) {
+      cursor: not-allowed;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
 }
 
 .navItem {
@@ -37,6 +45,12 @@
     background: var(--primary);
     color: var(--white);
     font-weight: var(--font-bold);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
   }
 
   .icon {
