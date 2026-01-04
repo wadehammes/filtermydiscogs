@@ -1,7 +1,7 @@
 .container {
   min-height: 100vh;
   padding: var(--space-8);
-  background: var(--white);
+  background: var(--background);
 }
 
 .header {
@@ -14,7 +14,7 @@
     font-size: var(--text-4xl);
     font-weight: var(--font-bold);
     margin-bottom: var(--space-4);
-    color: var(--black);
+    color: var(--foreground);
 
     @media (min-width: 768px) {
       font-size: 3rem;
@@ -176,7 +176,7 @@
   text-align: center;
 
   h1 {
-    color: var(--black);
+    color: var(--foreground);
     font-size: var(--text-4xl);
     font-weight: var(--font-bold);
     margin-bottom: var(--space-4);

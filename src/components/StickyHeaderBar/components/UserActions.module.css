@@ -24,7 +24,7 @@
 }
 
 .username {
-  color: var(--gray-600);
+  color: var(--muted-foreground);
   font-size: var(--text-sm);
   white-space: nowrap;
 }

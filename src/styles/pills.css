@@ -5,7 +5,11 @@
   font-size: 0.65rem;
   font-weight: var(--font-medium);
   padding: 0.2rem var(--space-2) 0.2rem;
-  transition: all var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal),
+    opacity var(--transition-normal);
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
@@ -13,48 +17,48 @@
 
 /* Format pill styles */
 .pillFormat {
-  background: var(--warning-50);
-  border: 1px solid var(--warning-500);
-  color: var(--warning-600);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  border: 1px solid var(--warning);
+  color: var(--warning);
 
   &:hover {
-    background: var(--warning-500);
-    border-color: var(--warning-600);
-    color: var(--white);
+    background: var(--warning);
+    border-color: var(--warning-hover);
+    color: var(--warning-foreground);
   }
 
   &.pillSelected {
-    background: var(--warning-500);
-    border-color: var(--warning-600);
-    color: var(--white);
+    background: var(--warning);
+    border-color: var(--warning-hover);
+    color: var(--warning-foreground);
 
     &:hover {
-      background: var(--warning-600);
-      border-color: var(--warning-600);
+      background: var(--warning-hover);
+      border-color: var(--warning-active);
     }
   }
 }
 
 /* Style pill styles */
 .pillStyle {
-  background: var(--success-50);
-  border: 1px solid var(--success-500);
-  color: var(--success-600);
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  border: 1px solid var(--success);
+  color: var(--success);
 
   &:hover {
-    background: var(--success-500);
-    border-color: var(--success-600);
-    color: var(--white);
+    background: var(--success);
+    border-color: var(--success-hover);
+    color: var(--success-foreground);
   }
 
   &.pillSelected {
-    background: var(--success-500);
-    border-color: var(--success-600);
-    color: var(--white);
+    background: var(--success);
+    border-color: var(--success-hover);
+    color: var(--success-foreground);
 
     &:hover {
-      background: var(--success-600);
-      border-color: var(--success-600);
+      background: var(--success-hover);
+      border-color: var(--success-active);
     }
   }
 }

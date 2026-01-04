@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Page } from "src/components/Page/Page.component";
+import styles from "./error.module.css";
 
 /**
  * Root error boundary.
@@ -22,42 +23,18 @@ export default function RootError({
 
   return (
     <Page>
-      <div
-        style={{
-          alignItems: "center",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          justifyContent: "center",
-          minHeight: "50vh",
-          padding: "2rem",
-          textAlign: "center",
-        }}
-      >
-        <h1>Something went wrong!</h1>
-        <p>We encountered an unexpected error. Please try again.</p>
+      <div className={styles.container}>
+        <h1 className={styles.title}>Something went wrong!</h1>
+        <p className={styles.message}>
+          We encountered an unexpected error. Please try again.
+        </p>
         {process.env.NODE_ENV === "development" && (
-          <details style={{ marginTop: "1rem", textAlign: "left" }}>
+          <details className={styles.details}>
             <summary>Error details (development only)</summary>
-            <pre style={{ marginTop: "0.5rem", overflow: "auto" }}>
-              {error.message}
-            </pre>
+            <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
         )}
-        <button
-          onClick={reset}
-          style={{
-            backgroundColor: "var(--primary-600)",
-            border: "none",
-            borderRadius: "4px",
-            color: "white",
-            cursor: "pointer",
-            fontSize: "1rem",
-            marginTop: "1rem",
-            padding: "0.75rem 1.5rem",
-          }}
-          type="button"
-        >
+        <button onClick={reset} className={styles.button} type="button">
           Try again
         </button>
       </div>

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Page } from "src/components/Page/Page.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
+import styles from "./error.module.css";
 
 /**
  * Error boundary for the mosaic page.
@@ -28,42 +29,18 @@ export default function MosaicError({
         hideCrate={true}
         currentPage="mosaic"
       />
-      <div
-        style={{
-          alignItems: "center",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          justifyContent: "center",
-          minHeight: "50vh",
-          padding: "2rem",
-          textAlign: "center",
-        }}
-      >
-        <h2>Failed to load mosaic</h2>
-        <p>We couldn't generate your mosaic. Please try again.</p>
+      <div className={styles.container}>
+        <h2 className={styles.title}>Failed to load mosaic</h2>
+        <p className={styles.message}>
+          We couldn't generate your mosaic. Please try again.
+        </p>
         {process.env.NODE_ENV === "development" && (
-          <details style={{ marginTop: "1rem", textAlign: "left" }}>
+          <details className={styles.details}>
             <summary>Error details (development only)</summary>
-            <pre style={{ marginTop: "0.5rem", overflow: "auto" }}>
-              {error.message}
-            </pre>
+            <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
         )}
-        <button
-          onClick={reset}
-          style={{
-            backgroundColor: "var(--primary-600)",
-            border: "none",
-            borderRadius: "4px",
-            color: "white",
-            cursor: "pointer",
-            fontSize: "1rem",
-            marginTop: "1rem",
-            padding: "0.75rem 1.5rem",
-          }}
-          type="button"
-        >
+        <button onClick={reset} className={styles.button} type="button">
           Retry
         </button>
       </div>

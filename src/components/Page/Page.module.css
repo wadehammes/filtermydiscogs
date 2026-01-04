@@ -1,5 +1,5 @@
 .pageContainer {
-  background: var(--gray-50);
+  background: var(--background);
   min-height: 100vh;
   width: 100%;
 }

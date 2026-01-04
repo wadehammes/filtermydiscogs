@@ -1,6 +1,7 @@
 .title {
   margin: 0;
   white-space: nowrap;
+  color: var(--text-color);
 
   > svg {
     width: 230px;

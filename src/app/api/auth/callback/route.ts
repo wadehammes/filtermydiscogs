@@ -31,13 +31,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("OAuth callback parameters:", {
-      oauthToken,
-      oauthVerifier,
-      storedOAuthToken: storedOAuthToken ? "present" : "missing",
-      storedOAuthTokenSecret: storedOAuthTokenSecret ? "present" : "missing",
-    });
-
     // Exchange request token for access token
     const accessTokens = await discogsOAuthService.getAccessToken(
       storedOAuthToken,

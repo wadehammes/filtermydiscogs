@@ -7,16 +7,17 @@
 }
 
 .label {
-  color: var(--gray-900);
+  color: var(--foreground);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
 .trigger {
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--gray-300);
+  background: var(--background);
+  border: 1px solid var(--input);
   border-radius: var(--radius-sm);
+  color: var(--foreground);
   cursor: pointer;
   display: flex;
   font-family: inherit;
@@ -27,22 +28,23 @@
   text-align: left;
 
   &:hover:not(:disabled) {
-    border-color: var(--gray-400);
+    border-color: var(--border);
   }
 
   &:focus {
-    outline: 2px solid var(--primary-600);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
   &:disabled {
-    background: var(--gray-50);
-    color: var(--gray-400);
+    background: var(--muted);
+    color: var(--muted-foreground);
     cursor: not-allowed;
   }
 }
 
 .value {
+  color: var(--foreground);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -50,7 +52,7 @@
 }
 
 .icon {
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
   margin-left: var(--space-2);
   transform: rotate(90deg);
@@ -66,8 +68,8 @@
 }
 
 .listbox {
-  background: var(--white);
-  border: 1px solid var(--gray-300);
+  background: var(--popover);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
   left: 0;
@@ -84,7 +86,8 @@
 }
 
 .option {
-  border-bottom: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
   cursor: pointer;
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
@@ -95,16 +98,16 @@
 
   &:hover,
   &.focused {
-    background: var(--gray-50);
+    background: var(--muted);
   }
 
   &.selected {
-    background: var(--primary-50);
-    color: var(--primary-600);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
 
     &:hover,
     &.focused {
-      background: var(--primary-100);
+      background: color-mix(in srgb, var(--primary) 20%, transparent);
     }
   }
 }

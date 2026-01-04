@@ -18,6 +18,7 @@ const VIEW_STORAGE_KEY = "filtermydiscogs_view_state";
 
 // Helper functions for localStorage
 const saveViewState = (state: ViewState) => {
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
@@ -26,6 +27,7 @@ const saveViewState = (state: ViewState) => {
 };
 
 const loadViewState = (): ViewState | null => {
+  if (typeof window === "undefined") return null;
   try {
     const saved = localStorage.getItem(VIEW_STORAGE_KEY);
     if (saved) {

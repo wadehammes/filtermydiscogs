@@ -1,7 +1,7 @@
 .container {
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--gray-300);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   display: flex;
   gap: 0;

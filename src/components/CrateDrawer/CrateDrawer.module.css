@@ -1,6 +1,6 @@
 .drawer {
-  background: var(--white);
-  border-left: 1px solid var(--gray-200);
+  background: var(--background);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -54,14 +54,14 @@
 
 .header {
   align-items: center;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   padding: var(--space-6);
 }
 
 .title {
-  color: var(--gray-900);
+  color: var(--foreground);
   font-size: var(--text-xl);
   font-weight: var(--font-semibold);
   margin: 0;
@@ -75,10 +75,10 @@
 
 .closeButton {
   align-items: center;
-  background: var(--gray-100);
+  background: var(--muted);
   border: none;
   border-radius: var(--radius-full);
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
   font-size: var(--text-2xl);
@@ -88,8 +88,8 @@
   width: 32px;
 
   &:hover {
-    background: var(--gray-200);
-    color: var(--gray-600);
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
 }
 
@@ -104,7 +104,7 @@
 
 .emptyState {
   align-items: center;
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -126,8 +126,8 @@
 
 .listItem {
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--gray-200);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
   display: flex;
@@ -137,12 +137,12 @@
   padding-right: var(--space-4);
 
   &:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-300);
+    background: var(--muted);
+    border-color: var(--input);
   }
 
   &:focus {
-    outline: 2px solid var(--primary-600);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 }
@@ -170,7 +170,7 @@
 }
 
 .itemTitle {
-  color: var(--gray-900);
+  color: var(--foreground);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   overflow: hidden;
@@ -179,7 +179,7 @@
 }
 
 .itemArtist {
-  color: var(--gray-600);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -187,7 +187,7 @@
 }
 
 .itemLabel {
-  color: var(--gray-400);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -196,10 +196,10 @@
 
 .removeButton {
   align-items: center;
-  background: var(--error-50);
+  background: color-mix(in srgb, var(--destructive) 10%, transparent);
   border: 1px solid transparent;
   border-radius: var(--radius-full);
-  color: var(--error-500);
+  color: var(--destructive);
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
@@ -210,7 +210,7 @@
   width: 28px;
 
   &:hover {
-    border-color: var(--error-600);
-    color: var(--error-500);
+    border-color: var(--destructive-hover);
+    color: var(--destructive);
   }
 }

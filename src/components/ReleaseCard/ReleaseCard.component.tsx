@@ -29,18 +29,33 @@ const ReleaseCardComponent = ({
     formats: releaseFormats,
     resource_url,
   } = release.basic_information;
+
+  const formatDateAdded = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "";
+    }
+  };
+
+  const dateAdded = release.date_added
+    ? formatDateAdded(release.date_added)
+    : null;
   const thumbUrl = thumb
     ? thumb
     : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
-  // Extract release ID from resource_url
   const releaseId = resource_url.split("/").pop() || "";
   const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
 
-  // Only fetch release data when clicked
   const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
     releaseId,
-    isClicked, // Only enable query when clicked
+    isClicked,
   );
 
   const handleReleaseClick = useCallback(
@@ -56,24 +71,18 @@ const ReleaseCardComponent = ({
         value: resource_url,
       });
 
-      // If we already have the data, open immediately
       if (releaseData?.uri) {
         window.open(releaseData.uri, "_blank", "noopener,noreferrer");
         return;
       }
-
-      // Otherwise, wait for the query to complete
-      // The useEffect below will handle opening the URL once data is loaded
     },
     [releaseData?.uri, resource_url],
   );
 
-  // Open URL once we have the release data
   const handleUrlOpen = useCallback(() => {
     if (releaseData?.uri) {
       window.open(releaseData.uri, "_blank", "noopener,noreferrer");
     } else if (!isLoading) {
-      // If query failed, use fallback
       window.open(fallbackUri, "_blank", "noopener,noreferrer");
     }
   }, [releaseData?.uri, isLoading, fallbackUri]);
@@ -105,13 +114,11 @@ const ReleaseCardComponent = ({
         value: style,
       });
 
-      // Exit random mode when clicking a style pill
       if (filtersState.isRandomMode) {
         filtersDispatch({
           type: FiltersActionTypes.ToggleRandomMode,
           payload: undefined,
         });
-        // Call the callback to change view back to card
         onExitRandomMode?.();
       }
 
@@ -120,11 +127,7 @@ const ReleaseCardComponent = ({
         payload: style,
       });
     },
-    [
-      filtersDispatch,
-      filtersState.isRandomMode, // Call the callback to change view back to card
-      onExitRandomMode,
-    ],
+    [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
   );
 
   const handleFormatPillClick = useCallback(
@@ -139,13 +142,11 @@ const ReleaseCardComponent = ({
         value: format,
       });
 
-      // Exit random mode when clicking a format pill
       if (filtersState.isRandomMode) {
         filtersDispatch({
           type: FiltersActionTypes.ToggleRandomMode,
           payload: undefined,
         });
-        // Call the callback to change view back to card
         onExitRandomMode?.();
       }
 
@@ -175,9 +176,14 @@ const ReleaseCardComponent = ({
       >
         <div
           className={styles.imageContainer}
-          style={{
-            backgroundImage: thumbUrl ? `url(${thumbUrl})` : "none",
-          }}
+          data-bg-image={thumbUrl || undefined}
+          style={
+            thumbUrl
+              ? {
+                  backgroundImage: `url(${thumbUrl})`,
+                }
+              : undefined
+          }
         >
           {thumbUrl && (
             <Image
@@ -187,43 +193,71 @@ const ReleaseCardComponent = ({
               quality={85}
               alt={release.basic_information.title}
               loading="lazy"
-              style={{ position: "relative", zIndex: 2 }}
+              style={{
+                position: "relative",
+                zIndex: 2,
+                filter: "none",
+              }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )}
-          <button
-            type="button"
-            className={styles.listButton}
-            onClick={handleCrateToggle}
-            aria-label={
-              isInCrate(release.instance_id)
-                ? "Remove from crate"
-                : "Add to crate"
-            }
-          >
-            <span className={styles.listButtonIcon}>
-              {isInCrate(release.instance_id) ? "−" : "+"}
-            </span>
-            <span className={styles.listButtonText}>
-              {isInCrate(release.instance_id)
-                ? "Remove from Crate"
-                : "Add to Crate"}
-            </span>
-          </button>
+          <div className={styles.actionButtons}>
+            <button
+              type="button"
+              className={styles.discogsIconButton}
+              onClick={handleReleaseClick}
+              disabled={isLoading}
+              aria-label="View on Discogs"
+              title="View on Discogs"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className={styles.externalLinkIcon}
+              >
+                <path d="M10 6v2H5v11h11v-5h2v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6zm11-3v8h-2V6.413l-7.793 7.794-1.414-1.414L17.586 5H13V3h8z" />
+              </svg>
+              <span className={styles.tooltip}>View on Discogs</span>
+            </button>
+            <button
+              type="button"
+              className={styles.listButton}
+              onClick={handleCrateToggle}
+              aria-label={
+                isInCrate(release.instance_id)
+                  ? "Remove from crate"
+                  : "Add to crate"
+              }
+            >
+              <span className={styles.listButtonIcon}>
+                {isInCrate(release.instance_id) ? "−" : "+"}
+              </span>
+              <span className={styles.listButtonText}>
+                {isInCrate(release.instance_id)
+                  ? "Remove from Crate"
+                  : "Add to Crate"}
+              </span>
+            </button>
+          </div>
         </div>
         <div className={styles.contentContainer}>
           <div className={styles.mainContent}>
-            <span className="typography-span">
-              <b>
-                {artists.map((artist) => artist.name).join(", ")} - {title}
-              </b>
-            </span>
-            <span className="typography-span typography-span-small">
-              {labels[0]?.name} {year !== 0 ? `— ${year}` : ""}
-            </span>
-            <span className="typography-span typography-span-small">
-              {release?.notes?.map((note) => note.value).join(", ")}
-            </span>
+            <h3 className={styles.title}>
+              {artists.map((artist) => artist.name).join(", ")} - {title}
+            </h3>
+            <div className={styles.metaContainer}>
+              {(labels[0]?.name || year !== 0) && (
+                <p className={styles.meta}>
+                  {labels[0]?.name}
+                  {labels[0]?.name && year !== 0 ? " • " : ""}
+                  {year !== 0 ? year : ""}
+                </p>
+              )}
+              {dateAdded && (
+                <p className={styles.meta}>Date Added: {dateAdded}</p>
+              )}
+            </div>
           </div>
           <div className={styles.genresContainer}>
             {releaseFormats && releaseFormats.length > 0 && (
@@ -274,16 +308,6 @@ const ReleaseCardComponent = ({
                 ))}
               </div>
             )}
-          </div>
-          <div className={styles.quickLinks}>
-            <button
-              type="button"
-              className={styles.discogsButton}
-              onClick={handleReleaseClick}
-              disabled={isLoading}
-            >
-              View on Discogs &rarr;
-            </button>
           </div>
         </div>
       </div>

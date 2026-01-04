@@ -112,8 +112,6 @@ class DiscogsOAuthService {
         additionalData,
       );
 
-      console.log("OAuth authorization:", oauthHeaders);
-
       const fetchOptions: FetchOptions = {
         method,
         headers: {
@@ -158,13 +156,6 @@ class DiscogsOAuthService {
     const oauthHeaders = this.oauth.toHeader(
       this.oauth.authorize(request_data),
     );
-
-    console.log("Request token request:", {
-      url,
-      method,
-      headers: oauthHeaders,
-      body: body.toString(),
-    });
 
     const response = await fetch(url, {
       method,
@@ -224,13 +215,6 @@ class DiscogsOAuthService {
     const oauthHeaders = this.oauth.toHeader(
       this.oauth.authorize(request_data, token),
     );
-
-    console.log("Access token request:", {
-      url,
-      method,
-      headers: oauthHeaders,
-      body: body.toString(),
-    });
 
     const response = await fetch(url, {
       method,

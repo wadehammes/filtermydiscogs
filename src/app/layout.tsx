@@ -50,9 +50,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={assistant.variable}>
+    <html lang="en" className={assistant.variable} suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('filtermydiscogs_theme') || 'system';
+                  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  const resolvedTheme = theme === 'system' ? systemTheme : theme;
+                  document.documentElement.setAttribute('data-theme', resolvedTheme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         <Providers>{children}</Providers>

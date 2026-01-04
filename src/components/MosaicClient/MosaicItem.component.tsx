@@ -56,7 +56,6 @@ export default function MosaicItem({ release }: MosaicItemProps) {
     if (releaseData?.uri) {
       window.open(releaseData.uri, "_blank", "noopener,noreferrer");
     } else if (!isLoading) {
-      // If query failed, use fallback
       window.open(fallbackUri, "_blank", "noopener,noreferrer");
     }
   }, [releaseData?.uri, isLoading, fallbackUri]);
