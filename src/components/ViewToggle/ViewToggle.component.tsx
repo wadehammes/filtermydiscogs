@@ -39,6 +39,7 @@ export const ViewToggle: FC<ViewToggleProps> = ({
           <rect x="1" y="9" width="6" height="6" rx="1" />
           <rect x="9" y="9" width="6" height="6" rx="1" />
         </svg>
+        <span>Grid</span>
       </button>
       <button
         type="button"
@@ -60,6 +61,7 @@ export const ViewToggle: FC<ViewToggleProps> = ({
           <rect x="1" y="7" width="14" height="2" rx="1" />
           <rect x="1" y="12" width="14" height="2" rx="1" />
         </svg>
+        <span>Table</span>
       </button>
       <button
         type="button"
@@ -96,6 +98,7 @@ export const ViewToggle: FC<ViewToggleProps> = ({
           <path d="M8 4c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
           <path d="M8 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
         </svg>
+        <span>Random</span>
       </button>
     </div>
   );

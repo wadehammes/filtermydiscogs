@@ -13,6 +13,7 @@ const ReleasesTable = dynamic(
   {
     loading: () => (
       <div className={styles.loadingContainer}>
+        <div className={styles.spinner} />
         <p className={styles.loadingText}>Loading table view...</p>
       </div>
     ),
