@@ -70,10 +70,10 @@
 
 .pill {
   align-items: center;
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  background: color-mix(in srgb, var(--primary) 15%, var(--background));
   border: 1px solid var(--primary);
   border-radius: 12px;
-  color: var(--primary);
+  color: var(--primary-hover);
   display: inline-flex;
   font-size: var(--text-xs);
   height: 20px;
@@ -109,8 +109,8 @@
   vertical-align: middle;
 
   &:hover {
-    background: color-mix(in srgb, var(--primary) 20%, transparent);
-    color: var(--primary-hover);
+    background: color-mix(in srgb, var(--primary) 20%, var(--background));
+    color: var(--primary);
   }
 
   &:focus {
@@ -192,12 +192,13 @@
   }
 
   &.selected {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 15%, var(--background));
+    color: var(--primary-hover);
 
     &:hover,
     &.focused {
-      background: color-mix(in srgb, var(--primary) 20%, transparent);
+      background: color-mix(in srgb, var(--primary) 20%, var(--background));
+      color: var(--primary);
     }
   }
 }

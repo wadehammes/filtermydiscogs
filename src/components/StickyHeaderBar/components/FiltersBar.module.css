@@ -2,8 +2,8 @@
   display: none;
 
   @media (min-width: 769px) {
-    background: var(--gray-50);
-    border-bottom: 1px solid var(--gray-200);
+    background: var(--muted);
+    border-bottom: 1px solid var(--border);
     display: block;
     padding: var(--space-2) 0;
     position: sticky;
@@ -33,7 +33,7 @@
     align-items: center;
     background: var(--card);
     border-radius: 50%;
-    color: var(--primary-600);
+    color: var(--primary);
     display: flex;
     font-size: 10px;
     font-weight: var(--font-bold);

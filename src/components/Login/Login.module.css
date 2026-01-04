@@ -131,10 +131,10 @@
     }
 
     .error {
-      background: color-mix(in srgb, var(--destructive) 10%, transparent);
+      background: color-mix(in srgb, var(--destructive) 15%, var(--background));
       border: 1px solid var(--destructive);
       border-radius: var(--radius-md);
-      color: var(--destructive);
+      color: var(--destructive-hover);
       font-size: 0.875rem;
       margin: 0;
       padding: 0.875rem;

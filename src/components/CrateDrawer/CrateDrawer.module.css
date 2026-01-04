@@ -196,10 +196,10 @@
 
 .removeButton {
   align-items: center;
-  background: color-mix(in srgb, var(--destructive) 10%, transparent);
+  background: color-mix(in srgb, var(--destructive) 15%, var(--background));
   border: 1px solid transparent;
   border-radius: var(--radius-full);
-  color: var(--destructive);
+  color: var(--destructive-hover);
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
@@ -210,6 +210,7 @@
   width: 28px;
 
   &:hover {
+    background: color-mix(in srgb, var(--destructive) 20%, var(--background));
     border-color: var(--destructive-hover);
     color: var(--destructive);
   }

@@ -7,7 +7,7 @@
 .header {
   text-align: center;
   margin-bottom: var(--space-12);
-  color: var(--gray-700);
+  color: var(--foreground);
   padding-top: var(--space-4);
 
   h1 {
@@ -24,7 +24,7 @@
   p {
     font-size: var(--text-lg);
     margin-bottom: var(--space-8);
-    color: var(--gray-600);
+    color: var(--muted-foreground);
 
     @media (min-width: 768px) {
       font-size: 1.2rem;
@@ -33,10 +33,10 @@
 }
 
 .downloadButton {
-  background: var(--primary-600);
+  background: var(--primary);
   border: none;
   border-radius: var(--radius-lg);
-  color: var(--white);
+  color: var(--primary-foreground);
   cursor: pointer;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
@@ -45,7 +45,7 @@
   box-shadow: var(--shadow-md);
 
   &:hover:not(:disabled) {
-    background: var(--primary-700);
+    background: var(--primary-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-lg);
   }
@@ -131,8 +131,8 @@
   .loadingSpinner {
     width: 20px;
     height: 20px;
-    border: 2px solid var(--gray-200);
-    border-top: 2px solid var(--primary-600);
+    border: 2px solid var(--border);
+    border-top: 2px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0;
@@ -150,9 +150,9 @@
 
 .mainLoadingSpinner {
   animation: spin 1s linear infinite;
-  border: 4px solid var(--gray-200);
+  border: 4px solid var(--border);
   border-radius: 50%;
-  border-top: 4px solid var(--primary-600);
+  border-top: 4px solid var(--primary);
   height: 50px;
   margin-bottom: var(--space-4);
   width: 50px;
@@ -183,7 +183,7 @@
   }
 
   p {
-    color: var(--gray-600);
+    color: var(--muted-foreground);
     font-size: var(--text-lg);
   }
 }

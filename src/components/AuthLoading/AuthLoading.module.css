@@ -32,9 +32,9 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  border: 3px solid #f3f4f6;
+  border: 3px solid var(--border);
   border-radius: 50%;
-  border-top-color: #3b82f6;
+  border-top-color: var(--primary);
   height: 40px;
   width: 40px;
 }
@@ -52,7 +52,7 @@
 }
 
 .description {
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   font-family: var(--font-assistant), sans-serif;
   font-size: 1rem;
   line-height: 1.6;

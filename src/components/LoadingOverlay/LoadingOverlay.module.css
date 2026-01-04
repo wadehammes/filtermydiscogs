@@ -25,15 +25,15 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  border: 3px solid var(--gray-200);
+  border: 3px solid var(--border);
   border-radius: 50%;
-  border-top-color: var(--primary-600);
+  border-top-color: var(--primary);
   height: 32px;
   width: 32px;
 }
 
 .message {
-  color: var(--gray-700);
+  color: var(--foreground);
   font-size: var(--text-lg);
   font-weight: 500;
   margin: 0;
