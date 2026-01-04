@@ -7,7 +7,7 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(8px);
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   bottom: var(--space-4);
   box-shadow: var(--shadow-lg);
@@ -29,15 +29,15 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  border: 2px solid var(--gray-200);
+  border: 2px solid var(--border);
   border-radius: 50%;
-  border-top-color: var(--primary-600);
+  border-top-color: var(--primary);
   height: 24px;
   width: 24px;
 }
 
 .message {
-  color: var(--gray-700);
+  color: var(--foreground);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   margin: 0;

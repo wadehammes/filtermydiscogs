@@ -10,7 +10,7 @@
   align-items: center;
   background: var(--card);
   border-radius: 50%;
-  color: var(--primary-600);
+  color: var(--primary);
   display: flex;
   font-size: 10px;
   font-weight: var(--font-bold);

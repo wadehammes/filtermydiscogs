@@ -17,9 +17,9 @@
 
 /* Format pill styles */
 .pillFormat {
-  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  background: color-mix(in srgb, var(--warning) 15%, var(--background));
   border: 1px solid var(--warning);
-  color: var(--warning);
+  color: var(--warning-hover);
 
   &:hover {
     background: var(--warning);
@@ -41,23 +41,23 @@
 
 /* Style pill styles */
 .pillStyle {
-  background: color-mix(in srgb, var(--success) 10%, transparent);
+  background: color-mix(in srgb, var(--success) 15%, var(--background));
   border: 1px solid var(--success);
-  color: var(--success);
+  color: var(--success-hover);
 
   &:hover {
-    background: var(--success);
-    border-color: var(--success-hover);
+    background: var(--success-hover);
+    border-color: var(--success-active);
     color: var(--success-foreground);
   }
 
   &.pillSelected {
-    background: var(--success);
-    border-color: var(--success-hover);
+    background: var(--success-hover);
+    border-color: var(--success-active);
     color: var(--success-foreground);
 
     &:hover {
-      background: var(--success-hover);
+      background: var(--success-active);
       border-color: var(--success-active);
     }
   }

@@ -102,12 +102,13 @@
   }
 
   &.selected {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 15%, var(--background));
+    color: var(--primary-hover);
 
     &:hover,
     &.focused {
-      background: color-mix(in srgb, var(--primary) 20%, transparent);
+      background: color-mix(in srgb, var(--primary) 20%, var(--background));
+      color: var(--primary);
     }
   }
 }

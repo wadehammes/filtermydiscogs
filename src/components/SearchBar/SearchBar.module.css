@@ -119,9 +119,14 @@
 }
 
 .errorMessage {
-  background-color: color-mix(in srgb, var(--destructive) 10%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--destructive) 15%,
+    var(--background)
+  );
+  border: 1px solid var(--destructive);
   border-radius: var(--radius-sm);
-  color: var(--destructive);
+  color: var(--destructive-hover);
   font-size: var(--text-sm);
   margin-top: var(--space-2);
   padding: var(--space-2);
