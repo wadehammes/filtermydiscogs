@@ -10,7 +10,7 @@
     var(--gradientPink) 0%,
     var(--gradientTeal) 100%
   );
-  gap: 2rem;
+  gap: var(--space-1);
 }
 
 .bentoGrid {
@@ -139,6 +139,21 @@
       margin: 0;
       padding: 0.875rem;
     }
+
+    .aboutLink {
+      color: var(--muted-foreground);
+      display: block;
+      font-size: 0.875rem;
+      margin-top: var(--space-4);
+      text-align: center;
+      text-decoration: none;
+      transition: color var(--transition-normal);
+
+      &:hover {
+        color: var(--primary);
+        text-decoration: underline;
+      }
+    }
   }
 
   &.featuresCard {
@@ -202,20 +217,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+  padding: var(--space-1) var(--space-2);
   width: 100%;
   text-wrap: balance;
-  font-family: monospace;
-  font-size: var(--text-xs);
 
-  a {
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 600;
-    transition: color var(--transition-normal);
+  @media (min-width: 768px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    justify-content: center;
+  }
 
-    &:hover {
-      color: var(--primary-hover);
+  span {
+    color: var(--background);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+
+    a {
+      color: var(--background);
+      font-weight: var(--font-medium);
+      text-decoration: underline;
     }
   }
 }
