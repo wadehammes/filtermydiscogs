@@ -159,7 +159,7 @@ const ReleaseListItemComponent = ({
             <div className={styles.styles}>
               {releaseStyles && releaseStyles.length > 0 && (
                 <div className={styles.stylesContainer}>
-                  {releaseStyles.slice(0, 3).map((style: string) => (
+                  {releaseStyles.map((style: string) => (
                     <button
                       key={style}
                       type="button"
@@ -173,11 +173,6 @@ const ReleaseListItemComponent = ({
                       {style}
                     </button>
                   ))}
-                  {releaseStyles.length > 3 && (
-                    <span className={styles.moreStyles}>
-                      +{releaseStyles.length - 3} more
-                    </span>
-                  )}
                 </div>
               )}
             </div>

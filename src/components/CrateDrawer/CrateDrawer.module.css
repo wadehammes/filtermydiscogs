@@ -29,7 +29,7 @@
   appearance: none;
   border: none;
   cursor: pointer;
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--background) 50%, transparent);
   display: none;
   height: 100vh;
   left: 0;

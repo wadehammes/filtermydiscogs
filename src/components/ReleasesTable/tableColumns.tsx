@@ -190,7 +190,7 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
 
           return (
             <div className={styles.formatsCell}>
-              {uniqueFormats.slice(0, 2).map((formatName) => (
+              {uniqueFormats.map((formatName) => (
                 <button
                   key={formatName}
                   type="button"
@@ -216,11 +216,6 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
                   {formatName}
                 </button>
               ))}
-              {uniqueFormats.length > 2 && (
-                <span className={styles.moreFormats}>
-                  +{uniqueFormats.length - 2}
-                </span>
-              )}
             </div>
           );
         },
@@ -236,7 +231,7 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
 
           return (
             <div className={styles.stylesCell}>
-              {releaseStyles.slice(0, 2).map((style: string) => (
+              {releaseStyles.map((style: string) => (
                 <button
                   key={style}
                   type="button"
@@ -249,11 +244,6 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
                   {style}
                 </button>
               ))}
-              {releaseStyles.length > 2 && (
-                <span className={styles.moreStyles}>
-                  +{releaseStyles.length - 2}
-                </span>
-              )}
             </div>
           );
         },

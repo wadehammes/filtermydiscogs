@@ -7,14 +7,12 @@ import type {
 export const fetchDiscogsCollection = async (
   username: string,
   page: number = 1,
-  sort: string = "added",
-  sortOrder: string = "desc",
 ): Promise<DiscogsCollection> => {
   const params = new URLSearchParams({
     username,
     page: page.toString(),
-    sort,
-    sort_order: sortOrder,
+    sort: "added",
+    sort_order: "desc",
   });
 
   const response = await fetch(`/api/collection?${params}`, {
@@ -65,7 +63,6 @@ export const fetchDiscogsSearch = async (
     type,
   });
 
-  // Add optional parameters
   if (format) params.append("format", format);
   if (year) params.append("year", year);
   if (genre) params.append("genre", genre);

@@ -5,7 +5,7 @@
 
 .overlay {
   align-items: center;
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--card) 95%, transparent);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);

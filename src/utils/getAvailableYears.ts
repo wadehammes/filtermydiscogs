@@ -10,5 +10,5 @@ export const getAvailableYears = (releases: DiscogsRelease[]): number[] => {
     }
   });
 
-  return Array.from(yearSet).sort((a, b) => b - a); // Sort descending (newest first)
+  return Array.from(yearSet).sort((a, b) => b - a);
 };

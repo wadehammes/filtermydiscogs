@@ -84,9 +84,7 @@ export function useGridDimensions({
       window.removeEventListener("resize", updateGridDimensions);
       clearTimeout(timeoutId);
     };
-    // calculateGridDimensions is stable (empty deps), so we don't need it in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemCount, debounceMs]);
+  }, [itemCount, debounceMs, calculateGridDimensions]);
 
   return gridDimensions;
 }

@@ -1,6 +1,6 @@
 .overlay {
   align-items: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--background) 60%, transparent);
   backdrop-filter: blur(10px);
   display: flex;
   height: 100vh;

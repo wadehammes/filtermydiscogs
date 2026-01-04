@@ -215,7 +215,7 @@
 .progressBar {
   width: 100%;
   height: 4px;
-  background: rgba(255, 255, 255, 0.3);
+  background: color-mix(in srgb, var(--foreground) 30%, transparent);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -292,7 +292,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--background) 50%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;

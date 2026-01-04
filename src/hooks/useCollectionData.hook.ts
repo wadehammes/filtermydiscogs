@@ -18,8 +18,7 @@ export const useCollectionData = (
     dispatchError,
   } = useCollectionContext();
 
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { selectedSort } = filtersState;
+  const { dispatch: filtersDispatch } = useFilters();
 
   const queryEnabled = isAuthenticated && !!username;
 
@@ -31,7 +30,7 @@ export const useCollectionData = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useDiscogsCollectionQuery(username || "", queryEnabled, selectedSort);
+  } = useDiscogsCollectionQuery(username || "", queryEnabled);
 
   useEffect(() => {
     if (isAuthenticated && username) {
@@ -41,7 +40,6 @@ export const useCollectionData = (
     }
   }, [isAuthenticated, username, queryClient]);
 
-  // Auto-fetch all pages when sort changes to maintain full collection
   useEffect(() => {
     if (isAuthenticated && username && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
