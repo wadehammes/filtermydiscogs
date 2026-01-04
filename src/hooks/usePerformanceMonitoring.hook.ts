@@ -65,8 +65,6 @@ export const usePerformanceMonitoring = () => {
 
     const reportMetrics = () => {
       if (Object.keys(metrics).length > 0) {
-        console.log("Performance Metrics:", metrics);
-
         if (
           typeof window !== "undefined" &&
           (window as Window & { gtag?: Function }).gtag

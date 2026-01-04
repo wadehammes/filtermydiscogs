@@ -31,7 +31,7 @@
 
   .crateCount {
     align-items: center;
-    background: var(--white);
+    background: var(--card);
     border-radius: 50%;
     color: var(--primary-600);
     display: flex;

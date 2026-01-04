@@ -1,5 +1,7 @@
 import { useRouter } from "next/navigation";
 import { trackEvent } from "src/analytics/analytics";
+import Grid from "src/styles/icons/grid.svg";
+import VinylRecord from "src/styles/icons/vinyl-record.svg";
 import styles from "./PageNavigation.module.css";
 
 interface PageNavigationProps {
@@ -34,7 +36,9 @@ export const PageNavigation = ({
           onClick={() => handleNavigation("releases", "Releases")}
           aria-label="View releases"
         >
-          <span className={styles.icon}>📀</span>
+          <span className={styles.icon}>
+            <VinylRecord />
+          </span>
           <span>Releases</span>
         </button>
       )}
@@ -46,7 +50,9 @@ export const PageNavigation = ({
           onClick={() => handleNavigation("mosaic", "Mosaic")}
           aria-label="View mosaic"
         >
-          <span className={styles.icon}>🖼️</span>
+          <span className={styles.icon}>
+            <Grid />
+          </span>
           <span>Mosaic</span>
         </button>
       )}

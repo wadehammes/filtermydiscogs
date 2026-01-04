@@ -1,48 +1,56 @@
 .navigation {
   align-items: center;
-  display: flex;
-  gap: var(--space-4);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  gap: 0;
   margin: 0 var(--space-4);
+  padding: var(--space-1);
 
   @media (min-width: 769px) {
-    gap: var(--space-6);
+    margin: 0 var(--space-6);
   }
 }
 
 .navItem {
   align-items: center;
-  background: none;
+  background: transparent;
   border: none;
-  color: var(--gray-600);
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  gap: var(--space-1);
-  padding: var(--space-2) 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   position: relative;
-  transition: var(--transition-normal);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 
-  &:hover {
-    color: var(--gray-900);
+  &:hover:not(.active) {
+    color: var(--foreground);
   }
 
   &.active {
-    color: var(--primary-600);
-    font-weight: var(--font-semibold);
-
-    &::after {
-      background: var(--primary-600);
-      bottom: 0;
-      content: "";
-      height: 2px;
-      left: 0;
-      position: absolute;
-      right: 0;
-    }
+    background: var(--primary);
+    color: var(--white);
+    font-weight: var(--font-bold);
   }
 
   .icon {
+    align-items: center;
+    display: flex;
     font-size: var(--text-base);
+    height: 1em;
+    justify-content: center;
+    line-height: 1;
+    width: 1em;
+
+    svg {
+      height: 100%;
+      width: 100%;
+    }
   }
 }

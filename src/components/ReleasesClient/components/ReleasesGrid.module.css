@@ -1,23 +1,23 @@
-.releasesGrid {
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  padding: 0 var(--space-4);
+.loadingContainer {
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.loadingText {
+  color: var(--foreground);
+  font-size: var(--text-base);
 }
 
 .releasesGridRandom {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  padding: var(--space-8);
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.releasesList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: 0 var(--space-4);
+  justify-content: center;
+  padding: var(--space-4);
+  width: 100%;
+
+  & > div {
+    max-width: 600px;
+    width: 100%;
+  }
 }

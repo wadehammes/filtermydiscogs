@@ -87,17 +87,13 @@ export function useMosaicGenerator({
   }, []);
 
   const downloadMosaic = useCallback(async () => {
-    console.log("Download mosaic button clicked");
     if (!canvasRef.current || releases.length === 0) {
-      console.log("Early return: canvas ref or no releases");
       return;
     }
 
     // Create abort controller for cancellation
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-
-    console.log("Starting mosaic generation...");
     setState({
       isGenerating: true,
       generationProgress: 0,
@@ -133,10 +129,6 @@ export function useMosaicGenerator({
         ...prev,
         error: `Warning: Very large collection (${releases.length} items) may cause performance issues. Consider using filters to reduce the number of items.`,
       }));
-    } else if (isLargeCollection) {
-      console.log(
-        `Large collection detected (${releases.length} items). Using optimized settings.`,
-      );
     }
 
     try {
@@ -161,25 +153,14 @@ export function useMosaicGenerator({
         aspectRatioConfig,
       );
 
-      const { cols, rows, cellSize, canvasWidth, canvasHeight } = optimalGrid;
+      const { cols, cellSize, canvasWidth, canvasHeight } = optimalGrid;
 
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
 
-      console.log(
-        `Grid calculation: ${cols}x${rows} grid, cell size: ${cellSize}px, canvas: ${canvasWidth}x${canvasHeight}px`,
-      );
-      console.log(
-        `Grid coverage: ${cols * cellSize}x${rows * cellSize}px (should fill ${canvasWidth}x${canvasHeight}px)`,
-      );
-
       // Fill background
       ctx.fillStyle = MOSAIC_CONSTANTS.CANVAS_BACKGROUND_COLOR;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      console.log(
-        `Generating mosaic for ${releases.length} releases in ${cols}x${rows} grid`,
-      );
 
       // Create optimized image loader
       const imageLoader = createOptimizedImageLoader();
@@ -234,7 +215,6 @@ export function useMosaicGenerator({
           return;
         }
 
-        // If no image URL, draw placeholder immediately
         if (!originalImageUrl) {
           drawPlaceholder();
           statsRef.current.failedImages++;
@@ -265,13 +245,7 @@ export function useMosaicGenerator({
               ...prev,
               successfulImages: prev.successfulImages + 1,
             }));
-            console.log(
-              `Successfully drew image for ${release.basic_information.title}`,
-            );
           } else {
-            console.log(
-              `Failed to load image for ${release.basic_information.title}: ${result.error}`,
-            );
             drawPlaceholder();
             statsRef.current.failedImages++;
             setState((prev) => ({
@@ -305,14 +279,9 @@ export function useMosaicGenerator({
 
       const totalBatches = Math.ceil(releases.length / batchSize);
 
-      console.log(
-        `Processing ${releases.length} images in ${totalBatches} batches of ${batchSize}`,
-      );
-
       for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
         // Check for cancellation before each batch
         if (signal.aborted) {
-          console.log("Generation cancelled during batch processing");
           throw new Error("Generation cancelled");
         }
 
@@ -320,38 +289,21 @@ export function useMosaicGenerator({
         const endIndex = Math.min(startIndex + batchSize, releases.length);
         const batch = releases.slice(startIndex, endIndex);
 
-        console.log(
-          `Processing batch ${batchIndex + 1}/${totalBatches} (${startIndex + 1}-${endIndex})`,
-        );
-
         const batchPromises = batch.map((release, batchItemIndex) =>
           loadImageForCanvas(release, startIndex + batchItemIndex),
         );
 
         try {
           await Promise.all(batchPromises);
-          console.log(`Completed batch ${batchIndex + 1}/${totalBatches}`);
 
           // Update progress with more granular tracking
           const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
-          const currentImageCount = (batchIndex + 1) * batchSize;
-          const processedImages = Math.min(currentImageCount, releases.length);
 
           setState((prev) => ({
             ...prev,
             generationProgress: progress,
             error: null, // Clear any previous errors on successful batch
           }));
-
-          // Log detailed progress for large collections
-          if (
-            isLargeCollection &&
-            batchIndex % Math.ceil(totalBatches / 10) === 0
-          ) {
-            console.log(
-              `Progress: ${progress}% (${processedImages}/${releases.length} images processed)`,
-            );
-          }
 
           // Update memory usage stats
           statsRef.current.memoryUsage = getCacheMemoryUsage();
@@ -384,9 +336,6 @@ export function useMosaicGenerator({
       // Add watermark footer
       addWatermarkFooter(ctx, canvasWidth, canvasHeight);
 
-      // Convert to blob and download with optimization
-      console.log("Canvas size:", canvas.width, "x", canvas.height);
-
       // Use selected format and quality for optimal compression
       const mimeType = imageFormat === "png" ? "image/png" : "image/jpeg";
       const quality = imageFormat === "png" ? undefined : imageQuality / 100;
@@ -394,10 +343,7 @@ export function useMosaicGenerator({
 
       canvas.toBlob(
         (blob) => {
-          console.log("Canvas toBlob callback called, blob:", blob);
           if (blob) {
-            console.log("Blob size:", blob.size, "bytes");
-
             // Performance tracking
             const endTime = performance.now();
             const generationTime = endTime - startTime;
@@ -409,8 +355,6 @@ export function useMosaicGenerator({
                 (statsRef.current.successfulImages / releases.length) * 100,
               memoryUsage: getCacheMemoryUsage(),
             };
-
-            console.log("Performance metrics:", performanceMetrics);
 
             // Track performance analytics
             trackEvent("mosaicPerformance", {
@@ -428,7 +372,6 @@ export function useMosaicGenerator({
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            console.log("Download triggered successfully");
           } else {
             console.error("Canvas toBlob returned null blob");
           }
@@ -456,7 +399,6 @@ export function useMosaicGenerator({
         value: errorMessage,
       });
     } finally {
-      console.log("Mosaic generation completed, setting isGenerating to false");
       setState((prev) => ({
         ...prev,
         isGenerating: false,

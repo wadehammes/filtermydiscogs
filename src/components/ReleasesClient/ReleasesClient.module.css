@@ -17,7 +17,7 @@
 }
 
 .mainContent {
-  background-color: var(--white);
+  background-color: var(--background);
   grid-area: main;
   padding: 0 var(--space-4);
 }

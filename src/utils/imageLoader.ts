@@ -53,13 +53,11 @@ function isCircuitOpen(): boolean {
     state.isOpen = false;
   }
 
-  // Open circuit if threshold exceeded
   if (state.failures >= threshold) {
     state.isOpen = true;
     state.lastFailureTime = now;
   }
 
-  // Check if circuit should be closed (half-open state)
   if (state.isOpen && now - state.lastFailureTime > timeout) {
     state.isOpen = false;
   }
@@ -77,10 +75,8 @@ function recordFailure(): void {
   circuitBreaker.state.lastFailureTime = Date.now();
 }
 
-// Cache management functions
 function manageCacheSize(): void {
   if (imageCache.size > CACHE_SIZE_LIMIT) {
-    // Remove oldest entries (simple FIFO)
     const entries = Array.from(imageCache.entries());
     const toRemove = entries.slice(0, imageCache.size - CACHE_SIZE_LIMIT);
     toRemove.forEach(([key]) => {

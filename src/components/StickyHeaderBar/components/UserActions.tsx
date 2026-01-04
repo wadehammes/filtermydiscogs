@@ -1,6 +1,7 @@
 import { useRouter } from "next/navigation";
 import { trackEvent } from "src/analytics/analytics";
 import Button from "src/components/Button/Button.component";
+import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import styles from "./UserActions.module.css";
 
@@ -60,6 +61,8 @@ export const UserActions = ({
       {showUsername && username && (
         <span className={styles.username}>Welcome, {username}</span>
       )}
+
+      <ThemeSwitcher variant={variant} />
 
       <Button variant="danger" size={buttonSize} onPress={handleLogout}>
         Logout

@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
+import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 
 interface ProvidersProps {
@@ -38,18 +39,20 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CollectionContextProvider>
-          <FiltersProvider>
-            <CrateProvider>
-              <ViewProvider>
-                {children}
-                <LogoutOverlayWrapper />
-              </ViewProvider>
-            </CrateProvider>
-          </FiltersProvider>
-        </CollectionContextProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <CollectionContextProvider>
+            <FiltersProvider>
+              <CrateProvider>
+                <ViewProvider>
+                  {children}
+                  <LogoutOverlayWrapper />
+                </ViewProvider>
+              </CrateProvider>
+            </FiltersProvider>
+          </CollectionContextProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

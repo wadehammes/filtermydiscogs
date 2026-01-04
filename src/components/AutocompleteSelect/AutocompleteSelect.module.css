@@ -8,9 +8,10 @@
 
 .trigger {
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--gray-300);
+  background: var(--background);
+  border: 1px solid var(--input);
   border-radius: var(--radius-sm);
+  color: var(--foreground);
   cursor: pointer;
   display: flex;
   font-family: inherit;
@@ -21,17 +22,17 @@
   text-align: left;
 
   &:hover:not(:disabled) {
-    border-color: var(--gray-400);
+    border-color: var(--border);
   }
 
   &:focus {
-    outline: 1px solid var(--primary-600);
+    outline: 1px solid var(--ring);
     outline-offset: 1px;
   }
 
   &:disabled {
-    background: var(--gray-50);
-    color: var(--gray-400);
+    background: var(--muted);
+    color: var(--muted-foreground);
     cursor: not-allowed;
   }
 }
@@ -44,6 +45,7 @@
 }
 
 .value {
+  color: var(--foreground);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -52,7 +54,7 @@
 
 .placeholder {
   flex: 1;
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   font-style: italic;
 }
 
@@ -68,10 +70,10 @@
 
 .pill {
   align-items: center;
-  background: var(--primary-50);
-  border: 1px solid var(--primary-200);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border: 1px solid var(--primary);
   border-radius: 12px;
-  color: var(--primary-700);
+  color: var(--primary);
   display: inline-flex;
   font-size: var(--text-xs);
   height: 20px;
@@ -91,7 +93,7 @@
   background: none;
   border: none;
   border-radius: 50%;
-  color: var(--primary-700);
+  color: var(--primary);
   cursor: pointer;
   display: inline-flex;
   font-size: 12px;
@@ -107,18 +109,18 @@
   vertical-align: middle;
 
   &:hover {
-    background: var(--primary-200);
-    color: var(--primary-800);
+    background: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--primary-hover);
   }
 
   &:focus {
-    outline: 2px solid var(--primary-500);
+    outline: 2px solid var(--ring);
     outline-offset: 1px;
   }
 }
 
 .icon {
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
   margin-left: var(--space-2);
   transform: rotate(90deg);
@@ -134,8 +136,8 @@
 }
 
 .dropdown {
-  background: var(--white);
-  border: 1px solid var(--gray-300);
+  background: var(--popover);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
   left: 0;
@@ -146,13 +148,14 @@
 }
 
 .searchContainer {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
   padding: 8px 12px;
 }
 
 .searchInput {
   background: transparent;
   border: none;
+  color: var(--foreground);
   font-family: inherit;
   font-size: 14px;
   outline: none;
@@ -160,7 +163,7 @@
   width: 100%;
 
   &::placeholder {
-    color: var(--gray-400);
+    color: var(--muted-foreground);
   }
 }
 
@@ -173,7 +176,8 @@
 }
 
 .option {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
   cursor: pointer;
   font-size: 14px;
   padding: 8px 12px;
@@ -184,16 +188,16 @@
 
   &:hover,
   &.focused {
-    background: #f5f5f5;
+    background: var(--muted);
   }
 
   &.selected {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
 
     &:hover,
     &.focused {
-      background: #bbdefb;
+      background: color-mix(in srgb, var(--primary) 20%, transparent);
     }
   }
 }
@@ -220,7 +224,7 @@
   background: none;
   border: none;
   border-radius: 2px;
-  color: #666;
+  color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
   font-size: 16px;
@@ -234,18 +238,18 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: #f0f0f0;
-    color: #333;
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
 
   &:focus {
-    outline: 2px solid #1976d2;
+    outline: 2px solid var(--ring);
     outline-offset: 1px;
   }
 }
 
 .noResults {
-  color: var(--gray-400);
+  color: var(--muted-foreground);
   font-size: 14px;
   padding: 16px;
   text-align: center;

@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
+import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import FilterSolid from "src/styles/icons/filter-solid.svg";
@@ -177,6 +178,7 @@ export const MobileMenu = ({
                   <span>Welcome, {username}</span>
                 </div>
               )}
+              <ThemeSwitcher variant="mobile" />
               <button
                 type="button"
                 className={styles.logoutButton}

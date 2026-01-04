@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
 import type { DiscogsRelease } from "src/types";
@@ -12,8 +12,8 @@ const ReleasesTable = dynamic(
     ),
   {
     loading: () => (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <p>Loading table view...</p>
+      <div className={styles.loadingContainer}>
+        <p className={styles.loadingText}>Loading table view...</p>
       </div>
     ),
   },
@@ -29,7 +29,7 @@ interface ReleasesGridProps {
   randomRelease?: DiscogsRelease | null;
 }
 
-export const ReleasesGrid = ({
+const ReleasesGridComponent = ({
   releases,
   view,
   isMobile,
@@ -115,3 +115,5 @@ export const ReleasesGrid = ({
     </div>
   );
 };
+
+export const ReleasesGrid = memo(ReleasesGridComponent);

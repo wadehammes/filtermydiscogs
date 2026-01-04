@@ -1,7 +1,7 @@
 .releaseItem {
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--gray-200);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   display: flex;
   gap: var(--space-4);
@@ -9,19 +9,19 @@
   transition: var(--transition-fast);
 
   &:hover {
-    border-color: var(--primary-300);
+    border-color: var(--primary);
     box-shadow: var(--shadow-sm);
   }
 
   &.highlighted {
-    border-color: var(--primary-600);
+    border-color: var(--primary);
     box-shadow: var(--shadow-md);
   }
 
   &.inCrate {
-    border: 2px solid var(--primary-500);
+    border: 2px solid var(--primary);
     box-shadow:
-      0 0 0 4px var(--primary-100),
+      0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
       var(--shadow-md);
   }
 }
@@ -63,7 +63,7 @@
 }
 
 .title {
-  color: var(--black);
+  color: var(--foreground);
   font-size: var(--text-base);
   font-weight: var(--font-bold);
   line-height: 1.4;
@@ -74,13 +74,13 @@
 }
 
 .details {
-  color: var(--gray-600);
+  color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin: 0;
 }
 
 .notes {
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
   font-style: italic;
   margin: 0;
@@ -100,10 +100,10 @@
 }
 
 .stylePill {
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
+  background: var(--muted);
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  color: var(--gray-600);
+  color: var(--muted-foreground);
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: var(--font-medium);
@@ -111,24 +111,24 @@
   transition: all var(--transition-normal);
 
   &:hover {
-    background: var(--gray-200);
-    border-color: var(--gray-300);
+    background: var(--accent);
+    border-color: var(--input);
   }
 
   &.stylePillSelected {
-    background: var(--primary-500);
-    border-color: var(--primary-600);
-    color: var(--white);
+    background: var(--primary);
+    border-color: var(--primary-hover);
+    color: var(--primary-foreground);
 
     &:hover {
-      background: var(--primary-600);
-      border-color: var(--primary-700);
+      background: var(--primary-hover);
+      border-color: var(--primary-active);
     }
   }
 }
 
 .moreStyles {
-  color: var(--gray-500);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
   font-style: italic;
 }
@@ -142,11 +142,11 @@
 
 .crateButton {
   align-items: center;
-  background: var(--gray-100);
+  background: var(--muted);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
-  color: var(--gray-700);
+  color: var(--foreground);
   cursor: pointer;
   display: flex;
   font-size: var(--text-sm);
@@ -158,9 +158,9 @@
   white-space: nowrap;
 
   &:hover {
-    background: var(--gray-200);
-    border-color: var(--gray-300);
-    color: var(--gray-700);
+    background: var(--accent);
+    border-color: var(--input);
+    color: var(--accent-foreground);
     transform: translateY(-1px);
   }
 
@@ -169,7 +169,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--primary-600);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 }
@@ -177,7 +177,7 @@
 .discogsButton {
   background: none;
   border: none;
-  color: var(--purple-600);
+  color: var(--primary);
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
@@ -188,19 +188,19 @@
   transition: all var(--transition-normal);
 
   &:hover {
-    color: var(--purple-700);
+    color: var(--primary-hover);
     text-decoration-thickness: 2px;
   }
 
   &:disabled {
-    color: var(--gray-400);
+    color: var(--muted-foreground);
     cursor: not-allowed;
     opacity: 0.6;
     text-decoration: none;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--primary-600);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 }
