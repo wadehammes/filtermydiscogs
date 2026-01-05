@@ -113,7 +113,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
                 onChange={handleYearChange}
                 disabled={!collection}
                 multiple={true}
-                placeholder="All release years..."
+                placeholder="All release years"
               />
             </div>
           )}

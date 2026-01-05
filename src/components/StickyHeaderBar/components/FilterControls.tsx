@@ -61,7 +61,7 @@ export const FilterControls = ({
         onChange={handleYearChange}
         disabled={!collection}
         multiple={true}
-        placeholder="All release years..."
+        placeholder="All release years"
       />
       <AutocompleteSelect
         label="Format"
