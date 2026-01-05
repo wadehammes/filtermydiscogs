@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+model Crate {
+  user_id    Int
+  id         String    @default(uuid())
+  name       String
+  is_default Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+
+  releases CrateRelease[]
+
+  @@id([user_id, id])
+  @@index([user_id])
+  @@index([user_id, is_default])
+  @@map("crates")
+}
+
+model CrateRelease {
+  user_id     Int
+  crate_id    String
+  instance_id String
+  release_data Json
+  added_at    DateTime @default(now())
+
+  crate Crate @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
+
+  @@id([user_id, crate_id, instance_id])
+  @@index([user_id, crate_id])
+  @@index([user_id, instance_id])
+  @@map("crate_releases")
+}
+

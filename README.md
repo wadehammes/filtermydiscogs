@@ -47,7 +47,26 @@ DISCOGS_CALLBACK_URL=http://localhost:6767/api/auth/callback
 
 # Site URL (optional, defaults to https://www.filtermydisco.gs)
 NEXT_PUBLIC_SITE_URL=http://localhost:6767
+
+# Database URL (for Prisma)
+# Get this from your Vercel dashboard: Project Settings > Storage > Postgres > .env.local
+# Vercel provides DATABASE_URL, but Prisma can also use POSTGRES_URL
+DATABASE_URL=your_database_url_here
 ```
+
+### Database Setup
+
+1. Create a Postgres database in your Vercel project:
+   - Go to your Vercel project dashboard
+   - Navigate to Storage > Create Database > Postgres
+   - Follow the setup instructions
+
+2. Set up Prisma:
+   - Copy the `DATABASE_URL` from Vercel dashboard to your `.env.local` file
+   - Install dependencies: `pnpm install`
+   - Generate Prisma Client: `pnpm db:generate`
+   - Push the schema to your database: `pnpm db:push`
+   - Or run migrations: `pnpm db:migrate`
 
 ### Installation
 
@@ -86,6 +105,7 @@ The app will be available at `http://localhost:6767`.
 - **State Management**: React Context + useReducer
 - **Data Fetching**: TanStack Query (React Query)
 - **Tables**: TanStack Table
+- **Database**: Prisma with Vercel Postgres
 - **Authentication**: OAuth 1.0a with Discogs
 - **Analytics**: Google Tag Manager
 - **Linting & Formatting**: Biome
@@ -135,6 +155,12 @@ pnpm lighthouse
 
 # Scaffold new component/page
 pnpm scaffold
+
+# Database commands
+pnpm db:generate  # Generate Prisma Client
+pnpm db:push      # Push schema changes to database
+pnpm db:migrate   # Create and run migrations
+pnpm db:studio    # Open Prisma Studio
 ```
 
 ## Release

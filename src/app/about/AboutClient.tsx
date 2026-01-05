@@ -70,7 +70,6 @@ export function AboutClient() {
       {isAuthenticated ? (
         <StickyHeaderBar
           allReleasesLoaded={true}
-          hideCrate={true}
           hideFilters={true}
           currentPage="about"
         />

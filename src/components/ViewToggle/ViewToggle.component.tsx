@@ -7,6 +7,8 @@ interface ViewToggleProps {
   currentView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   onRandomClick?: () => void;
+  onCratesClick?: () => void;
+  isCratesOpen?: boolean;
   className?: string;
 }
 
@@ -14,92 +16,118 @@ export const ViewToggle: FC<ViewToggleProps> = ({
   currentView,
   onViewChange,
   onRandomClick,
+  onCratesClick,
+  isCratesOpen,
   className,
 }) => {
   return (
-    <div className={`${styles.container} ${className || ""}`}>
-      <button
-        type="button"
-        className={`${styles.toggleButton} ${
-          currentView === "card" ? styles.active : ""
-        }`}
-        onClick={() => onViewChange("card")}
-        aria-label="Switch to card view"
-        title="Card view"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg"
+    <div className={`${styles.wrapper} ${className || ""}`}>
+      <div className={styles.container}>
+        <button
+          type="button"
+          className={`${styles.toggleButton} ${
+            currentView === "card" ? styles.active : ""
+          }`}
+          onClick={() => onViewChange("card")}
+          aria-label="Switch to card view"
+          title="Card view"
         >
-          <rect x="1" y="1" width="6" height="6" rx="1" />
-          <rect x="9" y="1" width="6" height="6" rx="1" />
-          <rect x="1" y="9" width="6" height="6" rx="1" />
-          <rect x="9" y="9" width="6" height="6" rx="1" />
-        </svg>
-        <span>Grid</span>
-      </button>
-      <button
-        type="button"
-        className={`${styles.toggleButton} ${
-          currentView === "list" ? styles.active : ""
-        }`}
-        onClick={() => onViewChange("list")}
-        aria-label="Switch to list view"
-        title="List view"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg"
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          <span>Grid</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.toggleButton} ${
+            currentView === "list" ? styles.active : ""
+          }`}
+          onClick={() => onViewChange("list")}
+          aria-label="Switch to list view"
+          title="List view"
         >
-          <rect x="1" y="2" width="14" height="2" rx="1" />
-          <rect x="1" y="7" width="14" height="2" rx="1" />
-          <rect x="1" y="12" width="14" height="2" rx="1" />
-        </svg>
-        <span>Table</span>
-      </button>
-      <button
-        type="button"
-        className={`${styles.toggleButton} ${
-          currentView === "random" ? styles.active : ""
-        }`}
-        onClick={() => {
-          if (currentView === "random" && onRandomClick) {
-            onRandomClick();
-          } else {
-            onViewChange("random");
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect x="1" y="2" width="14" height="2" rx="1" />
+            <rect x="1" y="7" width="14" height="2" rx="1" />
+            <rect x="1" y="12" width="14" height="2" rx="1" />
+          </svg>
+          <span>Table</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.toggleButton} ${
+            currentView === "random" ? styles.active : ""
+          }`}
+          onClick={() => {
+            if (currentView === "random" && onRandomClick) {
+              onRandomClick();
+            } else {
+              onViewChange("random");
+            }
+          }}
+          aria-label={
+            currentView === "random"
+              ? "Get another random release"
+              : "Switch to random view"
           }
-        }}
-        aria-label={
-          currentView === "random"
-            ? "Get another random release"
-            : "Switch to random view"
-        }
-        title={
-          currentView === "random"
-            ? "Get another random release"
-            : "Random view"
-        }
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg"
+          title={
+            currentView === "random"
+              ? "Get another random release"
+              : "Random view"
+          }
         >
-          <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
-          <path d="M8 2C4.69 2 2 4.69 2 8s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-          <path d="M8 4c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
-          <path d="M8 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-        </svg>
-        <span>Random</span>
-      </button>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+            <path d="M8 2C4.69 2 2 4.69 2 8s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+            <path d="M8 4c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
+            <path d="M8 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+          </svg>
+          <span>Random</span>
+        </button>
+      </div>
+      {onCratesClick && (
+        <button
+          type="button"
+          className={`${styles.cratesButton} ${
+            isCratesOpen ? styles.active : ""
+          }`}
+          onClick={onCratesClick}
+          aria-label={isCratesOpen ? "Close crates" : "Open crates"}
+          title={isCratesOpen ? "Close crates" : "View your crates"}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M2 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2zm0 1h12v10H2V3zm2 2h8v1H4V5zm0 2h8v1H4V7zm0 2h6v1H4V9z" />
+          </svg>
+          <span>Crates</span>
+        </button>
+      )}
     </div>
   );
 };

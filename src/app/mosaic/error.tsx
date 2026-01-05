@@ -24,11 +24,7 @@ export default function MosaicError({
 
   return (
     <Page>
-      <StickyHeaderBar
-        allReleasesLoaded={true}
-        hideCrate={true}
-        currentPage="mosaic"
-      />
+      <StickyHeaderBar allReleasesLoaded={true} currentPage="mosaic" />
       <div className={styles.container}>
         <h2 className={styles.title}>Failed to load mosaic</h2>
         <p className={styles.message}>
