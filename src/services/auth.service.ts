@@ -13,10 +13,11 @@ export const getUsernameFromCookies = (): string | null => {
 export const clearAuthCookies = (): void => {
   if (typeof document === "undefined") return;
 
-  // Clear all auth-related cookies
+  // Clear session state (username) and temporary OAuth tokens
+  // Note: discogs_access_token and discogs_access_token_secret are httpOnly cookies
+  // and cannot be cleared from client-side JavaScript. They are preserved on logout
+  // so users can log back in without re-authorization.
   Cookies.remove("discogs_username");
-  Cookies.remove("discogs_access_token");
-  Cookies.remove("discogs_access_token_secret");
   Cookies.remove("oauth_token");
   Cookies.remove("oauth_token_secret");
 };

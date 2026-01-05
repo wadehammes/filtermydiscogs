@@ -1,6 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 
+// Maximum dimensions and file size limits to prevent DoS
+const MAX_IMAGE_DIMENSION = 5000;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_QUALITY = 100;
+const MIN_QUALITY = 1;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const imageUrl = searchParams.get("url");
@@ -9,7 +15,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing image URL" }, { status: 400 });
   }
 
+  // Validate URL length to prevent extremely long URLs
+  if (imageUrl.length > 2048) {
+    return NextResponse.json({ error: "Image URL too long" }, { status: 400 });
+  }
+
   try {
+    // Validate image URL domain
     if (
       !(
         imageUrl.startsWith("https://i.discogs.com/") ||
@@ -18,6 +30,16 @@ export async function GET(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "Invalid image source" },
+        { status: 400 },
+      );
+    }
+
+    // Validate URL format
+    try {
+      new URL(imageUrl);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid URL format" },
         { status: 400 },
       );
     }
@@ -35,14 +57,72 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check content length before downloading
+    const contentLength = response.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        { error: "Image file too large" },
+        { status: 413 },
+      );
+    }
+
     const imageBuffer = await response.arrayBuffer();
+
+    // Validate downloaded image size
+    if (imageBuffer.byteLength > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        { error: "Image file too large" },
+        { status: 413 },
+      );
+    }
+
     const originalContentType =
       response.headers.get("content-type") || "image/jpeg";
 
-    const width = searchParams.get("w");
-    const height = searchParams.get("h");
-    const quality = searchParams.get("q") || "85";
-    const format = searchParams.get("f") || "jpeg";
+    // Validate and sanitize parameters
+    const widthParam = searchParams.get("w");
+    const heightParam = searchParams.get("h");
+    const qualityParam = searchParams.get("q") || "85";
+    const formatParam = searchParams.get("f") || "jpeg";
+
+    // Validate dimensions
+    const width = widthParam ? parseInt(widthParam, 10) : undefined;
+    const height = heightParam ? parseInt(heightParam, 10) : undefined;
+
+    if (
+      width &&
+      (Number.isNaN(width) || width < 1 || width > MAX_IMAGE_DIMENSION)
+    ) {
+      return NextResponse.json(
+        { error: `Invalid width (must be 1-${MAX_IMAGE_DIMENSION})` },
+        { status: 400 },
+      );
+    }
+
+    if (
+      height &&
+      (Number.isNaN(height) || height < 1 || height > MAX_IMAGE_DIMENSION)
+    ) {
+      return NextResponse.json(
+        { error: `Invalid height (must be 1-${MAX_IMAGE_DIMENSION})` },
+        { status: 400 },
+      );
+    }
+
+    // Validate quality
+    const quality = Math.max(
+      MIN_QUALITY,
+      Math.min(MAX_QUALITY, parseInt(qualityParam, 10)),
+    );
+    if (Number.isNaN(quality)) {
+      return NextResponse.json(
+        { error: "Invalid quality parameter" },
+        { status: 400 },
+      );
+    }
+
+    // Validate format
+    const format = formatParam === "png" ? "png" : "jpeg";
 
     try {
       let sharpInstance = sharp(Buffer.from(imageBuffer));
@@ -57,8 +137,8 @@ export async function GET(request: NextRequest) {
           fit: "cover",
           position: "center",
         };
-        if (width) resizeOptions.width = parseInt(width, 10);
-        if (height) resizeOptions.height = parseInt(height, 10);
+        if (width) resizeOptions.width = width;
+        if (height) resizeOptions.height = height;
 
         sharpInstance = sharpInstance.resize(resizeOptions);
       }
@@ -69,7 +149,7 @@ export async function GET(request: NextRequest) {
       if (format === "png") {
         optimizedBuffer = await sharpInstance
           .png({
-            quality: parseInt(quality, 10),
+            quality: quality,
             compressionLevel: 9,
             progressive: true,
           })
@@ -78,7 +158,7 @@ export async function GET(request: NextRequest) {
       } else {
         optimizedBuffer = await sharpInstance
           .jpeg({
-            quality: parseInt(quality, 10),
+            quality: quality,
             progressive: true,
             mozjpeg: true,
           })

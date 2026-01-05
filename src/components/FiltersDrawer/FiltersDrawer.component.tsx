@@ -105,15 +105,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
           {yearOptions.length > 0 && !fetchingCollection && !error && (
             <div className={styles.filterSection}>
-              <h3 className={styles.sectionTitle}>Year</h3>
+              <h3 className={styles.sectionTitle}>Release Year</h3>
               <Select
-                label="Year"
+                label="Release Year"
                 options={yearOptions}
                 value={selectedYears.map((year) => year.toString())}
                 onChange={handleYearChange}
                 disabled={!collection}
                 multiple={true}
-                placeholder="All years"
+                placeholder="All release years..."
               />
             </div>
           )}

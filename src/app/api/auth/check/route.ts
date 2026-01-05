@@ -12,10 +12,17 @@ export async function GET(request: NextRequest) {
     // Check if we have all required auth data
     const isAuthenticated = !!(accessToken && accessTokenSecret && username);
 
-    return NextResponse.json({
-      isAuthenticated,
-      username: isAuthenticated ? username : null,
-    });
+    return NextResponse.json(
+      {
+        isAuthenticated,
+        username: isAuthenticated ? username : null,
+      },
+      {
+        headers: {
+          "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        },
+      },
+    );
   } catch (error) {
     console.error("Auth check error:", error);
     return NextResponse.json({
