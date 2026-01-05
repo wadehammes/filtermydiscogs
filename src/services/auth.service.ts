@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 export interface AuthStatus {
   isAuthenticated: boolean;
   username: string | null;
+  userId: string | null;
 }
 
 export const getUsernameFromCookies = (): string | null => {
@@ -10,14 +11,20 @@ export const getUsernameFromCookies = (): string | null => {
   return Cookies.get("discogs_username") || null;
 };
 
+export const getUserIdFromCookies = (): string | null => {
+  if (typeof document === "undefined") return null;
+  return Cookies.get("discogs_user_id") || null;
+};
+
 export const clearAuthCookies = (): void => {
   if (typeof document === "undefined") return;
 
-  // Clear session state (username) and temporary OAuth tokens
+  // Clear session state (username, user_id) and temporary OAuth tokens
   // Note: discogs_access_token and discogs_access_token_secret are httpOnly cookies
   // and cannot be cleared from client-side JavaScript. They are preserved on logout
   // so users can log back in without re-authorization.
   Cookies.remove("discogs_username");
+  Cookies.remove("discogs_user_id");
   Cookies.remove("oauth_token");
   Cookies.remove("oauth_token_secret");
 };
@@ -55,6 +62,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
       return {
         isAuthenticated: data.isAuthenticated,
         username: data.username || null,
+        userId: data.userId || null,
       };
     }
   } catch (_error) {
@@ -64,5 +72,6 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
   return {
     isAuthenticated: false,
     username: null,
+    userId: null,
   };
 };

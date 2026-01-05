@@ -8,14 +8,21 @@ export async function GET(request: NextRequest) {
       "discogs_access_token_secret",
     )?.value;
     const username = request.cookies.get("discogs_username")?.value;
+    const userId = request.cookies.get("discogs_user_id")?.value;
 
     // Check if we have all required auth data
-    const isAuthenticated = !!(accessToken && accessTokenSecret && username);
+    const isAuthenticated = !!(
+      accessToken &&
+      accessTokenSecret &&
+      username &&
+      userId
+    );
 
     return NextResponse.json(
       {
         isAuthenticated,
         username: isAuthenticated ? username : null,
+        userId: isAuthenticated ? userId : null,
       },
       {
         headers: {
@@ -28,6 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       isAuthenticated: false,
       username: null,
+      userId: null,
     });
   }
 }

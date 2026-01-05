@@ -11,6 +11,8 @@ interface ReleasesHeaderProps {
   currentView: "card" | "list" | "random";
   onViewChange: (view: "card" | "list" | "random") => void;
   onRandomClick: () => void;
+  onCratesClick?: () => void;
+  isCratesOpen?: boolean;
 }
 
 export const ReleasesHeader = ({
@@ -22,6 +24,8 @@ export const ReleasesHeader = ({
   currentView,
   onViewChange,
   onRandomClick,
+  onCratesClick,
+  isCratesOpen,
 }: ReleasesHeaderProps) => {
   return (
     <div className={styles.releasesHeader}>
@@ -45,6 +49,7 @@ export const ReleasesHeader = ({
           currentView={isRandomMode ? "random" : currentView}
           onViewChange={onViewChange}
           onRandomClick={onRandomClick}
+          {...(onCratesClick && { onCratesClick, isCratesOpen })}
         />
       )}
     </div>

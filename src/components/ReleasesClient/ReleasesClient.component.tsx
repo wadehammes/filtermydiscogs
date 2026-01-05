@@ -19,7 +19,7 @@ import styles from "./ReleasesClient.module.css";
 export default function ReleasesClient() {
   const router = useRouter();
   const { state: authState } = useAuth();
-  const { isDrawerOpen, closeDrawer } = useCrate();
+  const { isDrawerOpen, toggleDrawer } = useCrate();
   const {
     // Loading states
     authLoading,
@@ -108,6 +108,8 @@ export default function ReleasesClient() {
               currentView={viewState.currentView}
               onViewChange={handleViewChange}
               onRandomClick={handleRandomClick}
+              onCratesClick={toggleDrawer}
+              isCratesOpen={isDrawerOpen}
             />
           )}
 
@@ -134,7 +136,6 @@ export default function ReleasesClient() {
         <div className={styles.sidebar}>
           <CrateDrawer
             isOpen={isDrawerOpen}
-            onClose={closeDrawer}
             onReleaseClick={handleReleaseClick}
           />
         </div>

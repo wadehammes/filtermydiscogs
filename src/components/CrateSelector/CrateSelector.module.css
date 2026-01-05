@@ -1,0 +1,58 @@
+.container {
+  align-items: stretch;
+  display: flex;
+  gap: 0.5rem;
+  overflow: visible;
+  position: relative;
+  width: 100%;
+
+  > :global(button) {
+    align-self: stretch;
+    flex-shrink: 0;
+    height: 100%;
+    min-height: var(--input-height);
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.select {
+  flex: 1;
+}
+
+.loading {
+  color: var(--color-text-secondary);
+  padding: var(--space-2);
+}
+
+.createForm {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.input {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  flex: 1;
+  font-size: var(--font-size-base);
+  padding: var(--space-2) var(--space-3);
+
+  &:focus {
+    border-color: var(--color-primary);
+    outline: none;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}

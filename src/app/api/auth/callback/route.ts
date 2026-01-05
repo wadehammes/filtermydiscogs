@@ -89,6 +89,15 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
+    // Store user ID (not httpOnly so it can be read by client-side JS)
+    response.cookies.set("discogs_user_id", verifiedIdentity.id.toString(), {
+      httpOnly: false,
+      secure: secureFlag,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
     // Clear request tokens
     response.cookies.delete("oauth_token");
     response.cookies.delete("oauth_token_secret");

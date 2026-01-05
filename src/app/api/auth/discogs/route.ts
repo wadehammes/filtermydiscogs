@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
           accessTokenSecret,
         );
 
-        // Tokens are valid - restore username if missing
+        // Tokens are valid - restore username and user_id if missing
         // This can happen if tokens were preserved from a previous session
-        // or if the username cookie expired but tokens are still valid
+        // or if the cookies expired but tokens are still valid
         const response = NextResponse.redirect(
           new URL("/releases?auth=success", request.url),
         );
@@ -28,9 +28,22 @@ export async function GET(request: NextRequest) {
         // Use secure: false for development, true for production
         const secureFlag = process.env.NODE_ENV === "production";
 
+        const userId = request.cookies.get("discogs_user_id")?.value;
+
         // Restore username cookie if it's missing
         if (!username) {
           response.cookies.set("discogs_username", identity.username, {
+            httpOnly: false,
+            secure: secureFlag,
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+          });
+        }
+
+        // Restore user_id cookie if it's missing
+        if (!userId) {
+          response.cookies.set("discogs_user_id", identity.id.toString(), {
             httpOnly: false,
             secure: secureFlag,
             sameSite: "lax",

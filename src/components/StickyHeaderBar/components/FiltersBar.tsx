@@ -7,7 +7,6 @@ import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
-import { useCrate } from "src/context/crate.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
@@ -15,16 +14,10 @@ import styles from "./FiltersBar.module.css";
 interface FiltersBarProps {
   category: string;
   disabled?: boolean;
-  showCrate?: boolean;
 }
 
-export const FiltersBar = ({
-  category,
-  disabled = false,
-  showCrate = true,
-}: FiltersBarProps) => {
+export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
   const { state: collectionState } = useCollectionContext();
-  const { selectedReleases, openDrawer } = useCrate();
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
 
   const { fetchingCollection, collection, error } = collectionState;
@@ -55,16 +48,6 @@ export const FiltersBar = ({
 
   const closeFiltersDrawer = () => {
     setIsFiltersDrawerOpen(false);
-  };
-
-  const handleCrateClick = () => {
-    openDrawer();
-    trackEvent("crateOpened", {
-      action: "crateOpenedFromHeader",
-      category: "crate",
-      label: "Crate Opened from Header",
-      value: selectedReleases.length.toString(),
-    });
   };
 
   const { dispatch: filtersDispatch } = useFilters();
@@ -145,21 +128,6 @@ export const FiltersBar = ({
           >
             Clear All
           </Button>
-
-          {/* Crate button in desktop filters */}
-          {showCrate && selectedReleases.length > 0 && (
-            <Button
-              variant="primary"
-              size="md"
-              onPress={handleCrateClick}
-              aria-label={`Open crate with ${selectedReleases.length} items`}
-            >
-              <span>My Crate</span>
-              <span className={styles.crateCount}>
-                {selectedReleases.length}
-              </span>
-            </Button>
-          )}
         </div>
 
         {/* Mobile filters button */}
@@ -173,21 +141,6 @@ export const FiltersBar = ({
             <span>⚙️</span>
             <span>Filters</span>
           </Button>
-
-          {/* Crate button in mobile filters */}
-          {showCrate && selectedReleases.length > 0 && (
-            <Button
-              variant="primary"
-              size="sm"
-              onPress={handleCrateClick}
-              aria-label={`Open crate with ${selectedReleases.length} items`}
-            >
-              <span>My Crate</span>
-              <span className={styles.crateCount}>
-                {selectedReleases.length}
-              </span>
-            </Button>
-          )}
         </div>
       </div>
 

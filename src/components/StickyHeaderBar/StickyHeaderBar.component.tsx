@@ -9,7 +9,6 @@ import styles from "./StickyHeaderBar.module.css";
 interface StickyHeaderBarProps {
   allReleasesLoaded?: boolean;
   hideFilters?: boolean;
-  hideCrate?: boolean;
   filterCategory?: string;
   currentPage?: string;
 }
@@ -17,7 +16,6 @@ interface StickyHeaderBarProps {
 export const StickyHeaderBar = ({
   allReleasesLoaded = true,
   hideFilters = false,
-  hideCrate = false,
   filterCategory = "home",
   currentPage,
 }: StickyHeaderBarProps) => {
@@ -68,11 +66,7 @@ export const StickyHeaderBar = ({
 
       {/* Filters bar */}
       {shouldShowFilters && (
-        <FiltersBar
-          category={filterCategory}
-          disabled={!collection}
-          showCrate={!hideCrate}
-        />
+        <FiltersBar category={filterCategory} disabled={!collection} />
       )}
     </>
   );

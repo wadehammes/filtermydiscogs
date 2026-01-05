@@ -89,11 +89,7 @@ export default function MosaicClient() {
   if (releasesToDisplay.length === 0) {
     return (
       <>
-        <StickyHeaderBar
-          allReleasesLoaded={true}
-          hideCrate={true}
-          currentPage="mosaic"
-        />
+        <StickyHeaderBar allReleasesLoaded={true} currentPage="mosaic" />
         <div className={styles.emptyState}>
           <h1>No releases to display</h1>
           <p>
@@ -108,11 +104,7 @@ export default function MosaicClient() {
 
   return (
     <>
-      <StickyHeaderBar
-        allReleasesLoaded={true}
-        hideCrate={true}
-        currentPage="mosaic"
-      />
+      <StickyHeaderBar allReleasesLoaded={true} currentPage="mosaic" />
       <div className={styles.container}>
         <div className={styles.header}>
           <h1>Album Mosaic</h1>
