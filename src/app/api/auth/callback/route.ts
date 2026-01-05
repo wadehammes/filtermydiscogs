@@ -1,31 +1,38 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
-function isLocalhost(url: string) {
-  return (
-    url.startsWith("http://localhost") || url.startsWith("http://127.0.0.1")
-  );
-}
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const oauthToken = searchParams.get("oauth_token");
     const oauthVerifier = searchParams.get("oauth_verifier");
 
+    // Validate OAuth callback parameters
+    if (!(oauthToken && oauthVerifier)) {
+      return NextResponse.redirect(
+        new URL("/?error=oauth_callback_invalid", request.url),
+      );
+    }
+
+    // Validate token format (should be alphanumeric, typically 40+ chars)
+    if (!/^[a-zA-Z0-9_-]+$/.test(oauthToken) || oauthToken.length < 20) {
+      return NextResponse.redirect(
+        new URL("/?error=oauth_callback_invalid", request.url),
+      );
+    }
+
+    if (!/^[a-zA-Z0-9]+$/.test(oauthVerifier) || oauthVerifier.length < 10) {
+      return NextResponse.redirect(
+        new URL("/?error=oauth_callback_invalid", request.url),
+      );
+    }
+
     // Get stored tokens from cookies
     const storedOAuthToken = request.cookies.get("oauth_token")?.value;
     const storedOAuthTokenSecret =
       request.cookies.get("oauth_token_secret")?.value;
 
-    if (
-      !(
-        oauthToken &&
-        oauthVerifier &&
-        storedOAuthToken &&
-        storedOAuthTokenSecret
-      )
-    ) {
+    if (!(storedOAuthToken && storedOAuthTokenSecret)) {
       return NextResponse.redirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
@@ -39,7 +46,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Get user identity to verify authentication
-    const identity = await discogsOAuthService.getIdentity(
+    const verifiedIdentity = await discogsOAuthService.getIdentity(
       accessTokens.oauth_token,
       accessTokens.oauth_token_secret,
     );
@@ -49,9 +56,8 @@ export async function GET(request: NextRequest) {
       new URL("/releases?auth=success", request.url),
     );
 
-    // Use secure: false for localhost, true for production
-    const isLocal = isLocalhost(request.url);
-    const secureFlag = !isLocal;
+    // Use secure: false for development, true for production
+    const secureFlag = process.env.NODE_ENV === "production";
 
     // Store access tokens in secure cookies
     response.cookies.set("discogs_access_token", accessTokens.oauth_token, {
@@ -75,7 +81,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Store user info (not httpOnly so it can be read by client-side JS)
-    response.cookies.set("discogs_username", identity.username, {
+    response.cookies.set("discogs_username", verifiedIdentity.username, {
       httpOnly: false,
       secure: secureFlag,
       sameSite: "lax",

@@ -175,7 +175,8 @@
 .artistCell,
 .titleCell,
 .labelCell,
-.yearCell {
+.yearCell,
+.dateAddedCell {
   color: var(--foreground);
   font-size: var(--text-xs);
   line-height: 1.2;
@@ -191,7 +192,38 @@
   font-weight: var(--font-medium);
 }
 
+/* Combined Artist/Title cell */
+.artistTitleCell {
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xs);
+  gap: var(--space-1);
+  line-height: 1.2;
+  padding: var(--space-1) var(--space-2);
+  word-wrap: break-word;
+
+  @media (min-width: 640px) {
+    font-size: var(--text-sm);
+  }
+}
+
+.artistName {
+  color: var(--muted-foreground);
+  font-weight: var(--font-normal);
+}
+
+.titleName {
+  color: var(--foreground);
+  font-weight: var(--font-medium);
+}
+
 .yearCell {
+  color: var(--muted-foreground);
+  text-align: left;
+}
+
+.dateAddedCell {
   color: var(--muted-foreground);
   text-align: left;
 }

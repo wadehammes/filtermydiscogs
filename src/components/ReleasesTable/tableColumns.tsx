@@ -127,28 +127,21 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
         size: 50,
         enableSorting: false,
       }),
-      columnHelper.accessor("basic_information.artists", {
-        id: "artist",
-        header: "Artist",
-        cell: ({ getValue }) => {
-          const artists = getValue();
+      columnHelper.display({
+        id: "artistTitle",
+        header: "Artist / Title",
+        cell: ({ row }) => {
+          const artists = row.original.basic_information.artists;
+          const title = row.original.basic_information.title;
+          const artistNames = artists.map((artist) => artist.name).join(", ");
           return (
-            <div className={styles.artistCell}>
-              {artists.map((artist) => artist.name).join(", ")}
+            <div className={styles.artistTitleCell}>
+              <span className={styles.artistName}>{artistNames}</span>
+              <span className={styles.titleName}>{title}</span>
             </div>
           );
         },
-        size: 180,
-        enableSorting: false,
-      }),
-      columnHelper.accessor("basic_information.title", {
-        id: "title",
-        header: "Title",
-        cell: ({ getValue }) => {
-          const title = getValue();
-          return <div className={styles.titleCell}>{title}</div>;
-        },
-        size: 220,
+        size: 300,
         enableSorting: false,
       }),
       columnHelper.accessor("basic_information.labels", {
@@ -167,7 +160,7 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
       }),
       columnHelper.accessor("basic_information.year", {
         id: "year",
-        header: "Year",
+        header: "Release Year",
         cell: ({ getValue }) => {
           const year = getValue();
           return (

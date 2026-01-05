@@ -8,9 +8,17 @@ export async function GET(
   try {
     const { id: releaseId } = await params;
 
+    // Validate release ID format (Discogs release IDs are numeric)
     if (!releaseId) {
       return NextResponse.json(
         { error: "Release ID is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!/^\d+$/.test(releaseId) || releaseId.length > 10) {
+      return NextResponse.json(
+        { error: "Invalid release ID format" },
         { status: 400 },
       );
     }

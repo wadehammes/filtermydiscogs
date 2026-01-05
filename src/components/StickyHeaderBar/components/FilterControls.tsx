@@ -55,13 +55,13 @@ export const FilterControls = ({
         placeholder="Select styles..."
       />
       <AutocompleteSelect
-        label="Year"
+        label="Release Year"
         options={yearOptions}
         value={selectedYears.map((year) => year.toString())}
         onChange={handleYearChange}
         disabled={!collection}
         multiple={true}
-        placeholder="All years"
+        placeholder="All release years..."
       />
       <AutocompleteSelect
         label="Format"

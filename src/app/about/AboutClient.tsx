@@ -1,14 +1,69 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Button from "src/components/Button/Button.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
+import { useCollectionContext } from "src/context/collection.context";
+import { useCrate } from "src/context/crate.context";
 import Logo from "src/styles/icons/fmd-logo.svg";
 import styles from "./page.module.css";
 
 export function AboutClient() {
-  const { state: authState } = useAuth();
+  const { state: authState, logout } = useAuth();
+  const { dispatchResetState } = useCollectionContext();
+  const { clearCrate } = useCrate();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const [isClearing, setIsClearing] = useState(false);
   const isAuthenticated = authState.isAuthenticated;
+
+  const handleClearAllData = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to clear all data? This will:\n\n" +
+          "• Log you out\n" +
+          "• Clear all authentication tokens\n" +
+          "• Clear your crate\n" +
+          "• Clear all preferences and cached data\n\n" +
+          "You will need to authorize the app again to use it.",
+      )
+    ) {
+      return;
+    }
+
+    setIsClearing(true);
+
+    try {
+      // Clear all cookies (authentication tokens)
+      await fetch("/api/auth/clear-data", { method: "POST" });
+
+      // Clear localStorage
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("filtermydiscogs_selected_releases");
+        localStorage.removeItem("fmd_username");
+        localStorage.removeItem("filtermydiscogs_theme");
+        localStorage.removeItem("filtermydiscogs_view_state");
+      }
+
+      // Clear React Query cache and reset collection state
+      queryClient.clear();
+      dispatchResetState();
+      clearCrate();
+
+      // Logout and redirect to home
+      await logout();
+      router.replace("/");
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      alert("Failed to clear all data. Please try again.");
+    } finally {
+      setIsClearing(false);
+    }
+  };
 
   return (
     <>
@@ -139,6 +194,41 @@ export function AboutClient() {
                 Images are cached but not permanently stored.
               </li>
             </ul>
+          </section>
+
+          <section className={styles.section}>
+            <h2>Data Management</h2>
+            <p>
+              You can clear all data stored by this application at any time.
+              This includes:
+            </p>
+            <ul>
+              <li>Authentication tokens and session data</li>
+              <li>Your crate (saved releases)</li>
+              <li>View preferences and settings</li>
+              <li>All cached collection data</li>
+            </ul>
+            <p>
+              <strong>Note:</strong> Clearing data will log you out and you will
+              need to authorize the application again to use it. This is useful
+              if you're using a shared device or want to start fresh.
+            </p>
+            <div className={styles.clearDataButton}>
+              <Button
+                variant="danger"
+                size="md"
+                onPress={handleClearAllData}
+                disabled={isClearing || !isAuthenticated}
+                aria-label="Clear all data"
+              >
+                {isClearing ? "Clearing..." : "Clear All Data"}
+              </Button>
+            </div>
+            {!isAuthenticated && (
+              <p className={styles.clearDataNote}>
+                You must be logged in to clear data.
+              </p>
+            )}
           </section>
 
           <section className={styles.section}>

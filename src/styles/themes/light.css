@@ -8,7 +8,7 @@
 
   /* Muted colors */
   --muted: #f8fafc;
-  --muted-foreground: #64748b;
+  --muted-foreground: #475569; /* WCAG AA compliant: ~4.7:1 contrast on white */
 
   /* Accent colors */
   --accent: #f1f5f9;
