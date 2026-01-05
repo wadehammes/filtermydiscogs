@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.27.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767 --webpack",
