@@ -98,15 +98,26 @@
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
+  flex-shrink: 0;
   font-size: var(--text-2xl);
   height: 32px;
   justify-content: center;
+  line-height: 1;
   transition: all var(--transition-normal);
   width: 32px;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
 
   &:hover {
     background: var(--accent);
     color: var(--accent-foreground);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }
 

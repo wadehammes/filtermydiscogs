@@ -78,6 +78,14 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
                 : {})}
             />
           </div>
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={toggleDrawer}
+            aria-label="Close crate drawer"
+          >
+            ×
+          </button>
         </div>
 
         <div className={styles.content}>
