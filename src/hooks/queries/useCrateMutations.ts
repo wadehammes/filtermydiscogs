@@ -66,7 +66,6 @@ const invalidateCrateQueries = (
   crateId?: string,
 ) => {
   if (userId) {
-    // Invalidate with specific userId
     queryClient.invalidateQueries({
       queryKey: ["crates", userId],
     });
@@ -81,7 +80,6 @@ const invalidateCrateQueries = (
       });
     }
   } else {
-    // Fallback: invalidate all crate queries if userId is null
     queryClient.invalidateQueries({
       queryKey: ["crates"],
     });
@@ -204,8 +202,6 @@ export const useUpdateCrateMutation = () => {
     },
     onSuccess: async (_, variables) => {
       invalidateCrateQueries(queryClient, userId, variables.crateId);
-
-      // Force refetch to ensure UI updates
       await Promise.all([
         queryClient.refetchQueries({
           queryKey: ["crates", userId],
@@ -284,13 +280,13 @@ export const useAddReleaseToCrateMutation = () => {
         crateId,
       );
 
+      const normalizedRelease = {
+        ...release,
+        instance_id: String(release.instance_id),
+      };
+      const releaseId = String(release.instance_id);
+
       if (previousCrateData) {
-        const normalizedRelease = {
-          ...release,
-          instance_id: String(release.instance_id),
-        };
-        // Check if release is already in the list (prevent duplicates)
-        const releaseId = String(release.instance_id);
         const alreadyExists = previousCrateData.releases.some(
           (r: DiscogsRelease) => String(r.instance_id) === releaseId,
         );
@@ -304,6 +300,21 @@ export const useAddReleaseToCrateMutation = () => {
             },
           );
         }
+      } else {
+        queryClient.setQueryData<CrateWithReleasesResponse>(
+          ["crate", userId, crateId],
+          {
+            crate: {
+              user_id: parseInt(userId || "0", 10),
+              id: crateId,
+              name: "",
+              is_default: false,
+              created_at: new Date(),
+              updated_at: new Date(),
+            },
+            releases: [normalizedRelease],
+          },
+        );
       }
 
       if (previousCratesData) {
@@ -321,25 +332,10 @@ export const useAddReleaseToCrateMutation = () => {
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
-      // Invalidate to ensure we get fresh data after error
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
-    onSuccess: async (_data, variables) => {
-      // Small delay to ensure server has fully processed the change
-      // This prevents race conditions where refetch happens before server is ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Explicitly refetch to ensure UI matches server state
-      await Promise.all([
-        queryClient.refetchQueries({
-          queryKey: ["crate", userId, variables.crateId],
-          exact: true,
-        }),
-        queryClient.refetchQueries({
-          queryKey: ["crates", userId],
-          exact: true,
-        }),
-      ]);
+    onSuccess: (_data, variables) => {
+      invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });
 };
@@ -413,25 +409,10 @@ export const useRemoveReleaseFromCrateMutation = () => {
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
-      // Invalidate to ensure we get fresh data after error
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
-    onSuccess: async (_data, variables) => {
-      // Small delay to ensure server has fully processed the change
-      // This prevents race conditions where refetch happens before server is ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Explicitly refetch to ensure UI matches server state
-      await Promise.all([
-        queryClient.refetchQueries({
-          queryKey: ["crate", userId, variables.crateId],
-          exact: true,
-        }),
-        queryClient.refetchQueries({
-          queryKey: ["crates", userId],
-          exact: true,
-        }),
-      ]);
+    onSuccess: (_data, variables) => {
+      invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });
 };
