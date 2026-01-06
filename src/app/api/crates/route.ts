@@ -118,6 +118,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check for connection/resource errors
+    if (
+      errorMessage.includes("INSUFFICIENT RESOURCES") ||
+      errorMessage.includes("P1001") ||
+      errorMessage.includes("connection") ||
+      errorMessage.includes("timeout")
+    ) {
+      return NextResponse.json(
+        {
+          error: "Database connection error",
+          details: "Please try again in a moment",
+        },
+        { status: 503 },
+      );
+    }
+
     console.error("Error details:", { errorMessage, errorStack });
     return NextResponse.json(
       {

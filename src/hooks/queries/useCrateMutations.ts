@@ -288,13 +288,21 @@ export const useAddReleaseToCrateMutation = () => {
           ...release,
           instance_id: String(release.instance_id),
         };
-        queryClient.setQueryData<CrateWithReleasesResponse>(
-          ["crate", userId, crateId],
-          {
-            ...previousCrateData,
-            releases: [normalizedRelease, ...previousCrateData.releases],
-          },
+        // Check if release is already in the list (prevent duplicates)
+        const releaseId = String(release.instance_id);
+        const alreadyExists = previousCrateData.releases.some(
+          (r: DiscogsRelease) => String(r.instance_id) === releaseId,
         );
+
+        if (!alreadyExists) {
+          queryClient.setQueryData<CrateWithReleasesResponse>(
+            ["crate", userId, crateId],
+            {
+              ...previousCrateData,
+              releases: [normalizedRelease, ...previousCrateData.releases],
+            },
+          );
+        }
       }
 
       if (previousCratesData) {
@@ -312,9 +320,25 @@ export const useAddReleaseToCrateMutation = () => {
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
-    },
-    onSuccess: (_data, variables) => {
+      // Invalidate to ensure we get fresh data after error
       invalidateCrateQueries(queryClient, userId, variables.crateId);
+    },
+    onSuccess: async (_data, variables) => {
+      // Small delay to ensure server has fully processed the change
+      // This prevents race conditions where refetch happens before server is ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Explicitly refetch to ensure UI matches server state
+      await Promise.all([
+        queryClient.refetchQueries({
+          queryKey: ["crate", userId, variables.crateId],
+          exact: true,
+        }),
+        queryClient.refetchQueries({
+          queryKey: ["crates", userId],
+          exact: true,
+        }),
+      ]);
     },
   });
 };
@@ -387,9 +411,25 @@ export const useRemoveReleaseFromCrateMutation = () => {
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
-    },
-    onSuccess: (_data, variables) => {
+      // Invalidate to ensure we get fresh data after error
       invalidateCrateQueries(queryClient, userId, variables.crateId);
+    },
+    onSuccess: async (_data, variables) => {
+      // Small delay to ensure server has fully processed the change
+      // This prevents race conditions where refetch happens before server is ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Explicitly refetch to ensure UI matches server state
+      await Promise.all([
+        queryClient.refetchQueries({
+          queryKey: ["crate", userId, variables.crateId],
+          exact: true,
+        }),
+        queryClient.refetchQueries({
+          queryKey: ["crates", userId],
+          exact: true,
+        }),
+      ]);
     },
   });
 };

@@ -130,6 +130,22 @@ export async function POST(
       errorString: String(error),
     });
 
+    // Check for connection/resource errors
+    if (
+      errorMessage.includes("INSUFFICIENT RESOURCES") ||
+      errorMessage.includes("P1001") ||
+      errorMessage.includes("connection") ||
+      errorMessage.includes("timeout")
+    ) {
+      return NextResponse.json(
+        {
+          error: "Database connection error",
+          details: "Please try again in a moment",
+        },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
