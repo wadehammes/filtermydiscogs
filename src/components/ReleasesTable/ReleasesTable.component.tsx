@@ -85,7 +85,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       () => [
         columnHelper.display({
           id: "checkbox",
-          header: "In Crate",
+          header: "Crate",
           cell: ({ row }) => {
             const release = row.original;
             return (
@@ -123,6 +123,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 <button
                   type="button"
                   className={styles.imageButton}
+                  title={`View ${title} on Discogs`}
                   onClick={(e) => {
                     e.stopPropagation();
                     // Handle the click to open Discogs link

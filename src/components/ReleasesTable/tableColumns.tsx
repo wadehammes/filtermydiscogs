@@ -62,7 +62,7 @@ export const useTableColumns = (onExitRandomMode: () => void) => {
     () => [
       columnHelper.display({
         id: "checkbox",
-        header: "In Crate",
+        header: "Crate",
         cell: ({ row }) => {
           const release = row.original;
           return (

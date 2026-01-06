@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import Login from "src/components/Login/Login.component";
 import { Page } from "src/components/Page/Page.component";
@@ -131,6 +132,7 @@ export default function ReleasesClient() {
             isFetchingNextPage={isFetchingNextPage}
             infiniteScrollRef={infiniteScrollRef}
           />
+          <BackToTop />
         </div>
 
         <div className={styles.sidebar}>
