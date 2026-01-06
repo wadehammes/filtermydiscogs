@@ -16,7 +16,7 @@
   align-items: center;
   background: var(--background);
   border: 1px solid var(--input);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   color: var(--foreground);
   cursor: pointer;
   display: flex;
@@ -44,8 +44,16 @@
 }
 
 .value {
+  align-items: center;
   color: var(--foreground);
+  display: flex;
   flex: 1;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.valueText {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -70,7 +78,7 @@
 .listbox {
   background: var(--popover);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   box-shadow: var(--shadow-md);
   left: 0;
   list-style: none;
@@ -127,5 +135,22 @@
 }
 
 .optionLabel {
+  align-items: center;
+  display: flex;
   flex: 1;
+  gap: var(--space-2);
+}
+
+.defaultBadge {
+  background: color-mix(in srgb, var(--primary) 15%, var(--background));
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  font-size: var(--text-xxs);
+  font-weight: var(--font-medium);
+  margin-left: auto;
+  padding: 0.125rem var(--space-2);
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 0.075em;
 }

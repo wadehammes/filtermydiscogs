@@ -15,7 +15,7 @@
 .loadingCard {
   align-items: center;
   background: var(--card);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;

@@ -23,8 +23,71 @@
   }
 }
 
-.username {
+.userDropdown {
+  position: relative;
+}
+
+.usernameTrigger {
+  align-items: center;
+  background: none;
+  border: none;
   color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
   font-size: var(--text-sm);
+  gap: var(--space-1);
+  padding: 0;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--foreground);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-ui);
+  }
+}
+
+.username {
   white-space: nowrap;
+}
+
+.chevron {
+  height: 0.75rem;
+  transition: transform var(--transition-fast);
+  width: 0.75rem;
+  transform: rotate(90deg);
+}
+
+.chevronOpen {
+  transform: rotate(270deg);
+}
+
+.dropdown {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 160px;
+  padding: var(--space-2);
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  z-index: var(--z-dropdown);
+}
+
+.dropdownItem {
+  align-items: center;
+  display: flex;
+  width: 100%;
+
+  button {
+    width: 100%;
+  }
 }

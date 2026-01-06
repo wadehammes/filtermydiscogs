@@ -10,7 +10,7 @@
   align-items: center;
   background: var(--background);
   border: 1px solid var(--input);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   color: var(--foreground);
   cursor: pointer;
   display: flex;
@@ -72,7 +72,7 @@
   align-items: center;
   background: color-mix(in srgb, var(--primary) 15%, var(--background));
   border: 1px solid var(--primary);
-  border-radius: 12px;
+  border-radius: var(--radius-ui);
   color: var(--primary);
   display: inline-flex;
   font-size: var(--text-xs);
@@ -138,7 +138,7 @@
 .dropdown {
   background: var(--popover);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   box-shadow: var(--shadow-md);
   left: 0;
   position: absolute;
@@ -224,7 +224,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: 2px;
+  border-radius: var(--radius-ui);
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;

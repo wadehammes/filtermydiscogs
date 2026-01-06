@@ -15,7 +15,7 @@
 .content {
   align-items: center;
   background: var(--card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;

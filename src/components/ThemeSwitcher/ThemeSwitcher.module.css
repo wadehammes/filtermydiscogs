@@ -2,7 +2,7 @@
   align-items: center;
   background: var(--secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   color: var(--secondary-foreground);
   cursor: pointer;
   display: flex;
@@ -35,7 +35,7 @@
   align-items: center;
   background: var(--secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   color: var(--secondary-foreground);
   cursor: pointer;
   display: flex;

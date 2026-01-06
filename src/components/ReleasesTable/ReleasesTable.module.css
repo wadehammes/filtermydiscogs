@@ -9,7 +9,7 @@
   display: none;
   overflow: hidden;
   width: 100%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
 
   @media (min-width: 640px) {
     box-shadow: var(--shadow-sm);
@@ -117,7 +117,7 @@
 .imageButton {
   background: none;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   cursor: pointer;
   display: block;
   overflow: hidden;
@@ -274,7 +274,7 @@
   align-items: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   display: flex;
   gap: var(--space-3);
   overflow: hidden;

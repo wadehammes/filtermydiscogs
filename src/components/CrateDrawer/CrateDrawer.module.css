@@ -26,33 +26,6 @@
   }
 }
 
-.backdrop {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-  background: color-mix(in srgb, var(--background) 50%, transparent);
-  display: none;
-  height: 100vh;
-  left: 0;
-  position: fixed;
-  top: 0;
-  width: 100vw;
-  z-index: calc(var(--z-modal) - 1);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-
-  @media (max-width: 1023px) {
-    display: block;
-  }
-
-  &.open {
-    @media (max-width: 1023px) {
-      display: block;
-      opacity: 1;
-    }
-  }
-}
-
 .header {
   align-items: center;
   border-bottom: 1px solid var(--border);
@@ -176,7 +149,7 @@
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   cursor: pointer;
   display: flex;
   gap: var(--space-4);
@@ -197,7 +170,7 @@
 }
 
 .itemImage {
-  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
   flex-shrink: 0;
   height: 100px;
   overflow: hidden;
@@ -246,21 +219,20 @@
 .removeButton {
   align-items: center;
   background: color-mix(in srgb, var(--destructive) 15%, var(--background));
-  border: 1px solid transparent;
+  border: 1px solid var(--destructive-hover);
   border-radius: var(--radius-full);
   color: var(--destructive-hover);
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
   font-size: var(--text-sm);
-  height: 28px;
+  height: 24px;
   justify-content: center;
   transition: all var(--transition-normal);
-  width: 28px;
+  width: 24px;
 
   &:hover {
     background: color-mix(in srgb, var(--destructive) 20%, var(--background));
-    border-color: var(--destructive-hover);
     color: var(--destructive);
   }
 }
