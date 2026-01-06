@@ -331,47 +331,52 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     }
 
     return (
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead className={styles.thead}>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className={styles.headerRow}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className={styles.headerCell}
-                    style={{ width: header.getSize() }}
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className={styles.tbody}>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className={classNames(styles.dataRow, {
-                  [styles.highlighted as string]:
-                    highlightedReleaseId === row.original.instance_id,
-                  [styles.inCrate as string]: isInCrate(
-                    row.original.instance_id,
-                  ),
-                })}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className={styles.dataCell}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={styles.tableWrapper}>
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
+            <thead className={styles.thead}>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className={styles.headerRow}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className={styles.headerCell}
+                      style={{ width: header.getSize() }}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className={styles.tbody}>
+              {table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className={classNames(styles.dataRow, {
+                    [styles.highlighted as string]:
+                      highlightedReleaseId === row.original.instance_id,
+                    [styles.inCrate as string]: isInCrate(
+                      row.original.instance_id,
+                    ),
+                  })}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className={styles.dataCell}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   },

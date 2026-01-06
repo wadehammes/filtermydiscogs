@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Moon from "src/styles/icons/moon.svg";
 import Sun from "src/styles/icons/sun.svg";
-import SystemTheme from "src/styles/icons/system-theme.svg";
 import styles from "./ThemeSwitcher.module.css";
 
 interface ThemeSwitcherProps {
@@ -12,7 +11,7 @@ interface ThemeSwitcherProps {
 }
 
 export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,19 +19,18 @@ export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
   }, []);
 
   const handleThemeToggle = () => {
-    if (theme === "light") {
-      setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
-    } else {
-      setTheme("light");
-    }
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   const getIcon = () => {
-    if (!mounted) return <SystemTheme className={styles.iconSvg} />;
-    if (theme === "system") {
-      return <SystemTheme className={styles.iconSvg} />;
+    // Don't render icon until mounted to avoid hydration mismatch
+    if (!mounted) {
+      return (
+        <div
+          className={styles.iconSvg}
+          style={{ width: "1em", height: "1em" }}
+        />
+      );
     }
     return resolvedTheme === "dark" ? (
       <Moon className={styles.iconSvg} />
@@ -42,9 +40,9 @@ export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
   };
 
   const getLabel = () => {
-    if (!mounted) return "System";
-    if (theme === "system") {
-      return "System";
+    // Use consistent default during SSR to avoid hydration mismatch
+    if (!mounted) {
+      return "Light";
     }
     return resolvedTheme === "dark" ? "Dark" : "Light";
   };

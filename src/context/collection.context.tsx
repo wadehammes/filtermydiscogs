@@ -208,6 +208,22 @@ export interface CollectionProviderProps {
 
 export const CollectionContext = createContext({} as CollectionProviderProps);
 
+const resetCollectionState = ({
+  router,
+}: {
+  router: ReturnType<typeof useRouter>;
+}) => {
+  const {
+    location: { href },
+    localStorage,
+  } = window;
+
+  const url = new URL(href);
+  url.searchParams.delete("username");
+  router.replace(url.toString());
+  localStorage.removeItem(USERNAME_STORAGE_PARAM);
+};
+
 export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   children,
 }) => {
@@ -286,20 +302,8 @@ export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
   }, []);
 
   const dispatchResetState = useCallback(() => {
-    const {
-      location: { href },
-      localStorage,
-    } = window;
-
-    const url = new URL(href);
-
-    url.searchParams.delete("username");
-
-    router.replace(url.toString());
-
+    resetCollectionState({ router });
     dispatch({ type: CollectionActionTypes.ResetState, payload: initialState });
-
-    localStorage.removeItem(USERNAME_STORAGE_PARAM);
   }, [router]);
 
   return children ? (

@@ -17,21 +17,24 @@
   /* Border and input */
   --border: #cbd5e0;
   --input: #cbd5e0;
-  --ring: #0052a3;
+  --ring: #0066cc;
 
   /* Card */
   --card: #ffffff;
   --card-foreground: #171717;
+
+  /* Sticky Header */
+  --sticky-header-background: #fbeec7;
 
   /* Popover */
   --popover: #ffffff;
   --popover-foreground: #171717;
 
   /* Primary */
-  --primary: #0052a3;
+  --primary: #0066cc;
   --primary-foreground: #ffffff;
-  --primary-hover: #003d7a;
-  --primary-active: #002d5c;
+  --primary-hover: #0052a3;
+  --primary-active: #003d7a;
 
   /* Secondary */
   --secondary: #f1f5f9;

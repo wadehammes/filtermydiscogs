@@ -59,9 +59,18 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('filtermydiscogs_theme') || 'system';
-                  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  const resolvedTheme = theme === 'system' ? systemTheme : theme;
+                  const stored = localStorage.getItem('filtermydiscogs_theme');
+                  let resolvedTheme;
+                  if (stored === 'light' || stored === 'dark') {
+                    resolvedTheme = stored;
+                  } else {
+                    // No stored theme or old "system" value - use system preference
+                    resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    // Migrate "system" to explicit theme preference
+                    if (stored === 'system') {
+                      localStorage.setItem('filtermydiscogs_theme', resolvedTheme);
+                    }
+                  }
                   document.documentElement.setAttribute('data-theme', resolvedTheme);
                 } catch (e) {}
               })();

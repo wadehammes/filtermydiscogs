@@ -11,65 +11,93 @@ import {
 export type Theme = "light" | "dark" | "system";
 
 interface ThemeContextType {
-  theme: Theme;
+  theme: "light" | "dark";
   resolvedTheme: "light" | "dark";
-  setTheme: (theme: Theme) => void;
+  setTheme: (theme: "light" | "dark") => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_STORAGE_KEY = "filtermydiscogs_theme";
 
-function getSystemTheme(): "light" | "dark" {
+const getSystemTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
-}
+};
 
-function getStoredTheme(): Theme | null {
+const getStoredTheme = ({
+  storageKey,
+}: {
+  storageKey: string;
+}): "light" | "dark" | null => {
   if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === "light" || stored === "dark" || stored === "system") {
+  const stored = localStorage.getItem(storageKey);
+  // Convert "system" to current system preference if found (for migration)
+  if (stored === "system") {
+    const systemTheme = getSystemTheme();
+    localStorage.setItem(storageKey, systemTheme);
+    return systemTheme;
+  }
+  if (stored === "light" || stored === "dark") {
     return stored;
   }
   return null;
-}
+};
 
-function applyTheme(theme: "light" | "dark") {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
+const createThemeApplier = () => {
+  let rootElement: HTMLElement | null = null;
 
-  const currentTheme = root.getAttribute("data-theme");
-  if (currentTheme !== theme) {
-    root.classList.add("theme-transitioning");
-    root.setAttribute("data-theme", theme);
-    setTimeout(() => {
-      root.classList.remove("theme-transitioning");
-    }, 0);
-  } else {
-    root.setAttribute("data-theme", theme);
-  }
-}
+  return ({ theme }: { theme: "light" | "dark" }) => {
+    if (typeof document === "undefined") return;
+
+    if (!rootElement) {
+      rootElement = document.documentElement;
+    }
+
+    const currentTheme = rootElement.getAttribute("data-theme");
+    if (currentTheme !== theme) {
+      rootElement.classList.add("theme-transitioning");
+      rootElement.setAttribute("data-theme", theme);
+
+      requestAnimationFrame(() => {
+        rootElement?.classList.remove("theme-transitioning");
+      });
+    } else {
+      rootElement.setAttribute("data-theme", theme);
+    }
+  };
+};
+
+const applyTheme = createThemeApplier();
 
 interface ThemeProviderProps {
   children: React.ReactNode;
-  defaultTheme?: Theme;
 }
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-}: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(defaultTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  // Initialize with system preference if no stored theme exists
+  const getInitialTheme = useCallback((): "light" | "dark" => {
+    if (typeof window === "undefined") return "light";
+    const stored = getStoredTheme({ storageKey: THEME_STORAGE_KEY });
+    if (stored) return stored;
+    // If no stored theme, use system preference
+    return getSystemTheme();
+  }, []);
 
-  const setTheme = useCallback((newTheme: Theme) => {
+  const [theme, setThemeState] = useState<"light" | "dark">(() =>
+    getInitialTheme(),
+  );
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
+    getInitialTheme(),
+  );
+
+  const setTheme = useCallback((newTheme: "light" | "dark") => {
     if (typeof window !== "undefined") {
-      const resolved = newTheme === "system" ? getSystemTheme() : newTheme;
-      applyTheme(resolved);
+      applyTheme({ theme: newTheme });
       localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-      setResolvedTheme(resolved);
+      setResolvedTheme(newTheme);
     }
     setThemeState(newTheme);
   }, []);
@@ -77,42 +105,15 @@ export function ThemeProvider({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const initialTheme = getStoredTheme() ?? defaultTheme;
-    const resolved =
-      initialTheme === "system" ? getSystemTheme() : initialTheme;
-
+    const initialTheme = getInitialTheme();
     setThemeState(initialTheme);
-    setResolvedTheme(resolved);
-    applyTheme(resolved);
-
-    if (initialTheme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = (e: MediaQueryListEvent) => {
-        const newResolved = e.matches ? "dark" : "light";
-        setResolvedTheme(newResolved);
-        applyTheme(newResolved);
-      };
-
-      if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener("change", handleChange);
-        return () => mediaQuery.removeEventListener("change", handleChange);
-      }
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
-    }
-
-    return undefined;
-  }, [defaultTheme]);
+    setResolvedTheme(initialTheme);
+    applyTheme({ theme: initialTheme });
+  }, [getInitialTheme]);
 
   useEffect(() => {
-    if (theme === "system") {
-      const resolved = getSystemTheme();
-      setResolvedTheme(resolved);
-      applyTheme(resolved);
-    } else {
-      setResolvedTheme(theme);
-      applyTheme(theme);
-    }
+    setResolvedTheme(theme);
+    applyTheme({ theme });
   }, [theme]);
 
   return (

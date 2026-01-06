@@ -82,7 +82,7 @@ const ReleasesGridComponent = ({
   if (isListView) {
     return (
       <ReleasesTable
-        releases={releases}
+        releases={releasesToShow}
         isMobile={isMobile}
         isRandomMode={isRandomMode}
         highlightedReleaseId={highlightedReleaseId}

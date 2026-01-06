@@ -2,35 +2,38 @@
 
 [data-theme="dark"] {
   /* Base colors */
-  --background: #0a0a0a;
+  --background: #121212;
   --foreground: #fafafa;
 
   /* Muted colors */
-  --muted: #1a1a1a;
+  --muted: #1e1e1e;
   --muted-foreground: #a3a3a3;
 
   /* Accent colors */
-  --accent: #262626;
+  --accent: #2a2a2a;
   --accent-foreground: #fafafa;
 
   /* Border and input */
-  --border: #2a2a2a;
-  --input: #2a2a2a;
-  --ring: #0066cc;
+  --border: #333333;
+  --input: #333333;
+  --ring: #0080ff;
 
   /* Card */
-  --card: #141414;
+  --card: #1a1a1a;
   --card-foreground: #fafafa;
 
+  /* Sticky Header */
+  --sticky-header-background: #080808;
+
   /* Popover */
-  --popover: #141414;
+  --popover: #1a1a1a;
   --popover-foreground: #fafafa;
 
   /* Primary */
-  --primary: #0066cc;
+  --primary: #0080ff;
   --primary-foreground: #ffffff;
-  --primary-hover: #0052a3;
-  --primary-active: #003d7a;
+  --primary-hover: #0066cc;
+  --primary-active: #0052a3;
 
   /* Secondary */
   --secondary: #262626;
@@ -58,13 +61,13 @@
 
   /* Legacy color mappings for backward compatibility during migration */
   --white: #fafafa;
-  --black: #0a0a0a;
+  --black: #121212;
   --trueBlack: hsla(5, 92%, 1%, 0.83);
 
-  --gray-50: #0a0a0a;
-  --gray-100: #141414;
-  --gray-200: #1a1a1a;
-  --gray-300: #262626;
+  --gray-50: #121212;
+  --gray-100: #1a1a1a;
+  --gray-200: #1e1e1e;
+  --gray-300: #2a2a2a;
   --gray-400: #404040;
   --gray-500: #525252;
   --gray-600: #737373;

@@ -17,19 +17,29 @@ interface ViewState {
 const VIEW_STORAGE_KEY = "filtermydiscogs_view_state";
 
 // Helper functions for localStorage
-const saveViewState = (state: ViewState) => {
+const saveViewState = ({
+  state,
+  storageKey,
+}: {
+  state: ViewState;
+  storageKey: string;
+}) => {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(storageKey, JSON.stringify(state));
   } catch (error) {
     console.warn("Failed to save view state to localStorage:", error);
   }
 };
 
-const loadViewState = (): ViewState | null => {
+const loadViewState = ({
+  storageKey,
+}: {
+  storageKey: string;
+}): ViewState | null => {
   if (typeof window === "undefined") return null;
   try {
-    const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       const parsed = JSON.parse(saved);
       // Validate that the parsed state has the expected structure
@@ -82,8 +92,8 @@ const viewReducer = (state: ViewState, action: ViewActions): ViewState => {
   }
 };
 
-const getInitialState = (): ViewState => {
-  const saved = loadViewState();
+const getInitialState = ({ storageKey }: { storageKey: string }): ViewState => {
+  const saved = loadViewState({ storageKey });
   return (
     saved || {
       currentView: "card",
@@ -98,11 +108,14 @@ const ViewContext = createContext<{
 } | null>(null);
 
 export const ViewProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [state, dispatch] = useReducer(viewReducer, getInitialState());
+  const [state, dispatch] = useReducer(
+    viewReducer,
+    getInitialState({ storageKey: VIEW_STORAGE_KEY }),
+  );
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    saveViewState(state);
+    saveViewState({ state, storageKey: VIEW_STORAGE_KEY });
   }, [state]);
 
   return (

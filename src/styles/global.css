@@ -377,7 +377,7 @@ button {
 
 .layout-sticky-header {
   align-items: center;
-  background: var(--background);
+  background: var(--sticky-header-background, var(--background));
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: center;

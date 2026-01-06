@@ -1,24 +1,19 @@
-/* Mobile-first responsive table styles */
+.tableWrapper {
+  width: 100%;
+  padding: 0 var(--space-4);
+}
+
 .tableContainer {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   display: none;
   overflow: hidden;
   width: 100%;
+  border-radius: var(--radius-sm);
 
   @media (min-width: 640px) {
-    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     display: block;
-  }
-
-  @media (min-width: 768px) {
-    border-radius: var(--radius-xl);
-  }
-
-  @media (min-width: 1024px) {
-    border-radius: var(--radius-2xl);
   }
 }
 
