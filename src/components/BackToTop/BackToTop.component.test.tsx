@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BackToTop } from "./BackToTop.component";
 
@@ -21,14 +21,17 @@ describe("BackToTop", () => {
     jest.restoreAllMocks();
   });
 
-  it("renders button", () => {
+  it("renders button", async () => {
     render(<BackToTop />);
-    expect(
-      screen.getByRole("button", { name: "Back to top" }),
-    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Back to top" }),
+      ).toBeInTheDocument();
+    });
   });
 
-  it("is not visible initially when scroll position is below threshold", () => {
+  it("is not visible initially when scroll position is below threshold", async () => {
     Object.defineProperty(window, "scrollY", {
       writable: true,
       configurable: true,
@@ -36,27 +39,31 @@ describe("BackToTop", () => {
     });
 
     const { container } = render(<BackToTop />);
-    const button = container.querySelector("button");
 
-    expect(button?.className).not.toContain("visible");
+    await waitFor(() => {
+      const button = container.querySelector("button");
+      expect(button?.className).not.toContain("visible");
+    });
   });
 
-  it("becomes visible when scroll position exceeds threshold", () => {
+  it("becomes visible when scroll position exceeds threshold", async () => {
     Object.defineProperty(window, "scrollY", {
       writable: true,
       configurable: true,
       value: 500,
     });
 
-    const { container, rerender } = render(<BackToTop />);
+    const { container } = render(<BackToTop />);
 
-    const scrollEvent = new Event("scroll");
-    window.dispatchEvent(scrollEvent);
+    await act(async () => {
+      const scrollEvent = new Event("scroll");
+      window.dispatchEvent(scrollEvent);
+    });
 
-    rerender(<BackToTop />);
-
-    const button = container.querySelector("button");
-    expect(button?.className).toContain("visible");
+    await waitFor(() => {
+      const button = container.querySelector("button");
+      expect(button?.className).toContain("visible");
+    });
   });
 
   it("scrolls to top when clicked", async () => {
@@ -75,8 +82,8 @@ describe("BackToTop", () => {
     });
   });
 
-  it("updates visibility on scroll", () => {
-    const { container, rerender } = render(<BackToTop />);
+  it("updates visibility on scroll", async () => {
+    const { container } = render(<BackToTop />);
 
     Object.defineProperty(window, "scrollY", {
       writable: true,
@@ -84,21 +91,29 @@ describe("BackToTop", () => {
       value: 500,
     });
 
-    const scrollEvent = new Event("scroll");
-    window.dispatchEvent(scrollEvent);
+    await act(async () => {
+      const scrollEvent = new Event("scroll");
+      window.dispatchEvent(scrollEvent);
+    });
 
-    rerender(<BackToTop />);
-
-    const button = container.querySelector("button");
-    expect(button?.className).toContain("visible");
+    await waitFor(() => {
+      const button = container.querySelector("button");
+      expect(button?.className).toContain("visible");
+    });
   });
 
-  it("cleans up scroll listener on unmount", () => {
+  it("cleans up scroll listener on unmount", async () => {
     const removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
 
     const { unmount } = render(<BackToTop />);
 
-    unmount();
+    await waitFor(() => {
+      expect(screen.getByRole("button")).toBeInTheDocument();
+    });
+
+    act(() => {
+      unmount();
+    });
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       "scroll",

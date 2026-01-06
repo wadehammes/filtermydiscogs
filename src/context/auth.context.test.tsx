@@ -58,7 +58,7 @@ describe("AuthProvider", () => {
     mockGetUsernameFromCookies.mockReturnValue(null);
   });
 
-  it("provides initial state", () => {
+  it("provides initial state", async () => {
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
     });
@@ -66,6 +66,11 @@ describe("AuthProvider", () => {
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
     expect(result.current.state.isLoading).toBe(true);
+
+    // Wait for async auth check to complete
+    await waitFor(() => {
+      expect(result.current.state.isLoading).toBe(false);
+    });
   });
 
   it("checks auth status on mount", async () => {
@@ -123,6 +128,12 @@ describe("AuthProvider", () => {
   });
 
   it("handles successful auth from URL params", async () => {
+    // Mock checkAuthStatus to resolve quickly but not interfere
+    mockCheckAuthStatus.mockResolvedValue({
+      isAuthenticated: false,
+      username: null,
+      userId: null,
+    });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: "success",
       errorStatus: null,
@@ -138,6 +149,7 @@ describe("AuthProvider", () => {
     });
 
     expect(result.current.state.username).toBe("testuser");
+    expect(result.current.state.isLoading).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
     expect(mockQueryClient.invalidateQueries).toHaveBeenCalledWith({
       queryKey: ["discogsCollection"],
@@ -145,6 +157,12 @@ describe("AuthProvider", () => {
   });
 
   it("handles auth error from URL params", async () => {
+    // Mock checkAuthStatus to resolve quickly but not interfere
+    mockCheckAuthStatus.mockResolvedValue({
+      isAuthenticated: false,
+      username: null,
+      userId: null,
+    });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: null,
       errorStatus: "access_denied",
@@ -156,15 +174,15 @@ describe("AuthProvider", () => {
 
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.error).toBe(
+        "Authentication failed: access_denied",
+      );
     });
 
-    expect(result.current.state.error).toBe(
-      "Authentication failed: access_denied",
-    );
     expect(mockClearUrlParams).toHaveBeenCalled();
   });
 
-  it("calls login function", () => {
+  it("calls login function", async () => {
     let locationHref = "http://localhost/";
     const originalHrefDescriptor = Object.getOwnPropertyDescriptor(
       window.location,
@@ -190,6 +208,11 @@ describe("AuthProvider", () => {
       wrapper: AuthProvider,
     });
 
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.state.isLoading).toBe(false);
+    });
+
     act(() => {
       result.current.login();
     });
@@ -208,6 +231,11 @@ describe("AuthProvider", () => {
 
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
+    });
+
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.state.isLoading).toBe(false);
     });
 
     // Set authenticated state first
@@ -239,6 +267,11 @@ describe("AuthProvider", () => {
 
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
+    });
+
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.state.isLoading).toBe(false);
     });
 
     await act(async () => {
