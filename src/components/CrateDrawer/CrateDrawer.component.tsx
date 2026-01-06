@@ -62,13 +62,6 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
 
   return (
     <>
-      {isOpen && (
-        <button
-          className={`${styles.backdrop} ${isOpen ? styles.open : ""}`}
-          onClick={toggleDrawer}
-          type="button"
-        />
-      )}
       <div className={`${styles.drawer} ${isOpen ? styles.open : ""}`}>
         <div className={styles.header}>
           <div className={styles.headerLeft}>
