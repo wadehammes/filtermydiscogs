@@ -184,8 +184,27 @@ export const useDeleteCrateMutation = () => {
     mutationFn: async (crateId) => {
       return deleteCrate(crateId);
     },
-    onSuccess: () => {
+    onMutate: async (crateId) => {
+      // Optimistically remove the crate from the cache
+      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
+        if (!old) return old;
+        return {
+          crates: old.crates.filter((crate) => crate.id !== crateId),
+        };
+      });
+
+      // Remove the crate's releases query
+      queryClient.removeQueries({
+        queryKey: ["crate", userId, crateId],
+      });
+    },
+    onSuccess: async () => {
       invalidateCrateQueries(queryClient, userId);
+      // Refetch to ensure we have the latest data
+      await queryClient.refetchQueries({
+        queryKey: ["crates", userId],
+        exact: false,
+      });
     },
   });
 };
