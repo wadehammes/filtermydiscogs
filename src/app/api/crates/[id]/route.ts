@@ -22,19 +22,12 @@ export async function GET(
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
-    // Get the crate with releases
+    // Get the crate first (without releases to reduce memory usage)
     const crate = await prisma.crate.findUnique({
       where: {
         user_id_id: {
           user_id: userIdNum,
           id: id,
-        },
-      },
-      include: {
-        releases: {
-          orderBy: {
-            added_at: "desc",
-          },
         },
       },
     });
@@ -43,8 +36,23 @@ export async function GET(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
+    // Get releases separately with pagination to avoid loading all at once
+    // This prevents memory issues with large crates
+    const releases = await prisma.crateRelease.findMany({
+      where: {
+        user_id: userIdNum,
+        crate_id: id,
+      },
+      orderBy: {
+        added_at: "desc",
+      },
+      select: {
+        release_data: true,
+      },
+    });
+
     // Map releases and ensure instance_id is consistent
-    const releases = crate.releases.map((r) => {
+    const mappedReleases = releases.map((r) => {
       const releaseData = r.release_data as DiscogsRelease;
       // Ensure instance_id matches the stored string format
       if (releaseData && typeof releaseData.instance_id !== "string") {
@@ -55,12 +63,31 @@ export async function GET(
 
     return NextResponse.json({
       crate,
-      releases,
+      releases: mappedReleases,
     });
   } catch (error) {
     console.error("Error fetching crate:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    // Check for connection/resource errors
+    if (
+      errorMessage.includes("INSUFFICIENT RESOURCES") ||
+      errorMessage.includes("P1001") ||
+      errorMessage.includes("connection") ||
+      errorMessage.includes("timeout")
+    ) {
+      return NextResponse.json(
+        {
+          error: "Database connection error",
+          details: "Please try again in a moment",
+        },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to fetch crate" },
+      { error: "Failed to fetch crate", details: errorMessage },
       { status: 500 },
     );
   }

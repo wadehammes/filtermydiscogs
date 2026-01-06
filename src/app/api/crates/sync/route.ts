@@ -63,8 +63,27 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error syncing crates:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    // Check for connection/resource errors
+    if (
+      errorMessage.includes("INSUFFICIENT RESOURCES") ||
+      errorMessage.includes("P1001") ||
+      errorMessage.includes("connection") ||
+      errorMessage.includes("timeout")
+    ) {
+      return NextResponse.json(
+        {
+          error: "Database connection error",
+          details: "Please try again in a moment",
+        },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to sync crates" },
+      { error: "Failed to sync crates", details: errorMessage },
       { status: 500 },
     );
   }

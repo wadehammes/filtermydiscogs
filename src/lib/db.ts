@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
-// PrismaClient is attached to the `global` object in development to prevent
-// exhausting your database connection limit.
+// PrismaClient is attached to the `global` object to prevent
+// exhausting your database connection limit in serverless environments.
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -24,7 +24,10 @@ try {
 
 export const prisma = prismaInstance;
 
-if (process.env.NODE_ENV !== "production") {
+// Always cache Prisma Client in serverless environments (including production)
+// This prevents creating multiple connections per function invocation
+// Vercel serverless functions can reuse the same instance across invocations
+if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = prisma;
 }
 
