@@ -82,9 +82,15 @@ export const useReleasesClient = () => {
   const handleReleaseClick = useCallback((instanceId: string) => {
     const element = document.getElementById(`release-${instanceId}`);
     if (element) {
-      element.scrollIntoView({
+      const headerHeight = 139;
+      const extraOffset = 24;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - headerHeight - extraOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
         behavior: "smooth",
-        block: "start",
       });
 
       setTimeout(() => {
