@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { clearData } from "src/api/helpers";
 import Button from "src/components/Button/Button.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
@@ -39,7 +40,7 @@ export function AboutClient() {
 
     try {
       // Clear all cookies (authentication tokens)
-      await fetch("/api/auth/clear-data", { method: "POST" });
+      await clearData();
 
       // Clear localStorage
       if (typeof window !== "undefined") {

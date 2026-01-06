@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useMediaQuery } from "usehooks-ts";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -20,23 +21,17 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_STORAGE_KEY = "filtermydiscogs_theme";
 
-const getSystemTheme = (): "light" | "dark" => {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-};
-
 const getStoredTheme = ({
   storageKey,
+  prefersDark,
 }: {
   storageKey: string;
+  prefersDark: boolean;
 }): "light" | "dark" | null => {
   if (typeof window === "undefined") return null;
   const stored = localStorage.getItem(storageKey);
-  // Convert "system" to current system preference if found (for migration)
   if (stored === "system") {
-    const systemTheme = getSystemTheme();
+    const systemTheme = prefersDark ? "dark" : "light";
     localStorage.setItem(storageKey, systemTheme);
     return systemTheme;
   }
@@ -77,21 +72,22 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  // Initialize with system preference if no stored theme exists
+  const prefersDark = useMediaQuery("(prefers-color-scheme: dark)", {
+    defaultValue: false,
+  });
+
   const getInitialTheme = useCallback((): "light" | "dark" => {
     if (typeof window === "undefined") return "light";
-    const stored = getStoredTheme({ storageKey: THEME_STORAGE_KEY });
+    const stored = getStoredTheme({
+      storageKey: THEME_STORAGE_KEY,
+      prefersDark,
+    });
     if (stored) return stored;
-    // If no stored theme, use system preference
-    return getSystemTheme();
-  }, []);
+    return prefersDark ? "dark" : "light";
+  }, [prefersDark]);
 
-  const [theme, setThemeState] = useState<"light" | "dark">(() =>
-    getInitialTheme(),
-  );
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
-    getInitialTheme(),
-  );
+  const [theme, setThemeState] = useState<"light" | "dark">("light");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
   const setTheme = useCallback((newTheme: "light" | "dark") => {
     if (typeof window !== "undefined") {

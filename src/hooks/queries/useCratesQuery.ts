@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { fetchCrate, fetchCrates } from "src/api/helpers";
 import { getUserIdFromCookies } from "src/services/auth.service";
 import type {
   CratesResponse,
@@ -15,16 +16,7 @@ export const useCratesQuery = () => {
         throw new Error("User not authenticated");
       }
 
-      const response = await fetch("/api/crates", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch crates: ${response.status}`);
-      }
-
-      return response.json();
+      return fetchCrates();
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
@@ -49,16 +41,7 @@ export const useCrateQuery = (crateId: string | null) => {
         throw new Error("Crate ID missing");
       }
 
-      const response = await fetch(`/api/crates/${crateId}`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch crate");
-      }
-
-      return response.json();
+      return fetchCrate(crateId);
     },
     enabled: isEnabled,
     staleTime: 2 * 60 * 1000,

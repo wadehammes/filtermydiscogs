@@ -1,4 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  addReleaseToCrate,
+  createCrate,
+  deleteCrate,
+  removeReleaseFromCrate,
+  syncCrates,
+  updateCrate,
+} from "src/api/helpers";
 import { getUserIdFromCookies } from "src/services/auth.service";
 import type { DiscogsRelease } from "src/types";
 import type {
@@ -46,19 +54,6 @@ interface SyncCratesResponse {
   success: boolean;
   removedCount: number;
 }
-
-const handleApiError = async (
-  response: Response,
-  defaultMessage: string,
-): Promise<string> => {
-  try {
-    const error = await response.json();
-    return error.error || defaultMessage;
-  } catch {
-    const text = await response.text();
-    return text || defaultMessage;
-  }
-};
 
 const invalidateCrateQueries = (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -131,24 +126,7 @@ export const useCreateCrateMutation = () => {
 
   return useMutation<CreateCrateResponse, Error, CreateCrateRequest>({
     mutationFn: async (data) => {
-      const response = await fetch("/api/crates", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await handleApiError(
-          response,
-          "Failed to create crate",
-        );
-        throw new Error(errorMessage);
-      }
-
-      return response.json();
+      return createCrate(data.name);
     },
     onSuccess: (data) => {
       queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
@@ -180,24 +158,7 @@ export const useUpdateCrateMutation = () => {
     { crateId: string; updates: UpdateCrateRequest }
   >({
     mutationFn: async ({ crateId, updates }) => {
-      const response = await fetch(`/api/crates/${crateId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(updates),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await handleApiError(
-          response,
-          "Failed to update crate",
-        );
-        throw new Error(errorMessage);
-      }
-
-      return response.json();
+      return updateCrate(crateId, updates);
     },
     onSuccess: async (_, variables) => {
       invalidateCrateQueries(queryClient, userId, variables.crateId);
@@ -221,18 +182,7 @@ export const useDeleteCrateMutation = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (crateId) => {
-      const response = await fetch(`/api/crates/${crateId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorMessage = await handleApiError(
-          response,
-          "Failed to delete crate",
-        );
-        throw new Error(errorMessage);
-      }
+      return deleteCrate(crateId);
     },
     onSuccess: () => {
       invalidateCrateQueries(queryClient, userId);
@@ -252,24 +202,7 @@ export const useAddReleaseToCrateMutation = () => {
   >({
     mutationKey: ["addReleaseToCrate"],
     mutationFn: async ({ crateId, release }) => {
-      const response = await fetch(`/api/crates/${crateId}/releases`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(release),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await handleApiError(
-          response,
-          "Failed to add release to crate",
-        );
-        throw new Error(errorMessage);
-      }
-
-      return response.json();
+      return addReleaseToCrate(crateId, release);
     },
     onMutate: async ({ crateId, release }) => {
       const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
@@ -349,23 +282,7 @@ export const useRemoveReleaseFromCrateMutation = () => {
   >({
     mutationKey: ["removeReleaseFromCrate"],
     mutationFn: async ({ crateId, releaseId }) => {
-      const response = await fetch(
-        `/api/crates/${crateId}/releases/${releaseId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
-
-      if (!response.ok) {
-        const errorMessage = await handleApiError(
-          response,
-          "Failed to remove release from crate",
-        );
-        throw new Error(errorMessage);
-      }
-
-      return response.json();
+      return removeReleaseFromCrate(crateId, releaseId);
     },
     onMutate: async ({ crateId, releaseId }) => {
       const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
@@ -418,24 +335,7 @@ export const useSyncCratesMutation = () => {
 
   return useMutation<SyncCratesResponse, Error, SyncCratesRequest>({
     mutationFn: async (data) => {
-      const response = await fetch("/api/crates/sync", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await handleApiError(
-          response,
-          "Failed to sync crates",
-        );
-        throw new Error(errorMessage);
-      }
-
-      return response.json();
+      return syncCrates(data.collectionInstanceIds);
     },
     onSuccess: () => {
       invalidateCrateQueries(queryClient, userId);

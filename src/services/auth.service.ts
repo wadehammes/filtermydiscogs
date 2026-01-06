@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import { checkAuth as checkAuthApi } from "src/api/helpers";
 
 export interface AuthStatus {
   isAuthenticated: boolean;
@@ -52,26 +53,18 @@ export const parseAuthUrlParams = (): {
 
 export const checkAuthStatus = async (): Promise<AuthStatus> => {
   try {
-    const response = await fetch("/api/auth/check", {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        isAuthenticated: data.isAuthenticated,
-        username: data.username || null,
-        userId: data.userId || null,
-      };
-    }
+    const data = await checkAuthApi();
+    return {
+      isAuthenticated: data.isAuthenticated,
+      username: data.username || null,
+      userId: data.userId || null,
+    };
   } catch (_error) {
     // Silent fail
+    return {
+      isAuthenticated: false,
+      username: null,
+      userId: null,
+    };
   }
-
-  return {
-    isAuthenticated: false,
-    username: null,
-    userId: null,
-  };
 };

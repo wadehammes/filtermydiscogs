@@ -23,8 +23,15 @@ export default async () => {
   const moduleNameMapper = {
     ...jestConfig.moduleNameMapper,
     "swiper/react": "<rootDir>/node_modules/swiper",
-    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "\\.(css|less|scss|sass|svg)$": "identity-obj-proxy",
   };
 
-  return { ...jestConfig, moduleNameMapper };
+  return {
+    ...jestConfig,
+    moduleNameMapper,
+    transformIgnorePatterns: [
+      ...(jestConfig.transformIgnorePatterns || []),
+      "<rootDir>/node_modules/(?!isbot|swiper)",
+    ],
+  };
 };
