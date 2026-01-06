@@ -20,6 +20,7 @@
   background-color: var(--background);
   grid-area: main;
   padding: 0;
+  position: relative;
 }
 
 .sidebar {

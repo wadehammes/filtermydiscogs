@@ -46,13 +46,8 @@
     border-right: none;
   }
 
-  @media (min-width: 640px) {
-    font-size: var(--text-xs);
-    padding: var(--space-4);
-  }
-
   @media (min-width: 768px) {
-    padding: var(--space-5);
+    padding: var(--space-4) var(--space-3);
   }
 }
 

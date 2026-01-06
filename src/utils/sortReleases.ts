@@ -4,8 +4,49 @@ import type { DiscogsRelease } from "src/types";
 const compareNumeric = (a: number, b: number, descending: boolean) =>
   descending ? b - a : a - b;
 
-const compareString = (a: string, b: string, descending: boolean) =>
-  descending ? b.localeCompare(a) : a.localeCompare(b);
+// Natural sort comparison - handles numeric prefixes correctly
+// Useful for titles, artists, labels, etc. that may start with numbers
+const compareNatural = ({
+  a,
+  b,
+  descending,
+}: {
+  a: string;
+  b: string;
+  descending: boolean;
+}) => {
+  // Trim and normalize
+  const strA = a.trim();
+  const strB = b.trim();
+
+  // Extract leading numbers from both strings
+  const numMatchA = strA.match(/^(\d+)/);
+  const numMatchB = strB.match(/^(\d+)/);
+
+  // If both start with numbers, compare numerically
+  if (numMatchA && numMatchB && numMatchA[1] && numMatchB[1]) {
+    const numA = parseInt(numMatchA[1], 10);
+    const numB = parseInt(numMatchB[1], 10);
+    if (numA !== numB) {
+      return descending ? numB - numA : numA - numB;
+    }
+    // If numbers are equal, compare the rest of the string
+    const restA = strA.slice(numMatchA[1].length);
+    const restB = strB.slice(numMatchB[1].length);
+    return descending ? restB.localeCompare(restA) : restA.localeCompare(restB);
+  }
+
+  // If only one starts with a number, numbers come first (or last if descending)
+  if (numMatchA && !numMatchB) {
+    return descending ? 1 : -1;
+  }
+  if (!numMatchA && numMatchB) {
+    return descending ? -1 : 1;
+  }
+
+  // Neither starts with a number, use regular string comparison
+  return descending ? strB.localeCompare(strA) : strA.localeCompare(strB);
+};
 
 const getDateAdded = (release: DiscogsRelease) =>
   new Date(release.date_added).getTime();
@@ -63,32 +104,56 @@ export const sortReleases = (
 
     case SortValues.AZArtist:
       return sorted.sort((a, b) =>
-        compareString(getArtist(a), getArtist(b), false),
+        compareNatural({
+          a: getArtist(a),
+          b: getArtist(b),
+          descending: false,
+        }),
       );
 
     case SortValues.ZAArtist:
       return sorted.sort((a, b) =>
-        compareString(getArtist(a), getArtist(b), true),
+        compareNatural({
+          a: getArtist(a),
+          b: getArtist(b),
+          descending: true,
+        }),
       );
 
     case SortValues.AZTitle:
       return sorted.sort((a, b) =>
-        compareString(getTitle(a), getTitle(b), false),
+        compareNatural({
+          a: getTitle(a),
+          b: getTitle(b),
+          descending: false,
+        }),
       );
 
     case SortValues.ZATitle:
       return sorted.sort((a, b) =>
-        compareString(getTitle(a), getTitle(b), true),
+        compareNatural({
+          a: getTitle(a),
+          b: getTitle(b),
+          descending: true,
+        }),
       );
 
     case SortValues.AZLabel:
       return sorted.sort((a, b) =>
-        compareString(getLabel(a), getLabel(b), false),
+        compareNatural({
+          a: getLabel(a),
+          b: getLabel(b),
+          descending: false,
+        }),
       );
 
     case SortValues.ZALabel:
       return sorted.sort((a, b) =>
-        compareString(getLabel(a), getLabel(b), true),
+        compareNatural({
+          a: getLabel(a),
+          b: getLabel(b),
+          descending: true,
+        }),
       );
 
     default:
