@@ -19,7 +19,7 @@
 .mainContent {
   background-color: var(--background);
   grid-area: main;
-  padding: 0 var(--space-4);
+  padding: 0;
 }
 
 .sidebar {
@@ -91,6 +91,7 @@
   contain-intrinsic-size: 400px 300px;
 
   & > div {
+    min-width: 0;
     scroll-margin-top: 250px;
   }
 

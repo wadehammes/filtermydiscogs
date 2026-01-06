@@ -6,6 +6,8 @@ import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.compon
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import FilterSolid from "src/styles/icons/filter-solid.svg";
+import Grid from "src/styles/icons/grid.svg";
+import VinylRecord from "src/styles/icons/vinyl-record.svg";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuProps {
@@ -157,7 +159,9 @@ export const MobileMenu = ({
                   onClick={() => handleNavigation("releases", "Releases")}
                   disabled={isDisabled}
                 >
-                  <span className={styles.menuIcon}>📀</span>
+                  <span className={styles.menuIcon}>
+                    <VinylRecord />
+                  </span>
                   <span>Releases</span>
                 </button>
               )}
@@ -171,7 +175,9 @@ export const MobileMenu = ({
                   onClick={() => handleNavigation("mosaic", "Mosaic")}
                   disabled={isDisabled}
                 >
-                  <span className={styles.menuIcon}>🖼️</span>
+                  <span className={styles.menuIcon}>
+                    <Grid />
+                  </span>
                   <span>Mosaic</span>
                 </button>
               )}
@@ -183,7 +189,29 @@ export const MobileMenu = ({
                 }`}
                 onClick={() => handleNavigation("about", "About")}
               >
-                <span className={styles.menuIcon}>ℹ️</span>
+                <span className={styles.menuIcon}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="8"
+                      cy="8"
+                      r="7"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M8 6V8M8 10H8.01"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
                 <span>About</span>
               </button>
             </nav>

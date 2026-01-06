@@ -69,13 +69,15 @@ const ReleasesGridComponent = ({
       return {
         display: "grid",
         gap: "var(--space-4)",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gridTemplateColumns: isMobile
+          ? "1fr"
+          : "repeat(auto-fill, minmax(280px, 1fr))",
         padding: "0 var(--space-4)",
       };
     }
 
     return undefined;
-  }, [isActuallyRandomMode, isCardView]);
+  }, [isActuallyRandomMode, isCardView, isMobile]);
 
   if (isListView) {
     return (

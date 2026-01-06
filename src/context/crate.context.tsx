@@ -7,6 +7,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useAuth } from "src/context/auth.context";
@@ -57,8 +58,9 @@ const STORAGE_KEY = "filtermydiscogs_selected_releases";
 export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { state: authState } = useAuth();
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [migrationDone, setMigrationDone] = useState(false);
+  const hasSetInitialDrawerState = useRef(false);
 
   const { data: cratesData, isLoading, isError, error } = useCratesQuery();
   const crates = cratesData?.crates || [];
@@ -151,6 +153,22 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
     addReleaseMutation,
     findDefaultCrate,
   ]);
+
+  // Set initial drawer state based on screen size - open on desktop, closed on mobile
+  useEffect(() => {
+    if (!hasSetInitialDrawerState.current) {
+      // Check media query directly to avoid dependency array issues
+      if (
+        typeof window !== "undefined" &&
+        window.matchMedia("(min-width: 1024px)").matches
+      ) {
+        setIsDrawerOpen(true);
+      }
+      hasSetInitialDrawerState.current = true;
+    }
+    // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selectedReleases = activeCrateReleases;
   const toggleDrawer = useCallback(() => {
