@@ -57,7 +57,7 @@ const STORAGE_KEY = "filtermydiscogs_selected_releases";
 export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { state: authState } = useAuth();
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [migrationDone, setMigrationDone] = useState(false);
 
   const { data: cratesData, isLoading, isError, error } = useCratesQuery();
