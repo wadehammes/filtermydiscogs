@@ -7,7 +7,7 @@
     display: block;
     padding: var(--space-2) 0;
     position: sticky;
-    top: 82px;
+    top: 78px;
     width: 100%;
     z-index: 100;
   }

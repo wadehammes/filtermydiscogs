@@ -9,6 +9,9 @@ import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
 import type { DiscogsRelease } from "src/types";
 import { filterReleases } from "src/utils/filterReleases";
 
+const INITIAL_VISIBLE_RELEASES = 100;
+const VISIBLE_BATCH_SIZE = 100;
+
 export const useReleasesClient = () => {
   const { state: authState } = useAuth();
   const authLoading = !authState.isAuthenticated && authState.isLoading;
@@ -23,6 +26,7 @@ export const useReleasesClient = () => {
   const [highlightedReleaseId, setHighlightedReleaseId] = useState<
     string | null
   >(null);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
 
   const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useCollectionData(username, isAuthenticated);
@@ -34,6 +38,14 @@ export const useReleasesClient = () => {
   });
 
   const releaseCount = filteredReleases.length;
+
+  const visibleReleases =
+    !isRandomMode && filteredReleases.length > visibleCount
+      ? filteredReleases.slice(0, visibleCount)
+      : filteredReleases;
+
+  const hasMoreVisible =
+    !isRandomMode && filteredReleases.length > visibleReleases.length;
 
   useEffect(() => {
     if (!isRandomMode && viewState.currentView === "random") {
@@ -74,10 +86,20 @@ export const useReleasesClient = () => {
   }, [hasNextPage, isFetchingNextPage, hasReleases]);
 
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+    if (inView) {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      } else if (hasMoreVisible) {
+        setVisibleCount((prev) => prev + VISIBLE_BATCH_SIZE);
+      }
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage, hasMoreVisible]);
+
+  // Reset the visible count when filters change or random mode toggles
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filteredReleases reference changes when filters change, which is what we want to track
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_RELEASES);
+  }, [filteredReleases, isRandomMode]);
 
   const handleReleaseClick = useCallback((instanceId: string) => {
     const element = document.getElementById(`release-${instanceId}`);
@@ -173,6 +195,7 @@ export const useReleasesClient = () => {
     showAllLoadedMessage,
 
     filteredReleases,
+    visibleReleases,
     releaseCount,
     isRandomMode,
     randomRelease,

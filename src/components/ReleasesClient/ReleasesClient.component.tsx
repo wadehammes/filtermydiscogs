@@ -31,7 +31,7 @@ export default function ReleasesClient() {
     showAllLoadedMessage,
 
     // Data
-    filteredReleases,
+    visibleReleases,
     releaseCount,
     isRandomMode,
     randomRelease,
@@ -115,7 +115,7 @@ export default function ReleasesClient() {
 
           {hasReleases ? (
             <ReleasesGrid
-              releases={filteredReleases}
+              releases={visibleReleases}
               view={viewState.currentView}
               isMobile={isMobile}
               isRandomMode={isRandomMode}

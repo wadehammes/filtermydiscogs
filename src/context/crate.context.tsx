@@ -77,7 +77,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const removeReleaseMutation = useRemoveReleaseFromCrateMutation();
 
   const findDefaultCrate = useCallback(
-    (crateList: typeof crates) =>
+    ({ crateList }: { crateList: typeof crates }) =>
       crateList.find((c) => c.is_default) || crateList[0],
     [],
   );
@@ -88,7 +88,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
     const hasActiveCrate =
       activeCrateId && crates.some((c) => c.id === activeCrateId);
     if (!hasActiveCrate) {
-      const defaultCrate = findDefaultCrate(crates);
+      const defaultCrate = findDefaultCrate({ crateList: crates });
       if (defaultCrate) {
         setActiveCrateId(defaultCrate.id);
       }
@@ -120,7 +120,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
           return;
         }
 
-        const defaultCrate = findDefaultCrate(crates);
+        const defaultCrate = findDefaultCrate({ crateList: crates });
         if (!defaultCrate) {
           setMigrationDone(true);
           return;
@@ -167,7 +167,6 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       hasSetInitialDrawerState.current = true;
     }
     // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectedReleases = activeCrateReleases;
@@ -205,7 +204,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       let crateIdToUse = activeCrateId;
 
       if (!crateIdToUse) {
-        const defaultCrate = findDefaultCrate(crates);
+        const defaultCrate = findDefaultCrate({ crateList: crates });
         if (defaultCrate) {
           crateIdToUse = defaultCrate.id;
           setActiveCrateId(defaultCrate.id);
@@ -241,7 +240,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       let crateIdToUse = activeCrateId;
 
       if (!crateIdToUse && crates.length > 0) {
-        const defaultCrate = findDefaultCrate(crates);
+        const defaultCrate = findDefaultCrate({ crateList: crates });
         if (defaultCrate) {
           crateIdToUse = defaultCrate.id;
           setActiveCrateId(defaultCrate.id);
@@ -314,7 +313,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
 
       if (crateId === activeCrateId) {
         const remainingCrates = crates.filter((c) => c.id !== crateId);
-        const defaultCrate = findDefaultCrate(remainingCrates);
+        const defaultCrate = findDefaultCrate({ crateList: remainingCrates });
         setActiveCrateId(defaultCrate?.id || null);
       }
     },

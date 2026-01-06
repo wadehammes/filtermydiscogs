@@ -2,12 +2,12 @@
   margin: 0;
   white-space: nowrap;
   color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 
   > svg {
-    width: 230px;
-
-    @media (max-width: 768px) {
-      width: 36px;
-    }
+    height: auto;
+    object-fit: contain;
   }
 }

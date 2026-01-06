@@ -25,6 +25,7 @@ const ReleaseCardComponent = ({
     artists,
     title,
     thumb,
+    cover_image,
     styles: releaseStyles,
     formats: releaseFormats,
     resource_url,
@@ -46,9 +47,9 @@ const ReleaseCardComponent = ({
   const dateAdded = release.date_added
     ? formatDateAdded(release.date_added)
     : null;
-  const thumbUrl = thumb
-    ? thumb
-    : "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
+  const thumbUrl =
+    (cover_image || thumb) ??
+    "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
   const releaseId = resource_url.split("/").pop() || "";
   const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
@@ -285,54 +286,45 @@ const ReleaseCardComponent = ({
             </div>
           </div>
           <div className={styles.genresContainer}>
-            {releaseFormats && releaseFormats.length > 0 && (
-              <div className={styles.formatsContainer}>
-                {Array.from(
-                  new Set(releaseFormats.map((format) => format.name)),
-                ).map((formatName) => (
-                  <button
-                    key={formatName}
-                    type="button"
-                    className={classNames(
-                      "pill",
-                      "pillFormat",
-                      styles.formatPill,
-                      {
-                        pillSelected:
-                          filtersState.selectedFormats.includes(formatName),
-                      },
-                    )}
-                    onClick={(e) => handleFormatPillClick(e, formatName)}
-                    aria-label={`Filter by ${formatName} format`}
-                  >
-                    {formatName}
-                  </button>
-                ))}
-              </div>
-            )}
-            {releaseStyles && releaseStyles.length > 0 && (
-              <div className={styles.stylesContainer}>
-                {releaseStyles.map((style: string) => (
-                  <button
-                    key={style}
-                    type="button"
-                    className={classNames(
-                      "pill",
-                      "pillStyle",
-                      styles.stylePill,
-                      {
-                        pillSelected:
-                          filtersState.selectedStyles.includes(style),
-                      },
-                    )}
-                    onClick={(e) => handleStylePillClick(e, style)}
-                    aria-label={`Filter by ${style} style`}
-                  >
-                    {style}
-                  </button>
-                ))}
-              </div>
-            )}
+            {releaseFormats &&
+              releaseFormats.length > 0 &&
+              Array.from(
+                new Set(releaseFormats.map((format) => format.name)),
+              ).map((formatName) => (
+                <button
+                  key={formatName}
+                  type="button"
+                  className={classNames(
+                    "pill",
+                    "pillFormat",
+                    styles.formatPill,
+                    {
+                      pillSelected:
+                        filtersState.selectedFormats.includes(formatName),
+                    },
+                  )}
+                  onClick={(e) => handleFormatPillClick(e, formatName)}
+                  aria-label={`Filter by ${formatName} format`}
+                >
+                  {formatName}
+                </button>
+              ))}
+
+            {releaseStyles &&
+              releaseStyles.length > 0 &&
+              releaseStyles.map((style: string) => (
+                <button
+                  key={style}
+                  type="button"
+                  className={classNames("pill", "pillStyle", styles.stylePill, {
+                    pillSelected: filtersState.selectedStyles.includes(style),
+                  })}
+                  onClick={(e) => handleStylePillClick(e, style)}
+                  aria-label={`Filter by ${style} style`}
+                >
+                  {style}
+                </button>
+              ))}
           </div>
         </div>
       </div>

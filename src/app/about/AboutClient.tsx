@@ -27,7 +27,7 @@ export function AboutClient() {
         "Are you sure you want to clear all data? This will:\n\n" +
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
-          "• Clear your crate\n" +
+          "• Delete all your stored crates\n" +
           "• Clear all preferences and cached data\n\n" +
           "You will need to authorize the app again to use it.",
       )
@@ -203,7 +203,7 @@ export function AboutClient() {
             </p>
             <ul>
               <li>Authentication tokens and session data</li>
-              <li>Your crate (saved releases)</li>
+              <li>All your created and stored crates</li>
               <li>View preferences and settings</li>
               <li>All cached collection data</li>
             </ul>

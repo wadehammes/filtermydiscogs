@@ -144,22 +144,28 @@ export type FiltersActions =
       payload: boolean;
     };
 
-const getRandomRelease = (
-  releases: DiscogsRelease[],
-): DiscogsRelease | null => {
+const getRandomRelease = ({
+  releases,
+}: {
+  releases: DiscogsRelease[];
+}): DiscogsRelease | null => {
   if (releases.length === 0) return null;
   const randomIndex = Math.floor(Math.random() * releases.length);
   return releases[randomIndex] || null;
 };
 
 // Helper function to handle random mode logic when filters change
-const handleRandomModeAfterFilter = (
-  isRandomMode: boolean,
-  currentRandomRelease: DiscogsRelease | null,
-  filteredReleases: DiscogsRelease[],
-) => {
+const handleRandomModeAfterFilter = ({
+  isRandomMode,
+  currentRandomRelease,
+  filteredReleases,
+}: {
+  isRandomMode: boolean;
+  currentRandomRelease: DiscogsRelease | null;
+  filteredReleases: DiscogsRelease[];
+}) => {
   if (isRandomMode && filteredReleases.length > 0) {
-    const newRandomRelease = getRandomRelease(filteredReleases);
+    const newRandomRelease = getRandomRelease({ releases: filteredReleases });
     return {
       filteredReleases: newRandomRelease ? [newRandomRelease] : [],
       randomRelease: newRandomRelease,
@@ -175,6 +181,56 @@ const handleRandomModeAfterFilter = (
 // Use the shared filterReleases utility
 const filterReleases = filterReleasesUtil;
 const sortReleases = sortReleasesUtil;
+
+// Helper function to compute filtered, sorted releases and available options
+const computeFilteredState = ({
+  allReleases,
+  selectedStyles,
+  selectedYears,
+  selectedFormats,
+  searchQuery,
+  selectedSort,
+  isRandomMode,
+  currentRandomRelease,
+}: {
+  allReleases: DiscogsRelease[];
+  selectedStyles: string[];
+  selectedYears: number[];
+  selectedFormats: string[];
+  searchQuery: string;
+  selectedSort: SortValues;
+  isRandomMode: boolean;
+  currentRandomRelease: DiscogsRelease | null;
+}) => {
+  const filtered = filterReleases(
+    allReleases,
+    selectedStyles,
+    selectedYears,
+    selectedFormats,
+    searchQuery,
+  );
+  const sorted = sortReleases(filtered, selectedSort);
+  const availableStyles = getAvailableStyles(sorted);
+  const availableYears = getAvailableYears(sorted);
+  const availableFormats = getAvailableFormats(sorted);
+
+  const {
+    filteredReleases: finalFilteredReleases,
+    randomRelease: newRandomRelease,
+  } = handleRandomModeAfterFilter({
+    isRandomMode,
+    currentRandomRelease,
+    filteredReleases: sorted,
+  });
+
+  return {
+    filteredReleases: finalFilteredReleases,
+    availableStyles,
+    availableYears,
+    availableFormats,
+    randomRelease: newRandomRelease,
+  };
+};
 
 const filtersReducer = (
   state: FiltersState,
@@ -200,25 +256,21 @@ const filtersReducer = (
       };
 
     case FiltersActionTypes.SetAllReleases: {
-      const filteredReleases = filterReleases(
-        action.payload,
-        state.selectedStyles,
-        state.selectedYears,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const sortedReleases = sortReleases(filteredReleases, state.selectedSort);
-      const availableStyles = getAvailableStyles(sortedReleases);
-      const availableYears = getAvailableYears(sortedReleases);
-      const availableFormats = getAvailableFormats(sortedReleases);
+      const computed = computeFilteredState({
+        allReleases: action.payload,
+        selectedStyles: state.selectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         allReleases: action.payload,
-        filteredReleases: sortedReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
+        ...computed,
       };
     }
 
@@ -227,38 +279,21 @@ const filtersReducer = (
         ? state.selectedStyles.filter((style) => style !== action.payload)
         : [...state.selectedStyles, action.payload];
 
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        newSelectedStyles,
-        state.selectedYears,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const newSortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(newSortedReleases);
-      const availableYears = getAvailableYears(newSortedReleases);
-      const availableFormats = getAvailableFormats(newSortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        newSortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: newSelectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedStyles: newSelectedStyles,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
@@ -267,38 +302,21 @@ const filtersReducer = (
         ? state.selectedYears.filter((year) => year !== action.payload)
         : [...state.selectedYears, action.payload];
 
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        newSelectedYears,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const newSortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(newSortedReleases);
-      const availableYears = getAvailableYears(newSortedReleases);
-      const availableFormats = getAvailableFormats(newSortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        newSortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: newSelectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedYears: newSelectedYears,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
@@ -307,284 +325,154 @@ const filtersReducer = (
         ? state.selectedFormats.filter((format) => format !== action.payload)
         : [...state.selectedFormats, action.payload];
 
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        state.selectedYears,
-        newSelectedFormats,
-        state.searchQuery,
-      );
-      const newSortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(newSortedReleases);
-      const availableYears = getAvailableYears(newSortedReleases);
-      const availableFormats = getAvailableFormats(newSortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        newSortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: newSelectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedFormats: newSelectedFormats,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.SetSort: {
-      const filteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        state.selectedYears,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const sortedFilteredReleases = sortReleases(
-        filteredReleases,
-        action.payload,
-      );
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        sortedFilteredReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: action.payload,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedSort: action.payload,
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.ClearStyles: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        [],
-        state.selectedYears,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const sortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(sortedReleases);
-      const availableYears = getAvailableYears(sortedReleases);
-      const availableFormats = getAvailableFormats(sortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        sortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: [],
+        selectedYears: state.selectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedStyles: [],
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.SetStyles: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        action.payload,
-        state.selectedYears,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const newSortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(newSortedReleases);
-      const availableYears = getAvailableYears(newSortedReleases);
-      const availableFormats = getAvailableFormats(newSortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        newSortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: action.payload,
+        selectedYears: state.selectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedStyles: action.payload,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.ClearYears: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        [],
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const sortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(sortedReleases);
-      const availableYears = getAvailableYears(sortedReleases);
-      const availableFormats = getAvailableFormats(sortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        sortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: [],
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedYears: [],
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.SetYears: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        action.payload,
-        state.selectedFormats,
-        state.searchQuery,
-      );
-      const newSortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(newSortedReleases);
-      const availableYears = getAvailableYears(newSortedReleases);
-      const availableFormats = getAvailableFormats(newSortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        newSortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: action.payload,
+        selectedFormats: state.selectedFormats,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedYears: action.payload,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.ClearFormats: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        state.selectedYears,
-        [],
-        state.searchQuery,
-      );
-      const sortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(sortedReleases);
-      const availableYears = getAvailableYears(sortedReleases);
-      const availableFormats = getAvailableFormats(sortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        sortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: [],
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedFormats: [],
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
     case FiltersActionTypes.SetFormats: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        state.selectedYears,
-        action.payload,
-        state.searchQuery,
-      );
-      const newSortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(newSortedReleases);
-      const availableYears = getAvailableYears(newSortedReleases);
-      const availableFormats = getAvailableFormats(newSortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        newSortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: action.payload,
+        searchQuery: state.searchQuery,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         selectedFormats: action.payload,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
+        ...computed,
       };
     }
 
@@ -595,7 +483,9 @@ const filtersReducer = (
 
       if (newIsRandomMode) {
         // Entering random mode - get a random release from the FILTERED collection
-        newRandomRelease = getRandomRelease(state.filteredReleases);
+        newRandomRelease = getRandomRelease({
+          releases: state.filteredReleases,
+        });
         newFilteredReleases = newRandomRelease ? [newRandomRelease] : [];
       } else {
         // Exiting random mode - restore all filtered releases
@@ -657,6 +547,9 @@ const filtersReducer = (
         state.selectedSort,
       );
 
+      const availableStyles = getAvailableStyles(sortedReleases);
+      const availableYears = getAvailableYears(sortedReleases);
+      const availableFormats = getAvailableFormats(sortedReleases);
       return {
         ...state,
         selectedStyles: [],
@@ -664,45 +557,31 @@ const filtersReducer = (
         selectedFormats: [],
         searchQuery: "",
         filteredReleases: sortedReleases,
+        availableStyles,
+        availableYears,
+        availableFormats,
         isRandomMode: false,
         randomRelease: null,
       };
     }
 
     case FiltersActionTypes.SetSearchQuery: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        state.selectedStyles,
-        state.selectedYears,
-        state.selectedFormats,
-        action.payload,
-      );
-      const sortedReleases = sortReleases(
-        newFilteredReleases,
-        state.selectedSort,
-      );
-      const availableStyles = getAvailableStyles(sortedReleases);
-      const availableYears = getAvailableYears(sortedReleases);
-      const availableFormats = getAvailableFormats(sortedReleases);
-
-      const {
-        filteredReleases: finalFilteredReleases,
-        randomRelease: newRandomRelease,
-      } = handleRandomModeAfterFilter(
-        state.isRandomMode,
-        state.randomRelease,
-        sortedReleases,
-      );
+      const computed = computeFilteredState({
+        allReleases: state.allReleases,
+        selectedStyles: state.selectedStyles,
+        selectedYears: state.selectedYears,
+        selectedFormats: state.selectedFormats,
+        searchQuery: action.payload,
+        selectedSort: state.selectedSort,
+        isRandomMode: state.isRandomMode,
+        currentRandomRelease: state.randomRelease,
+      });
 
       return {
         ...state,
         searchQuery: action.payload,
-        filteredReleases: finalFilteredReleases,
-        availableStyles,
-        availableYears,
-        availableFormats,
-        randomRelease: newRandomRelease,
-        isSearching: false, // Clear searching state when search completes
+        isSearching: false,
+        ...computed,
       };
     }
 

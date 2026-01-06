@@ -124,9 +124,9 @@
 
   @media (min-width: 768px) {
     border-radius: var(--radius-2xl);
-    height: 60%;
+    height: 65%;
     object-fit: cover;
-    width: 60%;
+    width: 65%;
   }
 }
 
