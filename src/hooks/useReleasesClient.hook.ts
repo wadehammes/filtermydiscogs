@@ -161,13 +161,13 @@ export const useReleasesClient = () => {
       searchQuery,
     } = filtersState;
 
-    const currentFilteredReleases = filterReleases(
-      allReleases,
+    const currentFilteredReleases = filterReleases({
+      releases: allReleases,
       selectedStyles,
       selectedYears,
       selectedFormats,
       searchQuery,
-    );
+    });
 
     const randomRelease = getRandomRelease(currentFilteredReleases);
     if (randomRelease) {

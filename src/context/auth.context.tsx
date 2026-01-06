@@ -8,6 +8,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
+import { logout as logoutApi } from "src/api/helpers";
 import {
   checkAuthStatus,
   clearAuthCookies,
@@ -104,9 +105,13 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
   // Check for existing authentication on mount
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuth = async () => {
       try {
         const authStatus = await checkAuthStatus();
+        if (!isMounted) return;
+
         if (authStatus.isAuthenticated && authStatus.username) {
           dispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
           dispatch({
@@ -117,16 +122,27 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
           // If not authenticated, clear any cached data to prevent data leakage
           queryClient.clear();
         }
+        // Set loading to false after successful check
+        if (isMounted) {
+          dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+        }
       } catch (error) {
+        if (!isMounted) return;
         console.error("Error checking auth:", error);
         // On error, also clear cache to be safe
         queryClient.clear();
-      } finally {
-        dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+        // Set loading to false after error
+        if (isMounted) {
+          dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+        }
       }
     };
 
     checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [queryClient]);
 
   useEffect(() => {
@@ -165,7 +181,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     try {
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: true });
 
-      await fetch("/api/auth/logout", { method: "POST" });
+      await logoutApi();
 
       clearAuthCookies();
       queryClient.clear();

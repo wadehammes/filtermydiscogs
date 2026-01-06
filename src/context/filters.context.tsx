@@ -202,13 +202,13 @@ const computeFilteredState = ({
   isRandomMode: boolean;
   currentRandomRelease: DiscogsRelease | null;
 }) => {
-  const filtered = filterReleases(
-    allReleases,
+  const filtered = filterReleases({
+    releases: allReleases,
     selectedStyles,
     selectedYears,
     selectedFormats,
     searchQuery,
-  );
+  });
   const sorted = sortReleases(filtered, selectedSort);
   const availableStyles = getAvailableStyles(sorted);
   const availableYears = getAvailableYears(sorted);
@@ -489,13 +489,13 @@ const filtersReducer = (
         newFilteredReleases = newRandomRelease ? [newRandomRelease] : [];
       } else {
         // Exiting random mode - restore all filtered releases
-        newFilteredReleases = filterReleases(
-          state.allReleases,
-          state.selectedStyles,
-          state.selectedYears,
-          state.selectedFormats,
-          state.searchQuery,
-        );
+        newFilteredReleases = filterReleases({
+          releases: state.allReleases,
+          selectedStyles: state.selectedStyles,
+          selectedYears: state.selectedYears,
+          selectedFormats: state.selectedFormats,
+          searchQuery: state.searchQuery,
+        });
         newRandomRelease = null;
       }
 
@@ -535,13 +535,13 @@ const filtersReducer = (
     }
 
     case FiltersActionTypes.ClearAllFilters: {
-      const newFilteredReleases = filterReleases(
-        state.allReleases,
-        [],
-        [],
-        [],
-        "",
-      );
+      const newFilteredReleases = filterReleases({
+        releases: state.allReleases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: [],
+        searchQuery: "",
+      });
       const sortedReleases = sortReleases(
         newFilteredReleases,
         state.selectedSort,
@@ -647,13 +647,13 @@ export const useMemoizedFilteredReleases = () => {
   } = state;
 
   const filteredReleases = useMemo(() => {
-    const filtered = filterReleases(
-      allReleases,
+    const filtered = filterReleases({
+      releases: allReleases,
       selectedStyles,
       selectedYears,
       selectedFormats,
       searchQuery,
-    );
+    });
     return sortReleases(filtered, selectedSort);
   }, [
     allReleases,

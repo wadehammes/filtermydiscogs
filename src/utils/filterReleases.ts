@@ -8,14 +8,19 @@ export const clearSearchCache = () => {
   searchTextCache.clear();
 };
 
-export const filterReleases = (
-  releases: DiscogsRelease[],
-  selectedStyles: string[],
-  selectedYears: number[],
-  selectedFormats: string[],
-  searchQuery?: string,
-): DiscogsRelease[] => {
-  // Early return if no filters applied
+export const filterReleases = ({
+  releases,
+  selectedStyles,
+  selectedYears,
+  selectedFormats,
+  searchQuery,
+}: {
+  releases: DiscogsRelease[];
+  selectedStyles: string[];
+  selectedYears: number[];
+  selectedFormats: string[];
+  searchQuery?: string;
+}): DiscogsRelease[] => {
   if (
     selectedStyles.length === 0 &&
     selectedYears.length === 0 &&
@@ -34,13 +39,11 @@ export const filterReleases = (
   const searchTerm = searchQuery?.trim().toLowerCase();
 
   return releases.filter((release) => {
-    // Check year filter first (fastest - single number comparison)
     if (selectedYearsSet) {
       const releaseYear = release.basic_information.year;
       if (!selectedYearsSet.has(releaseYear)) return false;
     }
 
-    // Check style filter second (medium speed - array iteration)
     if (selectedStylesSet) {
       const releaseStyles = release.basic_information.styles;
       const hasMatchingStyle = releaseStyles.some((style) =>
@@ -49,7 +52,6 @@ export const filterReleases = (
       if (!hasMatchingStyle) return false;
     }
 
-    // Check format filter third (medium speed - array iteration)
     if (selectedFormatsSet) {
       const releaseFormats = release.basic_information.formats;
       const hasMatchingFormat = releaseFormats.some((format) =>
@@ -58,7 +60,6 @@ export const filterReleases = (
       if (!hasMatchingFormat) return false;
     }
 
-    // Check search filter last (slowest - string processing)
     if (searchTerm) {
       const releaseId = release.instance_id;
       let searchableText = searchTextCache.get(releaseId);
