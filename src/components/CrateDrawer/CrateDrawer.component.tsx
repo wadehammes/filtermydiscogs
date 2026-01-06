@@ -4,6 +4,7 @@ import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { useCrate } from "src/context/crate.context";
+import { useView } from "src/context/view.context";
 import styles from "./CrateDrawer.module.css";
 
 interface CrateDrawerProps {
@@ -24,6 +25,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     isUpdatingCrate,
     isDeletingCrate,
   } = useCrate();
+  const { state: viewState } = useView();
 
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -84,9 +86,11 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         <div className={styles.content}>
           {selectedReleases.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>No releases added to your crate yet.</p>
+              <h3>No releases added to your crate yet.</h3>
               <p>
-                Click the "+ Add to Crate" button on any release to add it here.
+                {viewState.currentView === "list"
+                  ? "Toggle the checkbox on any release to add it to this crate"
+                  : 'Click the "+ Add to Crate" button on any release to add it to this crate'}
               </p>
             </div>
           ) : (

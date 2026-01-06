@@ -1,17 +1,34 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
 
-// PrismaClient is attached to the `global` object to prevent
+// PrismaClient and Pool are attached to the `global` object to prevent
 // exhausting your database connection limit in serverless environments.
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  pool: Pool | undefined;
 };
 
 let prismaInstance: PrismaClient;
 
 try {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  // Reuse pool instance in serverless environments
+  const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+  if (!globalForPrisma.pool) {
+    globalForPrisma.pool = pool;
+  }
+
+  const adapter = new PrismaPg(pool);
+
   prismaInstance =
     globalForPrisma.prisma ??
     new PrismaClient({
+      adapter,
       log:
         process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });

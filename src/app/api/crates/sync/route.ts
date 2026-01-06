@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
     // Find releases that are in crates but not in collection
     const collectionInstanceIdSet = new Set(collectionInstanceIds);
     const orphanedReleases = allCrateReleases.filter(
-      (r) => !collectionInstanceIdSet.has(r.instance_id),
+      (r: { instance_id: string }) =>
+        !collectionInstanceIdSet.has(r.instance_id),
     );
 
     if (orphanedReleases.length === 0) {
@@ -47,7 +48,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove orphaned releases from all crates
-    const instanceIds = orphanedReleases.map((r) => r.instance_id);
+    const instanceIds = orphanedReleases.map(
+      (r: { instance_id: string }) => r.instance_id,
+    );
     const result = await prisma.crateRelease.deleteMany({
       where: {
         user_id: userIdNum,

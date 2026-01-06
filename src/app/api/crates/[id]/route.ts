@@ -52,7 +52,7 @@ export async function GET(
     });
 
     // Map releases and ensure instance_id is consistent
-    const mappedReleases = releases.map((r) => {
+    const mappedReleases = releases.map((r: { release_data: unknown }) => {
       const releaseData = r.release_data as DiscogsRelease;
       // Ensure instance_id matches the stored string format
       if (releaseData && typeof releaseData.instance_id !== "string") {
