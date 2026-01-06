@@ -255,6 +255,7 @@ export const useAddReleaseToCrateMutation = () => {
     { crateId: string; release: DiscogsRelease },
     OptimisticUpdateContext
   >({
+    mutationKey: ["addReleaseToCrate"],
     mutationFn: async ({ crateId, release }) => {
       const response = await fetch(`/api/crates/${crateId}/releases`, {
         method: "POST",
@@ -353,6 +354,7 @@ export const useRemoveReleaseFromCrateMutation = () => {
     { crateId: string; releaseId: string },
     OptimisticUpdateContext
   >({
+    mutationKey: ["removeReleaseFromCrate"],
     mutationFn: async ({ crateId, releaseId }) => {
       const response = await fetch(
         `/api/crates/${crateId}/releases/${releaseId}`,
