@@ -8,7 +8,7 @@
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-ui);
   display: flex;
   gap: 0;
   overflow: hidden;
@@ -21,6 +21,7 @@
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
+  font-family: inherit;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   gap: var(--space-2);
@@ -49,10 +50,11 @@
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-ui);
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
+  font-family: inherit;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   gap: var(--space-2);

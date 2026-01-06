@@ -35,7 +35,7 @@
 .downloadButton {
   background: var(--primary);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-ui);
   color: var(--primary-foreground);
   cursor: pointer;
   font-size: var(--text-lg);
@@ -126,7 +126,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
 
   .loadingSpinner {
     width: 20px;

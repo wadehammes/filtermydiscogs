@@ -14,7 +14,7 @@
 .dialog {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;

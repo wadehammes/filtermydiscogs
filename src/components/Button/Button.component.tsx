@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 import styles from "./Button.module.css";
 
 export interface ButtonProps {
-  variant?: "primary" | "secondary" | "danger" | "ghost";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "success";
   size?: "sm" | "md" | "lg";
   children: ReactNode;
   className?: string;

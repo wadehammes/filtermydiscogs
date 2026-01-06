@@ -46,10 +46,10 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
 
   const options = crates.map((crate) => {
     const releaseCount = (crate as { releaseCount?: number }).releaseCount ?? 0;
-    const name = crate.is_default ? `${crate.name} (default)` : crate.name;
     return {
       value: crate.id,
-      label: `${name} (${releaseCount})`,
+      label: `${crate.name} (${releaseCount})`,
+      isDefault: crate.is_default,
     };
   });
 
@@ -74,11 +74,11 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
             {...(styles.select ? { className: styles.select } : {})}
           />
           <Button
-            variant="secondary"
+            variant="success"
             size="sm"
             onPress={() => setIsCreating(true)}
           >
-            Add New Crate
+            New Crate
           </Button>
         </>
       ) : (

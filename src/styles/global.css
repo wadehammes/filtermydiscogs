@@ -131,6 +131,13 @@ b {
   font-weight: bold;
 }
 
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 button {
   cursor: pointer;
 }
@@ -138,7 +145,7 @@ button {
 .btn {
   align-items: center;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-ui);
   cursor: pointer;
   display: inline-flex;
   font-family: inherit;
@@ -217,7 +224,7 @@ button {
 .btn-modern {
   align-items: center;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   cursor: pointer;
   display: flex;
   font-family: inherit;

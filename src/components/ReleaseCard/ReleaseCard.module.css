@@ -7,7 +7,7 @@
   min-width: 0;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   padding: 0;
   transition:
@@ -23,7 +23,7 @@
 
   @media (min-width: 768px) {
     flex-direction: column;
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-card);
   }
 
   &.highlighted {
@@ -77,7 +77,7 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
   display: flex;
   flex-shrink: 0;
   height: 100px;
@@ -113,7 +113,7 @@
 
 .imageContainer > img[src],
 .imageContainer img[src] {
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
   filter: none;
   height: 100%;
   object-fit: cover;
@@ -123,7 +123,7 @@
   background-color: var(--background);
 
   @media (min-width: 768px) {
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-card);
     height: 65%;
     object-fit: cover;
     width: 65%;
@@ -265,7 +265,7 @@
   .tooltip {
     background: var(--popover);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-ui);
     top: calc(100% + var(--space-2) + 4px);
     box-shadow: var(--shadow-md);
     color: var(--popover-foreground);
@@ -354,7 +354,7 @@
   width: 32px;
 
   @media (min-width: 768px) {
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-card);
     font-size: var(--text-xs);
     padding: var(--space-1) var(--space-3);
     width: auto;

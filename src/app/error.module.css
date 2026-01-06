@@ -33,7 +33,7 @@
 .button {
   background-color: var(--primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   color: var(--primary-foreground);
   cursor: pointer;
   font-size: var(--text-base);

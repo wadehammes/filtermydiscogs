@@ -2,7 +2,7 @@
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   display: flex;
   gap: var(--space-4);
   overflow: hidden;
@@ -145,7 +145,7 @@
   background: var(--muted);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-ui);
   color: var(--foreground);
   cursor: pointer;
   display: flex;

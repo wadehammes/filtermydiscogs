@@ -54,6 +54,7 @@
 
 .navLink {
   color: var(--muted-foreground);
+  font-family: inherit;
   font-size: var(--text-base);
   font-weight: var(--font-medium);
   text-decoration: none;
@@ -102,7 +103,7 @@
 .section {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   margin-bottom: var(--space-6);
   padding: var(--space-6);
 
@@ -147,7 +148,7 @@
 .contactInfo {
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   padding: var(--space-4);
 
   p {
@@ -186,7 +187,7 @@
   align-items: center;
   background: var(--primary);
   border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   color: var(--primary-foreground);
   display: inline-flex;
   font-size: var(--text-base);

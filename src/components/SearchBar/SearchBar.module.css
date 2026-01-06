@@ -23,7 +23,7 @@
   padding: var(--space-2) var(--space-3);
   padding-right: 3rem;
   border: 1px solid var(--input);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   font-family: inherit;
   font-size: var(--text-sm);
   min-height: var(--input-height);
@@ -125,7 +125,7 @@
     var(--background)
   );
   border: 1px solid var(--destructive);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   color: var(--destructive-hover);
   font-size: var(--text-sm);
   margin-top: var(--space-2);
@@ -135,7 +135,7 @@
 
 .noResults {
   background-color: var(--muted);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin-top: var(--space-2);

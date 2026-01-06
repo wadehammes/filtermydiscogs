@@ -170,6 +170,12 @@ export function AboutClient() {
                 All data processing happens locally in your browser or through
                 direct API calls to Discogs.
               </li>
+              <li>
+                Your crates (custom collections you create) are stored in a
+                database and are associated with your user account. You can
+                clear all crates at any time using the "Clear All Data" button
+                in the Data Management section below.
+              </li>
             </ul>
             <h3>Cookies and Local Storage</h3>
             <ul>
@@ -204,13 +210,17 @@ export function AboutClient() {
             </p>
             <ul>
               <li>Authentication tokens and session data</li>
-              <li>All your created and stored crates</li>
+              <li>
+                All your created and stored crates (stored in our database and
+                permanently deleted when cleared)
+              </li>
               <li>View preferences and settings</li>
               <li>All cached collection data</li>
             </ul>
             <p>
               <strong>Note:</strong> Clearing data will log you out and you will
-              need to authorize the application again to use it. This is useful
+              need to authorize the application again to use it. All crates
+              stored in the database will be permanently deleted. This is useful
               if you're using a shared device or want to start fresh.
             </p>
             <div className={styles.clearDataButton}>

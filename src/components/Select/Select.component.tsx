@@ -7,6 +7,7 @@ import styles from "./Select.module.css";
 interface SelectOption {
   value: string;
   label: string;
+  isDefault?: boolean;
 }
 
 interface SelectProps {
@@ -150,7 +151,17 @@ const SelectComponent = ({
         onKeyDown={handleKeyDown}
         disabled={disabled}
       >
-        <span className={styles.value}>{getDisplayValue()}</span>
+        <span className={styles.value}>
+          <span className={styles.valueText}>{getDisplayValue()}</span>
+          {(() => {
+            const selectedOption = options.find(
+              (opt) => opt.value === (Array.isArray(value) ? value[0] : value),
+            );
+            return selectedOption?.isDefault ? (
+              <span className={styles.defaultBadge}>Default</span>
+            ) : null;
+          })()}
+        </span>
         <span className={classNames(styles.icon, isOpen && styles.iconOpen)}>
           <Chevron />
         </span>
@@ -180,7 +191,12 @@ const SelectComponent = ({
                     <Check />
                   </span>
                 )}
-                <span className={styles.optionLabel}>{option.label}</span>
+                <span className={styles.optionLabel}>
+                  {option.label}
+                  {option.isDefault && (
+                    <span className={styles.defaultBadge}>Default</span>
+                  )}
+                </span>
               </span>
             </li>
           ))}

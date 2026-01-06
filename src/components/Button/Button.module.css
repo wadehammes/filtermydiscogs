@@ -1,7 +1,7 @@
 .button {
   align-items: center;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
   cursor: pointer;
   display: inline-flex;
   font-family: inherit;
@@ -83,6 +83,24 @@
 
   &:active:not(:disabled) {
     background: var(--muted);
+  }
+}
+
+.success {
+  background: color-mix(in srgb, var(--success) 15%, var(--background));
+  border-color: var(--success);
+  color: var(--success-hover);
+
+  &:hover:not(:disabled) {
+    background: var(--success-hover);
+    border-color: var(--success-active);
+    color: var(--success-foreground);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--success-active);
+    border-color: var(--success-active);
+    color: var(--success-foreground);
   }
 }
 

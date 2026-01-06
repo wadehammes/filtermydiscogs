@@ -80,7 +80,7 @@
 .menu {
   animation: slideUp 0.15s ease-out;
   background: var(--background);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   bottom: 0;
   box-shadow: var(--shadow-lg);
   display: flex;
@@ -149,10 +149,11 @@
     align-items: center;
     background: none;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-ui);
     color: var(--foreground);
     cursor: pointer;
     display: flex;
+    font-family: inherit;
     font-size: var(--text-base);
     font-weight: var(--font-medium);
     gap: var(--space-3);
@@ -205,9 +206,10 @@
   .logoutButton {
     background: color-mix(in srgb, var(--destructive) 15%, var(--background));
     border: 1px solid var(--destructive);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-ui);
     color: var(--destructive-hover);
     cursor: pointer;
+    font-family: inherit;
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
     padding: var(--space-3);

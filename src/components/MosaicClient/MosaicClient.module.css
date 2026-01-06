@@ -102,7 +102,7 @@
 .controlSelect {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-ui);
   background: var(--card);
   color: var(--foreground);
   font-size: var(--text-sm);
@@ -128,7 +128,7 @@
 .controlRange {
   width: 120px;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-ui);
   background: var(--border);
   outline: none;
   cursor: pointer;
@@ -175,7 +175,7 @@
 .downloadButton {
   background: var(--primary);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-ui);
   color: var(--primary-foreground);
   cursor: pointer;
   font-size: var(--text-base);
@@ -216,14 +216,14 @@
   width: 100%;
   height: 4px;
   background: color-mix(in srgb, var(--foreground) 30%, transparent);
-  border-radius: 2px;
+  border-radius: var(--radius-ui);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
   background: var(--primary);
-  border-radius: 2px;
+  border-radius: var(--radius-ui);
   transition: width 0.3s ease;
 }
 
@@ -296,7 +296,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-ui);
 
   .loadingSpinner {
     width: 20px;
