@@ -97,13 +97,23 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
                   "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
                 return (
-                  <button
+                  // biome-ignore lint/a11y/useSemanticElements: Cannot use button here due to nested button (remove button)
+                  <div
                     key={release.instance_id}
-                    type="button"
                     className={styles.listItem}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       if (onReleaseClick) {
                         onReleaseClick(String(release.instance_id));
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        if (onReleaseClick) {
+                          onReleaseClick(String(release.instance_id));
+                        }
                       }
                     }}
                   >
@@ -149,7 +159,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
                     >
                       ×
                     </button>
-                  </button>
+                  </div>
                 );
               })}
             </div>

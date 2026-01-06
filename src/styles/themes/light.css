@@ -17,7 +17,7 @@
   /* Border and input */
   --border: #cbd5e0;
   --input: #cbd5e0;
-  --ring: #2563eb;
+  --ring: #0052a3;
 
   /* Card */
   --card: #ffffff;
@@ -28,10 +28,10 @@
   --popover-foreground: #171717;
 
   /* Primary */
-  --primary: #2563eb;
+  --primary: #0052a3;
   --primary-foreground: #ffffff;
-  --primary-hover: #1d4ed8;
-  --primary-active: #1e40af;
+  --primary-hover: #003d7a;
+  --primary-active: #002d5c;
 
   /* Secondary */
   --secondary: #f1f5f9;
