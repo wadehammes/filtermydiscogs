@@ -103,7 +103,7 @@
 
   &.selected {
     background: color-mix(in srgb, var(--primary) 15%, var(--background));
-    color: var(--primary-hover);
+    color: var(--primary);
 
     &:hover,
     &.focused {

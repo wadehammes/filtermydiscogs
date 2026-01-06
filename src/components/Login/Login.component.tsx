@@ -70,6 +70,7 @@ export const Login = () => {
             <li>View a random release</li>
             <li>View release details in card or table view</li>
             <li>Save releases to a crate as you browse</li>
+            <li>Manage multiple crates</li>
             <li>Create and download mosaic grids in different formats/sizes</li>
           </ul>
         </div>

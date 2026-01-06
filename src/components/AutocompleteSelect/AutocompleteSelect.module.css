@@ -73,7 +73,7 @@
   background: color-mix(in srgb, var(--primary) 15%, var(--background));
   border: 1px solid var(--primary);
   border-radius: 12px;
-  color: var(--primary-hover);
+  color: var(--primary);
   display: inline-flex;
   font-size: var(--text-xs);
   height: 20px;
@@ -193,7 +193,7 @@
 
   &.selected {
     background: color-mix(in srgb, var(--primary) 15%, var(--background));
-    color: var(--primary-hover);
+    color: var(--primary);
 
     &:hover,
     &.focused {

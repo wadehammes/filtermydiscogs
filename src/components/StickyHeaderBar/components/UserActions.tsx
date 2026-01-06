@@ -40,7 +40,7 @@ export const UserActions = ({
     router.push("/mosaic");
   };
 
-  const buttonSize = variant === "mobile" ? "sm" : "md";
+  const buttonSize = "sm";
   const containerClass =
     variant === "mobile" ? styles.mobileActions : styles.userSection;
 
