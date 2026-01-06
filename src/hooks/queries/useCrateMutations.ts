@@ -89,21 +89,6 @@ const invalidateCrateQueries = (
   }
 };
 
-const cancelCrateQueries = async (
-  queryClient: ReturnType<typeof useQueryClient>,
-  userId: string | null,
-  crateId?: string,
-) => {
-  if (crateId) {
-    await queryClient.cancelQueries({
-      queryKey: ["crate", userId, crateId],
-    });
-  }
-  await queryClient.cancelQueries({
-    queryKey: ["crates", userId],
-  });
-};
-
 const getCrateQuerySnapshots = (
   queryClient: ReturnType<typeof useQueryClient>,
   userId: string | null,
@@ -273,7 +258,6 @@ export const useAddReleaseToCrateMutation = () => {
       return response.json();
     },
     onMutate: async ({ crateId, release }) => {
-      await cancelCrateQueries(queryClient, userId, crateId);
       const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
         queryClient,
         userId,
@@ -286,55 +270,54 @@ export const useAddReleaseToCrateMutation = () => {
       };
       const releaseId = String(release.instance_id);
 
-      if (previousCrateData) {
-        const alreadyExists = previousCrateData.releases.some(
-          (r: DiscogsRelease) => String(r.instance_id) === releaseId,
-        );
+      queryClient.setQueryData<CrateWithReleasesResponse>(
+        ["crate", userId, crateId],
+        (old) => {
+          if (!old) {
+            return {
+              crate: {
+                user_id: parseInt(userId || "0", 10),
+                id: crateId,
+                name: "",
+                is_default: false,
+                created_at: new Date(),
+                updated_at: new Date(),
+              },
+              releases: [normalizedRelease],
+            };
+          }
 
-        if (!alreadyExists) {
-          queryClient.setQueryData<CrateWithReleasesResponse>(
-            ["crate", userId, crateId],
-            {
-              ...previousCrateData,
-              releases: [normalizedRelease, ...previousCrateData.releases],
-            },
+          const alreadyExists = old.releases.some(
+            (r: DiscogsRelease) => String(r.instance_id) === releaseId,
           );
-        }
-      } else {
-        queryClient.setQueryData<CrateWithReleasesResponse>(
-          ["crate", userId, crateId],
-          {
-            crate: {
-              user_id: parseInt(userId || "0", 10),
-              id: crateId,
-              name: "",
-              is_default: false,
-              created_at: new Date(),
-              updated_at: new Date(),
-            },
-            releases: [normalizedRelease],
-          },
-        );
-      }
 
-      if (previousCratesData) {
-        queryClient.setQueryData<CratesResponse>(["crates", userId], {
-          crates: previousCratesData.crates.map((crate) => {
+          if (alreadyExists) {
+            return old;
+          }
+
+          return {
+            ...old,
+            releases: [normalizedRelease, ...old.releases],
+          };
+        },
+      );
+
+      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
+        if (!old) return old;
+        return {
+          crates: old.crates.map((crate) => {
             if (crate.id === crateId) {
               return { ...crate, releaseCount: (crate.releaseCount || 0) + 1 };
             }
             return crate;
           }),
-        });
-      }
+        };
+      });
 
       return { previousCrateData, previousCratesData };
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
-      invalidateCrateQueries(queryClient, userId, variables.crateId);
-    },
-    onSuccess: (_data, variables) => {
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });
@@ -371,29 +354,30 @@ export const useRemoveReleaseFromCrateMutation = () => {
       return response.json();
     },
     onMutate: async ({ crateId, releaseId }) => {
-      await cancelCrateQueries(queryClient, userId, crateId);
       const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
         queryClient,
         userId,
         crateId,
       );
 
-      if (previousCrateData) {
-        queryClient.setQueryData<CrateWithReleasesResponse>(
-          ["crate", userId, crateId],
-          {
-            ...previousCrateData,
-            releases: previousCrateData.releases.filter(
+      queryClient.setQueryData<CrateWithReleasesResponse>(
+        ["crate", userId, crateId],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            releases: old.releases.filter(
               (r: DiscogsRelease) =>
                 String(r.instance_id) !== String(releaseId),
             ),
-          },
-        );
-      }
+          };
+        },
+      );
 
-      if (previousCratesData) {
-        queryClient.setQueryData<CratesResponse>(["crates", userId], {
-          crates: previousCratesData.crates.map((crate) => {
+      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
+        if (!old) return old;
+        return {
+          crates: old.crates.map((crate) => {
             if (crate.id === crateId) {
               return {
                 ...crate,
@@ -402,16 +386,13 @@ export const useRemoveReleaseFromCrateMutation = () => {
             }
             return crate;
           }),
-        });
-      }
+        };
+      });
 
       return { previousCrateData, previousCratesData };
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
-      invalidateCrateQueries(queryClient, userId, variables.crateId);
-    },
-    onSuccess: (_data, variables) => {
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });
