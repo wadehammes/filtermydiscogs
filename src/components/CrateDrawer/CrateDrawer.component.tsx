@@ -100,8 +100,10 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
             <div className={styles.releasesList}>
               {selectedReleases.map((release) => {
                 const { basic_information } = release;
-                const thumbUrl =
-                  basic_information.cover_image || basic_information.thumb;
+                const imageUrl =
+                  basic_information.cover_image ||
+                  basic_information.thumb ||
+                  "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
 
                 return (
                   // biome-ignore lint/a11y/useSemanticElements: Cannot use button here due to nested button (remove button)
@@ -126,12 +128,13 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
                   >
                     <div className={styles.itemImage}>
                       <Image
-                        src={thumbUrl}
-                        height={60}
-                        width={60}
+                        src={imageUrl}
+                        height={100}
+                        width={100}
                         quality={100}
                         alt={basic_information.title}
                         loading="lazy"
+                        sizes="100px"
                       />
                     </div>
                     <div className={styles.itemContent}>
