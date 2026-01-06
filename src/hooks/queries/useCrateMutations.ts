@@ -150,8 +150,22 @@ export const useCreateCrateMutation = () => {
 
       return response.json();
     },
-    onSuccess: () => {
-      invalidateCrateQueries(queryClient, userId);
+    onSuccess: (data) => {
+      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
+        if (!old) {
+          return {
+            crates: [
+              {
+                ...data.crate,
+                releaseCount: 0,
+              },
+            ],
+          };
+        }
+        return {
+          crates: [...old.crates, { ...data.crate, releaseCount: 0 }],
+        };
+      });
     },
   });
 };

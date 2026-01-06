@@ -11,10 +11,7 @@ interface CrateDrawerProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-const CrateDrawerComponent = ({
-  isOpen,
-  onReleaseClick: _onReleaseClick,
-}: CrateDrawerProps) => {
+const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
   const {
     selectedReleases,
     removeFromCrate,
@@ -100,10 +97,15 @@ const CrateDrawerComponent = ({
                   "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
 
                 return (
-                  <a
+                  <button
                     key={release.instance_id}
+                    type="button"
                     className={styles.listItem}
-                    href={`#release-${release.instance_id}`}
+                    onClick={() => {
+                      if (onReleaseClick) {
+                        onReleaseClick(String(release.instance_id));
+                      }
+                    }}
                   >
                     <div className={styles.itemImage}>
                       <Image
@@ -147,7 +149,7 @@ const CrateDrawerComponent = ({
                     >
                       ×
                     </button>
-                  </a>
+                  </button>
                 );
               })}
             </div>
