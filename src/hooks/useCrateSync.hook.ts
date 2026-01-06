@@ -19,6 +19,7 @@ export const useCrateSync = () => {
     username || "",
     authState.isAuthenticated,
   );
+  // Only check if crates exist, don't watch for changes (that would trigger sync after mutations)
   const { data: cratesData } = useCratesQuery();
   const syncMutation = useSyncCratesMutation();
 
@@ -64,10 +65,16 @@ export const useCrateSync = () => {
       return;
     }
 
+    // Only check if crates exist, don't require cratesData to be in dependency array
+    // This prevents sync from running when crates refetch after mutations
     if (
-      !(authState.isAuthenticated && collectionData && cratesData) ||
-      cratesData.crates.length === 0 ||
-      !collectionData.pages?.length
+      !(
+        authState.isAuthenticated &&
+        collectionData &&
+        collectionData.pages?.length &&
+        cratesData
+      ) ||
+      cratesData.crates.length === 0
     ) {
       return;
     }
