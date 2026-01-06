@@ -19,11 +19,10 @@ export const SearchBar = ({
   const [inputValue, setInputValue] = useState("");
   const { isSearching } = filtersState;
 
-  // No need to sync with external state - let the input be controlled locally
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousSearchQueryRef = useRef<string>(filtersState.searchQuery);
 
-  // Optimized debounced search with cleanup
   const debouncedSearch = useCallback(
     (query: string) => {
       if (debounceTimeoutRef.current) {
@@ -71,7 +70,27 @@ export const SearchBar = ({
     [handleClear],
   );
 
-  // Cleanup timeout on unmount
+  // Sync local input value when search query is cleared externally (e.g., Clear All Filters)
+  // Only clear if searchQuery changed from non-empty to empty (external clear), not during typing
+  useEffect(() => {
+    const previousQuery = previousSearchQueryRef.current;
+    const currentQuery = filtersState.searchQuery;
+
+    // If searchQuery was cleared externally (changed from non-empty to empty)
+    // and we have a local input value, clear it
+    if (previousQuery !== "" && currentQuery === "" && inputValue !== "") {
+      // Clear the debounce timeout if it exists
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = null;
+      }
+      setInputValue("");
+    }
+
+    // Update the ref for next comparison
+    previousSearchQueryRef.current = currentQuery;
+  }, [filtersState.searchQuery, inputValue]);
+
   useEffect(() => {
     return () => {
       if (debounceTimeoutRef.current) {

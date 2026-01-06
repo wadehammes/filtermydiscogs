@@ -14,12 +14,14 @@ export const filterReleases = ({
   selectedYears,
   selectedFormats,
   searchQuery,
+  styleOperator = "OR",
 }: {
   releases: DiscogsRelease[];
   selectedStyles: string[];
   selectedYears: number[];
   selectedFormats: string[];
   searchQuery?: string;
+  styleOperator?: "AND" | "OR";
 }): DiscogsRelease[] => {
   if (
     selectedStyles.length === 0 &&
@@ -46,10 +48,19 @@ export const filterReleases = ({
 
     if (selectedStylesSet) {
       const releaseStyles = release.basic_information.styles;
-      const hasMatchingStyle = releaseStyles.some((style) =>
-        selectedStylesSet.has(style),
-      );
-      if (!hasMatchingStyle) return false;
+      if (styleOperator === "AND") {
+        // AND: release must have ALL selected styles
+        const hasAllStyles = selectedStyles.every((style) =>
+          releaseStyles.includes(style),
+        );
+        if (!hasAllStyles) return false;
+      } else {
+        // OR: release must have ANY of the selected styles (default)
+        const hasMatchingStyle = releaseStyles.some((style) =>
+          selectedStylesSet.has(style),
+        );
+        if (!hasMatchingStyle) return false;
+      }
     }
 
     if (selectedFormatsSet) {

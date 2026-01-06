@@ -312,9 +312,23 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       await deleteCrateMutation.mutateAsync(crateId);
 
       if (crateId === activeCrateId) {
+        // Switch to default crate if the deleted crate was active
+        // Use optimistic update: filter out deleted crate and find default
         const remainingCrates = crates.filter((c) => c.id !== crateId);
         const defaultCrate = findDefaultCrate({ crateList: remainingCrates });
-        setActiveCrateId(defaultCrate?.id || null);
+        if (defaultCrate) {
+          setActiveCrateId(defaultCrate.id);
+        } else if (remainingCrates.length > 0) {
+          // Fallback to first crate if no default
+          const firstCrate = remainingCrates[0];
+          if (firstCrate) {
+            setActiveCrateId(firstCrate.id);
+          } else {
+            setActiveCrateId(null);
+          }
+        } else {
+          setActiveCrateId(null);
+        }
       }
     },
     [activeCrateId, crates, deleteCrateMutation, findDefaultCrate],

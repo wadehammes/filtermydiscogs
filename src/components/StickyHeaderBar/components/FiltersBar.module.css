@@ -25,6 +25,66 @@
     flex: 1;
   }
 
+  .styleFilterGroup {
+    flex: 1;
+    align-items: stretch;
+    display: flex;
+    gap: var(--space-1);
+
+    & > :first-child {
+      flex: 1;
+    }
+  }
+
+  .styleOperatorSegment {
+    align-items: center;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ui);
+    display: flex;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .segmentButton {
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: var(--foreground);
+    cursor: pointer;
+    display: flex;
+    font-family: inherit;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    justify-content: center;
+    padding: var(--space-2) var(--space-3);
+    transition: var(--transition-fast);
+    white-space: nowrap;
+    height: 100%;
+
+    &:hover:not(.active):not(:disabled) {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+
+    &.active {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    &:disabled {
+      background: var(--muted);
+      color: var(--muted-foreground);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+  }
+
   .mobileFilters {
     display: none;
   }

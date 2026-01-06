@@ -21,6 +21,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     handleYearChange,
     handleFormatChange,
     handleSortChange,
+    handleStyleOperatorChange,
     styleOptions,
     yearOptions,
     formatOptions,
@@ -28,6 +29,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     selectedYears,
     selectedFormats,
     selectedSort,
+    styleOperator,
   } = useFilterHandlers("mobile_filters");
 
   const { fetchingCollection, collection, error } = collectionState;
@@ -100,6 +102,34 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
                 multiple={true}
                 placeholder="Select styles..."
               />
+              {selectedStyles.length > 1 && (
+                <div className={styles.styleOperatorSegment}>
+                  <button
+                    type="button"
+                    className={`${styles.segmentButton} ${
+                      styleOperator === "OR" ? styles.active : ""
+                    }`}
+                    onClick={() => handleStyleOperatorChange("OR")}
+                    disabled={!collection}
+                    aria-label="Match any style (OR)"
+                    title="Match any style (OR)"
+                  >
+                    Any (OR)
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.segmentButton} ${
+                      styleOperator === "AND" ? styles.active : ""
+                    }`}
+                    onClick={() => handleStyleOperatorChange("AND")}
+                    disabled={!collection}
+                    aria-label="Match all styles (AND)"
+                    title="Match all styles (AND)"
+                  >
+                    All (AND)
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

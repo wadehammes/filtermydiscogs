@@ -27,6 +27,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     handleYearChange,
     handleFormatChange,
     handleSortChange,
+    handleStyleOperatorChange,
     styleOptions,
     yearOptions,
     formatOptions,
@@ -34,6 +35,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     selectedYears,
     selectedFormats,
     selectedSort,
+    styleOperator,
   } = useFilterHandlers(category);
 
   const handleFiltersClick = () => {
@@ -81,15 +83,45 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
             disabled={!collection}
             className={styles.searchBar || ""}
           />
-          <AutocompleteSelect
-            label="Style"
-            options={styleOptions}
-            value={selectedStyles}
-            onChange={handleStyleChange}
-            disabled={!collection}
-            multiple={true}
-            placeholder="Select styles..."
-          />
+          <div className={styles.styleFilterGroup}>
+            <AutocompleteSelect
+              label="Style"
+              options={styleOptions}
+              value={selectedStyles}
+              onChange={handleStyleChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="Select styles..."
+            />
+            {selectedStyles.length > 1 && (
+              <div className={styles.styleOperatorSegment}>
+                <button
+                  type="button"
+                  className={`${styles.segmentButton} ${
+                    styleOperator === "OR" ? styles.active : ""
+                  }`}
+                  onClick={() => handleStyleOperatorChange("OR")}
+                  disabled={!collection}
+                  aria-label="Match any style (OR)"
+                  title="Match any style (OR)"
+                >
+                  Any (OR)
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.segmentButton} ${
+                    styleOperator === "AND" ? styles.active : ""
+                  }`}
+                  onClick={() => handleStyleOperatorChange("AND")}
+                  disabled={!collection}
+                  aria-label="Match all styles (AND)"
+                  title="Match all styles (AND)"
+                >
+                  All (AND)
+                </button>
+              </div>
+            )}
+          </div>
           <AutocompleteSelect
             label="Release Year"
             options={yearOptions}

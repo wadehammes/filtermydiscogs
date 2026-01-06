@@ -16,6 +16,7 @@ export const useFilterHandlers = (category: string) => {
     selectedYears,
     selectedFormats,
     selectedSort,
+    styleOperator,
   } = filtersState;
 
   const handleStyleChange = useCallback(
@@ -97,6 +98,27 @@ export const useFilterHandlers = (category: string) => {
     [category, filtersDispatch],
   );
 
+  const handleStyleOperatorChange = useCallback(
+    (value: string | string[]) => {
+      const operatorValue = Array.isArray(value) ? value[0] : value;
+
+      if (operatorValue === "AND" || operatorValue === "OR") {
+        trackEvent("styleOperator", {
+          action: "styleOperatorChanged",
+          category,
+          label: "Style Operator Changed",
+          value: operatorValue,
+        });
+
+        filtersDispatch({
+          type: FiltersActionTypes.SetStyleOperator,
+          payload: operatorValue,
+        });
+      }
+    },
+    [category, filtersDispatch],
+  );
+
   const styleOptions = useMemo(
     () =>
       availableStyles.map((style) => ({
@@ -124,17 +146,28 @@ export const useFilterHandlers = (category: string) => {
     [availableFormats],
   );
 
+  const styleOperatorOptions = useMemo(
+    () => [
+      { value: "OR", label: "Any (OR)" },
+      { value: "AND", label: "All (AND)" },
+    ],
+    [],
+  );
+
   return {
     handleStyleChange,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
+    handleStyleOperatorChange,
     styleOptions,
     yearOptions,
     formatOptions,
+    styleOperatorOptions,
     selectedStyles,
     selectedYears,
     selectedFormats,
     selectedSort,
+    styleOperator,
   };
 };
