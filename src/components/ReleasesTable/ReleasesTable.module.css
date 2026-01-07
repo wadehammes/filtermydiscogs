@@ -203,9 +203,53 @@
   font-weight: var(--font-normal);
 }
 
+.artistLink {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+}
+
+.titleLink {
+  all: unset;
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline;
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  font-size: var(--text-md);
+
+  &:hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-ui);
+  }
+}
+
 .titleName {
   color: var(--foreground);
   font-weight: var(--font-medium);
+}
+
+.labelLink {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--foreground);
+    text-decoration: underline;
+  }
 }
 
 .yearCell {

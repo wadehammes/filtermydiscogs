@@ -14,12 +14,9 @@ export async function GET() {
   };
 
   try {
-    // Test Prisma Client initialization
-    await prisma.$connect();
-    diagnostics.prismaClientStatus = "connected";
-
-    // Test a simple query
+    // Test a simple query (connection pool handles connections automatically)
     const result = await prisma.$queryRaw`SELECT 1 as test`;
+    diagnostics.prismaClientStatus = "connected";
     diagnostics.databaseQuery = "success";
     diagnostics.testQueryResult = result;
 
@@ -33,8 +30,6 @@ export async function GET() {
       diagnostics.crateTableError =
         error instanceof Error ? error.message : String(error);
     }
-
-    await prisma.$disconnect();
   } catch (error) {
     diagnostics.prismaClientStatus = "error";
     diagnostics.error = error instanceof Error ? error.message : String(error);
