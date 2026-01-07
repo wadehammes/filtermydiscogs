@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
@@ -30,7 +30,6 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { logout, state: authState } = useAuth();
   const { username } = authState;
@@ -77,23 +76,6 @@ export const MobileMenu = ({
   const closeFiltersDrawer = () => {
     setIsFiltersDrawerOpen(false);
   };
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
 
   const hasValidCollection =
     !(fetchingCollection || error) && Boolean(collection);
@@ -156,7 +138,7 @@ export const MobileMenu = ({
           </div>
         }
       >
-        <nav className={styles.menuNav} ref={menuRef}>
+        <nav className={styles.menuNav}>
           {showReleases && (
             <button
               type="button"

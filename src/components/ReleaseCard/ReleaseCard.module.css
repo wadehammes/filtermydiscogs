@@ -414,6 +414,19 @@
   }
 }
 
+.removeButton {
+  background: color-mix(in srgb, var(--destructive) 15%, var(--background));
+  border: 1px solid var(--destructive);
+  color: var(--destructive-hover);
+
+  &:hover {
+    background: color-mix(in srgb, var(--destructive) 20%, var(--background));
+    border-color: var(--destructive-hover);
+    color: var(--destructive);
+    transform: translateY(-1px);
+  }
+}
+
 .stylesContainer,
 .formatsContainer {
   align-items: center;

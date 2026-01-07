@@ -38,32 +38,11 @@
     min-width: 320px;
   }
 
-  &::before {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--foreground) 10%, transparent) 0%,
-      color-mix(in srgb, var(--foreground) 5%, transparent) 100%
-    );
-    content: "";
-    height: 100%;
-    left: 0;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    transition: opacity var(--transition-slow);
-    width: 100%;
-    z-index: 1;
-  }
-
   &:hover {
     border-color: var(--input);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     color: inherit;
     text-decoration: none;
-
-    &::before {
-      opacity: 1;
-    }
   }
 }
 
@@ -76,11 +55,12 @@
   border-radius: var(--radius-card) 0 0 var(--radius-card);
   display: flex;
   flex-shrink: 0;
-  height: 120px;
+  height: 100%;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  width: 120px;
+  max-width: 75px;
+  width: 100%;
 
   &::before {
     background-color: var(--background);
@@ -284,4 +264,17 @@
   display: flex;
   height: var(--space-4);
   width: var(--space-4);
+}
+
+.removeButton {
+  background: color-mix(in srgb, var(--destructive) 15%, var(--background));
+  border: 1px solid var(--destructive);
+  color: var(--destructive-hover);
+
+  &:hover {
+    background: color-mix(in srgb, var(--destructive) 20%, var(--background));
+    border-color: var(--destructive-hover);
+    color: var(--destructive);
+    transform: translateY(-1px);
+  }
 }
