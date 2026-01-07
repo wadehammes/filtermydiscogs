@@ -319,6 +319,42 @@ describe("FiltersProvider", () => {
     expect(result.current.state.filteredReleases).toEqual(filteredReleases);
   });
 
+  it("computes availableYears from allReleases, not filtered releases", () => {
+    const allReleases = releaseFactory.buildList(5);
+    const filteredReleases = releaseFactory.buildList(2);
+    const allYears = [2020, 2021, 2022, 2023, 2024];
+
+    mockFilterReleases.mockReturnValue(filteredReleases);
+    mockGetAvailableYears.mockReturnValue(allYears);
+
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: FiltersProvider,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetAllReleases,
+        payload: allReleases,
+      });
+    });
+
+    expect(mockGetAvailableYears).toHaveBeenCalledWith(allReleases);
+    expect(result.current.state.availableYears).toEqual(allYears);
+
+    mockGetAvailableYears.mockClear();
+    mockGetAvailableYears.mockReturnValue(allYears);
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetYears,
+        payload: [2020],
+      });
+    });
+
+    expect(mockGetAvailableYears).toHaveBeenCalledWith(allReleases);
+    expect(result.current.state.availableYears).toEqual(allYears);
+  });
+
   it("throws error when useFilters is used outside FiltersProvider", () => {
     const consoleSpy = jest
       .spyOn(console, "error")

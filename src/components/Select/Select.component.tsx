@@ -186,7 +186,10 @@ const SelectComponent = ({
                 focusedIndex === index && styles.focused,
               )}
               tabIndex={focusedIndex === index ? 0 : -1}
-              onClick={() => handleOptionClick(option.value)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOptionClick(option.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();

@@ -222,7 +222,7 @@ const computeFilteredState = ({
   });
   const sorted = sortReleases(filtered, selectedSort);
   const availableStyles = getAvailableStyles(sorted);
-  const availableYears = getAvailableYears(sorted);
+  const availableYears = getAvailableYears(allReleases);
   const availableFormats = getAvailableFormats(sorted);
 
   const {
@@ -543,7 +543,7 @@ const filtersReducer = (
       }
 
       const availableStyles = getAvailableStyles(newFilteredReleases);
-      const availableYears = getAvailableYears(newFilteredReleases);
+      const availableYears = getAvailableYears(state.allReleases);
       const availableFormats = getAvailableFormats(newFilteredReleases);
 
       return {
@@ -564,7 +564,7 @@ const filtersReducer = (
         : state.filteredReleases;
 
       const availableStyles = getAvailableStyles(newFilteredReleases);
-      const availableYears = getAvailableYears(newFilteredReleases);
+      const availableYears = getAvailableYears(state.allReleases);
       const availableFormats = getAvailableFormats(newFilteredReleases);
 
       return {
@@ -592,7 +592,7 @@ const filtersReducer = (
       );
 
       const availableStyles = getAvailableStyles(sortedReleases);
-      const availableYears = getAvailableYears(sortedReleases);
+      const availableYears = getAvailableYears(state.allReleases);
       const availableFormats = getAvailableFormats(sortedReleases);
       return {
         ...state,

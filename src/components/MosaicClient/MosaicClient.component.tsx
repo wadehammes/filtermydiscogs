@@ -137,7 +137,11 @@ export default function MosaicClient() {
                   }}
                 >
                   {releasesToDisplay.map((release) => (
-                    <MosaicItem key={release.instance_id} release={release} />
+                    <MosaicItem
+                      key={release.instance_id}
+                      release={release}
+                      totalReleases={releasesToDisplay.length}
+                    />
                   ))}
                 </div>
               )}
