@@ -1,23 +1,37 @@
 .container {
-  min-height: 100vh;
-  padding: var(--space-8);
   background: var(--background);
-  max-width: 1440px;
   margin: 0 auto;
+  max-width: 1440px;
+  min-height: 100vh;
+  padding: var(--space-4);
   width: 100%;
+
+  @media (min-width: 768px) {
+    padding: var(--space-8);
+  }
 }
 
 .header {
-  text-align: center;
-  margin-bottom: var(--space-12);
   color: var(--foreground);
+  margin-bottom: var(--space-12);
   padding-top: var(--space-4);
+  text-align: center;
+
+  @media (max-width: 767px) {
+    margin-bottom: var(--space-6);
+    padding-top: var(--space-2);
+  }
 
   h1 {
+    color: var(--foreground);
     font-size: var(--text-4xl);
     font-weight: var(--font-bold);
     margin-bottom: var(--space-4);
-    color: var(--foreground);
+
+    @media (max-width: 767px) {
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-2);
+    }
 
     @media (min-width: 768px) {
       font-size: var(--text-3xl);
@@ -25,9 +39,14 @@
   }
 
   p {
+    color: var(--muted-foreground);
     font-size: var(--text-lg);
     margin-bottom: var(--space-8);
-    color: var(--muted-foreground);
+
+    @media (max-width: 767px) {
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-4);
+    }
 
     @media (min-width: 768px) {
       font-size: var(--text-xl);
@@ -36,49 +55,71 @@
 }
 
 .controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin: 0 auto var(--space-6);
   align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-4);
   justify-content: center;
+  margin: 0 auto var(--space-6);
+
+  @media (max-width: 767px) {
+    align-items: stretch;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    width: 100%;
+  }
 
   @media (min-width: 768px) {
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
     gap: var(--space-6);
   }
 }
 
 .controlsLeft {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
   align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-4);
+
+  @media (max-width: 767px) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+  }
 
   @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: center;
     gap: var(--space-6);
   }
 }
 
 .controlGroup {
+  align-items: center;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  align-items: center;
+
+  @media (max-width: 767px) {
+    align-items: stretch;
+    width: 100%;
+  }
 
   @media (min-width: 768px) {
     flex-direction: row;
-    align-items: center;
     gap: var(--space-3);
   }
 }
 
 .aspectRatioGroup {
   min-width: 200px;
+
+  @media (max-width: 767px) {
+    min-width: auto;
+  }
+
   :global(.container) {
     text-align: left;
   }
@@ -173,28 +214,38 @@
 }
 
 .downloadButton {
+  align-items: center;
   background: var(--primary);
   border: none;
   border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
   color: var(--primary-foreground);
   cursor: pointer;
+  display: flex;
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
-  padding: var(--space-3) var(--space-6);
-  transition: var(--transition-normal);
-  box-shadow: var(--shadow-md);
-  white-space: nowrap;
+  justify-content: center;
+  min-height: var(--input-height);
   min-width: 160px;
+  padding: var(--space-2) var(--space-6);
+  transition: var(--transition-normal);
+  white-space: nowrap;
+
+  @media (max-width: 767px) {
+    font-size: var(--text-sm);
+    min-width: 100%;
+    padding: var(--space-2) var(--space-4);
+  }
 
   &:hover:not(:disabled) {
     background: var(--primary-hover);
-    transform: translateY(-1px);
     box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
   }
 
   &:disabled {
-    opacity: 0.7;
     cursor: not-allowed;
+    opacity: 0.7;
     transform: none;
   }
 }
@@ -228,58 +279,62 @@
 }
 
 .mosaicContainer {
-  width: 100%;
+  align-items: center;
   display: flex;
   justify-content: center;
-  align-items: center;
-  overflow: auto;
   min-height: 400px;
-  padding: var(--space-2);
+  overflow: auto;
+  padding: var(--space-4);
+  width: 100%;
+
+  @media (max-width: 767px) {
+    padding: var(--space-2);
+  }
 
   @media (min-width: 1000px) {
-    max-width: 95vw;
     margin: 0 auto;
+    max-width: 95vw;
   }
 }
 
 .mosaicGrid {
+  column-gap: 0;
   display: grid;
   gap: 0;
+  grid-gap: 0;
   height: auto;
   margin: 0 auto;
-  width: fit-content;
-  grid-gap: 0;
-  column-gap: 0;
   row-gap: 0;
+  width: fit-content;
 }
 
 .mosaicItem {
   aspect-ratio: 1;
-  overflow: hidden;
-  transition: var(--transition-fast);
-  cursor: pointer;
-  position: relative;
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
+  cursor: pointer;
   display: block;
-  width: 100%;
   height: 100%;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  transition: var(--transition-fast);
+  width: 100%;
 
   &:hover {
+    position: relative;
     transform: scale(1.05);
     z-index: 10;
-    position: relative;
   }
 }
 
 .mosaicImage {
+  display: block;
   height: 100%;
   object-fit: cover;
   transition: var(--transition-fast);
   width: 100%;
-  display: block;
 
   .mosaicItem:hover & {
     filter: brightness(1.1);
@@ -287,16 +342,16 @@
 }
 
 .loadingOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: color-mix(in srgb, var(--background) 50%, transparent);
-  display: flex;
   align-items: center;
-  justify-content: center;
+  background: color-mix(in srgb, var(--background) 50%, transparent);
   border-radius: var(--radius-ui);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 
   .loadingSpinner {
     animation: spin 1s linear infinite;
@@ -355,34 +410,5 @@
   p {
     color: var(--muted-foreground);
     font-size: var(--text-lg);
-  }
-}
-
-/* Mobile-first responsive design */
-@media (max-width: 768px) {
-  .container {
-    padding: var(--space-4);
-  }
-
-  .header {
-    h1 {
-      font-size: var(--text-3xl);
-    }
-
-    p {
-      font-size: var(--text-base);
-    }
-  }
-
-  .mosaicContainer {
-    padding: var(--space-4);
-    overflow-x: auto;
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .mosaicContainer {
-    padding: var(--space-2);
   }
 }

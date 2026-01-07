@@ -147,6 +147,12 @@
   z-index: var(--z-1-dropdown);
 }
 
+.dropdownUpward {
+  bottom: 100%;
+  margin-bottom: var(--space-1);
+  top: auto;
+}
+
 .searchContainer {
   border-bottom: 1px solid var(--border);
   padding: var(--space-2) var(--space-3);
@@ -176,11 +182,18 @@
 }
 
 .option {
+  align-items: center;
   border-bottom: 1px solid var(--border);
   color: var(--foreground);
   cursor: pointer;
+  display: flex;
   font-size: var(--text-sm);
+  min-height: 40px;
   padding: var(--space-2) var(--space-3);
+
+  @media (min-width: 768px) {
+    min-height: auto;
+  }
 
   &:last-child {
     border-bottom: none;

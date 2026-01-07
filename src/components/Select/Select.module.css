@@ -93,12 +93,25 @@
   text-align: left;
 }
 
+.listboxUpward {
+  bottom: 100%;
+  margin-bottom: var(--space-1);
+  top: auto;
+}
+
 .option {
+  align-items: center;
   border-bottom: 1px solid var(--border);
   color: var(--foreground);
   cursor: pointer;
+  display: flex;
   font-size: var(--text-sm);
+  min-height: 32px;
   padding: var(--space-2) var(--space-3);
+
+  @media (min-width: 768px) {
+    min-height: auto;
+  }
 
   &:last-child {
     border-bottom: none;

@@ -33,6 +33,7 @@ const SelectComponent = ({
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [openUpward, setOpenUpward] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
 
@@ -54,8 +55,17 @@ const SelectComponent = ({
   useEffect(() => {
     if (isOpen) {
       setFocusedIndex(-1);
+      if (containerRef.current && listboxRef.current) {
+        const triggerRect = containerRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const estimatedMenuHeight = Math.min(200, options.length * 40); // max-height is 200px, estimate 40px per option
+
+        // Open upward if there's not enough space below (with some buffer)
+        setOpenUpward(spaceBelow < estimatedMenuHeight + 20);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, options.length]);
 
   const getDisplayValue = useCallback((): string => {
     if (!value) return placeholder || "";
@@ -169,7 +179,10 @@ const SelectComponent = ({
       {isOpen && options.length > 0 && (
         <ul
           ref={listboxRef}
-          className={styles.listbox}
+          className={classNames(
+            styles.listbox,
+            openUpward && styles.listboxUpward,
+          )}
           // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
           role="listbox"
           aria-label={label}
