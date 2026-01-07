@@ -19,6 +19,7 @@
 
 # misc
 .DS_Store
+/.pnpm-store
 
 # debug
 npm-debug.log*

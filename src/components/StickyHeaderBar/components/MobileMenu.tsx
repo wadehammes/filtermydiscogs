@@ -1,13 +1,16 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import FilterSolid from "src/styles/icons/filter-solid.svg";
 import Grid from "src/styles/icons/grid.svg";
+import MenuIcon from "src/styles/icons/menu.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
+import XIcon from "src/styles/icons/x.svg";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuProps {
@@ -99,7 +102,6 @@ export const MobileMenu = ({
   return (
     <>
       <div className={styles.mobileNav}>
-        {/* Filters button */}
         {shouldShowFilters && (
           <button
             type="button"
@@ -113,115 +115,35 @@ export const MobileMenu = ({
           </button>
         )}
 
-        {/* Hamburger button */}
         <button
           type="button"
           className={styles.hamburger}
           onClick={toggleMenu}
-          aria-label="Toggle menu"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
         >
-          <span
-            className={`${styles.line} ${isOpen ? styles.line1 : ""}`}
-          ></span>
-          <span
-            className={`${styles.line} ${isOpen ? styles.line2 : ""}`}
-          ></span>
-          <span
-            className={`${styles.line} ${isOpen ? styles.line3 : ""}`}
-          ></span>
+          {isOpen ? (
+            <XIcon className={styles.menuIcon} />
+          ) : (
+            <MenuIcon className={styles.menuIcon} />
+          )}
         </button>
       </div>
 
-      {/* Mobile menu overlay */}
-      {isOpen && (
-        <div className={styles.overlay}>
-          <div ref={menuRef} className={styles.menu}>
-            <div className={styles.menuHeader}>
-              <h2>Menu</h2>
-              <button
-                type="button"
-                className={styles.closeButton}
-                onClick={() => setIsOpen(false)}
-                aria-label="Close menu"
-              >
-                ×
-              </button>
-            </div>
-
-            <nav className={styles.menuNav}>
-              {showReleases && (
-                <button
-                  type="button"
-                  className={`${styles.menuItem} ${
-                    currentPage === "releases" ? styles.active : ""
-                  } ${isDisabled ? styles.disabled : ""}`}
-                  onClick={() => handleNavigation("releases", "Releases")}
-                  disabled={isDisabled}
-                >
-                  <span className={styles.menuIcon}>
-                    <VinylRecord />
-                  </span>
-                  <span>Releases</span>
-                </button>
-              )}
-
-              {showMosaic && (
-                <button
-                  type="button"
-                  className={`${styles.menuItem} ${
-                    currentPage === "mosaic" ? styles.active : ""
-                  } ${isDisabled ? styles.disabled : ""}`}
-                  onClick={() => handleNavigation("mosaic", "Mosaic")}
-                  disabled={isDisabled}
-                >
-                  <span className={styles.menuIcon}>
-                    <Grid />
-                  </span>
-                  <span>Mosaic</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                className={`${styles.menuItem} ${
-                  currentPage === "about" ? styles.active : ""
-                }`}
-                onClick={() => handleNavigation("about", "About")}
-              >
-                <span className={styles.menuIcon}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="8"
-                      cy="8"
-                      r="7"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                    />
-                    <path
-                      d="M8 6V8M8 10H8.01"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </span>
-                <span>About</span>
-              </button>
-            </nav>
-
-            <div className={styles.menuFooter}>
-              {username && (
-                <div className={styles.userInfo}>
-                  <span>Welcome, {username}</span>
-                </div>
-              )}
+      <BottomDrawer
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Menu"
+        closeButtonAriaLabel="Close menu"
+        dataAttribute="data-mobile-menu-open"
+        footer={
+          <div className={styles.menuFooter}>
+            {username && (
+              <div className={styles.userInfo}>
+                <span>{username}</span>
+              </div>
+            )}
+            <div className={styles.buttonGroup}>
               <ThemeSwitcher variant="mobile" />
               <button
                 type="button"
@@ -232,10 +154,76 @@ export const MobileMenu = ({
               </button>
             </div>
           </div>
-        </div>
-      )}
+        }
+      >
+        <nav className={styles.menuNav} ref={menuRef}>
+          {showReleases && (
+            <button
+              type="button"
+              className={`${styles.menuItem} ${
+                currentPage === "releases" ? styles.active : ""
+              } ${isDisabled ? styles.disabled : ""}`}
+              onClick={() => handleNavigation("releases", "Releases")}
+              disabled={isDisabled}
+            >
+              <span className={styles.menuIcon}>
+                <VinylRecord />
+              </span>
+              <span>Releases</span>
+            </button>
+          )}
 
-      {/* Mobile filters drawer */}
+          {showMosaic && (
+            <button
+              type="button"
+              className={`${styles.menuItem} ${
+                currentPage === "mosaic" ? styles.active : ""
+              } ${isDisabled ? styles.disabled : ""}`}
+              onClick={() => handleNavigation("mosaic", "Mosaic")}
+              disabled={isDisabled}
+            >
+              <span className={styles.menuIcon}>
+                <Grid />
+              </span>
+              <span>Mosaic</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            className={`${styles.menuItem} ${
+              currentPage === "about" ? styles.active : ""
+            }`}
+            onClick={() => handleNavigation("about", "About")}
+          >
+            <span className={styles.menuIcon}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  r="7"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M8 6V8M8 10H8.01"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+            <span>About</span>
+          </button>
+        </nav>
+      </BottomDrawer>
+
       <FiltersDrawer
         isOpen={isFiltersDrawerOpen}
         onClose={closeFiltersDrawer}

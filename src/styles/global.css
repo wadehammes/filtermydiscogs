@@ -1,3 +1,4 @@
+@import "./custom-media.css";
 @import "./pills.css";
 @import "./themes/index.css";
 
@@ -302,19 +303,19 @@ button {
 
 .typography-h1 {
   font-family: inherit;
-  font-size: 1.25rem;
-  font-weight: bold;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
   line-height: 1;
 }
 
 .typography-p {
-  font-size: 1rem;
-  font-weight: normal;
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
   line-height: 1.5;
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--space-6);
 
   @media (min-width: 768px) {
-    font-size: 1.15rem;
+    font-size: var(--text-lg);
   }
 
   &:empty {
@@ -327,7 +328,7 @@ button {
   align-items: stretch;
   display: flex;
   flex-flow: column wrap;
-  gap: 1.25rem;
+  gap: var(--space-5);
   list-style-type: none;
   padding-left: 0;
 
@@ -347,7 +348,7 @@ button {
 .typography-span {
   display: flex;
   line-height: 1.25;
-  padding: 0.2rem 0;
+  padding: var(--space-1) 0;
   text-align: left;
 }
 
@@ -360,12 +361,12 @@ button {
 }
 
 .layout-content {
-  display: flex;
   align-items: flex-start;
-  justify-content: flex-start;
+  display: flex;
   flex-flow: column nowrap;
   height: 100%;
-  padding: 0 2rem 4rem;
+  justify-content: flex-start;
+  padding: 0 var(--space-8) var(--space-16);
 }
 
 .layout-footer {
@@ -388,14 +389,14 @@ button {
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: center;
-  padding: 0.75rem 1rem;
+  padding: var(--space-3) var(--space-4);
   position: sticky;
   top: 0;
   width: 100%;
-  z-index: 999;
+  z-index: var(--z-3-fixed);
 
   @media (min-width: 768px) {
-    padding: 0.75rem 1rem 0.85rem;
+    padding: var(--space-3) var(--space-4) var(--space-4);
   }
 
   & > *:not(h1) {

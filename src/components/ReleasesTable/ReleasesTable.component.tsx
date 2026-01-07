@@ -11,7 +11,7 @@ import Image from "next/image";
 import type React from "react";
 import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import ReleaseCard from "src/components/ReleaseCard/ReleaseCard.component";
+import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { useCrate } from "src/context/crate.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import type { DiscogsRelease } from "src/types";
@@ -421,7 +421,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       [
         filtersState.selectedStyles,
         filtersState.selectedFormats,
-        filtersDispatch,
         handlePillClick,
         handleCheckboxChange,
         isInCrate,
@@ -460,7 +459,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       return (
         <div className={styles.mobileContainer}>
           {releases.map((release) => (
-            <ReleaseCard
+            <MobileReleaseCard
               key={release.instance_id}
               release={release}
               isRandomMode={isRandomMode}

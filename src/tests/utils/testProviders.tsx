@@ -9,9 +9,6 @@ import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 import { createTestQueryClient } from "./testQueryClient";
 
-/**
- * Wrapper component that provides all context providers for testing
- */
 export const TestProviders = ({ children }: { children: ReactNode }) => {
   const queryClient = useMemo(() => createTestQueryClient(), []);
 

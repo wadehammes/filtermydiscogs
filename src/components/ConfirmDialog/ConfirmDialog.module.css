@@ -8,7 +8,7 @@
   position: fixed;
   top: 0;
   width: 100vw;
-  z-index: var(--z-modal);
+  z-index: var(--z-5-modal);
 }
 
 .dialog {

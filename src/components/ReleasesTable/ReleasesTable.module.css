@@ -86,7 +86,6 @@
   }
 }
 
-/* Checkbox cell */
 .checkboxCell {
   align-items: center;
   display: flex;
@@ -106,7 +105,6 @@
   }
 }
 
-/* Image cell */
 .imageCell {
   align-items: center;
   display: flex;
@@ -125,8 +123,8 @@
   transition: all var(--transition-normal);
 
   &:hover {
-    transform: scale(1.05);
     box-shadow: var(--shadow-md);
+    transform: scale(1.05);
   }
 
   &:active {
@@ -141,13 +139,12 @@
   img {
     border-radius: 0;
     display: block;
-    height: 40px;
+    height: var(--button-height-md);
     object-fit: cover;
-    width: 40px;
+    width: var(--button-height-md);
   }
 }
 
-/* Ensure first column (checkbox) is narrow */
 .table td:first-child,
 .table th:first-child {
   font-size: var(--text-xs);
@@ -155,13 +152,12 @@
   letter-spacing: 0.025em;
   text-align: center;
   text-transform: uppercase;
-  width: 40px;
-  min-width: 40px;
-  max-width: 40px;
+  width: var(--button-height-md);
+  min-width: var(--button-height-md);
+  max-width: var(--button-height-md);
   padding: var(--space-1);
 }
 
-/* Text cells */
 .artistCell,
 .titleCell,
 .labelCell,
@@ -182,7 +178,6 @@
   font-weight: var(--font-medium);
 }
 
-/* Combined Artist/Title cell */
 .artistTitleCell {
   color: var(--foreground);
   display: flex;
@@ -222,7 +217,7 @@
   font-weight: var(--font-medium);
   text-decoration: none;
   transition: color var(--transition-fast);
-  font-size: var(--text-md);
+  font-size: var(--text-base);
 
   &:hover {
     color: var(--primary);
@@ -247,7 +242,7 @@
   transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--foreground);
+    color: var(--primary);
     text-decoration: underline;
   }
 }
@@ -262,12 +257,11 @@
   text-align: left;
 }
 
-/* Styles cell */
 .stylesCell {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  align-items: center;
   padding: var(--space-1) var(--space-2);
 }
 
@@ -277,16 +271,13 @@
   font-style: italic;
 }
 
-/* Formats cell */
 .formatsCell {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  align-items: center;
   padding: var(--space-1) var(--space-2);
 }
-
-/* Base pill styles are in global pills.css */
 
 .moreFormats {
   color: var(--muted-foreground);
@@ -294,7 +285,6 @@
   font-style: italic;
 }
 
-/* Mobile formats */
 .mobileFormats {
   display: flex;
   flex-wrap: wrap;
@@ -302,7 +292,6 @@
   margin-top: var(--space-2);
 }
 
-/* Mobile styles */
 .mobileContainer {
   display: flex;
   flex-direction: column;

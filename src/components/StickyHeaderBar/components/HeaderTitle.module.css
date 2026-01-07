@@ -1,10 +1,10 @@
 .title {
+  align-items: center;
+  color: var(--foreground);
+  display: flex;
+  justify-content: flex-start;
   margin: 0;
   white-space: nowrap;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
 
   > svg {
     height: auto;

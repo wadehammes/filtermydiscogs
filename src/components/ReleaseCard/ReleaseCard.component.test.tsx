@@ -125,7 +125,7 @@ describe("ReleaseCard", () => {
     const titleElement = screen.getByRole("heading", { level: 3 });
     expect(titleElement.textContent).toBe("Test Artist - Test Album");
     // Verify the label meta text content (text is split across elements)
-    const metaElement = screen.getByText((content, element) => {
+    const metaElement = screen.getByText((_content, element) => {
       return element?.textContent === "Test Label • 2020";
     });
     expect(metaElement).toBeInTheDocument();

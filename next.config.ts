@@ -104,49 +104,62 @@ const nextConfig: NextConfig = {
       "@tanstack/react-table",
     ],
   },
+  trailingSlash: false,
   turbopack: {
     rules: {
       "*.svg": {
         as: "*.js",
-        loaders: ["@svgr/webpack"],
+        loaders: [
+          {
+            loader: "@svgr/webpack",
+            options: {
+              ref: true,
+              svgoConfig: {
+                plugins: [
+                  {
+                    active: false,
+                    name: "removeViewBox",
+                  },
+                ],
+              },
+              titleProp: true,
+            },
+          },
+        ],
       },
     },
   },
-  webpack(config, { dev, isServer }) {
+  webpack(config) {
+    const fileLoaderRule = config.module.rules.find((rule: { test?: RegExp }) =>
+      rule.test?.test?.(".svg"),
+    );
+
+    // Add SVGR loader for SVG files
     config.module.rules.push({
-      test: /\.svg$/,
-      use: ["@svgr/webpack"],
-    });
-
-    if (process.env.ANALYZE === "true") {
-      const { BundleAnalyzerPlugin } = require("@next/bundle-analyzer");
-      config.plugins.push(
-        new BundleAnalyzerPlugin({
-          analyzerMode: "static",
-          openAnalyzer: false,
-        }),
-      );
-    }
-
-    if (!(dev || isServer)) {
-      config.optimization.splitChunks = {
-        chunks: "all",
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: "vendors",
-            chunks: "all",
-            priority: 10,
-          },
-          common: {
-            name: "common",
-            minChunks: 2,
-            chunks: "all",
-            priority: 5,
-            reuseExistingChunk: true,
+      issuer: fileLoaderRule?.issuer,
+      test: /\.svg$/i,
+      use: [
+        {
+          loader: "@svgr/webpack",
+          options: {
+            ref: true,
+            svgoConfig: {
+              plugins: [
+                {
+                  active: false,
+                  name: "removeViewBox",
+                },
+              ],
+            },
+            titleProp: true,
           },
         },
-      };
+      ],
+    });
+
+    // Modify the file loader rule to ignore *.svg, since we have it handled now.
+    if (fileLoaderRule) {
+      fileLoaderRule.exclude = /\.svg$/i;
     }
 
     return config;

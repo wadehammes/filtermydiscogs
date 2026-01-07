@@ -9,7 +9,7 @@
   position: fixed;
   top: 0;
   width: 100vw;
-  z-index: 9999;
+  z-index: var(--z-5-modal);
 }
 
 .content {
@@ -26,16 +26,16 @@
 .spinner {
   animation: spin 1s linear infinite;
   border: 3px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border-top-color: var(--primary);
-  height: 32px;
-  width: 32px;
+  height: var(--button-height-sm);
+  width: var(--button-height-sm);
 }
 
 .message {
   color: var(--foreground);
   font-size: var(--text-lg);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   margin: 0;
   text-align: center;
 }

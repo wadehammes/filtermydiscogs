@@ -69,14 +69,14 @@
   --transition-slow: 300ms ease;
   --transition-bounce: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Z-index */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
+  /* Z-index - numbered for hierarchy (higher number = higher z-index) */
+  --z-1-dropdown: 1000;
+  --z-2-sticky: 1020;
+  --z-3-fixed: 1030;
+  --z-4-backdrop: 1040;
+  --z-5-modal: 1050;
+  --z-6-popover: 1060;
+  --z-7-tooltip: 1070;
 }
 
 /* Disable transitions during theme switching to prevent scroll jank */

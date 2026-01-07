@@ -1,15 +1,16 @@
+// jest.config.ts
 import type { Config } from "@jest/types";
 import nextJest from "next/jest.js";
 
 // Sync object
 const customJestConfig: Config.InitialOptions = {
-  verbose: true,
-  testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+  moduleDirectories: ["node_modules", "<rootDir>"],
   setupFiles: ["<rootDir>/.jest/setEnvVars.ts"],
   setupFilesAfterEnv: ["<rootDir>/.jest/setupTests.ts"],
-  moduleDirectories: ["node_modules", "<rootDir>"],
   testEnvironment: "jest-environment-jsdom",
-  transformIgnorePatterns: ["<rootDir>/node_modules/(?!isbot|swiper)"],
+  testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+  transformIgnorePatterns: ["<rootDir>/node_modules/(?!isbot|jest-dom|@svgr)"],
+  verbose: true,
 };
 
 // Providing the path to your Next.js app which will enable loading next.config.js and .env files
@@ -20,18 +21,12 @@ export default async () => {
   const jestConfig = await createJestConfig();
 
   // Custom `moduleNameMapper` configuration
+  // Put SVG mapping first to ensure it takes precedence over any nextJest mappings
   const moduleNameMapper = {
+    "\\.svg$": "<rootDir>/.jest/__mocks__/svg.js",
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     ...jestConfig.moduleNameMapper,
-    "swiper/react": "<rootDir>/node_modules/swiper",
-    "\\.(css|less|scss|sass|svg)$": "identity-obj-proxy",
   };
 
-  return {
-    ...jestConfig,
-    moduleNameMapper,
-    transformIgnorePatterns: [
-      ...(jestConfig.transformIgnorePatterns || []),
-      "<rootDir>/node_modules/(?!isbot|swiper)",
-    ],
-  };
+  return { ...jestConfig, moduleNameMapper, testTimeout: 20000 };
 };

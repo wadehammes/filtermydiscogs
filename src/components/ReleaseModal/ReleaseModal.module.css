@@ -9,16 +9,14 @@
   position: fixed;
   top: 0;
   width: 100vw;
-  z-index: var(--z-modal);
+  z-index: var(--z-5-modal);
 }
 
 .modal {
   background: transparent;
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-lg);
   margin: var(--space-4);
   max-height: calc(100vh - var(--space-8));
-  max-width: 600px;
+  max-width: 500px;
   position: relative;
   width: 90%;
 }
@@ -43,15 +41,15 @@
   color: var(--foreground);
   cursor: pointer;
   display: flex;
-  font-size: 32px;
-  height: 40px;
+  font-size: var(--text-2xl);
+  height: var(--button-height-md);
   justify-content: center;
   line-height: 1;
   position: absolute;
   right: var(--space-1);
   top: var(--space-1);
-  transition: color 0.2s ease;
-  width: 40px;
+  transition: color var(--transition-normal);
+  width: var(--button-height-md);
   z-index: 1;
 
   &:hover {
@@ -73,12 +71,10 @@
 }
 
 .releaseCardWrapper {
-  /* Remove scroll offset and highlight styles for release card in modal */
   & > :global(div) {
     scroll-margin-top: 0;
   }
 
-  /* Increase specificity to override ReleaseCard component styles */
   & > :global(div[class*="releaseCard"][class*="highlighted"]) {
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);

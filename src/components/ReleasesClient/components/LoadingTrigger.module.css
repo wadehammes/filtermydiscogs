@@ -17,7 +17,7 @@
   padding: var(--space-4);
   position: absolute;
   transform: translateX(-50%);
-  z-index: 100;
+  z-index: var(--z-3-fixed);
 }
 
 .content {
@@ -30,10 +30,10 @@
 .spinner {
   animation: spin 1s linear infinite;
   border: 2px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border-top-color: var(--primary);
-  height: 24px;
-  width: 24px;
+  height: var(--space-6);
+  width: var(--space-6);
 }
 
 .message {

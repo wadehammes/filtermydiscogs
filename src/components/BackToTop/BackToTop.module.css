@@ -11,10 +11,10 @@
   cursor: pointer;
   display: flex;
   gap: 0;
-  height: 48px;
+  height: var(--button-height-md);
   justify-content: center;
   left: var(--space-6);
-  min-width: 48px;
+  min-width: var(--button-height-md);
   opacity: 0;
   padding: 0;
   position: fixed;
@@ -28,7 +28,7 @@
     padding var(--transition-normal),
     gap var(--transition-normal);
   white-space: nowrap;
-  z-index: 1000;
+  z-index: var(--z-3-fixed);
 
   &:hover {
     background: var(--primary-hover);
@@ -56,9 +56,9 @@
 
   @media (max-width: 768px) {
     bottom: var(--space-4);
-    height: 44px;
+    height: var(--button-height-sm);
     left: var(--space-4);
-    min-width: 44px;
+    min-width: var(--button-height-sm);
 
     &:hover {
       padding: 0 var(--space-2);
@@ -69,8 +69,8 @@
 .icon {
   display: block;
   flex-shrink: 0;
-  height: 20px;
-  width: 20px;
+  height: var(--space-5);
+  width: var(--space-5);
 }
 
 .label {

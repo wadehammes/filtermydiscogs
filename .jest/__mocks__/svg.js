@@ -1,8 +1,15 @@
-import React from "react";
+const React = require("react");
 
-const SvgComponent = React.forwardRef((props, ref) =>
-  React.createElement("svg", { ref, ...props, "data-testid": "svg-mock" }),
-);
+const SvgMock = React.forwardRef((props, ref) => {
+  return React.createElement("svg", {
+    ...props,
+    ref,
+    "data-testid": "svg-mock",
+  });
+});
 
-export default SvgComponent;
-export const ReactComponent = SvgComponent;
+SvgMock.displayName = "SvgMock";
+
+module.exports = SvgMock;
+module.exports.default = SvgMock;
+module.exports.ReactComponent = SvgMock;

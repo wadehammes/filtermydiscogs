@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_CATEGORIES } from "src/constants/sorting";
@@ -59,132 +60,117 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   };
 
   return (
-    <>
-      {isOpen && (
-        <button
-          className={`${styles.backdrop} ${isOpen ? styles.open : ""}`}
-          onClick={onClose}
-          type="button"
-        />
-      )}
-      <div className={`${styles.drawer} ${isOpen ? styles.open : ""}`}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>Filters</h2>
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close filters"
-          >
-            ×
-          </button>
+    <BottomDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Filters"
+      closeButtonAriaLabel="Close filters"
+      dataAttribute="data-filters-drawer-open"
+    >
+      <div className={styles.content}>
+        <div className={styles.filterSection}>
+          <h3 className={styles.sectionTitle}>Search</h3>
+          <SearchBar
+            placeholder="Search your collection..."
+            disabled={!collection}
+            className={styles.searchBar || ""}
+          />
         </div>
 
-        <div className={styles.content}>
+        {styleOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Search</h3>
-            <SearchBar
-              placeholder="Search your collection..."
+            <h3 className={styles.sectionTitle}>Style</h3>
+            <Select
+              label="Style"
+              options={styleOptions}
+              value={selectedStyles}
+              onChange={handleStyleChange}
               disabled={!collection}
-              className={styles.searchBar || ""}
+              multiple={true}
+              placeholder="Select styles..."
             />
+            {selectedStyles.length > 1 && (
+              <div className={styles.styleOperatorSegment}>
+                <button
+                  type="button"
+                  className={`${styles.segmentButton} ${
+                    styleOperator === "OR" ? styles.active : ""
+                  }`}
+                  onClick={() => handleStyleOperatorChange("OR")}
+                  disabled={!collection}
+                  aria-label="Match any style (OR)"
+                  title="Match any style (OR)"
+                >
+                  Any (OR)
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.segmentButton} ${
+                    styleOperator === "AND" ? styles.active : ""
+                  }`}
+                  onClick={() => handleStyleOperatorChange("AND")}
+                  disabled={!collection}
+                  aria-label="Match all styles (AND)"
+                  title="Match all styles (AND)"
+                >
+                  All (AND)
+                </button>
+              </div>
+            )}
           </div>
+        )}
 
-          {styleOptions.length > 0 && !fetchingCollection && !error && (
-            <div className={styles.filterSection}>
-              <h3 className={styles.sectionTitle}>Style</h3>
-              <Select
-                label="Style"
-                options={styleOptions}
-                value={selectedStyles}
-                onChange={handleStyleChange}
-                disabled={!collection}
-                multiple={true}
-                placeholder="Select styles..."
-              />
-              {selectedStyles.length > 1 && (
-                <div className={styles.styleOperatorSegment}>
-                  <button
-                    type="button"
-                    className={`${styles.segmentButton} ${
-                      styleOperator === "OR" ? styles.active : ""
-                    }`}
-                    onClick={() => handleStyleOperatorChange("OR")}
-                    disabled={!collection}
-                    aria-label="Match any style (OR)"
-                    title="Match any style (OR)"
-                  >
-                    Any (OR)
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.segmentButton} ${
-                      styleOperator === "AND" ? styles.active : ""
-                    }`}
-                    onClick={() => handleStyleOperatorChange("AND")}
-                    disabled={!collection}
-                    aria-label="Match all styles (AND)"
-                    title="Match all styles (AND)"
-                  >
-                    All (AND)
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {yearOptions.length > 0 && !fetchingCollection && !error && (
-            <div className={styles.filterSection}>
-              <h3 className={styles.sectionTitle}>Release Year</h3>
-              <Select
-                label="Release Year"
-                options={yearOptions}
-                value={selectedYears.map((year) => year.toString())}
-                onChange={handleYearChange}
-                disabled={!collection}
-                multiple={true}
-                placeholder="All release years"
-              />
-            </div>
-          )}
-
-          {formatOptions.length > 0 && !fetchingCollection && !error && (
-            <div className={styles.filterSection}>
-              <h3 className={styles.sectionTitle}>Format</h3>
-              <Select
-                label="Format"
-                options={formatOptions}
-                value={selectedFormats}
-                onChange={handleFormatChange}
-                disabled={!collection}
-                multiple={true}
-                placeholder="All formats"
-              />
-            </div>
-          )}
-
+        {yearOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Sort</h3>
+            <h3 className={styles.sectionTitle}>Release Year</h3>
             <Select
-              label="Sort by"
-              options={categoryOptions}
-              value={sortCategory}
-              onChange={handleCategoryChange}
-              disabled={fetchingCollection}
-              placeholder="Select category..."
-            />
-            <Select
-              label="Order"
-              options={currentSortOptions}
-              value={selectedSort}
-              onChange={handleSortChange}
-              disabled={fetchingCollection}
-              placeholder="Select order..."
+              label="Release Year"
+              options={yearOptions}
+              value={selectedYears.map((year) => year.toString())}
+              onChange={handleYearChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="All release years"
             />
           </div>
+        )}
+
+        {formatOptions.length > 0 && !fetchingCollection && !error && (
+          <div className={styles.filterSection}>
+            <h3 className={styles.sectionTitle}>Format</h3>
+            <Select
+              label="Format"
+              options={formatOptions}
+              value={selectedFormats}
+              onChange={handleFormatChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="All formats"
+            />
+          </div>
+        )}
+
+        <div className={styles.filterSection}>
+          <h3 className={styles.sectionTitle}>Sort</h3>
+          <Select
+            label="Sort by"
+            options={categoryOptions}
+            value={sortCategory}
+            onChange={handleCategoryChange}
+            disabled={fetchingCollection}
+            placeholder="Select category..."
+          />
+          <Select
+            label="Order"
+            options={currentSortOptions}
+            value={selectedSort}
+            onChange={handleSortChange}
+            disabled={fetchingCollection}
+            placeholder="Select order..."
+          />
         </div>
       </div>
-    </>
+    </BottomDrawer>
   );
 };
 

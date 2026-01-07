@@ -12,10 +12,10 @@
 .spinner {
   animation: spin 1s linear infinite;
   border: 3px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border-top-color: var(--primary);
-  height: 32px;
-  width: 32px;
+  height: var(--button-height-sm);
+  width: var(--button-height-sm);
 }
 
 @keyframes spin {

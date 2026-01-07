@@ -76,9 +76,9 @@
   color: var(--primary);
   display: inline-flex;
   font-size: var(--text-xs);
-  height: 20px;
+  height: var(--space-5);
   max-width: 120px;
-  padding: 2px 2px 2px 6px;
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
 }
 
 .pillLabel {
@@ -92,21 +92,21 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: var(--primary);
   cursor: pointer;
   display: inline-flex;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
-  height: 14px;
+  height: var(--space-4);
   justify-content: center;
   line-height: 1;
-  margin-left: 4px;
+  margin-left: var(--space-1);
   padding: 0;
   text-align: center;
   transition: all var(--transition-normal);
-  width: 14px;
   vertical-align: middle;
+  width: var(--space-4);
 
   &:hover {
     background: color-mix(in srgb, var(--primary) 20%, var(--background));
@@ -132,7 +132,7 @@
 }
 
 .trigger[aria-expanded="true"] .icon {
-  transform: rotate(270deg); /* Point up when open */
+  transform: rotate(270deg);
 }
 
 .dropdown {
@@ -144,12 +144,12 @@
   position: absolute;
   right: 0;
   top: 100%;
-  z-index: var(--z-dropdown);
+  z-index: var(--z-1-dropdown);
 }
 
 .searchContainer {
   border-bottom: 1px solid var(--border);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .searchInput {
@@ -157,9 +157,9 @@
   border: none;
   color: var(--foreground);
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--text-sm);
   outline: none;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
   width: 100%;
 
   &::placeholder {
@@ -179,8 +179,8 @@
   border-bottom: 1px solid var(--border);
   color: var(--foreground);
   cursor: pointer;
-  font-size: 14px;
-  padding: 8px 12px;
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
 
   &:last-child {
     border-bottom: none;
@@ -206,7 +206,7 @@
 .optionContent {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .checkmark {
@@ -228,15 +228,15 @@
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
-  font-size: 16px;
-  font-weight: bold;
-  height: 20px;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  height: var(--space-5);
   justify-content: center;
   line-height: 1;
-  margin-left: 8px;
-  min-width: 20px;
-  padding: 2px 4px;
-  transition: all 0.2s ease;
+  margin-left: var(--space-2);
+  min-width: var(--space-5);
+  padding: var(--space-1) var(--space-1);
+  transition: all var(--transition-normal);
 
   &:hover {
     background: var(--accent);
@@ -251,7 +251,7 @@
 
 .noResults {
   color: var(--muted-foreground);
-  font-size: 14px;
-  padding: 16px;
+  font-size: var(--text-sm);
+  padding: var(--space-4);
   text-align: center;
 }

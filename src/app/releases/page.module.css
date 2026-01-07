@@ -3,7 +3,7 @@
   grid-template-columns: 1fr;
   grid-template-areas: "main";
   width: 100%;
-  min-height: calc(100vh - 60px); /* Subtract header height */
+  min-height: calc(100vh - 60px);
 
   &.withSidebar {
     grid-template-columns: 1fr 400px;
@@ -64,8 +64,8 @@
   border: 2px solid var(--border);
   border-radius: var(--radius-full);
   border-top-color: var(--muted-foreground);
-  height: 16px;
-  width: 16px;
+  height: var(--space-4);
+  width: var(--space-4);
 }
 
 @keyframes spin {
