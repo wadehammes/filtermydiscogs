@@ -73,10 +73,62 @@
   white-space: nowrap;
 }
 
+.artistLink {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--primary);
+  }
+}
+
+.titleLink {
+  background: transparent;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  text-align: inherit;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-ui);
+  }
+}
+
 .details {
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin: 0;
+}
+
+.labelLink {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--foreground);
+    text-decoration: underline;
+  }
 }
 
 .notes {

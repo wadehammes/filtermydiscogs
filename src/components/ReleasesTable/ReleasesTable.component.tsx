@@ -23,20 +23,13 @@ interface ReleasesTableProps {
   releases: DiscogsRelease[];
   isMobile: boolean;
   isRandomMode: boolean;
-  highlightedReleaseId: string | null;
   onExitRandomMode: () => void;
 }
 
 const columnHelper = createColumnHelper<DiscogsRelease>();
 
 export const ReleasesTable = memo<ReleasesTableProps>(
-  ({
-    releases,
-    isMobile,
-    isRandomMode,
-    highlightedReleaseId,
-    onExitRandomMode,
-  }) => {
+  ({ releases, isMobile, isRandomMode, onExitRandomMode }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
     const { state: filtersState, dispatch: filtersDispatch } = useFilters();
 
@@ -322,7 +315,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             <ReleaseCard
               key={release.instance_id}
               release={release}
-              isHighlighted={highlightedReleaseId === release.instance_id}
               isRandomMode={isRandomMode}
               onExitRandomMode={onExitRandomMode}
             />
@@ -358,8 +350,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 <tr
                   key={row.id}
                   className={classNames(styles.dataRow, {
-                    [styles.highlighted as string]:
-                      highlightedReleaseId === row.original.instance_id,
                     [styles.inCrate as string]: isInCrate(
                       row.original.instance_id,
                     ),

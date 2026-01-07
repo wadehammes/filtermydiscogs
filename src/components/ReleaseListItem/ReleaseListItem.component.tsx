@@ -7,7 +7,11 @@ import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.compone
 import { useCrate } from "src/context/crate.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
-import type { ReleaseListItemProps } from "src/types";
+import type {
+  DiscogsArtist,
+  DiscogsLabel,
+  ReleaseListItemProps,
+} from "src/types";
 import styles from "./ReleaseListItem.module.css";
 
 const ReleaseListItemComponent = ({
@@ -33,6 +37,21 @@ const ReleaseListItemComponent = ({
 
   const releaseId = resource_url.split("/").pop() || "";
   const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
+
+  // Convert label API resource_url to web URL if available
+  const getLabelUrl = useCallback((label: DiscogsLabel | undefined) => {
+    if (!label?.resource_url) return null;
+    const labelId = label.resource_url.split("/").pop();
+    return labelId ? `https://www.discogs.com/label/${labelId}` : null;
+  }, []);
+
+  const getArtistUrl = useCallback((artist: DiscogsArtist) => {
+    if (!artist?.resource_url) return null;
+    const artistId = artist.resource_url.split("/").pop();
+    return artistId ? `https://www.discogs.com/artist/${artistId}` : null;
+  }, []);
+
+  const labelUrl = getLabelUrl(labels[0]);
 
   const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
     releaseId,
@@ -144,10 +163,69 @@ const ReleaseListItemComponent = ({
           <div className={styles.contentLeft}>
             <div className={styles.mainInfo}>
               <h3 className={styles.title}>
-                {artists.map((artist) => artist.name).join(", ")} - {title}
+                {artists.map((artist, index) => {
+                  const artistUrl = getArtistUrl(artist);
+                  return (
+                    <span key={artist.id || index}>
+                      {artistUrl ? (
+                        <a
+                          href={artistUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            trackEvent("artistClicked", {
+                              action: "artistClicked",
+                              category: "releaseListItem",
+                              label: "Artist Clicked",
+                              value: artistUrl,
+                            });
+                          }}
+                          className={styles.artistLink}
+                        >
+                          {artist.name}
+                        </a>
+                      ) : (
+                        artist.name
+                      )}
+                      {index < artists.length - 1 && ", "}
+                    </span>
+                  );
+                })}{" "}
+                -{" "}
+                <button
+                  type="button"
+                  onClick={handleReleaseClick}
+                  disabled={isLoading}
+                  className={styles.titleLink}
+                  title="View release on Discogs"
+                >
+                  {title}
+                </button>
               </h3>
               <p className={styles.details}>
-                {labels[0]?.name} {year !== 0 ? `— ${year}` : ""}
+                {labelUrl ? (
+                  <a
+                    href={labelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      trackEvent("labelClicked", {
+                        action: "labelClicked",
+                        category: "releaseListItem",
+                        label: "Label Clicked",
+                        value: labelUrl,
+                      });
+                    }}
+                    className={styles.labelLink}
+                  >
+                    {labels[0]?.name}
+                  </a>
+                ) : (
+                  labels[0]?.name
+                )}{" "}
+                {year !== 0 ? `— ${year}` : ""}
               </p>
               {release?.notes?.length > 0 && (
                 <p className={styles.notes}>

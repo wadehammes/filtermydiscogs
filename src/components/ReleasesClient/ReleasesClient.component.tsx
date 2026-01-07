@@ -6,6 +6,7 @@ import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import Login from "src/components/Login/Login.component";
 import { Page } from "src/components/Page/Page.component";
+import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
@@ -40,14 +41,18 @@ export default function ReleasesClient() {
     // UI state
     isMobile,
     viewState,
-    highlightedReleaseId,
 
     // Refs
     mainContentRef,
     infiniteScrollRef,
 
+    // Modal state
+    selectedRelease,
+    selectedReleaseId,
+
     // Callbacks
     handleReleaseClick,
+    handleCloseModal,
     handleViewChange,
     handleRandomClick,
     handleExitRandomMode,
@@ -120,7 +125,6 @@ export default function ReleasesClient() {
               view={viewState.currentView}
               isMobile={isMobile}
               isRandomMode={isRandomMode}
-              highlightedReleaseId={highlightedReleaseId}
               onExitRandomMode={handleExitRandomMode}
               randomRelease={randomRelease}
             />
@@ -142,6 +146,11 @@ export default function ReleasesClient() {
           />
         </div>
       </div>
+      <ReleaseModal
+        isOpen={selectedReleaseId !== null}
+        release={selectedRelease}
+        onClose={handleCloseModal}
+      />
     </Page>
   );
 }
