@@ -9,13 +9,13 @@
 }
 
 .footer {
-  display: flex;
   align-items: center;
-  justify-content: flex-start;
+  display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  justify-content: flex-start;
+  padding: var(--space-8);
   width: 100%;
-  padding: 2rem;
 
   @media (min-width: 768px) {
     flex-direction: row;

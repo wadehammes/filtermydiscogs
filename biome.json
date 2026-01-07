@@ -29,7 +29,7 @@
       "lineWidth": 80
     },
     "linter": {
-      "enabled": true
+      "enabled": false
     }
   },
   "linter": {

@@ -167,10 +167,19 @@ const SelectComponent = ({
         </span>
       </button>
       {isOpen && options.length > 0 && (
-        <ul ref={listboxRef} className={styles.listbox} aria-label={label}>
+        <ul
+          ref={listboxRef}
+          className={styles.listbox}
+          // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
+          role="listbox"
+          aria-label={label}
+        >
           {options.map((option, index) => (
             <li
               key={option.value}
+              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
+              role="option"
+              aria-selected={isOptionSelected(option.value)}
               className={classNames(
                 styles.option,
                 isOptionSelected(option.value) && styles.selected,

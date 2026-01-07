@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import CratesIcon from "src/styles/icons/crates-solid.svg";
 import styles from "./ViewToggle.module.css";
 
 export type ViewMode = "card" | "list" | "random";
@@ -116,15 +117,7 @@ export const ViewToggle: FC<ViewToggleProps> = ({
           aria-label={isCratesOpen ? "Close crates" : "Open crates"}
           title={isCratesOpen ? "Close crates" : "View your crates"}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M2 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2zm0 1h12v10H2V3zm2 2h8v1H4V5zm0 2h8v1H4V7zm0 2h6v1H4V9z" />
-          </svg>
+          <CratesIcon width="16" height="16" />
           <span>Crates</span>
         </button>
       )}

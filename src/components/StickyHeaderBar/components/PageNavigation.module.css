@@ -44,7 +44,7 @@
 
   &.active {
     background: var(--primary);
-    color: var(--white);
+    color: var(--primary-foreground);
     font-weight: var(--font-bold);
   }
 

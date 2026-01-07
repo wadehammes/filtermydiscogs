@@ -89,7 +89,7 @@
   position: absolute;
   right: 0;
   top: 100%;
-  z-index: var(--z-dropdown);
+  z-index: var(--z-1-dropdown);
   text-align: left;
 }
 

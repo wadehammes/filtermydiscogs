@@ -27,10 +27,10 @@
 .spinner {
   animation: spin 1s linear infinite;
   border: 2px solid var(--border);
+  border-radius: var(--radius-full);
   border-top: 2px solid var(--primary);
-  border-radius: 50%;
-  height: 16px;
-  width: 16px;
+  height: var(--space-4);
+  width: var(--space-4);
 }
 
 @keyframes spin {

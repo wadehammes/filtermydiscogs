@@ -91,7 +91,7 @@ export const UserActions = ({
             aria-expanded={isDropdownOpen}
             aria-haspopup="true"
           >
-            <span className={styles.username}>Welcome, {username}</span>
+            <span className={styles.username}>{username}</span>
             <Chevron
               className={`${styles.chevron} ${
                 isDropdownOpen ? styles.chevronOpen : ""

@@ -1,7 +1,8 @@
 .container {
   align-items: stretch;
   display: flex;
-  gap: 0.5rem;
+  flex-direction: row;
+  gap: var(--space-2);
   overflow: visible;
   position: relative;
   width: 100%;
@@ -12,10 +13,6 @@
     height: 100%;
     min-height: var(--input-height);
   }
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
 }
 
 .select {
@@ -23,36 +20,37 @@
 }
 
 .loading {
-  color: var(--color-text-secondary);
+  color: var(--muted-foreground);
   padding: var(--space-2);
 }
 
 .createForm {
   align-items: center;
   display: flex;
+  flex-direction: column;
   gap: var(--space-2);
   width: 100%;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
+  @media (min-width: 769px) {
+    flex-direction: row;
   }
 }
 
 .input {
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
   border-radius: var(--radius-ui);
-  color: var(--color-text);
+  color: var(--foreground);
   flex: 1;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   padding: var(--space-2) var(--space-3);
 
   &:focus {
-    border-color: var(--color-primary);
+    border-color: var(--primary);
     outline: none;
   }
 
-  @media (max-width: 768px) {
-    width: 100%;
+  @media (min-width: 769px) {
+    width: auto;
   }
 }

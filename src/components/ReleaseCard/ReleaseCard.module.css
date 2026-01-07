@@ -176,7 +176,6 @@
   }
 }
 
-/* Shared link styles */
 .artistLink,
 .titleLink {
   color: var(--foreground);
@@ -250,7 +249,7 @@
   transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--foreground);
+    color: var(--primary);
   }
 }
 
@@ -284,7 +283,6 @@
   }
 }
 
-/* Shared action button base styles */
 .discogsIconButton,
 .listButton {
   align-items: center;
@@ -328,7 +326,7 @@
     opacity var(--transition-fast),
     transform var(--transition-fast);
   white-space: nowrap;
-  z-index: var(--z-tooltip);
+  z-index: var(--z-7-tooltip);
 
   &::after {
     border-left: 4px solid transparent;

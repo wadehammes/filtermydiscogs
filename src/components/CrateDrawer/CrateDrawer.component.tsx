@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { useCallback, useState } from "react";
+import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { useCrate } from "src/context/crate.context";
 import { useView } from "src/context/view.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import styles from "./CrateDrawer.module.css";
 
 interface CrateDrawerProps {
@@ -26,6 +28,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     isDeletingCrate,
   } = useCrate();
   const { state: viewState } = useView();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -62,150 +65,160 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     }
   }, [activeCrateId, updateCrate]);
 
+  const releasesContent = (
+    <>
+      {selectedReleases.length === 0 ? (
+        <div className={styles.emptyState}>
+          <h3>No releases added to your crate yet.</h3>
+          <p>
+            {viewState.currentView === "list"
+              ? "Toggle the checkbox on any release to add it to this crate"
+              : 'Click the "+ Add to Crate" button on any release to add it to this crate'}
+          </p>
+        </div>
+      ) : (
+        <div className={styles.releasesList}>
+          {selectedReleases.map((release) => {
+            const { basic_information } = release;
+            const imageUrl =
+              basic_information.cover_image ||
+              basic_information.thumb ||
+              "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
+
+            return (
+              // biome-ignore lint/a11y/useSemanticElements: Cannot use button here due to nested button (remove button)
+              <div
+                key={release.instance_id}
+                className={styles.listItem}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  if (onReleaseClick) {
+                    onReleaseClick(String(release.instance_id));
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (onReleaseClick) {
+                      onReleaseClick(String(release.instance_id));
+                    }
+                  }
+                }}
+              >
+                <div className={styles.itemImage}>
+                  <Image
+                    src={imageUrl}
+                    height={100}
+                    width={100}
+                    quality={100}
+                    alt={basic_information.title}
+                    loading="lazy"
+                    sizes="100px"
+                  />
+                </div>
+                <div className={styles.itemContent}>
+                  <span className={`typography-span ${styles.itemTitle || ""}`}>
+                    {basic_information.title}
+                  </span>
+                  <span
+                    className={`typography-span ${styles.itemArtist || ""}`}
+                  >
+                    {basic_information.artists
+                      .map((artist) => artist.name)
+                      .join(", ")}
+                  </span>
+                  <span className={`typography-span ${styles.itemLabel || ""}`}>
+                    {basic_information.labels[0]?.name} —{" "}
+                    {basic_information.year}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.removeButton}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeFromCrate(release.instance_id);
+                  }}
+                  aria-label={`Remove ${basic_information.title} from crate`}
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+
+  const footerContent = (
+    <div className={styles.footer}>
+      <div className={styles.footerActions}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onPress={() => setShowClearDialog(true)}
+          disabled={selectedReleases.length === 0}
+        >
+          Clear Crate
+        </Button>
+        {!isDefaultCrate && (
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={() => setShowMakeDefaultDialog(true)}
+              disabled={isUpdatingCrate || isDeletingCrate}
+            >
+              {isUpdatingCrate ? "Making Default..." : "Make Default"}
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onPress={() => setShowDeleteDialog(true)}
+              disabled={!canDelete || isUpdatingCrate || isDeletingCrate}
+            >
+              {isDeletingCrate ? "Deleting..." : "Delete Crate"}
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <div className={`${styles.drawer} ${isOpen ? styles.open : ""}`}>
-        <div className={styles.header}>
-          <div className={styles.headerLeft}>
+      {isMobile ? (
+        <BottomDrawer
+          isOpen={isOpen}
+          onClose={toggleDrawer}
+          closeButtonAriaLabel="Close crate drawer"
+          headerContent={
+            <CrateSelector
+              {...(styles.headerCrateSelector
+                ? { className: styles.headerCrateSelector }
+                : {})}
+            />
+          }
+          footer={footerContent}
+        >
+          <div className={styles.content}>{releasesContent}</div>
+        </BottomDrawer>
+      ) : (
+        <div className={styles.drawer}>
+          <div className={styles.header}>
             <CrateSelector
               {...(styles.headerCrateSelector
                 ? { className: styles.headerCrateSelector }
                 : {})}
             />
           </div>
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={toggleDrawer}
-            aria-label="Close crate drawer"
-          >
-            ×
-          </button>
+          <div className={styles.content}>{releasesContent}</div>
+          {footerContent}
         </div>
-
-        <div className={styles.content}>
-          {selectedReleases.length === 0 ? (
-            <div className={styles.emptyState}>
-              <h3>No releases added to your crate yet.</h3>
-              <p>
-                {viewState.currentView === "list"
-                  ? "Toggle the checkbox on any release to add it to this crate"
-                  : 'Click the "+ Add to Crate" button on any release to add it to this crate'}
-              </p>
-            </div>
-          ) : (
-            <div className={styles.releasesList}>
-              {selectedReleases.map((release) => {
-                const { basic_information } = release;
-                const imageUrl =
-                  basic_information.cover_image ||
-                  basic_information.thumb ||
-                  "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
-
-                return (
-                  // biome-ignore lint/a11y/useSemanticElements: Cannot use button here due to nested button (remove button)
-                  <div
-                    key={release.instance_id}
-                    className={styles.listItem}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      if (onReleaseClick) {
-                        onReleaseClick(String(release.instance_id));
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        if (onReleaseClick) {
-                          onReleaseClick(String(release.instance_id));
-                        }
-                      }
-                    }}
-                  >
-                    <div className={styles.itemImage}>
-                      <Image
-                        src={imageUrl}
-                        height={100}
-                        width={100}
-                        quality={100}
-                        alt={basic_information.title}
-                        loading="lazy"
-                        sizes="100px"
-                      />
-                    </div>
-                    <div className={styles.itemContent}>
-                      <span
-                        className={`typography-span ${styles.itemTitle || ""}`}
-                      >
-                        {basic_information.title}
-                      </span>
-                      <span
-                        className={`typography-span ${styles.itemArtist || ""}`}
-                      >
-                        {basic_information.artists
-                          .map((artist) => artist.name)
-                          .join(", ")}
-                      </span>
-                      <span
-                        className={`typography-span ${styles.itemLabel || ""}`}
-                      >
-                        {basic_information.labels[0]?.name} —{" "}
-                        {basic_information.year}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      className={styles.removeButton}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        removeFromCrate(release.instance_id);
-                      }}
-                      aria-label={`Remove ${basic_information.title} from crate`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className={styles.footer}>
-          <div className={styles.footerActions}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onPress={() => setShowClearDialog(true)}
-              disabled={selectedReleases.length === 0}
-            >
-              Clear Crate
-            </Button>
-            {!isDefaultCrate && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onPress={() => setShowMakeDefaultDialog(true)}
-                  disabled={isUpdatingCrate || isDeletingCrate}
-                >
-                  {isUpdatingCrate ? "Making Default..." : "Make Default"}
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onPress={() => setShowDeleteDialog(true)}
-                  disabled={!canDelete || isUpdatingCrate || isDeletingCrate}
-                >
-                  {isDeletingCrate ? "Deleting..." : "Delete Crate"}
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
 
       <ConfirmDialog
         isOpen={showClearDialog}

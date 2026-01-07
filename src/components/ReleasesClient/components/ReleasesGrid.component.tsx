@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { memo, useMemo } from "react";
+import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
 import type { DiscogsRelease } from "src/types";
@@ -97,11 +98,19 @@ const ReleasesGridComponent = ({
       {releasesToShow.map((release: DiscogsRelease) => (
         <div key={release.instance_id} id={`release-${release.instance_id}`}>
           {isCardView ? (
-            <ReleaseCard
-              release={release}
-              isRandomMode={isActuallyRandomMode}
-              onExitRandomMode={onExitRandomMode}
-            />
+            isMobile ? (
+              <MobileReleaseCard
+                release={release}
+                isRandomMode={isActuallyRandomMode}
+                onExitRandomMode={onExitRandomMode}
+              />
+            ) : (
+              <ReleaseCard
+                release={release}
+                isRandomMode={isActuallyRandomMode}
+                onExitRandomMode={onExitRandomMode}
+              />
+            )
           ) : (
             <ReleaseListItem
               release={release}

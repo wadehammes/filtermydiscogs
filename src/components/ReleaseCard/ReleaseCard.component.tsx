@@ -7,6 +7,9 @@ import { LoadingOverlay } from "src/components/LoadingOverlay/LoadingOverlay.com
 import { useCrate } from "src/context/crate.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
+import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
+import MinusIcon from "src/styles/icons/minus-solid.svg";
+import PlusIcon from "src/styles/icons/plus-solid.svg";
 import type { ReleaseCardProps } from "src/types";
 import styles from "./ReleaseCard.module.css";
 
@@ -218,14 +221,7 @@ const ReleaseCardComponent = ({
               aria-label="View on Discogs"
               title="View on Discogs"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className={styles.externalLinkIcon}
-              >
-                <path d="M10 6v2H5v11h11v-5h2v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6zm11-3v8h-2V6.413l-7.793 7.794-1.414-1.414L17.586 5H13V3h8z" />
-              </svg>
+              <ExternalLinkIcon className={styles.externalLinkIcon} />
               <span className={styles.tooltip}>View on Discogs</span>
             </button>
             <button
@@ -239,32 +235,9 @@ const ReleaseCardComponent = ({
               }
             >
               {isInCrate(release.instance_id) ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={styles.listButtonIcon}
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <MinusIcon className={styles.listButtonIcon} />
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={styles.listButtonIcon}
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <PlusIcon className={styles.listButtonIcon} />
               )}
               <span className={styles.listButtonText}>
                 {isInCrate(release.instance_id)

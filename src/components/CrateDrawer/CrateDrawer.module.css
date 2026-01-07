@@ -1,28 +1,18 @@
 .drawer {
+  --top-offset: 136px;
   background: var(--background);
   border-left: 1px solid var(--border);
-  display: flex;
+  display: none;
   flex-direction: column;
-  height: 100vh;
-  width: 100%;
+  height: calc(100vh - var(--top-offset));
   overflow: hidden;
-  position: fixed;
-  right: 0;
-  top: 0;
-  z-index: var(--z-modal);
-  transform: translateX(100%);
-  transition: transform var(--transition-normal);
-
-  &.open {
-    transform: translateX(0);
-  }
+  position: sticky;
+  top: var(--top-offset);
+  width: 100%;
+  z-index: auto;
 
   @media (min-width: 1024px) {
-    position: sticky;
-    top: 136px;
-    height: calc(100vh - 139px);
-    transform: translateX(0);
-    z-index: auto;
+    display: flex;
   }
 }
 
@@ -31,17 +21,9 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-shrink: 0;
-  gap: var(--space-4);
-  justify-content: space-between;
+  gap: var(--space-2);
   padding: var(--space-4);
-}
-
-.headerLeft {
-  align-items: center;
-  display: flex;
-  flex: 1;
-  gap: var(--space-4);
-  min-width: 0;
+  flex-direction: row;
 }
 
 .headerCrateSelector {
@@ -63,54 +45,29 @@
   gap: var(--space-4);
 }
 
-.closeButton {
-  align-items: center;
-  background: var(--muted);
-  border: none;
-  border-radius: var(--radius-full);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  font-size: var(--text-2xl);
-  height: 32px;
-  justify-content: center;
-  line-height: 1;
-  transition: all var(--transition-normal);
-  width: 32px;
-
-  @media (min-width: 1024px) {
-    display: none;
-  }
-
-  &:hover {
-    background: var(--accent);
-    color: var(--accent-foreground);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-}
-
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   min-height: 0;
+
+  @media (min-width: 1024px) {
+    padding: var(--space-4);
+  }
 }
 
 .footer {
-  border-top: 1px solid var(--border);
-  padding: var(--space-4) var(--space-6);
   background: var(--background);
   flex-shrink: 0;
   position: relative;
   z-index: 1;
+
+  @media (min-width: 1024px) {
+    padding: var(--space-2) var(--space-4);
+    border-top: 1px solid var(--border);
+  }
 }
 
 .footerActions {

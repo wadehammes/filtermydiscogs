@@ -61,12 +61,12 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
   font-size: var(--text-xl);
-  height: 1.5rem;
+  height: var(--space-6);
   justify-content: center;
   line-height: 1;
   position: absolute;
@@ -74,7 +74,7 @@
   top: 50%;
   transform: translateY(-50%);
   transition: all var(--transition-normal);
-  width: 1.5rem;
+  width: var(--space-6);
 
   &:hover {
     background-color: var(--accent);
@@ -91,21 +91,21 @@
 .loadingIndicator {
   align-items: center;
   display: flex;
-  height: 1.5rem;
+  height: var(--space-6);
   justify-content: center;
   position: absolute;
   right: var(--space-3);
   top: 50%;
   transform: translateY(-50%);
-  width: 1.5rem;
+  width: var(--space-6);
 
   .spinner {
     animation: spin 1s linear infinite;
     border: 2px solid var(--muted);
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     border-top: 2px solid var(--muted-foreground);
-    height: 1rem;
-    width: 1rem;
+    height: var(--space-4);
+    width: var(--space-4);
   }
 }
 

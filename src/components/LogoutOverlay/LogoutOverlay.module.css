@@ -9,39 +9,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: var(--z-5-modal);
   animation: fadeIn 0.2s ease-in-out;
 }
 
 .content {
-  text-align: center;
   color: var(--foreground);
   max-width: 400px;
-  padding: 2rem;
+  padding: var(--space-8);
+  text-align: center;
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid color-mix(in srgb, var(--foreground) 30%, transparent);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem;
+  border: 3px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+  border-radius: var(--radius-full);
+  border-top: 3px solid var(--primary);
+  height: var(--button-height-md);
+  margin: 0 auto var(--space-6);
+  width: var(--button-height-md);
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
   color: var(--foreground);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .subtitle {
-  font-size: 1rem;
-  margin: 0;
   color: var(--muted-foreground);
+  font-size: var(--text-base);
   line-height: 1.5;
+  margin: 0;
 }
 
 @keyframes fadeIn {

@@ -1,0 +1,29 @@
+/* Custom Media Queries - Mobile First Approach */
+
+/* Mobile breakpoints */
+@custom-media --mobile-only (max-width: 480px);
+@custom-media --mobile-up (min-width: 481px);
+@custom-media --mobile-m-up (min-width: 576px);
+@custom-media --mobile-l-up (min-width: 672px);
+
+/* Tablet breakpoints */
+@custom-media --tablet-up (min-width: 769px);
+@custom-media --tablet-down (max-width: 768px);
+@custom-media --tablet-only (min-width: 481px) and (max-width: 768px);
+
+/* Desktop breakpoints */
+@custom-media --desktop-up (min-width: 1024px);
+@custom-media --desktop-down (max-width: 1023px);
+@custom-media --desktop-only (min-width: 1024px);
+
+/* Laptop breakpoints */
+@custom-media --laptop-up (min-width: 1120px);
+@custom-media --laptop-vert-up (min-width: 960px);
+
+/* Large desktop breakpoints */
+@custom-media --desktop-large-up (min-width: 1440px);
+@custom-media --desktop-xl-up (min-width: 1920px);
+
+/* Common responsive patterns */
+@custom-media --mobile-to-tablet (min-width: 481px) and (max-width: 1023px);
+@custom-media --tablet-to-desktop (min-width: 769px) and (max-width: 1023px);
