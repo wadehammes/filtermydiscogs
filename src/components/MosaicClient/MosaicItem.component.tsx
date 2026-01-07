@@ -9,20 +9,22 @@ import styles from "./MosaicClient.module.css";
 
 interface MosaicItemProps {
   release: DiscogsRelease;
+  totalReleases: number;
 }
 
-export default function MosaicItem({ release }: MosaicItemProps) {
+export default function MosaicItem({
+  release,
+  totalReleases,
+}: MosaicItemProps) {
   const [isClicked, setIsClicked] = useState(false);
   const { resource_url } = release.basic_information;
 
-  // Extract release ID from resource_url
   const releaseId = resource_url.split("/").pop() || "";
   const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
 
-  // Only fetch release data when clicked
   const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
     releaseId,
-    isClicked, // Only enable query when clicked
+    isClicked,
   );
 
   const handleReleaseClick = useCallback(
@@ -39,19 +41,14 @@ export default function MosaicItem({ release }: MosaicItemProps) {
         value: resource_url,
       });
 
-      // If we already have the data, open immediately
       if (releaseData?.uri) {
         window.open(releaseData.uri, "_blank", "noopener,noreferrer");
         return;
       }
-
-      // Otherwise, wait for the query to complete
-      // The useEffect below will handle opening the URL once data is loaded
     },
     [releaseData?.uri, resource_url],
   );
 
-  // Open URL once we have the release data
   const handleUrlOpen = useCallback(() => {
     if (releaseData?.uri) {
       window.open(releaseData.uri, "_blank", "noopener,noreferrer");
@@ -60,7 +57,6 @@ export default function MosaicItem({ release }: MosaicItemProps) {
     }
   }, [releaseData?.uri, isLoading, fallbackUri]);
 
-  // Handle opening URL when data is loaded
   useEffect(() => {
     if (isClicked && releaseData?.uri) {
       handleUrlOpen();
@@ -69,9 +65,13 @@ export default function MosaicItem({ release }: MosaicItemProps) {
   }, [isClicked, releaseData?.uri, handleUrlOpen]);
 
   const imageUrl =
-    release.basic_information.thumb ||
-    release.basic_information.cover_image ||
-    "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
+    totalReleases > 150
+      ? release.basic_information.thumb ||
+        release.basic_information.cover_image ||
+        "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5"
+      : release.basic_information.cover_image ||
+        release.basic_information.thumb ||
+        "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
 
   return (
     <button

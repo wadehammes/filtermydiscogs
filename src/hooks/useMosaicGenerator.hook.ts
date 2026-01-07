@@ -180,9 +180,13 @@ export function useMosaicGenerator({
         const x = col * cellSize;
         const y = row * cellSize;
 
+        // Use thumb if more than 30 releases (for performance), otherwise prefer cover_image (higher quality)
         const originalImageUrl =
-          release.basic_information.thumb ||
-          release.basic_information.cover_image;
+          releases.length > 30
+            ? release.basic_information.thumb ||
+              release.basic_information.cover_image
+            : release.basic_information.cover_image ||
+              release.basic_information.thumb;
 
         const drawPlaceholder = () => {
           ctx.fillStyle = MOSAIC_CONSTANTS.PLACEHOLDER_COLOR;

@@ -150,20 +150,33 @@ export function calculateOptimalGrid(
   const finalCols = bestCols;
   const finalRows = Math.ceil(itemCount / finalCols);
 
-  // Calculate cell size to perfectly fill the canvas (no gaps)
-  // Use exact division to avoid gaps
+  // Calculate cell size to perfectly fill the canvas width (no gaps on right side)
+  // Prioritize filling the width to avoid the black bar issue
   const cellSizeByWidth = fixedCanvasWidth / finalCols;
   const cellSizeByHeight = fixedCanvasHeight / finalRows;
-  const cellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
+
+  // Use the width-based cell size to ensure we fill the entire canvas width
+  // This prevents the black bar on the right side
+  let finalCellSize = cellSizeByWidth;
+
+  // If using width-based size would exceed the canvas height, use height-based instead
+  if (finalRows * finalCellSize > fixedCanvasHeight) {
+    finalCellSize = cellSizeByHeight;
+  }
 
   // Ensure we don't go below minimum cell size unless absolutely necessary
-  const finalCellSize = Math.max(MOSAIC_CONSTANTS.MIN_CELL_SIZE, cellSize);
+  finalCellSize = Math.max(MOSAIC_CONSTANTS.MIN_CELL_SIZE, finalCellSize);
+
+  // Recalculate canvas dimensions to exactly match the grid (no gaps)
+  // This ensures the grid fills the entire canvas without black bars
+  const actualCanvasWidth = finalCols * finalCellSize;
+  const actualCanvasHeight = finalRows * finalCellSize;
 
   return {
     cols: finalCols,
     rows: finalRows,
     cellSize: finalCellSize,
-    canvasWidth: fixedCanvasWidth,
-    canvasHeight: fixedCanvasHeight,
+    canvasWidth: actualCanvasWidth,
+    canvasHeight: actualCanvasHeight,
   };
 }
