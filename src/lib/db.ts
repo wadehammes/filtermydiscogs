@@ -18,7 +18,22 @@ try {
   }
 
   // Reuse pool instance in serverless environments
-  const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+  // Configure pool to prevent connection exhaustion
+  // Vercel Postgres limits: Hobby (20), Pro (50), Enterprise (varies)
+  const pool =
+    globalForPrisma.pool ??
+    new Pool({
+      connectionString,
+      // Limit max connections to prevent exhausting database connection limit
+      // Leave headroom for migrations, direct DB access, etc.
+      max: 10, // Safe default for serverless (adjust based on your Vercel plan)
+      // Close idle connections quickly in serverless environments
+      idleTimeoutMillis: 30000, // 30 seconds
+      // Fail fast if connection can't be established
+      connectionTimeoutMillis: 10000, // 10 seconds
+      // Allow pool to close when idle (good for serverless)
+      allowExitOnIdle: true,
+    });
   if (!globalForPrisma.pool) {
     globalForPrisma.pool = pool;
   }

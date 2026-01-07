@@ -9,13 +9,11 @@ import {
 import classNames from "classnames";
 import Image from "next/image";
 import type React from "react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.component";
 import ReleaseCard from "src/components/ReleaseCard/ReleaseCard.component";
 import { useCrate } from "src/context/crate.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesTable.module.css";
 
@@ -33,19 +31,45 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
     const { state: filtersState, dispatch: filtersDispatch } = useFilters();
 
-    const handleStylePillClick = useCallback(
-      (e: React.MouseEvent, style: string) => {
-        e.preventDefault();
-        e.stopPropagation();
+    // Generic function to convert API resource_url to web URL
+    const getResourceUrl = useCallback(
+      ({
+        resourceUrl,
+        type,
+      }: {
+        resourceUrl: string | undefined;
+        type: "artist" | "label";
+      }) => {
+        if (!resourceUrl) return null;
+        const id = resourceUrl.split("/").pop();
+        return id ? `https://www.discogs.com/${type}/${id}` : null;
+      },
+      [],
+    );
 
-        trackEvent("stylePillClicked", {
-          action: "stylePillClicked",
+    // Generic handler for style/format pill clicks
+    const handlePillClick = useCallback(
+      ({
+        event,
+        value,
+        type,
+        eventLabel,
+      }: {
+        event: React.MouseEvent;
+        value: string;
+        type: "style" | "format";
+        eventLabel: string;
+      }) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        trackEvent(`${type}PillClicked`, {
+          action: `${type}PillClicked`,
           category: "releasesTable",
-          label: "Style Pill Clicked",
-          value: style,
+          label: eventLabel,
+          value,
         });
 
-        // Exit random mode when clicking a style pill
         if (filtersState.isRandomMode) {
           filtersDispatch({
             type: FiltersActionTypes.ToggleRandomMode,
@@ -55,8 +79,11 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         }
 
         filtersDispatch({
-          type: FiltersActionTypes.ToggleStyle,
-          payload: style,
+          type:
+            type === "style"
+              ? FiltersActionTypes.ToggleStyle
+              : FiltersActionTypes.ToggleFormat,
+          payload: value,
         });
       },
       [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
@@ -148,13 +175,70 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           id: "artistTitle",
           header: "Artist / Title",
           cell: ({ row }) => {
-            const artists = row.original.basic_information.artists;
-            const title = row.original.basic_information.title;
-            const artistNames = artists.map((artist) => artist.name).join(", ");
+            const release = row.original;
+            const artists = release.basic_information.artists;
+            const title = release.basic_information.title;
+            const releaseId =
+              release.basic_information.resource_url.split("/").pop() || "";
+            const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
+
+            const handleTitleClick = (e: React.MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              trackEvent("releaseClicked", {
+                action: "releaseClicked",
+                category: "releasesTable",
+                label: "Release Clicked (Table View)",
+                value: release.basic_information.resource_url,
+              });
+              window.open(fallbackUri, "_blank", "noopener,noreferrer");
+            };
+
             return (
               <div className={styles.artistTitleCell}>
-                <span className={styles.artistName}>{artistNames}</span>
-                <span className={styles.titleName}>{title}</span>
+                <span className={styles.artistName}>
+                  {artists.map((artist, index) => {
+                    const artistUrl = getResourceUrl({
+                      resourceUrl: artist.resource_url,
+                      type: "artist",
+                    });
+                    return (
+                      <span key={artist.id || index}>
+                        {artistUrl ? (
+                          <a
+                            href={artistUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`View ${artist.name} on Discogs`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              trackEvent("artistClicked", {
+                                action: "artistClicked",
+                                category: "releasesTable",
+                                label: "Artist Clicked",
+                                value: artistUrl,
+                              });
+                            }}
+                            className={styles.artistLink}
+                          >
+                            {artist.name}
+                          </a>
+                        ) : (
+                          artist.name
+                        )}
+                        {index < artists.length - 1 && ", "}
+                      </span>
+                    );
+                  })}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleTitleClick}
+                  className={styles.titleLink}
+                  title="View release on Discogs"
+                >
+                  {title}
+                </button>
               </div>
             );
           },
@@ -166,9 +250,44 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           header: "Label",
           cell: ({ getValue }) => {
             const labels = getValue();
+            const label = labels[0];
+            const labelUrl = getResourceUrl({
+              resourceUrl: label?.resource_url,
+              type: "label",
+            });
+
+            if (!label?.name) {
+              return (
+                <div className={styles.labelCell}>
+                  <span>Unknown</span>
+                </div>
+              );
+            }
+
             return (
               <div className={styles.labelCell}>
-                {labels[0]?.name || "Unknown"}
+                {labelUrl ? (
+                  <a
+                    href={labelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`View ${label.name} on Discogs`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      trackEvent("labelClicked", {
+                        action: "labelClicked",
+                        category: "releasesTable",
+                        label: "Label Clicked",
+                        value: labelUrl,
+                      });
+                    }}
+                    className={styles.labelLink}
+                  >
+                    {label.name}
+                  </a>
+                ) : (
+                  <span>{label.name}</span>
+                )}
               </div>
             );
           },
@@ -238,14 +357,14 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                           filtersState.selectedFormats.includes(formatName),
                       },
                     )}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      filtersDispatch({
-                        type: FiltersActionTypes.ToggleFormat,
-                        payload: formatName,
-                      });
-                    }}
+                    onClick={(e) =>
+                      handlePillClick({
+                        event: e,
+                        value: formatName,
+                        type: "format",
+                        eventLabel: "Format Pill Clicked",
+                      })
+                    }
                     aria-label={`Filter by ${formatName} format`}
                   >
                     {formatName}
@@ -279,7 +398,14 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                           filtersState.selectedStyles.includes(style),
                       },
                     )}
-                    onClick={(e) => handleStylePillClick(e, style)}
+                    onClick={(e) =>
+                      handlePillClick({
+                        event: e,
+                        value: style,
+                        type: "style",
+                        eventLabel: "Style Pill Clicked",
+                      })
+                    }
                     aria-label={`Filter by ${style} style`}
                   >
                     {style}
@@ -296,11 +422,33 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         filtersState.selectedStyles,
         filtersState.selectedFormats,
         filtersDispatch,
-        handleStylePillClick,
+        handlePillClick,
         handleCheckboxChange,
         isInCrate,
+        getResourceUrl,
       ],
     );
+
+    // Create a key based on actual class name values to force remount on CSS hot reload
+    // This ensures React Table remounts when CSS Modules class names change
+    // biome-ignore lint/correctness/useExhaustiveDependencies: We need these dependencies to detect CSS class name changes on hot reload
+    const tableKey = useMemo(() => {
+      return [
+        styles.table,
+        styles.thead,
+        styles.tbody,
+        styles.headerRow,
+        styles.dataRow,
+        styles.dataCell,
+      ].join("-");
+    }, [
+      styles.table,
+      styles.thead,
+      styles.tbody,
+      styles.headerRow,
+      styles.dataRow,
+      styles.dataCell,
+    ]);
 
     const table = useReactTable({
       data: releases,
@@ -326,7 +474,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     return (
       <div className={styles.tableWrapper}>
         <div className={styles.tableContainer}>
-          <table className={styles.table}>
+          <table key={tableKey} className={styles.table}>
             <thead className={styles.thead}>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={styles.headerRow}>
@@ -373,63 +521,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
   },
 );
 
-// Release link button component
-const ReleaseLinkButton = memo<{ release: DiscogsRelease }>(({ release }) => {
-  const [isClicked, setIsClicked] = useState(false);
-  const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
-    release.basic_information.resource_url.split("/").pop() || "",
-    isClicked,
-  );
-
-  const handleReleaseClick = useCallback(
-    async (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      setIsClicked(true);
-
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "releasesTable",
-        label: "Release Clicked (Table View)",
-        value: release.basic_information.resource_url,
-      });
-
-      if (releaseData?.uri) {
-        window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-        return;
-      }
-    },
-    [releaseData?.uri, release.basic_information.resource_url],
-  );
-
-  useEffect(() => {
-    if (isClicked && releaseData?.uri) {
-      window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-      setIsClicked(false);
-    }
-  }, [isClicked, releaseData?.uri]);
-
-  return (
-    <>
-      <button
-        type="button"
-        className={styles.discogsButton}
-        onClick={handleReleaseClick}
-        disabled={isLoading}
-        aria-label="View on Discogs"
-      >
-        View
-      </button>
-      <LoadingOverlay
-        message="Fetching Discogs Release URL"
-        isVisible={isLoading}
-      />
-    </>
-  );
-});
-
 ReleasesTable.displayName = "ReleasesTable";
-ReleaseLinkButton.displayName = "ReleaseLinkButton";
 
 export default ReleasesTable;
