@@ -12,7 +12,6 @@ import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
-import CratesIcon from "src/styles/icons/crates-solid.svg";
 import { EmptyState } from "./components/EmptyState.component";
 import { LoadingTrigger } from "./components/LoadingTrigger.component";
 import { ReleasesGrid } from "./components/ReleasesGrid.component";
@@ -22,7 +21,15 @@ import styles from "./ReleasesClient.module.css";
 export default function ReleasesClient() {
   const router = useRouter();
   const { state: authState } = useAuth();
-  const { isDrawerOpen, toggleDrawer, selectedReleases } = useCrate();
+  const {
+    isDrawerOpen,
+    toggleDrawer,
+    selectedReleases,
+    crates,
+    activeCrateId,
+  } = useCrate();
+  const activeCrate = crates.find((c) => c.id === activeCrateId);
+  const crateName = activeCrate?.name;
   const {
     // Loading states
     authLoading,
@@ -147,16 +154,21 @@ export default function ReleasesClient() {
           />
         </div>
       </div>
-      {isMobile && selectedReleases.length > 0 && (
+      {isMobile && activeCrateId && (
         <button
           type="button"
           className={styles.crateFab}
           onClick={toggleDrawer}
           aria-label={`${isDrawerOpen ? "Close" : "Open"} crate with ${selectedReleases.length} items`}
         >
-          <CratesIcon className={styles.fabIcon} />
-          <span>Crates</span>
-          <span className={styles.fabCount}>{selectedReleases.length}</span>
+          <div className={styles.fabContent}>
+            <div className={styles.fabMain}>
+              <span className={styles.fabMainContent}>
+                {crateName ? <span>{crateName}</span> : <span>Crate</span>}
+              </span>
+              <span className={styles.fabCount}>{selectedReleases.length}</span>
+            </div>
+          </div>
         </button>
       )}
       <ReleaseModal

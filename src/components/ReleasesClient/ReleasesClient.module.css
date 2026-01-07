@@ -165,9 +165,10 @@
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   gap: var(--space-2);
-  height: 56px;
+  height: auto;
   justify-content: center;
-  padding: 0 var(--space-4);
+  min-height: 56px;
+  padding: var(--space-1) var(--space-4);
   position: fixed;
   right: var(--space-4);
   transition:
@@ -205,10 +206,25 @@
   }
 }
 
-.fabIcon {
-  height: var(--space-5);
-  width: var(--space-5);
-  flex-shrink: 0;
+.fabContent {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.fabMain {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+}
+
+.fabMainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+  justify-content: flex-start;
 }
 
 .fabCount {
@@ -223,4 +239,17 @@
   justify-content: center;
   min-width: var(--space-5);
   padding: 0 var(--space-1);
+}
+
+.fabCrateName {
+  color: var(--primary-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  line-height: 1;
+  max-width: 120px;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

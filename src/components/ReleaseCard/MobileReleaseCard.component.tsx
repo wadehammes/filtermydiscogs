@@ -361,7 +361,10 @@ const MobileReleaseCardComponent = ({
           </button>
           <button
             type="button"
-            className={styles.listButton}
+            className={classNames(
+              styles.listButton,
+              isInCrate(release.instance_id) && styles.removeButton,
+            )}
             onClick={handleCrateToggle}
             aria-label={
               isInCrate(release.instance_id)
