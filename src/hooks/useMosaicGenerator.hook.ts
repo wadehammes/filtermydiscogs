@@ -180,9 +180,8 @@ export function useMosaicGenerator({
         const x = col * cellSize;
         const y = row * cellSize;
 
-        // Use thumb if more than 30 releases (for performance), otherwise prefer cover_image (higher quality)
         const originalImageUrl =
-          releases.length > 30
+          releases.length > 100
             ? release.basic_information.thumb ||
               release.basic_information.cover_image
             : release.basic_information.cover_image ||
