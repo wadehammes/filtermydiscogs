@@ -33,9 +33,11 @@ const AutocompleteSelectComponent = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [openUpward, setOpenUpward] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Filter options based on search term
   const filteredOptions = options.filter((option) =>
@@ -62,12 +64,25 @@ const AutocompleteSelectComponent = ({
     if (isOpen) {
       setFocusedIndex(-1);
       setSearchTerm("");
+      // Calculate if menu should open upward
+      if (containerRef.current && dropdownRef.current) {
+        const triggerRect = containerRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const estimatedMenuHeight = Math.min(
+          250,
+          filteredOptions.length * 40 + 60,
+        ); // max-height + search input
+
+        // Open upward if there's not enough space below (with some buffer)
+        setOpenUpward(spaceBelow < estimatedMenuHeight + 20);
+      }
       // Focus the input when opening
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
     }
-  }, [isOpen]);
+  }, [isOpen, filteredOptions.length]);
 
   const getDisplayValue = useCallback((): string => {
     if (!value) return placeholder || "";
@@ -237,7 +252,13 @@ const AutocompleteSelectComponent = ({
         </span>
       </div>
       {isOpen && (
-        <div className={styles.dropdown}>
+        <div
+          ref={dropdownRef}
+          className={classNames(
+            styles.dropdown,
+            openUpward && styles.dropdownUpward,
+          )}
+        >
           <div className={styles.searchContainer}>
             <input
               ref={inputRef}
