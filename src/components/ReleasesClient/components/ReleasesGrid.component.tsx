@@ -25,7 +25,6 @@ interface ReleasesGridProps {
   view: "card" | "list" | "random";
   isMobile: boolean;
   isRandomMode: boolean;
-  highlightedReleaseId: string | null;
   onExitRandomMode: () => void;
   randomRelease?: DiscogsRelease | null;
 }
@@ -35,7 +34,6 @@ const ReleasesGridComponent = ({
   view,
   isMobile,
   isRandomMode,
-  highlightedReleaseId,
   onExitRandomMode,
   randomRelease,
 }: ReleasesGridProps) => {
@@ -85,7 +83,6 @@ const ReleasesGridComponent = ({
         releases={releasesToShow}
         isMobile={isMobile}
         isRandomMode={isRandomMode}
-        highlightedReleaseId={highlightedReleaseId}
         onExitRandomMode={onExitRandomMode}
       />
     );
@@ -102,14 +99,12 @@ const ReleasesGridComponent = ({
           {isCardView ? (
             <ReleaseCard
               release={release}
-              isHighlighted={highlightedReleaseId === release.instance_id}
               isRandomMode={isActuallyRandomMode}
               onExitRandomMode={onExitRandomMode}
             />
           ) : (
             <ReleaseListItem
               release={release}
-              isHighlighted={highlightedReleaseId === release.instance_id}
               onExitRandomMode={onExitRandomMode}
             />
           )}

@@ -54,6 +54,27 @@ const ReleaseCardComponent = ({
   const releaseId = resource_url.split("/").pop() || "";
   const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
 
+  // Generic function to convert API resource_url to web URL
+  const getResourceUrl = useCallback(
+    ({
+      resourceUrl,
+      type,
+    }: {
+      resourceUrl: string | undefined;
+      type: "artist" | "label";
+    }) => {
+      if (!resourceUrl) return null;
+      const id = resourceUrl.split("/").pop();
+      return id ? `https://www.discogs.com/${type}/${id}` : null;
+    },
+    [],
+  );
+
+  const labelUrl = getResourceUrl({
+    resourceUrl: labels[0]?.resource_url,
+    type: "label",
+  });
+
   const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
     releaseId,
     isClicked,
@@ -103,16 +124,27 @@ const ReleaseCardComponent = ({
     [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
   );
 
-  const handleStylePillClick = useCallback(
-    (e: React.MouseEvent, style: string) => {
-      e.preventDefault();
-      e.stopPropagation();
+  // Generic handler for style/format pill clicks
+  const handlePillClick = useCallback(
+    ({
+      event,
+      value,
+      type,
+      eventLabel,
+    }: {
+      event: React.MouseEvent;
+      value: string;
+      type: "style" | "format";
+      eventLabel: string;
+    }) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-      trackEvent("stylePillClicked", {
-        action: "stylePillClicked",
+      trackEvent(`${type}PillClicked`, {
+        action: `${type}PillClicked`,
         category: "releaseCard",
-        label: "Style Pill Clicked",
-        value: style,
+        label: eventLabel,
+        value,
       });
 
       if (filtersState.isRandomMode) {
@@ -124,36 +156,11 @@ const ReleaseCardComponent = ({
       }
 
       filtersDispatch({
-        type: FiltersActionTypes.ToggleStyle,
-        payload: style,
-      });
-    },
-    [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
-  );
-
-  const handleFormatPillClick = useCallback(
-    (e: React.MouseEvent, format: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      trackEvent("formatPillClicked", {
-        action: "formatPillClicked",
-        category: "releaseCard",
-        label: "Format Pill Clicked",
-        value: format,
-      });
-
-      if (filtersState.isRandomMode) {
-        filtersDispatch({
-          type: FiltersActionTypes.ToggleRandomMode,
-          payload: undefined,
-        });
-        onExitRandomMode?.();
-      }
-
-      filtersDispatch({
-        type: FiltersActionTypes.ToggleFormat,
-        payload: format,
+        type:
+          type === "style"
+            ? FiltersActionTypes.ToggleStyle
+            : FiltersActionTypes.ToggleFormat,
+        payload: value,
       });
     },
     [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
@@ -270,12 +277,75 @@ const ReleaseCardComponent = ({
         <div className={styles.contentContainer}>
           <div className={styles.mainContent}>
             <h3 className={styles.title}>
-              {artists.map((artist) => artist.name).join(", ")} - {title}
+              {artists.map((artist, index) => {
+                const artistUrl = getResourceUrl({
+                  resourceUrl: artist.resource_url,
+                  type: "artist",
+                });
+                return (
+                  <span key={artist.id || index}>
+                    {artistUrl ? (
+                      <a
+                        href={artistUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`View ${artist.name} on Discogs`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          trackEvent("artistClicked", {
+                            action: "artistClicked",
+                            category: "releaseCard",
+                            label: "Artist Clicked",
+                            value: artistUrl,
+                          });
+                        }}
+                        className={styles.artistLink}
+                      >
+                        {artist.name}
+                      </a>
+                    ) : (
+                      artist.name
+                    )}
+                    {index < artists.length - 1 && ", "}
+                  </span>
+                );
+              })}{" "}
+              -{" "}
+              <button
+                type="button"
+                onClick={handleReleaseClick}
+                disabled={isLoading}
+                className={styles.titleLink}
+                title="View release on Discogs"
+              >
+                {title}
+              </button>
             </h3>
             <div className={styles.metaContainer}>
               {(labels[0]?.name || year !== 0) && (
                 <p className={styles.meta}>
-                  {labels[0]?.name}
+                  {labelUrl ? (
+                    <a
+                      href={labelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`View ${labels[0]?.name} on Discogs`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        trackEvent("labelClicked", {
+                          action: "labelClicked",
+                          category: "releaseCard",
+                          label: "Label Clicked",
+                          value: labelUrl,
+                        });
+                      }}
+                      className={styles.labelLink}
+                    >
+                      {labels[0]?.name}
+                    </a>
+                  ) : (
+                    labels[0]?.name
+                  )}
                   {labels[0]?.name && year !== 0 ? " • " : ""}
                   {year !== 0 ? year : ""}
                 </p>
@@ -303,7 +373,14 @@ const ReleaseCardComponent = ({
                         filtersState.selectedFormats.includes(formatName),
                     },
                   )}
-                  onClick={(e) => handleFormatPillClick(e, formatName)}
+                  onClick={(e) =>
+                    handlePillClick({
+                      event: e,
+                      value: formatName,
+                      type: "format",
+                      eventLabel: "Format Pill Clicked",
+                    })
+                  }
                   aria-label={`Filter by ${formatName} format`}
                 >
                   {formatName}
@@ -319,7 +396,14 @@ const ReleaseCardComponent = ({
                   className={classNames("pill", "pillStyle", styles.stylePill, {
                     pillSelected: filtersState.selectedStyles.includes(style),
                   })}
-                  onClick={(e) => handleStylePillClick(e, style)}
+                  onClick={(e) =>
+                    handlePillClick({
+                      event: e,
+                      value: style,
+                      type: "style",
+                      eventLabel: "Style Pill Clicked",
+                    })
+                  }
                   aria-label={`Filter by ${style} style`}
                 >
                   {style}

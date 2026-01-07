@@ -113,8 +113,22 @@ describe("ReleaseCard", () => {
 
     render(<ReleaseCard release={release} />);
 
-    expect(screen.getByText("Test Artist - Test Album")).toBeInTheDocument();
-    expect(screen.getByText("Test Label • 2020")).toBeInTheDocument();
+    // Artist name is now wrapped in a link
+    expect(
+      screen.getByRole("link", { name: /Test Artist/ }),
+    ).toBeInTheDocument();
+    // Label name is also wrapped in a link
+    expect(
+      screen.getByRole("link", { name: /Test Label/ }),
+    ).toBeInTheDocument();
+    // Verify the full title text content
+    const titleElement = screen.getByRole("heading", { level: 3 });
+    expect(titleElement.textContent).toBe("Test Artist - Test Album");
+    // Verify the label meta text content (text is split across elements)
+    const metaElement = screen.getByText((content, element) => {
+      return element?.textContent === "Test Label • 2020";
+    });
+    expect(metaElement).toBeInTheDocument();
   });
 
   it("displays date added when available", () => {

@@ -23,9 +23,10 @@ export const useReleasesClient = () => {
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const [showAllLoadedMessage, setShowAllLoadedMessage] = useState(false);
-  const [highlightedReleaseId, setHighlightedReleaseId] = useState<
-    string | null
-  >(null);
+
+  const [selectedReleaseId, setSelectedReleaseId] = useState<string | null>(
+    null,
+  );
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
 
   const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
@@ -101,27 +102,23 @@ export const useReleasesClient = () => {
     setVisibleCount(INITIAL_VISIBLE_RELEASES);
   }, [filteredReleases, isRandomMode]);
 
-  const handleReleaseClick = useCallback((instanceId: string) => {
-    const element = document.getElementById(`release-${instanceId}`);
-    if (element) {
-      const headerHeight = 139;
-      const extraOffset = 24;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition =
-        elementPosition + window.pageYOffset - headerHeight - extraOffset;
+  const handleReleaseClick = useCallback(
+    (instanceId: string) => {
+      // Find the release in the filtered releases
+      const release = filteredReleases.find(
+        (r) => String(r.instance_id) === instanceId,
+      );
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
+      // If release found, open it in the modal
+      if (release) {
+        setSelectedReleaseId(instanceId);
+      }
+    },
+    [filteredReleases],
+  );
 
-      setTimeout(() => {
-        setHighlightedReleaseId(instanceId);
-        setTimeout(() => {
-          setHighlightedReleaseId(null);
-        }, 3000);
-      }, 500);
-    }
+  const handleCloseModal = useCallback(() => {
+    setSelectedReleaseId(null);
   }, []);
 
   const handleViewChange = useCallback(
@@ -202,12 +199,19 @@ export const useReleasesClient = () => {
 
     isMobile,
     viewState,
-    highlightedReleaseId,
 
     mainContentRef,
     infiniteScrollRef: ref,
 
+    selectedReleaseId,
+    selectedRelease: selectedReleaseId
+      ? filteredReleases.find(
+          (r) => String(r.instance_id) === selectedReleaseId,
+        ) || null
+      : null,
+
     handleReleaseClick,
+    handleCloseModal,
     handleViewChange,
     handleRandomClick,
     handleExitRandomMode,
