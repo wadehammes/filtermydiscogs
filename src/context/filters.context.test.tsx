@@ -355,6 +355,42 @@ describe("FiltersProvider", () => {
     expect(result.current.state.availableYears).toEqual(allYears);
   });
 
+  it("computes availableStyles from allReleases, not filtered releases", () => {
+    const allReleases = releaseFactory.buildList(5);
+    const filteredReleases = releaseFactory.buildList(2);
+    const allStyles = ["Rock", "Pop", "Jazz", "Electronic", "Hip Hop"];
+
+    mockFilterReleases.mockReturnValue(filteredReleases);
+    mockGetAvailableStyles.mockReturnValue(allStyles);
+
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: FiltersProvider,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetAllReleases,
+        payload: allReleases,
+      });
+    });
+
+    expect(mockGetAvailableStyles).toHaveBeenCalledWith(allReleases);
+    expect(result.current.state.availableStyles).toEqual(allStyles);
+
+    mockGetAvailableStyles.mockClear();
+    mockGetAvailableStyles.mockReturnValue(allStyles);
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.ToggleStyle,
+        payload: "Rock",
+      });
+    });
+
+    expect(mockGetAvailableStyles).toHaveBeenCalledWith(allReleases);
+    expect(result.current.state.availableStyles).toEqual(allStyles);
+  });
+
   it("throws error when useFilters is used outside FiltersProvider", () => {
     const consoleSpy = jest
       .spyOn(console, "error")

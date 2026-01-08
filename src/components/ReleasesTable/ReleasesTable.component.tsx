@@ -13,8 +13,11 @@ import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { useCrate } from "src/context/crate.context";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { useFilters } from "src/context/filters.context";
+import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
+import { formatDate } from "src/utils/dateHelpers";
+import { getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleasesTable.module.css";
 
 interface ReleasesTableProps {
@@ -29,65 +32,12 @@ const columnHelper = createColumnHelper<DiscogsRelease>();
 export const ReleasesTable = memo<ReleasesTableProps>(
   ({ releases, isMobile, isRandomMode, onExitRandomMode }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-    const { state: filtersState, dispatch: filtersDispatch } = useFilters();
+    const { state: filtersState } = useFilters();
 
-    // Generic function to convert API resource_url to web URL
-    const getResourceUrl = useCallback(
-      ({
-        resourceUrl,
-        type,
-      }: {
-        resourceUrl: string | undefined;
-        type: "artist" | "label";
-      }) => {
-        if (!resourceUrl) return null;
-        const id = resourceUrl.split("/").pop();
-        return id ? `https://www.discogs.com/${type}/${id}` : null;
-      },
-      [],
-    );
-
-    // Generic handler for style/format pill clicks
-    const handlePillClick = useCallback(
-      ({
-        event,
-        value,
-        type,
-        eventLabel,
-      }: {
-        event: React.MouseEvent;
-        value: string;
-        type: "style" | "format";
-        eventLabel: string;
-      }) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        trackEvent(`${type}PillClicked`, {
-          action: `${type}PillClicked`,
-          category: "releasesTable",
-          label: eventLabel,
-          value,
-        });
-
-        if (filtersState.isRandomMode) {
-          filtersDispatch({
-            type: FiltersActionTypes.ToggleRandomMode,
-            payload: undefined,
-          });
-          onExitRandomMode?.();
-        }
-
-        filtersDispatch({
-          type:
-            type === "style"
-              ? FiltersActionTypes.ToggleStyle
-              : FiltersActionTypes.ToggleFormat,
-          payload: value,
-        });
-      },
-      [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
-    );
+    const handlePillClick = usePillClickHandler({
+      category: "releasesTable",
+      onExitRandomMode,
+    });
 
     const handleCheckboxChange = useCallback(
       (release: DiscogsRelease) => {
@@ -314,19 +264,10 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             if (!dateString)
               return <div className={styles.dateAddedCell}>—</div>;
 
-            try {
-              const date = new Date(dateString);
-              const formattedDate = date.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              });
-              return (
-                <div className={styles.dateAddedCell}>{formattedDate}</div>
-              );
-            } catch {
-              return <div className={styles.dateAddedCell}>—</div>;
-            }
+            const formattedDate = formatDate(dateString);
+            return (
+              <div className={styles.dateAddedCell}>{formattedDate || "—"}</div>
+            );
           },
           size: 120,
           enableSorting: false,
@@ -424,7 +365,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         handlePillClick,
         handleCheckboxChange,
         isInCrate,
-        getResourceUrl,
       ],
     );
 

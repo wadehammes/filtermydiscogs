@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { mocked } from "jest-mock";
 import { fetchDiscogsRelease } from "src/api/helpers";
@@ -315,63 +315,45 @@ describe("ReleaseCard", () => {
     expect(onExitRandomMode).toHaveBeenCalled();
   });
 
-  it("shows loading overlay when fetching release data", async () => {
+  it("renders Discogs link with correct URL", () => {
     const release = releaseFactory.build({
       basic_information: basicInformationFactory.build({
         resource_url: "https://api.discogs.com/releases/123",
       }),
     });
-    const user = userEvent.setup();
-
-    mockFetchDiscogsRelease.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ uri: "https://www.discogs.com/release/123" });
-          }, 100);
-        }),
-    );
 
     render(<ReleaseCard release={release} />);
 
-    const discogsButton = screen.getByRole("button", {
+    const discogsLink = screen.getByRole("link", {
       name: "View on Discogs",
     });
-    await user.click(discogsButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Fetching Discogs Release URL"),
-      ).toBeInTheDocument();
-    });
+    expect(discogsLink).toHaveAttribute(
+      "href",
+      "https://www.discogs.com/release/123",
+    );
+    expect(discogsLink).toHaveAttribute("target", "_blank");
+    expect(discogsLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("opens release URL when Discogs button is clicked and data is available", async () => {
+  it("renders title link with correct URL", () => {
     const release = releaseFactory.build({
       basic_information: basicInformationFactory.build({
-        resource_url: "https://api.discogs.com/releases/123",
+        resource_url: "https://api.discogs.com/releases/456",
+        title: "Test Release",
       }),
-    });
-    const user = userEvent.setup();
-
-    mockFetchDiscogsRelease.mockResolvedValue({
-      uri: "https://www.discogs.com/release/123",
     });
 
     render(<ReleaseCard release={release} />);
 
-    const discogsButton = screen.getByRole("button", {
-      name: "View on Discogs",
+    const titleLink = screen.getByRole("link", {
+      name: "Test Release",
     });
-    await user.click(discogsButton);
-
-    await waitFor(() => {
-      expect(window.open).toHaveBeenCalledWith(
-        "https://www.discogs.com/release/123",
-        "_blank",
-        "noopener,noreferrer",
-      );
-    });
+    expect(titleLink).toHaveAttribute(
+      "href",
+      "https://www.discogs.com/release/456",
+    );
+    expect(titleLink).toHaveAttribute("target", "_blank");
+    expect(titleLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("uses cover_image when available", () => {

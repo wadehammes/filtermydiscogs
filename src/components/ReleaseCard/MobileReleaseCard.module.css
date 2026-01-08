@@ -62,36 +62,11 @@
   position: relative;
   max-width: 75px;
   width: 100%;
-
-  &::before {
-    background-color: var(--background);
-    background-image: inherit;
-    background-position: inherit;
-    background-repeat: inherit;
-    background-size: inherit;
-    content: "";
-    filter: blur(1.5rem);
-    height: calc(100% + 4rem);
-    left: -2rem;
-    position: absolute;
-    top: -2rem;
-    width: calc(100% + 4rem);
-    z-index: 0;
-  }
-
-  > * {
-    border-radius: var(--radius-card) 0 0 var(--radius-card);
-    height: 100%;
-    overflow: hidden;
-    width: 100%;
-  }
 }
 
-.imageContainer > img[src],
-.imageContainer img[src] {
-  background-color: var(--background);
+.imageContainer > img,
+.imageContainer img {
   border-radius: var(--radius-card) 0 0 var(--radius-card);
-  filter: none;
   height: 100%;
   object-fit: cover;
   position: relative;
