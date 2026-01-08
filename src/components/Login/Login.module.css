@@ -100,54 +100,19 @@
     }
 
     .loginButton {
-      background: linear-gradient(
-        135deg,
-        var(--primary) 0%,
-        var(--primary-hover) 100%
-      );
-      border: none;
-      border-radius: var(--radius-ui);
-      color: var(--primary-foreground);
-      cursor: pointer;
-      font-size: var(--text-base);
-      font-weight: var(--font-semibold);
       margin-top: auto;
-      padding: var(--space-4) var(--space-8);
-      transition:
-        box-shadow var(--transition-normal),
-        transform var(--transition-normal);
       width: 100%;
-
-      &:hover:not(:disabled) {
-        box-shadow: 0 8px 25px
-          color-mix(in srgb, var(--primary) 30%, transparent);
-        transform: translateY(-2px);
-      }
-
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.7;
-      }
-    }
-
-    .error {
-      background: color-mix(in srgb, var(--destructive) 15%, var(--background));
-      border: 1px solid var(--destructive);
-      border-radius: var(--radius-ui);
-      color: var(--destructive-hover);
-      font-size: var(--text-sm);
-      margin: 0;
-      padding: var(--space-3);
     }
 
     .aboutLink {
       color: var(--muted-foreground);
       display: block;
-      font-size: var(--text-sm);
+      font-size: var(--text-xs);
       margin-top: var(--space-4);
       text-align: center;
       text-decoration: none;
       transition: color var(--transition-normal);
+      font-family: var(--font-mono);
 
       &:hover {
         color: var(--primary);
@@ -195,6 +160,11 @@
         font-weight: var(--font-bold);
         left: 0;
         position: absolute;
+      }
+
+      strong {
+        color: var(--foreground);
+        font-weight: var(--font-semibold);
       }
     }
   }
@@ -266,27 +236,6 @@
   & small {
     color: var(--muted-foreground);
     font-size: var(--text-sm);
-  }
-}
-
-.spinner {
-  animation: spin 0.7s linear infinite;
-  border: 2.5px solid var(--primary-foreground);
-  border-radius: var(--radius-full);
-  border-top: 2.5px solid var(--primary);
-  display: inline-block;
-  height: 1.25em;
-  margin-right: var(--space-2);
-  vertical-align: middle;
-  width: 1.25em;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
   }
 }
 

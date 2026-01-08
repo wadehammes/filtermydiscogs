@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Button from "src/components/Button/Button.component";
+import ErrorMessage from "src/components/ErrorMessage/ErrorMessage.component";
 import { useAuth } from "src/context/auth.context";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Logo from "src/styles/icons/fmd-stacked.svg";
@@ -31,31 +33,22 @@ export const Login = () => {
         <div className={`${styles.bentoCard} ${styles.actionCard}`}>
           <Logo className={styles.logo} />
           <p className={styles.description}>
-            Connect your Discogs account to filter and explore your vinyl
-            collection
+            Connect your Discogs account to explore your collection
           </p>
 
-          {error && (
-            <div className={styles.error}>
-              <p>{error}</p>
-            </div>
-          )}
+          {error && <ErrorMessage message={error} />}
 
-          <button
-            className={styles.loginButton}
+          <Button
+            variant="primary"
+            size="lg"
             onClick={login}
             disabled={isLoading}
-            type="button"
+            isLoading={isLoading}
+            loadingText="Connecting..."
+            className={styles.loginButton}
           >
-            {isLoading ? (
-              <>
-                <span className={styles.spinner} />
-                Connecting...
-              </>
-            ) : (
-              "Connect with Discogs"
-            )}
-          </button>
+            Connect with Discogs
+          </Button>
 
           <a href="/about" className={styles.aboutLink}>
             Terms & Privacy
@@ -63,15 +56,28 @@ export const Login = () => {
         </div>
 
         <div className={`${styles.bentoCard} ${styles.featuresCard}`}>
-          <h3>What you can do with your Discogs collection:</h3>
+          <h3>What you can do with your collection:</h3>
           <ul>
-            <li>Browse, search and filter by styles, years, and formats</li>
-            <li>Sort by label, year, date added, or rating</li>
-            <li>View a random release</li>
-            <li>View release details in card or table view</li>
-            <li>Save releases to a crate as you browse</li>
-            <li>Manage multiple crates</li>
-            <li>Create and download mosaic grids in different formats/sizes</li>
+            <li>Browse and search your entire collection</li>
+            <li>
+              Filter by styles, genres, years, and formats; sort by label, year,
+              date added, or rating
+            </li>
+            <li>Hit random and rediscover something from your collection</li>
+            <li>
+              <strong>Create and manage multiple crates</strong>—perfect for DJ
+              gigs, organizing by theme, or tracking favorites
+            </li>
+            <li>
+              Generate mosaic grids from your crates in different formats and
+              sizes
+            </li>
+            <li>Works great on your phone, tablet, or desktop</li>
+            <li>
+              <strong>
+                Free to use (although subscriptions may happen later)
+              </strong>
+            </li>
           </ul>
         </div>
       </div>

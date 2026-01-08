@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Button from "src/components/Button/Button.component";
 import { Page } from "src/components/Page/Page.component";
 import styles from "./error.module.css";
 
@@ -34,9 +35,9 @@ export default function RootError({
             <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
         )}
-        <button onClick={reset} className={styles.button} type="button">
+        <Button variant="primary" size="md" onClick={reset}>
           Try again
-        </button>
+        </Button>
       </div>
     </Page>
   );

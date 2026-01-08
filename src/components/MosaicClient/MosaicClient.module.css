@@ -214,39 +214,16 @@
 }
 
 .downloadButton {
-  align-items: center;
-  background: var(--primary);
-  border: none;
-  border-radius: var(--radius-ui);
   box-shadow: var(--shadow-md);
-  color: var(--primary-foreground);
-  cursor: pointer;
-  display: flex;
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  justify-content: center;
-  min-height: var(--input-height);
   min-width: 160px;
-  padding: var(--space-2) var(--space-6);
-  transition: var(--transition-normal);
-  white-space: nowrap;
 
   @media (max-width: 767px) {
-    font-size: var(--text-sm);
     min-width: 100%;
-    padding: var(--space-2) var(--space-4);
   }
 
   &:hover:not(:disabled) {
-    background: var(--primary-hover);
     box-shadow: var(--shadow-lg);
     transform: translateY(-1px);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-    transform: none;
   }
 }
 

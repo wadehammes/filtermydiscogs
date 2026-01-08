@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import styles from "./MosaicClient.module.css";
@@ -62,16 +63,18 @@ export default function MosaicControls({
       </div>
 
       <div className={styles.controlGroup}>
-        <button
-          type="button"
-          className={styles.downloadButton}
+        <Button
+          variant="primary"
+          size="md"
           onClick={onDownload}
           disabled={isGenerating}
+          isLoading={isGenerating}
+          className={styles.downloadButton}
         >
           {isGenerating
             ? `Generating... ${generationProgress}%`
             : "Download Mosaic"}
-        </button>
+        </Button>
       </div>
     </div>
   );

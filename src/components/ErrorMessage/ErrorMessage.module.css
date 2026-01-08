@@ -1,0 +1,13 @@
+.error {
+  background: color-mix(in srgb, var(--destructive) 15%, var(--background));
+  border: 1px solid var(--destructive);
+  border-radius: var(--radius-ui);
+  color: var(--destructive-hover);
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.error p {
+  margin: 0;
+}
