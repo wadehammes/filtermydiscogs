@@ -1,5 +1,5 @@
 .drawer {
-  --top-offset: 136px;
+  --top-offset: 139px;
   background: var(--background);
   border-left: 1px solid var(--border);
   display: none;

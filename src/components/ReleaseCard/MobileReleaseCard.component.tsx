@@ -202,6 +202,7 @@ const MobileReleaseCardComponent = ({
               quality={85}
               alt={release.basic_information.title}
               loading="lazy"
+              className={styles.releaseImage}
               style={{
                 position: "relative",
                 zIndex: 2,
