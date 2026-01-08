@@ -55,10 +55,10 @@
   }
 
   @media (max-width: 768px) {
-    bottom: var(--space-4);
-    height: var(--button-height-sm);
+    bottom: var(--space-6);
+    height: 48px;
     left: var(--space-4);
-    min-width: var(--button-height-sm);
+    min-width: 48px;
 
     &:hover {
       padding: 0 var(--space-2);
