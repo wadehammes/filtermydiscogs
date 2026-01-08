@@ -11,10 +11,10 @@
   cursor: pointer;
   display: flex;
   gap: 0;
-  height: var(--button-height-md);
+  height: 48px;
   justify-content: center;
-  left: var(--space-6);
-  min-width: var(--button-height-md);
+  left: var(--space-4);
+  min-width: 48px;
   opacity: 0;
   padding: 0;
   position: fixed;
@@ -23,20 +23,27 @@
     background-color var(--transition-normal),
     border-color var(--transition-normal),
     opacity var(--transition-normal),
-    transform var(--transition-normal),
-    min-width var(--transition-normal),
-    padding var(--transition-normal),
-    gap var(--transition-normal);
+    transform var(--transition-normal);
   white-space: nowrap;
   z-index: var(--z-3-fixed);
+
+  @media (--tablet-up) {
+    bottom: var(--space-8);
+    height: var(--button-height-md);
+    left: var(--space-6);
+    min-width: var(--button-height-md);
+  }
 
   &:hover {
     background: var(--primary-hover);
     border-color: var(--primary-hover);
-    gap: var(--space-2);
-    min-width: auto;
-    padding: 0 var(--space-3);
     transform: translateY(0) translateY(-2px);
+
+    @media (--tablet-up) {
+      gap: var(--space-2);
+      min-width: auto;
+      padding: 0 var(--space-3);
+    }
   }
 
   &:active {
@@ -53,24 +60,18 @@
     opacity: 1;
     transform: translateY(0);
   }
-
-  @media (max-width: 768px) {
-    bottom: var(--space-4);
-    height: var(--button-height-sm);
-    left: var(--space-4);
-    min-width: var(--button-height-sm);
-
-    &:hover {
-      padding: 0 var(--space-2);
-    }
-  }
 }
 
 .icon {
   display: block;
   flex-shrink: 0;
-  height: var(--space-5);
-  width: var(--space-5);
+  height: var(--space-6);
+  width: var(--space-6);
+
+  @media (--tablet-up) {
+    height: var(--space-5);
+    width: var(--space-5);
+  }
 }
 
 .label {

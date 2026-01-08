@@ -11,7 +11,7 @@
   width: 100%;
   z-index: auto;
 
-  @media (min-width: 1024px) {
+  @media (--desktop-up) {
     display: flex;
   }
 }
@@ -53,7 +53,7 @@
   gap: var(--space-3);
   min-height: 0;
 
-  @media (min-width: 1024px) {
+  @media (--desktop-up) {
     padding: var(--space-4);
   }
 }
@@ -64,7 +64,7 @@
   position: relative;
   z-index: 1;
 
-  @media (min-width: 1024px) {
+  @media (--desktop-up) {
     padding: var(--space-2) var(--space-4);
     border-top: 1px solid var(--border);
   }

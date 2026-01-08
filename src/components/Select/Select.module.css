@@ -71,8 +71,10 @@
   transform: rotate(270deg);
 }
 
-.trigger[aria-expanded="true"] .icon {
-  transform: rotate(270deg);
+.trigger {
+  &[aria-expanded="true"] .icon {
+    transform: rotate(270deg);
+  }
 }
 
 .listbox {
@@ -109,7 +111,7 @@
   min-height: 32px;
   padding: var(--space-2) var(--space-3);
 
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
     min-height: auto;
   }
 

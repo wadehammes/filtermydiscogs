@@ -3,11 +3,11 @@
   width: 100%;
   max-width: 400px;
 
-  @media (min-width: 640px) {
+  @media (--mobile-l-up) {
     max-width: 500px;
   }
 
-  @media (min-width: 1024px) {
+  @media (--desktop-up) {
     max-width: 600px;
   }
 }

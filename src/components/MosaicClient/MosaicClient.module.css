@@ -6,118 +6,106 @@
   padding: var(--space-4);
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
     padding: var(--space-8);
   }
 }
 
 .header {
   color: var(--foreground);
-  margin-bottom: var(--space-12);
-  padding-top: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding-top: var(--space-2);
   text-align: center;
 
-  @media (max-width: 767px) {
-    margin-bottom: var(--space-6);
-    padding-top: var(--space-2);
+  @media (--tablet-up) {
+    margin-bottom: var(--space-12);
+    padding-top: var(--space-4);
   }
 
   h1 {
     color: var(--foreground);
-    font-size: var(--text-4xl);
+    font-size: var(--text-2xl);
     font-weight: var(--font-bold);
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-2);
 
-    @media (max-width: 767px) {
-      font-size: var(--text-2xl);
-      margin-bottom: var(--space-2);
-    }
-
-    @media (min-width: 768px) {
+    @media (--tablet-up) {
       font-size: var(--text-3xl);
+      margin-bottom: var(--space-4);
     }
   }
 
   p {
     color: var(--muted-foreground);
-    font-size: var(--text-lg);
-    margin-bottom: var(--space-8);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
 
-    @media (max-width: 767px) {
-      font-size: var(--text-sm);
-      margin-bottom: var(--space-4);
-    }
-
-    @media (min-width: 768px) {
+    @media (--tablet-up) {
       font-size: var(--text-xl);
+      margin-bottom: var(--space-8);
     }
   }
 }
 
 .controls {
-  align-items: center;
+  align-items: stretch;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
   display: flex;
-  flex-direction: row;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-3);
   justify-content: center;
   margin: 0 auto var(--space-6);
+  padding: var(--space-4);
+  width: 100%;
 
-  @media (max-width: 767px) {
-    align-items: stretch;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    width: 100%;
-  }
-
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    flex-direction: row;
     gap: var(--space-6);
+    padding: 0;
+    width: auto;
   }
 }
 
 .controlsLeft {
-  align-items: center;
+  align-items: stretch;
   display: flex;
-  flex-direction: row;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
 
-  @media (max-width: 767px) {
-    align-items: stretch;
-    flex-direction: column;
-    gap: var(--space-3);
-    width: 100%;
-  }
-
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
+    align-items: center;
+    flex-direction: row;
     gap: var(--space-6);
+    width: auto;
   }
 }
 
 .controlGroup {
-  align-items: center;
+  align-items: stretch;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  width: 100%;
 
-  @media (max-width: 767px) {
-    align-items: stretch;
-    width: 100%;
-  }
-
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
+    align-items: center;
     flex-direction: row;
     gap: var(--space-3);
+    width: auto;
   }
 }
 
 .aspectRatioGroup {
-  min-width: 200px;
+  min-width: auto;
 
-  @media (max-width: 767px) {
-    min-width: auto;
+  @media (--tablet-up) {
+    min-width: 200px;
   }
 
   :global(.container) {
@@ -222,19 +210,19 @@
   color: var(--primary-foreground);
   cursor: pointer;
   display: flex;
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   justify-content: center;
   min-height: var(--input-height);
-  min-width: 160px;
-  padding: var(--space-2) var(--space-6);
+  min-width: 100%;
+  padding: var(--space-2) var(--space-4);
   transition: var(--transition-normal);
   white-space: nowrap;
 
-  @media (max-width: 767px) {
-    font-size: var(--text-sm);
-    min-width: 100%;
-    padding: var(--space-2) var(--space-4);
+  @media (--tablet-up) {
+    font-size: var(--text-base);
+    min-width: 160px;
+    padding: var(--space-2) var(--space-6);
   }
 
   &:hover:not(:disabled) {
@@ -284,14 +272,14 @@
   justify-content: center;
   min-height: 400px;
   overflow: auto;
-  padding: var(--space-4);
+  padding: var(--space-2);
   width: 100%;
 
-  @media (max-width: 767px) {
-    padding: var(--space-2);
+  @media (--tablet-up) {
+    padding: var(--space-4);
   }
 
-  @media (min-width: 1000px) {
+  @media (--desktop-up) {
     margin: 0 auto;
     max-width: 95vw;
   }

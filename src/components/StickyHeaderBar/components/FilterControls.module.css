@@ -1,7 +1,7 @@
 .filtersContainer {
   display: none;
 
-  @media (min-width: 769px) {
+  @media (--tablet-up) {
     align-items: center;
     display: flex;
     flex: 1;

@@ -1,7 +1,7 @@
 .desktopCrateButton {
   display: none;
 
-  @media (min-width: 769px) {
+  @media (--tablet-up) {
     display: flex;
   }
 }
@@ -19,7 +19,7 @@
   min-width: var(--space-5);
   padding: 0;
 
-  @media (min-width: 769px) {
+  @media (--tablet-up) {
     font-size: var(--text-xs);
     height: var(--space-5);
     min-width: var(--space-5);

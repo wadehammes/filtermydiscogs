@@ -6,12 +6,9 @@
   width: 100%;
 
   &.withSidebar {
-    grid-template-areas: "main sidebar";
-    grid-template-columns: 1fr 400px;
-
-    @media (max-width: 480px) {
-      grid-template-areas: "main";
-      grid-template-columns: 1fr;
+    @media (--desktop-up) {
+      grid-template-areas: "main sidebar";
+      grid-template-columns: 1fr 400px;
     }
   }
 }
@@ -24,15 +21,13 @@
 }
 
 .sidebar {
-  grid-area: sidebar;
   display: none;
+  grid-area: sidebar;
 
   .withSidebar & {
-    display: block;
-  }
-
-  @media (max-width: 1023px) {
-    display: none;
+    @media (--desktop-up) {
+      display: block;
+    }
   }
 }
 
@@ -41,23 +36,23 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: var(--space-4);
-  width: 100%;
   padding-top: var(--space-4);
+  width: 100%;
+
+  p {
+    align-items: center;
+    color: var(--muted-foreground);
+    display: flex;
+    font-size: var(--text-base);
+    gap: var(--space-2);
+    margin: 0;
+  }
 }
 
 .headerControls {
   align-items: center;
   display: flex;
   gap: var(--space-3);
-}
-
-.releasesHeader p {
-  align-items: center;
-  color: var(--muted-foreground);
-  display: flex;
-  font-size: var(--text-base);
-  gap: var(--space-2);
-  margin: 0;
 }
 
 .loadingIcon {
@@ -83,32 +78,31 @@
 
 .releasesGrid {
   align-items: stretch;
+  contain-intrinsic-size: 400px 300px;
+  content-visibility: visible;
   display: grid;
   gap: var(--space-4);
   grid-template-columns: 1fr;
   justify-content: stretch;
   width: 100%;
-  content-visibility: visible;
-  contain-intrinsic-size: 400px 300px;
 
   & > div {
     min-width: 0;
     scroll-margin-top: 250px;
   }
 
-  @media (min-width: 620px) {
-    gap: var(--space-4);
+  @media (--mobile-l-up) {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
 
 .releasesList {
+  contain-intrinsic-size: 1px 800px;
+  content-visibility: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   width: 100%;
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 800px;
 
   & > div {
     scroll-margin-top: 250px;
@@ -116,33 +110,33 @@
 }
 
 .errorContainer {
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
   min-height: 50vh;
   padding: var(--space-8);
   text-align: center;
-}
 
-.errorContainer h2 {
-  color: var(--destructive);
-  margin-bottom: var(--space-4);
+  h2 {
+    color: var(--destructive);
+    margin-bottom: var(--space-4);
+  }
 }
 
 .emptyState {
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
   min-height: 50vh;
   padding: var(--space-8);
   text-align: center;
-}
 
-.emptyState h2 {
-  color: var(--muted-foreground);
-  margin-bottom: var(--space-4);
+  h2 {
+    color: var(--muted-foreground);
+    margin-bottom: var(--space-4);
+  }
 }
 
 .loadingTrigger {
@@ -161,32 +155,30 @@
   box-shadow: var(--shadow-lg);
   color: var(--primary-foreground);
   cursor: pointer;
-  display: none;
+  display: flex;
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   gap: var(--space-2);
   height: auto;
   justify-content: center;
-  min-height: 56px;
+  min-height: 48px;
   padding: var(--space-1) var(--space-4);
   position: fixed;
   right: var(--space-4);
   transition:
     background-color var(--transition-normal),
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal);
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
   z-index: var(--z-3-fixed);
 
-  @media (max-width: 1023px) {
-    display: flex;
+  @media (--desktop-up) {
+    display: none;
   }
 
   /* Hide FAB when mobile menu or filters drawer is open */
-  @media (max-width: 1023px) {
-    :global(body:has([data-mobile-menu-open="true"])) &,
-    :global(body:has([data-filters-drawer-open="true"])) & {
-      display: none;
-    }
+  :global(body:has([data-mobile-menu-open="true"])) &,
+  :global(body:has([data-filters-drawer-open="true"])) & {
+    display: none;
   }
 
   &:hover {
@@ -223,8 +215,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  text-align: left;
   justify-content: flex-start;
+  text-align: left;
 }
 
 .fabCount {

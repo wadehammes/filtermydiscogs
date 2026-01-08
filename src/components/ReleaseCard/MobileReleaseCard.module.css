@@ -57,6 +57,7 @@
   flex-shrink: 0;
   height: 100%;
   justify-content: center;
+  isolation: isolate;
   overflow: hidden;
   position: relative;
   max-width: 75px;
@@ -77,6 +78,13 @@
     width: calc(100% + 4rem);
     z-index: 0;
   }
+
+  > * {
+    border-radius: var(--radius-card) 0 0 var(--radius-card);
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+  }
 }
 
 .imageContainer > img[src],
@@ -89,6 +97,32 @@
   position: relative;
   width: 100%;
   z-index: 2;
+}
+
+.releaseImage {
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.releaseImage :global(span) {
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.releaseImage :global(span > img) {
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
 }
 
 .contentContainer {

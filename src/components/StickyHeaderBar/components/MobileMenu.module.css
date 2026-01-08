@@ -3,7 +3,7 @@
   display: flex;
   gap: var(--space-4);
 
-  @media (min-width: 769px) {
+  @media (--tablet-up) {
     display: none;
   }
 }

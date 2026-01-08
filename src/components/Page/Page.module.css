@@ -17,7 +17,7 @@
   padding: var(--space-8);
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
     flex-direction: row;
     justify-content: flex-end;
   }

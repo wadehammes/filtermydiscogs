@@ -65,7 +65,7 @@
 .content {
   padding: var(--space-6);
 
-  @media (min-width: 768px) {
+  @media (--tablet-up) {
     padding: var(--space-8);
   }
 }

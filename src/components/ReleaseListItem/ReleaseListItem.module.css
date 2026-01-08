@@ -4,9 +4,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   display: flex;
+  flex-direction: column;
   gap: var(--space-4);
   overflow: hidden;
   transition: var(--transition-fast);
+
+  @media (--tablet-up) {
+    flex-direction: row;
+  }
 
   &:hover {
     border-color: var(--primary);
@@ -28,9 +33,14 @@
 
 .imageContainer {
   flex-shrink: 0;
-  height: 120px;
+  height: 200px;
   overflow: hidden;
-  width: 120px;
+  width: 100%;
+
+  @media (--tablet-up) {
+    height: 120px;
+    width: 120px;
+  }
 
   img {
     height: 100%;
@@ -40,13 +50,19 @@
 }
 
 .content {
+  align-items: center;
   display: flex;
   flex: 1;
   flex-direction: row;
-  align-items: center;
   justify-content: space-between;
   min-width: 0;
-  padding: var(--space-4) var(--space-4) var(--space-4) 0;
+  padding: 0 var(--space-4) var(--space-4);
+  text-align: center;
+
+  @media (--tablet-up) {
+    padding: var(--space-4) var(--space-4) var(--space-4) 0;
+    text-align: left;
+  }
 }
 
 .contentLeft {
@@ -70,7 +86,11 @@
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+
+  @media (--tablet-up) {
+    white-space: nowrap;
+  }
 }
 
 .artistLink {
@@ -188,8 +208,13 @@
 .actions {
   align-items: center;
   display: flex;
-  gap: var(--space-2);
   flex-shrink: 0;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+
+  @media (--tablet-up) {
+    margin-top: 0;
+  }
 }
 
 .crateButton {
@@ -254,29 +279,5 @@
   &:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
-  }
-}
-
-@media (max-width: 768px) {
-  .releaseItem {
-    flex-direction: column;
-  }
-
-  .imageContainer {
-    height: 200px;
-    width: 100%;
-  }
-
-  .content {
-    align-items: center;
-    text-align: center;
-  }
-
-  .actions {
-    margin-top: var(--space-3);
-  }
-
-  .title {
-    white-space: normal;
   }
 }
