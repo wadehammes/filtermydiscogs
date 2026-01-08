@@ -380,6 +380,7 @@
   border-top: 4px solid var(--primary);
   height: var(--space-12);
   margin-bottom: var(--space-4);
+  font-family: var(--font-mono);
   width: var(--space-12);
 }
 

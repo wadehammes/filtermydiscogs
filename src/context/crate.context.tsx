@@ -31,6 +31,7 @@ interface CrateContextType {
   activeCrateId: string | null;
   selectedReleases: DiscogsRelease[];
   isLoading: boolean;
+  isLoadingCrate: boolean;
   addToCrate: (release: DiscogsRelease) => void;
   removeFromCrate: (releaseId: string) => void;
   isInCrate: (releaseId: string) => boolean;
@@ -65,7 +66,8 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { data: cratesData, isLoading, isError, error } = useCratesQuery();
   const crates = cratesData?.crates || [];
 
-  const { data: activeCrateData } = useCrateQuery(activeCrateId);
+  const { data: activeCrateData, isLoading: isLoadingCrate } =
+    useCrateQuery(activeCrateId);
   const activeCrateReleases = activeCrateData?.releases || [];
 
   useCrateSync();
@@ -340,6 +342,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       activeCrateId,
       selectedReleases,
       isLoading,
+      isLoadingCrate,
       addToCrate,
       removeFromCrate,
       isInCrate,
@@ -360,6 +363,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       activeCrateId,
       selectedReleases,
       isLoading,
+      isLoadingCrate,
       addToCrate,
       removeFromCrate,
       isInCrate,

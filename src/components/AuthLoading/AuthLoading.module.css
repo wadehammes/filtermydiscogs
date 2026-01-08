@@ -53,14 +53,10 @@
 
 .description {
   color: var(--muted-foreground);
-  font-family: var(--font-assistant), sans-serif;
+  font-family: var(--font-mono);
   font-size: var(--text-base);
   line-height: 1.6;
   margin: 0;
-
-  @media (min-width: 768px) {
-    font-size: var(--text-lg);
-  }
 }
 
 @keyframes spin {

@@ -122,7 +122,22 @@ export const fetchCrates = async (): Promise<CratesResponse> => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return response.json();
+    const data = await response.json();
+
+    // Transform paginated response to backward-compatible format
+    // API now returns { data: [...], pagination: {...} }
+    // but we need { crates: [...] } for backward compatibility
+    if (data.data && Array.isArray(data.data)) {
+      return { crates: data.data };
+    }
+
+    // Fallback for old format (if API still returns it)
+    if (data.crates && Array.isArray(data.crates)) {
+      return data;
+    }
+
+    // If neither format, return empty array
+    return { crates: [] };
   } catch (error) {
     if (error instanceof Error) {
       throw error;

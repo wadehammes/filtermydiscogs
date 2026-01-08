@@ -70,6 +70,7 @@ describe("ReleaseCard", () => {
       clearCrate: jest.fn(),
       isDrawerOpen: false,
       isLoading: false,
+      isLoadingCrate: false,
       isUpdatingCrate: false,
       isDeletingCrate: false,
     });

@@ -1,4 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  auditDatabaseOperation,
+  checkRateLimitWithResponse,
+  getUserIdFromRequest,
+  sanitizeError,
+} from "src/lib/api-helpers";
 import { type Prisma, prisma } from "src/lib/db";
 import type { DiscogsRelease } from "src/types";
 
@@ -10,17 +16,19 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
+    }
+    const { userId: userIdNum } = userIdResult;
+
+    // Check rate limit (write operation)
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
+    if (rateLimitError) {
+      return rateLimitError;
+    }
+
     const { id } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
 
     // Verify crate exists and belongs to user
     const crate = await prisma.crate.findUnique({
@@ -30,6 +38,7 @@ export async function POST(
           id,
         },
       },
+      select: { id: true },
     });
 
     if (!crate) {
@@ -73,6 +82,7 @@ export async function POST(
           instance_id: instanceId,
         },
       },
+      select: { instance_id: true },
     });
 
     if (existingRelease) {
@@ -98,54 +108,18 @@ export async function POST(
       },
     });
 
+    // Audit log
+    auditDatabaseOperation(userIdNum, "CrateRelease", "create", instanceId, {
+      crate_id: id,
+    });
+
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     console.error("Error adding release to crate:", error);
-
-    // Check if it was a unique constraint violation
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === "P2002"
-    ) {
-      return NextResponse.json(
-        { error: "Release already in crate" },
-        { status: 409 },
-      );
-    }
-
-    // Provide more detailed error information
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : typeof error === "object" && error !== null && "message" in error
-          ? String(error.message)
-          : "Failed to add release to crate";
-
-    console.error("Detailed error:", {
-      error,
-      errorMessage,
-      errorType: typeof error,
-      errorString: String(error),
-    });
-
-    // Check for connection/resource errors
-    if (
-      errorMessage.includes("INSUFFICIENT RESOURCES") ||
-      errorMessage.includes("P1001") ||
-      errorMessage.includes("connection") ||
-      errorMessage.includes("timeout")
-    ) {
-      return NextResponse.json(
-        {
-          error: "Database connection error",
-          details: "Please try again in a moment",
-        },
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    const sanitized = sanitizeError(error);
+    return NextResponse.json(
+      { error: sanitized.message },
+      { status: sanitized.status },
+    );
   }
 }

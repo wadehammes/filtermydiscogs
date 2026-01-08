@@ -1,6 +1,7 @@
 import { GoogleTagManager } from "@next/third-parties/google";
+import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
-import { Assistant } from "next/font/google";
+import { Assistant, JetBrains_Mono } from "next/font/google";
 import { Providers } from "src/components/Providers";
 
 import "src/styles/global.css";
@@ -11,6 +12,14 @@ const assistant = Assistant({
   weight: ["300", "400", "600", "700"],
   display: "swap",
   variable: "--font-assistant",
+  preload: true,
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "600", "700"],
+  display: "swap",
+  variable: "--font-mono",
   preload: true,
 });
 
@@ -50,7 +59,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={assistant.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={classNames(assistant.variable, jetbrainsMono.variable)}
+      suppressHydrationWarning
+    >
       <head>
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <script

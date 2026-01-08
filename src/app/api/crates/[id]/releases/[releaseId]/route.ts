@@ -1,4 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  auditDatabaseOperation,
+  checkRateLimitWithResponse,
+  getUserIdFromRequest,
+  sanitizeError,
+} from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 
 /**
@@ -9,17 +15,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; releaseId: string }> },
 ) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
+    }
+    const { userId: userIdNum } = userIdResult;
+
+    // Check rate limit (write operation)
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
+    if (rateLimitError) {
+      return rateLimitError;
+    }
+
     const { id, releaseId } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
 
     // Verify crate exists and belongs to user
     const crate = await prisma.crate.findUnique({
@@ -29,6 +37,7 @@ export async function DELETE(
           id,
         },
       },
+      select: { id: true },
     });
 
     if (!crate) {
@@ -46,14 +55,15 @@ export async function DELETE(
           },
         },
       });
+
+      // Audit log
+      auditDatabaseOperation(userIdNum, "CrateRelease", "delete", releaseId, {
+        crate_id: id,
+      });
     } catch (error) {
       // Check if it was a not found error
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "P2025"
-      ) {
+      const sanitized = sanitizeError(error);
+      if (sanitized.code === "NOT_FOUND") {
         return NextResponse.json(
           { error: "Release not found in crate" },
           { status: 404 },
@@ -65,9 +75,10 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error removing release from crate:", error);
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: "Failed to remove release from crate" },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }

@@ -1,4 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  checkRateLimitWithResponse,
+  getPaginationParams,
+  getUserIdFromRequest,
+  sanitizeError,
+} from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 import type { DiscogsRelease } from "src/types";
 
@@ -10,17 +16,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
+    }
+    const { userId: userIdNum } = userIdResult;
+
+    // Check rate limit
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, false);
+    if (rateLimitError) {
+      return rateLimitError;
+    }
+
     const { id } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
+    const { skip, take, page, pageSize } = getPaginationParams(request);
 
     // Get the crate first (without releases to reduce memory usage)
     const crate = await prisma.crate.findUnique({
@@ -30,11 +39,27 @@ export async function GET(
           id: id,
         },
       },
+      select: {
+        user_id: true,
+        id: true,
+        name: true,
+        is_default: true,
+        created_at: true,
+        updated_at: true,
+      },
     });
 
     if (!crate) {
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
+
+    // Get total count for pagination
+    const total = await prisma.crateRelease.count({
+      where: {
+        user_id: userIdNum,
+        crate_id: id,
+      },
+    });
 
     // Get releases separately with pagination to avoid loading all at once
     // This prevents memory issues with large crates
@@ -46,6 +71,8 @@ export async function GET(
       orderBy: {
         added_at: "desc",
       },
+      skip,
+      take,
       select: {
         release_data: true,
       },
@@ -64,31 +91,21 @@ export async function GET(
     return NextResponse.json({
       crate,
       releases: mappedReleases,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+        hasNextPage: page < Math.ceil(total / pageSize),
+        hasPreviousPage: page > 1,
+      },
     });
   } catch (error) {
     console.error("Error fetching crate:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
-    // Check for connection/resource errors
-    if (
-      errorMessage.includes("INSUFFICIENT RESOURCES") ||
-      errorMessage.includes("P1001") ||
-      errorMessage.includes("connection") ||
-      errorMessage.includes("timeout")
-    ) {
-      return NextResponse.json(
-        {
-          error: "Database connection error",
-          details: "Please try again in a moment",
-        },
-        { status: 503 },
-      );
-    }
-
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: "Failed to fetch crate", details: errorMessage },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }
@@ -101,17 +118,19 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
+    }
+    const { userId: userIdNum } = userIdResult;
+
+    // Check rate limit (write operation)
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
+    if (rateLimitError) {
+      return rateLimitError;
+    }
+
     const { id } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
 
     const body = await request.json();
     const { name, is_default } = body;
@@ -124,6 +143,7 @@ export async function PUT(
           id,
         },
       },
+      select: { id: true, name: true, is_default: true },
     });
 
     if (!existingCrate) {
@@ -159,6 +179,7 @@ export async function PUT(
             id,
           },
         },
+        select: { id: true },
       });
 
       if (duplicateCrate) {
@@ -182,7 +203,7 @@ export async function PUT(
       if (is_default) {
         // If setting this as default, unset other defaults
         // This ensures only one default crate per user
-        await prisma.crate.updateMany({
+        const updateResult = await prisma.crate.updateMany({
           where: {
             user_id: userIdNum,
             is_default: true,
@@ -194,6 +215,17 @@ export async function PUT(
             is_default: false,
           },
         });
+
+        // Audit log for bulk update
+        if (updateResult.count > 0) {
+          const { auditDatabaseOperation } = await import(
+            "src/lib/api-helpers"
+          );
+          auditDatabaseOperation(userIdNum, "Crate", "update", undefined, {
+            action: "unset_default",
+            affectedCount: updateResult.count,
+          });
+        }
       }
 
       updateData.is_default = is_default;
@@ -216,12 +248,17 @@ export async function PUT(
       data: updateData,
     });
 
+    // Audit log
+    const { auditDatabaseOperation } = await import("src/lib/api-helpers");
+    auditDatabaseOperation(userIdNum, "Crate", "update", id, updateData);
+
     return NextResponse.json({ crate: updatedCrate });
   } catch (error) {
     console.error("Error updating crate:", error);
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: "Failed to update crate" },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }
@@ -234,17 +271,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
+    }
+    const { userId: userIdNum } = userIdResult;
+
+    // Check rate limit (write operation)
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
+    if (rateLimitError) {
+      return rateLimitError;
+    }
+
     const { id } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
 
     // Check if this is the only crate
     const crateCount = await prisma.crate.count({
@@ -258,6 +297,14 @@ export async function DELETE(
       );
     }
 
+    // Get release count before deletion for audit
+    const releaseCount = await prisma.crateRelease.count({
+      where: {
+        user_id: userIdNum,
+        crate_id: id,
+      },
+    });
+
     // Verify crate exists and belongs to user, then delete (cascade will delete releases)
     await prisma.crate.delete({
       where: {
@@ -268,21 +315,19 @@ export async function DELETE(
       },
     });
 
+    // Audit log (sensitive operation)
+    const { auditDatabaseOperation } = await import("src/lib/api-helpers");
+    auditDatabaseOperation(userIdNum, "Crate", "delete", id, {
+      releaseCount,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting crate:", error);
-    // Check if it was a not found error
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === "P2025"
-    ) {
-      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
-    }
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: "Failed to delete crate" },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }

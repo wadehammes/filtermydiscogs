@@ -37,6 +37,8 @@ model CrateRelease {
   @@id([user_id, crate_id, instance_id])
   @@index([user_id, crate_id])
   @@index([user_id, instance_id])
+  @@index([added_at])
+  @@index([user_id, crate_id, added_at])
   @@map("crate_releases")
 }
 
