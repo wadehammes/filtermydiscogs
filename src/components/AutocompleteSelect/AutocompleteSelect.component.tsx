@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Check from "src/styles/icons/check-solid.svg";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import { isOptionSelected } from "src/utils/selectHelpers";
 import styles from "./AutocompleteSelect.module.css";
 
 interface AutocompleteOption {
@@ -203,13 +204,6 @@ const AutocompleteSelectComponent = ({
     }
   }, [disabled, isOpen]);
 
-  const isOptionSelected = (optionValue: string): boolean => {
-    if (Array.isArray(value)) {
-      return value.includes(optionValue);
-    }
-    return value === optionValue;
-  };
-
   return (
     <div ref={containerRef} className={classNames(styles.container, className)}>
       <div
@@ -277,7 +271,7 @@ const AutocompleteSelectComponent = ({
                   key={option.value}
                   className={classNames(
                     styles.option,
-                    isOptionSelected(option.value) && styles.selected,
+                    isOptionSelected(value, option.value) && styles.selected,
                     focusedIndex === index && styles.focused,
                   )}
                   tabIndex={focusedIndex === index ? 0 : -1}
@@ -290,7 +284,7 @@ const AutocompleteSelectComponent = ({
                   }}
                 >
                   <span className={styles.optionContent}>
-                    {isOptionSelected(option.value) && (
+                    {isOptionSelected(value, option.value) && (
                       <span className={styles.checkmark}>
                         <Check />
                       </span>

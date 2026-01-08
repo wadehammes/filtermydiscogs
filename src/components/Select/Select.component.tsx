@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Check from "src/styles/icons/check-solid.svg";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import { isOptionSelected } from "src/utils/selectHelpers";
 import styles from "./Select.module.css";
 
 interface SelectOption {
@@ -142,13 +143,6 @@ const SelectComponent = ({
     [isOpen, options, focusedIndex, handleOptionClick],
   );
 
-  const isOptionSelected = (optionValue: string): boolean => {
-    if (Array.isArray(value)) {
-      return value.includes(optionValue);
-    }
-    return value === optionValue;
-  };
-
   return (
     <div ref={containerRef} className={classNames(styles.container, className)}>
       <button
@@ -192,10 +186,10 @@ const SelectComponent = ({
               key={option.value}
               // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
               role="option"
-              aria-selected={isOptionSelected(option.value)}
+              aria-selected={isOptionSelected(value, option.value)}
               className={classNames(
                 styles.option,
-                isOptionSelected(option.value) && styles.selected,
+                isOptionSelected(value, option.value) && styles.selected,
                 focusedIndex === index && styles.focused,
               )}
               tabIndex={focusedIndex === index ? 0 : -1}
@@ -211,7 +205,7 @@ const SelectComponent = ({
               }}
             >
               <span className={styles.optionContent}>
-                {isOptionSelected(option.value) && (
+                {isOptionSelected(value, option.value) && (
                   <span className={styles.checkmark}>
                     <Check />
                   </span>

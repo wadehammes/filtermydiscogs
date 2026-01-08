@@ -1,17 +1,13 @@
 import classNames from "classnames";
 import Image from "next/image";
 import type React from "react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.component";
 import { useCrate } from "src/context/crate.context";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
-import type {
-  DiscogsArtist,
-  DiscogsLabel,
-  ReleaseListItemProps,
-} from "src/types";
+import { useFilters } from "src/context/filters.context";
+import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
+import type { DiscogsArtist, ReleaseListItemProps } from "src/types";
+import { getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseListItem.module.css";
 
 const ReleaseListItemComponent = ({
@@ -19,9 +15,8 @@ const ReleaseListItemComponent = ({
   isHighlighted = false,
   onExitRandomMode,
 }: ReleaseListItemProps) => {
-  const [isClicked, setIsClicked] = useState(false);
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
+  const { state: filtersState } = useFilters();
   const {
     labels,
     year,
@@ -35,86 +30,38 @@ const ReleaseListItemComponent = ({
     ? thumb
     : "https://placehold.jp/effbf2/000/60x60.png?text=%F0%9F%98%B5";
 
-  const releaseId = resource_url.split("/").pop() || "";
-  const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
+  const releaseUrl = getResourceUrl({
+    resourceUrl: resource_url,
+    type: "release",
+  });
 
-  // Convert label API resource_url to web URL if available
-  const getLabelUrl = useCallback((label: DiscogsLabel | undefined) => {
-    if (!label?.resource_url) return null;
-    const labelId = label.resource_url.split("/").pop();
-    return labelId ? `https://www.discogs.com/label/${labelId}` : null;
-  }, []);
+  const labelUrl = getResourceUrl({
+    resourceUrl: labels[0]?.resource_url,
+    type: "label",
+  });
 
   const getArtistUrl = useCallback((artist: DiscogsArtist) => {
-    if (!artist?.resource_url) return null;
-    const artistId = artist.resource_url.split("/").pop();
-    return artistId ? `https://www.discogs.com/artist/${artistId}` : null;
+    return getResourceUrl({
+      resourceUrl: artist?.resource_url,
+      type: "artist",
+    });
   }, []);
 
-  const labelUrl = getLabelUrl(labels[0]);
-
-  const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
-    releaseId,
-    isClicked,
-  );
-
-  const handleReleaseClick = useCallback(
-    async (e: React.MouseEvent) => {
-      e.preventDefault();
-
-      setIsClicked(true);
-
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "home",
-        label: "Release Clicked (List View)",
-        value: resource_url,
-      });
-
-      if (releaseData?.uri) {
-        window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-        return;
-      }
-    },
-    [releaseData?.uri, resource_url],
-  );
-
-  const handleUrlOpen = useCallback(() => {
-    if (releaseData?.uri) {
-      window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-    } else if (!isLoading) {
-      window.open(fallbackUri, "_blank", "noopener,noreferrer");
-    }
-  }, [releaseData?.uri, isLoading, fallbackUri]);
+  const handlePillClick = usePillClickHandler({
+    category: "releaseListItem",
+    onExitRandomMode,
+  });
 
   const handleStylePillClick = useCallback(
     (e: React.MouseEvent, style: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      trackEvent("stylePillClicked", {
-        action: "stylePillClicked",
-        category: "releaseListItem",
-        label: "Style Pill Clicked",
+      handlePillClick({
+        event: e,
         value: style,
-      });
-
-      // Exit random mode when clicking a style pill
-      if (filtersState.isRandomMode) {
-        filtersDispatch({
-          type: FiltersActionTypes.ToggleRandomMode,
-          payload: undefined,
-        });
-        // Call the callback to change view back to card
-        onExitRandomMode?.();
-      }
-
-      filtersDispatch({
-        type: FiltersActionTypes.ToggleStyle,
-        payload: style,
+        type: "style",
+        eventLabel: "Style Pill Clicked",
       });
     },
-    [filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
+    [handlePillClick],
   );
 
   const handleCrateToggle = useCallback(
@@ -132,161 +79,170 @@ const ReleaseListItemComponent = ({
     [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
   );
 
-  useEffect(() => {
-    if (isClicked && releaseData?.uri) {
-      handleUrlOpen();
-      setIsClicked(false);
-    }
-  }, [isClicked, releaseData?.uri, handleUrlOpen]);
-
   return (
-    <>
-      <div
-        className={classNames(styles.releaseItem, {
-          [styles.highlighted as string]: isHighlighted,
-          [styles.inCrate as string]: isInCrate(release.instance_id),
-        })}
-      >
-        <div className={styles.imageContainer}>
-          <Image
-            src={thumbUrl}
-            height={60}
-            width={60}
-            quality={85}
-            alt={title}
-            loading="lazy"
-            sizes="60px"
-          />
-        </div>
+    <div
+      className={classNames(styles.releaseItem, {
+        [styles.highlighted as string]: isHighlighted,
+        [styles.inCrate as string]: isInCrate(release.instance_id),
+      })}
+    >
+      <div className={styles.imageContainer}>
+        <Image
+          src={thumbUrl}
+          height={60}
+          width={60}
+          quality={85}
+          alt={title}
+          loading="lazy"
+          sizes="60px"
+        />
+      </div>
 
-        <div className={styles.content}>
-          <div className={styles.contentLeft}>
-            <div className={styles.mainInfo}>
-              <h3 className={styles.title}>
-                {artists.map((artist, index) => {
-                  const artistUrl = getArtistUrl(artist);
-                  return (
-                    <span key={artist.id || index}>
-                      {artistUrl ? (
-                        <a
-                          href={artistUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            trackEvent("artistClicked", {
-                              action: "artistClicked",
-                              category: "releaseListItem",
-                              label: "Artist Clicked",
-                              value: artistUrl,
-                            });
-                          }}
-                          className={styles.artistLink}
-                        >
-                          {artist.name}
-                        </a>
-                      ) : (
-                        artist.name
-                      )}
-                      {index < artists.length - 1 && ", "}
-                    </span>
-                  );
-                })}{" "}
-                -{" "}
-                <button
-                  type="button"
-                  onClick={handleReleaseClick}
-                  disabled={isLoading}
+      <div className={styles.content}>
+        <div className={styles.contentLeft}>
+          <div className={styles.mainInfo}>
+            <h3 className={styles.title}>
+              {artists.map((artist, index) => {
+                const artistUrl = getArtistUrl(artist);
+                return (
+                  <span key={artist.id || index}>
+                    {artistUrl ? (
+                      <a
+                        href={artistUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          trackEvent("artistClicked", {
+                            action: "artistClicked",
+                            category: "releaseListItem",
+                            label: "Artist Clicked",
+                            value: artistUrl,
+                          });
+                        }}
+                        className={styles.artistLink}
+                      >
+                        {artist.name}
+                      </a>
+                    ) : (
+                      artist.name
+                    )}
+                    {index < artists.length - 1 && ", "}
+                  </span>
+                );
+              })}{" "}
+              -{" "}
+              {releaseUrl ? (
+                <a
+                  href={releaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    trackEvent("releaseClicked", {
+                      action: "releaseClicked",
+                      category: "home",
+                      label: "Release Clicked (List View)",
+                      value: resource_url,
+                    });
+                  }}
                   className={styles.titleLink}
                   title="View release on Discogs"
                 >
                   {title}
-                </button>
-              </h3>
-              <p className={styles.details}>
-                {labelUrl ? (
-                  <a
-                    href={labelUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      trackEvent("labelClicked", {
-                        action: "labelClicked",
-                        category: "releaseListItem",
-                        label: "Label Clicked",
-                        value: labelUrl,
-                      });
-                    }}
-                    className={styles.labelLink}
-                  >
-                    {labels[0]?.name}
-                  </a>
-                ) : (
-                  labels[0]?.name
-                )}{" "}
-                {year !== 0 ? `— ${year}` : ""}
+                </a>
+              ) : (
+                <span>{title}</span>
+              )}
+            </h3>
+            <p className={styles.details}>
+              {labelUrl ? (
+                <a
+                  href={labelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    trackEvent("labelClicked", {
+                      action: "labelClicked",
+                      category: "releaseListItem",
+                      label: "Label Clicked",
+                      value: labelUrl,
+                    });
+                  }}
+                  className={styles.labelLink}
+                >
+                  {labels[0]?.name}
+                </a>
+              ) : (
+                labels[0]?.name
+              )}{" "}
+              {year !== 0 ? `— ${year}` : ""}
+            </p>
+            {release?.notes?.length > 0 && (
+              <p className={styles.notes}>
+                {release.notes.map((note) => note.value).join(", ")}
               </p>
-              {release?.notes?.length > 0 && (
-                <p className={styles.notes}>
-                  {release.notes.map((note) => note.value).join(", ")}
-                </p>
-              )}
-            </div>
-
-            <div className={styles.styles}>
-              {releaseStyles && releaseStyles.length > 0 && (
-                <div className={styles.stylesContainer}>
-                  {releaseStyles.map((style: string) => (
-                    <button
-                      key={style}
-                      type="button"
-                      className={classNames(styles.stylePill, {
-                        [styles.stylePillSelected as string]:
-                          filtersState.selectedStyles.includes(style),
-                      })}
-                      onClick={(e) => handleStylePillClick(e, style)}
-                      aria-label={`Filter by ${style} style`}
-                    >
-                      {style}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.crateButton}
-              onClick={handleCrateToggle}
-              aria-label={
-                isInCrate(release.instance_id)
-                  ? "Remove from crate"
-                  : "Add to crate"
-              }
-            >
-              {isInCrate(release.instance_id)
-                ? "− Remove from Crate"
-                : "+ Add to Crate"}
-            </button>
-            <button
-              type="button"
-              className={styles.discogsButton}
-              onClick={handleReleaseClick}
-              disabled={isLoading}
-            >
-              View on Discogs
-            </button>
+          <div className={styles.styles}>
+            {releaseStyles && releaseStyles.length > 0 && (
+              <div className={styles.stylesContainer}>
+                {releaseStyles.map((style: string) => (
+                  <button
+                    key={style}
+                    type="button"
+                    className={classNames(styles.stylePill, {
+                      [styles.stylePillSelected as string]:
+                        filtersState.selectedStyles.includes(style),
+                    })}
+                    onClick={(e) => handleStylePillClick(e, style)}
+                    aria-label={`Filter by ${style} style`}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.crateButton}
+            onClick={handleCrateToggle}
+            aria-label={
+              isInCrate(release.instance_id)
+                ? "Remove from crate"
+                : "Add to crate"
+            }
+          >
+            {isInCrate(release.instance_id)
+              ? "− Remove from Crate"
+              : "+ Add to Crate"}
+          </button>
+          {releaseUrl && (
+            <a
+              href={releaseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.discogsButton}
+              onClick={() => {
+                trackEvent("releaseClicked", {
+                  action: "releaseClicked",
+                  category: "home",
+                  label: "Release Clicked (List View)",
+                  value: resource_url,
+                });
+              }}
+            >
+              View on Discogs
+            </a>
+          )}
+        </div>
       </div>
-      <LoadingOverlay
-        message="Fetching Discogs Release URL"
-        isVisible={isLoading}
-      />
-    </>
+    </div>
   );
 };
 

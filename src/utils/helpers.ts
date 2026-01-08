@@ -26,3 +26,22 @@ export const envUrl = () => {
 export const isLocalhost = (): boolean => {
   return process.env.NODE_ENV === "development";
 };
+
+/**
+ * Converts a Discogs API resource_url to a web URL
+ * @param params - Object containing resourceUrl and type
+ * @param params.resourceUrl - The resource URL from the Discogs API (e.g., "/releases/123456")
+ * @param params.type - The type of resource: "artist", "label", or "release"
+ * @returns The web URL (e.g., "https://www.discogs.com/release/123456") or null if invalid
+ */
+export const getResourceUrl = ({
+  resourceUrl,
+  type,
+}: {
+  resourceUrl: string | undefined;
+  type: "artist" | "label" | "release";
+}): string | null => {
+  if (!resourceUrl) return null;
+  const id = resourceUrl.split("/").pop();
+  return id ? `https://www.discogs.com/${type}/${id}` : null;
+};
