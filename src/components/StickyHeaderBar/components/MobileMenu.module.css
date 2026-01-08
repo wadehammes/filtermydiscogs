@@ -1,7 +1,7 @@
 .mobileNav {
   align-items: center;
   display: flex;
-  gap: var(--space-6);
+  gap: var(--space-4);
 
   @media (min-width: 769px) {
     display: none;
