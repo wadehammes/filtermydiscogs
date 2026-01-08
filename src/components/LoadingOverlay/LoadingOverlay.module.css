@@ -38,6 +38,7 @@
   font-weight: var(--font-medium);
   margin: 0;
   text-align: center;
+  font-family: var(--font-mono);
 }
 
 @keyframes spin {

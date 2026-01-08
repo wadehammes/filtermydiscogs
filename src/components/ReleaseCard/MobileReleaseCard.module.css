@@ -176,7 +176,7 @@
 
 .meta {
   color: var(--muted-foreground);
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: var(--font-normal);
   line-height: 1.5;
@@ -276,14 +276,14 @@
 }
 
 .removeButton {
-  background: color-mix(in srgb, var(--destructive) 15%, var(--background));
-  border: 1px solid var(--destructive);
-  color: var(--destructive-hover);
+  background: var(--destructive);
+  border: 1px solid var(--destructive-hover);
+  color: var(--destructive-foreground);
 
   &:hover {
-    background: color-mix(in srgb, var(--destructive) 20%, var(--background));
-    border-color: var(--destructive-hover);
-    color: var(--destructive);
+    background: var(--destructive-hover);
+    border-color: var(--destructive-active);
+    color: var(--destructive-foreground);
     transform: translateY(-1px);
   }
 }

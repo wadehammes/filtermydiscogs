@@ -20,6 +20,7 @@
 .text {
   color: var(--foreground);
   font-size: var(--text-base);
+  font-family: var(--font-mono);
 }
 
 @keyframes spin {

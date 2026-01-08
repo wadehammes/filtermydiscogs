@@ -1,5 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  checkRateLimitWithResponse,
+  createPaginatedResponse,
+  getPaginationParams,
+  getUserIdFromRequest,
+  sanitizeError,
+} from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 
 /**
@@ -8,22 +15,38 @@ import { prisma } from "src/lib/db";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
+    }
+    const { userId: userIdNum } = userIdResult;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Check rate limit
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, false);
+    if (rateLimitError) {
+      return rateLimitError;
     }
 
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
+    const { skip, take, page, pageSize } = getPaginationParams(request);
 
-    // Get all crates for the user with release counts
+    // Get total count for pagination
+    const total = await prisma.crate.count({
+      where: { user_id: userIdNum },
+    });
+
+    // Get crates for the user with release counts (paginated)
     const crates = await prisma.crate.findMany({
       where: { user_id: userIdNum },
       orderBy: [{ is_default: "desc" }, { created_at: "asc" }],
-      include: {
+      skip,
+      take,
+      select: {
+        user_id: true,
+        id: true,
+        name: true,
+        is_default: true,
+        created_at: true,
+        updated_at: true,
         _count: {
           select: {
             releases: true,
@@ -32,8 +55,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // If no crates exist, create a default crate
-    if (crates.length === 0) {
+    // If no crates exist and we're on the first page, create a default crate
+    if (crates.length === 0 && page === 1 && total === 0) {
       const defaultCrate = await prisma.crate.create({
         data: {
           user_id: userIdNum,
@@ -41,7 +64,13 @@ export async function GET(request: NextRequest) {
           name: "My Crate",
           is_default: true,
         },
-        include: {
+        select: {
+          user_id: true,
+          id: true,
+          name: true,
+          is_default: true,
+          created_at: true,
+          updated_at: true,
           _count: {
             select: {
               releases: true,
@@ -61,11 +90,21 @@ export async function GET(request: NextRequest) {
         releaseCount: defaultCrate._count.releases,
       };
 
-      return NextResponse.json({ crates: [defaultCrateWithCount] });
+      return NextResponse.json({
+        data: [defaultCrateWithCount],
+        pagination: {
+          page: 1,
+          pageSize: 1,
+          total: 1,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      });
     }
 
     // Map crates to include release count in a cleaner format
-    const cratesWithCounts = crates.map((crate: (typeof crates)[0]) => ({
+    const cratesWithCounts = crates.map((crate) => ({
       user_id: crate.user_id,
       id: crate.id,
       name: crate.name,
@@ -75,72 +114,13 @@ export async function GET(request: NextRequest) {
       releaseCount: crate._count.releases,
     }));
 
-    return NextResponse.json({ crates: cratesWithCounts });
+    return createPaginatedResponse(cratesWithCounts, total, page, pageSize);
   } catch (error) {
     console.error("Error fetching crates:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    // Check if it's a Prisma initialization error
-    if (
-      errorMessage.includes("Prisma Client") ||
-      errorMessage.includes("Cannot find module '@prisma/client'")
-    ) {
-      console.error(
-        "Prisma Client not generated. Run: pnpm db:generate && pnpm db:push",
-      );
-      return NextResponse.json(
-        {
-          error: "Database not initialized",
-          details:
-            "Prisma Client not generated. Please run 'pnpm db:generate' and 'pnpm db:push'",
-        },
-        { status: 503 },
-      );
-    }
-
-    // Check if it's a database connection error
-    if (
-      errorMessage.includes("Can't reach database") ||
-      errorMessage.includes("P1001") ||
-      errorMessage.includes("DATABASE_URL")
-    ) {
-      console.error(
-        "Database connection error. Check DATABASE_URL environment variable.",
-      );
-      return NextResponse.json(
-        {
-          error: "Database connection failed",
-          details: "Please check your DATABASE_URL environment variable",
-        },
-        { status: 503 },
-      );
-    }
-
-    // Check for connection/resource errors
-    if (
-      errorMessage.includes("INSUFFICIENT RESOURCES") ||
-      errorMessage.includes("P1001") ||
-      errorMessage.includes("connection") ||
-      errorMessage.includes("timeout")
-    ) {
-      return NextResponse.json(
-        {
-          error: "Database connection error",
-          details: "Please try again in a moment",
-        },
-        { status: 503 },
-      );
-    }
-
-    console.error("Error details:", { errorMessage, errorStack });
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      {
-        error: "Failed to fetch crates",
-        details: errorMessage,
-      },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }
@@ -150,15 +130,16 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
     }
+    const { userId: userIdNum } = userIdResult;
 
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    // Check rate limit (write operation)
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
+    if (rateLimitError) {
+      return rateLimitError;
     }
 
     const body = await request.json();
@@ -184,6 +165,7 @@ export async function POST(request: NextRequest) {
         user_id: userIdNum,
         name: name.trim(),
       },
+      select: { id: true },
     });
 
     if (existingCrate) {
@@ -193,21 +175,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const crateId = randomUUID();
     const newCrate = await prisma.crate.create({
       data: {
         user_id: userIdNum,
-        id: randomUUID(),
+        id: crateId,
         name: name.trim(),
         is_default: false,
       },
     });
 
+    // Audit log
+    const { auditDatabaseOperation } = await import("src/lib/api-helpers");
+    auditDatabaseOperation(userIdNum, "Crate", "create", crateId, {
+      name: name.trim(),
+    });
+
     return NextResponse.json({ crate: newCrate }, { status: 201 });
   } catch (error) {
     console.error("Error creating crate:", error);
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: "Failed to create crate" },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }

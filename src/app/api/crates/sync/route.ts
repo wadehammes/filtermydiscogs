@@ -1,4 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  auditDatabaseOperation,
+  checkRateLimitWithResponse,
+  getUserIdFromRequest,
+  sanitizeError,
+} from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 
 /**
@@ -6,15 +12,16 @@ import { prisma } from "src/lib/db";
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.cookies.get("discogs_user_id")?.value;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userIdResult = getUserIdFromRequest(request);
+    if ("error" in userIdResult) {
+      return userIdResult.error;
     }
+    const { userId: userIdNum } = userIdResult;
 
-    const userIdNum = parseInt(userId, 10);
-    if (Number.isNaN(userIdNum)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    // Check rate limit (write operation - bulk delete)
+    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
+    if (rateLimitError) {
+      return rateLimitError;
     }
 
     const body = await request.json();
@@ -27,10 +34,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get all releases in all crates for this user
+    // Get all releases in all crates for this user (limit to prevent memory issues)
+    const MAX_RELEASES_TO_CHECK = 10000;
     const allCrateReleases = await prisma.crateRelease.findMany({
       where: { user_id: userIdNum },
       select: { instance_id: true },
+      take: MAX_RELEASES_TO_CHECK,
     });
 
     // Find releases that are in crates but not in collection
@@ -47,47 +56,50 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Remove orphaned releases from all crates
+    // Remove orphaned releases from all crates (batch delete for performance)
     const instanceIds = orphanedReleases.map(
       (r: { instance_id: string }) => r.instance_id,
     );
-    const result = await prisma.crateRelease.deleteMany({
-      where: {
-        user_id: userIdNum,
-        instance_id: {
-          in: instanceIds,
+
+    // Process in batches to avoid query size limits
+    const BATCH_SIZE = 1000;
+    let totalDeleted = 0;
+
+    for (let i = 0; i < instanceIds.length; i += BATCH_SIZE) {
+      const batch = instanceIds.slice(i, i + BATCH_SIZE);
+      const result = await prisma.crateRelease.deleteMany({
+        where: {
+          user_id: userIdNum,
+          instance_id: {
+            in: batch,
+          },
         },
+      });
+      totalDeleted += result.count;
+    }
+
+    // Audit log (sensitive bulk operation)
+    auditDatabaseOperation(
+      userIdNum,
+      "CrateRelease",
+      "bulk_delete",
+      undefined,
+      {
+        removedCount: totalDeleted,
+        operation: "sync",
       },
-    });
+    );
 
     return NextResponse.json({
       success: true,
-      removedCount: result.count,
+      removedCount: totalDeleted,
     });
   } catch (error) {
     console.error("Error syncing crates:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
-    // Check for connection/resource errors
-    if (
-      errorMessage.includes("INSUFFICIENT RESOURCES") ||
-      errorMessage.includes("P1001") ||
-      errorMessage.includes("connection") ||
-      errorMessage.includes("timeout")
-    ) {
-      return NextResponse.json(
-        {
-          error: "Database connection error",
-          details: "Please try again in a moment",
-        },
-        { status: 503 },
-      );
-    }
-
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: "Failed to sync crates", details: errorMessage },
-      { status: 500 },
+      { error: sanitized.message },
+      { status: sanitized.status },
     );
   }
 }

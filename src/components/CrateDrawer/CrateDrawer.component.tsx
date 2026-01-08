@@ -26,6 +26,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     toggleDrawer,
     isUpdatingCrate,
     isDeletingCrate,
+    isLoadingCrate,
   } = useCrate();
   const { state: viewState } = useView();
   const isMobile = useMediaQuery("(max-width: 1023px)");
@@ -67,7 +68,12 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
 
   const releasesContent = (
     <>
-      {selectedReleases.length === 0 ? (
+      {isLoadingCrate ? (
+        <div className={styles.emptyState}>
+          <div className={styles.loadingSpinner} />
+          <p>Loading crate...</p>
+        </div>
+      ) : selectedReleases.length === 0 ? (
         <div className={styles.emptyState}>
           <h3>No releases added to your crate yet.</h3>
           <p>
@@ -129,7 +135,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
                       .join(", ")}
                   </span>
                   <span className={`typography-span ${styles.itemLabel || ""}`}>
-                    {basic_information.labels[0]?.name} —{" "}
+                    {basic_information.labels[0]?.name} &bull;{" "}
                     {basic_information.year}
                   </span>
                 </div>

@@ -72,7 +72,9 @@ export const useCrateSync = () => {
         authState.isAuthenticated &&
         collectionData &&
         collectionData.pages?.length &&
-        cratesData
+        cratesData &&
+        cratesData.crates &&
+        Array.isArray(cratesData.crates)
       ) ||
       cratesData.crates.length === 0
     ) {
