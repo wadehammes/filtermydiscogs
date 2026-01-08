@@ -99,34 +99,35 @@ export function AboutClient() {
           <section className={styles.section}>
             <h2>Terms of Service</h2>
             <p>
-              By using Filter My Disco.gs, you agree to the following terms:
+              Here's the deal: use this app at your own risk. I'm not a lawyer,
+              but here's what you should know:
             </p>
             <ul>
               <li>
-                This application is provided "as is" without warranty of any
-                kind.
+                This thing is free and comes with zero guarantees. If it breaks,
+                I'll try to fix it, but no promises.
               </li>
               <li>
-                This service does not modify or delete data from your Discogs
-                account. We are not responsible for any issues that may occur
-                while using this service, as it only reads data from your
-                Discogs collection.
+                I only read your Discogs collection—I never touch, modify, or
+                delete anything in your actual Discogs account. Your collection
+                stays safe.
+              </li>
+              <li>Keep your Discogs account secure. That's on you, not me.</li>
+              <li>
+                I use OAuth, so I never see your password. Your Discogs login
+                stays between you and Discogs.
               </li>
               <li>
-                You are responsible for maintaining the security of your Discogs
-                account credentials.
+                Want to bail? Revoke access anytime in your Discogs settings. No
+                hard feelings.
               </li>
               <li>
-                This application uses OAuth to access your Discogs collection
-                data. We do not store your Discogs password.
+                I might change things up or shut it down. That's just how it
+                goes with free projects.
               </li>
               <li>
-                You may revoke access to your Discogs account at any time
-                through your Discogs settings.
-              </li>
-              <li>
-                We reserve the right to modify or discontinue the service at any
-                time without notice.
+                Right now it's free, but that might change. If I ever add paid
+                features or subscriptions, I'll give you a heads up first.
               </li>
             </ul>
           </section>
@@ -134,94 +135,103 @@ export function AboutClient() {
           <section className={styles.section}>
             <h2>Privacy Policy</h2>
             <p>
-              Your privacy is important to us. This privacy policy explains how
-              we handle your data:
+              I'm not in the data-selling business. Here's what I actually do
+              with your stuff:
             </p>
-            <h3>Data Collection</h3>
+            <h3>What I Collect</h3>
             <ul>
               <li>
-                We use OAuth 1.0a to authenticate with Discogs. We never see or
-                store your Discogs password.
+                OAuth 1.0a authentication—I never see your Discogs password.
+                That stays between you and Discogs.
               </li>
               <li>
-                We store OAuth tokens in your browser's local storage to
-                maintain your session.
+                OAuth tokens live in your browser's local storage so you don't
+                have to log in every time.
               </li>
               <li>
-                Collection data is fetched directly from Discogs API and cached
-                in your browser.
+                Your collection data comes straight from Discogs API and gets
+                cached in your browser to keep things snappy.
               </li>
               <li>
-                We do not collect, store, or transmit your personal information
-                to third parties.
+                Your crates? Those live in my Postgres database so they stick
+                around between sessions. That's the only server-side storage I
+                do.
+              </li>
+              <li>
+                I don't sell your data, share it, or do anything sketchy with
+                it. Period.
               </li>
             </ul>
-            <h3>Data Usage</h3>
+            <h3>What I Do With It</h3>
             <ul>
               <li>
-                Your collection data is only used to display your releases
-                within the application.
+                Your collection data is just for showing you your records.
+                That's it.
               </li>
               <li>
-                We do not analyze, sell, or share your collection data with
-                anyone.
+                I don't analyze it, mine it, or send it anywhere. Your music
+                taste stays yours.
               </li>
               <li>
-                All data processing happens locally in your browser or through
-                direct API calls to Discogs.
+                Collection data runs through your browser and hits Discogs API
+                directly. Your crates get saved to my Postgres database so they
+                don't disappear when you close the tab.
               </li>
               <li>
-                Your crates (custom collections you create) are stored in a
-                database and are associated with your user account. You can
-                clear all crates at any time using the "Clear All Data" button
-                in the Data Management section below.
+                Want to nuke everything? Hit "Clear All Data" below and I'll
+                wipe your crates from the database. Gone forever.
               </li>
             </ul>
-            <h3>Cookies and Local Storage</h3>
+            <h3>Cookies & Storage</h3>
             <ul>
               <li>
-                We use browser local storage to save your preferences (theme,
-                view settings, filters).
+                Local storage holds your preferences (theme, view settings,
+                filters). Just quality-of-life stuff.
               </li>
               <li>
-                OAuth tokens are stored in local storage for session management.
+                OAuth tokens hang out in local storage too, so you stay logged
+                in.
               </li>
-              <li>We do not use tracking cookies or analytics services.</li>
+              <li>
+                I use Google Tag Manager for basic analytics (page views,
+                clicks, that kind of thing). Standard web stuff—nothing
+                personal.
+              </li>
             </ul>
-            <h3>Third-Party Services</h3>
+            <h3>Third-Party Stuff</h3>
             <ul>
               <li>
-                This application integrates with Discogs API. Your use of this
-                application is also subject to Discogs' Terms of Service and
-                Privacy Policy.
+                The app talks to Discogs API. That's it. Their rules apply to
+                that relationship.
               </li>
               <li>
-                We use an image proxy service to optimize release thumbnails.
-                Images are cached but not permanently stored.
+                Google Tag Manager handles analytics. Google's privacy policy
+                applies there.
+              </li>
+              <li>
+                Images get proxied for speed, but I don't hoard them. They're
+                cached, not stored.
               </li>
             </ul>
           </section>
 
           <section className={styles.section}>
             <h2>Data Management</h2>
-            <p>
-              You can clear all data stored by this application at any time.
-              This includes:
-            </p>
+            <p>Want to start fresh? Clear everything out. This button wipes:</p>
             <ul>
-              <li>Authentication tokens and session data</li>
+              <li>All your auth tokens and session stuff</li>
               <li>
-                All your created and stored crates (stored in our database and
-                permanently deleted when cleared)
+                Every crate you've created (deleted from Postgres, gone
+                forever—no takebacks)
               </li>
-              <li>View preferences and settings</li>
+              <li>All your preferences and settings</li>
               <li>All cached collection data</li>
             </ul>
             <p>
-              <strong>Note:</strong> Clearing data will log you out and you will
-              need to authorize the application again to use it. All crates
-              stored in the database will be permanently deleted. This is useful
-              if you're using a shared device or want to start fresh.
+              <strong>Heads up:</strong> This logs you out and you'll need to
+              reconnect with Discogs. All your crates get permanently deleted
+              from the database. Useful if you're on a shared computer or just
+              want a clean slate.
             </p>
             <div className={styles.clearDataButton}>
               <Button
@@ -244,8 +254,7 @@ export function AboutClient() {
           <section className={styles.section}>
             <h2>Contact</h2>
             <p>
-              If you have questions, concerns, or feedback about Filter My
-              Disco.gs, please reach out:
+              Got questions? Found a bug? Want to suggest something? Hit me up:
             </p>
             <div className={styles.contactInfo}>
               <p>
@@ -265,19 +274,18 @@ export function AboutClient() {
                 </a>
               </p>
               <p>
-                <strong>Feature Requests:</strong> Please use{" "}
+                <strong>Feature Requests:</strong> Drop your ideas in{" "}
                 <a
                   href="https://github.com/wadehammes/filtermydiscogs/discussions"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   GitHub Discussions
-                </a>{" "}
-                to share feature ideas and suggestions.
+                </a>
+                . I'm always down to hear what would make this better.
               </p>
               <p>
-                <strong>Bug Reports:</strong> If you encounter an issue, please
-                submit it as an{" "}
+                <strong>Bug Reports:</strong> Something broken? Open an{" "}
                 <a
                   href="https://github.com/wadehammes/filtermydiscogs/issues"
                   target="_blank"
@@ -285,7 +293,7 @@ export function AboutClient() {
                 >
                   issue on GitHub
                 </a>
-                .
+                . The more details, the faster I can fix it.
               </p>
             </div>
           </section>
@@ -293,8 +301,8 @@ export function AboutClient() {
           <section className={styles.section}>
             <h2>Repository</h2>
             <p>
-              Filter My Disco.gs is an open-source project. You can view the
-              source code, contribute, or report issues on GitHub:
+              This is open source. Check out the code, submit a PR, or just
+              snoop around:
             </p>
             <div className={styles.repoLink}>
               <a
@@ -307,14 +315,14 @@ export function AboutClient() {
               </a>
             </div>
             <p className={styles.license}>
-              This project is licensed under the MIT License.
+              MIT License—use it, fork it, make it better.
             </p>
           </section>
 
           <section className={styles.section}>
             <h2>Built By</h2>
             <p>
-              Filter My Disco.gs was built by{" "}
+              Made by{" "}
               <a
                 href="https://wadehammes.com"
                 target="_blank"
@@ -322,7 +330,8 @@ export function AboutClient() {
               >
                 Wade Hammes
               </a>
-              .
+              . Just trying to make browsing your record collection a little
+              cooler.
             </p>
             <div className={styles.contactInfo}>
               <p>
