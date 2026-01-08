@@ -81,62 +81,84 @@ export const useCrateSync = () => {
       return;
     }
 
-    const collectionInstanceIds: string[] = [];
-    for (const page of collectionData.pages) {
-      if (page?.releases) {
-        for (const release of page.releases) {
-          if (release?.instance_id) {
-            collectionInstanceIds.push(String(release.instance_id));
-          }
+    // Process collection data in a non-blocking way
+    // Extract IDs efficiently using flatMap, then defer sorting/hashing to avoid blocking
+    const extractIds = () => {
+      // Use flatMap for better performance than nested loops
+      const collectionInstanceIds = collectionData.pages
+        .flatMap((page) => page?.releases ?? [])
+        .map((release) => release?.instance_id)
+        .filter((id): id is string => Boolean(id))
+        .map(String);
+
+      if (collectionInstanceIds.length === 0) {
+        return;
+      }
+
+      // Defer sorting and hashing to avoid blocking the main thread
+      const processHashAndSync = () => {
+        // Sort in a deferred way to avoid blocking
+        const sortedIds = collectionInstanceIds.sort();
+        const collectionHash = sortedIds.join(",");
+
+        if (
+          hasSyncedRef.current &&
+          lastCollectionHashRef.current === collectionHash
+        ) {
+          return;
         }
-      }
-    }
 
-    if (collectionInstanceIds.length === 0) {
-      return;
-    }
+        hasSyncedRef.current = true;
+        lastCollectionHashRef.current = collectionHash;
 
-    const collectionHash = collectionInstanceIds.sort().join(",");
+        debounceTimerRef.current = setTimeout(() => {
+          // Double-check mutations aren't pending and cooldown has passed before syncing
+          const now = Date.now();
+          const mutations = queryClient.getMutationCache().getAll();
+          const hasPendingMutations = mutations.some(
+            (mutation) =>
+              mutation.state.status === "pending" &&
+              (mutation.options.mutationKey?.[0] === "addReleaseToCrate" ||
+                mutation.options.mutationKey?.[0] === "removeReleaseFromCrate"),
+          );
 
-    if (
-      hasSyncedRef.current &&
-      lastCollectionHashRef.current === collectionHash
-    ) {
-      return;
-    }
+          if (
+            !hasPendingMutations &&
+            now >= mutationCooldownRef.current &&
+            lastCollectionHashRef.current === collectionHash
+          ) {
+            syncMutation.mutate(
+              { collectionInstanceIds: sortedIds },
+              {
+                onError: () => {
+                  hasSyncedRef.current = false;
+                },
+              },
+            );
+          } else {
+            // Reset sync state if we can't sync yet
+            hasSyncedRef.current = false;
+          }
+        }, 3000);
+      };
 
-    hasSyncedRef.current = true;
-    lastCollectionHashRef.current = collectionHash;
-
-    debounceTimerRef.current = setTimeout(() => {
-      // Double-check mutations aren't pending and cooldown has passed before syncing
-      const now = Date.now();
-      const mutations = queryClient.getMutationCache().getAll();
-      const hasPendingMutations = mutations.some(
-        (mutation) =>
-          mutation.state.status === "pending" &&
-          (mutation.options.mutationKey?.[0] === "addReleaseToCrate" ||
-            mutation.options.mutationKey?.[0] === "removeReleaseFromCrate"),
-      );
-
-      if (
-        !hasPendingMutations &&
-        now >= mutationCooldownRef.current &&
-        lastCollectionHashRef.current === collectionHash
-      ) {
-        syncMutation.mutate(
-          { collectionInstanceIds },
-          {
-            onError: () => {
-              hasSyncedRef.current = false;
-            },
-          },
-        );
+      // Defer sorting/hashing to avoid blocking - use requestIdleCallback if available
+      if (typeof requestIdleCallback !== "undefined") {
+        requestIdleCallback(processHashAndSync, { timeout: 1000 });
       } else {
-        // Reset sync state if we can't sync yet
-        hasSyncedRef.current = false;
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(processHashAndSync, 0);
       }
-    }, 3000);
+    };
+
+    // Defer initial extraction to avoid blocking the main thread
+    // Use requestIdleCallback to process when browser is idle, with 1s timeout fallback
+    if (typeof requestIdleCallback !== "undefined") {
+      requestIdleCallback(extractIds, { timeout: 1000 });
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      setTimeout(extractIds, 0);
+    }
 
     return () => {
       if (debounceTimerRef.current) {
