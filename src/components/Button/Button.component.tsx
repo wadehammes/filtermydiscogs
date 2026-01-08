@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
+import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./Button.module.css";
 
 export interface ButtonProps {
   variant?: "primary" | "secondary" | "danger" | "ghost" | "success";
   size?: "sm" | "md" | "lg";
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
   onPress?: () => void;
   onClick?: () => void;
   disabled?: boolean;
+  isLoading?: boolean;
+  loadingText?: string;
   "aria-label"?: string;
   "aria-labelledby"?: string;
 }
@@ -22,6 +25,8 @@ const ButtonComponent = ({
   onPress,
   onClick,
   disabled,
+  isLoading = false,
+  loadingText,
   ...props
 }: ButtonProps) => {
   const handleClick = onPress || onClick;
@@ -35,14 +40,19 @@ const ButtonComponent = ({
     .filter(Boolean)
     .join(" ");
 
+  const isDisabled = disabled || isLoading;
+
   return (
     <button
       {...props}
       onClick={handleClick}
-      disabled={disabled}
+      disabled={isDisabled}
       className={buttonClasses}
     >
-      {children}
+      {isLoading && (
+        <Spinner size={size === "sm" ? "sm" : size === "lg" ? "lg" : "md"} />
+      )}
+      {isLoading && loadingText ? loadingText : children}
     </button>
   );
 };

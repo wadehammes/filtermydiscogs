@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Button from "src/components/Button/Button.component";
 import { Page } from "src/components/Page/Page.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import styles from "./error.module.css";
@@ -36,9 +37,9 @@ export default function ReleasesError({
             <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
         )}
-        <button onClick={reset} className={styles.button} type="button">
+        <Button variant="primary" size="md" onClick={reset}>
           Retry
-        </button>
+        </Button>
       </div>
     </Page>
   );

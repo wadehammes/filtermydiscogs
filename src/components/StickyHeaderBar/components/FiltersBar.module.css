@@ -55,6 +55,8 @@
     display: flex;
     font-family: inherit;
     font-size: var(--text-xs);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     font-weight: var(--font-medium);
     justify-content: center;
     padding: var(--space-2) var(--space-3);
