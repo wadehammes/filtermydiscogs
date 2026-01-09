@@ -11,7 +11,7 @@ import MinusIcon from "src/styles/icons/minus-solid.svg";
 import PlusIcon from "src/styles/icons/plus-solid.svg";
 import type { ReleaseCardProps } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
-import { getResourceUrl } from "src/utils/helpers";
+import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseCard.module.css";
 
 const ReleaseCardComponent = ({
@@ -36,9 +36,13 @@ const ReleaseCardComponent = ({
 
   const dateAdded = release.date_added ? formatDate(release.date_added) : null;
 
-  const thumbUrl =
-    (cover_image || thumb) ??
-    "https://placehold.jp/effbf2/000/150x150.png?text=%F0%9F%98%B5";
+  const thumbUrl = getReleaseImageUrl({
+    thumb,
+    cover_image,
+    width: 200,
+    height: 200,
+    preferCoverImage: true,
+  });
 
   const releaseUrl = getResourceUrl({
     resourceUrl: resource_url,

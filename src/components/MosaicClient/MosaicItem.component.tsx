@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
+import { getReleaseImageUrl } from "src/utils/helpers";
 import styles from "./MosaicClient.module.css";
 
 interface MosaicItemProps {
@@ -64,14 +65,13 @@ export default function MosaicItem({
     }
   }, [isClicked, releaseData?.uri, handleUrlOpen]);
 
-  const imageUrl =
-    totalReleases > 150
-      ? release.basic_information.thumb ||
-        release.basic_information.cover_image ||
-        "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5"
-      : release.basic_information.cover_image ||
-        release.basic_information.thumb ||
-        "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
+  const imageUrl = getReleaseImageUrl({
+    thumb: release.basic_information.thumb,
+    cover_image: release.basic_information.cover_image,
+    width: 100,
+    height: 100,
+    preferCoverImage: totalReleases <= 150,
+  });
 
   return (
     <button

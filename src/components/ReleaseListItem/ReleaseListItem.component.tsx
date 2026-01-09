@@ -7,7 +7,7 @@ import { useCrate } from "src/context/crate.context";
 import { useFilters } from "src/context/filters.context";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsArtist, ReleaseListItemProps } from "src/types";
-import { getResourceUrl } from "src/utils/helpers";
+import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseListItem.module.css";
 
 const ReleaseListItemComponent = ({
@@ -25,10 +25,15 @@ const ReleaseListItemComponent = ({
     thumb,
     styles: releaseStyles,
     resource_url,
+    cover_image,
   } = release.basic_information;
-  const thumbUrl = thumb
-    ? thumb
-    : "https://placehold.jp/effbf2/000/60x60.png?text=%F0%9F%98%B5";
+  const thumbUrl = getReleaseImageUrl({
+    thumb,
+    cover_image,
+    width: 60,
+    height: 60,
+    preferCoverImage: false,
+  });
 
   const releaseUrl = getResourceUrl({
     resourceUrl: resource_url,
