@@ -1,14 +1,14 @@
 .searchBar {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 25rem;
 
   @media (min-width: 640px) {
-    max-width: 500px;
+    max-width: 31.25rem;
   }
 
   @media (min-width: 1024px) {
-    max-width: 600px;
+    max-width: 37.5rem;
   }
 }
 

@@ -13,7 +13,7 @@
   flex-direction: column;
   gap: var(--space-4);
   justify-content: center;
-  min-height: 200px;
+  min-height: 12.5rem;
   width: 100%;
 }
 

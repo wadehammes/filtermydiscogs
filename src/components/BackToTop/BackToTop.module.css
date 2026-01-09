@@ -56,9 +56,9 @@
 
   @media (max-width: 768px) {
     bottom: var(--space-6);
-    height: 48px;
+    height: 3rem;
     left: var(--space-4);
-    min-width: 48px;
+    min-width: 3rem;
 
     &:hover {
       padding: 0 var(--space-2);

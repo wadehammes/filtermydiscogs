@@ -13,7 +13,7 @@
   overflow: hidden;
   padding: 0;
   position: relative;
-  scroll-margin-top: 250px;
+  scroll-margin-top: 15.625rem;
   text-align: left;
   text-decoration: none;
   transition:
@@ -35,7 +35,7 @@
   }
 
   &.randomMode {
-    min-width: 320px;
+    min-width: 20rem;
   }
 
   &:hover {
@@ -60,7 +60,7 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
-  max-width: 75px;
+  max-width: 4.6875rem;
   width: 100%;
 }
 
@@ -231,8 +231,8 @@
   font-weight: var(--font-medium);
   gap: var(--space-2);
   justify-content: center;
-  min-height: 48px;
-  min-width: 48px;
+  min-height: 3rem;
+  min-width: 3rem;
   padding: var(--space-2);
   transition:
     background-color var(--transition-normal),

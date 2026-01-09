@@ -15,7 +15,7 @@
 
 .content {
   color: var(--foreground);
-  max-width: 400px;
+  max-width: 25rem;
   padding: var(--space-8);
   text-align: center;
 }

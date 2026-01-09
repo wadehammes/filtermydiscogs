@@ -16,7 +16,7 @@
   background: transparent;
   margin: var(--space-4);
   max-height: calc(100vh - var(--space-8));
-  max-width: 500px;
+  max-width: 31.25rem;
   position: relative;
   width: 90%;
 }
