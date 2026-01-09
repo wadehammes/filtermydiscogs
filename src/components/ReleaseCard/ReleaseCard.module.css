@@ -19,7 +19,7 @@
   overflow: hidden;
   position: relative;
   min-height: 0;
-  scroll-margin-top: 250px;
+  scroll-margin-top: 15.625rem;
 
   &.highlighted {
     border: 2px solid var(--primary);
@@ -35,7 +35,7 @@
   }
 
   &.randomMode {
-    min-width: 320px;
+    min-width: 20rem;
   }
 
   &::before {
@@ -247,19 +247,19 @@
   color: var(--card-foreground);
   cursor: pointer;
   display: flex;
-  height: 24px;
+  height: 1.5rem;
   justify-content: center;
   padding: 0;
   transition:
     background-color var(--transition-normal),
     transform var(--transition-normal),
     opacity var(--transition-normal);
-  width: 24px;
+  width: 1.5rem;
 }
 
 .externalLinkIcon {
-  height: 12px;
-  width: 12px;
+  height: 0.75rem;
+  width: 0.75rem;
 }
 
 .tooltip {
@@ -350,8 +350,8 @@
 
 .listButtonIcon {
   display: flex;
-  height: 12px;
-  width: 12px;
+  height: 0.75rem;
+  width: 0.75rem;
   color: currentColor;
 }
 

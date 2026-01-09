@@ -63,7 +63,7 @@
   justify-content: center;
   align-items: center;
   overflow: auto;
-  min-height: 400px;
+  min-height: 25rem;
   padding: var(--space-2);
 
   @media (min-width: 1000px) {

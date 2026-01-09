@@ -9,10 +9,10 @@
   > svg {
     height: auto;
     object-fit: contain;
-    max-width: 180px;
+    max-width: 11.25rem;
 
     @media (min-width: 768px) {
-      max-width: 225px;
+      max-width: 14.0625rem;
     }
   }
 }

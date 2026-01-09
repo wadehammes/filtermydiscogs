@@ -3,8 +3,9 @@
   display: flex;
   flex-direction: row;
   gap: var(--space-1);
+  height: 100%;
   justify-content: space-between;
-  padding: var(--space-3) 0;
+  padding: 0;
   position: relative;
   width: 100%;
 
@@ -14,12 +15,14 @@
 
   @media (min-width: 769px) {
     gap: var(--space-4);
-    padding: var(--space-1) 0;
   }
 }
 
 .desktopNav {
   display: none;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
 
   @media (min-width: 769px) {
     display: block;

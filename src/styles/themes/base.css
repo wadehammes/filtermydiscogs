@@ -16,15 +16,23 @@
   --space-24: 6rem;
 
   /* Component sizing */
-  --button-height-sm: 32px;
-  --button-height-md: 40px;
+  --button-height-sm: 2rem;
+  --button-height-md: 2.5rem;
   --button-padding-sm: var(--space-2) var(--space-3);
   --button-padding-md: 0.625rem 1rem;
   --button-padding-lg: 0.75rem var(--space-3);
-  --input-height: 40px;
+  --input-height: 2.5rem;
   --input-padding: var(--space-2);
   --input-padding-full: var(--space-2) var(--space-3);
   --transition-button: all var(--transition-normal);
+
+  /* Sticky header heights - fixed for consistent positioning */
+  --sticky-header-height: 4rem;
+  --filters-bar-height: 3.5rem;
+  --sticky-header-total-height: calc(
+    var(--sticky-header-height) +
+    var(--filters-bar-height)
+  );
 
   /* Typography */
   --text-xxs: 0.625rem;

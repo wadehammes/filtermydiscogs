@@ -85,12 +85,15 @@
   contain-intrinsic-size: 400px 300px;
 
   & > div {
-    scroll-margin-top: 250px;
+    scroll-margin-top: 15.625rem;
   }
 
   @media (min-width: 620px) {
     gap: var(--space-4);
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(clamp(18.75rem, 20vw, 20rem), 1fr)
+      );
   }
 }
 
@@ -103,7 +106,7 @@
   contain-intrinsic-size: 1px 800px;
 
   & > div {
-    scroll-margin-top: 250px;
+    scroll-margin-top: 15.625rem;
   }
 }
 
@@ -141,5 +144,5 @@
   display: flex;
   justify-content: center;
   padding: var(--space-8);
-  min-height: 100px;
+  min-height: 6.25rem;
 }

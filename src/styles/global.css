@@ -99,16 +99,21 @@ video {
 
 html,
 body {
-  padding: 0;
   color: var(--foreground);
-  font-size: 14px;
   font-family: var(--font-assistant), sans-serif;
-}
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1.125rem);
+  padding: 0;
 
-@media (min-width: 768px) {
-  html,
-  body {
-    font-size: 16px;
+  @media (min-width: 768px) and (max-width: 1023px) {
+    font-size: clamp(0.875rem, 0.8125rem + 0.25vw, 0.9375rem);
+  }
+
+  @media (min-width: 1024px) {
+    font-size: clamp(0.825rem, 0.772rem + 0.35vw, 0.881rem);
+  }
+
+  @media (min-width: 1440px) {
+    font-size: clamp(0.881rem, 0.828rem + 0.263vw, 0.991rem);
   }
 }
 
@@ -230,16 +235,13 @@ button {
   background: var(--sticky-header-background, var(--background));
   border-bottom: 1px solid var(--border);
   display: flex;
+  height: var(--sticky-header-height);
   justify-content: center;
-  padding: var(--space-3) var(--space-4);
+  padding: 0 var(--space-4);
   position: sticky;
   top: 0;
   width: 100%;
   z-index: var(--z-3-fixed);
-
-  @media (min-width: 768px) {
-    padding: var(--space-3) var(--space-4) var(--space-4);
-  }
 
   & > *:not(h1) {
     flex: 1;

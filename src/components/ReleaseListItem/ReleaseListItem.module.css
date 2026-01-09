@@ -28,9 +28,9 @@
 
 .imageContainer {
   flex-shrink: 0;
-  height: 120px;
+  height: 7.5rem;
   overflow: hidden;
-  width: 120px;
+  width: 7.5rem;
 
   img {
     height: 100%;
@@ -263,7 +263,7 @@
   }
 
   .imageContainer {
-    height: 200px;
+    height: 12.5rem;
     width: 100%;
   }
 

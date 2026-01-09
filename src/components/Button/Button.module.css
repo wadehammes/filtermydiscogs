@@ -107,22 +107,22 @@
 
 .sm {
   font-size: var(--text-xs);
-  height: 32px;
-  min-height: 32px;
+  height: var(--button-height-sm);
+  min-height: var(--button-height-sm);
   padding: 0 var(--space-2);
 }
 
 .md {
   font-size: var(--text-sm);
-  height: 40px;
-  min-height: 40px;
+  height: var(--button-height-md);
+  min-height: var(--button-height-md);
   padding: 0 var(--space-3);
 }
 
 .lg {
   font-size: var(--text-base);
-  height: 48px;
-  min-height: 48px;
+  height: 3rem;
+  min-height: 3rem;
   padding: 0 var(--space-4);
 }
 

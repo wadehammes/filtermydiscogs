@@ -5,12 +5,8 @@
   border-radius: var(--radius-ui);
   display: inline-flex;
   gap: 0;
-  margin: 0 var(--space-4);
+  margin: 0;
   padding: var(--space-1);
-
-  @media (min-width: 769px) {
-    margin: 0 var(--space-6);
-  }
 
   &.disabled {
     .navItem:not(.active) {

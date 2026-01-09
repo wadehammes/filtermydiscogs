@@ -1,13 +1,12 @@
 .drawer {
-  --top-offset: 139px;
   background: var(--background);
   border-left: 1px solid var(--border);
   display: none;
   flex-direction: column;
-  height: calc(100vh - var(--top-offset));
+  height: calc(100vh - var(--sticky-header-total-height));
   overflow: hidden;
   position: sticky;
-  top: var(--top-offset);
+  top: var(--sticky-header-total-height);
   width: 100%;
   z-index: auto;
 
@@ -83,7 +82,7 @@
   flex-direction: column;
   gap: var(--space-4);
   justify-content: center;
-  min-height: 200px;
+  min-height: 12.5rem;
   padding: var(--space-8);
   text-align: center;
   text-wrap: balance;
@@ -107,8 +106,8 @@
   border: 3px solid var(--border);
   border-radius: var(--radius-full);
   border-top-color: var(--foreground);
-  height: 40px;
-  width: 40px;
+  height: 2.5rem;
+  width: 2.5rem;
 }
 
 @keyframes spin {
@@ -154,9 +153,9 @@
 .itemImage {
   border-radius: var(--radius-card) 0 0 var(--radius-card);
   flex-shrink: 0;
-  height: 100px;
+  height: 6.25rem;
   overflow: hidden;
-  width: 100px;
+  width: 6.25rem;
 
   img {
     height: 100%;
@@ -210,10 +209,10 @@
   display: flex;
   flex-shrink: 0;
   font-size: var(--text-sm);
-  height: 24px;
+  height: 1.5rem;
   justify-content: center;
   transition: all var(--transition-normal);
-  width: 24px;
+  width: 1.5rem;
 
   &:hover {
     background: color-mix(in srgb, var(--destructive) 20%, var(--background));

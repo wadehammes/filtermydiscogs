@@ -4,7 +4,7 @@
   flex-direction: column;
   gap: var(--space-4);
   justify-content: center;
-  min-height: 200px;
+  min-height: 12.5rem;
   padding: var(--space-8);
   text-align: center;
 }
@@ -41,7 +41,7 @@
   width: 100%;
 
   & > div {
-    max-width: 600px;
+    max-width: 37.5rem;
     width: 100%;
   }
 }
