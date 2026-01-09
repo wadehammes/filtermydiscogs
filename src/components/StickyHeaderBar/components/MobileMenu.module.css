@@ -3,7 +3,7 @@
   display: flex;
   gap: var(--space-4);
 
-  @media (min-width: 769px) {
+  @media (min-width: 1024px) {
     display: none;
   }
 }
@@ -107,12 +107,14 @@
       align-items: center;
       display: flex;
       flex-shrink: 0;
-      height: var(--space-5);
+      height: 24px;
       justify-content: center;
-      width: var(--space-5);
+      width: 24px;
 
       :global(svg) {
         height: 100%;
+        max-height: 100%;
+        max-width: 100%;
         width: 100%;
       }
     }

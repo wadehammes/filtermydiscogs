@@ -13,7 +13,7 @@
     gap: var(--space-2);
   }
 
-  @media (min-width: 769px) {
+  @media (min-width: 1024px) {
     gap: var(--space-4);
   }
 }
@@ -24,7 +24,7 @@
   position: absolute;
   transform: translateX(-50%);
 
-  @media (min-width: 769px) {
+  @media (min-width: 1024px) {
     display: block;
   }
 }
@@ -33,7 +33,7 @@
   display: block;
   margin-left: auto;
 
-  @media (min-width: 769px) {
+  @media (min-width: 1024px) {
     display: none;
   }
 }

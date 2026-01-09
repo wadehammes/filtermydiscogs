@@ -60,27 +60,31 @@ export const Login = () => {
         <div className={`${styles.bentoCard} ${styles.featuresCard}`}>
           <h3>What you can do with your collection:</h3>
           <ul>
-            <li>Browse and search your entire collection</li>
             <li>
-              Filter by styles, genres, years, and formats; sort by label, year,
-              date added, or rating
-            </li>
-            <li>Hit random and rediscover something from your collection</li>
-            <li>
-              <strong>Create and manage multiple crates</strong>—perfect for DJ
-              gigs, organizing by theme, or tracking favorites
+              <strong>Explore your Collections Insights Dashboard</strong>—
+              discover your collection milestones, style evolution over time,
+              growth trends, and more with beautiful visualizations
             </li>
             <li>
-              Generate mosaic grids from your crates in different formats and
-              sizes
+              <strong>Browse, search, and filter your entire collection</strong>{" "}
+              - rediscover your favorite albums and artists
             </li>
             <li>
-              <strong>
-                Free to use (
-                <Link href="/about">support is greatly appreciated</Link>)
-              </strong>
+              <strong>Create and manage multiple crates</strong> — perfect for
+              DJ gigs, organizing by theme, or tracking favorites
+            </li>
+            <li>
+              <strong>Generate mosaic grids from your crates</strong> in
+              different formats and sizes—perfect for social sharing
             </li>
           </ul>
+          <p className={styles.note}>
+            Free to use (
+            <Link href="/about" className={styles.supportLink}>
+              support is greatly appreciated
+            </Link>
+            )
+          </p>
         </div>
       </div>
 

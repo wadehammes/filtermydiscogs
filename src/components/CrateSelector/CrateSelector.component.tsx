@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { useCallback, useState } from "react";
 import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
@@ -55,14 +56,14 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
 
   if (isLoading) {
     return (
-      <div className={`${styles.container} ${className || ""}`}>
+      <div className={classNames(styles.container, className)}>
         <div className={styles.loading}>Loading crates...</div>
       </div>
     );
   }
 
   return (
-    <div className={`${styles.container} ${className || ""}`}>
+    <div className={classNames(styles.container, className)}>
       {!isCreating ? (
         <>
           <Select

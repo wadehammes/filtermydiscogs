@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
@@ -109,7 +110,9 @@ export default function ReleasesClient() {
     <Page>
       <StickyHeaderBar allReleasesLoaded={true} currentPage="releases" />
       <div
-        className={`${styles.container} ${isDrawerOpen ? styles.withSidebar : ""}`}
+        className={classNames(styles.container, {
+          [styles.withSidebar as string]: isDrawerOpen,
+        })}
       >
         <div ref={mainContentRef} className={styles.mainContent}>
           {hasReleases && (

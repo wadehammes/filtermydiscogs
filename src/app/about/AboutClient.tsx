@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -115,10 +116,13 @@ export function AboutClient() {
             </p>
             <div className={styles.donationContent}>
               <div className={styles.donationQR}>
-                <img
+                <Image
                   src="/images/paypal-qr.png"
                   alt="PayPal Donation QR Code"
                   className={styles.qrCode}
+                  width={200}
+                  height={200}
+                  quality={90}
                 />
                 <p className={styles.qrLabel}>Scan to donate</p>
               </div>

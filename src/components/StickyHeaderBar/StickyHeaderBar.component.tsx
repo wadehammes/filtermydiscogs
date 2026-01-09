@@ -40,6 +40,7 @@ export const StickyHeaderBar = ({
               currentPage={currentPage}
               showMosaic={true}
               showReleases={true}
+              showDashboard={true}
               isDisabled={!allReleasesLoaded}
             />
           </div>
@@ -50,6 +51,7 @@ export const StickyHeaderBar = ({
               currentPage={currentPage}
               showMosaic={true}
               showReleases={true}
+              showDashboard={true}
               showFilters={!hideFilters}
               isDisabled={!allReleasesLoaded}
             />

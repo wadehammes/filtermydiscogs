@@ -1,0 +1,106 @@
+.chartsGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.chartContainer {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.chartContainer h2 {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  margin: 0 0 var(--space-4);
+}
+
+.chartWrapper {
+  height: 380px;
+  min-height: 380px;
+  overflow: visible;
+  padding-bottom: var(--space-2);
+  padding-top: var(--space-4);
+  width: 100%;
+
+  /* Style pie chart labels for better visibility */
+  :global(.recharts-pie-label-text) {
+    fill: var(--foreground) !important;
+    font-size: 11px;
+    font-weight: var(--font-semibold);
+    text-shadow:
+      0 0 3px var(--background),
+      0 0 3px var(--background),
+      0 0 3px var(--background);
+  }
+
+  /* Style tooltip text for better contrast */
+  :global(.recharts-tooltip-wrapper) {
+    color: var(--popover-foreground);
+  }
+
+  :global(.recharts-default-tooltip) {
+    background-color: var(--popover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--popover-foreground) !important;
+  }
+
+  :global(.recharts-tooltip-item-value),
+  :global(.recharts-tooltip-item-name) {
+    color: var(--popover-foreground) !important;
+  }
+}
+
+/* Improve pie chart legend layout */
+.chartWrapper :global(.recharts-legend-wrapper) {
+  overflow: visible;
+  padding-top: 20px;
+  width: 100%;
+}
+
+.chartWrapper :global(.recharts-default-legend) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+.chartWrapper :global(.recharts-legend-item) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.chartWrapper :global(.recharts-legend-item-text) {
+  color: var(--foreground);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.chartWrapper :global(*),
+.chartWrapper :global(*:focus),
+.chartWrapper :global(*:focus-visible),
+.chartWrapper :global(svg:focus),
+.chartWrapper :global(svg:focus-visible) {
+  outline: none !important;
+  border: none !important;
+}

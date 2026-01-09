@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import type { FC } from "react";
 import CratesIcon from "src/styles/icons/crates-solid.svg";
 import styles from "./ViewToggle.module.css";
@@ -22,13 +23,13 @@ export const ViewToggle: FC<ViewToggleProps> = ({
   className,
 }) => {
   return (
-    <div className={`${styles.wrapper} ${className || ""}`}>
+    <div className={classNames(styles.wrapper, className)}>
       <div className={styles.container}>
         <button
           type="button"
-          className={`${styles.toggleButton} ${
-            currentView === "card" ? styles.active : ""
-          }`}
+          className={classNames(styles.toggleButton, {
+            [styles.active as string]: currentView === "card",
+          })}
           onClick={() => onViewChange("card")}
           aria-label="Switch to card view"
           title="Card view"
@@ -49,9 +50,9 @@ export const ViewToggle: FC<ViewToggleProps> = ({
         </button>
         <button
           type="button"
-          className={`${styles.toggleButton} ${
-            currentView === "list" ? styles.active : ""
-          }`}
+          className={classNames(styles.toggleButton, {
+            [styles.active as string]: currentView === "list",
+          })}
           onClick={() => onViewChange("list")}
           aria-label="Switch to list view"
           title="List view"
@@ -71,9 +72,9 @@ export const ViewToggle: FC<ViewToggleProps> = ({
         </button>
         <button
           type="button"
-          className={`${styles.toggleButton} ${
-            currentView === "random" ? styles.active : ""
-          }`}
+          className={classNames(styles.toggleButton, {
+            [styles.active as string]: currentView === "random",
+          })}
           onClick={() => {
             if (currentView === "random" && onRandomClick) {
               onRandomClick();
@@ -110,9 +111,9 @@ export const ViewToggle: FC<ViewToggleProps> = ({
       {onCratesClick && (
         <button
           type="button"
-          className={`${styles.cratesButton} ${
-            isCratesOpen ? styles.active : ""
-          }`}
+          className={classNames(styles.cratesButton, {
+            [styles.active as string]: isCratesOpen,
+          })}
           onClick={onCratesClick}
           aria-label={isCratesOpen ? "Close crates" : "Open crates"}
           title={isCratesOpen ? "Close crates" : "View your crates"}
