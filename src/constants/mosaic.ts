@@ -19,6 +19,16 @@ export const MOSAIC_CONSTANTS = {
     SQUARE: { width: 1, height: 1, name: "Square" },
     LANDSCAPE: { width: 16, height: 9, name: "Landscape (16:9)" },
     PORTRAIT: { width: 3, height: 4, name: "Portrait (3:4)" },
+    MOBILE_PORTRAIT: {
+      width: 9,
+      height: 19.5,
+      name: "Mobile Portrait (9:19.5)",
+    },
+    MOBILE_LANDSCAPE: {
+      width: 19.5,
+      height: 9,
+      name: "Mobile Landscape (19.5:9)",
+    },
   } as const,
 
   // Canvas size constraints
@@ -28,6 +38,8 @@ export const MOSAIC_CONSTANTS = {
   FIXED_SQUARE_CANVAS_SIZE: 1000,
   FIXED_LANDSCAPE_CANVAS_SIZE: 1600,
   FIXED_PORTRAIT_CANVAS_SIZE: 1200,
+  FIXED_MOBILE_PORTRAIT_CANVAS_SIZE: 2000,
+  FIXED_MOBILE_LANDSCAPE_CANVAS_SIZE: 2000,
 
   // Grid calculations
   CONTAINER_PADDING: 16,
@@ -112,17 +124,35 @@ export function calculateOptimalGrid(
     fixedCanvasWidth = MOSAIC_CONSTANTS.FIXED_SQUARE_CANVAS_SIZE;
     fixedCanvasHeight = MOSAIC_CONSTANTS.FIXED_SQUARE_CANVAS_SIZE;
   } else if (aspectRatioValue > 1) {
-    // Landscape: 1600x900 (16:9)
-    fixedCanvasWidth = MOSAIC_CONSTANTS.FIXED_LANDSCAPE_CANVAS_SIZE;
-    fixedCanvasHeight = Math.floor(
-      MOSAIC_CONSTANTS.FIXED_LANDSCAPE_CANVAS_SIZE / aspectRatioValue,
-    );
+    // Landscape orientations
+    if (aspectRatioValue === 19.5 / 9) {
+      // Mobile Landscape: 19.5:9
+      fixedCanvasWidth = MOSAIC_CONSTANTS.FIXED_MOBILE_LANDSCAPE_CANVAS_SIZE;
+      fixedCanvasHeight = Math.floor(
+        MOSAIC_CONSTANTS.FIXED_MOBILE_LANDSCAPE_CANVAS_SIZE / aspectRatioValue,
+      );
+    } else {
+      // Standard Landscape: 1600x900 (16:9)
+      fixedCanvasWidth = MOSAIC_CONSTANTS.FIXED_LANDSCAPE_CANVAS_SIZE;
+      fixedCanvasHeight = Math.floor(
+        MOSAIC_CONSTANTS.FIXED_LANDSCAPE_CANVAS_SIZE / aspectRatioValue,
+      );
+    }
   } else {
-    // Portrait: 900x1200 (3:4)
-    fixedCanvasHeight = MOSAIC_CONSTANTS.FIXED_PORTRAIT_CANVAS_SIZE;
-    fixedCanvasWidth = Math.floor(
-      MOSAIC_CONSTANTS.FIXED_PORTRAIT_CANVAS_SIZE * aspectRatioValue,
-    );
+    // Portrait orientations
+    if (aspectRatioValue === 9 / 19.5) {
+      // Mobile Portrait: 9:19.5
+      fixedCanvasHeight = MOSAIC_CONSTANTS.FIXED_MOBILE_PORTRAIT_CANVAS_SIZE;
+      fixedCanvasWidth = Math.floor(
+        MOSAIC_CONSTANTS.FIXED_MOBILE_PORTRAIT_CANVAS_SIZE * aspectRatioValue,
+      );
+    } else {
+      // Standard Portrait: 900x1200 (3:4)
+      fixedCanvasHeight = MOSAIC_CONSTANTS.FIXED_PORTRAIT_CANVAS_SIZE;
+      fixedCanvasWidth = Math.floor(
+        MOSAIC_CONSTANTS.FIXED_PORTRAIT_CANVAS_SIZE * aspectRatioValue,
+      );
+    }
   }
 
   // Calculate grid dimensions that best fit the aspect ratio

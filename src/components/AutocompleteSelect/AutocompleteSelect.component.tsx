@@ -61,27 +61,31 @@ const AutocompleteSelectComponent = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Reset search term and focus when opening the dropdown
   useEffect(() => {
     if (isOpen) {
       setFocusedIndex(-1);
       setSearchTerm("");
-      // Calculate if menu should open upward
-      if (containerRef.current && dropdownRef.current) {
-        const triggerRect = containerRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const spaceBelow = viewportHeight - triggerRect.bottom;
-        const estimatedMenuHeight = Math.min(
-          250,
-          filteredOptions.length * 40 + 60,
-        ); // max-height + search input
-
-        // Open upward if there's not enough space below (with some buffer)
-        setOpenUpward(spaceBelow < estimatedMenuHeight + 20);
-      }
       // Focus the input when opening
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
+    }
+  }, [isOpen]);
+
+  // Calculate dropdown position when it opens or filtered options change
+  useEffect(() => {
+    if (isOpen && containerRef.current && dropdownRef.current) {
+      const triggerRect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - triggerRect.bottom;
+      const estimatedMenuHeight = Math.min(
+        250,
+        filteredOptions.length * 40 + 60,
+      ); // max-height + search input
+
+      // Open upward if there's not enough space below (with some buffer)
+      setOpenUpward(spaceBelow < estimatedMenuHeight + 20);
     }
   }, [isOpen, filteredOptions.length]);
 
@@ -147,7 +151,7 @@ const AutocompleteSelectComponent = ({
     [isOpen],
   );
 
-  const handleKeyDown = useCallback(
+  const handleTriggerKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (!isOpen) {
         if (
@@ -158,6 +162,14 @@ const AutocompleteSelectComponent = ({
           event.preventDefault();
           setIsOpen(true);
         }
+      }
+    },
+    [isOpen],
+  );
+
+  const handleInputKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isOpen) {
         return;
       }
 
@@ -184,6 +196,7 @@ const AutocompleteSelectComponent = ({
           );
           break;
         case "Escape":
+          event.preventDefault();
           setIsOpen(false);
           setFocusedIndex(-1);
           setSearchTerm("");
@@ -192,6 +205,9 @@ const AutocompleteSelectComponent = ({
           setIsOpen(false);
           setFocusedIndex(-1);
           setSearchTerm("");
+          break;
+        default:
+          // Allow all other keys (typing) to work normally
           break;
       }
     },
@@ -213,7 +229,7 @@ const AutocompleteSelectComponent = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={handleTriggerClick}
-        onKeyDown={handleKeyDown}
+        onKeyDown={handleTriggerKeyDown}
         tabIndex={disabled ? -1 : 0}
       >
         <div className={styles.valueContainer}>
@@ -261,7 +277,8 @@ const AutocompleteSelectComponent = ({
               placeholder={`Search ${label.toLowerCase()}...`}
               value={searchTerm}
               onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
+              onKeyDown={handleInputKeyDown}
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
           {filteredOptions.length > 0 ? (
