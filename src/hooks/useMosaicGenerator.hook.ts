@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { calculateOptimalGrid, MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import type { DiscogsRelease } from "src/types";
+import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   createOptimizedImageLoader,
   getCacheMemoryUsage,
@@ -180,12 +181,13 @@ export function useMosaicGenerator({
         const x = col * cellSize;
         const y = row * cellSize;
 
-        const originalImageUrl =
-          releases.length > 100
-            ? release.basic_information.thumb ||
-              release.basic_information.cover_image
-            : release.basic_information.cover_image ||
-              release.basic_information.thumb;
+        const originalImageUrl = getReleaseImageUrl({
+          thumb: release.basic_information.thumb,
+          cover_image: release.basic_information.cover_image,
+          width: cellSize,
+          height: cellSize,
+          preferCoverImage: releases.length <= 100,
+        });
 
         const drawPlaceholder = () => {
           ctx.fillStyle = MOSAIC_CONSTANTS.PLACEHOLDER_COLOR;

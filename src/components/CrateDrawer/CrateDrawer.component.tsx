@@ -7,6 +7,7 @@ import { CrateSelector } from "src/components/CrateSelector/CrateSelector.compon
 import { useCrate } from "src/context/crate.context";
 import { useView } from "src/context/view.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { getReleaseImageUrl } from "src/utils/helpers";
 import styles from "./CrateDrawer.module.css";
 
 interface CrateDrawerProps {
@@ -86,10 +87,13 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         <div className={styles.releasesList}>
           {selectedReleases.map((release) => {
             const { basic_information } = release;
-            const imageUrl =
-              basic_information.cover_image ||
-              basic_information.thumb ||
-              "https://placehold.jp/effbf2/000/100x100.png?text=%F0%9F%98%B5";
+            const imageUrl = getReleaseImageUrl({
+              thumb: basic_information.thumb,
+              cover_image: basic_information.cover_image,
+              width: 100,
+              height: 100,
+              preferCoverImage: true,
+            });
 
             return (
               // biome-ignore lint/a11y/useSemanticElements: Cannot use button here due to nested button (remove button)

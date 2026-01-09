@@ -17,7 +17,7 @@ import { useFilters } from "src/context/filters.context";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
-import { getResourceUrl } from "src/utils/helpers";
+import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleasesTable.module.css";
 
 interface ReleasesTableProps {
@@ -84,9 +84,13 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             const thumb = getValue();
             const title = row.original.basic_information.title;
             const release = row.original;
-            const thumbUrl = thumb
-              ? thumb
-              : "https://placehold.jp/effbf2/000/40x40.png?text=%F0%9F%98%B5";
+            const thumbUrl = getReleaseImageUrl({
+              thumb,
+              cover_image: row.original.basic_information.cover_image,
+              width: 40,
+              height: 40,
+              preferCoverImage: false,
+            });
 
             return (
               <div className={styles.imageCell}>

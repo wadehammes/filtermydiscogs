@@ -83,7 +83,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "placehold.jp",
+        hostname: "placehold.co",
       },
       {
         protocol: "https",
