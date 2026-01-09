@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Spinner from "src/components/Spinner/Spinner.component";
 import { ALL_RELEASES_LOADED } from "src/constants";
 import Check from "src/styles/icons/check-solid.svg";
 import styles from "./ReleasesLoading.module.css";
@@ -39,7 +40,11 @@ export const ReleasesLoading = ({
         </span>
       ) : (
         <>
-          <div className={styles.spinner} />
+          <Spinner
+            size="xl"
+            className={styles.spinner}
+            aria-label="Loading your collection"
+          />
           <div className={styles.loadingText}>
             Loading your collection...
             {progress && (

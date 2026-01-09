@@ -1,3 +1,4 @@
+import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./LoadingTrigger.module.css";
 
 interface LoadingTriggerProps {
@@ -14,7 +15,7 @@ export const LoadingTrigger = ({
       {isFetchingNextPage && (
         <div className={styles.overlay}>
           <div className={styles.content}>
-            <div className={styles.spinner} />
+            <Spinner size="md" aria-label="Loading more releases" />
             <p className={styles.message}>Loading more releases...</p>
           </div>
         </div>

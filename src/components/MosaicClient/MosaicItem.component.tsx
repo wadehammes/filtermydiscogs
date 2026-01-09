@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import Spinner from "src/components/Spinner/Spinner.component";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -92,7 +93,7 @@ export default function MosaicItem({
       />
       {isLoading && (
         <div className={styles.loadingOverlay}>
-          <div className={styles.loadingSpinner}></div>
+          <Spinner size="sm" aria-label="Loading release" />
         </div>
       )}
     </button>

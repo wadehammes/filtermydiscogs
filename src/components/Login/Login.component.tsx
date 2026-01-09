@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import Button from "src/components/Button/Button.component";
 import ErrorMessage from "src/components/ErrorMessage/ErrorMessage.component";
 import { useAuth } from "src/context/auth.context";
@@ -32,6 +33,7 @@ export const Login = () => {
 
         <div className={`${styles.bentoCard} ${styles.actionCard}`}>
           <Logo className={styles.logo} />
+
           <p className={styles.description}>
             Connect your Discogs account to explore your collection
           </p>
@@ -50,9 +52,9 @@ export const Login = () => {
             Connect with Discogs
           </Button>
 
-          <a href="/legal" className={styles.aboutLink}>
+          <Link href="/legal" className={styles.aboutLink}>
             Terms & Privacy
-          </a>
+          </Link>
         </div>
 
         <div className={`${styles.bentoCard} ${styles.featuresCard}`}>
@@ -72,10 +74,10 @@ export const Login = () => {
               Generate mosaic grids from your crates in different formats and
               sizes
             </li>
-            <li>Works great on your phone, tablet, or desktop</li>
             <li>
               <strong>
-                Free to use (although subscriptions may happen later)
+                Free to use (
+                <Link href="/about">support is greatly appreciated</Link>)
               </strong>
             </li>
           </ul>
@@ -90,7 +92,7 @@ export const Login = () => {
           </a>
         </span>
         <span>
-          <a href="/about">About</a>
+          <Link href="/about">About</Link>
         </span>
         <span>
           <a

@@ -6,7 +6,7 @@
   margin-bottom: var(--space-4);
   padding: 0 var(--space-4);
 
-  p {
+  .headerText {
     align-items: center;
     color: var(--muted-foreground);
     display: flex;
@@ -22,22 +22,4 @@
   display: flex;
   font-size: var(--text-sm);
   gap: var(--space-1);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-full);
-  border-top: 2px solid var(--primary);
-  height: var(--space-4);
-  width: var(--space-4);
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }

@@ -50,7 +50,10 @@ const ButtonComponent = ({
       className={buttonClasses}
     >
       {isLoading && (
-        <Spinner size={size === "sm" ? "sm" : size === "lg" ? "lg" : "md"} />
+        <Spinner
+          size={size === "sm" ? "sm" : size === "lg" ? "lg" : "md"}
+          aria-label={loadingText || "Loading"}
+        />
       )}
       {isLoading && loadingText ? loadingText : children}
     </button>

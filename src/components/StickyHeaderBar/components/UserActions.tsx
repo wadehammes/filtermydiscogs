@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import Button from "src/components/Button/Button.component";
@@ -18,7 +18,6 @@ export const UserActions = ({
   showMosaic = true,
   showUsername = true,
 }: UserActionsProps) => {
-  const router = useRouter();
   const { logout, state: authState } = useAuth();
   const { username } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -61,7 +60,6 @@ export const UserActions = ({
       label: "Navigate to Mosaic",
       value: "header",
     });
-    router.push("/mosaic");
   };
 
   const buttonSize = "sm";
@@ -71,15 +69,15 @@ export const UserActions = ({
   return (
     <div className={containerClass}>
       {showMosaic && (
-        <Button
-          variant="secondary"
-          size={buttonSize}
-          onPress={handleMosaicClick}
+        <Link
+          href="/mosaic"
+          className={styles.mosaicLink}
+          onClick={handleMosaicClick}
           aria-label="View mosaic"
         >
           <span>🖼️</span>
           <span>Mosaic</span>
-        </Button>
+        </Link>
       )}
 
       {showUsername && username && (

@@ -155,11 +155,17 @@
       position: relative;
 
       &::before {
-        color: var(--primary);
-        content: "✓";
-        font-weight: var(--font-bold);
+        background-color: var(--primary);
+        content: "";
+        height: 1em;
         left: 0;
+        mask-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIiBmaWxsPSJibGFjayI+PHBhdGggZD0iTTQzOC42IDEwNS40QzQ1MS4xIDExNy45IDQ1MS4xIDEzOC4xIDQzOC42IDE1MC42TDE4Mi42IDQwNi42QzE3MC4xIDQxOS4xIDE0OS45IDQxOS4xIDEzNy40IDQwNi42TDkuMzcyIDI3OC42Qy0zLjEyNCAyNjYuMS0zLjEyNCAyNDUuOSA5LjM3MiAyMzMuNEMyMS44NyAyMjAuOSA0Mi4xMyAyMjAuOSA1NC42MyAyMzMuNEwxNTkuMSAzMzguN0wzOTMuNCAxMDUuNEM0MDUuOSA5Mi44OCA0MjYuMSA5Mi44OCA0MzguNiAxMDUuNEg0MzguNnoiLz48L3N2Zz4=");
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-size: contain;
         position: absolute;
+        transform: translateY(0.25em);
+        width: 1em;
       }
 
       strong {

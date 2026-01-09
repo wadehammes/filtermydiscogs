@@ -21,13 +21,7 @@
 }
 
 .spinner {
-  animation: spin 1s linear infinite;
-  border: 3px solid color-mix(in srgb, var(--foreground) 30%, transparent);
-  border-radius: var(--radius-full);
-  border-top: 3px solid var(--primary);
-  height: var(--button-height-md);
   margin: 0 auto var(--space-6);
-  width: var(--button-height-md);
 }
 
 .title {
@@ -50,14 +44,5 @@
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
   }
 }

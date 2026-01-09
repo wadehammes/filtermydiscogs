@@ -307,16 +307,6 @@
   position: absolute;
   right: 0;
   top: 0;
-
-  .loadingSpinner {
-    animation: spin 1s linear infinite;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-full);
-    border-top: 2px solid var(--primary);
-    height: var(--space-5);
-    margin: 0;
-    width: var(--space-5);
-  }
 }
 
 .loadingContainer {
@@ -330,23 +320,8 @@
   font-size: var(--text-sm);
 }
 
-.mainLoadingSpinner {
-  animation: spin 1s linear infinite;
-  border: 4px solid var(--border);
-  border-radius: var(--radius-full);
-  border-top: 4px solid var(--primary);
-  height: var(--space-12);
+.spinner {
   margin-bottom: var(--space-4);
-  width: var(--space-12);
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .emptyState {

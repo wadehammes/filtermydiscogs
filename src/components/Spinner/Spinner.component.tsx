@@ -1,9 +1,9 @@
 import styles from "./Spinner.module.css";
 
 export interface SpinnerProps {
-  size?: "sm" | "md" | "lg";
-  className?: string;
-  "aria-label"?: string;
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+  className?: string | undefined;
+  "aria-label": string;
 }
 
 export const Spinner = ({
@@ -12,7 +12,13 @@ export const Spinner = ({
   "aria-label": ariaLabel = "Loading",
   ...props
 }: SpinnerProps) => {
-  const spinnerClasses = [styles.spinner, styles[size], className]
+  const sizeClass =
+    size === "2xl"
+      ? styles.twoXl
+      : size === "3xl"
+        ? styles.threeXl
+        : styles[size];
+  const spinnerClasses = [styles.spinner, sizeClass, className]
     .filter(Boolean)
     .join(" ");
 

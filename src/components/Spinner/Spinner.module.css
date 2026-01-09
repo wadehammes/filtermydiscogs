@@ -1,25 +1,45 @@
 .spinner {
   animation: spin 0.7s linear infinite;
-  border: 2.5px solid currentColor;
+  border: 3px solid var(--border);
   border-radius: var(--radius-full);
-  border-top-color: transparent;
+  border-top-color: var(--primary);
   display: inline-block;
   vertical-align: middle;
 }
 
+.xs {
+  height: var(--space-4);
+  width: var(--space-4);
+}
+
 .sm {
-  height: 1em;
-  width: 1em;
+  height: var(--space-5);
+  width: var(--space-5);
 }
 
 .md {
-  height: 1.25em;
-  width: 1.25em;
+  height: var(--space-6);
+  width: var(--space-6);
 }
 
 .lg {
-  height: 1.5em;
-  width: 1.5em;
+  height: var(--button-height-sm);
+  width: var(--button-height-sm);
+}
+
+.xl {
+  height: var(--button-height-md);
+  width: var(--button-height-md);
+}
+
+.twoXl {
+  height: var(--space-12);
+  width: var(--space-12);
+}
+
+.threeXl {
+  height: 3.125rem;
+  width: 3.125rem;
 }
 
 @keyframes spin {

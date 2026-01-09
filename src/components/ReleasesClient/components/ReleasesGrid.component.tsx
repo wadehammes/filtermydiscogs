@@ -3,6 +3,7 @@ import { memo, useMemo } from "react";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
+import Spinner from "src/components/Spinner/Spinner.component";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
 
@@ -14,7 +15,7 @@ const ReleasesTable = dynamic(
   {
     loading: () => (
       <div className={styles.loadingContainer}>
-        <div className={styles.spinner} />
+        <Spinner size="lg" aria-label="Loading table view" />
         <p className={styles.loadingText}>Loading table view...</p>
       </div>
     ),
