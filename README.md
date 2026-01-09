@@ -1,6 +1,6 @@
 <img width="2042" height="1194" alt="app-preview--dark" src="https://github.com/user-attachments/assets/d1206324-c2be-4650-8598-f4b98aff7b41" />
 
-# Filter My Disco.gs
+# FilterMyDisco.gs
 
 A web application to filter and explore your Discogs vinyl collection.
 
