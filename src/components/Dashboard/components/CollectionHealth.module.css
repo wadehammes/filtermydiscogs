@@ -1,0 +1,94 @@
+.healthContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.healthContainer h2 {
+  color: var(--foreground);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+}
+
+.healthGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.healthCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.healthLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+}
+
+.healthValue {
+  color: var(--foreground);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+}
+
+.healthDescription {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.expandButton {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  transition: var(--transition-fast);
+
+  &:hover {
+    background: var(--muted);
+  }
+}
+
+.rateLink {
+  color: var(--primary);
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  margin-top: var(--space-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--primary-hover);
+  }
+}
+
+.detailsSection {
+  margin-top: var(--space-4);
+  width: 100%;
+}

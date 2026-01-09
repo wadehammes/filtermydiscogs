@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import styles from "./SearchBar.module.css";
@@ -100,7 +101,7 @@ export const SearchBar = ({
   }, []);
 
   return (
-    <div className={`${styles.searchBar} ${className || ""}`}>
+    <div className={classNames(styles.searchBar, className)}>
       <div className={styles.inputContainer}>
         <input
           ref={inputRef}
@@ -110,7 +111,9 @@ export const SearchBar = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className={`${styles.input} ${isSearching ? styles.searching : ""}`}
+          className={classNames(styles.input, {
+            [styles.searching as string]: isSearching,
+          })}
           aria-label="Search collection"
         />
 

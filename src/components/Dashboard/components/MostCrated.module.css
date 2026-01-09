@@ -1,0 +1,119 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.container h2 {
+  color: var(--foreground);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.releasesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.releaseItem {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  transition: var(--transition-fast);
+
+  &:hover {
+    border-color: var(--input);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.crateCount {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.countNumber {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  line-height: 1;
+}
+
+.countLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  text-transform: lowercase;
+}
+
+.emptyState {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.emptyState p {
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.emptyStateSubtext {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.emptyStateLink {
+  align-self: center;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-ui);
+  color: var(--primary-foreground);
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  &:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: var(--primary-foreground);
+  }
+}
+
+.loading {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.error {
+  color: var(--destructive);
+  font-size: var(--text-sm);
+  margin: 0;
+}

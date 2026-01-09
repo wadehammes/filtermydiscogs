@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import styles from "./BottomDrawer.module.css";
 
@@ -28,7 +29,9 @@ export const BottomDrawer = ({
     <>
       <button
         type="button"
-        className={`${styles.overlay} ${isOpen ? styles.open : ""}`}
+        className={classNames(styles.overlay, {
+          [styles.open as string]: isOpen,
+        })}
         onClick={onClose}
         aria-label="Close drawer overlay"
         {...(dataAttribute ? { [dataAttribute]: "true" } : {})}
@@ -44,7 +47,9 @@ export const BottomDrawer = ({
         </button>
       )}
       <div
-        className={`${styles.drawer} ${isOpen ? styles.open : ""}`}
+        className={classNames(styles.drawer, {
+          [styles.open as string]: isOpen,
+        })}
         onClick={(e) => {
           e.stopPropagation();
         }}

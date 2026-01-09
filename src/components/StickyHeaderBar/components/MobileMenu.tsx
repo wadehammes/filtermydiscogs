@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import Link from "next/link";
 import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
@@ -6,9 +7,11 @@ import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component"
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
+import About from "src/styles/icons/about.svg";
+import Dashboard from "src/styles/icons/dashboard.svg";
 import FilterSolid from "src/styles/icons/filter-solid.svg";
-import Grid from "src/styles/icons/grid.svg";
 import MenuIcon from "src/styles/icons/menu.svg";
+import Mosaic from "src/styles/icons/mosaic.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
 import XIcon from "src/styles/icons/x.svg";
 import styles from "./MobileMenu.module.css";
@@ -17,6 +20,7 @@ interface MobileMenuProps {
   currentPage?: string | undefined;
   showMosaic?: boolean;
   showReleases?: boolean;
+  showDashboard?: boolean;
   showFilters?: boolean;
   isDisabled?: boolean;
 }
@@ -25,6 +29,7 @@ export const MobileMenu = ({
   currentPage,
   showMosaic = true,
   showReleases = true,
+  showDashboard = true,
   showFilters = true,
   isDisabled = false,
 }: MobileMenuProps) => {
@@ -143,12 +148,31 @@ export const MobileMenu = ({
         }
       >
         <nav className={styles.menuNav}>
+          {showDashboard && (
+            <Link
+              href="/dashboard"
+              className={classNames(styles.menuItem, {
+                [styles.active as string]: currentPage === "dashboard",
+                [styles.disabled as string]: isDisabled,
+              })}
+              onClick={(e) => handleNavigation(e, "Dashboard")}
+              aria-disabled={isDisabled}
+              tabIndex={isDisabled ? -1 : undefined}
+            >
+              <span className={styles.menuIcon}>
+                <Dashboard />
+              </span>
+              <span>Dashboard</span>
+            </Link>
+          )}
+
           {showReleases && (
             <Link
               href="/releases"
-              className={`${styles.menuItem} ${
-                currentPage === "releases" ? styles.active : ""
-              } ${isDisabled ? styles.disabled : ""}`}
+              className={classNames(styles.menuItem, {
+                [styles.active as string]: currentPage === "releases",
+                [styles.disabled as string]: isDisabled,
+              })}
               onClick={(e) => handleNavigation(e, "Releases")}
               aria-disabled={isDisabled}
               tabIndex={isDisabled ? -1 : undefined}
@@ -163,15 +187,16 @@ export const MobileMenu = ({
           {showMosaic && (
             <Link
               href="/mosaic"
-              className={`${styles.menuItem} ${
-                currentPage === "mosaic" ? styles.active : ""
-              } ${isDisabled ? styles.disabled : ""}`}
+              className={classNames(styles.menuItem, {
+                [styles.active as string]: currentPage === "mosaic",
+                [styles.disabled as string]: isDisabled,
+              })}
               onClick={(e) => handleNavigation(e, "Mosaic")}
               aria-disabled={isDisabled}
               tabIndex={isDisabled ? -1 : undefined}
             >
               <span className={styles.menuIcon}>
-                <Grid />
+                <Mosaic />
               </span>
               <span>Mosaic</span>
             </Link>
@@ -179,33 +204,13 @@ export const MobileMenu = ({
 
           <Link
             href="/about"
-            className={`${styles.menuItem} ${
-              currentPage === "about" ? styles.active : ""
-            }`}
+            className={classNames(styles.menuItem, {
+              [styles.active as string]: currentPage === "about",
+            })}
             onClick={(e) => handleNavigation(e, "About")}
           >
             <span className={styles.menuIcon}>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="8"
-                  cy="8"
-                  r="7"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M8 6V8M8 10H8.01"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <About />
             </span>
             <span>About</span>
           </Link>

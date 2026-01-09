@@ -1,0 +1,133 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.container h2 {
+  color: var(--foreground);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+}
+
+.date {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.releasesGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  width: 100%;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+}
+
+.releaseCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: var(--transition-fast);
+
+  &:hover {
+    border-color: var(--input);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.imageWrapper {
+  aspect-ratio: 1;
+  background: var(--muted);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.coverImage {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.releaseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.releaseTitle {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  line-height: 1.3;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+.releaseArtist {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.releaseMeta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+
+.year {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.yearAdded {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-style: italic;
+}
+
+.emptyState {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.emptyState p {
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.moreText {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  text-align: center;
+}

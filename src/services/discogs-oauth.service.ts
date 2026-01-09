@@ -128,7 +128,22 @@ class DiscogsOAuthService {
       const response = await fetch(requestUrl, fetchOptions);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to get error message from response body
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // If response isn't JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        const error = new Error(errorMessage);
+        (error as Error & { status?: number }).status = response.status;
+        throw error;
       }
 
       return response.json();
@@ -328,6 +343,73 @@ class DiscogsOAuthService {
     } catch (error) {
       console.error("searchReleases error:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Parse currency string from Discogs API (e.g., "$1,000.00" -> 1000.00)
+   */
+  private parseCurrencyValue(value: string | number | undefined): number {
+    if (typeof value === "number") {
+      return value;
+    }
+    if (!value || typeof value !== "string") {
+      return 0;
+    }
+    // Remove currency symbols, commas, and whitespace, then parse
+    const cleaned = value.replace(/[$,\s]/g, "");
+    const parsed = parseFloat(cleaned);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  async getCollectionValue(
+    username: string,
+    oauthToken: string,
+    oauthTokenSecret: string,
+  ): Promise<{ minimum: number; median: number; maximum: number }> {
+    const url = `https://api.discogs.com/users/${username}/collection/value`;
+
+    try {
+      const result = (await this.makeAuthenticatedRequest(
+        url,
+        "GET",
+        oauthToken,
+        oauthTokenSecret,
+      )) as {
+        minimum?: string | number;
+        median?: string | number;
+        maximum?: string | number;
+      };
+
+      // Validate response structure
+      if (!result || typeof result !== "object") {
+        throw new Error("Invalid response format from Discogs API");
+      }
+
+      // Discogs API returns values as formatted currency strings (e.g., "$1,000.00")
+      // Parse them to numbers
+      const minimum = this.parseCurrencyValue(result.minimum);
+      const median = this.parseCurrencyValue(result.median);
+      const maximum = this.parseCurrencyValue(result.maximum);
+
+      // Validate parsed values
+      if (
+        Number.isNaN(minimum) ||
+        Number.isNaN(median) ||
+        Number.isNaN(maximum)
+      ) {
+        throw new Error(
+          "Collection value contains invalid numbers. The collection value endpoint may not be available for this account.",
+        );
+      }
+
+      return { minimum, median, maximum };
+    } catch (error) {
+      console.error("getCollectionValue error:", error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Failed to fetch collection value from Discogs");
     }
   }
 }

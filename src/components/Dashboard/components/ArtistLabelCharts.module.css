@@ -1,0 +1,156 @@
+.chartsGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.chartContainer {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.chart {
+  /* Ensure chart inherits proper styling */
+}
+
+.chartContainer h2 {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  margin: 0 0 var(--space-4);
+}
+
+.chartWrapper {
+  height: 400px;
+  width: 100%;
+
+  /* Reduce YAxis label font size on mobile */
+  @media (max-width: 1023px) {
+    :global(.recharts-yAxis .recharts-text) {
+      font-size: 10px;
+    }
+  }
+}
+
+/* Style bar hover effect */
+.chartWrapper :global(.recharts-bar-rectangle) {
+  cursor: pointer;
+}
+
+/* Nuclear option: Hide ALL possible active bar overlays */
+.chartWrapper :global(.recharts-active-bar),
+.chartWrapper :global(.recharts-active-bar *),
+.chartWrapper :global(.recharts-active-bar rect),
+.chartWrapper :global(.recharts-active-bar path),
+.chartWrapper :global(.recharts-bar-rectangle:hover .recharts-active-bar),
+.chartWrapper :global(.recharts-bar-rectangle:hover .recharts-active-bar *),
+.chartWrapper :global(.recharts-bar-rectangle:hover .recharts-active-bar rect),
+.chartWrapper :global(.recharts-bar-rectangle:hover .recharts-active-bar path),
+.chartWrapper :global(.recharts-bar-rectangle .recharts-active-bar),
+.chartWrapper :global(.recharts-bar-rectangle .recharts-active-bar *) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  fill: transparent !important;
+}
+
+/* Hide any white/light colored elements that might be overlays */
+.chartWrapper :global(rect[fill="#fff"]),
+.chartWrapper :global(rect[fill="white"]),
+.chartWrapper :global(rect[fill="#ffffff"]),
+.chartWrapper :global(rect[fill="#f5f5f5"]),
+.chartWrapper :global(rect[fill="#e5e5e5"]),
+.chartWrapper :global(rect[fill="#fafafa"]),
+.chartWrapper :global(rect[fill="#f0f0f0"]),
+.chartWrapper :global(path[fill="#fff"]),
+.chartWrapper :global(path[fill="white"]),
+.chartWrapper :global(path[fill="#ffffff"]),
+.chartWrapper :global(path[fill="#f5f5f5"]),
+.chartWrapper :global(path[fill="#e5e5e5"]),
+.chartWrapper :global(path[fill="#fafafa"]),
+.chartWrapper :global(path[fill="#f0f0f0"]) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  fill: transparent !important;
+}
+
+/* Target any element with light colors inside bar rectangles */
+.chartWrapper :global(.recharts-bar-rectangle rect[fill-opacity]),
+.chartWrapper :global(.recharts-bar-rectangle path[fill-opacity]) {
+  fill-opacity: 1 !important;
+}
+
+/* Keep bars visible on hover */
+.chartWrapper :global(.recharts-bar-rectangle:hover) {
+  opacity: 1;
+}
+
+.chartWrapper
+  :global(
+    .recharts-bar-rectangle:hover
+    rect:not([fill="#fff"]):not([fill="white"]):not([fill="#ffffff"])
+  ),
+.chartWrapper
+  :global(
+    .recharts-bar-rectangle:hover
+    path:not([fill="#fff"]):not([fill="white"]):not([fill="#ffffff"])
+  ) {
+  opacity: 1 !important;
+  fill-opacity: 1 !important;
+}
+
+/* Style for custom bars */
+.customBar {
+  transition: opacity 0.2s ease;
+}
+
+.customBar:hover {
+  opacity: 0.85;
+}
+
+/* Style the bar background area that highlights on hover */
+.barBackground {
+  fill: transparent;
+  fill-opacity: 0;
+}
+
+.barBackground:hover {
+  fill: var(--muted);
+  fill-opacity: 0.3;
+  transition: fill-opacity 0.2s ease;
+}
+
+/* Target Recharts background elements */
+.chartWrapper :global(.recharts-bar-rectangle .recharts-bar-background),
+.chartWrapper :global(.recharts-bar-rectangle .recharts-bar-background rect) {
+  fill: transparent !important;
+  fill-opacity: 0 !important;
+}
+
+.chartWrapper :global(.recharts-bar-rectangle:hover .recharts-bar-background),
+.chartWrapper
+  :global(.recharts-bar-rectangle:hover .recharts-bar-background rect) {
+  fill: var(--muted) !important;
+  fill-opacity: 0.2 !important;
+}
+
+.chartWrapper :global(*),
+.chartWrapper :global(*:focus),
+.chartWrapper :global(*:focus-visible),
+.chartWrapper :global(svg:focus),
+.chartWrapper :global(svg:focus-visible) {
+  outline: none !important;
+  border: none !important;
+}

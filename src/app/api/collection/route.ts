@@ -111,10 +111,23 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
       },
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error("getCollection error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to fetch collection";
+    const status =
+      (error instanceof Error &&
+        (error as Error & { status?: number }).status) ||
+      (errorMessage.toLowerCase().includes("too many requests") ? 429 : 500);
+
     return NextResponse.json(
-      { error: "Failed to fetch collection" },
-      { status: 500 },
+      {
+        error:
+          status === 429
+            ? "Rate limit exceeded. Please try again in a moment."
+            : "Failed to fetch collection",
+      },
+      { status },
     );
   }
 }

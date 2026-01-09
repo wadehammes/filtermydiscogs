@@ -8,6 +8,10 @@ import type {
   CratesResponse,
   CrateWithReleasesResponse,
 } from "src/types/crate.types";
+import type {
+  CollectionValue,
+  MostCratedRelease,
+} from "src/types/dashboard.types";
 
 export const fetchDiscogsCollection = async (
   username: string,
@@ -400,5 +404,68 @@ export const logout = async (): Promise<{ success: boolean }> => {
       throw error;
     }
     throw new Error("Failed to logout");
+  }
+};
+
+export const fetchCollectionValue = async (
+  username: string,
+): Promise<CollectionValue> => {
+  try {
+    const params = new URLSearchParams({
+      username,
+    });
+
+    const response = await fetch(`/api/collection/value?${params}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error ||
+          `Failed to fetch collection value: ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch collection value");
+  }
+};
+
+export const fetchMostCratedReleases = async (
+  limit: number = 10,
+): Promise<MostCratedRelease[]> => {
+  try {
+    const response = await fetch(`/api/dashboard/most-crated?limit=${limit}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error ||
+          `Failed to fetch most crated releases: ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    return data.releases || [];
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch most crated releases");
   }
 };

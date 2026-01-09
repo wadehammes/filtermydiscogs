@@ -1,0 +1,159 @@
+.container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.container h2 {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-4);
+}
+
+.evolutionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.periodItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+}
+
+.periodHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.periodLabel {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+.periodMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dateRange {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.releaseCount {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.chartWrapper {
+  height: 280px;
+  min-height: 280px;
+  overflow: visible;
+  padding-bottom: var(--space-2);
+  padding-top: var(--space-4);
+  width: 100%;
+
+  /* Style pie chart labels for better visibility */
+  :global(.recharts-pie-label-text) {
+    fill: var(--foreground) !important;
+    font-size: 11px;
+    font-weight: var(--font-semibold);
+    text-shadow:
+      0 0 3px var(--background),
+      0 0 3px var(--background),
+      0 0 3px var(--background);
+  }
+
+  /* Style tooltip text for better contrast */
+  :global(.recharts-tooltip-wrapper) {
+    color: var(--popover-foreground);
+  }
+
+  :global(.recharts-default-tooltip) {
+    background-color: var(--popover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--popover-foreground) !important;
+  }
+
+  :global(.recharts-tooltip-item-value),
+  :global(.recharts-tooltip-item-name) {
+    color: var(--popover-foreground) !important;
+  }
+}
+
+.chartWrapper :global(.recharts-legend-wrapper) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  justify-content: center;
+  overflow: visible;
+  padding: var(--space-3) 0;
+  width: 100%;
+}
+
+.chartWrapper :global(.recharts-default-legend) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  justify-content: center;
+  width: 100%;
+}
+
+.chartWrapper :global(.recharts-legend-item) {
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.chartWrapper :global(.recharts-legend-item-text) {
+  color: var(--foreground);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  margin-left: var(--space-2);
+}
+
+.noStyles {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-style: italic;
+  padding: var(--space-2);
+}
+
+.emptyState {
+  color: var(--muted-foreground);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.chartWrapper :global(*),
+.chartWrapper :global(*:focus),
+.chartWrapper :global(*:focus-visible),
+.chartWrapper :global(svg:focus),
+.chartWrapper :global(svg:focus-visible) {
+  outline: none !important;
+  border: none !important;
+}

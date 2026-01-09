@@ -1,0 +1,18 @@
+.container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  justify-content: center;
+  text-align: center;
+}
+
+.spinner {
+  margin-bottom: var(--space-4);
+}
+
+.text {
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-family: var(--font-mono);
+}

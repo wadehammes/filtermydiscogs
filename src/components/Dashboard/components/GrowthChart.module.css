@@ -1,0 +1,77 @@
+.chartContainer {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.chartHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.chartHeader h2 {
+  color: var(--foreground);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+}
+
+.viewToggle {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.toggleButton {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  padding: var(--space-2) var(--space-3);
+  transition: var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--accent);
+    border-color: var(--input);
+    color: var(--accent-foreground);
+  }
+
+  &.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  &.active:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: var(--primary-foreground);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.chartWrapper {
+  height: 300px;
+  width: 100%;
+}
+
+.chartWrapper :global(*),
+.chartWrapper :global(*:focus),
+.chartWrapper :global(*:focus-visible),
+.chartWrapper :global(svg:focus),
+.chartWrapper :global(svg:focus-visible) {
+  outline: none !important;
+  border: none !important;
+}
