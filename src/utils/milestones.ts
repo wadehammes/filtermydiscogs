@@ -28,14 +28,15 @@ export function calculateMilestones(
     const yearsCollecting = Math.floor(
       (today.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24 * 365),
     );
+    const firstDateFormatted = firstDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
 
     milestones.push({
-      label: "Years Collecting",
-      value: yearsCollecting.toString(),
-      description: `Since ${firstDate.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      })}`,
+      label: "First release added",
+      value: `${firstDateFormatted} • ${yearsCollecting} years collecting`,
+      release: firstRelease,
     });
   }
 
