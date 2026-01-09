@@ -8,26 +8,11 @@
 }
 
 .spinner {
-  animation: spin 1s linear infinite;
-  border: 4px solid var(--border);
-  border-radius: 50%;
-  border-top: 4px solid var(--primary);
-  height: 3.125rem;
   margin-bottom: var(--space-4);
-  width: 3.125rem;
 }
 
 .text {
   color: var(--foreground);
   font-size: var(--text-base);
   font-family: var(--font-mono);
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }

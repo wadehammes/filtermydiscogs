@@ -23,15 +23,6 @@
   padding: var(--space-8);
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-  border: 3px solid var(--border);
-  border-radius: var(--radius-full);
-  border-top-color: var(--primary);
-  height: var(--button-height-sm);
-  width: var(--button-height-sm);
-}
-
 .message {
   color: var(--foreground);
   font-size: var(--text-lg);
@@ -39,10 +30,4 @@
   margin: 0;
   text-align: center;
   font-family: var(--font-mono);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }

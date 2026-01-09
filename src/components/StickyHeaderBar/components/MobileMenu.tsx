@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
@@ -30,21 +30,25 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
-  const router = useRouter();
   const { logout, state: authState } = useAuth();
   const { username } = authState;
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
 
-  const handleNavigation = (page: string, label: string) => {
-    if (isDisabled) return;
+  const handleNavigation = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    label: string,
+  ) => {
+    if (isDisabled) {
+      e.preventDefault();
+      return;
+    }
     trackEvent("pageNavigation", {
       action: "pageNavigation",
       category: "navigation",
       label: `Navigate to ${label}`,
-      value: page,
+      value: label.toLowerCase(),
     });
-    router.push(`/${page}`);
     setIsOpen(false);
   };
 
@@ -140,43 +144,45 @@ export const MobileMenu = ({
       >
         <nav className={styles.menuNav}>
           {showReleases && (
-            <button
-              type="button"
+            <Link
+              href="/releases"
               className={`${styles.menuItem} ${
                 currentPage === "releases" ? styles.active : ""
               } ${isDisabled ? styles.disabled : ""}`}
-              onClick={() => handleNavigation("releases", "Releases")}
-              disabled={isDisabled}
+              onClick={(e) => handleNavigation(e, "Releases")}
+              aria-disabled={isDisabled}
+              tabIndex={isDisabled ? -1 : undefined}
             >
               <span className={styles.menuIcon}>
                 <VinylRecord />
               </span>
               <span>Releases</span>
-            </button>
+            </Link>
           )}
 
           {showMosaic && (
-            <button
-              type="button"
+            <Link
+              href="/mosaic"
               className={`${styles.menuItem} ${
                 currentPage === "mosaic" ? styles.active : ""
               } ${isDisabled ? styles.disabled : ""}`}
-              onClick={() => handleNavigation("mosaic", "Mosaic")}
-              disabled={isDisabled}
+              onClick={(e) => handleNavigation(e, "Mosaic")}
+              aria-disabled={isDisabled}
+              tabIndex={isDisabled ? -1 : undefined}
             >
               <span className={styles.menuIcon}>
                 <Grid />
               </span>
               <span>Mosaic</span>
-            </button>
+            </Link>
           )}
 
-          <button
-            type="button"
+          <Link
+            href="/about"
             className={`${styles.menuItem} ${
               currentPage === "about" ? styles.active : ""
             }`}
-            onClick={() => handleNavigation("about", "About")}
+            onClick={(e) => handleNavigation(e, "About")}
           >
             <span className={styles.menuIcon}>
               <svg
@@ -202,7 +208,7 @@ export const MobileMenu = ({
               </svg>
             </span>
             <span>About</span>
-          </button>
+          </Link>
         </nav>
       </BottomDrawer>
 

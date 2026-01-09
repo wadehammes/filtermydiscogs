@@ -9,24 +9,6 @@
   text-align: center;
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-  border: 3px solid var(--border);
-  border-radius: var(--radius-full);
-  border-top-color: var(--primary);
-  height: var(--button-height-sm);
-  width: var(--button-height-sm);
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .loadingText {
   color: var(--muted-foreground);
   font-size: var(--text-base);

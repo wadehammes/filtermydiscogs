@@ -77,6 +77,7 @@
     gap: var(--space-3);
     padding: var(--space-3);
     text-align: left;
+    text-decoration: none;
     transition: var(--transition-normal);
     width: 100%;
 

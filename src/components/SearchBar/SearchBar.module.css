@@ -88,36 +88,6 @@
   }
 }
 
-.loadingIndicator {
-  align-items: center;
-  display: flex;
-  height: var(--space-6);
-  justify-content: center;
-  position: absolute;
-  right: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  width: var(--space-6);
-
-  .spinner {
-    animation: spin 1s linear infinite;
-    border: 2px solid var(--muted);
-    border-radius: var(--radius-full);
-    border-top: 2px solid var(--muted-foreground);
-    height: var(--space-4);
-    width: var(--space-4);
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .errorMessage {
   background-color: color-mix(
     in srgb,

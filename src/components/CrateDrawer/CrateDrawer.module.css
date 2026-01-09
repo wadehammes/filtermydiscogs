@@ -101,21 +101,6 @@
   }
 }
 
-.loadingSpinner {
-  animation: spin 1s linear infinite;
-  border: 3px solid var(--border);
-  border-radius: var(--radius-full);
-  border-top-color: var(--foreground);
-  height: 2.5rem;
-  width: 2.5rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .releasesList {
   display: flex;
   flex-direction: column;

@@ -4,6 +4,7 @@ import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component
 import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
+import Spinner from "src/components/Spinner/Spinner.component";
 import { useCrate } from "src/context/crate.context";
 import { useView } from "src/context/view.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
@@ -71,7 +72,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     <>
       {isLoadingCrate ? (
         <div className={styles.emptyState}>
-          <div className={styles.loadingSpinner} />
+          <Spinner size="xl" aria-label="Loading crate" />
           <p>Loading crate...</p>
         </div>
       ) : selectedReleases.length === 0 ? (

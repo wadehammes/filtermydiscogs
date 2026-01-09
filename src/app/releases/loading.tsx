@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./loading.module.css";
 
 /**
@@ -9,7 +10,11 @@ import styles from "./loading.module.css";
 export default function ReleasesLoadingPage() {
   return (
     <div className={styles.container}>
-      <div className={styles.spinner} />
+      <Spinner
+        size="3xl"
+        className={styles.spinner}
+        aria-label="Loading releases"
+      />
       <p className={styles.text}>Loading releases...</p>
     </div>
   );

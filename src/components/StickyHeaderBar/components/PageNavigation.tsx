@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { trackEvent } from "src/analytics/analytics";
 import Grid from "src/styles/icons/grid.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
@@ -17,17 +17,20 @@ export const PageNavigation = ({
   showReleases = true,
   isDisabled = false,
 }: PageNavigationProps) => {
-  const router = useRouter();
-
-  const handleNavigation = (page: string, label: string) => {
-    if (isDisabled) return;
+  const handleNavigation = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    label: string,
+  ) => {
+    if (isDisabled) {
+      e.preventDefault();
+      return;
+    }
     trackEvent("pageNavigation", {
       action: "pageNavigation",
       category: "navigation",
       label: `Navigate to ${label}`,
-      value: page,
+      value: label.toLowerCase(),
     });
-    router.push(`/${page}`);
   };
 
   return (
@@ -35,39 +38,41 @@ export const PageNavigation = ({
       className={`${styles.navigation} ${isDisabled ? styles.disabled : ""}`}
     >
       {showReleases && (
-        <button
-          type="button"
-          className={`${styles.navItem} ${currentPage === "releases" ? styles.active : ""}`}
-          onClick={() => handleNavigation("releases", "Releases")}
+        <Link
+          href="/releases"
+          className={`${styles.navItem} ${currentPage === "releases" ? styles.active : ""} ${isDisabled ? styles.disabled : ""}`}
+          onClick={(e) => handleNavigation(e, "Releases")}
           aria-label="View releases"
-          disabled={isDisabled}
+          aria-disabled={isDisabled}
+          tabIndex={isDisabled ? -1 : undefined}
         >
           <span className={styles.icon}>
             <VinylRecord />
           </span>
           <span>Releases</span>
-        </button>
+        </Link>
       )}
 
       {showMosaic && (
-        <button
-          type="button"
-          className={`${styles.navItem} ${currentPage === "mosaic" ? styles.active : ""}`}
-          onClick={() => handleNavigation("mosaic", "Mosaic")}
+        <Link
+          href="/mosaic"
+          className={`${styles.navItem} ${currentPage === "mosaic" ? styles.active : ""} ${isDisabled ? styles.disabled : ""}`}
+          onClick={(e) => handleNavigation(e, "Mosaic")}
           aria-label="View mosaic"
-          disabled={isDisabled}
+          aria-disabled={isDisabled}
+          tabIndex={isDisabled ? -1 : undefined}
         >
           <span className={styles.icon}>
             <Grid />
           </span>
           <span>Mosaic</span>
-        </button>
+        </Link>
       )}
 
-      <button
-        type="button"
+      <Link
+        href="/about"
         className={`${styles.navItem} ${currentPage === "about" ? styles.active : ""}`}
-        onClick={() => handleNavigation("about", "About")}
+        onClick={(e) => handleNavigation(e, "About")}
         aria-label="View about"
       >
         <span className={styles.icon}>
@@ -94,7 +99,7 @@ export const PageNavigation = ({
           </svg>
         </span>
         <span>About</span>
-      </button>
+      </Link>
     </nav>
   );
 };

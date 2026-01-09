@@ -66,21 +66,6 @@
   gap: var(--space-2);
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-full);
-  border-top-color: var(--muted-foreground);
-  height: var(--space-4);
-  width: var(--space-4);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .releasesGrid {
   align-items: stretch;
   display: grid;

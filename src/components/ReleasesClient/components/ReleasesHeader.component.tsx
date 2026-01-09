@@ -1,3 +1,4 @@
+import Spinner from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import Check from "src/styles/icons/check-solid.svg";
 import styles from "./ReleasesHeader.module.css";
@@ -29,11 +30,11 @@ export const ReleasesHeader = ({
 }: ReleasesHeaderProps) => {
   return (
     <div className={styles.releasesHeader}>
-      <p>
+      <div className={styles.headerText}>
         Showing {releaseCount} releases
         {isFetchingNextPage && (
           <span className={styles.loadingIcon}>
-            <span className={styles.spinner} />
+            <Spinner size="xs" aria-label="Loading more" />
             <span>Loading more...</span>
           </span>
         )}
@@ -43,7 +44,7 @@ export const ReleasesHeader = ({
             <span>All releases loaded</span>
           </span>
         )}
-      </p>
+      </div>
       {!isMobile && (
         <ViewToggle
           currentView={isRandomMode ? "random" : currentView}
