@@ -27,13 +27,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs",
   ),
-  title: "Filter My Disco.gs - a Discogs collection management tool",
+  title: "FilterMyDisco.gs - a Discogs collection management tool",
   description: "a Discogs collection management tool",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Filter My Disco.gs",
+    title: "FilterMyDisco.gs",
     description: "a Discogs collection management tool",
     type: "website",
     locale: "en-US",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
         url: "/images/app-preview.png",
         width: 800,
         height: 400,
-        alt: "Filter My Disco.gs App Preview",
+        alt: "FilterMyDisco.gs App Preview",
       },
     ],
   },

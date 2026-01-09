@@ -12,11 +12,11 @@ export const Helmet: FC = () => {
 
   return (
     <Head>
-      <title>Filter My Disco.gs - a Discogs collection management tool</title>
+      <title>FilterMyDisco.gs - a Discogs collection management tool</title>
       <link rel="icon" type="image/x-icon" href="/favicon.ico" />
       <meta name="viewport" content="width=device-width, minimum-scale=1.0" />
       <meta name="description" content="a Discogs collection management tool" />
-      <meta property="og:title" content="Filter My Disco.gs" />
+      <meta property="og:title" content="FilterMyDisco.gs" />
       <meta property="og:type" content="website" />
       <meta
         property="og:description"
@@ -28,7 +28,7 @@ export const Helmet: FC = () => {
       />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:creator" content="@nthoftype" />
-      <meta name="twitter:title" content="Filter My Disco.gs" />
+      <meta name="twitter:title" content="FilterMyDisco.gs" />
       <meta
         name="twitter:description"
         content="a Discogs collection management tool"

@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clearData } from "src/api/helpers";
 import Button from "src/components/Button/Button.component";
+import { PublicPageHeader } from "src/components/PublicPageHeader/PublicPageHeader.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useCrate } from "src/context/crate.context";
-import Logo from "src/styles/icons/fmd-logo.svg";
 import styles from "./page.module.css";
 
 export function AboutClient() {
@@ -75,144 +75,68 @@ export function AboutClient() {
           currentPage="about"
         />
       ) : (
-        <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <Link href="/" className={styles.logoLink}>
-              <Logo className={styles.logo} />
-            </Link>
-            <nav className={styles.nav}>
-              <Link href="/" className={styles.navLink}>
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className={`${styles.navLink} ${styles.active}`}
-              >
-                About
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <PublicPageHeader currentPage="about" />
       )}
       <div className={styles.container}>
         <div className={styles.content}>
           <section className={styles.section}>
-            <h2>Terms of Service</h2>
+            <h2>About This Project</h2>
             <p>
-              Here's the deal: use this app at your own risk. I'm not a lawyer,
-              but here's what you should know:
+              FilterMyDisco.gs is a tool to help you browse, filter, and
+              organize your Discogs collection. Made by{" "}
+              <a
+                href="https://wadehammes.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.inlineLink}
+              >
+                Wade Hammes
+              </a>
+              . A passion project to help you discover, organize, and explore
+              your music collection—whether it's vinyl, CDs, cassettes, or
+              digital releases. Create crates for DJ sets, organize by theme, or
+              just rediscover what you already own.
             </p>
-            <ul>
-              <li>
-                This thing is free and comes with zero guarantees. If it breaks,
-                I'll try to fix it, but no promises.
-              </li>
-              <li>
-                I only read your Discogs collection—I never touch, modify, or
-                delete anything in your actual Discogs account. Your collection
-                stays safe.
-              </li>
-              <li>Keep your Discogs account secure. That's on you, not me.</li>
-              <li>
-                I use OAuth, so I never see your password. Your Discogs login
-                stays between you and Discogs.
-              </li>
-              <li>
-                Want to bail? Revoke access anytime in your Discogs settings. No
-                hard feelings.
-              </li>
-              <li>
-                I might change things up or shut it down. That's just how it
-                goes with free projects.
-              </li>
-              <li>
-                Right now it's free, but that might change. If I ever add paid
-                features or subscriptions, I'll give you a heads up first.
-              </li>
-            </ul>
+            <p>
+              For legal information, see our{" "}
+              <Link href="/legal" className={styles.inlineLink}>
+                Terms of Service and Privacy Policy
+              </Link>
+              .
+            </p>
           </section>
 
-          <section className={styles.section}>
-            <h2>Privacy Policy</h2>
+          <section className={`${styles.section} ${styles.donationSection}`}>
+            <h2>Support This Project</h2>
             <p>
-              I'm not in the data-selling business. Here's what I actually do
-              with your stuff:
+              If you find this app useful and want to support its development,
+              consider tossing me some coin. Every contribution helps keep this
+              project running and improving!
             </p>
-            <h3>What I Collect</h3>
-            <ul>
-              <li>
-                OAuth 1.0a authentication—I never see your Discogs password.
-                That stays between you and Discogs.
-              </li>
-              <li>
-                OAuth tokens live in your browser's local storage so you don't
-                have to log in every time.
-              </li>
-              <li>
-                Your collection data comes straight from Discogs API and gets
-                cached in your browser to keep things snappy.
-              </li>
-              <li>
-                Your crates? Those live in my Postgres database so they stick
-                around between sessions. That's the only server-side storage I
-                do.
-              </li>
-              <li>
-                I don't sell your data, share it, or do anything sketchy with
-                it. Period.
-              </li>
-            </ul>
-            <h3>What I Do With It</h3>
-            <ul>
-              <li>
-                Your collection data is just for showing you your records.
-                That's it.
-              </li>
-              <li>
-                I don't analyze it, mine it, or send it anywhere. Your music
-                taste stays yours.
-              </li>
-              <li>
-                Collection data runs through your browser and hits Discogs API
-                directly. Your crates get saved to my Postgres database so they
-                don't disappear when you close the tab.
-              </li>
-              <li>
-                Want to nuke everything? Hit "Clear All Data" below and I'll
-                wipe your crates from the database. Gone forever.
-              </li>
-            </ul>
-            <h3>Cookies & Storage</h3>
-            <ul>
-              <li>
-                Local storage holds your preferences (theme, view settings,
-                filters). Just quality-of-life stuff.
-              </li>
-              <li>
-                OAuth tokens hang out in local storage too, so you stay logged
-                in.
-              </li>
-              <li>
-                I use Google Tag Manager for basic analytics (page views,
-                clicks, that kind of thing). Standard web stuff—nothing
-                personal.
-              </li>
-            </ul>
-            <h3>Third-Party Stuff</h3>
-            <ul>
-              <li>
-                The app talks to Discogs API. That's it. Their rules apply to
-                that relationship.
-              </li>
-              <li>
-                Google Tag Manager handles analytics. Google's privacy policy
-                applies there.
-              </li>
-              <li>
-                Images get proxied for speed, but I don't hoard them. They're
-                cached, not stored.
-              </li>
-            </ul>
+            <div className={styles.donationContent}>
+              <div className={styles.donationQR}>
+                <img
+                  src="/images/paypal-qr.png"
+                  alt="PayPal Donation QR Code"
+                  className={styles.qrCode}
+                />
+                <p className={styles.qrLabel}>Scan to donate</p>
+              </div>
+              <div className={styles.donationLink}>
+                <a
+                  href="https://www.paypal.com/donate/?business=D86FX8QV7BPMG&no_recurring=0&currency_code=USD"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.donateButton}
+                >
+                  Donate via PayPal
+                </a>
+                <p className={styles.donateNote}>
+                  Your support means the world and helps keep this project free
+                  for everyone.
+                </p>
+              </div>
+            </div>
           </section>
 
           <section className={styles.section}>
@@ -249,6 +173,34 @@ export function AboutClient() {
                 You must be logged in to clear data.
               </p>
             )}
+            <p className={styles.clearDataNote}>
+              For more information about how we handle your data, see our{" "}
+              <Link href="/legal" className={styles.inlineLink}>
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </section>
+
+          <section className={styles.section}>
+            <h2>Repository</h2>
+            <p>
+              This is open source. Check out the code, submit a PR, or just
+              snoop around:
+            </p>
+            <div className={styles.repoLink}>
+              <a
+                href="https://github.com/wadehammes/filtermydiscogs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.repoButton}
+              >
+                View on GitHub
+              </a>
+            </div>
+            <p className={styles.license}>
+              MIT License—use it, fork it, make it better.
+            </p>
           </section>
 
           <section className={styles.section}>
@@ -294,65 +246,6 @@ export function AboutClient() {
                   issue on GitHub
                 </a>
                 . The more details, the faster I can fix it.
-              </p>
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <h2>Repository</h2>
-            <p>
-              This is open source. Check out the code, submit a PR, or just
-              snoop around:
-            </p>
-            <div className={styles.repoLink}>
-              <a
-                href="https://github.com/wadehammes/filtermydiscogs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.repoButton}
-              >
-                View on GitHub
-              </a>
-            </div>
-            <p className={styles.license}>
-              MIT License—use it, fork it, make it better.
-            </p>
-          </section>
-
-          <section className={styles.section}>
-            <h2>Built By</h2>
-            <p>
-              Made by{" "}
-              <a
-                href="https://wadehammes.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Wade Hammes
-              </a>
-              . Just trying to make browsing your record collection a little
-              cooler.
-            </p>
-            <div className={styles.contactInfo}>
-              <p>
-                <strong>Personal Website:</strong>{" "}
-                <a
-                  href="https://wadehammes.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  wadehammes.com
-                </a>
-              </p>
-              <p>
-                <strong>Links:</strong>{" "}
-                <a
-                  href="https://linktr.ee/wadehammes"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  linktr.ee/wadehammes
-                </a>
               </p>
             </div>
           </section>

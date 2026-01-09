@@ -50,7 +50,7 @@ export const Login = () => {
             Connect with Discogs
           </Button>
 
-          <a href="/about" className={styles.aboutLink}>
+          <a href="/legal" className={styles.aboutLink}>
             Terms & Privacy
           </a>
         </div>
