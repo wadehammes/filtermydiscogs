@@ -19,10 +19,6 @@
   width: 100%;
 }
 
-.chart {
-  /* Ensure chart inherits proper styling */
-}
-
 .chartContainer h2 {
   color: var(--foreground);
   font-size: var(--text-lg);
@@ -42,12 +38,9 @@
   }
 }
 
-/* Style bar hover effect */
 .chartWrapper :global(.recharts-bar-rectangle) {
   cursor: pointer;
 }
-
-/* Nuclear option: Hide ALL possible active bar overlays */
 .chartWrapper :global(.recharts-active-bar),
 .chartWrapper :global(.recharts-active-bar *),
 .chartWrapper :global(.recharts-active-bar rect),
@@ -65,7 +58,6 @@
   fill: transparent !important;
 }
 
-/* Hide any white/light colored elements that might be overlays */
 .chartWrapper :global(rect[fill="#fff"]),
 .chartWrapper :global(rect[fill="white"]),
 .chartWrapper :global(rect[fill="#ffffff"]),
@@ -92,7 +84,6 @@
   fill-opacity: 1 !important;
 }
 
-/* Keep bars visible on hover */
 .chartWrapper :global(.recharts-bar-rectangle:hover) {
   opacity: 1;
 }
@@ -120,7 +111,6 @@
   opacity: 0.85;
 }
 
-/* Style the bar background area that highlights on hover */
 .barBackground {
   fill: transparent;
   fill-opacity: 0;
@@ -132,7 +122,6 @@
   transition: fill-opacity 0.2s ease;
 }
 
-/* Target Recharts background elements */
 .chartWrapper :global(.recharts-bar-rectangle .recharts-bar-background),
 .chartWrapper :global(.recharts-bar-rectangle .recharts-bar-background rect) {
   fill: transparent !important;

@@ -73,7 +73,6 @@
   padding-top: var(--space-4);
   width: 100%;
 
-  /* Style pie chart labels for better visibility */
   :global(.recharts-pie-label-text) {
     fill: var(--foreground) !important;
     font-size: 11px;
@@ -84,7 +83,6 @@
       0 0 3px var(--background);
   }
 
-  /* Style tooltip text for better contrast */
   :global(.recharts-tooltip-wrapper) {
     color: var(--popover-foreground);
   }

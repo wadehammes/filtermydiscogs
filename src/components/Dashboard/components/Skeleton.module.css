@@ -1,0 +1,101 @@
+.skeleton {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeletonCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.skeletonText {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: 4px;
+  height: 1em;
+}
+
+.skeletonTitle {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: 4px;
+  height: 1.5em;
+  margin-bottom: var(--space-4);
+  width: 60%;
+}
+
+.skeletonChart {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  height: 300px;
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.skeletonBar {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: 4px;
+  height: 20px;
+  margin-bottom: var(--space-2);
+}
+
+.skeletonPie {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: center;
+}
+
+.skeletonCircle {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: 50%;
+  height: 120px;
+  width: 120px;
+}
+
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeletonListItem {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+  height: 80px;
+}
+
+.skeletonGrid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.skeletonGridItem {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+  height: 80px;
+}
