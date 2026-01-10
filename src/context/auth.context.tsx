@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useReducer,
+  useRef,
 } from "react";
 import { logout as logoutApi } from "src/api/helpers";
 import {
@@ -103,9 +104,28 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Check for existing authentication on mount
+  // Check for existing authentication on mount (only once)
+  const hasCheckedAuthRef = useRef(false);
   useEffect(() => {
+    // Skip if we've already checked auth or if already authenticated
+    if (
+      hasCheckedAuthRef.current ||
+      (state.isAuthenticated && state.username)
+    ) {
+      if (
+        !hasCheckedAuthRef.current &&
+        state.isAuthenticated &&
+        state.username
+      ) {
+        // If authenticated but haven't checked yet, just set loading to false
+        dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+        hasCheckedAuthRef.current = true;
+      }
+      return;
+    }
+
     let isMounted = true;
+    hasCheckedAuthRef.current = true;
 
     const checkAuth = async () => {
       try {
@@ -119,19 +139,15 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
             payload: authStatus.username,
           });
         } else {
-          // If not authenticated, clear any cached data to prevent data leakage
           queryClient.clear();
         }
-        // Set loading to false after successful check
         if (isMounted) {
           dispatch({ type: AuthActionTypes.SetLoading, payload: false });
         }
       } catch (error) {
         if (!isMounted) return;
         console.error("Error checking auth:", error);
-        // On error, also clear cache to be safe
         queryClient.clear();
-        // Set loading to false after error
         if (isMounted) {
           dispatch({ type: AuthActionTypes.SetLoading, payload: false });
         }
@@ -143,7 +159,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, [queryClient]);
+  }, [queryClient, state.isAuthenticated, state.username]);
 
   useEffect(() => {
     const { authStatus, errorStatus } = parseAuthUrlParams();
@@ -172,8 +188,6 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const login = () => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
     dispatch({ type: AuthActionTypes.SetError, payload: null });
-
-    // Redirect to OAuth initiation
     window.location.href = "/api/auth/discogs";
   };
 

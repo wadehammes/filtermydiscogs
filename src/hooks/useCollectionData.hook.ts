@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ERROR_FETCHING } from "src/constants";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
@@ -32,8 +32,11 @@ export const useCollectionData = (
     isFetchingNextPage,
   } = useDiscogsCollectionQuery(username || "", queryEnabled);
 
+  // Only invalidate queries when username actually changes, not on every auth check
+  const prevUsernameRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isAuthenticated && username) {
+    if (isAuthenticated && username && username !== prevUsernameRef.current) {
+      prevUsernameRef.current = username;
       queryClient.invalidateQueries({
         queryKey: ["discogsCollection", username],
       });

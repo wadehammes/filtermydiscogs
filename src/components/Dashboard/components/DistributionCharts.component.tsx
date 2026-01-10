@@ -36,9 +36,10 @@ export function DistributionCharts({
       <div className={styles.chartContainer}>
         <h2>Top Styles</h2>
         <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={styleDistribution as unknown as Record<string, unknown>[]}
+              margin={{ top: 5, right: 10, bottom: 5, left: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
@@ -47,7 +48,7 @@ export function DistributionCharts({
                 style={AXIS_STYLE}
                 angle={-45}
                 textAnchor="end"
-                height={80}
+                height={60}
               />
               <YAxis stroke="var(--muted-foreground)" style={AXIS_STYLE} />
               <Bar
@@ -150,9 +151,10 @@ export function DistributionCharts({
       <div className={styles.chartContainer}>
         <h2>By Format</h2>
         <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={formatDistribution as unknown as Record<string, unknown>[]}
+              margin={{ top: 5, right: 10, bottom: 5, left: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
@@ -162,7 +164,17 @@ export function DistributionCharts({
               />
               <YAxis stroke="var(--muted-foreground)" style={AXIS_STYLE} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Bar dataKey="count">
+              <Bar
+                dataKey="count"
+                label={{
+                  position: "top",
+                  fill: "var(--foreground)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  formatter: (value: unknown) =>
+                    typeof value === "number" ? value.toString() : "",
+                }}
+              >
                 {formatDistribution.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}

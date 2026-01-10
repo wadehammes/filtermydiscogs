@@ -61,21 +61,21 @@ export const Login = () => {
           <h3>What you can do with your collection:</h3>
           <ul>
             <li>
-              <strong>Explore your Collections Insights Dashboard</strong>—
+              <strong>Explore your Collections Insights Dashboard</strong> —
               discover your collection milestones, style evolution over time,
               growth trends, and more with beautiful visualizations
             </li>
             <li>
               <strong>Browse, search, and filter your entire collection</strong>{" "}
-              - rediscover your favorite albums and artists
+              — rediscover your favorite albums and artists
             </li>
             <li>
               <strong>Create and manage multiple crates</strong> — perfect for
               DJ gigs, organizing by theme, or tracking favorites
             </li>
             <li>
-              <strong>Generate mosaic grids from your crates</strong> in
-              different formats and sizes—perfect for social sharing
+              <strong>Generate mosaic grids</strong> — different formats and
+              sizes; perfect for social sharing
             </li>
           </ul>
           <p className={styles.note}>
