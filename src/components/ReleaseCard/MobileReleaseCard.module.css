@@ -34,10 +34,6 @@
     outline-offset: 2px;
   }
 
-  &.randomMode {
-    min-width: 20rem;
-  }
-
   &:hover {
     border-color: var(--input);
     box-shadow: var(--shadow-md);
@@ -55,12 +51,11 @@
   border-radius: var(--radius-card) 0 0 var(--radius-card);
   display: flex;
   flex-shrink: 0;
-  height: 100%;
   isolation: isolate;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  max-width: 4.6875rem;
+  max-width: 6rem;
   width: 100%;
 }
 
