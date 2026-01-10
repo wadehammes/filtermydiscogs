@@ -34,10 +34,6 @@
     outline-offset: 2px;
   }
 
-  &.randomMode {
-    min-width: 20rem;
-  }
-
   &::before {
     background: linear-gradient(
       135deg,

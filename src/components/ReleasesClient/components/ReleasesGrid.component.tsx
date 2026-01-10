@@ -4,6 +4,7 @@ import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
 import Spinner from "src/components/Spinner/Spinner.component";
+import DiceSolid from "src/styles/icons/dice-solid.svg";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
 
@@ -28,6 +29,7 @@ interface ReleasesGridProps {
   isMobile: boolean;
   isRandomMode: boolean;
   onExitRandomMode: () => void;
+  onRandomClick?: () => void;
   randomRelease?: DiscogsRelease | null;
 }
 
@@ -37,18 +39,18 @@ const ReleasesGridComponent = ({
   isMobile,
   isRandomMode,
   onExitRandomMode,
+  onRandomClick,
   randomRelease,
 }: ReleasesGridProps) => {
   const isActuallyRandomMode = isRandomMode && view === "random";
   const isCardView = view === "card" || isMobile || isActuallyRandomMode;
   const isListView = view === "list" && !isMobile && !isActuallyRandomMode;
 
-  const releasesToShow =
-    isActuallyRandomMode && randomRelease
+  const releasesToShow = isActuallyRandomMode
+    ? randomRelease
       ? [randomRelease]
-      : isActuallyRandomMode && releases.length > 1
-        ? releases.slice(0, 1)
-        : releases;
+      : []
+    : releases;
 
   const gridClassName = useMemo(() => {
     if (isActuallyRandomMode) {
@@ -77,7 +79,7 @@ const ReleasesGridComponent = ({
     }
 
     return undefined;
-  }, [isActuallyRandomMode, isCardView, isMobile]);
+  }, [isCardView, isActuallyRandomMode, isMobile]);
 
   if (isListView) {
     return (
@@ -120,8 +122,42 @@ const ReleasesGridComponent = ({
           )}
         </div>
       ))}
+      {isMobile && isRandomMode && onRandomClick && (
+        <div className={styles.randomButtonContainer}>
+          <button
+            type="button"
+            className={styles.randomButton}
+            onClick={onRandomClick}
+            aria-label="Get another random release"
+          >
+            <DiceSolid width="16" height="16" />
+            <span>Get Another Random Release</span>
+          </button>
+          <button
+            type="button"
+            className={styles.exitRandomLink}
+            onClick={onExitRandomMode}
+            aria-label="Exit random mode"
+          >
+            Exit random mode
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export const ReleasesGrid = memo(ReleasesGridComponent);
+export const ReleasesGrid = memo(
+  ReleasesGridComponent,
+  (prevProps, nextProps) => {
+    return (
+      prevProps.releases === nextProps.releases &&
+      prevProps.view === nextProps.view &&
+      prevProps.isMobile === nextProps.isMobile &&
+      prevProps.isRandomMode === nextProps.isRandomMode &&
+      prevProps.randomRelease === nextProps.randomRelease &&
+      prevProps.onExitRandomMode === nextProps.onExitRandomMode &&
+      prevProps.onRandomClick === nextProps.onRandomClick
+    );
+  },
+);

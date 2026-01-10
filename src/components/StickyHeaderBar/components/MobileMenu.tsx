@@ -7,8 +7,11 @@ import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component"
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
+import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { useView, ViewActionTypes } from "src/context/view.context";
 import About from "src/styles/icons/about.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
+import DiceSolid from "src/styles/icons/dice-solid.svg";
 import FilterSolid from "src/styles/icons/filter-solid.svg";
 import MenuIcon from "src/styles/icons/menu.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
@@ -86,6 +89,32 @@ export const MobileMenu = ({
     setIsFiltersDrawerOpen(false);
   };
 
+  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
+  const { dispatch: viewDispatch } = useView();
+  const { isRandomMode } = filtersState;
+
+  const handleRandomModeToggle = () => {
+    const newIsRandomMode = !isRandomMode;
+
+    if (newIsRandomMode) {
+      viewDispatch({
+        type: ViewActionTypes.SetView,
+        payload: "random",
+      });
+    }
+
+    filtersDispatch({
+      type: FiltersActionTypes.ToggleRandomMode,
+      payload: undefined,
+    });
+    trackEvent("randomModeToggled", {
+      action: "toggleRandomMode",
+      category: "mobile_filters",
+      label: "Random Mode Toggled from Mobile Header",
+      value: newIsRandomMode ? "enabled" : "disabled",
+    });
+  };
+
   const hasValidCollection =
     !(fetchingCollection || error) && Boolean(collection);
   const shouldShowFilters = showFilters && hasValidCollection;
@@ -94,16 +123,32 @@ export const MobileMenu = ({
     <>
       <div className={styles.mobileNav}>
         {shouldShowFilters && (
-          <button
-            type="button"
-            className={styles.filtersButton}
-            onClick={handleFiltersClick}
-            aria-label="Open filters"
-          >
-            <span className={styles.filterIcon}>
-              <FilterSolid />
-            </span>
-          </button>
+          <>
+            <button
+              type="button"
+              className={`${styles.filtersButton} ${
+                isRandomMode ? styles.active : ""
+              }`}
+              onClick={handleRandomModeToggle}
+              aria-label={
+                isRandomMode ? "Exit random mode" : "Show a random release"
+              }
+            >
+              <span className={styles.filterIcon}>
+                <DiceSolid />
+              </span>
+            </button>
+            <button
+              type="button"
+              className={styles.filtersButton}
+              onClick={handleFiltersClick}
+              aria-label="Open filters"
+            >
+              <span className={styles.filterIcon}>
+                <FilterSolid />
+              </span>
+            </button>
+          </>
         )}
 
         <button
