@@ -14,38 +14,80 @@ export function calculateStyleEvolution(
     return [];
   }
 
-  const sortedByDate = [...releases].sort(
-    (a, b) =>
-      new Date(a.date_added).getTime() - new Date(b.date_added).getTime(),
-  );
+  // Filter and sort releases by date_added
+  const releasesWithDates = releases
+    .map((release) => {
+      try {
+        const dateAdded = new Date(release.date_added);
+        if (Number.isNaN(dateAdded.getTime())) {
+          return null;
+        }
+        return { release, dateAdded };
+      } catch {
+        return null;
+      }
+    })
+    .filter(
+      (item): item is { release: DiscogsRelease; dateAdded: Date } =>
+        item !== null,
+    )
+    .sort((a, b) => a.dateAdded.getTime() - b.dateAdded.getTime());
 
-  const totalReleases = sortedByDate.length;
-  const quarterSize = Math.ceil(totalReleases / 4);
+  if (releasesWithDates.length === 0) {
+    return [];
+  }
 
+  // Find the date range of the collection
+  const firstItem = releasesWithDates[0];
+  const lastIndex = releasesWithDates.length - 1;
+  const lastItem = releasesWithDates[lastIndex];
+
+  if (firstItem === undefined) {
+    return [];
+  }
+
+  if (lastItem === undefined) {
+    return [];
+  }
+
+  const firstDate = firstItem.dateAdded;
+  const lastDate = lastItem.dateAdded;
+
+  // Calculate the total time span
+  const totalTimeSpan = lastDate.getTime() - firstDate.getTime();
+  const quarterTimeSpan = totalTimeSpan / 4;
+
+  // Create 4 time-based quarters
   const periods: StyleEvolutionData[] = [];
 
   for (let i = 0; i < 4; i++) {
-    const start = i * quarterSize;
-    const end = Math.min(start + quarterSize, totalReleases);
-    const periodReleases = sortedByDate.slice(start, end);
+    const quarterStartTime = firstDate.getTime() + i * quarterTimeSpan;
+    const quarterEndTime =
+      i === 3
+        ? lastDate.getTime() + 1 // Include the last date in the final quarter
+        : firstDate.getTime() + (i + 1) * quarterTimeSpan;
+
+    const quarterStart = new Date(quarterStartTime);
+    const quarterEnd = new Date(quarterEndTime);
+
+    // Filter releases that fall within this quarter
+    const periodReleases = releasesWithDates
+      .filter(({ dateAdded }) => {
+        const time = dateAdded.getTime();
+        return time >= quarterStartTime && time < quarterEndTime;
+      })
+      .map(({ release }) => release);
 
     if (periodReleases.length === 0) continue;
 
-    const firstRelease = periodReleases[0];
-    const lastRelease = periodReleases[periodReleases.length - 1];
-    if (!(firstRelease && lastRelease)) continue;
-
-    const firstDate = new Date(firstRelease.date_added);
-    const lastDate = new Date(lastRelease.date_added);
-
     const dateRange =
-      firstDate.getFullYear() === lastDate.getFullYear() &&
-      firstDate.getMonth() === lastDate.getMonth()
-        ? firstDate.toLocaleDateString("en-US", {
+      quarterStart.getFullYear() === quarterEnd.getFullYear() &&
+      quarterStart.getMonth() === quarterEnd.getMonth()
+        ? quarterStart.toLocaleDateString("en-US", {
             month: "long",
             year: "numeric",
           })
-        : `${firstDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })} - ${lastDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })}`;
+        : `${quarterStart.toLocaleDateString("en-US", { month: "short", year: "numeric" })} - ${quarterEnd.toLocaleDateString("en-US", { month: "short", year: "numeric" })}`;
 
     const styleCounts = new Map<string, number>();
     periodReleases.forEach((release) => {
@@ -74,12 +116,12 @@ export function calculateStyleEvolution(
 
     const periodLabel =
       i === 0
-        ? "First 25%"
+        ? "First Period"
         : i === 1
-          ? "Second 25%"
+          ? "Second Period"
           : i === 2
-            ? "Third 25%"
-            : "Most Recent 25%";
+            ? "Third Period"
+            : "Most Recent Period";
 
     periods.push({
       period: periodLabel,

@@ -30,6 +30,13 @@
   text-transform: uppercase;
 }
 
+.statValueContainer {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
 .statValue {
   color: var(--foreground);
   font-size: var(--text-2xl);
@@ -39,6 +46,38 @@
   @media (min-width: 768px) {
     font-size: var(--text-3xl);
   }
+}
+
+.yearOverYear {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.yearOverYearLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  white-space: nowrap;
+}
+
+.yearOverYear.positive {
+  color: var(--success);
+}
+
+.yearOverYear.negative {
+  color: var(--destructive);
+}
+
+.arrowIcon {
+  flex-shrink: 0;
+}
+
+.percentage {
+  white-space: nowrap;
 }
 
 .statSubtext {

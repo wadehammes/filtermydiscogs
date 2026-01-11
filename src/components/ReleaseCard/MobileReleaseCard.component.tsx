@@ -20,7 +20,7 @@ const MobileReleaseCardComponent = ({
   isRandomMode = false,
   onExitRandomMode,
 }: ReleaseCardProps) => {
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+  const { addToCrate, removeFromCrate, isInCrate } = useCrate();
   const { state: filtersState } = useFilters();
   const {
     labels,
@@ -62,10 +62,10 @@ const MobileReleaseCardComponent = ({
         removeFromCrate(release.instance_id);
       } else {
         addToCrate(release);
-        openDrawer();
+        // Don't open drawer on mobile
       }
     },
-    [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
+    [isInCrate, addToCrate, removeFromCrate, release],
   );
 
   const handlePillClick = usePillClickHandler({

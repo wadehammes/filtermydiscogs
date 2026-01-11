@@ -5,6 +5,7 @@ import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { useCrate } from "src/context/crate.context";
 import { useFilters } from "src/context/filters.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
 import MinusIcon from "src/styles/icons/minus-solid.svg";
@@ -22,6 +23,7 @@ const ReleaseCardComponent = ({
 }: ReleaseCardProps) => {
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
   const { state: filtersState } = useFilters();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
   const {
     labels,
     year,
@@ -63,10 +65,13 @@ const ReleaseCardComponent = ({
         removeFromCrate(release.instance_id);
       } else {
         addToCrate(release);
-        openDrawer();
+        // Only open drawer on desktop, not on mobile
+        if (!isMobile) {
+          openDrawer();
+        }
       }
     },
-    [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
+    [isInCrate, addToCrate, removeFromCrate, openDrawer, release, isMobile],
   );
 
   const handlePillClick = usePillClickHandler({
@@ -109,52 +114,61 @@ const ReleaseCardComponent = ({
             sizes="(max-width: 1200px) 50vw, 33vw"
           />
         )}
-        <div className={styles.actionButtons}>
+        <div className={styles.actionButtonsContainer}>
           {releaseUrl && (
-            <a
-              href={releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.discogsIconButton}
-              onClick={() => {
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category: "home",
-                  label: "Release Clicked",
-                  value: resource_url,
-                });
-              }}
-              aria-label="View on Discogs"
-              title="View on Discogs"
-            >
-              <ExternalLinkIcon className={styles.externalLinkIcon} />
+            <div className={styles.buttonWrapper}>
+              <a
+                href={releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.discogsButton}
+                onClick={() => {
+                  trackEvent("releaseClicked", {
+                    action: "releaseClicked",
+                    category: "home",
+                    label: "Release Clicked",
+                    value: resource_url,
+                  });
+                }}
+                aria-label="View on Discogs"
+                title="View on Discogs"
+              >
+                <ExternalLinkIcon className={styles.externalLinkIcon} />
+              </a>
               <span className={styles.tooltip}>View on Discogs</span>
-            </a>
+            </div>
           )}
-          <button
-            type="button"
-            className={classNames(
-              styles.listButton,
-              isInCrate(release.instance_id) && styles.removeButton,
-            )}
-            onClick={handleCrateToggle}
-            aria-label={
-              isInCrate(release.instance_id)
-                ? "Remove from crate"
-                : "Add to crate"
-            }
-          >
-            {isInCrate(release.instance_id) ? (
-              <MinusIcon className={styles.listButtonIcon} />
-            ) : (
-              <PlusIcon className={styles.listButtonIcon} />
-            )}
-            <span className={styles.listButtonText}>
+          <div className={styles.buttonWrapper}>
+            <button
+              type="button"
+              className={classNames(
+                styles.listButton,
+                isInCrate(release.instance_id) && styles.removeButton,
+              )}
+              onClick={handleCrateToggle}
+              aria-label={
+                isInCrate(release.instance_id)
+                  ? "Remove from crate"
+                  : "Add to crate"
+              }
+              title={
+                isInCrate(release.instance_id)
+                  ? "Remove from Crate"
+                  : "Add to Crate"
+              }
+            >
+              {isInCrate(release.instance_id) ? (
+                <MinusIcon className={styles.listButtonIcon} />
+              ) : (
+                <PlusIcon className={styles.listButtonIcon} />
+              )}
+            </button>
+            <span className={styles.tooltip}>
               {isInCrate(release.instance_id)
                 ? "Remove from Crate"
                 : "Add to Crate"}
             </span>
-          </button>
+          </div>
         </div>
       </div>
       <div className={styles.contentContainer}>
