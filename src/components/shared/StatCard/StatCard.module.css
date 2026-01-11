@@ -1,0 +1,32 @@
+.statCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.statLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+}
+
+.statValue {
+  color: var(--foreground);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+
+  @media (min-width: 768px) {
+    font-size: var(--text-3xl);
+  }
+}
+
+.statSubtext {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}

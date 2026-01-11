@@ -1,0 +1,119 @@
+/* Admin-specific styles - shared styles are in DashboardLayout.module.css */
+
+.activityGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.activityCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.activityTitle {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.activityStats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.activityStat {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.activityLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.activityValue {
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+}
+
+.topUsersGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.topUsersCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.topUsersTitle {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table thead {
+  background: var(--muted);
+}
+
+.table th {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.table td {
+  border-top: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.table tbody tr:hover {
+  background: var(--muted);
+}
+
+.emptyTable {
+  color: var(--muted-foreground);
+  font-style: italic;
+  text-align: center;
+}

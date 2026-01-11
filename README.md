@@ -52,6 +52,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:6767
 # Get this from your Vercel dashboard: Project Settings > Storage > Postgres > .env.local
 # Vercel provides DATABASE_URL, but Prisma can also use POSTGRES_URL
 DATABASE_URL=your_database_url_here
+
+# Admin User ID (optional, for admin dashboard access)
+# Set this to your Discogs user ID to access the admin dashboard at /admin
+# You can find your user ID after logging in - it's stored in the discogs_user_id cookie
+ADMIN_USER_ID=your_discogs_user_id_here
 ```
 
 ### Database Setup
@@ -95,6 +100,7 @@ The app will be available at `http://localhost:6767`.
 - **Releases** (`/releases`) - Browse, filter, and sort your collection
 - **Mosaic** (`/mosaic`) - Create mosaic grids from your collection
 - **About** (`/about`) - Terms of Service, Privacy Policy, and contact information
+- **Admin** (`/admin`) - Admin dashboard with application statistics (admin access required)
 
 ## Tech Stack
 
