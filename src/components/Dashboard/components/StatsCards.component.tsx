@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { useCollectionContext } from "src/context/collection.context";
 import type {
   CollectionStats,
   CollectionValue,
@@ -19,6 +21,61 @@ export function StatsCards({
   isLoadingValue,
   valueError,
 }: StatsCardsProps) {
+  const { state: collectionState } = useCollectionContext();
+  const { releases } = collectionState;
+
+  const yearOverYearChange = useMemo(() => {
+    if (!releases || releases.length === 0) {
+      return null;
+    }
+
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0-11
+    const currentDay = today.getDate(); // 1-31
+
+    // Create date for this time last year (same month and day)
+    const thisTimeLastYear = new Date(
+      currentYear - 1,
+      currentMonth,
+      currentDay,
+    );
+
+    // Count total collection size today (all releases added up to today)
+    const totalToday = releases.length;
+
+    // Count collection size at this time last year (releases added up to same date last year)
+    let totalLastYear = 0;
+
+    releases.forEach((release) => {
+      try {
+        const dateAdded = new Date(release.date_added);
+        if (Number.isNaN(dateAdded.getTime())) {
+          return;
+        }
+
+        // Count releases that were added on or before this date last year
+        if (dateAdded <= thisTimeLastYear) {
+          totalLastYear++;
+        }
+      } catch {
+        // Skip invalid dates
+      }
+    });
+
+    if (totalLastYear === 0) {
+      return null; // Can't calculate if no data from this time last year
+    }
+
+    const change = ((totalToday - totalLastYear) / totalLastYear) * 100;
+    return {
+      percentage: Math.abs(change),
+      isPositive: change > 0,
+      totalToday,
+      totalLastYear,
+    };
+  }, [releases]);
+
   const formatCurrency = (value: number | undefined): string => {
     if (value === undefined || value === null) {
       return "—";
@@ -68,8 +125,38 @@ export function StatsCards({
 
       <div className={styles.statCard}>
         <div className={styles.statLabel}>Total Releases</div>
-        <div className={styles.statValue}>
-          {formatNumber(stats.totalReleases)}
+        <div className={styles.statValueContainer}>
+          <div className={styles.statValue}>
+            {formatNumber(stats.totalReleases)}
+          </div>
+          {yearOverYearChange && (
+            <div
+              className={`${styles.yearOverYear} ${
+                yearOverYearChange.isPositive
+                  ? styles.positive
+                  : styles.negative
+              }`}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={styles.arrowIcon}
+              >
+                {yearOverYearChange.isPositive ? (
+                  <path d="M6 2L10 6H7V10H5V6H2L6 2Z" fill="currentColor" />
+                ) : (
+                  <path d="M6 10L2 6H5V2H7V6H10L6 10Z" fill="currentColor" />
+                )}
+              </svg>
+              <span className={styles.percentage}>
+                {yearOverYearChange.percentage.toFixed(1)}%
+              </span>
+              <span className={styles.yearOverYearLabel}>vs last year</span>
+            </div>
+          )}
         </div>
       </div>
 

@@ -24,6 +24,28 @@ export function StyleEvolution() {
     return calculateStyleEvolution(releases || []);
   }, [releases]);
 
+  // Create a consistent color map for all styles across all periods
+  const styleColorMap = useMemo(() => {
+    const allStyles = new Set<string>();
+    styleEvolution.forEach((period) => {
+      period.styles.forEach((style) => {
+        allStyles.add(style.name);
+      });
+    });
+
+    const sortedStyles = Array.from(allStyles).sort();
+    const colorMap = new Map<string, string>();
+
+    sortedStyles.forEach((style, index) => {
+      const color = colors[index % colors.length];
+      if (color !== undefined) {
+        colorMap.set(style, color);
+      }
+    });
+
+    return colorMap;
+  }, [styleEvolution, colors]);
+
   if (styleEvolution.length === 0) {
     return (
       <div className={styles.container}>
@@ -71,10 +93,10 @@ export function StyleEvolution() {
                       fill="#5e5365"
                       dataKey="value"
                     >
-                      {period.styles.map((_style, styleIndex) => (
+                      {period.styles.map((style) => (
                         <Cell
-                          key={`cell-${styleIndex}`}
-                          fill={colors[styleIndex % colors.length]}
+                          key={`cell-${style.name}`}
+                          fill={styleColorMap.get(style.name) || colors[0]}
                         />
                       ))}
                     </Pie>

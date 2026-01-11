@@ -23,6 +23,7 @@ import {
   useCratesQuery,
 } from "src/hooks/queries/useCratesQuery";
 import { useCrateSync } from "src/hooks/useCrateSync.hook";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
 import type { Crate } from "src/types/crate.types";
 
@@ -58,6 +59,7 @@ const STORAGE_KEY = "filtermydiscogs_selected_releases";
 
 export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { state: authState } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [migrationDone, setMigrationDone] = useState(false);
@@ -221,7 +223,12 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
           release,
         },
         {
-          onSuccess: openDrawer,
+          onSuccess: () => {
+            // Only open drawer on desktop, not on mobile
+            if (!isMobile) {
+              openDrawer();
+            }
+          },
         },
       );
     },
@@ -234,6 +241,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
       findDefaultCrate,
       addReleaseMutation,
       openDrawer,
+      isMobile,
     ],
   );
 

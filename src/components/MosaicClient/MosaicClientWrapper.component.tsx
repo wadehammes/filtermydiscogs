@@ -1,10 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
 
 const MosaicClient = dynamic(() => import("./MosaicClient.component"), {
-  loading: () => <AuthLoading />,
   ssr: false,
 });
 
