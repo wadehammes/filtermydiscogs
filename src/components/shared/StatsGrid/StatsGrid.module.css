@@ -1,0 +1,14 @@
+.statsGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(var(--mobile-columns, 1), 1fr);
+  width: 100%;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(var(--tablet-columns, 2), 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(var(--desktop-columns, 4), 1fr);
+  }
+}
