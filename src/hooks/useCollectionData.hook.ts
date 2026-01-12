@@ -4,7 +4,6 @@ import { ERROR_FETCHING } from "src/constants";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
-import type { CollectionPage } from "src/types";
 
 export const useCollectionData = (
   username: string | null,
@@ -58,8 +57,8 @@ export const useCollectionData = (
   const processedData = useMemo(() => {
     if (!collectionData?.pages) return null;
 
-    const pages = collectionData.pages as CollectionPage[];
-    const allReleases = pages.flatMap((page: CollectionPage) => page.releases);
+    const pages = collectionData.pages;
+    const allReleases = pages.flatMap((page) => page.releases);
     const collection = pages[pages.length - 1];
 
     // Single pass through releases to extract both styles and years

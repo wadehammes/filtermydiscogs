@@ -95,6 +95,34 @@
   width: 100%;
 }
 
+.ratingBadge {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--card-foreground);
+  display: flex;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  gap: var(--space-1);
+  justify-content: center;
+  left: var(--space-2);
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  padding: var(--space-1) var(--space-2);
+  position: absolute;
+  top: var(--space-2);
+  z-index: 10;
+}
+
+.starIcon {
+  color: currentColor;
+  display: flex;
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
 .contentContainer {
   display: flex;
   flex: 1;

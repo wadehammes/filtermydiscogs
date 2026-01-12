@@ -11,9 +11,19 @@ export interface CratesResponse {
   crates: CrateWithCount[];
 }
 
+export interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface CrateWithReleasesResponse {
   crate: Crate;
   releases: DiscogsRelease[];
+  pagination?: PaginationInfo;
 }
 
 export interface OptimisticUpdateContext {

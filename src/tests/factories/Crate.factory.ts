@@ -26,7 +26,9 @@ class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
         "Collection",
         faker.word.noun(),
       ]),
+      username: null,
       is_default: isDefault,
+      private: true,
       created_at: faker.date.past(),
       updated_at: faker.date.recent(),
     } satisfies Crate;
@@ -34,7 +36,7 @@ class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
     return {
       ...instance,
       ...(attributes ?? {}),
-    };
+    } as Crate;
   }
 }
 

@@ -1,0 +1,20 @@
+.container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: center;
+  min-height: 12.5rem;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.fullHeight {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+.text {
+  color: var(--muted-foreground);
+  font-size: var(--text-base);
+}

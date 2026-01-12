@@ -13,7 +13,9 @@ model Crate {
   user_id    Int
   id         String    @default(uuid())
   name       String
+  username   String?
   is_default Boolean   @default(false)
+  private    Boolean   @default(true)
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
 
@@ -22,6 +24,7 @@ model Crate {
   @@id([user_id, id])
   @@index([user_id])
   @@index([user_id, is_default])
+  @@index([id, private])
   @@map("crates")
 }
 

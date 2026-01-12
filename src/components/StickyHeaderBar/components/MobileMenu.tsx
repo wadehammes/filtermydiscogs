@@ -3,12 +3,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
+import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useView, ViewActionTypes } from "src/context/view.context";
+import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
+import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import About from "src/styles/icons/about.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import DiceSolid from "src/styles/icons/dice-solid.svg";
@@ -17,6 +20,7 @@ import MenuIcon from "src/styles/icons/menu.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
 import XIcon from "src/styles/icons/x.svg";
+import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuProps {
@@ -38,10 +42,17 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
+  const [showSyncDialog, setShowSyncDialog] = useState(false);
   const { logout, state: authState } = useAuth();
-  const { username } = authState;
+  const { username, isAuthenticated } = authState;
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
+  const syncMutation = useSyncCratesMutation();
+  const {
+    data: collectionData,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useDiscogsCollectionQuery(username || "", isAuthenticated);
 
   const handleNavigation = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -69,6 +80,63 @@ export const MobileMenu = ({
       value: username || "unknown",
     });
     setIsOpen(false);
+  };
+
+  const isCollectionLoading = hasNextPage || isFetchingNextPage;
+  const isSyncDisabled = syncMutation.isPending || isCollectionLoading;
+
+  const handleSyncClick = () => {
+    setIsOpen(false);
+    setShowSyncDialog(true);
+  };
+
+  const handleSyncConfirm = () => {
+    const syncResult = prepareCollectionForSync(
+      collectionData,
+      hasNextPage,
+      isFetchingNextPage,
+    );
+
+    if (!syncResult.isValid) {
+      alert(syncResult.error);
+      setShowSyncDialog(false);
+      return;
+    }
+
+    if (!syncResult.instanceIds) {
+      alert("No instance IDs found.");
+      setShowSyncDialog(false);
+      return;
+    }
+
+    syncMutation.mutate(
+      { collectionInstanceIds: syncResult.instanceIds },
+      {
+        onSuccess: (data) => {
+          setShowSyncDialog(false);
+          trackEvent("crateSync", {
+            action: "crateSyncManual",
+            category: "crate",
+            label: "Manual Crate Sync",
+            value: data.removedCount.toString(),
+          });
+          if (data.removedCount > 0) {
+            alert(
+              `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,
+            );
+          } else {
+            alert(
+              "Sync complete: All releases in your crates are still in your collection.",
+            );
+          }
+        },
+        onError: (error) => {
+          alert(
+            `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+        },
+      },
+    );
   };
 
   const toggleMenu = () => {
@@ -183,6 +251,23 @@ export const MobileMenu = ({
               <ThemeSwitcher variant="mobile" />
               <button
                 type="button"
+                className={styles.syncButton}
+                onClick={handleSyncClick}
+                disabled={isSyncDisabled}
+                title={
+                  isCollectionLoading
+                    ? "Please wait for your collection to finish loading"
+                    : undefined
+                }
+              >
+                {syncMutation.isPending
+                  ? "Syncing..."
+                  : isCollectionLoading
+                    ? "Loading..."
+                    : "Sync Collection"}
+              </button>
+              <button
+                type="button"
                 className={styles.logoutButton}
                 onClick={handleLogout}
               >
@@ -265,6 +350,18 @@ export const MobileMenu = ({
       <FiltersDrawer
         isOpen={isFiltersDrawerOpen}
         onClose={closeFiltersDrawer}
+      />
+
+      <ConfirmDialog
+        isOpen={showSyncDialog}
+        title="Sync Collection"
+        message="This will sync your crates with your Discogs collection and remove any releases from your crates that are no longer in your collection. This action cannot be undone. Continue?"
+        confirmLabel={syncMutation.isPending ? "Syncing..." : "Sync"}
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={handleSyncConfirm}
+        onCancel={() => setShowSyncDialog(false)}
+        isConfirming={syncMutation.isPending}
       />
     </>
   );

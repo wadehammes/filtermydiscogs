@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Logo from "src/styles/icons/fmd-logo.svg";
+import InstagramIcon from "src/styles/icons/instagram.svg";
 import styles from "./PublicPageHeader.module.css";
 
 type PublicPageHeaderProps = {
@@ -35,6 +36,15 @@ export function PublicPageHeader({ currentPage }: PublicPageHeaderProps) {
           >
             Legal
           </Link>
+          <a
+            href="https://www.instagram.com/filtermydiscogs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.socialLink}
+            aria-label="Follow @filtermydiscogs on Instagram"
+          >
+            <InstagramIcon className={styles.socialIcon} />
+          </a>
         </nav>
       </div>
     </header>

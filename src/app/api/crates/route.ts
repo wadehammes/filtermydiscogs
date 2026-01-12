@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       return userIdResult.error;
     }
     const { userId: userIdNum } = userIdResult;
+    const username = request.cookies.get("discogs_username")?.value;
 
     // Check rate limit
     const rateLimitError = checkRateLimitWithResponse(userIdNum, false);
@@ -44,7 +45,9 @@ export async function GET(request: NextRequest) {
         user_id: true,
         id: true,
         name: true,
+        username: true,
         is_default: true,
+        private: true,
         created_at: true,
         updated_at: true,
         _count: {
@@ -62,13 +65,16 @@ export async function GET(request: NextRequest) {
           user_id: userIdNum,
           id: randomUUID(),
           name: "My Crate",
+          username: username || null,
           is_default: true,
         },
         select: {
           user_id: true,
           id: true,
           name: true,
+          username: true,
           is_default: true,
+          private: true,
           created_at: true,
           updated_at: true,
           _count: {
@@ -84,7 +90,9 @@ export async function GET(request: NextRequest) {
         user_id: defaultCrate.user_id,
         id: defaultCrate.id,
         name: defaultCrate.name,
+        username: defaultCrate.username,
         is_default: defaultCrate.is_default,
+        private: defaultCrate.private,
         created_at: defaultCrate.created_at,
         updated_at: defaultCrate.updated_at,
         releaseCount: defaultCrate._count.releases,
@@ -108,7 +116,9 @@ export async function GET(request: NextRequest) {
       user_id: crate.user_id,
       id: crate.id,
       name: crate.name,
+      username: crate.username,
       is_default: crate.is_default,
+      private: crate.private,
       created_at: crate.created_at,
       updated_at: crate.updated_at,
       releaseCount: crate._count.releases,
@@ -135,6 +145,7 @@ export async function POST(request: NextRequest) {
       return userIdResult.error;
     }
     const { userId: userIdNum } = userIdResult;
+    const username = request.cookies.get("discogs_username")?.value;
 
     // Check rate limit (write operation)
     const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
@@ -181,6 +192,7 @@ export async function POST(request: NextRequest) {
         user_id: userIdNum,
         id: crateId,
         name: name.trim(),
+        username: username || null,
         is_default: false,
       },
     });

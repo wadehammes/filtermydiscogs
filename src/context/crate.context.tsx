@@ -22,13 +22,12 @@ import {
   useCrateQuery,
   useCratesQuery,
 } from "src/hooks/queries/useCratesQuery";
-import { useCrateSync } from "src/hooks/useCrateSync.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
-import type { Crate } from "src/types/crate.types";
+import type { Crate, CrateWithCount } from "src/types/crate.types";
 
 interface CrateContextType {
-  crates: Crate[];
+  crates: CrateWithCount[];
   activeCrateId: string | null;
   selectedReleases: DiscogsRelease[];
   isLoading: boolean;
@@ -71,8 +70,6 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { data: activeCrateData, isLoading: isLoadingCrate } =
     useCrateQuery(activeCrateId);
   const activeCrateReleases = activeCrateData?.releases || [];
-
-  useCrateSync();
 
   const createCrateMutation = useCreateCrateMutation();
   const updateCrateMutation = useUpdateCrateMutation();
@@ -302,12 +299,19 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
 
   const updateCrate = useCallback(
     async (crateId: string, updates: Partial<Crate>) => {
-      const updateData: { name?: string; is_default?: boolean } = {};
+      const updateData: {
+        name?: string;
+        is_default?: boolean;
+        private?: boolean;
+      } = {};
       if (updates.name !== undefined) {
         updateData.name = updates.name;
       }
       if (updates.is_default !== undefined) {
         updateData.is_default = updates.is_default;
+      }
+      if (updates.private !== undefined) {
+        updateData.private = updates.private;
       }
       await updateCrateMutation.mutateAsync({
         crateId,
