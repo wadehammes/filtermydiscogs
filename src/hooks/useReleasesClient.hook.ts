@@ -18,7 +18,8 @@ export const useReleasesClient = () => {
   const { username, isAuthenticated } = authState;
   const { state: viewState, dispatch: viewDispatch } = useView();
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { filteredReleases, isRandomMode, randomRelease } = filtersState;
+  const { filteredReleases, isRandomMode, randomRelease, allReleases } =
+    filtersState;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -104,8 +105,8 @@ export const useReleasesClient = () => {
 
   const handleReleaseClick = useCallback(
     (instanceId: string) => {
-      // Find the release in the filtered releases
-      const release = filteredReleases.find(
+      // Find the release in all releases (not just filtered) so crate releases work even when filtered out
+      const release = allReleases.find(
         (r) => String(r.instance_id) === instanceId,
       );
 
@@ -114,7 +115,7 @@ export const useReleasesClient = () => {
         setSelectedReleaseId(instanceId);
       }
     },
-    [filteredReleases],
+    [allReleases],
   );
 
   const handleCloseModal = useCallback(() => {
@@ -205,9 +206,8 @@ export const useReleasesClient = () => {
 
     selectedReleaseId,
     selectedRelease: selectedReleaseId
-      ? filteredReleases.find(
-          (r) => String(r.instance_id) === selectedReleaseId,
-        ) || null
+      ? allReleases.find((r) => String(r.instance_id) === selectedReleaseId) ||
+        null
       : null,
 
     handleReleaseClick,
