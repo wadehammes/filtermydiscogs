@@ -216,9 +216,10 @@ export function auditDatabaseOperation(
  * Fetch public crate data for server-side use (e.g., in generateMetadata)
  * Uses internal API route
  */
-export async function fetchPublicCrateMetadata(
-  crateId: string,
-): Promise<{ crate: { name: string }; pagination: { total: number } } | null> {
+export async function fetchPublicCrateMetadata(crateId: string): Promise<{
+  crate: { name: string; username: string | null };
+  pagination: { total: number };
+} | null> {
   try {
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL ||
@@ -236,7 +237,7 @@ export async function fetchPublicCrateMetadata(
 
     const data = await response.json();
     return {
-      crate: { name: data.crate.name },
+      crate: { name: data.crate.name, username: data.crate.username },
       pagination: { total: data.pagination.total },
     };
   } catch {

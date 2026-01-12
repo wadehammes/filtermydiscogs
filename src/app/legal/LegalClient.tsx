@@ -4,8 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clearData } from "src/api/helpers";
+import { AppPageLayout } from "src/components/AppPageLayout/AppPageLayout.component";
 import Button from "src/components/Button/Button.component";
-import { PublicPageHeader } from "src/components/PublicPageHeader/PublicPageHeader.component";
+import pageStyles from "src/components/Page/Page.module.css";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
@@ -66,17 +67,20 @@ export function LegalClient() {
   };
 
   return (
-    <>
-      {isAuthenticated ? (
-        <StickyHeaderBar
-          allReleasesLoaded={true}
-          hideFilters={true}
-          currentPage="legal"
-        />
-      ) : (
-        <PublicPageHeader currentPage="legal" />
-      )}
-      <div className={styles.container}>
+    <AppPageLayout
+      currentPage="legal"
+      header={
+        isAuthenticated ? (
+          <StickyHeaderBar
+            allReleasesLoaded={true}
+            hideFilters={true}
+            currentPage="legal"
+          />
+        ) : undefined
+      }
+      showFooter={!isAuthenticated}
+    >
+      <div className={pageStyles.container}>
         <div className={styles.content}>
           <section className={styles.section}>
             <h2>Terms of Service</h2>
@@ -234,6 +238,6 @@ export function LegalClient() {
           </section>
         </div>
       </div>
-    </>
+    </AppPageLayout>
   );
 }
