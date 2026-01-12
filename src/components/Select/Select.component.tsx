@@ -211,7 +211,7 @@ const SelectComponent = ({
                   </span>
                 )}
                 <span className={styles.optionLabel}>
-                  {option.label}
+                  <span>{option.label}</span>
                   {option.isDefault && (
                     <span className={styles.defaultBadge}>Default</span>
                   )}

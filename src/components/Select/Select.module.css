@@ -107,7 +107,7 @@
   display: flex;
   font-size: var(--text-sm);
   min-height: 2rem;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3);
 
   @media (min-width: 768px) {
     min-height: auto;
@@ -138,6 +138,7 @@
   align-items: center;
   display: flex;
   gap: var(--space-2);
+  width: 100%;
 }
 
 .checkmark {
@@ -150,8 +151,10 @@
 .optionLabel {
   align-items: center;
   display: flex;
+  justify-content: space-between;
   flex: 1;
   gap: var(--space-2);
+  width: 100%;
 }
 
 .defaultBadge {
@@ -162,7 +165,7 @@
   font-size: var(--text-xxs);
   font-weight: var(--font-medium);
   margin-left: auto;
-  padding: 0.125rem var(--space-2);
+  padding: 0.145rem var(--space-2) 0.1rem;
   text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.075em;
