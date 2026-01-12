@@ -44,7 +44,7 @@
 
 .imageContainer {
   align-items: center;
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1;
   background-blend-mode: normal;
   background-position: center;
   background-repeat: no-repeat;
@@ -53,10 +53,9 @@
   display: flex;
   height: auto;
   justify-content: center;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
   width: 100%;
-  max-height: 20em;
 
   > img[src],
   img[src] {
