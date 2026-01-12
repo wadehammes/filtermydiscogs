@@ -75,17 +75,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     if (!activeCrateId) return;
 
     try {
-      // Toggle privacy:
-      // Checkbox checked = public (private=false, isPublic=true)
-      // Checkbox unchecked = private (private=true, isPublic=false)
-      // When clicking, we want to toggle to the opposite state
-      // If currently private (isPublic=false), make public (private=false)
-      // If currently public (isPublic=true), make private (private=true)
-      // So: newPrivateValue should be the opposite of what we want isPublic to be
-      // If isPublic=false, we want isPublic=true, so private=false
-      // If isPublic=true, we want isPublic=false, so private=true
-      // Therefore: newPrivateValue = isPublic (not !isPublic)
-      const newPrivateValue = isPublic;
+      const newPrivateValue = !isPublic;
       const updates = { private: newPrivateValue };
       await updateCrate(activeCrateId, updates);
     } catch (error) {
