@@ -173,6 +173,7 @@ export const useUpdateCrateMutation = () => {
     onMutate: async ({ crateId, updates }) => {
       // Optimistically update the crates list
       await queryClient.cancelQueries({ queryKey: ["crates", userId] });
+      await queryClient.cancelQueries({ queryKey: ["crate", userId, crateId] });
 
       const previousCrates = queryClient.getQueryData<CratesResponse>([
         "crates",
@@ -186,7 +187,7 @@ export const useUpdateCrateMutation = () => {
             return {
               ...crate,
               ...updates,
-            };
+            } as CrateWithCount;
           }
           return crate;
         });
@@ -226,8 +227,11 @@ export const useUpdateCrateMutation = () => {
         };
       });
 
-      // Invalidate queries to trigger refetch and ensure all components have latest data
-      invalidateCrateQueries(queryClient, userId, variables.crateId);
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["crate", userId, variables.crateId],
+        });
+      }
     },
   });
 };
