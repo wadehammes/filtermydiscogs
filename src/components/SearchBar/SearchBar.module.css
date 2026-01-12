@@ -1,21 +1,14 @@
 .searchBar {
   position: relative;
   width: 100%;
-  max-width: 25rem;
-
-  @media (min-width: 640px) {
-    max-width: 31.25rem;
-  }
-
-  @media (min-width: 1024px) {
-    max-width: 37.5rem;
-  }
+  flex: 2;
 }
 
 .inputContainer {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .input {
@@ -25,11 +18,15 @@
   border: 1px solid var(--input);
   border-radius: var(--radius-ui);
   font-family: inherit;
-  font-size: var(--text-sm);
+  font-size: 16px;
   min-height: var(--input-height);
   background-color: var(--background);
   color: var(--foreground);
   transition: all var(--transition-normal);
+
+  @media (min-width: 640px) {
+    font-size: var(--text-sm);
+  }
 
   &:hover:not(:disabled) {
     border-color: var(--border);
