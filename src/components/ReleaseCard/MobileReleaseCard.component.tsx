@@ -9,6 +9,7 @@ import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
 import MinusIcon from "src/styles/icons/minus-solid.svg";
 import PlusIcon from "src/styles/icons/plus-solid.svg";
+import StarIcon from "src/styles/icons/star-solid.svg";
 import type { ReleaseCardProps } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -92,6 +93,15 @@ const MobileReleaseCardComponent = ({
             : undefined
         }
       >
+        {release.rating > 0 && (
+          <div
+            className={styles.ratingBadge}
+            title={`Rating: ${release.rating}/5`}
+          >
+            <StarIcon className={styles.starIcon} />
+            {release.rating}
+          </div>
+        )}
         {thumbUrl && (
           <Image
             src={thumbUrl}

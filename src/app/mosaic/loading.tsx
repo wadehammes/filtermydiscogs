@@ -1,21 +1,11 @@
 "use client";
 
-import Spinner from "src/components/Spinner/Spinner.component";
-import styles from "./loading.module.css";
+import PageLoader from "src/components/PageLoader/PageLoader.component";
 
 /**
  * Loading UI for the mosaic page.
  * Shows instantly while the page is loading, improving perceived performance.
  */
 export default function MosaicLoadingPage() {
-  return (
-    <div className={styles.container}>
-      <Spinner
-        size="3xl"
-        className={styles.spinner}
-        aria-label="Loading mosaic"
-      />
-      <p className={styles.text}>Loading mosaic...</p>
-    </div>
-  );
+  return <PageLoader message="Loading mosaic..." size="3xl" fullHeight />;
 }

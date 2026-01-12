@@ -46,7 +46,7 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
   }, []);
 
   const options = crates.map((crate) => {
-    const releaseCount = (crate as { releaseCount?: number }).releaseCount ?? 0;
+    const releaseCount = crate.releaseCount ?? 0;
     return {
       value: crate.id,
       label: `${crate.name} (${releaseCount})`,

@@ -8,7 +8,9 @@ export const createMockPrisma = () => {
     user_id: 123456,
     id: "crate-1",
     name: "Test Crate",
+    username: null,
     is_default: true,
+    private: true,
     created_at: new Date(),
     updated_at: new Date(),
   };

@@ -394,7 +394,8 @@ describe("updateCrate", () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
-    } as Response);
+      json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+    } as unknown as Response);
 
     await expect(updateCrate("crate-123", { name: "Test" })).rejects.toThrow(
       "HTTP error! status: 404",

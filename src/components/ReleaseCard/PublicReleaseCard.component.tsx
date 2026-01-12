@@ -1,30 +1,17 @@
 import classNames from "classnames";
 import Image from "next/image";
-import type React from "react";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import { useCrate } from "src/context/crate.context";
-import { useFilters } from "src/context/filters.context";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
-import MinusIcon from "src/styles/icons/minus-solid.svg";
-import PlusIcon from "src/styles/icons/plus-solid.svg";
-import StarIcon from "src/styles/icons/star-solid.svg";
 import type { ReleaseCardProps } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseCard.module.css";
 
-const ReleaseCardComponent = ({
+const PublicReleaseCardComponent = ({
   release,
   isHighlighted = false,
-  isRandomMode = false,
-  onExitRandomMode,
-}: ReleaseCardProps) => {
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const { state: filtersState } = useFilters();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
+}: Omit<ReleaseCardProps, "isRandomMode" | "onExitRandomMode">) => {
   const {
     labels,
     year,
@@ -57,35 +44,10 @@ const ReleaseCardComponent = ({
     type: "label",
   });
 
-  const handleCrateToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (isInCrate(release.instance_id)) {
-        removeFromCrate(release.instance_id);
-      } else {
-        addToCrate(release);
-        // Only open drawer on desktop, not on mobile
-        if (!isMobile) {
-          openDrawer();
-        }
-      }
-    },
-    [isInCrate, addToCrate, removeFromCrate, openDrawer, release, isMobile],
-  );
-
-  const handlePillClick = usePillClickHandler({
-    category: "releaseCard",
-    onExitRandomMode,
-  });
-
   return release ? (
     <div
       className={classNames(styles.releaseCard, {
         [styles.highlighted as string]: isHighlighted,
-        [styles.inCrate as string]: isInCrate(release.instance_id),
-        [styles.randomMode as string]: isRandomMode,
       })}
     >
       <div
@@ -99,15 +61,6 @@ const ReleaseCardComponent = ({
             : undefined
         }
       >
-        {release.rating > 0 && (
-          <div
-            className={styles.ratingBadge}
-            title={`Rating: ${release.rating}/5`}
-          >
-            <StarIcon className={styles.starIcon} />
-            {release.rating}
-          </div>
-        )}
         {thumbUrl && (
           <Image
             src={thumbUrl}
@@ -135,7 +88,7 @@ const ReleaseCardComponent = ({
                 onClick={() => {
                   trackEvent("releaseClicked", {
                     action: "releaseClicked",
-                    category: "home",
+                    category: "publicCrate",
                     label: "Release Clicked",
                     value: resource_url,
                   });
@@ -148,37 +101,6 @@ const ReleaseCardComponent = ({
               <span className={styles.tooltip}>View on Discogs</span>
             </div>
           )}
-          <div className={styles.buttonWrapper}>
-            <button
-              type="button"
-              className={classNames(
-                styles.listButton,
-                isInCrate(release.instance_id) && styles.removeButton,
-              )}
-              onClick={handleCrateToggle}
-              aria-label={
-                isInCrate(release.instance_id)
-                  ? "Remove from crate"
-                  : "Add to crate"
-              }
-              title={
-                isInCrate(release.instance_id)
-                  ? "Remove from Crate"
-                  : "Add to Crate"
-              }
-            >
-              {isInCrate(release.instance_id) ? (
-                <MinusIcon className={styles.listButtonIcon} />
-              ) : (
-                <PlusIcon className={styles.listButtonIcon} />
-              )}
-            </button>
-            <span className={styles.tooltip}>
-              {isInCrate(release.instance_id)
-                ? "Remove from Crate"
-                : "Add to Crate"}
-            </span>
-          </div>
         </div>
       </div>
       <div className={styles.contentContainer}>
@@ -201,7 +123,7 @@ const ReleaseCardComponent = ({
                         e.stopPropagation();
                         trackEvent("artistClicked", {
                           action: "artistClicked",
-                          category: "releaseCard",
+                          category: "publicCrate",
                           label: "Artist Clicked",
                           value: artistUrl,
                         });
@@ -226,7 +148,7 @@ const ReleaseCardComponent = ({
                 onClick={() => {
                   trackEvent("releaseClicked", {
                     action: "releaseClicked",
-                    category: "home",
+                    category: "publicCrate",
                     label: "Release Clicked",
                     value: resource_url,
                   });
@@ -253,7 +175,7 @@ const ReleaseCardComponent = ({
                       e.stopPropagation();
                       trackEvent("labelClicked", {
                         action: "labelClicked",
-                        category: "releaseCard",
+                        category: "publicCrate",
                         label: "Label Clicked",
                         value: labelUrl,
                       });
@@ -280,48 +202,23 @@ const ReleaseCardComponent = ({
             Array.from(
               new Set(releaseFormats.map((format) => format.name)),
             ).map((formatName) => (
-              <button
+              <span
                 key={formatName}
-                type="button"
-                className={classNames("pill", "pillFormat", styles.formatPill, {
-                  pillSelected:
-                    filtersState.selectedFormats.includes(formatName),
-                })}
-                onClick={(e) =>
-                  handlePillClick({
-                    event: e,
-                    value: formatName,
-                    type: "format",
-                    eventLabel: "Format Pill Clicked",
-                  })
-                }
-                aria-label={`Filter by ${formatName} format`}
+                className={classNames("pill", "pillFormat", styles.formatPill)}
               >
                 {formatName}
-              </button>
+              </span>
             ))}
 
           {releaseStyles &&
             releaseStyles.length > 0 &&
             releaseStyles.map((style: string) => (
-              <button
+              <span
                 key={style}
-                type="button"
-                className={classNames("pill", "pillStyle", styles.stylePill, {
-                  pillSelected: filtersState.selectedStyles.includes(style),
-                })}
-                onClick={(e) =>
-                  handlePillClick({
-                    event: e,
-                    value: style,
-                    type: "style",
-                    eventLabel: "Style Pill Clicked",
-                  })
-                }
-                aria-label={`Filter by ${style} style`}
+                className={classNames("pill", "pillStyle", styles.stylePill)}
               >
                 {style}
-              </button>
+              </span>
             ))}
         </div>
       </div>
@@ -329,6 +226,5 @@ const ReleaseCardComponent = ({
   ) : null;
 };
 
-export const ReleaseCard = memo(ReleaseCardComponent);
-
-export default ReleaseCard;
+export const PublicReleaseCard = memo(PublicReleaseCardComponent);
+export default PublicReleaseCard;

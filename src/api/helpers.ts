@@ -182,7 +182,9 @@ export const createCrate = async (
     user_id: number;
     id: string;
     name: string;
+    username: string | null;
     is_default: boolean;
+    private: boolean;
     created_at: Date;
     updated_at: Date;
   };
@@ -212,29 +214,35 @@ export const createCrate = async (
 
 export const updateCrate = async (
   crateId: string,
-  updates: { name?: string; is_default?: boolean },
+  updates: { name?: string; is_default?: boolean; private?: boolean },
 ): Promise<{
   crate: {
     user_id: number;
     id: string;
     name: string;
+    username: string | null;
     is_default: boolean;
+    private: boolean;
     created_at: Date;
     updated_at: Date;
   };
 }> => {
   try {
+    const bodyString = JSON.stringify(updates);
     const response = await fetch(`/api/crates/${crateId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify(updates),
+      body: bodyString,
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage =
+        errorData?.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();

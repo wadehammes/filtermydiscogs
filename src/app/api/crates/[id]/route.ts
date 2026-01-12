@@ -43,7 +43,9 @@ export async function GET(
         user_id: true,
         id: true,
         name: true,
+        username: true,
         is_default: true,
+        private: true,
         created_at: true,
         updated_at: true,
       },
@@ -123,6 +125,7 @@ export async function PUT(
       return userIdResult.error;
     }
     const { userId: userIdNum } = userIdResult;
+    const username = request.cookies.get("discogs_username")?.value;
 
     // Check rate limit (write operation)
     const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
@@ -132,8 +135,67 @@ export async function PUT(
 
     const { id } = await params;
 
-    const body = await request.json();
-    const { name, is_default } = body;
+    // Read the raw body first to debug
+    const rawBody = await request.text();
+    console.log(
+      "Raw request body:",
+      rawBody,
+      "Length:",
+      rawBody.length,
+      "Type:",
+      typeof rawBody,
+    );
+
+    if (!rawBody || rawBody.length === 0) {
+      console.error("Empty request body received");
+      return NextResponse.json(
+        { error: "Request body is required" },
+        { status: 400 },
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+      console.log("Parsed body:", body, "Type:", typeof body);
+    } catch (error) {
+      console.error(
+        "Failed to parse request body:",
+        error,
+        "Raw body:",
+        rawBody,
+      );
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { error: "Request body must be an object" },
+        { status: 400 },
+      );
+    }
+
+    // Handle 'private' keyword by accessing it directly from body object
+    // Use type assertion to safely access properties
+    const bodyObj = body as Record<string, unknown>;
+    const name = bodyObj.name;
+    const is_default = bodyObj.is_default;
+    // Access 'private' using bracket notation to avoid reserved keyword issues
+    const privateField = bodyObj["private"];
+
+    // Debug: log what we received
+    console.log("Update crate - received body:", {
+      body,
+      bodyObj,
+      name,
+      is_default,
+      privateField,
+      hasPrivate: "private" in bodyObj,
+      bodyKeys: Object.keys(bodyObj),
+    });
 
     // Verify crate exists and belongs to user
     const existingCrate = await prisma.crate.findUnique({
@@ -143,7 +205,7 @@ export async function PUT(
           id,
         },
       },
-      select: { id: true, name: true, is_default: true },
+      select: { id: true, name: true, is_default: true, private: true },
     });
 
     if (!existingCrate) {
@@ -152,8 +214,15 @@ export async function PUT(
 
     const updateData: {
       name?: string;
+      username?: string | null;
       is_default?: boolean;
+      private?: boolean;
     } = {};
+
+    // Always update username if available (to keep it current)
+    if (username) {
+      updateData.username = username;
+    }
 
     if (name !== undefined) {
       if (typeof name !== "string" || name.trim().length === 0) {
@@ -229,6 +298,23 @@ export async function PUT(
       }
 
       updateData.is_default = is_default;
+    }
+
+    // Check if private field was explicitly provided (can be true or false)
+    if (privateField !== undefined && privateField !== null) {
+      if (typeof privateField !== "boolean") {
+        return NextResponse.json(
+          { error: "private must be a boolean" },
+          { status: 400 },
+        );
+      }
+
+      updateData.private = privateField;
+
+      // When making a crate public, ensure username is set
+      if (privateField === false && username) {
+        updateData.username = username;
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

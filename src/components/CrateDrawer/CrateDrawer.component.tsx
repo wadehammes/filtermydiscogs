@@ -4,11 +4,12 @@ import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component
 import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
-import Spinner from "src/components/Spinner/Spinner.component";
+import PageLoader from "src/components/PageLoader/PageLoader.component";
 import { useCrate } from "src/context/crate.context";
 import { useView } from "src/context/view.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { getReleaseImageUrl } from "src/utils/helpers";
+import { copyToClipboard } from "src/utils/copyToClipboard";
+import { getReleaseImageUrl, getSiteUrl } from "src/utils/helpers";
 import styles from "./CrateDrawer.module.css";
 
 interface CrateDrawerProps {
@@ -36,10 +37,12 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name || "My Crate";
   const isDefaultCrate = activeCrate?.is_default;
+  const isPublic = activeCrate?.private === false;
   const canDelete = crates.length > 1 && !isDefaultCrate;
 
   const handleClearConfirm = useCallback(() => {
@@ -68,12 +71,51 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     }
   }, [activeCrateId, updateCrate]);
 
+  const handlePrivacyToggle = useCallback(async () => {
+    if (!activeCrateId) return;
+
+    try {
+      // Toggle privacy:
+      // Checkbox checked = public (private=false, isPublic=true)
+      // Checkbox unchecked = private (private=true, isPublic=false)
+      // When clicking, we want to toggle to the opposite state
+      // If currently private (isPublic=false), make public (private=false)
+      // If currently public (isPublic=true), make private (private=true)
+      // So: newPrivateValue should be the opposite of what we want isPublic to be
+      // If isPublic=false, we want isPublic=true, so private=false
+      // If isPublic=true, we want isPublic=false, so private=true
+      // Therefore: newPrivateValue = isPublic (not !isPublic)
+      const newPrivateValue = isPublic;
+      const updates = { private: newPrivateValue };
+      await updateCrate(activeCrateId, updates);
+    } catch (error) {
+      console.error("Failed to update crate privacy:", error);
+      alert(
+        `Failed to update crate privacy: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }, [activeCrateId, isPublic, updateCrate]);
+
+  const handleCopyLink = useCallback(async () => {
+    if (!activeCrateId) return;
+
+    const siteUrl = getSiteUrl();
+    const crateUrl = `${siteUrl}/crate/${activeCrateId}`;
+
+    const success = await copyToClipboard(crateUrl);
+    if (success) {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } else {
+      alert("Failed to copy link to clipboard");
+    }
+  }, [activeCrateId]);
+
   const releasesContent = (
     <>
       {isLoadingCrate ? (
         <div className={styles.emptyState}>
-          <Spinner size="xl" aria-label="Loading crate" />
-          <p>Loading crate...</p>
+          <PageLoader message="Loading crate..." />
         </div>
       ) : selectedReleases.length === 0 ? (
         <div className={styles.emptyState}>
@@ -194,6 +236,28 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
               {isDeletingCrate ? "Deleting..." : "Delete Crate"}
             </Button>
           </>
+        )}
+      </div>
+      <div className={styles.sharingSection}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={handlePrivacyToggle}
+            disabled={isUpdatingCrate || isDeletingCrate || !activeCrateId}
+            className={styles.checkbox}
+          />
+          <span>Make shareable</span>
+        </label>
+        {isPublic && activeCrateId && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={handleCopyLink}
+            disabled={isUpdatingCrate || isDeletingCrate}
+          >
+            {copySuccess ? "Copied!" : "Copy Link"}
+          </Button>
         )}
       </div>
     </div>

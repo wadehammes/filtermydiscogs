@@ -1,9 +1,9 @@
 import dynamic from "next/dynamic";
 import { memo, useMemo } from "react";
+import PageLoader from "src/components/PageLoader/PageLoader.component";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
-import Spinner from "src/components/Spinner/Spinner.component";
 import DiceSolid from "src/styles/icons/dice-solid.svg";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
@@ -14,12 +14,7 @@ const ReleasesTable = dynamic(
       (mod) => mod.ReleasesTable,
     ),
   {
-    loading: () => (
-      <div className={styles.loadingContainer}>
-        <Spinner size="lg" aria-label="Loading table view" />
-        <p className={styles.loadingText}>Loading table view...</p>
-      </div>
-    ),
+    loading: () => <PageLoader message="Loading table view..." size="lg" />,
   },
 );
 

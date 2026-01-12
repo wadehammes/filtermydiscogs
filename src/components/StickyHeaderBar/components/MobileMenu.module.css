@@ -161,6 +161,29 @@
     gap: var(--space-2);
   }
 
+  .syncButton {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ui);
+    color: var(--foreground);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    padding: var(--space-3);
+    transition: var(--transition-normal);
+
+    &:hover:not(:disabled) {
+      background: var(--accent);
+      border-color: var(--input);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
   .logoutButton {
     background: color-mix(in srgb, var(--destructive) 15%, var(--background));
     border: 1px solid var(--destructive);

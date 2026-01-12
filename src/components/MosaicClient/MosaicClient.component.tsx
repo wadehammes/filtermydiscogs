@@ -5,7 +5,7 @@ import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
 import Login from "src/components/Login/Login.component";
 import MosaicControls from "src/components/MosaicClient/MosaicControls.component";
 import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
-import Spinner from "src/components/Spinner/Spinner.component";
+import PageLoader from "src/components/PageLoader/PageLoader.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import { useAuth } from "src/context/auth.context";
@@ -81,12 +81,7 @@ export default function MosaicClient() {
   if (collectionLoading) {
     return (
       <div className={styles.loadingContainer}>
-        <Spinner
-          size="2xl"
-          className={styles.spinner}
-          aria-label="Loading your collection"
-        />
-        <p>Loading your collection...</p>
+        <PageLoader message="Loading your collection..." size="2xl" />
       </div>
     );
   }

@@ -19,6 +19,20 @@ export const envUrl = () => {
 };
 
 /**
+ * Gets the site URL for client-side use
+ * Uses NEXT_PUBLIC_SITE_URL environment variable with fallback
+ * @returns The site URL (e.g., https://filtermydisco.gs or http://localhost:6767)
+ */
+export const getSiteUrl = (): string => {
+  if (typeof window !== "undefined") {
+    // Client-side: use NEXT_PUBLIC_SITE_URL or fallback to current origin
+    return process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+  }
+  // Server-side: use NEXT_PUBLIC_SITE_URL or fallback to envUrl()
+  return process.env.NEXT_PUBLIC_SITE_URL || envUrl();
+};
+
+/**
  * Checks if we're running in a local development environment
  * Uses NODE_ENV which is more reliable than URL parsing
  * @returns true if NODE_ENV is "development"

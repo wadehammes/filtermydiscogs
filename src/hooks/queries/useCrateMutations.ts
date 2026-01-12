@@ -11,6 +11,7 @@ import { getUserIdFromCookies } from "src/services/auth.service";
 import type { DiscogsRelease } from "src/types";
 import type {
   CratesResponse,
+  CrateWithCount,
   CrateWithReleasesResponse,
   OptimisticUpdateContext,
 } from "src/types/crate.types";
@@ -22,6 +23,7 @@ interface CreateCrateRequest {
 interface UpdateCrateRequest {
   name?: string;
   is_default?: boolean;
+  private?: boolean;
 }
 
 interface CreateCrateResponse {
@@ -29,7 +31,9 @@ interface CreateCrateResponse {
     user_id: number;
     id: string;
     name: string;
+    username: string | null;
     is_default: boolean;
+    private: boolean;
     created_at: Date;
     updated_at: Date;
   };
@@ -40,7 +44,9 @@ interface UpdateCrateResponse {
     user_id: number;
     id: string;
     name: string;
+    username: string | null;
     is_default: boolean;
+    private: boolean;
     created_at: Date;
     updated_at: Date;
   };
@@ -136,12 +142,15 @@ export const useCreateCrateMutation = () => {
               {
                 ...data.crate,
                 releaseCount: 0,
-              },
+              } as CrateWithCount,
             ],
           };
         }
         return {
-          crates: [...old.crates, { ...data.crate, releaseCount: 0 }],
+          crates: [
+            ...old.crates,
+            { ...data.crate, releaseCount: 0 } as CrateWithCount,
+          ],
         };
       });
     },
@@ -155,23 +164,70 @@ export const useUpdateCrateMutation = () => {
   return useMutation<
     UpdateCrateResponse,
     Error,
-    { crateId: string; updates: UpdateCrateRequest }
+    { crateId: string; updates: UpdateCrateRequest },
+    OptimisticUpdateContext
   >({
     mutationFn: async ({ crateId, updates }) => {
       return updateCrate(crateId, updates);
     },
-    onSuccess: async (_, variables) => {
-      invalidateCrateQueries(queryClient, userId, variables.crateId);
-      await Promise.all([
-        queryClient.refetchQueries({
-          queryKey: ["crates", userId],
-          exact: false,
-        }),
-        queryClient.refetchQueries({
-          queryKey: ["crate", userId, variables.crateId],
-          exact: false,
-        }),
+    onMutate: async ({ crateId, updates }) => {
+      // Optimistically update the crates list
+      await queryClient.cancelQueries({ queryKey: ["crates", userId] });
+
+      const previousCrates = queryClient.getQueryData<CratesResponse>([
+        "crates",
+        userId,
       ]);
+
+      if (previousCrates) {
+        const updatedCrates = previousCrates.crates.map((crate) => {
+          if (crate.id === crateId) {
+            // Preserve all existing fields and update with new values
+            return {
+              ...crate,
+              ...updates,
+            };
+          }
+          return crate;
+        });
+
+        queryClient.setQueryData<CratesResponse>(["crates", userId], {
+          crates: updatedCrates,
+        });
+      }
+
+      return { previousCratesData: previousCrates };
+    },
+    onError: (_error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousCratesData) {
+        queryClient.setQueryData(
+          ["crates", userId],
+          context.previousCratesData,
+        );
+      }
+    },
+    onSuccess: async (data, variables) => {
+      // Update with server response, preserving releaseCount
+      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
+        if (!old) return old;
+        return {
+          crates: old.crates.map((crate) => {
+            if (crate.id === variables.crateId) {
+              // Preserve releaseCount and merge with server response
+              return {
+                ...crate,
+                ...data.crate,
+                releaseCount: crate.releaseCount ?? 0, // Preserve releaseCount
+              } as CrateWithCount;
+            }
+            return crate;
+          }),
+        };
+      });
+
+      // Invalidate queries to trigger refetch and ensure all components have latest data
+      invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });
 };
@@ -245,7 +301,9 @@ export const useAddReleaseToCrateMutation = () => {
                 user_id: parseInt(userId || "0", 10),
                 id: crateId,
                 name: "",
+                username: null,
                 is_default: false,
+                private: true,
                 created_at: new Date(),
                 updated_at: new Date(),
               },
@@ -284,6 +342,10 @@ export const useAddReleaseToCrateMutation = () => {
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
+      invalidateCrateQueries(queryClient, userId, variables.crateId);
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate queries to refetch from server and ensure releaseCount is accurate
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });
@@ -343,6 +405,10 @@ export const useRemoveReleaseFromCrateMutation = () => {
     },
     onError: (_error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
+      invalidateCrateQueries(queryClient, userId, variables.crateId);
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate queries to refetch from server and ensure releaseCount is accurate
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
   });

@@ -1,17 +1,11 @@
 "use client";
 
-import Spinner from "src/components/Spinner/Spinner.component";
-import styles from "./loading.module.css";
+import PageLoader from "src/components/PageLoader/PageLoader.component";
 
 /**
  * Root loading UI.
  * Shows instantly while the root layout or initial page is loading.
  */
 export default function RootLoading() {
-  return (
-    <div className={styles.container}>
-      <Spinner size="3xl" className={styles.spinner} aria-label="Loading" />
-      <p className={styles.text}>Loading...</p>
-    </div>
-  );
+  return <PageLoader message="Loading..." size="3xl" fullHeight />;
 }
