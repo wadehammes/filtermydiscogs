@@ -82,12 +82,64 @@
   }
 }
 
+.twoColumnLayout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    gap: 8rem;
+  }
+}
+
+.aboutContent {
+  flex: 2.5;
+}
+
+.loginModule {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 10%, var(--card)),
+    color-mix(in srgb, var(--primary) 5%, var(--card))
+  );
+  border: 2px solid var(--primary);
+  padding: var(--space-6) var(--space-8);
+  border-radius: var(--radius-card);
+}
+
+.loginButtonContainer {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: var(--space-4) 0;
+  width: 100%;
+}
+
+.connectButton {
+  width: 100%;
+}
+
+.loginNote {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin-bottom: 0;
+  margin-top: var(--space-4);
+  text-align: center;
+  width: 100%;
+}
+
 .text {
   color: var(--muted-foreground);
   font-size: var(--text-base);
   line-height: 1.6;
   margin-bottom: var(--space-4);
-  text-wrap: balance;
 }
 
 .list {

@@ -16,5 +16,6 @@
 
 .text {
   color: var(--muted-foreground);
-  font-size: var(--text-base);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
 }
