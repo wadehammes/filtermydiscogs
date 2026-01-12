@@ -72,19 +72,22 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
   }, [activeCrateId, updateCrate]);
 
   const handlePrivacyToggle = useCallback(async () => {
-    if (!activeCrateId) return;
+    if (!activeCrate) {
+      console.error("Active crate not found");
+      return;
+    }
 
     try {
-      const newPrivateValue = !isPublic;
-      const updates = { private: newPrivateValue };
-      await updateCrate(activeCrateId, updates);
+      const currentPrivateValue = activeCrate.private;
+      const updates = { private: !currentPrivateValue };
+      await updateCrate(activeCrate.id, updates);
     } catch (error) {
       console.error("Failed to update crate privacy:", error);
       alert(
         `Failed to update crate privacy: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
-  }, [activeCrateId, isPublic, updateCrate]);
+  }, [activeCrate, updateCrate]);
 
   const handleCopyLink = useCallback(async () => {
     if (!activeCrateId) return;
