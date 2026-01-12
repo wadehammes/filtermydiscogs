@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clearData } from "src/api/helpers";
+import { AppPageLayout } from "src/components/AppPageLayout/AppPageLayout.component";
 import Button from "src/components/Button/Button.component";
-import { PublicPageHeader } from "src/components/PublicPageHeader/PublicPageHeader.component";
+import pageStyles from "src/components/Page/Page.module.css";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
@@ -68,17 +69,20 @@ export function AboutClient() {
   };
 
   return (
-    <>
-      {isAuthenticated ? (
-        <StickyHeaderBar
-          allReleasesLoaded={true}
-          hideFilters={true}
-          currentPage="about"
-        />
-      ) : (
-        <PublicPageHeader currentPage="about" />
-      )}
-      <div className={styles.container}>
+    <AppPageLayout
+      currentPage="about"
+      header={
+        isAuthenticated ? (
+          <StickyHeaderBar
+            allReleasesLoaded={true}
+            hideFilters={true}
+            currentPage="about"
+          />
+        ) : undefined
+      }
+      showFooter={!isAuthenticated}
+    >
+      <div className={pageStyles.container}>
         <div className={styles.content}>
           <section className={styles.section}>
             <h2>About This Project</h2>
@@ -255,6 +259,6 @@ export function AboutClient() {
           </section>
         </div>
       </div>
-    </>
+    </AppPageLayout>
   );
 }

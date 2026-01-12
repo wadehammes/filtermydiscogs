@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { AppPageLayout } from "src/components/AppPageLayout/AppPageLayout.component";
 import Button from "src/components/Button/Button.component";
 import PageLoader from "src/components/PageLoader/PageLoader.component";
-import { PublicPageHeader } from "src/components/PublicPageHeader/PublicPageHeader.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
 import { formatDate } from "src/utils/dateHelpers";
@@ -18,14 +18,13 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
 
   if (isLoading) {
     return (
-      <>
-        <PublicPageHeader />
+      <AppPageLayout>
         <div className={styles.container}>
           <div className={styles.content}>
             <PageLoader message="Loading crate..." />
           </div>
         </div>
-      </>
+      </AppPageLayout>
     );
   }
 
@@ -34,8 +33,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
       error instanceof Error ? error.message : "Failed to load crate";
 
     return (
-      <>
-        <PublicPageHeader />
+      <AppPageLayout>
         <div className={styles.container}>
           <div className={styles.content}>
             <div className={styles.section}>
@@ -85,7 +83,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
             </section>
           </div>
         </div>
-      </>
+      </AppPageLayout>
     );
   }
 
@@ -101,8 +99,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
   };
 
   return (
-    <>
-      <PublicPageHeader />
+    <AppPageLayout>
       <div className={styles.container}>
         <div className={styles.content}>
           {crateWithUsername.username && (
@@ -215,6 +212,6 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
           </section>
         </div>
       </div>
-    </>
+    </AppPageLayout>
   );
 }
