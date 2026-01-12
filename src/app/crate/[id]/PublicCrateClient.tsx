@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Button from "src/components/Button/Button.component";
 import PageLoader from "src/components/PageLoader/PageLoader.component";
 import { PublicPageHeader } from "src/components/PublicPageHeader/PublicPageHeader.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
@@ -147,50 +148,70 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
           )}
 
           <section className={`${styles.section} ${styles.aboutSection}`}>
-            <h2 className={styles.heading}>About FilterMyDiscogs</h2>
-            <p className={styles.text}>
-              FilterMyDisco.gs is a tool to help you browse, filter, and
-              organize your Discogs collection. Made by{" "}
-              <a
-                href="https://wadehammes.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.inlineLink}
-              >
-                Wade Hammes
-              </a>
-              . A passion project to help you discover, organize, and explore
-              your music collection—whether it's vinyl, CDs, cassettes, or
-              digital releases.
-            </p>
-            <p className={styles.text}>Key features:</p>
-            <ul className={styles.list}>
-              <li className={styles.listItem}>
-                <strong>Browse and filter your collection</strong> — rediscover
-                your favorite albums and artists
-              </li>
-              <li className={styles.listItem}>
-                <strong>Create and manage crates</strong> — perfect for DJ gigs,
-                organizing by theme, or tracking favorites
-              </li>
-              <li className={styles.listItem}>
-                <strong>Generate mosaic grids</strong> — different formats and
-                sizes; perfect for social sharing
-              </li>
-              <li className={styles.listItem}>
-                <strong>Share public crates</strong> — make your crates public
-                and share them with others
-              </li>
-            </ul>
-            <p className={styles.text}>
-              <Link href="/" className={styles.inlineLink}>
-                Get started with FilterMyDisco.gs
-              </Link>
-              {" — "}
-              <Link href="/about" className={styles.inlineLink}>
-                Learn more
-              </Link>
-            </p>
+            <div className={styles.twoColumnLayout}>
+              <div className={styles.aboutContent}>
+                <h2 className={styles.heading}>About FilterMyDiscogs</h2>
+                <p className={styles.text}>
+                  FilterMyDisco.gs is a passion project to help you better and
+                  more effectively discover, organize, and explore your
+                  collection.
+                </p>
+                <p className={styles.text}>Key features:</p>
+                <ul className={styles.list}>
+                  <li className={styles.listItem}>
+                    <strong>Collection analytics</strong> — discover your
+                    collection milestones, style evolution over time, growth
+                    trends, and more with beautiful visualizations
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Browse and filter your collection</strong> —
+                    rediscover your favorite albums and artists
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Create and manage crates</strong> — perfect for DJ
+                    gigs, organizing by theme, or tracking favorites
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Generate mosaic grids</strong> — different formats
+                    and sizes; perfect for social sharing
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Share public crates</strong> — make your crates
+                    public and share them with others
+                  </li>
+                </ul>
+                <p className={styles.text}>
+                  <Link href="/about" className={styles.inlineLink}>
+                    Learn more
+                  </Link>
+                </p>
+              </div>
+
+              <div className={styles.loginModule}>
+                <h2 className={styles.heading}>Get Started</h2>
+                <p className={styles.text}>
+                  Connect your Discogs account to start exploring and organizing
+                  your collection.
+                </p>
+                <div className={styles.loginButtonContainer}>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onPress={() => {
+                      window.location.href = "/api/auth/discogs";
+                    }}
+                    className={styles.connectButton}
+                  >
+                    Connect your Discogs
+                  </Button>
+                </div>
+                <p className={styles.loginNote}>
+                  <Link href="/legal" className={styles.inlineLink}>
+                    Terms & Privacy
+                  </Link>
+                </p>
+              </div>
+            </div>
           </section>
         </div>
       </div>
