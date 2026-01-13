@@ -187,7 +187,17 @@ const PublicReleaseCardComponent = ({
                 ) : (
                   labels[0]?.name
                 )}
-                {labels[0]?.name && year !== 0 ? " • " : ""}
+                {(() => {
+                  const catno = labels[0]?.catno;
+                  const catnoStr = catno ? String(catno) : "";
+                  return (
+                    <>
+                      {labels[0]?.name && catnoStr ? " • " : ""}
+                      {catnoStr}
+                      {(labels[0]?.name || catnoStr) && year !== 0 ? " • " : ""}
+                    </>
+                  );
+                })()}
                 {year !== 0 ? year : ""}
               </p>
             )}

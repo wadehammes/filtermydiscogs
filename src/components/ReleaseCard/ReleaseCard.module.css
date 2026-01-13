@@ -196,15 +196,20 @@
 .metaContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0.125rem;
+  margin-top: 0.125rem;
+
+  @media (min-width: 640px) {
+    gap: var(--space-1);
+  }
 }
 
 p.meta {
   color: var(--muted-foreground);
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: 0.675em;
   font-weight: var(--font-normal);
-  line-height: 1.5;
+  line-height: 1.25;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;

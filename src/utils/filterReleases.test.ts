@@ -291,6 +291,35 @@ describe("filterReleases", () => {
     expect(result[0]).toEqual(release1);
   });
 
+  it("filters by search query matching catalog number", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        labels: [{ name: "Test Label", catno: "ABC-123" }],
+        artists: [{ name: "Test Artist" }],
+        title: "Test Title",
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        labels: [{ name: "Other Label", catno: "XYZ-456" }],
+        artists: [{ name: "Other Artist" }],
+        title: "Other Title",
+      }),
+    });
+    const releases = [release1, release2];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: [],
+      selectedYears: [],
+      selectedFormats: [],
+      searchQuery: "abc-123",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(release1);
+  });
+
   it("search query is case insensitive", () => {
     const release1 = releaseFactory.build({
       basic_information: basicInformationFactory.build({
