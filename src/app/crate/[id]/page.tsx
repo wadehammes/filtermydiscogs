@@ -58,20 +58,11 @@ export async function generateMetadata({
       description: "A public crate on FilterMyDisco.gs",
       url: crateUrl,
       type: "website",
-      images: [
-        {
-          url: "/images/app-preview--light.png",
-          width: 800,
-          height: 400,
-          alt: "FilterMyDisco.gs App Preview",
-        },
-      ],
     },
     twitter: {
       card: "summary_large_image",
       title: "Crate | FilterMyDisco.gs",
       description: "Public crate on FilterMyDisco.gs",
-      images: ["/images/app-preview--light.png"],
     },
   };
 }
