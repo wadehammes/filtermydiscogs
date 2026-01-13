@@ -30,8 +30,9 @@ export async function generateMetadata({
         title: `${crateName}${username ? ` by ${username}` : ""}`,
         description,
         url: crateUrl,
-        type: "website",
         siteName: "FilterMyDisco.gs",
+        type: "website",
+        locale: "en-US",
         images: [
           {
             url: `/crate/${id}/opengraph-image.png`,
@@ -57,7 +58,9 @@ export async function generateMetadata({
       title: "Crate | FilterMyDisco.gs",
       description: "A public crate on FilterMyDisco.gs",
       url: crateUrl,
+      siteName: "FilterMyDisco.gs",
       type: "website",
+      locale: "en-US",
       images: [
         {
           url: `/crate/${id}/opengraph-image.png`,
