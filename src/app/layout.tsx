@@ -65,7 +65,7 @@ export default function RootLayout({
       className={classNames(assistant.variable, jetbrainsMono.variable)}
       suppressHydrationWarning
     >
-      <body>
+      <body suppressHydrationWarning>
         <Script
           id="theme-init"
           strategy="beforeInteractive"
@@ -74,19 +74,36 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  const systemTheme = prefersDark ? 'dark' : 'light';
                   const stored = localStorage.getItem('filtermydiscogs_theme');
-                  let resolvedTheme;
+                  let resolvedTheme = systemTheme;
+                  
                   if (stored === 'light' || stored === 'dark') {
                     resolvedTheme = stored;
-                  } else {
-                    // No stored theme or old "system" value - use system preference
-                    resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                    // Migrate "system" to explicit theme preference
-                    if (stored === 'system') {
-                      localStorage.setItem('filtermydiscogs_theme', resolvedTheme);
-                    }
+                  } else if (stored === 'system') {
+                    localStorage.setItem('filtermydiscogs_theme', systemTheme);
                   }
+                  
+                  const bgColor = resolvedTheme === 'dark' ? '#121212' : '#ffffff';
+                  const fgColor = resolvedTheme === 'dark' ? '#fafafa' : '#171717';
                   document.documentElement.setAttribute('data-theme', resolvedTheme);
+                  document.documentElement.style.backgroundColor = bgColor;
+                  document.documentElement.style.color = fgColor;
+                  
+                  if (document.body) {
+                    document.body.style.backgroundColor = bgColor;
+                    document.body.style.color = fgColor;
+                  } else {
+                    const observer = new MutationObserver(function(mutations) {
+                      if (document.body) {
+                        document.body.style.backgroundColor = bgColor;
+                        document.body.style.color = fgColor;
+                        observer.disconnect();
+                      }
+                    });
+                    observer.observe(document.documentElement, { childList: true, subtree: true });
+                  }
                 } catch (e) {}
               })();
             `,

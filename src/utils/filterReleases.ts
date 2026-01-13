@@ -77,11 +77,20 @@ export const filterReleases = ({
 
       if (!searchableText) {
         const { title, artists, labels } = release.basic_information;
-        searchableText = [
-          title.toLowerCase(),
-          ...artists.map((a) => a.name.toLowerCase()),
-          ...labels.map((l) => l.name.toLowerCase()),
-        ].join(" ");
+        const parts: string[] = [title.toLowerCase()];
+
+        for (const artist of artists) {
+          parts.push(artist.name.toLowerCase());
+        }
+
+        for (const label of labels) {
+          parts.push(label.name.toLowerCase());
+          if (label.catno) {
+            parts.push(String(label.catno).toLowerCase());
+          }
+        }
+
+        searchableText = parts.join(" ");
         searchTextCache.set(releaseId, searchableText);
       }
 

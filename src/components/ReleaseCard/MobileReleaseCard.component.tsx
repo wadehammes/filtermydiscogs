@@ -54,6 +54,8 @@ const MobileReleaseCardComponent = ({
     type: "label",
   });
 
+  const catno = labels[0]?.catno ? String(labels[0].catno) : null;
+
   const handleCrateToggle = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -204,10 +206,11 @@ const MobileReleaseCardComponent = ({
                 ) : (
                   labels[0]?.name
                 )}
-                {labels[0]?.name && year !== 0 ? " • " : ""}
+                {labels[0]?.name && catno && year !== 0 ? " • " : ""}
                 {year !== 0 ? year : ""}
               </p>
             )}
+            {labels[0]?.name && catno && <p className={styles.meta}>{catno}</p>}
             {dateAdded && (
               <p className={styles.meta}>Date Added: {dateAdded}</p>
             )}

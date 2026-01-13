@@ -248,6 +248,21 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           size: 120,
           enableSorting: false,
         }),
+        columnHelper.accessor("basic_information.labels", {
+          id: "catno",
+          header: "Catalog #",
+          cell: ({ getValue }) => {
+            const labels = getValue();
+            const catno = labels[0]?.catno;
+            return (
+              <div className={styles.catnoCell}>
+                {catno ? String(catno) : "—"}
+              </div>
+            );
+          },
+          size: 100,
+          enableSorting: false,
+        }),
         columnHelper.accessor("basic_information.year", {
           id: "year",
           header: "Release Year",

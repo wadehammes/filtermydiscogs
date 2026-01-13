@@ -67,6 +67,32 @@ const createThemeApplier = () => {
 
 const applyTheme = createThemeApplier();
 
+const getInitialThemeSync = (): "light" | "dark" => {
+  if (typeof window === "undefined") return "light";
+
+  const dataTheme = document.documentElement.getAttribute("data-theme");
+  if (dataTheme === "light" || dataTheme === "dark") {
+    return dataTheme;
+  }
+
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") {
+    return stored;
+  }
+
+  if (stored === "system") {
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    const systemTheme = prefersDark ? "dark" : "light";
+    localStorage.setItem(THEME_STORAGE_KEY, systemTheme);
+    return systemTheme;
+  }
+
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return prefersDark ? "dark" : "light";
+};
+
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
@@ -86,8 +112,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return prefersDark ? "dark" : "light";
   }, [prefersDark]);
 
-  const [theme, setThemeState] = useState<"light" | "dark">("light");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [theme, setThemeState] = useState<"light" | "dark">(() =>
+    getInitialThemeSync(),
+  );
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
+    getInitialThemeSync(),
+  );
 
   const setTheme = useCallback((newTheme: "light" | "dark") => {
     if (typeof window !== "undefined") {
@@ -102,10 +132,18 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     if (typeof window === "undefined") return;
 
     const initialTheme = getInitialTheme();
-    setThemeState(initialTheme);
-    setResolvedTheme(initialTheme);
-    applyTheme({ theme: initialTheme });
-  }, [getInitialTheme]);
+    const currentDataTheme =
+      document.documentElement.getAttribute("data-theme");
+
+    if (
+      initialTheme !== theme ||
+      (currentDataTheme && currentDataTheme !== initialTheme)
+    ) {
+      setThemeState(initialTheme);
+      setResolvedTheme(initialTheme);
+      applyTheme({ theme: initialTheme });
+    }
+  }, [getInitialTheme, theme]);
 
   useEffect(() => {
     setResolvedTheme(theme);

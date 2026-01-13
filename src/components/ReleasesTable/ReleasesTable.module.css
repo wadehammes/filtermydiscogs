@@ -161,6 +161,7 @@
 .artistCell,
 .titleCell,
 .labelCell,
+.catnoCell,
 .yearCell,
 .dateAddedCell {
   color: var(--foreground);
@@ -237,6 +238,11 @@
     color: var(--primary);
     text-decoration: underline;
   }
+}
+
+.catnoCell {
+  color: var(--muted-foreground);
+  text-align: left;
 }
 
 .yearCell {
