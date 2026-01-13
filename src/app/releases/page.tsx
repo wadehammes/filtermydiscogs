@@ -12,10 +12,37 @@ const ReleasesClient = dynamic(
   },
 );
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
+
 export const metadata: Metadata = {
   title: "Releases | FilterMyDisco.gs",
   description:
     "Filter and sort your Discogs collection and build a crate as you browse.",
+  openGraph: {
+    title: "Releases | FilterMyDisco.gs",
+    description:
+      "Filter and sort your Discogs collection and build a crate as you browse.",
+    url: `${baseUrl}/releases`,
+    siteName: "FilterMyDisco.gs",
+    type: "website",
+    locale: "en-US",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FilterMyDisco.gs App Preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Releases | FilterMyDisco.gs",
+    description:
+      "Filter and sort your Discogs collection and build a crate as you browse.",
+    images: ["/opengraph-image.png"],
+  },
 };
 
 export default function ReleasesPage() {
