@@ -348,9 +348,10 @@ export const useAddReleaseToCrateMutation = () => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
-    onSuccess: (_data, variables) => {
-      // Invalidate queries to refetch from server and ensure releaseCount is accurate
-      invalidateCrateQueries(queryClient, userId, variables.crateId);
+    onSuccess: () => {
+      // Don't invalidate - the optimistic update is already correct
+      // The query will naturally refetch when it becomes stale or on navigation
+      // This prevents race conditions where a refetch overwrites the optimistic update
     },
   });
 };
@@ -411,9 +412,10 @@ export const useRemoveReleaseFromCrateMutation = () => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
       invalidateCrateQueries(queryClient, userId, variables.crateId);
     },
-    onSuccess: (_data, variables) => {
-      // Invalidate queries to refetch from server and ensure releaseCount is accurate
-      invalidateCrateQueries(queryClient, userId, variables.crateId);
+    onSuccess: () => {
+      // Don't invalidate - the optimistic update is already correct
+      // The query will naturally refetch when it becomes stale or on navigation
+      // This prevents race conditions where a refetch overwrites the optimistic update
     },
   });
 };
