@@ -34,9 +34,9 @@ export async function generateMetadata({
         siteName: "FilterMyDisco.gs",
         images: [
           {
-            url: "/images/app-preview--light.png",
-            width: 800,
-            height: 400,
+            url: `/crate/${id}/opengraph-image.png`,
+            width: 1200,
+            height: 630,
             alt: `Public crate: ${crateName}`,
           },
         ],
@@ -45,7 +45,7 @@ export async function generateMetadata({
         card: "summary_large_image",
         title: `${crateName}${username ? ` by ${username}` : ""}`,
         description,
-        images: ["/images/app-preview--light.png"],
+        images: [`/crate/${id}/opengraph-image.png`],
       },
     };
   }
@@ -58,11 +58,20 @@ export async function generateMetadata({
       description: "A public crate on FilterMyDisco.gs",
       url: crateUrl,
       type: "website",
+      images: [
+        {
+          url: `/crate/${id}/opengraph-image.png`,
+          width: 1200,
+          height: 630,
+          alt: "Image of Crate Releases",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: "Crate | FilterMyDisco.gs",
       description: "Public crate on FilterMyDisco.gs",
+      images: [`/crate/${id}/opengraph-image.png`],
     },
   };
 }

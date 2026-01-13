@@ -2,6 +2,7 @@ import { GoogleTagManager } from "@next/third-parties/google";
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { Assistant, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import { Providers } from "src/components/Providers";
 
 import "src/styles/global.css";
@@ -64,9 +65,10 @@ export default function RootLayout({
       className={classNames(assistant.variable, jetbrainsMono.variable)}
       suppressHydrationWarning
     >
-      <head>
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <script
+      <body>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           // biome-ignore lint: Theme initialization script must run before React hydration
           dangerouslySetInnerHTML={{
             __html: `
@@ -90,8 +92,6 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
-      <body>
         <Providers>{children}</Providers>
         <GoogleTagManager gtmId="GTM-NCP5CSG" />
       </body>
