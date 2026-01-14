@@ -74,19 +74,20 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  const systemTheme = prefersDark ? 'dark' : 'light';
-                  const stored = localStorage.getItem('filtermydiscogs_theme');
-                  let resolvedTheme = systemTheme;
+                  const storageKey = 'filtermydiscogs_theme';
+                  const stored = localStorage.getItem(storageKey);
+                  let resolvedTheme;
                   
                   if (stored === 'light' || stored === 'dark') {
                     resolvedTheme = stored;
-                  } else if (stored === 'system') {
-                    localStorage.setItem('filtermydiscogs_theme', systemTheme);
+                  } else {
+                    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    resolvedTheme = systemTheme;
+                    if (stored === 'system') {
+                      localStorage.setItem(storageKey, systemTheme);
+                    }
                   }
                   
-                  const bgColor = resolvedTheme === 'dark' ? '#121212' : '#ffffff';
-                  const fgColor = resolvedTheme === 'dark' ? '#fafafa' : '#171717';
                   document.documentElement.setAttribute('data-theme', resolvedTheme);
                   document.documentElement.style.backgroundColor = bgColor;
                   document.documentElement.style.color = fgColor;
