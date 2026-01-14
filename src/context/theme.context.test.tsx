@@ -1,9 +1,15 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { mocked } from "jest-mock";
+import { usePathname } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 import { ThemeProvider, useTheme } from "./theme.context";
 
 const mockUseMediaQuery = mocked(useMediaQuery);
+const mockUsePathname = mocked(usePathname);
+
+jest.mock("next/navigation", () => ({
+  usePathname: jest.fn(() => "/"),
+}));
 
 describe("ThemeProvider", () => {
   beforeEach(() => {
@@ -12,20 +18,23 @@ describe("ThemeProvider", () => {
     document.documentElement.removeAttribute("data-theme");
     document.documentElement.classList.remove("theme-transitioning");
     mockUseMediaQuery.mockReturnValue(false);
+    mockUsePathname.mockReturnValue("/");
   });
 
-  it("provides default theme based on system preference", () => {
+  it("provides default theme based on system preference", async () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ThemeProvider,
     });
 
-    expect(result.current.theme).toBe("light");
-    expect(result.current.resolvedTheme).toBe("light");
+    await waitFor(() => {
+      expect(result.current.theme).toBe("light");
+      expect(result.current.resolvedTheme).toBe("light");
+    });
   });
 
-  it("loads stored theme from localStorage", () => {
+  it("loads stored theme from localStorage", async () => {
     localStorage.setItem("filtermydiscogs_theme", "dark");
     mockUseMediaQuery.mockReturnValue(false);
 
@@ -33,15 +42,21 @@ describe("ThemeProvider", () => {
       wrapper: ThemeProvider,
     });
 
-    expect(result.current.theme).toBe("dark");
-    expect(result.current.resolvedTheme).toBe("dark");
+    await waitFor(() => {
+      expect(result.current.theme).toBe("dark");
+      expect(result.current.resolvedTheme).toBe("dark");
+    });
   });
 
-  it("sets theme and updates localStorage", () => {
+  it("sets theme and updates localStorage", async () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBeDefined();
     });
 
     act(() => {
@@ -53,11 +68,15 @@ describe("ThemeProvider", () => {
     expect(localStorage.getItem("filtermydiscogs_theme")).toBe("dark");
   });
 
-  it("applies theme to document element", () => {
+  it("applies theme to document element", async () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBeDefined();
     });
 
     act(() => {
@@ -67,7 +86,7 @@ describe("ThemeProvider", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("migrates 'system' theme to explicit theme", () => {
+  it("migrates 'system' theme to explicit theme", async () => {
     localStorage.setItem("filtermydiscogs_theme", "system");
     mockUseMediaQuery.mockReturnValue(true);
 
@@ -89,11 +108,13 @@ describe("ThemeProvider", () => {
       wrapper: ThemeProvider,
     });
 
-    expect(result.current.theme).toBe("dark");
-    expect(localStorage.getItem("filtermydiscogs_theme")).toBe("dark");
+    await waitFor(() => {
+      expect(result.current.theme).toBe("dark");
+      expect(localStorage.getItem("filtermydiscogs_theme")).toBe("dark");
+    });
   });
 
-  it("handles invalid localStorage theme gracefully", () => {
+  it("handles invalid localStorage theme gracefully", async () => {
     localStorage.setItem("filtermydiscogs_theme", "invalid");
     mockUseMediaQuery.mockReturnValue(false);
 
@@ -101,7 +122,9 @@ describe("ThemeProvider", () => {
       wrapper: ThemeProvider,
     });
 
-    expect(result.current.theme).toBe("light");
+    await waitFor(() => {
+      expect(result.current.theme).toBe("light");
+    });
   });
 
   it("throws error when useTheme is used outside ThemeProvider", () => {
@@ -116,11 +139,16 @@ describe("ThemeProvider", () => {
     consoleSpy.mockRestore();
   });
 
-  it("adds theme-transitioning class when theme changes", () => {
+  it("adds theme-transitioning class when theme changes", async () => {
     mockUseMediaQuery.mockReturnValue(false);
+    document.documentElement.setAttribute("data-theme", "light");
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBeDefined();
     });
 
     const rafCallbacks: Array<(time: number) => void> = [];
@@ -147,5 +175,64 @@ describe("ThemeProvider", () => {
     ).toBe(false);
 
     rafSpy.mockRestore();
+  });
+
+  it("reads initial theme from DOM if available", async () => {
+    document.documentElement.setAttribute("data-theme", "dark");
+    mockUseMediaQuery.mockReturnValue(false);
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBe("dark");
+    });
+  });
+
+  it("prioritizes DOM theme over localStorage", async () => {
+    localStorage.setItem("filtermydiscogs_theme", "light");
+    document.documentElement.setAttribute("data-theme", "dark");
+    mockUseMediaQuery.mockReturnValue(false);
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBe("dark");
+    });
+  });
+
+  it("maintains theme when pathname changes", async () => {
+    mockUseMediaQuery.mockReturnValue(false);
+    mockUsePathname.mockReturnValue("/");
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBeDefined();
+    });
+
+    act(() => {
+      result.current.setTheme("dark");
+    });
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+
+    document.documentElement.removeAttribute("data-theme");
+    mockUsePathname.mockReturnValue("/dashboard");
+
+    const { result: resultAfterNav } = renderHook(() => useTheme(), {
+      wrapper: ThemeProvider,
+    });
+
+    await waitFor(() => {
+      const themeAttr = document.documentElement.getAttribute("data-theme");
+      expect(themeAttr).toBe("dark");
+      expect(resultAfterNav.current.theme).toBe("dark");
+    });
   });
 });

@@ -1,10 +1,13 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
+  useRef,
   useState,
 } from "react";
 import { useMediaQuery } from "usehooks-ts";
@@ -21,51 +24,47 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_STORAGE_KEY = "filtermydiscogs_theme";
 
-const getStoredTheme = ({
-  storageKey,
-  prefersDark,
-}: {
-  storageKey: string;
-  prefersDark: boolean;
-}): "light" | "dark" | null => {
+const getStoredTheme = (
+  storageKey: string,
+): "light" | "dark" | "system" | null => {
   if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(storageKey);
-  if (stored === "system") {
-    const systemTheme = prefersDark ? "dark" : "light";
-    localStorage.setItem(storageKey, systemTheme);
-    return systemTheme;
-  }
-  if (stored === "light" || stored === "dark") {
-    return stored;
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+  } catch {
+    return null;
   }
   return null;
 };
 
-const createThemeApplier = () => {
-  let rootElement: HTMLElement | null = null;
+const applyThemeToDocument = (theme: "light" | "dark") => {
+  if (typeof document === "undefined") return;
 
-  return ({ theme }: { theme: "light" | "dark" }) => {
-    if (typeof document === "undefined") return;
+  const rootElement = document.documentElement;
+  const currentTheme = rootElement.getAttribute("data-theme");
 
-    if (!rootElement) {
-      rootElement = document.documentElement;
-    }
+  if (currentTheme === theme) return;
 
-    const currentTheme = rootElement.getAttribute("data-theme");
-    if (currentTheme !== theme) {
-      rootElement.classList.add("theme-transitioning");
-      rootElement.setAttribute("data-theme", theme);
+  rootElement.setAttribute("data-theme", theme);
 
-      requestAnimationFrame(() => {
-        rootElement?.classList.remove("theme-transitioning");
-      });
-    } else {
-      rootElement.setAttribute("data-theme", theme);
-    }
-  };
+  if (currentTheme) {
+    rootElement.classList.add("theme-transitioning");
+    requestAnimationFrame(() => {
+      rootElement.classList.remove("theme-transitioning");
+    });
+  }
 };
 
-const applyTheme = createThemeApplier();
+const getInitialThemeFromDOM = (): "light" | "dark" | null => {
+  if (typeof document === "undefined") return null;
+  const theme = document.documentElement.getAttribute("data-theme");
+  if (theme === "light" || theme === "dark") {
+    return theme;
+  }
+  return null;
+};
 
 const getInitialThemeSync = (): "light" | "dark" => {
   if (typeof window === "undefined") return "light";
@@ -101,57 +100,84 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const prefersDark = useMediaQuery("(prefers-color-scheme: dark)", {
     defaultValue: false,
   });
+  const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
+  const systemThemeRef = useRef<"light" | "dark">(
+    prefersDark ? "dark" : "light",
+  );
+  const [mounted, setMounted] = useState(false);
 
-  const getInitialTheme = useCallback((): "light" | "dark" => {
+  const resolveTheme = useCallback(
+    (stored: "light" | "dark" | "system" | null): "light" | "dark" => {
+      if (stored === "light" || stored === "dark") {
+        return stored;
+      }
+      return systemThemeRef.current;
+    },
+    [],
+  );
+
+  const [theme, setThemeState] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
-    const stored = getStoredTheme({
-      storageKey: THEME_STORAGE_KEY,
-      prefersDark,
-    });
-    if (stored) return stored;
-    return prefersDark ? "dark" : "light";
-  }, [prefersDark]);
-
-  const [theme, setThemeState] = useState<"light" | "dark">(() =>
-    getInitialThemeSync(),
-  );
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
-    getInitialThemeSync(),
-  );
+    return getInitialThemeSync();
+  });
 
   const setTheme = useCallback((newTheme: "light" | "dark") => {
-    if (typeof window !== "undefined") {
-      applyTheme({ theme: newTheme });
+    if (typeof window === "undefined") return;
+
+    try {
       localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-      setResolvedTheme(newTheme);
-    }
+    } catch {}
+
     setThemeState(newTheme);
+    applyThemeToDocument(newTheme);
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    setMounted(true);
+  }, []);
 
-    const initialTheme = getInitialTheme();
-    const currentDataTheme =
-      document.documentElement.getAttribute("data-theme");
+  useLayoutEffect(() => {
+    if (!mounted) return;
 
-    if (
-      initialTheme !== theme ||
-      (currentDataTheme && currentDataTheme !== initialTheme)
-    ) {
-      setThemeState(initialTheme);
-      setResolvedTheme(initialTheme);
-      applyTheme({ theme: initialTheme });
+    const currentSystemTheme = prefersDark ? "dark" : "light";
+    systemThemeRef.current = currentSystemTheme;
+
+    const stored = getStoredTheme(THEME_STORAGE_KEY);
+    if (stored === "system") {
+      const resolved = resolveTheme(stored);
+      if (resolved !== theme) {
+        setThemeState(resolved);
+        applyThemeToDocument(resolved);
+      }
     }
-  }, [getInitialTheme, theme]);
+  }, [prefersDark, mounted, theme, resolveTheme]);
 
-  useEffect(() => {
-    setResolvedTheme(theme);
-    applyTheme({ theme });
-  }, [theme]);
+  useLayoutEffect(() => {
+    if (!mounted) return;
+
+    const currentTheme = getInitialThemeFromDOM();
+    if (currentTheme && currentTheme !== theme) {
+      setThemeState(currentTheme);
+    } else {
+      applyThemeToDocument(theme);
+    }
+  }, [mounted, theme]);
+
+  useLayoutEffect(() => {
+    if (!mounted) return;
+
+    if (pathnameRef.current !== pathname) {
+      pathnameRef.current = pathname;
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      if (currentTheme !== theme) {
+        applyThemeToDocument(theme);
+      }
+    }
+  }, [pathname, theme, mounted]);
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme: theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
