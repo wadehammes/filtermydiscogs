@@ -1,3 +1,4 @@
+import type { StyleOperator } from "src/context/filters.context";
 import type { DiscogsRelease } from "src/types";
 
 // Cache for searchable text to avoid recomputation
@@ -21,7 +22,7 @@ export const filterReleases = ({
   selectedYears: number[];
   selectedFormats: string[];
   searchQuery?: string;
-  styleOperator?: "AND" | "OR";
+  styleOperator?: StyleOperator;
 }): DiscogsRelease[] => {
   if (
     selectedStyles.length === 0 &&
@@ -54,6 +55,12 @@ export const filterReleases = ({
           releaseStyles.includes(style),
         );
         if (!hasAllStyles) return false;
+      } else if (styleOperator === "NONE") {
+        // NONE: exclude releases that have ANY of the selected styles
+        const hasAnySelectedStyle = releaseStyles.some((style) =>
+          selectedStylesSet.has(style),
+        );
+        if (hasAnySelectedStyle) return false;
       } else {
         // OR: release must have ANY of the selected styles (default)
         const hasMatchingStyle = releaseStyles.some((style) =>

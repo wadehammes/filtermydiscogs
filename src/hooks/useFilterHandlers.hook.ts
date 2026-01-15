@@ -102,7 +102,11 @@ export const useFilterHandlers = (category: string) => {
     (value: string | string[]) => {
       const operatorValue = Array.isArray(value) ? value[0] : value;
 
-      if (operatorValue === "AND" || operatorValue === "OR") {
+      if (
+        operatorValue === "AND" ||
+        operatorValue === "OR" ||
+        operatorValue === "NONE"
+      ) {
         trackEvent("styleOperator", {
           action: "styleOperatorChanged",
           category,
@@ -148,8 +152,9 @@ export const useFilterHandlers = (category: string) => {
 
   const styleOperatorOptions = useMemo(
     () => [
-      { value: "OR", label: "Any (OR)" },
-      { value: "AND", label: "All (AND)" },
+      { value: "OR", label: "ANY" },
+      { value: "AND", label: "ALL" },
+      { value: "NONE", label: "NONE" },
     ],
     [],
   );

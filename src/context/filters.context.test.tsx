@@ -193,6 +193,30 @@ describe("FiltersProvider", () => {
     expect(result.current.state.selectedSort).toBe(SortValues.AZTitle);
   });
 
+  it("sets style operator", () => {
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: FiltersProvider,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetStyleOperator,
+        payload: "AND",
+      });
+    });
+
+    expect(result.current.state.styleOperator).toBe("AND");
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetStyleOperator,
+        payload: "NONE",
+      });
+    });
+
+    expect(result.current.state.styleOperator).toBe("NONE");
+  });
+
   it("toggles random mode", () => {
     const mockReleases = releaseFactory.buildList(3);
     mockFilterReleases.mockReturnValue(mockReleases);

@@ -104,6 +104,102 @@ describe("filterReleases", () => {
     expect(result).toHaveLength(0);
   });
 
+  it("filters with AND operator - requires all selected styles", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Rock", "Alternative"],
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Rock"],
+      }),
+    });
+    const release3 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Alternative"],
+      }),
+    });
+    const releases = [release1, release2, release3];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: ["Rock", "Alternative"],
+      selectedYears: [],
+      selectedFormats: [],
+      styleOperator: "AND",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(release1);
+  });
+
+  it("filters with NONE operator - excludes releases with any selected style", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Rock"],
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Jazz"],
+      }),
+    });
+    const release3 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Pop"],
+      }),
+    });
+    const release4 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Rock", "Jazz"],
+      }),
+    });
+    const releases = [release1, release2, release3, release4];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: ["Rock", "Jazz"],
+      selectedYears: [],
+      selectedFormats: [],
+      styleOperator: "NONE",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(release3);
+  });
+
+  it("filters with NONE operator - excludes releases with single selected style", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Rock"],
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Pop"],
+      }),
+    });
+    const release3 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Jazz"],
+      }),
+    });
+    const releases = [release1, release2, release3];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: ["Rock"],
+      selectedYears: [],
+      selectedFormats: [],
+      styleOperator: "NONE",
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual(release2);
+    expect(result).toContainEqual(release3);
+  });
+
   it("filters by single year", () => {
     const release1 = releaseFactory.build({
       basic_information: basicInformationFactory.build({
