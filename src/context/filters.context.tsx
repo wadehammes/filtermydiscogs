@@ -28,7 +28,7 @@ export enum SortValues {
   AlbumYearOld = "AlbumYearOld",
 }
 
-export type StyleOperator = "AND" | "OR";
+export type StyleOperator = "AND" | "OR" | "NONE";
 
 export interface FiltersState {
   selectedStyles: string[];
