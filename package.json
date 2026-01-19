@@ -51,7 +51,7 @@
     "pg": "^8.17.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-intersection-observer": "^10.0.0",
+    "react-intersection-observer": "^10.0.2",
     "recharts": "^3.6.0",
     "sharp": "^0.34.5",
     "usehooks-ts": "^3.0.0"
