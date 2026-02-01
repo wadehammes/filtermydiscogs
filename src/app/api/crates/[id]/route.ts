@@ -6,7 +6,7 @@ import {
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
-import type { DiscogsRelease } from "src/types";
+import type { DiscogsRelease } from "src/types/discogs-release.types";
 
 /**
  * Get a single crate with its releases
@@ -55,30 +55,28 @@ export async function GET(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Get total count for pagination
-    const total = await prisma.crateRelease.count({
-      where: {
-        user_id: userIdNum,
-        crate_id: id,
-      },
-    });
-
-    // Get releases separately with pagination to avoid loading all at once
-    // This prevents memory issues with large crates
-    const releases = await prisma.crateRelease.findMany({
-      where: {
-        user_id: userIdNum,
-        crate_id: id,
-      },
-      orderBy: {
-        added_at: "desc",
-      },
-      skip,
-      take,
-      select: {
-        release_data: true,
-      },
-    });
+    const [total, releases] = await Promise.all([
+      prisma.crateRelease.count({
+        where: {
+          user_id: userIdNum,
+          crate_id: id,
+        },
+      }),
+      prisma.crateRelease.findMany({
+        where: {
+          user_id: userIdNum,
+          crate_id: id,
+        },
+        orderBy: {
+          added_at: "desc",
+        },
+        skip,
+        take,
+        select: {
+          release_data: true,
+        },
+      }),
+    ]);
 
     // Map releases and ensure instance_id is consistent
     const mappedReleases = releases.map((r: { release_data: unknown }) => {

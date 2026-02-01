@@ -1,4 +1,4 @@
-import type { DiscogsRelease } from "./index";
+import type { DiscogsRelease } from "./discogs-release.types";
 
 export interface CollectionValue {
   minimum: number;
