@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import type { DistributionData } from "src/types/dashboard.types";
-import { useChartColors } from "src/utils/chartColors";
+import { getChartColor, useChartColors } from "src/utils/chartColors";
 import { AXIS_STYLE, TOOLTIP_STYLE } from "src/utils/chartConfig";
 import styles from "./DistributionCharts.module.css";
 
@@ -65,7 +65,7 @@ export function DistributionCharts({
                 {styleDistribution.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
+                    fill={getChartColor(colors, index)}
                   />
                 ))}
               </Bar>
@@ -99,7 +99,7 @@ export function DistributionCharts({
                 {decadeDistribution.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
+                    fill={getChartColor(colors, index)}
                   />
                 ))}
               </Pie>
@@ -178,7 +178,7 @@ export function DistributionCharts({
                 {formatDistribution.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
+                    fill={getChartColor(colors, index)}
                   />
                 ))}
               </Bar>

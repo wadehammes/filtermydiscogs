@@ -1,5 +1,5 @@
 import type { Crate as PrismaCrate } from "@prisma/client";
-import type { DiscogsRelease } from "./index";
+import type { DiscogsRelease } from "./discogs-release.types";
 
 export type Crate = PrismaCrate;
 

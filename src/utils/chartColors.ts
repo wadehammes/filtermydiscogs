@@ -1,13 +1,19 @@
 import { useMemo } from "react";
 import { useTheme } from "src/context/theme.context";
 
+const DEFAULT_CHART_COLOR = "#5e5365";
+
+export function getChartColor(colors: string[], index: number): string {
+  return colors[index % colors.length] ?? colors[0] ?? DEFAULT_CHART_COLOR;
+}
+
 export function useChartColors() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
   return useMemo(
     () => [
-      isLight ? "#5e5365" : "#a855f7",
+      isLight ? DEFAULT_CHART_COLOR : "#a855f7",
       "#f05278",
       "#54bd83",
       "#f37231",

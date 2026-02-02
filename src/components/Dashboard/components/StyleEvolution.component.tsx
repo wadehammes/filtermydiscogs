@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "recharts";
 import { useCollectionContext } from "src/context/collection.context";
-import { useChartColors } from "src/utils/chartColors";
+import { getChartColor, useChartColors } from "src/utils/chartColors";
 import { TOOLTIP_STYLE } from "src/utils/chartConfig";
 import { calculateStyleEvolution } from "src/utils/styleEvolution";
 import styles from "./StyleEvolution.module.css";
@@ -37,10 +37,7 @@ export function StyleEvolution() {
     const colorMap = new Map<string, string>();
 
     sortedStyles.forEach((style, index) => {
-      const color = colors[index % colors.length];
-      if (color !== undefined) {
-        colorMap.set(style, color);
-      }
+      colorMap.set(style, getChartColor(colors, index));
     });
 
     return colorMap;
@@ -96,7 +93,10 @@ export function StyleEvolution() {
                       {period.styles.map((style) => (
                         <Cell
                           key={`cell-${style.name}`}
-                          fill={styleColorMap.get(style.name) || colors[0]}
+                          fill={
+                            styleColorMap.get(style.name) ??
+                            getChartColor(colors, 0)
+                          }
                         />
                       ))}
                     </Pie>

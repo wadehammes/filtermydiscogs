@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DistributionData } from "src/types/dashboard.types";
-import { useChartColors } from "src/utils/chartColors";
+import { getChartColor, useChartColors } from "src/utils/chartColors";
 import { AXIS_STYLE, CHART_MARGIN } from "src/utils/chartConfig";
 import styles from "./ArtistLabelCharts.module.css";
 
@@ -122,7 +122,7 @@ export function ArtistLabelCharts({
                 {artistDistribution.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
+                    fill={getChartColor(colors, index)}
                   />
                 ))}
               </Bar>
@@ -175,7 +175,7 @@ export function ArtistLabelCharts({
                 {labelDistribution.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
+                    fill={getChartColor(colors, index)}
                   />
                 ))}
               </Bar>
