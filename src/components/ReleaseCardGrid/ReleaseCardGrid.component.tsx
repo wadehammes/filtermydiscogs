@@ -40,4 +40,3 @@ const ReleaseCardGridComponent = ({ releases }: ReleaseCardGridProps) => {
 };
 
 export const ReleaseCardGrid = memo(ReleaseCardGridComponent);
-export default ReleaseCardGrid;

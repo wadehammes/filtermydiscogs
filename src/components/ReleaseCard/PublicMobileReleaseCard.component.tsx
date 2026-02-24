@@ -87,7 +87,7 @@ const PublicMobileReleaseCardComponent = ({
                 type: "artist",
               });
               return (
-                <span key={artist.id || index}>
+                <span key={artist.id ?? `${artist.name}-${index}`}>
                   {artistUrl ? (
                     <a
                       href={artistUrl}
@@ -234,4 +234,3 @@ const PublicMobileReleaseCardComponent = ({
 };
 
 export const PublicMobileReleaseCard = memo(PublicMobileReleaseCardComponent);
-export default PublicMobileReleaseCard;

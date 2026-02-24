@@ -73,5 +73,3 @@ export const StickyHeaderBar = ({
     </>
   );
 };
-
-export default StickyHeaderBar;

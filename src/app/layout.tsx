@@ -69,46 +69,7 @@ export default function RootLayout({
         <Script
           id="theme-init"
           strategy="beforeInteractive"
-          // biome-ignore lint: Theme initialization script must run before React hydration
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const storageKey = 'filtermydiscogs_theme';
-                  const stored = localStorage.getItem(storageKey);
-                  let resolvedTheme;
-                  
-                  if (stored === 'light' || stored === 'dark') {
-                    resolvedTheme = stored;
-                  } else {
-                    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                    resolvedTheme = systemTheme;
-                    if (stored === 'system') {
-                      localStorage.setItem(storageKey, systemTheme);
-                    }
-                  }
-                  
-                  document.documentElement.setAttribute('data-theme', resolvedTheme);
-                  document.documentElement.style.backgroundColor = bgColor;
-                  document.documentElement.style.color = fgColor;
-                  
-                  if (document.body) {
-                    document.body.style.backgroundColor = bgColor;
-                    document.body.style.color = fgColor;
-                  } else {
-                    const observer = new MutationObserver(function(mutations) {
-                      if (document.body) {
-                        document.body.style.backgroundColor = bgColor;
-                        document.body.style.color = fgColor;
-                        observer.disconnect();
-                      }
-                    });
-                    observer.observe(document.documentElement, { childList: true, subtree: true });
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
+          src="/theme-init.js"
         />
         <Providers>{children}</Providers>
         <GoogleTagManager gtmId="GTM-NCP5CSG" />

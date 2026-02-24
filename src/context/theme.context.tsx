@@ -5,11 +5,11 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
+import { useMounted } from "src/hooks/useMounted.hook";
 import { useMediaQuery } from "usehooks-ts";
 
 export type Theme = "light" | "dark" | "system";
@@ -105,7 +105,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const systemThemeRef = useRef<"light" | "dark">(
     prefersDark ? "dark" : "light",
   );
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
 
   const resolveTheme = useCallback(
     (stored: "light" | "dark" | "system" | null): "light" | "dark" => {
@@ -131,10 +131,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     setThemeState(newTheme);
     applyThemeToDocument(newTheme);
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
   }, []);
 
   useLayoutEffect(() => {

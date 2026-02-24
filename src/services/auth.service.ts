@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 import { checkAuth as checkAuthApi } from "src/api/helpers";
 
-export interface AuthStatus {
+interface AuthStatus {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;

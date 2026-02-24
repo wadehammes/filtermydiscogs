@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMounted } from "src/hooks/useMounted.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Moon from "src/styles/icons/moon.svg";
 import Sun from "src/styles/icons/sun.svg";
@@ -12,11 +12,7 @@ interface ThemeSwitcherProps {
 
 export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const handleThemeToggle = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");

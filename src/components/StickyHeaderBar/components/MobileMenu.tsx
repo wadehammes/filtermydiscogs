@@ -1,27 +1,18 @@
-import classNames from "classnames";
-import Link from "next/link";
 import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
-import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
 import { useView, ViewActionTypes } from "src/context/view.context";
 import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
-import About from "src/styles/icons/about.svg";
-import Dashboard from "src/styles/icons/dashboard.svg";
-import DiceSolid from "src/styles/icons/dice-solid.svg";
-import FilterSolid from "src/styles/icons/filter-solid.svg";
-import MenuIcon from "src/styles/icons/menu.svg";
-import Mosaic from "src/styles/icons/mosaic.svg";
-import VinylRecord from "src/styles/icons/vinyl-record.svg";
-import XIcon from "src/styles/icons/x.svg";
 import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
-import styles from "./MobileMenu.module.css";
+import { MobileMenuDrawerFooter } from "./MobileMenuDrawerFooter";
+import { MobileMenuHeader } from "./MobileMenuHeader";
+import { MobileMenuNav } from "./MobileMenuNav";
 
 interface MobileMenuProps {
   currentPage?: string | undefined;
@@ -139,10 +130,6 @@ export const MobileMenu = ({
     );
   };
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
   const handleFiltersClick = () => {
     setIsFiltersDrawerOpen(true);
     trackEvent("filtersOpened", {
@@ -151,10 +138,6 @@ export const MobileMenu = ({
       label: "Filters Opened from Header",
       value: "mobile",
     });
-  };
-
-  const closeFiltersDrawer = () => {
-    setIsFiltersDrawerOpen(false);
   };
 
   const { state: filtersState, dispatch: filtersDispatch } = useFilters();
@@ -189,50 +172,14 @@ export const MobileMenu = ({
 
   return (
     <>
-      <div className={styles.mobileNav}>
-        {shouldShowFilters && (
-          <>
-            <button
-              type="button"
-              className={`${styles.filtersButton} ${
-                isRandomMode ? styles.active : ""
-              }`}
-              onClick={handleRandomModeToggle}
-              aria-label={
-                isRandomMode ? "Exit random mode" : "Show a random release"
-              }
-            >
-              <span className={styles.filterIcon}>
-                <DiceSolid />
-              </span>
-            </button>
-            <button
-              type="button"
-              className={styles.filtersButton}
-              onClick={handleFiltersClick}
-              aria-label="Open filters"
-            >
-              <span className={styles.filterIcon}>
-                <FilterSolid />
-              </span>
-            </button>
-          </>
-        )}
-
-        <button
-          type="button"
-          className={styles.hamburger}
-          onClick={toggleMenu}
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isOpen}
-        >
-          {isOpen ? (
-            <XIcon className={styles.menuIcon} />
-          ) : (
-            <MenuIcon className={styles.menuIcon} />
-          )}
-        </button>
-      </div>
+      <MobileMenuHeader
+        isOpen={isOpen}
+        isRandomMode={isRandomMode}
+        shouldShowFilters={shouldShowFilters}
+        onToggleMenu={() => setIsOpen(!isOpen)}
+        onFiltersClick={handleFiltersClick}
+        onRandomModeToggle={handleRandomModeToggle}
+      />
 
       <BottomDrawer
         isOpen={isOpen}
@@ -241,115 +188,29 @@ export const MobileMenu = ({
         closeButtonAriaLabel="Close menu"
         dataAttribute="data-mobile-menu-open"
         footer={
-          <div className={styles.menuFooter}>
-            {username && (
-              <div className={styles.userInfo}>
-                <span>{username}</span>
-              </div>
-            )}
-            <div className={styles.buttonGroup}>
-              <ThemeSwitcher variant="mobile" />
-              <button
-                type="button"
-                className={styles.syncButton}
-                onClick={handleSyncClick}
-                disabled={isSyncDisabled}
-                title={
-                  isCollectionLoading
-                    ? "Please wait for your collection to finish loading"
-                    : undefined
-                }
-              >
-                {syncMutation.isPending
-                  ? "Syncing..."
-                  : isCollectionLoading
-                    ? "Loading..."
-                    : "Sync Collection"}
-              </button>
-              <button
-                type="button"
-                className={styles.logoutButton}
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
+          <MobileMenuDrawerFooter
+            username={username || null}
+            isSyncDisabled={isSyncDisabled}
+            isSyncing={syncMutation.isPending}
+            isCollectionLoading={isCollectionLoading}
+            onSyncClick={handleSyncClick}
+            onLogout={handleLogout}
+          />
         }
       >
-        <nav className={styles.menuNav}>
-          {showDashboard && (
-            <Link
-              href="/dashboard"
-              className={classNames(styles.menuItem, {
-                [styles.active as string]: currentPage === "dashboard",
-                [styles.disabled as string]: isDisabled,
-              })}
-              onClick={(e) => handleNavigation(e, "Dashboard")}
-              aria-disabled={isDisabled}
-              tabIndex={isDisabled ? -1 : undefined}
-            >
-              <span className={styles.menuIcon}>
-                <Dashboard />
-              </span>
-              <span>Dashboard</span>
-            </Link>
-          )}
-
-          {showReleases && (
-            <Link
-              href="/releases"
-              className={classNames(styles.menuItem, {
-                [styles.active as string]: currentPage === "releases",
-                [styles.disabled as string]: isDisabled,
-              })}
-              onClick={(e) => handleNavigation(e, "Releases")}
-              aria-disabled={isDisabled}
-              tabIndex={isDisabled ? -1 : undefined}
-            >
-              <span className={styles.menuIcon}>
-                <VinylRecord />
-              </span>
-              <span>Releases</span>
-            </Link>
-          )}
-
-          {showMosaic && (
-            <Link
-              href="/mosaic"
-              className={classNames(styles.menuItem, {
-                [styles.active as string]: currentPage === "mosaic",
-                [styles.disabled as string]: isDisabled,
-              })}
-              onClick={(e) => handleNavigation(e, "Mosaic")}
-              aria-disabled={isDisabled}
-              tabIndex={isDisabled ? -1 : undefined}
-            >
-              <span className={styles.menuIcon}>
-                <Mosaic />
-              </span>
-              <span>Mosaic</span>
-            </Link>
-          )}
-
-          <Link
-            href="/about"
-            className={classNames(styles.menuItem, {
-              [styles.active as string]: currentPage === "about",
-            })}
-            onClick={(e) => handleNavigation(e, "About")}
-          >
-            <span className={styles.menuIcon}>
-              <About />
-            </span>
-            <span>About</span>
-          </Link>
-        </nav>
+        <MobileMenuNav
+          currentPage={currentPage}
+          showMosaic={showMosaic}
+          showReleases={showReleases}
+          showDashboard={showDashboard}
+          isDisabled={isDisabled}
+          onNavigation={handleNavigation}
+        />
       </BottomDrawer>
 
       <FiltersDrawer
         isOpen={isFiltersDrawerOpen}
-        onClose={closeFiltersDrawer}
+        onClose={() => setIsFiltersDrawerOpen(false)}
       />
 
       <ConfirmDialog

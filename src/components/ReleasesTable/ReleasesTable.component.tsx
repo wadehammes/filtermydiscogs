@@ -157,7 +157,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       type: "artist",
                     });
                     return (
-                      <span key={artist.id || index}>
+                      <span key={artist.id ?? `${artist.name}-${index}`}>
                         {artistUrl ? (
                           <a
                             href={artistUrl}
@@ -480,5 +480,3 @@ export const ReleasesTable = memo<ReleasesTableProps>(
 );
 
 ReleasesTable.displayName = "ReleasesTable";
-
-export default ReleasesTable;

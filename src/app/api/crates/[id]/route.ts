@@ -182,7 +182,7 @@ export async function PUT(
     const name = bodyObj.name;
     const is_default = bodyObj.is_default;
     // Access 'private' using bracket notation to avoid reserved keyword issues
-    const privateField = bodyObj["private"];
+    const privateField = bodyObj.private;
 
     // Debug: log what we received
     console.log("Update crate - received body:", {

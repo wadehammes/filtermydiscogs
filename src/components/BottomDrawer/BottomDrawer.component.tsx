@@ -77,5 +77,3 @@ export const BottomDrawer = ({
     </>
   );
 };
-
-export default BottomDrawer;

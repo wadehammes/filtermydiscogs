@@ -112,7 +112,7 @@ const PublicReleaseCardComponent = ({
                 type: "artist",
               });
               return (
-                <span key={artist.id || index}>
+                <span key={artist.id ?? `${artist.name}-${index}`}>
                   {artistUrl ? (
                     <a
                       href={artistUrl}
@@ -237,4 +237,3 @@ const PublicReleaseCardComponent = ({
 };
 
 export const PublicReleaseCard = memo(PublicReleaseCardComponent);
-export default PublicReleaseCard;

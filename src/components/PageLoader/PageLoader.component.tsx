@@ -10,7 +10,7 @@ interface PageLoaderProps {
   fullHeight?: boolean;
 }
 
-export const PageLoader: FC<PageLoaderProps> = ({
+const PageLoader: FC<PageLoaderProps> = ({
   message = "Loading...",
   size = "xl",
   fullHeight = false,

@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
-import "jest-canvas-mock";
 import "jest-fetch-mock";
+import "src/tests/mocks/mockCanvas.mock";
 import React from "react";
 import { setupIntersectionObserverMock } from "src/tests/mocks/mockIntersectionObserver.mock";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";

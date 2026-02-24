@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./Button.module.css";
 
-export interface ButtonProps {
+interface ButtonProps {
   variant?: "primary" | "secondary" | "danger" | "ghost" | "success";
   size?: "sm" | "md" | "lg";
   children: ReactNode;
@@ -60,9 +60,9 @@ const ButtonComponent = ({
   );
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (props, _ref) => <ButtonComponent {...props} />,
-);
+const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, _ref) => (
+  <ButtonComponent {...props} />
+));
 
 Button.displayName = "Button";
 
