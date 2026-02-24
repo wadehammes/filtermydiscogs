@@ -62,9 +62,9 @@ export function DistributionCharts({
                     typeof value === "number" ? value.toString() : "",
                 }}
               >
-                {styleDistribution.map((_entry, index) => (
+                {styleDistribution.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${entry.label}`}
                     fill={getChartColor(colors, index)}
                   />
                 ))}
@@ -96,9 +96,9 @@ export function DistributionCharts({
                 fill="#5e5365"
                 dataKey="count"
               >
-                {decadeDistribution.map((_entry, index) => (
+                {decadeDistribution.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${entry.label}`}
                     fill={getChartColor(colors, index)}
                   />
                 ))}
@@ -175,9 +175,9 @@ export function DistributionCharts({
                     typeof value === "number" ? value.toString() : "",
                 }}
               >
-                {formatDistribution.map((_entry, index) => (
+                {formatDistribution.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${entry.label}`}
                     fill={getChartColor(colors, index)}
                   />
                 ))}

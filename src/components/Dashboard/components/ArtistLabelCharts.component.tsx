@@ -119,9 +119,9 @@ export function ArtistLabelCharts({
                   },
                 }}
               >
-                {artistDistribution.map((_entry, index) => (
+                {artistDistribution.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${entry.label}`}
                     fill={getChartColor(colors, index)}
                   />
                 ))}
@@ -172,9 +172,9 @@ export function ArtistLabelCharts({
                   },
                 }}
               >
-                {labelDistribution.map((_entry, index) => (
+                {labelDistribution.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${entry.label}`}
                     fill={getChartColor(colors, index)}
                   />
                 ))}

@@ -1,11 +1,9 @@
 "use client";
 
 import classNames from "classnames";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { redirect } from "next/navigation";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
-import Login from "src/components/Login/Login.component";
 import { Page } from "src/components/Page/Page.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
 import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
@@ -20,7 +18,6 @@ import { ReleasesHeader } from "./components/ReleasesHeader.component";
 import styles from "./ReleasesClient.module.css";
 
 export default function ReleasesClient() {
-  const router = useRouter();
   const { state: authState } = useAuth();
   const {
     isDrawerOpen,
@@ -67,12 +64,6 @@ export default function ReleasesClient() {
     handleExitRandomMode,
   } = useReleasesClient();
 
-  useEffect(() => {
-    if (!(authState.isLoading || authState.isAuthenticated)) {
-      router.replace("/");
-    }
-  }, [authState.isAuthenticated, authState.isLoading, router]);
-
   const loadingProgress = hasReleases
     ? {
         current: releaseCount,
@@ -80,7 +71,7 @@ export default function ReleasesClient() {
     : undefined;
 
   if (!(authState.isAuthenticated || authState.isLoading)) {
-    return <Login />;
+    redirect("/");
   }
 
   if (authLoading || isLoading) {

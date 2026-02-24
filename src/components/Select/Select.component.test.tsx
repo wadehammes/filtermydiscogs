@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { render } from "test-utils";
-import { Select } from "./Select.component";
+import Select from "./Select.component";
 
 describe("Select", () => {
   const options = [

@@ -206,7 +206,7 @@ export interface CollectionProviderProps {
   dispatchResetState: () => void;
 }
 
-export const CollectionContext = createContext({} as CollectionProviderProps);
+const CollectionContext = createContext({} as CollectionProviderProps);
 
 const resetCollectionState = ({
   router,

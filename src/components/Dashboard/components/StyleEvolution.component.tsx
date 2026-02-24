@@ -61,8 +61,8 @@ export function StyleEvolution() {
         Top genres by when you added releases to your collection
       </p>
       <div className={styles.evolutionList}>
-        {styleEvolution.map((period, index) => (
-          <div key={index} className={styles.periodItem}>
+        {styleEvolution.map((period) => (
+          <div key={period.period} className={styles.periodItem}>
             <div className={styles.periodHeader}>
               <div className={styles.periodLabel}>{period.period}</div>
               <div className={styles.periodMeta}>

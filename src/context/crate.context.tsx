@@ -7,7 +7,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useAuth } from "src/context/auth.context";
@@ -22,6 +21,8 @@ import {
   useCrateQuery,
   useCratesQuery,
 } from "src/hooks/queries/useCratesQuery";
+import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
+import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
 import type { Crate, CrateWithCount } from "src/types/crate.types";
@@ -54,15 +55,12 @@ interface CrateProviderProps {
   children: ReactNode;
 }
 
-const STORAGE_KEY = "filtermydiscogs_selected_releases";
-
 export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { state: authState } = useAuth();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [migrationDone, setMigrationDone] = useState(false);
-  const hasSetInitialDrawerState = useRef(false);
+  const { isDrawerOpen, toggleDrawer, openDrawer, closeDrawer } =
+    useCrateDrawer();
 
   const { data: cratesData, isLoading, isError, error } = useCratesQuery();
   const crates = cratesData?.crates || [];
@@ -83,6 +81,14 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
     [],
   );
 
+  useCrateMigration(
+    authState.isAuthenticated,
+    isLoading,
+    crates,
+    findDefaultCrate,
+    addReleaseMutation,
+  );
+
   useEffect(() => {
     if (crates.length === 0) return;
 
@@ -96,92 +102,7 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
     }
   }, [crates, activeCrateId, findDefaultCrate]);
 
-  useEffect(() => {
-    if (
-      !authState.isAuthenticated ||
-      isLoading ||
-      migrationDone ||
-      crates.length === 0
-    ) {
-      return;
-    }
-
-    const migrateLocalStorage = async () => {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) {
-          setMigrationDone(true);
-          return;
-        }
-
-        const parsed = JSON.parse(stored) as DiscogsRelease[];
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-          localStorage.removeItem(STORAGE_KEY);
-          setMigrationDone(true);
-          return;
-        }
-
-        const defaultCrate = findDefaultCrate({ crateList: crates });
-        if (!defaultCrate) {
-          setMigrationDone(true);
-          return;
-        }
-
-        for (const release of parsed) {
-          try {
-            await addReleaseMutation.mutateAsync({
-              crateId: defaultCrate.id,
-              release,
-            });
-          } catch {
-            // Continue with other releases even if one fails
-          }
-        }
-
-        localStorage.removeItem(STORAGE_KEY);
-        setMigrationDone(true);
-      } catch {
-        setMigrationDone(true);
-      }
-    };
-
-    migrateLocalStorage();
-  }, [
-    authState.isAuthenticated,
-    isLoading,
-    migrationDone,
-    crates,
-    addReleaseMutation,
-    findDefaultCrate,
-  ]);
-
-  // Set initial drawer state based on screen size - open on desktop, closed on mobile
-  useEffect(() => {
-    if (!hasSetInitialDrawerState.current) {
-      // Check media query directly to avoid dependency array issues
-      if (
-        typeof window !== "undefined" &&
-        window.matchMedia("(min-width: 1024px)").matches
-      ) {
-        setIsDrawerOpen(true);
-      }
-      hasSetInitialDrawerState.current = true;
-    }
-    // Only run once on mount
-  }, []);
-
   const selectedReleases = activeCrateReleases;
-  const toggleDrawer = useCallback(() => {
-    setIsDrawerOpen((prev) => !prev);
-  }, []);
-
-  const openDrawer = useCallback(() => {
-    setIsDrawerOpen(true);
-  }, []);
-
-  const closeDrawer = useCallback(() => {
-    setIsDrawerOpen(false);
-  }, []);
 
   const addToCrate = useCallback(
     (release: DiscogsRelease) => {

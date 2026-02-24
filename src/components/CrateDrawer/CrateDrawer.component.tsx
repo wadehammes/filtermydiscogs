@@ -327,4 +327,3 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
 };
 
 export const CrateDrawer = CrateDrawerComponent;
-export default CrateDrawer;

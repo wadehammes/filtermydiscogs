@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useReducer, useRef } from "react";
 import Check from "src/styles/icons/check-solid.svg";
 import Chevron from "src/styles/icons/chevron-right-solid.svg";
 import { isOptionSelected } from "src/utils/selectHelpers";
@@ -22,6 +22,44 @@ interface SelectProps {
   className?: string;
 }
 
+type SelectState = {
+  isOpen: boolean;
+  focusedIndex: number;
+  openUpward: boolean;
+};
+
+type SelectAction =
+  | { type: "CLOSE" }
+  | { type: "OPEN" }
+  | { type: "TOGGLE" }
+  | { type: "SET_FOCUSED"; payload: number }
+  | { type: "SET_OPEN_UPWARD"; payload: boolean };
+
+const initialState: SelectState = {
+  isOpen: false,
+  focusedIndex: -1,
+  openUpward: false,
+};
+
+function selectReducer(state: SelectState, action: SelectAction): SelectState {
+  switch (action.type) {
+    case "CLOSE":
+      return { ...state, isOpen: false, focusedIndex: -1 };
+    case "OPEN":
+      return { ...state, isOpen: true, focusedIndex: -1 };
+    case "TOGGLE":
+      return state.isOpen
+        ? { ...state, isOpen: false, focusedIndex: -1 }
+        : { ...state, isOpen: true, focusedIndex: -1 };
+    case "SET_FOCUSED":
+      return { ...state, focusedIndex: action.payload };
+    case "SET_OPEN_UPWARD":
+      return { ...state, openUpward: action.payload };
+    default:
+      return state;
+  }
+}
+
 const SelectComponent = ({
   label,
   options,
@@ -32,9 +70,7 @@ const SelectComponent = ({
   placeholder,
   className,
 }: SelectProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [openUpward, setOpenUpward] = useState(false);
+  const [state, dispatch] = useReducer(selectReducer, initialState);
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
 
@@ -44,8 +80,7 @@ const SelectComponent = ({
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
-        setFocusedIndex(-1);
+        dispatch({ type: "CLOSE" });
       }
     };
 
@@ -54,19 +89,17 @@ const SelectComponent = ({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      setFocusedIndex(-1);
-      if (containerRef.current && listboxRef.current) {
-        const triggerRect = containerRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const spaceBelow = viewportHeight - triggerRect.bottom;
-        const estimatedMenuHeight = Math.min(200, options.length * 40); // max-height is 200px, estimate 40px per option
-
-        // Open upward if there's not enough space below (with some buffer)
-        setOpenUpward(spaceBelow < estimatedMenuHeight + 20);
-      }
+    if (state.isOpen && containerRef.current && listboxRef.current) {
+      const triggerRect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - triggerRect.bottom;
+      const estimatedMenuHeight = Math.min(200, options.length * 40);
+      dispatch({
+        type: "SET_OPEN_UPWARD",
+        payload: spaceBelow < estimatedMenuHeight + 20,
+      });
     }
-  }, [isOpen, options.length]);
+  }, [state.isOpen, options.length]);
 
   const getDisplayValue = useCallback((): string => {
     if (!value) return placeholder || "";
@@ -84,14 +117,13 @@ const SelectComponent = ({
         const isCurrentlySelected = currentValue.includes(optionValue);
 
         if (isCurrentlySelected) {
-          const newValue = currentValue.filter((v) => v !== optionValue);
-          onChange(newValue);
+          onChange(currentValue.filter((v) => v !== optionValue));
         } else {
           onChange([...currentValue, optionValue]);
         }
       } else {
         onChange(optionValue);
-        setIsOpen(false);
+        dispatch({ type: "CLOSE" });
       }
     },
     [multiple, value, onChange],
@@ -99,14 +131,14 @@ const SelectComponent = ({
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (!isOpen) {
+      if (!state.isOpen) {
         if (
           event.key === "Enter" ||
           event.key === " " ||
           event.key === "ArrowDown"
         ) {
           event.preventDefault();
-          setIsOpen(true);
+          dispatch({ type: "OPEN" });
         }
         return;
       }
@@ -115,8 +147,8 @@ const SelectComponent = ({
         case "Enter":
         case " ":
           event.preventDefault();
-          if (focusedIndex >= 0 && focusedIndex < options.length) {
-            const option = options[focusedIndex];
+          if (state.focusedIndex >= 0 && state.focusedIndex < options.length) {
+            const option = options[state.focusedIndex];
             if (option) {
               handleOptionClick(option.value);
             }
@@ -124,23 +156,31 @@ const SelectComponent = ({
           break;
         case "ArrowDown":
           event.preventDefault();
-          setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : 0));
+          dispatch({
+            type: "SET_FOCUSED",
+            payload:
+              state.focusedIndex < options.length - 1
+                ? state.focusedIndex + 1
+                : 0,
+          });
           break;
         case "ArrowUp":
           event.preventDefault();
-          setFocusedIndex((prev) => (prev > 0 ? prev - 1 : options.length - 1));
+          dispatch({
+            type: "SET_FOCUSED",
+            payload:
+              state.focusedIndex > 0
+                ? state.focusedIndex - 1
+                : options.length - 1,
+          });
           break;
         case "Escape":
-          setIsOpen(false);
-          setFocusedIndex(-1);
-          break;
         case "Tab":
-          setIsOpen(false);
-          setFocusedIndex(-1);
+          dispatch({ type: "CLOSE" });
           break;
       }
     },
-    [isOpen, options, focusedIndex, handleOptionClick],
+    [state.isOpen, state.focusedIndex, options, handleOptionClick],
   );
 
   return (
@@ -150,8 +190,8 @@ const SelectComponent = ({
         type="button"
         aria-label={label}
         aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        aria-expanded={state.isOpen}
+        onClick={() => !disabled && dispatch({ type: "TOGGLE" })}
         onKeyDown={handleKeyDown}
         disabled={disabled}
       >
@@ -166,16 +206,18 @@ const SelectComponent = ({
             ) : null;
           })()}
         </span>
-        <span className={classNames(styles.icon, isOpen && styles.iconOpen)}>
+        <span
+          className={classNames(styles.icon, state.isOpen && styles.iconOpen)}
+        >
           <Chevron />
         </span>
       </button>
-      {isOpen && options.length > 0 && (
+      {state.isOpen && options.length > 0 && (
         <ul
           ref={listboxRef}
           className={classNames(
             styles.listbox,
-            openUpward && styles.listboxUpward,
+            state.openUpward && styles.listboxUpward,
           )}
           // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
           role="listbox"
@@ -190,9 +232,9 @@ const SelectComponent = ({
               className={classNames(
                 styles.option,
                 isOptionSelected(value, option.value) && styles.selected,
-                focusedIndex === index && styles.focused,
+                state.focusedIndex === index && styles.focused,
               )}
-              tabIndex={focusedIndex === index ? 0 : -1}
+              tabIndex={state.focusedIndex === index ? 0 : -1}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
@@ -225,5 +267,5 @@ const SelectComponent = ({
   );
 };
 
-export const Select = memo(SelectComponent);
+const Select = memo(SelectComponent);
 export default Select;

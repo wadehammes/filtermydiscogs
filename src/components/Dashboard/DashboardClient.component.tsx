@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
 import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.component";
@@ -10,17 +11,45 @@ import { useCollectionContext } from "src/context/collection.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
-import { ArtistLabelCharts } from "./components/ArtistLabelCharts.component";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
 import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
-import { DistributionCharts } from "./components/DistributionCharts.component";
-import { GrowthChart } from "./components/GrowthChart.component";
 import { MostCrated } from "./components/MostCrated.component";
 import { OnThisDay } from "./components/OnThisDay.component";
 import { StatsCards } from "./components/StatsCards.component";
-import { StyleEvolution } from "./components/StyleEvolution.component";
 import styles from "./DashboardClient.module.css";
+
+const ArtistLabelCharts = dynamic(
+  () =>
+    import("./components/ArtistLabelCharts.component").then((m) => ({
+      default: m.ArtistLabelCharts,
+    })),
+  { ssr: false },
+);
+
+const DistributionCharts = dynamic(
+  () =>
+    import("./components/DistributionCharts.component").then((m) => ({
+      default: m.DistributionCharts,
+    })),
+  { ssr: false },
+);
+
+const GrowthChart = dynamic(
+  () =>
+    import("./components/GrowthChart.component").then((m) => ({
+      default: m.GrowthChart,
+    })),
+  { ssr: false },
+);
+
+const StyleEvolution = dynamic(
+  () =>
+    import("./components/StyleEvolution.component").then((m) => ({
+      default: m.StyleEvolution,
+    })),
+  { ssr: false },
+);
 
 export default function DashboardClient() {
   const { state: authState } = useAuth();

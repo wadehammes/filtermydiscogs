@@ -115,5 +115,3 @@ export const ViewToggle: FC<ViewToggleProps> = ({
     </div>
   );
 };
-
-export default ViewToggle;

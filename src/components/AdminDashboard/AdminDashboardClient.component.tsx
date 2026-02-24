@@ -1,16 +1,24 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
 import Login from "src/components/Login/Login.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import sharedStyles from "src/components/shared/DashboardLayout/DashboardLayout.module.css";
 import { DashboardSection } from "src/components/shared/DashboardSection/DashboardSection.component";
-import { GrowthAreaChart } from "src/components/shared/GrowthAreaChart/GrowthAreaChart.component";
 import { StatCard } from "src/components/shared/StatCard/StatCard.component";
 import { StatsGrid } from "src/components/shared/StatsGrid/StatsGrid.component";
 import { useAuth } from "src/context/auth.context";
 import { useAdminStats } from "src/hooks/useAdminStats.hook";
 import styles from "./AdminDashboardClient.module.css";
+
+const GrowthAreaChart = dynamic(
+  () =>
+    import(
+      "src/components/shared/GrowthAreaChart/GrowthAreaChart.component"
+    ).then((m) => ({ default: m.GrowthAreaChart })),
+  { ssr: false },
+);
 
 export default function AdminDashboardClient() {
   const { state: authState } = useAuth();

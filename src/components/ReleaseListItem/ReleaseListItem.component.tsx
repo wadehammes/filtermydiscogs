@@ -110,7 +110,7 @@ const ReleaseListItemComponent = ({
               {artists.map((artist, index) => {
                 const artistUrl = getArtistUrl(artist);
                 return (
-                  <span key={artist.id || index}>
+                  <span key={artist.id ?? `${artist.name}-${index}`}>
                     {artistUrl ? (
                       <a
                         href={artistUrl}
@@ -252,4 +252,3 @@ const ReleaseListItemComponent = ({
 };
 
 export const ReleaseListItem = memo(ReleaseListItemComponent);
-export default ReleaseListItem;

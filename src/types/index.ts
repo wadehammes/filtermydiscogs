@@ -102,11 +102,6 @@ export interface AuthState {
   error: string | null;
 }
 
-export interface AuthStatus {
-  isAuthenticated: boolean;
-  username: string | null;
-}
-
 export interface PerformanceMetrics {
   fcp: number;
   lcp: number;
