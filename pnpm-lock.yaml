@@ -36,8 +36,8 @@ importers:
         specifier: ^5.2.17
         version: 5.2.17(@types/react@19.2.14)(react@19.2.4)
       isbot:
-        specifier: ^5.1.35
-        version: 5.1.35
+        specifier: ^5.1.36
+        version: 5.1.36
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5
@@ -3152,8 +3152,8 @@ packages:
     resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
     engines: {node: '>=8'}
 
-  isbot@5.1.35:
-    resolution: {integrity: sha512-waFfC72ZNfwLLuJ2iLaoVaqcNo+CAaLR7xCpAn0Y5WfGzkNHv7ZN39Vbi1y+kb+Zs46XHOX3tZNExroFUPX+Kg==}
+  isbot@5.1.36:
+    resolution: {integrity: sha512-C/ZtXyJqDPZ7G7JPr06ApWyYoHjYexQbS6hPYD4WYCzpv2Qes6Z+CCEfTX4Owzf+1EJ933PoI2p+B9v7wpGZBQ==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -7759,7 +7759,7 @@ snapshots:
     dependencies:
       is-docker: 2.2.1
 
-  isbot@5.1.35: {}
+  isbot@5.1.36: {}
 
   isexe@2.0.0: {}
 
