@@ -12,6 +12,7 @@ export async function generateMetadata({
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
   const crateUrl = `${baseUrl}/crate/${id}`;
+  const ogImageUrl = new URL(`/api/og/crate/${id}`, baseUrl).href;
 
   const data = await fetchPublicCrateMetadata(id);
 
@@ -35,7 +36,7 @@ export async function generateMetadata({
         locale: "en-US",
         images: [
           {
-            url: `/crate/${id}/opengraph-image.png`,
+            url: ogImageUrl,
             width: 1200,
             height: 630,
             alt: `Public crate: ${crateName}`,
@@ -46,7 +47,7 @@ export async function generateMetadata({
         card: "summary_large_image",
         title: `${crateName}${username ? ` by ${username}` : ""}`,
         description,
-        images: [`/crate/${id}/opengraph-image.png`],
+        images: [ogImageUrl],
       },
     };
   }
@@ -63,7 +64,7 @@ export async function generateMetadata({
       locale: "en-US",
       images: [
         {
-          url: `/crate/${id}/opengraph-image.png`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: "Image of Crate Releases",
@@ -74,7 +75,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: "Crate | FilterMyDisco.gs",
       description: "Public crate on FilterMyDisco.gs",
-      images: [`/crate/${id}/opengraph-image.png`],
+      images: [ogImageUrl],
     },
   };
 }

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     locale: "en-US",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "FilterMyDisco.gs App Preview",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: "About | FilterMyDisco.gs",
     description:
       "About FilterMyDisco.gs, contact information, and how to support the project",
-    images: ["/opengraph-image.png"],
+    images: ["/opengraph-image"],
   },
 };
 

@@ -2,7 +2,6 @@
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "declaration": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -14,6 +13,10 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
+    "paths": {
+      "src/*": ["./src/*"],
+      "test-utils": ["./test-utils.tsx"]
+    },
     "resolveJsonModule": true,
     "rootDir": ".",
     "skipLibCheck": true,
@@ -40,7 +43,6 @@
     "cssprops.d.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
     "node_modules/.prisma/client/**/*.ts"
   ],
   "exclude": ["node_modules", "next.config.js", "playwright.config.ts"]

@@ -26,6 +26,8 @@ export default async () => {
     "\\.svg$": "<rootDir>/.jest/__mocks__/svg.js",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     ...jestConfig.moduleNameMapper,
+    "^src/(.*)$": "<rootDir>/src/$1",
+    "^test-utils$": "<rootDir>/test-utils.tsx",
   };
 
   return { ...jestConfig, moduleNameMapper, testTimeout: 20000 };

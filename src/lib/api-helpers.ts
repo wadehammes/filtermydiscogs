@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getPublicCrateMetadataForPage } from "src/lib/public-crate.server";
 import { auditLog } from "./db-audit";
 import { checkRateLimit } from "./rate-limit";
 
@@ -220,27 +221,5 @@ export async function fetchPublicCrateMetadata(crateId: string): Promise<{
   crate: { name: string; username: string | null };
   pagination: { total: number };
 } | null> {
-  try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      (process.env.NODE_ENV === "production"
-        ? "https://filtermydisco.gs"
-        : "http://localhost:6767");
-
-    const response = await fetch(`${baseUrl}/api/crates/public/${crateId}`, {
-      next: { revalidate: 300 },
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    return {
-      crate: { name: data.crate.name, username: data.crate.username },
-      pagination: { total: data.pagination.total },
-    };
-  } catch {
-    return null;
-  }
+  return getPublicCrateMetadataForPage(crateId);
 }
