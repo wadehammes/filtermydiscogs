@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     locale: "en-US",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "FilterMyDisco.gs App Preview",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Mosaic | FilterMyDisco.gs",
     description: "Create a mosaic of your Discogs collection.",
-    images: ["/opengraph-image.png"],
+    images: ["/opengraph-image"],
   },
 };
 

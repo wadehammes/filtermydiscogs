@@ -38,14 +38,6 @@ export const metadata: Metadata = {
     description: "a Discogs collection management tool",
     type: "website",
     locale: "en-US",
-    images: [
-      {
-        url: "/images/app-preview.png",
-        width: 800,
-        height: 400,
-        alt: "FilterMyDisco.gs App Preview",
-      },
-    ],
   },
 };
 
