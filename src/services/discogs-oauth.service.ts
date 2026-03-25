@@ -299,7 +299,7 @@ class DiscogsOAuthService {
     oauthToken: string,
     oauthTokenSecret: string,
     page: number = 1,
-    perPage: number = 500,
+    perPage: number = 100,
     sort: string = "added",
     sortOrder: string = "desc",
   ): Promise<DiscogsCollection> {

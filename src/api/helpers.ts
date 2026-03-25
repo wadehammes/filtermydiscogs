@@ -30,13 +30,15 @@ async function messageFromFailedApiResponse(
 export const fetchDiscogsCollection = async (
   username: string,
   page: number = 1,
+  perPage: number = 100,
 ): Promise<DiscogsCollection> => {
   try {
     const params = new URLSearchParams({
-      username,
       page: page.toString(),
+      per_page: perPage.toString(),
       sort: "added",
       sort_order: "desc",
+      username,
     });
 
     const response = await fetch(`/api/collection?${params}`, {

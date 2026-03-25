@@ -38,7 +38,7 @@ describe("fetchDiscogsCollection", () => {
 
     expect(result).toEqual(mockCollection);
     expect(mockFetch).toHaveBeenCalledWith(
-      "/api/collection?username=testuser&page=1&sort=added&sort_order=desc",
+      "/api/collection?page=1&per_page=100&sort=added&sort_order=desc&username=testuser",
       {
         method: "GET",
         headers: {
@@ -58,7 +58,7 @@ describe("fetchDiscogsCollection", () => {
     await fetchDiscogsCollection("testuser");
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("page=1"),
+      expect.stringMatching(/page=1.*per_page=100/),
       expect.any(Object),
     );
   });
