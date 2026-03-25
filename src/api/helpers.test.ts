@@ -67,10 +67,26 @@ describe("fetchDiscogsCollection", () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
+      json: async () => ({}),
     } as Response);
 
     await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
       "HTTP error! status: 500",
+    );
+  });
+
+  it("uses API error message when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      json: async () => ({
+        error:
+          "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
+      }),
+    } as Response);
+
+    await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
+      "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
     );
   });
 

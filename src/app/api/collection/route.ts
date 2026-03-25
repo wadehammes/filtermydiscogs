@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    if (storedUsername !== username) {
+    if (storedUsername.toLowerCase() !== username.toLowerCase()) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
     const collection = await discogsOAuthService.getCollection(
@@ -115,19 +115,36 @@ export async function GET(request: NextRequest) {
     console.error("getCollection error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch collection";
-    const status =
-      (error instanceof Error &&
-        (error as Error & { status?: number }).status) ||
+    const upstreamStatus =
+      error instanceof Error
+        ? (error as Error & { status?: number }).status
+        : undefined;
+
+    let status =
+      upstreamStatus ??
       (errorMessage.toLowerCase().includes("too many requests") ? 429 : 500);
 
-    return NextResponse.json(
-      {
-        error:
-          status === 429
-            ? "Rate limit exceeded. Please try again in a moment."
-            : "Failed to fetch collection",
-      },
-      { status },
-    );
+    if (
+      upstreamStatus !== undefined &&
+      upstreamStatus >= 500 &&
+      upstreamStatus < 600
+    ) {
+      status = 502;
+    }
+
+    let message = "Failed to fetch collection";
+    if (status === 429) {
+      message = "Rate limit exceeded. Please try again in a moment.";
+    } else if (status === 502 || upstreamStatus === 500) {
+      message =
+        "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.";
+    }
+
+    const body: { details?: string; error: string } = { error: message };
+    if (process.env.NODE_ENV === "development") {
+      body.details = errorMessage;
+    }
+
+    return NextResponse.json(body, { status });
   }
 }
