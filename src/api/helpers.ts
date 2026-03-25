@@ -13,6 +13,20 @@ import type {
   MostCratedRelease,
 } from "src/types/dashboard.types";
 
+async function messageFromFailedApiResponse(
+  response: Response,
+): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: unknown };
+    if (typeof data?.error === "string" && data.error.length > 0) {
+      return data.error;
+    }
+  } catch {
+    // non-JSON body
+  }
+  return `HTTP error! status: ${response.status}`;
+}
+
 export const fetchDiscogsCollection = async (
   username: string,
   page: number = 1,
@@ -33,7 +47,7 @@ export const fetchDiscogsCollection = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(await messageFromFailedApiResponse(response));
     }
 
     return response.json();

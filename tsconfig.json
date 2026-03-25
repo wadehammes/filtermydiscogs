@@ -43,7 +43,8 @@
     "cssprops.d.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "node_modules/.prisma/client/**/*.ts"
+    "node_modules/.prisma/client/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "next.config.js", "playwright.config.ts"]
 }

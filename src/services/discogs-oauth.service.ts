@@ -2,6 +2,13 @@ import crypto from "node:crypto";
 import OAuth from "oauth-1.0a";
 import type { DiscogsCollection, DiscogsSearchResponse } from "src/types";
 
+function discogsApiUserAgent(): string {
+  return (
+    process.env.DISCOGS_API_USER_AGENT?.trim() ||
+    "FilterMyDisco.gs/1.0 +https://www.filtermydisco.gs"
+  );
+}
+
 interface OAuthHeaders {
   Authorization: string;
 }
@@ -112,15 +119,19 @@ class DiscogsOAuthService {
         additionalData,
       );
 
+      const headers: Record<string, string> = {
+        "User-Agent": discogsApiUserAgent(),
+        ...oauthHeaders,
+      };
+      if (method !== "GET") {
+        headers["Content-Type"] = "application/json";
+      }
+
       const fetchOptions: FetchOptions = {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          ...oauthHeaders,
-        },
+        headers,
       };
 
-      // For POST requests, add body
       if (method === "POST" && Object.keys(additionalData).length > 0) {
         fetchOptions.body = JSON.stringify(additionalData);
       }
@@ -128,18 +139,28 @@ class DiscogsOAuthService {
       const response = await fetch(requestUrl, fetchOptions);
 
       if (!response.ok) {
-        // Try to get error message from response body
+        const bodyText = await response.text();
+        const bodyPreview = bodyText.slice(0, 2000);
+        console.error("Discogs API non-OK response:", {
+          body: bodyPreview,
+          status: response.status,
+          url: requestUrl,
+        });
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
-          const errorData = await response.json();
-          if (errorData.message) {
+          const errorData = JSON.parse(bodyText) as {
+            error?: unknown;
+            message?: unknown;
+          };
+          if (typeof errorData.message === "string") {
             errorMessage = errorData.message;
-          } else if (errorData.error) {
+          } else if (typeof errorData.error === "string") {
             errorMessage = errorData.error;
+          } else if (bodyPreview.length > 0) {
+            errorMessage = bodyPreview;
           }
         } catch {
-          // If response isn't JSON, use status text
-          errorMessage = response.statusText || errorMessage;
+          errorMessage = bodyPreview || response.statusText || errorMessage;
         }
         const error = new Error(errorMessage);
         (error as Error & { status?: number }).status = response.status;
@@ -176,6 +197,7 @@ class DiscogsOAuthService {
       method,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": discogsApiUserAgent(),
         ...oauthHeaders,
       },
       body: body.toString(),
@@ -235,6 +257,7 @@ class DiscogsOAuthService {
       method,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": discogsApiUserAgent(),
         ...oauthHeaders,
       },
       body: body.toString(),
