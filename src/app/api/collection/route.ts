@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     // Validate and sanitize perPage parameter (Discogs allows 1-500)
     const perPage = Math.max(
       1,
-      Math.min(500, parseInt(perPageParam || "500", 10)),
+      Math.min(500, parseInt(perPageParam || "100", 10)),
     );
     if (Number.isNaN(perPage) || perPage < 1) {
       return NextResponse.json(
