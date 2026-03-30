@@ -63,7 +63,7 @@
     }
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.9",
+    "@biomejs/biome": "^2.4.10",
     "@jest/test-sequencer": "30.3.0",
     "@jest/types": "^30.3.0",
     "@next/bundle-analyzer": "^16.2.1",
