@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "9.9.0",
-    "@next/third-parties": "^16.2.1",
+    "@next/third-parties": "^16.2.2",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@svgr/webpack": "^8.1.0",
