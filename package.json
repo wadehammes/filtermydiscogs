@@ -91,7 +91,7 @@
     "jest-transformer-svg": "^2.1.0",
     "jest-when": "^4.0.1",
     "knip": "^6.0.5",
-    "lighthouse": "^13.0.3",
+    "lighthouse": "^13.1.0",
     "postcss": "^8.5.8",
     "postcss-custom-media": "^12.0.1",
     "prisma": "^7.5.0",
