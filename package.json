@@ -76,7 +76,7 @@
     "@types/jest-when": "^3.5.5",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash.flatten": "^4.4.9",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.14",
     "critters": "^0.0.25",
