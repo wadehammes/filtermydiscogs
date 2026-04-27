@@ -89,7 +89,7 @@
     "jest-location-mock": "^3.0.0",
     "jest-mock": "^30.3.0",
     "jest-transformer-svg": "^2.1.0",
-    "jest-when": "^4.0.2",
+    "jest-when": "^4.0.3",
     "knip": "^6.4.1",
     "lighthouse": "^13.1.0",
     "postcss": "^8.5.10",

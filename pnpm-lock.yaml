@@ -154,8 +154,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0(jest@30.3.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.2)))(react@19.2.5)
       jest-when:
-        specifier: ^4.0.2
-        version: 4.0.2(jest@30.3.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.2)))
+        specifier: ^4.0.3
+        version: 4.0.3(jest@30.3.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.2)))
       knip:
         specifier: ^6.4.1
         version: 6.4.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)
@@ -3605,8 +3605,8 @@ packages:
     resolution: {integrity: sha512-PJ1d9ThtTR8aMiBWUdcownq9mDdLXsQzJayTk4kmaBRHKvwNQn+ANveuhEBUyNI2hR1TVhvQ8D5kHubbzBHR/w==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  jest-when@4.0.2:
-    resolution: {integrity: sha512-v003MeNF+J2TNPT1wy2QCUBPK8CdMJg8bTMy+8ibuK7SetCTM3cgjPBXWydTsactk6Ko5+wtcuM1xWM6G1R4AQ==}
+  jest-when@4.0.3:
+    resolution: {integrity: sha512-bYaT4K+L1l1UEcaKSRsWd+EZjwBEZwBvKtlhvXThUZl9k5TCaCXFCiumebew2sAi/AZai7zeSMud/PziHDpxIw==}
     peerDependencies:
       jest: '>= 27'
 
@@ -8649,7 +8649,7 @@ snapshots:
       jest-util: 30.3.0
       string-length: 4.0.2
 
-  jest-when@4.0.2(jest@30.3.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.2))):
+  jest-when@4.0.3(jest@30.3.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.2))):
     dependencies:
       jest: 30.3.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.2))
 
