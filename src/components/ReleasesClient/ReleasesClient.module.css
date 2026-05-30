@@ -9,7 +9,7 @@
     grid-template-areas: "main sidebar";
     grid-template-columns: 1fr 400px;
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
       grid-template-areas: "main";
       grid-template-columns: 1fr;
     }
@@ -31,7 +31,7 @@
     display: block;
   }
 
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     display: none;
   }
 }
@@ -81,7 +81,7 @@
     scroll-margin-top: 15.625rem;
   }
 
-  @media (min-width: 620px) {
+  @media (width >= 620px) {
     gap: var(--space-4);
     grid-template-columns: repeat(
         auto-fill,
@@ -165,12 +165,12 @@
     box-shadow var(--transition-normal);
   z-index: var(--z-3-fixed);
 
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     display: flex;
   }
 
   /* Hide FAB when mobile menu or filters drawer is open */
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     :global(body:has([data-mobile-menu-open="true"])) &,
     :global(body:has([data-filters-drawer-open="true"])) & {
       display: none;

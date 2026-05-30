@@ -30,6 +30,11 @@
   transition: var(--transition-fast);
   white-space: nowrap;
 
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
   &:hover:not(.active) {
     background: var(--muted);
     color: var(--foreground);
@@ -38,11 +43,6 @@
   &.active {
     background: var(--primary);
     color: var(--primary-foreground);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
   }
 }
 
@@ -63,6 +63,11 @@
   transition: var(--transition-fast);
   white-space: nowrap;
 
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
   &:hover:not(.active) {
     background: var(--muted);
     color: var(--foreground);
@@ -71,10 +76,5 @@
   &.active {
     background: var(--primary);
     color: var(--primary-foreground);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
   }
 }

@@ -120,15 +120,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {formatOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Format</h3>
+            <h3 className={styles.sectionTitle}>Format Type</h3>
             <Select
-              label="Format"
+              label="Format Type"
               options={formatOptions}
               value={selectedFormats}
               onChange={handleFormatChange}
               disabled={!collection}
               multiple={true}
-              placeholder="All formats"
+              placeholder="All format types"
             />
           </div>
         )}

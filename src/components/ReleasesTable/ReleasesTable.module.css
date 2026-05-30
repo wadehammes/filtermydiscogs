@@ -11,7 +11,7 @@
   width: 100%;
   border-radius: var(--radius-ui);
 
-  @media (min-width: 640px) {
+  @media (width >= 640px) {
     box-shadow: var(--shadow-sm);
     display: block;
   }
@@ -46,7 +46,7 @@
     border-right: none;
   }
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     padding: var(--space-4) var(--space-3);
   }
 }
@@ -168,7 +168,7 @@
   font-size: clamp(var(--text-xs), 1vw + 0.5rem, var(--text-sm));
   line-height: 1.2;
   padding: var(--space-1) var(--space-2);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .titleCell {
@@ -183,7 +183,7 @@
   gap: var(--space-1);
   line-height: 1.2;
   padding: var(--space-1) var(--space-2);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .artistName {
@@ -296,7 +296,7 @@
   gap: var(--space-3);
   padding: var(--space-4);
 
-  @media (min-width: 640px) {
+  @media (width >= 640px) {
     display: none;
   }
 }

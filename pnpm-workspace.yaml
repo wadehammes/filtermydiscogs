@@ -1,0 +1,10 @@
+allowBuilds:
+  '@prisma/engines': false
+  prisma: false
+  sharp: false
+  unrs-resolver: false
+overrides:
+  '@types/pg': 8.20.0
+publicHoistPattern:
+  - '*jest*'
+  - '*@jest/*'

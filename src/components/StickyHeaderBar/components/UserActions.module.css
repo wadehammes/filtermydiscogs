@@ -4,11 +4,11 @@
   gap: var(--space-1);
   margin-left: auto;
 
-  @media (min-width: 481px) {
+  @media (width >= 481px) {
     gap: var(--space-2);
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     display: none;
   }
 }
@@ -21,7 +21,7 @@
   position: relative;
   z-index: var(--z-6-popover);
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     display: flex;
   }
 }
@@ -55,7 +55,7 @@
 }
 
 .username {
-  color: currentColor;
+  color: currentcolor;
   white-space: nowrap;
   font-weight: var(--font-semibold);
 }

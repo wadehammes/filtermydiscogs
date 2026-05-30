@@ -69,7 +69,7 @@
 }
 
 .iconSvg {
-  color: currentColor;
+  color: currentcolor;
   height: var(--text-sm);
   width: var(--text-sm);
 }

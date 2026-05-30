@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMemo } from "react";
 import { useCollectionContext } from "src/context/collection.context";
+import { getReleaseImageUrl } from "src/utils/helpers";
 import { getOnThisDayReleases } from "src/utils/onThisDay";
 import styles from "./OnThisDay.module.css";
 
@@ -38,27 +39,33 @@ export function OnThisDay() {
       <p className={styles.date}>{dateString}</p>
       <div className={styles.releasesGrid}>
         {onThisDayReleases.slice(0, 10).map((release) => {
-          const { title, artists, thumb, year } = release.basic_information;
+          const { title, artists, thumb, cover_image, year } =
+            release.basic_information;
           const artistNames = artists.map((a) => a.name).join(", ");
           const dateAdded = new Date(release.date_added);
           const yearAdded = dateAdded.getFullYear();
+          const imageUrl = getReleaseImageUrl({
+            thumb,
+            cover_image,
+            width: 400,
+            height: 400,
+            preferCoverImage: true,
+          });
 
           return (
             <div key={release.instance_id} className={styles.releaseCard}>
-              {thumb && (
-                <div className={styles.imageWrapper}>
-                  <Image
-                    src={thumb}
-                    alt={`${title} by ${artistNames}`}
-                    className={styles.coverImage}
-                    width={48}
-                    height={48}
-                    quality={85}
-                    loading="lazy"
-                    sizes="48px"
-                  />
-                </div>
-              )}
+              <div className={styles.imageWrapper}>
+                <Image
+                  src={imageUrl}
+                  alt={`${title} by ${artistNames}`}
+                  className={styles.coverImage}
+                  width={400}
+                  height={400}
+                  quality={85}
+                  loading="lazy"
+                  sizes="(max-width: 640px) 160px, (max-width: 1024px) 192px, 224px"
+                />
+              </div>
               <div className={styles.releaseInfo}>
                 <div className={styles.releaseTitle}>{title}</div>
                 <div className={styles.releaseArtist}>{artistNames}</div>

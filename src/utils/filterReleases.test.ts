@@ -308,6 +308,43 @@ describe("filterReleases", () => {
     expect(result).toContainEqual(release3);
   });
 
+  it("filters by physical format tags from descriptions", () => {
+    const vinylTwelve = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [{ name: "Vinyl", descriptions: ['12"', "LP", "Album"] }],
+      }),
+    });
+    const vinylSeven = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [{ name: "Vinyl", descriptions: ['7"', "Single"] }],
+      }),
+    });
+    const cassette = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [{ name: "Cassette", descriptions: ["Album"] }],
+      }),
+    });
+    const releases = [vinylTwelve, vinylSeven, cassette];
+
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: ['12"'],
+      }),
+    ).toEqual([vinylTwelve]);
+
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: ["Cassette"],
+      }),
+    ).toEqual([cassette]);
+  });
+
   it("filters by search query matching title", () => {
     const release1 = releaseFactory.build({
       basic_information: basicInformationFactory.build({

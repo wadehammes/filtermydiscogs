@@ -7,14 +7,6 @@
   gap: 0;
   margin: 0;
   padding: var(--space-1);
-
-  &.disabled {
-    .navItem:not(.active) {
-      cursor: not-allowed;
-      opacity: 0.5;
-      pointer-events: none;
-    }
-  }
 }
 
 .navItem {
@@ -35,7 +27,13 @@
   transition: all var(--transition-fast);
   white-space: nowrap;
 
-  &:hover:not(.active):not(.disabled) {
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  &:hover:not(.active, .disabled) {
     color: var(--foreground);
   }
 
@@ -46,12 +44,6 @@
   }
 
   &.disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
     pointer-events: none;
@@ -71,4 +63,10 @@
       width: 100%;
     }
   }
+}
+
+.navigation.disabled .navItem:not(.active) {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
 }

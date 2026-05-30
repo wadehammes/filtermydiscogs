@@ -27,10 +27,6 @@
   padding: var(--space-2) var(--space-3);
   text-align: left;
 
-  &:hover:not(:disabled) {
-    border-color: var(--border);
-  }
-
   &:focus {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
@@ -40,6 +36,10 @@
     background: var(--muted);
     color: var(--muted-foreground);
     cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--border);
   }
 }
 
@@ -109,7 +109,7 @@
   min-height: 2rem;
   padding: var(--space-3);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     min-height: auto;
   }
 
@@ -143,7 +143,7 @@
 
 .checkmark {
   align-items: center;
-  color: currentColor;
+  color: currentcolor;
   display: flex;
   flex-shrink: 0;
 }

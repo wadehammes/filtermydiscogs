@@ -14,8 +14,8 @@
   --accent-foreground: #fafafa;
 
   /* Border and input */
-  --border: #333333;
-  --input: #333333;
+  --border: #333;
+  --input: #333;
   --ring: #0080ff;
 
   /* Card */
@@ -31,8 +31,8 @@
 
   /* Primary */
   --primary: #0080ff;
-  --primary-foreground: #ffffff;
-  --primary-hover: #0066cc;
+  --primary-foreground: #fff;
+  --primary-hover: #06c;
   --primary-active: #0052a3;
 
   /* Secondary */
@@ -43,27 +43,26 @@
 
   /* Destructive */
   --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: #fff;
   --destructive-hover: #dc2626;
   --destructive-active: #b91c1c;
 
   /* Success */
   --success: #22c55e;
-  --success-foreground: #ffffff;
+  --success-foreground: #fff;
   --success-hover: #16a34a;
   --success-active: #15803d;
 
   /* Warning */
   --warning: #f59e0b;
-  --warning-foreground: #ffffff;
+  --warning-foreground: #fff;
   --warning-hover: #d97706;
   --warning-active: #b45309;
 
   /* Legacy color mappings for backward compatibility during migration */
   --white: #fafafa;
   --black: #121212;
-  --trueBlack: hsla(5, 92%, 1%, 0.83);
-
+  --trueBlack: hsl(5deg 92% 1% / 83%);
   --gray-50: #121212;
   --gray-100: #1a1a1a;
   --gray-200: #1e1e1e;
@@ -74,7 +73,6 @@
   --gray-700: #a3a3a3;
   --gray-800: #d4d4d4;
   --gray-900: #fafafa;
-
   --primary-50: #1e3a8a;
   --primary-100: #1e40af;
   --primary-200: #1d4ed8;
@@ -85,7 +83,6 @@
   --primary-700: #bfdbfe;
   --primary-800: #dbeafe;
   --primary-900: #eff6ff;
-
   --purple-50: #581c87;
   --purple-100: #6b46c1;
   --purple-200: #7c3aed;
@@ -96,7 +93,6 @@
   --purple-700: #e9d5ff;
   --purple-800: #f3e8ff;
   --purple-900: #faf5ff;
-
   --success-50: #15803d;
   --success-500: #16a34a;
   --success-600: #22c55e;
@@ -106,7 +102,6 @@
   --error-50: #991b1b;
   --error-500: #dc2626;
   --error-600: #ef4444;
-
   --red-50: #7f1d1d;
   --red-100: #991b1b;
   --red-200: #b91c1c;
@@ -117,13 +112,12 @@
   --red-700: #fecaca;
   --red-800: #fee2e2;
   --red-900: #fef2f2;
-
   --gray: var(--gray-300);
   --gradientPink: #ffb7b7;
   --gradientLightPink: #ffd1d1;
   --gradientGray: var(--gray-500);
   --gradientBurgundy: #260000;
-  --gradientTeal: #00ffff;
+  --gradientTeal: #0ff;
   --gradientRed: var(--error-500);
   --gradientCyan: #00ffe0;
   --gradientYellow: #dbff00;

@@ -24,11 +24,11 @@
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   width: 100%;
 
-  @media (min-width: 640px) {
+  @media (width >= 640px) {
     grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 }

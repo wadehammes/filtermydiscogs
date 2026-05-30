@@ -1,6 +1,6 @@
-@import "./custom-media.css";
-@import "./pills.css";
-@import "./themes/index.css";
+@import url("./custom-media.css");
+@import url("./pills.css");
+@import url("./themes/index.css");
 
 *,
 *::before,
@@ -104,15 +104,15 @@ body {
   font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1.125rem);
   padding: 0;
 
-  @media (min-width: 768px) and (max-width: 1023px) {
+  @media (width >= 768px) and (width <= 1023px) {
     font-size: clamp(0.875rem, 0.8125rem + 0.25vw, 0.9375rem);
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     font-size: clamp(0.825rem, 0.772rem + 0.35vw, 0.881rem);
   }
 
-  @media (min-width: 1440px) {
+  @media (width >= 1440px) {
     font-size: clamp(0.881rem, 0.828rem + 0.263vw, 0.991rem);
   }
 }
@@ -161,7 +161,7 @@ button {
   line-height: 1.5;
   padding-bottom: var(--space-6);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     font-size: var(--text-lg);
   }
 
@@ -179,7 +179,7 @@ button {
   list-style-type: none;
   padding-left: 0;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     flex-flow: row wrap;
   }
 }

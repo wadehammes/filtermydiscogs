@@ -9,7 +9,7 @@
     grid-template-columns: 1fr 400px;
     grid-template-areas: "main sidebar";
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
       grid-template-columns: 1fr;
       grid-template-areas: "main";
     }
@@ -30,7 +30,7 @@
     display: block;
   }
 
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     display: none;
   }
 }
@@ -73,7 +73,7 @@
     scroll-margin-top: 15.625rem;
   }
 
-  @media (min-width: 620px) {
+  @media (width >= 620px) {
     gap: var(--space-4);
     grid-template-columns: repeat(
         auto-fill,

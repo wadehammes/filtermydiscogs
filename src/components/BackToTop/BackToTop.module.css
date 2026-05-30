@@ -54,7 +54,7 @@
     transform: translateY(0);
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     bottom: var(--space-6);
     height: 3rem;
     left: var(--space-4);
