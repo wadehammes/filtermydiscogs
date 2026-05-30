@@ -1,0 +1,7 @@
+/* Custom properties referenced in CSS but defined by Next.js at runtime.
+   Used by Stylelint only — do not import this file in the app. */
+
+:root {
+  --font-assistant: system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}

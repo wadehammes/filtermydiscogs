@@ -16,7 +16,7 @@
   max-width: 90rem;
   width: 100%;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     gap: var(--space-4);
   }
@@ -36,7 +36,7 @@
     font-weight: var(--font-bold);
     margin: 0;
 
-    @media (min-width: 768px) {
+    @media (width >= 768px) {
       font-size: var(--text-2xl);
     }
   }

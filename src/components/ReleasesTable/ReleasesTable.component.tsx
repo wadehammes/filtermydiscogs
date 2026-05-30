@@ -17,6 +17,7 @@ import { useFilters } from "src/context/filters.context";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
+import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleasesTable.module.css";
 
@@ -298,9 +299,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             const releaseFormats = getValue();
             if (!releaseFormats || releaseFormats.length === 0) return null;
 
-            const uniqueFormats = Array.from(
-              new Set(releaseFormats.map((format) => format.name)),
-            );
+            const uniqueFormats = getReleaseFormatTags(releaseFormats);
 
             return (
               <div className={styles.formatsCell}>

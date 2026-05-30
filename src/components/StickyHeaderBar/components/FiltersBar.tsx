@@ -116,13 +116,13 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
             placeholder="All release years"
           />
           <AutocompleteSelect
-            label="Format"
+            label="Format Type"
             options={formatOptions}
             value={selectedFormats}
             onChange={handleFormatChange}
             disabled={!collection}
             multiple={true}
-            placeholder="All formats"
+            placeholder="All format types"
           />
           <Select
             label="Sort by"

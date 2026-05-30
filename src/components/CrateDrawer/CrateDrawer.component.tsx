@@ -8,6 +8,7 @@ import PageLoader from "src/components/PageLoader/PageLoader.component";
 import { useCrate } from "src/context/crate.context";
 import { useView } from "src/context/view.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import XIcon from "src/styles/icons/x.svg";
 import { copyToClipboard } from "src/utils/copyToClipboard";
 import { getReleaseImageUrl, getSiteUrl } from "src/utils/helpers";
 import styles from "./CrateDrawer.module.css";
@@ -189,7 +190,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
                   }}
                   aria-label={`Remove ${basic_information.title} from crate`}
                 >
-                  ×
+                  <XIcon className={styles.removeIcon} aria-hidden />
                 </button>
               </div>
             );

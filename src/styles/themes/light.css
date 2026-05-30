@@ -3,7 +3,7 @@
 :root,
 [data-theme="light"] {
   /* Base colors */
-  --background: #ffffff;
+  --background: #fff;
   --foreground: #171717;
 
   /* Muted colors */
@@ -17,22 +17,22 @@
   /* Border and input */
   --border: #cbd5e0;
   --input: #cbd5e0;
-  --ring: #0066cc;
+  --ring: #06c;
 
   /* Card */
-  --card: #ffffff;
+  --card: #fff;
   --card-foreground: #171717;
 
   /* Sticky Header */
   --sticky-header-background: #fff;
 
   /* Popover */
-  --popover: #ffffff;
+  --popover: #fff;
   --popover-foreground: #171717;
 
   /* Primary */
-  --primary: #0066cc;
-  --primary-foreground: #ffffff;
+  --primary: #06c;
+  --primary-foreground: #fff;
   --primary-hover: #0052a3;
   --primary-active: #003d7a;
 
@@ -44,27 +44,26 @@
 
   /* Destructive */
   --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: #fff;
   --destructive-hover: #dc2626;
   --destructive-active: #b91c1c;
 
   /* Success */
   --success: #22c55e;
-  --success-foreground: #ffffff;
+  --success-foreground: #fff;
   --success-hover: #16a34a;
   --success-active: #15803d;
 
   /* Warning */
   --warning: #f59e0b;
-  --warning-foreground: #ffffff;
+  --warning-foreground: #fff;
   --warning-hover: #d97706;
   --warning-active: #b45309;
 
   /* Legacy color mappings for backward compatibility during migration */
-  --white: #ffffff;
+  --white: #fff;
   --black: #171717;
-  --trueBlack: hsla(5, 92%, 1%, 0.83);
-
+  --trueBlack: hsl(5deg 92% 1% / 83%);
   --gray-50: #f8fafc;
   --gray-100: #f1f5f9;
   --gray-200: #e2e8f0;
@@ -75,7 +74,6 @@
   --gray-700: #334155;
   --gray-800: #1e293b;
   --gray-900: #0f172a;
-
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
@@ -86,7 +84,6 @@
   --primary-700: #1d4ed8;
   --primary-800: #1e40af;
   --primary-900: #1e3a8a;
-
   --purple-50: #faf5ff;
   --purple-100: #f3e8ff;
   --purple-200: #e9d5ff;
@@ -97,7 +94,6 @@
   --purple-700: #7c3aed;
   --purple-800: #6b46c1;
   --purple-900: #581c87;
-
   --success-50: #f0fdf4;
   --success-500: #22c55e;
   --success-600: #16a34a;
@@ -107,7 +103,6 @@
   --error-50: #fef2f2;
   --error-500: #ef4444;
   --error-600: #dc2626;
-
   --red-50: #fef2f2;
   --red-100: #fee2e2;
   --red-200: #fecaca;
@@ -118,13 +113,12 @@
   --red-700: #b91c1c;
   --red-800: #991b1b;
   --red-900: #7f1d1d;
-
   --gray: var(--gray-300);
   --gradientPink: #ffb7b7;
   --gradientLightPink: #ffd1d1;
   --gradientGray: var(--gray-500);
   --gradientBurgundy: #260000;
-  --gradientTeal: #00ffff;
+  --gradientTeal: #0ff;
   --gradientRed: var(--error-500);
   --gradientCyan: #00ffe0;
   --gradientYellow: #dbff00;

@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
+import XIcon from "src/styles/icons/x.svg";
 import styles from "./BottomDrawer.module.css";
 
 interface BottomDrawerProps {
@@ -43,7 +44,7 @@ export const BottomDrawer = ({
           onClick={onClose}
           aria-label={closeButtonAriaLabel}
         >
-          ×
+          <XIcon className={styles.closeIcon} aria-hidden />
         </button>
       )}
       <div

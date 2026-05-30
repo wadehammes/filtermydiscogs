@@ -24,12 +24,8 @@
   color: var(--foreground);
   transition: all var(--transition-normal);
 
-  @media (min-width: 640px) {
+  @media (width >= 640px) {
     font-size: var(--text-sm);
-  }
-
-  &:hover:not(:disabled) {
-    border-color: var(--border);
   }
 
   &:focus {
@@ -41,6 +37,10 @@
     background: var(--muted);
     color: var(--muted-foreground);
     cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--border);
   }
 
   &.searching {
@@ -55,17 +55,17 @@
 }
 
 .clearButton {
-  align-items: center;
   background: none;
   border: none;
   border-radius: var(--radius-full);
   color: var(--muted-foreground);
   cursor: pointer;
-  display: flex;
+  display: grid;
   font-size: var(--text-xl);
   height: var(--space-6);
-  justify-content: center;
   line-height: 1;
+  padding: 0;
+  place-items: center;
   position: absolute;
   right: var(--space-3);
   top: 50%;

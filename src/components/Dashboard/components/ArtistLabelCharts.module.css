@@ -4,7 +4,7 @@
   grid-template-columns: 1fr;
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -31,7 +31,7 @@
   width: 100%;
 
   /* Reduce YAxis label font size on mobile */
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     :global(.recharts-yAxis .recharts-text) {
       font-size: 10px;
     }
@@ -41,6 +41,7 @@
 .chartWrapper :global(.recharts-bar-rectangle) {
   cursor: pointer;
 }
+
 .chartWrapper :global(.recharts-active-bar),
 .chartWrapper :global(.recharts-active-bar *),
 .chartWrapper :global(.recharts-active-bar rect),
@@ -91,12 +92,12 @@
 .chartWrapper
   :global(
     .recharts-bar-rectangle:hover
-    rect:not([fill="#fff"]):not([fill="white"]):not([fill="#ffffff"])
+    rect:not([fill="#fff"], [fill="white"], [fill="#ffffff"])
   ),
 .chartWrapper
   :global(
     .recharts-bar-rectangle:hover
-    path:not([fill="#fff"]):not([fill="white"]):not([fill="#ffffff"])
+    path:not([fill="#fff"], [fill="white"], [fill="#ffffff"])
   ) {
   opacity: 1 !important;
   fill-opacity: 1 !important;

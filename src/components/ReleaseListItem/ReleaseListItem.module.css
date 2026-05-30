@@ -98,10 +98,6 @@
   text-decoration: underline;
   transition: color var(--transition-fast);
 
-  &:hover:not(:disabled) {
-    color: var(--primary);
-  }
-
   &:disabled {
     cursor: wait;
     opacity: 0.6;
@@ -111,6 +107,10 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
     border-radius: var(--radius-ui);
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
   }
 }
 
@@ -257,7 +257,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .releaseItem {
     flex-direction: column;
   }

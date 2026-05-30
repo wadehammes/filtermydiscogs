@@ -14,7 +14,7 @@
   padding: var(--space-8) var(--space-4);
   width: 100%;
 
-  @media (min-width: 769px) {
+  @media (width >= 769px) {
     min-height: calc(100vh - 220px);
   }
 }
@@ -29,7 +29,7 @@
   width: 100%;
   text-align: center;
 
-  @media (min-width: 769px) {
+  @media (width >= 769px) {
     flex-direction: row;
     gap: var(--space-4);
     padding: var(--space-8);

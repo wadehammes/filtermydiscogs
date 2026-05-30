@@ -22,7 +22,6 @@
 }
 
 .title {
-  clip: rect(0 0 0 0);
   border: 0;
   clip-path: inset(50%);
   height: 1px;
@@ -35,16 +34,16 @@
 }
 
 .closeButton {
-  align-items: center;
   background: transparent;
   border: none;
   color: var(--foreground);
   cursor: pointer;
-  display: flex;
+  display: grid;
   font-size: var(--text-2xl);
   height: var(--button-height-md);
-  justify-content: center;
   line-height: 1;
+  padding: 0;
+  place-items: center;
   position: absolute;
   right: var(--space-1);
   top: var(--space-1);
@@ -65,7 +64,7 @@
 .content {
   padding: var(--space-6);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     padding: var(--space-8);
   }
 }

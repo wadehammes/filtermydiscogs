@@ -4,7 +4,7 @@
   padding: var(--space-12) var(--space-4);
   width: 100%;
 
-  @media (min-width: 769px) {
+  @media (width >= 769px) {
     padding: var(--space-16) var(--space-6);
   }
 }
@@ -24,7 +24,7 @@
   margin-bottom: var(--space-6);
   padding: var(--space-4);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     margin-bottom: var(--space-8);
     padding: var(--space-4) var(--space-6);
   }
@@ -40,7 +40,7 @@
 .section {
   margin-bottom: var(--space-12);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     margin-bottom: var(--space-16);
   }
 }
@@ -54,7 +54,7 @@
   margin-top: 0;
   text-align: left;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     font-size: var(--text-4xl);
   }
 }
@@ -65,7 +65,7 @@
   font-weight: var(--font-semibold);
   margin-bottom: var(--space-4);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     font-size: var(--text-2xl);
   }
 }
@@ -75,7 +75,7 @@
   margin-top: var(--space-16);
   padding-top: var(--space-8);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     margin-top: var(--space-20);
     padding-top: var(--space-12);
   }
@@ -87,7 +87,7 @@
   align-items: flex-start;
   gap: var(--space-4);
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     flex-direction: row;
     gap: 8rem;
   }
@@ -162,13 +162,12 @@
 
 .meta {
   color: var(--muted-foreground);
-  font-size: var(--text-base);
   margin-bottom: var(--space-8);
   text-align: left;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     margin-bottom: var(--space-12);
   }
 }

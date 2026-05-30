@@ -1,16 +1,17 @@
 import type { DiscogsRelease } from "src/types";
+import {
+  getReleaseFormatTags,
+  sortFormatTags,
+} from "src/utils/formatFilterTags";
 
 export const getAvailableFormats = (releases: DiscogsRelease[]): string[] => {
   const formatSet = new Set<string>();
 
   releases.forEach((release) => {
-    const formats = release.basic_information.formats;
-    formats.forEach((format) => {
-      if (format?.name?.trim()) {
-        formatSet.add(format.name);
-      }
+    getReleaseFormatTags(release.basic_information.formats).forEach((tag) => {
+      formatSet.add(tag);
     });
   });
 
-  return Array.from(formatSet).sort();
+  return sortFormatTags(Array.from(formatSet));
 };

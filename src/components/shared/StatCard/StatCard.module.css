@@ -21,7 +21,7 @@
   font-weight: var(--font-bold);
   line-height: 1.2;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     font-size: var(--text-3xl);
   }
 }

@@ -12,7 +12,7 @@
     margin-bottom: var(--space-8);
     text-align: center;
 
-    @media (min-width: 768px) {
+    @media (width >= 768px) {
       font-size: var(--text-3xl);
     }
   }
@@ -25,7 +25,7 @@
   margin-bottom: var(--space-6);
   padding: var(--space-6);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: var(--space-4);
   }
 
@@ -199,7 +199,7 @@
   margin-top: var(--space-6);
   position: relative;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     flex-direction: row;
     justify-content: space-around;
   }

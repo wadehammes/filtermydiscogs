@@ -1,5 +1,6 @@
 import type { StyleOperator } from "src/context/filters.context";
 import type { DiscogsRelease } from "src/types";
+import { releaseMatchesFormatFilters } from "src/utils/formatFilterTags";
 
 // Cache for searchable text to avoid recomputation
 const searchTextCache = new Map<string, string>();
@@ -71,9 +72,9 @@ export const filterReleases = ({
     }
 
     if (selectedFormatsSet) {
-      const releaseFormats = release.basic_information.formats;
-      const hasMatchingFormat = releaseFormats.some((format) =>
-        selectedFormatsSet.has(format.name),
+      const hasMatchingFormat = releaseMatchesFormatFilters(
+        release.basic_information.formats,
+        selectedFormats,
       );
       if (!hasMatchingFormat) return false;
     }

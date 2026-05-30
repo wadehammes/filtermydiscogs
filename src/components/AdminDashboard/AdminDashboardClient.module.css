@@ -6,7 +6,7 @@
   grid-template-columns: 1fr;
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -57,7 +57,7 @@
   grid-template-columns: 1fr;
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
 }

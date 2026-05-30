@@ -11,6 +11,10 @@
   justify-content: center;
   min-height: 100vh;
   padding: var(--space-8);
+
+  @media (width <= 768px) {
+    padding: var(--space-4);
+  }
 }
 
 .bentoGrid {
@@ -25,11 +29,11 @@
   padding: var(--space-4);
   width: 100%;
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     max-width: 50rem;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: var(--space-3);
     grid-template-columns: 1fr;
     padding: var(--space-3);
@@ -53,11 +57,11 @@
     overflow: hidden;
     padding: 0;
 
-    @media (max-width: 1024px) {
+    @media (width <= 1024px) {
       min-height: 17.5rem;
     }
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       grid-column: 1;
       grid-row: 1;
       min-height: 13.75rem;
@@ -71,7 +75,7 @@
     justify-content: center;
     text-align: center;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       gap: var(--space-5);
       grid-column: 1;
       grid-row: 2;
@@ -82,7 +86,7 @@
       margin: 0 auto;
       width: 15.625rem;
 
-      @media (max-width: 768px) {
+      @media (width <= 768px) {
         width: 11.25rem;
       }
     }
@@ -94,7 +98,7 @@
       margin: 0;
       text-wrap: balance;
 
-      @media (max-width: 768px) {
+      @media (width <= 768px) {
         font-size: var(--text-sm);
       }
     }
@@ -126,7 +130,7 @@
     grid-row: 2;
     justify-content: flex-start;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       grid-column: 1;
       grid-row: 3;
     }
@@ -192,7 +196,7 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: var(--space-6);
   }
 }
@@ -216,9 +220,8 @@
   width: 100%;
   text-wrap: balance;
 
-  @media (min-width: 768px) {
-    flex-direction: row;
-    flex-wrap: wrap;
+  @media (width >= 768px) {
+    flex-flow: row wrap;
     gap: var(--space-4);
     justify-content: center;
   }
@@ -259,11 +262,5 @@
   & small {
     color: var(--muted-foreground);
     font-size: var(--text-sm);
-  }
-}
-
-.container {
-  @media (max-width: 768px) {
-    padding: var(--space-4);
   }
 }

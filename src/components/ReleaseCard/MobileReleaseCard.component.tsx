@@ -11,9 +11,13 @@ import MinusIcon from "src/styles/icons/minus-solid.svg";
 import PlusIcon from "src/styles/icons/plus-solid.svg";
 import StarIcon from "src/styles/icons/star-solid.svg";
 import type { ReleaseCardProps } from "src/types";
-import { formatDate } from "src/utils/dateHelpers";
+import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./MobileReleaseCard.module.css";
+import {
+  ReleaseCardCatalog,
+  ReleaseCardMeta,
+} from "./ReleaseCardMeta.component";
 
 const MobileReleaseCardComponent = ({
   release,
@@ -35,7 +39,6 @@ const MobileReleaseCardComponent = ({
     resource_url,
   } = release.basic_information;
 
-  const dateAdded = release.date_added ? formatDate(release.date_added) : null;
   const thumbUrl = getReleaseImageUrl({
     thumb,
     cover_image,
@@ -124,6 +127,7 @@ const MobileReleaseCardComponent = ({
       </div>
       <div className={styles.contentContainer}>
         <div className={styles.mainContent}>
+          <ReleaseCardCatalog catno={catno} />
           <h3 className={styles.title}>
             {artists.map((artist, index) => {
               const artistUrl = getResourceUrl({
@@ -181,47 +185,17 @@ const MobileReleaseCardComponent = ({
               <span>{title}</span>
             )}
           </h3>
-          <div className={styles.metaContainer}>
-            {(labels[0]?.name || year !== 0) && (
-              <p className={styles.meta}>
-                {labelUrl ? (
-                  <a
-                    href={labelUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`View ${labels[0]?.name} on Discogs`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      trackEvent("labelClicked", {
-                        action: "labelClicked",
-                        category: "releaseCard",
-                        label: "Label Clicked",
-                        value: labelUrl,
-                      });
-                    }}
-                    className={styles.labelLink}
-                  >
-                    {labels[0]?.name}
-                  </a>
-                ) : (
-                  labels[0]?.name
-                )}
-                {labels[0]?.name && catno && year !== 0 ? " • " : ""}
-                {year !== 0 ? year : ""}
-              </p>
-            )}
-            {labels[0]?.name && catno && <p className={styles.meta}>{catno}</p>}
-            {dateAdded && (
-              <p className={styles.meta}>Date Added: {dateAdded}</p>
-            )}
-          </div>
+          <ReleaseCardMeta
+            labelName={labels[0]?.name}
+            labelUrl={labelUrl}
+            year={year}
+            dateAdded={release.date_added ?? null}
+          />
         </div>
         <div className={styles.genresContainer}>
           {releaseFormats &&
             releaseFormats.length > 0 &&
-            Array.from(
-              new Set(releaseFormats.map((format) => format.name)),
-            ).map((formatName) => (
+            getReleaseFormatTags(releaseFormats).map((formatName) => (
               <button
                 key={formatName}
                 type="button"

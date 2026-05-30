@@ -10,7 +10,7 @@
   width: 100%;
   z-index: auto;
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     display: flex;
   }
 }
@@ -52,7 +52,7 @@
   gap: var(--space-3);
   min-height: 0;
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     padding: var(--space-4);
   }
 }
@@ -63,7 +63,7 @@
   position: relative;
   z-index: 1;
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     padding: var(--space-3) var(--space-4);
     border-top: 1px solid var(--border);
   }
@@ -78,7 +78,7 @@
   margin-top: var(--space-4);
   padding-top: var(--space-4);
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     margin-top: var(--space-3);
     padding-top: var(--space-3);
   }
@@ -152,7 +152,7 @@
   padding-left: var(--space-4);
   padding-right: var(--space-4);
 
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     margin-left: 0;
     margin-right: 0;
     padding-left: 0;
@@ -236,19 +236,23 @@
 }
 
 .removeButton {
-  align-items: center;
   background: color-mix(in srgb, var(--destructive) 15%, var(--background));
   border: 1px solid var(--destructive-hover);
   border-radius: var(--radius-full);
   color: var(--destructive-hover);
   cursor: pointer;
-  display: flex;
+  display: grid;
   flex-shrink: 0;
-  font-size: var(--text-sm);
   height: 1.5rem;
-  justify-content: center;
+  padding: 0;
+  place-items: center;
   transition: all var(--transition-normal);
   width: 1.5rem;
+
+  .removeIcon {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
 
   &:hover {
     background: color-mix(in srgb, var(--destructive) 20%, var(--background));
