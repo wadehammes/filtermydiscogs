@@ -415,6 +415,42 @@ describe("FiltersProvider", () => {
     expect(result.current.state.availableStyles).toEqual(allStyles);
   });
 
+  it("computes availableFormats from allReleases, not filtered releases", () => {
+    const allReleases = releaseFactory.buildList(5);
+    const filteredReleases = releaseFactory.buildList(2);
+    const allFormats = ['12"', '7"', "LP", "Vinyl", "Cassette"];
+
+    mockFilterReleases.mockReturnValue(filteredReleases);
+    mockGetAvailableFormats.mockReturnValue(allFormats);
+
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: FiltersProvider,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetAllReleases,
+        payload: allReleases,
+      });
+    });
+
+    expect(mockGetAvailableFormats).toHaveBeenCalledWith(allReleases);
+    expect(result.current.state.availableFormats).toEqual(allFormats);
+
+    mockGetAvailableFormats.mockClear();
+    mockGetAvailableFormats.mockReturnValue(allFormats);
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.ToggleFormat,
+        payload: '12"',
+      });
+    });
+
+    expect(mockGetAvailableFormats).toHaveBeenCalledWith(allReleases);
+    expect(result.current.state.availableFormats).toEqual(allFormats);
+  });
+
   it("throws error when useFilters is used outside FiltersProvider", () => {
     const consoleSpy = jest
       .spyOn(console, "error")
