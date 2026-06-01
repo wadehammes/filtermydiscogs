@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(request: NextRequest) {
@@ -19,8 +20,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate username format
-    if (!/^[a-zA-Z0-9_-]+$/.test(username) || username.length > 50) {
+    if (!isValidDiscogsUsername(username)) {
       return NextResponse.json(
         { error: "Invalid username format" },
         { status: 400 },
