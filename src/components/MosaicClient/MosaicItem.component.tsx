@@ -24,10 +24,10 @@ export default function MosaicItem({
   const releaseId = resource_url.split("/").pop() || "";
   const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
 
-  const { data: releaseData, isLoading } = useDiscogsReleaseQuery(
+  const { data: releaseData, isLoading } = useDiscogsReleaseQuery({
     releaseId,
-    isClicked,
-  );
+    enabled: isClicked,
+  });
 
   const handleReleaseClick = useCallback(
     async (e: React.MouseEvent) => {

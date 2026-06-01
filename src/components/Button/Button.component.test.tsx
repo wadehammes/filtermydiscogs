@@ -1,10 +1,21 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import Button from "./Button.component";
+import { ButtonPageObject } from "./Button.po";
+
+let po: ButtonPageObject;
 
 describe("Button", () => {
+  beforeEach(() => {
+    po = new ButtonPageObject();
+  });
+
+  it("renders component root", () => {
+    po.renderButton();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+  });
+
   it("renders children", () => {
-    render(<Button>Click me</Button>);
+    po.renderButton();
     expect(
       screen.getByRole("button", { name: "Click me" }),
     ).toBeInTheDocument();
@@ -14,7 +25,7 @@ describe("Button", () => {
     const handleClick = jest.fn();
     const user = userEvent.setup();
 
-    render(<Button onClick={handleClick}>Click me</Button>);
+    po.renderButton({ onClick: handleClick });
 
     await user.click(screen.getByRole("button"));
 
@@ -25,7 +36,7 @@ describe("Button", () => {
     const handlePress = jest.fn();
     const user = userEvent.setup();
 
-    render(<Button onPress={handlePress}>Click me</Button>);
+    po.renderButton({ onPress: handlePress });
 
     await user.click(screen.getByRole("button"));
 
@@ -37,11 +48,7 @@ describe("Button", () => {
     const handleClick = jest.fn();
     const user = userEvent.setup();
 
-    render(
-      <Button onPress={handlePress} onClick={handleClick}>
-        Click me
-      </Button>,
-    );
+    po.renderButton({ onPress: handlePress, onClick: handleClick });
 
     await user.click(screen.getByRole("button"));
 
@@ -50,56 +57,54 @@ describe("Button", () => {
   });
 
   it("applies primary variant", () => {
-    const { container } = render(<Button variant="primary">Click me</Button>);
+    const { container } = po.renderButton({ variant: "primary" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies secondary variant", () => {
-    const { container } = render(<Button variant="secondary">Click me</Button>);
+    const { container } = po.renderButton({ variant: "secondary" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies danger variant", () => {
-    const { container } = render(<Button variant="danger">Click me</Button>);
+    const { container } = po.renderButton({ variant: "danger" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies ghost variant", () => {
-    const { container } = render(<Button variant="ghost">Click me</Button>);
+    const { container } = po.renderButton({ variant: "ghost" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies small size", () => {
-    const { container } = render(<Button size="sm">Click me</Button>);
+    const { container } = po.renderButton({ size: "sm" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies medium size", () => {
-    const { container } = render(<Button size="md">Click me</Button>);
+    const { container } = po.renderButton({ size: "md" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies large size", () => {
-    const { container } = render(<Button size="lg">Click me</Button>);
+    const { container } = po.renderButton({ size: "lg" });
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("applies custom className", () => {
-    const { container } = render(
-      <Button className="custom-class">Click me</Button>,
-    );
+    const { container } = po.renderButton({ className: "custom-class" });
     expect(container.firstChild).toHaveClass("custom-class");
   });
 
   it("disables button when disabled prop is true", () => {
-    render(<Button disabled>Click me</Button>);
+    po.renderButton({ disabled: true });
     expect(screen.getByRole("button")).toBeDisabled();
   });
 
@@ -107,11 +112,7 @@ describe("Button", () => {
     const handleClick = jest.fn();
     const user = userEvent.setup();
 
-    render(
-      <Button onClick={handleClick} disabled>
-        Click me
-      </Button>,
-    );
+    po.renderButton({ onClick: handleClick, disabled: true });
 
     await user.click(screen.getByRole("button"));
 
@@ -119,19 +120,14 @@ describe("Button", () => {
   });
 
   it("applies aria-label", () => {
-    render(<Button aria-label="Custom label">Click me</Button>);
+    po.renderButton({ "aria-label": "Custom label" });
     expect(
       screen.getByRole("button", { name: "Custom label" }),
     ).toBeInTheDocument();
   });
 
   it("applies aria-labelledby", () => {
-    render(
-      <div>
-        <span id="label">Label</span>
-        <Button aria-labelledby="label">Click me</Button>
-      </div>,
-    );
+    po.renderButtonWithLabelledBy();
     expect(screen.getByRole("button")).toHaveAttribute(
       "aria-labelledby",
       "label",
@@ -139,13 +135,13 @@ describe("Button", () => {
   });
 
   it("defaults to secondary variant", () => {
-    const { container } = render(<Button>Click me</Button>);
+    const { container } = po.renderButton();
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
 
   it("defaults to medium size", () => {
-    const { container } = render(<Button>Click me</Button>);
+    const { container } = po.renderButton();
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });

@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { mocked } from "jest-mock";
 import { useRouter } from "next/navigation";
 import { logout as logoutApi } from "src/api/helpers";
+import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
   checkAuthStatus,
   clearAuthCookies,
@@ -152,7 +153,7 @@ describe("AuthProvider", () => {
     expect(result.current.state.isLoading).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
     expect(mockQueryClient.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ["discogsCollection"],
+      queryKey: DiscogsCollectionQueryKeys.all(),
     });
   });
 

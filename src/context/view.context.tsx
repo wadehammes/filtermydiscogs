@@ -1,6 +1,5 @@
 import {
   createContext,
-  type FC,
   type PropsWithChildren,
   useContext,
   useEffect,
@@ -107,7 +106,7 @@ const ViewContext = createContext<{
   dispatch: React.Dispatch<ViewActions>;
 } | null>(null);
 
-export const ViewProvider: FC<PropsWithChildren> = ({ children }) => {
+export const ViewProvider = ({ children }: PropsWithChildren) => {
   const [state, dispatch] = useReducer(
     viewReducer,
     getInitialState({ storageKey: VIEW_STORAGE_KEY }),

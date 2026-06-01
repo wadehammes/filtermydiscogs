@@ -2,7 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
   createContext,
-  type FC,
   type PropsWithChildren,
   useContext,
   useEffect,
@@ -10,6 +9,7 @@ import {
   useRef,
 } from "react";
 import { logout as logoutApi } from "src/api/helpers";
+import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
   checkAuthStatus,
   clearAuthCookies,
@@ -99,7 +99,7 @@ const AuthContext = createContext<{
   logout: () => Promise<void>;
 } | null>(null);
 
-export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
+export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -171,7 +171,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         dispatch({ type: AuthActionTypes.SetUsername, payload: username });
         dispatch({ type: AuthActionTypes.SetLoading, payload: false });
         queryClient.invalidateQueries({
-          queryKey: ["discogsCollection"],
+          queryKey: DiscogsCollectionQueryKeys.all(),
         });
         clearUrlParams();
       }

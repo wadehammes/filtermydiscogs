@@ -14,7 +14,7 @@ interface PublicCrateClientProps {
 }
 
 export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
-  const { data, isLoading, isError, error } = usePublicCrateQuery(crateId);
+  const { data, isLoading, isError, error } = usePublicCrateQuery({ crateId });
 
   if (isLoading) {
     return (

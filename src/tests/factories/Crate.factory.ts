@@ -1,17 +1,23 @@
 import { faker } from "@faker-js/faker";
+import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type { Crate } from "src/types/crate.types";
-import { BaseFactory } from "./BaseFactory";
+import type { KeysMatch } from "src/types/KeysMatch";
+import { nullish } from "src/utils/factory.helpers";
 
 type CrateFactoryOptions = {
   userId?: number;
   isDefault?: boolean;
 };
 
+const CRATE_NAME_SAMPLES = [
+  "My Crate",
+  "Favorites",
+  "Wantlist",
+  "Collection",
+] as const;
+
 class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
-  public build(
-    attributes?: Partial<Crate>,
-    options?: CrateFactoryOptions,
-  ): Crate {
+  build(attributes?: Partial<Crate>, options?: CrateFactoryOptions): Crate {
     const userId =
       options?.userId ?? faker.number.int({ min: 100000, max: 999999 });
     const isDefault = options?.isDefault ?? false;
@@ -20,23 +26,25 @@ class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
       user_id: userId,
       id: faker.string.uuid(),
       name: faker.helpers.arrayElement([
-        "My Crate",
-        "Favorites",
-        "Wantlist",
-        "Collection",
+        ...CRATE_NAME_SAMPLES,
         faker.word.noun(),
       ]),
-      username: null,
+      username: nullish([faker.internet.username()]),
       is_default: isDefault,
-      private: true,
+      private: faker.datatype.boolean(),
       created_at: faker.date.past(),
       updated_at: faker.date.recent(),
     } satisfies Crate;
 
-    return {
+    const factoryBuilt: Crate = {
       ...instance,
       ...(attributes ?? {}),
-    } as Crate;
+    };
+
+    const _allKeysMustBeInTheInstance: KeysMatch<Crate, typeof instance> =
+      undefined;
+
+    return factoryBuilt;
   }
 }
 

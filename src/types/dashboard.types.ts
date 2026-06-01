@@ -46,6 +46,45 @@ export interface MostCratedRelease {
   release: DiscogsRelease;
 }
 
+export interface AdminStatsTopUser {
+  user_id: number;
+  count: number;
+}
+
+export interface AdminStatsGrowthDataPoint {
+  month: string;
+  count: number;
+}
+
+export interface AdminStats {
+  overview: {
+    totalUsers: number;
+    totalCrates: number;
+    totalReleases: number;
+  };
+  recentActivity: {
+    last7Days: {
+      newUsers: number;
+      newCrates: number;
+      newReleases: number;
+    };
+    last30Days: {
+      newUsers: number;
+      newCrates: number;
+      newReleases: number;
+    };
+  };
+  topUsers: {
+    byCrates: AdminStatsTopUser[];
+    byReleases: AdminStatsTopUser[];
+  };
+  growth: {
+    users: AdminStatsGrowthDataPoint[];
+    crates: AdminStatsGrowthDataPoint[];
+    releases: AdminStatsGrowthDataPoint[];
+  };
+}
+
 export interface CollectionMilestone {
   label: string;
   value: string;

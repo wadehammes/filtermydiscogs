@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from "react";
+import type { ReactNode } from "react";
 import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./LoadingOverlay.module.css";
 
@@ -9,25 +9,28 @@ interface LoadingOverlayProps {
   progressText?: ReactNode;
 }
 
-export const LoadingOverlay: FC<LoadingOverlayProps> = ({
+export const LoadingOverlay = ({
   message,
   isVisible,
   hideBackdrop = false,
   progressText,
-}) => {
-  if (!isVisible) return null;
+}: LoadingOverlayProps) => {
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div
       className={`${styles.overlay} ${hideBackdrop ? styles.noBackdrop : ""}`}
+      data-testid="fmdLoadingOverlay"
     >
       <div className={styles.content}>
         <Spinner size="lg" aria-label={message} />
         <div className={styles.messageContainer}>
           <p className={styles.message}>{message}</p>
-          {progressText && (
+          {progressText ? (
             <div className={styles.progressText}>{progressText}</div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

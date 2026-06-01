@@ -1,41 +1,27 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render } from "test-utils";
-import { SearchBar } from "./SearchBar.component";
+import { mockFiltersDispatch, SearchBarPageObject } from "./SearchBar.po";
 
-const mockUseFilters = jest.fn();
-const mockDispatch = jest.fn();
-
-jest.mock("src/context/filters.context", () => {
-  return {
-    FiltersActionTypes: {
-      SetSearchQuery: "SET_SEARCH_QUERY",
-      SetSearching: "SET_SEARCHING",
-    },
-    useFilters: () => mockUseFilters(),
-  };
-});
+let po: SearchBarPageObject;
 
 describe("SearchBar", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseFilters.mockReturnValue({
-      state: {
-        searchQuery: "",
-        isSearching: false,
-      },
-      dispatch: mockDispatch,
-    });
+    po = new SearchBarPageObject();
+  });
+
+  it("renders component root", () => {
+    po.renderSearchBar();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
   it("renders with placeholder", () => {
-    render(<SearchBar placeholder="Search..." />);
+    po.renderSearchBar({ placeholder: "Search..." });
 
     expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();
   });
 
   it("renders with default placeholder", () => {
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     expect(
       screen.getByPlaceholderText("Search your collection..."),
@@ -44,7 +30,7 @@ describe("SearchBar", () => {
 
   it("updates input value when typing", async () => {
     const user = userEvent.setup();
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test query");
@@ -55,17 +41,17 @@ describe("SearchBar", () => {
   it("debounces search query dispatch", async () => {
     jest.useFakeTimers();
     const user = userEvent.setup({ delay: null });
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test");
 
-    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(mockFiltersDispatch).not.toHaveBeenCalled();
 
     jest.advanceTimersByTime(300);
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith({
+      expect(mockFiltersDispatch).toHaveBeenCalledWith({
         type: "SET_SEARCH_QUERY",
         payload: "test",
       });
@@ -76,7 +62,7 @@ describe("SearchBar", () => {
 
   it("shows clear button when input has value", async () => {
     const user = userEvent.setup();
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test");
@@ -87,7 +73,7 @@ describe("SearchBar", () => {
   });
 
   it("hides clear button when input is empty", () => {
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     expect(
       screen.queryByRole("button", { name: "Clear search" }),
@@ -96,7 +82,7 @@ describe("SearchBar", () => {
 
   it("clears input and search query when clear button is clicked", async () => {
     const user = userEvent.setup();
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test query");
@@ -105,11 +91,11 @@ describe("SearchBar", () => {
     await user.click(clearButton);
 
     expect(input).toHaveValue("");
-    expect(mockDispatch).toHaveBeenCalledWith({
+    expect(mockFiltersDispatch).toHaveBeenCalledWith({
       type: "SET_SEARCHING",
       payload: false,
     });
-    expect(mockDispatch).toHaveBeenCalledWith({
+    expect(mockFiltersDispatch).toHaveBeenCalledWith({
       type: "SET_SEARCH_QUERY",
       payload: "",
     });
@@ -117,18 +103,18 @@ describe("SearchBar", () => {
 
   it("clears input when Escape key is pressed", async () => {
     const user = userEvent.setup();
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test query");
     await user.keyboard("{Escape}");
 
     expect(input).toHaveValue("");
-    expect(mockDispatch).toHaveBeenCalledWith({
+    expect(mockFiltersDispatch).toHaveBeenCalledWith({
       type: "SET_SEARCHING",
       payload: false,
     });
-    expect(mockDispatch).toHaveBeenCalledWith({
+    expect(mockFiltersDispatch).toHaveBeenCalledWith({
       type: "SET_SEARCH_QUERY",
       payload: "",
     });
@@ -136,7 +122,7 @@ describe("SearchBar", () => {
 
   it("focuses input after clearing", async () => {
     const user = userEvent.setup();
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test");
@@ -150,22 +136,16 @@ describe("SearchBar", () => {
   it("syncs input value when searchQuery is cleared externally", async () => {
     const user = userEvent.setup();
 
-    mockUseFilters.mockReturnValue({
-      state: {
-        searchQuery: "",
-        isSearching: false,
-      },
-      dispatch: mockDispatch,
-    });
+    po.resetFiltersMock();
 
-    const { rerender } = render(<SearchBar />);
+    const { rerender } = po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test query");
 
     await waitFor(
       () => {
-        expect(mockDispatch).toHaveBeenCalledWith({
+        expect(mockFiltersDispatch).toHaveBeenCalledWith({
           type: "SET_SEARCH_QUERY",
           payload: "test query",
         });
@@ -173,29 +153,17 @@ describe("SearchBar", () => {
       { timeout: 1000 },
     );
 
-    mockUseFilters.mockReturnValue({
-      state: {
-        searchQuery: "test query",
-        isSearching: false,
-      },
-      dispatch: mockDispatch,
-    });
+    po.resetFiltersMock({ searchQuery: "test query" });
 
-    rerender(<SearchBar />);
+    po.rerenderSearchBar(rerender);
 
     await waitFor(() => {
       expect(input).toHaveValue("test query");
     });
 
-    mockUseFilters.mockReturnValue({
-      state: {
-        searchQuery: "",
-        isSearching: false,
-      },
-      dispatch: mockDispatch,
-    });
+    po.resetFiltersMock({ searchQuery: "" });
 
-    rerender(<SearchBar />);
+    po.rerenderSearchBar(rerender);
 
     await waitFor(
       () => {
@@ -206,22 +174,16 @@ describe("SearchBar", () => {
   });
 
   it("applies searching class when isSearching is true", () => {
-    mockUseFilters.mockReturnValue({
-      state: {
-        searchQuery: "test",
-        isSearching: true,
-      },
-      dispatch: mockDispatch,
-    });
+    po.resetFiltersMock({ searchQuery: "test", isSearching: true });
 
-    render(<SearchBar />);
+    po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     expect(input.className).toContain("searching");
   });
 
   it("is disabled when disabled prop is true", () => {
-    render(<SearchBar disabled={true} />);
+    po.renderSearchBar({ disabled: true });
 
     const input = screen.getByPlaceholderText("Search your collection...");
     expect(input).toBeDisabled();
@@ -229,18 +191,18 @@ describe("SearchBar", () => {
 
   it("does not dispatch when disabled", async () => {
     const user = userEvent.setup();
-    render(<SearchBar disabled={true} />);
+    po.renderSearchBar({ disabled: true });
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test");
 
-    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(mockFiltersDispatch).not.toHaveBeenCalled();
   });
 
   it("cleans up debounce timeout on unmount", async () => {
     jest.useFakeTimers();
     const user = userEvent.setup({ delay: null });
-    const { unmount } = render(<SearchBar />);
+    const { unmount } = po.renderSearchBar();
 
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test");

@@ -36,6 +36,7 @@ export const BackToTop = () => {
       className={classNames(styles.backToTop, {
         [styles.visible as string]: isVisible,
       })}
+      data-testid="fmdBackToTop"
       aria-label="Back to top"
       title="Back to top"
     >

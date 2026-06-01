@@ -1,55 +1,21 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { mocked } from "jest-mock";
-import { useCrate } from "src/context/crate.context";
-import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
-import { crateFactory } from "src/tests/factories/Crate.factory";
-import { render } from "test-utils";
-import { CrateSelector } from "./CrateSelector.component";
+import { CrateSelectorPageObject } from "./CrateSelector.po";
 
-jest.mock("src/context/crate.context");
-jest.mock("src/hooks/queries/useCrateMutations");
-
-const mockUseCrate = mocked(useCrate);
-const mockUseCreateCrateMutation = mocked(useCreateCrateMutation);
+let po: CrateSelectorPageObject;
 
 describe("CrateSelector", () => {
-  const mockSelectCrate = jest.fn();
-  const mockCreateCrate = jest.fn();
-
-  const mockCrates = [
-    {
-      ...crateFactory.build({ id: "1", name: "Crate 1", is_default: true }),
-      releaseCount: 5,
-    },
-    {
-      ...crateFactory.build({ id: "2", name: "Crate 2", is_default: false }),
-      releaseCount: 3,
-    },
-    {
-      ...crateFactory.build({ id: "3", name: "Crate 3", is_default: false }),
-      releaseCount: 0,
-    },
-  ];
-
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseCrate.mockReturnValue({
-      crates: mockCrates,
-      activeCrateId: "1",
-      selectCrate: mockSelectCrate,
-      createCrate: mockCreateCrate,
-      isLoading: false,
-    } as unknown as ReturnType<typeof useCrate>);
+    po = new CrateSelectorPageObject();
+  });
 
-    mockUseCreateCrateMutation.mockReturnValue({
-      isPending: false,
-      mutateAsync: jest.fn(),
-    } as unknown as ReturnType<typeof useCreateCrateMutation>);
+  it("renders component root", () => {
+    po.renderCrateSelector();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
   it("renders crate selector with options", () => {
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     expect(
       screen.getByRole("button", { name: /Select crate/i }),
@@ -61,7 +27,7 @@ describe("CrateSelector", () => {
 
   it("displays active crate in select", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const select = screen.getByRole("button", { name: /Select crate/i });
     await user.click(select);
@@ -75,7 +41,7 @@ describe("CrateSelector", () => {
 
   it("shows crate options with release counts", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const select = screen.getByRole("button", { name: /Select crate/i });
     await user.click(select);
@@ -97,7 +63,7 @@ describe("CrateSelector", () => {
 
   it("calls selectCrate when option is selected", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const select = screen.getByRole("button", { name: /Select crate/i });
     await user.click(select);
@@ -105,19 +71,12 @@ describe("CrateSelector", () => {
     const option2 = screen.getByText("Crate 2 (3)");
     await user.click(option2);
 
-    expect(mockSelectCrate).toHaveBeenCalledWith("2");
+    expect(po.selectCrate).toHaveBeenCalledWith("2");
   });
 
   it("shows loading state when isLoading is true", () => {
-    mockUseCrate.mockReturnValue({
-      crates: [],
-      activeCrateId: null,
-      selectCrate: mockSelectCrate,
-      createCrate: mockCreateCrate,
-      isLoading: true,
-    } as unknown as ReturnType<typeof useCrate>);
-
-    render(<CrateSelector />);
+    po.mockLoading();
+    po.renderCrateSelector();
 
     expect(screen.getByText("Loading crates...")).toBeInTheDocument();
     expect(
@@ -127,7 +86,7 @@ describe("CrateSelector", () => {
 
   it("shows create form when New Crate button is clicked", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -139,8 +98,8 @@ describe("CrateSelector", () => {
 
   it("creates crate when form is submitted", async () => {
     const user = userEvent.setup();
-    mockCreateCrate.mockResolvedValue(undefined);
-    render(<CrateSelector />);
+    po.createCrate.mockResolvedValue(undefined);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -152,14 +111,14 @@ describe("CrateSelector", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(mockCreateCrate).toHaveBeenCalledWith("My New Crate");
+      expect(po.createCrate).toHaveBeenCalledWith("My New Crate");
     });
   });
 
   it("creates crate when Enter key is pressed in input", async () => {
     const user = userEvent.setup();
-    mockCreateCrate.mockResolvedValue(undefined);
-    render(<CrateSelector />);
+    po.createCrate.mockResolvedValue(undefined);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -169,13 +128,13 @@ describe("CrateSelector", () => {
     await user.keyboard("{Enter}");
 
     await waitFor(() => {
-      expect(mockCreateCrate).toHaveBeenCalledWith("My New Crate");
+      expect(po.createCrate).toHaveBeenCalledWith("My New Crate");
     });
   });
 
   it("cancels create form when Cancel button is clicked", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -195,7 +154,7 @@ describe("CrateSelector", () => {
 
   it("cancels create form when Escape key is pressed", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -216,7 +175,7 @@ describe("CrateSelector", () => {
 
   it("disables Create button when input is empty", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -227,7 +186,7 @@ describe("CrateSelector", () => {
 
   it("disables Create button when input only has whitespace", async () => {
     const user = userEvent.setup();
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -241,8 +200,8 @@ describe("CrateSelector", () => {
 
   it("trims crate name when creating", async () => {
     const user = userEvent.setup();
-    mockCreateCrate.mockResolvedValue(undefined);
-    render(<CrateSelector />);
+    po.createCrate.mockResolvedValue(undefined);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -254,18 +213,14 @@ describe("CrateSelector", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(mockCreateCrate).toHaveBeenCalledWith("My New Crate");
+      expect(po.createCrate).toHaveBeenCalledWith("My New Crate");
     });
   });
 
   it("disables Create button when mutation is pending", async () => {
     const user = userEvent.setup();
-    mockUseCreateCrateMutation.mockReturnValue({
-      isPending: true,
-      mutateAsync: jest.fn(),
-    } as unknown as ReturnType<typeof useCreateCrateMutation>);
-
-    render(<CrateSelector />);
+    po.mockPendingMutation();
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -279,8 +234,8 @@ describe("CrateSelector", () => {
 
   it("clears input and closes form after successful creation", async () => {
     const user = userEvent.setup();
-    mockCreateCrate.mockResolvedValue(undefined);
-    render(<CrateSelector />);
+    po.createCrate.mockResolvedValue(undefined);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -304,9 +259,9 @@ describe("CrateSelector", () => {
   it("handles create error gracefully", async () => {
     const user = userEvent.setup();
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-    mockCreateCrate.mockRejectedValue(new Error("Failed to create crate"));
+    po.createCrate.mockRejectedValue(new Error("Failed to create crate"));
 
-    render(<CrateSelector />);
+    po.renderCrateSelector();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -328,7 +283,7 @@ describe("CrateSelector", () => {
   });
 
   it("applies custom className", () => {
-    const { container } = render(<CrateSelector className="custom-class" />);
+    const { container } = po.renderCrateSelector({ className: "custom-class" });
 
     const crateSelector = container.querySelector('[class*="container"]');
     expect(crateSelector).toHaveClass("custom-class");

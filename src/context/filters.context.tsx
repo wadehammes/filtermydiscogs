@@ -1,6 +1,5 @@
 import {
   createContext,
-  type FC,
   type PropsWithChildren,
   useContext,
   useMemo,
@@ -663,7 +662,7 @@ const FiltersContext = createContext<{
   dispatch: React.Dispatch<FiltersActions>;
 } | null>(null);
 
-export const FiltersProvider: FC<PropsWithChildren> = ({ children }) => {
+export const FiltersProvider = ({ children }: PropsWithChildren) => {
   const [state, dispatch] = useReducer(filtersReducer, initialState);
 
   return (

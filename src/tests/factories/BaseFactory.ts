@@ -13,6 +13,11 @@ export abstract class BaseFactory<
     return faker.number.int().toString();
   }
 
+  public abstract build(
+    attributes?: Partial<FactoryType>,
+    options?: Options,
+  ): FactoryType;
+
   public buildList(
     quantity: number,
     attributes?: Partial<FactoryType>,
@@ -23,12 +28,7 @@ export abstract class BaseFactory<
     });
   }
 
-  public abstract build(
-    attributes?: Partial<FactoryType>,
-    options?: Options,
-  ): FactoryType;
-
-  buildModel(
+  public buildModel(
     attributes?: Partial<FactoryType>,
     options?: Options,
   ): FactoryModel {
@@ -40,7 +40,7 @@ export abstract class BaseFactory<
     return new this.FactoryModel(factoryTypeInstance);
   }
 
-  buildListModel(
+  public buildListModel(
     quantity: number,
     attributes?: Partial<FactoryType>,
     options?: Options,

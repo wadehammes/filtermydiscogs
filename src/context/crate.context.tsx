@@ -1,6 +1,6 @@
 "use client";
 
-import React, {
+import {
   createContext,
   type ReactNode,
   useCallback,
@@ -55,7 +55,7 @@ interface CrateProviderProps {
   children: ReactNode;
 }
 
-export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
+export const CrateProvider = ({ children }: CrateProviderProps) => {
   const { state: authState } = useAuth();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
@@ -65,8 +65,9 @@ export const CrateProvider: React.FC<CrateProviderProps> = ({ children }) => {
   const { data: cratesData, isLoading, isError, error } = useCratesQuery();
   const crates = cratesData?.crates || [];
 
-  const { data: activeCrateData, isLoading: isLoadingCrate } =
-    useCrateQuery(activeCrateId);
+  const { data: activeCrateData, isLoading: isLoadingCrate } = useCrateQuery({
+    crateId: activeCrateId,
+  });
   const activeCrateReleases = activeCrateData?.releases || [];
 
   const createCrateMutation = useCreateCrateMutation();

@@ -63,7 +63,7 @@ export default function DashboardClient() {
     data: collectionValue,
     isLoading: valueLoading,
     error: valueError,
-  } = useCollectionValueQuery(authState.username);
+  } = useCollectionValueQuery({ username: authState.username });
 
   useEffect(() => {
     if (valueError && process.env.NODE_ENV === "development") {

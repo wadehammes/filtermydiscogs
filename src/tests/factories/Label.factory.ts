@@ -1,24 +1,28 @@
 import { faker } from "@faker-js/faker";
+import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type { DiscogsLabel } from "src/types";
-import { BaseFactory } from "./BaseFactory";
 
 type LabelFactoryOptions = Record<string, never>;
 
 class LabelFactory extends BaseFactory<DiscogsLabel, LabelFactoryOptions> {
-  public build(
+  build(
     attributes?: Partial<DiscogsLabel>,
     _options?: LabelFactoryOptions,
   ): DiscogsLabel {
+    const labelId = faker.number.int({ min: 1, max: 999999 });
+
     const instance = {
       name: faker.company.name(),
-      id: faker.number.int({ min: 1, max: 999999 }),
-      resource_url: `https://api.discogs.com/labels/${faker.number.int()}`,
+      id: labelId,
+      resource_url: `https://api.discogs.com/labels/${labelId}`,
     } satisfies DiscogsLabel;
 
-    return {
+    const factoryBuilt: DiscogsLabel = {
       ...instance,
       ...(attributes ?? {}),
     };
+
+    return factoryBuilt;
   }
 }
 

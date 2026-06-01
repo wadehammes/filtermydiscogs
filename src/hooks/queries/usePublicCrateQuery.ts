@@ -1,38 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
+import { fetchPublicCrate } from "src/api/helpers";
 import type { CrateWithReleasesResponse } from "src/types/crate.types";
+import { PublicCrateQueryKeys } from "./querykeys.constants";
 
-const fetchPublicCrate = async (
-  crateId: string,
-): Promise<CrateWithReleasesResponse> => {
-  try {
-    const response = await fetch(`/api/crates/public/${crateId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+export interface UsePublicCrateQueryParams {
+  crateId: string | null;
+}
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error("Crate not found or is private");
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Failed to fetch public crate");
-  }
-};
-
-export const usePublicCrateQuery = (crateId: string | null) => {
+export const usePublicCrateQuery = ({ crateId }: UsePublicCrateQueryParams) => {
   const isEnabled = Boolean(crateId);
 
   return useQuery<CrateWithReleasesResponse>({
-    queryKey: ["publicCrate", crateId],
+    queryKey: PublicCrateQueryKeys.byId(crateId),
     queryFn: async () => {
       if (!crateId) {
         throw new Error("Crate ID missing");
@@ -41,7 +20,7 @@ export const usePublicCrateQuery = (crateId: string | null) => {
       return fetchPublicCrate(crateId);
     },
     enabled: isEnabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes - public crates change less frequently
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: true,

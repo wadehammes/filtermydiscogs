@@ -1,9 +1,10 @@
 import { faker } from "@faker-js/faker";
+import { artistFactory } from "src/tests/factories/Artist.factory";
+import { BaseFactory } from "src/tests/factories/BaseFactory";
+import { formatFactory } from "src/tests/factories/Format.factory";
+import { labelFactory } from "src/tests/factories/Label.factory";
 import type { DiscogsBasicInformation } from "src/types";
-import { artistFactory } from "./Artist.factory";
-import { BaseFactory } from "./BaseFactory";
-import { formatFactory } from "./Format.factory";
-import { labelFactory } from "./Label.factory";
+import { nullish } from "src/utils/factory.helpers";
 
 type BasicInformationFactoryOptions = {
   artistCount?: number;
@@ -12,11 +13,28 @@ type BasicInformationFactoryOptions = {
   styleCount?: number;
 };
 
+const STYLE_SAMPLES = [
+  "Rock",
+  "Pop",
+  "Electronic",
+  "Jazz",
+  "Hip Hop",
+  "Classical",
+  "Folk",
+  "Country",
+  "Blues",
+  "Reggae",
+  "Shoegaze",
+  "Indie Rock",
+  "Punk",
+  "Metal",
+] as const;
+
 class BasicInformationFactory extends BaseFactory<
   DiscogsBasicInformation,
   BasicInformationFactoryOptions
 > {
-  public build(
+  build(
     attributes?: Partial<DiscogsBasicInformation>,
     options?: BasicInformationFactoryOptions,
   ): DiscogsBasicInformation {
@@ -24,32 +42,15 @@ class BasicInformationFactory extends BaseFactory<
     const masterId = faker.number.int({ min: 1, max: 999999 });
     const year = faker.date.past({ years: 50 }).getFullYear();
 
-    const styles = [
-      "Rock",
-      "Pop",
-      "Electronic",
-      "Jazz",
-      "Hip Hop",
-      "Classical",
-      "Folk",
-      "Country",
-      "Blues",
-      "Reggae",
-      "Shoegaze",
-      "Indie Rock",
-      "Punk",
-      "Metal",
-    ];
-
     const instance = {
       resource_url: `https://api.discogs.com/releases/${releaseId}`,
       uri: `https://www.discogs.com/release/${releaseId}`,
       styles: faker.helpers.arrayElements(
-        styles,
+        STYLE_SAMPLES,
         options?.styleCount ?? faker.number.int({ min: 1, max: 3 }),
       ),
       master_id: masterId,
-      master_url: `https://www.discogs.com/master/${masterId}`,
+      master_url: nullish([`https://www.discogs.com/master/${masterId}`]),
       thumb: faker.image.url({ width: 150, height: 150 }),
       cover_image: faker.image.url({ width: 600, height: 600 }),
       title: faker.music.songName(),
@@ -65,10 +66,12 @@ class BasicInformationFactory extends BaseFactory<
       ),
     } satisfies DiscogsBasicInformation;
 
-    return {
+    const factoryBuilt: DiscogsBasicInformation = {
       ...instance,
       ...(attributes ?? {}),
     };
+
+    return factoryBuilt;
   }
 }
 

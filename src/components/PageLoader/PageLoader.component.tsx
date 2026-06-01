@@ -1,6 +1,5 @@
 "use client";
 
-import type { FC } from "react";
 import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./PageLoader.module.css";
 
@@ -10,14 +9,15 @@ interface PageLoaderProps {
   fullHeight?: boolean;
 }
 
-const PageLoader: FC<PageLoaderProps> = ({
+export const PageLoader = ({
   message = "Loading...",
   size = "xl",
   fullHeight = false,
-}) => {
+}: PageLoaderProps) => {
   return (
     <div
       className={`${styles.container} ${fullHeight ? styles.fullHeight : ""}`}
+      data-testid="fmdPageLoader"
     >
       <Spinner size={size} aria-label={message} />
       <p className={styles.text}>{message}</p>

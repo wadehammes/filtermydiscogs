@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "../DashboardClient.module.css";
+import styles from "src/components/Dashboard/DashboardClient.module.css";
 import {
   SkeletonCard,
   SkeletonChart,

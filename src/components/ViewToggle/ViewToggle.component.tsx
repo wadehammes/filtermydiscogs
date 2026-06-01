@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import type { FC } from "react";
 import CratesIcon from "src/styles/icons/crates-solid.svg";
 import DiceSolid from "src/styles/icons/dice-solid.svg";
 import styles from "./ViewToggle.module.css";
@@ -15,16 +14,19 @@ interface ViewToggleProps {
   className?: string;
 }
 
-export const ViewToggle: FC<ViewToggleProps> = ({
+export const ViewToggle = ({
   currentView,
   onViewChange,
   onRandomClick,
   onCratesClick,
   isCratesOpen,
   className,
-}) => {
+}: ViewToggleProps) => {
   return (
-    <div className={classNames(styles.wrapper, className)}>
+    <div
+      className={classNames(styles.wrapper, className)}
+      data-testid="fmdViewToggle"
+    >
       <div className={styles.container}>
         <button
           type="button"
