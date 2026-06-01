@@ -182,7 +182,7 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 
 **Entry point:** [`docs/handbook/README.md`](./docs/handbook/README.md)
 
-**Agents / AI tools:** [CLAUDE.md](./CLAUDE.md) and [AGENTS.md](./AGENTS.md). In Cursor, project rules live under [`.cursor/rules/`](./.cursor/rules/). For other tools, use the task map in [`docs/handbook/llms.md`](./docs/handbook/llms.md).
+**Agents / AI tools:** [CLAUDE.md](./CLAUDE.md) and [AGENTS.md](./AGENTS.md). Use the task map in [`docs/handbook/llms.md`](./docs/handbook/llms.md) to route work to the right handbook chapter.
 
 **Suggested reading order**
 

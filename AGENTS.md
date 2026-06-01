@@ -1,6 +1,6 @@
 # Agent instructions
 
-Before **substantive** work in this repo—features, refactors, Discogs OAuth/API changes, crate/database work, patterns that touch the App Router or route handlers, CI or env, analytics or tags—read **`docs/handbook/README.md`** and the handbook **chapter** that matches the task. Use **`docs/handbook/llms.md`** for a compact task→chapter map (helpful for routing or for pasting into other tools). **Cursor** applies **`.cursor/rules/filtermydiscogs-handbook.mdc`** automatically as a project rule.
+Before **substantive** work in this repo—features, refactors, Discogs OAuth/API changes, crate/database work, patterns that touch the App Router or route handlers, CI or env, analytics or tags—read **`docs/handbook/README.md`** and the handbook **chapter** that matches the task. Use **`docs/handbook/llms.md`** for a compact task→chapter map (helpful for routing or for pasting into other tools).
 
 Follow documented patterns.
 
