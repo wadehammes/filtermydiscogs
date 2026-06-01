@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ALL_RELEASES_LOADED } from "src/constants";
 import Check from "src/styles/icons/check-solid.svg";
 import styles from "./ReleasesLoading.module.css";
@@ -65,5 +65,3 @@ export const ReleasesLoading = ({
     </div>
   ) : null;
 };
-
-export default ReleasesLoading;

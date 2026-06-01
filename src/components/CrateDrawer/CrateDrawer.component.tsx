@@ -4,7 +4,7 @@ import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component
 import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
-import PageLoader from "src/components/PageLoader/PageLoader.component";
+import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { useCrate } from "src/context/crate.context";
 import { useView } from "src/context/view.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";

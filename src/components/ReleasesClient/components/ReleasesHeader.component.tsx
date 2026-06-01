@@ -1,4 +1,4 @@
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import Check from "src/styles/icons/check-solid.svg";
 import styles from "./ReleasesHeader.module.css";

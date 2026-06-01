@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./Button.module.css";
 
 interface ButtonProps {

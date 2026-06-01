@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./LoadingOverlay.module.css";
 
 interface LoadingOverlayProps {
@@ -36,5 +36,3 @@ export const LoadingOverlay = ({
     </div>
   );
 };
-
-export default LoadingOverlay;

@@ -13,8 +13,8 @@ import { CrateSelector } from "./CrateSelector.component";
 jest.mock("src/context/crate.context");
 jest.mock("src/hooks/queries/useCrateMutations");
 
-export const mockUseCrate = mocked(useCrate);
-export const mockUseCreateCrateMutation = mocked(useCreateCrateMutation);
+const mockUseCrate = mocked(useCrate);
+const mockUseCreateCrateMutation = mocked(useCreateCrateMutation);
 
 export type CrateSelectorRenderProps = {
   className?: string;

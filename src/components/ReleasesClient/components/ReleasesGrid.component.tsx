@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { memo, useMemo } from "react";
-import PageLoader from "src/components/PageLoader/PageLoader.component";
+import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";

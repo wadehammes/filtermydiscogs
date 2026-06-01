@@ -100,11 +100,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     // optimizePackageImports is still experimental in Next.js 16.1
-    optimizePackageImports: [
-      "lodash.flatten",
-      "@tanstack/react-query",
-      "@tanstack/react-table",
-    ],
+    optimizePackageImports: ["@tanstack/react-query", "@tanstack/react-table"],
   },
   trailingSlash: false,
   turbopack: {

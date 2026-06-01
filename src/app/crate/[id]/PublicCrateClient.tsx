@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AppPageLayout } from "src/components/AppPageLayout/AppPageLayout.component";
 import Button from "src/components/Button/Button.component";
-import PageLoader from "src/components/PageLoader/PageLoader.component";
+import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
 import { formatDate } from "src/utils/dateHelpers";

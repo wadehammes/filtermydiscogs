@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Button from "src/components/Button/Button.component";
-import ErrorMessage from "src/components/ErrorMessage/ErrorMessage.component";
+import { ErrorMessage } from "src/components/ErrorMessage/ErrorMessage.component";
 import { useAuth } from "src/context/auth.context";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Logo from "src/styles/icons/fmd-stacked.svg";
@@ -112,5 +112,3 @@ export const Login = () => {
     </div>
   );
 };
-
-export default Login;

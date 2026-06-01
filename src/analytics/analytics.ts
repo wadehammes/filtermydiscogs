@@ -1,11 +1,5 @@
 import { isBrowser } from "src/utils/helpers";
 
-interface GTMPageEventProps {
-  event: string;
-  page: string;
-  [key: string]: unknown;
-}
-
 interface EventProps {
   category: string;
   action: string;
@@ -24,21 +18,10 @@ declare global {
   }
 }
 
-export const addDataLayer = () => {
+export const trackEvent = (event: string, properties: EventProps) => {
   if (isBrowser()) {
     window.dataLayer = window.dataLayer || [];
   }
-};
 
-export const trackEvent = (event: string, properties: EventProps) => {
   window.dataLayer?.push({ event, ...properties });
-};
-
-export const trackPageView = (url: string): void => {
-  const pageEvent: GTMPageEventProps = {
-    event: "pageview",
-    page: url,
-  };
-
-  window.dataLayer?.push(pageEvent);
 };

@@ -1,18 +1,4 @@
 /**
- * Configuration for query monitoring
- */
-const QUERY_CONFIG = {
-  slowQueryThreshold: parseInt(
-    process.env.DB_SLOW_QUERY_THRESHOLD || "100",
-    10,
-  ), // milliseconds
-  queryTimeout: parseInt(process.env.DB_QUERY_TIMEOUT || "30000", 10), // milliseconds
-  enableQueryLogging:
-    process.env.NODE_ENV === "development" ||
-    process.env.DB_LOG_QUERIES === "true",
-};
-
-/**
  * Query performance metrics
  */
 interface QueryMetrics {
@@ -24,84 +10,6 @@ interface QueryMetrics {
 }
 
 const queryMetrics: QueryMetrics[] = [];
-
-/**
- * Wrap a Prisma query with logging and timeout monitoring
- * Use this to instrument specific queries
- */
-export async function instrumentQuery<T>(
-  model: string,
-  action: string,
-  queryFn: () => Promise<T>,
-): Promise<T> {
-  const startTime = Date.now();
-
-  // Create a timeout promise
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(
-        new Error(
-          `Query timeout: ${model}.${action} exceeded ${QUERY_CONFIG.queryTimeout}ms`,
-        ),
-      );
-    }, QUERY_CONFIG.queryTimeout);
-  });
-
-  try {
-    // Race the query against the timeout
-    const result = await Promise.race([queryFn(), timeoutPromise]);
-
-    const duration = Date.now() - startTime;
-    const isSlow = duration > QUERY_CONFIG.slowQueryThreshold;
-
-    // Log slow queries
-    if (isSlow) {
-      console.warn(
-        `[DB] Slow query detected: ${model}.${action} took ${duration}ms`,
-        {
-          model,
-          action,
-          duration,
-        },
-      );
-    }
-
-    // Log all queries in development
-    if (QUERY_CONFIG.enableQueryLogging) {
-      console.log(`[DB] Query: ${model}.${action} (${duration}ms)`);
-    }
-
-    // Store metrics (keep last 100 queries)
-    queryMetrics.push({
-      model,
-      action,
-      duration,
-      timestamp: new Date(),
-      slow: isSlow,
-    });
-
-    if (queryMetrics.length > 100) {
-      queryMetrics.shift();
-    }
-
-    return result;
-  } catch (error) {
-    const duration = Date.now() - startTime;
-    console.error(
-      `[DB] Query error: ${model}.${action} (${duration}ms)`,
-      error instanceof Error ? error.message : String(error),
-    );
-
-    // Don't expose internal Prisma errors
-    if (error instanceof Error) {
-      const sanitizedError = new Error("Database operation failed");
-      sanitizedError.name = error.name;
-      throw sanitizedError;
-    }
-
-    throw error;
-  }
-}
 
 /**
  * Get query performance statistics

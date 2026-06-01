@@ -1,6 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import { useState } from "react";
+import { QueryClient } from "@tanstack/react-query";
 
 /**
  * Creates a test QueryClient with default options suitable for testing
@@ -17,19 +15,4 @@ export const createTestQueryClient = () => {
       },
     },
   });
-};
-
-/**
- * Wrapper component that provides a QueryClient for testing
- */
-export const TestQueryClientProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
-  const [queryClient] = useState(() => createTestQueryClient());
-
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
 };

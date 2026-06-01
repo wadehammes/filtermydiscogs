@@ -84,36 +84,3 @@ export function checkRateLimit(
     resetAt: entry.resetAt,
   };
 }
-
-/**
- * Reset rate limit for a user (useful for testing or admin operations)
- */
-export function resetRateLimit(userId: number): void {
-  rateLimitStore.delete(userId);
-}
-
-/**
- * Get rate limit status for a user
- */
-export function getRateLimitStatus(userId: number): {
-  count: number;
-  maxOperations: number;
-  resetAt: Date;
-} | null {
-  const entry = rateLimitStore.get(userId);
-  if (!entry) {
-    return null;
-  }
-
-  const now = new Date();
-  if (entry.resetAt < now) {
-    rateLimitStore.delete(userId);
-    return null;
-  }
-
-  return {
-    count: entry.count,
-    maxOperations: RATE_LIMIT_CONFIG.maxOperations,
-    resetAt: entry.resetAt,
-  };
-}

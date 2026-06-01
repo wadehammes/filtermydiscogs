@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";

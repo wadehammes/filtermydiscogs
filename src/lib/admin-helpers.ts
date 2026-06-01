@@ -10,7 +10,7 @@ import { discogsOAuthService } from "src/services/discogs-oauth.service";
  * @param userId - The user ID to check
  * @returns true if the user ID matches admin, false otherwise
  */
-export function isAdminUser(userId: number): boolean {
+function isAdminUser(userId: number): boolean {
   const adminUserId = process.env.ADMIN_USER_ID;
 
   if (!adminUserId) {

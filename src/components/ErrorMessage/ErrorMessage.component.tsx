@@ -14,5 +14,3 @@ export const ErrorMessage = ({ message, className }: ErrorMessageProps) => {
     </div>
   );
 };
-
-export default ErrorMessage;

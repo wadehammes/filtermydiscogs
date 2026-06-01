@@ -1,4 +1,4 @@
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./LogoutOverlay.module.css";
 
 interface LogoutOverlayProps {
@@ -24,5 +24,3 @@ export const LogoutOverlay = ({ isVisible }: LogoutOverlayProps) => {
     </div>
   );
 };
-
-export default LogoutOverlay;

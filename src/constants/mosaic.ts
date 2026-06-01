@@ -89,14 +89,6 @@ export const GRID_BREAKPOINTS = {
   },
 } as const;
 
-// Image proxy URL parameters
-export const IMAGE_PROXY_PARAMS = {
-  WIDTH: "w",
-  HEIGHT: "h",
-  QUALITY: "q",
-  FORMAT: "f",
-} as const;
-
 // Calculate optimal grid dimensions for a given aspect ratio and item count
 export function calculateOptimalGrid(
   itemCount: number,
