@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import AutocompleteSelect from "src/components/AutocompleteSelect/AutocompleteSelect.component";
+import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
-import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
+import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_OPTIONS } from "src/constants/sorting";

@@ -1,6 +1,6 @@
 "use client";
 
-import PageLoader from "src/components/PageLoader/PageLoader.component";
+import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 
 /**
  * Loading UI for the dashboard page.

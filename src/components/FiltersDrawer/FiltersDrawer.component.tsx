@@ -156,5 +156,3 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     </BottomDrawer>
   );
 };
-
-export default FiltersDrawer;

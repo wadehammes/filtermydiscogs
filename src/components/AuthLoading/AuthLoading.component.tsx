@@ -1,4 +1,4 @@
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import Logo from "src/styles/icons/fmd-logo.svg";
 import styles from "./AuthLoading.module.css";
 
@@ -13,5 +13,3 @@ export const AuthLoading = () => {
     </div>
   );
 };
-
-export default AuthLoading;

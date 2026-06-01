@@ -55,7 +55,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **Security headers**: CSP, HSTS, frame options, etc. on `/`, `/api/*`, and static paths.
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
 - **SVGR**: webpack + turbopack rules for SVG-as-React components.
-- **`experimental.optimizePackageImports`**: tree-shaking for lodash.flatten, TanStack packages.
+- **`experimental.optimizePackageImports`**: tree-shaking for TanStack packages.
 
 If you add a new third-party script domain, update **CSP** in the same change.
 

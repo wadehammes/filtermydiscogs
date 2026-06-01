@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
-import Login from "src/components/Login/Login.component";
+import { AuthLoading } from "src/components/AuthLoading/AuthLoading.component";
+import { Login } from "src/components/Login/Login.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import sharedStyles from "src/components/shared/DashboardLayout/DashboardLayout.module.css";
 import { DashboardSection } from "src/components/shared/DashboardSection/DashboardSection.component";

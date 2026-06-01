@@ -10,8 +10,6 @@ import {
 import { render } from "test-utils";
 import Select from "./Select.component";
 
-export type { SelectOption };
-
 export type SelectRenderProps = {
   label?: string;
   options?: SelectOption[];

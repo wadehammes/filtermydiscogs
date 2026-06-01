@@ -1,20 +1,5 @@
 import styles from "./Skeleton.module.css";
 
-interface SkeletonProps {
-  className?: string;
-  height?: string;
-  width?: string;
-}
-
-export function Skeleton({ className, height, width }: SkeletonProps) {
-  return (
-    <div
-      className={`${styles.skeleton} ${className || ""}`}
-      style={{ height, width }}
-    />
-  );
-}
-
 export function SkeletonCard() {
   return (
     <div className={styles.skeletonCard}>
@@ -83,16 +68,6 @@ export function SkeletonList({ count = 3 }: { count?: number }) {
           <div key={i} className={styles.skeletonListItem} />
         ))}
       </div>
-    </div>
-  );
-}
-
-export function SkeletonGrid({ count = 6 }: { count?: number }) {
-  return (
-    <div className={styles.skeletonGrid}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={styles.skeletonGridItem} />
-      ))}
     </div>
   );
 }

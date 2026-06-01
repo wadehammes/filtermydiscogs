@@ -42,3 +42,5 @@ jobs:
         run: pnpm lint:css
       - name: Run Jest
         run: pnpm test:ci
+      - name: Run Knip
+        run: pnpm knip:ci

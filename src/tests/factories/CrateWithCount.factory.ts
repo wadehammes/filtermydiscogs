@@ -26,7 +26,7 @@ class CrateWithCountFactory extends BaseFactory<
   }
 }
 
-export const crateWithCountFactory = new CrateWithCountFactory();
+const crateWithCountFactory = new CrateWithCountFactory();
 
 export const defaultCrateSelectorCrates = (): CrateWithCount[] => [
   crateWithCountFactory.build({

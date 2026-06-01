@@ -6,7 +6,7 @@ import {
 import { render } from "test-utils";
 import { SearchBar } from "./SearchBar.component";
 
-export const mockUseFilters = jest.fn();
+const mockUseFilters = jest.fn();
 export const mockFiltersDispatch = jest.fn();
 
 jest.mock("src/context/filters.context", () => {

@@ -86,7 +86,7 @@ Use the **`/opengraph-image`** route path in metadata (not `.png`) for App Route
 
 - Shared literals (sort values, storage keys) live in [`src/constants.ts`](../../src/constants.ts)—not magic strings in components.
 - Runtime **`process.env.*`** keys that must reach the browser need to be listed under **`env`** in [`next.config.ts`](../../next.config.ts). OAuth secrets stay **server-only** unless intentionally exposed for OAuth initiation.
-- URL helpers: [`getSiteUrl`](../../src/utils/helpers.ts), [`envUrl`](../../src/utils/helpers.ts) for site base URLs.
+- URL helpers: [`getSiteUrl`](../../src/utils/helpers.ts) for site base URLs.
 
 ## Admin dashboard
 

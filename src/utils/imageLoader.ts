@@ -240,16 +240,6 @@ export function createOptimizedImageLoader() {
   };
 }
 
-// Utility to clear cache when needed
-export function clearImageCache(): void {
-  imageCache.clear();
-}
-
-// Utility to get cache size for debugging
-export function getImageCacheSize(): number {
-  return imageCache.size;
-}
-
 // Utility to get circuit breaker status
 export function getCircuitBreakerStatus(): {
   isOpen: boolean;
@@ -263,27 +253,8 @@ export function getCircuitBreakerStatus(): {
   };
 }
 
-// Utility to reset circuit breaker
-export function resetCircuitBreaker(): void {
-  circuitBreaker.state.failures = 0;
-  circuitBreaker.state.isOpen = false;
-  circuitBreaker.state.lastFailureTime = 0;
-}
-
 // Utility to estimate cache memory usage (approximate)
 export function getCacheMemoryUsage(): number {
   // Rough estimation: assume each image is ~50KB on average
   return imageCache.size * 50 * 1024;
-}
-
-// Utility to force cache cleanup
-export function forceCacheCleanup(): void {
-  if (imageCache.size > CACHE_SIZE_LIMIT) {
-    const entries = Array.from(imageCache.entries());
-    const toKeep = entries.slice(-CACHE_SIZE_LIMIT);
-    imageCache.clear();
-    toKeep.forEach(([key, value]) => {
-      imageCache.set(key, value);
-    });
-  }
 }

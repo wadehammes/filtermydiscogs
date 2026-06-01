@@ -1,6 +1,6 @@
 "use client";
 
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./PageLoader.module.css";
 
 interface PageLoaderProps {
@@ -24,5 +24,3 @@ export const PageLoader = ({
     </div>
   );
 };
-
-export default PageLoader;

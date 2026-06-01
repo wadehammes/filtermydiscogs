@@ -1,4 +1,4 @@
-import Spinner from "src/components/Spinner/Spinner.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./LoadingTrigger.module.css";
 
 interface LoadingTriggerProps {

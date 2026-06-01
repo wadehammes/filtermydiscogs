@@ -33,9 +33,9 @@ jest.mock("next/image", () => ({
   },
 }));
 
-export const mockUseCrate = mocked(useCrate);
-export const mockUseFilters = mocked(useFilters);
-export const mockFetchDiscogsRelease = mocked(fetchDiscogsRelease);
+const mockUseCrate = mocked(useCrate);
+const mockUseFilters = mocked(useFilters);
+const mockFetchDiscogsRelease = mocked(fetchDiscogsRelease);
 
 export type ReleaseCardRenderProps = Partial<
   Omit<ReleaseCardProps, "release">

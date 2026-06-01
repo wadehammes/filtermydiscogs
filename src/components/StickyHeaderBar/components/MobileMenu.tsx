@@ -2,7 +2,7 @@ import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
-import FiltersDrawer from "src/components/FiltersDrawer/FiltersDrawer.component";
+import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";

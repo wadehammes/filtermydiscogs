@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo } from "react";
-import LogoutOverlay from "src/components/LogoutOverlay/LogoutOverlay.component";
+import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";

@@ -58,43 +58,6 @@ export function auditLog(
 }
 
 /**
- * Get audit logs for a specific user
- */
-export function getAuditLogsForUser(
-  userId: number,
-  limit = 100,
-): AuditLogEntry[] {
-  return auditLogs
-    .filter((log) => log.userId === userId)
-    .slice(-limit)
-    .reverse();
-}
-
-/**
- * Get audit logs for a specific model/operation
- */
-export function getAuditLogsForOperation(
-  model: string,
-  action?: AuditLogEntry["action"],
-  limit = 100,
-): AuditLogEntry[] {
-  return auditLogs
-    .filter((log) => log.model === model && (!action || log.action === action))
-    .slice(-limit)
-    .reverse();
-}
-
-/**
- * Get recent sensitive operations
- */
-export function getSensitiveOperations(limit = 50): AuditLogEntry[] {
-  return auditLogs
-    .filter((log) => log.action === "delete" || log.action === "bulk_delete")
-    .slice(-limit)
-    .reverse();
-}
-
-/**
  * Get audit statistics
  */
 export function getAuditStats() {

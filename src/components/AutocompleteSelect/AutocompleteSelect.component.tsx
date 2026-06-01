@@ -293,4 +293,3 @@ const AutocompleteSelectComponent = ({
 };
 
 export const AutocompleteSelect = memo(AutocompleteSelectComponent);
-export default AutocompleteSelect;

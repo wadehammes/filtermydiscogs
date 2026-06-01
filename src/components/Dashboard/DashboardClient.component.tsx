@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
-import AuthLoading from "src/components/AuthLoading/AuthLoading.component";
-import LoadingOverlay from "src/components/LoadingOverlay/LoadingOverlay.component";
-import Login from "src/components/Login/Login.component";
+import { AuthLoading } from "src/components/AuthLoading/AuthLoading.component";
+import { LoadingOverlay } from "src/components/LoadingOverlay/LoadingOverlay.component";
+import { Login } from "src/components/Login/Login.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
