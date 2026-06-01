@@ -1,6 +1,6 @@
 # Conventions
 
-House style for TypeScript, React, CSS, and tests so the repo reads consistently—aligned with **rhythm-marketing** patterns where stacks overlap. When something here conflicts with a local shortcut, follow the doc (or open a PR to change the doc if the rule is wrong).
+House style for TypeScript, React, CSS, and tests so the repo reads consistently. When something here conflicts with a local shortcut, follow the doc (or open a PR to change the doc if the rule is wrong).
 
 If you are unsure, copy a nearby file that already does the right thing and run **`pnpm lint`** and **`pnpm tsc:ci`** before you push.
 
@@ -94,7 +94,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 
 Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTests.ts`](../../.jest/setupTests.ts)). Prefer **`screen`** and **`userEvent`** in specs.
 
-### Page object pattern (rhythm-marketing aligned)
+### Page object pattern
 
 - **Base class**: [`src/tests/basePageObject.po.ts`](../../src/tests/basePageObject.po.ts).
 - **Per-component page object** (when useful): `<Name>.po.tsx` extends `BasePageObject`, sets **`testId = "fmd<ComponentName>"`**, holds **test data, mocks, and setup/render helpers only**—**not** wrappers around every `screen.getBy*`. **POs never assert and never call `screen.find*` / `getBy*` / `queryBy*` / `waitFor`.**
@@ -107,7 +107,7 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 
 ### Test data and factories
 
-See **[factories.md](factories.md)** for the full rhythm-marketing-aligned pattern (`BaseFactory`, `KeysMatch`, `nullish`, nested factories, one file per factory).
+See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`, `KeysMatch`, `nullish`, nested factories, one file per factory).
 
 - Factories live only under **[`src/tests/factories/`](../../src/tests/factories/)**.
 - Import singletons by path (e.g. `releaseFactory` from `src/tests/factories/Release.factory`).

@@ -1,6 +1,6 @@
 # Patterns
 
-Cross-cutting patterns for auth, global state, data fetching, filtering, and public pages—aligned with **rhythm-marketing** where the stack matches (API layer, React Query, constants).
+Cross-cutting patterns for auth, global state, data fetching, filtering, and public pages.
 
 ## Provider stack
 

@@ -23,7 +23,7 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 | File | What it covers |
 |------|----------------|
 | [architecture.md](architecture.md) | Tech stack, directory map, data flow, key config. Start here. |
-| [conventions.md](conventions.md) | TypeScript, Biome, Stylelint/CSS, Modules, testing, accessibility—aligned with rhythm-marketing where applicable. |
+| [conventions.md](conventions.md) | TypeScript, Biome, Stylelint/CSS, Modules, testing, accessibility. |
 | [discogs.md](discogs.md) | OAuth 1.0a, `discogs-oauth.service`, username validation, cookies, API errors. |
 | [database.md](database.md) | Prisma models, crate CRUD, migrations, admin stats. |
 | [components.md](components.md) | Component folder layout, naming, tests. |

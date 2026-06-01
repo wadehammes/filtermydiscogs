@@ -1,6 +1,6 @@
 # Test factories
 
-Structured test data for Discogs releases, collections, and crates. Same **rhythm-marketing** factory pattern—without Contentful types or generated CMS models.
+Structured test data for Discogs releases, collections, and crates.
 
 All factories live under **[`src/tests/factories/`](../../src/tests/factories/)** only. Specs and page objects import them by concrete path (e.g. `from "src/tests/factories/Release.factory"`). **No barrel `index.ts`.**
 
