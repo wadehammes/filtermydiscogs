@@ -5,7 +5,6 @@ import { releaseMatchesFormatFilters } from "src/utils/formatFilterTags";
 // Cache for searchable text to avoid recomputation
 const searchTextCache = new Map<string, string>();
 
-/** @internal Exported for unit tests only. */
 export const clearSearchCache = () => {
   searchTextCache.clear();
 };

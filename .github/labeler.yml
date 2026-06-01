@@ -24,6 +24,8 @@ configuration:
   - i18next.config.js
   - .browserslistrc
   - stylelint.config.ts
+  - knip.json
+  - tsconfig.json
 
 # Add `dependencies` label to any changes to package.json or pnpm-lock.yaml
 dependencies:

@@ -86,7 +86,6 @@ export const fetchDiscogsRelease = async (
   }
 };
 
-/** @internal Exported for unit tests only. */
 export const fetchDiscogsSearch = async (
   query: string,
   page: number = 1,

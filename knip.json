@@ -1,19 +1,9 @@
 {
-  "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreFiles": [
-    "public/theme-init.js",
-    ".jest/**",
-    "**/*.po.tsx",
-    "**/*.{test,spec}.{ts,tsx}",
-    "src/tests/**",
-    "test-utils.tsx",
-    "src/types/KeysMatch.ts",
-    "src/utils/factory.helpers.ts"
-  ],
+  "$schema": "./node_modules/knip/schema.json",
+  "ignoreFiles": ["public/theme-init.js"],
   "ignoreBinaries": ["scripts/scaffold.sh"],
   "ignoreDependencies": ["@svgr/webpack"],
   "ignoreExportsUsedInFile": true,
-  "tags": ["-@internal"],
   "ignoreIssues": {
     "src/types/**": ["exports", "types"],
     "src/context/**": ["types", "enumMembers"]
