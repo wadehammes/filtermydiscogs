@@ -1,7 +1,7 @@
-import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { screen } from "src/tests/utils/test-utils";
 import { ReleaseCardPageObject } from "./ReleaseCard.po";
 
 let po: ReleaseCardPageObject;

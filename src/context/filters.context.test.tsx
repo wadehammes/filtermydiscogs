@@ -1,17 +1,12 @@
-import { act, renderHook } from "@testing-library/react";
 import { mocked } from "jest-mock";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { act, renderHook, TestProviders } from "src/tests/utils/test-utils";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import { getAvailableFormats } from "src/utils/getAvailableFormats";
 import { getAvailableStyles } from "src/utils/getAvailableStyles";
 import { getAvailableYears } from "src/utils/getAvailableYears";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
-import {
-  FiltersActionTypes,
-  FiltersProvider,
-  SortValues,
-  useFilters,
-} from "./filters.context";
+import { FiltersActionTypes, SortValues, useFilters } from "./filters.context";
 
 jest.mock("src/utils/filterReleases");
 jest.mock("src/utils/sortReleases");
@@ -39,7 +34,7 @@ describe("FiltersProvider", () => {
 
   it("provides initial state", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     expect(result.current.state.selectedStyles).toEqual([]);
@@ -54,7 +49,7 @@ describe("FiltersProvider", () => {
   it("sets all releases", () => {
     const mockReleases = releaseFactory.buildList(3);
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -69,7 +64,7 @@ describe("FiltersProvider", () => {
 
   it("toggles style filter", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -93,7 +88,7 @@ describe("FiltersProvider", () => {
 
   it("toggles year filter", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -117,7 +112,7 @@ describe("FiltersProvider", () => {
 
   it("toggles format filter", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -141,7 +136,7 @@ describe("FiltersProvider", () => {
 
   it("sets styles", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -156,7 +151,7 @@ describe("FiltersProvider", () => {
 
   it("clears styles", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     // Set styles first
@@ -180,7 +175,7 @@ describe("FiltersProvider", () => {
 
   it("sets sort", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -195,7 +190,7 @@ describe("FiltersProvider", () => {
 
   it("sets style operator", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -222,7 +217,7 @@ describe("FiltersProvider", () => {
     mockFilterReleases.mockReturnValue(mockReleases);
 
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     // Set releases first
@@ -245,7 +240,7 @@ describe("FiltersProvider", () => {
 
   it("sets search query", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -260,7 +255,7 @@ describe("FiltersProvider", () => {
 
   it("sets searching state", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -275,7 +270,7 @@ describe("FiltersProvider", () => {
 
   it("clears all filters", () => {
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     // Set some filters
@@ -320,7 +315,7 @@ describe("FiltersProvider", () => {
     mockFilterReleases.mockReturnValue(filteredReleases);
 
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     // Set releases
@@ -352,7 +347,7 @@ describe("FiltersProvider", () => {
     mockGetAvailableYears.mockReturnValue(allYears);
 
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -375,8 +370,8 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockGetAvailableYears).toHaveBeenCalledWith(allReleases);
     expect(result.current.state.availableYears).toEqual(allYears);
+    expect(mockGetAvailableYears).not.toHaveBeenCalled();
   });
 
   it("computes availableStyles from allReleases, not filtered releases", () => {
@@ -388,7 +383,7 @@ describe("FiltersProvider", () => {
     mockGetAvailableStyles.mockReturnValue(allStyles);
 
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -411,8 +406,8 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockGetAvailableStyles).toHaveBeenCalledWith(allReleases);
     expect(result.current.state.availableStyles).toEqual(allStyles);
+    expect(mockGetAvailableStyles).not.toHaveBeenCalled();
   });
 
   it("computes availableFormats from allReleases, not filtered releases", () => {
@@ -424,7 +419,7 @@ describe("FiltersProvider", () => {
     mockGetAvailableFormats.mockReturnValue(allFormats);
 
     const { result } = renderHook(() => useFilters(), {
-      wrapper: FiltersProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -447,8 +442,8 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockGetAvailableFormats).toHaveBeenCalledWith(allReleases);
     expect(result.current.state.availableFormats).toEqual(allFormats);
+    expect(mockGetAvailableFormats).not.toHaveBeenCalled();
   });
 
   it("throws error when useFilters is used outside FiltersProvider", () => {

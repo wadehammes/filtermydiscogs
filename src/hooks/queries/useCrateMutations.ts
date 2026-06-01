@@ -127,6 +127,55 @@ const rollbackOptimisticUpdate = (
   }
 };
 
+const applyCratesListUpdate = ({
+  crates,
+  crateId,
+  updates,
+  serverCrate,
+}: {
+  crates: CrateWithCount[];
+  crateId: string;
+  updates: UpdateCrateRequest;
+  serverCrate?: UpdateCrateResponse["crate"];
+}): CrateWithCount[] =>
+  crates.map((crate) => {
+    if (crate.id === crateId) {
+      return {
+        ...crate,
+        ...(serverCrate ?? updates),
+        releaseCount: crate.releaseCount ?? 0,
+      } as CrateWithCount;
+    }
+
+    if (updates.is_default) {
+      return { ...crate, is_default: false };
+    }
+
+    return crate;
+  });
+
+const mergeCrateDetailCache = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  userId: string | null,
+  crateId: string,
+  crateUpdates: Partial<UpdateCrateResponse["crate"]>,
+) => {
+  queryClient.setQueryData<CrateWithReleasesResponse>(
+    CrateQueryKeys.byUserAndId(userId, crateId),
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        crate: {
+          ...old.crate,
+          ...crateUpdates,
+        },
+      };
+    },
+  );
+};
+
 export const useCreateCrateMutation = () => {
   const queryClient = useQueryClient();
   const userId = getUserIdFromCookies();
@@ -175,7 +224,6 @@ export const useUpdateCrateMutation = () => {
       return updateCrate(crateId, updates);
     },
     onMutate: async ({ crateId, updates }) => {
-      // Optimistically update the crates list
       await queryClient.cancelQueries({
         queryKey: CratesQueryKeys.byUserId(userId),
       });
@@ -186,65 +234,49 @@ export const useUpdateCrateMutation = () => {
       const previousCrates = queryClient.getQueryData<CratesResponse>(
         CratesQueryKeys.byUserId(userId),
       );
+      const previousCrateData =
+        queryClient.getQueryData<CrateWithReleasesResponse>(
+          CrateQueryKeys.byUserAndId(userId, crateId),
+        );
 
       if (previousCrates) {
-        const updatedCrates = previousCrates.crates.map((crate) => {
-          if (crate.id === crateId) {
-            // Preserve all existing fields and update with new values
-            return {
-              ...crate,
-              ...updates,
-            } as CrateWithCount;
-          }
-          return crate;
-        });
-
         queryClient.setQueryData<CratesResponse>(
           CratesQueryKeys.byUserId(userId),
           {
-            crates: updatedCrates,
+            crates: applyCratesListUpdate({
+              crates: previousCrates.crates,
+              crateId,
+              updates,
+            }),
           },
         );
       }
 
-      return { previousCratesData: previousCrates };
+      mergeCrateDetailCache(queryClient, userId, crateId, updates);
+
+      return { previousCratesData: previousCrates, previousCrateData };
     },
-    onError: (_error, _variables, context) => {
-      // Rollback on error
-      if (context?.previousCratesData) {
-        queryClient.setQueryData(
-          CratesQueryKeys.byUserId(userId),
-          context.previousCratesData,
-        );
-      }
+    onError: (_error, variables, context) => {
+      rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
     },
-    onSuccess: async (data, variables) => {
-      // Update with server response, preserving releaseCount
+    onSuccess: (data, variables) => {
       queryClient.setQueryData<CratesResponse>(
         CratesQueryKeys.byUserId(userId),
         (old) => {
           if (!old) return old;
+
           return {
-            crates: old.crates.map((crate) => {
-              if (crate.id === variables.crateId) {
-                // Preserve releaseCount and merge with server response
-                return {
-                  ...crate,
-                  ...data.crate,
-                  releaseCount: crate.releaseCount ?? 0, // Preserve releaseCount
-                } as CrateWithCount;
-              }
-              return crate;
+            crates: applyCratesListUpdate({
+              crates: old.crates,
+              crateId: variables.crateId,
+              updates: variables.updates,
+              serverCrate: data.crate,
             }),
           };
         },
       );
 
-      if (userId) {
-        queryClient.invalidateQueries({
-          queryKey: CrateQueryKeys.byUserAndId(userId, variables.crateId),
-        });
-      }
+      mergeCrateDetailCache(queryClient, userId, variables.crateId, data.crate);
     },
   });
 };

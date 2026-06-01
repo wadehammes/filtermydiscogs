@@ -1,5 +1,5 @@
-import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { screen } from "src/tests/utils/test-utils";
 import { BottomDrawerPageObject } from "./BottomDrawer.po";
 
 let po: BottomDrawerPageObject;

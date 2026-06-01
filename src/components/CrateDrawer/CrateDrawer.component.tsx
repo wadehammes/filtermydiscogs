@@ -6,8 +6,8 @@ import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.compon
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { useCrate } from "src/context/crate.context";
-import { useView } from "src/context/view.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { useCurrentView } from "src/hooks/useViewAtoms.hook";
 import XIcon from "src/styles/icons/x.svg";
 import { copyToClipboard } from "src/utils/copyToClipboard";
 import { getReleaseImageUrl, getSiteUrl } from "src/utils/helpers";
@@ -32,7 +32,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     isDeletingCrate,
     isLoadingCrate,
   } = useCrate();
-  const { state: viewState } = useView();
+  const currentView = useCurrentView();
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const [showClearDialog, setShowClearDialog] = useState(false);
@@ -115,7 +115,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         <div className={styles.emptyState}>
           <h3>No releases added to your crate yet.</h3>
           <p>
-            {viewState.currentView === "list"
+            {currentView === "list"
               ? "Toggle the checkbox on any release to add it to this crate"
               : 'Click the "+ Add to Crate" button on any release to add it to this crate'}
           </p>

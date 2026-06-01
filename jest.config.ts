@@ -31,7 +31,7 @@ export default async () => {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     ...jestConfig.moduleNameMapper,
     "^src/(.*)$": "<rootDir>/src/$1",
-    "^test-utils$": "<rootDir>/test-utils.tsx",
+    "^test-utils$": "<rootDir>/src/tests/utils/test-utils.tsx",
   };
 
   return { ...jestConfig, moduleNameMapper, testTimeout: 20000 };

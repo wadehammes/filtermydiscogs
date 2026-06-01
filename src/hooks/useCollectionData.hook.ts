@@ -2,23 +2,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ERROR_FETCHING } from "src/constants";
 import { useCollectionContext } from "src/context/collection.context";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { FiltersActionTypes } from "src/context/filters.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
+import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 
 export const useCollectionData = (
   username: string | null,
   isAuthenticated: boolean,
 ) => {
   const queryClient = useQueryClient();
-  const {
-    dispatchFetchingCollection,
-    dispatchCollection,
-    dispatchReleases,
-    dispatchError,
-  } = useCollectionContext();
+  const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
+    useCollectionContext();
 
-  const { dispatch: filtersDispatch } = useFilters();
+  const filtersDispatch = useFiltersDispatch();
 
   const queryEnabled = isAuthenticated && !!username;
 
@@ -65,41 +62,16 @@ export const useCollectionData = (
     const allReleases = pages.flatMap((page) => page.releases);
     const collection = pages[pages.length - 1];
 
-    // Single pass through releases to extract both styles and years
-    const uniqueStyles = new Set<string>();
-    const uniqueYears = new Set<number>();
-
-    for (const release of allReleases) {
-      for (const style of release.basic_information.styles) {
-        uniqueStyles.add(style);
-      }
-
-      const year = release.basic_information.year;
-      if (year > 0) {
-        uniqueYears.add(year);
-      }
-    }
-
-    const sortedStyles: string[] = Array.from(uniqueStyles).sort((a, b) =>
-      a.localeCompare(b),
-    );
-
-    const sortedYears: number[] = Array.from(uniqueYears).sort((a, b) => b - a); // Newest first
-
     return {
       allReleases,
       collection,
-      sortedStyles,
-      sortedYears,
     };
   }, [collectionData?.pages]);
 
   const handleDataUpdate = useCallback(() => {
     if (processedData) {
-      const { allReleases, collection, sortedStyles, sortedYears } =
-        processedData;
+      const { allReleases, collection } = processedData;
 
-      dispatchReleases(allReleases);
       if (collection) {
         dispatchCollection(collection);
       }
@@ -110,13 +82,11 @@ export const useCollectionData = (
         type: FiltersActionTypes.SetAllReleases,
         payload: allReleases,
       });
+    } else if (!queryEnabled) {
+      dispatchFetchingCollection(false);
       filtersDispatch({
-        type: FiltersActionTypes.SetAvailableStyles,
-        payload: sortedStyles,
-      });
-      filtersDispatch({
-        type: FiltersActionTypes.SetAvailableYears,
-        payload: sortedYears,
+        type: FiltersActionTypes.SetAllReleases,
+        payload: [],
       });
     } else if (isError) {
       dispatchFetchingCollection(false);
@@ -126,10 +96,10 @@ export const useCollectionData = (
     }
   }, [
     processedData,
+    queryEnabled,
     isError,
     isLoading,
     queryError,
-    dispatchReleases,
     dispatchCollection,
     dispatchFetchingCollection,
     dispatchError,

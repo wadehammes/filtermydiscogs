@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useCollectionContext } from "src/context/collection.context";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
 import { AXIS_STYLE, TOOLTIP_STYLE } from "src/utils/chartConfig";
 import { analyzeGrowthByYear } from "src/utils/growthTracker";
@@ -23,8 +23,7 @@ interface GrowthChartProps {
 
 export function GrowthChart({ growthData }: GrowthChartProps) {
   const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly");
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const releases = useAllReleases();
 
   const chartData = useMemo(() => {
     if (viewMode === "yearly" && releases) {

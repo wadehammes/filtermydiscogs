@@ -1,7 +1,12 @@
-import { mocked } from "jest-mock";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  mockFetchError,
+  mockFetchResponse,
+  mockFetchSuccess,
+  resetFetchMock,
+} from "src/tests/mocks/mockFetchResponse";
 import {
   addReleaseToCrate,
   checkAuth,
@@ -20,19 +25,16 @@ import {
 } from "./helpers";
 
 global.fetch = jest.fn();
-const mockFetch = mocked(fetch);
+const mockFetch = jest.mocked(fetch);
 
 describe("fetchDiscogsCollection", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("fetches collection successfully", async () => {
     const mockCollection = collectionFactory.build();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockCollection,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCollection));
 
     const result = await fetchDiscogsCollection("testuser", 1);
 
@@ -50,10 +52,7 @@ describe("fetchDiscogsCollection", () => {
 
   it("uses default page when not provided", async () => {
     const mockCollection = collectionFactory.build();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockCollection,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCollection));
 
     await fetchDiscogsCollection("testuser");
 
@@ -64,11 +63,7 @@ describe("fetchDiscogsCollection", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
     await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
       "HTTP error! status: 500",
@@ -76,14 +71,12 @@ describe("fetchDiscogsCollection", () => {
   });
 
   it("uses API error message when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 502,
-      json: async () => ({
+    mockFetch.mockResolvedValueOnce(
+      mockFetchError(502, {
         error:
           "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
       }),
-    } as Response);
+    );
 
     await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
       "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
@@ -109,15 +102,12 @@ describe("fetchDiscogsCollection", () => {
 
 describe("fetchDiscogsRelease", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("fetches release successfully", async () => {
     const mockRelease = { id: "123", title: "Test Release" };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockRelease,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockRelease));
 
     const result = await fetchDiscogsRelease("123");
 
@@ -131,10 +121,7 @@ describe("fetchDiscogsRelease", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(404));
 
     await expect(fetchDiscogsRelease("123")).rejects.toThrow(
       "HTTP error! status: 404",
@@ -150,7 +137,7 @@ describe("fetchDiscogsRelease", () => {
 
 describe("fetchDiscogsSearch", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("fetches search results successfully with all parameters", async () => {
@@ -158,10 +145,7 @@ describe("fetchDiscogsSearch", () => {
       pagination: { pages: 1, items: 10 },
       results: [],
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockSearch,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockSearch));
 
     const result = await fetchDiscogsSearch(
       "test query",
@@ -191,10 +175,7 @@ describe("fetchDiscogsSearch", () => {
       pagination: { pages: 1, items: 10 },
       results: [],
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockSearch,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockSearch));
 
     await fetchDiscogsSearch("test");
 
@@ -209,10 +190,7 @@ describe("fetchDiscogsSearch", () => {
       pagination: { pages: 1, items: 10 },
       results: [],
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockSearch,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockSearch));
 
     await fetchDiscogsSearch(
       "test",
@@ -234,10 +212,7 @@ describe("fetchDiscogsSearch", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(400));
 
     await expect(fetchDiscogsSearch("test")).rejects.toThrow(
       "HTTP error! status: 400",
@@ -247,17 +222,14 @@ describe("fetchDiscogsSearch", () => {
 
 describe("fetchCrates", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("fetches crates successfully", async () => {
     const mockCrates = {
       crates: crateFactory.buildList(3),
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockCrates,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCrates));
 
     const result = await fetchCrates();
 
@@ -272,10 +244,7 @@ describe("fetchCrates", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 401,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(401));
 
     await expect(fetchCrates()).rejects.toThrow("HTTP error! status: 401");
   });
@@ -283,7 +252,7 @@ describe("fetchCrates", () => {
 
 describe("fetchCrate", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("fetches crate successfully", async () => {
@@ -292,10 +261,7 @@ describe("fetchCrate", () => {
       crate: crateFactory.build({ id: crateId }),
       releases: releaseFactory.buildList(5),
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockCrate,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCrate));
 
     const result = await fetchCrate(crateId);
 
@@ -310,10 +276,7 @@ describe("fetchCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(404));
 
     await expect(fetchCrate("crate-123")).rejects.toThrow(
       "HTTP error! status: 404",
@@ -323,16 +286,13 @@ describe("fetchCrate", () => {
 
 describe("createCrate", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("creates crate successfully", async () => {
     const crateName = "My New Crate";
     const mockCrate = crateFactory.build({ name: crateName });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ crate: mockCrate }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ crate: mockCrate }));
 
     const result = await createCrate(crateName);
 
@@ -348,10 +308,7 @@ describe("createCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(400));
 
     await expect(createCrate("Test")).rejects.toThrow(
       "HTTP error! status: 400",
@@ -361,17 +318,14 @@ describe("createCrate", () => {
 
 describe("updateCrate", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("updates crate successfully with name", async () => {
     const crateId = "crate-123";
     const updates = { name: "Updated Name" };
     const mockCrate = crateFactory.build({ id: crateId, name: updates.name });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ crate: mockCrate }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ crate: mockCrate }));
 
     const result = await updateCrate(crateId, updates);
 
@@ -390,10 +344,7 @@ describe("updateCrate", () => {
     const crateId = "crate-123";
     const updates = { is_default: true };
     const mockCrate = crateFactory.build({ id: crateId, is_default: true });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ crate: mockCrate }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ crate: mockCrate }));
 
     const result = await updateCrate(crateId, updates);
 
@@ -407,11 +358,12 @@ describe("updateCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-    } as unknown as Response);
+    mockFetch.mockResolvedValueOnce(
+      mockFetchResponse(undefined, {
+        ok: false,
+        status: 404,
+      }),
+    );
 
     await expect(updateCrate("crate-123", { name: "Test" })).rejects.toThrow(
       "HTTP error! status: 404",
@@ -421,14 +373,12 @@ describe("updateCrate", () => {
 
 describe("deleteCrate", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("deletes crate successfully", async () => {
     const crateId = "crate-123";
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(undefined));
 
     await deleteCrate(crateId);
 
@@ -439,10 +389,7 @@ describe("deleteCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(404));
 
     await expect(deleteCrate("crate-123")).rejects.toThrow(
       "HTTP error! status: 404",
@@ -452,16 +399,13 @@ describe("deleteCrate", () => {
 
 describe("addReleaseToCrate", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("adds release to crate successfully", async () => {
     const crateId = "crate-123";
     const release = releaseFactory.build();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
 
     const result = await addReleaseToCrate(crateId, release);
 
@@ -477,10 +421,7 @@ describe("addReleaseToCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(400));
 
     await expect(
       addReleaseToCrate("crate-123", releaseFactory.build()),
@@ -490,16 +431,13 @@ describe("addReleaseToCrate", () => {
 
 describe("removeReleaseFromCrate", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("removes release from crate successfully", async () => {
     const crateId = "crate-123";
     const releaseId = "release-456";
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
 
     const result = await removeReleaseFromCrate(crateId, releaseId);
 
@@ -514,10 +452,7 @@ describe("removeReleaseFromCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(404));
 
     await expect(
       removeReleaseFromCrate("crate-123", "release-456"),
@@ -527,16 +462,13 @@ describe("removeReleaseFromCrate", () => {
 
 describe("syncCrates", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("syncs crates successfully", async () => {
     const collectionInstanceIds = ["id1", "id2", "id3"];
     const mockResponse = { success: true, removedCount: 2 };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockResponse));
 
     const result = await syncCrates(collectionInstanceIds);
 
@@ -552,10 +484,7 @@ describe("syncCrates", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
     await expect(syncCrates(["id1"])).rejects.toThrow(
       "HTTP error! status: 500",
@@ -565,7 +494,7 @@ describe("syncCrates", () => {
 
 describe("checkAuth", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("returns auth status when authenticated", async () => {
@@ -574,10 +503,7 @@ describe("checkAuth", () => {
       username: "testuser",
       userId: "123456",
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockAuth,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
 
     const result = await checkAuth();
 
@@ -594,10 +520,7 @@ describe("checkAuth", () => {
       username: null,
       userId: null,
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockAuth,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
 
     const result = await checkAuth();
 
@@ -605,10 +528,7 @@ describe("checkAuth", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
     await expect(checkAuth()).rejects.toThrow("HTTP error! status: 500");
   });
@@ -616,14 +536,11 @@ describe("checkAuth", () => {
 
 describe("clearData", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("clears data successfully", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
 
     const result = await clearData();
 
@@ -635,10 +552,7 @@ describe("clearData", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
     await expect(clearData()).rejects.toThrow("HTTP error! status: 500");
   });
@@ -646,14 +560,11 @@ describe("clearData", () => {
 
 describe("logout", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    resetFetchMock();
   });
 
   it("logs out successfully", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true }),
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
 
     const result = await logout();
 
@@ -665,10 +576,7 @@ describe("logout", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
+    mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
     await expect(logout()).rejects.toThrow("HTTP error! status: 500");
   });

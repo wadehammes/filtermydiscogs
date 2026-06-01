@@ -3,21 +3,29 @@ import { trackEvent } from "src/analytics/analytics";
 import {
   FiltersActionTypes,
   type SortValues,
-  useFilters,
 } from "src/context/filters.context";
+import {
+  useAvailableFormats,
+  useAvailableStyles,
+  useAvailableYears,
+  useFiltersDispatch,
+  useSelectedFormats,
+  useSelectedSort,
+  useSelectedStyles,
+  useSelectedYears,
+  useStyleOperator,
+} from "src/hooks/useFilterAtoms.hook";
 
 export const useFilterHandlers = (category: string) => {
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const {
-    availableStyles,
-    availableYears,
-    availableFormats,
-    selectedStyles,
-    selectedYears,
-    selectedFormats,
-    selectedSort,
-    styleOperator,
-  } = filtersState;
+  const filtersDispatch = useFiltersDispatch();
+  const availableStyles = useAvailableStyles();
+  const availableYears = useAvailableYears();
+  const availableFormats = useAvailableFormats();
+  const selectedStyles = useSelectedStyles();
+  const selectedYears = useSelectedYears();
+  const selectedFormats = useSelectedFormats();
+  const selectedSort = useSelectedSort();
+  const styleOperator = useStyleOperator();
 
   const handleStyleChange = useCallback(
     (value: string | string[]) => {

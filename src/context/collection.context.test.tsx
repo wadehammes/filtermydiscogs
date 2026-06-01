@@ -1,17 +1,14 @@
-import { act, renderHook } from "@testing-library/react";
 import { mocked } from "jest-mock";
 import { useRouter } from "next/navigation";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { act, renderHook, TestProviders } from "src/tests/utils/test-utils";
 import {
   CollectionActionTypes,
-  CollectionContextProvider,
   CollectionReducer,
   CollectionSortingValues,
   useCollectionContext,
 } from "./collection.context";
-
-jest.mock("next/navigation");
 
 const mockUseRouter = mocked(useRouter);
 
@@ -21,7 +18,6 @@ describe("CollectionReducer", () => {
     page: 1,
     nextPageLink: null,
     collection: null,
-    releases: [],
     fetchingCollection: true,
     filteredReleases: [],
     releaseStyles: [],
@@ -69,17 +65,6 @@ describe("CollectionReducer", () => {
     const result = CollectionReducer(initialState, action);
 
     expect(result.collection).toEqual(mockCollection);
-  });
-
-  it("sets releases", () => {
-    const mockReleases = releaseFactory.buildList(3);
-    const action = {
-      type: CollectionActionTypes.SetReleases,
-      payload: mockReleases,
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.releases).toEqual(mockReleases);
   });
 
   it("sets fetching collection state", () => {
@@ -185,17 +170,16 @@ describe("CollectionContextProvider", () => {
 
   it("provides initial state", () => {
     const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: CollectionContextProvider,
+      wrapper: TestProviders,
     });
 
     expect(result.current.state.username).toBeNull();
     expect(result.current.state.page).toBe(1);
-    expect(result.current.state.releases).toEqual([]);
   });
 
   it("dispatches user", () => {
     const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: CollectionContextProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -207,7 +191,7 @@ describe("CollectionContextProvider", () => {
 
   it("dispatches page", () => {
     const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: CollectionContextProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -219,7 +203,7 @@ describe("CollectionContextProvider", () => {
 
   it("dispatches collection", () => {
     const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: CollectionContextProvider,
+      wrapper: TestProviders,
     });
 
     const mockCollection = collectionFactory.build();
@@ -229,20 +213,6 @@ describe("CollectionContextProvider", () => {
     });
 
     expect(result.current.state.collection).toEqual(mockCollection);
-  });
-
-  it("dispatches releases", () => {
-    const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: CollectionContextProvider,
-    });
-
-    const mockReleases = releaseFactory.buildList(2);
-
-    act(() => {
-      result.current.dispatchReleases(mockReleases);
-    });
-
-    expect(result.current.state.releases).toEqual(mockReleases);
   });
 
   it("dispatches reset state", () => {
@@ -273,7 +243,7 @@ describe("CollectionContextProvider", () => {
     }
 
     const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: CollectionContextProvider,
+      wrapper: TestProviders,
     });
 
     // Set some state first

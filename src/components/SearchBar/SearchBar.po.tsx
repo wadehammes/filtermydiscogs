@@ -1,23 +1,20 @@
-import type { RenderResult } from "@testing-library/react";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/basePageObject.po";
-import { render } from "test-utils";
+import type { RenderResult } from "src/tests/utils/test-utils";
+import { render } from "src/tests/utils/test-utils";
 import { SearchBar } from "./SearchBar.component";
 
-const mockUseFilters = jest.fn();
+const mockSearchQuery = jest.fn(() => "");
+const mockIsSearching = jest.fn(() => false);
 export const mockFiltersDispatch = jest.fn();
 
-jest.mock("src/context/filters.context", () => {
-  return {
-    FiltersActionTypes: {
-      SetSearchQuery: "SET_SEARCH_QUERY",
-      SetSearching: "SET_SEARCHING",
-    },
-    useFilters: () => mockUseFilters(),
-  };
-});
+jest.mock("src/hooks/useFilterAtoms.hook", () => ({
+  useFiltersDispatch: () => mockFiltersDispatch,
+  useSearchQuery: () => mockSearchQuery(),
+  useIsSearching: () => mockIsSearching(),
+}));
 
 export type SearchBarRenderProps = {
   className?: string;
@@ -38,13 +35,8 @@ export class SearchBarPageObject extends BasePageObject {
     state: { searchQuery?: string; isSearching?: boolean } = {},
   ) {
     jest.clearAllMocks();
-    mockUseFilters.mockReturnValue({
-      state: {
-        searchQuery: state.searchQuery ?? "",
-        isSearching: state.isSearching ?? false,
-      },
-      dispatch: mockFiltersDispatch,
-    });
+    mockSearchQuery.mockReturnValue(state.searchQuery ?? "");
+    mockIsSearching.mockReturnValue(state.isSearching ?? false);
   }
 
   private searchBarElement(overrides: SearchBarRenderProps = {}) {

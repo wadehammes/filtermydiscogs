@@ -4,7 +4,7 @@ import type React from "react";
 import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { useCrate } from "src/context/crate.context";
-import { useFilters } from "src/context/filters.context";
+import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsArtist, ReleaseListItemProps } from "src/types";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -16,7 +16,7 @@ const ReleaseListItemComponent = ({
   onExitRandomMode,
 }: ReleaseListItemProps) => {
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const { state: filtersState } = useFilters();
+  const selectedStyles = useSelectedStyles();
   const {
     labels,
     year,
@@ -199,7 +199,7 @@ const ReleaseListItemComponent = ({
                     type="button"
                     className={classNames(styles.stylePill, {
                       [styles.stylePillSelected as string]:
-                        filtersState.selectedStyles.includes(style),
+                        selectedStyles.includes(style),
                     })}
                     onClick={(e) => handleStylePillClick(e, style)}
                     aria-label={`Filter by ${style} style`}

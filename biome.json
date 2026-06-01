@@ -61,7 +61,22 @@
       "style": {
         "useLiteralEnumMembers": "off",
         "useConst": "error",
-        "useTemplate": "error"
+        "useTemplate": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "src/context/filters.context": {
+                "importNames": ["useFilters"],
+                "message": "Prefer granular hooks from src/hooks/useFilterAtoms.hook.ts (e.g. useSelectedStyles, useFiltersDispatch)."
+              },
+              "src/context/view.context": {
+                "importNames": ["useView"],
+                "message": "Prefer granular hooks from src/hooks/useViewAtoms.hook.ts (e.g. useCurrentView, useViewDispatch)."
+              }
+            }
+          }
+        }
       },
       "suspicious": {
         "noArrayIndexKey": "off",
@@ -84,5 +99,22 @@
       "indentWidth": 2
     },
     "globals": ["jest"]
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/context/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    }
+  ]
 }

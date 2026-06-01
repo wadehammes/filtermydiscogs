@@ -103,7 +103,14 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 - **Mocks in POs**: Put `jest.mock(...)` in the PO when the component depends on context or modules. Specs import the **PO first** (before the component) so mocks apply before the component module loads.
 - **Specs**: Prefer **`<Name>.spec.tsx`** for new component tests with page objects. Existing **`* .test.tsx`** / **`* .component.test.tsx`** files remain valid. In specs, import **`describe`**, **`it`**, **`expect`**, **`beforeEach`** from **`@jest/globals`** when you need jest-dom matchers typed cleanly.
 - **Assert on literal user-visible strings in specs**, not `po.someField` read back from the PO—repeat the literal in both PO factory/render setup and `screen.getBy*` / `expect` so coupling stays visible.
-- **Custom render**: Use **`render`** from [`test-utils.tsx`](../../test-utils.tsx) in POs (QueryClient wrapper). Use **`renderWithProviders`** when the real provider stack is required and you are **not** mocking context. Context-heavy component tests usually mock context in the PO instead.
+- **Custom render**: Use **`render`**, **`renderHook`**, and other Testing Library helpers from [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx) (import alias **`test-utils`**). The default **`render`** wrapper is **`TestProviders`** (QueryClient, Jotai, theme, auth, collection, filters, crate, view). Pass a custom **`wrapper`** only when a test intentionally needs a subset (e.g. “outside provider” error cases).
+
+### Jotai state in components
+
+- **Read** filter/view slices via [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts)—not **`useFilters()`** / **`useView()`** (Biome enforces this under `src/components/**`).
+- **Write** filter actions via **`useFiltersDispatch()`**; view changes via **`useViewDispatch()`**.
+- **Release list**: read **`useAllReleases()`** from filter atoms; only **`useCollectionData`** (and **`useCollectionReset`**) should dispatch **`SetAllReleases`**.
+- **PO mocks**: when asserting dispatch in isolation, mock **`src/hooks/useFilterAtoms.hook`** (see `SearchBar.po.tsx`, `ReleaseCard.po.tsx`) rather than **`useFilters()`**.
 
 ### Test data and factories
 
@@ -117,7 +124,7 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 ### What to mock (and what not)
 
 - **Don't mock**: Pure helpers under [`src/utils/`](../../src/utils/)—filter, sort, format, URL helpers. Let them run in component tests.
-- **Do mock**: External dependencies—`src/api/*` when testing components in isolation, auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
+- **Do mock**: External dependencies—mock **`src/api/helpers`** with **`jest.mock("src/api/helpers")`** and configure responses via [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts) (same helper as energy-texas). Use [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts) for fetch-level tests of [`src/api/helpers.ts`](../../src/api/helpers.ts). Also mock auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
 - **Assertions**: Prefer asserting final DOM/output; avoid `expect(mockFn).toHaveBeenCalledWith(...)` when un-mocking—the output already proves wiring.
 
 ### Jest notes

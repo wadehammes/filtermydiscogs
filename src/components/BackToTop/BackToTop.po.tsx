@@ -1,9 +1,9 @@
-import type { RenderResult } from "@testing-library/react";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/basePageObject.po";
-import { render } from "test-utils";
+import type { RenderResult } from "src/tests/utils/test-utils";
+import { render } from "src/tests/utils/test-utils";
 import { BackToTop } from "./BackToTop.component";
 
 export class BackToTopPageObject extends BasePageObject {

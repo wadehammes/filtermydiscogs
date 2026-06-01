@@ -63,7 +63,7 @@ If you add a new third-party script domain, update **CSP** in the same change.
 
 [`jest.config.ts`](../../jest.config.ts) uses **`next/jest`** with:
 
-- **`test-utils`** alias → [`test-utils.tsx`](../../test-utils.tsx)
+- **`test-utils`** alias → [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)
 - **`src/`** path alias
 - SVG and CSS mocks under **`.jest/`**
 - Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`** (see comments in config)

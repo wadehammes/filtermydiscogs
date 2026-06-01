@@ -9,15 +9,14 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { useCollectionContext } from "src/context/collection.context";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
 import { TOOLTIP_STYLE } from "src/utils/chartConfig";
 import { calculateStyleEvolution } from "src/utils/styleEvolution";
 import styles from "./StyleEvolution.module.css";
 
 export function StyleEvolution() {
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const releases = useAllReleases();
   const colors = useChartColors();
 
   const styleEvolution = useMemo(() => {

@@ -1,5 +1,5 @@
-import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { screen, waitFor } from "src/tests/utils/test-utils";
 import { mockFiltersDispatch, SearchBarPageObject } from "./SearchBar.po";
 
 let po: SearchBarPageObject;

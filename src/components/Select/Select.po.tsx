@@ -1,4 +1,3 @@
-import type { RenderResult } from "@testing-library/react";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -7,7 +6,8 @@ import {
   defaultSelectOptions,
   type SelectOption,
 } from "src/tests/factories/SelectOption.factory";
-import { render } from "test-utils";
+import type { RenderResult } from "src/tests/utils/test-utils";
+import { render } from "src/tests/utils/test-utils";
 import Select from "./Select.component";
 
 export type SelectRenderProps = {

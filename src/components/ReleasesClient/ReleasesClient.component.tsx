@@ -46,7 +46,7 @@ export default function ReleasesClient() {
 
     // UI state
     isMobile,
-    viewState,
+    currentView,
 
     // Refs
     mainContentRef,
@@ -113,7 +113,7 @@ export default function ReleasesClient() {
               showAllLoadedMessage={showAllLoadedMessage}
               isMobile={isMobile}
               isRandomMode={isRandomMode}
-              currentView={viewState.currentView}
+              currentView={currentView}
               onViewChange={handleViewChange}
               onRandomClick={handleRandomClick}
               onCratesClick={toggleDrawer}
@@ -124,7 +124,7 @@ export default function ReleasesClient() {
           {hasReleases ? (
             <ReleasesGrid
               releases={visibleReleases}
-              view={viewState.currentView}
+              view={currentView}
               isMobile={isMobile}
               isRandomMode={isRandomMode}
               onExitRandomMode={handleExitRandomMode}

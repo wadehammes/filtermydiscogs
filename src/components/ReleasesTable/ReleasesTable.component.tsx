@@ -13,7 +13,10 @@ import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { useCrate } from "src/context/crate.context";
-import { useFilters } from "src/context/filters.context";
+import {
+  useSelectedFormats,
+  useSelectedStyles,
+} from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
@@ -33,7 +36,8 @@ const columnHelper = createColumnHelper<DiscogsRelease>();
 export const ReleasesTable = memo<ReleasesTableProps>(
   ({ releases, isMobile, isRandomMode, onExitRandomMode }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-    const { state: filtersState } = useFilters();
+    const selectedStyles = useSelectedStyles();
+    const selectedFormats = useSelectedFormats();
 
     const handlePillClick = usePillClickHandler({
       category: "releasesTable",
@@ -312,8 +316,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       "pillFormat",
                       styles.formatPill,
                       {
-                        pillSelected:
-                          filtersState.selectedFormats.includes(formatName),
+                        pillSelected: selectedFormats.includes(formatName),
                       },
                     )}
                     onClick={(e) =>
@@ -353,8 +356,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       "pillStyle",
                       styles.stylePill,
                       {
-                        pillSelected:
-                          filtersState.selectedStyles.includes(style),
+                        pillSelected: selectedStyles.includes(style),
                       },
                     )}
                     onClick={(e) =>
@@ -378,8 +380,8 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         }),
       ],
       [
-        filtersState.selectedStyles,
-        filtersState.selectedFormats,
+        selectedStyles,
+        selectedFormats,
         handlePillClick,
         handleCheckboxChange,
         isInCrate,

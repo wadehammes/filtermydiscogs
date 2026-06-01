@@ -2,7 +2,12 @@
 
 import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { FiltersActionTypes } from "src/context/filters.context";
+import {
+  useFiltersDispatch,
+  useIsSearching,
+  useSearchQuery,
+} from "src/hooks/useFilterAtoms.hook";
 import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
@@ -16,13 +21,14 @@ export const SearchBar = ({
   placeholder = "Search your collection...",
   disabled = false,
 }: SearchBarProps) => {
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
+  const filtersDispatch = useFiltersDispatch();
+  const searchQuery = useSearchQuery();
+  const isSearching = useIsSearching();
   const [inputValue, setInputValue] = useState("");
-  const { isSearching } = filtersState;
 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousSearchQueryRef = useRef<string>(filtersState.searchQuery);
+  const previousSearchQueryRef = useRef<string>(searchQuery);
 
   const debouncedSearch = useCallback(
     (query: string) => {
@@ -75,7 +81,7 @@ export const SearchBar = ({
   // Only clear if searchQuery changed from non-empty to empty (external clear), not during typing
   useEffect(() => {
     const previousQuery = previousSearchQueryRef.current;
-    const currentQuery = filtersState.searchQuery;
+    const currentQuery = searchQuery;
 
     // If searchQuery was cleared externally (changed from non-empty to empty)
     // and we have a local input value, clear it
@@ -90,7 +96,7 @@ export const SearchBar = ({
 
     // Update the ref for next comparison
     previousSearchQueryRef.current = currentQuery;
-  }, [filtersState.searchQuery, inputValue]);
+  }, [searchQuery, inputValue]);
 
   useEffect(() => {
     return () => {

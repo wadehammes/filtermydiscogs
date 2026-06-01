@@ -1,15 +1,16 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
 import { mocked } from "jest-mock";
 import { usePathname } from "next/navigation";
+import {
+  act,
+  renderHook,
+  TestProviders,
+  waitFor,
+} from "src/tests/utils/test-utils";
 import { useMediaQuery } from "usehooks-ts";
-import { ThemeProvider, useTheme } from "./theme.context";
+import { useTheme } from "./theme.context";
 
 const mockUseMediaQuery = mocked(useMediaQuery);
 const mockUsePathname = mocked(usePathname);
-
-jest.mock("next/navigation", () => ({
-  usePathname: jest.fn(() => "/"),
-}));
 
 describe("ThemeProvider", () => {
   beforeEach(() => {
@@ -25,7 +26,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -39,7 +40,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -52,7 +53,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -72,7 +73,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -105,7 +106,7 @@ describe("ThemeProvider", () => {
     });
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -119,7 +120,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -144,7 +145,7 @@ describe("ThemeProvider", () => {
     document.documentElement.setAttribute("data-theme", "light");
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -182,7 +183,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -196,7 +197,7 @@ describe("ThemeProvider", () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -209,7 +210,7 @@ describe("ThemeProvider", () => {
     mockUsePathname.mockReturnValue("/");
 
     const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -226,7 +227,7 @@ describe("ThemeProvider", () => {
     mockUsePathname.mockReturnValue("/dashboard");
 
     const { result: resultAfterNav } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {

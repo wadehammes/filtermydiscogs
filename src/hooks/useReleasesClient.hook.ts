@@ -1,11 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useAuth } from "src/context/auth.context";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
-import { useView, ViewActionTypes } from "src/context/view.context";
+import { FiltersActionTypes } from "src/context/filters.context";
+import { ViewActionTypes } from "src/context/view.context";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import {
+  useAllReleases,
+  useFilteredReleases,
+  useFiltersDispatch,
+  useIsRandomMode,
+  useRandomRelease,
+  useSearchQuery,
+  useSelectedFormats,
+  useSelectedStyles,
+  useSelectedYears,
+} from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
+import {
+  useCurrentView,
+  usePreviousView,
+  useViewDispatch,
+} from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
 import { filterReleases } from "src/utils/filterReleases";
 
@@ -16,10 +32,18 @@ export const useReleasesClient = () => {
   const { state: authState } = useAuth();
   const authLoading = !authState.isAuthenticated && authState.isLoading;
   const { username, isAuthenticated } = authState;
-  const { state: viewState, dispatch: viewDispatch } = useView();
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { filteredReleases, isRandomMode, randomRelease, allReleases } =
-    filtersState;
+  const currentView = useCurrentView();
+  const previousView = usePreviousView();
+  const viewDispatch = useViewDispatch();
+  const filtersDispatch = useFiltersDispatch();
+  const filteredReleases = useFilteredReleases();
+  const isRandomMode = useIsRandomMode();
+  const randomRelease = useRandomRelease();
+  const allReleases = useAllReleases();
+  const selectedStyles = useSelectedStyles();
+  const selectedYears = useSelectedYears();
+  const selectedFormats = useSelectedFormats();
+  const searchQuery = useSearchQuery();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -50,22 +74,15 @@ export const useReleasesClient = () => {
     !isRandomMode && filteredReleases.length > visibleReleases.length;
 
   useEffect(() => {
-    if (!isRandomMode && viewState.currentView === "random") {
-      const previousView =
-        viewState.previousView === "list"
-          ? "card"
-          : viewState.previousView || "card";
+    if (!isRandomMode && currentView === "random") {
+      const nextView =
+        previousView === "list" ? "card" : previousView || "card";
       viewDispatch({
         type: ViewActionTypes.SetView,
-        payload: previousView,
+        payload: nextView,
       });
     }
-  }, [
-    isRandomMode,
-    viewState.currentView,
-    viewState.previousView,
-    viewDispatch,
-  ]);
+  }, [isRandomMode, currentView, previousView, viewDispatch]);
 
   useEffect(() => {
     const allLoaded = !(hasNextPage || isFetchingNextPage) && hasReleases;
@@ -151,14 +168,6 @@ export const useReleasesClient = () => {
   }, []);
 
   const handleRandomClick = useCallback(() => {
-    const {
-      allReleases,
-      selectedStyles,
-      selectedYears,
-      selectedFormats,
-      searchQuery,
-    } = filtersState;
-
     const currentFilteredReleases = filterReleases({
       releases: allReleases,
       selectedStyles,
@@ -167,14 +176,22 @@ export const useReleasesClient = () => {
       searchQuery,
     });
 
-    const randomRelease = getRandomRelease(currentFilteredReleases);
-    if (randomRelease) {
+    const nextRandomRelease = getRandomRelease(currentFilteredReleases);
+    if (nextRandomRelease) {
       filtersDispatch({
         type: FiltersActionTypes.SetRandomRelease,
-        payload: randomRelease,
+        payload: nextRandomRelease,
       });
     }
-  }, [filtersState, filtersDispatch, getRandomRelease]);
+  }, [
+    allReleases,
+    selectedStyles,
+    selectedYears,
+    selectedFormats,
+    searchQuery,
+    filtersDispatch,
+    getRandomRelease,
+  ]);
 
   const handleExitRandomMode = useCallback(() => {
     filtersDispatch({
@@ -199,7 +216,7 @@ export const useReleasesClient = () => {
     randomRelease,
 
     isMobile,
-    viewState,
+    currentView,
 
     mainContentRef,
     infiniteScrollRef: ref,

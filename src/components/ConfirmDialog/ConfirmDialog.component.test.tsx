@@ -1,5 +1,5 @@
-import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { fireEvent, screen } from "src/tests/utils/test-utils";
 import { ConfirmDialogPageObject } from "./ConfirmDialog.po";
 
 let po: ConfirmDialogPageObject;

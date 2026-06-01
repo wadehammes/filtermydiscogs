@@ -1,5 +1,5 @@
-import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { screen } from "src/tests/utils/test-utils";
 import { ViewTogglePageObject } from "./ViewToggle.po";
 
 let po: ViewTogglePageObject;
@@ -53,6 +53,18 @@ describe("ViewToggle", () => {
     await user.click(cardButton);
 
     expect(po.onViewChange).toHaveBeenCalledWith("card");
+  });
+
+  it("scrolls to top when a view mode button is clicked", async () => {
+    const user = userEvent.setup();
+    const scrollToSpy = po.mockScrollTo();
+    po.renderViewToggle({ currentView: "list" });
+
+    await user.click(
+      screen.getByRole("button", { name: "Switch to card view" }),
+    );
+
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "instant" });
   });
 
   it("calls onViewChange when list view is clicked", async () => {
@@ -119,6 +131,16 @@ describe("ViewToggle", () => {
     await user.click(cratesButton);
 
     expect(po.onCratesClick).toHaveBeenCalled();
+  });
+
+  it("does not scroll to top when the crates button is clicked", async () => {
+    const user = userEvent.setup();
+    const scrollToSpy = po.mockScrollTo();
+    po.renderViewToggle({ onCratesClick: po.onCratesClick });
+
+    await user.click(screen.getByRole("button", { name: "Open crates" }));
+
+    expect(scrollToSpy).not.toHaveBeenCalled();
   });
 
   it("highlights crates button when isCratesOpen is true", () => {

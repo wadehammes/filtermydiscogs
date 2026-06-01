@@ -1,6 +1,6 @@
-import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { selectOptionFactory } from "src/tests/factories/SelectOption.factory";
+import { screen, waitFor } from "src/tests/utils/test-utils";
 import Select from "./Select.component";
 import { SelectPageObject } from "./Select.po";
 
