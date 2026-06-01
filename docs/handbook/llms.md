@@ -21,7 +21,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Task | Location |
 |------|----------|
 | Install Node/pnpm, Discogs app, database, first run | Repo root **[README.md](../../README.md)** |
-| Agent defaults, handbook sync | **[CLAUDE.md](../../CLAUDE.md)**, **[AGENTS.md](../../AGENTS.md)**; Cursor **[`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc)** |
+| Agent defaults, handbook sync | **[CLAUDE.md](../../CLAUDE.md)**, **[AGENTS.md](../../AGENTS.md)** |
 
 ## Suggested instruction blurb (copy-paste)
 
