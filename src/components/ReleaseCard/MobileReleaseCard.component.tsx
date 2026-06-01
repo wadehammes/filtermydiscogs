@@ -4,7 +4,10 @@ import type React from "react";
 import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { useCrate } from "src/context/crate.context";
-import { useFilters } from "src/context/filters.context";
+import {
+  useSelectedFormats,
+  useSelectedStyles,
+} from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
 import MinusIcon from "src/styles/icons/minus-solid.svg";
@@ -26,7 +29,8 @@ const MobileReleaseCardComponent = ({
   onExitRandomMode,
 }: ReleaseCardProps) => {
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
-  const { state: filtersState } = useFilters();
+  const selectedStyles = useSelectedStyles();
+  const selectedFormats = useSelectedFormats();
   const {
     labels,
     year,
@@ -200,8 +204,7 @@ const MobileReleaseCardComponent = ({
                 key={formatName}
                 type="button"
                 className={classNames("pill", "pillFormat", styles.formatPill, {
-                  pillSelected:
-                    filtersState.selectedFormats.includes(formatName),
+                  pillSelected: selectedFormats.includes(formatName),
                 })}
                 onClick={(e) =>
                   handlePillClick({
@@ -224,7 +227,7 @@ const MobileReleaseCardComponent = ({
                 key={style}
                 type="button"
                 className={classNames("pill", "pillStyle", styles.stylePill, {
-                  pillSelected: filtersState.selectedStyles.includes(style),
+                  pillSelected: selectedStyles.includes(style),
                 })}
                 onClick={(e) =>
                   handlePillClick({

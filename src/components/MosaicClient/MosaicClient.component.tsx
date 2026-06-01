@@ -9,46 +9,51 @@ import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import { useAuth } from "src/context/auth.context";
-import { useCollectionContext } from "src/context/collection.context";
 import {
   FiltersActionTypes,
-  useFilters,
   useMemoizedFilteredReleases,
 } from "src/context/filters.context";
-import { useView, ViewActionTypes } from "src/context/view.context";
+import { ViewActionTypes } from "src/context/view.context";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import {
+  useAllReleases,
+  useFiltersDispatch,
+  useIsRandomMode,
+} from "src/hooks/useFilterAtoms.hook";
 import { useGridDimensions } from "src/hooks/useGridDimensions.hook";
 import { useMosaicGenerator } from "src/hooks/useMosaicGenerator.hook";
+import { useCurrentView, useViewDispatch } from "src/hooks/useViewAtoms.hook";
 import styles from "./MosaicClient.module.css";
 
 export default function MosaicClient() {
   const { state } = useAuth();
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const allReleases = useAllReleases();
   const { isLoading: collectionLoading } = useCollectionData(
     state.username,
     state.isAuthenticated,
   );
-  const { state: viewState, dispatch: viewDispatch } = useView();
-  const { dispatch: filtersDispatch, state: filtersState } = useFilters();
+  const currentView = useCurrentView();
+  const viewDispatch = useViewDispatch();
+  const filtersDispatch = useFiltersDispatch();
+  const isRandomMode = useIsRandomMode();
 
   useEffect(() => {
-    if (viewState.currentView === "random") {
+    if (currentView === "random") {
       viewDispatch({
         type: ViewActionTypes.SetView,
         payload: "card",
       });
     }
-  }, [viewState.currentView, viewDispatch]);
+  }, [currentView, viewDispatch]);
 
   useEffect(() => {
-    if (filtersState.isRandomMode) {
+    if (isRandomMode) {
       filtersDispatch({
         type: FiltersActionTypes.ToggleRandomMode,
         payload: undefined,
       });
     }
-  }, [filtersState.isRandomMode, filtersDispatch]);
+  }, [isRandomMode, filtersDispatch]);
 
   const [imageFormat, setImageFormat] = useState<"jpeg" | "png">(
     MOSAIC_CONSTANTS.DEFAULT_FORMAT,
@@ -93,7 +98,7 @@ export default function MosaicClient() {
         <div className={styles.emptyState}>
           <h1>No releases to display</h1>
           <p>
-            {releases.length === 0
+            {allReleases.length === 0
               ? "Your collection appears to be empty"
               : "No releases match your current filters. Try adjusting your filter settings."}
           </p>
@@ -109,7 +114,7 @@ export default function MosaicClient() {
         <div className={styles.header}>
           <h1>Album Mosaic</h1>
           <p>
-            {releasesToDisplay.length === releases.length
+            {releasesToDisplay.length === allReleases.length
               ? `Showing all ${releasesToDisplay.length} releases from your collection`
               : `Showing ${releasesToDisplay.length} filtered releases from your collection`}
           </p>

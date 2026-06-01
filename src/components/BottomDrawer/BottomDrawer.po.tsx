@@ -1,10 +1,10 @@
-import type { RenderResult } from "@testing-library/react";
 import type { ReactNode } from "react";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/basePageObject.po";
-import { render } from "test-utils";
+import type { RenderResult } from "src/tests/utils/test-utils";
+import { render } from "src/tests/utils/test-utils";
 import { BottomDrawer } from "./BottomDrawer.component";
 
 export type BottomDrawerRenderProps = {

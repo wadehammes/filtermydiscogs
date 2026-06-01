@@ -1,9 +1,9 @@
-import type { RenderResult } from "@testing-library/react";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/basePageObject.po";
-import { render } from "test-utils";
+import type { RenderResult } from "src/tests/utils/test-utils";
+import { render } from "src/tests/utils/test-utils";
 import { type ViewMode, ViewToggle } from "./ViewToggle.component";
 
 export type ViewToggleRenderProps = {
@@ -24,6 +24,12 @@ export class ViewTogglePageObject extends BasePageObject {
   constructor(props: BasePageObjectProps = {}) {
     super(props);
     jest.clearAllMocks();
+  }
+
+  mockScrollTo() {
+    const scrollToSpy = jest.fn();
+    window.scrollTo = scrollToSpy;
+    return scrollToSpy;
   }
 
   private viewToggleElement(overrides: ViewToggleRenderProps = {}) {

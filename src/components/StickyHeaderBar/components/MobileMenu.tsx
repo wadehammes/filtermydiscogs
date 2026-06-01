@@ -5,10 +5,15 @@ import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.compon
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
-import { useView, ViewActionTypes } from "src/context/view.context";
+import { FiltersActionTypes } from "src/context/filters.context";
+import { ViewActionTypes } from "src/context/view.context";
 import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
+import {
+  useFiltersDispatch,
+  useIsRandomMode,
+} from "src/hooks/useFilterAtoms.hook";
+import { useViewDispatch } from "src/hooks/useViewAtoms.hook";
 import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
 import { MobileMenuDrawerFooter } from "./MobileMenuDrawerFooter";
 import { MobileMenuHeader } from "./MobileMenuHeader";
@@ -143,9 +148,9 @@ export const MobileMenu = ({
     });
   };
 
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
-  const { dispatch: viewDispatch } = useView();
-  const { isRandomMode } = filtersState;
+  const filtersDispatch = useFiltersDispatch();
+  const viewDispatch = useViewDispatch();
+  const isRandomMode = useIsRandomMode();
 
   const handleRandomModeToggle = () => {
     const newIsRandomMode = !isRandomMode;

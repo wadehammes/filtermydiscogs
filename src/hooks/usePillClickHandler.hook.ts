@@ -1,6 +1,10 @@
 import { useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { FiltersActionTypes } from "src/context/filters.context";
+import {
+  useFiltersDispatch,
+  useIsRandomMode,
+} from "src/hooks/useFilterAtoms.hook";
 
 interface UsePillClickHandlerOptions {
   category: string;
@@ -25,7 +29,8 @@ export const usePillClickHandler = ({
   category,
   onExitRandomMode,
 }: UsePillClickHandlerOptions) => {
-  const { state: filtersState, dispatch: filtersDispatch } = useFilters();
+  const filtersDispatch = useFiltersDispatch();
+  const isRandomMode = useIsRandomMode();
 
   const handlePillClick = useCallback(
     ({ event, value, type, eventLabel }: PillClickParams) => {
@@ -39,7 +44,7 @@ export const usePillClickHandler = ({
         value,
       });
 
-      if (filtersState.isRandomMode) {
+      if (isRandomMode) {
         filtersDispatch({
           type: FiltersActionTypes.ToggleRandomMode,
           payload: undefined,
@@ -55,7 +60,7 @@ export const usePillClickHandler = ({
         payload: value,
       });
     },
-    [category, filtersDispatch, filtersState.isRandomMode, onExitRandomMode],
+    [category, filtersDispatch, isRandomMode, onExitRandomMode],
   );
 
   return handlePillClick;

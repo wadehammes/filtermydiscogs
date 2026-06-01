@@ -7,14 +7,17 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 [`src/components/Providers.tsx`](../../src/components/Providers.tsx) nests providers in this order (outer → inner):
 
 1. **QueryClientProvider** — TanStack Query defaults (10 min stale time, limited refetch).
-2. **ThemeProvider** — light / dark / system preference.
-3. **AuthProvider** — OAuth session state.
-4. **CollectionContextProvider** — loaded releases and pagination.
-5. **FiltersProvider** — style/year/format filters, sort, search, random mode.
-6. **CrateProvider** — active crate and crate list.
-7. **ViewProvider** — card vs table view preference.
+2. **JotaiProvider** — shared Jotai store for client UI state ([`src/atoms/JotaiProvider.tsx`](../../src/atoms/JotaiProvider.tsx)).
+3. **ThemeProvider** — light / dark / system preference.
+4. **AuthProvider** — OAuth session state.
+5. **CollectionContextProvider** — loaded releases and pagination.
+6. **FiltersProvider** — scope marker for filter hooks (state lives in [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts)).
+7. **CrateProvider** — active crate and crate list.
+8. **ViewProvider** — scope marker for view hooks (state in [`src/atoms/view.atoms.ts`](../../src/atoms/view.atoms.ts)).
 
-When adding a new global concern, follow the same **context + useReducer + typed actions** pattern as existing files under [`src/context/`](../../src/context/).
+**Jotai** backs **filters** and **view** preference state. Atoms and derived selectors live under [`src/atoms/`](../../src/atoms/); [`src/context/filters.context.tsx`](../../src/context/filters.context.tsx) and [`view.context.tsx`](../../src/context/view.context.tsx) expose scope markers and legacy `useFilters()` / `useView()` for full state. Prefer granular hooks from [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts) so components subscribe only to the slice they need (for example `useSelectedStyles()`, `useFilteredReleases()`, `useCurrentView()`).
+
+**Auth**, **collection**, **crate**, and **theme** still use React context. When adding a new global concern, use **Jotai** for derived client UI state with many subscribers; use **context + reducer** (or React Query) for session lifecycle, server-backed data, or side-effect-heavy flows.
 
 ## Authentication flow
 
@@ -57,14 +60,16 @@ Hook rules (single params object, no side effects in hook files): [conventions.m
 
 ## Filtering and sorting
 
-1. **`CollectionContext`** holds **`allReleases`** from paginated Discogs fetches.
-2. **`FiltersContext`** reducer calls pure helpers:
+1. **`useCollectionData`** loads paginated Discogs pages and writes releases once via **`FiltersActionTypes.SetAllReleases`** → **`allReleasesAtom`** (single source of truth). Collection context keeps pagination metadata (`collection`, `fetchingCollection`, `error`) only—not a duplicate release list.
+2. **Filter atoms** ([`filters.atoms.ts`](../../src/atoms/filters.atoms.ts)) derive **`filteredReleases`** from filter inputs via:
    - [`filterReleases.ts`](../../src/utils/filterReleases.ts)
    - [`sortReleases.ts`](../../src/utils/sortReleases.ts)
    - [`getAvailableStyles/Years/Formats`](../../src/utils/) for filter chip options
-3. UI components (`FiltersBar`, `FiltersDrawer`) dispatch filter actions; **`filteredReleases`** drives tables, cards, mosaic input, and random release.
+3. UI components (`FiltersBar`, `FiltersDrawer`, release pills) dispatch filter actions through **`useFiltersDispatch()`** and read state via **`useFilterAtoms`** hooks; **`useFilteredReleases()`** / **`useMemoizedFilteredReleases()`** drive tables, cards, mosaic input, and random release. Dashboard/analytics read the same list via **`useAllReleases()`**.
 
-Add filter dimensions by extending reducer state, helpers, and UI—not by filtering ad hoc in leaf components.
+**Lint guardrails**: Biome **`noRestrictedImports`** blocks **`useFilters`** / **`useView`** in `src/components/**`—use **`useFilterAtoms`** / **`useViewAtoms`** instead. Context modules and tests are exempt.
+
+Add filter dimensions by extending filter atoms/helpers and UI—not by filtering ad hoc in leaf components.
 
 ## Crates
 

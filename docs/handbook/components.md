@@ -50,7 +50,7 @@ Add factories under **`src/tests/factories/`** when structured test data is need
 ## Testing
 
 - Colocate specs with the component when adding coverage (`*.spec.tsx`, `*.test.tsx`, `*.component.test.tsx`, plus optional **`*.po.tsx`**).
-- Use **`renderWithProviders`** from **`test-utils`** when auth, filters, or crate context is required **without** mocking. Context-heavy component tests usually mock context in the PO and use **`render`** instead (see [conventions.md → Testing](conventions.md#testing)).
+- Use **`render`** from **`test-utils`** when auth, filters, or crate context is required **without** mocking (default wrapper is **`TestProviders`**). Context-heavy component tests usually mock context in the PO and use **`render`** instead (see [conventions.md → Testing](conventions.md#testing)).
 
 ## Exports
 

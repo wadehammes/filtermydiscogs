@@ -22,7 +22,6 @@ export enum CollectionActionTypes {
   SetPage = "SET_PAGE",
   SetNextPageLink = "SET_NEXT_PAGE_LINK",
   SetCollection = "SET_COLLECTION",
-  SetReleases = "SET_RELEASES",
   SetFetchingCollection = "SET_FETCHING_COLLECTION",
   SetFilteredReleases = "SET_FILTERED_RELEASES",
   SetReleaseStyles = "SET_RELEASE_STYLES",
@@ -41,7 +40,6 @@ export interface CollectionStateStore {
   page: number;
   nextPageLink: string | null;
   collection: DiscogsCollection | null;
-  releases: DiscogsRelease[];
   fetchingCollection: boolean;
   filteredReleases: DiscogsRelease[];
   releaseStyles: string[];
@@ -66,10 +64,6 @@ export type CollectionActions =
   | {
       type: CollectionActionTypes.SetCollection;
       payload: DiscogsCollection;
-    }
-  | {
-      type: CollectionActionTypes.SetReleases;
-      payload: DiscogsRelease[];
     }
   | {
       type: CollectionActionTypes.SetFetchingCollection;
@@ -125,11 +119,6 @@ export const CollectionReducer = (
         ...state,
         collection: action.payload,
       };
-    case CollectionActionTypes.SetReleases:
-      return {
-        ...state,
-        releases: action.payload,
-      };
     case CollectionActionTypes.SetFilteredReleases:
       return {
         ...state,
@@ -175,7 +164,6 @@ const initialState: CollectionStateStore = {
   page: 1,
   nextPageLink: null,
   collection: null,
-  releases: [],
   fetchingCollection: true,
   filteredReleases: [],
   releaseStyles: [],
@@ -190,7 +178,6 @@ export interface CollectionProviderProps {
   dispatchPage: (page: number) => void;
   dispatchNextPageLink: (link: string | null) => void;
   dispatchCollection: (collection: DiscogsCollection) => void;
-  dispatchReleases: (releases: DiscogsRelease[]) => void;
   dispatchFetchingCollection: (fetching: boolean) => void;
   dispatchFilteredReleases: (releases: DiscogsRelease[]) => void;
   dispatchReleaseStyles: (styles: string[]) => void;
@@ -257,13 +244,6 @@ export const CollectionContextProvider = ({
     });
   }, []);
 
-  const dispatchReleases = useCallback((releases: DiscogsRelease[]) => {
-    dispatch({
-      type: CollectionActionTypes.SetReleases,
-      payload: releases,
-    });
-  }, []);
-
   const dispatchReleaseStyles = useCallback((styles: string[]) => {
     dispatch({
       type: CollectionActionTypes.SetReleaseStyles,
@@ -310,7 +290,6 @@ export const CollectionContextProvider = ({
         dispatchNextPageLink,
         dispatchFetchingCollection,
         dispatchCollection,
-        dispatchReleases,
         dispatchFilteredReleases,
         dispatchReleaseStyles,
         dispatchSelectedReleaseStyle,

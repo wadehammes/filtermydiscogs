@@ -1,24 +1,5 @@
-import { QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
 import { mocked } from "jest-mock";
-import type { ReactNode } from "react";
-import { useMemo } from "react";
-import {
-  addReleaseToCrate,
-  createCrate,
-  deleteCrate,
-  fetchCrate,
-  fetchCrates,
-  fetchDiscogsCollection,
-  removeReleaseFromCrate,
-  syncCrates,
-  updateCrate,
-} from "src/api/helpers";
-import { AuthProvider } from "src/context/auth.context";
-import { CollectionContextProvider } from "src/context/collection.context";
-import { FiltersProvider } from "src/context/filters.context";
-import { ThemeProvider } from "src/context/theme.context";
-import { ViewProvider } from "src/context/view.context";
+import * as apiHelpers from "src/api/helpers";
 import {
   checkAuthStatus,
   clearAuthCookies,
@@ -30,24 +11,21 @@ import {
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { createTestQueryClient } from "src/tests/utils/testQueryClient";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  act,
+  renderHook,
+  TestProviders,
+  waitFor,
+} from "src/tests/utils/test-utils";
 import { useMediaQuery } from "usehooks-ts";
-import { CrateProvider, useCrate } from "./crate.context";
+import { useCrate } from "./crate.context";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
+const mockApi = mocked(apiHelpers);
 const mockUseMediaQuery = mocked(useMediaQuery);
-
-const mockFetchCrates = mocked(fetchCrates);
-const mockFetchCrate = mocked(fetchCrate);
-const mockFetchDiscogsCollection = mocked(fetchDiscogsCollection);
-const mockCreateCrate = mocked(createCrate);
-const mockUpdateCrate = mocked(updateCrate);
-const mockDeleteCrate = mocked(deleteCrate);
-const mockAddReleaseToCrate = mocked(addReleaseToCrate);
-const mockRemoveReleaseFromCrate = mocked(removeReleaseFromCrate);
-const mockSyncCrates = mocked(syncCrates);
 const mockGetUserIdFromCookies = mocked(getUserIdFromCookies);
 const mockGetUsernameFromCookies = mocked(getUsernameFromCookies);
 const mockCheckAuthStatus = mocked(checkAuthStatus);
@@ -55,25 +33,7 @@ const mockParseAuthUrlParams = mocked(parseAuthUrlParams);
 const mockClearAuthCookies = mocked(clearAuthCookies);
 const mockClearUrlParams = mocked(clearUrlParams);
 
-const CrateTestWrapper = ({ children }: { children: ReactNode }) => {
-  const queryClient = useMemo(() => createTestQueryClient(), []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <CollectionContextProvider>
-            <FiltersProvider>
-              <CrateProvider>
-                <ViewProvider>{children}</ViewProvider>
-              </CrateProvider>
-            </FiltersProvider>
-          </CollectionContextProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-};
+const apiError = new Error("API request failed");
 
 describe("CrateProvider", () => {
   beforeEach(() => {
@@ -95,37 +55,70 @@ describe("CrateProvider", () => {
     mockClearAuthCookies.mockImplementation(() => {});
     mockClearUrlParams.mockImplementation(() => {});
 
-    mockFetchCrates.mockResolvedValue({ crates: [] });
-    mockFetchCrate.mockResolvedValue({
-      crate: crateFactory.build({ user_id: 123 }),
-      releases: [],
-    });
-    mockFetchDiscogsCollection.mockResolvedValue(
-      collectionFactory.build({ releases: [] }),
+    mockApiResponse(true, mockApi.fetchCrates, { crates: [] }, apiError);
+    mockApiResponse(
+      true,
+      mockApi.fetchCrate,
+      {
+        crate: crateFactory.build({ user_id: 123 }),
+        releases: [],
+      },
+      apiError,
     );
-    mockCreateCrate.mockResolvedValue({
-      crate: crateFactory.build({
-        user_id: 123,
-        id: "new-crate",
-        name: "New Crate",
-      }),
-    });
-    mockUpdateCrate.mockResolvedValue({
-      crate: crateFactory.build({
-        user_id: 123,
-        id: "crate-1",
-        name: "Updated Crate",
-      }),
-    });
-    mockDeleteCrate.mockResolvedValue(undefined);
-    mockAddReleaseToCrate.mockResolvedValue({ success: true });
-    mockRemoveReleaseFromCrate.mockResolvedValue({ success: true });
-    mockSyncCrates.mockResolvedValue({ success: true, removedCount: 0 });
+    mockApiResponse(
+      true,
+      mockApi.fetchDiscogsCollection,
+      collectionFactory.build({ releases: [] }),
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.createCrate,
+      {
+        crate: crateFactory.build({
+          user_id: 123,
+          id: "new-crate",
+          name: "New Crate",
+        }),
+      },
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.updateCrate,
+      {
+        crate: crateFactory.build({
+          user_id: 123,
+          id: "crate-1",
+          name: "Updated Crate",
+        }),
+      },
+      apiError,
+    );
+    mockApiResponse(true, mockApi.deleteCrate, undefined, apiError);
+    mockApiResponse(
+      true,
+      mockApi.addReleaseToCrate,
+      { success: true },
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.removeReleaseFromCrate,
+      { success: true },
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.syncCrates,
+      { success: true, removedCount: 0 },
+      apiError,
+    );
   });
 
   it("provides initial state", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -141,10 +134,15 @@ describe("CrateProvider", () => {
 
   it("provides crates from fetchCrates", async () => {
     const mockCrates = crateFactory.buildList(3);
-    mockFetchCrates.mockResolvedValue({ crates: mockCrates });
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      { crates: mockCrates },
+      apiError,
+    );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -159,10 +157,15 @@ describe("CrateProvider", () => {
       crateFactory.build({ id: "crate-1", is_default: false }),
       crateFactory.build({ id: "crate-2", is_default: true }),
     ];
-    mockFetchCrates.mockResolvedValue({ crates: mockCrates });
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      { crates: mockCrates },
+      apiError,
+    );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -174,7 +177,7 @@ describe("CrateProvider", () => {
 
   it("selects crate", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -193,7 +196,7 @@ describe("CrateProvider", () => {
 
   it("toggles drawer", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -222,7 +225,7 @@ describe("CrateProvider", () => {
 
   it("opens and closes drawer", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -251,14 +254,24 @@ describe("CrateProvider", () => {
     const mockReleases = releaseFactory.buildList(2);
     const mockCrate = crateFactory.build({ id: "crate-1" });
 
-    mockFetchCrates.mockResolvedValue({ crates: [mockCrate] });
-    mockFetchCrate.mockResolvedValue({
-      crate: mockCrate,
-      releases: mockReleases,
-    });
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      { crates: [mockCrate] },
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.fetchCrate,
+      {
+        crate: mockCrate,
+        releases: mockReleases,
+      },
+      apiError,
+    );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -279,14 +292,24 @@ describe("CrateProvider", () => {
     const mockRelease = releaseFactory.build({ instance_id: "release-1" });
     const mockCrate = crateFactory.build({ id: "crate-1" });
 
-    mockFetchCrates.mockResolvedValue({ crates: [mockCrate] });
-    mockFetchCrate.mockResolvedValue({
-      crate: mockCrate,
-      releases: [mockRelease],
-    });
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      { crates: [mockCrate] },
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.fetchCrate,
+      {
+        crate: mockCrate,
+        releases: [mockRelease],
+      },
+      apiError,
+    );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -310,13 +333,23 @@ describe("CrateProvider", () => {
       id: "new-crate",
       name: "New Crate",
     });
-    mockCreateCrate.mockResolvedValue({
-      crate: mockCreatedCrate,
-    });
-    mockFetchCrates.mockResolvedValue({ crates: [mockCreatedCrate] });
+    mockApiResponse(
+      true,
+      mockApi.createCrate,
+      {
+        crate: mockCreatedCrate,
+      },
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      { crates: [mockCreatedCrate] },
+      apiError,
+    );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: CrateTestWrapper,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -328,7 +361,7 @@ describe("CrateProvider", () => {
       await result.current.createCrate("New Crate");
     });
 
-    expect(mockCreateCrate).toHaveBeenCalledWith("New Crate");
+    expect(mockApi.createCrate).toHaveBeenCalledWith("New Crate");
 
     await waitFor(() => {
       expect(result.current.activeCrateId).toBe("new-crate");

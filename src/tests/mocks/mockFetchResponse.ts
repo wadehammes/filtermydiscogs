@@ -1,0 +1,36 @@
+export interface MockFetchResponseOptions {
+  ok?: boolean;
+  status?: number;
+  statusText?: string;
+}
+
+export const mockFetchResponse = <T>(
+  body?: T,
+  options: MockFetchResponseOptions = {},
+): Response => {
+  const ok = options.ok ?? true;
+  const status = options.status ?? (ok ? 200 : 500);
+
+  return {
+    ok,
+    status,
+    statusText: options.statusText ?? (ok ? "OK" : "Error"),
+    json: async () => body,
+  } as Response;
+};
+
+export const mockFetchSuccess = <T>(
+  body: T,
+  options: Omit<MockFetchResponseOptions, "ok"> = {},
+): Response => mockFetchResponse(body, { ok: true, status: 200, ...options });
+
+export const mockFetchError = (
+  status: number,
+  body: Record<string, unknown> = {},
+): Response => mockFetchResponse(body, { ok: false, status });
+
+export const resetFetchMock = () => {
+  if (jest.isMockFunction(fetch)) {
+    (fetch as jest.Mock).mockClear();
+  }
+};

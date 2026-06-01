@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
 import { mocked } from "jest-mock";
 import { useRouter } from "next/navigation";
 import { logout as logoutApi } from "src/api/helpers";
@@ -11,10 +10,25 @@ import {
   getUsernameFromCookies,
   parseAuthUrlParams,
 } from "src/services/auth.service";
-import { AuthActionTypes, AuthProvider, useAuth } from "./auth.context";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  act,
+  renderHook,
+  TestProviders,
+  waitFor,
+} from "src/tests/utils/test-utils";
+import { AuthActionTypes, useAuth } from "./auth.context";
 
-jest.mock("@tanstack/react-query");
-jest.mock("next/navigation");
+jest.mock("@tanstack/react-query", () => {
+  const actual = jest.requireActual<typeof import("@tanstack/react-query")>(
+    "@tanstack/react-query",
+  );
+
+  return {
+    ...actual,
+    useQueryClient: jest.fn(),
+  };
+});
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
@@ -61,7 +75,7 @@ describe("AuthProvider", () => {
 
   it("provides initial state", async () => {
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     expect(result.current.state.isAuthenticated).toBe(false);
@@ -82,7 +96,7 @@ describe("AuthProvider", () => {
     });
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -102,7 +116,7 @@ describe("AuthProvider", () => {
     });
 
     renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -118,7 +132,7 @@ describe("AuthProvider", () => {
     mockCheckAuthStatus.mockRejectedValueOnce(new Error("Auth check failed"));
 
     renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -142,7 +156,7 @@ describe("AuthProvider", () => {
     mockGetUsernameFromCookies.mockReturnValue("testuser");
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -170,7 +184,7 @@ describe("AuthProvider", () => {
     });
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     await waitFor(() => {
@@ -206,7 +220,7 @@ describe("AuthProvider", () => {
     }
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     // Wait for initial auth check to complete
@@ -228,10 +242,15 @@ describe("AuthProvider", () => {
   });
 
   it("calls logout function", async () => {
-    mockLogoutApi.mockResolvedValueOnce({ success: true });
+    mockApiResponse(
+      true,
+      mockLogoutApi,
+      { success: true },
+      new Error("Logout failed"),
+    );
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     // Wait for initial auth check to complete
@@ -264,10 +283,15 @@ describe("AuthProvider", () => {
   });
 
   it("handles logout error", async () => {
-    mockLogoutApi.mockRejectedValueOnce(new Error("Logout failed"));
+    mockApiResponse(
+      false,
+      mockLogoutApi,
+      { success: true },
+      new Error("Logout failed"),
+    );
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider,
+      wrapper: TestProviders,
     });
 
     // Wait for initial auth check to complete

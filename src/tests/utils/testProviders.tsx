@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import { JotaiProvider } from "src/atoms/JotaiProvider";
 import { AuthProvider } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
@@ -14,17 +15,19 @@ export const TestProviders = ({ children }: { children: ReactNode }) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <CollectionContextProvider>
-            <FiltersProvider>
-              <CrateProvider>
-                <ViewProvider>{children}</ViewProvider>
-              </CrateProvider>
-            </FiltersProvider>
-          </CollectionContextProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <JotaiProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <CollectionContextProvider>
+              <FiltersProvider>
+                <CrateProvider>
+                  <ViewProvider>{children}</ViewProvider>
+                </CrateProvider>
+              </FiltersProvider>
+            </CollectionContextProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </JotaiProvider>
     </QueryClientProvider>
   );
 };

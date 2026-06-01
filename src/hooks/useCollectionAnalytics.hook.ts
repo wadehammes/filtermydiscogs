@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCollectionContext } from "src/context/collection.context";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { CollectionAnalytics } from "src/types/dashboard.types";
 import {
   calculateArtistDistribution,
@@ -15,8 +15,7 @@ import { calculateMilestones } from "src/utils/milestones";
 import { calculateStyleEvolution } from "src/utils/styleEvolution";
 
 export const useCollectionAnalytics = (): CollectionAnalytics | null => {
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const releases = useAllReleases();
 
   return useMemo(() => {
     if (!releases || releases.length === 0) {

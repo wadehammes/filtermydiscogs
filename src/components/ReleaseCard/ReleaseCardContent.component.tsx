@@ -1,6 +1,9 @@
 import classNames from "classnames";
 import { trackEvent } from "src/analytics/analytics";
-import { useFilters } from "src/context/filters.context";
+import {
+  useSelectedFormats,
+  useSelectedStyles,
+} from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
@@ -24,7 +27,8 @@ export function ReleaseCardContent({
   labelUrl,
   onExitRandomMode,
 }: ReleaseCardContentProps) {
-  const { state: filtersState } = useFilters();
+  const selectedStyles = useSelectedStyles();
+  const selectedFormats = useSelectedFormats();
   const handlePillClick = usePillClickHandler({
     category: "releaseCard",
     onExitRandomMode,
@@ -118,7 +122,7 @@ export function ReleaseCardContent({
               key={formatName}
               type="button"
               className={classNames("pill", "pillFormat", styles.formatPill, {
-                pillSelected: filtersState.selectedFormats.includes(formatName),
+                pillSelected: selectedFormats.includes(formatName),
               })}
               onClick={(e) =>
                 handlePillClick({
@@ -140,7 +144,7 @@ export function ReleaseCardContent({
               key={style}
               type="button"
               className={classNames("pill", "pillStyle", styles.stylePill, {
-                pillSelected: filtersState.selectedStyles.includes(style),
+                pillSelected: selectedStyles.includes(style),
               })}
               onClick={(e) =>
                 handlePillClick({

@@ -11,13 +11,13 @@ import Button from "src/components/Button/Button.component";
 import pageStyles from "src/components/Page/Page.module.css";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
-import { useCollectionContext } from "src/context/collection.context";
 import { useCrate } from "src/context/crate.context";
+import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
 import styles from "./page.module.css";
 
 export function AboutClient() {
   const { state: authState, logout } = useAuth();
-  const { dispatchResetState } = useCollectionContext();
+  const resetCollection = useCollectionReset();
   const { clearCrate } = useCrate();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -54,7 +54,7 @@ export function AboutClient() {
 
       // Clear React Query cache and reset collection state
       queryClient.clear();
-      dispatchResetState();
+      resetCollection();
       clearCrate();
 
       // Logout and redirect to home

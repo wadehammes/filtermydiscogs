@@ -15,7 +15,7 @@
     "noEmit": true,
     "paths": {
       "src/*": ["./src/*"],
-      "test-utils": ["./test-utils.tsx"]
+      "test-utils": ["./src/tests/utils/test-utils.tsx"]
     },
     "resolveJsonModule": true,
     "rootDir": ".",

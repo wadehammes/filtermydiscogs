@@ -1,4 +1,3 @@
-import type { RenderResult } from "@testing-library/react";
 import { mocked } from "jest-mock";
 import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
@@ -7,7 +6,8 @@ import {
   type BasePageObjectProps,
 } from "src/tests/basePageObject.po";
 import { defaultCrateSelectorCrates } from "src/tests/factories/CrateWithCount.factory";
-import { render } from "test-utils";
+import type { RenderResult } from "src/tests/utils/test-utils";
+import { render } from "src/tests/utils/test-utils";
 import { CrateSelector } from "./CrateSelector.component";
 
 jest.mock("src/context/crate.context");

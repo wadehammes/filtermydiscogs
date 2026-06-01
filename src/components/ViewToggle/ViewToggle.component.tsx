@@ -5,6 +5,10 @@ import styles from "./ViewToggle.module.css";
 
 export type ViewMode = "card" | "list" | "random";
 
+const scrollPageToTop = () => {
+  window.scrollTo({ top: 0, behavior: "instant" });
+};
+
 interface ViewToggleProps {
   currentView: ViewMode;
   onViewChange: (view: ViewMode) => void;
@@ -33,7 +37,10 @@ export const ViewToggle = ({
           className={classNames(styles.toggleButton, {
             [styles.active as string]: currentView === "card",
           })}
-          onClick={() => onViewChange("card")}
+          onClick={() => {
+            scrollPageToTop();
+            onViewChange("card");
+          }}
           aria-label="Switch to card view"
           title="Card view"
         >
@@ -56,7 +63,10 @@ export const ViewToggle = ({
           className={classNames(styles.toggleButton, {
             [styles.active as string]: currentView === "list",
           })}
-          onClick={() => onViewChange("list")}
+          onClick={() => {
+            scrollPageToTop();
+            onViewChange("list");
+          }}
           aria-label="Switch to list view"
           title="List view"
         >
@@ -79,6 +89,7 @@ export const ViewToggle = ({
             [styles.active as string]: currentView === "random",
           })}
           onClick={() => {
+            scrollPageToTop();
             if (currentView === "random" && onRandomClick) {
               onRandomClick();
             } else {

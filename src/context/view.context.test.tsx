@@ -1,5 +1,5 @@
-import { act, renderHook } from "@testing-library/react";
-import { useView, ViewActionTypes, ViewProvider } from "./view.context";
+import { act, renderHook, TestProviders } from "src/tests/utils/test-utils";
+import { useView, ViewActionTypes } from "./view.context";
 
 describe("ViewProvider", () => {
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe("ViewProvider", () => {
 
   it("provides default view state when no saved state exists", () => {
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     expect(result.current.state.currentView).toBe("card");
@@ -26,7 +26,7 @@ describe("ViewProvider", () => {
     );
 
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     expect(result.current.state.currentView).toBe("list");
@@ -35,7 +35,7 @@ describe("ViewProvider", () => {
 
   it("sets view and updates previousView", () => {
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -51,7 +51,7 @@ describe("ViewProvider", () => {
 
   it("does not update previousView when switching from random view", () => {
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     // Set to list first
@@ -90,7 +90,7 @@ describe("ViewProvider", () => {
 
   it("restores previous view", () => {
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     // Set to list
@@ -115,7 +115,7 @@ describe("ViewProvider", () => {
 
   it("saves state to localStorage when state changes", () => {
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     act(() => {
@@ -153,7 +153,7 @@ describe("ViewProvider", () => {
     localStorage.setItem("filtermydiscogs_view_state", "invalid json");
 
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     // Should fall back to default state
@@ -170,7 +170,7 @@ describe("ViewProvider", () => {
     );
 
     const { result } = renderHook(() => useView(), {
-      wrapper: ViewProvider,
+      wrapper: TestProviders,
     });
 
     // Should fall back to default state

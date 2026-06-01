@@ -1,5 +1,5 @@
-import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { act, screen, waitFor } from "src/tests/utils/test-utils";
 import { BackToTopPageObject } from "./BackToTop.po";
 
 let po: BackToTopPageObject;

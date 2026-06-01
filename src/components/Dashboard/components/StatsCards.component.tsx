@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useCollectionContext } from "src/context/collection.context";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type {
   CollectionStats,
   CollectionValue,
@@ -21,8 +21,7 @@ export function StatsCards({
   isLoadingValue,
   valueError,
 }: StatsCardsProps) {
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const releases = useAllReleases();
 
   const yearOverYearChange = useMemo(() => {
     if (!releases || releases.length === 0) {

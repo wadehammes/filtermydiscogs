@@ -7,10 +7,10 @@ import { LoadingOverlay } from "src/components/LoadingOverlay/LoadingOverlay.com
 import { Login } from "src/components/Login/Login.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
-import { useCollectionContext } from "src/context/collection.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
 import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
@@ -55,8 +55,7 @@ export default function DashboardClient() {
   const { state: authState } = useAuth();
   const { isLoading: collectionLoading, isFetchingNextPage } =
     useCollectionData(authState.username, authState.isAuthenticated);
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const allReleases = useAllReleases();
 
   const analytics = useCollectionAnalytics();
   const {
@@ -101,8 +100,8 @@ export default function DashboardClient() {
               message="Loading your collection..."
               hideBackdrop={true}
               progressText={
-                releases && releases.length > 0
-                  ? `${releases.length} releases loaded${
+                allReleases.length > 0
+                  ? `${allReleases.length} releases loaded${
                       isFetchingNextPage ? " (loading more...)" : ""
                     }`
                   : undefined

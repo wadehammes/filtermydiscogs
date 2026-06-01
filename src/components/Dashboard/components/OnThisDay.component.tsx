@@ -2,14 +2,13 @@
 
 import Image from "next/image";
 import { useMemo } from "react";
-import { useCollectionContext } from "src/context/collection.context";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { getOnThisDayReleases } from "src/utils/onThisDay";
 import styles from "./OnThisDay.module.css";
 
 export function OnThisDay() {
-  const { state: collectionState } = useCollectionContext();
-  const { releases } = collectionState;
+  const releases = useAllReleases();
 
   const onThisDayReleases = useMemo(() => {
     return getOnThisDayReleases(releases || []);

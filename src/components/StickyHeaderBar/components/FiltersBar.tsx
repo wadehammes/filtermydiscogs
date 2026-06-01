@@ -7,7 +7,8 @@ import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
-import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { FiltersActionTypes } from "src/context/filters.context";
+import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
 
@@ -53,7 +54,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     setIsFiltersDrawerOpen(false);
   };
 
-  const { dispatch: filtersDispatch } = useFilters();
+  const filtersDispatch = useFiltersDispatch();
 
   const handleClearAllFilters = () => {
     filtersDispatch({
