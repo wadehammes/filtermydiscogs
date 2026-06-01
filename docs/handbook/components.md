@@ -1,6 +1,6 @@
 # Components
 
-How UI is organized under `src/components/` and how we test it—aligned with **rhythm-marketing** folder and test-ID conventions.
+How UI is organized under `src/components/` and how we test it.
 
 ## Folder layout
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Scaffold a component folder aligned with docs/handbook/conventions.md (rhythm-marketing patterns).
+# Scaffold a component folder aligned with docs/handbook/conventions.md.
 
 create_component_file() {
   touch "$component_name.component.tsx"
