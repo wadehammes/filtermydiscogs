@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ERROR_FETCHING } from "src/constants";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes, useFilters } from "src/context/filters.context";
+import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 
 export const useCollectionData = (
@@ -29,7 +30,10 @@ export const useCollectionData = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useDiscogsCollectionQuery(username || "", queryEnabled);
+  } = useDiscogsCollectionQuery({
+    username: username || "",
+    enabled: queryEnabled,
+  });
 
   // Only invalidate queries when username actually changes, not on every auth check
   const prevUsernameRef = useRef<string | null>(null);
@@ -37,7 +41,7 @@ export const useCollectionData = (
     if (isAuthenticated && username && username !== prevUsernameRef.current) {
       prevUsernameRef.current = username;
       queryClient.invalidateQueries({
-        queryKey: ["discogsCollection", username],
+        queryKey: DiscogsCollectionQueryKeys.byUsername(username),
       });
     }
   }, [isAuthenticated, username, queryClient]);

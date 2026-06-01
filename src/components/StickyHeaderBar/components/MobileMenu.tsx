@@ -43,7 +43,10 @@ export const MobileMenu = ({
     data: collectionData,
     hasNextPage,
     isFetchingNextPage,
-  } = useDiscogsCollectionQuery(username || "", isAuthenticated);
+  } = useDiscogsCollectionQuery({
+    username: username || "",
+    enabled: isAuthenticated,
+  });
 
   const handleNavigation = (
     e: React.MouseEvent<HTMLAnchorElement>,

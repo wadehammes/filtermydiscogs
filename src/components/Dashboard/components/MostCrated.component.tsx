@@ -6,7 +6,13 @@ import { DashboardReleaseItem } from "./DashboardReleaseItem.component";
 import styles from "./MostCrated.module.css";
 
 export function MostCrated() {
-  const { data: mostCratedReleases, isLoading, error } = useMostCratedQuery(10);
+  const {
+    data: mostCratedReleases,
+    isLoading,
+    error,
+  } = useMostCratedQuery({
+    limit: 10,
+  });
 
   if (isLoading) {
     return (

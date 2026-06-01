@@ -1,19 +1,21 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render } from "test-utils";
-import { ViewToggle } from "./ViewToggle.component";
+import { ViewTogglePageObject } from "./ViewToggle.po";
+
+let po: ViewTogglePageObject;
 
 describe("ViewToggle", () => {
-  const mockOnViewChange = jest.fn();
-  const mockOnRandomClick = jest.fn();
-  const mockOnCratesClick = jest.fn();
-
   beforeEach(() => {
-    jest.clearAllMocks();
+    po = new ViewTogglePageObject();
+  });
+
+  it("renders component root", () => {
+    po.renderViewToggle();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
   it("renders all view buttons", () => {
-    render(<ViewToggle currentView="card" onViewChange={mockOnViewChange} />);
+    po.renderViewToggle();
 
     expect(
       screen.getByRole("button", { name: "Switch to card view" }),
@@ -27,16 +29,14 @@ describe("ViewToggle", () => {
   });
 
   it("highlights active view", () => {
-    const { rerender } = render(
-      <ViewToggle currentView="card" onViewChange={mockOnViewChange} />,
-    );
+    const { rerender } = po.renderViewToggle({ currentView: "card" });
 
     const cardButton = screen.getByRole("button", {
       name: "Switch to card view",
     });
     expect(cardButton.className).toContain("active");
 
-    rerender(<ViewToggle currentView="list" onViewChange={mockOnViewChange} />);
+    po.rerenderViewToggle(rerender, { currentView: "list" });
     const listButton = screen.getByRole("button", {
       name: "Switch to list view",
     });
@@ -45,61 +45,58 @@ describe("ViewToggle", () => {
 
   it("calls onViewChange when card view is clicked", async () => {
     const user = userEvent.setup();
-    render(<ViewToggle currentView="list" onViewChange={mockOnViewChange} />);
+    po.renderViewToggle({ currentView: "list" });
 
     const cardButton = screen.getByRole("button", {
       name: "Switch to card view",
     });
     await user.click(cardButton);
 
-    expect(mockOnViewChange).toHaveBeenCalledWith("card");
+    expect(po.onViewChange).toHaveBeenCalledWith("card");
   });
 
   it("calls onViewChange when list view is clicked", async () => {
     const user = userEvent.setup();
-    render(<ViewToggle currentView="card" onViewChange={mockOnViewChange} />);
+    po.renderViewToggle({ currentView: "card" });
 
     const listButton = screen.getByRole("button", {
       name: "Switch to list view",
     });
     await user.click(listButton);
 
-    expect(mockOnViewChange).toHaveBeenCalledWith("list");
+    expect(po.onViewChange).toHaveBeenCalledWith("list");
   });
 
   it("calls onViewChange when random view is clicked (not already in random)", async () => {
     const user = userEvent.setup();
-    render(<ViewToggle currentView="card" onViewChange={mockOnViewChange} />);
+    po.renderViewToggle({ currentView: "card" });
 
     const randomButton = screen.getByRole("button", {
       name: "Switch to random view",
     });
     await user.click(randomButton);
 
-    expect(mockOnViewChange).toHaveBeenCalledWith("random");
+    expect(po.onViewChange).toHaveBeenCalledWith("random");
   });
 
   it("calls onRandomClick when random button is clicked while already in random view", async () => {
     const user = userEvent.setup();
-    render(
-      <ViewToggle
-        currentView="random"
-        onViewChange={mockOnViewChange}
-        onRandomClick={mockOnRandomClick}
-      />,
-    );
+    po.renderViewToggle({
+      currentView: "random",
+      onRandomClick: po.onRandomClick,
+    });
 
     const randomButton = screen.getByRole("button", {
       name: "Get another random release",
     });
     await user.click(randomButton);
 
-    expect(mockOnRandomClick).toHaveBeenCalled();
-    expect(mockOnViewChange).not.toHaveBeenCalled();
+    expect(po.onRandomClick).toHaveBeenCalled();
+    expect(po.onViewChange).not.toHaveBeenCalled();
   });
 
   it("does not show crates button when onCratesClick is not provided", () => {
-    render(<ViewToggle currentView="card" onViewChange={mockOnViewChange} />);
+    po.renderViewToggle();
 
     expect(
       screen.queryByRole("button", { name: /crates/i }),
@@ -107,13 +104,7 @@ describe("ViewToggle", () => {
   });
 
   it("shows crates button when onCratesClick is provided", () => {
-    render(
-      <ViewToggle
-        currentView="card"
-        onViewChange={mockOnViewChange}
-        onCratesClick={mockOnCratesClick}
-      />,
-    );
+    po.renderViewToggle({ onCratesClick: po.onCratesClick });
 
     expect(
       screen.getByRole("button", { name: "Open crates" }),
@@ -122,56 +113,38 @@ describe("ViewToggle", () => {
 
   it("calls onCratesClick when crates button is clicked", async () => {
     const user = userEvent.setup();
-    render(
-      <ViewToggle
-        currentView="card"
-        onViewChange={mockOnViewChange}
-        onCratesClick={mockOnCratesClick}
-      />,
-    );
+    po.renderViewToggle({ onCratesClick: po.onCratesClick });
 
     const cratesButton = screen.getByRole("button", { name: "Open crates" });
     await user.click(cratesButton);
 
-    expect(mockOnCratesClick).toHaveBeenCalled();
+    expect(po.onCratesClick).toHaveBeenCalled();
   });
 
   it("highlights crates button when isCratesOpen is true", () => {
-    render(
-      <ViewToggle
-        currentView="card"
-        onViewChange={mockOnViewChange}
-        onCratesClick={mockOnCratesClick}
-        isCratesOpen={true}
-      />,
-    );
+    po.renderViewToggle({
+      onCratesClick: po.onCratesClick,
+      isCratesOpen: true,
+    });
 
     const cratesButton = screen.getByRole("button", { name: "Close crates" });
     expect(cratesButton.className).toContain("active");
   });
 
   it("updates crates button aria-label based on isCratesOpen", () => {
-    const { rerender } = render(
-      <ViewToggle
-        currentView="card"
-        onViewChange={mockOnViewChange}
-        onCratesClick={mockOnCratesClick}
-        isCratesOpen={false}
-      />,
-    );
+    const { rerender } = po.renderViewToggle({
+      onCratesClick: po.onCratesClick,
+      isCratesOpen: false,
+    });
 
     expect(
       screen.getByRole("button", { name: "Open crates" }),
     ).toBeInTheDocument();
 
-    rerender(
-      <ViewToggle
-        currentView="card"
-        onViewChange={mockOnViewChange}
-        onCratesClick={mockOnCratesClick}
-        isCratesOpen={true}
-      />,
-    );
+    po.rerenderViewToggle(rerender, {
+      onCratesClick: po.onCratesClick,
+      isCratesOpen: true,
+    });
 
     expect(
       screen.getByRole("button", { name: "Close crates" }),
@@ -179,13 +152,7 @@ describe("ViewToggle", () => {
   });
 
   it("applies custom className", () => {
-    const { container } = render(
-      <ViewToggle
-        currentView="card"
-        onViewChange={mockOnViewChange}
-        className="custom-class"
-      />,
-    );
+    const { container } = po.renderViewToggle({ className: "custom-class" });
 
     expect(container.firstChild).toHaveClass("custom-class");
   });

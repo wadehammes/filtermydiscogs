@@ -33,7 +33,10 @@ export const UserActions = ({
     data: collectionData,
     hasNextPage,
     isFetchingNextPage,
-  } = useDiscogsCollectionQuery(username || "", isAuthenticated);
+  } = useDiscogsCollectionQuery({
+    username: username || "",
+    enabled: isAuthenticated,
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

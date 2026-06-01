@@ -1,37 +1,36 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ConfirmDialog } from "./ConfirmDialog.component";
+import { ConfirmDialogPageObject } from "./ConfirmDialog.po";
+
+let po: ConfirmDialogPageObject;
 
 describe("ConfirmDialog", () => {
-  const defaultProps = {
-    isOpen: true,
-    title: "Confirm Action",
-    message: "Are you sure you want to proceed?",
-    onConfirm: jest.fn(),
-    onCancel: jest.fn(),
-  };
-
   beforeEach(() => {
-    jest.clearAllMocks();
+    po = new ConfirmDialogPageObject();
   });
 
   it("does not render when isOpen is false", () => {
-    render(<ConfirmDialog {...defaultProps} isOpen={false} />);
+    po.renderConfirmDialog({ isOpen: false });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("renders when isOpen is true", () => {
-    render(<ConfirmDialog {...defaultProps} />);
+    po.renderConfirmDialog();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
+  it("renders component root when open", () => {
+    po.renderConfirmDialog();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+  });
+
   it("displays title", () => {
-    render(<ConfirmDialog {...defaultProps} />);
+    po.renderConfirmDialog();
     expect(screen.getByText("Confirm Action")).toBeInTheDocument();
   });
 
   it("displays message", () => {
-    render(<ConfirmDialog {...defaultProps} />);
+    po.renderConfirmDialog();
     expect(
       screen.getByText("Are you sure you want to proceed?"),
     ).toBeInTheDocument();
@@ -41,7 +40,7 @@ describe("ConfirmDialog", () => {
     const onConfirm = jest.fn();
     const user = userEvent.setup();
 
-    render(<ConfirmDialog {...defaultProps} onConfirm={onConfirm} />);
+    po.renderConfirmDialog({ onConfirm });
 
     const confirmButton = screen.getByRole("button", { name: "Confirm" });
     await user.click(confirmButton);
@@ -53,7 +52,7 @@ describe("ConfirmDialog", () => {
     const onCancel = jest.fn();
     const user = userEvent.setup();
 
-    render(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
+    po.renderConfirmDialog({ onCancel });
 
     const cancelButton = screen.getByRole("button", { name: "Cancel" });
     await user.click(cancelButton);
@@ -65,7 +64,7 @@ describe("ConfirmDialog", () => {
     const onCancel = jest.fn();
     const user = userEvent.setup();
 
-    render(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
+    po.renderConfirmDialog({ onCancel });
 
     const backdrop = screen.getByRole("dialog");
     await user.click(backdrop);
@@ -77,7 +76,7 @@ describe("ConfirmDialog", () => {
     const onCancel = jest.fn();
     const user = userEvent.setup();
 
-    render(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
+    po.renderConfirmDialog({ onCancel });
 
     const title = screen.getByText("Confirm Action");
     await user.click(title);
@@ -88,7 +87,7 @@ describe("ConfirmDialog", () => {
   it("calls onCancel when Escape key is pressed", () => {
     const onCancel = jest.fn();
 
-    render(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
+    po.renderConfirmDialog({ onCancel });
 
     const dialog = screen.getByRole("dialog");
     fireEvent.keyDown(dialog, { key: "Escape" });
@@ -97,23 +96,23 @@ describe("ConfirmDialog", () => {
   });
 
   it("uses custom confirm label", () => {
-    render(<ConfirmDialog {...defaultProps} confirmLabel="Delete" />);
+    po.renderConfirmDialog({ confirmLabel: "Delete" });
     expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
   });
 
   it("uses custom cancel label", () => {
-    render(<ConfirmDialog {...defaultProps} cancelLabel="Go Back" />);
+    po.renderConfirmDialog({ cancelLabel: "Go Back" });
     expect(screen.getByRole("button", { name: "Go Back" })).toBeInTheDocument();
   });
 
   it("applies danger variant to confirm button", () => {
-    render(<ConfirmDialog {...defaultProps} variant="danger" />);
+    po.renderConfirmDialog({ variant: "danger" });
     const confirmButton = screen.getByRole("button", { name: "Confirm" });
     expect(confirmButton.className).toContain("danger");
   });
 
   it("disables buttons when isConfirming is true", () => {
-    render(<ConfirmDialog {...defaultProps} isConfirming={true} />);
+    po.renderConfirmDialog({ isConfirming: true });
     const confirmButton = screen.getByRole("button", { name: "Confirm" });
     const cancelButton = screen.getByRole("button", { name: "Cancel" });
 
@@ -125,13 +124,7 @@ describe("ConfirmDialog", () => {
     const onConfirm = jest.fn();
     const user = userEvent.setup();
 
-    render(
-      <ConfirmDialog
-        {...defaultProps}
-        onConfirm={onConfirm}
-        isConfirming={true}
-      />,
-    );
+    po.renderConfirmDialog({ onConfirm, isConfirming: true });
 
     const confirmButton = screen.getByRole("button", { name: "Confirm" });
     await user.click(confirmButton);
@@ -140,7 +133,7 @@ describe("ConfirmDialog", () => {
   });
 
   it("has correct aria attributes", () => {
-    render(<ConfirmDialog {...defaultProps} />);
+    po.renderConfirmDialog();
     const dialog = screen.getByRole("dialog");
 
     expect(dialog).toHaveAttribute("aria-modal", "true");

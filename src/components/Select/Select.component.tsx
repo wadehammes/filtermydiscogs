@@ -184,7 +184,11 @@ const SelectComponent = ({
   );
 
   return (
-    <div ref={containerRef} className={classNames(styles.container, className)}>
+    <div
+      ref={containerRef}
+      className={classNames(styles.container, className)}
+      data-testid="fmdSelect"
+    >
       <button
         className={styles.trigger}
         type="button"

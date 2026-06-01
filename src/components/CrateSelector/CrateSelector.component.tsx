@@ -56,14 +56,20 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
 
   if (isLoading) {
     return (
-      <div className={classNames(styles.container, className)}>
+      <div
+        className={classNames(styles.container, className)}
+        data-testid="fmdCrateSelector"
+      >
         <div className={styles.loading}>Loading crates...</div>
       </div>
     );
   }
 
   return (
-    <div className={classNames(styles.container, className)}>
+    <div
+      className={classNames(styles.container, className)}
+      data-testid="fmdCrateSelector"
+    >
       {!isCreating ? (
         <>
           <Select

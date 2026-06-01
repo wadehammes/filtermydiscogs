@@ -40,6 +40,7 @@ const ReleaseCardComponent = ({
         [styles.inCrate as string]: isInCrate(release.instance_id),
         [styles.randomMode as string]: isRandomMode,
       })}
+      data-testid="fmdReleaseCard"
     >
       <ReleaseCardImage
         release={release}

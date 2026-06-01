@@ -5,12 +5,13 @@ import type {
   CratesResponse,
   CrateWithReleasesResponse,
 } from "src/types/crate.types";
+import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 
 export const useCratesQuery = () => {
   const userId = getUserIdFromCookies();
 
   return useQuery<CratesResponse>({
-    queryKey: ["crates", userId],
+    queryKey: CratesQueryKeys.byUserId(userId),
     queryFn: async () => {
       if (!userId) {
         throw new Error("User not authenticated");
@@ -27,16 +28,21 @@ export const useCratesQuery = () => {
   });
 };
 
-export const useCrateQuery = (crateId: string | null) => {
+export interface UseCrateQueryParams {
+  crateId: string | null;
+}
+
+export const useCrateQuery = ({ crateId }: UseCrateQueryParams) => {
   const userId = getUserIdFromCookies();
   const isEnabled = Boolean(userId && crateId);
 
   return useQuery<CrateWithReleasesResponse>({
-    queryKey: ["crate", userId, crateId],
+    queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
     queryFn: async () => {
       if (!userId) {
         throw new Error("User not authenticated");
       }
+
       if (!crateId) {
         throw new Error("Crate ID missing");
       }

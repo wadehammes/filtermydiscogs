@@ -19,7 +19,7 @@ function LogoutOverlayWrapper() {
   return <LogoutOverlay isVisible={authState.isLoggingOut} />;
 }
 
-export function Providers({ children }: ProvidersProps) {
+export const Providers = ({ children }: ProvidersProps) => {
   const queryClient = useMemo(
     () =>
       new QueryClient({
@@ -55,4 +55,4 @@ export function Providers({ children }: ProvidersProps) {
       </ThemeProvider>
     </QueryClientProvider>
   );
-}
+};

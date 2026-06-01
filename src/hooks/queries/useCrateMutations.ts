@@ -15,6 +15,7 @@ import type {
   CrateWithReleasesResponse,
   OptimisticUpdateContext,
 } from "src/types/crate.types";
+import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 
 interface CreateCrateRequest {
   name: string;
@@ -68,24 +69,24 @@ const invalidateCrateQueries = (
 ) => {
   if (userId) {
     queryClient.invalidateQueries({
-      queryKey: ["crates", userId],
+      queryKey: CratesQueryKeys.byUserId(userId),
     });
 
     if (crateId) {
       queryClient.invalidateQueries({
-        queryKey: ["crate", userId, crateId],
+        queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
       });
     } else {
       queryClient.invalidateQueries({
-        queryKey: ["crate", userId],
+        queryKey: CrateQueryKeys.byUserId(userId),
       });
     }
   } else {
     queryClient.invalidateQueries({
-      queryKey: ["crates"],
+      queryKey: CratesQueryKeys.all(),
     });
     queryClient.invalidateQueries({
-      queryKey: ["crate"],
+      queryKey: CrateQueryKeys.all(),
     });
   }
 };
@@ -96,16 +97,13 @@ const getCrateQuerySnapshots = (
   crateId?: string,
 ) => {
   const previousCrateData = crateId
-    ? queryClient.getQueryData<CrateWithReleasesResponse>([
-        "crate",
-        userId,
-        crateId,
-      ])
+    ? queryClient.getQueryData<CrateWithReleasesResponse>(
+        CrateQueryKeys.byUserAndId(userId, crateId),
+      )
     : undefined;
-  const previousCratesData = queryClient.getQueryData<CratesResponse>([
-    "crates",
-    userId,
-  ]);
+  const previousCratesData = queryClient.getQueryData<CratesResponse>(
+    CratesQueryKeys.byUserId(userId),
+  );
   return { previousCrateData, previousCratesData };
 };
 
@@ -117,12 +115,15 @@ const rollbackOptimisticUpdate = (
 ) => {
   if (context?.previousCrateData && crateId) {
     queryClient.setQueryData(
-      ["crate", userId, crateId],
+      CrateQueryKeys.byUserAndId(userId, crateId),
       context.previousCrateData,
     );
   }
   if (context?.previousCratesData) {
-    queryClient.setQueryData(["crates", userId], context.previousCratesData);
+    queryClient.setQueryData(
+      CratesQueryKeys.byUserId(userId),
+      context.previousCratesData,
+    );
   }
 };
 
@@ -135,24 +136,27 @@ export const useCreateCrateMutation = () => {
       return createCrate(data.name);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
-        if (!old) {
+      queryClient.setQueryData<CratesResponse>(
+        CratesQueryKeys.byUserId(userId),
+        (old) => {
+          if (!old) {
+            return {
+              crates: [
+                {
+                  ...data.crate,
+                  releaseCount: 0,
+                } as CrateWithCount,
+              ],
+            };
+          }
           return {
             crates: [
-              {
-                ...data.crate,
-                releaseCount: 0,
-              } as CrateWithCount,
+              ...old.crates,
+              { ...data.crate, releaseCount: 0 } as CrateWithCount,
             ],
           };
-        }
-        return {
-          crates: [
-            ...old.crates,
-            { ...data.crate, releaseCount: 0 } as CrateWithCount,
-          ],
-        };
-      });
+        },
+      );
     },
   });
 };
@@ -172,13 +176,16 @@ export const useUpdateCrateMutation = () => {
     },
     onMutate: async ({ crateId, updates }) => {
       // Optimistically update the crates list
-      await queryClient.cancelQueries({ queryKey: ["crates", userId] });
-      await queryClient.cancelQueries({ queryKey: ["crate", userId, crateId] });
+      await queryClient.cancelQueries({
+        queryKey: CratesQueryKeys.byUserId(userId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
+      });
 
-      const previousCrates = queryClient.getQueryData<CratesResponse>([
-        "crates",
-        userId,
-      ]);
+      const previousCrates = queryClient.getQueryData<CratesResponse>(
+        CratesQueryKeys.byUserId(userId),
+      );
 
       if (previousCrates) {
         const updatedCrates = previousCrates.crates.map((crate) => {
@@ -192,9 +199,12 @@ export const useUpdateCrateMutation = () => {
           return crate;
         });
 
-        queryClient.setQueryData<CratesResponse>(["crates", userId], {
-          crates: updatedCrates,
-        });
+        queryClient.setQueryData<CratesResponse>(
+          CratesQueryKeys.byUserId(userId),
+          {
+            crates: updatedCrates,
+          },
+        );
       }
 
       return { previousCratesData: previousCrates };
@@ -203,33 +213,36 @@ export const useUpdateCrateMutation = () => {
       // Rollback on error
       if (context?.previousCratesData) {
         queryClient.setQueryData(
-          ["crates", userId],
+          CratesQueryKeys.byUserId(userId),
           context.previousCratesData,
         );
       }
     },
     onSuccess: async (data, variables) => {
       // Update with server response, preserving releaseCount
-      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
-        if (!old) return old;
-        return {
-          crates: old.crates.map((crate) => {
-            if (crate.id === variables.crateId) {
-              // Preserve releaseCount and merge with server response
-              return {
-                ...crate,
-                ...data.crate,
-                releaseCount: crate.releaseCount ?? 0, // Preserve releaseCount
-              } as CrateWithCount;
-            }
-            return crate;
-          }),
-        };
-      });
+      queryClient.setQueryData<CratesResponse>(
+        CratesQueryKeys.byUserId(userId),
+        (old) => {
+          if (!old) return old;
+          return {
+            crates: old.crates.map((crate) => {
+              if (crate.id === variables.crateId) {
+                // Preserve releaseCount and merge with server response
+                return {
+                  ...crate,
+                  ...data.crate,
+                  releaseCount: crate.releaseCount ?? 0, // Preserve releaseCount
+                } as CrateWithCount;
+              }
+              return crate;
+            }),
+          };
+        },
+      );
 
       if (userId) {
         queryClient.invalidateQueries({
-          queryKey: ["crate", userId, variables.crateId],
+          queryKey: CrateQueryKeys.byUserAndId(userId, variables.crateId),
         });
       }
     },
@@ -246,23 +259,26 @@ export const useDeleteCrateMutation = () => {
     },
     onMutate: async (crateId) => {
       // Optimistically remove the crate from the cache
-      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
-        if (!old) return old;
-        return {
-          crates: old.crates.filter((crate) => crate.id !== crateId),
-        };
-      });
+      queryClient.setQueryData<CratesResponse>(
+        CratesQueryKeys.byUserId(userId),
+        (old) => {
+          if (!old) return old;
+          return {
+            crates: old.crates.filter((crate) => crate.id !== crateId),
+          };
+        },
+      );
 
       // Remove the crate's releases query
       queryClient.removeQueries({
-        queryKey: ["crate", userId, crateId],
+        queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
       });
     },
     onSuccess: async () => {
       invalidateCrateQueries(queryClient, userId);
       // Refetch to ensure we have the latest data
       await queryClient.refetchQueries({
-        queryKey: ["crates", userId],
+        queryKey: CratesQueryKeys.byUserId(userId),
         exact: false,
       });
     },
@@ -297,7 +313,7 @@ export const useAddReleaseToCrateMutation = () => {
       const releaseId = String(release.instance_id);
 
       queryClient.setQueryData<CrateWithReleasesResponse>(
-        ["crate", userId, crateId],
+        CrateQueryKeys.byUserAndId(userId, crateId),
         (old) => {
           if (!old) {
             return {
@@ -330,17 +346,23 @@ export const useAddReleaseToCrateMutation = () => {
         },
       );
 
-      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
-        if (!old) return old;
-        return {
-          crates: old.crates.map((crate) => {
-            if (crate.id === crateId) {
-              return { ...crate, releaseCount: (crate.releaseCount || 0) + 1 };
-            }
-            return crate;
-          }),
-        };
-      });
+      queryClient.setQueryData<CratesResponse>(
+        CratesQueryKeys.byUserId(userId),
+        (old) => {
+          if (!old) return old;
+          return {
+            crates: old.crates.map((crate) => {
+              if (crate.id === crateId) {
+                return {
+                  ...crate,
+                  releaseCount: (crate.releaseCount || 0) + 1,
+                };
+              }
+              return crate;
+            }),
+          };
+        },
+      );
 
       return { previousCrateData, previousCratesData };
     },
@@ -378,7 +400,7 @@ export const useRemoveReleaseFromCrateMutation = () => {
       );
 
       queryClient.setQueryData<CrateWithReleasesResponse>(
-        ["crate", userId, crateId],
+        CrateQueryKeys.byUserAndId(userId, crateId),
         (old) => {
           if (!old) return old;
           return {
@@ -391,20 +413,23 @@ export const useRemoveReleaseFromCrateMutation = () => {
         },
       );
 
-      queryClient.setQueryData<CratesResponse>(["crates", userId], (old) => {
-        if (!old) return old;
-        return {
-          crates: old.crates.map((crate) => {
-            if (crate.id === crateId) {
-              return {
-                ...crate,
-                releaseCount: Math.max((crate.releaseCount || 0) - 1, 0),
-              };
-            }
-            return crate;
-          }),
-        };
-      });
+      queryClient.setQueryData<CratesResponse>(
+        CratesQueryKeys.byUserId(userId),
+        (old) => {
+          if (!old) return old;
+          return {
+            crates: old.crates.map((crate) => {
+              if (crate.id === crateId) {
+                return {
+                  ...crate,
+                  releaseCount: Math.max((crate.releaseCount || 0) - 1, 0),
+                };
+              }
+              return crate;
+            }),
+          };
+        },
+      );
 
       return { previousCrateData, previousCratesData };
     },

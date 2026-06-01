@@ -9,6 +9,7 @@ import type {
   CrateWithReleasesResponse,
 } from "src/types/crate.types";
 import type {
+  AdminStats,
   CollectionValue,
   MostCratedRelease,
 } from "src/types/dashboard.types";
@@ -163,6 +164,35 @@ export const fetchCrates = async (): Promise<CratesResponse> => {
       throw error;
     }
     throw new Error("Failed to fetch crates");
+  }
+};
+
+export const fetchPublicCrate = async (
+  crateId: string,
+): Promise<CrateWithReleasesResponse> => {
+  try {
+    const response = await fetch(`/api/crates/public/${crateId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Crate not found or is private");
+      }
+
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error("Failed to fetch public crate");
   }
 };
 
@@ -491,5 +521,37 @@ export const fetchMostCratedReleases = async (
       throw error;
     }
     throw new Error("Failed to fetch most crated releases");
+  }
+};
+
+export const fetchAdminStats = async (): Promise<AdminStats> => {
+  try {
+    const response = await fetch("/api/admin/stats", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("Forbidden: Admin access required");
+      }
+
+      if (response.status === 401) {
+        throw new Error("Unauthorized: Please log in");
+      }
+
+      throw new Error(`Failed to fetch admin stats: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error("Failed to fetch admin stats");
   }
 };

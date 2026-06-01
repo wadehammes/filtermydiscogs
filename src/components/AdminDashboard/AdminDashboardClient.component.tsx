@@ -9,7 +9,7 @@ import { DashboardSection } from "src/components/shared/DashboardSection/Dashboa
 import { StatCard } from "src/components/shared/StatCard/StatCard.component";
 import { StatsGrid } from "src/components/shared/StatsGrid/StatsGrid.component";
 import { useAuth } from "src/context/auth.context";
-import { useAdminStats } from "src/hooks/useAdminStats.hook";
+import { useAdminStatsQuery } from "src/hooks/queries/useAdminStatsQuery";
 import styles from "./AdminDashboardClient.module.css";
 
 const GrowthAreaChart = dynamic(
@@ -22,7 +22,7 @@ const GrowthAreaChart = dynamic(
 
 export default function AdminDashboardClient() {
   const { state: authState } = useAuth();
-  const { data: stats, isLoading, error } = useAdminStats();
+  const { data: stats, isLoading, error } = useAdminStatsQuery();
 
   if (!authState.isAuthenticated && authState.isLoading) {
     return <AuthLoading />;

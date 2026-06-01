@@ -101,7 +101,10 @@ export const SearchBar = ({
   }, []);
 
   return (
-    <div className={classNames(styles.searchBar, className)}>
+    <div
+      className={classNames(styles.searchBar, className)}
+      data-testid="fmdSearchBar"
+    >
       <div className={styles.inputContainer}>
         <input
           ref={inputRef}

@@ -48,6 +48,7 @@ const ButtonComponent = ({
       onClick={handleClick}
       disabled={isDisabled}
       className={buttonClasses}
+      data-testid="fmdButton"
     >
       {isLoading && (
         <Spinner

@@ -1,4 +1,3 @@
-import type { FC } from "react";
 import Spinner from "src/components/Spinner/Spinner.component";
 import styles from "./LogoutOverlay.module.css";
 
@@ -6,11 +5,13 @@ interface LogoutOverlayProps {
   isVisible: boolean;
 }
 
-export const LogoutOverlay: FC<LogoutOverlayProps> = ({ isVisible }) => {
-  if (!isVisible) return null;
+export const LogoutOverlay = ({ isVisible }: LogoutOverlayProps) => {
+  if (!isVisible) {
+    return null;
+  }
 
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} data-testid="fmdLogoutOverlay">
       <div className={styles.content}>
         <Spinner
           size="xl"

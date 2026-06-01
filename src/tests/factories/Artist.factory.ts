@@ -1,24 +1,28 @@
 import { faker } from "@faker-js/faker";
+import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type { DiscogsArtist } from "src/types";
-import { BaseFactory } from "./BaseFactory";
 
 type ArtistFactoryOptions = Record<string, never>;
 
 class ArtistFactory extends BaseFactory<DiscogsArtist, ArtistFactoryOptions> {
-  public build(
+  build(
     attributes?: Partial<DiscogsArtist>,
     _options?: ArtistFactoryOptions,
   ): DiscogsArtist {
+    const artistId = faker.number.int({ min: 1, max: 999999 });
+
     const instance = {
       name: faker.person.fullName(),
-      id: faker.number.int({ min: 1, max: 999999 }),
-      resource_url: `https://api.discogs.com/artists/${faker.number.int()}`,
+      id: artistId,
+      resource_url: `https://api.discogs.com/artists/${artistId}`,
     } satisfies DiscogsArtist;
 
-    return {
+    const factoryBuilt: DiscogsArtist = {
       ...instance,
       ...(attributes ?? {}),
     };
+
+    return factoryBuilt;
   }
 }
 

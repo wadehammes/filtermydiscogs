@@ -39,6 +39,7 @@ export const ConfirmDialog = ({
   return (
     <div
       className={styles.backdrop}
+      data-testid="fmdConfirmDialog"
       onClick={handleBackdropClick}
       onKeyDown={(e) => {
         if (e.key === "Escape") {

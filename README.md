@@ -176,6 +176,25 @@ pnpm db:studio    # Open Prisma Studio
 make release tag=v0.0.1
 ```
 
+## Handbook
+
+The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place for structure, conventions, Discogs/Prisma patterns, and platform details. Update it when behavior or layout changes so the next reader (human or tool) is not misled.
+
+**Entry point:** [`docs/handbook/README.md`](./docs/handbook/README.md)
+
+**Agents / AI tools:** [CLAUDE.md](./CLAUDE.md) and [AGENTS.md](./AGENTS.md). In Cursor, project rules live under [`.cursor/rules/`](./.cursor/rules/). For other tools, use the task map in [`docs/handbook/llms.md`](./docs/handbook/llms.md).
+
+**Suggested reading order**
+
+- **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then skim [patterns.md](./docs/handbook/patterns.md).
+- **Discogs OAuth or API:** [discogs.md](./docs/handbook/discogs.md).
+- **Crates or database:** [database.md](./docs/handbook/database.md).
+- **Test factories / Faker data:** [factories.md](./docs/handbook/factories.md).
+- **Adding or changing UI:** [components.md](./docs/handbook/components.md) and [conventions.md](./docs/handbook/conventions.md).
+- **Filters, contexts, React Query:** [patterns.md](./docs/handbook/patterns.md).
+- **CI, env, security headers:** [platform.md](./docs/handbook/platform.md).
+- **Finding a file:** [source-layout.md](./docs/handbook/source-layout.md).
+
 ## License
 
 MIT

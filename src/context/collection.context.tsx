@@ -1,13 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  createContext,
-  type FC,
-  useCallback,
-  useContext,
-  useReducer,
-} from "react";
+import { createContext, useCallback, useContext, useReducer } from "react";
 import type { PropsWithChildrenOnly } from "src/@types/react";
 import { USERNAME_STORAGE_PARAM } from "src/constants";
 import type { DiscogsCollection, DiscogsRelease } from "src/types";
@@ -224,9 +218,9 @@ const resetCollectionState = ({
   localStorage.removeItem(USERNAME_STORAGE_PARAM);
 };
 
-export const CollectionContextProvider: FC<PropsWithChildrenOnly> = ({
+export const CollectionContextProvider = ({
   children,
-}) => {
+}: PropsWithChildrenOnly) => {
   const [state, dispatch] = useReducer(CollectionReducer, initialState);
   const router = useRouter();
 

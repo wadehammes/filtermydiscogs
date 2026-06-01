@@ -51,6 +51,7 @@ export const BottomDrawer = ({
         className={classNames(styles.drawer, {
           [styles.open as string]: isOpen,
         })}
+        data-testid="fmdBottomDrawer"
         onClick={(e) => {
           e.stopPropagation();
         }}

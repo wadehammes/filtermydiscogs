@@ -1,25 +1,27 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render } from "test-utils";
+import { selectOptionFactory } from "src/tests/factories/SelectOption.factory";
 import Select from "./Select.component";
+import { SelectPageObject } from "./Select.po";
+
+let po: SelectPageObject;
 
 describe("Select", () => {
-  const options = [
-    { value: "option1", label: "Option 1" },
-    { value: "option2", label: "Option 2" },
-    { value: "option3", label: "Option 3" },
-  ];
+  beforeEach(() => {
+    po = new SelectPageObject();
+  });
+
+  it("renders component root", () => {
+    po.renderSelect();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+  });
 
   it("renders with label and placeholder", () => {
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        onChange={handleChange}
-        placeholder="Choose an option"
-      />,
-    );
+    po.renderSelect({
+      onChange: handleChange,
+      placeholder: "Choose an option",
+    });
 
     expect(
       screen.getByRole("button", { name: "Test Select" }),
@@ -29,14 +31,7 @@ describe("Select", () => {
 
   it("displays selected value when provided", () => {
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        value="option2"
-        onChange={handleChange}
-      />,
-    );
+    po.renderSelect({ value: "option2", onChange: handleChange });
 
     expect(screen.getByText("Option 2")).toBeInTheDocument();
   });
@@ -44,9 +39,7 @@ describe("Select", () => {
   it("opens dropdown when clicked", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -62,9 +55,7 @@ describe("Select", () => {
   it("calls onChange when option is selected (single select)", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -79,9 +70,7 @@ describe("Select", () => {
   it("closes dropdown after selecting option in single select mode", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -106,14 +95,18 @@ describe("Select", () => {
     const renderSelect = () => (
       <Select
         label="Test Select"
-        options={options}
+        options={po.options}
         value={selectedValues}
         onChange={handleChange}
         multiple={true}
       />
     );
 
-    const { rerender } = render(renderSelect());
+    const { rerender } = po.renderSelect({
+      multiple: true,
+      onChange: handleChange,
+      value: selectedValues,
+    });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -140,15 +133,11 @@ describe("Select", () => {
   it("allows deselecting options in multiple mode", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        value={["option1", "option2"]}
-        onChange={handleChange}
-        multiple={true}
-      />,
-    );
+    po.renderSelect({
+      value: ["option1", "option2"],
+      onChange: handleChange,
+      multiple: true,
+    });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -161,15 +150,11 @@ describe("Select", () => {
 
   it("displays selected options in multiple mode", () => {
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        value={["option1", "option3"]}
-        onChange={handleChange}
-        multiple={true}
-      />,
-    );
+    po.renderSelect({
+      value: ["option1", "option3"],
+      onChange: handleChange,
+      multiple: true,
+    });
 
     expect(screen.getByText("option1, option3")).toBeInTheDocument();
   });
@@ -177,14 +162,7 @@ describe("Select", () => {
   it("shows checkmark for selected options", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        value="option2"
-        onChange={handleChange}
-      />,
-    );
+    po.renderSelect({ value: "option2", onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -201,18 +179,19 @@ describe("Select", () => {
   it("displays default badge for default option", () => {
     const handleChange = jest.fn();
     const optionsWithDefault = [
-      { value: "option1", label: "Option 1", isDefault: true },
-      { value: "option2", label: "Option 2" },
+      selectOptionFactory.build({
+        value: "option1",
+        label: "Option 1",
+        isDefault: true,
+      }),
+      selectOptionFactory.build({ value: "option2", label: "Option 2" }),
     ];
 
-    render(
-      <Select
-        label="Test Select"
-        options={optionsWithDefault}
-        value="option1"
-        onChange={handleChange}
-      />,
-    );
+    po.renderSelect({
+      options: optionsWithDefault,
+      value: "option1",
+      onChange: handleChange,
+    });
 
     expect(screen.getByText("Default")).toBeInTheDocument();
   });
@@ -220,9 +199,7 @@ describe("Select", () => {
   it("handles keyboard navigation - Enter opens dropdown", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     trigger.focus();
@@ -236,9 +213,7 @@ describe("Select", () => {
   it("handles keyboard navigation - Arrow keys navigate options", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     trigger.focus();
@@ -257,9 +232,7 @@ describe("Select", () => {
   it("handles keyboard navigation - Enter selects focused option", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     trigger.focus();
@@ -274,9 +247,7 @@ describe("Select", () => {
   it("handles keyboard navigation - Escape closes dropdown", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select label="Test Select" options={options} onChange={handleChange} />,
-    );
+    po.renderSelect({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -297,12 +268,7 @@ describe("Select", () => {
   it("closes dropdown when clicking outside", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <div>
-        <Select label="Test Select" options={options} onChange={handleChange} />
-        <button type="button">Outside</button>
-      </div>,
-    );
+    po.renderSelectWithOutsideButton({ onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -323,14 +289,7 @@ describe("Select", () => {
 
   it("is disabled when disabled prop is true", () => {
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        onChange={handleChange}
-        disabled={true}
-      />,
-    );
+    po.renderSelect({ onChange: handleChange, disabled: true });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     expect(trigger).toBeDisabled();
@@ -339,14 +298,7 @@ describe("Select", () => {
   it("does not open dropdown when disabled", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(
-      <Select
-        label="Test Select"
-        options={options}
-        onChange={handleChange}
-        disabled={true}
-      />,
-    );
+    po.renderSelect({ onChange: handleChange, disabled: true });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
@@ -358,7 +310,7 @@ describe("Select", () => {
 
   it("handles empty options array", () => {
     const handleChange = jest.fn();
-    render(<Select label="Test Select" options={[]} onChange={handleChange} />);
+    po.renderSelect({ options: [], onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     expect(trigger).toBeInTheDocument();
@@ -367,7 +319,7 @@ describe("Select", () => {
   it("does not show dropdown when options are empty", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    render(<Select label="Test Select" options={[]} onChange={handleChange} />);
+    po.renderSelect({ options: [], onChange: handleChange });
 
     const trigger = screen.getByRole("button", { name: "Test Select" });
     await user.click(trigger);
