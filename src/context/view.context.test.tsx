@@ -1,4 +1,5 @@
-import { act, renderHook, TestProviders } from "src/tests/utils/test-utils";
+import { beforeEach, describe, expect, it } from "@jest/globals";
+import { act, renderHook, TestProviders } from "test-utils";
 import { useView, ViewActionTypes } from "./view.context";
 
 describe("ViewProvider", () => {

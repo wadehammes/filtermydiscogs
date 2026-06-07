@@ -1,5 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { mocked } from "jest-mock";
+import { beforeEach, describe, expect, it } from "@jest/globals";
+import type { QueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { logout as logoutApi } from "src/api/helpers";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
@@ -11,41 +11,28 @@ import {
   parseAuthUrlParams,
 } from "src/services/auth.service";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import {
-  act,
-  renderHook,
-  TestProviders,
-  waitFor,
-} from "src/tests/utils/test-utils";
+import { createTestQueryClient } from "src/tests/utils/testQueryClient";
+import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { AuthActionTypes, useAuth } from "./auth.context";
 
-jest.mock("@tanstack/react-query", () => {
-  const actual = jest.requireActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
-
-  return {
-    ...actual,
-    useQueryClient: jest.fn(),
-  };
-});
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
-const mockUseQueryClient = mocked(useQueryClient);
-const mockUseRouter = mocked(useRouter);
-const mockLogoutApi = mocked(logoutApi);
-const mockCheckAuthStatus = mocked(checkAuthStatus);
-const mockClearAuthCookies = mocked(clearAuthCookies);
-const mockClearUrlParams = mocked(clearUrlParams);
-const mockGetUsernameFromCookies = mocked(getUsernameFromCookies);
-const mockParseAuthUrlParams = mocked(parseAuthUrlParams);
+const mockUseRouter = jest.mocked(useRouter);
+const mockLogoutApi = jest.mocked(logoutApi);
+const mockClearAuthCookies = jest.mocked(clearAuthCookies);
+const mockClearUrlParams = jest.mocked(clearUrlParams);
+const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
+const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
+const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 
 describe("AuthProvider", () => {
-  const mockQueryClient = {
-    clear: jest.fn(),
-    invalidateQueries: jest.fn(),
-  };
+  let queryClient: QueryClient;
+  let clearSpy: jest.SpiedFunction<QueryClient["clear"]>;
+  let invalidateQueriesSpy: jest.SpiedFunction<
+    QueryClient["invalidateQueries"]
+  >;
+
   const mockRouter = {
     replace: jest.fn(),
     push: jest.fn(),
@@ -55,11 +42,19 @@ describe("AuthProvider", () => {
     prefetch: jest.fn(),
   } as ReturnType<typeof useRouter>;
 
+  const renderAuthHook = () =>
+    renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <TestProviders queryClient={queryClient}>{children}</TestProviders>
+      ),
+    });
+
   beforeEach(() => {
+    queryClient = createTestQueryClient();
+    clearSpy = jest.spyOn(queryClient, "clear");
+    invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
+
     jest.clearAllMocks();
-    mockUseQueryClient.mockReturnValue(
-      mockQueryClient as unknown as ReturnType<typeof useQueryClient>,
-    );
     mockUseRouter.mockReturnValue(mockRouter);
     mockCheckAuthStatus.mockResolvedValue({
       isAuthenticated: false,
@@ -74,15 +69,12 @@ describe("AuthProvider", () => {
   });
 
   it("provides initial state", async () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
     expect(result.current.state.isLoading).toBe(true);
 
-    // Wait for async auth check to complete
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
     });
@@ -95,9 +87,7 @@ describe("AuthProvider", () => {
       userId: "123",
     });
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
@@ -115,12 +105,10 @@ describe("AuthProvider", () => {
       userId: null,
     });
 
-    renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    renderAuthHook();
 
     await waitFor(() => {
-      expect(mockQueryClient.clear).toHaveBeenCalled();
+      expect(clearSpy).toHaveBeenCalled();
     });
   });
 
@@ -131,19 +119,16 @@ describe("AuthProvider", () => {
 
     mockCheckAuthStatus.mockRejectedValueOnce(new Error("Auth check failed"));
 
-    renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    renderAuthHook();
 
     await waitFor(() => {
-      expect(mockQueryClient.clear).toHaveBeenCalled();
+      expect(clearSpy).toHaveBeenCalled();
     });
 
     consoleSpy.mockRestore();
   });
 
   it("handles successful auth from URL params", async () => {
-    // Mock checkAuthStatus to resolve quickly but not interfere
     mockCheckAuthStatus.mockResolvedValue({
       isAuthenticated: false,
       username: null,
@@ -155,9 +140,7 @@ describe("AuthProvider", () => {
     });
     mockGetUsernameFromCookies.mockReturnValue("testuser");
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
     await waitFor(() => {
       expect(result.current.state.isAuthenticated).toBe(true);
@@ -166,13 +149,12 @@ describe("AuthProvider", () => {
     expect(result.current.state.username).toBe("testuser");
     expect(result.current.state.isLoading).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
-    expect(mockQueryClient.invalidateQueries).toHaveBeenCalledWith({
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
       queryKey: DiscogsCollectionQueryKeys.all(),
     });
   });
 
   it("handles auth error from URL params", async () => {
-    // Mock checkAuthStatus to resolve quickly but not interfere
     mockCheckAuthStatus.mockResolvedValue({
       isAuthenticated: false,
       username: null,
@@ -183,9 +165,7 @@ describe("AuthProvider", () => {
       errorStatus: "access_denied",
     });
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
@@ -215,15 +195,11 @@ describe("AuthProvider", () => {
         },
       });
     } catch {
-      // If href is not configurable, skip this test
       return;
     }
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
-    // Wait for initial auth check to complete
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
     });
@@ -249,16 +225,12 @@ describe("AuthProvider", () => {
       new Error("Logout failed"),
     );
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
-    // Wait for initial auth check to complete
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
     });
 
-    // Set authenticated state first
     act(() => {
       result.current.dispatch({
         type: AuthActionTypes.SetAuthenticated,
@@ -276,7 +248,7 @@ describe("AuthProvider", () => {
 
     expect(mockLogoutApi).toHaveBeenCalled();
     expect(mockClearAuthCookies).toHaveBeenCalled();
-    expect(mockQueryClient.clear).toHaveBeenCalled();
+    expect(clearSpy).toHaveBeenCalled();
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
     expect(mockRouter.replace).toHaveBeenCalledWith("/");
@@ -290,11 +262,8 @@ describe("AuthProvider", () => {
       new Error("Logout failed"),
     );
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderAuthHook();
 
-    // Wait for initial auth check to complete
     await waitFor(() => {
       expect(result.current.state.isLoading).toBe(false);
     });

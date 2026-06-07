@@ -22,6 +22,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2020",
+    "types": ["jest", "node"],
     "typeRoots": ["node_modules/@types"],
     "incremental": true,
     "plugins": [
@@ -39,6 +40,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    ".jest/jest-dom-globals.d.ts",
     ".jest/setupTests.ts",
     "cssprops.d.ts",
     "next-env.d.ts",

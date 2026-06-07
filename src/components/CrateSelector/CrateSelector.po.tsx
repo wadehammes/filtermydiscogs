@@ -1,20 +1,34 @@
-import { mocked } from "jest-mock";
-import { useCrate } from "src/context/crate.context";
-import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
+import * as apiHelpers from "src/api/helpers";
+import {
+  checkAuthStatus,
+  getUserIdFromCookies,
+  getUsernameFromCookies,
+  parseAuthUrlParams,
+} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
-import { defaultCrateSelectorCrates } from "src/tests/factories/CrateWithCount.factory";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
+} from "src/tests/BasePageObject.po";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
+import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import type { RenderResult } from "test-utils";
+import { render, screen, waitFor } from "test-utils";
 import { CrateSelector } from "./CrateSelector.component";
 
-jest.mock("src/context/crate.context");
-jest.mock("src/hooks/queries/useCrateMutations");
+jest.mock("src/api/helpers");
+jest.mock("src/services/auth.service");
 
-const mockUseCrate = mocked(useCrate);
-const mockUseCreateCrateMutation = mocked(useCreateCrateMutation);
+const mockApi = jest.mocked(apiHelpers);
+const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
+const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
+const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
+const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
+
+const apiError = new Error("API request failed");
 
 export type CrateSelectorRenderProps = {
   className?: string;
@@ -22,46 +36,94 @@ export type CrateSelectorRenderProps = {
 
 export class CrateSelectorPageObject extends BasePageObject {
   public testId = "fmdCrateSelector";
-  public selectCrate = jest.fn();
-  public createCrate = jest.fn();
-  public crates = defaultCrateSelectorCrates();
+  public mockApiHelpers = mockApi;
+  public crates = crateWithCountFactory.defaultCrateSelectorCrates();
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
-    this.setupDefaultMocks();
+    this.setupMocks();
   }
 
-  setupDefaultMocks() {
+  setupMocks() {
     jest.clearAllMocks();
-    mockUseCrate.mockReturnValue({
-      crates: this.crates,
-      activeCrateId: "1",
-      selectCrate: this.selectCrate,
-      createCrate: this.createCrate,
-      isLoading: false,
-    } as unknown as ReturnType<typeof useCrate>);
+    localStorage.clear();
 
-    mockUseCreateCrateMutation.mockReturnValue({
-      isPending: false,
-      mutateAsync: jest.fn(),
-    } as unknown as ReturnType<typeof useCreateCrateMutation>);
+    mockGetUserIdFromCookies.mockReturnValue("123");
+    mockGetUsernameFromCookies.mockReturnValue("testuser");
+    mockCheckAuthStatus.mockResolvedValue({
+      isAuthenticated: true,
+      username: "testuser",
+      userId: "123",
+    });
+    mockParseAuthUrlParams.mockReturnValue({
+      authStatus: null,
+      errorStatus: null,
+    });
+
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      cratesResponseFactory.withCrates(this.crates),
+      apiError,
+    );
+
+    mockApi.fetchCrate.mockImplementation(async (crateId: string) => {
+      const crate = this.crates.find((entry) => entry.id === crateId);
+      if (!crate) {
+        throw new Error(`Crate not found: ${crateId}`);
+      }
+
+      const { releaseCount: _releaseCount, ...crateWithoutCount } = crate;
+      return crateWithReleasesResponseFactory.empty(crateWithoutCount);
+    });
+
+    mockApiResponse(
+      true,
+      mockApi.createCrate,
+      createCrateResponseFactory.named("My New Crate"),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.syncCrates,
+      crateMutationSuccessFactory.sync(0),
+      apiError,
+    );
   }
 
   mockLoading() {
-    mockUseCrate.mockReturnValue({
-      crates: [],
-      activeCrateId: null,
-      selectCrate: this.selectCrate,
-      createCrate: this.createCrate,
-      isLoading: true,
-    } as unknown as ReturnType<typeof useCrate>);
+    mockApi.fetchCrates.mockImplementation(() => new Promise(() => {}));
   }
 
-  mockPendingMutation() {
-    mockUseCreateCrateMutation.mockReturnValue({
-      isPending: true,
-      mutateAsync: jest.fn(),
-    } as unknown as ReturnType<typeof useCreateCrateMutation>);
+  mockSlowCreateCrate() {
+    mockApi.createCrate.mockImplementation(() => new Promise(() => {}));
+  }
+
+  mockCreateCrateError() {
+    mockApiResponse(
+      false,
+      mockApi.createCrate,
+      createCrateResponseFactory.build(),
+      new Error("Failed to create crate"),
+    );
+  }
+
+  mockCreateCrateResponse(crateName: string, crateId = "new-crate") {
+    mockApiResponse(
+      true,
+      mockApi.createCrate,
+      createCrateResponseFactory.named(crateName, { id: crateId }),
+      apiError,
+    );
+  }
+
+  async waitUntilLoaded() {
+    await waitFor(() => {
+      if (screen.queryByText("Loading crates...")) {
+        throw new Error("Crate selector is still loading");
+      }
+    });
   }
 
   renderCrateSelector(overrides: CrateSelectorRenderProps = {}): RenderResult {

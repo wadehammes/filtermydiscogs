@@ -1,5 +1,3 @@
-import type { ReactNode } from "react";
-
 export interface DiscogsArtist {
   name: string;
   id?: number;
@@ -22,6 +20,7 @@ export interface DiscogsFormat {
 }
 
 export interface DiscogsBasicInformation {
+  id?: number;
   resource_url: string;
   uri: string;
   styles: string[];
@@ -37,16 +36,32 @@ export interface DiscogsBasicInformation {
   [key: string]: unknown;
 }
 
-interface ReleaseNote {
-  field_id: string;
-  value: ReactNode;
+export interface ReleaseNote {
+  field_id: number;
+  value: string;
+}
+
+export interface DiscogsCollectionField {
+  id: number;
+  name: string;
+  type: string;
+  options?: string[];
+  lines?: boolean;
+  public?: boolean;
+  position?: number;
+}
+
+export interface DiscogsCollectionFieldsResponse {
+  fields: DiscogsCollectionField[];
 }
 
 export interface DiscogsRelease {
+  id?: number;
+  folder_id?: number;
   instance_id: string;
   date_added: string;
   rating: number;
   basic_information: DiscogsBasicInformation;
-  notes: ReleaseNote[];
+  notes?: ReleaseNote[] | undefined;
   [key: string]: unknown;
 }

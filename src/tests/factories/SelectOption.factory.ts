@@ -1,26 +1,38 @@
 import { faker } from "@faker-js/faker";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
+import type { KeysMatch } from "src/types/KeysMatch";
 
-export type SelectOption = {
+export type SelectOptionFactoryType = {
   value: string;
   label: string;
   isDefault?: boolean;
 };
 
+type SelectOptionFactoryOptions = Record<string, never>;
+
 class SelectOptionFactory extends BaseFactory<
-  SelectOption,
-  Record<string, never>
+  SelectOptionFactoryType,
+  SelectOptionFactoryOptions
 > {
-  build(attributes?: Partial<SelectOption>): SelectOption {
+  build(
+    attributes?: Partial<SelectOptionFactoryType>,
+    _options?: SelectOptionFactoryOptions,
+  ) {
     const instance = {
       value: faker.string.alphanumeric(8),
       label: faker.word.words({ count: { min: 1, max: 3 } }),
-    } satisfies SelectOption;
+      ...(faker.datatype.boolean({ probability: 0.2 }) && { isDefault: true }),
+    } satisfies SelectOptionFactoryType;
 
-    const factoryBuilt: SelectOption = {
+    const factoryBuilt: SelectOptionFactoryType = {
       ...instance,
       ...(attributes ?? {}),
     };
+
+    const _allKeysMustBeInTheInstance: KeysMatch<
+      SelectOptionFactoryType,
+      typeof instance
+    > = undefined;
 
     return factoryBuilt;
   }
@@ -28,7 +40,7 @@ class SelectOptionFactory extends BaseFactory<
 
 export const selectOptionFactory = new SelectOptionFactory();
 
-export const defaultSelectOptions = (): SelectOption[] => [
+export const defaultSelectOptions = (): SelectOptionFactoryType[] => [
   selectOptionFactory.build({ value: "option1", label: "Option 1" }),
   selectOptionFactory.build({ value: "option2", label: "Option 2" }),
   selectOptionFactory.build({ value: "option3", label: "Option 3" }),

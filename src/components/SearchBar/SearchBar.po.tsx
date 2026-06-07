@@ -1,9 +1,9 @@
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
+} from "src/tests/BasePageObject.po";
+import type { RenderResult } from "test-utils";
+import { render } from "test-utils";
 import { SearchBar } from "./SearchBar.component";
 
 const mockSearchQuery = jest.fn(() => "");
@@ -34,7 +34,7 @@ export class SearchBarPageObject extends BasePageObject {
   resetFiltersMock(
     state: { searchQuery?: string; isSearching?: boolean } = {},
   ) {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     mockSearchQuery.mockReturnValue(state.searchQuery ?? "");
     mockIsSearching.mockReturnValue(state.isSearching ?? false);
   }

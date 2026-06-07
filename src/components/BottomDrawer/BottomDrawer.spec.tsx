@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { screen } from "src/tests/utils/test-utils";
-import { BottomDrawerPageObject } from "./BottomDrawer.po";
+import { BottomDrawerPageObject } from "src/components/BottomDrawer/BottomDrawer.po";
+import { screen } from "test-utils";
 
 let po: BottomDrawerPageObject;
 

@@ -1,11 +1,11 @@
 .catalogRow {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .metaCatalog {
   background: color-mix(in srgb, var(--muted) 80%, transparent);
   border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   color: var(--muted-foreground);
   display: inline-block;
   font-family: var(--font-mono);
@@ -13,7 +13,8 @@
   font-weight: var(--font-normal);
   letter-spacing: 0.02em;
   line-height: 1.2;
-  padding: 0.125rem var(--space-2);
+  padding: 0.15rem var(--space-2) 0.1rem;
+  text-transform: uppercase;
 }
 
 .metaLine {
@@ -23,7 +24,7 @@
   font-weight: var(--font-normal);
   letter-spacing: 0.02em;
   line-height: 1.4;
-  margin: var(--space-2) 0 0;
+  margin: var(--space-1) 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

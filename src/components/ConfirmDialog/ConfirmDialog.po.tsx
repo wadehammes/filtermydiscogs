@@ -1,9 +1,9 @@
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
+} from "src/tests/BasePageObject.po";
+import type { RenderResult } from "test-utils";
+import { render } from "test-utils";
 import { ConfirmDialog } from "./ConfirmDialog.component";
 
 export type ConfirmDialogRenderProps = {
@@ -29,7 +29,7 @@ export class ConfirmDialogPageObject extends BasePageObject {
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   }
 
   renderConfirmDialog(overrides: ConfirmDialogRenderProps = {}): RenderResult {

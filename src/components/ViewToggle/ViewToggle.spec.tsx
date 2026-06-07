@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { screen } from "src/tests/utils/test-utils";
-import { ViewTogglePageObject } from "./ViewToggle.po";
+import { ViewTogglePageObject } from "src/components/ViewToggle/ViewToggle.po";
+import { screen } from "test-utils";
 
 let po: ViewTogglePageObject;
 

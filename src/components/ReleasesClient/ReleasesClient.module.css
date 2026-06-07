@@ -18,6 +18,8 @@
 
 .mainContent {
   background-color: var(--background);
+  background-image: var(--pattern-microdot);
+  background-size: var(--pattern-microdot-size);
   grid-area: main;
   padding: 0;
   position: relative;

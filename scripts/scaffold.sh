@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# Scaffold a component folder aligned with docs/handbook/conventions.md.
+factory_export_name() {
+  local name="$1"
+  local first rest
+  first=$(printf '%s' "${name:0:1}" | tr '[:upper:]' '[:lower:]')
+  rest="${name:1}"
+  echo "${first}${rest}Factory"
+}
 
 create_component_file() {
   touch "$component_name.component.tsx"
@@ -32,12 +38,21 @@ create_css_module_file() {
   } >> "$component_name.module.css"
 }
 
+create_interfaces_file() {
+  touch "$component_name.interfaces.ts"
+  {
+    echo "export interface ${component_name}Type {"
+    echo "  id: string;"
+    echo "}"
+  } >> "$component_name.interfaces.ts"
+}
+
 create_spec_file() {
   touch "$component_name.spec.tsx"
   {
-    echo "import { describe, expect, it, beforeEach } from \"@jest/globals\";"
+    echo "import { beforeEach, describe, expect, it } from \"@jest/globals\";"
+    echo "import { ${component_name}PageObject } from \"src/components/${component_name}/${component_name}.po\";"
     echo "import { screen } from \"test-utils\";"
-    echo "import { ${component_name}PageObject } from \"./${component_name}.po\";"
     echo
     echo "let po: ${component_name}PageObject;"
     echo
@@ -55,6 +70,49 @@ create_spec_file() {
   } >> "$component_name.spec.tsx"
 }
 
+create_factory_file() {
+  local factory_name factory_path
+  factory_name=$(factory_export_name "$component_name")
+  factory_path="$repo_root/src/tests/factories/${component_name}.factory.ts"
+  touch "$factory_path"
+  {
+    echo "import { faker } from \"@faker-js/faker\";"
+    echo "import type { ${component_name}Type } from \"src/components/${component_name}/${component_name}.interfaces\";"
+    echo "import { BaseFactory } from \"src/tests/factories/BaseFactory\";"
+    echo "import type { KeysMatch } from \"src/types/KeysMatch\";"
+    echo
+    echo "type ${component_name}FactoryOptions = Record<string, never>;"
+    echo
+    echo "class ${component_name}Factory extends BaseFactory<"
+    echo "  ${component_name}Type,"
+    echo "  ${component_name}FactoryOptions"
+    echo "> {"
+    echo "  build("
+    echo "    attributes?: Partial<${component_name}Type>,"
+    echo "    _options?: ${component_name}FactoryOptions,"
+    echo "  ) {"
+    echo "    const instance = {"
+    echo "      id: faker.string.uuid(),"
+    echo "    } satisfies ${component_name}Type;"
+    echo
+    echo "    const factoryBuilt: ${component_name}Type = {"
+    echo "      ...instance,"
+    echo "      ...(attributes ?? {}),"
+    echo "    };"
+    echo
+    echo "    const _allKeysMustBeInTheInstance: KeysMatch<"
+    echo "      ${component_name}Type,"
+    echo "      typeof instance"
+    echo "    > = undefined;"
+    echo
+    echo "    return factoryBuilt;"
+    echo "  }"
+    echo "}"
+    echo
+    echo "export const ${factory_name} = new ${component_name}Factory();"
+  } >> "$factory_path"
+}
+
 create_page_object_file() {
   touch "$component_name.po.tsx"
   {
@@ -62,7 +120,7 @@ create_page_object_file() {
     echo "import {"
     echo "  BasePageObject,"
     echo "  type BasePageObjectProps,"
-    echo "} from \"src/tests/basePageObject.po\";"
+    echo "} from \"src/tests/BasePageObject.po\";"
     echo "import { render } from \"test-utils\";"
     echo "import { ${component_name} } from \"./${component_name}.component\";"
     echo
@@ -75,7 +133,7 @@ create_page_object_file() {
     echo
     echo "  constructor(props: BasePageObjectProps = {}) {"
     echo "    super(props);"
-    echo "    jest.clearAllMocks();"
+    echo "    jest.resetAllMocks();"
     echo "  }"
     echo
     echo "  private ${component_name}Element(overrides: ${component_name}RenderProps = {}) {"
@@ -97,6 +155,7 @@ create_page_object_file() {
 }
 
 component_name=$1
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [ "$component_name" = "" ]; then
   echo "Error: Component name not provided."
@@ -104,18 +163,22 @@ if [ "$component_name" = "" ]; then
   exit 1
 fi
 
-dir="./src/components/$component_name"
+dir="$repo_root/src/components/$component_name"
 
 if [ ! -d "$dir" ]; then
   mkdir "$dir"
   pushd "$dir" > /dev/null
   create_component_file
   create_css_module_file
+  create_interfaces_file
   create_spec_file
   create_page_object_file
   popd > /dev/null
+  create_factory_file
+  pnpm exec biome format --write "$dir" "$repo_root/src/tests/factories/${component_name}.factory.ts"
   echo "Scaffolded ${component_name} under src/components/${component_name}"
-  echo "See docs/handbook/conventions.md for test IDs, PO rules, and factories."
+  echo "Factory: src/tests/factories/${component_name}.factory.ts"
+  echo "See docs/handbook/conventions.md and docs/handbook/factories.md"
   exit 0
 else
   echo "Error: $component_name already exists. Aborting scaffolding."

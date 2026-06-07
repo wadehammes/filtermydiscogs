@@ -3,6 +3,10 @@ import Image from "next/image";
 import type React from "react";
 import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
+import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
+import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
+import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
 import {
   useSelectedFormats,
@@ -85,156 +89,165 @@ const MobileReleaseCardComponent = ({
   });
 
   return release ? (
-    <div
-      className={classNames(styles.releaseCard, {
-        [styles.highlighted as string]: isHighlighted,
-        [styles.inCrate as string]: isInCrate(release.instance_id),
-        [styles.randomMode as string]: isRandomMode,
-      })}
-    >
+    <ReleaseNotesEditorProvider release={release}>
       <div
-        className={styles.imageContainer}
-        data-bg-image={thumbUrl || undefined}
-        style={
-          thumbUrl
-            ? {
-                backgroundImage: `url(${thumbUrl})`,
-              }
-            : undefined
-        }
+        className={classNames(styles.releaseCard, {
+          [styles.highlighted as string]: isHighlighted,
+          [styles.inCrate as string]: isInCrate(release.instance_id),
+          [styles.randomMode as string]: isRandomMode,
+        })}
       >
-        {release.rating > 0 && (
-          <div
-            className={styles.ratingBadge}
-            title={`Rating: ${release.rating}/5`}
-          >
-            <StarIcon className={styles.starIcon} />
-            {release.rating}
-          </div>
-        )}
-        {thumbUrl && (
-          <Image
-            src={thumbUrl}
-            height={200}
-            width={200}
-            quality={85}
-            alt={release.basic_information.title}
-            loading="lazy"
-            className={styles.releaseImage}
-            style={{
-              position: "relative",
-              zIndex: 2,
-              filter: "none",
-            }}
-            sizes="100px"
-          />
-        )}
-      </div>
-      <div className={styles.contentContainer}>
-        <div className={styles.mainContent}>
-          <ReleaseCardCatalog catno={catno} />
-          <ReleaseCardTitle
-            artists={artists}
-            title={title}
-            releaseUrl={releaseUrl}
-            resourceUrl={resource_url}
-          />
-          <ReleaseCardMeta
-            labelName={labels[0]?.name}
-            labelUrl={labelUrl}
-            year={year}
-          />
-        </div>
-        <div className={styles.genresContainer}>
-          {releaseFormats &&
-            releaseFormats.length > 0 &&
-            getReleaseFormatTags(releaseFormats).map((formatName) => (
-              <button
-                key={formatName}
-                type="button"
-                className={classNames("pill", "pillFormat", styles.formatPill, {
-                  pillSelected: selectedFormats.includes(formatName),
-                })}
-                onClick={(e) =>
-                  handlePillClick({
-                    event: e,
-                    value: formatName,
-                    type: "format",
-                    eventLabel: "Format Pill Clicked",
-                  })
+        <div
+          className={styles.imageContainer}
+          data-bg-image={thumbUrl || undefined}
+          style={
+            thumbUrl
+              ? {
+                  backgroundImage: `url(${thumbUrl})`,
                 }
-                aria-label={`Filter by ${formatName} format`}
-              >
-                {formatName}
-              </button>
-            ))}
-
-          {releaseStyles &&
-            releaseStyles.length > 0 &&
-            releaseStyles.map((style: string) => (
-              <button
-                key={style}
-                type="button"
-                className={classNames("pill", "pillStyle", styles.stylePill, {
-                  pillSelected: selectedStyles.includes(style),
-                })}
-                onClick={(e) =>
-                  handlePillClick({
-                    event: e,
-                    value: style,
-                    type: "style",
-                    eventLabel: "Style Pill Clicked",
-                  })
-                }
-                aria-label={`Filter by ${style} style`}
-              >
-                {style}
-              </button>
-            ))}
-        </div>
-      </div>
-      <div className={styles.actionButtonsContainer}>
-        {releaseUrl && (
-          <a
-            href={releaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.discogsButton}
-            onClick={() => {
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: "home",
-                label: "Release Clicked",
-                value: resource_url,
-              });
-            }}
-            aria-label="View on Discogs"
-            title="View on Discogs"
-          >
-            <ExternalLinkIcon className={styles.externalLinkIcon} />
-          </a>
-        )}
-        <button
-          type="button"
-          className={classNames(
-            styles.listButton,
-            isInCrate(release.instance_id) && styles.removeButton,
-          )}
-          onClick={handleCrateToggle}
-          aria-label={
-            isInCrate(release.instance_id)
-              ? "Remove from crate"
-              : "Add to crate"
+              : undefined
           }
         >
-          {isInCrate(release.instance_id) ? (
-            <MinusIcon className={styles.listButtonIcon} />
-          ) : (
-            <PlusIcon className={styles.listButtonIcon} />
+          {release.rating > 0 && (
+            <div
+              className={styles.ratingBadge}
+              title={`Rating: ${release.rating}/5`}
+            >
+              <StarIcon className={styles.starIcon} />
+              {release.rating}
+            </div>
           )}
-        </button>
+          {thumbUrl && (
+            <Image
+              src={thumbUrl}
+              height={200}
+              width={200}
+              quality={85}
+              alt={release.basic_information.title}
+              loading="lazy"
+              className={styles.releaseImage}
+              style={{
+                position: "relative",
+                zIndex: 2,
+                filter: "none",
+              }}
+              sizes="100px"
+            />
+          )}
+        </div>
+        <div className={styles.contentContainer}>
+          <div className={styles.mainContent}>
+            <ReleaseCardCatalog catno={catno} />
+            <ReleaseCardTitle
+              artists={artists}
+              title={title}
+              releaseUrl={releaseUrl}
+              resourceUrl={resource_url}
+            />
+            <ReleaseCardMeta
+              labelName={labels[0]?.name}
+              labelUrl={labelUrl}
+              year={year}
+            />
+            <ReleaseNotes release={release} variant="displayOnly" />
+          </div>
+          <HorizontalScrollRow className={styles.genresContainer}>
+            {releaseFormats &&
+              releaseFormats.length > 0 &&
+              getReleaseFormatTags(releaseFormats).map((formatName) => (
+                <button
+                  key={formatName}
+                  type="button"
+                  className={classNames(
+                    "pill",
+                    "pillFormat",
+                    styles.formatPill,
+                    {
+                      pillSelected: selectedFormats.includes(formatName),
+                    },
+                  )}
+                  onClick={(e) =>
+                    handlePillClick({
+                      event: e,
+                      value: formatName,
+                      type: "format",
+                      eventLabel: "Format Pill Clicked",
+                    })
+                  }
+                  aria-label={`Filter by ${formatName} format`}
+                >
+                  {formatName}
+                </button>
+              ))}
+
+            {releaseStyles &&
+              releaseStyles.length > 0 &&
+              releaseStyles.map((style: string) => (
+                <button
+                  key={style}
+                  type="button"
+                  className={classNames("pill", "pillStyle", styles.stylePill, {
+                    pillSelected: selectedStyles.includes(style),
+                  })}
+                  onClick={(e) =>
+                    handlePillClick({
+                      event: e,
+                      value: style,
+                      type: "style",
+                      eventLabel: "Style Pill Clicked",
+                    })
+                  }
+                  aria-label={`Filter by ${style} style`}
+                >
+                  {style}
+                </button>
+              ))}
+          </HorizontalScrollRow>
+        </div>
+        <div className={styles.actionButtonsContainer}>
+          {releaseUrl && (
+            <a
+              href={releaseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.discogsButton}
+              onClick={() => {
+                trackEvent("releaseClicked", {
+                  action: "releaseClicked",
+                  category: "home",
+                  label: "Release Clicked",
+                  value: resource_url,
+                });
+              }}
+              aria-label="View on Discogs"
+              title="View on Discogs"
+            >
+              <ExternalLinkIcon className={styles.externalLinkIcon} />
+            </a>
+          )}
+          <ReleaseNotesCardAction />
+          <button
+            type="button"
+            className={classNames(
+              styles.listButton,
+              isInCrate(release.instance_id) && styles.removeButton,
+            )}
+            onClick={handleCrateToggle}
+            aria-label={
+              isInCrate(release.instance_id)
+                ? "Remove from crate"
+                : "Add to crate"
+            }
+          >
+            {isInCrate(release.instance_id) ? (
+              <MinusIcon className={styles.listButtonIcon} />
+            ) : (
+              <PlusIcon className={styles.listButtonIcon} />
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+    </ReleaseNotesEditorProvider>
   ) : null;
 };
 

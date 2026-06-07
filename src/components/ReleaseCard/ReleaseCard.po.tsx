@@ -1,45 +1,41 @@
-import { mocked } from "jest-mock";
 import * as apiHelpers from "src/api/helpers";
-import { useCrate } from "src/context/crate.context";
-import * as filterAtoms from "src/hooks/useFilterAtoms.hook";
+import {
+  checkAuthStatus,
+  getUserIdFromCookies,
+  getUsernameFromCookies,
+  parseAuthUrlParams,
+} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
+} from "src/tests/BasePageObject.po";
+import { crateFactory } from "src/tests/factories/Crate.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
+import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
+import type { RenderResult } from "test-utils";
+import { render } from "test-utils";
 import { ReleaseCard } from "./ReleaseCard.component";
 
 jest.mock("src/api/helpers");
-jest.mock("src/context/crate.context");
-jest.mock("src/hooks/useFilterAtoms.hook");
+jest.mock("src/services/auth.service");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-jest.mock("next/image", () => ({
-  __esModule: true,
-  default: (props: {
-    src: string;
-    alt: string;
-    width?: number;
-    height?: number;
-    [key: string]: unknown;
-  }) => {
-    // biome-ignore lint/performance/noImgElement: Test mock component
-    return <img src={props.src} alt={props.alt} />;
-  },
-}));
+const mockApi = jest.mocked(apiHelpers);
+const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
+const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
+const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
+const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
 
-const mockApi = mocked(apiHelpers);
-const mockUseCrate = mocked(useCrate);
-const mockUseSelectedStyles = mocked(filterAtoms.useSelectedStyles);
-const mockUseSelectedFormats = mocked(filterAtoms.useSelectedFormats);
-const mockUseFiltersDispatch = mocked(filterAtoms.useFiltersDispatch);
-const mockUseIsRandomMode = mocked(filterAtoms.useIsRandomMode);
+const apiError = new Error("API request failed");
 
 export type ReleaseCardRenderProps = Partial<
   Omit<ReleaseCardProps, "release">
@@ -50,11 +46,9 @@ export type ReleaseCardRenderProps = Partial<
 export class ReleaseCardPageObject extends BasePageObject {
   public testId = "fmdReleaseCard";
   public mockApi = mockApi.fetchDiscogsRelease;
-  public addToCrate = jest.fn();
-  public removeFromCrate = jest.fn();
-  public isInCrate = jest.fn();
-  public openDrawer = jest.fn();
-  public filtersDispatch = jest.fn();
+  public mockApiHelpers = mockApi;
+  public defaultCrate = crateFactory.defaultTestCrate();
+  public defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
@@ -63,54 +57,79 @@ export class ReleaseCardPageObject extends BasePageObject {
 
   setupMocks() {
     jest.clearAllMocks();
-    window.open = jest.fn();
 
-    mockUseCrate.mockReturnValue({
-      addToCrate: this.addToCrate,
-      removeFromCrate: this.removeFromCrate,
-      isInCrate: this.isInCrate,
-      openDrawer: this.openDrawer,
-      crates: [],
-      activeCrateId: null,
-      selectedReleases: [],
-      toggleDrawer: jest.fn(),
-      closeDrawer: jest.fn(),
-      selectCrate: jest.fn(),
-      createCrate: jest.fn(),
-      updateCrate: jest.fn(),
-      deleteCrate: jest.fn(),
-      clearCrate: jest.fn(),
-      isDrawerOpen: false,
-      isLoading: false,
-      isLoadingCrate: false,
-      isUpdatingCrate: false,
-      isDeletingCrate: false,
+    mockGetUserIdFromCookies.mockReturnValue("123");
+    mockGetUsernameFromCookies.mockReturnValue("testuser");
+    mockCheckAuthStatus.mockResolvedValue({
+      isAuthenticated: true,
+      username: "testuser",
+      userId: "123",
     });
-
-    mockUseSelectedStyles.mockReturnValue([]);
-    mockUseSelectedFormats.mockReturnValue([]);
-    mockUseFiltersDispatch.mockReturnValue(this.filtersDispatch);
-    mockUseIsRandomMode.mockReturnValue(false);
+    mockParseAuthUrlParams.mockReturnValue({
+      authStatus: null,
+      errorStatus: null,
+    });
 
     mockApiResponse(
       true,
-      this.mockApi,
-      { uri: "https://www.discogs.com/release/123" },
-      new Error("Failed to fetch release"),
+      mockApi.fetchDiscogsRelease,
+      discogsReleaseJsonFactory.forReleaseId(123),
+      apiError,
     );
 
-    this.isInCrate.mockImplementation(() => false);
+    mockApiResponse(
+      true,
+      mockApi.fetchCollectionFields,
+      discogsCollectionFieldsResponseFactory.forReleaseNotes(),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      cratesResponseFactory.withCrate(this.defaultCrateWithCount),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.fetchCrate,
+      crateWithReleasesResponseFactory.empty(this.defaultCrate),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.addReleaseToCrate,
+      crateMutationSuccessFactory.build(),
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.removeReleaseFromCrate,
+      crateMutationSuccessFactory.build(),
+      apiError,
+    );
   }
 
-  mockRandomModeFilters() {
-    mockUseIsRandomMode.mockReturnValue(true);
+  mockCrateContainsRelease(release: DiscogsRelease) {
+    mockApiResponse(
+      true,
+      mockApi.fetchCrate,
+      crateWithReleasesResponseFactory.withReleases(this.defaultCrate, [
+        release,
+      ]),
+      apiError,
+    );
   }
 
   private releaseCardElement(overrides: ReleaseCardRenderProps = {}) {
+    const { release, ...rest } = overrides;
+
     return (
       <ReleaseCard
-        release={overrides.release ?? releaseFactory.withDisplayDefaults()}
-        {...overrides}
+        release={release ?? releaseFactory.withDisplayDefaults()}
+        {...rest}
       />
     );
   }

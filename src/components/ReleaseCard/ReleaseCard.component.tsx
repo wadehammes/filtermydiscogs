@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { memo } from "react";
+import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { useCrate } from "src/context/crate.context";
 import type { ReleaseCardProps } from "src/types";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -34,26 +35,28 @@ const ReleaseCardComponent = ({
   });
 
   return release ? (
-    <div
-      className={classNames(styles.releaseCard, {
-        [styles.highlighted as string]: isHighlighted,
-        [styles.inCrate as string]: isInCrate(release.instance_id),
-        [styles.randomMode as string]: isRandomMode,
-      })}
-      data-testid="fmdReleaseCard"
-    >
-      <ReleaseCardImage
-        release={release}
-        thumbUrl={thumbUrl}
-        resourceUrl={releaseUrl}
-      />
-      <ReleaseCardContent
-        release={release}
-        releaseUrl={releaseUrl}
-        labelUrl={labelUrl}
-        {...(onExitRandomMode && { onExitRandomMode })}
-      />
-    </div>
+    <ReleaseNotesEditorProvider release={release}>
+      <div
+        className={classNames(styles.releaseCard, {
+          [styles.highlighted as string]: isHighlighted,
+          [styles.inCrate as string]: isInCrate(release.instance_id),
+          [styles.randomMode as string]: isRandomMode,
+        })}
+        data-testid="fmdReleaseCard"
+      >
+        <ReleaseCardImage
+          release={release}
+          thumbUrl={thumbUrl}
+          resourceUrl={releaseUrl}
+        />
+        <ReleaseCardContent
+          release={release}
+          releaseUrl={releaseUrl}
+          labelUrl={labelUrl}
+          {...(onExitRandomMode && { onExitRandomMode })}
+        />
+      </div>
+    </ReleaseNotesEditorProvider>
   ) : null;
 };
 

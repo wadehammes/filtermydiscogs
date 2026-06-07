@@ -79,7 +79,6 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "jest-fetch-mock": "^3.0.3",
-    "jest-mock": "^30.4.1",
     "knip": "^6.16.1",
     "lighthouse": "^13.3.0",
     "postcss": "^8.5.15",

@@ -1,5 +1,6 @@
 import type {
   DiscogsCollection,
+  DiscogsCollectionFieldsResponse,
   DiscogsRelease,
   DiscogsReleaseJson,
   DiscogsSearchResponse,
@@ -18,14 +19,29 @@ async function messageFromFailedApiResponse(
   response: Response,
 ): Promise<string> {
   try {
-    const data = (await response.json()) as { error?: unknown };
+    const data = (await response.json()) as {
+      error?: unknown;
+      details?: unknown;
+    };
     if (typeof data?.error === "string" && data.error.length > 0) {
       return data.error;
+    }
+    if (typeof data?.details === "string" && data.details.length > 0) {
+      return data.details;
     }
   } catch {
     // non-JSON body
   }
   return `HTTP error! status: ${response.status}`;
+}
+
+async function parseSuccessResponse<T>(response: Response): Promise<T> {
+  const bodyText = await response.text();
+  if (!bodyText.trim()) {
+    return { success: true } as T;
+  }
+
+  return JSON.parse(bodyText) as T;
 }
 
 export const fetchDiscogsCollection = async (
@@ -59,6 +75,78 @@ export const fetchDiscogsCollection = async (
       throw error;
     }
     throw new Error("Failed to fetch collection");
+  }
+};
+
+export const fetchCollectionFields = async (
+  username: string,
+): Promise<DiscogsCollectionFieldsResponse> => {
+  try {
+    const params = new URLSearchParams({ username });
+    const response = await fetch(`/api/collection/fields?${params}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(await messageFromFailedApiResponse(response));
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch collection fields");
+  }
+};
+
+export interface UpdateCollectionNoteParams {
+  username: string;
+  instanceId: string;
+  fieldId: number;
+  releaseId: number;
+  folderId: number;
+  value: string;
+}
+
+export const updateCollectionNote = async ({
+  username,
+  instanceId,
+  fieldId,
+  releaseId,
+  folderId,
+  value,
+}: UpdateCollectionNoteParams): Promise<{ success: boolean }> => {
+  try {
+    const response = await fetch(
+      `/api/collection/instances/${instanceId}/fields/${fieldId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          releaseId,
+          folderId,
+          value,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(await messageFromFailedApiResponse(response));
+    }
+
+    return parseSuccessResponse<{ success: boolean }>(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update collection note");
   }
 };
 

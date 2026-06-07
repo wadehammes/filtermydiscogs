@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { screen } from "src/tests/utils/test-utils";
-import { ButtonPageObject } from "./Button.po";
+import { ButtonPageObject } from "src/components/Button/Button.po";
+import { screen } from "test-utils";
 
 let po: ButtonPageObject;
 

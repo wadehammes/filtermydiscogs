@@ -46,6 +46,24 @@ class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
 
     return factoryBuilt;
   }
+
+  defaultTestCrate(attributes: Partial<Crate> = {}): Crate {
+    return this.build({
+      id: "crate-1",
+      is_default: true,
+      user_id: 123,
+      ...attributes,
+    });
+  }
+
+  named(name: string, attributes: Partial<Crate> = {}): Crate {
+    return this.build({
+      id: "new-crate",
+      name,
+      user_id: 123,
+      ...attributes,
+    });
+  }
 }
 
 export const crateFactory = new CrateFactory();

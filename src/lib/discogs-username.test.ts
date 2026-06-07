@@ -1,3 +1,4 @@
+import { describe, expect, it } from "@jest/globals";
 import { isValidDiscogsUsername } from "./discogs-username";
 
 describe("isValidDiscogsUsername", () => {

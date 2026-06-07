@@ -1,9 +1,9 @@
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
+} from "src/tests/BasePageObject.po";
+import type { RenderResult } from "test-utils";
+import { render } from "test-utils";
 import { BackToTop } from "./BackToTop.component";
 
 export class BackToTopPageObject extends BasePageObject {

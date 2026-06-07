@@ -1,6 +1,7 @@
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { act, screen, waitFor } from "src/tests/utils/test-utils";
-import { BackToTopPageObject } from "./BackToTop.po";
+import { BackToTopPageObject } from "src/components/BackToTop/BackToTop.po";
+import { act, screen, waitFor } from "test-utils";
 
 let po: BackToTopPageObject;
 

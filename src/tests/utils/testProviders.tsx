@@ -1,4 +1,4 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
@@ -10,8 +10,15 @@ import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 import { createTestQueryClient } from "./testQueryClient";
 
-export const TestProviders = ({ children }: { children: ReactNode }) => {
-  const queryClient = useMemo(() => createTestQueryClient(), []);
+export const TestProviders = ({
+  children,
+  queryClient: queryClientOverride,
+}: {
+  children: ReactNode;
+  queryClient?: QueryClient;
+}) => {
+  const defaultQueryClient = useMemo(() => createTestQueryClient(), []);
+  const queryClient = queryClientOverride ?? defaultQueryClient;
 
   return (
     <QueryClientProvider client={queryClient}>

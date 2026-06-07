@@ -3,6 +3,7 @@ import Image from "next/image";
 import type React from "react";
 import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrate } from "src/context/crate.context";
 import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
@@ -183,11 +184,7 @@ const ReleaseListItemComponent = ({
               )}{" "}
               {year !== 0 ? `— ${year}` : ""}
             </p>
-            {release?.notes?.length > 0 && (
-              <p className={styles.notes}>
-                {release.notes.map((note) => note.value).join(", ")}
-              </p>
-            )}
+            <ReleaseNotes release={release} />
           </div>
 
           <div className={styles.styles}>

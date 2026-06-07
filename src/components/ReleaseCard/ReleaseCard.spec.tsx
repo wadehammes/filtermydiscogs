@@ -1,8 +1,8 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { FiltersActionTypes } from "src/context/filters.context";
+import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { screen } from "src/tests/utils/test-utils";
-import { ReleaseCardPageObject } from "./ReleaseCard.po";
+import { screen, waitFor } from "test-utils";
 
 let po: ReleaseCardPageObject;
 
@@ -66,37 +66,44 @@ describe("ReleaseCard", () => {
   });
 
   it("calls addToCrate when crate button is clicked and release is not in crate", async () => {
-    const release = releaseFactory.build();
-    po.isInCrate.mockImplementation(() => false);
+    const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
     po.renderReleaseCard({ release });
 
-    const crateButton = screen.getByRole("button", { name: "Add to crate" });
-    await user.click(crateButton);
+    await waitFor(() => {
+      expect(po.mockApiHelpers.fetchCrates).toHaveBeenCalled();
+    });
 
-    expect(po.addToCrate).toHaveBeenCalledWith(release);
-    expect(po.openDrawer).toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.addReleaseToCrate).toHaveBeenCalled();
+    });
   });
 
   it("calls removeFromCrate when crate button is clicked and release is in crate", async () => {
-    const release = releaseFactory.build();
-    po.isInCrate.mockImplementation(() => true);
+    const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
+    po.mockCrateContainsRelease(release);
     po.renderReleaseCard({ release });
 
-    const crateButton = screen.getByRole("button", {
-      name: "Remove from crate",
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Remove from crate" }),
+      ).toBeInTheDocument();
     });
-    await user.click(crateButton);
 
-    expect(po.removeFromCrate).toHaveBeenCalledWith(release.instance_id);
-    expect(po.addToCrate).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Remove from crate" }));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.removeReleaseFromCrate).toHaveBeenCalled();
+    });
   });
 
   it("applies highlighted class when isHighlighted is true", () => {
-    const release = releaseFactory.build();
+    const release = releaseFactory.withEmptyNotes();
     const { container } = po.renderReleaseCard({
       release,
       isHighlighted: true,
@@ -106,16 +113,18 @@ describe("ReleaseCard", () => {
     expect(card?.className).toContain("highlighted");
   });
 
-  it("applies inCrate class when release is in crate", () => {
-    const release = releaseFactory.build();
-    po.isInCrate.mockImplementation(() => true);
+  it("applies inCrate class when release is in crate", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    po.mockCrateContainsRelease(release);
     const { container } = po.renderReleaseCard({ release });
 
-    const card = container.querySelector(".releaseCard");
-    expect(card?.className).toContain("inCrate");
+    await waitFor(() => {
+      const card = container.querySelector(".releaseCard");
+      expect(card?.className).toContain("inCrate");
+    });
   });
 
-  it("calls toggleStyle when style pill is clicked", async () => {
+  it("selects style pill when clicked", async () => {
     const user = userEvent.setup();
 
     po.renderReleaseCard({
@@ -127,13 +136,10 @@ describe("ReleaseCard", () => {
     });
     await user.click(stylePill);
 
-    expect(po.filtersDispatch).toHaveBeenCalledWith({
-      type: FiltersActionTypes.ToggleStyle,
-      payload: "Rock",
-    });
+    expect(stylePill).toHaveClass("pillSelected");
   });
 
-  it("calls toggleFormat when format pill is clicked", async () => {
+  it("selects format pill when clicked", async () => {
     const user = userEvent.setup();
 
     po.renderReleaseCard({
@@ -145,33 +151,17 @@ describe("ReleaseCard", () => {
     });
     await user.click(formatPill);
 
-    expect(po.filtersDispatch).toHaveBeenCalledWith({
-      type: FiltersActionTypes.ToggleFormat,
-      payload: "Vinyl",
-    });
+    expect(formatPill).toHaveClass("pillSelected");
   });
 
-  it("toggles random mode when style pill is clicked in random mode", async () => {
-    const onExitRandomMode = jest.fn();
-    const user = userEvent.setup();
-
-    po.mockRandomModeFilters();
-
-    po.renderReleaseCard({
+  it("applies randomMode class when isRandomMode is true", () => {
+    const { container } = po.renderReleaseCard({
       release: releaseFactory.withStyles(["Rock"]),
-      onExitRandomMode,
+      isRandomMode: true,
     });
 
-    const stylePill = screen.getByRole("button", {
-      name: "Filter by Rock style",
-    });
-    await user.click(stylePill);
-
-    expect(po.filtersDispatch).toHaveBeenCalledWith({
-      type: FiltersActionTypes.ToggleRandomMode,
-      payload: undefined,
-    });
-    expect(onExitRandomMode).toHaveBeenCalled();
+    const card = container.querySelector(".releaseCard");
+    expect(card?.className).toContain("randomMode");
   });
 
   it("renders Discogs link with correct URL", () => {

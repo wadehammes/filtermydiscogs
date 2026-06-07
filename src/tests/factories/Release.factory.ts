@@ -4,7 +4,8 @@ import { BaseFactory } from "src/tests/factories/BaseFactory";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { formatFactory } from "src/tests/factories/Format.factory";
 import { labelFactory } from "src/tests/factories/Label.factory";
-import type { DiscogsRelease } from "src/types";
+import { releaseNoteFactory } from "src/tests/factories/ReleaseNote.factory";
+import type { DiscogsRelease, ReleaseNote } from "src/types";
 
 type ReleaseFactoryOptions = {
   artistCount?: number;
@@ -25,24 +26,8 @@ class ReleaseFactory extends BaseFactory<
       instance_id: faker.string.uuid(),
       date_added: faker.date.past().toISOString(),
       rating: faker.number.int({ min: 0, max: 5 }),
-      basic_information: basicInformationFactory.build(
-        {},
-        {
-          ...(options?.artistCount !== undefined && {
-            artistCount: options.artistCount,
-          }),
-          ...(options?.labelCount !== undefined && {
-            labelCount: options.labelCount,
-          }),
-          ...(options?.formatCount !== undefined && {
-            formatCount: options.formatCount,
-          }),
-          ...(options?.styleCount !== undefined && {
-            styleCount: options.styleCount,
-          }),
-        },
-      ),
-      notes: [],
+      basic_information: basicInformationFactory.build({}, options),
+      notes: releaseNoteFactory.buildList(faker.number.int({ min: 0, max: 2 })),
     } satisfies DiscogsRelease;
 
     const factoryBuilt: DiscogsRelease = {
@@ -63,6 +48,7 @@ class ReleaseFactory extends BaseFactory<
         year: 2020,
         labels: [labelFactory.build({ name: "Test Label" })],
       }),
+      notes: [],
       ...attributes,
     });
   }
@@ -148,6 +134,36 @@ class ReleaseFactory extends BaseFactory<
       basic_information: basicInformationFactory.build({
         thumb,
         cover_image: "",
+      }),
+      ...attributes,
+    });
+  }
+
+  withNotes(
+    notes: ReleaseNote[],
+    attributes: Partial<DiscogsRelease> = {},
+  ): DiscogsRelease {
+    return this.build({
+      notes,
+      ...attributes,
+    });
+  }
+
+  withEmptyNotes(attributes: Partial<DiscogsRelease> = {}): DiscogsRelease {
+    return this.build({
+      notes: [],
+      ...attributes,
+    });
+  }
+
+  forNotesEditor(
+    releaseId = 12345,
+    attributes: Partial<DiscogsRelease> = {},
+  ): DiscogsRelease {
+    return this.withResourceUrl(releaseId, {
+      basic_information: basicInformationFactory.build({
+        id: releaseId,
+        resource_url: `https://api.discogs.com/releases/${releaseId}`,
       }),
       ...attributes,
     });
