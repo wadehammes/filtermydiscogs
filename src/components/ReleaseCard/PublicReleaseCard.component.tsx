@@ -11,6 +11,7 @@ import {
   ReleaseCardCatalog,
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
+import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
 
 const PublicReleaseCardComponent = ({
   release,
@@ -110,68 +111,17 @@ const PublicReleaseCardComponent = ({
       <div className={styles.contentContainer}>
         <div className={styles.mainContent}>
           <ReleaseCardCatalog catno={catno} />
-          <h3 className={styles.title}>
-            {artists.map((artist, index) => {
-              const artistUrl = getResourceUrl({
-                resourceUrl: artist.resource_url,
-                type: "artist",
-              });
-              return (
-                <span key={artist.id ?? `${artist.name}-${index}`}>
-                  {artistUrl ? (
-                    <a
-                      href={artistUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`View ${artist.name} on Discogs`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        trackEvent("artistClicked", {
-                          action: "artistClicked",
-                          category: "publicCrate",
-                          label: "Artist Clicked",
-                          value: artistUrl,
-                        });
-                      }}
-                      className={styles.artistLink}
-                    >
-                      {artist.name}
-                    </a>
-                  ) : (
-                    artist.name
-                  )}
-                  {index < artists.length - 1 && ", "}
-                </span>
-              );
-            })}{" "}
-            -{" "}
-            {releaseUrl ? (
-              <a
-                href={releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  trackEvent("releaseClicked", {
-                    action: "releaseClicked",
-                    category: "publicCrate",
-                    label: "Release Clicked",
-                    value: resource_url,
-                  });
-                }}
-                className={styles.titleLink}
-                title="View release on Discogs"
-              >
-                {title}
-              </a>
-            ) : (
-              <span>{title}</span>
-            )}
-          </h3>
+          <ReleaseCardTitle
+            artists={artists}
+            title={title}
+            releaseUrl={releaseUrl}
+            resourceUrl={resource_url}
+            analyticsCategory="publicCrate"
+          />
           <ReleaseCardMeta
             labelName={labels[0]?.name}
             labelUrl={labelUrl}
             year={year}
-            dateAdded={release.date_added ?? null}
             analyticsCategory="publicCrate"
           />
         </div>

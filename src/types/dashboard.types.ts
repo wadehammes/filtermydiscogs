@@ -33,6 +33,18 @@ export interface DistributionData {
   count: number;
 }
 
+export interface FormatMixSummary {
+  topMediaType: string;
+  topMediaTypePercent: number;
+  topTags: Array<{ label: string; count: number }>;
+}
+
+export interface MediaFormatSubtypeGroup {
+  mediaType: string;
+  releaseCount: number;
+  subtypes: DistributionData[];
+}
+
 export interface CollectionHealth {
   duplicateCount: number;
   potentialDuplicates: number;
@@ -102,7 +114,10 @@ export interface CollectionAnalytics {
   health: CollectionHealth;
   styleDistribution: DistributionData[];
   decadeDistribution: DistributionData[];
-  formatDistribution: DistributionData[];
+  mediaTypeDistribution: DistributionData[];
+  formatTagDistribution: DistributionData[];
+  mediaFormatSubtypeBreakdown: MediaFormatSubtypeGroup[];
+  formatMix: FormatMixSummary | null;
   artistDistribution: DistributionData[];
   labelDistribution: DistributionData[];
   milestones: CollectionMilestone[];

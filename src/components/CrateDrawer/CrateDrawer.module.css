@@ -168,12 +168,29 @@
   cursor: pointer;
   display: flex;
   gap: var(--space-4);
-  transition: all var(--transition-normal);
-  text-decoration: none;
-  padding: 0;
-  padding-right: var(--space-4);
   outline: 1px solid transparent;
   outline-offset: 1px;
+  padding: 0;
+  padding-right: var(--space-4);
+  position: relative;
+  text-decoration: none;
+  transition: all var(--transition-normal);
+
+  &::before {
+    background-image: var(--pattern-microdot);
+    background-size: var(--pattern-microdot-size);
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     background: var(--muted);

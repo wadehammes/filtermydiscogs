@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import styles from "./MobileMenu.module.css";
 
@@ -8,6 +9,7 @@ interface MobileMenuDrawerFooterProps {
   isCollectionLoading: boolean;
   onSyncClick: () => void;
   onLogout: () => void;
+  onAboutClick: () => void;
 }
 
 export function MobileMenuDrawerFooter({
@@ -17,6 +19,7 @@ export function MobileMenuDrawerFooter({
   isCollectionLoading,
   onSyncClick,
   onLogout,
+  onAboutClick,
 }: MobileMenuDrawerFooterProps) {
   return (
     <div className={styles.menuFooter}>
@@ -26,6 +29,9 @@ export function MobileMenuDrawerFooter({
         </div>
       )}
       <div className={styles.buttonGroup}>
+        <Link href="/about" className={styles.aboutLink} onClick={onAboutClick}>
+          About
+        </Link>
         <ThemeSwitcher variant="mobile" />
         <button
           type="button"

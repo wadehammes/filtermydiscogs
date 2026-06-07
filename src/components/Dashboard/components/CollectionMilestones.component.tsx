@@ -30,11 +30,7 @@ export function CollectionMilestones() {
       <div className={styles.milestonesList}>
         {milestones.map((milestone) => (
           <div
-            key={
-              milestone.release
-                ? milestone.release.instance_id
-                : `${milestone.label}-${milestone.value}`
-            }
+            key={`${milestone.label}-${milestone.release?.instance_id ?? milestone.value}`}
             className={styles.milestoneItem}
           >
             <div className={styles.milestoneHeader}>

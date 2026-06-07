@@ -161,6 +161,26 @@
     gap: var(--space-2);
   }
 
+  .aboutLink {
+    align-items: center;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ui);
+    color: var(--foreground);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    padding: var(--space-3);
+    text-decoration: none;
+    transition: var(--transition-normal);
+
+    &:hover {
+      background: var(--accent);
+      border-color: var(--input);
+      color: var(--primary);
+    }
+  }
+
   .syncButton {
     background: var(--muted);
     border: 1px solid var(--border);

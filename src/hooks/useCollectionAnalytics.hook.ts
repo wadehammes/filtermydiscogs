@@ -5,8 +5,11 @@ import {
   calculateArtistDistribution,
   calculateCollectionStats,
   calculateDecadeDistribution,
-  calculateFormatDistribution,
+  calculateFormatMixSummary,
+  calculateFormatTagDistribution,
   calculateLabelDistribution,
+  calculateMediaFormatSubtypeBreakdown,
+  calculateMediaTypeDistribution,
   calculateStyleDistribution,
   detectDuplicates,
 } from "src/utils/collectionAnalytics";
@@ -41,7 +44,11 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
     const growth = analyzeGrowthFromDates(releases);
     const styleDistribution = calculateStyleDistribution(releases);
     const decadeDistribution = calculateDecadeDistribution(releases);
-    const formatDistribution = calculateFormatDistribution(releases);
+    const mediaTypeDistribution = calculateMediaTypeDistribution(releases);
+    const formatTagDistribution = calculateFormatTagDistribution(releases);
+    const mediaFormatSubtypeBreakdown =
+      calculateMediaFormatSubtypeBreakdown(releases);
+    const formatMix = calculateFormatMixSummary(releases);
     const artistDistribution = calculateArtistDistribution(releases);
     const labelDistribution = calculateLabelDistribution(releases);
     const milestones = calculateMilestones(releases);
@@ -53,7 +60,10 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       health,
       styleDistribution,
       decadeDistribution,
-      formatDistribution,
+      mediaTypeDistribution,
+      formatTagDistribution,
+      mediaFormatSubtypeBreakdown,
+      formatMix,
       artistDistribution,
       labelDistribution,
       milestones,

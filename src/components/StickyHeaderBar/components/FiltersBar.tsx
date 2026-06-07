@@ -78,7 +78,6 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
   return (
     <>
       <div className={styles.filtersBar}>
-        {/* Desktop filters */}
         <div className={styles.desktopFilters}>
           <SearchBar
             placeholder="Search your collection..."
@@ -147,7 +146,6 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
           </Button>
         </div>
 
-        {/* Mobile filters button */}
         <div className={styles.mobileFilters}>
           <Button
             variant="secondary"
@@ -161,7 +159,6 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
         </div>
       </div>
 
-      {/* Mobile filters drawer */}
       <FiltersDrawer
         isOpen={isFiltersDrawerOpen}
         onClose={closeFiltersDrawer}

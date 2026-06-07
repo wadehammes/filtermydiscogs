@@ -72,6 +72,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 ### File naming
 
 - **`MyComponent.component.tsx`** + **`MyComponent.module.css`**. Use the `styles.*` object in TSX.
+- **Shared style modules** under [`src/styles/`](../../src/styles/) (e.g. [`segmented-control.module.css`](../../src/styles/segmented-control.module.css)) for cross-component patterns. Import directly from the module path; do not re-export through barrel files.
 
 ### Modern CSS
 

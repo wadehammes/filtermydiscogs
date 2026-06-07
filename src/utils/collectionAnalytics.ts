@@ -3,7 +3,59 @@ import type {
   CollectionStats,
   DistributionData,
   DuplicateGroup,
+  FormatMixSummary,
+  MediaFormatSubtypeGroup,
 } from "src/types/dashboard.types";
+import {
+  getFormatSubtypeTags,
+  getReleaseFormatTags,
+} from "src/utils/formatFilterTags";
+
+const MEDIA_TYPE_NAMES = new Set([
+  "vinyl",
+  "cassette",
+  "cd",
+  "file",
+  "digital",
+  "dvd",
+  "blu-ray",
+  "vhs",
+  "betamax",
+  "laserdisc",
+]);
+
+const formatDistributionLabel = (raw: string): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+};
+
+const getPrimaryMediaType = (release: DiscogsRelease): string | null => {
+  const name = release.basic_information.formats[0]?.name?.trim();
+  if (!name) {
+    return null;
+  }
+
+  return formatDistributionLabel(name);
+};
+
+export const toDistributionData = (
+  counts: Map<string, number>,
+  limit?: number,
+): DistributionData[] => {
+  const sorted = Array.from(counts.entries())
+    .map(([label, count]) => ({
+      label,
+      value: count,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  return limit === undefined ? sorted : sorted.slice(0, limit);
+};
 
 export function calculateCollectionStats(
   releases: DiscogsRelease[],
@@ -172,25 +224,136 @@ export function calculateDecadeDistribution(
     });
 }
 
-export function calculateFormatDistribution(
+export function calculateMediaTypeDistribution(
   releases: DiscogsRelease[],
 ): DistributionData[] {
-  const formatCounts = new Map<string, number>();
+  const mediaTypeCounts = new Map<string, number>();
 
   releases.forEach((release) => {
-    release.basic_information.formats.forEach((format) => {
-      const formatName = format.name.toLowerCase();
-      formatCounts.set(formatName, (formatCounts.get(formatName) || 0) + 1);
+    const mediaType = getPrimaryMediaType(release);
+    if (!mediaType) {
+      return;
+    }
+
+    mediaTypeCounts.set(mediaType, (mediaTypeCounts.get(mediaType) || 0) + 1);
+  });
+
+  return toDistributionData(mediaTypeCounts);
+}
+
+export function calculateMediaFormatSubtypeBreakdown(
+  releases: DiscogsRelease[],
+  options?: { maxMediaTypes?: number; subtypeLimit?: number },
+): MediaFormatSubtypeGroup[] {
+  const maxMediaTypes = options?.maxMediaTypes ?? 2;
+  const subtypeLimit = options?.subtypeLimit ?? 8;
+  const releaseCounts = new Map<string, number>();
+  const subtypeCountsByMediaType = new Map<string, Map<string, number>>();
+
+  releases.forEach((release) => {
+    const format = release.basic_information.formats[0];
+    const mediaTypeName = format?.name?.trim();
+    if (!(format && mediaTypeName)) {
+      return;
+    }
+
+    const mediaType = formatDistributionLabel(mediaTypeName);
+    releaseCounts.set(mediaType, (releaseCounts.get(mediaType) || 0) + 1);
+
+    const subtypeTags = getFormatSubtypeTags(format);
+    const countedTags = new Set<string>();
+    const subtypeCounts =
+      subtypeCountsByMediaType.get(mediaType) || new Map<string, number>();
+
+    if (subtypeTags.length === 0) {
+      const unspecifiedLabel = "Unspecified";
+      subtypeCounts.set(
+        unspecifiedLabel,
+        (subtypeCounts.get(unspecifiedLabel) || 0) + 1,
+      );
+      subtypeCountsByMediaType.set(mediaType, subtypeCounts);
+      return;
+    }
+
+    subtypeTags.forEach((tag) => {
+      const label = formatDistributionLabel(tag);
+      if (countedTags.has(label)) {
+        return;
+      }
+
+      countedTags.add(label);
+      subtypeCounts.set(label, (subtypeCounts.get(label) || 0) + 1);
+    });
+
+    subtypeCountsByMediaType.set(mediaType, subtypeCounts);
+  });
+
+  return Array.from(releaseCounts.entries())
+    .sort((left, right) => right[1] - left[1])
+    .map(([mediaType, releaseCount]) => ({
+      mediaType,
+      releaseCount,
+      subtypes: toDistributionData(
+        subtypeCountsByMediaType.get(mediaType) || new Map(),
+        subtypeLimit,
+      ),
+    }))
+    .filter((group) => group.subtypes.length > 1)
+    .slice(0, maxMediaTypes);
+}
+
+export function calculateFormatTagDistribution(
+  releases: DiscogsRelease[],
+): DistributionData[] {
+  const tagCounts = new Map<string, number>();
+
+  releases.forEach((release) => {
+    const countedTags = new Set<string>();
+
+    getReleaseFormatTags(release.basic_information.formats).forEach((tag) => {
+      if (MEDIA_TYPE_NAMES.has(tag.toLowerCase())) {
+        return;
+      }
+
+      const label = formatDistributionLabel(tag);
+      if (countedTags.has(label)) {
+        return;
+      }
+
+      countedTags.add(label);
+      tagCounts.set(label, (tagCounts.get(label) || 0) + 1);
     });
   });
 
-  return Array.from(formatCounts.entries())
-    .map(([label, count]) => ({
-      label: label.charAt(0).toUpperCase() + label.slice(1),
-      value: count,
+  return toDistributionData(tagCounts, 10);
+}
+
+export function calculateFormatMixSummary(
+  releases: DiscogsRelease[],
+): FormatMixSummary | null {
+  if (releases.length === 0) {
+    return null;
+  }
+
+  const mediaTypeDistribution = calculateMediaTypeDistribution(releases);
+  const topMediaType = mediaTypeDistribution[0];
+
+  if (!topMediaType) {
+    return null;
+  }
+
+  const formatTagDistribution = calculateFormatTagDistribution(releases);
+
+  return {
+    topMediaType: topMediaType.label,
+    topMediaTypePercent: Math.round(
+      (topMediaType.count / releases.length) * 100,
+    ),
+    topTags: formatTagDistribution.slice(0, 3).map(({ label, count }) => ({
+      label,
       count,
-    }))
-    .sort((a, b) => b.count - a.count);
+    })),
+  };
 }
 
 export function calculateArtistDistribution(

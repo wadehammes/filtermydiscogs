@@ -1,19 +1,17 @@
 .navigation {
   align-items: center;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
   display: inline-flex;
-  gap: 0;
+  gap: var(--space-1);
   margin: 0;
-  padding: var(--space-1);
+  padding: 0;
 }
 
 .navItem {
   align-items: center;
   background: transparent;
   border: none;
-  border-radius: var(--radius-ui);
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
@@ -24,7 +22,9 @@
   padding: var(--space-2) var(--space-3);
   position: relative;
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
   white-space: nowrap;
 
   &:disabled {
@@ -38,9 +38,9 @@
   }
 
   &.active {
-    background: var(--primary);
-    color: var(--primary-foreground);
-    font-weight: var(--font-bold);
+    border-bottom-color: var(--primary);
+    color: var(--primary);
+    font-weight: var(--font-semibold);
   }
 
   &.disabled {

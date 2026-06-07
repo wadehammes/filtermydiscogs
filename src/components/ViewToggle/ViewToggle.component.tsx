@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import CratesIcon from "src/styles/icons/crates-solid.svg";
 import DiceSolid from "src/styles/icons/dice-solid.svg";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import styles from "./ViewToggle.module.css";
 
 export type ViewMode = "card" | "list" | "random";
@@ -31,11 +32,11 @@ export const ViewToggle = ({
       className={classNames(styles.wrapper, className)}
       data-testid="fmdViewToggle"
     >
-      <div className={styles.container}>
+      <div className={segmentedStyles.container}>
         <button
           type="button"
-          className={classNames(styles.toggleButton, {
-            [styles.active as string]: currentView === "card",
+          className={classNames(segmentedStyles.segment, {
+            [segmentedStyles.active as string]: currentView === "card",
           })}
           onClick={() => {
             scrollPageToTop();
@@ -60,8 +61,8 @@ export const ViewToggle = ({
         </button>
         <button
           type="button"
-          className={classNames(styles.toggleButton, {
-            [styles.active as string]: currentView === "list",
+          className={classNames(segmentedStyles.segment, {
+            [segmentedStyles.active as string]: currentView === "list",
           })}
           onClick={() => {
             scrollPageToTop();
@@ -85,8 +86,8 @@ export const ViewToggle = ({
         </button>
         <button
           type="button"
-          className={classNames(styles.toggleButton, {
-            [styles.active as string]: currentView === "random",
+          className={classNames(segmentedStyles.segment, {
+            [segmentedStyles.active as string]: currentView === "random",
           })}
           onClick={() => {
             scrollPageToTop();
@@ -110,21 +111,21 @@ export const ViewToggle = ({
           <DiceSolid width="16" height="16" />
           <span>Random</span>
         </button>
+        {onCratesClick && (
+          <button
+            type="button"
+            className={classNames(segmentedStyles.segment, {
+              [segmentedStyles.active as string]: isCratesOpen,
+            })}
+            onClick={onCratesClick}
+            aria-label={isCratesOpen ? "Close crates" : "Open crates"}
+            title={isCratesOpen ? "Close crates" : "View your crates"}
+          >
+            <CratesIcon width="16" height="16" />
+            <span>Crates</span>
+          </button>
+        )}
       </div>
-      {onCratesClick && (
-        <button
-          type="button"
-          className={classNames(styles.cratesButton, {
-            [styles.active as string]: isCratesOpen,
-          })}
-          onClick={onCratesClick}
-          aria-label={isCratesOpen ? "Close crates" : "Open crates"}
-          title={isCratesOpen ? "Close crates" : "View your crates"}
-        >
-          <CratesIcon width="16" height="16" />
-          <span>Crates</span>
-        </button>
-      )}
     </div>
   );
 };

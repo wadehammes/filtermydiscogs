@@ -50,7 +50,7 @@ export function DashboardReleaseItem({
               type: "artist",
             });
             return (
-              <span key={artist.id ?? `${artist.name}-${index}`}>
+              <span key={`${artist.id ?? artist.name}-${index}`}>
                 {artistUrl ? (
                   <a
                     href={artistUrl}

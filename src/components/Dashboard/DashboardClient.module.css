@@ -54,22 +54,10 @@
   }
 }
 
-.chartsGrid {
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: 1fr;
-  width: 100%;
-
-  @media (width >= 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (width >= 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 .chartsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   width: 100%;
 }
 

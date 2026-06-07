@@ -1,18 +1,24 @@
-.skeleton {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
-  border-radius: var(--radius-ui);
-}
-
 @keyframes pulse {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.45;
   }
 
   50% {
-    opacity: 1;
+    opacity: 0.85;
   }
+}
+
+.skeletonText,
+.skeletonTitle,
+.skeletonChartBody,
+.skeletonHorizontalBarLabel,
+.skeletonHorizontalBar,
+.skeletonCircle,
+.skeletonLegendItem,
+.skeletonListItem {
+  animation: pulse 1.4s ease-in-out infinite;
+  background: var(--muted);
 }
 
 .skeletonCard {
@@ -22,80 +28,128 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  min-height: 7rem;
   padding: var(--space-4);
+  width: 100%;
 }
 
 .skeletonText {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
   border-radius: 4px;
   height: 1em;
 }
 
-.skeletonTitle {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
-  border-radius: 4px;
-  height: 1.5em;
-  margin-bottom: var(--space-4);
-  width: 60%;
+.skeletonTextSm {
+  width: 40%;
+}
+
+.skeletonTextMd {
+  height: 2em;
+  width: 55%;
+}
+
+.skeletonTextLg {
+  width: 30%;
 }
 
 .skeletonChart {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
-  height: 300px;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
   padding: var(--space-4);
   width: 100%;
 }
 
-.skeletonBar {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
+.skeletonTitle {
   border-radius: 4px;
-  height: 20px;
-  margin-bottom: var(--space-2);
+  flex-shrink: 0;
+  height: 1.25rem;
+  margin-bottom: var(--space-4);
+  width: 40%;
 }
 
-.skeletonPie {
+.skeletonChartBody {
+  border-radius: var(--radius-ui);
+  flex: 1;
+  min-height: 300px;
+  width: 100%;
+}
+
+.skeletonHorizontalBars {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+}
+
+.skeletonHorizontalBarRow {
+  align-items: center;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 4.5rem 1fr;
+  width: 100%;
+}
+
+.skeletonHorizontalBarLabel {
+  border-radius: 4px;
+  height: 0.75rem;
+  width: 100%;
+}
+
+.skeletonHorizontalBar {
+  border-radius: 4px;
+  height: 1.25rem;
+  width: 100%;
+}
+
+.skeletonPieBody {
   align-items: center;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   justify-content: center;
+  min-height: 300px;
+  width: 100%;
 }
 
 .skeletonCircle {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
   border-radius: 50%;
-  height: 120px;
-  width: 120px;
+  flex-shrink: 0;
+  height: 10rem;
+  width: 10rem;
+}
+
+.skeletonLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  justify-content: center;
+  width: 100%;
+}
+
+.skeletonLegendItem {
+  border-radius: 4px;
+  height: 0.875rem;
+  width: 4.5rem;
 }
 
 .skeletonList {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-3);
+  min-height: 300px;
+  width: 100%;
 }
 
 .skeletonListItem {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
   border-radius: var(--radius-ui);
-  height: 80px;
-}
-
-.skeletonGrid {
-  display: grid;
-  gap: var(--space-2);
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-
-.skeletonGridItem {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--muted);
-  border-radius: var(--radius-ui);
-  height: 80px;
+  height: 5rem;
+  width: 100%;
 }

@@ -61,6 +61,19 @@ function isFilterableDescription(description: string): boolean {
   return FORMAT_SIZE_PATTERN.test(trimmed);
 }
 
+export function getFormatSubtypeTags(format: DiscogsFormat): string[] {
+  const tags = new Set<string>();
+
+  format.descriptions?.forEach((description) => {
+    const trimmed = description.trim();
+    if (trimmed && isFilterableDescription(trimmed)) {
+      tags.add(trimmed);
+    }
+  });
+
+  return sortFormatTags(Array.from(tags));
+}
+
 export function getFormatTagsFromFormat(format: DiscogsFormat): string[] {
   const tags = new Set<string>();
 
@@ -68,11 +81,8 @@ export function getFormatTagsFromFormat(format: DiscogsFormat): string[] {
     tags.add(format.name.trim());
   }
 
-  format.descriptions?.forEach((description) => {
-    const trimmed = description.trim();
-    if (trimmed && isFilterableDescription(trimmed)) {
-      tags.add(trimmed);
-    }
+  getFormatSubtypeTags(format).forEach((tag) => {
+    tags.add(tag);
   });
 
   return Array.from(tags);
