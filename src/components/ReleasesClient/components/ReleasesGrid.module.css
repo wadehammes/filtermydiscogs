@@ -1,3 +1,8 @@
+.releaseItem {
+  min-width: 0;
+  width: 100%;
+}
+
 .loadingContainer {
   align-items: center;
   display: flex;

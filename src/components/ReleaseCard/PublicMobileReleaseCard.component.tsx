@@ -12,7 +12,9 @@ import {
   ReleaseCardCatalog,
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
+import metaStyles from "./ReleaseCardMeta.module.css";
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
+import titleStyles from "./ReleaseCardTitle.module.css";
 
 const PublicMobileReleaseCardComponent = ({
   release,
@@ -87,20 +89,27 @@ const PublicMobileReleaseCardComponent = ({
       </div>
       <div className={styles.contentContainer}>
         <div className={styles.mainContent}>
-          <ReleaseCardCatalog catno={catno} />
-          <ReleaseCardTitle
-            artists={artists}
-            title={title}
-            releaseUrl={releaseUrl}
-            resourceUrl={resource_url}
-            analyticsCategory="publicCrate"
+          <ReleaseCardCatalog
+            catno={catno}
+            className={metaStyles.catalogRowMobile}
           />
-          <ReleaseCardMeta
-            labelName={labels[0]?.name}
-            labelUrl={labelUrl}
-            year={year}
-            analyticsCategory="publicCrate"
-          />
+          <div className={styles.releaseInfo}>
+            <ReleaseCardTitle
+              artists={artists}
+              title={title}
+              releaseUrl={releaseUrl}
+              resourceUrl={resource_url}
+              analyticsCategory="publicCrate"
+              className={titleStyles.titleGroupMobile}
+            />
+            <ReleaseCardMeta
+              labelName={labels[0]?.name}
+              labelUrl={labelUrl}
+              year={year}
+              analyticsCategory="publicCrate"
+              className={metaStyles.metaLineMobile}
+            />
+          </div>
         </div>
         <HorizontalScrollRow className={styles.genresContainer}>
           {releaseFormats &&
@@ -128,24 +137,26 @@ const PublicMobileReleaseCardComponent = ({
       </div>
       <div className={styles.actionButtonsContainer}>
         {releaseUrl && (
-          <a
-            href={releaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.discogsButton}
-            onClick={() => {
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: "publicCrate",
-                label: "Release Clicked",
-                value: resource_url,
-              });
-            }}
-            aria-label="View on Discogs"
-            title="View on Discogs"
-          >
-            <ExternalLinkIcon className={styles.externalLinkIcon} />
-          </a>
+          <div className={styles.actionSlot}>
+            <a
+              href={releaseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.discogsButton}
+              onClick={() => {
+                trackEvent("releaseClicked", {
+                  action: "releaseClicked",
+                  category: "publicCrate",
+                  label: "Release Clicked",
+                  value: resource_url,
+                });
+              }}
+              aria-label="View on Discogs"
+              title="View on Discogs"
+            >
+              <ExternalLinkIcon className={styles.externalLinkIcon} />
+            </a>
+          </div>
         )}
       </div>
     </div>

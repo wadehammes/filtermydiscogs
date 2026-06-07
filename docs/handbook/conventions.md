@@ -88,6 +88,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 
 - **Alphabetize** properties within each rule block.
 - **Nest** sensible selectors (`&:hover`, `&.modifier`); keep structural nesting shallow.
+- **Selector order**: Put **base** class rules **before** more specific compound selectors (e.g. **`.artistLine`** before **`.titleGroupMobile .artistLine`**) so Stylelint **`no-descending-specificity`** passes.
 - **Spacing**: Avoid **`margin-top`** for stacking siblings; prefer **flex/grid** with **`gap`**.
 - No redundant comments in CSS; names and structure should read clearly.
 
@@ -105,6 +106,7 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 - **Specs**: Use **`<Name>.spec.tsx`** for component tests with page objects (import the PO from **`src/components/<Name>/<Name>.po`**). Context, hook, and util tests may stay as **`* .test.ts(x)`** co-located with source. Import **`describe`**, **`it`**, **`expect`**, and lifecycle hooks from **`@jest/globals`** in every test file (not ambient globals). Use the global **`jest`** object for **`jest.mock`**, **`jest.fn`**, **`jest.spyOn`**, and **`jest.mocked`**—do **not** import **`jest`** from **`@jest/globals`** (that breaks the mock registry). Import Testing Library helpers from the **`test-utils`** alias. Jest DOM matchers are wired in [`.jest/setupTests.ts`](../../.jest/setupTests.ts) via **`@testing-library/jest-dom/jest-globals`**; types come from [`.jest/jest-dom-globals.d.ts`](../../.jest/jest-dom-globals.d.ts).
 - **Assert on literal user-visible strings in specs**, not `po.someField` read back from the PO—repeat the literal in both PO factory/render setup and `screen.getBy*` / `expect` so coupling stays visible.
 - **Custom render**: Use **`render`**, **`renderHook`**, and other Testing Library helpers from **`test-utils`** ([`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)). Global styles load via **`src/styles/global.css`** in test-utils (same as rhythm-marketing). The default **`render`** wrapper is **`TestProviders`** (QueryClient, Jotai, theme, auth, collection, filters, crate, view). Pass a custom **`wrapper`** only when a test intentionally needs a subset (e.g. “outside provider” error cases).
+- **`TestProviders` auth defaults**: **`skipInitialAuthCheck`** defaults to **`true`** so most component tests get a stable idle auth state without async **`checkAuthStatus`** updates (avoids act warnings). Pass **`skipInitialAuthCheck={false}`** only when testing real mount-time auth (e.g. **`auth.context.test.tsx`** with a minimal **`QueryClientProvider` + `AuthProvider`** wrapper). Optional **`authInitialState`** seeds **`AuthProvider`**; when **`skipInitialAuthCheck`** is **`false`** and **`authInitialState`** is omitted, production initial state (**`isLoading: true`**) applies. Presets live in [`testAuthStates.ts`](../../src/tests/utils/testAuthStates.ts). Do **not** suppress act warnings in **`setupTests.ts`**—fix async provider setup instead.
 
 ### Jotai state in components
 

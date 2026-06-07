@@ -94,7 +94,11 @@ const ReleasesGridComponent = ({
       key={`grid-${view}-${isRandomMode}`}
     >
       {releasesToShow.map((release: DiscogsRelease) => (
-        <div key={release.instance_id} id={`release-${release.instance_id}`}>
+        <div
+          key={release.instance_id}
+          id={`release-${release.instance_id}`}
+          className={styles.releaseItem}
+        >
           {isCardView ? (
             isMobile ? (
               <MobileReleaseCard

@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsArtist } from "src/types";
 import { getResourceUrl } from "src/utils/helpers";
@@ -9,6 +10,7 @@ interface ReleaseCardTitleProps {
   releaseUrl: string | null;
   resourceUrl: string | null;
   analyticsCategory?: "releaseCard" | "publicCrate" | "home";
+  className?: string | undefined;
 }
 
 export function ReleaseCardTitle({
@@ -17,9 +19,10 @@ export function ReleaseCardTitle({
   releaseUrl,
   resourceUrl,
   analyticsCategory = "releaseCard",
+  className,
 }: ReleaseCardTitleProps) {
   return (
-    <div className={styles.titleGroup}>
+    <div className={classNames(styles.titleGroup, className)}>
       <p className={styles.artistLine}>
         {artists.map((artist, index) => {
           const artistUrl = getResourceUrl({
