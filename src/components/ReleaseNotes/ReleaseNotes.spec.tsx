@@ -50,10 +50,10 @@ describe("ReleaseNotes", () => {
   });
 
   it("renders nothing for inline variant when there are no notes and editing is unavailable", () => {
-    po.mockEditingUnavailable();
     po.renderReleaseNotes({
       release: releaseFactory.withEmptyNotes(),
       variant: "inline",
+      authenticated: false,
     });
 
     expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();

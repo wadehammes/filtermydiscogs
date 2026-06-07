@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import type { QueryClient } from "@tanstack/react-query";
+import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { logout as logoutApi } from "src/api/helpers";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
@@ -12,8 +12,8 @@ import {
 } from "src/services/auth.service";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
-import { act, renderHook, TestProviders, waitFor } from "test-utils";
-import { AuthActionTypes, useAuth } from "./auth.context";
+import { act, renderHook, waitFor } from "test-utils";
+import { AuthActionTypes, AuthProvider, useAuth } from "./auth.context";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
@@ -45,7 +45,9 @@ describe("AuthProvider", () => {
   const renderAuthHook = () =>
     renderHook(() => useAuth(), {
       wrapper: ({ children }) => (
-        <TestProviders queryClient={queryClient}>{children}</TestProviders>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider skipInitialAuthCheck={false}>{children}</AuthProvider>
+        </QueryClientProvider>
       ),
     });
 

@@ -99,14 +99,31 @@ const AuthContext = createContext<{
   logout: () => Promise<void>;
 } | null>(null);
 
-export const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+interface AuthProviderProps extends PropsWithChildren {
+  initialState?: AuthState;
+  skipInitialAuthCheck?: boolean;
+}
+
+export const AuthProvider = ({
+  children,
+  initialState: initialStateOverride,
+  skipInitialAuthCheck = false,
+}: AuthProviderProps) => {
+  const [state, dispatch] = useReducer(
+    authReducer,
+    initialStateOverride ?? initialState,
+  );
   const queryClient = useQueryClient();
   const router = useRouter();
 
   // Check for existing authentication on mount (only once)
   const hasCheckedAuthRef = useRef(false);
   useEffect(() => {
+    if (skipInitialAuthCheck) {
+      hasCheckedAuthRef.current = true;
+      return;
+    }
+
     // Skip if we've already checked auth or if already authenticated
     if (
       hasCheckedAuthRef.current ||
@@ -159,9 +176,18 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     return () => {
       isMounted = false;
     };
-  }, [queryClient, state.isAuthenticated, state.username]);
+  }, [
+    queryClient,
+    skipInitialAuthCheck,
+    state.isAuthenticated,
+    state.username,
+  ]);
 
   useEffect(() => {
+    if (skipInitialAuthCheck) {
+      return;
+    }
+
     const { authStatus, errorStatus } = parseAuthUrlParams();
 
     if (authStatus === "success") {
@@ -183,7 +209,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       dispatch({ type: AuthActionTypes.SetLoading, payload: false });
       clearUrlParams();
     }
-  }, [queryClient]);
+  }, [queryClient, skipInitialAuthCheck]);
 
   const login = () => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
