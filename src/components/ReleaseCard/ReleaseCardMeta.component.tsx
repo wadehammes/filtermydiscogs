@@ -1,12 +1,17 @@
+import classNames from "classnames";
 import { trackEvent } from "src/analytics/analytics";
 import { formatDate } from "src/utils/dateHelpers";
 import styles from "./ReleaseCardMeta.module.css";
 
 interface ReleaseCardCatalogProps {
   catno?: string | null | undefined;
+  className?: string | undefined;
 }
 
-export function ReleaseCardCatalog({ catno }: ReleaseCardCatalogProps) {
+export function ReleaseCardCatalog({
+  catno,
+  className,
+}: ReleaseCardCatalogProps) {
   const catnoStr = catno ? String(catno) : "";
 
   if (!catnoStr) {
@@ -14,7 +19,7 @@ export function ReleaseCardCatalog({ catno }: ReleaseCardCatalogProps) {
   }
 
   return (
-    <div className={styles.catalogRow}>
+    <div className={classNames(styles.catalogRow, className)}>
       <span className={styles.metaCatalog}>{catnoStr}</span>
     </div>
   );
@@ -26,6 +31,7 @@ interface ReleaseCardMetaProps {
   year?: number | undefined;
   dateAdded?: string | null | undefined;
   analyticsCategory?: "releaseCard" | "publicCrate" | "home" | undefined;
+  className?: string | undefined;
 }
 
 function MetaSeparator() {
@@ -42,6 +48,7 @@ export function ReleaseCardMeta({
   year,
   dateAdded,
   analyticsCategory = "releaseCard",
+  className,
 }: ReleaseCardMetaProps) {
   const showYear = year !== undefined && year !== 0;
   const formattedDateAdded = dateAdded ? formatDate(dateAdded) : null;
@@ -53,7 +60,7 @@ export function ReleaseCardMeta({
   }
 
   return (
-    <p className={styles.metaLine}>
+    <p className={classNames(styles.metaLine, className)}>
       {showLabel &&
         (labelUrl ? (
           <a

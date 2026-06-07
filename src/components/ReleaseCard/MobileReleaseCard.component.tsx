@@ -4,6 +4,7 @@ import type React from "react";
 import { memo, useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
+import notesStyles from "src/components/ReleaseNotes/ReleaseNotes.module.css";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
@@ -25,7 +26,9 @@ import {
   ReleaseCardCatalog,
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
+import metaStyles from "./ReleaseCardMeta.module.css";
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
+import titleStyles from "./ReleaseCardTitle.module.css";
 
 const MobileReleaseCardComponent = ({
   release,
@@ -120,36 +123,48 @@ const MobileReleaseCardComponent = ({
           {thumbUrl && (
             <Image
               src={thumbUrl}
-              height={200}
-              width={200}
+              height={96}
+              width={96}
               quality={85}
               alt={release.basic_information.title}
               loading="lazy"
               className={styles.releaseImage}
               style={{
+                maxWidth: "100%",
                 position: "relative",
                 zIndex: 2,
                 filter: "none",
               }}
-              sizes="100px"
+              sizes="96px"
             />
           )}
         </div>
         <div className={styles.contentContainer}>
           <div className={styles.mainContent}>
-            <ReleaseCardCatalog catno={catno} />
-            <ReleaseCardTitle
-              artists={artists}
-              title={title}
-              releaseUrl={releaseUrl}
-              resourceUrl={resource_url}
+            <ReleaseCardCatalog
+              catno={catno}
+              className={metaStyles.catalogRowMobile}
             />
-            <ReleaseCardMeta
-              labelName={labels[0]?.name}
-              labelUrl={labelUrl}
-              year={year}
+            <div className={styles.releaseInfo}>
+              <ReleaseCardTitle
+                artists={artists}
+                title={title}
+                releaseUrl={releaseUrl}
+                resourceUrl={resource_url}
+                className={titleStyles.titleGroupMobile}
+              />
+              <ReleaseCardMeta
+                labelName={labels[0]?.name}
+                labelUrl={labelUrl}
+                year={year}
+                className={metaStyles.metaLineMobile}
+              />
+            </div>
+            <ReleaseNotes
+              release={release}
+              variant="displayOnly"
+              className={notesStyles.notesCardMobile}
             />
-            <ReleaseNotes release={release} variant="displayOnly" />
           </div>
           <HorizontalScrollRow className={styles.genresContainer}>
             {releaseFormats &&
@@ -206,45 +221,49 @@ const MobileReleaseCardComponent = ({
         </div>
         <div className={styles.actionButtonsContainer}>
           {releaseUrl && (
-            <a
-              href={releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.discogsButton}
-              onClick={() => {
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category: "home",
-                  label: "Release Clicked",
-                  value: resource_url,
-                });
-              }}
-              aria-label="View on Discogs"
-              title="View on Discogs"
-            >
-              <ExternalLinkIcon className={styles.externalLinkIcon} />
-            </a>
+            <div className={styles.actionSlot}>
+              <a
+                href={releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.discogsButton}
+                onClick={() => {
+                  trackEvent("releaseClicked", {
+                    action: "releaseClicked",
+                    category: "home",
+                    label: "Release Clicked",
+                    value: resource_url,
+                  });
+                }}
+                aria-label="View on Discogs"
+                title="View on Discogs"
+              >
+                <ExternalLinkIcon className={styles.externalLinkIcon} />
+              </a>
+            </div>
           )}
-          <ReleaseNotesCardAction />
-          <button
-            type="button"
-            className={classNames(
-              styles.listButton,
-              isInCrate(release.instance_id) && styles.removeButton,
-            )}
-            onClick={handleCrateToggle}
-            aria-label={
-              isInCrate(release.instance_id)
-                ? "Remove from crate"
-                : "Add to crate"
-            }
-          >
-            {isInCrate(release.instance_id) ? (
-              <MinusIcon className={styles.listButtonIcon} />
-            ) : (
-              <PlusIcon className={styles.listButtonIcon} />
-            )}
-          </button>
+          <ReleaseNotesCardAction variant="mobile" />
+          <div className={styles.actionSlot}>
+            <button
+              type="button"
+              className={classNames(
+                styles.listButton,
+                isInCrate(release.instance_id) && styles.removeButton,
+              )}
+              onClick={handleCrateToggle}
+              aria-label={
+                isInCrate(release.instance_id)
+                  ? "Remove from crate"
+                  : "Add to crate"
+              }
+            >
+              {isInCrate(release.instance_id) ? (
+                <MinusIcon className={styles.listButtonIcon} />
+              ) : (
+                <PlusIcon className={styles.listButtonIcon} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </ReleaseNotesEditorProvider>

@@ -29,9 +29,14 @@
     transform: scale(1.02);
   }
 
-  &.inCrate {
-    outline: 3px solid var(--primary);
-    outline-offset: 2px;
+  &.inCrate::after {
+    border: 2px solid var(--primary);
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 20;
   }
 
   &:hover {
@@ -50,19 +55,19 @@
   background-size: cover;
   border-radius: var(--radius-card) 0 0 var(--radius-card);
   display: flex;
-  flex-shrink: 0;
+  flex: 0 0 6rem;
   isolation: isolate;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  max-width: 6rem;
-  width: 100%;
+  width: 6rem;
 }
 
 .imageContainer > img,
 .imageContainer img {
   border-radius: var(--radius-card) 0 0 var(--radius-card);
   height: 100%;
+  max-width: 100%;
   object-fit: cover;
   position: relative;
   width: 100%;
@@ -125,15 +130,15 @@
 
 .contentContainer {
   display: flex;
-  flex: 1;
+  flex: 1 1 0;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   min-height: 0;
   min-width: 0;
-  padding: var(--space-1);
+  overflow: hidden;
+  padding: 0;
   position: relative;
   text-align: left;
-  width: 100%;
   z-index: 2;
 }
 
@@ -141,11 +146,18 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0;
   min-height: 0;
   min-width: 0;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-4) var(--space-4) 0;
   text-align: left;
+}
+
+.releaseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: var(--space-2) 0 var(--space-4);
 }
 
 .title {
@@ -197,24 +209,36 @@
 }
 
 .genresContainer {
-  padding: 0 var(--space-2) var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  width: 100%;
 }
 
 .actionButtonsContainer {
-  align-items: stretch;
+  align-self: stretch;
   border-left: 1px solid var(--border);
   display: flex;
+  flex: 0 0 3rem;
   flex-direction: column;
-  flex-shrink: 0;
-  gap: var(--space-2);
-  justify-content: flex-start;
-  padding: var(--space-2);
+  gap: var(--space-1);
+  min-height: 0;
+  padding: var(--space-1);
+  width: 3rem;
   z-index: 10;
+}
+
+.actionSlot {
+  align-items: stretch;
+  display: flex;
+  flex: 1 1 0;
+  min-height: 2.5rem;
+  min-width: 0;
 }
 
 .discogsButton,
 .listButton {
   align-items: center;
+  align-self: stretch;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
@@ -225,15 +249,17 @@
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   gap: var(--space-2);
+  height: 100%;
   justify-content: center;
-  min-height: 3rem;
-  min-width: 3rem;
-  padding: var(--space-2);
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-1);
   transition:
     background-color var(--transition-normal),
     border-color var(--transition-normal),
     color var(--transition-normal),
     transform var(--transition-normal);
+  width: 100%;
 
   &:hover {
     background: var(--muted);
@@ -255,6 +281,14 @@
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
+  }
+}
+
+.listButton {
+  &.notesButtonActive {
+    background: color-mix(in srgb, var(--primary) 12%, var(--card));
+    border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+    color: var(--primary);
   }
 }
 

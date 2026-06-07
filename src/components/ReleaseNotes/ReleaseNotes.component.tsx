@@ -10,9 +10,16 @@ import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 interface ReleaseNotesProps {
   release: DiscogsRelease;
   variant?: "inline" | "displayOnly";
+  className?: string | undefined;
 }
 
-const ReleaseNotesCardDisplay = ({ release }: { release: DiscogsRelease }) => {
+const ReleaseNotesCardDisplay = ({
+  release,
+  className,
+}: {
+  release: DiscogsRelease;
+  className?: string | undefined;
+}) => {
   const {
     canEdit,
     cardDisplayedNotes,
@@ -30,7 +37,7 @@ const ReleaseNotesCardDisplay = ({ release }: { release: DiscogsRelease }) => {
   return (
     <>
       <div
-        className={classNames(styles.notes, styles.notesCard)}
+        className={classNames(styles.notes, styles.notesCard, className)}
         data-testid="fmdReleaseNotes"
       >
         {hasNotes ? (
@@ -137,9 +144,10 @@ const ReleaseNotesInline = ({ release }: { release: DiscogsRelease }) => {
 export const ReleaseNotes = ({
   release,
   variant = "inline",
+  className,
 }: ReleaseNotesProps) => {
   if (variant === "displayOnly") {
-    return <ReleaseNotesCardDisplay release={release} />;
+    return <ReleaseNotesCardDisplay release={release} className={className} />;
   }
 
   return <ReleaseNotesInline release={release} />;

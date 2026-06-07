@@ -4,6 +4,10 @@
   gap: var(--space-1);
 }
 
+.titleGroupMobile {
+  gap: 0;
+}
+
 .artistLine {
   color: var(--muted-foreground);
   font-size: var(--text-sm);
@@ -27,6 +31,14 @@
   margin: 0;
   overflow: hidden;
   text-align: left;
+}
+
+.titleGroupMobile .artistLine {
+  line-height: 1.2;
+}
+
+.titleGroupMobile .releaseTitle {
+  line-height: 1.2;
 }
 
 .artistLink {

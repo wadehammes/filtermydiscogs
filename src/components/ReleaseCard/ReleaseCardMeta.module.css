@@ -2,6 +2,10 @@
   margin-bottom: var(--space-3);
 }
 
+.catalogRowMobile {
+  margin-bottom: var(--space-1);
+}
+
 .metaCatalog {
   background: color-mix(in srgb, var(--muted) 80%, transparent);
   border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
@@ -28,6 +32,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.metaLineMobile {
+  margin: 0;
 }
 
 .metaSeparator {

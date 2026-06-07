@@ -56,6 +56,18 @@ Add factories under **`src/tests/factories/`** when structured test data is need
 
 Import from the **concrete module path** (e.g. `src/components/ReleaseCard/ReleaseCard.component.tsx`). Avoid new barrel **`index.ts`** files.
 
+## Feature example: MobileReleaseCard
+
+[`src/components/ReleaseCard/MobileReleaseCard.component.tsx`](../../src/components/ReleaseCard/MobileReleaseCard.component.tsx) is the **mobile** release row (image | content | action column). **`PublicMobileReleaseCard`** shares **`MobileReleaseCard.module.css`**.
+
+| Concern | Pattern |
+|---------|---------|
+| Layout | Horizontal flex: fixed **`6rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`3rem`** action column with **`.actionSlot`** children (**`flex: 1 1 0`**) for equal-height icon buttons |
+| Pills | **`HorizontalScrollRow`** — wrapper needs **`min-width: 0`** + **`overflow: hidden`** so pill rows do not expand card width |
+| Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
+| In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
+| Notes action | **`ReleaseNotesCardAction variant="mobile"`** — stacked column button styles; desktop overlay uses default **`variant="card"`** |
+
 ## Feature example: ReleaseNotes
 
 [`src/components/ReleaseNotes/`](../../src/components/ReleaseNotes/) follows the standard folder layout plus a colocated state hook:
@@ -63,7 +75,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | File | Role |
 |------|------|
 | `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`) and list display (`inline`) |
-| `ReleaseNotesCardAction.component.tsx` | Sticky-note icon on card image overlay |
+| `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column) |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
 | `NoteEditDialog.component.tsx` | Native `<dialog>` editor (`data-testid="fmdNoteEditDialog"`) |
