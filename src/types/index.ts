@@ -3,9 +3,12 @@ import type { DiscogsRelease } from "./discogs-release.types";
 export type {
   DiscogsArtist,
   DiscogsBasicInformation,
+  DiscogsCollectionField,
+  DiscogsCollectionFieldsResponse,
   DiscogsFormat,
   DiscogsLabel,
   DiscogsRelease,
+  ReleaseNote,
 } from "./discogs-release.types";
 
 export interface DiscogsReleaseJson {

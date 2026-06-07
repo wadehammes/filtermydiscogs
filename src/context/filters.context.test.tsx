@@ -1,11 +1,11 @@
-import { mocked } from "jest-mock";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { act, renderHook, TestProviders } from "src/tests/utils/test-utils";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import { getAvailableFormats } from "src/utils/getAvailableFormats";
 import { getAvailableStyles } from "src/utils/getAvailableStyles";
 import { getAvailableYears } from "src/utils/getAvailableYears";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
+import { act, renderHook, TestProviders } from "test-utils";
 import { FiltersActionTypes, SortValues, useFilters } from "./filters.context";
 
 jest.mock("src/utils/filterReleases");
@@ -14,11 +14,11 @@ jest.mock("src/utils/getAvailableStyles");
 jest.mock("src/utils/getAvailableYears");
 jest.mock("src/utils/getAvailableFormats");
 
-const mockFilterReleases = mocked(filterReleasesUtil);
-const mockSortReleases = mocked(sortReleasesUtil);
-const mockGetAvailableStyles = mocked(getAvailableStyles);
-const mockGetAvailableYears = mocked(getAvailableYears);
-const mockGetAvailableFormats = mocked(getAvailableFormats);
+const mockFilterReleases = jest.mocked(filterReleasesUtil);
+const mockSortReleases = jest.mocked(sortReleasesUtil);
+const mockGetAvailableStyles = jest.mocked(getAvailableStyles);
+const mockGetAvailableYears = jest.mocked(getAvailableYears);
+const mockGetAvailableFormats = jest.mocked(getAvailableFormats);
 
 describe("FiltersProvider", () => {
   beforeEach(() => {

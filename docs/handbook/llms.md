@@ -9,6 +9,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Stack, folders, Discogs → UI data flow | [architecture.md](architecture.md) |
 | TypeScript / React / Biome / Stylelint / CSS / tests | [conventions.md](conventions.md) |
 | OAuth login, Discogs API, username format, cookies | [discogs.md](discogs.md) |
+| Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | Component folders, naming, tests | [components.md](components.md) |
 | Contexts, filters, React Query, auth, public crates | [patterns.md](patterns.md) |

@@ -1,18 +1,18 @@
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
+} from "src/tests/BasePageObject.po";
 import {
   defaultSelectOptions,
-  type SelectOption,
+  type SelectOptionFactoryType,
 } from "src/tests/factories/SelectOption.factory";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
+import type { RenderResult } from "test-utils";
+import { render } from "test-utils";
 import Select from "./Select.component";
 
 export type SelectRenderProps = {
   label?: string;
-  options?: SelectOption[];
+  options?: SelectOptionFactoryType[];
   value?: string | string[];
   onChange?: (value: string | string[]) => void;
   disabled?: boolean;

@@ -59,7 +59,12 @@ export const useCollectionData = (
     if (!collectionData?.pages) return null;
 
     const pages = collectionData.pages;
-    const allReleases = pages.flatMap((page) => page.releases);
+    const allReleases = pages.flatMap((page) =>
+      page.releases.map((release) => ({
+        ...release,
+        notes: release.notes ?? [],
+      })),
+    );
     const collection = pages[pages.length - 1];
 
     return {

@@ -1,16 +1,11 @@
-import { mocked } from "jest-mock";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname } from "next/navigation";
-import {
-  act,
-  renderHook,
-  TestProviders,
-  waitFor,
-} from "src/tests/utils/test-utils";
+import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { useMediaQuery } from "usehooks-ts";
 import { useTheme } from "./theme.context";
 
-const mockUseMediaQuery = mocked(useMediaQuery);
-const mockUsePathname = mocked(usePathname);
+const mockUseMediaQuery = jest.mocked(useMediaQuery);
+const mockUsePathname = jest.mocked(usePathname);
 
 describe("ThemeProvider", () => {
   beforeEach(() => {

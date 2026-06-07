@@ -6,10 +6,11 @@ All factories live under **[`src/tests/factories/`](../../src/tests/factories/)*
 
 ## Base class
 
-Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts):
+Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts) (same shape as rhythm-marketing):
 
 - **`build(attributes?, options?)`** — one instance; pass **`Partial<Type>`** overrides for fields the test cares about.
 - **`buildList(n, attributes?, options?)`** — array of `n` instances.
+- **`buildModel` / `buildListModel`** — optional when a domain class wraps the built type.
 
 ## File and export naming
 
@@ -42,6 +43,10 @@ build(attributes?: Partial<MyType>, _options?: MyFactoryOptions): MyType {
 [`src/types/KeysMatch.ts`](../../src/types/KeysMatch.ts) fails the build if the target type gains a field the factory does not set. Use it on **closed** types (e.g. **`DiscogsCollection`**, **`Crate`** from Prisma).
 
 **Skip `KeysMatch`** when the type has an index signature (e.g. **`[key: string]: unknown`** on Discogs API shapes like **`DiscogsRelease`**). Those types still use the same `instance` / `factoryBuilt` structure—just omit the guard line.
+
+### Every field gets Faker data
+
+Required, optional, and nullable fields in the `instance` literal must use **`faker.*`**, **`nullish`**, or nested **`.build()`**—not hard-coded defaults. Preset methods (e.g. **`withDisplayDefaults()`**) may set fixed literals for repeated component-test scenarios; tests that need a specific value still override with **`.build({ field: "literal" })`**.
 
 ### Nullable fields
 
@@ -102,6 +107,14 @@ Use **`options`** for **build-time knobs** that are not part of the domain type�
 | [`Crate.factory.ts`](../../src/tests/factories/Crate.factory.ts) | `crateFactory` | Prisma `Crate` |
 | [`CrateWithCount.factory.ts`](../../src/tests/factories/CrateWithCount.factory.ts) | `crateWithCountFactory` | `Crate` + `releaseCount` (UI list shape) |
 | [`SelectOption.factory.ts`](../../src/tests/factories/SelectOption.factory.ts) | `selectOptionFactory` | Select dropdown option |
+| [`ReleaseNote.factory.ts`](../../src/tests/factories/ReleaseNote.factory.ts) | `releaseNoteFactory` | `ReleaseNote` |
+| [`DiscogsCollectionField.factory.ts`](../../src/tests/factories/DiscogsCollectionField.factory.ts) | `discogsCollectionFieldFactory` | `DiscogsCollectionField` |
+| [`DiscogsCollectionFieldsResponse.factory.ts`](../../src/tests/factories/DiscogsCollectionFieldsResponse.factory.ts) | `discogsCollectionFieldsResponseFactory` | `DiscogsCollectionFieldsResponse` |
+| [`CratesResponse.factory.ts`](../../src/tests/factories/CratesResponse.factory.ts) | `cratesResponseFactory` | `CratesResponse` |
+| [`CrateWithReleasesResponse.factory.ts`](../../src/tests/factories/CrateWithReleasesResponse.factory.ts) | `crateWithReleasesResponseFactory` | `CrateWithReleasesResponse` |
+| [`CreateCrateResponse.factory.ts`](../../src/tests/factories/CreateCrateResponse.factory.ts) | `createCrateResponseFactory` | `{ crate: Crate }` API payloads |
+| [`CrateMutationSuccess.factory.ts`](../../src/tests/factories/CrateMutationSuccess.factory.ts) | `crateMutationSuccessFactory` | Crate mutation success payloads |
+| [`DiscogsReleaseJson.factory.ts`](../../src/tests/factories/DiscogsReleaseJson.factory.ts) | `discogsReleaseJsonFactory` | `DiscogsReleaseJson` |
 
 ### Preset methods
 
@@ -109,9 +122,19 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 
 | Factory | Presets | Use when |
 |---------|---------|----------|
-| `releaseFactory` | `withDisplayDefaults()`, `withDateAdded()`, `withStyles()`, `withNamedFormats()`, `withResourceUrl()`, `withTitle()`, `withCoverImage()`, `withThumbOnly()` | Component tests assert on known titles, styles, URLs, or images |
+| `releaseFactory` | `withDisplayDefaults()`, `withEmptyNotes()`, `withDateAdded()`, `withStyles()`, `withNamedFormats()`, `withResourceUrl()`, `withTitle()`, `withCoverImage()`, `withThumbOnly()`, `withNotes()` | Component tests assert on known titles, styles, URLs, images, or notes |
 | `selectOptionFactory` | `defaultSelectOptions()` | Select PO default option list |
-| `crateWithCountFactory` | `defaultCrateSelectorCrates()` | CrateSelector PO default crate list |
+| `crateWithCountFactory` | `defaultTestCrate()`, `fromCrate()`, `defaultCrateSelectorCrates()` | Crate list UI shapes and CrateSelector PO defaults |
+| `crateFactory` | `defaultTestCrate()`, `named()` | Default authenticated-user crate and named create flows |
+| `cratesResponseFactory` | `empty()`, `withCrates()`, `withCrate()` | `fetchCrates` API response |
+| `crateWithReleasesResponseFactory` | `empty()`, `withReleases()` | `fetchCrate` API response |
+| `createCrateResponseFactory` | `forCrate()`, `named()` | `createCrate` / `updateCrate` API response |
+| `crateMutationSuccessFactory` | `build()`, `sync()` | Add/remove crate and sync success payloads |
+| `discogsReleaseJsonFactory` | `forReleaseId()` | `fetchDiscogsRelease` URI payload |
+| `discogsCollectionFieldFactory` | `notesField()` | Notes field for release-notes editor tests |
+| `discogsCollectionFieldsResponseFactory` | `forReleaseNotes()` | Collection fields API for notes editor |
+| `collectionFactory` | `empty()` | Empty collection pages |
+| `releaseFactory` | `forNotesEditor()` | ReleaseNotes PO default release |
 
 ## Adding a new factory
 

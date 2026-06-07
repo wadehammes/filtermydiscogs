@@ -1,8 +1,9 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import { SelectPageObject } from "src/components/Select/Select.po";
 import { selectOptionFactory } from "src/tests/factories/SelectOption.factory";
-import { screen, waitFor } from "src/tests/utils/test-utils";
+import { screen, waitFor } from "test-utils";
 import Select from "./Select.component";
-import { SelectPageObject } from "./Select.po";
 
 let po: SelectPageObject;
 

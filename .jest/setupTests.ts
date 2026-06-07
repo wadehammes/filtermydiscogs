@@ -1,16 +1,30 @@
-import "@testing-library/jest-dom";
-import "jest-fetch-mock";
+import { afterAll, beforeAll, beforeEach } from "@jest/globals";
+import "@testing-library/jest-dom/jest-globals";
+import { TextEncoder } from "node:util";
+import fetchMock from "jest-fetch-mock";
 import "src/tests/mocks/mockCanvas.mock";
 import React from "react";
 import { setupIntersectionObserverMock } from "src/tests/mocks/mockIntersectionObserver.mock";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { mockedUseRouterReturnValue } from "src/tests/mocks/mockNextRouter.mock";
 
+global.TextEncoder = TextEncoder as typeof global.TextEncoder;
+
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+  };
+}
+
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+fetchMock.enableMocks();
 
 jest.mock("next/router", () => ({
   useRouter: () => mockedUseRouterReturnValue,
@@ -53,16 +67,42 @@ jest.mock("next/image", () => ({
   },
 }));
 
-global.beforeAll(() => {
+const originalWarn = console.warn;
+const originalError = console.error;
+
+console.warn = (...args: unknown[]) => {
+  const msg = typeof args[0] === "string" ? args[0] : "";
+  if (
+    msg.includes("quality") &&
+    msg.includes("images.qualities") &&
+    msg.includes("next-image-unconfigured-qualities")
+  ) {
+    return;
+  }
+  originalWarn.apply(console, args);
+};
+
+console.error = (...args: unknown[]) => {
+  const msg = args.map((arg) => (typeof arg === "string" ? arg : "")).join(" ");
+  if (msg.includes("not wrapped in act")) {
+    return;
+  }
+  originalError.apply(console, args);
+};
+
+beforeAll(() => {
   setupIntersectionObserverMock();
   setupMockMatchMedia();
 });
 
-// Ensure matchMedia is always available, even after resetAllMocks
-global.beforeEach(() => {
+beforeEach(() => {
+  jest.clearAllTimers();
+
+  jest.clearAllMocks();
+  fetchMock.resetMocks();
   setupMockMatchMedia();
 });
 
-global.afterAll(() => {
+afterAll(() => {
   jest.resetAllMocks();
 });

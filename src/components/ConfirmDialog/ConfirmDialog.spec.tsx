@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { fireEvent, screen } from "src/tests/utils/test-utils";
-import { ConfirmDialogPageObject } from "./ConfirmDialog.po";
+import { ConfirmDialogPageObject } from "src/components/ConfirmDialog/ConfirmDialog.po";
+import { fireEvent, screen } from "test-utils";
 
 let po: ConfirmDialogPageObject;
 

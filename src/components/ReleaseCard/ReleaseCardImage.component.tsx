@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { trackEvent } from "src/analytics/analytics";
+import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
@@ -93,6 +94,7 @@ export function ReleaseCardImage({
             <span className={styles.tooltip}>View on Discogs</span>
           </div>
         )}
+        <ReleaseNotesCardAction />
         <div className={styles.buttonWrapper}>
           <button
             type="button"

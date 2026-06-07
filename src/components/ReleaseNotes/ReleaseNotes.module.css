@@ -1,0 +1,69 @@
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  width: 100%;
+}
+
+.noteRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  width: 100%;
+}
+
+.noteHeading {
+  color: var(--foreground);
+  font-size: var(--text-xxs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.01rem;
+  line-height: 1.4;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.noteScroll {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  min-width: 0;
+  overflow-y: auto;
+  width: 100%;
+  max-height: 3lh;
+  min-height: 1lh;
+}
+
+.noteContent {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.noteLabel {
+  color: var(--foreground);
+  font-weight: var(--font-medium);
+}
+
+.addNotesLink,
+.editButton {
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--foreground);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}

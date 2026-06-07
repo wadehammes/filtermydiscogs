@@ -2,6 +2,7 @@ import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
 import type { ReleaseCardProps } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
@@ -101,7 +102,7 @@ const PublicMobileReleaseCardComponent = ({
             analyticsCategory="publicCrate"
           />
         </div>
-        <div className={styles.genresContainer}>
+        <HorizontalScrollRow className={styles.genresContainer}>
           {releaseFormats &&
             releaseFormats.length > 0 &&
             getReleaseFormatTags(releaseFormats).map((formatName) => (
@@ -123,7 +124,7 @@ const PublicMobileReleaseCardComponent = ({
                 {style}
               </span>
             ))}
-        </div>
+        </HorizontalScrollRow>
       </div>
       <div className={styles.actionButtonsContainer}>
         {releaseUrl && (

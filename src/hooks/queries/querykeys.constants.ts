@@ -4,6 +4,12 @@ export const DiscogsCollectionQueryKeys = {
     [...DiscogsCollectionQueryKeys.all(), username] as const,
 };
 
+export const CollectionFieldsQueryKeys = {
+  all: () => ["collectionFields"] as const,
+  byUsername: (username: string) =>
+    [...CollectionFieldsQueryKeys.all(), username] as const,
+};
+
 export const CollectionValueQueryKeys = {
   byUsername: (username: string | null) =>
     ["collectionValue", username] as const,

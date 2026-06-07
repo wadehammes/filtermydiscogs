@@ -31,6 +31,6 @@ export const mockFetchError = (
 
 export const resetFetchMock = () => {
   if (jest.isMockFunction(fetch)) {
-    (fetch as jest.Mock).mockClear();
+    jest.mocked(fetch).mockClear();
   }
 };

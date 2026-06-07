@@ -1,4 +1,4 @@
-import { mocked } from "jest-mock";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import * as apiHelpers from "src/api/helpers";
 import {
   checkAuthStatus,
@@ -10,28 +10,28 @@ import {
 } from "src/services/auth.service";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
+import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import {
-  act,
-  renderHook,
-  TestProviders,
-  waitFor,
-} from "src/tests/utils/test-utils";
+import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { useMediaQuery } from "usehooks-ts";
 import { useCrate } from "./crate.context";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
-const mockApi = mocked(apiHelpers);
-const mockUseMediaQuery = mocked(useMediaQuery);
-const mockGetUserIdFromCookies = mocked(getUserIdFromCookies);
-const mockGetUsernameFromCookies = mocked(getUsernameFromCookies);
-const mockCheckAuthStatus = mocked(checkAuthStatus);
-const mockParseAuthUrlParams = mocked(parseAuthUrlParams);
-const mockClearAuthCookies = mocked(clearAuthCookies);
-const mockClearUrlParams = mocked(clearUrlParams);
+const mockApi = jest.mocked(apiHelpers);
+const mockUseMediaQuery = jest.mocked(useMediaQuery);
+const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
+const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
+const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
+const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
+const mockClearAuthCookies = jest.mocked(clearAuthCookies);
+const mockClearUrlParams = jest.mocked(clearUrlParams);
 
 const apiError = new Error("API request failed");
 
@@ -55,63 +55,55 @@ describe("CrateProvider", () => {
     mockClearAuthCookies.mockImplementation(() => {});
     mockClearUrlParams.mockImplementation(() => {});
 
-    mockApiResponse(true, mockApi.fetchCrates, { crates: [] }, apiError);
+    mockApiResponse(
+      true,
+      mockApi.fetchCrates,
+      cratesResponseFactory.empty(),
+      apiError,
+    );
     mockApiResponse(
       true,
       mockApi.fetchCrate,
-      {
-        crate: crateFactory.build({ user_id: 123 }),
-        releases: [],
-      },
+      crateWithReleasesResponseFactory.empty({ user_id: 123 }),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.fetchDiscogsCollection,
-      collectionFactory.build({ releases: [] }),
+      collectionFactory.empty(),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.createCrate,
-      {
-        crate: crateFactory.build({
-          user_id: 123,
-          id: "new-crate",
-          name: "New Crate",
-        }),
-      },
+      createCrateResponseFactory.named("New Crate"),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.updateCrate,
-      {
-        crate: crateFactory.build({
-          user_id: 123,
-          id: "crate-1",
-          name: "Updated Crate",
-        }),
-      },
+      createCrateResponseFactory.forCrate(
+        crateFactory.named("Updated Crate", { id: "crate-1" }),
+      ),
       apiError,
     );
     mockApiResponse(true, mockApi.deleteCrate, undefined, apiError);
     mockApiResponse(
       true,
       mockApi.addReleaseToCrate,
-      { success: true },
+      crateMutationSuccessFactory.build(),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.removeReleaseFromCrate,
-      { success: true },
+      crateMutationSuccessFactory.build(),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.syncCrates,
-      { success: true, removedCount: 0 },
+      crateMutationSuccessFactory.sync(0),
       apiError,
     );
   });
@@ -133,11 +125,11 @@ describe("CrateProvider", () => {
   });
 
   it("provides crates from fetchCrates", async () => {
-    const mockCrates = crateFactory.buildList(3);
+    const mockCrates = crateWithCountFactory.buildList(3);
     mockApiResponse(
       true,
       mockApi.fetchCrates,
-      { crates: mockCrates },
+      cratesResponseFactory.withCrates(mockCrates),
       apiError,
     );
 
@@ -160,7 +152,7 @@ describe("CrateProvider", () => {
     mockApiResponse(
       true,
       mockApi.fetchCrates,
-      { crates: mockCrates },
+      cratesResponseFactory.withCrates(mockCrates),
       apiError,
     );
 
@@ -257,16 +249,15 @@ describe("CrateProvider", () => {
     mockApiResponse(
       true,
       mockApi.fetchCrates,
-      { crates: [mockCrate] },
+      cratesResponseFactory.withCrate(
+        crateWithCountFactory.build({ id: "crate-1" }),
+      ),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.fetchCrate,
-      {
-        crate: mockCrate,
-        releases: mockReleases,
-      },
+      crateWithReleasesResponseFactory.withReleases(mockCrate, mockReleases),
       apiError,
     );
 
@@ -295,16 +286,15 @@ describe("CrateProvider", () => {
     mockApiResponse(
       true,
       mockApi.fetchCrates,
-      { crates: [mockCrate] },
+      cratesResponseFactory.withCrate(
+        crateWithCountFactory.build({ id: "crate-1" }),
+      ),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.fetchCrate,
-      {
-        crate: mockCrate,
-        releases: [mockRelease],
-      },
+      crateWithReleasesResponseFactory.withReleases(mockCrate, [mockRelease]),
       apiError,
     );
 
@@ -328,23 +318,19 @@ describe("CrateProvider", () => {
   });
 
   it("creates crate and sets it as active", async () => {
-    const mockCreatedCrate = crateFactory.build({
-      user_id: 123,
-      id: "new-crate",
-      name: "New Crate",
-    });
+    const mockCreatedCrate = crateFactory.named("New Crate");
     mockApiResponse(
       true,
       mockApi.createCrate,
-      {
-        crate: mockCreatedCrate,
-      },
+      createCrateResponseFactory.forCrate(mockCreatedCrate),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.fetchCrates,
-      { crates: [mockCreatedCrate] },
+      cratesResponseFactory.withCrate(
+        crateWithCountFactory.fromCrate(mockCreatedCrate),
+      ),
       apiError,
     );
 

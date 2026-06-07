@@ -97,14 +97,14 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 
 ### Page object pattern
 
-- **Base class**: [`src/tests/basePageObject.po.ts`](../../src/tests/basePageObject.po.ts).
+- **Base class**: [`src/tests/BasePageObject.po.ts`](../../src/tests/BasePageObject.po.ts).
 - **Per-component page object** (when useful): `<Name>.po.tsx` extends `BasePageObject`, sets **`testId = "fmd<ComponentName>"`**, holds **test data, mocks, and setup/render helpers only**—**not** wrappers around every `screen.getBy*`. **POs never assert and never call `screen.find*` / `getBy*` / `queryBy*` / `waitFor`.**
 - **Render helpers**: Set component defaults on the JSX element, then spread overrides: `{...overrides}`. Do **not** use conditional spreads like `{...(overrides.foo !== undefined && { foo: overrides.foo })}`.
 - **Shared element helpers**: When `render*` and `rerender*` need the same JSX, extract a private `*Element(overrides)` method and reuse it—specs call `po.rerender*(rerender, overrides)`, not `rerender(<Component />)` directly.
 - **Mocks in POs**: Put `jest.mock(...)` in the PO when the component depends on context or modules. Specs import the **PO first** (before the component) so mocks apply before the component module loads.
-- **Specs**: Prefer **`<Name>.spec.tsx`** for new component tests with page objects. Existing **`* .test.tsx`** / **`* .component.test.tsx`** files remain valid. In specs, import **`describe`**, **`it`**, **`expect`**, **`beforeEach`** from **`@jest/globals`** when you need jest-dom matchers typed cleanly.
+- **Specs**: Use **`<Name>.spec.tsx`** for component tests with page objects (import the PO from **`src/components/<Name>/<Name>.po`**). Context, hook, and util tests may stay as **`* .test.ts(x)`** co-located with source. Import **`describe`**, **`it`**, **`expect`**, and lifecycle hooks from **`@jest/globals`** in every test file (not ambient globals). Use the global **`jest`** object for **`jest.mock`**, **`jest.fn`**, **`jest.spyOn`**, and **`jest.mocked`**—do **not** import **`jest`** from **`@jest/globals`** (that breaks the mock registry). Import Testing Library helpers from the **`test-utils`** alias. Jest DOM matchers are wired in [`.jest/setupTests.ts`](../../.jest/setupTests.ts) via **`@testing-library/jest-dom/jest-globals`**; types come from [`.jest/jest-dom-globals.d.ts`](../../.jest/jest-dom-globals.d.ts).
 - **Assert on literal user-visible strings in specs**, not `po.someField` read back from the PO—repeat the literal in both PO factory/render setup and `screen.getBy*` / `expect` so coupling stays visible.
-- **Custom render**: Use **`render`**, **`renderHook`**, and other Testing Library helpers from [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx) (import alias **`test-utils`**). The default **`render`** wrapper is **`TestProviders`** (QueryClient, Jotai, theme, auth, collection, filters, crate, view). Pass a custom **`wrapper`** only when a test intentionally needs a subset (e.g. “outside provider” error cases).
+- **Custom render**: Use **`render`**, **`renderHook`**, and other Testing Library helpers from **`test-utils`** ([`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)). Global styles load via **`src/styles/global.css`** in test-utils (same as rhythm-marketing). The default **`render`** wrapper is **`TestProviders`** (QueryClient, Jotai, theme, auth, collection, filters, crate, view). Pass a custom **`wrapper`** only when a test intentionally needs a subset (e.g. “outside provider” error cases).
 
 ### Jotai state in components
 
@@ -120,11 +120,13 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 - Factories live only under **[`src/tests/factories/`](../../src/tests/factories/)**.
 - Import singletons by path (e.g. `releaseFactory` from `src/tests/factories/Release.factory`).
 - Override with `.build({ field: "literal" })` for values the spec asserts on.
-- Use **preset methods** on factories for common test shapes (e.g. `releaseFactory.withDisplayDefaults()`, `releaseFactory.withStyles(["Rock"])`) instead of ad-hoc PO builder methods or repeated inline `.build({ ... })` blocks.
+- **Always use factories** in tests and POs—domain entities, API response shapes, and nested objects come from **`src/tests/factories/`**, not inline object literals.
+- Use **preset methods** on factories for common test shapes (e.g. `releaseFactory.withDisplayDefaults()`, `cratesResponseFactory.empty()`) instead of ad-hoc PO builder methods or repeated inline `.build({ ... })` blocks.
 
 ### What to mock (and what not)
 
 - **Don't mock**: Pure helpers under [`src/utils/`](../../src/utils/)—filter, sort, format, URL helpers. Let them run in component tests.
+- **Don't mock React Query**: Use a real **`QueryClient`** from [`createTestQueryClient`](../../src/tests/utils/testQueryClient.tsx) via **`TestProviders`** (pass **`queryClient`** when a test needs to spy on cache behavior). Mock **`src/api/helpers`** and auth services instead so hooks and providers exercise real query/mutation wiring.
 - **Do mock**: External dependencies—mock **`src/api/helpers`** with **`jest.mock("src/api/helpers")`** and configure responses via [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts) (same helper as energy-texas). Use [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts) for fetch-level tests of [`src/api/helpers.ts`](../../src/api/helpers.ts). Also mock auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
 - **Assertions**: Prefer asserting final DOM/output; avoid `expect(mockFn).toHaveBeenCalledWith(...)` when un-mocking—the output already proves wiring.
 
@@ -132,7 +134,8 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 
 - **Faker 10+** is ESM-only; transpiled via **`transpilePackages`** in `next.config.ts` (see [platform.md](platform.md)).
 - **SVG**: mocked globally via [`.jest/__mocks__/svg.js`](../../.jest/__mocks__/svg.js).
-- **`next/script`**: If a spec asserts on JSON-LD or script injection, mock `next/script` synchronously (add `src/tests/mocks/nextScript.tsx` when needed).
+- **fetchMock**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) enables and resets **`jest-fetch-mock`** each test (rhythm-marketing pattern).
+- **PO mock reset**: Use **`jest.resetAllMocks()`** in PO constructors or **`setupMocks()`**.
 
 ## Test IDs
 

@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { screen, waitFor } from "src/tests/utils/test-utils";
-import { CrateSelectorPageObject } from "./CrateSelector.po";
+import { CrateSelectorPageObject } from "src/components/CrateSelector/CrateSelector.po";
+import { screen, waitFor } from "test-utils";
 
 let po: CrateSelectorPageObject;
 
@@ -9,13 +10,15 @@ describe("CrateSelector", () => {
     po = new CrateSelectorPageObject();
   });
 
-  it("renders component root", () => {
+  it("renders component root", async () => {
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
-  it("renders crate selector with options", () => {
+  it("renders crate selector with options", async () => {
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     expect(
       screen.getByRole("button", { name: /Select crate/i }),
@@ -28,6 +31,9 @@ describe("CrateSelector", () => {
   it("displays active crate in select", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
+
+    expect(screen.getByText("Crate 1 (5)")).toBeInTheDocument();
 
     const select = screen.getByRole("button", { name: /Select crate/i });
     await user.click(select);
@@ -42,6 +48,7 @@ describe("CrateSelector", () => {
   it("shows crate options with release counts", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const select = screen.getByRole("button", { name: /Select crate/i });
     await user.click(select);
@@ -64,6 +71,7 @@ describe("CrateSelector", () => {
   it("calls selectCrate when option is selected", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const select = screen.getByRole("button", { name: /Select crate/i });
     await user.click(select);
@@ -71,7 +79,9 @@ describe("CrateSelector", () => {
     const option2 = screen.getByText("Crate 2 (3)");
     await user.click(option2);
 
-    expect(po.selectCrate).toHaveBeenCalledWith("2");
+    await waitFor(() => {
+      expect(po.mockApiHelpers.fetchCrate).toHaveBeenCalledWith("2");
+    });
   });
 
   it("shows loading state when isLoading is true", () => {
@@ -87,6 +97,7 @@ describe("CrateSelector", () => {
   it("shows create form when New Crate button is clicked", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -98,8 +109,9 @@ describe("CrateSelector", () => {
 
   it("creates crate when form is submitted", async () => {
     const user = userEvent.setup();
-    po.createCrate.mockResolvedValue(undefined);
+    po.mockCreateCrateResponse("My New Crate");
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -111,14 +123,17 @@ describe("CrateSelector", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(po.createCrate).toHaveBeenCalledWith("My New Crate");
+      expect(po.mockApiHelpers.createCrate).toHaveBeenCalledWith(
+        "My New Crate",
+      );
     });
   });
 
   it("creates crate when Enter key is pressed in input", async () => {
     const user = userEvent.setup();
-    po.createCrate.mockResolvedValue(undefined);
+    po.mockCreateCrateResponse("My New Crate");
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -128,13 +143,16 @@ describe("CrateSelector", () => {
     await user.keyboard("{Enter}");
 
     await waitFor(() => {
-      expect(po.createCrate).toHaveBeenCalledWith("My New Crate");
+      expect(po.mockApiHelpers.createCrate).toHaveBeenCalledWith(
+        "My New Crate",
+      );
     });
   });
 
   it("cancels create form when Cancel button is clicked", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -155,6 +173,7 @@ describe("CrateSelector", () => {
   it("cancels create form when Escape key is pressed", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -176,6 +195,7 @@ describe("CrateSelector", () => {
   it("disables Create button when input is empty", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -187,6 +207,7 @@ describe("CrateSelector", () => {
   it("disables Create button when input only has whitespace", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -200,8 +221,9 @@ describe("CrateSelector", () => {
 
   it("trims crate name when creating", async () => {
     const user = userEvent.setup();
-    po.createCrate.mockResolvedValue(undefined);
+    po.mockCreateCrateResponse("My New Crate");
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -213,14 +235,17 @@ describe("CrateSelector", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(po.createCrate).toHaveBeenCalledWith("My New Crate");
+      expect(po.mockApiHelpers.createCrate).toHaveBeenCalledWith(
+        "My New Crate",
+      );
     });
   });
 
-  it("disables Create button when mutation is pending", async () => {
+  it("keeps create form open while create request is in flight", async () => {
     const user = userEvent.setup();
-    po.mockPendingMutation();
+    po.mockSlowCreateCrate();
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -229,13 +254,22 @@ describe("CrateSelector", () => {
     await user.type(input, "My New Crate");
 
     const createButton = screen.getByRole("button", { name: "Create" });
-    expect(createButton).toBeDisabled();
+    await user.click(createButton);
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.createCrate).toHaveBeenCalledWith(
+        "My New Crate",
+      );
+    });
+    expect(screen.getByPlaceholderText("Crate name")).toBeInTheDocument();
+    expect(createButton).toBeInTheDocument();
   });
 
   it("clears input and closes form after successful creation", async () => {
     const user = userEvent.setup();
-    po.createCrate.mockResolvedValue(undefined);
+    po.mockCreateCrateResponse("My New Crate");
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -258,10 +292,13 @@ describe("CrateSelector", () => {
 
   it("handles create error gracefully", async () => {
     const user = userEvent.setup();
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-    po.createCrate.mockRejectedValue(new Error("Failed to create crate"));
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    po.mockCreateCrateError();
 
     po.renderCrateSelector();
+    await po.waitUntilLoaded();
 
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
@@ -282,8 +319,9 @@ describe("CrateSelector", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it("applies custom className", () => {
+  it("applies custom className", async () => {
     const { container } = po.renderCrateSelector({ className: "custom-class" });
+    await po.waitUntilLoaded();
 
     const crateSelector = container.querySelector('[class*="container"]');
     expect(crateSelector).toHaveClass("custom-class");

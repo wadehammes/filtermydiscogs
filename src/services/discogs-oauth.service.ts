@@ -1,6 +1,10 @@
 import crypto from "node:crypto";
 import OAuth from "oauth-1.0a";
-import type { DiscogsCollection, DiscogsSearchResponse } from "src/types";
+import type {
+  DiscogsCollection,
+  DiscogsCollectionFieldsResponse,
+  DiscogsSearchResponse,
+} from "src/types";
 
 function discogsApiUserAgent(): string {
   return (
@@ -167,7 +171,16 @@ class DiscogsOAuthService {
         throw error;
       }
 
-      return response.json();
+      if (response.status === 204 || response.status === 205) {
+        return null;
+      }
+
+      const bodyText = await response.text();
+      if (!bodyText.trim()) {
+        return null;
+      }
+
+      return JSON.parse(bodyText) as unknown;
     } catch (error) {
       console.error("OAuth request failed:", error);
       throw error;
@@ -383,6 +396,63 @@ class DiscogsOAuthService {
     const cleaned = value.replace(/[$,\s]/g, "");
     const parsed = parseFloat(cleaned);
     return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  async getCollectionFields(
+    username: string,
+    oauthToken: string,
+    oauthTokenSecret: string,
+  ): Promise<DiscogsCollectionFieldsResponse> {
+    const url = `https://api.discogs.com/users/${username}/collection/fields`;
+
+    try {
+      const result = await this.makeAuthenticatedRequest(
+        url,
+        "GET",
+        oauthToken,
+        oauthTokenSecret,
+      );
+
+      return result as DiscogsCollectionFieldsResponse;
+    } catch (error) {
+      console.error("getCollectionFields error:", error);
+      throw error;
+    }
+  }
+
+  async updateCollectionInstanceField({
+    username,
+    folderId,
+    releaseId,
+    instanceId,
+    fieldId,
+    value,
+    oauthToken,
+    oauthTokenSecret,
+  }: {
+    username: string;
+    folderId: number;
+    releaseId: number;
+    instanceId: number;
+    fieldId: number;
+    value: string;
+    oauthToken: string;
+    oauthTokenSecret: string;
+  }): Promise<void> {
+    const url = `https://api.discogs.com/users/${username}/collection/folders/${folderId}/releases/${releaseId}/instances/${instanceId}/fields/${fieldId}`;
+
+    try {
+      await this.makeAuthenticatedRequest(
+        url,
+        "POST",
+        oauthToken,
+        oauthTokenSecret,
+        { value },
+      );
+    } catch (error) {
+      console.error("updateCollectionInstanceField error:", error);
+      throw error;
+    }
   }
 
   async getCollectionValue(

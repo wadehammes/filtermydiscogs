@@ -29,10 +29,11 @@ Quick map of **`src/`** and related top-level folders.
 | Add a Discogs-proxied API route | Copy [`src/app/api/collection/route.ts`](../../src/app/api/collection/route.ts); use [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) |
 | Validate a username param | [`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts) |
 | Add a client fetch wrapper | [`src/api/helpers.ts`](../../src/api/helpers.ts) |
-| Add global UI state | Jotai atoms in [`src/atoms/`](../../src/atoms/) for derived client state; context in [`src/context/`](../../src/context/) for auth/session/server-backed flows; register providers in [`Providers.tsx`](../../src/components/Providers.tsx) |
+| Collection notes (read/write/UI) | [`src/utils/releaseNotes.ts`](../../src/utils/releaseNotes.ts), [`src/components/ReleaseNotes/`](../../src/components/ReleaseNotes/), [`src/app/api/collection/fields/`](../../src/app/api/collection/fields/), [`src/app/api/collection/instances/[instanceId]/fields/[fieldId]/`](../../src/app/api/collection/instances/[instanceId]/fields/[fieldId]/) |
+| Add global UI state | Jotai atoms in [`src/atoms/`](../../src/atoms/) for derived client state; context in [`src/context/`](../../src/context/) for auth/session/server-backed flows; register providers in [`Providers.tsx`](../../src/components/Providers.tsx). Feature-scoped providers (e.g. release notes) live next to the component folder. |
 | Add a React Query hook | [`src/hooks/queries/`](../../src/hooks/queries/) |
 | Change filter logic | [`src/utils/filterReleases.ts`](../../src/utils/filterReleases.ts) + [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts) |
 | Crate DB changes | [`prisma/schema.prisma`](../../prisma/schema.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
 
-**Tests** for a module usually sit **next to** that module (`*.test.ts`, `*.test.tsx`, `*.component.test.tsx`, `*.spec.tsx`, optional **`*.po.tsx`** for page objects).
+**Tests** for a module usually sit **next to** that module (`*.spec.tsx` for PO-backed components, `*.test.ts(x)` for context/hooks/utils, optional **`*.po.tsx`** for page objects). Shared test infra lives under **`src/tests/`** (`BasePageObject.po.ts`, factories, mocks).

@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { clearSearchCache, filterReleases } from "./filterReleases";
@@ -745,5 +746,32 @@ describe("clearSearchCache", () => {
       searchQuery: "test",
     });
     expect(result).toHaveLength(1);
+  });
+
+  it("matches collection note text in search queries", () => {
+    const release = releaseFactory.withNotes([
+      { field_id: 3, value: "Signed tour edition" },
+    ]);
+    const releases = [release];
+
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: [],
+        searchQuery: "tour edition",
+      }),
+    ).toHaveLength(1);
+
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: [],
+        searchQuery: "bootleg",
+      }),
+    ).toHaveLength(0);
   });
 });

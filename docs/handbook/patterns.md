@@ -45,6 +45,7 @@ Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpe
 | Hook | Key factory | Purpose |
 |------|-------------|---------|
 | `useDiscogsCollectionQuery` | `DiscogsCollectionQueryKeys.byUsername` | Infinite collection pages |
+| `useCollectionFieldsQuery` | `CollectionFieldsQueryKeys.byUsername` | Discogs collection custom-field definitions (notes editor) |
 | `useCollectionValueQuery` | `CollectionValueQueryKeys.byUsername` | Collection dollar value |
 | `useDiscogsReleaseQuery` | `DiscogsReleaseQueryKeys.byId` | Single release fetch |
 | `useCratesQuery` / `useCrateQuery` | `CratesQueryKeys` / `CrateQueryKeys` | Crate list and detail |
@@ -69,7 +70,17 @@ Hook rules (single params object, no side effects in hook files): [conventions.m
 
 **Lint guardrails**: Biome **`noRestrictedImports`** blocks **`useFilters`** / **`useView`** in `src/components/**`—use **`useFilterAtoms`** / **`useViewAtoms`** instead. Context modules and tests are exempt.
 
-Add filter dimensions by extending filter atoms/helpers and UI—not by filtering ad hoc in leaf components.
+Add filter dimensions by extending filter atoms/helpers and UI—not by filtering ad hoc in leaf components. Release note text is included in search via **`getReleaseNotesSearchText`** in [`filterReleases.ts`](../../src/utils/filterReleases.ts).
+
+## Collection notes (scoped provider)
+
+Release-card notes use a **feature-local provider**, not a global entry in **`Providers.tsx`**:
+
+1. **`ReleaseNotesEditorProvider`** wraps each **`ReleaseCard`** / **`MobileReleaseCard`** and calls **`useReleaseNotesEditor(release)`** once.
+2. **`ReleaseNotes`** (`displayOnly`) and **`ReleaseNotesCardAction`** read **`useReleaseNotesEditorContext()`** so the body, **Add notes** link, and icon open the same **`NoteEditDialog`**.
+3. Saves go through **`updateCollectionNote`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/collection/instances/.../fields/...`** → **`discogsOAuthService.updateCollectionInstanceField`**.
+
+Colocate feature hooks under the component folder ([`useReleaseNotesEditor.hook.ts`](../../src/components/ReleaseNotes/useReleaseNotesEditor.hook.ts)); keep shared React Query hooks in [`src/hooks/queries/`](../../src/hooks/queries/).
 
 ## Crates
 

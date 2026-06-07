@@ -1,6 +1,7 @@
 import type { StyleOperator } from "src/context/filters.context";
 import type { DiscogsRelease } from "src/types";
 import { releaseMatchesFormatFilters } from "src/utils/formatFilterTags";
+import { getReleaseNotesSearchText } from "src/utils/releaseNotes";
 
 // Cache for searchable text to avoid recomputation
 const searchTextCache = new Map<string, string>();
@@ -95,6 +96,11 @@ export const filterReleases = ({
           if (label.catno) {
             parts.push(String(label.catno).toLowerCase());
           }
+        }
+
+        const notesText = getReleaseNotesSearchText(release);
+        if (notesText) {
+          parts.push(notesText);
         }
 
         searchableText = parts.join(" ");

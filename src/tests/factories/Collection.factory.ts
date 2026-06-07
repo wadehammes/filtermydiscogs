@@ -59,6 +59,10 @@ class CollectionFactory extends BaseFactory<
 
     return factoryBuilt;
   }
+
+  empty(attributes: Partial<DiscogsCollection> = {}): DiscogsCollection {
+    return this.build({ releases: [], ...attributes }, { releaseCount: 0 });
+  }
 }
 
 export const collectionFactory = new CollectionFactory();

@@ -2,9 +2,9 @@ import type { ReactNode } from "react";
 import {
   BasePageObject,
   type BasePageObjectProps,
-} from "src/tests/basePageObject.po";
-import type { RenderResult } from "src/tests/utils/test-utils";
-import { render } from "src/tests/utils/test-utils";
+} from "src/tests/BasePageObject.po";
+import type { RenderResult } from "test-utils";
+import { render } from "test-utils";
 import { BottomDrawer } from "./BottomDrawer.component";
 
 export type BottomDrawerRenderProps = {
@@ -26,7 +26,7 @@ export class BottomDrawerPageObject extends BasePageObject {
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   }
 
   renderBottomDrawer(overrides: BottomDrawerRenderProps = {}): RenderResult {

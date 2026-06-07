@@ -1,23 +1,27 @@
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { mocked } from "jest-mock";
 import type { ReactNode } from "react";
 import * as apiHelpers from "src/api/helpers";
 import { getUserIdFromCookies } from "src/services/auth.service";
 import { crateFactory } from "src/tests/factories/Crate.factory";
+import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { act, renderHook, waitFor } from "src/tests/utils/test-utils";
 import type {
   CratesResponse,
   CrateWithReleasesResponse,
 } from "src/types/crate.types";
+import { act, renderHook, waitFor } from "test-utils";
 import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 import { useUpdateCrateMutation } from "./useCrateMutations";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
-const mockUpdateCrate = mocked(apiHelpers.updateCrate);
-const mockGetUserIdFromCookies = mocked(getUserIdFromCookies);
+const mockUpdateCrate = jest.mocked(apiHelpers.updateCrate);
+const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
 
 const userId = "123";
 const newCrateId = "crate-new";
@@ -45,29 +49,24 @@ describe("useUpdateCrateMutation", () => {
       },
     });
 
-    const cratesResponse: CratesResponse = {
-      crates: [
-        {
-          ...crateFactory.build({
-            id: oldDefaultCrateId,
-            is_default: true,
-          }),
-          releaseCount: 0,
-        },
-        {
-          ...crateFactory.build({
-            id: newCrateId,
-            is_default: false,
-          }),
-          releaseCount: 1,
-        },
-      ],
-    };
+    const cratesResponse: CratesResponse = cratesResponseFactory.withCrates([
+      crateWithCountFactory.build({
+        id: oldDefaultCrateId,
+        is_default: true,
+        releaseCount: 0,
+      }),
+      crateWithCountFactory.build({
+        id: newCrateId,
+        is_default: false,
+        releaseCount: 1,
+      }),
+    ]);
 
-    const crateDetail: CrateWithReleasesResponse = {
-      crate: crateFactory.build({ id: newCrateId, is_default: false }),
-      releases: [release],
-    };
+    const crateDetail: CrateWithReleasesResponse =
+      crateWithReleasesResponseFactory.withReleases(
+        crateFactory.build({ id: newCrateId, is_default: false }),
+        [release],
+      );
 
     queryClient.setQueryData(CratesQueryKeys.byUserId(userId), cratesResponse);
     queryClient.setQueryData(
@@ -75,9 +74,11 @@ describe("useUpdateCrateMutation", () => {
       crateDetail,
     );
 
-    mockUpdateCrate.mockResolvedValue({
-      crate: crateFactory.build({ id: newCrateId, is_default: true }),
-    });
+    mockUpdateCrate.mockResolvedValue(
+      createCrateResponseFactory.forCrate(
+        crateFactory.build({ id: newCrateId, is_default: true }),
+      ),
+    );
 
     const { result } = renderHook(() => useUpdateCrateMutation(), {
       wrapper: createWrapper(queryClient),

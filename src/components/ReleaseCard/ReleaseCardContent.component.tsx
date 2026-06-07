@@ -1,4 +1,6 @@
 import classNames from "classnames";
+import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
+import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import {
   useSelectedFormats,
   useSelectedStyles,
@@ -61,8 +63,9 @@ export function ReleaseCardContent({
           labelUrl={labelUrl}
           year={year}
         />
+        <ReleaseNotes release={release} variant="displayOnly" />
       </div>
-      <div className={styles.genresContainer}>
+      <HorizontalScrollRow className={styles.genresContainer}>
         {releaseFormats &&
           releaseFormats.length > 0 &&
           getReleaseFormatTags(releaseFormats).map((formatName) => (
@@ -107,7 +110,7 @@ export function ReleaseCardContent({
               {style}
             </button>
           ))}
-      </div>
+      </HorizontalScrollRow>
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import { mocked } from "jest-mock";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useRouter } from "next/navigation";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { act, renderHook, TestProviders } from "src/tests/utils/test-utils";
+import { act, renderHook, TestProviders } from "test-utils";
 import {
   CollectionActionTypes,
   CollectionReducer,
@@ -10,7 +10,7 @@ import {
   useCollectionContext,
 } from "./collection.context";
 
-const mockUseRouter = mocked(useRouter);
+const mockUseRouter = jest.mocked(useRouter);
 
 describe("CollectionReducer", () => {
   const initialState = {

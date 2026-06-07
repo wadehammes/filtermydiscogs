@@ -1,12 +1,20 @@
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { screen, waitFor } from "src/tests/utils/test-utils";
-import { mockFiltersDispatch, SearchBarPageObject } from "./SearchBar.po";
+import {
+  mockFiltersDispatch,
+  SearchBarPageObject,
+} from "src/components/SearchBar/SearchBar.po";
+import { screen, waitFor } from "test-utils";
 
 let po: SearchBarPageObject;
 
 describe("SearchBar", () => {
   beforeEach(() => {
     po = new SearchBarPageObject();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it("renders component root", () => {
