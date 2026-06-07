@@ -1,10 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  checkRateLimitWithResponse,
   createPaginatedResponse,
   getPaginationParams,
-  getUserIdFromRequest,
+  getVerifiedUserFromRequestWithRateLimit,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
@@ -15,18 +14,11 @@ import { prisma } from "src/lib/db";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(request);
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-    const username = request.cookies.get("discogs_username")?.value;
-
-    // Check rate limit
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, false);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum, username } = verified.user;
 
     const { skip, take, page, pageSize } = getPaginationParams(request);
 
@@ -140,18 +132,14 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(
+      request,
+      true,
+    );
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-    const username = request.cookies.get("discogs_username")?.value;
-
-    // Check rate limit (write operation)
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum, username } = verified.user;
 
     const body = await request.json();
     const { name } = body;

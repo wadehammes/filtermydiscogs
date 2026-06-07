@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+
+const MAX_NOTE_LENGTH = 10_000;
 
 interface UpdateCollectionNoteBody {
   username?: string;
@@ -63,6 +66,15 @@ export async function POST(
       );
     }
 
+    if (value.length > MAX_NOTE_LENGTH) {
+      return NextResponse.json(
+        {
+          error: `Note value must be ${MAX_NOTE_LENGTH} characters or less`,
+        },
+        { status: 400 },
+      );
+    }
+
     if (typeof folderId !== "number" || folderId < 0) {
       return NextResponse.json(
         { error: "Valid folder ID is required" },
@@ -70,29 +82,20 @@ export async function POST(
       );
     }
 
-    const accessToken = request.cookies.get("discogs_access_token")?.value;
-    const accessTokenSecret = request.cookies.get(
-      "discogs_access_token_secret",
-    )?.value;
-    const storedUsername = request.cookies.get("discogs_username")?.value;
-
-    if (!(accessToken && accessTokenSecret && storedUsername)) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    if (storedUsername.toLowerCase() !== username.toLowerCase()) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const session = await requireAuthenticatedDiscogsUser(request, username);
+    if ("error" in session) {
+      return session.error;
     }
 
     await discogsOAuthService.updateCollectionInstanceField({
-      username,
+      username: session.user.username,
       folderId,
       releaseId,
       instanceId: Number.parseInt(instanceId, 10),
       fieldId: Number.parseInt(fieldId, 10),
       value,
-      oauthToken: accessToken,
-      oauthTokenSecret: accessTokenSecret,
+      oauthToken: session.accessToken,
+      oauthTokenSecret: session.accessTokenSecret,
     });
 
     return NextResponse.json({ success: true });

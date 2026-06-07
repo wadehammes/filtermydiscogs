@@ -7,7 +7,6 @@ import {
   syncCrates,
   updateCrate,
 } from "src/api/helpers";
-import { getUserIdFromCookies } from "src/services/auth.service";
 import type { DiscogsRelease } from "src/types";
 import type {
   CratesResponse,
@@ -176,9 +175,8 @@ const mergeCrateDetailCache = (
   );
 };
 
-export const useCreateCrateMutation = () => {
+export const useCreateCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
-  const userId = getUserIdFromCookies();
 
   return useMutation<CreateCrateResponse, Error, CreateCrateRequest>({
     mutationFn: async (data) => {
@@ -210,9 +208,8 @@ export const useCreateCrateMutation = () => {
   });
 };
 
-export const useUpdateCrateMutation = () => {
+export const useUpdateCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
-  const userId = getUserIdFromCookies();
 
   return useMutation<
     UpdateCrateResponse,
@@ -281,9 +278,8 @@ export const useUpdateCrateMutation = () => {
   });
 };
 
-export const useDeleteCrateMutation = () => {
+export const useDeleteCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
-  const userId = getUserIdFromCookies();
 
   return useMutation<void, Error, string>({
     mutationFn: async (crateId) => {
@@ -317,9 +313,8 @@ export const useDeleteCrateMutation = () => {
   });
 };
 
-export const useAddReleaseToCrateMutation = () => {
+export const useAddReleaseToCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
-  const userId = getUserIdFromCookies();
 
   return useMutation<
     { success: boolean },
@@ -410,9 +405,8 @@ export const useAddReleaseToCrateMutation = () => {
   });
 };
 
-export const useRemoveReleaseFromCrateMutation = () => {
+export const useRemoveReleaseFromCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
-  const userId = getUserIdFromCookies();
 
   return useMutation<
     { success: boolean },
@@ -477,9 +471,8 @@ export const useRemoveReleaseFromCrateMutation = () => {
   });
 };
 
-export const useSyncCratesMutation = () => {
+export const useSyncCratesMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
-  const userId = getUserIdFromCookies();
 
   return useMutation<SyncCratesResponse, Error, SyncCratesRequest>({
     mutationFn: async (data) => {

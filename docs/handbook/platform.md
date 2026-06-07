@@ -45,14 +45,15 @@ Full list: [`package.json`](../../package.json).
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional) |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
 
-[`next.config.ts`](../../next.config.ts) **`env`** block exposes Discogs consumer key/secret/callback to the Next bundle—treat as **intentionally client-visible** for OAuth initiation; do not add server-only secrets there.
+[`next.config.ts`](../../next.config.ts) **`env`** block exposes only **`DISCOGS_CONSUMER_KEY`** and **`DISCOGS_CALLBACK_URL`** to the Next bundle. **`DISCOGS_CONSUMER_SECRET`** stays a runtime server env var (used by [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) only). Do not add server-only secrets to **`env`**.
 
 Local values: **`.env.local`** (gitignored). See root [README.md](../../README.md) for setup steps.
 
 ## `next.config.ts` highlights
 
 - **Images**: remote patterns for **`i.discogs.com`** and placeholders.
-- **Security headers**: CSP, HSTS, frame options, etc. on `/`, `/api/*`, and static paths.
+- **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging.
+- **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
 - **SVGR**: webpack + turbopack rules for SVG-as-React components.
 - **`experimental.optimizePackageImports`**: tree-shaking for TanStack packages.

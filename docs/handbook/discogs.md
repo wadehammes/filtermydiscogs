@@ -36,19 +36,19 @@ Set in [`src/app/api/auth/callback/route.ts`](../../src/app/api/auth/callback/ro
 | `discogs_access_token` | yes | OAuth access token |
 | `discogs_access_token_secret` | yes | OAuth access token secret |
 | `discogs_username` | no | Display name; readable by client JS |
-| `discogs_user_id` | no | Numeric Discogs user ID; used for crate scoping and admin |
+| `discogs_user_id` | yes | Numeric Discogs user ID; display/cache only—**never** used for API authorization |
 
 `secure` is **`false` in development**, **`true` in production**. Max age: 30 days.
 
-Client reads username via [`getUsernameFromCookies`](../../src/services/auth.service.ts) (`js-cookie`). Access tokens are **never** exposed to client JS.
+Client reads username via [`getUsernameFromCookies`](../../src/services/auth.service.ts) (`js-cookie`). User ID comes from [`/api/auth/check`](../../src/app/api/auth/check/route.ts) (verified OAuth identity) and is stored in [`AuthProvider`](../../src/context/auth.context.tsx)—not from a client-readable cookie. Access tokens are **never** exposed to client JS.
 
 ## Authenticated API routes
 
 Route handlers that proxy Discogs (e.g. **`/api/collection`**, **`/api/collection/fields`**, **`/api/collection/instances/{instanceId}/fields/{fieldId}`**, **`/api/collection/value`**, **`/api/search`**) must:
 
-1. Read access token cookies.
-2. Validate the **`username`** query param with **`isValidDiscogsUsername`** ([`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts)).
-3. Confirm **`storedUsername`** matches the requested username (**case-insensitive** for collection routes).
+1. Verify the session with **`requireAuthenticatedDiscogsUser`** or **`getVerifiedUserFromRequest`** ([`src/lib/auth-request.ts`](../../src/lib/auth-request.ts))—never trust **`discogs_user_id`** or **`discogs_username`** cookies for authorization.
+2. Validate the **`username`** query/body param with **`isValidDiscogsUsername`** ([`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts)).
+3. Confirm the verified identity username matches the requested username (**case-insensitive** for collection routes).
 4. Call **`discogsOAuthService`** methods with token + secret.
 
 Collection route: [`src/app/api/collection/route.ts`](../../src/app/api/collection/route.ts).

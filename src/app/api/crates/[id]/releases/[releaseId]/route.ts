@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   auditDatabaseOperation,
-  checkRateLimitWithResponse,
-  getUserIdFromRequest,
+  getVerifiedUserFromRequestWithRateLimit,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
@@ -15,17 +14,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; releaseId: string }> },
 ) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(
+      request,
+      true,
+    );
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-
-    // Check rate limit (write operation)
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum } = verified.user;
 
     const { id, releaseId } = await params;
 

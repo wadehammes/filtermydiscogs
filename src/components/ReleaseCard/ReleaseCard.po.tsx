@@ -1,7 +1,6 @@
 import * as apiHelpers from "src/api/helpers";
 import {
   checkAuthStatus,
-  getUserIdFromCookies,
   getUsernameFromCookies,
   parseAuthUrlParams,
 } from "src/services/auth.service";
@@ -18,6 +17,7 @@ import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/Disc
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
@@ -31,7 +31,6 @@ jest.mock("src/analytics/analytics", () => ({
 
 const mockApi = jest.mocked(apiHelpers);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
-const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
 
@@ -58,7 +57,6 @@ export class ReleaseCardPageObject extends BasePageObject {
   setupMocks() {
     jest.clearAllMocks();
 
-    mockGetUserIdFromCookies.mockReturnValue("123");
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue({
       isAuthenticated: true,
@@ -135,6 +133,8 @@ export class ReleaseCardPageObject extends BasePageObject {
   }
 
   renderReleaseCard(overrides: ReleaseCardRenderProps = {}): RenderResult {
-    return render(this.releaseCardElement(overrides));
+    return render(this.releaseCardElement(overrides), {
+      authInitialState: testAuthenticatedAuthState,
+    });
   }
 }

@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { useCallback, useState } from "react";
 import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
+import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
 import styles from "./CrateSelector.module.css";
@@ -11,9 +12,12 @@ interface CrateSelectorProps {
 }
 
 export const CrateSelector = ({ className }: CrateSelectorProps) => {
+  const {
+    state: { userId },
+  } = useAuth();
   const { crates, activeCrateId, selectCrate, createCrate, isLoading } =
     useCrate();
-  const createCrateMutation = useCreateCrateMutation();
+  const createCrateMutation = useCreateCrateMutation(userId);
   const [isCreating, setIsCreating] = useState(false);
   const [newCrateName, setNewCrateName] = useState("");
 

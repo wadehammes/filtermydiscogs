@@ -38,6 +38,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (oauthToken !== storedOAuthToken) {
+      return NextResponse.redirect(
+        new URL("/?error=oauth_callback_invalid", request.url),
+      );
+    }
+
     // Exchange request token for access token
     const accessTokens = await discogsOAuthService.getAccessToken(
       storedOAuthToken,
@@ -80,7 +86,7 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    // Store user info (not httpOnly so it can be read by client-side JS)
+    // Store user info for display; authorization always re-verifies OAuth tokens.
     response.cookies.set("discogs_username", verifiedIdentity.username, {
       httpOnly: false,
       secure: secureFlag,
@@ -89,9 +95,8 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
-    // Store user ID (not httpOnly so it can be read by client-side JS)
     response.cookies.set("discogs_user_id", verifiedIdentity.id.toString(), {
-      httpOnly: false,
+      httpOnly: true,
       secure: secureFlag,
       sameSite: "lax",
       path: "/",

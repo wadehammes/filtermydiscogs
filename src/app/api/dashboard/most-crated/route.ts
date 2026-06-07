@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  checkRateLimitWithResponse,
-  getUserIdFromRequest,
+  getVerifiedUserFromRequestWithRateLimit,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
@@ -18,17 +17,11 @@ interface MostCratedRelease {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(request);
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-
-    // Check rate limit
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, false);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum } = verified.user;
 
     // Get query params for limit
     const { searchParams } = new URL(request.url);

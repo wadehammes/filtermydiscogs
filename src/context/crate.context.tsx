@@ -56,25 +56,35 @@ interface CrateProviderProps {
 }
 
 export const CrateProvider = ({ children }: CrateProviderProps) => {
-  const { state: authState } = useAuth();
+  const {
+    state: { userId, isAuthenticated },
+  } = useAuth();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
   const { isDrawerOpen, toggleDrawer, openDrawer, closeDrawer } =
     useCrateDrawer();
 
-  const { data: cratesData, isLoading, isError, error } = useCratesQuery();
+  const {
+    data: cratesData,
+    isLoading,
+    isError,
+    error,
+  } = useCratesQuery({
+    userId,
+  });
   const crates = cratesData?.crates || [];
 
   const { data: activeCrateData, isLoading: isLoadingCrate } = useCrateQuery({
+    userId,
     crateId: activeCrateId,
   });
   const activeCrateReleases = activeCrateData?.releases || [];
 
-  const createCrateMutation = useCreateCrateMutation();
-  const updateCrateMutation = useUpdateCrateMutation();
-  const deleteCrateMutation = useDeleteCrateMutation();
-  const addReleaseMutation = useAddReleaseToCrateMutation();
-  const removeReleaseMutation = useRemoveReleaseFromCrateMutation();
+  const createCrateMutation = useCreateCrateMutation(userId);
+  const updateCrateMutation = useUpdateCrateMutation(userId);
+  const deleteCrateMutation = useDeleteCrateMutation(userId);
+  const addReleaseMutation = useAddReleaseToCrateMutation(userId);
+  const removeReleaseMutation = useRemoveReleaseFromCrateMutation(userId);
 
   const findDefaultCrate = useCallback(
     ({ crateList }: { crateList: typeof crates }) =>
@@ -83,7 +93,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   );
 
   useCrateMigration(
-    authState.isAuthenticated,
+    isAuthenticated,
     isLoading,
     crates,
     findDefaultCrate,

@@ -14,13 +14,13 @@ import {
   checkAuthStatus,
   clearAuthCookies,
   clearUrlParams,
-  getUsernameFromCookies,
   parseAuthUrlParams,
 } from "src/services/auth.service";
 
 export interface AuthState {
   isAuthenticated: boolean;
   username: string | null;
+  userId: string | null;
   isLoading: boolean;
   isLoggingOut: boolean;
   error: string | null;
@@ -29,6 +29,7 @@ export interface AuthState {
 export enum AuthActionTypes {
   SetAuthenticated = "SetAuthenticated",
   SetUsername = "SetUsername",
+  SetUserId = "SetUserId",
   SetLoading = "SetLoading",
   SetLoggingOut = "SetLoggingOut",
   SetError = "SetError",
@@ -38,6 +39,7 @@ export enum AuthActionTypes {
 export type AuthActions =
   | { type: AuthActionTypes.SetAuthenticated; payload: boolean }
   | { type: AuthActionTypes.SetUsername; payload: string | null }
+  | { type: AuthActionTypes.SetUserId; payload: string | null }
   | { type: AuthActionTypes.SetLoading; payload: boolean }
   | { type: AuthActionTypes.SetLoggingOut; payload: boolean }
   | { type: AuthActionTypes.SetError; payload: string | null }
@@ -54,6 +56,11 @@ const authReducer = (state: AuthState, action: AuthActions): AuthState => {
       return {
         ...state,
         username: action.payload,
+      };
+    case AuthActionTypes.SetUserId:
+      return {
+        ...state,
+        userId: action.payload,
       };
     case AuthActionTypes.SetLoading:
       return {
@@ -75,6 +82,7 @@ const authReducer = (state: AuthState, action: AuthActions): AuthState => {
         ...state,
         isAuthenticated: false,
         username: null,
+        userId: null,
         error: null,
         isLoading: false,
         isLoggingOut: false,
@@ -87,6 +95,7 @@ const authReducer = (state: AuthState, action: AuthActions): AuthState => {
 const initialState: AuthState = {
   isAuthenticated: false,
   username: null,
+  userId: null,
   isLoading: true,
   isLoggingOut: false,
   error: null,
@@ -116,33 +125,15 @@ export const AuthProvider = ({
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Check for existing authentication on mount (only once)
+  // Check for existing authentication once on mount
   const hasCheckedAuthRef = useRef(false);
   useEffect(() => {
-    if (skipInitialAuthCheck) {
-      hasCheckedAuthRef.current = true;
+    if (skipInitialAuthCheck || hasCheckedAuthRef.current) {
       return;
     }
 
-    // Skip if we've already checked auth or if already authenticated
-    if (
-      hasCheckedAuthRef.current ||
-      (state.isAuthenticated && state.username)
-    ) {
-      if (
-        !hasCheckedAuthRef.current &&
-        state.isAuthenticated &&
-        state.username
-      ) {
-        // If authenticated but haven't checked yet, just set loading to false
-        dispatch({ type: AuthActionTypes.SetLoading, payload: false });
-        hasCheckedAuthRef.current = true;
-      }
-      return;
-    }
-
-    let isMounted = true;
     hasCheckedAuthRef.current = true;
+    let isMounted = true;
 
     const checkAuth = async () => {
       try {
@@ -154,6 +145,10 @@ export const AuthProvider = ({
           dispatch({
             type: AuthActionTypes.SetUsername,
             payload: authStatus.username,
+          });
+          dispatch({
+            type: AuthActionTypes.SetUserId,
+            payload: authStatus.userId,
           });
         } else {
           queryClient.clear();
@@ -176,12 +171,7 @@ export const AuthProvider = ({
     return () => {
       isMounted = false;
     };
-  }, [
-    queryClient,
-    skipInitialAuthCheck,
-    state.isAuthenticated,
-    state.username,
-  ]);
+  }, [queryClient, skipInitialAuthCheck]);
 
   useEffect(() => {
     if (skipInitialAuthCheck) {
@@ -191,16 +181,31 @@ export const AuthProvider = ({
     const { authStatus, errorStatus } = parseAuthUrlParams();
 
     if (authStatus === "success") {
-      const username = getUsernameFromCookies();
-      if (username) {
-        dispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
-        dispatch({ type: AuthActionTypes.SetUsername, payload: username });
+      const completeAuthSuccess = async () => {
+        const authStatusResult = await checkAuthStatus();
+        if (authStatusResult.isAuthenticated && authStatusResult.username) {
+          dispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
+          dispatch({
+            type: AuthActionTypes.SetUsername,
+            payload: authStatusResult.username,
+          });
+          dispatch({
+            type: AuthActionTypes.SetUserId,
+            payload: authStatusResult.userId,
+          });
+          dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+          queryClient.invalidateQueries({
+            queryKey: DiscogsCollectionQueryKeys.all(),
+          });
+          clearUrlParams();
+          return;
+        }
+
         dispatch({ type: AuthActionTypes.SetLoading, payload: false });
-        queryClient.invalidateQueries({
-          queryKey: DiscogsCollectionQueryKeys.all(),
-        });
         clearUrlParams();
-      }
+      };
+
+      void completeAuthSuccess();
     } else if (errorStatus) {
       dispatch({
         type: AuthActionTypes.SetError,
@@ -222,13 +227,10 @@ export const AuthProvider = ({
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: true });
 
       await logoutApi();
-
       clearAuthCookies();
-      queryClient.clear();
-
       dispatch({ type: AuthActionTypes.Logout, payload: undefined });
-
       router.replace("/");
+      queryClient.clear();
     } catch (_error) {
       dispatch({ type: AuthActionTypes.SetError, payload: "Logout failed" });
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: false });

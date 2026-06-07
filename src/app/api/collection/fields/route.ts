@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -20,24 +21,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const accessToken = request.cookies.get("discogs_access_token")?.value;
-    const accessTokenSecret = request.cookies.get(
-      "discogs_access_token_secret",
-    )?.value;
-    const storedUsername = request.cookies.get("discogs_username")?.value;
-
-    if (!(accessToken && accessTokenSecret && storedUsername)) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    if (storedUsername.toLowerCase() !== username.toLowerCase()) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const session = await requireAuthenticatedDiscogsUser(request, username);
+    if ("error" in session) {
+      return session.error;
     }
 
     const fields = await discogsOAuthService.getCollectionFields(
-      username,
-      accessToken,
-      accessTokenSecret,
+      session.user.username,
+      session.accessToken,
+      session.accessTokenSecret,
     );
 
     return NextResponse.json(fields, {

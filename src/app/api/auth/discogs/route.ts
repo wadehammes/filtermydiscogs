@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         // Restore user_id cookie if it's missing
         if (!userId) {
           response.cookies.set("discogs_user_id", identity.id.toString(), {
-            httpOnly: false,
+            httpOnly: true,
             secure: secureFlag,
             sameSite: "lax",
             path: "/",

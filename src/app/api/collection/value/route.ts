@@ -1,16 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const username = searchParams.get("username");
-  const accessToken = request.cookies.get("discogs_access_token")?.value;
-  const accessTokenSecret = request.cookies.get(
-    "discogs_access_token_secret",
-  )?.value;
-  const storedUsername = request.cookies.get("discogs_username")?.value;
-
   try {
     // Validate username
     if (!username) {
@@ -27,18 +22,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!(accessToken && accessTokenSecret && storedUsername)) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    if (storedUsername !== username) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const session = await requireAuthenticatedDiscogsUser(request, username);
+    if ("error" in session) {
+      return session.error;
     }
 
     const collectionValue = await discogsOAuthService.getCollectionValue(
-      username,
-      accessToken,
-      accessTokenSecret,
+      session.user.username,
+      session.accessToken,
+      session.accessTokenSecret,
     );
 
     // Validate the response has the expected structure (already parsed to numbers in service)
@@ -74,9 +66,6 @@ export async function GET(request: NextRequest) {
       console.error("Collection value error details:", {
         error,
         username,
-        hasAccessToken: !!accessToken,
-        hasAccessTokenSecret: !!accessTokenSecret,
-        storedUsername,
       });
     }
 

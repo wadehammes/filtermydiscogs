@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchCrate, fetchCrates } from "src/api/helpers";
-import { getUserIdFromCookies } from "src/services/auth.service";
 import type {
   CratesResponse,
   CrateWithReleasesResponse,
 } from "src/types/crate.types";
 import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 
-export const useCratesQuery = () => {
-  const userId = getUserIdFromCookies();
+export interface UseCratesQueryParams {
+  userId: string | null;
+}
 
+export const useCratesQuery = ({ userId }: UseCratesQueryParams) => {
   return useQuery<CratesResponse>({
     queryKey: CratesQueryKeys.byUserId(userId),
     queryFn: async () => {
@@ -29,11 +30,11 @@ export const useCratesQuery = () => {
 };
 
 export interface UseCrateQueryParams {
+  userId: string | null;
   crateId: string | null;
 }
 
-export const useCrateQuery = ({ crateId }: UseCrateQueryParams) => {
-  const userId = getUserIdFromCookies();
+export const useCrateQuery = ({ userId, crateId }: UseCrateQueryParams) => {
   const isEnabled = Boolean(userId && crateId);
 
   return useQuery<CrateWithReleasesResponse>({

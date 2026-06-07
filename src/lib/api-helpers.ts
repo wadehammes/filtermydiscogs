@@ -1,7 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  getVerifiedUserFromRequest,
+  type VerifiedDiscogsUser,
+} from "src/lib/auth-request";
 import { getPublicCrateMetadataForPage } from "src/lib/public-crate.server";
 import { auditLog } from "./db-audit";
 import { checkRateLimit } from "./rate-limit";
+
+export type { VerifiedDiscogsUser };
 
 /**
  * Sanitize error messages to prevent information leakage
@@ -87,27 +93,29 @@ export function sanitizeError(error: unknown): {
 }
 
 /**
- * Get user ID from request with validation
+ * Resolve the authenticated user from verified OAuth tokens.
  */
-export function getUserIdFromRequest(
+export async function getVerifiedUserFromRequestWithRateLimit(
   request: NextRequest,
-): { userId: number; error?: never } | { userId?: never; error: NextResponse } {
-  const userId = request.cookies.get("discogs_user_id")?.value;
-
-  if (!userId) {
-    return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
+  isWriteOperation = false,
+): Promise<
+  | { user: VerifiedDiscogsUser; error?: never }
+  | { user?: never; error: NextResponse }
+> {
+  const verified = await getVerifiedUserFromRequest(request);
+  if ("error" in verified) {
+    return verified;
   }
 
-  const userIdNum = parseInt(userId, 10);
-  if (Number.isNaN(userIdNum)) {
-    return {
-      error: NextResponse.json({ error: "Invalid user ID" }, { status: 400 }),
-    };
+  const rateLimitError = checkRateLimitWithResponse(
+    verified.user.userId,
+    isWriteOperation,
+  );
+  if (rateLimitError) {
+    return { error: rateLimitError };
   }
 
-  return { userId: userIdNum };
+  return verified;
 }
 
 /**

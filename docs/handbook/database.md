@@ -59,7 +59,9 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates |
 
-All mutating crate routes require authenticated cookies and scope queries by **`user_id`** from **`discogs_user_id`**.
+All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
+
+**`/api/crates/health`** is admin-only (same OAuth verification as **`/api/admin/stats`**).
 
 ## Public crates
 

@@ -23,8 +23,8 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 
 1. **Start OAuth**: client navigates to **`GET /api/auth/discogs`**, which redirects to Discogs authorize URL and stores temporary request tokens in cookies.
 2. **Callback**: **`GET /api/auth/callback`** exchanges verifier for access token, calls **`getIdentity`**, sets cookies, redirects to **`/releases?auth=success`**.
-3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount and reads **`discogs_username`** via [`auth.service.ts`](../../src/services/auth.service.ts).
-4. **Logout**: **`/api/auth/logout`** clears cookies; client dispatches logout actions and shows **`LogoutOverlay`**.
+3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount (server verifies OAuth tokens with Discogs **`getIdentity`**). Username may still be read from **`discogs_username`** for display; **`userId`** comes from the check response.
+4. **Logout**: **`/api/auth/logout`** clears session cookies by default (full logout). Pass **`?preserve_tokens=true`** to keep OAuth tokens for quick re-login. Client dispatches logout actions and shows **`LogoutOverlay`**.
 
 Cookie names and security flags: [discogs.md](discogs.md).
 

@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  checkRateLimitWithResponse,
   getPaginationParams,
-  getUserIdFromRequest,
+  getVerifiedUserFromRequestWithRateLimit,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
@@ -16,17 +15,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(request);
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-
-    // Check rate limit
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, false);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum } = verified.user;
 
     const { id } = await params;
     const { skip, take, page, pageSize } = getPaginationParams(request);
@@ -118,51 +111,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(
+      request,
+      true,
+    );
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-    const username = request.cookies.get("discogs_username")?.value;
-
-    // Check rate limit (write operation)
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum, username } = verified.user;
 
     const { id } = await params;
 
-    // Read the raw body first to debug
-    const rawBody = await request.text();
-    console.log(
-      "Raw request body:",
-      rawBody,
-      "Length:",
-      rawBody.length,
-      "Type:",
-      typeof rawBody,
-    );
-
-    if (!rawBody || rawBody.length === 0) {
-      console.error("Empty request body received");
-      return NextResponse.json(
-        { error: "Request body is required" },
-        { status: 400 },
-      );
-    }
-
     let body: unknown;
     try {
-      body = JSON.parse(rawBody);
-      console.log("Parsed body:", body, "Type:", typeof body);
+      body = await request.json();
     } catch (error) {
-      console.error(
-        "Failed to parse request body:",
-        error,
-        "Raw body:",
-        rawBody,
-      );
+      console.error("Failed to parse request body:", error);
       return NextResponse.json(
         { error: "Invalid request body" },
         { status: 400 },
@@ -183,17 +147,6 @@ export async function PUT(
     const is_default = bodyObj.is_default;
     // Access 'private' using bracket notation to avoid reserved keyword issues
     const privateField = bodyObj.private;
-
-    // Debug: log what we received
-    console.log("Update crate - received body:", {
-      body,
-      bodyObj,
-      name,
-      is_default,
-      privateField,
-      hasPrivate: "private" in bodyObj,
-      bodyKeys: Object.keys(bodyObj),
-    });
 
     // Verify crate exists and belongs to user
     const existingCrate = await prisma.crate.findUnique({
@@ -355,17 +308,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(
+      request,
+      true,
+    );
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-
-    // Check rate limit (write operation)
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum } = verified.user;
 
     const { id } = await params;
 

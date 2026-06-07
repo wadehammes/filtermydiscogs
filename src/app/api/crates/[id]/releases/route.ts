@@ -1,12 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   auditDatabaseOperation,
-  checkRateLimitWithResponse,
-  getUserIdFromRequest,
+  getVerifiedUserFromRequestWithRateLimit,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { type Prisma, prisma } from "src/lib/db";
-import type { DiscogsRelease } from "src/types";
+import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 
 /**
  * Add a release to a crate
@@ -16,17 +15,14 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userIdResult = getUserIdFromRequest(request);
-    if ("error" in userIdResult) {
-      return userIdResult.error;
+    const verified = await getVerifiedUserFromRequestWithRateLimit(
+      request,
+      true,
+    );
+    if ("error" in verified) {
+      return verified.error;
     }
-    const { userId: userIdNum } = userIdResult;
-
-    // Check rate limit (write operation)
-    const rateLimitError = checkRateLimitWithResponse(userIdNum, true);
-    if (rateLimitError) {
-      return rateLimitError;
-    }
+    const { userId: userIdNum } = verified.user;
 
     const { id } = await params;
 
@@ -56,22 +52,13 @@ export async function POST(
       );
     }
 
-    const release = body as DiscogsRelease;
-
-    if (!release?.instance_id) {
-      console.error("Invalid release data:", {
-        hasRelease: !!release,
-        hasInstanceId: !!release?.instance_id,
-        releaseKeys: release ? Object.keys(release) : [],
-      });
-      return NextResponse.json(
-        { error: "Invalid release data: missing instance_id" },
-        { status: 400 },
-      );
+    const validation = validateReleaseDataForStorage(body);
+    if ("error" in validation) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    // Ensure instance_id is a string (Discogs API returns it as a number)
-    const instanceId = String(release.instance_id);
+    const release = validation.release;
+    const instanceId = release.instance_id;
 
     // Check if release is already in crate
     const existingRelease = await prisma.crateRelease.findUnique({

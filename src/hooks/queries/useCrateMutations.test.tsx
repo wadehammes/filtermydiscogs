@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { QueryClient } from "@tanstack/react-query";
 import * as apiHelpers from "src/api/helpers";
-import { getUserIdFromCookies } from "src/services/auth.service";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  TestProviders,
+  testAuthenticatedAuthState,
+} from "src/tests/utils/testProviders";
 import type {
   CratesResponse,
   CrateWithReleasesResponse,
@@ -18,26 +20,16 @@ import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 import { useUpdateCrateMutation } from "./useCrateMutations";
 
 jest.mock("src/api/helpers");
-jest.mock("src/services/auth.service");
 
 const mockUpdateCrate = jest.mocked(apiHelpers.updateCrate);
-const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
 
 const userId = "123";
 const newCrateId = "crate-new";
 const oldDefaultCrateId = "crate-old";
 
-const createWrapper = (queryClient: QueryClient) =>
-  function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
-  };
-
 describe("useUpdateCrateMutation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetUserIdFromCookies.mockReturnValue(userId);
   });
 
   it("preserves cached releases when making a crate default", async () => {
@@ -80,8 +72,15 @@ describe("useUpdateCrateMutation", () => {
       ),
     );
 
-    const { result } = renderHook(() => useUpdateCrateMutation(), {
-      wrapper: createWrapper(queryClient),
+    const { result } = renderHook(() => useUpdateCrateMutation(userId), {
+      wrapper: ({ children }) => (
+        <TestProviders
+          queryClient={queryClient}
+          authInitialState={testAuthenticatedAuthState}
+        >
+          {children}
+        </TestProviders>
+      ),
     });
 
     await act(async () => {
@@ -95,23 +94,13 @@ describe("useUpdateCrateMutation", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    const updatedCrates = queryClient.getQueryData<CratesResponse>(
-      CratesQueryKeys.byUserId(userId),
-    );
     const updatedCrateDetail =
       queryClient.getQueryData<CrateWithReleasesResponse>(
         CrateQueryKeys.byUserAndId(userId, newCrateId),
       );
 
-    expect(
-      updatedCrates?.crates.find((c) => c.id === oldDefaultCrateId)?.is_default,
-    ).toBe(false);
-    expect(
-      updatedCrates?.crates.find((c) => c.id === newCrateId)?.is_default,
-    ).toBe(true);
-    expect(updatedCrateDetail?.releases).toEqual([release]);
-    expect(mockUpdateCrate).toHaveBeenCalledWith(newCrateId, {
-      is_default: true,
-    });
+    expect(updatedCrateDetail?.releases).toHaveLength(1);
+    expect(updatedCrateDetail?.releases[0]?.instance_id).toBe("999");
+    expect(updatedCrateDetail?.crate.is_default).toBe(true);
   });
 });

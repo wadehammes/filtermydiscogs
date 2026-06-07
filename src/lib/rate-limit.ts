@@ -1,5 +1,6 @@
 /**
- * Rate limiting middleware for database operations per user
+ * In-memory per-user rate limiting for database operations.
+ * Resets per serverless instance; pair with verified OAuth user IDs (see auth-request.ts).
  */
 
 interface RateLimitEntry {
