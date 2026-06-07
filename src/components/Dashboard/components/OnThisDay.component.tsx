@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import { useMemo } from "react";
+import { trackEvent } from "src/analytics/analytics";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
-import { getReleaseImageUrl } from "src/utils/helpers";
+import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getOnThisDayReleases } from "src/utils/onThisDay";
 import styles from "./OnThisDay.module.css";
+
+const ANALYTICS_CATEGORY = "onThisDay";
 
 export function OnThisDay() {
   const releases = useAllReleases();
@@ -38,9 +41,17 @@ export function OnThisDay() {
       <p className={styles.date}>{dateString}</p>
       <div className={styles.releasesGrid}>
         {onThisDayReleases.slice(0, 10).map((release) => {
-          const { title, artists, thumb, cover_image, year } =
-            release.basic_information;
+          const {
+            title,
+            artists,
+            labels,
+            thumb,
+            cover_image,
+            year,
+            resource_url,
+          } = release.basic_information;
           const artistNames = artists.map((a) => a.name).join(", ");
+          const primaryLabel = labels[0];
           const dateAdded = new Date(release.date_added);
           const yearAdded = dateAdded.getFullYear();
           const imageUrl = getReleaseImageUrl({
@@ -50,6 +61,16 @@ export function OnThisDay() {
             height: 400,
             preferCoverImage: true,
           });
+          const releaseUrl = getResourceUrl({
+            resourceUrl: resource_url,
+            type: "release",
+          });
+          const labelUrl = primaryLabel
+            ? getResourceUrl({
+                resourceUrl: primaryLabel.resource_url,
+                type: "label",
+              })
+            : null;
 
           return (
             <div key={release.instance_id} className={styles.releaseCard}>
@@ -66,9 +87,90 @@ export function OnThisDay() {
                 />
               </div>
               <div className={styles.releaseInfo}>
-                <div className={styles.releaseTitle}>{title}</div>
-                <div className={styles.releaseArtist}>{artistNames}</div>
+                <div className={styles.releaseTitle}>
+                  {releaseUrl ? (
+                    <a
+                      href={releaseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        trackEvent("releaseClicked", {
+                          action: "releaseClicked",
+                          category: ANALYTICS_CATEGORY,
+                          label: "Release Clicked (onThisDay)",
+                          value: resource_url,
+                        });
+                      }}
+                    >
+                      {title}
+                    </a>
+                  ) : (
+                    title
+                  )}
+                </div>
+                <div className={styles.releaseArtist}>
+                  {artists.map((artist, index) => {
+                    const artistUrl = getResourceUrl({
+                      resourceUrl: artist.resource_url,
+                      type: "artist",
+                    });
+
+                    return (
+                      <span key={`${artist.id ?? artist.name}-${index}`}>
+                        {artistUrl ? (
+                          <a
+                            href={artistUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => {
+                              trackEvent("artistClicked", {
+                                action: "artistClicked",
+                                category: ANALYTICS_CATEGORY,
+                                label: "Artist Clicked (onThisDay)",
+                                value: artist.resource_url || "",
+                              });
+                            }}
+                          >
+                            {artist.name}
+                          </a>
+                        ) : (
+                          artist.name
+                        )}
+                        {index < artists.length - 1 && ", "}
+                      </span>
+                    );
+                  })}
+                </div>
                 <div className={styles.releaseMeta}>
+                  {primaryLabel && (
+                    <>
+                      {labelUrl ? (
+                        <a
+                          href={labelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.labelLink}
+                          onClick={() => {
+                            trackEvent("labelClicked", {
+                              action: "labelClicked",
+                              category: ANALYTICS_CATEGORY,
+                              label: "Label Clicked (onThisDay)",
+                              value: primaryLabel.resource_url || "",
+                            });
+                          }}
+                        >
+                          {primaryLabel.name}
+                        </a>
+                      ) : (
+                        <span>{primaryLabel.name}</span>
+                      )}
+                      {year > 0 && (
+                        <span className={styles.metaSeparator} aria-hidden>
+                          ·
+                        </span>
+                      )}
+                    </>
+                  )}
                   {year > 0 && <span className={styles.year}>{year}</span>}
                   <span className={styles.yearAdded}>Added in {yearAdded}</span>
                 </div>
