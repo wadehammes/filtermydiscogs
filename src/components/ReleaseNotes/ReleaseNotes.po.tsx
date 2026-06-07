@@ -7,9 +7,9 @@ import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/Disc
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
-  setupAuthenticatedAuthServiceMocks,
-  setupDefaultAuthServiceMocks,
-} from "src/tests/mocks/setupAuthServiceMocks";
+  testAuthenticatedAuthState,
+  testUnauthenticatedAuthState,
+} from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
@@ -17,13 +17,13 @@ import { ReleaseNotes } from "./ReleaseNotes.component";
 import { ReleaseNotesEditorProvider } from "./ReleaseNotesEditor.context";
 
 jest.mock("src/api/helpers");
-jest.mock("src/services/auth.service");
 
 const mockApi = jest.mocked(apiHelpers);
 
 export type ReleaseNotesRenderProps = {
   release?: DiscogsRelease;
   variant?: "inline" | "displayOnly";
+  authenticated?: boolean;
 };
 
 export class ReleaseNotesPageObject extends BasePageObject {
@@ -36,7 +36,6 @@ export class ReleaseNotesPageObject extends BasePageObject {
 
   setupMocks() {
     jest.clearAllMocks();
-    setupAuthenticatedAuthServiceMocks();
 
     mockApiResponse(
       true,
@@ -63,11 +62,14 @@ export class ReleaseNotesPageObject extends BasePageObject {
     return notes;
   }
 
-  mockEditingUnavailable() {
-    setupDefaultAuthServiceMocks();
-  }
-
-  renderReleaseNotes(overrides: ReleaseNotesRenderProps = {}): RenderResult {
-    return render(this.releaseNotesElement(overrides));
+  renderReleaseNotes({
+    authenticated = true,
+    ...overrides
+  }: ReleaseNotesRenderProps = {}): RenderResult {
+    return render(this.releaseNotesElement(overrides), {
+      authInitialState: authenticated
+        ? testAuthenticatedAuthState
+        : testUnauthenticatedAuthState,
+    });
   }
 }

@@ -68,8 +68,6 @@ jest.mock("next/image", () => ({
 }));
 
 const originalWarn = console.warn;
-const originalError = console.error;
-
 console.warn = (...args: unknown[]) => {
   const msg = typeof args[0] === "string" ? args[0] : "";
   if (
@@ -80,14 +78,6 @@ console.warn = (...args: unknown[]) => {
     return;
   }
   originalWarn.apply(console, args);
-};
-
-console.error = (...args: unknown[]) => {
-  const msg = args.map((arg) => (typeof arg === "string" ? arg : "")).join(" ");
-  if (msg.includes("not wrapped in act")) {
-    return;
-  }
-  originalError.apply(console, args);
 };
 
 beforeAll(() => {

@@ -3,16 +3,39 @@ import {
   render as rtlRender,
 } from "@testing-library/react";
 import type { ComponentType, ReactElement, ReactNode } from "react";
-import { TestProviders } from "src/tests/utils/testProviders";
+import {
+  TestProviders,
+  type TestProvidersProps,
+} from "src/tests/utils/testProviders";
 
-interface CustomRenderOptions extends Omit<RenderOptions, "queries"> {
+interface CustomRenderOptions
+  extends Omit<RenderOptions, "queries">,
+    Pick<TestProvidersProps, "authInitialState" | "skipInitialAuthCheck"> {
   wrapper?: ComponentType<{ children: ReactNode }>;
 }
 
 const render = (ui: ReactElement, options?: CustomRenderOptions) => {
-  const { wrapper: Wrapper = TestProviders, ...renderOptions } = options ?? {};
+  const {
+    wrapper: Wrapper,
+    authInitialState,
+    skipInitialAuthCheck,
+    ...renderOptions
+  } = options ?? {};
 
-  return rtlRender(ui, { wrapper: Wrapper, ...renderOptions });
+  const ResolvedWrapper =
+    Wrapper ??
+    (({ children }: { children: ReactNode }) => (
+      <TestProviders
+        {...(authInitialState !== undefined ? { authInitialState } : {})}
+        {...(skipInitialAuthCheck !== undefined
+          ? { skipInitialAuthCheck }
+          : {})}
+      >
+        {children}
+      </TestProviders>
+    ));
+
+  return rtlRender(ui, { wrapper: ResolvedWrapper, ...renderOptions });
 };
 
 export * from "@testing-library/react";
