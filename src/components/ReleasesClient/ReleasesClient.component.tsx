@@ -1,7 +1,8 @@
 "use client";
 
 import classNames from "classnames";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { Page } from "src/components/Page/Page.component";
@@ -18,6 +19,7 @@ import { ReleasesHeader } from "./components/ReleasesHeader.component";
 import styles from "./ReleasesClient.module.css";
 
 export default function ReleasesClient() {
+  const router = useRouter();
   const { state: authState } = useAuth();
   const {
     isDrawerOpen,
@@ -70,8 +72,18 @@ export default function ReleasesClient() {
       }
     : undefined;
 
-  if (!(authState.isAuthenticated || authState.isLoading)) {
-    redirect("/");
+  const shouldRedirectHome = !(
+    authState.isAuthenticated || authState.isLoading
+  );
+
+  useEffect(() => {
+    if (shouldRedirectHome) {
+      router.replace("/");
+    }
+  }, [shouldRedirectHome, router]);
+
+  if (shouldRedirectHome) {
+    return null;
   }
 
   if (authLoading || isLoading) {

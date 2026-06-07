@@ -1,24 +1,44 @@
 import type { NextConfig } from "next";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 // https://securityheaders.com
-const scriptSrc = [
-  "'self'",
-  "'unsafe-eval'",
-  "'unsafe-inline'",
-  "polyfill.io",
-  "*.googletagmanager.com",
-];
+const scriptSrc = isProduction
+  ? ["'self'", "'unsafe-inline'", "*.googletagmanager.com", "*.google.com"]
+  : [
+      "'self'",
+      "'unsafe-eval'",
+      "'unsafe-inline'",
+      "polyfill.io",
+      "*.googletagmanager.com",
+    ];
+
+const connectSrc = isProduction
+  ? [
+      "'self'",
+      "*.googletagmanager.com",
+      "*.google-analytics.com",
+      "*.analytics.google.com",
+      "*.google.com",
+      "https://www.discogs.com",
+      "https://api.discogs.com",
+    ]
+  : ["*"];
+
+const frameSrc = isProduction
+  ? ["'self'", "*.youtube.com", "*.google.com", "*.googletagmanager.com"]
+  : ["*"];
 
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src ${scriptSrc.join(" ")};
   child-src *.youtube.com *.google.com;
   style-src 'self' 'unsafe-inline' *.googleapis.com *.google.com *.googletagmanager.com;
-  img-src * blob: data: i.discogs.com;
-  object-src * blob: data:;
+  img-src 'self' blob: data: https://i.discogs.com https://img.discogs.com https://placehold.co;
+  object-src 'none';
   media-src 'self';
-  connect-src *;
-  frame-src * 'self' blob: data:;
+  connect-src ${connectSrc.join(" ")};
+  frame-src ${frameSrc.join(" ")};
   font-src 'self' data: fonts.gstatic.com;
   worker-src 'self' *.vercel.app;
   manifest-src 'self' *.vercel.app;
@@ -64,7 +84,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
   poweredByHeader: false,
   compress: true,
   // Faker 10+ is ESM-only; Next’s Jest SWC pipeline must transpile it (see next/dist/build/jest/jest.js).
@@ -76,7 +96,6 @@ const nextConfig: NextConfig = {
   },
   env: {
     DISCOGS_CONSUMER_KEY: process.env.DISCOGS_CONSUMER_KEY,
-    DISCOGS_CONSUMER_SECRET: process.env.DISCOGS_CONSUMER_SECRET,
     DISCOGS_CALLBACK_URL:
       process.env.DISCOGS_CALLBACK_URL ||
       "http://localhost:6767/api/auth/callback",

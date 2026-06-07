@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getVerifiedUserFromRequest } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(
@@ -21,6 +22,11 @@ export async function GET(
         { error: "Invalid release ID format" },
         { status: 400 },
       );
+    }
+
+    const verified = await getVerifiedUserFromRequest(request);
+    if ("error" in verified) {
+      return verified.error;
     }
 
     const accessToken = request.cookies.get("discogs_access_token")?.value;

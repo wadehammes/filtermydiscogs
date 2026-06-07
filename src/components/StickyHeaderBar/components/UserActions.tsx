@@ -28,7 +28,7 @@ export const UserActions = ({
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const syncMutation = useSyncCratesMutation();
+  const syncMutation = useSyncCratesMutation(authState.userId);
   const {
     data: collectionData,
     hasNextPage,

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getVerifiedUserFromRequest } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 const VALID_SEARCH_TYPES = ["release", "master", "artist", "label"] as const;
@@ -100,6 +101,11 @@ export async function GET(request: NextRequest) {
         },
         { status: 400 },
       );
+    }
+
+    const verified = await getVerifiedUserFromRequest(request);
+    if ("error" in verified) {
+      return verified.error;
     }
 
     const accessToken = request.cookies.get("discogs_access_token")?.value;

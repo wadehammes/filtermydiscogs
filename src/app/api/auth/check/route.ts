@@ -1,28 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getVerifiedUserFromRequest } from "src/lib/auth-request";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get auth cookies
-    const accessToken = request.cookies.get("discogs_access_token")?.value;
-    const accessTokenSecret = request.cookies.get(
-      "discogs_access_token_secret",
-    )?.value;
-    const username = request.cookies.get("discogs_username")?.value;
-    const userId = request.cookies.get("discogs_user_id")?.value;
+    const verified = await getVerifiedUserFromRequest(request);
 
-    // Check if we have all required auth data
-    const isAuthenticated = !!(
-      accessToken &&
-      accessTokenSecret &&
-      username &&
-      userId
-    );
+    if ("error" in verified) {
+      return NextResponse.json(
+        {
+          isAuthenticated: false,
+          username: null,
+          userId: null,
+        },
+        {
+          headers: {
+            "Cache-Control": "private, no-cache, no-store, must-revalidate",
+          },
+        },
+      );
+    }
 
     return NextResponse.json(
       {
-        isAuthenticated,
-        username: isAuthenticated ? username : null,
-        userId: isAuthenticated ? userId : null,
+        isAuthenticated: true,
+        username: verified.user.username,
+        userId: String(verified.user.userId),
       },
       {
         headers: {

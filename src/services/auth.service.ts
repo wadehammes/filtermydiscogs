@@ -12,20 +12,12 @@ export const getUsernameFromCookies = (): string | null => {
   return Cookies.get("discogs_username") || null;
 };
 
-export const getUserIdFromCookies = (): string | null => {
-  if (typeof document === "undefined") return null;
-  return Cookies.get("discogs_user_id") || null;
-};
-
 export const clearAuthCookies = (): void => {
   if (typeof document === "undefined") return;
 
-  // Clear session state (username, user_id) and temporary OAuth tokens
-  // Note: discogs_access_token and discogs_access_token_secret are httpOnly cookies
-  // and cannot be cleared from client-side JavaScript. They are preserved on logout
-  // so users can log back in without re-authorization.
+  // Clear display/session cookies readable by client JS.
+  // httpOnly cookies (discogs_user_id, OAuth tokens) are cleared by API routes.
   Cookies.remove("discogs_username");
-  Cookies.remove("discogs_user_id");
   Cookies.remove("oauth_token");
   Cookies.remove("oauth_token_secret");
 };

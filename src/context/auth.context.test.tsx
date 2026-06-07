@@ -132,15 +132,14 @@ describe("AuthProvider", () => {
 
   it("handles successful auth from URL params", async () => {
     mockCheckAuthStatus.mockResolvedValue({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
+      isAuthenticated: true,
+      username: "testuser",
+      userId: "123",
     });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: "success",
       errorStatus: null,
     });
-    mockGetUsernameFromCookies.mockReturnValue("testuser");
 
     const { result } = renderAuthHook();
 
@@ -149,6 +148,7 @@ describe("AuthProvider", () => {
     });
 
     expect(result.current.state.username).toBe("testuser");
+    expect(result.current.state.userId).toBe("123");
     expect(result.current.state.isLoading).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({

@@ -4,7 +4,6 @@ import {
   checkAuthStatus,
   clearAuthCookies,
   clearUrlParams,
-  getUserIdFromCookies,
   getUsernameFromCookies,
   parseAuthUrlParams,
 } from "src/services/auth.service";
@@ -17,6 +16,7 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { useMediaQuery } from "usehooks-ts";
 import { useCrate } from "./crate.context";
@@ -26,7 +26,6 @@ jest.mock("src/services/auth.service");
 
 const mockApi = jest.mocked(apiHelpers);
 const mockUseMediaQuery = jest.mocked(useMediaQuery);
-const mockGetUserIdFromCookies = jest.mocked(getUserIdFromCookies);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -41,7 +40,6 @@ describe("CrateProvider", () => {
     localStorage.clear();
     mockUseMediaQuery.mockReturnValue(false);
 
-    mockGetUserIdFromCookies.mockReturnValue("123");
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue({
       isAuthenticated: true,
@@ -110,7 +108,11 @@ describe("CrateProvider", () => {
 
   it("provides initial state", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -134,7 +136,11 @@ describe("CrateProvider", () => {
     );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -157,7 +163,11 @@ describe("CrateProvider", () => {
     );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -169,7 +179,11 @@ describe("CrateProvider", () => {
 
   it("selects crate", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -188,7 +202,11 @@ describe("CrateProvider", () => {
 
   it("toggles drawer", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -217,7 +235,11 @@ describe("CrateProvider", () => {
 
   it("opens and closes drawer", async () => {
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -262,7 +284,11 @@ describe("CrateProvider", () => {
     );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -299,7 +325,11 @@ describe("CrateProvider", () => {
     );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {
@@ -335,7 +365,11 @@ describe("CrateProvider", () => {
     );
 
     const { result } = renderHook(() => useCrate(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
     });
 
     await waitFor(() => {

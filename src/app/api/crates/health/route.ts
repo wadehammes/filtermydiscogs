@@ -1,13 +1,23 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { verifyAdminUser } from "src/lib/admin-helpers";
 import { getPoolMetrics, prisma } from "src/lib/db";
 import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
 
 /**
- * Health check endpoint for debugging production issues
- * Includes performance metrics and monitoring data
+ * Admin-only health check for debugging production issues.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const accessToken = request.cookies.get("discogs_access_token")?.value;
+  const accessTokenSecret = request.cookies.get(
+    "discogs_access_token_secret",
+  )?.value;
+  const isAdmin = await verifyAdminUser(accessToken, accessTokenSecret);
+
+  if (!isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const diagnostics: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
@@ -17,7 +27,6 @@ export async function GET() {
 
   try {
     const startTime = Date.now();
-    // Test a simple query (connection pool handles connections automatically)
     const result = await prisma.$queryRaw`SELECT 1 as test`;
     const queryDuration = Date.now() - startTime;
 
@@ -26,7 +35,6 @@ export async function GET() {
     diagnostics.testQueryResult = result;
     diagnostics.queryDuration = `${queryDuration}ms`;
 
-    // Test if we can query crates table
     try {
       const crateCount = await prisma.crate.count();
       diagnostics.crateTableAccessible = true;
@@ -37,17 +45,13 @@ export async function GET() {
         error instanceof Error ? error.message : String(error);
     }
 
-    // Add connection pool metrics
     const poolMetrics = getPoolMetrics();
     if (poolMetrics) {
       diagnostics.poolMetrics = poolMetrics;
     }
 
-    // Add query performance statistics
-    const queryStats = getQueryStats();
-    diagnostics.queryStats = queryStats;
+    diagnostics.queryStats = getQueryStats();
 
-    // Add query patterns (only in development or if explicitly enabled)
     if (
       process.env.NODE_ENV === "development" ||
       process.env.DB_ENABLE_DIAGNOSTICS === "true"
@@ -57,7 +61,6 @@ export async function GET() {
     }
   } catch (error) {
     diagnostics.prismaClientStatus = "error";
-    // Sanitize error to prevent information leakage
     const errorMessage = error instanceof Error ? error.message : String(error);
     diagnostics.error = errorMessage
       .replace(/DATABASE_URL[^;]*/gi, "DATABASE_URL=***")

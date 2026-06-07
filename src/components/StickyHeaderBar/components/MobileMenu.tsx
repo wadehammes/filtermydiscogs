@@ -43,7 +43,10 @@ export const MobileMenu = ({
   const { username, isAuthenticated } = authState;
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
-  const syncMutation = useSyncCratesMutation();
+  const syncMutation = useSyncCratesMutation(authState.userId);
+  const filtersDispatch = useFiltersDispatch();
+  const viewDispatch = useViewDispatch();
+  const isRandomMode = useIsRandomMode();
   const {
     data: collectionData,
     hasNextPage,
@@ -147,10 +150,6 @@ export const MobileMenu = ({
       value: "mobile",
     });
   };
-
-  const filtersDispatch = useFiltersDispatch();
-  const viewDispatch = useViewDispatch();
-  const isRandomMode = useIsRandomMode();
 
   const handleRandomModeToggle = () => {
     const newIsRandomMode = !isRandomMode;

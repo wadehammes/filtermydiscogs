@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPaginationParams, sanitizeError } from "src/lib/api-helpers";
+import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
 import { prisma } from "src/lib/db";
 import type { DiscogsRelease } from "src/types";
 
@@ -40,17 +41,13 @@ export async function GET(
       );
     }
 
-    // If username is missing, try to get it from request cookies (if viewing own crate)
-    // This helps backfill username for existing crates
-    const viewerUsername = request.cookies.get("discogs_username")?.value;
-    const viewerUserId = request.cookies.get("discogs_user_id")?.value;
-    const isOwner =
-      viewerUserId && parseInt(viewerUserId, 10) === crate.user_id;
+    // If username is missing, backfill when the verified owner is viewing their crate.
+    const viewer = await getOptionalVerifiedUserFromRequest(request);
+    const isOwner = viewer?.userId === crate.user_id;
 
     let finalUsername = crate.username;
 
-    if (!finalUsername && isOwner && viewerUsername) {
-      // Update the crate with username for future requests
+    if (!finalUsername && isOwner && viewer?.username) {
       await prisma.crate.update({
         where: {
           user_id_id: {
@@ -59,15 +56,20 @@ export async function GET(
           },
         },
         data: {
-          username: viewerUsername,
+          username: viewer.username,
         },
       });
-      finalUsername = viewerUsername;
+      finalUsername = viewer.username;
     }
 
     const crateWithUsername = {
-      ...crate,
+      id: crate.id,
+      name: crate.name,
       username: finalUsername,
+      is_default: crate.is_default,
+      private: crate.private,
+      created_at: crate.created_at,
+      updated_at: crate.updated_at,
     };
 
     // Get total count for pagination
