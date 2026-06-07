@@ -1,36 +1,48 @@
 import styles from "./Skeleton.module.css";
 
+const HORIZONTAL_BAR_WIDTHS = [92, 78, 65, 54, 48, 40, 34, 28];
+
 export function SkeletonCard() {
   return (
     <div className={styles.skeletonCard}>
-      <div className={styles.skeletonText} style={{ width: "40%" }} />
-      <div
-        className={styles.skeletonText}
-        style={{ width: "70%", height: "2em" }}
-      />
-      <div className={styles.skeletonText} style={{ width: "30%" }} />
+      <div className={`${styles.skeletonText} ${styles.skeletonTextSm}`} />
+      <div className={`${styles.skeletonText} ${styles.skeletonTextMd}`} />
+      <div className={`${styles.skeletonText} ${styles.skeletonTextLg}`} />
     </div>
   );
 }
 
-export function SkeletonChart() {
+export function SkeletonGrowthChart() {
   return (
     <div className={styles.skeletonChart}>
       <div className={styles.skeletonTitle} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-2)",
-          marginTop: "var(--space-4)",
-        }}
-      >
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className={styles.skeletonBar}
-            style={{ width: `${60 + i * 5}%` }}
-          />
+      <div className={styles.skeletonChartBody} />
+    </div>
+  );
+}
+
+export function SkeletonBarChart() {
+  return (
+    <div className={styles.skeletonChart}>
+      <div className={styles.skeletonTitle} />
+      <div className={styles.skeletonChartBody} />
+    </div>
+  );
+}
+
+export function SkeletonHorizontalBarChart() {
+  return (
+    <div className={styles.skeletonChart}>
+      <div className={styles.skeletonTitle} />
+      <div className={styles.skeletonHorizontalBars}>
+        {HORIZONTAL_BAR_WIDTHS.map((width) => (
+          <div className={styles.skeletonHorizontalBarRow} key={width}>
+            <div className={styles.skeletonHorizontalBarLabel} />
+            <div
+              className={styles.skeletonHorizontalBar}
+              style={{ width: `${width}%` }}
+            />
+          </div>
         ))}
       </div>
     </div>
@@ -41,17 +53,11 @@ export function SkeletonPieChart() {
   return (
     <div className={styles.skeletonChart}>
       <div className={styles.skeletonTitle} />
-      <div className={styles.skeletonPie}>
+      <div className={styles.skeletonPieBody}>
         <div className={styles.skeletonCircle} />
-        <div
-          style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}
-        >
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className={styles.skeletonText}
-              style={{ width: "60px", height: "16px" }}
-            />
+        <div className={styles.skeletonLegend}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div className={styles.skeletonLegendItem} key={index} />
           ))}
         </div>
       </div>
@@ -64,8 +70,8 @@ export function SkeletonList({ count = 3 }: { count?: number }) {
     <div className={styles.skeletonChart}>
       <div className={styles.skeletonTitle} />
       <div className={styles.skeletonList}>
-        {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className={styles.skeletonListItem} />
+        {Array.from({ length: count }).map((_, index) => (
+          <div className={styles.skeletonListItem} key={index} />
         ))}
       </div>
     </div>

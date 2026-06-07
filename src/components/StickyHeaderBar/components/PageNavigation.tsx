@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import Link from "next/link";
 import { trackEvent } from "src/analytics/analytics";
-import About from "src/styles/icons/about.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
@@ -100,20 +99,6 @@ export const PageNavigation = ({
           <span>Mosaic</span>
         </Link>
       )}
-
-      <Link
-        href="/about"
-        className={classNames(styles.navItem, {
-          [styles.active as string]: currentPage === "about",
-        })}
-        onClick={(e) => handleNavigation(e, "About")}
-        aria-label="View about"
-      >
-        <span className={styles.icon}>
-          <About />
-        </span>
-        <span>About</span>
-      </Link>
     </nav>
   );
 };

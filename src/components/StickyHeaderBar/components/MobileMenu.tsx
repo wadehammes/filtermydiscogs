@@ -174,6 +174,16 @@ export const MobileMenu = ({
     });
   };
 
+  const handleAboutClick = () => {
+    setIsOpen(false);
+    trackEvent("pageNavigation", {
+      action: "pageNavigation",
+      category: "navigation",
+      label: "Navigate to About",
+      value: "about",
+    });
+  };
+
   const hasValidCollection =
     !(fetchingCollection || error) && Boolean(collection);
   const shouldShowFilters = showFilters && hasValidCollection;
@@ -203,6 +213,7 @@ export const MobileMenu = ({
             isCollectionLoading={isCollectionLoading}
             onSyncClick={handleSyncClick}
             onLogout={handleLogout}
+            onAboutClick={handleAboutClick}
           />
         }
       >

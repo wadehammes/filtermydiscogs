@@ -1,5 +1,6 @@
 import { formatFactory } from "src/tests/factories/Format.factory";
 import {
+  getFormatSubtypeTags,
   getFormatTagsFromFormat,
   getReleaseFormatTags,
   releaseMatchesFormatFilters,
@@ -7,13 +8,22 @@ import {
 } from "./formatFilterTags";
 
 describe("formatFilterTags", () => {
-  it("includes format name and physical size descriptions", () => {
-    const format = formatFactory.build({
+  it("returns only filterable subtype descriptions", () => {
+    const format = {
       name: "Vinyl",
       descriptions: ["LP", '12"', "Album", "Stereo"],
-    });
+    };
 
-    expect(getFormatTagsFromFormat(format)).toEqual(["Vinyl", "LP", '12"']);
+    expect(getFormatSubtypeTags(format)).toEqual(['12"', "LP"]);
+  });
+
+  it("includes format name and physical size descriptions", () => {
+    const format = {
+      name: "Vinyl",
+      descriptions: ["LP", '12"', "Album", "Stereo"],
+    };
+
+    expect(getFormatTagsFromFormat(format)).toEqual(["Vinyl", '12"', "LP"]);
   });
 
   it("includes cassette and cd names", () => {

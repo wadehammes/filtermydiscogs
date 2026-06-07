@@ -5,11 +5,13 @@ import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type {
   CollectionStats,
   CollectionValue,
+  FormatMixSummary,
 } from "src/types/dashboard.types";
 import styles from "./StatsCards.module.css";
 
 interface StatsCardsProps {
   stats: CollectionStats;
+  formatMix: FormatMixSummary | null;
   collectionValue: CollectionValue | undefined;
   isLoadingValue: boolean;
   valueError: Error | null;
@@ -17,6 +19,7 @@ interface StatsCardsProps {
 
 export function StatsCards({
   stats,
+  formatMix,
   collectionValue,
   isLoadingValue,
   valueError,
@@ -173,6 +176,25 @@ export function StatsCards({
         </div>
         {stats.averageRating > 0 && (
           <div className={styles.statSubtext}>out of 5</div>
+        )}
+      </div>
+
+      <div className={styles.statCard}>
+        <div className={styles.statLabel}>Format Mix</div>
+        <div className={styles.statValue}>
+          {formatMix ? `${formatMix.topMediaTypePercent}%` : "—"}
+        </div>
+        {formatMix && (
+          <>
+            <div className={styles.statSubtext}>{formatMix.topMediaType}</div>
+            {formatMix.topTags.length > 0 && (
+              <div className={styles.statSubtext}>
+                {formatMix.topTags
+                  .map((tag) => `${formatNumber(tag.count)} ${tag.label}`)
+                  .join(" · ")}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

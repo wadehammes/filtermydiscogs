@@ -26,20 +26,17 @@ describe("ReleaseCard", () => {
       screen.getByRole("link", { name: /Test Label/ }),
     ).toBeInTheDocument();
     const titleElement = screen.getByRole("heading", { level: 3 });
-    expect(titleElement.textContent).toBe("Test Artist - Test Album");
+    expect(titleElement.textContent).toBe("Test Album");
     expect(screen.getByText("2020")).toBeInTheDocument();
   });
 
-  it("displays date added when available", () => {
+  it("does not display date added on the card", () => {
     po.renderReleaseCard({
       release: releaseFactory.withDateAdded("2023-01-15T00:00:00Z"),
     });
 
-    expect(screen.getByText(/Added/)).toBeInTheDocument();
-    expect(screen.getByRole("time")).toHaveAttribute(
-      "datetime",
-      "2023-01-15T00:00:00Z",
-    );
+    expect(screen.queryByText(/Added/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("time")).not.toBeInTheDocument();
   });
 
   it("displays style pills", () => {

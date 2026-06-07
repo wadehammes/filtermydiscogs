@@ -2,9 +2,9 @@
 .pill {
   border-radius: var(--radius-full);
   cursor: pointer;
-  font-size: 0.65rem;
+  font-size: var(--text-xxs);
   font-weight: var(--font-medium);
-  padding: 0.2rem var(--space-2) 0.2rem;
+  padding: 0.125rem 0.5rem 0.2rem;
   transition:
     background-color var(--transition-normal),
     border-color var(--transition-normal),
@@ -67,6 +67,6 @@
 .pillsContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1);
   align-items: center;
 }

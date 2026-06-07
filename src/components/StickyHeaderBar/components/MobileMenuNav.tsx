@@ -1,6 +1,5 @@
 import classNames from "classnames";
 import Link from "next/link";
-import About from "src/styles/icons/about.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
@@ -78,19 +77,6 @@ export function MobileMenuNav({
           <span>Mosaic</span>
         </Link>
       )}
-
-      <Link
-        href="/about"
-        className={classNames(styles.menuItem, {
-          [styles.active as string]: currentPage === "about",
-        })}
-        onClick={(e) => onNavigation(e, "About")}
-      >
-        <span className={styles.menuIcon}>
-          <About />
-        </span>
-        <span>About</span>
-      </Link>
     </nav>
   );
 }

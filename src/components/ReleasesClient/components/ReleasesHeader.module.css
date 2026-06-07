@@ -1,21 +1,21 @@
 .releasesHeader {
   align-items: center;
+  backdrop-filter: blur(10px);
+  background: oklch(18.22% 0 0deg / 50%);
   display: flex;
   justify-content: space-between;
   margin-bottom: var(--space-4);
   padding: var(--space-4);
   position: sticky;
-  top: 56px;
-  z-index: 100;
-  background: oklch(18.22% 0 0deg / 50%);
-  backdrop-filter: blur(10px);
+  top: var(--sticky-header-height);
+  z-index: calc(var(--z-2-sticky) - 10);
 
-  @media (width >= 1024px) {
-    top: 105px;
+  [data-theme="light"] & {
+    background: oklch(100% 0 0deg / 50%);
   }
 
-  @media (width >= 1440px) {
-    top: 118px;
+  @media (width >= 1024px) {
+    top: var(--sticky-header-total-height);
   }
 
   .headerText {

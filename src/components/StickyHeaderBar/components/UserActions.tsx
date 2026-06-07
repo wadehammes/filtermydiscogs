@@ -77,6 +77,16 @@ export const UserActions = ({
     });
   };
 
+  const handleAboutClick = () => {
+    setIsDropdownOpen(false);
+    trackEvent("pageNavigation", {
+      action: "pageNavigation",
+      category: "navigation",
+      label: "Navigate to About",
+      value: "about",
+    });
+  };
+
   const handleSyncClick = () => {
     setIsDropdownOpen(false);
     setShowSyncDialog(true);
@@ -170,6 +180,15 @@ export const UserActions = ({
           </button>
           {isDropdownOpen && (
             <div className={styles.dropdown}>
+              <div className={styles.dropdownItem}>
+                <Link
+                  href="/about"
+                  className={styles.dropdownLink}
+                  onClick={handleAboutClick}
+                >
+                  About
+                </Link>
+              </div>
               <div className={styles.dropdownItem}>
                 <ThemeSwitcher variant="desktop" />
               </div>

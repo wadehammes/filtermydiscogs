@@ -34,7 +34,6 @@ export const StickyHeaderBar = ({
         <div className={styles.headerContent}>
           <HeaderTitle />
 
-          {/* Desktop navigation */}
           <div className={styles.desktopNav}>
             <PageNavigation
               currentPage={currentPage}
@@ -45,7 +44,6 @@ export const StickyHeaderBar = ({
             />
           </div>
 
-          {/* Mobile menu */}
           <div className={styles.mobileMenu}>
             <MobileMenu
               currentPage={currentPage}
@@ -57,7 +55,6 @@ export const StickyHeaderBar = ({
             />
           </div>
 
-          {/* Desktop user section */}
           <UserActions
             variant="desktop"
             showMosaic={false}
@@ -66,7 +63,6 @@ export const StickyHeaderBar = ({
         </div>
       </div>
 
-      {/* Filters bar */}
       {shouldShowFilters && (
         <FiltersBar category={filterCategory} disabled={!collection} />
       )}

@@ -97,6 +97,28 @@
   }
 }
 
+.dropdownLink {
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  width: 100%;
+
+  &:hover {
+    background: var(--muted);
+    color: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
 .mosaicLink {
   align-items: center;
   background: var(--card);

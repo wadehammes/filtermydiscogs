@@ -122,6 +122,7 @@ export default function DashboardClient() {
           <div className={styles.content}>
             <StatsCards
               stats={analytics.stats}
+              formatMix={analytics.formatMix}
               collectionValue={collectionValue}
               isLoadingValue={valueLoading}
               valueError={valueError}
@@ -135,7 +136,11 @@ export default function DashboardClient() {
               <DistributionCharts
                 styleDistribution={analytics.styleDistribution}
                 decadeDistribution={analytics.decadeDistribution}
-                formatDistribution={analytics.formatDistribution}
+                mediaTypeDistribution={analytics.mediaTypeDistribution}
+                formatTagDistribution={analytics.formatTagDistribution}
+                mediaFormatSubtypeBreakdown={
+                  analytics.mediaFormatSubtypeBreakdown ?? []
+                }
               />
             </div>
 

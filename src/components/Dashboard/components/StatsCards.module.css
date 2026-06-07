@@ -9,7 +9,7 @@
   }
 
   @media (width >= 1024px) {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   }
 }
 
