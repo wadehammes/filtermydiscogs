@@ -25,6 +25,7 @@ interface ReleasesGridProps {
   isRandomMode: boolean;
   onExitRandomMode: () => void;
   onRandomClick?: () => void;
+  onReleaseClick: (instanceId: string) => void;
   randomRelease?: DiscogsRelease | null;
 }
 
@@ -35,11 +36,12 @@ const ReleasesGridComponent = ({
   isRandomMode,
   onExitRandomMode,
   onRandomClick,
+  onReleaseClick,
   randomRelease,
 }: ReleasesGridProps) => {
   const isActuallyRandomMode = isRandomMode && view === "random";
-  const isCardView = view === "card" || isMobile || isActuallyRandomMode;
-  const isListView = view === "list" && !isMobile && !isActuallyRandomMode;
+  const isCardView = view === "card" || isActuallyRandomMode;
+  const isListView = view === "list" && !isActuallyRandomMode;
 
   const releasesToShow = isActuallyRandomMode
     ? randomRelease
@@ -80,9 +82,9 @@ const ReleasesGridComponent = ({
     return (
       <ReleasesTable
         releases={releasesToShow}
-        isMobile={isMobile}
         isRandomMode={isRandomMode}
         onExitRandomMode={onExitRandomMode}
+        onReleaseClick={onReleaseClick}
       />
     );
   }
@@ -156,7 +158,8 @@ export const ReleasesGrid = memo(
       prevProps.isRandomMode === nextProps.isRandomMode &&
       prevProps.randomRelease === nextProps.randomRelease &&
       prevProps.onExitRandomMode === nextProps.onExitRandomMode &&
-      prevProps.onRandomClick === nextProps.onRandomClick
+      prevProps.onRandomClick === nextProps.onRandomClick &&
+      prevProps.onReleaseClick === nextProps.onReleaseClick
     );
   },
 );

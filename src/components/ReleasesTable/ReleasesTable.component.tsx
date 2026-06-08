@@ -11,33 +11,27 @@ import Image from "next/image";
 import type React from "react";
 import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
+import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrate } from "src/context/crate.context";
-import {
-  useSelectedFormats,
-  useSelectedStyles,
-} from "src/hooks/useFilterAtoms.hook";
+import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
-import { formatDate } from "src/utils/dateHelpers";
-import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleasesTable.module.css";
 
 interface ReleasesTableProps {
   releases: DiscogsRelease[];
-  isMobile: boolean;
   isRandomMode: boolean;
   onExitRandomMode: () => void;
+  onReleaseClick: (instanceId: string) => void;
 }
 
 const columnHelper = createColumnHelper<DiscogsRelease>();
 
 export const ReleasesTable = memo<ReleasesTableProps>(
-  ({ releases, isMobile, isRandomMode, onExitRandomMode }) => {
+  ({ releases, isRandomMode, onExitRandomMode, onReleaseClick }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
     const selectedStyles = useSelectedStyles();
-    const selectedFormats = useSelectedFormats();
 
     const handlePillClick = usePillClickHandler({
       category: "releasesTable",
@@ -54,6 +48,19 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         }
       },
       [isInCrate, addToCrate, removeFromCrate, openDrawer],
+    );
+
+    const handleImageClick = useCallback(
+      (release: DiscogsRelease) => {
+        trackEvent("releaseClicked", {
+          action: "releaseClicked",
+          category: "releasesTable",
+          label: "Release Image Clicked (Table View)",
+          value: release.basic_information.resource_url,
+        });
+        onReleaseClick(String(release.instance_id));
+      },
+      [onReleaseClick],
     );
 
     const columns = useMemo(
@@ -102,17 +109,12 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 <button
                   type="button"
                   className={styles.imageButton}
-                  title={`View ${title} on Discogs`}
+                  title={`View ${title}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Handle the click to open Discogs link
-                    const releaseId =
-                      release.basic_information.resource_url.split("/").pop() ||
-                      "";
-                    const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
-                    window.open(fallbackUri, "_blank", "noopener,noreferrer");
+                    handleImageClick(release);
                   }}
-                  aria-label={`View ${title} on Discogs`}
+                  aria-label={`View ${title}`}
                 >
                   <Image
                     src={thumbUrl}
@@ -137,20 +139,10 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             const release = row.original;
             const artists = release.basic_information.artists;
             const title = release.basic_information.title;
-            const releaseId =
-              release.basic_information.resource_url.split("/").pop() || "";
-            const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
-
             const handleTitleClick = (e: React.MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: "releasesTable",
-                label: "Release Clicked (Table View)",
-                value: release.basic_information.resource_url,
-              });
-              window.open(fallbackUri, "_blank", "noopener,noreferrer");
+              handleImageClick(release);
             };
 
             return (
@@ -194,7 +186,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   type="button"
                   onClick={handleTitleClick}
                   className={styles.titleLink}
-                  title="View release on Discogs"
+                  title="View release details"
                 >
                   {title}
                 </button>
@@ -253,21 +245,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           size: 120,
           enableSorting: false,
         }),
-        columnHelper.accessor("basic_information.labels", {
-          id: "catno",
-          header: "Catalog #",
-          cell: ({ getValue }) => {
-            const labels = getValue();
-            const catno = labels[0]?.catno;
-            return (
-              <div className={styles.catnoCell}>
-                {catno ? String(catno) : "—"}
-              </div>
-            );
-          },
-          size: 100,
-          enableSorting: false,
-        }),
         columnHelper.accessor("basic_information.year", {
           id: "year",
           header: "Release Year",
@@ -278,64 +255,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             );
           },
           size: 60,
-          enableSorting: false,
-        }),
-        columnHelper.accessor("date_added", {
-          id: "dateAdded",
-          header: "Date Added",
-          cell: ({ getValue }) => {
-            const dateString = getValue();
-            if (!dateString)
-              return <div className={styles.dateAddedCell}>—</div>;
-
-            const formattedDate = formatDate(dateString);
-            return (
-              <div className={styles.dateAddedCell}>{formattedDate || "—"}</div>
-            );
-          },
-          size: 120,
-          enableSorting: false,
-        }),
-        columnHelper.accessor("basic_information.formats", {
-          id: "formats",
-          header: "Format",
-          cell: ({ getValue }) => {
-            const releaseFormats = getValue();
-            if (!releaseFormats || releaseFormats.length === 0) return null;
-
-            const uniqueFormats = getReleaseFormatTags(releaseFormats);
-
-            return (
-              <div className={styles.formatsCell}>
-                {uniqueFormats.map((formatName) => (
-                  <button
-                    key={formatName}
-                    type="button"
-                    className={classNames(
-                      "pill",
-                      "pillFormat",
-                      styles.formatPill,
-                      {
-                        pillSelected: selectedFormats.includes(formatName),
-                      },
-                    )}
-                    onClick={(e) =>
-                      handlePillClick({
-                        event: e,
-                        value: formatName,
-                        type: "format",
-                        eventLabel: "Format Pill Clicked",
-                      })
-                    }
-                    aria-label={`Filter by ${formatName} format`}
-                  >
-                    {formatName}
-                  </button>
-                ))}
-              </div>
-            );
-          },
-          size: 120,
           enableSorting: false,
         }),
         columnHelper.accessor("basic_information.styles", {
@@ -378,12 +297,26 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           size: 150,
           enableSorting: false,
         }),
+        columnHelper.display({
+          id: "notes",
+          header: "Notes",
+          cell: ({ row }) => {
+            const release = row.original;
+            return (
+              <div className={styles.notesCell}>
+                <ReleaseNotes release={release} variant="table" />
+              </div>
+            );
+          },
+          size: 220,
+          enableSorting: false,
+        }),
       ],
       [
         selectedStyles,
-        selectedFormats,
         handlePillClick,
         handleCheckboxChange,
+        handleImageClick,
         isInCrate,
       ],
     );
@@ -415,23 +348,8 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       getCoreRowModel: getCoreRowModel(),
     });
 
-    if (isMobile) {
-      return (
-        <div className={styles.mobileContainer}>
-          {releases.map((release) => (
-            <MobileReleaseCard
-              key={release.instance_id}
-              release={release}
-              isRandomMode={isRandomMode}
-              onExitRandomMode={onExitRandomMode}
-            />
-          ))}
-        </div>
-      );
-    }
-
     return (
-      <div className={styles.tableWrapper}>
+      <div className={styles.tableWrapper} data-testid="fmdReleasesTable">
         <div className={styles.tableContainer}>
           <table key={tableKey} className={styles.table}>
             <thead className={styles.thead}>

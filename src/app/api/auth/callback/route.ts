@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { primeVerifiedIdentityCache } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(request: NextRequest) {
@@ -55,6 +56,15 @@ export async function GET(request: NextRequest) {
     const verifiedIdentity = await discogsOAuthService.getIdentity(
       accessTokens.oauth_token,
       accessTokens.oauth_token_secret,
+    );
+
+    primeVerifiedIdentityCache(
+      accessTokens.oauth_token,
+      accessTokens.oauth_token_secret,
+      {
+        userId: verifiedIdentity.id,
+        username: verifiedIdentity.username,
+      },
     );
 
     // Store access tokens securely

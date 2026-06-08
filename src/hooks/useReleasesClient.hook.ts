@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -120,20 +120,23 @@ export const useReleasesClient = () => {
     setVisibleCount(INITIAL_VISIBLE_RELEASES);
   }, [filteredReleases, isRandomMode]);
 
-  const handleReleaseClick = useCallback(
-    (instanceId: string) => {
-      // Find the release in all releases (not just filtered) so crate releases work even when filtered out
-      const release = allReleases.find(
-        (r) => String(r.instance_id) === instanceId,
-      );
+  const handleReleaseClick = useCallback((instanceId: string) => {
+    setSelectedReleaseId(instanceId);
+  }, []);
 
-      // If release found, open it in the modal
-      if (release) {
-        setSelectedReleaseId(instanceId);
-      }
-    },
-    [allReleases],
-  );
+  const selectedRelease = useMemo(() => {
+    if (!selectedReleaseId) {
+      return null;
+    }
+
+    return (
+      allReleases.find((r) => String(r.instance_id) === selectedReleaseId) ??
+      filteredReleases.find(
+        (r) => String(r.instance_id) === selectedReleaseId,
+      ) ??
+      null
+    );
+  }, [selectedReleaseId, allReleases, filteredReleases]);
 
   const handleCloseModal = useCallback(() => {
     setSelectedReleaseId(null);
@@ -222,10 +225,7 @@ export const useReleasesClient = () => {
     infiniteScrollRef: ref,
 
     selectedReleaseId,
-    selectedRelease: selectedReleaseId
-      ? allReleases.find((r) => String(r.instance_id) === selectedReleaseId) ||
-        null
-      : null,
+    selectedRelease,
 
     handleReleaseClick,
     handleCloseModal,

@@ -9,7 +9,7 @@ import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
 interface ReleaseNotesProps {
   release: DiscogsRelease;
-  variant?: "inline" | "displayOnly";
+  variant?: "inline" | "displayOnly" | "table";
   className?: string | undefined;
 }
 
@@ -68,6 +68,70 @@ const ReleaseNotesCardDisplay = ({
             </button>
           ) : null}
         </section>
+      </div>
+
+      <NoteEditDialog
+        isOpen={isDialogOpen}
+        release={release}
+        fields={fields}
+        isSaving={isSaving}
+        errorMessage={errorMessage}
+        onClose={closeDialog}
+        onSave={handleSave}
+      />
+    </>
+  );
+};
+
+const ReleaseNotesTable = ({ release }: { release: DiscogsRelease }) => {
+  const {
+    canEdit,
+    cardDisplayedNotes,
+    closeDialog,
+    errorMessage,
+    fields,
+    handleSave,
+    isDialogOpen,
+    isSaving,
+    openDialog,
+  } = useReleaseNotesEditor(release);
+
+  return (
+    <>
+      <div
+        className={classNames(styles.notes, styles.notesTable)}
+        data-testid="fmdReleaseNotes"
+      >
+        {cardDisplayedNotes.length > 0 ? (
+          cardDisplayedNotes.map((note) => (
+            <div
+              className={styles.noteRow}
+              key={`${release.instance_id}-${note.fieldId}`}
+            >
+              <p className={styles.noteContent}>{note.value}</p>
+            </div>
+          ))
+        ) : canEdit ? (
+          <button
+            type="button"
+            className={styles.addNotesLink}
+            onClick={openDialog}
+          >
+            Add notes
+          </button>
+        ) : (
+          <span className={styles.emptyNotes}>—</span>
+        )}
+
+        {canEdit && cardDisplayedNotes.length > 0 ? (
+          <button
+            type="button"
+            className={styles.editButton}
+            onClick={openDialog}
+          >
+            Edit
+          </button>
+        ) : null}
       </div>
 
       <NoteEditDialog
@@ -148,6 +212,10 @@ export const ReleaseNotes = ({
 }: ReleaseNotesProps) => {
   if (variant === "displayOnly") {
     return <ReleaseNotesCardDisplay release={release} className={className} />;
+  }
+
+  if (variant === "table") {
+    return <ReleaseNotesTable release={release} />;
   }
 
   return <ReleaseNotesInline release={release} />;

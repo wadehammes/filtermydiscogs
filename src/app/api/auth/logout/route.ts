@@ -1,6 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { clearVerifiedIdentityCache } from "src/lib/auth-request";
 
 export async function POST(request: NextRequest) {
+  const accessToken = request.cookies.get("discogs_access_token")?.value;
+  const accessTokenSecret = request.cookies.get(
+    "discogs_access_token_secret",
+  )?.value;
+
+  if (accessToken && accessTokenSecret) {
+    clearVerifiedIdentityCache(accessToken, accessTokenSecret);
+  }
+
   const response = NextResponse.json({ success: true });
 
   // Preserve OAuth tokens only when explicitly requested (shared-device convenience).

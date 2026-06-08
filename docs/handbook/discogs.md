@@ -84,6 +84,8 @@ All Discogs HTTP calls include a **`User-Agent`** identifying the app (required 
 
 Discogs may return **429** (rate limit) or **5xx** (upstream errors). Route handlers should return appropriate status codes and messages; clients surface errors via React Query / context error state.
 
+**OAuth identity lookups** (`getVerifiedUserFromRequest` in [`src/lib/auth-request.ts`](../../src/lib/auth-request.ts)) are cached in memory for a short TTL ([`src/lib/identity-cache.ts`](../../src/lib/identity-cache.ts)) so `/api/auth/check` and crate routes do not call `oauth/identity` on every request. Concurrent lookups for the same token pair share one in-flight request. On Discogs **429**, the server reuses a recently cached identity or, for `/api/auth/check` only, falls back to session cookies set at OAuth callback until the limit clears.
+
 If collection fetches fail after login, verify OAuth tokens (re-login), consumer app settings, and Discogs API status before assuming an app bug.
 
 ## Client-side collection access
@@ -112,7 +114,7 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 - **`folderId`**: **`getReleaseFolderId`** reads **`release.folder_id`**; defaults to **`0`** (All) when missing.
 - **`instanceId`**: collection item **`instance_id`**.
 
-**Editing scope (v1):** text and textarea field types only (**`isEditableCollectionField`**). Dropdown/boolean fields (e.g. Media/Sleeve Condition) may appear in list views but are hidden from release-card display via **`forCard: true`** / **`isCardDisplayNoteField`**.
+**Editing scope (v1):** text and textarea field types only (**`isEditableCollectionField`**). Dropdown/boolean fields (e.g. Media/Sleeve Condition) are hidden from release-card and table display via **`forCard: true`** / **`isCardDisplayNoteField`**; the default **`inline`** list variant may still show all fields.
 
 **Card UI:** every release card shows a **Notes** heading and a fixed-height scroll region (**`max-height: 4lh`**). Cards without notes show an **Add notes** link when editing is available. The sticky-note icon and inline link share one dialog via **`ReleaseNotesEditorProvider`** on **`ReleaseCard`** / **`MobileReleaseCard`**.
 
