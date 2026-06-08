@@ -13,6 +13,6 @@
 
 .text {
   color: var(--foreground);
-  font-size: var(--text-base);
-  font-family: var(--font-mono);
+  font-size: var(--text-meta-base);
+  font-family: var(--font-family-meta);
 }

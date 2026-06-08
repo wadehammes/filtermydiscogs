@@ -1,0 +1,24 @@
+.visual,
+.placeholder {
+  aspect-ratio: 1;
+  background: var(--muted);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--card) 80%, transparent),
+    var(--shadow-lg);
+  margin: 0 auto;
+  max-width: min(100%, 27.5rem);
+  overflow: hidden;
+  width: 100%;
+}
+
+.visual {
+  position: relative;
+}
+
+.image {
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+}

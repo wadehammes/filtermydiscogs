@@ -233,8 +233,8 @@
 
 .fabCrateName {
   color: var(--primary-foreground);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
   font-weight: var(--font-normal);
   line-height: 1;
   max-width: 7.5rem;

@@ -1,0 +1,45 @@
+.demo {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 72rem);
+}
+
+.frame {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  width: 100%;
+}
+
+.titleBar {
+  align-items: center;
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.trafficLight {
+  background: var(--border);
+  border-radius: 50%;
+  height: 0.625rem;
+  width: 0.625rem;
+}
+
+.viewport {
+  aspect-ratio: 2042 / 1194;
+  background: var(--muted);
+  min-height: 16rem;
+  position: relative;
+  width: 100%;
+}
+
+.previewImage {
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+}

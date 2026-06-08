@@ -72,7 +72,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 ### File naming
 
 - **`MyComponent.component.tsx`** + **`MyComponent.module.css`**. Use the `styles.*` object in TSX.
-- **Shared style modules** under [`src/styles/`](../../src/styles/) (e.g. [`segmented-control.module.css`](../../src/styles/segmented-control.module.css)) for cross-component patterns. Import directly from the module path; do not re-export through barrel files.
+- **Shared style modules** under [`src/styles/`](../../src/styles/) (e.g. [`nav-links.module.css`](../../src/styles/nav-links.module.css), [`segmented-control.module.css`](../../src/styles/segmented-control.module.css)) for cross-component patterns. Import directly from the module path; do not re-export through barrel files.
 
 ### Modern CSS
 
@@ -92,6 +92,23 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 - **Spacing**: Avoid **`margin-top`** for stacking siblings; prefer **flex/grid** with **`gap`**.
 - No redundant comments in CSS; names and structure should read clearly.
 
+### Typography
+
+Two typefaces, used by role—not ad hoc per component:
+
+| Role | Token | Use for |
+|------|--------|---------|
+| **Sans (Assistant)** | `--font-family-body` / `--font-family-heading` | Body copy, headings, buttons, form controls, descriptions |
+| **Mono (JetBrains Mono)** | `--font-family-meta` | Eyebrows, stats, metadata, loading/status text, fine print |
+
+Mono text uses **`--text-meta-*`** size tokens (2px smaller than the matching **`--text-*`** scale) because JetBrains Mono runs large at equal pixel sizes. Example: **`--text-meta-xs`** for captions and **`--text-meta-sm`** for compact meta lines (e.g. releases header “Showing X releases” count).
+
+- **Default**: `html` / `body` set `--font-family-body`. Headings inherit `--font-family-heading` (same sans stack). Buttons and inputs use **`font-family: inherit`**.
+- **Shared classes**: [`src/styles/typography.module.css`](../../src/styles/typography.module.css) — `brandEyebrow`, `sectionEyebrow`, `displayHeading`, `lead`, `sectionHeading`, `subsectionHeading`, `bodyText`, `metaCaption`. Compose with local layout classes (width, alignment) in component modules. Screen-reader-only text uses [`src/styles/accessibility.module.css`](../../src/styles/accessibility.module.css) (`.visuallyHidden`).
+- **Do not** set `var(--font-assistant)` or `var(--font-mono)` directly in component CSS—use the semantic tokens above or shared typography classes.
+- **Nav and segmented controls** (ViewToggle, theme switcher) use **`--nav-link-font-family`** / **`--nav-link-font-size`**, which map to the sans stack.
+- **Exceptions**: Some dense UI keeps **`--text-xxs`** (not `--text-meta-*`) even with mono—e.g. release catalog pills (`.metaCatalog` in `ReleaseCardMeta.module.css`). Prefer meta tokens for new mono lines unless the design needs the extra-small sans-scale size.
+
 ## Testing
 
 Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTests.ts`](../../.jest/setupTests.ts)). Prefer **`screen`** and **`userEvent`** in specs.
@@ -102,11 +119,11 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 - **Per-component page object** (when useful): `<Name>.po.tsx` extends `BasePageObject`, sets **`testId = "fmd<ComponentName>"`**, holds **test data, mocks, and setup/render helpers only**—**not** wrappers around every `screen.getBy*`. **POs never assert and never call `screen.find*` / `getBy*` / `queryBy*` / `waitFor`.**
 - **Render helpers**: Set component defaults on the JSX element, then spread overrides: `{...overrides}`. Do **not** use conditional spreads like `{...(overrides.foo !== undefined && { foo: overrides.foo })}`.
 - **Shared element helpers**: When `render*` and `rerender*` need the same JSX, extract a private `*Element(overrides)` method and reuse it—specs call `po.rerender*(rerender, overrides)`, not `rerender(<Component />)` directly.
-- **Mocks in POs**: Put `jest.mock(...)` in the PO when the component depends on context or modules. Specs import the **PO first** (before the component) so mocks apply before the component module loads.
+- **Mocks in POs**: Put `jest.mock(...)` in the PO when the component depends on context or modules. Specs import the **PO first** (before the component) so mocks apply before the component module loads. When production wraps the component in a layout and server footer, the PO **`render*`** helper should use the same wrapper and mock server-only children (see [components.md → Testing](components.md#testing)).
 - **Specs**: Use **`<Name>.spec.tsx`** for component tests with page objects (import the PO from **`src/components/<Name>/<Name>.po`**). Context, hook, and util tests may stay as **`* .test.ts(x)`** co-located with source. Import **`describe`**, **`it`**, **`expect`**, and lifecycle hooks from **`@jest/globals`** in every test file (not ambient globals). Use the global **`jest`** object for **`jest.mock`**, **`jest.fn`**, **`jest.spyOn`**, and **`jest.mocked`**—do **not** import **`jest`** from **`@jest/globals`** (that breaks the mock registry). Import Testing Library helpers from the **`test-utils`** alias. Jest DOM matchers are wired in [`.jest/setupTests.ts`](../../.jest/setupTests.ts) via **`@testing-library/jest-dom/jest-globals`**; types come from [`.jest/jest-dom-globals.d.ts`](../../.jest/jest-dom-globals.d.ts).
 - **Assert on literal user-visible strings in specs**, not `po.someField` read back from the PO—repeat the literal in both PO factory/render setup and `screen.getBy*` / `expect` so coupling stays visible.
 - **Custom render**: Use **`render`**, **`renderHook`**, and other Testing Library helpers from **`test-utils`** ([`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)). Global styles load via **`src/styles/global.css`** in test-utils (same as rhythm-marketing). The default **`render`** wrapper is **`TestProviders`** (QueryClient, Jotai, theme, auth, collection, filters, crate, view). Pass a custom **`wrapper`** only when a test intentionally needs a subset (e.g. “outside provider” error cases).
-- **`TestProviders` auth defaults**: **`skipInitialAuthCheck`** defaults to **`true`** so most component tests get a stable idle auth state without async **`checkAuthStatus`** updates (avoids act warnings). Pass **`skipInitialAuthCheck={false}`** only when testing real mount-time auth (e.g. **`auth.context.test.tsx`** with a minimal **`QueryClientProvider` + `AuthProvider`** wrapper). Optional **`authInitialState`** seeds **`AuthProvider`**; when **`skipInitialAuthCheck`** is **`false`** and **`authInitialState`** is omitted, production initial state (**`isLoading: true`**) applies. Presets live in [`testAuthStates.ts`](../../src/tests/utils/testAuthStates.ts). Do **not** suppress act warnings in **`setupTests.ts`**—fix async provider setup instead.
+- **`TestProviders` auth defaults**: **`skipInitialAuthCheck`** defaults to **`true`** so most component tests get a stable idle auth state without async **`checkAuthStatus`** updates (avoids act warnings). Pass **`skipInitialAuthCheck={false}`** only when testing real mount-time auth (e.g. **`auth.context.test.tsx`** with a minimal **`QueryClientProvider` + `AuthProvider`** wrapper). Optional **`authInitialState`** seeds **`AuthProvider`**; when **`skipInitialAuthCheck`** is **`false`** and **`authInitialState`** is omitted, production initial state (**`isCheckingAuth: true`**, **`isLoading: false`**) applies. Presets live in [`testAuthStates.ts`](../../src/tests/utils/testAuthStates.ts). Do **not** suppress act warnings in **`setupTests.ts`**—fix async provider setup instead.
 
 ### Jotai state in components
 

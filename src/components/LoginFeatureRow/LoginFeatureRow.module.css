@@ -1,0 +1,39 @@
+.featureRow {
+  align-items: center;
+  display: grid;
+  gap: var(--space-8);
+  grid-template-columns: 1fr;
+
+  @media (width >= 768px) {
+    gap: var(--space-12);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.featureRowReverse {
+  @media (width >= 768px) {
+    & .featureCopy {
+      order: 2;
+    }
+
+    & .featureVisual {
+      order: 1;
+    }
+  }
+}
+
+.featureCopy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 36rem;
+
+  @media (width >= 768px) {
+    gap: var(--space-5);
+    max-width: none;
+  }
+}
+
+.featureVisual {
+  width: 100%;
+}

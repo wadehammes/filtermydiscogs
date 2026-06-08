@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import HomeClient from "src/components/HomeClient/HomeClient.component";
+import { Login } from "src/components/Login/Login.component";
+import { PageFooter } from "src/components/Page/PageFooter.server";
+import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
@@ -35,5 +37,9 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <HomeClient />;
+  return (
+    <PublicAuthLayout centerMain currentPage="home" footer={<PageFooter />}>
+      <Login />
+    </PublicAuthLayout>
+  );
 }

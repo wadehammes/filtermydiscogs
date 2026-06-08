@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { PageFooter } from "src/components/Page/PageFooter.server";
+import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { LegalClient } from "./LegalClient";
 
 const baseUrl =
@@ -32,5 +34,13 @@ export const metadata: Metadata = {
 };
 
 export default function LegalPage() {
-  return <LegalClient />;
+  return (
+    <PublicAuthLayout
+      authenticatedNavPage="legal"
+      currentPage="legal"
+      footer={<PageFooter />}
+    >
+      <LegalClient />
+    </PublicAuthLayout>
+  );
 }

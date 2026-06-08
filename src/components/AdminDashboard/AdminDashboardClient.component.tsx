@@ -24,7 +24,7 @@ export default function AdminDashboardClient() {
   const { state: authState } = useAuth();
   const { data: stats, isLoading, error } = useAdminStatsQuery();
 
-  if (!authState.isAuthenticated && authState.isLoading) {
+  if (!authState.isAuthenticated && authState.isCheckingAuth) {
     return <AuthLoading />;
   }
 

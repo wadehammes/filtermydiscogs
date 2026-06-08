@@ -100,7 +100,7 @@ video {
 html,
 body {
   color: var(--foreground);
-  font-family: var(--font-assistant), sans-serif;
+  font-family: var(--font-family-body);
   font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1.125rem);
   padding: 0;
 
@@ -121,6 +121,15 @@ body {
   line-height: 1;
   background-color: var(--background);
   min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-heading);
 }
 
 img {
@@ -246,4 +255,21 @@ button {
   & > *:not(h1) {
     flex: 1;
   }
+}
+
+[data-sonner-toaster] {
+  --normal-bg: var(--card);
+  --normal-border: var(--border);
+  --normal-text: var(--foreground);
+}
+
+[data-sonner-toast].fmd-toast {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
+}
+
+[data-sonner-toast] .fmd-toast-title {
+  font-weight: var(--font-medium);
 }

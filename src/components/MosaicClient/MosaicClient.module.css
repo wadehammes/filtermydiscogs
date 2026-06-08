@@ -310,8 +310,8 @@
   height: 100vh;
   justify-content: center;
   text-align: center;
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
 }
 
 .spinner {

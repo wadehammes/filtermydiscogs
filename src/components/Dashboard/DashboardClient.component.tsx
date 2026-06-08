@@ -70,7 +70,7 @@ export default function DashboardClient() {
     }
   }, [valueError]);
 
-  if (!authState.isAuthenticated && authState.isLoading) {
+  if (!authState.isAuthenticated && authState.isCheckingAuth) {
     return <AuthLoading />;
   }
 

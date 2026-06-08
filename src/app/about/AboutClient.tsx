@@ -6,10 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clearData } from "src/api/helpers";
-import { AppPageLayout } from "src/components/AppPageLayout/AppPageLayout.component";
 import Button from "src/components/Button/Button.component";
 import pageStyles from "src/components/Page/Page.module.css";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
@@ -69,196 +67,180 @@ export function AboutClient() {
   };
 
   return (
-    <AppPageLayout
-      currentPage="about"
-      header={
-        isAuthenticated ? (
-          <StickyHeaderBar
-            allReleasesLoaded={true}
-            hideFilters={true}
-            currentPage="about"
-          />
-        ) : undefined
-      }
-      showFooter={!isAuthenticated}
-    >
-      <div className={pageStyles.container}>
-        <div className={styles.content}>
-          <section className={styles.section}>
-            <h2>About This Project</h2>
-            <p>
-              FilterMyDisco.gs is a tool to help you browse, filter, and
-              organize your Discogs collection. Made by{" "}
+    <div className={pageStyles.container}>
+      <div className={styles.content}>
+        <section className={styles.section}>
+          <h2>About This Project</h2>
+          <p>
+            FilterMyDisco.gs is a tool to help you browse, filter, and organize
+            your Discogs collection. Made by{" "}
+            <a
+              href="https://wadehammes.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.inlineLink}
+            >
+              Wade Hammes
+            </a>
+            . A passion project to help you discover, organize, and explore your
+            music collection—whether it's vinyl, CDs, cassettes, or digital
+            releases. Create crates for DJ sets, organize by theme, or just
+            rediscover what you already own.
+          </p>
+          <p>
+            For legal information, see our{" "}
+            <Link href="/legal" className={styles.inlineLink}>
+              Terms of Service and Privacy Policy
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section className={`${styles.section} ${styles.donationSection}`}>
+          <h2>Support This Project</h2>
+          <p>
+            If you find this app useful and want to support its development,
+            consider tossing me some coin. Every contribution helps keep this
+            project running and improving!
+          </p>
+          <div className={styles.donationContent}>
+            <div className={styles.donationQR}>
+              <Image
+                src="/images/paypal-qr.png"
+                alt="PayPal Donation QR Code"
+                className={styles.qrCode}
+                width={200}
+                height={200}
+                quality={90}
+              />
+              <p className={styles.qrLabel}>Scan to donate</p>
+            </div>
+            <div className={styles.donationLink}>
               <a
-                href="https://wadehammes.com"
+                href="https://www.paypal.com/donate/?business=D86FX8QV7BPMG&no_recurring=0&currency_code=USD"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.inlineLink}
+                className={styles.donateButton}
               >
-                Wade Hammes
+                Donate via PayPal
               </a>
-              . A passion project to help you discover, organize, and explore
-              your music collection—whether it's vinyl, CDs, cassettes, or
-              digital releases. Create crates for DJ sets, organize by theme, or
-              just rediscover what you already own.
-            </p>
-            <p>
-              For legal information, see our{" "}
-              <Link href="/legal" className={styles.inlineLink}>
-                Terms of Service and Privacy Policy
-              </Link>
-              .
-            </p>
-          </section>
-
-          <section className={`${styles.section} ${styles.donationSection}`}>
-            <h2>Support This Project</h2>
-            <p>
-              If you find this app useful and want to support its development,
-              consider tossing me some coin. Every contribution helps keep this
-              project running and improving!
-            </p>
-            <div className={styles.donationContent}>
-              <div className={styles.donationQR}>
-                <Image
-                  src="/images/paypal-qr.png"
-                  alt="PayPal Donation QR Code"
-                  className={styles.qrCode}
-                  width={200}
-                  height={200}
-                  quality={90}
-                />
-                <p className={styles.qrLabel}>Scan to donate</p>
-              </div>
-              <div className={styles.donationLink}>
-                <a
-                  href="https://www.paypal.com/donate/?business=D86FX8QV7BPMG&no_recurring=0&currency_code=USD"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.donateButton}
-                >
-                  Donate via PayPal
-                </a>
-                <p className={styles.donateNote}>
-                  Your support means the world and helps keep this project free
-                  for everyone.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <h2>Data Management</h2>
-            <p>Want to start fresh? Clear everything out. This button wipes:</p>
-            <ul>
-              <li>All your auth tokens and session stuff</li>
-              <li>
-                Every crate you've created (deleted from Postgres, gone
-                forever—no takebacks)
-              </li>
-              <li>All your preferences and settings</li>
-              <li>All cached collection data</li>
-            </ul>
-            <p>
-              <strong>Heads up:</strong> This logs you out and you'll need to
-              reconnect with Discogs. All your crates get permanently deleted
-              from the database. Useful if you're on a shared computer or just
-              want a clean slate.
-            </p>
-            <div className={styles.clearDataButton}>
-              <Button
-                variant="danger"
-                size="md"
-                onPress={handleClearAllData}
-                disabled={isClearing || !isAuthenticated}
-                aria-label="Clear all data"
-              >
-                {isClearing ? "Clearing..." : "Clear All Data"}
-              </Button>
-            </div>
-            {!isAuthenticated && (
-              <p className={styles.clearDataNote}>
-                You must be logged in to clear data.
+              <p className={styles.donateNote}>
+                Your support means the world and helps keep this project free
+                for everyone.
               </p>
-            )}
-            <p className={styles.clearDataNote}>
-              For more information about how we handle your data, see our{" "}
-              <Link href="/legal" className={styles.inlineLink}>
-                Privacy Policy
-              </Link>
-              .
-            </p>
-          </section>
+            </div>
+          </div>
+        </section>
 
-          <section className={styles.section}>
-            <h2>Repository</h2>
-            <p>
-              This is open source. Check out the code, submit a PR, or just
-              snoop around:
+        <section className={styles.section}>
+          <h2>Data Management</h2>
+          <p>Want to start fresh? Clear everything out. This button wipes:</p>
+          <ul>
+            <li>All your auth tokens and session stuff</li>
+            <li>
+              Every crate you've created (deleted from Postgres, gone forever—no
+              takebacks)
+            </li>
+            <li>All your preferences and settings</li>
+            <li>All cached collection data</li>
+          </ul>
+          <p>
+            <strong>Heads up:</strong> This logs you out and you'll need to
+            reconnect with Discogs. All your crates get permanently deleted from
+            the database. Useful if you're on a shared computer or just want a
+            clean slate.
+          </p>
+          <div className={styles.clearDataButton}>
+            <Button
+              variant="danger"
+              size="md"
+              onPress={handleClearAllData}
+              disabled={isClearing || !isAuthenticated}
+              aria-label="Clear all data"
+            >
+              {isClearing ? "Clearing..." : "Clear All Data"}
+            </Button>
+          </div>
+          {!isAuthenticated && (
+            <p className={styles.clearDataNote}>
+              You must be logged in to clear data.
             </p>
-            <div className={styles.repoLink}>
+          )}
+          <p className={styles.clearDataNote}>
+            For more information about how we handle your data, see our{" "}
+            <Link href="/legal" className={styles.inlineLink}>
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2>Repository</h2>
+          <p>
+            This is open source. Check out the code, submit a PR, or just snoop
+            around:
+          </p>
+          <div className={styles.repoLink}>
+            <a
+              href="https://github.com/wadehammes/filtermydiscogs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.repoButton}
+            >
+              View on GitHub
+            </a>
+          </div>
+          <p className={styles.license}>
+            MIT License—use it, fork it, make it better.
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2>Contact</h2>
+          <p>
+            Got questions? Found a bug? Want to suggest something? Hit me up:
+          </p>
+          <div className={styles.contactInfo}>
+            <p>
+              <strong>Email:</strong>{" "}
+              <a href="mailto:noise@filtermydisco.gs">noise@filtermydisco.gs</a>
+            </p>
+            <p>
+              <strong>GitHub:</strong>{" "}
               <a
                 href="https://github.com/wadehammes/filtermydiscogs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.repoButton}
               >
-                View on GitHub
+                wadehammes/filtermydiscogs
               </a>
-            </div>
-            <p className={styles.license}>
-              MIT License—use it, fork it, make it better.
             </p>
-          </section>
-
-          <section className={styles.section}>
-            <h2>Contact</h2>
             <p>
-              Got questions? Found a bug? Want to suggest something? Hit me up:
+              <strong>Feature Requests:</strong> Drop your ideas in{" "}
+              <a
+                href="https://github.com/wadehammes/filtermydiscogs/discussions"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub Discussions
+              </a>
+              . I'm always down to hear what would make this better.
             </p>
-            <div className={styles.contactInfo}>
-              <p>
-                <strong>Email:</strong>{" "}
-                <a href="mailto:noise@filtermydisco.gs">
-                  noise@filtermydisco.gs
-                </a>
-              </p>
-              <p>
-                <strong>GitHub:</strong>{" "}
-                <a
-                  href="https://github.com/wadehammes/filtermydiscogs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  wadehammes/filtermydiscogs
-                </a>
-              </p>
-              <p>
-                <strong>Feature Requests:</strong> Drop your ideas in{" "}
-                <a
-                  href="https://github.com/wadehammes/filtermydiscogs/discussions"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  GitHub Discussions
-                </a>
-                . I'm always down to hear what would make this better.
-              </p>
-              <p>
-                <strong>Bug Reports:</strong> Something broken? Open an{" "}
-                <a
-                  href="https://github.com/wadehammes/filtermydiscogs/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  issue on GitHub
-                </a>
-                . The more details, the faster I can fix it.
-              </p>
-            </div>
-          </section>
-        </div>
+            <p>
+              <strong>Bug Reports:</strong> Something broken? Open an{" "}
+              <a
+                href="https://github.com/wadehammes/filtermydiscogs/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                issue on GitHub
+              </a>
+              . The more details, the faster I can fix it.
+            </p>
+          </div>
+        </section>
       </div>
-    </AppPageLayout>
+    </div>
   );
 }

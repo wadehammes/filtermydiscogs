@@ -26,7 +26,9 @@ Most feature pages are **client components** (`*Client.tsx`) wrapped by thin ser
 
 ### [`src/components/`](../../src/components/)
 
-Feature UI: one folder per area (e.g. `Dashboard`, `ReleaseCard`, `StickyHeaderBar`). See [components.md](components.md).
+Feature UI: one folder per area (e.g. `Dashboard`, `ReleaseCard`, `StickyHeaderBar`, `PublicAuthLayout`). See [components.md](components.md).
+
+**Public auth shell**: [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) wraps home, about, legal, and public crate pages — neutral [`var(--background)`](../../src/styles/themes/) page, optional server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx), and [`PublicAuthHeader`](../../src/components/PublicAuthLayout/PublicAuthHeader.component.tsx) (logged-out [`PublicPageHeader`](../../src/components/PublicPageHeader/PublicPageHeader.component.tsx) or authenticated [`StickyHeaderBar`](../../src/components/StickyHeaderBar/StickyHeaderBar.component.tsx) on about/legal). Logged-out [`Login`](../../src/components/Login/Login.component.tsx) is an Umbra-style landing: text-first hero, theme-aware [`LoginPreviewDemo`](../../src/components/Login/LoginPreviewDemo.component.tsx), feature rows, and a bottom connect CTA. Protected app routes gate on **`isCheckingAuth`** via standalone [`AuthLoading`](../../src/components/AuthLoading/AuthLoading.component.tsx), not `PublicAuthLayout`.
 
 [`Providers.tsx`](../../src/components/Providers.tsx) wires QueryClient and all context providers.
 

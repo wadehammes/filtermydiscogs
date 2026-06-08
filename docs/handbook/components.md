@@ -12,7 +12,9 @@ How UI is organized under `src/components/` and how we test it.
 
 - **Shared primitives**: [`src/components/shared/`](../../src/components/shared/) — reusable layout/stats pieces.
 
-- **Providers**: [`src/components/Providers.tsx`](../../src/components/Providers.tsx) — root QueryClient + context stack.
+- **Providers**: [`src/components/Providers.tsx`](../../src/components/Providers.tsx) — root QueryClient + context stack. Global toasts use **[Sonner](https://sonner.emilkowal.ski/)** via [`AppToaster`](../../src/components/AppToaster/AppToaster.component.tsx); auth session feedback on `/` uses [`AuthCheckingToast`](../../src/components/AuthCheckingToast/AuthCheckingToast.component.tsx).
+- **Public pages**: [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) is the single client shell for home, about, legal, and public crate pages (`data-testid="fmdPublicAuthLayout"`). Server `page.tsx` files pass [`PageFooter`](../../src/components/Page/PageFooter.server.tsx) as the `footer` prop. [`PublicAuthHeader`](../../src/components/PublicAuthLayout/PublicAuthHeader.component.tsx) renders [`PublicPageHeader`](../../src/components/PublicPageHeader/PublicPageHeader.component.tsx) for visitors or [`StickyHeaderBar`](../../src/components/StickyHeaderBar/StickyHeaderBar.component.tsx) when `authenticatedNavPage` is set and the user is signed in. Props: `currentPage` (`home` \| `about` \| `legal`), `centerMain` (home), `authenticatedNavPage`, optional `header` override, optional `footer`.
+- **Landing page**: [`Login`](../../src/components/Login/Login.component.tsx) (`data-testid="fmdLogin"`) composes [`LoginIntro`](../../src/components/LoginIntro/LoginIntro.component.tsx), [`LoginFeatureRow`](../../src/components/LoginFeatureRow/LoginFeatureRow.component.tsx), [`LoginBottomCta`](../../src/components/LoginBottomCta/LoginBottomCta.component.tsx), and shared [`LoginConnectButton`](../../src/components/LoginConnectButton/LoginConnectButton.component.tsx). Theme-aware screenshots stay colocated under `Login/` as [`LoginPreviewDemo`](../../src/components/Login/LoginPreviewDemo.component.tsx) and [`LoginFeatureVisual`](../../src/components/Login/LoginFeatureVisual.component.tsx). Feature copy lives in [`loginFeatures.constants.ts`](../../src/components/Login/loginFeatures.constants.ts). [`LoginConnectButton`](../../src/components/LoginConnectButton/LoginConnectButton.component.tsx) shows the Discogs SVG with **“Connect with Discogs”** as the accessible name (visible “Discogs” text is `.visuallyHidden` from [`accessibility.module.css`](../../src/styles/accessibility.module.css)).
 
 ## Naming
 
@@ -51,6 +53,7 @@ Add factories under **`src/tests/factories/`** when structured test data is need
 
 - Colocate specs with the component when adding coverage (`*.spec.tsx` for PO-backed components; `*.test.tsx` for other tests; optional **`*.po.tsx`**).
 - Use **`render`** from **`test-utils`** when auth, filters, or crate context is required **without** mocking (default wrapper is **`TestProviders`**). Context-heavy component tests usually mock context in the PO and use **`render`** instead (see [conventions.md → Testing](conventions.md#testing)).
+- **Page composition in POs**: When production mounts a component inside a layout plus server footer (e.g. home = `PublicAuthLayout` + `PageFooter` + `Login`), the PO **`render*`** helper should mirror that tree. Put **`jest.mock("src/components/Page/PageFooter.server")`** in the PO and render `<PageFooter />` in the layout’s `footer` prop—do not inline a partial footer that omits links the spec asserts on.
 
 ## Exports
 

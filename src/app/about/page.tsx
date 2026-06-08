@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { PageFooter } from "src/components/Page/PageFooter.server";
+import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { AboutClient } from "./AboutClient";
 
 const baseUrl =
@@ -35,5 +37,13 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
-  return <AboutClient />;
+  return (
+    <PublicAuthLayout
+      authenticatedNavPage="about"
+      currentPage="about"
+      footer={<PageFooter />}
+    >
+      <AboutClient />
+    </PublicAuthLayout>
+  );
 }

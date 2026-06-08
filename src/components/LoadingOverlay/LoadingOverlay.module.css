@@ -37,11 +37,11 @@
 
 .message {
   color: var(--foreground);
-  font-size: var(--text-lg);
+  font-size: var(--text-meta-lg);
   font-weight: var(--font-medium);
   margin: 0;
   text-align: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-family-meta);
 }
 
 .progressText {

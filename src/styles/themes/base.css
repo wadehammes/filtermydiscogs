@@ -45,6 +45,34 @@
   --text-3xl: 1.875rem;
   --text-4xl: 3.25rem;
 
+  /* Font families */
+  --font-family-sans: var(--font-assistant), sans-serif;
+  --font-family-mono: var(--font-mono), ui-monospace, monospace;
+  --font-family-body: var(--font-family-sans);
+  --font-family-heading: var(--font-family-sans);
+  --font-family-meta: var(--font-family-mono);
+  --font-size-meta-nudge: 0.125rem;
+  --text-meta-xxs: calc(var(--text-xxs) - var(--font-size-meta-nudge));
+  --text-meta-xs: calc(var(--text-xs) - var(--font-size-meta-nudge));
+  --text-meta-sm: calc(var(--text-sm) - var(--font-size-meta-nudge));
+  --text-meta-base: calc(var(--text-base) - var(--font-size-meta-nudge));
+  --text-meta-lg: calc(var(--text-lg) - var(--font-size-meta-nudge));
+  --letter-spacing-display: -0.03em;
+  --letter-spacing-eyebrow: 0.08em;
+  --letter-spacing-meta: 0.04em;
+
+  /* Navigation links */
+  --nav-actions-gap: var(--space-4);
+  --nav-bar-gap: var(--space-6);
+  --nav-bar-gap-lg: var(--space-10);
+  --nav-link-font-family: var(--font-family-body);
+  --nav-link-font-size: var(--text-sm);
+  --nav-link-font-weight: var(--font-medium);
+  --nav-link-gap: var(--space-5);
+  --nav-link-gap-lg: var(--space-8);
+  --nav-link-letter-spacing: 0.03em;
+  --nav-link-line-height: 1;
+
   /* Font weights */
   --font-normal: 400;
   --font-medium: 500;

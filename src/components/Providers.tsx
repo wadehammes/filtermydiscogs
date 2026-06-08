@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
+import { AppToaster } from "src/components/AppToaster/AppToaster.component";
+import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthCheckingToast.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
@@ -49,11 +51,13 @@ export const Providers = ({ children }: ProvidersProps) => {
                   <ViewProvider>
                     {children}
                     <LogoutOverlayWrapper />
+                    <AuthCheckingToast />
                   </ViewProvider>
                 </CrateProvider>
               </FiltersProvider>
             </CollectionContextProvider>
           </AuthProvider>
+          <AppToaster />
         </ThemeProvider>
       </JotaiProvider>
     </QueryClientProvider>

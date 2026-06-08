@@ -4,7 +4,7 @@ import styles from "./AuthLoading.module.css";
 
 export const AuthLoading = () => {
   return (
-    <div className={styles.container}>
+    <div className={styles.loadingShell}>
       <div className={styles.loadingCard}>
         <Logo className={styles.logo} />
         <Spinner size="xl" aria-label="Checking authentication" />

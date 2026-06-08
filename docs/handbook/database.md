@@ -63,6 +63,10 @@ All mutating crate routes require a verified OAuth session via **`getVerifiedUse
 
 **`/api/crates/health`** is admin-only (same OAuth verification as **`/api/admin/stats`**).
 
+## Public community stats
+
+Aggregate crate totals for the public footer (crates, saved releases, distinct collectors) are loaded server-side via [`src/lib/public-stats.server.ts`](../../src/lib/public-stats.server.ts), cached for five minutes with `unstable_cache`. No auth required; if the database is unavailable the stats block is omitted.
+
 ## Public crates
 
 When **`private: false`**, [`src/lib/public-crate.server.ts`](../../src/lib/public-crate.server.ts) loads crate metadata and releases for SSR/SEO on **`/crate/[id]`**. OG images: [`src/app/api/og/crate/[id]/route.tsx`](../../src/app/api/og/crate/[id]/route.tsx).

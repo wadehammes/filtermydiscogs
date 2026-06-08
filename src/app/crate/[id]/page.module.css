@@ -164,8 +164,8 @@
   color: var(--muted-foreground);
   margin-bottom: var(--space-8);
   text-align: left;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
 
   @media (width >= 768px) {
     margin-bottom: var(--space-12);
