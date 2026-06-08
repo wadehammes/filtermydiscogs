@@ -14,6 +14,7 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 6. **`pnpm lint:ci`**
 7. **`pnpm lint:css`**
 8. **`pnpm test:ci`**
+9. **`pnpm knip:ci`**
 
 GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file).
 
@@ -26,7 +27,8 @@ Run the same locally before pushing when possible.
 | `pnpm dev` | Next dev server on **port 6767** (webpack mode). |
 | `pnpm build` | `db:generate` + production build. |
 | `pnpm start` | Serve production build on port 6767. |
-| `pnpm tsc:ci` / `pnpm lint:ci` / `pnpm test:ci` | Quality gates. |
+| `pnpm tsc:ci` / `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
+| `pnpm knip` | Find unused exports/files locally ([`knip.json`](../../knip.json)). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
 | `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |

@@ -8,10 +8,10 @@ A web application to filter and explore your Discogs vinyl collection.
 
 - 🔐 **OAuth Authentication** - Secure login with your Discogs account
 - 🎵 **Complete Collection Access** - Browse your entire vinyl collection
-- 🎨 **Style Filtering** - Filter releases by music styles, genres, years, and formats
-- 📊 **Advanced Sorting** - Sort by label, date added, release year, and rating
-- 🎲 **Random Release** - View a random release from your collection
-- 📋 **Multiple Views** - View releases in card or table format
+- 🎨 **Style Filtering** — Filter by style, genre, year, and format
+- 📊 **Advanced Sorting** — Sort by label, artist, title, date added, year, rating, and more
+- 🎲 **Random Release** — View a random release from your collection
+- 📋 **Multiple Views** — Card, list (table on desktop), or random view
 - 📦 **Crate Management** - Save releases to a crate as you browse
 - 🖼️ **Mosaic Generator** - Create and download mosaic grids in different formats/sizes
 - 📱 **Responsive Design** - Works on desktop, tablet, and mobile
@@ -98,6 +98,7 @@ The app will be available at `http://localhost:6767`.
 
 - **Home** (`/`) - Login and main dashboard
 - **Releases** (`/releases`) - Browse, filter, and sort your collection
+- **Dashboard** (`/dashboard`) - Collection analytics and insights
 - **Mosaic** (`/mosaic`) - Create mosaic grids from your collection
 - **About** (`/about`) - About the project, support, and data management
 - **Legal** (`/legal`) - Terms of Service and Privacy Policy
@@ -105,12 +106,15 @@ The app will be available at `http://localhost:6767`.
 
 ## Tech Stack
 
-- **Framework**: Next.js 16.1 with App Router
+- **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript
 - **UI Library**: React 19
 - **Styling**: CSS Modules with modern CSS features
-- **State Management**: React Context + useReducer
+- **State Management**: Jotai (filters, view) + React Context (auth, collection, crate, theme)
 - **Data Fetching**: TanStack Query (React Query)
+- **Forms**: React Hook Form
+- **Charts**: Recharts (dashboard)
+- **Toasts**: Sonner
 - **Tables**: TanStack Table
 - **Database**: Prisma with Vercel Postgres
 - **Authentication**: OAuth 1.0a with Discogs
@@ -192,8 +196,8 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 - **Crates or database:** [database.md](./docs/handbook/database.md).
 - **Test factories / Faker data:** [factories.md](./docs/handbook/factories.md).
 - **Adding or changing UI:** [components.md](./docs/handbook/components.md) and [conventions.md](./docs/handbook/conventions.md).
-- **Filters, contexts, React Query:** [patterns.md](./docs/handbook/patterns.md).
-- **CI, env, security headers:** [platform.md](./docs/handbook/platform.md).
+- **Filters, Jotai atoms, contexts, React Query:** [patterns.md](./docs/handbook/patterns.md).
+- **CI, Knip, env, security headers:** [platform.md](./docs/handbook/platform.md).
 - **Finding a file:** [source-layout.md](./docs/handbook/source-layout.md).
 
 ## License

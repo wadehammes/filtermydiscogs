@@ -8,7 +8,7 @@ Prisma schema, crate persistence, and related API routes.
 - **Database**: PostgreSQL (Vercel Postgres in production)
 - **Client**: [`src/lib/db.ts`](../../src/lib/db.ts) — singleton Prisma client for route handlers
 
-Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma).
+Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`prisma.config.ts`](../../prisma.config.ts) (Prisma 7).
 
 ## Models
 
@@ -16,7 +16,7 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma).
 
 | Field | Notes |
 |-------|-------|
-| `user_id` | Discogs user ID (from `discogs_user_id` cookie) |
+| `user_id` | Discogs user ID from **verified OAuth identity** (matches Prisma `Int`; not the cookie alone) |
 | `id` | UUID string |
 | `name` | Display name |
 | `username` | Discogs username (for public crate attribution) |
@@ -58,6 +58,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/health` | GET | Health check |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates |
+| `/api/auth/clear-data` | POST | Delete authenticated user's crates and clear session cookies |
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 

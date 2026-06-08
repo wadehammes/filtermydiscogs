@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AuthLoading } from "src/components/AuthLoading/AuthLoading.component";
-import { Login } from "src/components/Login/Login.component";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import MosaicControls from "src/components/MosaicClient/MosaicControls.component";
 import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
-import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import { useAuth } from "src/context/auth.context";
@@ -22,16 +20,21 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { useGridDimensions } from "src/hooks/useGridDimensions.hook";
 import { useMosaicGenerator } from "src/hooks/useMosaicGenerator.hook";
+import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
+import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useCurrentView, useViewDispatch } from "src/hooks/useViewAtoms.hook";
 import styles from "./MosaicClient.module.css";
 
 export default function MosaicClient() {
   const { state } = useAuth();
+  const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const allReleases = useAllReleases();
   const { isLoading: collectionLoading } = useCollectionData(
     state.username,
     state.isAuthenticated,
   );
+  const needsCollectionLoad = useNeedsCollectionLoad(collectionLoading);
+  const showLoading = isCheckingAuth || needsCollectionLoad;
   const currentView = useCurrentView();
   const viewDispatch = useViewDispatch();
   const filtersDispatch = useFiltersDispatch();
@@ -75,20 +78,12 @@ export default function MosaicClient() {
       aspectRatio,
     });
 
-  if (!state.isAuthenticated && state.isCheckingAuth) {
-    return <AuthLoading />;
+  if (shouldRedirectHome) {
+    return null;
   }
 
-  if (!state.isAuthenticated) {
-    return <Login />;
-  }
-
-  if (collectionLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <PageLoader message="Loading your collection..." size="2xl" />
-      </div>
-    );
+  if (showLoading) {
+    return <AppPageLoading currentPage="mosaic" />;
   }
 
   if (releasesToDisplay.length === 0) {

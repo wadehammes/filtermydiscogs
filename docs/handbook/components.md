@@ -87,3 +87,15 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** and card **`ReleaseNotes`** (`displayOnly`) must consume **`useReleaseNotesEditorContext`**—do not call **`useReleaseNotesEditor`** twice on the same card.
 
 List/table rows use **`ReleaseNotes`** without the provider; only the **`inline`** subcomponent calls **`useReleaseNotesEditor`** directly.
+
+## Client page shells
+
+| Shell | Route | Layout |
+|-------|-------|--------|
+| [`Login`](../../src/components/Login/Login.component.tsx) + [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) | `/`, about, legal, public crate | Server `PageFooter`, optional authenticated header |
+| [`ReleasesClient`](../../src/components/ReleasesClient/ReleasesClient.component.tsx) | `/releases` | [`Page`](../../src/components/Page/Page.component.tsx) + [`StickyHeaderBar`](../../src/components/StickyHeaderBar/StickyHeaderBar.component.tsx) + [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) |
+| [`DashboardClient`](../../src/components/Dashboard/DashboardClient.component.tsx) | `/dashboard` | Analytics charts (Recharts) |
+| [`MosaicClient`](../../src/components/MosaicClient/MosaicClient.component.tsx) | `/mosaic` | Canvas mosaic via [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) |
+| [`AdminDashboardClient`](../../src/components/AdminDashboard/AdminDashboardClient.component.tsx) | `/admin` | Admin stats |
+
+Login marketing assets live under [`public/images/`](../../public/images/) and theme-aware demo components under [`Login/`](../../src/components/Login/).

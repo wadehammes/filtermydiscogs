@@ -30,7 +30,6 @@ const VISIBLE_BATCH_SIZE = 100;
 
 export const useReleasesClient = () => {
   const { state: authState } = useAuth();
-  const authLoading = !authState.isAuthenticated && authState.isCheckingAuth;
   const { username, isAuthenticated } = authState;
   const currentView = useCurrentView();
   const previousView = usePreviousView();
@@ -213,7 +212,6 @@ export const useReleasesClient = () => {
   }, [filtersDispatch]);
 
   return {
-    authLoading,
     isLoading,
     hasError,
     error,

@@ -10,10 +10,12 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 2. **JotaiProvider** — shared Jotai store for client UI state ([`src/atoms/JotaiProvider.tsx`](../../src/atoms/JotaiProvider.tsx)).
 3. **ThemeProvider** — light / dark / system preference.
 4. **AuthProvider** — OAuth session state.
-5. **CollectionContextProvider** — loaded releases and pagination.
+5. **CollectionContextProvider** — collection pagination metadata only (not the release list).
 6. **FiltersProvider** — scope marker for filter hooks (state lives in [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts)).
 7. **CrateProvider** — active crate and crate list.
 8. **ViewProvider** — scope marker for view hooks (state in [`src/atoms/view.atoms.ts`](../../src/atoms/view.atoms.ts)).
+
+Inside **ViewProvider**: **`LogoutOverlayWrapper`** and **`AuthCheckingToast`**. **`AppToaster`** (Sonner) is a sibling under **ThemeProvider**, outside the auth subtree.
 
 **Jotai** backs **filters** and **view** preference state. Atoms and derived selectors live under [`src/atoms/`](../../src/atoms/); [`src/context/filters.context.tsx`](../../src/context/filters.context.tsx) and [`view.context.tsx`](../../src/context/view.context.tsx) expose scope markers and legacy `useFilters()` / `useView()` for full state. Prefer granular hooks from [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts) so components subscribe only to the slice they need (for example `useSelectedStyles()`, `useFilteredReleases()`, `useCurrentView()`).
 
@@ -23,10 +25,23 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 
 1. **Start OAuth**: client navigates to **`GET /api/auth/discogs`**, which redirects to Discogs authorize URL and stores temporary request tokens in cookies.
 2. **Callback**: **`GET /api/auth/callback`** exchanges verifier for access token, calls **`getIdentity`**, sets cookies, redirects to **`/releases?auth=success`**.
-3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount (server verifies OAuth tokens with Discogs **`getIdentity`**). Username may still be read from **`discogs_username`** for display; **`userId`** comes from the check response. **`isCheckingAuth`** tracks this background check; **`isLoading`** is reserved for an in-flight OAuth redirect after **Connect with Discogs**. The home page renders the landing immediately while **`isCheckingAuth`** runs, shows a subtle Sonner toast (**`AuthCheckingToast`**) while the session is verified, and redirects authenticated users to **`/releases`** when the check completes. Protected app routes still gate on **`isCheckingAuth`** via **`AuthLoading`** until the session is known.
-4. **Logout**: **`/api/auth/logout`** clears session cookies by default (full logout). Pass **`?preserve_tokens=true`** to keep OAuth tokens for quick re-login. Client dispatches logout actions and shows **`LogoutOverlay`**.
+3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount (server verifies OAuth tokens with Discogs **`getIdentity`**). Username may still be read from **`discogs_username`** for display; **`userId`** comes from the check response. **`isCheckingAuth`** tracks this background check; **`isLoading`** is reserved for an in-flight OAuth redirect after **Connect with Discogs**. The home page renders the landing immediately while **`isCheckingAuth`** runs, shows a subtle Sonner toast (**`AuthCheckingToast`**) while the session is verified, and redirects authenticated users to **`/releases`** when the check completes.
+4. **Logout**: **`POST /api/auth/logout`** clears session cookies by default (full logout). Pass **`?preserve_tokens=true`** to keep OAuth tokens for quick re-login. Client dispatches logout actions and shows **`LogoutOverlay`**.
 
 Cookie names and security flags: [discogs.md](discogs.md).
+
+## Protected routes
+
+Authenticated app routes use [`useRedirectIfUnauthenticated`](../../src/hooks/useRedirectIfUnauthenticated.hook.ts): while **`isCheckingAuth`**, render nothing briefly; when unauthenticated, **`router.replace("/")`**. While a page or its collection is loading, show [`AppPageLoading`](../../src/components/AppPageLoading/AppPageLoading.component.tsx) with page-specific copy (**Loading releases…**, **Loading dashboard…**, **Loading mosaic…**). Collection loading UI uses [`useNeedsCollectionLoad`](../../src/hooks/useNeedsCollectionLoad.hook.ts) so cached releases skip the spinner when navigating between app pages.
+
+| Route | While `isCheckingAuth` | When unauthenticated | Collection loading |
+|-------|------------------------|----------------------|--------------------|
+| `/` | Landing + toast | Landing | — |
+| `/releases` | Header + loader (first load only) | Redirect to `/` | Skip when releases already in Jotai |
+| `/dashboard`, `/mosaic` | Header + skeleton/loader (first load only) | Redirect to `/` | Skip when releases already in Jotai |
+| `/admin` | Server gate + brief null | Redirect to `/` | — |
+
+Authenticated app routes use segment **`loading.tsx`** with **`AppPageLoading`** ( **`StickyHeaderBar`**, not **`PublicAuthLayout`** ). Root [`loading.tsx`](../../src/app/loading.tsx) switches to the same shell when the user is authenticated on `/releases`, `/dashboard`, `/mosaic`, or `/admin`.
 
 ## Public pages
 
@@ -36,11 +51,11 @@ Server `page.tsx` files for home, about, legal, and public crates share one clie
 2. **`PageFooter`** (server component) — community stats (`PageFooterStats` / `PageFooterFun`) plus About / Contribute links. Pass as the layout `footer` prop from each `page.tsx`.
 3. **Page content** — e.g. [`Login`](../../src/components/Login/Login.component.tsx) on `/`, `AboutClient` / `LegalClient`, or public crate client.
 
-Home renders the landing immediately during **`isCheckingAuth`**; authenticated users redirect from `Login` via `router.replace("/releases")`. Do not block the landing with **`AuthLoading`** — that component is for protected app routes only.
+Home renders the landing immediately during **`isCheckingAuth`**; authenticated users redirect from `Login` via `router.replace("/releases")`. Protected app routes use **`AppPageLoading`** (see Protected routes above), not a blocking auth shell on `/`.
 
 ## API layer
 
-Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpers.ts)**—the single front door for collection pages, crates, search, auth check, and dashboard stats.
+Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpers.ts)**—the single front door for collection, crates, search, release fetch, auth check/logout/clear-data, and dashboard stats.
 
 - **Do not** call Discogs or `/api/...` with raw **`fetch`** from components or query hook files.
 - **Do not** call Discogs directly from the browser; route handlers sign OAuth requests server-side.
@@ -58,7 +73,7 @@ Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpe
 | `useCollectionFieldsQuery` | `CollectionFieldsQueryKeys.byUsername` | Discogs collection custom-field definitions (notes editor) |
 | `useCollectionValueQuery` | `CollectionValueQueryKeys.byUsername` | Collection dollar value |
 | `useDiscogsReleaseQuery` | `DiscogsReleaseQueryKeys.byId` | Single release fetch |
-| `useCratesQuery` / `useCrateQuery` | `CratesQueryKeys` / `CrateQueryKeys` | Crate list and detail |
+| `useCratesQuery` / `useCrateQuery` | `CratesQueryKeys` / `CrateQueryKeys` | Crate list and detail (`useCrateQuery` is exported from [`useCratesQuery.ts`](../../src/hooks/queries/useCratesQuery.ts)) |
 | `usePublicCrateQuery` | `PublicCrateQueryKeys.byId` | Public crate page |
 | `useMostCratedQuery` | `MostCratedQueryKeys.list` | Dashboard stats |
 | `useAdminStatsQuery` | `AdminStatsQueryKeys.all` | Admin dashboard |
@@ -78,7 +93,7 @@ Hook rules (single params object, no side effects in hook files): [conventions.m
    - [`getAvailableStyles/Years/Formats`](../../src/utils/) for filter chip options
 3. UI components (`FiltersBar`, `FiltersDrawer`, release pills) dispatch filter actions through **`useFiltersDispatch()`** and read state via **`useFilterAtoms`** hooks; **`useFilteredReleases()`** / **`useMemoizedFilteredReleases()`** drive tables, cards, mosaic input, and random release. Dashboard/analytics read the same list via **`useAllReleases()`**.
 
-**Lint guardrails**: Biome **`noRestrictedImports`** blocks **`useFilters`** / **`useView`** in `src/components/**`—use **`useFilterAtoms`** / **`useViewAtoms`** instead. Context modules and tests are exempt.
+**Lint guardrails**: Biome **`noRestrictedImports`** discourages **`useFilters`** / **`useView`** in application code—prefer **`useFilterAtoms`** / **`useViewAtoms`**. Context modules and test files are exempt.
 
 Add filter dimensions by extending filter atoms/helpers and UI—not by filtering ad hoc in leaf components. Release note text is included in search via **`getReleaseNotesSearchText`** in [`filterReleases.ts`](../../src/utils/filterReleases.ts).
 
@@ -95,10 +110,27 @@ Colocate feature hooks under the component folder ([`useReleaseNotesEditor.hook.
 ## Crates
 
 - **Client**: `CrateProvider` + **`useCrateMutations`** talk to **`/api/crates`** via **`src/api/helpers.ts`**.
-- **Server**: handlers scope all rows by **`discogs_user_id`** cookie; store optional **`username`** on public crates.
-- **Public view**: [`/crate/[id]`](../../src/app/crate/[id]/page.tsx) uses **`fetchPublicCrateMetadata`** for SEO and **`usePublicCrateQuery`** for client data.
+- **UI**: [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) sidebar/bottom drawer — [`CrateSelector`](../../src/components/CrateSelector/CrateSelector.component.tsx) (dropdown + circular **New Crate** button), footer actions, [`EditCrateDialog`](../../src/components/EditCrateDialog/EditCrateDialog.component.tsx) modal (rename + type-to-confirm delete). Submit-style crate forms use **React Hook Form** ([conventions.md](conventions.md)).
+- **Server**: handlers scope all rows by **verified OAuth user ID** from **`getVerifiedUserFromRequestWithRateLimit`**; store optional **`username`** on public crates.
+- **Public view**: [`/crate/[id]`](../../src/app/crate/[id]/page.tsx) loads SEO metadata via **`fetchPublicCrateMetadata`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts) → [`public-crate.server.ts`](../../src/lib/public-crate.server.ts)) and client data via **`usePublicCrateQuery`**.
 
 See [database.md](database.md) for schema details.
+
+## Dashboard analytics
+
+- **Page**: [`/dashboard`](../../src/app/dashboard/page.tsx) → [`DashboardClient`](../../src/components/Dashboard/DashboardClient.component.tsx).
+- **Data**: **`useAllReleases()`** from Jotai + **`useCollectionAnalytics`** for computed stats; **`useCollectionValueQuery`** for Discogs collection dollar value; **Recharts** for charts.
+- **Types**: [`src/types/dashboard.types.ts`](../../src/types/dashboard.types.ts).
+
+## Mosaic generator
+
+- **Page**: [`/mosaic`](../../src/app/mosaic/page.tsx) → [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) (client `dynamic` with `ssr: false`; [`AppPageLoading`](../../src/components/AppPageLoading/AppPageLoading.component.tsx) while the chunk loads) → [`MosaicClient`](../../src/components/MosaicClient/MosaicClient.component.tsx).
+- **Hook**: [`useMosaicGenerator`](../../src/hooks/useMosaicGenerator.hook.ts) builds canvas grids from filtered releases.
+- **Images**: [`src/utils/imageLoader.ts`](../../src/utils/imageLoader.ts) fetches resized covers via **`GET /api/image-proxy`** (Sharp server-side).
+
+## Clear stored data
+
+About/Legal **Clear stored data** calls **`clearData`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/auth/clear-data`**, which deletes the user's crates and clears session cookies. Client reset uses **`useCollectionReset`** ([`useCollectionReset.hook.ts`](../../src/hooks/useCollectionReset.hook.ts)).
 
 ## Metadata and OG images
 
@@ -111,7 +143,7 @@ Do not add a dynamic `opengraph-image.tsx` alongside the PNG; the code route ove
 
 ## Constants and env
 
-- Shared literals (sort values, storage keys) live in [`src/constants.ts`](../../src/constants.ts)—not magic strings in components.
+- Shared literals live in [`src/constants.ts`](../../src/constants.ts) and topic files under [`src/constants/`](../../src/constants/) (e.g. **`SortValues`**, mosaic sizes)—not magic strings in components.
 - Runtime **`process.env.*`** keys that must reach the browser need to be listed under **`env`** in [`next.config.ts`](../../next.config.ts). OAuth secrets stay **server-only** unless intentionally exposed for OAuth initiation.
 - URL helpers: [`getSiteUrl`](../../src/utils/helpers.ts) for site base URLs.
 

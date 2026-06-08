@@ -31,7 +31,7 @@ if (!username) {
 - **Semantic parameter and variable names.** Describe what the value *is*, not generic placeholders like `raw`, `data`, `val`, `tmp`.
 - **App-level types**: Shared types live under [`src/types/`](../../src/types/) (e.g. [`index.ts`](../../src/types/index.ts), [`crate.types.ts`](../../src/types/crate.types.ts)). Type-only modules belong here, not under `src/utils/`.
 - **API payloads**: Define request/response types next to the feature or under `src/types/` when shared.
-- **Constants**: App-wide literals (sort enums, storage keys) live in [`src/constants.ts`](../../src/constants.ts). Use `src/utils/` for functions; use `src/constants.ts` for shared immutable values.
+- **Constants**: App-wide literals live in [`src/constants.ts`](../../src/constants.ts) and topic modules under [`src/constants/`](../../src/constants/) (e.g. [`sorting.ts`](../../src/constants/sorting.ts)). Use `src/utils/` for functions.
 - **Discogs usernames**: Validate with **`isValidDiscogsUsername`** from [`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts) in route handlers—do not duplicate ad-hoc regex (see [discogs.md](discogs.md)).
 
 ## React / JSX
@@ -42,7 +42,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 - **Multiple or conditional class names**: Use **`classnames`** (import as `classNames`). Prefer **object notation** for conditionals: `classNames(styles.a, { [styles.active]: isActive })`. Static lists: `classNames(styles.a, styles.b)`. Optional `className` prop: `classNames(styles.container, className)`.
 - **Raster images**: Use **`next/image`**. Avoid bare **`<img>`** except rare documented exceptions. Every **`Image`** needs **`alt`**. Discogs covers use **`i.discogs.com`** (allowlisted in `next.config.ts`).
 - **Links**: Use **`next/link`**’s **`Link`** for navigational links—internal paths and external URLs—not a bare **`<a>`** unless you have a rare, documented exception. For new tabs, set **`target`** and **`rel="noopener noreferrer"`**.
-- **Context + reducer** for cross-page UI state; **React Query** for server-backed data (see [patterns.md](patterns.md)).
+- **Context + reducer** for cross-page UI state with side effects (auth session, collection pagination); **Jotai** for high-churn derived client state (filters, view); **React Query** for server-backed data (see [patterns.md](patterns.md)).
 - **Forms**: Use **[React Hook Form](https://react-hook-form.com/)** (`useForm`, `register`, `handleSubmit`) for submit-style forms (create/edit dialogs, multi-field modals). Reset with `reset()` when a dialog opens or defaults change. Live filter/search inputs that dispatch on every keystroke (e.g. [`SearchBar`](../../src/components/SearchBar/SearchBar.component.tsx), autocomplete dropdown search) may stay controlled without RHF.
 
 ### Large components and state
@@ -62,7 +62,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
   - `pnpm lint:all` — `lint:check` then `lint:css:fix`
   - `pnpm tsc:ci` — strict TypeScript
 - **Configs**: [`biome.json`](../../biome.json), [`stylelint.config.ts`](../../stylelint.config.ts).
-- **CI**: `pnpm lint:ci`, `pnpm lint:css`, `pnpm test:ci` (see [platform.md](platform.md)).
+- **CI**: `pnpm lint:ci`, `pnpm lint:css`, `pnpm test:ci`, `pnpm knip:ci` (see [platform.md](platform.md)).
 
 ## CSS and styling
 
@@ -128,7 +128,7 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 
 ### Jotai state in components
 
-- **Read** filter/view slices via [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts)—not **`useFilters()`** / **`useView()`** (Biome enforces this under `src/components/**`).
+- **Read** filter/view slices via [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts)—not **`useFilters()`** / **`useView()`** in new app code (Biome guardrail; context modules and tests exempt).
 - **Write** filter actions via **`useFiltersDispatch()`**; view changes via **`useViewDispatch()`**.
 - **Release list**: read **`useAllReleases()`** from filter atoms; only **`useCollectionData`** (and **`useCollectionReset`**) should dispatch **`SetAllReleases`**.
 - **PO mocks**: when asserting dispatch in isolation, mock **`src/hooks/useFilterAtoms.hook`** (see `SearchBar.po.tsx`, `ReleaseCard.po.tsx`) rather than **`useFilters()`**.

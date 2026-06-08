@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 
-// Dynamically import ReleasesClient to reduce initial bundle size
-// This component includes table, grid, and filtering logic
 const ReleasesClient = dynamic(
   () => import("src/components/ReleasesClient/ReleasesClient.component"),
   {
-    // Use null to let Next.js use the loading.tsx file for route-level loading
-    // The loading.tsx will show while the route is loading
-    loading: () => null,
+    loading: () => <AppPageLoading currentPage="releases" />,
   },
 );
 

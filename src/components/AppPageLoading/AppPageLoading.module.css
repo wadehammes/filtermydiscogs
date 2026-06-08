@@ -1,0 +1,21 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--sticky-header-height));
+}
+
+.loaderArea {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: center;
+}
+
+.progressText {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-sm);
+  text-align: center;
+}

@@ -13,8 +13,11 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | Component folders, naming, tests | [components.md](components.md) |
 | Public landing, login page, `PublicAuthLayout` | [components.md](components.md) + [patterns.md](patterns.md) (auth flow) |
-| Contexts, filters, React Query, auth, public crates | [patterns.md](patterns.md) |
-| CI, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
+| Filters, view mode, Jotai atoms, contexts, React Query, auth, public crates | [patterns.md](patterns.md) · stack detail in [architecture.md](architecture.md) |
+| Dashboard / collection analytics | [patterns.md](patterns.md) (Dashboard analytics) + [components.md](components.md) (`Dashboard/`) |
+| Mosaic generator / image proxy | [patterns.md](patterns.md) (Mosaic generator) |
+| Clear user data (About/Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
+| CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
 | Where a file category lives under `src/` | [source-layout.md](source-layout.md) |
 
