@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { Assistant, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Providers } from "src/components/Providers";
+import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 
 import "src/styles/global.css";
 import "src/styles/pills.css";
@@ -38,6 +39,11 @@ export const metadata: Metadata = {
     description: "a Discogs collection management tool",
     type: "website",
     locale: "en-US",
+    images: [DEFAULT_OPEN_GRAPH_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [DEFAULT_TWITTER_IMAGE],
   },
 };
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 
 // Dynamically import ReleasesClient to reduce initial bundle size
 // This component includes table, grid, and filtering logic
@@ -27,21 +28,14 @@ export const metadata: Metadata = {
     siteName: "FilterMyDisco.gs",
     type: "website",
     locale: "en-US",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "FilterMyDisco.gs App Preview",
-      },
-    ],
+    images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "Releases | FilterMyDisco.gs",
     description:
       "Filter and sort your Discogs collection and build a crate as you browse.",
-    images: ["/opengraph-image"],
+    images: [DEFAULT_TWITTER_IMAGE],
   },
 };
 

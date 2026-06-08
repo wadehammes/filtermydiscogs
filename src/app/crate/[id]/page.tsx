@@ -49,7 +49,12 @@ export async function generateMetadata({
         card: "summary_large_image",
         title: `${crateName}${username ? ` by ${username}` : ""}`,
         description,
-        images: [ogImageUrl],
+        images: [
+          {
+            url: ogImageUrl,
+            alt: `Public crate: ${crateName}`,
+          },
+        ],
       },
     };
   }
@@ -77,7 +82,12 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: "Crate | FilterMyDisco.gs",
       description: "Public crate on FilterMyDisco.gs",
-      images: [ogImageUrl],
+      images: [
+        {
+          url: ogImageUrl,
+          alt: "Image of Crate Releases",
+        },
+      ],
     },
   };
 }
