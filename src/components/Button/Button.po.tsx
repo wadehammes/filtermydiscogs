@@ -8,7 +8,13 @@ import Button from "./Button.component";
 
 export type ButtonRenderProps = {
   children?: string;
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "success";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "ghost"
+    | "success"
+    | "outlinePrimary";
   size?: "sm" | "md" | "lg";
   className?: string;
   onPress?: () => void;

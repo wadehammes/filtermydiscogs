@@ -1,0 +1,121 @@
+.backdrop {
+  align-items: center;
+  background: color-mix(in srgb, var(--background) 50%, transparent);
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: var(--z-6-popover);
+}
+
+.dialog {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-height: 90vh;
+  max-width: 28rem;
+  overflow-y: auto;
+  padding: var(--space-6);
+  width: 90%;
+}
+
+.title {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.titleRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.defaultBadge {
+  background: color-mix(in srgb, var(--primary) 15%, var(--background));
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  font-size: var(--text-xxs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.075em;
+  padding: 0.145rem var(--space-2) 0.1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.label {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.input {
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  font-size: var(--text-base);
+  padding: var(--space-2) var(--space-3);
+  width: 100%;
+
+  &:focus {
+    border-color: var(--primary);
+    outline: none;
+  }
+}
+
+.dangerSection {
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+}
+
+.dangerDescription {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.crateNameHighlight {
+  color: var(--foreground);
+  font-weight: var(--font-semibold);
+}
+
+.footerActions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin-top: var(--space-1);
+}
+
+.sectionActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}

@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -22,6 +23,8 @@ interface NoteEditDialogProps {
   onClose: () => void;
   onSave: (values: Array<{ fieldId: number; value: string }>) => void;
 }
+
+type NoteFormValues = Record<string, string>;
 
 const formatArtistNames = (release: DiscogsRelease): string => {
   return release.basic_information.artists
@@ -78,13 +81,25 @@ export const NoteEditDialog = ({
     return values;
   }, [editableFields, release]);
 
-  const [draftValues, setDraftValues] = useState(initialValues);
+  const defaultFormValues = useMemo(() => {
+    const values: NoteFormValues = {};
+
+    for (const field of editableFields) {
+      values[String(field.id)] = initialValues.get(field.id) ?? "";
+    }
+
+    return values;
+  }, [editableFields, initialValues]);
+
+  const { register, handleSubmit, reset } = useForm<NoteFormValues>({
+    defaultValues: defaultFormValues,
+  });
 
   useEffect(() => {
     if (isOpen) {
-      setDraftValues(initialValues);
+      reset(defaultFormValues);
     }
-  }, [initialValues, isOpen]);
+  }, [defaultFormValues, isOpen, reset]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -125,19 +140,19 @@ export const NoteEditDialog = ({
     [isSaving, onClose],
   );
 
-  const handleSave = useCallback(() => {
+  const handleSave = handleSubmit((data) => {
     const changedValues = editableFields
       .map((field) => {
-        const nextValue = draftValues.get(field.id) ?? "";
-        const previousValue = initialValues.get(field.id) ?? "";
+        const nextValue = (data[String(field.id)] ?? "").trim();
+        const previousValue = (initialValues.get(field.id) ?? "").trim();
 
-        if (nextValue.trim() === previousValue.trim()) {
+        if (nextValue === previousValue) {
           return null;
         }
 
         return {
           fieldId: field.id,
-          value: nextValue.trim(),
+          value: nextValue,
         };
       })
       .filter(
@@ -145,7 +160,7 @@ export const NoteEditDialog = ({
       );
 
     onSave(changedValues);
-  }, [draftValues, editableFields, initialValues, onSave]);
+  });
 
   const { basic_information: info } = release;
   const thumbUrl = getReleaseImageUrl({
@@ -167,7 +182,7 @@ export const NoteEditDialog = ({
       onClose={handleCancel}
       aria-labelledby="note-edit-title"
     >
-      <div className={styles.dialogContent}>
+      <form className={styles.dialogContent} onSubmit={handleSave}>
         <h2 id="note-edit-title" className={styles.title}>
           Add release notes
         </h2>
@@ -208,15 +223,8 @@ export const NoteEditDialog = ({
               <textarea
                 id={`note-field-${field.id}`}
                 className={styles.textarea}
-                value={draftValues.get(field.id) ?? ""}
-                onChange={(event) => {
-                  setDraftValues((current) => {
-                    const next = new Map(current);
-                    next.set(field.id, event.target.value);
-                    return next;
-                  });
-                }}
                 disabled={isSaving}
+                {...register(String(field.id))}
               />
             </div>
           ))
@@ -226,6 +234,7 @@ export const NoteEditDialog = ({
 
         <div className={styles.actions}>
           <Button
+            type="button"
             variant="secondary"
             size="md"
             onPress={handleCancel}
@@ -234,15 +243,15 @@ export const NoteEditDialog = ({
             Cancel
           </Button>
           <Button
+            type="submit"
             variant="primary"
             size="md"
-            onPress={handleSave}
             disabled={isSaving || editableFields.length === 0 || !releaseId}
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
-      </div>
+      </form>
     </dialog>
   );
 };

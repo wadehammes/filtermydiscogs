@@ -1,10 +1,16 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { forwardRef } from "react";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./Button.module.css";
 
-interface ButtonProps {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "success";
+interface ButtonProps extends ComponentProps<"button"> {
+  variant?:
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "ghost"
+    | "success"
+    | "outlinePrimary";
   size?: "sm" | "md" | "lg";
   children: ReactNode;
   className?: string | undefined;

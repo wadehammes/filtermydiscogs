@@ -78,6 +78,14 @@ export const PublicPageHeader = ({
             >
               Legal
             </Link>
+            <Link
+              href="/api/auth/discogs"
+              className={classNames(navStyles.link, {
+                [styles.navLinkGradient as string]: variant === "gradient",
+              })}
+            >
+              Log in
+            </Link>
           </div>
           <div className={navStyles.actions}>
             <ThemeSwitcher variant="segmented" />

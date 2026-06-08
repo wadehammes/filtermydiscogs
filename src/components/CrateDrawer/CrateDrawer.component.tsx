@@ -1,9 +1,10 @@
 import Image from "next/image";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
+import { EditCrateDialog } from "src/components/EditCrateDialog/EditCrateDialog.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
@@ -36,13 +37,13 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
+  const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name || "My Crate";
-  const isDefaultCrate = activeCrate?.is_default;
+  const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
   const canDelete = crates.length > 1 && !isDefaultCrate;
 
@@ -51,10 +52,10 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     setShowClearDialog(false);
   }, [clearCrate]);
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteCrate = useCallback(() => {
     if (activeCrateId) {
       deleteCrate(activeCrateId);
-      setShowDeleteDialog(false);
+      setShowEditCrateDialog(false);
     }
   }, [activeCrateId, deleteCrate]);
 
@@ -103,6 +104,29 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     } else {
       alert("Failed to copy link to clipboard");
     }
+  }, [activeCrateId]);
+
+  const handleSaveCrateName = useCallback(
+    async (name: string) => {
+      if (!activeCrateId) {
+        return;
+      }
+
+      try {
+        await updateCrate(activeCrateId, { name });
+        setShowEditCrateDialog(false);
+      } catch (error) {
+        console.error("Error renaming crate:", error);
+        alert(
+          `Failed to rename crate: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+      }
+    },
+    [activeCrateId, updateCrate],
+  );
+
+  useEffect(() => {
+    setShowEditCrateDialog(false);
   }, [activeCrateId]);
 
   const releasesContent = (
@@ -206,6 +230,14 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         <Button
           variant="secondary"
           size="sm"
+          onPress={() => setShowEditCrateDialog(true)}
+          disabled={!activeCrateId || isUpdatingCrate || isDeletingCrate}
+        >
+          Edit Crate
+        </Button>
+        <Button
+          variant="danger"
+          size="sm"
           onPress={() => setShowClearDialog(true)}
           disabled={selectedReleases.length === 0}
         >
@@ -214,20 +246,12 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         {!isDefaultCrate && (
           <>
             <Button
-              variant="secondary"
+              variant="outlinePrimary"
               size="sm"
               onPress={() => setShowMakeDefaultDialog(true)}
               disabled={isUpdatingCrate || isDeletingCrate}
             >
               {isUpdatingCrate ? "Making Default..." : "Make Default"}
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onPress={() => setShowDeleteDialog(true)}
-              disabled={!canDelete || isUpdatingCrate || isDeletingCrate}
-            >
-              {isDeletingCrate ? "Deleting..." : "Delete Crate"}
             </Button>
           </>
         )}
@@ -289,6 +313,18 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         </div>
       )}
 
+      <EditCrateDialog
+        isOpen={showEditCrateDialog}
+        crateName={crateName}
+        isDefaultCrate={isDefaultCrate}
+        canDelete={canDelete}
+        isUpdatingCrate={isUpdatingCrate}
+        isDeletingCrate={isDeletingCrate}
+        onClose={() => setShowEditCrateDialog(false)}
+        onSaveName={handleSaveCrateName}
+        onDelete={handleDeleteCrate}
+      />
+
       <ConfirmDialog
         isOpen={showClearDialog}
         title="Clear Crate"
@@ -298,18 +334,6 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
         variant="danger"
         onConfirm={handleClearConfirm}
         onCancel={() => setShowClearDialog(false)}
-      />
-
-      <ConfirmDialog
-        isOpen={showDeleteDialog}
-        title="Delete Crate"
-        message={`Are you sure you want to delete "${crateName}"? This will permanently remove the crate and all ${selectedReleases.length} release${selectedReleases.length !== 1 ? "s" : ""} in it. This action cannot be undone.`}
-        confirmLabel={isDeletingCrate ? "Deleting..." : "Delete"}
-        cancelLabel="Cancel"
-        variant="danger"
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setShowDeleteDialog(false)}
-        isConfirming={isDeletingCrate}
       />
 
       <ConfirmDialog
