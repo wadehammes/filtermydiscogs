@@ -74,6 +74,15 @@ export const useReleasesClient = () => {
     !isRandomMode && filteredReleases.length > visibleReleases.length;
 
   useEffect(() => {
+    if (isMobile && currentView === "list") {
+      viewDispatch({
+        type: ViewActionTypes.SetView,
+        payload: "card",
+      });
+    }
+  }, [isMobile, currentView, viewDispatch]);
+
+  useEffect(() => {
     if (!isRandomMode && currentView === "random") {
       const nextView =
         previousView === "list" ? "card" : previousView || "card";
