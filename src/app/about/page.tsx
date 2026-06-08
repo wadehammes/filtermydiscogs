@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
+import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import { AboutClient } from "./AboutClient";
 
 const baseUrl =
@@ -18,21 +19,14 @@ export const metadata: Metadata = {
     siteName: "FilterMyDisco.gs",
     type: "website",
     locale: "en-US",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "FilterMyDisco.gs App Preview",
-      },
-    ],
+    images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "About | FilterMyDisco.gs",
     description:
       "About FilterMyDisco.gs, contact information, and how to support the project",
-    images: ["/opengraph-image"],
+    images: [DEFAULT_TWITTER_IMAGE],
   },
 };
 
