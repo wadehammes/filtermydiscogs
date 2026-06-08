@@ -21,6 +21,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  isCheckingAuth: boolean;
   isLoading: boolean;
   isLoggingOut: boolean;
   error: string | null;
@@ -30,6 +31,7 @@ export enum AuthActionTypes {
   SetAuthenticated = "SetAuthenticated",
   SetUsername = "SetUsername",
   SetUserId = "SetUserId",
+  SetCheckingAuth = "SetCheckingAuth",
   SetLoading = "SetLoading",
   SetLoggingOut = "SetLoggingOut",
   SetError = "SetError",
@@ -40,6 +42,7 @@ export type AuthActions =
   | { type: AuthActionTypes.SetAuthenticated; payload: boolean }
   | { type: AuthActionTypes.SetUsername; payload: string | null }
   | { type: AuthActionTypes.SetUserId; payload: string | null }
+  | { type: AuthActionTypes.SetCheckingAuth; payload: boolean }
   | { type: AuthActionTypes.SetLoading; payload: boolean }
   | { type: AuthActionTypes.SetLoggingOut; payload: boolean }
   | { type: AuthActionTypes.SetError; payload: string | null }
@@ -61,6 +64,11 @@ const authReducer = (state: AuthState, action: AuthActions): AuthState => {
       return {
         ...state,
         userId: action.payload,
+      };
+    case AuthActionTypes.SetCheckingAuth:
+      return {
+        ...state,
+        isCheckingAuth: action.payload,
       };
     case AuthActionTypes.SetLoading:
       return {
@@ -84,6 +92,7 @@ const authReducer = (state: AuthState, action: AuthActions): AuthState => {
         username: null,
         userId: null,
         error: null,
+        isCheckingAuth: false,
         isLoading: false,
         isLoggingOut: false,
       };
@@ -96,7 +105,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   username: null,
   userId: null,
-  isLoading: true,
+  isCheckingAuth: true,
+  isLoading: false,
   isLoggingOut: false,
   error: null,
 };
@@ -120,7 +130,10 @@ export const AuthProvider = ({
 }: AuthProviderProps) => {
   const [state, dispatch] = useReducer(
     authReducer,
-    initialStateOverride ?? initialState,
+    initialStateOverride ?? {
+      ...initialState,
+      isCheckingAuth: !skipInitialAuthCheck,
+    },
   );
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -154,14 +167,14 @@ export const AuthProvider = ({
           queryClient.clear();
         }
         if (isMounted) {
-          dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+          dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
         }
       } catch (error) {
         if (!isMounted) return;
         console.error("Error checking auth:", error);
         queryClient.clear();
         if (isMounted) {
-          dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+          dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
         }
       }
     };
@@ -193,7 +206,7 @@ export const AuthProvider = ({
             type: AuthActionTypes.SetUserId,
             payload: authStatusResult.userId,
           });
-          dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+          dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
           queryClient.invalidateQueries({
             queryKey: DiscogsCollectionQueryKeys.all(),
           });
@@ -201,7 +214,7 @@ export const AuthProvider = ({
           return;
         }
 
-        dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+        dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
         clearUrlParams();
       };
 
@@ -211,7 +224,7 @@ export const AuthProvider = ({
         type: AuthActionTypes.SetError,
         payload: `Authentication failed: ${errorStatus}`,
       });
-      dispatch({ type: AuthActionTypes.SetLoading, payload: false });
+      dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
       clearUrlParams();
     }
   }, [queryClient, skipInitialAuthCheck]);

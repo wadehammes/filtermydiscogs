@@ -138,8 +138,8 @@
   p {
     margin: 0;
     line-height: 1.5;
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
+    font-family: var(--font-family-meta);
+    font-size: var(--text-meta-xs);
   }
 }
 
@@ -236,20 +236,20 @@
 
 .itemArtist {
   color: var(--muted-foreground);
-  font-size: var(--text-xxs);
+  font-family: inherit;
+  font-size: var(--text-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-mono);
 }
 
 .itemLabel {
   color: var(--muted-foreground);
-  font-size: var(--text-xxs);
+  font-family: inherit;
+  font-size: var(--text-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-mono);
 }
 
 .removeButton {

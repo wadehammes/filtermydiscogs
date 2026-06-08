@@ -73,7 +73,7 @@ export default function ReleasesClient() {
     : undefined;
 
   const shouldRedirectHome = !(
-    authState.isAuthenticated || authState.isLoading
+    authState.isAuthenticated || authState.isCheckingAuth
   );
 
   useEffect(() => {

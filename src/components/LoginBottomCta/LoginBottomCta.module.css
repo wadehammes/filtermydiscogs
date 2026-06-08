@@ -1,0 +1,20 @@
+.bottomCta {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0 auto;
+  max-width: 40rem;
+  padding-top: var(--space-12);
+  text-align: center;
+  width: 100%;
+
+  @media (width >= 768px) {
+    padding-top: var(--space-16);
+  }
+}
+
+.loginButton {
+  margin-top: var(--space-2);
+}

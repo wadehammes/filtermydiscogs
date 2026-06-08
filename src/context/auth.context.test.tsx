@@ -75,10 +75,11 @@ describe("AuthProvider", () => {
 
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
-    expect(result.current.state.isLoading).toBe(true);
+    expect(result.current.state.isCheckingAuth).toBe(true);
+    expect(result.current.state.isLoading).toBe(false);
 
     await waitFor(() => {
-      expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.isCheckingAuth).toBe(false);
     });
   });
 
@@ -92,7 +93,7 @@ describe("AuthProvider", () => {
     const { result } = renderAuthHook();
 
     await waitFor(() => {
-      expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.isCheckingAuth).toBe(false);
     });
 
     expect(mockCheckAuthStatus).toHaveBeenCalled();
@@ -149,7 +150,7 @@ describe("AuthProvider", () => {
 
     expect(result.current.state.username).toBe("testuser");
     expect(result.current.state.userId).toBe("123");
-    expect(result.current.state.isLoading).toBe(false);
+    expect(result.current.state.isCheckingAuth).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
       queryKey: DiscogsCollectionQueryKeys.all(),
@@ -170,7 +171,7 @@ describe("AuthProvider", () => {
     const { result } = renderAuthHook();
 
     await waitFor(() => {
-      expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.isCheckingAuth).toBe(false);
       expect(result.current.state.error).toBe(
         "Authentication failed: access_denied",
       );
@@ -203,7 +204,7 @@ describe("AuthProvider", () => {
     const { result } = renderAuthHook();
 
     await waitFor(() => {
-      expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.isCheckingAuth).toBe(false);
     });
 
     act(() => {
@@ -230,7 +231,7 @@ describe("AuthProvider", () => {
     const { result } = renderAuthHook();
 
     await waitFor(() => {
-      expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.isCheckingAuth).toBe(false);
     });
 
     act(() => {
@@ -267,7 +268,7 @@ describe("AuthProvider", () => {
     const { result } = renderAuthHook();
 
     await waitFor(() => {
-      expect(result.current.state.isLoading).toBe(false);
+      expect(result.current.state.isCheckingAuth).toBe(false);
     });
 
     await act(async () => {

@@ -1,11 +1,16 @@
 "use client";
 
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
+import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 
 /**
  * Root loading UI.
- * Shows instantly while the root layout or initial page is loading.
+ * Keeps the public header visible while the initial page streams in.
  */
 export default function RootLoading() {
-  return <PageLoader message="Loading..." size="3xl" fullHeight />;
+  return (
+    <PublicAuthLayout>
+      <PageLoader message="Loading..." size="3xl" fullHeight />
+    </PublicAuthLayout>
+  );
 }

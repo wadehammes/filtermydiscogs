@@ -75,7 +75,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--space-1);
+  gap: var(--space-2);
 
   .menuItem {
     align-items: center;
@@ -85,10 +85,12 @@
     color: var(--foreground);
     cursor: pointer;
     display: flex;
-    font-family: inherit;
-    font-size: var(--text-base);
-    font-weight: var(--font-medium);
+    font-family: var(--nav-link-font-family);
+    font-size: var(--nav-link-font-size);
+    font-weight: var(--nav-link-font-weight);
     gap: var(--space-3);
+    letter-spacing: var(--nav-link-letter-spacing);
+    line-height: var(--nav-link-line-height);
     padding: var(--space-3);
     text-align: left;
     text-decoration: none;
@@ -168,8 +170,11 @@
     border-radius: var(--radius-ui);
     color: var(--foreground);
     display: inline-flex;
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
+    font-family: var(--nav-link-font-family);
+    font-size: var(--nav-link-font-size);
+    font-weight: var(--nav-link-font-weight);
+    letter-spacing: var(--nav-link-letter-spacing);
+    line-height: var(--nav-link-line-height);
     padding: var(--space-3);
     text-decoration: none;
     transition: var(--transition-normal);

@@ -12,6 +12,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | Component folders, naming, tests | [components.md](components.md) |
+| Public landing, login page, `PublicAuthLayout` | [components.md](components.md) + [patterns.md](patterns.md) (auth flow) |
 | Contexts, filters, React Query, auth, public crates | [patterns.md](patterns.md) |
 | CI, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |

@@ -1,14 +1,10 @@
-.container {
+.loadingShell {
   align-items: center;
-  background: linear-gradient(
-    135deg,
-    var(--gradientPink) 0%,
-    var(--gradientTeal) 100%
-  );
   display: flex;
-  height: 100vh;
+  flex: 1;
   justify-content: center;
-  padding: var(--space-4);
+  min-height: 100%;
+  padding: var(--space-8) var(--space-4);
   width: 100%;
 }
 
@@ -30,22 +26,15 @@
   }
 }
 
-.title {
+.logo {
   color: var(--foreground);
-  font-family: var(--font-assistant), sans-serif;
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  margin: 0;
-
-  @media (width >= 768px) {
-    font-size: var(--text-3xl);
-  }
+  width: 12.5rem;
 }
 
 .description {
   color: var(--muted-foreground);
-  font-family: var(--font-mono);
-  font-size: var(--text-base);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-base);
   line-height: 1.6;
   margin: 0;
 }

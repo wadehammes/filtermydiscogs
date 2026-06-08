@@ -89,8 +89,8 @@
 
   p {
     color: var(--muted-foreground);
-    font-size: var(--text-sm);
-    font-family: var(--font-mono);
+    font-size: var(--text-meta-sm);
+    font-family: var(--font-family-meta);
   }
 }
 

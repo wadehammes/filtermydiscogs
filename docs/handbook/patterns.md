@@ -23,10 +23,20 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 
 1. **Start OAuth**: client navigates to **`GET /api/auth/discogs`**, which redirects to Discogs authorize URL and stores temporary request tokens in cookies.
 2. **Callback**: **`GET /api/auth/callback`** exchanges verifier for access token, calls **`getIdentity`**, sets cookies, redirects to **`/releases?auth=success`**.
-3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount (server verifies OAuth tokens with Discogs **`getIdentity`**). Username may still be read from **`discogs_username`** for display; **`userId`** comes from the check response.
+3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount (server verifies OAuth tokens with Discogs **`getIdentity`**). Username may still be read from **`discogs_username`** for display; **`userId`** comes from the check response. **`isCheckingAuth`** tracks this background check; **`isLoading`** is reserved for an in-flight OAuth redirect after **Connect with Discogs**. The home page renders the landing immediately while **`isCheckingAuth`** runs, shows a subtle Sonner toast (**`AuthCheckingToast`**) while the session is verified, and redirects authenticated users to **`/releases`** when the check completes. Protected app routes still gate on **`isCheckingAuth`** via **`AuthLoading`** until the session is known.
 4. **Logout**: **`/api/auth/logout`** clears session cookies by default (full logout). Pass **`?preserve_tokens=true`** to keep OAuth tokens for quick re-login. Client dispatches logout actions and shows **`LogoutOverlay`**.
 
 Cookie names and security flags: [discogs.md](discogs.md).
+
+## Public pages
+
+Server `page.tsx` files for home, about, legal, and public crates share one client shell:
+
+1. **`PublicAuthLayout`** — header (`PublicAuthHeader` → `PublicPageHeader` or authenticated `StickyHeaderBar`), `<main>`, optional `footer`.
+2. **`PageFooter`** (server component) — community stats (`PageFooterStats` / `PageFooterFun`) plus About / Contribute links. Pass as the layout `footer` prop from each `page.tsx`.
+3. **Page content** — e.g. [`Login`](../../src/components/Login/Login.component.tsx) on `/`, `AboutClient` / `LegalClient`, or public crate client.
+
+Home renders the landing immediately during **`isCheckingAuth`**; authenticated users redirect from `Login` via `router.replace("/releases")`. Do not block the landing with **`AuthLoading`** — that component is for protected app routes only.
 
 ## API layer
 

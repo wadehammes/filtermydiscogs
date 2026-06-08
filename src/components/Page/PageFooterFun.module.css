@@ -1,0 +1,289 @@
+.fun {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: center;
+  padding: var(--space-8) var(--space-4) var(--space-3);
+  width: 100%;
+
+  @media (width >= 768px) {
+    gap: var(--space-5);
+    padding: var(--space-10) var(--space-4) var(--space-3);
+  }
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 42rem;
+  text-align: center;
+  width: min(100%, 42rem);
+}
+
+.title {
+  color: var(--foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.12em;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.purpose {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  margin: 0;
+  text-wrap: balance;
+
+  @media (width >= 768px) {
+    font-size: var(--text-meta-xs);
+  }
+}
+
+.funGradient .title {
+  color: var(--background);
+}
+
+.funGradient .purpose {
+  color: color-mix(in srgb, var(--background) 78%, transparent);
+}
+
+.sticker {
+  align-items: stretch;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card) 92%, var(--primary)) 0%,
+      var(--card) 55%
+    ),
+    var(--card);
+  border: 1px dashed color-mix(in srgb, var(--primary) 28%, var(--border));
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+    var(--shadow-sm);
+  display: flex;
+  margin: 0;
+  max-width: 42rem;
+  overflow: hidden;
+  position: relative;
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
+  width: min(100%, 42rem);
+
+  @media (prefers-reduced-motion: no-preference) {
+    &:hover {
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+      box-shadow:
+        0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
+        var(--shadow-md);
+      transform: rotate(-0.35deg) translateY(-1px);
+    }
+  }
+
+  @media (width >= 768px) {
+    min-height: 6.5rem;
+  }
+}
+
+.vinylWell {
+  align-items: center;
+  background: color-mix(in srgb, var(--primary) 7%, var(--background));
+  border-right: 1px solid color-mix(in srgb, var(--border) 85%, var(--primary));
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--space-4);
+  position: relative;
+  width: 5.5rem;
+
+  @media (width >= 768px) {
+    width: 6.5rem;
+  }
+}
+
+.grooves {
+  background: repeating-radial-gradient(
+    circle at center,
+    transparent 0,
+    transparent 0.35rem,
+    color-mix(in srgb, var(--muted-foreground) 10%, transparent) 0.35rem,
+    color-mix(in srgb, var(--muted-foreground) 10%, transparent) 0.42rem
+  );
+  inset: 0;
+  opacity: 0.65;
+  pointer-events: none;
+  position: absolute;
+}
+
+.vinyl {
+  display: flex;
+  flex-shrink: 0;
+  line-height: 0;
+  position: relative;
+  z-index: 1;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: vinylSpin 6s linear infinite;
+
+    .sticker:hover & {
+      animation-play-state: paused;
+    }
+  }
+}
+
+.vinylIcon {
+  color: var(--primary);
+  filter: drop-shadow(
+    0 2px 4px color-mix(in srgb, var(--foreground) 12%, transparent)
+  );
+  height: 2.25rem;
+  width: 2.25rem;
+
+  @media (width >= 768px) {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+}
+
+.copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: center;
+  min-width: 0;
+  padding: var(--space-4) var(--space-5);
+  text-align: left;
+
+  @media (width >= 768px) {
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-6);
+  }
+}
+
+.stats {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+
+  @media (width <= 640px) {
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.statValue {
+  color: var(--foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-lg);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+
+  @media (width >= 768px) {
+    font-size: var(--text-xl);
+  }
+}
+
+.statLabel {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.meta {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  gap: var(--space-2);
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.metaDivider {
+  color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+}
+
+.funGradient .sticker {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--background) 18%, transparent) 0%,
+      color-mix(in srgb, var(--background) 8%, transparent) 100%
+    ),
+    color-mix(in srgb, var(--background) 12%, transparent);
+  border-color: color-mix(in srgb, var(--background) 35%, transparent);
+  box-shadow: none;
+}
+
+.funGradient .vinylWell {
+  background: color-mix(in srgb, var(--background) 14%, transparent);
+  border-right-color: color-mix(in srgb, var(--background) 24%, transparent);
+}
+
+.funGradient .grooves {
+  background: repeating-radial-gradient(
+    circle at center,
+    transparent 0,
+    transparent 0.35rem,
+    color-mix(in srgb, var(--background) 18%, transparent) 0.35rem,
+    color-mix(in srgb, var(--background) 18%, transparent) 0.42rem
+  );
+}
+
+.funGradient .vinylIcon {
+  color: var(--background);
+  filter: none;
+}
+
+.funGradient .statValue {
+  color: var(--background);
+}
+
+.funGradient .statLabel {
+  color: color-mix(in srgb, var(--background) 72%, transparent);
+}
+
+.funGradient .meta {
+  color: color-mix(in srgb, var(--background) 72%, transparent);
+}
+
+.funGradient .metaDivider {
+  color: color-mix(in srgb, var(--background) 45%, transparent);
+}
+
+@keyframes vinylSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

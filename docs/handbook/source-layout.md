@@ -14,7 +14,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/lib/`](../../src/lib/) | Server utilities: Prisma client, username validation, public crate loader, rate limit, admin helpers. |
 | [`src/utils/`](../../src/utils/) | Pure helpers: filter, sort, format tags, sync collection. |
 | [`src/types/`](../../src/types/) | Shared TypeScript types (Discogs shapes, crate, dashboard). |
-| [`src/styles/`](../../src/styles/) | Global CSS, theme tokens, Stylelint custom properties. |
+| [`src/styles/`](../../src/styles/) | Global CSS, theme tokens, shared modules ([`typography.module.css`](../../src/styles/typography.module.css), [`accessibility.module.css`](../../src/styles/accessibility.module.css), nav/segmented controls), Stylelint custom properties. |
 | [`src/constants.ts`](../../src/constants.ts) | App-wide constants (storage keys, sort enums). |
 | [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, mocks. |
 | [`prisma/`](../../prisma/) | Schema and migrations. |
@@ -35,5 +35,6 @@ Quick map of **`src/`** and related top-level folders.
 | Change filter logic | [`src/utils/filterReleases.ts`](../../src/utils/filterReleases.ts) + [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts) |
 | Crate DB changes | [`prisma/schema.prisma`](../../prisma/schema.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
+| Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home content in [`Login/`](../../src/components/Login/) |
 
 **Tests** for a module usually sit **next to** that module (`*.spec.tsx` for PO-backed components, `*.test.ts(x)` for context/hooks/utils, optional **`*.po.tsx`** for page objects). Shared test infra lives under **`src/tests/`** (`BasePageObject.po.ts`, factories, mocks).

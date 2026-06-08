@@ -51,8 +51,8 @@
 
 .releaseMeta {
   color: var(--muted-foreground);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
   line-height: 1.5;
   margin: 0;
   overflow: hidden;

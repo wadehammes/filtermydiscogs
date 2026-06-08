@@ -12,7 +12,7 @@
   border-radius: var(--radius-card);
   color: var(--muted-foreground);
   display: inline-block;
-  font-family: var(--font-mono);
+  font-family: var(--font-family-meta);
   font-size: var(--text-xxs);
   font-weight: var(--font-normal);
   letter-spacing: 0.02em;
@@ -24,7 +24,7 @@
 .metaLine {
   color: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
   font-family: inherit;
-  font-size: var(--text-xxs);
+  font-size: var(--text-meta-sm);
   font-weight: var(--font-normal);
   letter-spacing: 0.02em;
   line-height: 1.4;

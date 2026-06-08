@@ -17,9 +17,9 @@
   flex-direction: column;
   gap: var(--space-2);
   color: var(--foreground);
-  font-size: var(--text-base);
+  font-size: var(--text-meta-base);
   font-weight: var(--font-medium);
-  font-family: var(--font-mono);
+  font-family: var(--font-family-meta);
   text-align: center;
 }
 
@@ -32,9 +32,9 @@
 
 .largeCollectionNote {
   color: var(--muted-foreground);
-  font-size: var(--text-xs);
+  font-size: var(--text-meta-xs);
   font-style: italic;
   margin-top: var(--space-3);
   text-align: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-family-meta);
 }

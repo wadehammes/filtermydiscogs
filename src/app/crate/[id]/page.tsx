@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { PageFooter } from "src/components/Page/PageFooter.server";
+import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { fetchPublicCrateMetadata } from "src/lib/api-helpers";
 import { PublicCrateClient } from "./PublicCrateClient";
 
@@ -87,5 +89,9 @@ export default async function PublicCratePage({
 }) {
   const { id } = await params;
 
-  return <PublicCrateClient crateId={id} />;
+  return (
+    <PublicAuthLayout footer={<PageFooter />}>
+      <PublicCrateClient crateId={id} />
+    </PublicAuthLayout>
+  );
 }

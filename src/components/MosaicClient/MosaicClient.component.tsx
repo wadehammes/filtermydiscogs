@@ -75,7 +75,7 @@ export default function MosaicClient() {
       aspectRatio,
     });
 
-  if (!state.isAuthenticated && state.isLoading) {
+  if (!state.isAuthenticated && state.isCheckingAuth) {
     return <AuthLoading />;
   }
 

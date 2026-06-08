@@ -37,7 +37,8 @@
     align-items: center;
     color: var(--muted-foreground);
     display: flex;
-    font-size: var(--text-sm);
+    font-family: var(--font-family-meta);
+    font-size: var(--text-meta-sm);
     gap: var(--space-2);
     margin: 0;
   }
@@ -47,7 +48,8 @@
   align-items: center;
   color: var(--primary);
   display: flex;
-  font-size: var(--text-sm);
+  font-family: inherit;
+  font-size: inherit;
   gap: var(--space-1);
 }
 
