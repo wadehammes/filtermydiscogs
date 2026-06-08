@@ -10,12 +10,16 @@
 }
 
 .main {
+  background-color: var(--background);
+  background-image: var(--pattern-microdot);
+  background-size: var(--pattern-microdot-size);
   align-items: stretch;
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
   width: 100%;
+  border-bottom: 1px dashed var(--border-color);
 }
 
 .mainCentered {

@@ -58,6 +58,11 @@ export const PageFooterFun = ({
       >
         <div className={styles.vinylWell} aria-hidden="true">
           <span className={styles.grooves} />
+          <span className={styles.pulseRings}>
+            <span className={styles.pulseRing} />
+            <span className={styles.pulseRing} />
+            <span className={styles.pulseRing} />
+          </span>
           <span className={styles.vinyl}>
             <VinylRecord className={styles.vinylIcon} />
           </span>
