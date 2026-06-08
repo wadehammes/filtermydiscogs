@@ -8,14 +8,17 @@ import {
 } from "@tanstack/react-table";
 import classNames from "classnames";
 import Image from "next/image";
-import type React from "react";
 import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrate } from "src/context/crate.context";
-import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
+import {
+  useSelectedFormats,
+  useSelectedStyles,
+} from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
+import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleasesTable.module.css";
 
@@ -32,6 +35,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
   ({ releases, isRandomMode, onExitRandomMode, onReleaseClick }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
     const selectedStyles = useSelectedStyles();
+    const selectedFormats = useSelectedFormats();
 
     const handlePillClick = usePillClickHandler({
       category: "releasesTable",
@@ -139,11 +143,11 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             const release = row.original;
             const artists = release.basic_information.artists;
             const title = release.basic_information.title;
-            const handleTitleClick = (e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleImageClick(release);
-            };
+            const resourceUrl = release.basic_information.resource_url;
+            const releaseUrl = getResourceUrl({
+              resourceUrl,
+              type: "release",
+            });
 
             return (
               <div className={styles.artistTitleCell}>
@@ -182,14 +186,28 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                     );
                   })}
                 </span>
-                <button
-                  type="button"
-                  onClick={handleTitleClick}
-                  className={styles.titleLink}
-                  title="View release details"
-                >
-                  {title}
-                </button>
+                {releaseUrl ? (
+                  <a
+                    href={releaseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.titleLink}
+                    title="View release on Discogs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      trackEvent("releaseClicked", {
+                        action: "releaseClicked",
+                        category: "releasesTable",
+                        label: "Release Clicked",
+                        value: resourceUrl ?? releaseUrl,
+                      });
+                    }}
+                  >
+                    {title}
+                  </a>
+                ) : (
+                  <span className={styles.titleLink}>{title}</span>
+                )}
               </div>
             );
           },
@@ -257,27 +275,53 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           size: 60,
           enableSorting: false,
         }),
-        columnHelper.accessor("basic_information.styles", {
-          id: "styles",
-          header: "Styles",
-          cell: ({ getValue }) => {
-            const releaseStyles = getValue();
-            if (!releaseStyles || releaseStyles.length === 0) return null;
+        columnHelper.display({
+          id: "formatStyles",
+          header: "Format/Styles",
+          cell: ({ row }) => {
+            const releaseFormats = row.original.basic_information.formats;
+            const releaseStyles = row.original.basic_information.styles;
+            const formatTags =
+              releaseFormats && releaseFormats.length > 0
+                ? getReleaseFormatTags(releaseFormats)
+                : [];
+
+            if (
+              formatTags.length === 0 &&
+              (!releaseStyles || releaseStyles.length === 0)
+            ) {
+              return null;
+            }
 
             return (
               <div className={styles.stylesCell}>
-                {releaseStyles.map((style: string) => (
+                {formatTags.map((formatName) => (
+                  <button
+                    key={formatName}
+                    type="button"
+                    className={classNames("pill", "pillFormat", {
+                      pillSelected: selectedFormats.includes(formatName),
+                    })}
+                    onClick={(e) =>
+                      handlePillClick({
+                        event: e,
+                        value: formatName,
+                        type: "format",
+                        eventLabel: "Format Pill Clicked",
+                      })
+                    }
+                    aria-label={`Filter by ${formatName} format`}
+                  >
+                    {formatName}
+                  </button>
+                ))}
+                {releaseStyles?.map((style: string) => (
                   <button
                     key={style}
                     type="button"
-                    className={classNames(
-                      "pill",
-                      "pillStyle",
-                      styles.stylePill,
-                      {
-                        pillSelected: selectedStyles.includes(style),
-                      },
-                    )}
+                    className={classNames("pill", "pillStyle", {
+                      pillSelected: selectedStyles.includes(style),
+                    })}
                     onClick={(e) =>
                       handlePillClick({
                         event: e,
@@ -294,7 +338,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
               </div>
             );
           },
-          size: 150,
+          size: 180,
           enableSorting: false,
         }),
         columnHelper.display({
@@ -313,6 +357,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
         }),
       ],
       [
+        selectedFormats,
         selectedStyles,
         handlePillClick,
         handleCheckboxChange,
