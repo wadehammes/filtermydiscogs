@@ -61,9 +61,13 @@ export const ViewToggle = ({
         </button>
         <button
           type="button"
-          className={classNames(segmentedStyles.segment, {
-            [segmentedStyles.active as string]: currentView === "list",
-          })}
+          className={classNames(
+            segmentedStyles.segment,
+            styles.listViewButton,
+            {
+              [segmentedStyles.active as string]: currentView === "list",
+            },
+          )}
           onClick={() => {
             scrollPageToTop();
             onViewChange("list");

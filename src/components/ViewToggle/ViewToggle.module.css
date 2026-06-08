@@ -2,3 +2,9 @@
   align-items: center;
   display: flex;
 }
+
+.listViewButton {
+  @media (width <= 768px) {
+    display: none;
+  }
+}

@@ -16,6 +16,11 @@ const STAT_ITEMS = [
     getValue: (stats: PublicCommunityStats) => stats.totalCrates,
   },
   {
+    key: "publicCrates",
+    label: "Public crates",
+    getValue: (stats: PublicCommunityStats) => stats.totalPublicCrates,
+  },
+  {
     key: "releases",
     label: "Releases saved",
     getValue: (stats: PublicCommunityStats) => stats.totalReleases,

@@ -3,17 +3,20 @@ import { prisma } from "src/lib/db";
 import type { PublicCommunityStats } from "src/types/public-stats.types";
 
 const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
-  const [totalCrates, totalReleases, collectors] = await Promise.all([
-    prisma.crate.count(),
-    prisma.crateRelease.count(),
-    prisma.crate.groupBy({
-      by: ["user_id"],
-    }),
-  ]);
+  const [totalCrates, totalPublicCrates, totalReleases, collectors] =
+    await Promise.all([
+      prisma.crate.count(),
+      prisma.crate.count({ where: { private: false } }),
+      prisma.crateRelease.count(),
+      prisma.crate.groupBy({
+        by: ["user_id"],
+      }),
+    ]);
 
   return {
     totalCollectors: collectors.length,
     totalCrates,
+    totalPublicCrates,
     totalReleases,
   };
 };
