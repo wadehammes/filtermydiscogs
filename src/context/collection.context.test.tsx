@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useRouter } from "next/navigation";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
-import { releaseFactory } from "src/tests/factories/Release.factory";
 import { act, renderHook, TestProviders } from "test-utils";
 import {
   CollectionActionTypes,
   CollectionReducer,
-  CollectionSortingValues,
   useCollectionContext,
 } from "./collection.context";
 
@@ -14,47 +12,10 @@ const mockUseRouter = jest.mocked(useRouter);
 
 describe("CollectionReducer", () => {
   const initialState = {
-    username: null,
-    page: 1,
-    nextPageLink: null,
     collection: null,
     fetchingCollection: true,
-    filteredReleases: [],
-    releaseStyles: [],
-    selectedReleaseStyle: [],
-    selectedReleaseSort: CollectionSortingValues.DateAddedNew,
     error: null,
   };
-
-  it("sets user", () => {
-    const action = {
-      type: CollectionActionTypes.SetUser,
-      payload: "testuser",
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.username).toBe("testuser");
-  });
-
-  it("sets page", () => {
-    const action = {
-      type: CollectionActionTypes.SetPage,
-      payload: 2,
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.page).toBe(2);
-  });
-
-  it("sets next page link", () => {
-    const action = {
-      type: CollectionActionTypes.SetNextPageLink,
-      payload: "https://example.com/next",
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.nextPageLink).toBe("https://example.com/next");
-  });
 
   it("sets collection", () => {
     const mockCollection = collectionFactory.build();
@@ -77,47 +38,6 @@ describe("CollectionReducer", () => {
     expect(result.fetchingCollection).toBe(false);
   });
 
-  it("sets filtered releases", () => {
-    const mockReleases = releaseFactory.buildList(2);
-    const action = {
-      type: CollectionActionTypes.SetFilteredReleases,
-      payload: mockReleases,
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.filteredReleases).toEqual(mockReleases);
-  });
-
-  it("sets release styles", () => {
-    const action = {
-      type: CollectionActionTypes.SetReleaseStyles,
-      payload: ["Rock", "Pop"] as string[],
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.releaseStyles).toEqual(["Rock", "Pop"]);
-  });
-
-  it("sets selected release style", () => {
-    const action = {
-      type: CollectionActionTypes.SetSelectedReleaseStyle,
-      payload: ["Rock"] as string[],
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.selectedReleaseStyle).toEqual(["Rock"]);
-  });
-
-  it("sets selected release sort", () => {
-    const action = {
-      type: CollectionActionTypes.SetSelectedReleaseSort,
-      payload: CollectionSortingValues.AZLabel,
-    } as const;
-    const result = CollectionReducer(initialState, action);
-
-    expect(result.selectedReleaseSort).toBe(CollectionSortingValues.AZLabel);
-  });
-
   it("sets error", () => {
     const action = {
       type: CollectionActionTypes.SetError,
@@ -131,8 +51,8 @@ describe("CollectionReducer", () => {
   it("resets state", () => {
     const modifiedState = {
       ...initialState,
-      username: "testuser",
-      page: 5,
+      fetchingCollection: false,
+      error: "Error message",
     };
     const action = {
       type: CollectionActionTypes.ResetState,
@@ -173,32 +93,9 @@ describe("CollectionContextProvider", () => {
       wrapper: TestProviders,
     });
 
-    expect(result.current.state.username).toBeNull();
-    expect(result.current.state.page).toBe(1);
-  });
-
-  it("dispatches user", () => {
-    const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: TestProviders,
-    });
-
-    act(() => {
-      result.current.dispatchUser("testuser");
-    });
-
-    expect(result.current.state.username).toBe("testuser");
-  });
-
-  it("dispatches page", () => {
-    const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: TestProviders,
-    });
-
-    act(() => {
-      result.current.dispatchPage(3);
-    });
-
-    expect(result.current.state.page).toBe(3);
+    expect(result.current.state.collection).toBeNull();
+    expect(result.current.state.fetchingCollection).toBe(true);
+    expect(result.current.state.error).toBeNull();
   });
 
   it("dispatches collection", () => {
@@ -238,7 +135,6 @@ describe("CollectionContextProvider", () => {
         value: "http://localhost/?username=testuser",
       });
     } catch {
-      // If href is not configurable, skip this test
       return;
     }
 
@@ -246,22 +142,20 @@ describe("CollectionContextProvider", () => {
       wrapper: TestProviders,
     });
 
-    // Set some state first
     act(() => {
-      result.current.dispatchUser("testuser");
-      result.current.dispatchPage(5);
+      result.current.dispatchError("Error message");
+      result.current.dispatchFetchingCollection(false);
     });
 
-    expect(result.current.state.username).toBe("testuser");
-    expect(result.current.state.page).toBe(5);
+    expect(result.current.state.error).toBe("Error message");
+    expect(result.current.state.fetchingCollection).toBe(false);
 
-    // Reset state
     act(() => {
       result.current.dispatchResetState();
     });
 
-    expect(result.current.state.username).toBeNull();
-    expect(result.current.state.page).toBe(1);
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.fetchingCollection).toBe(true);
     expect(mockReplace).toHaveBeenCalled();
 
     if (originalHrefDescriptor) {

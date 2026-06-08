@@ -2,15 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
-import { AuthLoading } from "src/components/AuthLoading/AuthLoading.component";
-import { LoadingOverlay } from "src/components/LoadingOverlay/LoadingOverlay.component";
-import { Login } from "src/components/Login/Login.component";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
-import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
+import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
 import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
@@ -53,9 +52,13 @@ const StyleEvolution = dynamic(
 
 export default function DashboardClient() {
   const { state: authState } = useAuth();
-  const { isLoading: collectionLoading, isFetchingNextPage } =
-    useCollectionData(authState.username, authState.isAuthenticated);
-  const allReleases = useAllReleases();
+  const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
+  const { isLoading: collectionLoading } = useCollectionData(
+    authState.username,
+    authState.isAuthenticated,
+  );
+  const needsCollectionLoad = useNeedsCollectionLoad(collectionLoading);
+  const showLoading = isCheckingAuth || needsCollectionLoad;
 
   const analytics = useCollectionAnalytics();
   const {
@@ -70,12 +73,16 @@ export default function DashboardClient() {
     }
   }, [valueError]);
 
-  if (!authState.isAuthenticated && authState.isCheckingAuth) {
-    return <AuthLoading />;
+  if (shouldRedirectHome) {
+    return null;
   }
 
-  if (!authState.isAuthenticated) {
-    return <Login />;
+  if (showLoading) {
+    return (
+      <AppPageLoading currentPage="dashboard" hideFilters={true}>
+        <DashboardSkeleton />
+      </AppPageLoading>
+    );
   }
 
   return (
@@ -92,24 +99,6 @@ export default function DashboardClient() {
             Insights and analytics about your Discogs collection
           </p>
         </div>
-
-        {collectionLoading && (
-          <>
-            <LoadingOverlay
-              isVisible={true}
-              message="Loading your collection..."
-              hideBackdrop={true}
-              progressText={
-                allReleases.length > 0
-                  ? `${allReleases.length} releases loaded${
-                      isFetchingNextPage ? " (loading more...)" : ""
-                    }`
-                  : undefined
-              }
-            />
-            <DashboardSkeleton />
-          </>
-        )}
 
         {!(collectionLoading || analytics) && (
           <div className={styles.emptyState}>

@@ -1,10 +1,11 @@
+import type { ViewMode } from "src/atoms/view.atoms";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import { type ViewMode, ViewToggle } from "./ViewToggle.component";
+import { ViewToggle } from "./ViewToggle.component";
 
 export type ViewToggleRenderProps = {
   currentView?: ViewMode;

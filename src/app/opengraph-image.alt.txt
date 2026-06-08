@@ -1,1 +1,1 @@
-App preview showing the main interface with release cards, filters, and crate functionality
+FilterMyDiscogs, a Discogs collection management tool

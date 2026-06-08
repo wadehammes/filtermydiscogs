@@ -1,16 +1,15 @@
 "use client";
 
 import classNames from "classnames";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { Page } from "src/components/Page/Page.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
-import { ReleasesLoading } from "src/components/ReleasesLoading/ReleasesLoading.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
-import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
+import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
+import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { EmptyState } from "./components/EmptyState.component";
 import { LoadingTrigger } from "./components/LoadingTrigger.component";
@@ -19,8 +18,7 @@ import { ReleasesHeader } from "./components/ReleasesHeader.component";
 import styles from "./ReleasesClient.module.css";
 
 export default function ReleasesClient() {
-  const router = useRouter();
-  const { state: authState } = useAuth();
+  const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const {
     isDrawerOpen,
     toggleDrawer,
@@ -32,7 +30,6 @@ export default function ReleasesClient() {
   const crateName = activeCrate?.name;
   const {
     // Loading states
-    authLoading,
     isLoading,
     hasError,
     error,
@@ -72,27 +69,24 @@ export default function ReleasesClient() {
       }
     : undefined;
 
-  const shouldRedirectHome = !(
-    authState.isAuthenticated || authState.isCheckingAuth
-  );
-
-  useEffect(() => {
-    if (shouldRedirectHome) {
-      router.replace("/");
-    }
-  }, [shouldRedirectHome, router]);
+  const needsCollectionLoad = useNeedsCollectionLoad(isLoading);
+  const showLoading = isCheckingAuth || needsCollectionLoad;
 
   if (shouldRedirectHome) {
     return null;
   }
 
-  if (authLoading || isLoading) {
+  if (showLoading) {
     return (
       <Page>
-        <StickyHeaderBar allReleasesLoaded={false} />
-        <div className={styles.loadingContainer}>
-          <ReleasesLoading isLoaded={false} progress={loadingProgress} />
-        </div>
+        <AppPageLoading
+          currentPage="releases"
+          progressText={
+            needsCollectionLoad && loadingProgress
+              ? `${loadingProgress.current} releases loaded`
+              : undefined
+          }
+        />
       </Page>
     );
   }

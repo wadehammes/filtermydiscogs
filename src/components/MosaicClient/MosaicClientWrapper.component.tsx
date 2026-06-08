@@ -1,15 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 
 const MosaicClient = dynamic(() => import("./MosaicClient.component"), {
   ssr: false,
+  loading: () => <AppPageLoading currentPage="mosaic" />,
 });
 
-/**
- * Client Component wrapper for MosaicClient.
- * Handles dynamic import with ssr: false since canvas API requires client-side rendering.
- */
 export default function MosaicClientWrapper() {
   return <MosaicClient />;
 }

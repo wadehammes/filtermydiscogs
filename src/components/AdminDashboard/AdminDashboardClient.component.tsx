@@ -1,15 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { AuthLoading } from "src/components/AuthLoading/AuthLoading.component";
-import { Login } from "src/components/Login/Login.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import sharedStyles from "src/components/shared/DashboardLayout/DashboardLayout.module.css";
 import { DashboardSection } from "src/components/shared/DashboardSection/DashboardSection.component";
 import { StatCard } from "src/components/shared/StatCard/StatCard.component";
 import { StatsGrid } from "src/components/shared/StatsGrid/StatsGrid.component";
-import { useAuth } from "src/context/auth.context";
 import { useAdminStatsQuery } from "src/hooks/queries/useAdminStatsQuery";
+import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import styles from "./AdminDashboardClient.module.css";
 
 const GrowthAreaChart = dynamic(
@@ -21,15 +19,11 @@ const GrowthAreaChart = dynamic(
 );
 
 export default function AdminDashboardClient() {
-  const { state: authState } = useAuth();
+  const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { data: stats, isLoading, error } = useAdminStatsQuery();
 
-  if (!authState.isAuthenticated && authState.isCheckingAuth) {
-    return <AuthLoading />;
-  }
-
-  if (!authState.isAuthenticated) {
-    return <Login />;
+  if (shouldRedirectHome || isCheckingAuth) {
+    return null;
   }
 
   const formatNumber = (value: number): string => {

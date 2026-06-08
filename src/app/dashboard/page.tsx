@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 
 const DashboardClient = dynamic(
   () => import("src/components/Dashboard/DashboardClient.component"),
   {
-    loading: () => null,
+    loading: () => (
+      <AppPageLoading currentPage="dashboard" hideFilters={true} />
+    ),
   },
 );
 

@@ -13,7 +13,7 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 3. **Discogs integration** — [discogs.md](discogs.md): OAuth, API service, username validation, cookies.
 4. **Database** — [database.md](database.md): Prisma schema, crates, route handlers.
 5. **UI structure** — [components.md](components.md): folders, naming, tests.
-6. **App patterns** — [patterns.md](patterns.md): contexts, React Query, filtering, auth flow, public crates.
+6. **App patterns** — [patterns.md](patterns.md): Jotai (filters/view), context providers, React Query, auth flow, public crates.
 7. **Operations** — [platform.md](platform.md): CI, env, `next.config`, security headers.
 8. **Test data** — [factories.md](factories.md): Faker factories for releases, collections, crates.
 9. **Where things live** — [source-layout.md](source-layout.md): `src/app`, `src/components`, hooks, API routes.
@@ -27,7 +27,7 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 | [discogs.md](discogs.md) | OAuth 1.0a, `discogs-oauth.service`, username validation, cookies, API errors. |
 | [database.md](database.md) | Prisma models, crate CRUD, migrations, admin stats. |
 | [components.md](components.md) | Component folder layout, naming, tests. |
-| [patterns.md](patterns.md) | Context providers, React Query hooks, filters, auth, public crate pages. |
+| [patterns.md](patterns.md) | Jotai atoms, context providers, React Query hooks, filters, auth, public crate pages. |
 | [platform.md](platform.md) | GitHub CI, `pnpm` scripts, `next.config` (env, CSP, images). |
 | [factories.md](factories.md) | Test factories: BaseFactory, Faker, KeysMatch, nullish, nested builds. |
 | [source-layout.md](source-layout.md) | Module map under `src/` and related folders. |

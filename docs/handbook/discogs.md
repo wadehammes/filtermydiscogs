@@ -12,7 +12,8 @@ Implemented in [`src/services/discogs-oauth.service.ts`](../../src/services/disc
 | 2 | Discogs redirects to callback | User approves app |
 | 3 | `GET /api/auth/callback` | Exchange for access token, fetch identity, set cookies |
 | 4 | `GET /api/auth/check` | Verify tokens still valid |
-| 5 | `GET /api/auth/logout` | Clear session cookies |
+| 5 | `POST /api/auth/logout` | Clear session cookies |
+| 6 | `POST /api/auth/clear-data` | Delete user's crates and clear session (About/Legal data management) |
 
 Temporary OAuth request tokens use short-lived cookies (`oauth_token`, `oauth_token_secret`) cleared after callback.
 
