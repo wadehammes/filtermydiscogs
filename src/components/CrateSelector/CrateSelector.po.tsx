@@ -84,6 +84,13 @@ export class CrateSelectorPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
+      mockApi.updateCrate,
+      createCrateResponseFactory.named("Renamed Crate", { id: "1" }),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
       mockApi.syncCrates,
       crateMutationSuccessFactory.sync(0),
       apiError,
@@ -111,6 +118,15 @@ export class CrateSelectorPageObject extends BasePageObject {
     mockApiResponse(
       true,
       mockApi.createCrate,
+      createCrateResponseFactory.named(crateName, { id: crateId }),
+      apiError,
+    );
+  }
+
+  mockRenameCrateResponse(crateName: string, crateId = "1") {
+    mockApiResponse(
+      true,
+      mockApi.updateCrate,
       createCrateResponseFactory.named(crateName, { id: crateId }),
       apiError,
     );

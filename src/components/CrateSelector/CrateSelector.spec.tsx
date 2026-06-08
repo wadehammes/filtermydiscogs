@@ -24,6 +24,9 @@ describe("CrateSelector", () => {
       screen.getByRole("button", { name: /Select crate/i }),
     ).toBeInTheDocument();
     expect(
+      screen.queryByRole("button", { name: "Rename" }),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByRole("button", { name: "New Crate" }),
     ).toBeInTheDocument();
   });

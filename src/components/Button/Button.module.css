@@ -56,6 +56,22 @@
   }
 }
 
+.outlinePrimary {
+  background: var(--card);
+  border-color: var(--primary);
+  color: var(--primary);
+
+  &:hover:not(:disabled) {
+    background: var(--primary);
+    border-color: var(--primary-hover);
+    color: var(--primary-foreground);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--primary-active);
+  }
+}
+
 .danger {
   background: var(--card);
   border-color: var(--destructive);

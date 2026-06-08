@@ -1,25 +1,51 @@
 import classNames from "classnames";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
+import PlusIcon from "src/styles/icons/plus-solid.svg";
 import styles from "./CrateSelector.module.css";
 
 interface CrateSelectorProps {
   className?: string;
 }
 
+type EditorMode = "idle" | "create";
+
+type CreateCrateFormValues = {
+  name: string;
+};
+
 export const CrateSelector = ({ className }: CrateSelectorProps) => {
   const {
     state: { userId },
   } = useAuth();
-  const { crates, activeCrateId, selectCrate, createCrate, isLoading } =
-    useCrate();
+  const {
+    crates,
+    activeCrateId,
+    selectCrate,
+    createCrate,
+    isLoading,
+    isUpdatingCrate,
+  } = useCrate();
   const createCrateMutation = useCreateCrateMutation(userId);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newCrateName, setNewCrateName] = useState("");
+  const [editorMode, setEditorMode] = useState<EditorMode>("idle");
+
+  const { register, handleSubmit, reset, watch } =
+    useForm<CreateCrateFormValues>({
+      defaultValues: { name: "" },
+    });
+
+  const crateNameValue = watch("name");
+
+  useEffect(() => {
+    if (editorMode === "create") {
+      reset({ name: "" });
+    }
+  }, [editorMode, reset]);
 
   const handleCrateChange = useCallback(
     (value: string | string[]) => {
@@ -30,24 +56,30 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
     [selectCrate],
   );
 
-  const handleCreateCrate = useCallback(async () => {
-    if (!newCrateName.trim()) {
+  const handleCreateCrate = handleSubmit(async ({ name }) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       return;
     }
 
     try {
-      await createCrate(newCrateName.trim());
-      setNewCrateName("");
-      setIsCreating(false);
+      await createCrate(trimmedName);
+      reset({ name: "" });
+      setEditorMode("idle");
     } catch (error) {
       console.error("Error creating crate:", error);
     }
-  }, [newCrateName, createCrate]);
+  });
 
-  const handleCancelCreate = useCallback(() => {
-    setNewCrateName("");
-    setIsCreating(false);
-  }, []);
+  const handleCancelEditor = useCallback(() => {
+    reset({ name: "" });
+    setEditorMode("idle");
+  }, [reset]);
+
+  const handleStartCreate = useCallback(() => {
+    reset({ name: "" });
+    setEditorMode("create");
+  }, [reset]);
 
   const options = crates.map((crate) => {
     const releaseCount = crate.releaseCount ?? 0;
@@ -57,6 +89,12 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
       isDefault: crate.is_default,
     };
   });
+
+  const trimmedInput = crateNameValue.trim();
+  const isCreateSubmitDisabled =
+    !trimmedInput || createCrateMutation.isPending || isUpdatingCrate;
+
+  const submitLabel = createCrateMutation.isPending ? "Creating..." : "Create";
 
   if (isLoading) {
     return (
@@ -74,7 +112,7 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
       className={classNames(styles.container, className)}
       data-testid="fmdCrateSelector"
     >
-      {!isCreating ? (
+      {editorMode === "idle" ? (
         <>
           <Select
             label="Select crate"
@@ -84,42 +122,53 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
             placeholder="Select a crate"
             {...(styles.select ? { className: styles.select } : {})}
           />
-          <Button
-            variant="success"
-            size="sm"
-            onPress={() => setIsCreating(true)}
-          >
-            New Crate
-          </Button>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.newCrateButton}
+              onClick={handleStartCreate}
+              disabled={isUpdatingCrate}
+              aria-label="New Crate"
+            >
+              <PlusIcon className={styles.newCrateIcon} aria-hidden />
+            </button>
+          </div>
         </>
       ) : (
-        <div className={styles.createForm}>
+        <form
+          className={styles.createForm}
+          onSubmit={handleCreateCrate}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              handleCancelEditor();
+            }
+          }}
+        >
           <input
             type="text"
-            value={newCrateName}
-            onChange={(e) => setNewCrateName(e.target.value)}
             placeholder="Crate name"
             className={styles.input}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleCreateCrate();
-              } else if (e.key === "Escape") {
-                handleCancelCreate();
-              }
-            }}
+            aria-label="Crate name"
+            {...register("name")}
           />
           <Button
+            type="submit"
             variant="primary"
             size="sm"
-            onPress={handleCreateCrate}
-            disabled={!newCrateName.trim() || createCrateMutation.isPending}
+            disabled={isCreateSubmitDisabled}
           >
-            Create
+            {submitLabel}
           </Button>
-          <Button variant="secondary" size="sm" onPress={handleCancelCreate}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onPress={handleCancelEditor}
+            disabled={createCrateMutation.isPending || isUpdatingCrate}
+          >
             Cancel
           </Button>
-        </div>
+        </form>
       )}
     </div>
   );
