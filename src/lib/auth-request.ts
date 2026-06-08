@@ -1,4 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  type CachedDiscogsIdentity,
+  clearCachedIdentity,
+  getCachedIdentity,
+  getIdentityCacheKey,
+  getInFlightIdentityRequest,
+  setCachedIdentity,
+  setInFlightIdentityRequest,
+} from "src/lib/identity-cache";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export interface VerifiedDiscogsUser {
@@ -9,6 +18,98 @@ export interface VerifiedDiscogsUser {
 export type VerifiedUserResult =
   | { user: VerifiedDiscogsUser; error?: never }
   | { user?: never; error: NextResponse };
+
+function getDiscogsRateLimitResponse(): NextResponse {
+  return NextResponse.json(
+    { error: "Discogs rate limit exceeded. Please try again shortly." },
+    {
+      status: 503,
+      headers: {
+        "Retry-After": "60",
+      },
+    },
+  );
+}
+
+function getDegradedIdentityFromCookies(
+  request: NextRequest,
+): VerifiedDiscogsUser | null {
+  const userIdCookie = request.cookies.get("discogs_user_id")?.value;
+  const usernameCookie = request.cookies.get("discogs_username")?.value;
+
+  if (!(userIdCookie && usernameCookie)) {
+    return null;
+  }
+
+  const userId = Number.parseInt(userIdCookie, 10);
+  if (Number.isNaN(userId)) {
+    return null;
+  }
+
+  return {
+    userId,
+    username: usernameCookie,
+  };
+}
+
+export function primeVerifiedIdentityCache(
+  accessToken: string,
+  accessTokenSecret: string,
+  identity: VerifiedDiscogsUser,
+): void {
+  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
+  setCachedIdentity(cacheKey, identity);
+}
+
+export function clearVerifiedIdentityCache(
+  accessToken: string,
+  accessTokenSecret: string,
+): void {
+  clearCachedIdentity(getIdentityCacheKey(accessToken, accessTokenSecret));
+}
+
+async function fetchVerifiedIdentity(
+  accessToken: string,
+  accessTokenSecret: string,
+): Promise<VerifiedDiscogsUser> {
+  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
+  const cached = getCachedIdentity(cacheKey);
+  if (cached) {
+    return {
+      userId: cached.userId,
+      username: cached.username,
+    };
+  }
+
+  const inFlight = getInFlightIdentityRequest(cacheKey);
+  if (inFlight) {
+    const identity = await inFlight;
+    return {
+      userId: identity.userId,
+      username: identity.username,
+    };
+  }
+
+  const requestPromise = (async (): Promise<CachedDiscogsIdentity> => {
+    const identity = await discogsOAuthService.getIdentity(
+      accessToken,
+      accessTokenSecret,
+    );
+
+    return setCachedIdentity(cacheKey, {
+      userId: identity.id,
+      username: identity.username,
+    });
+  })();
+
+  setInFlightIdentityRequest(cacheKey, requestPromise);
+
+  const identity = await requestPromise;
+  return {
+    userId: identity.userId,
+    username: identity.username,
+  };
+}
 
 /**
  * Resolve the authenticated Discogs user from httpOnly OAuth cookies.
@@ -28,19 +129,33 @@ export async function getVerifiedUserFromRequest(
     };
   }
 
-  try {
-    const identity = await discogsOAuthService.getIdentity(
-      accessToken,
-      accessTokenSecret,
-    );
+  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
 
-    return {
-      user: {
-        userId: identity.id,
-        username: identity.username,
-      },
-    };
+  try {
+    const user = await fetchVerifiedIdentity(accessToken, accessTokenSecret);
+    return { user };
   } catch (error) {
+    const status = (error as Error & { status?: number }).status;
+
+    if (status === 429) {
+      const stale = getCachedIdentity(cacheKey, true);
+      if (stale) {
+        return {
+          user: {
+            userId: stale.userId,
+            username: stale.username,
+          },
+        };
+      }
+
+      const degraded = getDegradedIdentityFromCookies(request);
+      if (degraded) {
+        return { user: degraded };
+      }
+
+      return { error: getDiscogsRateLimitResponse() };
+    }
+
     console.error("OAuth identity verification failed:", error);
     return {
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),

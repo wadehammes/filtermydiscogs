@@ -6,6 +6,26 @@ export async function GET(request: NextRequest) {
     const verified = await getVerifiedUserFromRequest(request);
 
     if ("error" in verified) {
+      if (verified.error.status === 503) {
+        const username = request.cookies.get("discogs_username")?.value ?? null;
+        const userId = request.cookies.get("discogs_user_id")?.value ?? null;
+
+        return NextResponse.json(
+          {
+            isAuthenticated: Boolean(username && userId),
+            username,
+            userId,
+            rateLimited: true,
+          },
+          {
+            headers: {
+              "Cache-Control": "private, no-cache, no-store, must-revalidate",
+              "Retry-After": "60",
+            },
+          },
+        );
+      }
+
       return NextResponse.json(
         {
           isAuthenticated: false,

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getVerifiedUserFromRequest } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(request: NextRequest) {
@@ -12,11 +13,10 @@ export async function GET(request: NextRequest) {
 
     // If tokens exist, verify they're still valid by checking identity
     if (accessToken && accessTokenSecret) {
-      try {
-        const identity = await discogsOAuthService.getIdentity(
-          accessToken,
-          accessTokenSecret,
-        );
+      const verified = await getVerifiedUserFromRequest(request);
+
+      if (!("error" in verified)) {
+        const identity = verified.user;
 
         // Tokens are valid - restore username and user_id if missing
         // This can happen if tokens were preserved from a previous session
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
         // Restore user_id cookie if it's missing
         if (!userId) {
-          response.cookies.set("discogs_user_id", identity.id.toString(), {
+          response.cookies.set("discogs_user_id", identity.userId.toString(), {
             httpOnly: true,
             secure: secureFlag,
             sameSite: "lax",
@@ -55,10 +55,16 @@ export async function GET(request: NextRequest) {
         // Redirect to releases page - reuses existing tokens without requiring re-authorization
         // Note: Tokens are only preserved if user didn't explicitly log out
         return response;
-      } catch (error) {
-        // Tokens are invalid or expired, continue with OAuth flow
-        console.log("Existing tokens invalid, starting new OAuth flow:", error);
       }
+
+      if (verified.error.status === 503) {
+        return NextResponse.redirect(new URL("/releases", request.url));
+      }
+
+      console.log(
+        "Existing tokens invalid, starting new OAuth flow:",
+        verified.error.status,
+      );
     }
 
     // No valid tokens found, start new OAuth flow

@@ -141,6 +141,7 @@ export default function ReleasesClient() {
               isRandomMode={isRandomMode}
               onExitRandomMode={handleExitRandomMode}
               onRandomClick={handleRandomClick}
+              onReleaseClick={handleReleaseClick}
               randomRelease={randomRelease}
             />
           ) : (

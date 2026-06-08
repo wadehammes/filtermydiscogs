@@ -6,19 +6,16 @@
 .tableContainer {
   background: var(--card);
   border: 1px solid var(--border);
-  display: none;
-  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: block;
+  overflow: auto hidden;
   width: 100%;
   border-radius: var(--radius-ui);
-
-  @media (width >= 640px) {
-    box-shadow: var(--shadow-sm);
-    display: block;
-  }
 }
 
 .table {
   border-collapse: collapse;
+  min-width: 56rem;
   width: 100%;
 }
 
@@ -253,6 +250,16 @@
 .dateAddedCell {
   color: var(--muted-foreground);
   text-align: left;
+}
+
+.notesCell {
+  max-width: 16rem;
+  min-width: 10rem;
+  padding: var(--space-1) var(--space-2);
+
+  > div {
+    padding-top: 0;
+  }
 }
 
 .stylesCell {

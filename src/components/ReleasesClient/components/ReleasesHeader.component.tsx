@@ -78,14 +78,13 @@ export const ReleasesHeader = ({
             </span>
           )}
         </div>
-        {!isMobile && (
-          <ViewToggle
-            currentView={isRandomMode ? "random" : currentView}
-            onViewChange={onViewChange}
-            onRandomClick={onRandomClick}
-            {...(onCratesClick && { onCratesClick, isCratesOpen })}
-          />
-        )}
+        <ViewToggle
+          currentView={isRandomMode ? "random" : currentView}
+          onViewChange={onViewChange}
+          onRandomClick={onRandomClick}
+          {...(isMobile ? { className: styles.viewToggleMobile } : {})}
+          {...(onCratesClick && { onCratesClick, isCratesOpen })}
+        />
       </div>
     </>
   );

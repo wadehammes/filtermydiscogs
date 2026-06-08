@@ -72,3 +72,40 @@
     opacity: 0.6;
   }
 }
+
+.emptyNotes {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.notesTable {
+  font-size: var(--text-xs);
+  gap: 0.125rem;
+  line-height: 1.3;
+  padding-top: 0;
+
+  .noteContent,
+  .emptyNotes,
+  .addNotesLink,
+  .editButton {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .noteContent {
+    color: var(--foreground);
+  }
+
+  .emptyNotes,
+  .addNotesLink,
+  .editButton {
+    color: var(--muted-foreground);
+    text-decoration: underline;
+    text-underline-offset: 1px;
+  }
+
+  .editButton:hover,
+  .addNotesLink:hover {
+    color: var(--foreground);
+  }
+}
