@@ -6,10 +6,7 @@
   letter-spacing: var(--letter-spacing-meta);
   line-height: 1;
   margin: 0;
-
-  @media (width >= 768px) {
-    font-size: var(--text-meta-base);
-  }
+  text-transform: uppercase;
 }
 
 .sectionEyebrow {
