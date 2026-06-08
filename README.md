@@ -99,7 +99,8 @@ The app will be available at `http://localhost:6767`.
 - **Home** (`/`) - Login and main dashboard
 - **Releases** (`/releases`) - Browse, filter, and sort your collection
 - **Mosaic** (`/mosaic`) - Create mosaic grids from your collection
-- **About** (`/about`) - Terms of Service, Privacy Policy, and contact information
+- **About** (`/about`) - About the project, support, and data management
+- **Legal** (`/legal`) - Terms of Service and Privacy Policy
 - **Admin** (`/admin`) - Admin dashboard with application statistics (admin access required)
 
 ## Tech Stack

@@ -21,7 +21,7 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Browse",
     title: "Browse, search, and filter your collection",
     description:
-      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Add or edit notes on any release from the card or list — kept in sync with your Discogs collection.",
+      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Add or edit notes on any release from the card or list, kept in sync with your Discogs collection.",
     imageBase: "releases",
     imageAlt:
       "Releases page with search, filters, grid and table views, and release cards",
@@ -39,7 +39,7 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Mosaics",
     title: "Generate mosaic grids",
     description:
-      "Turn your collection or a crate into a cover-art mosaic for social sharing. Choose formats and sizes that fit Instagram, headers, or print — a quick visual snapshot of what you are listening to.",
+      "Turn your collection or a crate into a cover-art mosaic for social sharing. Choose formats and sizes that fit Instagram, headers, or print. A quick visual snapshot of what you are listening to.",
     imageBase: "mosaic",
     imageAlt:
       "Cover-art mosaic grid generated from a collection of release artwork",
