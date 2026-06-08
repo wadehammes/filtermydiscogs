@@ -83,7 +83,7 @@ export function AboutClient() {
               Wade Hammes
             </a>
             . A passion project to help you discover, organize, and explore your
-            music collection—whether it's vinyl, CDs, cassettes, or digital
+            music collection, whether it's vinyl, CDs, cassettes, or digital
             releases. Create crates for DJ sets, organize by theme, or just
             rediscover what you already own.
           </p>
@@ -138,17 +138,22 @@ export function AboutClient() {
           <ul>
             <li>All your auth tokens and session stuff</li>
             <li>
-              Every crate you've created (deleted from Postgres, gone forever—no
-              takebacks)
+              Every crate you've created (deleted from Postgres, gone forever.
+              No takebacks)
             </li>
             <li>All your preferences and settings</li>
-            <li>All cached collection data</li>
+            <li>All cached collection data in the app</li>
+            <li>
+              Your Discogs collection and saved notes are not deleted. Only
+              app-side data here
+            </li>
           </ul>
           <p>
             <strong>Heads up:</strong> This logs you out and you'll need to
             reconnect with Discogs. All your crates get permanently deleted from
             the database. Useful if you're on a shared computer or just want a
-            clean slate.
+            clean slate on this app. It is not a way to undo note edits on
+            Discogs.
           </p>
           <div className={styles.clearDataButton}>
             <Button
@@ -192,7 +197,7 @@ export function AboutClient() {
             </a>
           </div>
           <p className={styles.license}>
-            MIT License—use it, fork it, make it better.
+            MIT License. Use it, fork it, make it better.
           </p>
         </section>
 

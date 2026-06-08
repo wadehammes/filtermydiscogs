@@ -49,25 +49,25 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
             <h2 className={styles.heading}>About FilterMyDiscogs</h2>
             <p className={styles.text}>
               FilterMyDisco.gs is a passion project to help you discover,
-              organize, and explore your music collection—whether it's vinyl,
+              organize, and explore your music collection, whether it's vinyl,
               CDs, cassettes, or digital releases.
             </p>
             <p className={styles.text}>Key features:</p>
             <ul className={styles.list}>
               <li className={styles.listItem}>
-                <strong>Browse and filter your collection</strong> — rediscover
+                <strong>Browse and filter your collection</strong>: rediscover
                 your favorite albums and artists
               </li>
               <li className={styles.listItem}>
-                <strong>Create and manage crates</strong> — perfect for DJ gigs,
+                <strong>Create and manage crates</strong>: perfect for DJ gigs,
                 organizing by theme, or tracking favorites
               </li>
               <li className={styles.listItem}>
-                <strong>Generate mosaic grids</strong> — different formats and
+                <strong>Generate mosaic grids</strong>: different formats and
                 sizes; perfect for social sharing
               </li>
               <li className={styles.listItem}>
-                <strong>Share public crates</strong> — make your crates public
+                <strong>Share public crates</strong>: make your crates public
                 and share them with others
               </li>
             </ul>
@@ -109,7 +109,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
             {crateWithUsername.username && (
               <>
                 By {crateWithUsername.username}
-                {" — "}
+                {" · "}
               </>
             )}
             {pagination.total} release{pagination.total !== 1 ? "s" : ""}
@@ -150,24 +150,24 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
               <p className={styles.text}>Key features:</p>
               <ul className={styles.list}>
                 <li className={styles.listItem}>
-                  <strong>Collection analytics</strong> — discover your
+                  <strong>Collection analytics</strong>: discover your
                   collection milestones, style evolution over time, growth
                   trends, and more with beautiful visualizations
                 </li>
                 <li className={styles.listItem}>
-                  <strong>Browse and filter your collection</strong> —
-                  rediscover your favorite albums and artists
+                  <strong>Browse and filter your collection</strong>: rediscover
+                  your favorite albums and artists
                 </li>
                 <li className={styles.listItem}>
-                  <strong>Create and manage crates</strong> — perfect for DJ
+                  <strong>Create and manage crates</strong>: perfect for DJ
                   gigs, organizing by theme, or tracking favorites
                 </li>
                 <li className={styles.listItem}>
-                  <strong>Generate mosaic grids</strong> — different formats and
+                  <strong>Generate mosaic grids</strong>: different formats and
                   sizes; perfect for social sharing
                 </li>
                 <li className={styles.listItem}>
-                  <strong>Share public crates</strong> — make your crates public
+                  <strong>Share public crates</strong>: make your crates public
                   and share them with others
                 </li>
               </ul>

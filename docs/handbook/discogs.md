@@ -118,6 +118,8 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 
 **Card UI:** every release card shows a **Notes** heading and a fixed-height scroll region (**`max-height: 4lh`**). Cards without notes show an **Add notes** link when editing is available. The sticky-note icon and inline link share one dialog via **`ReleaseNotesEditorProvider`** on **`ReleaseCard`** / **`MobileReleaseCard`**.
 
+**User-facing policy:** saving notes writes to the user's Discogs collection via the API; note text is not stored in Postgres. See **`/legal`** for Terms & Privacy copy.
+
 **List UI:** **`ReleaseNotes`** with default **`inline`** variant shows note text plus **Add/Edit release notes** (no card provider).
 
 After a successful write, **`useReleaseNotesEditor`** optimistically updates **`allReleasesAtom`** and invalidates **`DiscogsCollectionQueryKeys`** for the active username. On failure, it rolls back the optimistic update and surfaces the upstream error message when available.
