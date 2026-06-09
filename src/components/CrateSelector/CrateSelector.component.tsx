@@ -120,7 +120,7 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
             value={activeCrateId || ""}
             onChange={handleCrateChange}
             placeholder="Select a crate"
-            {...(styles.select ? { className: styles.select } : {})}
+            className={classNames(styles.select)}
           />
           <div className={styles.actions}>
             <button

@@ -12,6 +12,7 @@
   align-items: center;
   background: transparent;
   border: none;
+  box-shadow: inset 1px 0 0 var(--border);
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
@@ -25,6 +26,10 @@
   padding: var(--space-2) var(--space-3);
   transition: var(--transition-fast);
   white-space: nowrap;
+
+  &:first-child {
+    box-shadow: none;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--primary);

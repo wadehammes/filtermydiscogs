@@ -220,6 +220,28 @@ const MobileReleaseCardComponent = ({
           </HorizontalScrollRow>
         </div>
         <div className={styles.actionButtonsContainer}>
+          <div className={styles.actionSlot}>
+            <button
+              type="button"
+              className={classNames(
+                styles.listButton,
+                isInCrate(release.instance_id) && styles.removeButton,
+              )}
+              onClick={handleCrateToggle}
+              aria-label={
+                isInCrate(release.instance_id)
+                  ? "Remove from crate"
+                  : "Add to crate"
+              }
+            >
+              {isInCrate(release.instance_id) ? (
+                <MinusIcon className={styles.listButtonIcon} />
+              ) : (
+                <PlusIcon className={styles.listButtonIcon} />
+              )}
+            </button>
+          </div>
+          <ReleaseNotesCardAction variant="mobile" />
           {releaseUrl && (
             <div className={styles.actionSlot}>
               <a
@@ -242,28 +264,6 @@ const MobileReleaseCardComponent = ({
               </a>
             </div>
           )}
-          <ReleaseNotesCardAction variant="mobile" />
-          <div className={styles.actionSlot}>
-            <button
-              type="button"
-              className={classNames(
-                styles.listButton,
-                isInCrate(release.instance_id) && styles.removeButton,
-              )}
-              onClick={handleCrateToggle}
-              aria-label={
-                isInCrate(release.instance_id)
-                  ? "Remove from crate"
-                  : "Add to crate"
-              }
-            >
-              {isInCrate(release.instance_id) ? (
-                <MinusIcon className={styles.listButtonIcon} />
-              ) : (
-                <PlusIcon className={styles.listButtonIcon} />
-              )}
-            </button>
-          </div>
         </div>
       </div>
     </ReleaseNotesEditorProvider>

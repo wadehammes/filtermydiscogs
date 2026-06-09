@@ -152,6 +152,7 @@ describe("ViewToggle", () => {
 
     const cratesButton = screen.getByRole("button", { name: "Close crates" });
     expect(cratesButton.className).toContain("active");
+    expect(cratesButton).toHaveAttribute("aria-pressed", "true");
   });
 
   it("updates crates button aria-label based on isCratesOpen", () => {

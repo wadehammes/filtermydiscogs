@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import type { ReactNode } from "react";
 import * as apiHelpers from "src/api/helpers";
 import {
   checkAuthStatus,
@@ -16,16 +17,18 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
+import {
+  testAuthenticatedAuthState,
+  testUnauthenticatedAuthState,
+} from "src/tests/utils/testAuthStates";
 import { act, renderHook, TestProviders, waitFor } from "test-utils";
-import { useMediaQuery } from "usehooks-ts";
 import { useCrate } from "./crate.context";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
 const mockApi = jest.mocked(apiHelpers);
-const mockUseMediaQuery = jest.mocked(useMediaQuery);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -34,11 +37,25 @@ const mockClearUrlParams = jest.mocked(clearUrlParams);
 
 const apiError = new Error("API request failed");
 
+const createAuthTransitionWrapper = (authState: { authenticated: boolean }) => {
+  return ({ children }: { children: ReactNode }) => (
+    <TestProviders
+      authInitialState={
+        authState.authenticated
+          ? testAuthenticatedAuthState
+          : testUnauthenticatedAuthState
+      }
+    >
+      {children}
+    </TestProviders>
+  );
+};
+
 describe("CrateProvider", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
-    mockUseMediaQuery.mockReturnValue(false);
+    setupMockMatchMedia();
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue({
@@ -198,6 +215,88 @@ describe("CrateProvider", () => {
 
     await waitFor(() => {
       expect(result.current.activeCrateId).toBe("crate-1");
+    });
+  });
+
+  it("loads active crate releases after first login", async () => {
+    const mockReleases = releaseFactory.buildList(2);
+    const mockCrate = crateFactory.build({ id: "crate-2", is_default: true });
+    const mockCrates = [
+      crateWithCountFactory.build({
+        id: "crate-2",
+        is_default: true,
+        releaseCount: 2,
+      }),
+    ];
+
+    mockApi.fetchCrates.mockResolvedValue(
+      cratesResponseFactory.withCrates(mockCrates),
+    );
+    mockApi.fetchCrate.mockResolvedValue(
+      crateWithReleasesResponseFactory.withReleases(mockCrate, mockReleases),
+    );
+
+    const authState = { authenticated: false };
+    const { result, rerender } = renderHook(() => useCrate(), {
+      wrapper: createAuthTransitionWrapper(authState),
+    });
+
+    authState.authenticated = true;
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.activeCrateId).toBe("crate-2");
+      expect(result.current.selectedReleases).toEqual(mockReleases);
+    });
+  });
+
+  it("resets drawer to open on desktop login", async () => {
+    setupMockMatchMedia({ desktop: true });
+
+    const authState = { authenticated: false };
+    const { result, rerender } = renderHook(() => useCrate(), {
+      wrapper: createAuthTransitionWrapper(authState),
+    });
+
+    await waitFor(() => {
+      expect(result.current).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.closeDrawer();
+    });
+    expect(result.current.isDrawerOpen).toBe(false);
+
+    authState.authenticated = true;
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.isDrawerOpen).toBe(true);
+    });
+  });
+
+  it("resets drawer to closed on mobile login", async () => {
+    setupMockMatchMedia({ desktop: false });
+
+    const authState = { authenticated: false };
+    const { result, rerender } = renderHook(() => useCrate(), {
+      wrapper: createAuthTransitionWrapper(authState),
+    });
+
+    await waitFor(() => {
+      expect(result.current).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.openDrawer();
+    });
+    expect(result.current.isDrawerOpen).toBe(true);
+
+    authState.authenticated = true;
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.isDrawerOpen).toBe(false);
     });
   });
 

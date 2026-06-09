@@ -8,12 +8,14 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 |------------------|------------|
 | Stack, folders, Discogs → UI data flow | [architecture.md](architecture.md) |
 | TypeScript / React / Biome / Stylelint / CSS / tests | [conventions.md](conventions.md) |
+| CSS Modules nesting, mobile-first breakpoints, modern CSS | [conventions.md](conventions.md) (CSS and styling) |
 | OAuth login, Discogs API, username format, cookies | [discogs.md](discogs.md) |
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | Component folders, naming, tests | [components.md](components.md) |
 | Public landing, login page, `PublicAuthLayout` | [components.md](components.md) + [patterns.md](patterns.md) (auth flow) |
 | Filters, view mode, Jotai atoms, contexts, React Query, auth, public crates | [patterns.md](patterns.md) · stack detail in [architecture.md](architecture.md) |
+| Crate drawer defaults, login drawer reset, sidebar vs mobile shell | [patterns.md](patterns.md) (Crates) + [conventions.md](conventions.md) (Testing → `setupMockMatchMedia`) |
 | Dashboard / collection analytics | [patterns.md](patterns.md) (Dashboard analytics) + [components.md](components.md) (`Dashboard/`) |
 | Mosaic generator / image proxy | [patterns.md](patterns.md) (Mosaic generator) |
 | Clear user data (About/Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |

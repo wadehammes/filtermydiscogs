@@ -17,23 +17,24 @@
   flex-direction: column;
   padding: var(--space-4);
   width: 100%;
-}
 
-.chartContainer h2 {
-  color: var(--foreground);
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  margin: 0 0 var(--space-4);
+  h2 {
+    color: var(--foreground);
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-4);
+  }
 }
 
 .chartWrapper {
   height: 400px;
   width: 100%;
 
-  /* Reduce YAxis label font size on mobile */
-  @media (width <= 1023px) {
-    :global(.recharts-yAxis .recharts-text) {
-      font-size: 10px;
+  :global(.recharts-yAxis .recharts-text) {
+    font-size: 10px;
+
+    @media (width >= 1024px) {
+      font-size: revert;
     }
   }
 }

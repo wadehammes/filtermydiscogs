@@ -1,4 +1,20 @@
-export function setupMockMatchMedia() {
+type MockMatchMediaOptions = {
+  desktop?: boolean;
+};
+
+function queryMatches(query: string, desktop: boolean) {
+  if (query.includes("min-width: 1024px")) {
+    return desktop;
+  }
+  if (query.includes("max-width: 1023px")) {
+    return !desktop;
+  }
+  return false;
+}
+
+export function setupMockMatchMedia({
+  desktop = false,
+}: MockMatchMediaOptions = {}) {
   // Check if matchMedia already exists and delete it first if needed
   const existingDescriptor = Object.getOwnPropertyDescriptor(
     window,
@@ -27,7 +43,7 @@ export function setupMockMatchMedia() {
     configurable: true,
     enumerable: true,
     value: (query: string) => ({
-      matches: false,
+      matches: queryMatches(query, desktop),
       media: query,
       onchange: null,
       addListener: jest.fn(), // Deprecated

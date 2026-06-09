@@ -55,12 +55,12 @@
   background-size: cover;
   border-radius: var(--radius-card) 0 0 var(--radius-card);
   display: flex;
-  flex: 0 0 6rem;
+  flex: 0 0 7rem;
   isolation: isolate;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  width: 6rem;
+  width: 7rem;
 }
 
 .imageContainer > img,
@@ -167,6 +167,7 @@
   line-height: 1.25;
   margin: 0;
   text-align: left;
+  padding-top: 0.25rem;
 }
 
 .artistLink {
@@ -218,12 +219,12 @@
   align-self: stretch;
   border-left: 1px solid var(--border);
   display: flex;
-  flex: 0 0 3rem;
+  flex: 0 0 4rem;
   flex-direction: column;
   gap: var(--space-1);
   min-height: 0;
   padding: var(--space-1);
-  width: 3rem;
+  width: 4rem;
   z-index: 10;
 }
 

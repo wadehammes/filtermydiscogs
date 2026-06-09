@@ -54,5 +54,7 @@
 }
 
 .viewToggleMobile {
-  width: 100%;
+  @media (width < 1024px) {
+    display: none;
+  }
 }

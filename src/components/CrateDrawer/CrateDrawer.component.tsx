@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
@@ -32,6 +33,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
     isUpdatingCrate,
     isDeletingCrate,
     isLoadingCrate,
+    isFetchingCrate,
   } = useCrate();
   const currentView = useCurrentView();
   const isMobile = useMediaQuery("(max-width: 1023px)");
@@ -43,6 +45,12 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
 
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name || "My Crate";
+  const expectedReleaseCount = activeCrate?.releaseCount ?? 0;
+  const isLoadingReleases =
+    isLoadingCrate ||
+    (isFetchingCrate &&
+      expectedReleaseCount > 0 &&
+      selectedReleases.length === 0);
   const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
   const canDelete = crates.length > 1 && !isDefaultCrate;
@@ -131,7 +139,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
 
   const releasesContent = (
     <>
-      {isLoadingCrate ? (
+      {isLoadingReleases ? (
         <div className={styles.emptyState}>
           <PageLoader message="Loading crate..." />
         </div>
@@ -289,11 +297,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
           onClose={toggleDrawer}
           closeButtonAriaLabel="Close crate drawer"
           headerContent={
-            <CrateSelector
-              {...(styles.headerCrateSelector
-                ? { className: styles.headerCrateSelector }
-                : {})}
-            />
+            <CrateSelector className={classNames(styles.headerCrateSelector)} />
           }
           footer={footerContent}
         >
@@ -302,11 +306,7 @@ const CrateDrawerComponent = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
       ) : (
         <div className={styles.drawer}>
           <div className={styles.header}>
-            <CrateSelector
-              {...(styles.headerCrateSelector
-                ? { className: styles.headerCrateSelector }
-                : {})}
-            />
+            <CrateSelector className={classNames(styles.headerCrateSelector)} />
           </div>
           <div className={styles.content}>{releasesContent}</div>
           {footerContent}

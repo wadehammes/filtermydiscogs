@@ -9,7 +9,7 @@ const scrollPageToTop = () => {
   window.scrollTo({ top: 0, behavior: "instant" });
 };
 
-interface ViewToggleProps {
+export interface ViewToggleProps {
   currentView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   onRandomClick?: () => void;
@@ -24,7 +24,7 @@ export const ViewToggle = ({
   onRandomClick,
   onCratesClick,
   isCratesOpen,
-  className,
+  className = "",
 }: ViewToggleProps) => {
   return (
     <div
@@ -44,18 +44,14 @@ export const ViewToggle = ({
           aria-label="Switch to card view"
           title="Card view"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect x="1" y="1" width="6" height="6" rx="1" />
-            <rect x="9" y="1" width="6" height="6" rx="1" />
-            <rect x="1" y="9" width="6" height="6" rx="1" />
-            <rect x="9" y="9" width="6" height="6" rx="1" />
-          </svg>
+          <span className={styles.segmentIcon} aria-hidden>
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+          </span>
           <span>Grid</span>
         </button>
         <button
@@ -74,17 +70,13 @@ export const ViewToggle = ({
           aria-label="Switch to list view"
           title="List view"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect x="1" y="2" width="14" height="2" rx="1" />
-            <rect x="1" y="7" width="14" height="2" rx="1" />
-            <rect x="1" y="12" width="14" height="2" rx="1" />
-          </svg>
+          <span className={styles.segmentIcon} aria-hidden>
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <rect x="1" y="2" width="14" height="2" rx="1" />
+              <rect x="1" y="7" width="14" height="2" rx="1" />
+              <rect x="1" y="12" width="14" height="2" rx="1" />
+            </svg>
+          </span>
           <span>Table</span>
         </button>
         <button
@@ -111,7 +103,9 @@ export const ViewToggle = ({
               : "Random view"
           }
         >
-          <DiceSolid width="16" height="16" />
+          <span className={styles.segmentIcon} aria-hidden>
+            <DiceSolid />
+          </span>
           <span>Random</span>
         </button>
         {onCratesClick && (
@@ -123,8 +117,11 @@ export const ViewToggle = ({
             onClick={onCratesClick}
             aria-label={isCratesOpen ? "Close crates" : "Open crates"}
             title={isCratesOpen ? "Close crates" : "View your crates"}
+            aria-pressed={isCratesOpen}
           >
-            <CratesIcon width="16" height="16" />
+            <span className={styles.segmentIcon} aria-hidden>
+              <CratesIcon />
+            </span>
             <span>Crates</span>
           </button>
         )}
