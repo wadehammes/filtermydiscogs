@@ -7,6 +7,7 @@ export const testUnauthenticatedAuthState: AuthState = {
   isCheckingAuth: false,
   isLoading: false,
   isLoggingOut: false,
+  rateLimited: false,
   error: null,
 };
 
@@ -17,5 +18,6 @@ export const testAuthenticatedAuthState: AuthState = {
   isCheckingAuth: false,
   isLoading: false,
   isLoggingOut: false,
+  rateLimited: false,
   error: null,
 };

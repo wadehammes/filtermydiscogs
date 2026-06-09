@@ -189,7 +189,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
                   variant="primary"
                   size="lg"
                   onPress={() => {
-                    window.location.href = "/api/auth/discogs";
+                    window.location.href = "/api/auth/discogs?force=1";
                   }}
                   className={styles.connectButton}
                 >

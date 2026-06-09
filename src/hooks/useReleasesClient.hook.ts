@@ -30,7 +30,7 @@ const VISIBLE_BATCH_SIZE = 100;
 
 export const useReleasesClient = () => {
   const { state: authState } = useAuth();
-  const { username, isAuthenticated } = authState;
+  const { username, isAuthenticated, rateLimited } = authState;
   const currentView = useCurrentView();
   const previousView = usePreviousView();
   const viewDispatch = useViewDispatch();
@@ -54,7 +54,7 @@ export const useReleasesClient = () => {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
 
   const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useCollectionData(username, isAuthenticated);
+    useCollectionData(username, isAuthenticated, rateLimited);
   const { error, hasReleases, hasError } = useReleasesDisplay();
 
   const { ref, inView } = useInView({

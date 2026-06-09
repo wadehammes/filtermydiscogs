@@ -85,7 +85,9 @@ All Discogs HTTP calls include a **`User-Agent`** identifying the app (required 
 
 Discogs may return **429** (rate limit) or **5xx** (upstream errors). Route handlers should return appropriate status codes and messages; clients surface errors via React Query / context error state.
 
-**OAuth identity lookups** (`getVerifiedUserFromRequest` in [`src/lib/auth-request.ts`](../../src/lib/auth-request.ts)) are cached in memory for a short TTL ([`src/lib/identity-cache.ts`](../../src/lib/identity-cache.ts)) so `/api/auth/check` and crate routes do not call `oauth/identity` on every request. Concurrent lookups for the same token pair share one in-flight request. On Discogs **429**, the server reuses a recently cached identity or, for `/api/auth/check` only, falls back to session cookies set at OAuth callback until the limit clears.
+**OAuth identity lookups** (`getVerifiedUserFromRequest` in [`src/lib/auth-request.ts`](../../src/lib/auth-request.ts)) are cached in memory for a short TTL ([`src/lib/identity-cache.ts`](../../src/lib/identity-cache.ts)) so `/api/auth/check` and crate routes do not call `oauth/identity` on every request. Concurrent lookups for the same token pair share one in-flight request. On Discogs **429**, data routes reuse only a recently cached identity keyed to the current OAuth token pair; they **never** fall back to `discogs_user_id` / `discogs_username` cookies. **`/api/auth/check`** alone may return a display-only identity from those cookies with **`rateLimited: true`**; the client blocks collection and crate fetches until verification succeeds.
+
+**Explicit login** always uses **`GET /api/auth/discogs?force=1`**, which clears any existing session and requires a fresh Discogs authorization (prevents silently reusing another user's tokens on a shared browser).
 
 If collection fetches fail after login, verify OAuth tokens (re-login), consumer app settings, and Discogs API status before assuming an app bug.
 

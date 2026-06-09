@@ -1,10 +1,11 @@
 import Cookies from "js-cookie";
 import { checkAuth as checkAuthApi } from "src/api/helpers";
 
-interface AuthStatus {
+export interface AuthStatus {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  rateLimited: boolean;
 }
 
 export const getUsernameFromCookies = (): string | null => {
@@ -50,6 +51,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
       isAuthenticated: data.isAuthenticated,
       username: data.username || null,
       userId: data.userId || null,
+      rateLimited: data.rateLimited === true,
     };
   } catch (_error) {
     // Silent fail
@@ -57,6 +59,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      rateLimited: false,
     };
   }
 };

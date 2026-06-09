@@ -32,6 +32,7 @@ export default function MosaicClient() {
   const { isLoading: collectionLoading } = useCollectionData(
     state.username,
     state.isAuthenticated,
+    state.rateLimited,
   );
   const needsCollectionLoad = useNeedsCollectionLoad(collectionLoading);
   const showLoading = isCheckingAuth || needsCollectionLoad;

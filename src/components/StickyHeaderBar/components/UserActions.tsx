@@ -23,7 +23,7 @@ export const UserActions = ({
   showUsername = true,
 }: UserActionsProps) => {
   const { logout, state: authState } = useAuth();
-  const { username, isAuthenticated } = authState;
+  const { username, isAuthenticated, rateLimited } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export const UserActions = ({
     isFetchingNextPage,
   } = useDiscogsCollectionQuery({
     username: username || "",
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !rateLimited,
   });
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   type ReactNode,
@@ -7,9 +8,14 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useAuth } from "src/context/auth.context";
+import {
+  CrateQueryKeys,
+  CratesQueryKeys,
+} from "src/hooks/queries/querykeys.constants";
 import {
   useAddReleaseToCrateMutation,
   useCreateCrateMutation,
@@ -57,12 +63,17 @@ interface CrateProviderProps {
 
 export const CrateProvider = ({ children }: CrateProviderProps) => {
   const {
-    state: { userId, isAuthenticated },
+    state: { userId, isAuthenticated, rateLimited },
+    logout,
   } = useAuth();
+  const queryClient = useQueryClient();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
+  const prevUserIdRef = useRef<string | null>(userId);
   const { isDrawerOpen, toggleDrawer, openDrawer, closeDrawer } =
     useCrateDrawer();
+
+  const canLoadCrates = isAuthenticated && !!userId && !rateLimited;
 
   const {
     data: cratesData,
@@ -71,12 +82,14 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     error,
   } = useCratesQuery({
     userId,
+    enabled: canLoadCrates,
   });
   const crates = cratesData?.crates || [];
 
   const { data: activeCrateData, isLoading: isLoadingCrate } = useCrateQuery({
     userId,
     crateId: activeCrateId,
+    enabled: canLoadCrates,
   });
   const activeCrateReleases = activeCrateData?.releases || [];
 
@@ -93,12 +106,52 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   );
 
   useCrateMigration(
-    isAuthenticated,
+    canLoadCrates,
     isLoading,
     crates,
     findDefaultCrate,
     addReleaseMutation,
   );
+
+  useEffect(() => {
+    const previousUserId = prevUserIdRef.current;
+    if (previousUserId !== userId) {
+      setActiveCrateId(null);
+      closeDrawer();
+
+      if (previousUserId) {
+        queryClient.removeQueries({
+          queryKey: CratesQueryKeys.byUserId(previousUserId),
+        });
+        queryClient.removeQueries({
+          queryKey: CrateQueryKeys.byUserId(previousUserId),
+        });
+      }
+
+      prevUserIdRef.current = userId;
+    }
+  }, [userId, queryClient, closeDrawer]);
+
+  useEffect(() => {
+    if (!userId || crates.length === 0) {
+      return;
+    }
+
+    const expectedUserId = Number.parseInt(userId, 10);
+    if (Number.isNaN(expectedUserId)) {
+      return;
+    }
+
+    const hasOwnershipMismatch = crates.some(
+      (crate) => crate.user_id !== expectedUserId,
+    );
+
+    if (hasOwnershipMismatch) {
+      console.error("Crate ownership mismatch detected; clearing session.");
+      queryClient.clear();
+      void logout();
+    }
+  }, [crates, userId, queryClient, logout]);
 
   useEffect(() => {
     if (crates.length === 0) return;

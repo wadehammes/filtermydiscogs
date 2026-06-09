@@ -19,6 +19,12 @@ export type VerifiedUserResult =
   | { user: VerifiedDiscogsUser; error?: never }
   | { user?: never; error: NextResponse };
 
+const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+function getSecureCookieFlag(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+
 function getDiscogsRateLimitResponse(): NextResponse {
   return NextResponse.json(
     { error: "Discogs rate limit exceeded. Please try again shortly." },
@@ -31,7 +37,11 @@ function getDiscogsRateLimitResponse(): NextResponse {
   );
 }
 
-function getDegradedIdentityFromCookies(
+/**
+ * Display-only identity from session cookies. Used by /api/auth/check when
+ * Discogs identity verification is rate-limited. Never use for data routes.
+ */
+export function getDisplayIdentityFromCookies(
   request: NextRequest,
 ): VerifiedDiscogsUser | null {
   const userIdCookie = request.cookies.get("discogs_user_id")?.value;
@@ -50,6 +60,30 @@ function getDegradedIdentityFromCookies(
     userId,
     username: usernameCookie,
   };
+}
+
+/** Keep display cookies aligned with a verified OAuth identity. */
+export function syncIdentityCookies(
+  response: NextResponse,
+  identity: VerifiedDiscogsUser,
+): void {
+  const secureFlag = getSecureCookieFlag();
+
+  response.cookies.set("discogs_username", identity.username, {
+    httpOnly: false,
+    secure: secureFlag,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_COOKIE_MAX_AGE,
+  });
+
+  response.cookies.set("discogs_user_id", identity.userId.toString(), {
+    httpOnly: true,
+    secure: secureFlag,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_COOKIE_MAX_AGE,
+  });
 }
 
 export function primeVerifiedIdentityCache(
@@ -146,11 +180,6 @@ export async function getVerifiedUserFromRequest(
             username: stale.username,
           },
         };
-      }
-
-      const degraded = getDegradedIdentityFromCookies(request);
-      if (degraded) {
-        return { user: degraded };
       }
 
       return { error: getDiscogsRateLimitResponse() };

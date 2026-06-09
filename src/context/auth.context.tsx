@@ -1,3 +1,5 @@
+"use client";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
@@ -5,13 +7,16 @@ import {
   type PropsWithChildren,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
+  useState,
 } from "react";
 import { logout as logoutApi } from "src/api/helpers";
-import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
+import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import {
-  checkAuthStatus,
   clearAuthCookies,
   clearUrlParams,
   parseAuthUrlParams,
@@ -24,14 +29,17 @@ export interface AuthState {
   isCheckingAuth: boolean;
   isLoading: boolean;
   isLoggingOut: boolean;
+  rateLimited: boolean;
+  error: string | null;
+}
+
+interface AuthUiState {
+  isLoading: boolean;
+  isLoggingOut: boolean;
   error: string | null;
 }
 
 export enum AuthActionTypes {
-  SetAuthenticated = "SetAuthenticated",
-  SetUsername = "SetUsername",
-  SetUserId = "SetUserId",
-  SetCheckingAuth = "SetCheckingAuth",
   SetLoading = "SetLoading",
   SetLoggingOut = "SetLoggingOut",
   SetError = "SetError",
@@ -39,37 +47,16 @@ export enum AuthActionTypes {
 }
 
 export type AuthActions =
-  | { type: AuthActionTypes.SetAuthenticated; payload: boolean }
-  | { type: AuthActionTypes.SetUsername; payload: string | null }
-  | { type: AuthActionTypes.SetUserId; payload: string | null }
-  | { type: AuthActionTypes.SetCheckingAuth; payload: boolean }
   | { type: AuthActionTypes.SetLoading; payload: boolean }
   | { type: AuthActionTypes.SetLoggingOut; payload: boolean }
   | { type: AuthActionTypes.SetError; payload: string | null }
   | { type: AuthActionTypes.Logout; payload: undefined };
 
-const authReducer = (state: AuthState, action: AuthActions): AuthState => {
+const authUiReducer = (
+  state: AuthUiState,
+  action: AuthActions,
+): AuthUiState => {
   switch (action.type) {
-    case AuthActionTypes.SetAuthenticated:
-      return {
-        ...state,
-        isAuthenticated: action.payload,
-      };
-    case AuthActionTypes.SetUsername:
-      return {
-        ...state,
-        username: action.payload,
-      };
-    case AuthActionTypes.SetUserId:
-      return {
-        ...state,
-        userId: action.payload,
-      };
-    case AuthActionTypes.SetCheckingAuth:
-      return {
-        ...state,
-        isCheckingAuth: action.payload,
-      };
     case AuthActionTypes.SetLoading:
       return {
         ...state,
@@ -87,28 +74,30 @@ const authReducer = (state: AuthState, action: AuthActions): AuthState => {
       };
     case AuthActionTypes.Logout:
       return {
-        ...state,
-        isAuthenticated: false,
-        username: null,
-        userId: null,
-        error: null,
-        isCheckingAuth: false,
         isLoading: false,
         isLoggingOut: false,
+        error: null,
       };
     default:
       return state;
   }
 };
 
-const initialState: AuthState = {
-  isAuthenticated: false,
-  username: null,
-  userId: null,
-  isCheckingAuth: true,
+const initialUiState: AuthUiState = {
   isLoading: false,
   isLoggingOut: false,
   error: null,
+};
+
+const unauthenticatedSession: Pick<
+  AuthState,
+  "isAuthenticated" | "username" | "userId" | "rateLimited" | "isCheckingAuth"
+> = {
+  isAuthenticated: false,
+  username: null,
+  userId: null,
+  rateLimited: false,
+  isCheckingAuth: false,
 };
 
 const AuthContext = createContext<{
@@ -128,111 +117,144 @@ export const AuthProvider = ({
   initialState: initialStateOverride,
   skipInitialAuthCheck = false,
 }: AuthProviderProps) => {
-  const [state, dispatch] = useReducer(
-    authReducer,
-    initialStateOverride ?? {
-      ...initialState,
-      isCheckingAuth: !skipInitialAuthCheck,
-    },
-  );
+  const [uiState, dispatch] = useReducer(authUiReducer, initialUiState);
   const queryClient = useQueryClient();
   const router = useRouter();
+  const prevRateLimitedRef = useRef(false);
+  const hasHandledAuthUrlRef = useRef(false);
+  const [isCompletingOAuth, setIsCompletingOAuth] = useState(false);
 
-  // Check for existing authentication once on mount
-  const hasCheckedAuthRef = useRef(false);
+  const {
+    data: authData,
+    isPending,
+    isFetching,
+    isError,
+    refetch,
+  } = useAuthQuery({
+    enabled: !skipInitialAuthCheck,
+  });
+
+  const sessionState = useMemo(() => {
+    if (skipInitialAuthCheck && initialStateOverride) {
+      return {
+        isAuthenticated: initialStateOverride.isAuthenticated,
+        username: initialStateOverride.username,
+        userId: initialStateOverride.userId,
+        rateLimited: initialStateOverride.rateLimited,
+        isCheckingAuth: initialStateOverride.isCheckingAuth,
+      };
+    }
+
+    if (skipInitialAuthCheck) {
+      return unauthenticatedSession;
+    }
+
+    return {
+      isAuthenticated: Boolean(authData?.isAuthenticated && authData.username),
+      username: authData?.username ?? null,
+      userId: authData?.userId ?? null,
+      rateLimited: authData?.rateLimited ?? false,
+      isCheckingAuth:
+        isPending || isCompletingOAuth || (isFetching && !authData),
+    };
+  }, [
+    authData,
+    initialStateOverride,
+    isCompletingOAuth,
+    isFetching,
+    isPending,
+    skipInitialAuthCheck,
+  ]);
+
+  const state: AuthState = useMemo(
+    () => ({
+      ...sessionState,
+      isLoading: uiState.isLoading,
+      isLoggingOut: uiState.isLoggingOut,
+      error: uiState.error,
+    }),
+    [sessionState, uiState],
+  );
+
   useEffect(() => {
-    if (skipInitialAuthCheck || hasCheckedAuthRef.current) {
+    if (skipInitialAuthCheck || isPending) {
       return;
     }
 
-    hasCheckedAuthRef.current = true;
-    let isMounted = true;
+    if (!sessionState.isAuthenticated) {
+      queryClient.clear();
+    }
+  }, [
+    isPending,
+    queryClient,
+    sessionState.isAuthenticated,
+    skipInitialAuthCheck,
+  ]);
 
-    const checkAuth = async () => {
-      try {
-        const authStatus = await checkAuthStatus();
-        if (!isMounted) return;
+  useEffect(() => {
+    if (isError) {
+      console.error("Error checking auth");
+      queryClient.clear();
+    }
+  }, [isError, queryClient]);
 
-        if (authStatus.isAuthenticated && authStatus.username) {
-          dispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
-          dispatch({
-            type: AuthActionTypes.SetUsername,
-            payload: authStatus.username,
-          });
-          dispatch({
-            type: AuthActionTypes.SetUserId,
-            payload: authStatus.userId,
-          });
-        } else {
-          queryClient.clear();
-        }
-        if (isMounted) {
-          dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
-        }
-      } catch (error) {
-        if (!isMounted) return;
-        console.error("Error checking auth:", error);
-        queryClient.clear();
-        if (isMounted) {
-          dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
-        }
-      }
-    };
+  useEffect(() => {
+    if (skipInitialAuthCheck || hasHandledAuthUrlRef.current) {
+      return;
+    }
 
-    checkAuth();
+    const { authStatus, errorStatus } = parseAuthUrlParams();
+    hasHandledAuthUrlRef.current = true;
 
-    return () => {
-      isMounted = false;
-    };
-  }, [queryClient, skipInitialAuthCheck]);
+    if (authStatus === "success") {
+      setIsCompletingOAuth(true);
+      void refetch()
+        .then((result) => {
+          const data = result.data;
+          if (data?.isAuthenticated && data.username) {
+            clearUserScopedQueries(queryClient);
+          }
+          clearUrlParams();
+        })
+        .finally(() => {
+          setIsCompletingOAuth(false);
+        });
+      return;
+    }
+
+    if (errorStatus) {
+      dispatch({
+        type: AuthActionTypes.SetError,
+        payload: `Authentication failed: ${errorStatus}`,
+      });
+      clearUrlParams();
+    }
+  }, [queryClient, refetch, skipInitialAuthCheck]);
 
   useEffect(() => {
     if (skipInitialAuthCheck) {
       return;
     }
 
-    const { authStatus, errorStatus } = parseAuthUrlParams();
+    const wasRateLimited = prevRateLimitedRef.current;
+    const isRateLimited = sessionState.rateLimited;
 
-    if (authStatus === "success") {
-      const completeAuthSuccess = async () => {
-        const authStatusResult = await checkAuthStatus();
-        if (authStatusResult.isAuthenticated && authStatusResult.username) {
-          dispatch({ type: AuthActionTypes.SetAuthenticated, payload: true });
-          dispatch({
-            type: AuthActionTypes.SetUsername,
-            payload: authStatusResult.username,
-          });
-          dispatch({
-            type: AuthActionTypes.SetUserId,
-            payload: authStatusResult.userId,
-          });
-          dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
-          queryClient.invalidateQueries({
-            queryKey: DiscogsCollectionQueryKeys.all(),
-          });
-          clearUrlParams();
-          return;
-        }
-
-        dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
-        clearUrlParams();
-      };
-
-      void completeAuthSuccess();
-    } else if (errorStatus) {
-      dispatch({
-        type: AuthActionTypes.SetError,
-        payload: `Authentication failed: ${errorStatus}`,
-      });
-      dispatch({ type: AuthActionTypes.SetCheckingAuth, payload: false });
-      clearUrlParams();
+    if (wasRateLimited && !isRateLimited && sessionState.isAuthenticated) {
+      clearUserScopedQueries(queryClient);
     }
-  }, [queryClient, skipInitialAuthCheck]);
+
+    prevRateLimitedRef.current = isRateLimited;
+  }, [
+    queryClient,
+    sessionState.isAuthenticated,
+    sessionState.rateLimited,
+    skipInitialAuthCheck,
+  ]);
 
   const login = () => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
     dispatch({ type: AuthActionTypes.SetError, payload: null });
-    window.location.href = "/api/auth/discogs";
+    window.location.href = "/api/auth/discogs?force=1";
   };
 
   const logout = async () => {
@@ -242,6 +264,12 @@ export const AuthProvider = ({
       await logoutApi();
       clearAuthCookies();
       dispatch({ type: AuthActionTypes.Logout, payload: undefined });
+      queryClient.setQueryData(AuthQueryKeys.all(), {
+        isAuthenticated: false,
+        username: null,
+        userId: null,
+        rateLimited: false,
+      });
       router.replace("/");
       queryClient.clear();
     } catch (_error) {

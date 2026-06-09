@@ -56,6 +56,7 @@ export default function DashboardClient() {
   const { isLoading: collectionLoading } = useCollectionData(
     authState.username,
     authState.isAuthenticated,
+    authState.rateLimited,
   );
   const needsCollectionLoad = useNeedsCollectionLoad(collectionLoading);
   const showLoading = isCheckingAuth || needsCollectionLoad;

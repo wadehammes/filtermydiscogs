@@ -10,6 +10,7 @@ import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 export const useCollectionData = (
   username: string | null,
   isAuthenticated: boolean,
+  rateLimited = false,
 ) => {
   const queryClient = useQueryClient();
   const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
@@ -17,7 +18,7 @@ export const useCollectionData = (
 
   const filtersDispatch = useFiltersDispatch();
 
-  const queryEnabled = isAuthenticated && !!username;
+  const queryEnabled = isAuthenticated && !!username && !rateLimited;
 
   const {
     data: collectionData,

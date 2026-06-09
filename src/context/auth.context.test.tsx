@@ -1,10 +1,8 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { logout as logoutApi } from "src/api/helpers";
-import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { checkAuth, logout as logoutApi } from "src/api/helpers";
 import {
-  checkAuthStatus,
   clearAuthCookies,
   clearUrlParams,
   getUsernameFromCookies,
@@ -13,25 +11,23 @@ import {
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { act, renderHook, waitFor } from "test-utils";
-import { AuthActionTypes, AuthProvider, useAuth } from "./auth.context";
+import { AuthProvider, useAuth } from "./auth.context";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service");
 
 const mockUseRouter = jest.mocked(useRouter);
+const mockCheckAuth = jest.mocked(checkAuth);
 const mockLogoutApi = jest.mocked(logoutApi);
 const mockClearAuthCookies = jest.mocked(clearAuthCookies);
 const mockClearUrlParams = jest.mocked(clearUrlParams);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
-const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 
 describe("AuthProvider", () => {
   let queryClient: QueryClient;
   let clearSpy: jest.SpiedFunction<QueryClient["clear"]>;
-  let invalidateQueriesSpy: jest.SpiedFunction<
-    QueryClient["invalidateQueries"]
-  >;
+  let removeQueriesSpy: jest.SpiedFunction<QueryClient["removeQueries"]>;
 
   const mockRouter = {
     replace: jest.fn(),
@@ -54,14 +50,15 @@ describe("AuthProvider", () => {
   beforeEach(() => {
     queryClient = createTestQueryClient();
     clearSpy = jest.spyOn(queryClient, "clear");
-    invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
+    removeQueriesSpy = jest.spyOn(queryClient, "removeQueries");
 
     jest.clearAllMocks();
     mockUseRouter.mockReturnValue(mockRouter);
-    mockCheckAuthStatus.mockResolvedValue({
+    mockCheckAuth.mockResolvedValue({
       isAuthenticated: false,
       username: null,
       userId: null,
+      rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: null,
@@ -84,10 +81,11 @@ describe("AuthProvider", () => {
   });
 
   it("checks auth status on mount", async () => {
-    mockCheckAuthStatus.mockResolvedValueOnce({
+    mockCheckAuth.mockResolvedValueOnce({
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      rateLimited: false,
     });
 
     const { result } = renderAuthHook();
@@ -96,16 +94,17 @@ describe("AuthProvider", () => {
       expect(result.current.state.isCheckingAuth).toBe(false);
     });
 
-    expect(mockCheckAuthStatus).toHaveBeenCalled();
+    expect(mockCheckAuth).toHaveBeenCalled();
     expect(result.current.state.isAuthenticated).toBe(true);
     expect(result.current.state.username).toBe("testuser");
   });
 
   it("clears query cache when not authenticated", async () => {
-    mockCheckAuthStatus.mockResolvedValueOnce({
+    mockCheckAuth.mockResolvedValueOnce({
       isAuthenticated: false,
       username: null,
       userId: null,
+      rateLimited: false,
     });
 
     renderAuthHook();
@@ -120,11 +119,12 @@ describe("AuthProvider", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
 
-    mockCheckAuthStatus.mockRejectedValueOnce(new Error("Auth check failed"));
+    mockCheckAuth.mockRejectedValue(new Error("Auth check failed"));
 
-    renderAuthHook();
+    const { result } = renderAuthHook();
 
     await waitFor(() => {
+      expect(result.current.state.isCheckingAuth).toBe(false);
       expect(clearSpy).toHaveBeenCalled();
     });
 
@@ -132,10 +132,11 @@ describe("AuthProvider", () => {
   });
 
   it("handles successful auth from URL params", async () => {
-    mockCheckAuthStatus.mockResolvedValue({
+    mockCheckAuth.mockResolvedValue({
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: "success",
@@ -152,16 +153,16 @@ describe("AuthProvider", () => {
     expect(result.current.state.userId).toBe("123");
     expect(result.current.state.isCheckingAuth).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: DiscogsCollectionQueryKeys.all(),
-    });
+    expect(removeQueriesSpy).toHaveBeenCalled();
+    expect(clearSpy).not.toHaveBeenCalled();
   });
 
   it("handles auth error from URL params", async () => {
-    mockCheckAuthStatus.mockResolvedValue({
+    mockCheckAuth.mockResolvedValue({
       isAuthenticated: false,
       username: null,
       userId: null,
+      rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: null,
@@ -213,7 +214,7 @@ describe("AuthProvider", () => {
 
     expect(result.current.state.isLoading).toBe(true);
     expect(result.current.state.error).toBeNull();
-    expect(locationHref).toBe("/api/auth/discogs");
+    expect(locationHref).toBe("/api/auth/discogs?force=1");
 
     if (originalHrefDescriptor) {
       Object.defineProperty(window.location, "href", originalHrefDescriptor);
@@ -221,6 +222,12 @@ describe("AuthProvider", () => {
   });
 
   it("calls logout function", async () => {
+    mockCheckAuth.mockResolvedValue({
+      isAuthenticated: true,
+      username: "testuser",
+      userId: "123",
+      rateLimited: false,
+    });
     mockApiResponse(
       true,
       mockLogoutApi,
@@ -231,18 +238,7 @@ describe("AuthProvider", () => {
     const { result } = renderAuthHook();
 
     await waitFor(() => {
-      expect(result.current.state.isCheckingAuth).toBe(false);
-    });
-
-    act(() => {
-      result.current.dispatch({
-        type: AuthActionTypes.SetAuthenticated,
-        payload: true,
-      });
-      result.current.dispatch({
-        type: AuthActionTypes.SetUsername,
-        payload: "testuser",
-      });
+      expect(result.current.state.isAuthenticated).toBe(true);
     });
 
     await act(async () => {

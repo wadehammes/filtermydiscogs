@@ -489,6 +489,7 @@ export const checkAuth = async (): Promise<{
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  rateLimited?: boolean;
 }> => {
   try {
     const response = await fetch("/api/auth/check", {

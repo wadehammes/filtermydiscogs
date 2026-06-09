@@ -45,6 +45,7 @@ describe("CrateProvider", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: null,

@@ -8,9 +8,13 @@ import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 
 export interface UseCratesQueryParams {
   userId: string | null;
+  enabled?: boolean;
 }
 
-export const useCratesQuery = ({ userId }: UseCratesQueryParams) => {
+export const useCratesQuery = ({
+  userId,
+  enabled = true,
+}: UseCratesQueryParams) => {
   return useQuery<CratesResponse>({
     queryKey: CratesQueryKeys.byUserId(userId),
     queryFn: async () => {
@@ -20,7 +24,7 @@ export const useCratesQuery = ({ userId }: UseCratesQueryParams) => {
 
       return fetchCrates();
     },
-    enabled: !!userId,
+    enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -32,10 +36,15 @@ export const useCratesQuery = ({ userId }: UseCratesQueryParams) => {
 export interface UseCrateQueryParams {
   userId: string | null;
   crateId: string | null;
+  enabled?: boolean;
 }
 
-export const useCrateQuery = ({ userId, crateId }: UseCrateQueryParams) => {
-  const isEnabled = Boolean(userId && crateId);
+export const useCrateQuery = ({
+  userId,
+  crateId,
+  enabled = true,
+}: UseCrateQueryParams) => {
+  const isEnabled = enabled && Boolean(userId && crateId);
 
   return useQuery<CrateWithReleasesResponse>({
     queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
