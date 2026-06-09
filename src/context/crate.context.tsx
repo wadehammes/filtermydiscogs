@@ -115,22 +115,29 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
   useEffect(() => {
     const previousUserId = prevUserIdRef.current;
-    if (previousUserId !== userId) {
-      setActiveCrateId(null);
-      closeDrawer();
-
-      if (previousUserId) {
-        queryClient.removeQueries({
-          queryKey: CratesQueryKeys.byUserId(previousUserId),
-        });
-        queryClient.removeQueries({
-          queryKey: CrateQueryKeys.byUserId(previousUserId),
-        });
-      }
-
-      prevUserIdRef.current = userId;
+    if (previousUserId === userId) {
+      return;
     }
-  }, [userId, queryClient, closeDrawer]);
+
+    setActiveCrateId(null);
+
+    if (!previousUserId && userId) {
+      openDrawer();
+    } else {
+      closeDrawer();
+    }
+
+    if (previousUserId) {
+      queryClient.removeQueries({
+        queryKey: CratesQueryKeys.byUserId(previousUserId),
+      });
+      queryClient.removeQueries({
+        queryKey: CrateQueryKeys.byUserId(previousUserId),
+      });
+    }
+
+    prevUserIdRef.current = userId;
+  }, [userId, queryClient, closeDrawer, openDrawer]);
 
   useEffect(() => {
     if (!userId || crates.length === 0) {
