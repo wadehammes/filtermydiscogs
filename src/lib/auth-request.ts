@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 import {
   type CachedDiscogsIdentity,
   clearCachedIdentity,
@@ -8,6 +8,7 @@ import {
   setCachedIdentity,
   setInFlightIdentityRequest,
 } from "src/lib/identity-cache";
+import { privateRouteJson } from "src/lib/private-route-response";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export interface VerifiedDiscogsUser {
@@ -26,7 +27,7 @@ function getSecureCookieFlag(): boolean {
 }
 
 function getDiscogsRateLimitResponse(): NextResponse {
-  return NextResponse.json(
+  return privateRouteJson(
     { error: "Discogs rate limit exceeded. Please try again shortly." },
     {
       status: 503,
@@ -159,7 +160,7 @@ export async function getVerifiedUserFromRequest(
 
   if (!(accessToken && accessTokenSecret)) {
     return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+      error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
     };
   }
 
@@ -187,7 +188,7 @@ export async function getVerifiedUserFromRequest(
 
     console.error("OAuth identity verification failed:", error);
     return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+      error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
     };
   }
 }
@@ -229,7 +230,7 @@ export async function requireAuthenticatedDiscogsUser(
 
   if (!(accessToken && accessTokenSecret)) {
     return {
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
+      error: privateRouteJson({ error: "Not authenticated" }, { status: 401 }),
     };
   }
 
@@ -242,7 +243,7 @@ export async function requireAuthenticatedDiscogsUser(
     verified.user.username.toLowerCase() !== requestedUsername.toLowerCase()
   ) {
     return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 403 }),
+      error: privateRouteJson({ error: "Unauthorized" }, { status: 403 }),
     };
   }
 

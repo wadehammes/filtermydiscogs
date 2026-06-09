@@ -1,9 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 import {
   getVerifiedUserFromRequest,
   syncIdentityCookies,
 } from "src/lib/auth-request";
+import { privateRouteRedirect } from "src/lib/private-route-response";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+
+export const dynamic = "force-dynamic";
 
 function clearSessionCookies(response: NextResponse): void {
   const secureFlag = process.env.NODE_ENV === "production";
@@ -48,7 +51,7 @@ export async function GET(request: NextRequest) {
       if (!("error" in verified)) {
         const identity = verified.user;
 
-        const response = NextResponse.redirect(
+        const response = privateRouteRedirect(
           new URL("/releases?auth=success", request.url),
         );
 
@@ -58,7 +61,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (verified.error.status === 503) {
-        return NextResponse.redirect(new URL("/releases", request.url));
+        return privateRouteRedirect(new URL("/releases", request.url));
       }
 
       console.log(
@@ -72,7 +75,7 @@ export async function GET(request: NextRequest) {
     const requestTokens =
       await discogsOAuthService.getRequestToken(callbackUrl);
 
-    const response = NextResponse.redirect(
+    const response = privateRouteRedirect(
       discogsOAuthService.getAuthorizationUrl(requestTokens.oauth_token),
     );
 
@@ -103,7 +106,7 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("OAuth initiation error:", error);
-    return NextResponse.redirect(
+    return privateRouteRedirect(
       new URL("/?error=oauth_init_failed", request.url),
     );
   }

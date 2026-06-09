@@ -1,17 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 import {
   getVerifiedUserFromRequest,
   type VerifiedDiscogsUser,
 } from "src/lib/auth-request";
+import { privateRouteJson } from "src/lib/private-route-response";
 import { getPublicCrateMetadataForPage } from "src/lib/public-crate.server";
 import { auditLog } from "./db-audit";
 import { checkRateLimit } from "./rate-limit";
 
 export type { VerifiedDiscogsUser };
 
-/**
- * Sanitize error messages to prevent information leakage
- */
+export const createErrorResponse = (error: unknown): NextResponse => {
+  const sanitized = sanitizeError(error);
+
+  return privateRouteJson(
+    { error: sanitized.message },
+    { status: sanitized.status },
+  );
+};
+
 export function sanitizeError(error: unknown): {
   message: string;
   code?: string;
@@ -128,7 +135,7 @@ export function checkRateLimitWithResponse(
   const rateLimit = checkRateLimit(userId, isWriteOperation);
 
   if (!rateLimit.allowed) {
-    return NextResponse.json(
+    return privateRouteJson(
       {
         error: "Rate limit exceeded",
         details: `Too many requests. Please try again after ${new Date(rateLimit.resetAt).toISOString()}`,
@@ -188,7 +195,7 @@ export function createPaginatedResponse<T>(
 ) {
   const totalPages = Math.ceil(total / pageSize);
 
-  return NextResponse.json({
+  return privateRouteJson({
     data,
     pagination: {
       page,

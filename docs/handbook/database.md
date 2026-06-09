@@ -62,6 +62,8 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 
+Authenticated crate handlers return **`privateRouteJson`** / **`createErrorResponse`** ([`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and set **`export const dynamic = "force-dynamic"`**. See [platform.md](platform.md) (**Private session API responses**).
+
 **`/api/crates/health`** is admin-only (same OAuth verification as **`/api/admin/stats`**).
 
 ## Public community stats

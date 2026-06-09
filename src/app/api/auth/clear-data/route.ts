@@ -1,6 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getVerifiedUserFromRequest } from "src/lib/auth-request";
 import { prisma } from "src/lib/db";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const secureFlag = process.env.NODE_ENV === "production";
@@ -32,13 +35,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error clearing crate data for user:", error);
-    return NextResponse.json(
+    return privateRouteJson(
       { error: "Failed to clear stored data" },
       { status: 500 },
     );
   }
 
-  const response = NextResponse.json({ success: true });
+  const response = privateRouteJson({ success: true });
 
   response.cookies.set("discogs_username", "", clearDisplayCookieOptions);
   response.cookies.set("discogs_user_id", "", clearCookieOptions);

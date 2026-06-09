@@ -1,5 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { clearVerifiedIdentityCache } from "src/lib/auth-request";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get("discogs_access_token")?.value;
@@ -11,7 +14,7 @@ export async function POST(request: NextRequest) {
     clearVerifiedIdentityCache(accessToken, accessTokenSecret);
   }
 
-  const response = NextResponse.json({ success: true });
+  const response = privateRouteJson({ success: true });
 
   // Preserve OAuth tokens only when explicitly requested (shared-device convenience).
   const preserveTokens =

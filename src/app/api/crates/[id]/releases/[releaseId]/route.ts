@@ -1,10 +1,14 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   auditDatabaseOperation,
+  createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Remove a release from a crate
@@ -37,7 +41,7 @@ export async function DELETE(
     });
 
     if (!crate) {
-      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+      return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
     // Remove release from crate
@@ -60,7 +64,7 @@ export async function DELETE(
       // Check if it was a not found error
       const sanitized = sanitizeError(error);
       if (sanitized.code === "NOT_FOUND") {
-        return NextResponse.json(
+        return privateRouteJson(
           { error: "Release not found in crate" },
           { status: 404 },
         );
@@ -68,13 +72,9 @@ export async function DELETE(
       throw error;
     }
 
-    return NextResponse.json({ success: true });
+    return privateRouteJson({ success: true });
   } catch (error) {
     console.error("Error removing release from crate:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }
