@@ -82,7 +82,6 @@ const ReleasesGridComponent = ({
     return (
       <ReleasesTable
         releases={releasesToShow}
-        isRandomMode={isRandomMode}
         onExitRandomMode={onExitRandomMode}
         onReleaseClick={onReleaseClick}
       />

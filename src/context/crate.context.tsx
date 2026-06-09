@@ -161,17 +161,24 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   }, [crates, userId, queryClient, logout]);
 
   useEffect(() => {
-    if (crates.length === 0) return;
-
-    const hasActiveCrate =
-      activeCrateId && crates.some((c) => c.id === activeCrateId);
-    if (!hasActiveCrate) {
-      const defaultCrate = findDefaultCrate({ crateList: crates });
-      if (defaultCrate) {
-        setActiveCrateId(defaultCrate.id);
-      }
+    if (crates.length === 0) {
+      return;
     }
-  }, [crates, activeCrateId, findDefaultCrate]);
+
+    setActiveCrateId((currentActiveCrateId) => {
+      const hasActiveCrate =
+        currentActiveCrateId &&
+        crates.some((crate) => crate.id === currentActiveCrateId);
+
+      if (hasActiveCrate) {
+        return currentActiveCrateId;
+      }
+
+      const defaultCrate = findDefaultCrate({ crateList: crates });
+
+      return defaultCrate?.id ?? null;
+    });
+  }, [crates, findDefaultCrate]);
 
   const selectedReleases = activeCrateReleases;
 

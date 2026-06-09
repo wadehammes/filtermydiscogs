@@ -24,7 +24,6 @@ import styles from "./ReleasesTable.module.css";
 
 interface ReleasesTableProps {
   releases: DiscogsRelease[];
-  isRandomMode: boolean;
   onExitRandomMode: () => void;
   onReleaseClick: (instanceId: string) => void;
 }
@@ -32,7 +31,7 @@ interface ReleasesTableProps {
 const columnHelper = createColumnHelper<DiscogsRelease>();
 
 export const ReleasesTable = memo<ReleasesTableProps>(
-  ({ releases, isRandomMode, onExitRandomMode, onReleaseClick }) => {
+  ({ releases, onExitRandomMode, onReleaseClick }) => {
     const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
     const selectedStyles = useSelectedStyles();
     const selectedFormats = useSelectedFormats();
