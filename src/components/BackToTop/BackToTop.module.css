@@ -1,3 +1,17 @@
+.icon {
+  display: block;
+  flex-shrink: 0;
+  height: var(--space-5);
+  width: var(--space-5);
+}
+
+.label {
+  display: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+}
+
 .backToTop {
   align-items: center;
   background: var(--primary);
@@ -11,10 +25,10 @@
   cursor: pointer;
   display: flex;
   gap: 0;
-  height: var(--button-height-md);
+  height: 3rem;
   justify-content: center;
-  left: var(--space-6);
-  min-width: var(--button-height-md);
+  left: var(--space-4);
+  min-width: 3rem;
   opacity: 0;
   padding: 0;
   position: fixed;
@@ -22,11 +36,11 @@
   transition:
     background-color var(--transition-normal),
     border-color var(--transition-normal),
-    opacity var(--transition-normal),
-    transform var(--transition-normal),
+    gap var(--transition-normal),
     min-width var(--transition-normal),
+    opacity var(--transition-normal),
     padding var(--transition-normal),
-    gap var(--transition-normal);
+    transform var(--transition-normal);
   white-space: nowrap;
   z-index: var(--z-3-fixed);
 
@@ -35,8 +49,13 @@
     border-color: var(--primary-hover);
     gap: var(--space-2);
     min-width: auto;
-    padding: 0 var(--space-3);
+    padding: 0 var(--space-2);
     transform: translateY(0) translateY(-2px);
+
+    .label {
+      display: inline-block;
+      padding-left: var(--space-2);
+    }
   }
 
   &:active {
@@ -54,33 +73,13 @@
     transform: translateY(0);
   }
 
-  @media (width <= 768px) {
-    bottom: var(--space-6);
-    height: 3rem;
-    left: var(--space-4);
-    min-width: 3rem;
+  @media (width >= 768px) {
+    height: var(--button-height-md);
+    left: var(--space-6);
+    min-width: var(--button-height-md);
 
     &:hover {
-      padding: 0 var(--space-2);
+      padding: 0 var(--space-3);
     }
   }
-}
-
-.icon {
-  display: block;
-  flex-shrink: 0;
-  height: var(--space-5);
-  width: var(--space-5);
-}
-
-.label {
-  display: none;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  white-space: nowrap;
-}
-
-.backToTop:hover .label {
-  display: inline-block;
-  padding-left: var(--space-2);
 }

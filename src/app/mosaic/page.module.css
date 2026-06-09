@@ -1,7 +1,11 @@
 .container {
-  min-height: 100vh;
-  padding: var(--space-8);
   background: var(--background);
+  min-height: 100vh;
+  padding: var(--space-4);
+
+  @media (width >= 768px) {
+    padding: var(--space-8);
+  }
 }
 
 .header {
@@ -11,20 +15,16 @@
   padding-top: var(--space-4);
 
   h1 {
-    font-size: var(--text-4xl);
+    color: var(--foreground);
+    font-size: var(--text-3xl);
     font-weight: var(--font-bold);
     margin-bottom: var(--space-4);
-    color: var(--foreground);
-
-    @media (width >= 768px) {
-      font-size: var(--text-3xl);
-    }
   }
 
   p {
-    font-size: var(--text-lg);
-    margin-bottom: var(--space-8);
     color: var(--muted-foreground);
+    font-size: var(--text-base);
+    margin-bottom: var(--space-8);
 
     @media (width >= 768px) {
       font-size: var(--text-xl);
@@ -58,17 +58,26 @@
 }
 
 .mosaicContainer {
-  width: 100%;
+  align-items: center;
   display: flex;
   justify-content: center;
-  align-items: center;
-  overflow: auto;
   min-height: 25rem;
+  overflow-x: auto;
   padding: var(--space-2);
+  width: 100%;
+
+  @media (width >= 481px) {
+    padding: var(--space-4);
+  }
+
+  @media (width >= 768px) {
+    overflow: auto;
+    padding: var(--space-2);
+  }
 
   @media (width >= 1000px) {
-    max-width: 95vw;
     margin: 0 auto;
+    max-width: 95vw;
   }
 }
 
@@ -150,34 +159,5 @@
   p {
     color: var(--muted-foreground);
     font-size: var(--text-lg);
-  }
-}
-
-/* Mobile-first responsive design */
-@media (width <= 768px) {
-  .container {
-    padding: var(--space-4);
-  }
-
-  .header {
-    h1 {
-      font-size: var(--text-3xl);
-    }
-
-    p {
-      font-size: var(--text-base);
-    }
-  }
-
-  .mosaicContainer {
-    padding: var(--space-4);
-    overflow-x: auto;
-    width: 100%;
-  }
-}
-
-@media (width <= 480px) {
-  .mosaicContainer {
-    padding: var(--space-2);
   }
 }

@@ -37,5 +37,16 @@ export function useCrateDrawer() {
     setUserToggled(false);
   }, []);
 
-  return { isDrawerOpen, toggleDrawer, openDrawer, closeDrawer };
+  const resetDrawer = useCallback(() => {
+    setUserToggled(null);
+  }, []);
+
+  return {
+    isDrawerOpen,
+    isDesktop,
+    toggleDrawer,
+    openDrawer,
+    closeDrawer,
+    resetDrawer,
+  };
 }

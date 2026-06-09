@@ -117,7 +117,6 @@ export default function ReleasesClient() {
               releaseCount={releaseCount}
               isFetchingNextPage={isFetchingNextPage}
               showAllLoadedMessage={showAllLoadedMessage}
-              isMobile={isMobile}
               isRandomMode={isRandomMode}
               currentView={currentView}
               onViewChange={handleViewChange}

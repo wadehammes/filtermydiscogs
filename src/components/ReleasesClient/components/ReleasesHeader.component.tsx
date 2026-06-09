@@ -5,13 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import Check from "src/styles/icons/check-solid.svg";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleasesHeader.module.css";
 
 interface ReleasesHeaderProps {
   releaseCount: number;
   isFetchingNextPage: boolean;
   showAllLoadedMessage: boolean;
-  isMobile: boolean;
   isRandomMode: boolean;
   currentView: "card" | "list" | "random";
   onViewChange: (view: "card" | "list" | "random") => void;
@@ -24,7 +24,6 @@ export const ReleasesHeader = ({
   releaseCount,
   isFetchingNextPage,
   showAllLoadedMessage,
-  isMobile,
   isRandomMode,
   currentView,
   onViewChange,
@@ -82,8 +81,8 @@ export const ReleasesHeader = ({
           currentView={isRandomMode ? "random" : currentView}
           onViewChange={onViewChange}
           onRandomClick={onRandomClick}
-          {...(isMobile ? { className: styles.viewToggleMobile } : {})}
-          {...(onCratesClick && { onCratesClick, isCratesOpen })}
+          className={classNames(styles.viewToggleMobile)}
+          {...definedProps({ onCratesClick, isCratesOpen })}
         />
       </div>
     </>

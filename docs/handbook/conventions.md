@@ -33,6 +33,21 @@ if (!username) {
 - **API payloads**: Define request/response types next to the feature or under `src/types/` when shared.
 - **Constants**: App-wide literals live in [`src/constants.ts`](../../src/constants.ts) and topic modules under [`src/constants/`](../../src/constants/) (e.g. [`sorting.ts`](../../src/constants/sorting.ts)). Use `src/utils/` for functions.
 - **Discogs usernames**: Validate with **`isValidDiscogsUsername`** from [`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts) in route handlers—do not duplicate ad-hoc regex (see [discogs.md](discogs.md)).
+- **`exactOptionalPropertyTypes`** (`tsconfig.json`): Optional props (`foo?: T`) may be **omitted** or set to `T`—never pass **`undefined`** explicitly.
+  - **`className`**: Pass CSS module tokens through **`classNames()`** (returns `string`; accepts `string | undefined`).
+  - **Other optional props**: Spread **`definedProps({ ... })`** from [`src/utils/definedProps.ts`](../../src/utils/definedProps.ts) to drop `undefined` keys before spread.
+  - **Do not** build props with sequential `if (value !== undefined) { props.key = value }` blocks, or conditional spreads like `{...(styles.foo ? { className: styles.foo } : {})}`.
+
+```tsx
+<ViewToggle
+  currentView={currentView}
+  onViewChange={onViewChange}
+  className={classNames(styles.viewToggleMobile)}
+  {...definedProps({ onCratesClick, isCratesOpen })}
+/>
+
+<CrateSelector className={classNames(styles.headerCrateSelector)} />
+```
 
 ## React / JSX
 
@@ -75,23 +90,80 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 - **`MyComponent.component.tsx`** + **`MyComponent.module.css`**. Use the `styles.*` object in TSX.
 - **Shared style modules** under [`src/styles/`](../../src/styles/) (e.g. [`nav-links.module.css`](../../src/styles/nav-links.module.css), [`segmented-control.module.css`](../../src/styles/segmented-control.module.css)) for cross-component patterns. Import directly from the module path; do not re-export through barrel files.
 
+### Component block structure
+
+Each **`.module.css`** file is organized around **block classes** (the `styles.*` keys used in TSX). Follow this structure:
+
+1. **One block class per UI surface** (`.releaseCard`, `.header`, `.crateFab`) as a top-level rule.
+2. **Always nest inside the block**:
+   - States and pseudo-classes: `&:hover`, `&:focus-visible`, `&.active`, `&.inCrate`
+   - **`@media` that changes this block** — inside the rule it affects, never grouped at file bottom
+   - Parent-context overrides: `.withSidebar &` when the block reacts to an ancestor state
+   - Multiple child rules under the same block — group them inside `.block { }` so the relationship is obvious
+3. **Flat descendants are fine for simple cases** — a lone **`.block h2`** or **`.block p`** at the top level is OK when it is the **only** rule for that element under that block (no sibling child rules, no modifiers on the same selector). Nesting is optional here, not required.
+
+```css
+/* ✅ Either form is fine for a single heading rule */
+.errorContainer h2 {
+  color: var(--destructive);
+}
+
+.errorContainer {
+  h2 {
+    color: var(--destructive);
+  }
+}
+```
+
+4. **Max nesting depth: three levels** (block → child/state → pseudo). If deeper, split into a new top-level block class.
+5. **Forbidden patterns**:
+   - Top-level `@media` blocks that retarget multiple unrelated classes — nest per block instead
+   - Repeating `.blockName` instead of `&` (`.button { .button:hover { } }` → `.button { &:hover { } }`)
+   - Long compound chains at the top level (`.block .child .grandchild`) — nest or split into block classes
+
+**Reference implementations:** [`Button.module.css`](../../src/components/Button/Button.module.css) (modifiers + `&`), [`MosaicClient.module.css`](../../src/components/MosaicClient/MosaicClient.module.css) (nested elements + `@media`).
+
+### Mobile-first breakpoints
+
+- **Default styles = smallest viewport.** Enhance with range queries: **`@media (width >= 768px)`**, **`@media (width >= 1024px)`** (Stylelint enforces this notation over legacy `min-width:`).
+- **Do not** use `@media (max-width: …)` or `@media (width <= …)` in new or edited rules.
+- **Standard breakpoints** (match existing layout hooks): **`768px`** (mobile → tablet), **`1024px`** (tablet → desktop). Use `620px` only where the releases grid already does.
+- When desktop is the simpler case, still start mobile-first: put mobile values in the default block, add desktop overrides in `@media (min-width: …)`.
+
+```css
+/* ✅ Mobile-first */
+.crateFab {
+  display: flex;
+
+  @media (width >= 1024px) {
+    display: none;
+  }
+}
+
+/* ❌ Desktop-first */
+.crateFab {
+  display: none;
+
+  @media (width <= 1023px) {
+    display: flex;
+  }
+}
+```
+
 ### Modern CSS
 
-- **Nesting**: Use for scoped rules and nested `@media`. Avoid **deep** nesting; split into top-level full selectors when a block grows large.
-- **Custom properties**: Prefer theme tokens from [`src/styles/themes/`](../../src/styles/themes/) and globals from [`src/styles/global.css`](../../src/styles/global.css) over magic numbers.
-- **Modern features**: Use `color-mix()`, `clamp()`, etc. when they simplify layout or typography.
-
-### Mobile-first
-
-- **In CSS**: `@media (min-width: …)` from small screens up.
+- **Custom properties**: Use theme tokens from [`src/styles/themes/`](../../src/styles/themes/) and [`src/styles/global.css`](../../src/styles/global.css)—not magic numbers.
+- **Layout**: Prefer **flex/grid** with **`gap`** over margin stacking.
+- **Color**: Use **`color-mix(in srgb, …)`** for tinted surfaces (see [`BackToTop.module.css`](../../src/components/BackToTop/BackToTop.module.css)).
+- **Fluid sizing**: Use **`clamp()`** for type and spacing that scales across viewports (see [`MosaicClient.module.css`](../../src/components/MosaicClient/MosaicClient.module.css)).
 
 ### Style rules
 
 - **Alphabetize** properties within each rule block.
-- **Nest** sensible selectors (`&:hover`, `&.modifier`); keep structural nesting shallow.
-- **Selector order**: Put **base** class rules **before** more specific compound selectors (e.g. **`.artistLine`** before **`.titleGroupMobile .artistLine`**) so Stylelint **`no-descending-specificity`** passes.
-- **Spacing**: Avoid **`margin-top`** for stacking siblings; prefer **flex/grid** with **`gap`**.
+- **Selector order**: Base class rules **before** more specific compounds so Stylelint **`no-descending-specificity`** passes (define `.artistLine` before nesting under `.titleGroupMobile`).
+- **Spacing**: Avoid **`margin-top`** for stacking siblings; use **`gap`**. Exceptions: **`scroll-margin-top`**, **`margin-top: auto`** (flex push), and explicit **`margin-top: 0`** resets on headings.
 - No redundant comments in CSS; names and structure should read clearly.
+- Run **`pnpm lint:css`** before pushing; CI runs Stylelint on `src/**/*.css` ([`platform.md`](platform.md)).
 
 ### Typography
 
@@ -148,6 +220,7 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 - **Don't mock**: Pure helpers under [`src/utils/`](../../src/utils/)—filter, sort, format, URL helpers. Let them run in component tests.
 - **Don't mock React Query**: Use a real **`QueryClient`** from [`createTestQueryClient`](../../src/tests/utils/testQueryClient.tsx) via **`TestProviders`** (pass **`queryClient`** when a test needs to spy on cache behavior). Mock **`src/api/helpers`** and auth services instead so hooks and providers exercise real query/mutation wiring.
 - **Do mock**: External dependencies—mock **`src/api/helpers`** with **`jest.mock("src/api/helpers")`** and configure responses via [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts) (same helper as energy-texas). Use [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts) for fetch-level tests of [`src/api/helpers.ts`](../../src/api/helpers.ts). Also mock auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
+- **Viewport / `matchMedia`**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) calls [`setupMockMatchMedia`](../../src/tests/mocks/mockMatchMedia.mock.ts) each test (defaults to mobile). Pass **`{ desktop: true }`** when a test needs desktop **`(min-width: 1024px)`** / **`(max-width: 1023px)`** behavior (e.g. **`useCrateDrawer`**, **`CrateProvider`** login drawer tests).
 - **Assertions**: Prefer asserting final DOM/output; avoid `expect(mockFn).toHaveBeenCalledWith(...)` when un-mocking—the output already proves wiring.
 
 ### Jest notes

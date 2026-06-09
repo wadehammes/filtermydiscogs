@@ -29,7 +29,6 @@ import {
 } from "src/hooks/queries/useCratesQuery";
 import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
 import type { Crate, CrateWithCount } from "src/types/crate.types";
 
@@ -39,6 +38,7 @@ interface CrateContextType {
   selectedReleases: DiscogsRelease[];
   isLoading: boolean;
   isLoadingCrate: boolean;
+  isFetchingCrate: boolean;
   addToCrate: (release: DiscogsRelease) => void;
   removeFromCrate: (releaseId: string) => void;
   isInCrate: (releaseId: string) => boolean;
@@ -67,11 +67,17 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     logout,
   } = useAuth();
   const queryClient = useQueryClient();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
   const prevUserIdRef = useRef<string | null>(userId);
-  const { isDrawerOpen, toggleDrawer, openDrawer, closeDrawer } =
-    useCrateDrawer();
+  const mismatchRefetchKeyRef = useRef<string | null>(null);
+  const {
+    isDrawerOpen,
+    isDesktop,
+    toggleDrawer,
+    openDrawer,
+    closeDrawer,
+    resetDrawer,
+  } = useCrateDrawer();
 
   const canLoadCrates = isAuthenticated && !!userId && !rateLimited;
 
@@ -86,7 +92,13 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   });
   const crates = cratesData?.crates || [];
 
-  const { data: activeCrateData, isLoading: isLoadingCrate } = useCrateQuery({
+  const {
+    data: activeCrateData,
+    isLoading: isLoadingCrate,
+    isFetching: isFetchingCrate,
+    isError: isCrateError,
+    refetch: refetchActiveCrate,
+  } = useCrateQuery({
     userId,
     crateId: activeCrateId,
     enabled: canLoadCrates,
@@ -122,7 +134,13 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     setActiveCrateId(null);
 
     if (!previousUserId && userId) {
-      openDrawer();
+      resetDrawer();
+      void queryClient.invalidateQueries({
+        queryKey: CratesQueryKeys.byUserId(userId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: CrateQueryKeys.byUserId(userId),
+      });
     } else {
       closeDrawer();
     }
@@ -137,7 +155,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     }
 
     prevUserIdRef.current = userId;
-  }, [userId, queryClient, closeDrawer, openDrawer]);
+  }, [userId, queryClient, closeDrawer, resetDrawer]);
 
   useEffect(() => {
     if (!userId || crates.length === 0) {
@@ -178,7 +196,45 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
       return defaultCrate?.id ?? null;
     });
-  }, [crates, findDefaultCrate]);
+  }, [crates, findDefaultCrate, userId]);
+
+  useEffect(() => {
+    mismatchRefetchKeyRef.current = null;
+  }, [userId, activeCrateId]);
+
+  useEffect(() => {
+    if (
+      !(activeCrateId && userId && canLoadCrates) ||
+      isLoadingCrate ||
+      isFetchingCrate ||
+      isCrateError
+    ) {
+      return;
+    }
+
+    const crateSummary = crates.find((crate) => crate.id === activeCrateId);
+    const expectedReleaseCount = crateSummary?.releaseCount ?? 0;
+    const mismatchKey = `${userId}:${activeCrateId}`;
+
+    if (
+      expectedReleaseCount > 0 &&
+      activeCrateReleases.length === 0 &&
+      mismatchRefetchKeyRef.current !== mismatchKey
+    ) {
+      mismatchRefetchKeyRef.current = mismatchKey;
+      void refetchActiveCrate();
+    }
+  }, [
+    activeCrateId,
+    activeCrateReleases.length,
+    canLoadCrates,
+    crates,
+    isCrateError,
+    isFetchingCrate,
+    isLoadingCrate,
+    refetchActiveCrate,
+    userId,
+  ]);
 
   const selectedReleases = activeCrateReleases;
 
@@ -220,8 +276,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
         },
         {
           onSuccess: () => {
-            // Only open drawer on desktop, not on mobile
-            if (!isMobile) {
+            if (isDesktop) {
               openDrawer();
             }
           },
@@ -237,7 +292,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       findDefaultCrate,
       addReleaseMutation,
       openDrawer,
-      isMobile,
+      isDesktop,
     ],
   );
 
@@ -354,6 +409,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       selectedReleases,
       isLoading,
       isLoadingCrate,
+      isFetchingCrate,
       addToCrate,
       removeFromCrate,
       isInCrate,
@@ -375,6 +431,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       selectedReleases,
       isLoading,
       isLoadingCrate,
+      isFetchingCrate,
       addToCrate,
       removeFromCrate,
       isInCrate,
