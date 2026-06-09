@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
 import { CrateSelectorPageObject } from "src/components/CrateSelector/CrateSelector.po";
 import { screen, waitFor } from "test-utils";
 
@@ -295,9 +296,9 @@ describe("CrateSelector", () => {
 
   it("handles create error gracefully", async () => {
     const user = userEvent.setup();
-    const consoleErrorSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+    const toastErrorSpy = jest
+      .spyOn(toast, "error")
+      .mockImplementation(() => "toast-id");
     po.mockCreateCrateError();
 
     po.renderCrateSelector();
@@ -313,13 +314,18 @@ describe("CrateSelector", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Error creating crate:",
-        expect.any(Error),
-      );
+      expect(toastErrorSpy).toHaveBeenCalledWith("Failed to create crate", {
+        description: "Failed to create crate",
+      });
     });
 
-    consoleErrorSpy.mockRestore();
+    expect(screen.getByPlaceholderText("Crate name")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("My New Crate")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "New Crate" }),
+    ).not.toBeInTheDocument();
+
+    toastErrorSpy.mockRestore();
   });
 
   it("applies custom className", async () => {
