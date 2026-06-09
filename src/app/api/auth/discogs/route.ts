@@ -1,59 +1,59 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getVerifiedUserFromRequest } from "src/lib/auth-request";
+import {
+  getVerifiedUserFromRequest,
+  syncIdentityCookies,
+} from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+
+function clearSessionCookies(response: NextResponse): void {
+  const secureFlag = process.env.NODE_ENV === "production";
+
+  const clearCookieOptions = {
+    httpOnly: true,
+    secure: secureFlag,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 0,
+  };
+
+  const clearDisplayCookieOptions = {
+    httpOnly: false,
+    secure: secureFlag,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 0,
+  };
+
+  response.cookies.set("discogs_username", "", clearDisplayCookieOptions);
+  response.cookies.set("discogs_user_id", "", clearCookieOptions);
+  response.cookies.set("discogs_access_token", "", clearCookieOptions);
+  response.cookies.set("discogs_access_token_secret", "", clearCookieOptions);
+  response.cookies.set("oauth_token", "", clearCookieOptions);
+  response.cookies.set("oauth_token_secret", "", clearCookieOptions);
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user already has valid access tokens
+    const forceReauth = request.nextUrl.searchParams.get("force") === "1";
+
     const accessToken = request.cookies.get("discogs_access_token")?.value;
     const accessTokenSecret = request.cookies.get(
       "discogs_access_token_secret",
     )?.value;
-    const username = request.cookies.get("discogs_username")?.value;
 
-    // If tokens exist, verify they're still valid by checking identity
-    if (accessToken && accessTokenSecret) {
+    // Reuse existing tokens only when the user did not explicitly request re-auth.
+    if (!forceReauth && accessToken && accessTokenSecret) {
       const verified = await getVerifiedUserFromRequest(request);
 
       if (!("error" in verified)) {
         const identity = verified.user;
 
-        // Tokens are valid - restore username and user_id if missing
-        // This can happen if tokens were preserved from a previous session
-        // or if the cookies expired but tokens are still valid
         const response = NextResponse.redirect(
           new URL("/releases?auth=success", request.url),
         );
 
-        // Use secure: false for development, true for production
-        const secureFlag = process.env.NODE_ENV === "production";
+        syncIdentityCookies(response, identity);
 
-        const userId = request.cookies.get("discogs_user_id")?.value;
-
-        // Restore username cookie if it's missing
-        if (!username) {
-          response.cookies.set("discogs_username", identity.username, {
-            httpOnly: false,
-            secure: secureFlag,
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24 * 30, // 30 days
-          });
-        }
-
-        // Restore user_id cookie if it's missing
-        if (!userId) {
-          response.cookies.set("discogs_user_id", identity.userId.toString(), {
-            httpOnly: true,
-            secure: secureFlag,
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24 * 30, // 30 days
-          });
-        }
-
-        // Redirect to releases page - reuses existing tokens without requiring re-authorization
-        // Note: Tokens are only preserved if user didn't explicitly log out
         return response;
       }
 
@@ -67,28 +67,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // No valid tokens found, start new OAuth flow
-    // Construct callback URL from request
     const callbackUrl = new URL("/api/auth/callback", request.url).toString();
 
-    // Get request token with the correct callback URL
     const requestTokens =
       await discogsOAuthService.getRequestToken(callbackUrl);
 
-    // Store request tokens in session (we'll use cookies for now)
     const response = NextResponse.redirect(
       discogsOAuthService.getAuthorizationUrl(requestTokens.oauth_token),
     );
 
-    // Use secure: false for development, true for production
+    clearSessionCookies(response);
+
     const secureFlag = process.env.NODE_ENV === "production";
 
-    // Store tokens in secure cookies
     response.cookies.set("oauth_token", requestTokens.oauth_token, {
       httpOnly: true,
       secure: secureFlag,
       sameSite: "lax",
-      maxAge: 60 * 10, // 10 minutes
+      path: "/",
+      maxAge: 60 * 10,
     });
 
     response.cookies.set(
@@ -98,7 +95,8 @@ export async function GET(request: NextRequest) {
         httpOnly: true,
         secure: secureFlag,
         sameSite: "lax",
-        maxAge: 60 * 10, // 10 minutes
+        path: "/",
+        maxAge: 60 * 10,
       },
     );
 

@@ -23,9 +23,9 @@ Inside **ViewProvider**: **`LogoutOverlayWrapper`** and **`AuthCheckingToast`**.
 
 ## Authentication flow
 
-1. **Start OAuth**: client navigates to **`GET /api/auth/discogs`**, which redirects to Discogs authorize URL and stores temporary request tokens in cookies.
+1. **Start OAuth**: client navigates to **`GET /api/auth/discogs?force=1`**, which clears any prior session, redirects to Discogs authorize URL, and stores temporary request tokens in cookies.
 2. **Callback**: **`GET /api/auth/callback`** exchanges verifier for access token, calls **`getIdentity`**, sets cookies, redirects to **`/releases?auth=success`**.
-3. **Session check**: **`AuthProvider`** calls **`/api/auth/check`** on mount (server verifies OAuth tokens with Discogs **`getIdentity`**). Username may still be read from **`discogs_username`** for display; **`userId`** comes from the check response. **`isCheckingAuth`** tracks this background check; **`isLoading`** is reserved for an in-flight OAuth redirect after **Connect with Discogs**. The home page renders the landing immediately while **`isCheckingAuth`** runs, shows a subtle Sonner toast (**`AuthCheckingToast`**) while the session is verified, and redirects authenticated users to **`/releases`** when the check completes.
+3. **Session check**: **`useAuthQuery`** ([`src/hooks/queries/useAuthQuery.ts`](../../src/hooks/queries/useAuthQuery.ts)) fetches **`/api/auth/check`** via **`checkAuth`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). **`AuthProvider`** derives **`isAuthenticated`**, **`username`**, **`userId`**, **`rateLimited`**, and **`isCheckingAuth`** from that query. When Discogs is rate-limited, the check may return cookie-based identity with **`rateLimited: true`**; the query refetches every 60s (and on window focus) until verification succeeds; collection and crate queries stay disabled meanwhile. On OAuth success, **`refetch`** + **`queryClient.clear()`** reset cached user data; **`CrateProvider`** resets **`activeCrateId`** when **`userId`** changes and logs out if crate **`user_id`** does not match the session. Context reducer state is UI-only (**`isLoading`**, **`isLoggingOut`**, OAuth URL **`error`**). **`isLoading`** is reserved for an in-flight OAuth redirect after **Connect with Discogs**. The home page renders the landing immediately while **`isCheckingAuth`** runs, shows a subtle Sonner toast (**`AuthCheckingToast`**) while the session is verified, and redirects authenticated users to **`/releases`** when the check completes.
 4. **Logout**: **`POST /api/auth/logout`** clears session cookies by default (full logout). Pass **`?preserve_tokens=true`** to keep OAuth tokens for quick re-login. Client dispatches logout actions and shows **`LogoutOverlay`**.
 
 Cookie names and security flags: [discogs.md](discogs.md).
@@ -69,6 +69,7 @@ Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpe
 
 | Hook | Key factory | Purpose |
 |------|-------------|---------|
+| `useAuthQuery` | `AuthQueryKeys.all` | Session check (`/api/auth/check`) |
 | `useDiscogsCollectionQuery` | `DiscogsCollectionQueryKeys.byUsername` | Infinite collection pages |
 | `useCollectionFieldsQuery` | `CollectionFieldsQueryKeys.byUsername` | Discogs collection custom-field definitions (notes editor) |
 | `useCollectionValueQuery` | `CollectionValueQueryKeys.byUsername` | Collection dollar value |

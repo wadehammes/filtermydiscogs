@@ -23,7 +23,7 @@
   align-self: center;
   background: var(--success-hover);
   border: 1px solid var(--success);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-ui);
   color: var(--success-foreground);
   cursor: pointer;
   display: inline-flex;

@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getVerifiedUserFromRequest } from "src/lib/auth-request";
+import {
+  getDisplayIdentityFromCookies,
+  getVerifiedUserFromRequest,
+} from "src/lib/auth-request";
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,14 +10,13 @@ export async function GET(request: NextRequest) {
 
     if ("error" in verified) {
       if (verified.error.status === 503) {
-        const username = request.cookies.get("discogs_username")?.value ?? null;
-        const userId = request.cookies.get("discogs_user_id")?.value ?? null;
+        const displayIdentity = getDisplayIdentityFromCookies(request);
 
         return NextResponse.json(
           {
-            isAuthenticated: Boolean(username && userId),
-            username,
-            userId,
+            isAuthenticated: Boolean(displayIdentity),
+            username: displayIdentity?.username ?? null,
+            userId: displayIdentity ? String(displayIdentity.userId) : null,
             rateLimited: true,
           },
           {
@@ -31,6 +33,7 @@ export async function GET(request: NextRequest) {
           isAuthenticated: false,
           username: null,
           userId: null,
+          rateLimited: false,
         },
         {
           headers: {
@@ -45,6 +48,7 @@ export async function GET(request: NextRequest) {
         isAuthenticated: true,
         username: verified.user.username,
         userId: String(verified.user.userId),
+        rateLimited: false,
       },
       {
         headers: {
@@ -58,6 +62,7 @@ export async function GET(request: NextRequest) {
       isAuthenticated: false,
       username: null,
       userId: null,
+      rateLimited: false,
     });
   }
 }

@@ -18,8 +18,7 @@ const CRATE_NAME_SAMPLES = [
 
 class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
   build(attributes?: Partial<Crate>, options?: CrateFactoryOptions): Crate {
-    const userId =
-      options?.userId ?? faker.number.int({ min: 100000, max: 999999 });
+    const userId = options?.userId ?? 123;
     const isDefault = options?.isDefault ?? false;
 
     const instance = {
