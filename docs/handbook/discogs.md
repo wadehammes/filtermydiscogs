@@ -89,6 +89,8 @@ Discogs may return **429** (rate limit) or **5xx** (upstream errors). Route hand
 
 **Explicit login** always uses **`GET /api/auth/discogs?force=1`**, which clears any existing session and requires a fresh Discogs authorization (prevents silently reusing another user's tokens on a shared browser).
 
+Auth route handlers must not be CDN-cached; see [platform.md](platform.md) (**Private session API responses**) for **`privateRouteJson`**, **`privateRouteRedirect`**, and [`src/proxy.ts`](../../src/proxy.ts).
+
 If collection fetches fail after login, verify OAuth tokens (re-login), consumer app settings, and Discogs API status before assuming an app bug.
 
 ## Client-side collection access

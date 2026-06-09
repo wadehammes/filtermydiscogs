@@ -62,6 +62,19 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 
 If you add a new third-party script domain, update **CSP** in the same change.
 
+## Private session API responses
+
+Cookie-authenticated **`/api/auth/*`** and authenticated **`/api/crates/*`** routes (not **`/api/crates/public`**) must not be cached at the CDN or edge.
+
+| Mechanism | Location | Role |
+|-----------|----------|------|
+| Route handlers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts) | Return JSON via **`privateRouteJson`**, redirects via **`privateRouteRedirect`** (`Cache-Control: private, no-store`, **`Vary: Cookie`**) |
+| Error bodies | [`createErrorResponse`](../../src/lib/api-helpers.ts) in [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts) | Sanitized errors wrapped in **`privateRouteJson`** |
+| Dynamic rendering | `export const dynamic = "force-dynamic"` on each auth/crate handler | Prevents Next.js from caching handler output |
+| Edge pass-through | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 network proxy (replaces deprecated **`middleware.ts`**); applies the same cache headers when a handler omits them |
+
+Do **not** use bare **`NextResponse.json`** on private session routes—use **`privateRouteJson`** (or **`createErrorResponse`** in `catch` blocks). Public crate reads keep their own cache policy in [`/api/crates/public/[id]`](../../src/app/api/crates/public/[id]/route.ts).
+
 ## Jest
 
 [`jest.config.ts`](../../jest.config.ts) uses **`next/jest`** with:

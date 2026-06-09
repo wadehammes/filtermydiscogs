@@ -12,7 +12,8 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/services/`](../../src/services/) | Discogs OAuth service, client auth/cookie helpers. |
 | [`src/api/`](../../src/api/) | Browser-side fetch helpers for `/api/...` routes. |
 | [`src/hooks/`](../../src/hooks/) | Custom hooks; React Query under `hooks/queries/`. |
-| [`src/lib/`](../../src/lib/) | Server utilities: Prisma client, username validation, public crate loader, rate limit, admin helpers. |
+| [`src/lib/`](../../src/lib/) | Server utilities: Prisma client, username validation, public crate loader, private session response helpers, rate limit, admin helpers. |
+| [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 proxy: private cache headers on auth and authenticated crate API routes. |
 | [`src/utils/`](../../src/utils/) | Pure helpers: filter, sort, format tags, sync collection, image loader. |
 | [`src/types/`](../../src/types/) | Shared TypeScript types (Discogs shapes, crate, dashboard, public stats). |
 | [`src/styles/`](../../src/styles/) | Global CSS, theme tokens, shared modules ([`typography.module.css`](../../src/styles/typography.module.css), [`accessibility.module.css`](../../src/styles/accessibility.module.css), nav/segmented controls), Stylelint custom properties. |
@@ -39,6 +40,7 @@ Quick map of **`src/`** and related top-level folders.
 | Change filter logic | [`src/utils/filterReleases.ts`](../../src/utils/filterReleases.ts) + [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts) |
 | Crate DB changes | [`prisma/schema.prisma`](../../prisma/schema.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
+| Private session API cache headers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |
 | Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home content in [`Login/`](../../src/components/Login/) |
 | Unused code / dead exports | [`knip.json`](../../knip.json), `pnpm knip` |
 

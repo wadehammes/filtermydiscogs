@@ -1,11 +1,14 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   auditDatabaseOperation,
+  createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
-  sanitizeError,
 } from "src/lib/api-helpers";
 import { type Prisma, prisma } from "src/lib/db";
+import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Add a release to a crate
@@ -38,7 +41,7 @@ export async function POST(
     });
 
     if (!crate) {
-      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+      return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
     let body: unknown;
@@ -46,7 +49,7 @@ export async function POST(
       body = await request.json();
     } catch (error) {
       console.error("Failed to parse request body:", error);
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Invalid request body" },
         { status: 400 },
       );
@@ -54,7 +57,7 @@ export async function POST(
 
     const validation = validateReleaseDataForStorage(body);
     if ("error" in validation) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+      return privateRouteJson({ error: validation.error }, { status: 400 });
     }
 
     const release = validation.release;
@@ -73,7 +76,7 @@ export async function POST(
     });
 
     if (existingRelease) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Release already in crate" },
         { status: 409 },
       );
@@ -100,13 +103,9 @@ export async function POST(
       crate_id: id,
     });
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    return privateRouteJson({ success: true }, { status: 201 });
   } catch (error) {
     console.error("Error adding release to crate:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }

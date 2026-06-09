@@ -18,6 +18,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Mosaic generator / image proxy | [patterns.md](patterns.md) (Mosaic generator) |
 | Clear user data (About/Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
 | CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
+| Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
 | Where a file category lives under `src/` | [source-layout.md](source-layout.md) |
 

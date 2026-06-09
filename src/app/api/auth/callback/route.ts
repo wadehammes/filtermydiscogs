@@ -1,6 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { primeVerifiedIdentityCache } from "src/lib/auth-request";
+import { privateRouteRedirect } from "src/lib/private-route-response";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,20 +13,20 @@ export async function GET(request: NextRequest) {
 
     // Validate OAuth callback parameters
     if (!(oauthToken && oauthVerifier)) {
-      return NextResponse.redirect(
+      return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
     }
 
     // Validate token format (should be alphanumeric, typically 40+ chars)
     if (!/^[a-zA-Z0-9_-]+$/.test(oauthToken) || oauthToken.length < 20) {
-      return NextResponse.redirect(
+      return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
     }
 
     if (!/^[a-zA-Z0-9]+$/.test(oauthVerifier) || oauthVerifier.length < 10) {
-      return NextResponse.redirect(
+      return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
     }
@@ -34,13 +37,13 @@ export async function GET(request: NextRequest) {
       request.cookies.get("oauth_token_secret")?.value;
 
     if (!(storedOAuthToken && storedOAuthTokenSecret)) {
-      return NextResponse.redirect(
+      return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
     }
 
     if (oauthToken !== storedOAuthToken) {
-      return NextResponse.redirect(
+      return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
     }
@@ -68,7 +71,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Store access tokens securely
-    const response = NextResponse.redirect(
+    const response = privateRouteRedirect(
       new URL("/releases?auth=success", request.url),
     );
 
@@ -120,7 +123,7 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("OAuth callback error:", error);
-    return NextResponse.redirect(
+    return privateRouteRedirect(
       new URL("/?error=oauth_callback_failed", request.url),
     );
   }

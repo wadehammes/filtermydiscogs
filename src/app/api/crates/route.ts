@@ -1,12 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
+  createErrorResponse,
   createPaginatedResponse,
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
-  sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Get all crates for the authenticated user
@@ -90,7 +93,7 @@ export async function GET(request: NextRequest) {
         releaseCount: defaultCrate._count.releases,
       };
 
-      return NextResponse.json({
+      return privateRouteJson({
         data: [defaultCrateWithCount],
         pagination: {
           page: 1,
@@ -119,11 +122,7 @@ export async function GET(request: NextRequest) {
     return createPaginatedResponse(cratesWithCounts, total, page, pageSize);
   } catch (error) {
     console.error("Error fetching crates:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }
 
@@ -145,14 +144,14 @@ export async function POST(request: NextRequest) {
     const { name } = body;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Crate name is required" },
         { status: 400 },
       );
     }
 
     if (name.length > 100) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Crate name must be 100 characters or less" },
         { status: 400 },
       );
@@ -168,7 +167,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingCrate) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "A crate with this name already exists" },
         { status: 409 },
       );
@@ -191,13 +190,9 @@ export async function POST(request: NextRequest) {
       name: name.trim(),
     });
 
-    return NextResponse.json({ crate: newCrate }, { status: 201 });
+    return privateRouteJson({ crate: newCrate }, { status: 201 });
   } catch (error) {
     console.error("Error creating crate:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }

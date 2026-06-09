@@ -1,8 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { verifyAdminUser } from "src/lib/admin-helpers";
 import { getPoolMetrics, prisma } from "src/lib/db";
 import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Admin-only health check for debugging production issues.
@@ -15,7 +18,7 @@ export async function GET(request: NextRequest) {
   const isAdmin = await verifyAdminUser(accessToken, accessTokenSecret);
 
   if (!isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return privateRouteJson({ error: "Forbidden" }, { status: 403 });
   }
 
   const diagnostics: Record<string, unknown> = {
@@ -67,7 +70,7 @@ export async function GET(request: NextRequest) {
       .replace(/password[=:][^\s]*/gi, "password=***");
   }
 
-  return NextResponse.json(diagnostics, {
+  return privateRouteJson(diagnostics, {
     status: diagnostics.prismaClientStatus === "connected" ? 200 : 500,
   });
 }

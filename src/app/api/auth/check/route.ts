@@ -1,8 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   getDisplayIdentityFromCookies,
   getVerifiedUserFromRequest,
 } from "src/lib/auth-request";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +15,7 @@ export async function GET(request: NextRequest) {
       if (verified.error.status === 503) {
         const displayIdentity = getDisplayIdentityFromCookies(request);
 
-        return NextResponse.json(
+        return privateRouteJson(
           {
             isAuthenticated: Boolean(displayIdentity),
             username: displayIdentity?.username ?? null,
@@ -20,45 +23,28 @@ export async function GET(request: NextRequest) {
             rateLimited: true,
           },
           {
-            headers: {
-              "Cache-Control": "private, no-cache, no-store, must-revalidate",
-              "Retry-After": "60",
-            },
+            headers: { "Retry-After": "60" },
           },
         );
       }
 
-      return NextResponse.json(
-        {
-          isAuthenticated: false,
-          username: null,
-          userId: null,
-          rateLimited: false,
-        },
-        {
-          headers: {
-            "Cache-Control": "private, no-cache, no-store, must-revalidate",
-          },
-        },
-      );
+      return privateRouteJson({
+        isAuthenticated: false,
+        username: null,
+        userId: null,
+        rateLimited: false,
+      });
     }
 
-    return NextResponse.json(
-      {
-        isAuthenticated: true,
-        username: verified.user.username,
-        userId: String(verified.user.userId),
-        rateLimited: false,
-      },
-      {
-        headers: {
-          "Cache-Control": "private, no-cache, no-store, must-revalidate",
-        },
-      },
-    );
+    return privateRouteJson({
+      isAuthenticated: true,
+      username: verified.user.username,
+      userId: String(verified.user.userId),
+      rateLimited: false,
+    });
   } catch (error) {
     console.error("Auth check error:", error);
-    return NextResponse.json({
+    return privateRouteJson({
       isAuthenticated: false,
       username: null,
       userId: null,

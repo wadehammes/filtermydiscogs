@@ -86,7 +86,7 @@ Custom hooks and React Query hooks under [`hooks/queries/`](../../src/hooks/quer
 
 ### [`src/lib/`](../../src/lib/)
 
-Server utilities: [`discogs-username.ts`](../../src/lib/discogs-username.ts), [`api-helpers.ts`](../../src/lib/api-helpers.ts) (verified OAuth + rate limit), [`public-crate.server.ts`](../../src/lib/public-crate.server.ts), [`public-stats.server.ts`](../../src/lib/public-stats.server.ts), rate limiting, admin helpers, Prisma client ([`db.ts`](../../src/lib/db.ts)).
+Server utilities: [`discogs-username.ts`](../../src/lib/discogs-username.ts), [`api-helpers.ts`](../../src/lib/api-helpers.ts) (verified OAuth + rate limit), [`private-route-response.ts`](../../src/lib/private-route-response.ts), [`public-crate.server.ts`](../../src/lib/public-crate.server.ts), [`public-stats.server.ts`](../../src/lib/public-stats.server.ts), rate limiting, admin helpers, Prisma client ([`db.ts`](../../src/lib/db.ts)). Network proxy: [`src/proxy.ts`](../../src/proxy.ts) (see [platform.md](platform.md)).
 
 ### [`src/utils/`](../../src/utils/)
 

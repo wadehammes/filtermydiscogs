@@ -1,10 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   auditDatabaseOperation,
+  createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
-  sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
+import { privateRouteJson } from "src/lib/private-route-response";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Sync crates with collection - removes releases from crates that are no longer in the collection
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
     const { collectionInstanceIds, force = false } = body;
 
     if (!Array.isArray(collectionInstanceIds)) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "collectionInstanceIds must be an array" },
         { status: 400 },
       );
@@ -41,7 +44,7 @@ export async function POST(request: NextRequest) {
       console.warn(
         `Sync blocked: Collection too small (${collectionInstanceIds.length} < ${MIN_COLLECTION_SIZE}). This may indicate incomplete data.`,
       );
-      return NextResponse.json(
+      return privateRouteJson(
         {
           error: `Collection appears incomplete (${collectionInstanceIds.length} items). Sync requires at least ${MIN_COLLECTION_SIZE} items or force=true.`,
           collectionSize: collectionInstanceIds.length,
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (orphanedReleases.length === 0) {
-      return NextResponse.json({
+      return privateRouteJson({
         success: true,
         removedCount: 0,
       });
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
       console.error(
         `SYNC BLOCKED: Attempting to delete ${orphanedReleases.length} of ${totalCrateReleases} releases (${deletionPercentage.toFixed(1)}%). This seems unsafe.`,
       );
-      return NextResponse.json(
+      return privateRouteJson(
         {
           error: `Sync blocked: Would delete ${deletionPercentage.toFixed(1)}% of releases (${orphanedReleases.length} of ${totalCrateReleases}). This seems unsafe. Use force=true to override.`,
           orphanedCount: orphanedReleases.length,
@@ -142,16 +145,12 @@ export async function POST(request: NextRequest) {
       },
     );
 
-    return NextResponse.json({
+    return privateRouteJson({
       success: true,
       removedCount: totalDeleted,
     });
   } catch (error) {
     console.error("Error syncing crates:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }

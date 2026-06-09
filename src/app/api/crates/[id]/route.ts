@@ -1,11 +1,14 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
+  createErrorResponse,
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
-  sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
+import { privateRouteJson } from "src/lib/private-route-response";
 import type { DiscogsRelease } from "src/types/discogs-release.types";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Get a single crate with its releases
@@ -45,7 +48,7 @@ export async function GET(
     });
 
     if (!crate) {
-      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+      return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
     const [total, releases] = await Promise.all([
@@ -81,7 +84,7 @@ export async function GET(
       return releaseData;
     });
 
-    return NextResponse.json({
+    return privateRouteJson({
       crate,
       releases: mappedReleases,
       pagination: {
@@ -95,11 +98,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching crate:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }
 
@@ -127,14 +126,14 @@ export async function PUT(
       body = await request.json();
     } catch (error) {
       console.error("Failed to parse request body:", error);
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Invalid request body" },
         { status: 400 },
       );
     }
 
     if (!body || typeof body !== "object") {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Request body must be an object" },
         { status: 400 },
       );
@@ -160,7 +159,7 @@ export async function PUT(
     });
 
     if (!existingCrate) {
-      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+      return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
     const updateData: {
@@ -177,14 +176,14 @@ export async function PUT(
 
     if (name !== undefined) {
       if (typeof name !== "string" || name.trim().length === 0) {
-        return NextResponse.json(
+        return privateRouteJson(
           { error: "Crate name is required" },
           { status: 400 },
         );
       }
 
       if (name.length > 100) {
-        return NextResponse.json(
+        return privateRouteJson(
           { error: "Crate name must be 100 characters or less" },
           { status: 400 },
         );
@@ -203,7 +202,7 @@ export async function PUT(
       });
 
       if (duplicateCrate) {
-        return NextResponse.json(
+        return privateRouteJson(
           { error: "A crate with this name already exists" },
           { status: 409 },
         );
@@ -214,7 +213,7 @@ export async function PUT(
 
     if (is_default !== undefined) {
       if (typeof is_default !== "boolean") {
-        return NextResponse.json(
+        return privateRouteJson(
           { error: "is_default must be a boolean" },
           { status: 400 },
         );
@@ -254,7 +253,7 @@ export async function PUT(
     // Check if private field was explicitly provided (can be true or false)
     if (privateField !== undefined && privateField !== null) {
       if (typeof privateField !== "boolean") {
-        return NextResponse.json(
+        return privateRouteJson(
           { error: "private must be a boolean" },
           { status: 400 },
         );
@@ -269,7 +268,7 @@ export async function PUT(
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "No updates provided" },
         { status: 400 },
       );
@@ -289,14 +288,10 @@ export async function PUT(
     const { auditDatabaseOperation } = await import("src/lib/api-helpers");
     auditDatabaseOperation(userIdNum, "Crate", "update", id, updateData);
 
-    return NextResponse.json({ crate: updatedCrate });
+    return privateRouteJson({ crate: updatedCrate });
   } catch (error) {
     console.error("Error updating crate:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }
 
@@ -325,7 +320,7 @@ export async function DELETE(
     });
 
     if (crateCount <= 1) {
-      return NextResponse.json(
+      return privateRouteJson(
         { error: "Cannot delete the last remaining crate" },
         { status: 400 },
       );
@@ -355,13 +350,9 @@ export async function DELETE(
       releaseCount,
     });
 
-    return NextResponse.json({ success: true });
+    return privateRouteJson({ success: true });
   } catch (error) {
     console.error("Error deleting crate:", error);
-    const sanitized = sanitizeError(error);
-    return NextResponse.json(
-      { error: sanitized.message },
-      { status: sanitized.status },
-    );
+    return createErrorResponse(error);
   }
 }
