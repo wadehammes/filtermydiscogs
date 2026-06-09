@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   addReleaseToCrate,
   createCrate,
@@ -60,6 +61,26 @@ interface SyncCratesResponse {
   success: boolean;
   removedCount: number;
 }
+
+const getUpdateCrateErrorTitle = (updates: UpdateCrateRequest): string => {
+  if (updates.is_default) {
+    return "Failed to make crate default";
+  }
+
+  if (updates.private !== undefined) {
+    return "Failed to update crate privacy";
+  }
+
+  if (updates.name !== undefined) {
+    return "Failed to rename crate";
+  }
+
+  return "Failed to update crate";
+};
+
+const showCrateMutationError = (title: string, error: Error) => {
+  toast.error(title, { description: error.message });
+};
 
 const invalidateCrateQueries = (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -205,6 +226,9 @@ export const useCreateCrateMutation = (userId: string | null) => {
         },
       );
     },
+    onError: (error) => {
+      showCrateMutationError("Failed to create crate", error);
+    },
   });
 };
 
@@ -253,8 +277,12 @@ export const useUpdateCrateMutation = (userId: string | null) => {
 
       return { previousCratesData: previousCrates, previousCrateData };
     },
-    onError: (_error, variables, context) => {
+    onError: (error, variables, context) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
+      showCrateMutationError(
+        getUpdateCrateErrorTitle(variables.updates),
+        error,
+      );
     },
     onSuccess: (data, variables) => {
       queryClient.setQueryData<CratesResponse>(
@@ -308,6 +336,12 @@ export const useDeleteCrateMutation = (userId: string | null) => {
       await queryClient.refetchQueries({
         queryKey: CratesQueryKeys.byUserId(userId),
         exact: false,
+      });
+    },
+    onError: async (error) => {
+      showCrateMutationError("Failed to delete crate", error);
+      await queryClient.refetchQueries({
+        queryKey: CratesQueryKeys.byUserId(userId),
       });
     },
   });

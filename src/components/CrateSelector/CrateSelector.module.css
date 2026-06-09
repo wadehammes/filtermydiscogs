@@ -96,7 +96,6 @@
   border-radius: var(--radius-ui);
   color: var(--foreground);
   flex: 1;
-  font-size: var(--text-base);
   padding: var(--space-2) var(--space-3);
 
   &:focus {

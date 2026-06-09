@@ -1,9 +1,11 @@
 "use client";
 
+import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import modalInputStyles from "src/styles/modal-input.module.css";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
@@ -201,8 +203,8 @@ export const NoteEditDialog = ({
           ) : null}
 
           <div className={styles.releaseDetails}>
-            <p className={styles.albumTitle}>{info.title}</p>
             <p className={styles.artist}>{formatArtistNames(release)}</p>
+            <p className={styles.albumTitle}>{info.title}</p>
             {metaLine ? <p className={styles.metaLine}>{metaLine}</p> : null}
           </div>
         </div>
@@ -222,7 +224,7 @@ export const NoteEditDialog = ({
               </label>
               <textarea
                 id={`note-field-${field.id}`}
-                className={styles.textarea}
+                className={classNames(styles.textarea, modalInputStyles.field)}
                 disabled={isSaving}
                 {...register(String(field.id))}
               />

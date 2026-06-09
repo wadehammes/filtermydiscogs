@@ -1,6 +1,8 @@
+import classNames from "classnames";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./EditCrateDialog.module.css";
 
 type EditCrateFormValues = {
@@ -124,7 +126,7 @@ export const EditCrateDialog = ({
           <input
             id={`${titleId}-name-input`}
             type="text"
-            className={styles.input}
+            className={classNames(styles.input, modalInputStyles.field)}
             disabled={isBusy}
             {...register("name")}
           />
@@ -159,7 +161,7 @@ export const EditCrateDialog = ({
             <input
               id={`${titleId}-delete-input`}
               type="text"
-              className={styles.input}
+              className={classNames(styles.input, modalInputStyles.field)}
               autoComplete="off"
               disabled={isBusy}
               {...register("deleteConfirm")}

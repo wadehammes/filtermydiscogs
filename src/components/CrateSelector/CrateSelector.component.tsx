@@ -7,6 +7,7 @@ import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
 import PlusIcon from "src/styles/icons/plus-solid.svg";
+import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./CrateSelector.module.css";
 
 interface CrateSelectorProps {
@@ -66,8 +67,8 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
       await createCrate(trimmedName);
       reset({ name: "" });
       setEditorMode("idle");
-    } catch (error) {
-      console.error("Error creating crate:", error);
+    } catch {
+      // Error toast is handled by useCrateMutations; keep the create form open.
     }
   });
 
@@ -147,7 +148,7 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
           <input
             type="text"
             placeholder="Crate name"
-            className={styles.input}
+            className={classNames(styles.input, modalInputStyles.field)}
             aria-label="Crate name"
             {...register("name")}
           />

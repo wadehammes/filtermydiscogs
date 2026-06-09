@@ -179,7 +179,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   }, [crates, userId, queryClient, logout]);
 
   useEffect(() => {
-    if (crates.length === 0) {
+    if (!userId || crates.length === 0) {
       return;
     }
 
@@ -197,10 +197,6 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       return defaultCrate?.id ?? null;
     });
   }, [crates, findDefaultCrate, userId]);
-
-  useEffect(() => {
-    mismatchRefetchKeyRef.current = null;
-  }, [userId, activeCrateId]);
 
   useEffect(() => {
     if (
