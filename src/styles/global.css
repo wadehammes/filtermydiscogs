@@ -241,7 +241,7 @@ button {
 
 .layout-sticky-header {
   align-items: center;
-  background: var(--sticky-header-background, var(--background));
+  background: var(--background);
   border-bottom: 1px solid var(--border);
   display: flex;
   height: var(--sticky-header-height);
