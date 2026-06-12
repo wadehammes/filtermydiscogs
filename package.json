@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@11.5.3",
+  "packageManager": "pnpm@11.6.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767 --webpack",
@@ -57,7 +57,7 @@
     "react-hook-form": "^7.78.0",
     "react-intersection-observer": "^10.0.3",
     "recharts": "^3.8.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.1",
     "sonner": "^2.0.7",
     "usehooks-ts": "^3.1.1"
   },
@@ -73,7 +73,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^25.9.2",
+    "@types/node": "^25.9.3",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "dotenv-cli": "^11.0.0",
