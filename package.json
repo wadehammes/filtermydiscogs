@@ -47,7 +47,7 @@
     "@tanstack/react-query": "^5.101.0",
     "@tanstack/react-table": "^8.21.3",
     "classnames": "^2.5.1",
-    "jotai": "^2.20.0",
+    "jotai": "^2.20.1",
     "js-cookie": "^3.0.8",
     "next": "16.2.9",
     "oauth-1.0a": "^2.2.6",
