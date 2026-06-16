@@ -93,12 +93,12 @@
 .chartWrapper
   :global(
     .recharts-bar-rectangle:hover
-    rect:not([fill="#fff"], [fill="white"], [fill="#ffffff"])
+      rect:not([fill="#fff"], [fill="white"], [fill="#ffffff"])
   ),
 .chartWrapper
   :global(
     .recharts-bar-rectangle:hover
-    path:not([fill="#fff"], [fill="white"], [fill="#ffffff"])
+      path:not([fill="#fff"], [fill="white"], [fill="#ffffff"])
   ) {
   opacity: 1 !important;
   fill-opacity: 1 !important;

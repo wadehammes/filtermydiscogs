@@ -41,6 +41,8 @@ pnpm db:studio       # Prisma Studio
 pnpm db:generate     # regenerate client (also runs on build/postinstall)
 ```
 
+Generated Prisma client output is **not committed** (`/prisma/node_modules` and root `node_modules/.prisma/client` are gitignored; CI and `postinstall` run `prisma generate`).
+
 Migrations live under [`prisma/migrations/`](../../prisma/migrations/).
 
 CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platform.md)).

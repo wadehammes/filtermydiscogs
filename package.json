@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@11.6.0",
+  "packageManager": "pnpm@11.7.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767 --webpack",
@@ -47,14 +47,14 @@
     "@tanstack/react-query": "^5.101.0",
     "@tanstack/react-table": "^8.21.3",
     "classnames": "^2.5.1",
-    "jotai": "^2.20.0",
+    "jotai": "^2.20.1",
     "js-cookie": "^3.0.8",
     "next": "16.2.9",
     "oauth-1.0a": "^2.2.6",
     "pg": "^8.21.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-hook-form": "^7.78.0",
+    "react-hook-form": "^7.79.0",
     "react-intersection-observer": "^10.0.3",
     "recharts": "^3.8.1",
     "sharp": "^0.35.1",
@@ -62,7 +62,7 @@
     "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
+    "@biomejs/biome": "^2.5.0",
     "@faker-js/faker": "10.4.0",
     "@jest/globals": "^30.4.1",
     "@jest/types": "^30.4.1",
