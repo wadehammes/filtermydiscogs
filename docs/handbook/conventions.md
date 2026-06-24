@@ -154,6 +154,31 @@ Each **`.module.css`** file is organized around **block classes** (the `styles.*
 ### Modern CSS
 
 - **Custom properties**: Use theme tokens from [`src/styles/themes/`](../../src/styles/themes/) and [`src/styles/global.css`](../../src/styles/global.css)—not magic numbers.
+- **Theme files** ([`src/styles/themes/`](../../src/styles/themes/)):
+  - **`base.css`** — spacing, typography, transitions, z-index (non-color tokens).
+  - **`colors.css`** — semantic colors via **`light-dark()`** and **`color-scheme`**; **`--on-primary`**, **`--on-success`**, etc. for filled surfaces.
+  - **`theming.css`** — global utility classes (`.theme-surface-elevated`, `.theme-highlighted-surface`, `.theme-gradient-surface`, `.theme-on-gradient-muted`).
+  - **`index.css`** — imports the three files above; loaded from [`global.css`](../../src/styles/global.css).
+- **Theming**: Semantic colors live in [`colors.css`](../../src/styles/themes/colors.css) and resolve with **`light-dark()`** from **`color-scheme`**. The theme provider sets **`data-theme="light"`** or **`"dark"`** on `<html>`, which pins the used scheme; before that script runs, **`color-scheme: light dark`** on `:root` follows the OS preference. Prefer **`light-dark(light, dark)`** over duplicate **`[data-theme="…"]`** blocks for colors. Shadow tokens use the same pattern (drop shadow in light, subtle inset border in dark).
+- **Filled buttons and pills**: Default/hover/active text on solid semantic backgrounds uses **`--primary-foreground`** / **`--on-primary-hover`** / **`--on-primary-active`** (and the matching **`--on-success*`**, **`--on-destructive*`**, **`--on-warning*`** tokens). Set **`background`**, **`border-color`**, and **`color`** together on **`:active`**. Pin **`--on-*`** to **`#fff`** for brand fills where **`contrast-color()`** would pick black; reserve **`contrast-color()`** for dynamic surfaces (e.g. **`--on-gradient-surface`**).
+- **Legacy scale tokens** (**`--primary-500`**, **`--success-500`**, **`--error-500`**, etc.) alias the semantic tokens in **`colors.css`**—do not reintroduce brighter one-off hex values there.
+- **Shared elevation / micro-theming**: Prefer global utilities from [`theming.css`](../../src/styles/theming.css) over copy-pasted shadow stacks. In a CSS Module:
+
+```css
+.releaseItem {
+  --surface: var(--card);
+
+  composes: theme-surface-elevated from global;
+}
+
+.releaseCard {
+  &.highlighted {
+    composes: theme-highlighted-surface from global;
+  }
+}
+```
+
+  Set **`--surface`** when the utility needs a non-default surface. **`composes`** must be on a **top-level** local class (e.g. `.highlighted`), not nested under **`&`**—Turbopack/CSS Modules reject **`&.foo { composes: … }`**. Gradient marketing/footer shells compose **`theme-gradient-surface`**; muted text inside them uses **`theme-on-gradient-muted`** (apply via a local class that **`composes`**, or **`classNames`** in TSX—see [`Page.module.css`](../../src/components/Page/Page.module.css)).
 - **Layout**: Prefer **flex/grid** with **`gap`** over margin stacking.
 - **Color**: Use **`color-mix(in srgb, …)`** for tinted surfaces (see [`BackToTop.module.css`](../../src/components/BackToTop/BackToTop.module.css)).
 - **Fluid sizing**: Use **`clamp()`** for type and spacing that scales across viewports (see [`MosaicClient.module.css`](../../src/components/MosaicClient/MosaicClient.module.css)).
@@ -221,6 +246,7 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 - **Don't mock**: Pure helpers under [`src/utils/`](../../src/utils/)—filter, sort, format, URL helpers. Let them run in component tests.
 - **Don't mock React Query**: Use a real **`QueryClient`** from [`createTestQueryClient`](../../src/tests/utils/testQueryClient.tsx) via **`TestProviders`** (pass **`queryClient`** when a test needs to spy on cache behavior). Mock **`src/api/helpers`** and auth services instead so hooks and providers exercise real query/mutation wiring.
 - **Do mock**: External dependencies—mock **`src/api/helpers`** with **`jest.mock("src/api/helpers")`** and configure responses via [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts) (same helper as energy-texas). Use [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts) for fetch-level tests of [`src/api/helpers.ts`](../../src/api/helpers.ts). Also mock auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
+- **Authenticated tests + `CrateProvider`**: Default **`TestProviders`** includes **`CrateProvider`**, which runs **`useCratesQuery`** / **`useCrateQuery`** when **`authInitialState`** is authenticated and **`isCheckingAuth`** is false. If the test mocks **`src/api/helpers`** but only stubs unrelated endpoints (e.g. collection fields), React Query will still call **`fetchCrates`** / **`fetchCrate`**—undefined mocks log **`Query data cannot be undefined`**. Call [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) in the PO **`setupMocks()`** or hook test **`beforeEach`** when default empty crate data is enough; override **`fetchCrate`** (see [`CrateSelector.po.tsx`](../../src/components/CrateSelector/CrateSelector.po.tsx)) or seed a custom **`QueryClient`** when the test needs specific crate IDs, release counts, or cached detail.
 - **Viewport / `matchMedia`**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) calls [`setupMockMatchMedia`](../../src/tests/mocks/mockMatchMedia.mock.ts) each test (defaults to mobile). Pass **`{ desktop: true }`** when a test needs desktop **`(min-width: 1024px)`** / **`(max-width: 1023px)`** behavior (e.g. **`useCrateDrawer`**, **`CrateProvider`** login drawer tests).
 - **Assertions**: Prefer asserting final DOM/output; avoid `expect(mockFn).toHaveBeenCalledWith(...)` when un-mocking—the output already proves wiring.
 
@@ -229,6 +255,7 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 - **Faker 10+** is ESM-only; transpiled via **`transpilePackages`** in `next.config.ts` (see [platform.md](platform.md)).
 - **SVG**: mocked globally via [`.jest/__mocks__/svg.js`](../../.jest/__mocks__/svg.js).
 - **fetchMock**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) enables and resets **`jest-fetch-mock`** each test (rhythm-marketing pattern).
+- **jsdom globals**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) stubs **`window.scrollTo`** (jsdom does not implement it) and **`ResizeObserver`** each test. Specs that assert scroll behavior (e.g. **`ViewToggle.po.tsx`**) may replace **`window.scrollTo`** with a spy in the test or PO helper.
 - **PO mock reset**: Use **`jest.resetAllMocks()`** in PO constructors or **`setupMocks()`**.
 
 ## Test IDs

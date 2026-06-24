@@ -22,6 +22,8 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
+| Jest setup, PO mocks, `TestProviders`, crate API test mocks | [conventions.md](conventions.md) (Testing) |
+| Agent / LLM workflow, keeping docs in sync | **[AGENTS.md](../../AGENTS.md)**, **[CLAUDE.md](../../CLAUDE.md)** |
 | Where a file category lives under `src/` | [source-layout.md](source-layout.md) |
 
 ## Outside this folder
@@ -29,10 +31,9 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Task | Location |
 |------|----------|
 | Install Node/pnpm, Discogs app, database, first run | Repo root **[README.md](../../README.md)** |
-| Agent defaults, handbook sync | **[CLAUDE.md](../../CLAUDE.md)**, **[AGENTS.md](../../AGENTS.md)** |
 
 ## Suggested instruction blurb (copy-paste)
 
 ```text
-Before substantive edits, read docs/handbook/README.md and the chapter that matches the task (see docs/handbook/llms.md for a task→chapter map). When your change affects behavior, setup, or conventions, update the relevant docs/handbook/*.md in the same PR or an immediate follow-up so the handbook stays accurate.
+Before any work, read docs/handbook/README.md and the chapter that matches the task (see docs/handbook/llms.md for a task→chapter map). Follow documented patterns. When your change affects behavior, setup, or conventions, update the relevant docs/handbook/*.md in the same PR or an immediate follow-up so the handbook stays accurate.
 ```

@@ -1,0 +1,102 @@
+/* Micro-theming — contrast-color(), style queries, surface elevation */
+
+@property --surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: canvas;
+}
+
+@property --contrast-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: canvastext;
+}
+
+.theme-surface {
+  --contrast-color: contrast-color(var(--surface));
+
+  color: var(--contrast-color);
+  container-name: theme-surface;
+  container-type: style;
+}
+
+.theme-surface-muted {
+  color: color-mix(in srgb, var(--contrast-color) 72%, transparent);
+}
+
+@container theme-surface style(--contrast-color: white) {
+  .theme-surface-muted {
+    color: oklch(from var(--surface) 88% 0.08 h);
+  }
+}
+
+@container theme-surface style(--contrast-color: black) {
+  .theme-surface-muted {
+    color: oklch(from var(--surface) 35% 0.08 h);
+  }
+}
+
+.theme-surface-elevated {
+  box-shadow:
+    0 1px 2px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 8%, transparent),
+      transparent
+    ),
+    0 4px 12px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    inset 0 0 0 1px
+    light-dark(
+      transparent,
+      color-mix(
+        in srgb,
+        var(--surface, var(--card)) 50%,
+        var(--contrast-color, var(--foreground)) 12%
+      )
+    );
+}
+
+.theme-highlighted-surface {
+  --surface: var(--card);
+
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
+    0 1px 2px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 8%, transparent),
+      transparent
+    ),
+    0 4px 12px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    inset 0 0 0 1px
+    light-dark(
+      transparent,
+      color-mix(in srgb, var(--surface) 50%, var(--foreground) 12%)
+    );
+}
+
+.theme-gradient-surface {
+  --surface: var(--gradient-surface);
+  --contrast-color: var(--on-gradient-surface);
+
+  container-name: gradient-surface;
+  container-type: style;
+}
+
+@container gradient-surface style(--contrast-color: white) {
+  .theme-on-gradient-muted {
+    color: oklch(from var(--surface) 88% 0.08 h);
+  }
+}
+
+@container gradient-surface style(--contrast-color: black) {
+  .theme-on-gradient-muted {
+    color: oklch(from var(--surface) 35% 0.08 h);
+  }
+}

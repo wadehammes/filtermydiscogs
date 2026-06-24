@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ErrorMessage } from "src/components/ErrorMessage/ErrorMessage.component";
 import { LoginPreviewDemo } from "src/components/Login/LoginPreviewDemo.component";
 import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
+import FMDIcon from "src/styles/icons/fmd-icon.svg";
 import typography from "src/styles/typography.module.css";
 import styles from "./LoginIntro.module.css";
 
@@ -19,7 +20,7 @@ export const LoginIntro = ({
 }: LoginIntroProps) => (
   <div className={styles.intro}>
     <hgroup className={styles.introHeading}>
-      <p className={typography.brandEyebrow}>FilterMyDiscogs</p>
+      <FMDIcon aria-label="Filter My Discogs" />
       <h1
         id="login-heading"
         className={classNames(typography.displayHeading, styles.tagline)}

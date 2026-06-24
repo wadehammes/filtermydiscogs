@@ -57,12 +57,12 @@
 
 .navLinkGradient {
   &:hover {
-    color: var(--background);
+    color: var(--on-gradient-surface);
   }
 }
 
 .navLinkGradientActive {
-  color: var(--background);
+  color: var(--on-gradient-surface);
   font-weight: var(--font-semibold);
 }
 
@@ -80,7 +80,7 @@
 
 .socialLinkGradient {
   &:hover {
-    color: var(--background);
+    color: var(--on-gradient-surface);
   }
 }
 

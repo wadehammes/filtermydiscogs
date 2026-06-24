@@ -1,7 +1,10 @@
 .chartContainer {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
+  composes: theme-surface-elevated from global;
   display: flex;
   flex-direction: column;
   padding: var(--space-4);
@@ -58,7 +61,7 @@
   &.active:hover:not(:disabled) {
     background: var(--primary-hover);
     border-color: var(--primary-hover);
-    color: var(--primary-foreground);
+    color: var(--on-primary-hover);
   }
 }
 

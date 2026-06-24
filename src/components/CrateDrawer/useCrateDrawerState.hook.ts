@@ -30,11 +30,11 @@ export const useCrateDrawerState = () => {
 
   const crateName = activeCrate?.name || "My Crate";
   const expectedReleaseCount = activeCrate?.releaseCount ?? 0;
+  const hasReleaseCountMismatch =
+    expectedReleaseCount > 0 && selectedReleases.length === 0;
   const isLoadingReleases =
     isLoadingCrate ||
-    (isFetchingCrate &&
-      expectedReleaseCount > 0 &&
-      selectedReleases.length === 0);
+    (hasReleaseCountMismatch && (isFetchingCrate || isLoadingCrate));
   const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
   const canDelete = crates.length > 1 && !isDefaultCrate;

@@ -55,6 +55,12 @@
     transform: translateY(-1px);
     box-shadow: var(--shadow-lg);
   }
+
+  &:active:not(:disabled) {
+    background: var(--primary-active);
+    color: var(--on-primary-active);
+    transform: translateY(0);
+  }
 }
 
 .mosaicContainer {

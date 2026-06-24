@@ -4,7 +4,7 @@ This is the **FilterMyDisco.gs handbook**: how the app is structured, how we wri
 
 Skim the index, bookmark what you need, and come back when you touch that area. **Keep these docs aligned with the repo**—when behavior changes, update the matching page here (or in the same PR) so the next person is not misled.
 
-**For tools and LLMs:** **[llms.md](llms.md)** has a compact **task → chapter** map and a short copy-paste instruction blurb.
+**For tools and LLMs:** **[llms.md](llms.md)** has a compact **task → chapter** map and a short copy-paste instruction blurb. **[AGENTS.md](../../AGENTS.md)** and **[CLAUDE.md](../../CLAUDE.md)** require reading this handbook before any work in the repo.
 
 ## How to read this handbook
 

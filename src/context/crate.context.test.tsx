@@ -218,6 +218,57 @@ describe("CrateProvider", () => {
     });
   });
 
+  it("defers crate fetches until auth check completes after login", async () => {
+    const mockReleases = releaseFactory.buildList(2);
+    const mockCrate = crateFactory.build({ id: "crate-2", is_default: true });
+    const mockCrates = [
+      crateWithCountFactory.build({
+        id: "crate-2",
+        is_default: true,
+        releaseCount: 2,
+      }),
+    ];
+
+    mockApi.fetchCrates.mockResolvedValue(
+      cratesResponseFactory.withCrates(mockCrates),
+    );
+    mockApi.fetchCrate.mockResolvedValue(
+      crateWithReleasesResponseFactory.withReleases(mockCrate, mockReleases),
+    );
+
+    const authStateRef = {
+      current: {
+        ...testAuthenticatedAuthState,
+        isCheckingAuth: true,
+      },
+    };
+    const { result, rerender } = renderHook(() => useCrate(), {
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={authStateRef.current}>
+          {children}
+        </TestProviders>
+      ),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(mockApi.fetchCrates).not.toHaveBeenCalled();
+    expect(mockApi.fetchCrate).not.toHaveBeenCalled();
+
+    authStateRef.current = {
+      ...testAuthenticatedAuthState,
+      isCheckingAuth: false,
+    };
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.activeCrateId).toBe("crate-2");
+      expect(result.current.selectedReleases).toEqual(mockReleases);
+    });
+  });
+
   it("loads active crate releases after first login", async () => {
     const mockReleases = releaseFactory.buildList(2);
     const mockCrate = crateFactory.build({ id: "crate-2", is_default: true });

@@ -170,6 +170,8 @@
 
   &:active {
     background: var(--primary-active);
+    border-color: var(--primary-active);
+    color: var(--on-primary-active);
     transform: translateY(0);
   }
 

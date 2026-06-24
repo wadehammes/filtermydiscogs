@@ -6,6 +6,7 @@ import {
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import {
   testAuthenticatedAuthState,
   testUnauthenticatedAuthState,
@@ -43,6 +44,8 @@ export class ReleaseNotesPageObject extends BasePageObject {
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       new Error("Failed to fetch collection fields"),
     );
+
+    setupDefaultCrateApiMocks(mockApi);
   }
 
   private releaseNotesElement({

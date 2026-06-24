@@ -26,10 +26,13 @@
 }
 
 .releaseItem {
+  --surface: var(--card);
+
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
+  composes: theme-surface-elevated from global;
   display: flex;
   gap: var(--space-3);
   padding: var(--space-3);
@@ -37,7 +40,6 @@
 
   &:hover {
     border-color: var(--input);
-    box-shadow: var(--shadow-sm);
   }
 }
 
@@ -102,7 +104,13 @@
   &:hover {
     background: var(--primary-hover);
     border-color: var(--primary-hover);
-    color: var(--primary-foreground);
+    color: var(--on-primary-hover);
+  }
+
+  &:active {
+    background: var(--primary-active);
+    border-color: var(--primary-active);
+    color: var(--on-primary-active);
   }
 }
 

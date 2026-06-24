@@ -13,15 +13,30 @@
 }
 
 .backToTop {
+  --surface: var(--primary);
+
   align-items: center;
   background: var(--primary);
   border: 1px solid var(--primary);
   border-radius: var(--radius-full);
   bottom: var(--space-6);
   box-shadow:
-    0 4px 6px -1px color-mix(in srgb, var(--foreground) 10%, transparent),
-    0 2px 4px -2px color-mix(in srgb, var(--foreground) 10%, transparent);
-  color: var(--primary-foreground);
+    0 4px 6px -1px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    0 2px 4px -2px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    inset 0 0 0 1px
+    light-dark(
+      transparent,
+      color-mix(in srgb, var(--surface) 55%, var(--on-primary) 18%)
+    );
+  color: var(--on-primary);
   cursor: pointer;
   display: flex;
   gap: 0;
@@ -45,8 +60,11 @@
   z-index: var(--z-3-fixed);
 
   &:hover {
+    --surface: var(--primary-hover);
+
     background: var(--primary-hover);
     border-color: var(--primary-hover);
+    color: var(--on-primary-hover);
     gap: var(--space-2);
     min-width: auto;
     padding: 0 var(--space-2);
@@ -59,7 +77,10 @@
   }
 
   &:active {
+    --surface: var(--primary-active);
+
     background: var(--primary-active);
+    color: var(--on-primary-active);
     transform: translateY(0);
   }
 

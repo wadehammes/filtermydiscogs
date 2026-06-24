@@ -91,6 +91,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   fetchMock.resetMocks();
   setupMockMatchMedia();
+  window.scrollTo = jest.fn();
 });
 
 afterAll(() => {

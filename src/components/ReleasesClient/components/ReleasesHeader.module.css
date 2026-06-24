@@ -26,11 +26,10 @@
 
   &.stuck {
     backdrop-filter: blur(10px);
-    background: oklch(18.22% 0 0deg / 50%);
-
-    [data-theme="light"] & {
-      background: oklch(100% 0 0deg / 50%);
-    }
+    background: light-dark(
+      oklch(100% 0 0deg / 50%),
+      oklch(18.22% 0 0deg / 50%)
+    );
   }
 
   .headerText {

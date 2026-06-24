@@ -33,10 +33,13 @@
   &:hover:not(:disabled) {
     background: var(--primary-hover);
     border-color: var(--primary-hover);
+    color: var(--on-primary-hover);
   }
 
   &:active:not(:disabled) {
     background: var(--primary-active);
+    border-color: var(--primary-active);
+    color: var(--on-primary-active);
   }
 }
 
@@ -64,11 +67,13 @@
   &:hover:not(:disabled) {
     background: var(--primary);
     border-color: var(--primary-hover);
-    color: var(--primary-foreground);
+    color: var(--on-primary-hover);
   }
 
   &:active:not(:disabled) {
     background: var(--primary-active);
+    border-color: var(--primary-active);
+    color: var(--on-primary-active);
   }
 }
 
@@ -80,11 +85,13 @@
   &:hover:not(:disabled) {
     background: var(--destructive);
     border-color: var(--destructive-hover);
-    color: var(--destructive-foreground);
+    color: var(--on-destructive-hover);
   }
 
   &:active:not(:disabled) {
     background: var(--destructive-active);
+    border-color: var(--destructive-active);
+    color: var(--on-destructive-active);
   }
 }
 
@@ -111,13 +118,13 @@
   &:hover:not(:disabled) {
     background: var(--success-hover);
     border-color: var(--success-active);
-    color: var(--success-foreground);
+    color: var(--on-success-hover);
   }
 
   &:active:not(:disabled) {
     background: var(--success-active);
     border-color: var(--success-active);
-    color: var(--success-foreground);
+    color: var(--on-success-active);
   }
 }
 

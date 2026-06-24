@@ -47,7 +47,11 @@ export const PageFooterFun = ({
         <p className={styles.title} id="footer-community-stats-title">
           Community stats
         </p>
-        <p className={styles.purpose}>
+        <p
+          className={classNames(styles.purpose, {
+            [styles.onGradientMuted as string]: variant === "gradient",
+          })}
+        >
           Live totals from collectors using FilterMyDiscogs.
         </p>
       </div>
@@ -75,7 +79,13 @@ export const PageFooterFun = ({
                 <span className={styles.statValue}>
                   {formatCommunityStatValue(item.getValue(stats))}
                 </span>
-                <span className={styles.statLabel}>{item.label}</span>
+                <span
+                  className={classNames(styles.statLabel, {
+                    [styles.onGradientMuted as string]: variant === "gradient",
+                  })}
+                >
+                  {item.label}
+                </span>
               </li>
             ))}
           </ul>

@@ -15,6 +15,14 @@ export default {
       },
     ],
     "custom-property-pattern": null,
+    "declaration-property-value-no-unknown": [
+      true,
+      {
+        ignoreProperties: {
+          "container-type": ["style"],
+        },
+      },
+    ],
     "keyframes-name-pattern": null,
     "selector-class-pattern": null,
   },
