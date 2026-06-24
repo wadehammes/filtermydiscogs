@@ -39,7 +39,7 @@ describe("Login", () => {
     po.renderLogin();
 
     expect(screen.getByTestId("fmdLoginPreviewDemo")).toBeInTheDocument();
-    expect(screen.getByText("FilterMyDiscogs")).toBeInTheDocument();
+    expect(screen.getByLabelText("Filter My Discogs")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Digging made easier.",
     );

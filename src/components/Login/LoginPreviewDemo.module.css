@@ -6,10 +6,12 @@
 }
 
 .frame {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-lg);
+  composes: theme-surface-elevated from global;
   overflow: hidden;
   width: 100%;
 }

@@ -1,5 +1,5 @@
 /* Theme system loader - imports base tokens and active theme */
 
 @import url("./base.css");
-@import url("./light.css");
-@import url("./dark.css");
+@import url("./colors.css");
+@import url("../theming.css");

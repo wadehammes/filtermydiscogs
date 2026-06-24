@@ -21,14 +21,6 @@
     box-shadow var(--transition-bounce);
   width: 100%;
 
-  &.highlighted {
-    border: 2px solid var(--primary);
-    box-shadow:
-      0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
-      var(--shadow-lg);
-    transform: scale(1.02);
-  }
-
   &.inCrate::after {
     border: 2px solid var(--primary);
     border-radius: inherit;
@@ -45,6 +37,12 @@
     color: inherit;
     text-decoration: none;
   }
+}
+
+.highlighted {
+  border: 2px solid var(--primary);
+  composes: theme-highlighted-surface from global;
+  transform: scale(1.02);
 }
 
 .imageContainer {

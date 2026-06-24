@@ -24,17 +24,18 @@
   &:hover {
     background: var(--warning);
     border-color: var(--warning-hover);
-    color: var(--warning-foreground);
+    color: var(--on-warning);
   }
 
   &.pillSelected {
     background: var(--warning);
     border-color: var(--warning-hover);
-    color: var(--warning-foreground);
+    color: var(--on-warning);
 
     &:hover {
       background: var(--warning-hover);
       border-color: var(--warning-active);
+      color: var(--on-warning-active);
     }
   }
 }
@@ -48,17 +49,18 @@
   &:hover {
     background: var(--success-hover);
     border-color: var(--success-active);
-    color: var(--success-foreground);
+    color: var(--on-success-hover);
   }
 
   &.pillSelected {
     background: var(--success-hover);
     border-color: var(--success-active);
-    color: var(--success-foreground);
+    color: var(--on-success-hover);
 
     &:hover {
       background: var(--success-active);
       border-color: var(--success-active);
+      color: var(--on-success);
     }
   }
 }

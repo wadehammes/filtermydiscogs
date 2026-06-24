@@ -128,6 +128,7 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `crateFactory` | `defaultTestCrate()`, `named()` | Default authenticated-user crate and named create flows |
 | `cratesResponseFactory` | `empty()`, `withCrates()`, `withCrate()` | `fetchCrates` API response |
 | `crateWithReleasesResponseFactory` | `empty()`, `withReleases()` | `fetchCrate` API response |
+| [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) | (helper, not a factory) | PO / hook tests that mock **`src/api/helpers`** and mount authenticated **`TestProviders`** without custom crate data—uses **`defaultTestCrate()`** presets above |
 | `createCrateResponseFactory` | `forCrate()`, `named()` | `createCrate` / `updateCrate` API response |
 | `crateMutationSuccessFactory` | `build()`, `sync()` | Add/remove crate and sync success payloads |
 | `discogsReleaseJsonFactory` | `forReleaseId()` | `fetchDiscogsRelease` URI payload |

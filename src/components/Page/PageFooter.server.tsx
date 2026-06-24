@@ -32,16 +32,31 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
       >
         <p>
           <Heart /> made with love by{" "}
-          <a href="https://wadehammes.com" target="_blank" rel="noreferrer">
+          <a
+            href="https://wadehammes.com"
+            target="_blank"
+            rel="noreferrer"
+            className={classNames({
+              [styles.onGradientMuted as string]: variant === "gradient",
+            })}
+          >
             Wade Hammes
           </a>
         </p>
         <p className={styles.footerCopyrightMeta}>
-          <span>
+          <span
+            className={classNames({
+              [styles.onGradientMuted as string]: variant === "gradient",
+            })}
+          >
             <Link href="/about">About</Link>
           </span>
           &bull;
-          <span>
+          <span
+            className={classNames({
+              [styles.onGradientMuted as string]: variant === "gradient",
+            })}
+          >
             <a
               href="https://github.com/wadehammes/filtermydiscogs"
               target="_blank"
@@ -50,7 +65,13 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
               Contribute to the project
             </a>
           </span>
-          <span>&copy; {currentYear}</span>
+          <span
+            className={classNames({
+              [styles.onGradientMuted as string]: variant === "gradient",
+            })}
+          >
+            &copy; {currentYear}
+          </span>
         </p>
       </div>
     </footer>

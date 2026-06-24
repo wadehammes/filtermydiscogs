@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: var(--space-8);
   width: 100%;
-  padding-top: 2rem;
+  padding-top: 1rem;
 
   @media (width >= 768px) {
     gap: var(--space-10);

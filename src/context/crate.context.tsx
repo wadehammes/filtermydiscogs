@@ -63,7 +63,7 @@ interface CrateProviderProps {
 
 export const CrateProvider = ({ children }: CrateProviderProps) => {
   const {
-    state: { userId, isAuthenticated, rateLimited },
+    state: { userId, isAuthenticated, rateLimited, isCheckingAuth },
     logout,
   } = useAuth();
   const queryClient = useQueryClient();
@@ -79,7 +79,8 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     resetDrawer,
   } = useCrateDrawer();
 
-  const canLoadCrates = isAuthenticated && !!userId && !rateLimited;
+  const canLoadCrates =
+    isAuthenticated && !!userId && !rateLimited && !isCheckingAuth;
 
   const {
     data: cratesData,
@@ -134,6 +135,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     setActiveCrateId(null);
 
     if (!previousUserId && userId) {
+      mismatchRefetchKeyRef.current = null;
       resetDrawer();
       void queryClient.invalidateQueries({
         queryKey: CratesQueryKeys.byUserId(userId),
@@ -218,6 +220,9 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       mismatchRefetchKeyRef.current !== mismatchKey
     ) {
       mismatchRefetchKeyRef.current = mismatchKey;
+      queryClient.removeQueries({
+        queryKey: CrateQueryKeys.byUserAndId(userId, activeCrateId),
+      });
       void refetchActiveCrate();
     }
   }, [
@@ -228,6 +233,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     isCrateError,
     isFetchingCrate,
     isLoadingCrate,
+    queryClient,
     refetchActiveCrate,
     userId,
   ]);

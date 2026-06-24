@@ -7,6 +7,7 @@ import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factor
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
   TestProviders,
   testAuthenticatedAuthState,
@@ -22,14 +23,51 @@ import { useUpdateCrateMutation } from "./useCrateMutations";
 jest.mock("src/api/helpers");
 
 const mockUpdateCrate = jest.mocked(apiHelpers.updateCrate);
+const mockFetchCrates = jest.mocked(apiHelpers.fetchCrates);
+const mockFetchCrate = jest.mocked(apiHelpers.fetchCrate);
 
 const userId = "123";
 const newCrateId = "crate-new";
 const oldDefaultCrateId = "crate-old";
 
+const defaultCratesResponse: CratesResponse = cratesResponseFactory.withCrates([
+  crateWithCountFactory.build({
+    id: oldDefaultCrateId,
+    is_default: true,
+    releaseCount: 0,
+  }),
+  crateWithCountFactory.build({
+    id: newCrateId,
+    is_default: false,
+    releaseCount: 1,
+  }),
+]);
+
 describe("useUpdateCrateMutation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockApiResponse(
+      true,
+      mockFetchCrates,
+      defaultCratesResponse,
+      new Error("Failed to fetch crates"),
+    );
+
+    mockFetchCrate.mockImplementation(async (crateId: string) => {
+      const crateSummary = defaultCratesResponse.crates.find(
+        (crate) => crate.id === crateId,
+      );
+
+      if (!crateSummary) {
+        throw new Error(`Crate not found: ${crateId}`);
+      }
+
+      const { releaseCount: _releaseCount, ...crateWithoutCount } =
+        crateSummary;
+
+      return crateWithReleasesResponseFactory.empty(crateWithoutCount);
+    });
   });
 
   it("preserves cached releases when making a crate default", async () => {
