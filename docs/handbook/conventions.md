@@ -75,7 +75,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
   - `pnpm lint:check` — Biome on changed files since `origin/main`
   - `pnpm lint:css` / `pnpm lint:css:fix` — Stylelint over `src/**/*.css`
   - `pnpm lint:all` — `lint:check` then `lint:css:fix`
-  - `pnpm tsc:ci` — strict TypeScript
+  - `pnpm tsc:ci` — `db:generate` then strict TypeScript (`tsc --strict`)
 - **Configs**: [`biome.json`](../../biome.json), [`stylelint.config.ts`](../../stylelint.config.ts).
 - **CI**: `pnpm lint:ci`, `pnpm lint:css`, `pnpm test:ci`, `pnpm knip:ci` (see [platform.md](platform.md)).
 

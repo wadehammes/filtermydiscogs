@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/session-handbook-routing.sh",
+        "timeout": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/block-added-comments.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-toplevel-media.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-custom-media.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-margin-top.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-placeholder-names.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/enforce-scaffold.sh",
+        "matcher": "Write",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-barrel-files.sh",
+        "matcher": "Write",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/enforce-factory-location.sh",
+        "matcher": "Write",
+        "timeout": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/handbook-sync-nudge.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/check-css-nesting.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/handbook-drift-check.sh",
+        "timeout": 15,
+        "loop_limit": 1
+      }
+    ]
+  }
+}

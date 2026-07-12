@@ -9,12 +9,11 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 1. Checkout (full history).
 2. **pnpm** via **pnpm/action-setup**; **Node** version from [`.tool-versions`](../../.tool-versions).
 3. **`pnpm install`**
-4. **`pnpm prisma generate`**
-5. **`pnpm tsc:ci`**
-6. **`pnpm lint:ci`**
-7. **`pnpm lint:css`**
-8. **`pnpm test:ci`**
-9. **`pnpm knip:ci`**
+4. **`pnpm tsc:ci`** (runs `db:generate` first)
+5. **`pnpm lint:ci`**
+6. **`pnpm lint:css`**
+7. **`pnpm test:ci`**
+8. **`pnpm knip:ci`**
 
 GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file).
 
@@ -27,7 +26,8 @@ Run the same locally before pushing when possible.
 | `pnpm dev` | Next dev server on **port 6767** (webpack mode). |
 | `pnpm build` | `db:generate` + production build. |
 | `pnpm start` | Serve production build on port 6767. |
-| `pnpm tsc:ci` / `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
+| `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
+| `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
 | `pnpm knip` | Find unused exports/files locally ([`knip.json`](../../knip.json)). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
@@ -59,6 +59,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
 - **SVGR**: webpack + turbopack rules for SVG-as-React components.
 - **`experimental.optimizePackageImports`**: tree-shaking for TanStack packages.
+- **TypeScript**: pin **`typescript@^6`** until Next.js 16.2 stable supports TypeScript 7 (Next 16.3+ adds `experimental.useTypeScriptCli`). TypeScript 7 removes `lib/typescript.js`, which `next build` still probes for during type checking.
 
 If you add a new third-party script domain, update **CSP** in the same change.
 
@@ -89,6 +90,10 @@ Faker transpilation depends on **`transpilePackages`** in `next.config.ts` **and
 ## Analytics
 
 [`src/app/layout.tsx`](../../src/app/layout.tsx) mounts **Google Tag Manager** (`GTM-NCP5CSG`) via **`@next/third-parties/google`**.
+
+## Cursor hooks
+
+Project agent hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json) and [`.cursor/hooks/`](../../.cursor/hooks/README.md). They enforce handbook conventions (CSS rules, scaffold/factory placement, no comments/barrels) and nudge handbook updates after edits. Requires `jq` and executable hook scripts.
 
 ## Releases
 

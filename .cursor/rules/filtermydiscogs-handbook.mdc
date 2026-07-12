@@ -1,0 +1,34 @@
+---
+description: Mandatory handbook-first workflow before substantive repo work
+alwaysApply: true
+---
+
+# Handbook first (non-negotiable)
+
+`docs/handbook/` is the project source of truth. **`CLAUDE.md`** and **`AGENTS.md`** align with it.
+
+## Before editing code
+
+On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Router handlers, CSS/layout, tests for new behavior, CI/env):
+
+1. **Read** `docs/handbook/README.md` (skim index).
+2. **Route** the task via `docs/handbook/llms.md` → read **every matching chapter** before the first code change.
+3. **Reuse documented patterns** — extend existing hooks/components; do not reimplement parallel logic.
+
+**Substantive = read handbook first.** Narrow mechanical fixes (obvious typos, single-line fixes with unchanged behavior) may skip a full pass.
+
+## During implementation
+
+- **UI state defaults** — check whether an existing hook already owns them (e.g. `useCrateDrawer`: `userToggled ?? isDesktop`; login uses `resetDrawer()`, not duplicate breakpoint checks).
+- **Optional props** — `classNames()` for module `className`; `definedProps({ ... })` for other optional spreads ([conventions.md](docs/handbook/conventions.md)).
+- **CSS** — mobile-first `(width >= …)`; nest under block classes per Stylelint ([conventions.md](docs/handbook/conventions.md)).
+- **Auth/session** — verified OAuth on data routes; patterns in [discogs.md](docs/handbook/discogs.md) + [patterns.md](docs/handbook/patterns.md).
+
+## Before finishing
+
+- If behavior, files, or conventions changed → **update the matching `docs/handbook/*.md` chapter** in the same PR (or immediate follow-up). Do not leave the handbook stale.
+- Run relevant checks from the chapter (e.g. `pnpm lint:css`, targeted tests).
+
+## If unsure
+
+Search the handbook for the feature area; read that chapter. Do not guess project conventions from chat memory alone.

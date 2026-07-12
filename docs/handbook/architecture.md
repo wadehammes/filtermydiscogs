@@ -117,6 +117,6 @@ Factories (`src/tests/factories/`), test providers, shared mocks.
 - **[`next.config.ts`](../../next.config.ts)** — env exposure, Discogs image hosts, CSP/security headers, SVGR, `transpilePackages` for Jest/Faker.
 - **[`biome.json`](../../biome.json)** — lint and format rules.
 - **[`knip.json`](../../knip.json)** — unused export detection.
-- **[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)** — PR checks into `staging`: Prisma generate, `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, **`knip:ci`**.
+- **[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)** — PR checks into `staging`: `tsc:ci` (includes `db:generate`), `lint:ci`, `lint:css`, `test:ci`, **`knip:ci`**.
 
 Branching and releases are described in the root [README.md](../../README.md).
