@@ -112,8 +112,8 @@
 
 .success {
   background: color-mix(in srgb, var(--success) 15%, var(--background));
-  border-color: var(--success);
-  color: var(--success-hover);
+  border-color: var(--pill-style-border);
+  color: var(--pill-style-foreground);
 
   &:hover:not(:disabled) {
     background: var(--success-hover);

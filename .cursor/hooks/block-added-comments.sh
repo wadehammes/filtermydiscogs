@@ -15,7 +15,10 @@ esac
 
 added="$(tool_added_text)"
 
-violations="$(printf '%s\n' "$added" | grep -nE '^[[:space:]]*(//|/\*|\*)' || true)"
+violations="$(
+  printf '%s\n' "$added" | grep -nE \
+    '^[[:space:]]*(//|/\*|\*)|/\*[^*]*\*/' || true
+)"
 
 if [ -n "$violations" ]; then
   reason="$(printf 'Blocked: this edit adds code comments. Do not add explanatory comments — write self-documenting code (clear names, small functions) instead. Remove the comment lines and retry.\n\nOffending lines:\n%s' "$violations")"

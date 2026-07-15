@@ -21,10 +21,10 @@
 .newCrateButton {
   align-items: center;
   align-self: center;
-  background: var(--success-hover);
-  border: 1px solid var(--success);
+  background: color-mix(in srgb, var(--success) 15%, var(--background));
+  border: 1px solid var(--pill-style-border);
   border-radius: var(--radius-ui);
-  color: var(--success-foreground);
+  color: var(--pill-style-foreground);
   cursor: pointer;
   display: inline-flex;
   flex-shrink: 0;
@@ -47,11 +47,15 @@
   }
 
   &:hover:not(:disabled) {
-    background: var(--success-active);
+    background: var(--success-hover);
     border-color: var(--success-active);
+    color: var(--on-success-hover);
   }
 
   &:active:not(:disabled) {
+    background: var(--success-active);
+    border-color: var(--success-active);
+    color: var(--on-success-active);
     transform: translateY(1px);
   }
 }

@@ -57,7 +57,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
-- **SVGR**: webpack + turbopack rules for SVG-as-React components.
+- **SVGR**: webpack + turbopack rules for SVG-as-React components. Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
 - **`experimental.optimizePackageImports`**: tree-shaking for TanStack packages.
 - **TypeScript**: pin **`typescript@^6`** until Next.js 16.2 stable supports TypeScript 7 (Next 16.3+ adds `experimental.useTypeScriptCli`). TypeScript 7 removes `lib/typescript.js`, which `next build` still probes for during type checking.
 

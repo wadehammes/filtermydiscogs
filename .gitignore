@@ -61,3 +61,5 @@ public/generated-sitemap-*.xml
 
 tsconfig.tsbuildinfo
 .env*.local
+
+next-env.d.ts
