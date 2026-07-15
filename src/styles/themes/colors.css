@@ -87,6 +87,10 @@
   --on-warning-hover: #fff;
   --on-warning-active: #fff;
   --warning-foreground: var(--on-warning);
+  --pill-style-foreground: light-dark(var(--success-hover), #22c55e);
+  --pill-style-border: light-dark(var(--success), #22c55e);
+  --pill-format-foreground: light-dark(var(--warning-hover), #f59e0b);
+  --pill-format-border: light-dark(var(--warning), #f59e0b);
 
   /* Brand gradient surface (login/marketing footer) */
   --gradient-surface: light-dark(

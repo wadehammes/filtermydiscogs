@@ -18,8 +18,8 @@
 /* Format pill styles */
 .pillFormat {
   background: color-mix(in srgb, var(--warning) 15%, var(--background));
-  border: 1px solid var(--warning);
-  color: var(--warning-hover);
+  border: 1px solid var(--pill-format-border);
+  color: var(--pill-format-foreground);
 
   &:hover {
     background: var(--warning);
@@ -43,8 +43,8 @@
 /* Style pill styles */
 .pillStyle {
   background: color-mix(in srgb, var(--success) 15%, var(--background));
-  border: 1px solid var(--success);
-  color: var(--success-hover);
+  border: 1px solid var(--pill-style-border);
+  color: var(--pill-style-foreground);
 
   &:hover {
     background: var(--success-hover);
