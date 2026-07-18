@@ -9,6 +9,22 @@ class ReleaseNoteFactory extends BaseFactory<
   ReleaseNote,
   ReleaseNoteFactoryOptions
 > {
+  override buildList(
+    quantity: number,
+    attributes?: Partial<ReleaseNote>,
+    options?: ReleaseNoteFactoryOptions,
+  ) {
+    if (attributes?.field_id !== undefined) {
+      return super.buildList(quantity, attributes, options);
+    }
+
+    const startFieldId = faker.number.int({ min: 1, max: 900 });
+
+    return Array.from({ length: quantity }).map((_, index) =>
+      this.build({ ...attributes, field_id: startFieldId + index }, options),
+    );
+  }
+
   build(
     attributes?: Partial<ReleaseNote>,
     _options?: ReleaseNoteFactoryOptions,
