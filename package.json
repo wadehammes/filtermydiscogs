@@ -54,7 +54,7 @@
     "pg": "^8.22.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-hook-form": "^7.81.0",
+    "react-hook-form": "^7.82.0",
     "react-intersection-observer": "^10.1.0",
     "recharts": "^3.9.2",
     "sharp": "^0.35.3",
