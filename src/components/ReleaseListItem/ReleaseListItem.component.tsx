@@ -7,14 +7,18 @@ import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component
 import { useCrate } from "src/context/crate.context";
 import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { DiscogsArtist, ReleaseListItemProps } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./ReleaseListItem.module.css";
 
 const ReleaseListItemComponent = ({
   release,
   isHighlighted = false,
   onExitRandomMode,
+  onReleaseClick,
 }: ReleaseListItemProps) => {
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
   const selectedStyles = useSelectedStyles();
@@ -85,14 +89,29 @@ const ReleaseListItemComponent = ({
     [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
   );
 
+  const { openRelease, canOpen } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
+  });
+
+  const imageActivateProps = canOpen
+    ? getReleaseActivateProps({
+        onActivate: openRelease,
+        ariaLabel: `Open ${title} details`,
+      })
+    : undefined;
+
   return (
     <div
       className={classNames(styles.releaseItem, {
-        [styles.highlighted as string]: isHighlighted,
-        [styles.inCrate as string]: isInCrate(release.instance_id),
+        [styles.highlighted]: isHighlighted,
+        [styles.inCrate]: isInCrate(release.instance_id),
       })}
     >
-      <div className={styles.imageContainer}>
+      <div
+        className={styles.imageContainer}
+        {...definedProps(imageActivateProps ?? {})}
+      >
         <Image
           src={thumbUrl}
           height={60}
@@ -138,7 +157,16 @@ const ReleaseListItemComponent = ({
                 );
               })}{" "}
               -{" "}
-              {releaseUrl ? (
+              {canOpen ? (
+                <button
+                  type="button"
+                  onClick={openRelease}
+                  className={styles.titleLink}
+                  title="Open release details"
+                >
+                  {title}
+                </button>
+              ) : releaseUrl ? (
                 <a
                   href={releaseUrl}
                   target="_blank"
@@ -195,7 +223,7 @@ const ReleaseListItemComponent = ({
                     key={style}
                     type="button"
                     className={classNames(styles.stylePill, {
-                      [styles.stylePillSelected as string]:
+                      [styles.stylePillSelected]:
                         selectedStyles.includes(style),
                     })}
                     onClick={(e) => handleStylePillClick(e, style)}
@@ -230,7 +258,8 @@ const ReleaseListItemComponent = ({
               target="_blank"
               rel="noopener noreferrer"
               className={styles.discogsButton}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 trackEvent("releaseClicked", {
                   action: "releaseClicked",
                   category: "home",

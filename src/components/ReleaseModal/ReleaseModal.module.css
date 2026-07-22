@@ -13,24 +13,41 @@
 }
 
 .modal {
-  background: transparent;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
   margin: var(--space-4);
   max-height: calc(100vh - var(--space-8));
-  max-width: 31.25rem;
+  max-width: 42rem;
+  overflow: hidden;
   position: relative;
-  width: 90%;
+  width: min(100%, 42rem);
 }
 
-.title {
-  border: 0;
-  clip-path: inset(50%);
-  height: 1px;
-  margin: -1px;
+.toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.toolbarTitle {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  display: -webkit-box;
+  flex: 1;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  line-height: 1.3;
+  margin: 0;
+  min-width: 0;
   overflow: hidden;
-  padding: 0;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
 }
 
 .closeButton {
@@ -39,20 +56,17 @@
   color: var(--foreground);
   cursor: pointer;
   display: grid;
+  flex-shrink: 0;
   font-size: var(--text-2xl);
   height: var(--button-height-md);
   line-height: 1;
   padding: 0;
   place-items: center;
-  position: absolute;
-  right: var(--space-1);
-  top: var(--space-1);
   transition: color var(--transition-normal);
   width: var(--button-height-md);
-  z-index: 1;
 
   &:hover {
-    color: var(--foreground);
+    color: var(--muted-foreground);
   }
 
   &:focus-visible {
@@ -62,26 +76,116 @@
 }
 
 .content {
-  padding: var(--space-6);
+  flex: 1;
+  max-height: calc(100vh - var(--space-8) - 3rem);
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
 
   @media (width >= 768px) {
-    padding: var(--space-8);
+    padding: var(--space-5);
   }
 }
 
-.releaseCardWrapper {
-  & > :global(div) {
-    scroll-margin-top: 0;
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modalCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.heroSection {
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+
+  &::before {
+    background-image: var(--pattern-microdot);
+    background-size: var(--pattern-microdot-size);
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
   }
 
-  & > :global(div[class*="releaseCard"][class*="highlighted"]) {
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    transform: none;
+  & > * {
+    position: relative;
+    z-index: 1;
   }
+}
 
-  & > :global(div[class*="releaseCard"][class*="inCrate"]) {
-    outline: none;
-    outline-offset: 0;
+.notesSection {
+  background: var(--card);
+}
+
+.playbackSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.playbackNoPreview {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.loadingState,
+.errorState {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.loadingMessage,
+.errorMessage,
+.noPreviewMessage {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.searchLink {
+  color: var(--primary);
+  font-size: var(--text-sm);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.externalVideos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+
+  & a {
+    color: var(--primary);
+    font-size: var(--text-sm);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

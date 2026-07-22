@@ -11,6 +11,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | CSS Modules nesting, mobile-first breakpoints, modern CSS | [conventions.md](conventions.md) (CSS and styling) |
 | OAuth login, Discogs API, username format, cookies | [discogs.md](discogs.md) |
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
+| Release detail / tracklist / in-app playback | [discogs.md](discogs.md) (API) + [components.md](components.md) (`ReleaseModal/`, `ReleasePlayback/`) + [patterns.md](patterns.md) (`ReleasePlaybackProvider`) + [source-layout.md](source-layout.md) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | Component folders, naming, tests | [components.md](components.md) |
 | Public landing, login page, `PublicAuthLayout` | [components.md](components.md) + [patterns.md](patterns.md) (auth flow) |
@@ -22,7 +23,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
-| Jest setup, PO mocks, `TestProviders`, crate API test mocks | [conventions.md](conventions.md) (Testing) |
+| Jest setup, PO mocks, `TestProviders`, API route tests, query-hook stubs | [conventions.md](conventions.md) (Testing) |
 | Agent / LLM workflow, keeping docs in sync | **[AGENTS.md](../../AGENTS.md)**, **[CLAUDE.md](../../CLAUDE.md)** |
 | Where a file category lives under `src/` | [source-layout.md](source-layout.md) |
 

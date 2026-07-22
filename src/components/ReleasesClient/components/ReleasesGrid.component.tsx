@@ -106,18 +106,21 @@ const ReleasesGridComponent = ({
                 release={release}
                 isRandomMode={isActuallyRandomMode}
                 onExitRandomMode={onExitRandomMode}
+                onReleaseClick={onReleaseClick}
               />
             ) : (
               <ReleaseCard
                 release={release}
                 isRandomMode={isActuallyRandomMode}
                 onExitRandomMode={onExitRandomMode}
+                onReleaseClick={onReleaseClick}
               />
             )
           ) : (
             <ReleaseListItem
               release={release}
               onExitRandomMode={onExitRandomMode}
+              onReleaseClick={onReleaseClick}
             />
           )}
         </div>

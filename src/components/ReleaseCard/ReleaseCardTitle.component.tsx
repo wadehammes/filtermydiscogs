@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsArtist } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseCardTitle.module.css";
 
@@ -11,16 +12,69 @@ interface ReleaseCardTitleProps {
   resourceUrl: string | null;
   analyticsCategory?: "releaseCard" | "publicCrate" | "home";
   className?: string | undefined;
+  onReleaseOpen?: () => void;
 }
 
-export function ReleaseCardTitle({
+const renderReleaseTitle = ({
+  title,
+  onReleaseOpen,
+  releaseUrl,
+  resourceUrl,
+  analyticsCategory,
+}: {
+  title: string;
+  onReleaseOpen?: () => void;
+  releaseUrl: string | null;
+  resourceUrl: string | null;
+  analyticsCategory: "releaseCard" | "publicCrate" | "home";
+}) => {
+  if (onReleaseOpen) {
+    return (
+      <button
+        type="button"
+        onClick={onReleaseOpen}
+        className={styles.titleLink}
+        title="Open release details"
+      >
+        {title}
+      </button>
+    );
+  }
+
+  if (releaseUrl) {
+    return (
+      <a
+        href={releaseUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          trackEvent("releaseClicked", {
+            action: "releaseClicked",
+            category: analyticsCategory,
+            label: "Release Clicked",
+            value: resourceUrl ?? releaseUrl ?? "",
+          });
+        }}
+        className={styles.titleLink}
+        title="View release on Discogs"
+      >
+        {title}
+      </a>
+    );
+  }
+
+  return <span>{title}</span>;
+};
+
+export const ReleaseCardTitle = ({
   artists,
   title,
   releaseUrl,
   resourceUrl,
   analyticsCategory = "releaseCard",
   className,
-}: ReleaseCardTitleProps) {
+  onReleaseOpen,
+}: ReleaseCardTitleProps) => {
   return (
     <div className={classNames(styles.titleGroup, className)}>
       <p className={styles.artistLine}>
@@ -60,28 +114,14 @@ export function ReleaseCardTitle({
         })}
       </p>
       <h3 className={styles.releaseTitle}>
-        {releaseUrl ? (
-          <a
-            href={releaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => {
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: analyticsCategory,
-                label: "Release Clicked",
-                value: resourceUrl ?? releaseUrl ?? "",
-              });
-            }}
-            className={styles.titleLink}
-            title="View release on Discogs"
-          >
-            {title}
-          </a>
-        ) : (
-          <span>{title}</span>
-        )}
+        {renderReleaseTitle({
+          title,
+          releaseUrl,
+          resourceUrl,
+          analyticsCategory,
+          ...definedProps({ onReleaseOpen }),
+        })}
       </h3>
     </div>
   );
-}
+};

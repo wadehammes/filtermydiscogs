@@ -23,7 +23,7 @@ const mockApi = jest.mocked(apiHelpers);
 
 export type ReleaseNotesRenderProps = {
   release?: DiscogsRelease;
-  variant?: "inline" | "displayOnly";
+  variant?: "inline" | "displayOnly" | "modal";
   authenticated?: boolean;
 };
 
@@ -54,7 +54,7 @@ export class ReleaseNotesPageObject extends BasePageObject {
   }: ReleaseNotesRenderProps = {}) {
     const notes = <ReleaseNotes release={release} variant={variant} />;
 
-    if (variant === "displayOnly") {
+    if (variant === "displayOnly" || variant === "modal") {
       return (
         <ReleaseNotesEditorProvider release={release}>
           {notes}

@@ -131,7 +131,7 @@ See [database.md](database.md) for schema details.
 
 ## Clear stored data
 
-About/Legal **Clear stored data** calls **`clearData`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/auth/clear-data`**, which deletes the user's crates and clears session cookies. Client reset uses **`useCollectionReset`** ([`useCollectionReset.hook.ts`](../../src/hooks/useCollectionReset.hook.ts)).
+About/Legal **Clear stored data** calls **`clearData`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/auth/clear-data`**, which deletes the user's crates and clears session cookies. Client reset uses **`useCollectionReset`** ([`useCollectionReset.hook.ts`](../../src/hooks/useCollectionReset.hook.ts)) and clears client **`localStorage`** keys including release playback resume state ([`releasePlaybackStorage.ts`](../../src/utils/releasePlaybackStorage.ts)).
 
 ## Metadata and OG images
 
@@ -155,3 +155,10 @@ Do not add a dynamic `opengraph-image.tsx` alongside the PNG; the code route ove
 ## Testing
 
 Jest layout, page objects, factories, and mock boundaries: **[conventions.md → Testing](conventions.md#testing)**.
+
+## Release playback queue
+
+- **Scope (v1)**: Album queue — flattened tracks from the current release via **`ReleasePlaybackProvider`**.
+- **Placement**: Provider wraps **`ReleasesClient`** only (not global **`Providers`**). Closing **`ReleaseModal`** does not stop playback.
+- **UI**: [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx) is a slim background-playback dock (cover, title, prev/play-pause/next/stop). Clicking cover/title reopens **`ReleaseModal`** for the playing release. The crate toggle sits beside the release meta and calls **`addToCrate`** / **`removeFromCrate`** (drawer opens on desktop after add, same as cards). Play/pause sends YouTube iframe commands via **`togglePlayback`**. [`PersistentYoutubeIframe`](../../src/components/ReleasePlayback/PersistentYoutubeIframe.component.tsx) carries audio/video off-screen. A track row click in **`ReleaseModal`** calls **`startPlayback`**; there is no in-modal video preview. Closing the modal keeps playback going. Prev/next advance within the current release tracklist (no auto-advance on video end in v1).
+- **Resume after refresh**: **`startPlayback`** writes `{ instanceId, trackPosition }` to **`localStorage`** immediately; the provider keeps it updated while playback is active. On **`/releases`**, restore waits for auth (`isCheckingAuth`), the collection to finish loading (`collection !== null`, not fetching), and any remaining pages (`collection.pagination.urls.next`) before giving up. Restore reopens the dock **paused** — browsers block autoplay without a user gesture, so the listener taps play to resume audio. Cleared on stop, logout, and **Clear stored data**.

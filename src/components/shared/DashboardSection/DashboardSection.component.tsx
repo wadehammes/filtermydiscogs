@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import styles from "./DashboardSection.module.css";
 
@@ -15,7 +16,7 @@ export function DashboardSection({
   className,
 }: DashboardSectionProps) {
   return (
-    <div className={`${styles.section} ${className || ""}`}>
+    <div className={classNames(styles.section, className)}>
       <h2 className={styles.sectionTitle}>{title}</h2>
       {children}
     </div>

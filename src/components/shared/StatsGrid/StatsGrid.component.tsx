@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import styles from "./StatsGrid.module.css";
 
@@ -24,7 +25,7 @@ export function StatsGrid({
 
   return (
     <div
-      className={`${styles.statsGrid} ${className || ""}`}
+      className={classNames(styles.statsGrid, className)}
       style={
         {
           "--mobile-columns": mobileCols,

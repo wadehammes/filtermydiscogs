@@ -55,7 +55,7 @@ export function GrowthChart({ growthData }: GrowthChartProps) {
           <button
             type="button"
             className={classNames(styles.toggleButton, {
-              [styles.active as string]: viewMode === "monthly",
+              [styles.active]: viewMode === "monthly",
             })}
             onClick={() => setViewMode("monthly")}
           >
@@ -64,7 +64,7 @@ export function GrowthChart({ growthData }: GrowthChartProps) {
           <button
             type="button"
             className={classNames(styles.toggleButton, {
-              [styles.active as string]: viewMode === "yearly",
+              [styles.active]: viewMode === "yearly",
             })}
             onClick={() => setViewMode("yearly")}
           >

@@ -1,0 +1,116 @@
+.hero {
+  align-items: stretch;
+  display: flex;
+  gap: 0;
+  width: 100%;
+
+  @media (width >= 768px) {
+    align-items: center;
+  }
+}
+
+.coverWrapper {
+  flex-shrink: 0;
+  height: 6rem;
+  overflow: hidden;
+  width: 6rem;
+}
+
+.cover {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: center;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.detailsHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.detailsText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.artist {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  line-height: 1.25;
+  margin: 0;
+  overflow: hidden;
+}
+
+.metaLine {
+  margin: 0;
+}
+
+.discogsButton {
+  align-items: center;
+  background: color-mix(in srgb, var(--background) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--button-height-sm);
+  justify-content: center;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
+  width: var(--button-height-sm);
+
+  &:hover {
+    background: var(--muted);
+    border-color: var(--input);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.discogsIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.ratingBadge {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  gap: var(--space-1);
+  width: fit-content;
+}
+
+.starIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+}

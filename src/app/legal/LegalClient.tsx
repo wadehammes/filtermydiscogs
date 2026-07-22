@@ -9,6 +9,7 @@ import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
+import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 import styles from "./page.module.css";
 
 export function LegalClient() {
@@ -46,6 +47,7 @@ export function LegalClient() {
         localStorage.removeItem("fmd_username");
         localStorage.removeItem("filtermydiscogs_theme");
         localStorage.removeItem("filtermydiscogs_view_state");
+        clearPersistedReleasePlayback();
       }
 
       // Clear React Query cache and reset collection state

@@ -8,6 +8,14 @@
   overflow: hidden;
 }
 
+.containerVertical {
+  flex-direction: column;
+}
+
+.containerAllowOverflow {
+  overflow: visible;
+}
+
 .segment {
   align-items: center;
   background: transparent;
@@ -24,11 +32,21 @@
   letter-spacing: var(--nav-link-letter-spacing);
   line-height: var(--nav-link-line-height);
   padding: var(--space-2) var(--space-3);
+  text-decoration: none;
   transition: var(--transition-fast);
   white-space: nowrap;
 
   &:first-child {
     box-shadow: none;
+  }
+
+  .containerVertical & {
+    box-shadow: inset 0 1px 0 var(--border);
+    width: 100%;
+
+    &:first-child {
+      box-shadow: none;
+    }
   }
 
   &:focus-visible {

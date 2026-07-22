@@ -72,7 +72,7 @@ export class ReleaseCardPageObject extends BasePageObject {
     mockApiResponse(
       true,
       mockApi.fetchDiscogsRelease,
-      discogsReleaseJsonFactory.forReleaseId(123),
+      discogsReleaseJsonFactory.withTracklistAndVideos(),
       apiError,
     );
 

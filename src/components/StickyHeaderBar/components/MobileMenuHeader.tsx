@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import DiceSolid from "src/styles/icons/dice-solid.svg";
 import FilterSolid from "src/styles/icons/filter-solid.svg";
 import MenuIcon from "src/styles/icons/menu.svg";
@@ -27,9 +28,9 @@ export function MobileMenuHeader({
         <>
           <button
             type="button"
-            className={`${styles.filtersButton} ${
-              isRandomMode ? styles.active : ""
-            }`}
+            className={classNames(styles.filtersButton, {
+              [styles.active]: isRandomMode,
+            })}
             onClick={onRandomModeToggle}
             aria-label={
               isRandomMode ? "Exit random mode" : "Show a random release"

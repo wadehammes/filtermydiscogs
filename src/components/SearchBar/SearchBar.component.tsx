@@ -121,7 +121,7 @@ export const SearchBar = ({
           placeholder={placeholder}
           disabled={disabled}
           className={classNames(styles.input, {
-            [styles.searching as string]: isSearching,
+            [styles.searching]: isSearching,
           })}
           aria-label="Search collection"
         />

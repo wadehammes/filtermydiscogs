@@ -38,6 +38,28 @@ export const getReleaseFolderId = (release: DiscogsRelease): number => {
   return typeof release.folder_id === "number" ? release.folder_id : 0;
 };
 
+export const isSameReleaseInstance = (
+  left: DiscogsRelease | null | undefined,
+  right: DiscogsRelease | null | undefined,
+): boolean => {
+  if (!(left && right)) {
+    return false;
+  }
+
+  return String(left.instance_id) === String(right.instance_id);
+};
+
+export const matchesInstanceId = (
+  release: DiscogsRelease | null | undefined,
+  instanceId: string | number,
+): boolean => {
+  if (!release) {
+    return false;
+  }
+
+  return String(release.instance_id) === String(instanceId);
+};
+
 export const buildCollectionFieldsMap = (
   fields: DiscogsCollectionField[],
 ): Map<number, DiscogsCollectionField> => {

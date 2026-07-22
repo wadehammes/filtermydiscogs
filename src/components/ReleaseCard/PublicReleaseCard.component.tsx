@@ -4,6 +4,7 @@ import { memo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { ReleaseCardProps } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -53,60 +54,73 @@ const PublicReleaseCardComponent = ({
   return release ? (
     <div
       className={classNames(styles.releaseCard, {
-        [styles.highlighted as string]: isHighlighted,
+        [styles.highlighted]: isHighlighted,
       })}
     >
-      <div
-        className={styles.imageContainer}
-        data-bg-image={thumbUrl || undefined}
-        style={
-          thumbUrl
-            ? {
-                backgroundImage: `url(${thumbUrl})`,
-              }
-            : undefined
-        }
-      >
-        {thumbUrl && (
-          <Image
-            src={thumbUrl}
-            height={200}
-            width={200}
-            quality={85}
-            alt={release.basic_information.title}
-            loading="lazy"
-            style={{
-              position: "relative",
-              zIndex: 2,
-              filter: "none",
-            }}
-            sizes="(max-width: 1200px) 50vw, 33vw"
-          />
-        )}
-        <div className={styles.actionButtonsContainer}>
-          {releaseUrl && (
-            <div className={styles.buttonWrapper}>
-              <a
-                href={releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.discogsButton}
-                onClick={() => {
-                  trackEvent("releaseClicked", {
-                    action: "releaseClicked",
-                    category: "publicCrate",
-                    label: "Release Clicked",
-                    value: resource_url,
-                  });
-                }}
-                aria-label="View on Discogs"
-                title="View on Discogs"
-              >
-                <ExternalLinkIcon className={styles.externalLinkIcon} />
-              </a>
-              <span className={styles.tooltip}>View on Discogs</span>
-            </div>
+      <div className={styles.imageShell}>
+        <div
+          className={styles.imageContainer}
+          data-bg-image={thumbUrl || undefined}
+          style={
+            thumbUrl
+              ? {
+                  backgroundImage: `url(${thumbUrl})`,
+                }
+              : undefined
+          }
+        >
+          {thumbUrl && (
+            <Image
+              src={thumbUrl}
+              height={200}
+              width={200}
+              quality={85}
+              alt={release.basic_information.title}
+              loading="lazy"
+              style={{
+                position: "relative",
+                zIndex: 2,
+                filter: "none",
+              }}
+              sizes="(max-width: 1200px) 50vw, 33vw"
+            />
           )}
+        </div>
+        <div className={styles.actionButtonsContainer}>
+          {releaseUrl ? (
+            <div
+              className={classNames(
+                segmentedStyles.container,
+                segmentedStyles.containerAllowOverflow,
+                styles.actionSegmented,
+              )}
+            >
+              <div className={styles.segmentSlot}>
+                <a
+                  href={releaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={classNames(
+                    segmentedStyles.segment,
+                    styles.actionSegment,
+                  )}
+                  onClick={() => {
+                    trackEvent("releaseClicked", {
+                      action: "releaseClicked",
+                      category: "publicCrate",
+                      label: "Release Clicked",
+                      value: resource_url,
+                    });
+                  }}
+                  aria-label="View on Discogs"
+                  title="View on Discogs"
+                >
+                  <ExternalLinkIcon className={styles.actionIcon} />
+                </a>
+                <span className={styles.tooltip}>View on Discogs</span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
       <div className={styles.contentContainer}>

@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
@@ -173,9 +174,9 @@ export const UserActions = ({
           >
             <span className={styles.username}>{username}</span>
             <Chevron
-              className={`${styles.chevron} ${
-                isDropdownOpen ? styles.chevronOpen : ""
-              }`}
+              className={classNames(styles.chevron, {
+                [styles.chevronOpen]: isDropdownOpen,
+              })}
             />
           </button>
           {isDropdownOpen && (

@@ -28,8 +28,8 @@ export function MobileMenuNav({
         <Link
           href="/dashboard"
           className={classNames(styles.menuItem, {
-            [styles.active as string]: currentPage === "dashboard",
-            [styles.disabled as string]: isDisabled,
+            [styles.active]: currentPage === "dashboard",
+            [styles.disabled]: isDisabled,
           })}
           onClick={(e) => onNavigation(e, "Dashboard")}
           aria-disabled={isDisabled}
@@ -46,8 +46,8 @@ export function MobileMenuNav({
         <Link
           href="/releases"
           className={classNames(styles.menuItem, {
-            [styles.active as string]: currentPage === "releases",
-            [styles.disabled as string]: isDisabled,
+            [styles.active]: currentPage === "releases",
+            [styles.disabled]: isDisabled,
           })}
           onClick={(e) => onNavigation(e, "Releases")}
           aria-disabled={isDisabled}
@@ -64,8 +64,8 @@ export function MobileMenuNav({
         <Link
           href="/mosaic"
           className={classNames(styles.menuItem, {
-            [styles.active as string]: currentPage === "mosaic",
-            [styles.disabled as string]: isDisabled,
+            [styles.active]: currentPage === "mosaic",
+            [styles.disabled]: isDisabled,
           })}
           onClick={(e) => onNavigation(e, "Mosaic")}
           aria-disabled={isDisabled}

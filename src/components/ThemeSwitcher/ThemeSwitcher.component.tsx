@@ -34,7 +34,7 @@ export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
           <button
             type="button"
             className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active as string]: activeTheme === "light",
+              [segmentedStyles.active]: activeTheme === "light",
             })}
             onClick={() => {
               setTheme("light");
@@ -46,7 +46,7 @@ export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
           <button
             type="button"
             className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active as string]: activeTheme === "dark",
+              [segmentedStyles.active]: activeTheme === "dark",
             })}
             onClick={() => {
               setTheme("dark");

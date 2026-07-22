@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./PageLoader.module.css";
 
@@ -16,7 +17,9 @@ export const PageLoader = ({
 }: PageLoaderProps) => {
   return (
     <div
-      className={`${styles.container} ${fullHeight ? styles.fullHeight : ""}`}
+      className={classNames(styles.container, {
+        [styles.fullHeight]: fullHeight,
+      })}
       data-testid="fmdPageLoader"
     >
       <Spinner size={size} aria-label={message} />

@@ -21,6 +21,7 @@ import {
   clearUrlParams,
   parseAuthUrlParams,
 } from "src/services/auth.service";
+import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -263,6 +264,7 @@ export const AuthProvider = ({
 
       await logoutApi();
       clearAuthCookies();
+      clearPersistedReleasePlayback();
       dispatch({ type: AuthActionTypes.Logout, payload: undefined });
       queryClient.setQueryData(AuthQueryKeys.all(), {
         isAuthenticated: false,

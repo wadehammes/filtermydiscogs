@@ -1,10 +1,17 @@
 import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === "production";
+const isVercelPreview = process.env.VERCEL_ENV === "preview";
 
 // https://securityheaders.com
 const scriptSrc = isProduction
-  ? ["'self'", "'unsafe-inline'", "*.googletagmanager.com", "*.google.com"]
+  ? [
+      "'self'",
+      "'unsafe-inline'",
+      "*.googletagmanager.com",
+      "*.google.com",
+      ...(isVercelPreview ? ["vercel.live"] : []),
+    ]
   : [
       "'self'",
       "'unsafe-eval'",
@@ -25,14 +32,16 @@ const connectSrc = isProduction
     ]
   : ["*"];
 
+const youtubeFrameSrc = ["*.youtube.com", "*.youtube-nocookie.com"];
+
 const frameSrc = isProduction
-  ? ["'self'", "*.youtube.com", "*.google.com", "*.googletagmanager.com"]
+  ? ["'self'", ...youtubeFrameSrc, "*.google.com", "*.googletagmanager.com"]
   : ["*"];
 
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src ${scriptSrc.join(" ")};
-  child-src *.youtube.com *.google.com;
+  child-src ${youtubeFrameSrc.join(" ")} *.google.com;
   style-src 'self' 'unsafe-inline' *.googleapis.com *.google.com *.googletagmanager.com;
   img-src 'self' blob: data: https://i.discogs.com https://img.discogs.com https://placehold.co;
   object-src 'none';

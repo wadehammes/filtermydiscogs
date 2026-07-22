@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import { useMemo } from "react";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type {
@@ -133,11 +134,10 @@ export function StatsCards({
           </div>
           {yearOverYearChange && (
             <div
-              className={`${styles.yearOverYear} ${
-                yearOverYearChange.isPositive
-                  ? styles.positive
-                  : styles.negative
-              }`}
+              className={classNames(styles.yearOverYear, {
+                [styles.positive]: yearOverYearChange.isPositive,
+                [styles.negative]: !yearOverYearChange.isPositive,
+              })}
             >
               <svg
                 width="12"

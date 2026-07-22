@@ -26,9 +26,9 @@ const getNavLinkClassName = ({
   const isGradient = variant === "gradient";
 
   return classNames(navStyles.link, {
-    [navStyles.linkActive as string]: isActive && !isGradient,
-    [styles.navLinkGradient as string]: isGradient,
-    [styles.navLinkGradientActive as string]: isActive && isGradient,
+    [navStyles.linkActive]: isActive && !isGradient,
+    [styles.navLinkGradient]: isGradient,
+    [styles.navLinkGradientActive]: isActive && isGradient,
   });
 };
 
@@ -39,7 +39,7 @@ export const PublicPageHeader = ({
   return (
     <header
       className={classNames(styles.header, {
-        [styles.headerGradient as string]: variant === "gradient",
+        [styles.headerGradient]: variant === "gradient",
       })}
     >
       <div className={styles.headerContent}>
@@ -81,7 +81,7 @@ export const PublicPageHeader = ({
             <Link
               href="/api/auth/discogs?force=1"
               className={classNames(navStyles.link, {
-                [styles.navLinkGradient as string]: variant === "gradient",
+                [styles.navLinkGradient]: variant === "gradient",
               })}
             >
               Log in
@@ -94,7 +94,7 @@ export const PublicPageHeader = ({
               target="_blank"
               rel="noopener noreferrer"
               className={classNames(styles.socialLink, {
-                [styles.socialLinkGradient as string]: variant === "gradient",
+                [styles.socialLinkGradient]: variant === "gradient",
               })}
               aria-label="Follow @filtermydiscogs on Instagram"
             >

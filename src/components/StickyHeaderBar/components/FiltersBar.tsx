@@ -82,7 +82,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
           <SearchBar
             placeholder="Search your collection..."
             disabled={!collection}
-            className={styles.searchBar || ""}
+            className={styles.searchBar}
           />
           <div className={styles.styleFilterGroup}>
             <AutocompleteSelect

@@ -42,10 +42,9 @@ export function AutocompleteDropdown({
   return (
     <div
       ref={dropdownRef}
-      className={classNames(
-        styles.dropdown,
-        openUpward && styles.dropdownUpward,
-      )}
+      className={classNames(styles.dropdown, {
+        [styles.dropdownUpward]: openUpward,
+      })}
     >
       <div className={styles.searchContainer}>
         <input
@@ -69,11 +68,10 @@ export function AutocompleteDropdown({
           {filteredOptions.map((option, index) => (
             <li
               key={option.value}
-              className={classNames(
-                styles.option,
-                isOptionSelected(value, option.value) && styles.selected,
-                focusedIndex === index && styles.focused,
-              )}
+              className={classNames(styles.option, {
+                [styles.selected]: isOptionSelected(value, option.value),
+                [styles.focused]: focusedIndex === index,
+              })}
               tabIndex={focusedIndex === index ? 0 : -1}
               onClick={() => onOptionClick(option.value)}
               onKeyDown={(e) => {

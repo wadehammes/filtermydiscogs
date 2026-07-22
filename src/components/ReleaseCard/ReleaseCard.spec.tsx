@@ -218,4 +218,18 @@ describe("ReleaseCard", () => {
     const image = screen.getByAltText(release.basic_information.title);
     expect(image).toHaveAttribute("src", expect.stringContaining("thumb.jpg"));
   });
+
+  it("calls onReleaseClick when title is clicked and handler is provided", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const onReleaseClick = jest.fn();
+    const user = userEvent.setup();
+
+    po.renderReleaseCard({ release, onReleaseClick });
+
+    await user.click(
+      screen.getByRole("button", { name: release.basic_information.title }),
+    );
+
+    expect(onReleaseClick).toHaveBeenCalledWith(String(release.instance_id));
+  });
 });

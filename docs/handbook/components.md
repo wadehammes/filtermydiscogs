@@ -24,7 +24,7 @@ How UI is organized under `src/components/` and how we test it.
 
 ## CSS Modules
 
-Import as `import styles from "./Name.module.css"` and reference **`styles.className`**. Prefer **`classNames`** with object notation for conditionals (see [conventions.md](conventions.md)).
+Import as `import styles from "./Name.module.css"` and reference **`styles.className`**. Use **`classNames`** whenever classes are combined or conditional — static lists, object notation for state, and optional `className` props (see [conventions.md → React / JSX](conventions.md#react--jsx)). Single unconditional module classes may use `className={styles.block}` directly.
 
 ## Scaffolding
 
@@ -70,6 +70,33 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
 | Notes action | **`ReleaseNotesCardAction variant="mobile"`** — stacked column button styles; desktop overlay uses default **`variant="card"`** |
+| Open detail modal | Cover + title call optional **`onReleaseClick`**; Discogs external-link stays separate (stop propagation) |
+
+## Feature example: ReleaseModal
+
+[`src/components/ReleaseModal/`](../../src/components/ReleaseModal/) is the release detail dialog on **`/releases`**. Opened when the user clicks cover art or title on a collection card (via **`onReleaseClick`** from [`useReleasesClient`](../../src/hooks/useReleasesClient.hook.ts)).
+
+| File | Role |
+|------|------|
+| `ReleaseModal.component.tsx` | Backdrop, sticky toolbar (title + close), analytics on open |
+| `ReleaseModalBody.component.tsx` | Hero card, notes section, tracklist via **`useReleaseModalPlayback`** |
+| `ReleaseSummaryHero.component.tsx` | Cover + metadata + Discogs icon button inside hero card |
+| `ReleasePlaybackFallback.component.tsx` | YouTube search + external video links when no embeddable video is available |
+| `ReleaseTracklist.component.tsx` | Clickable track rows; click starts background playback; click the active dock track again to play/pause; animated bars or pause icon on the dock’s active track |
+| `useReleaseModalPlayback.hook.ts` | Modal playback state; track select calls **`startPlayback`** (no in-modal video) |
+
+## Feature example: ReleasePlayback
+
+[`src/components/ReleasePlayback/`](../../src/components/ReleasePlayback/) hosts the persistent background player on **`/releases`**. [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx) wraps **`ReleasesClient`** only (not global **`Providers`**).
+
+| File | Role |
+|------|------|
+| `ReleaseMiniPlayer.component.tsx` | Slim dock (cover, title, prev/next/stop); hidden when idle; cover/title click opens **`ReleaseModal`** via **`onReleaseClick`**; crate toggle sits beside release meta |
+| `PersistentYoutubeIframe.component.tsx` | Off-screen iframe that carries actual playback audio/video |
+
+Closing **`ReleaseModal`** does not stop playback. **Play in background** or a track row click calls **`startPlayback`** and overwrites whatever is in the dock. Prev/next walk the flattened tracklist for the active release (v1 album queue). Helpers live in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts).
+
+Crate, notes, and filter pill clicks do **not** open the modal. The Discogs external-link control remains a separate new-tab action on cards.
 
 ## Feature example: ReleaseNotes
 
@@ -77,7 +104,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 | File | Role |
 |------|------|
-| `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`) and list display (`inline`) |
+| `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`), list display (`inline`), release modal (`variant="modal"`) |
 | `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column) |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |

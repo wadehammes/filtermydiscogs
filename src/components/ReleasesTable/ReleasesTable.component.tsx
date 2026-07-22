@@ -419,9 +419,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 <tr
                   key={row.id}
                   className={classNames(styles.dataRow, {
-                    [styles.inCrate as string]: isInCrate(
-                      row.original.instance_id,
-                    ),
+                    [styles.inCrate]: isInCrate(row.original.instance_id),
                   })}
                 >
                   {row.getVisibleCells().map((cell) => (

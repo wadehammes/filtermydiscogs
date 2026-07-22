@@ -40,6 +40,10 @@
   transform: scale(1.02);
 }
 
+.imageShell {
+  position: relative;
+}
+
 .imageContainer {
   align-items: center;
   aspect-ratio: 1 / 1;
@@ -56,6 +60,10 @@
   overflow: hidden;
   position: relative;
   width: 100%;
+
+  &[role="button"] {
+    cursor: pointer;
+  }
 
   &::before {
     background-image: inherit;
@@ -156,149 +164,93 @@
 }
 
 .actionButtonsContainer {
-  align-items: stretch;
-  display: flex;
-  flex-direction: row;
   flex-shrink: 0;
-  gap: var(--space-2);
-  justify-content: flex-start;
   overflow: visible;
   padding: var(--space-2);
+  pointer-events: none;
   position: absolute;
   right: var(--space-1);
   top: var(--space-1);
   z-index: 10;
-}
 
-.tooltip {
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  box-shadow: var(--shadow-md);
-  color: var(--popover-foreground);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  left: auto;
-  opacity: 0;
-  padding: var(--space-1) var(--space-2);
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: calc(100% + var(--space-1));
-  transform: translateX(0) translateY(0);
-  transition:
-    opacity var(--transition-normal),
-    transform var(--transition-normal);
-  white-space: nowrap;
-  z-index: var(--z-7-tooltip);
-
-  &::after {
-    border-bottom: 4px solid var(--popover);
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    content: "";
-    position: absolute;
-    right: var(--space-2);
-    top: -4px;
-  }
-
-  &::before {
-    border-bottom: 5px solid var(--border);
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    content: "";
-    position: absolute;
-    right: var(--space-2);
-    top: -5px;
+  > * {
+    pointer-events: auto;
   }
 }
 
-.buttonWrapper {
+.actionSegmented {
+  background: var(--card);
+  overflow: visible;
+}
+
+.segmentSlot {
+  display: flex;
   position: relative;
 
-  &:hover .tooltip {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0) translateY(0);
-  }
-}
-
-.discogsButton,
-.listButton {
-  align-items: center;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  color: var(--card-foreground);
-  cursor: pointer;
-  display: flex;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  gap: var(--space-2);
-  justify-content: center;
-  min-height: 1.5rem;
-  min-width: 1.5rem;
-  padding: var(--space-2);
-  transition:
-    background-color var(--transition-normal),
-    border-color var(--transition-normal),
-    color var(--transition-normal),
-    transform var(--transition-normal);
-
-  &:hover {
-    background: var(--muted);
-    border-color: var(--input);
-    color: var(--foreground);
-    transform: translateY(-1px);
+  & + & {
+    box-shadow: inset 1px 0 0 var(--border);
   }
 
-  &:active {
-    background: var(--accent);
-    transform: translateY(0);
-  }
+  .tooltip {
+    background: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-md);
+    color: var(--popover-foreground);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    left: auto;
+    opacity: 0;
+    padding: var(--space-1) var(--space-2);
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + var(--space-1));
+    transition: opacity var(--transition-normal);
+    visibility: hidden;
+    white-space: nowrap;
+    z-index: var(--z-7-tooltip);
 
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
+    &::after {
+      border-bottom: 4px solid var(--popover);
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      content: "";
+      position: absolute;
+      right: var(--space-2);
+      top: -4px;
+    }
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
-
-.listButton {
-  &.notesButtonActive {
-    background: color-mix(in srgb, var(--primary) 12%, var(--card));
-    border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
-    color: var(--primary);
-  }
-
-  &.removeButton {
-    background: var(--destructive);
-    border: 1px solid var(--destructive-hover);
-    color: var(--destructive-foreground);
-
-    &:hover {
-      background: var(--destructive-hover);
-      border-color: var(--destructive-active);
-      color: var(--destructive-foreground);
-      transform: translateY(-1px);
+    &::before {
+      border-bottom: 5px solid var(--border);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      content: "";
+      position: absolute;
+      right: var(--space-2);
+      top: -5px;
     }
   }
+
+  &:hover .tooltip,
+  &:focus-within .tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
-.externalLinkIcon {
-  height: var(--space-4);
-  width: var(--space-4);
+.actionSegment {
+  box-shadow: none;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  padding: var(--space-1);
 }
 
-.listButtonIcon {
-  color: currentcolor;
+.actionIcon {
   display: flex;
-  height: var(--space-4);
-  width: var(--space-4);
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
 }
 
 .stylesContainer,

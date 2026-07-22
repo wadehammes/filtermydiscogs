@@ -9,7 +9,7 @@ import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
 interface ReleaseNotesProps {
   release: DiscogsRelease;
-  variant?: "inline" | "displayOnly" | "table";
+  variant?: "inline" | "displayOnly" | "table" | "modal";
   className?: string | undefined;
 }
 
@@ -68,6 +68,81 @@ const ReleaseNotesCardDisplay = ({
             </button>
           ) : null}
         </section>
+      </div>
+
+      <NoteEditDialog
+        isOpen={isDialogOpen}
+        release={release}
+        fields={fields}
+        isSaving={isSaving}
+        errorMessage={errorMessage}
+        onClose={closeDialog}
+        onSave={handleSave}
+      />
+    </>
+  );
+};
+
+const ReleaseNotesModal = ({ release }: { release: DiscogsRelease }) => {
+  const {
+    canEdit,
+    cardDisplayedNotes,
+    closeDialog,
+    errorMessage,
+    fields,
+    handleSave,
+    isDialogOpen,
+    isSaving,
+    openDialog,
+  } = useReleaseNotesEditorContext();
+
+  const hasNotes = cardDisplayedNotes.length > 0;
+
+  if (!(hasNotes || canEdit)) {
+    return null;
+  }
+
+  return (
+    <>
+      <div
+        className={classNames(styles.notes, styles.notesModal)}
+        data-testid="fmdReleaseNotes"
+      >
+        <h3 className={styles.noteHeading} id="release-modal-notes-heading">
+          Notes
+        </h3>
+        <section
+          aria-labelledby="release-modal-notes-heading"
+          className={styles.noteScrollModal}
+        >
+          {hasNotes ? (
+            cardDisplayedNotes.map((note) => (
+              <p
+                className={styles.noteContent}
+                key={`${release.instance_id}-${note.fieldId}`}
+              >
+                {note.value}
+              </p>
+            ))
+          ) : (
+            <button
+              type="button"
+              className={styles.addNotesLink}
+              onClick={openDialog}
+            >
+              Add notes
+            </button>
+          )}
+        </section>
+        {canEdit && hasNotes ? (
+          <button
+            type="button"
+            className={styles.editButton}
+            onClick={openDialog}
+          >
+            Edit notes
+          </button>
+        ) : null}
       </div>
 
       <NoteEditDialog
@@ -212,6 +287,10 @@ export const ReleaseNotes = ({
 }: ReleaseNotesProps) => {
   if (variant === "displayOnly") {
     return <ReleaseNotesCardDisplay release={release} className={className} />;
+  }
+
+  if (variant === "modal") {
+    return <ReleaseNotesModal release={release} />;
   }
 
   if (variant === "table") {

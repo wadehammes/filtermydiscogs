@@ -97,6 +97,24 @@ If collection fetches fail after login, verify OAuth tokens (re-login), consumer
 
 Browsers call **`fetchDiscogsCollection`** in [`src/api/helpers.ts`](../../src/api/helpers.ts), which hits **`/api/collection`** with the authenticated user's username—not the Discogs API directly.
 
+## Release detail and in-app playback
+
+Full release metadata (tracklist, community videos) is **not** included in collection pagination. The app fetches it on demand when a release detail modal opens.
+
+| Operation | App route | Discogs API |
+|-----------|-----------|-------------|
+| Read release detail | `GET /api/release/{releaseId}` | `GET /releases/{release_id}` |
+
+Client helper: **`fetchDiscogsRelease`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). React Query: **`useDiscogsReleaseQuery`** ([`src/hooks/queries/useDiscogsReleaseQuery.ts`](../../src/hooks/queries/useDiscogsReleaseQuery.ts)) with **`DiscogsReleaseQueryKeys`**.
+
+**Testing:** Assert the route contract in [`route.test.ts`](../../src/app/api/release/[id]/route.test.ts) and the client helper in [`helpers.test.ts`](../../src/api/helpers.test.ts). UI/context tests mock **`useDiscogsReleaseQuery`** (see [conventions.md → Testing](conventions.md#testing))—do not drive fetch through a real **`QueryClient`** for release detail.
+
+Typed response fields live in [`src/types/discogs-release-detail.types.ts`](../../src/types/discogs-release-detail.types.ts): **`tracklist`** (position, title, duration, nested **`sub_tracks`**), **`videos`** (YouTube **`uri`**, **`title`**, **`embed`**).
+
+**Playback (v1):** Discogs does not stream audio. When a release has embeddable YouTube links in **`videos`**, [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx) (via [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx)) keeps playback alive when the modal closes. The modal and mini player share album queue state; track rows call **`findVideoForTrack`** in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts) to pick the best match; otherwise the UI links out to YouTube search. Coverage depends on community-submitted videos—many releases have none.
+
+**Card click:** On **`/releases`**, clicking cover art or title on desktop/mobile cards (not the Discogs external-link icon) opens the release detail modal via **`onReleaseClick`** from [`useReleasesClient`](../../src/hooks/useReleasesClient.hook.ts). Public crate cards keep external Discogs links only.
+
 ## Collection notes (custom fields)
 
 Discogs collection instances can include user-defined note fields (Media, Notes, etc.). Values are already present on each release in the **`/api/collection`** pagination payload as **`notes: [{ field_id, value }]`**. Normalize missing notes to **`[]`** when ingesting collection pages ([`useCollectionData.hook.ts`](../../src/hooks/useCollectionData.hook.ts)).
