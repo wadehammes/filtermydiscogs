@@ -1,21 +1,103 @@
-.miniPlayer {
-  align-items: center;
-  backdrop-filter: blur(8px);
-  background: color-mix(in srgb, var(--card) 92%, transparent);
-  border-top: 1px solid var(--border);
+.miniPlayerShell {
+  --release-mini-player-bar-height: 3.25rem;
+  --release-mini-player-video-height: 9rem;
+
   bottom: 0;
   display: flex;
-  gap: var(--space-3);
+  flex-direction: column;
   left: 0;
-  min-height: 3.25rem;
-  padding: var(--space-2) var(--space-4);
   position: fixed;
   right: 0;
   z-index: var(--z-3-fixed);
 
   @media (width >= 768px) {
-    padding: var(--space-2) var(--space-5);
+    --release-mini-player-video-height: 16.1rem;
   }
+}
+
+.videoPanel {
+  align-self: flex-start;
+  height: 0;
+  margin-left: var(--space-3);
+  overflow: hidden;
+  position: relative;
+  width: 0;
+
+  @media (width >= 768px) {
+    margin-left: var(--space-4);
+  }
+}
+
+.videoPanelExpanded {
+  background: var(--background);
+  border-radius: var(--radius-ui) var(--radius-ui) 0 0;
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 10%);
+  height: var(--release-mini-player-video-height);
+  overflow: hidden;
+  width: calc(var(--release-mini-player-video-height) * 16 / 9);
+}
+
+.miniPlayerBar {
+  align-items: center;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: var(--space-3);
+  min-height: var(--release-mini-player-bar-height);
+  padding: var(--space-2) var(--space-4);
+  padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+
+  @media (width >= 768px) {
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
+  }
+}
+
+.videoTab {
+  align-self: stretch;
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  min-height: 2.5rem;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+  width: 1.5rem;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+}
+
+.videoTabExpanded {
+  background: var(--muted);
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.videoTabChevron {
+  height: 0.625rem;
+  transform: rotate(-90deg);
+  width: 0.625rem;
+}
+
+.videoTabChevronExpanded {
+  transform: rotate(90deg);
 }
 
 .releaseArea {
@@ -67,36 +149,8 @@
   overflow: hidden;
 }
 
-.crateButton {
-  align-items: center;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  cursor: pointer;
-  display: inline-flex;
-  flex-shrink: 0;
-  height: 1.75rem;
-  justify-content: center;
-  transition:
-    background-color var(--transition-normal),
-    border-color var(--transition-normal),
-    color var(--transition-normal);
-  width: 1.75rem;
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  &:hover {
-    border-color: var(--input);
-    color: var(--foreground);
-  }
-}
-
 .crateButtonActive {
-  background: var(--card);
+  background: var(--muted);
   border-color: var(--foreground);
 }
 

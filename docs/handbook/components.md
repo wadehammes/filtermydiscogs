@@ -24,7 +24,7 @@ How UI is organized under `src/components/` and how we test it.
 
 ## CSS Modules
 
-Import as `import styles from "./Name.module.css"` and reference **`styles.className`**. Use **`classNames`** whenever classes are combined or conditional — static lists, object notation for state, and optional `className` props (see [conventions.md → React / JSX](conventions.md#react--jsx)). Single unconditional module classes may use `className={styles.block}` directly.
+Import as `import styles from "./Name.module.css"` and reference **`styles.className`**. Use **`classNames`** whenever classes are combined or conditional — static lists, object notation for state, and optional `className` props (see [conventions.md → React / JSX](conventions.md#react--jsx)). Do **not** cast module keys with **`as string`** in object notation. Single unconditional module classes may use `className={styles.block}` directly.
 
 ## Scaffolding
 
@@ -70,7 +70,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
 | Notes action | **`ReleaseNotesCardAction variant="mobile"`** — stacked column button styles; desktop overlay uses default **`variant="card"`** |
-| Open detail modal | Cover + title call optional **`onReleaseClick`**; Discogs external-link stays separate (stop propagation) |
+| Open detail modal | Cover + title call optional **`onReleaseClick`**; title/artist/label links open Discogs in a new tab |
 
 ## Feature example: ReleaseModal
 
@@ -91,12 +91,12 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 | File | Role |
 |------|------|
-| `ReleaseMiniPlayer.component.tsx` | Slim dock (cover, title, prev/next/stop); hidden when idle; cover/title click opens **`ReleaseModal`** via **`onReleaseClick`**; crate toggle sits beside release meta |
+| `ReleaseMiniPlayer.component.tsx` | Video panel above the mini bar (chevron toggle); bar has cover/title, crate +/-, transport |
 | `PersistentYoutubeIframe.component.tsx` | Off-screen iframe that carries actual playback audio/video |
 
 Closing **`ReleaseModal`** does not stop playback. **Play in background** or a track row click calls **`startPlayback`** and overwrites whatever is in the dock. Prev/next walk the flattened tracklist for the active release (v1 album queue). Helpers live in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts).
 
-Crate, notes, and filter pill clicks do **not** open the modal. The Discogs external-link control remains a separate new-tab action on cards.
+Crate, notes, and filter pill clicks do **not** open the modal. Discogs links live on title, artist, and label text—not on the image overlay action group.
 
 ## Feature example: ReleaseNotes
 
@@ -105,7 +105,7 @@ Crate, notes, and filter pill clicks do **not** open the modal. The Discogs exte
 | File | Role |
 |------|------|
 | `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`), list display (`inline`), release modal (`variant="modal"`) |
-| `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column) |
+| `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); no active styling when notes exist |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
 | `NoteEditDialog.component.tsx` | Native `<dialog>` editor (`data-testid="fmdNoteEditDialog"`) |

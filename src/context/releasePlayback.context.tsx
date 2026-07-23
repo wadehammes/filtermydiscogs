@@ -177,6 +177,13 @@ export const ReleasePlaybackProvider = ({
     const index = findTrackIndexByPosition(tracks, pendingTrackPosition);
 
     if (index < 0) {
+      setPendingTrackPosition(null);
+      setIsPlaying(false);
+      setIsPaused(false);
+      setShouldAutoplayEmbed(false);
+      setRelease(null);
+      setActiveTrackIndex(0);
+      clearPersistedReleasePlayback();
       return;
     }
 
@@ -324,7 +331,10 @@ export const ReleasePlaybackProvider = ({
   startPlaybackRef.current = startPlayback;
 
   useEffect(() => {
-    if (!(isPlaying && release && activeTrackPosition)) {
+    if (
+      !(isPlaying && release && activeTrackPosition) ||
+      pendingTrackPosition
+    ) {
       return;
     }
 
@@ -332,7 +342,7 @@ export const ReleasePlaybackProvider = ({
       instanceId: String(release.instance_id),
       trackPosition: activeTrackPosition,
     });
-  }, [activeTrackPosition, isPlaying, release]);
+  }, [activeTrackPosition, isPlaying, pendingTrackPosition, release]);
 
   useEffect(() => {
     if (hasAttemptedRestoreRef.current || isPlaying) {

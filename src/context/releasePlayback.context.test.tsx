@@ -330,6 +330,25 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
+  it("stops playback when the requested track position is not in the tracklist", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "Z99",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaying).toBe(false);
+    });
+
+    expect(readPersistedReleasePlayback()).toBeNull();
+  });
+
   it("stops playback and clears release state", async () => {
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),

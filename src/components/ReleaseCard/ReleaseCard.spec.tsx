@@ -164,22 +164,6 @@ describe("ReleaseCard", () => {
     expect(card?.className).toContain("randomMode");
   });
 
-  it("renders Discogs link with correct URL", () => {
-    po.renderReleaseCard({
-      release: releaseFactory.withResourceUrl(123),
-    });
-
-    const discogsLink = screen.getByRole("link", {
-      name: "View on Discogs",
-    });
-    expect(discogsLink).toHaveAttribute(
-      "href",
-      "https://www.discogs.com/release/123",
-    );
-    expect(discogsLink).toHaveAttribute("target", "_blank");
-    expect(discogsLink).toHaveAttribute("rel", "noopener noreferrer");
-  });
-
   it("renders title link with correct URL", () => {
     po.renderReleaseCard({
       release: releaseFactory.withTitle("Test Release", 456),

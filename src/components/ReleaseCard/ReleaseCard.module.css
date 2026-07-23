@@ -165,7 +165,6 @@
 
 .actionButtonsContainer {
   flex-shrink: 0;
-  overflow: visible;
   padding: var(--space-2);
   pointer-events: none;
   position: absolute;
@@ -180,7 +179,6 @@
 
 .actionSegmented {
   background: var(--card);
-  overflow: visible;
 }
 
 .segmentSlot {

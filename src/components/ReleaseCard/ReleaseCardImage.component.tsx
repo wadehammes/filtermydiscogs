@@ -1,10 +1,8 @@
 import classNames from "classnames";
 import Image from "next/image";
-import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import StarIcon from "src/styles/icons/star-solid.svg";
@@ -17,14 +15,12 @@ import styles from "./ReleaseCard.module.css";
 interface ReleaseCardImageProps {
   release: DiscogsRelease;
   thumbUrl: string | null;
-  resourceUrl: string | null;
   onReleaseOpen?: () => void;
 }
 
 export const ReleaseCardImage = ({
   release,
   thumbUrl,
-  resourceUrl,
   onReleaseOpen,
 }: ReleaseCardImageProps) => {
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
@@ -89,37 +85,9 @@ export const ReleaseCardImage = ({
         <div
           className={classNames(
             segmentedStyles.container,
-            segmentedStyles.containerAllowOverflow,
             styles.actionSegmented,
           )}
         >
-          {resourceUrl ? (
-            <div className={styles.segmentSlot}>
-              <a
-                href={resourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={classNames(
-                  segmentedStyles.segment,
-                  styles.actionSegment,
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  trackEvent("releaseClicked", {
-                    action: "releaseClicked",
-                    category: "home",
-                    label: "Release Clicked",
-                    value: resourceUrl,
-                  });
-                }}
-                aria-label="View on Discogs"
-                title="View on Discogs"
-              >
-                <ExternalLinkIcon className={styles.actionIcon} />
-              </a>
-              <span className={styles.tooltip}>View on Discogs</span>
-            </div>
-          ) : null}
           <ReleaseNotesCardAction />
           <div className={styles.segmentSlot}>
             <button

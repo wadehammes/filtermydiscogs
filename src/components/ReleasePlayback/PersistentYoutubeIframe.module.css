@@ -1,10 +1,18 @@
-.iframe {
+.iframeHidden {
   border: 0;
   height: 1px;
   left: 0;
   opacity: 0;
   pointer-events: none;
-  position: fixed;
+  position: absolute;
   top: 0;
   width: 1px;
+}
+
+.iframeVisible {
+  border: 0;
+  display: block;
+  height: 100%;
+  pointer-events: auto;
+  width: 100%;
 }

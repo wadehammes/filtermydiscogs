@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import { useEffect, useMemo } from "react";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { definedProps } from "src/utils/definedProps";
@@ -11,6 +12,7 @@ interface PersistentYoutubeIframeProps {
   videoTitle: string;
   playbackKey: string;
   autoplay?: boolean;
+  variant?: "hidden" | "visible";
 }
 
 export const PersistentYoutubeIframe = ({
@@ -18,6 +20,7 @@ export const PersistentYoutubeIframe = ({
   videoTitle,
   playbackKey,
   autoplay = false,
+  variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
   const { registerPlaybackIframe } = useReleasePlayback();
 
@@ -46,8 +49,12 @@ export const PersistentYoutubeIframe = ({
       title={videoTitle}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowFullScreen
-      className={styles.iframe}
+      className={classNames({
+        [styles.iframeHidden]: variant === "hidden",
+        [styles.iframeVisible]: variant === "visible",
+      })}
       data-testid="fmdPersistentYoutubeIframe"
+      data-variant={variant}
     />
   );
 };
