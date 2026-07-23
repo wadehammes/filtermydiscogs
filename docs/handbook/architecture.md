@@ -43,7 +43,7 @@ Feature UI: one folder per area (e.g. `Dashboard`, `ReleaseCard`, `StickyHeaderB
 
 **Jotai** client UI state:
 
-- [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts) — `allReleasesAtom`, filter inputs, derived `filteredReleasesAtom`, `filtersDispatchAtom`.
+- [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts) — `allReleasesAtom`, filter inputs (`atomWithStorage` → **`filtermydiscogs_filters`**), derived `filteredReleasesAtom`, `filtersDispatchAtom`.
 - [`view.atoms.ts`](../../src/atoms/view.atoms.ts) — card / list / random view preference (`atomWithStorage`); list mode renders [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) on desktop.
 - [`JotaiProvider.tsx`](../../src/atoms/JotaiProvider.tsx) — shared store for the app tree.
 

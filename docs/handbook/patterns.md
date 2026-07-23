@@ -94,6 +94,8 @@ Hook rules (single params object, no side effects in hook files): [conventions.m
    - [`getAvailableStyles/Years/Formats`](../../src/utils/) for filter chip options
 3. UI components (`FiltersBar`, `FiltersDrawer`, release pills) dispatch filter actions through **`useFiltersDispatch()`** and read state via **`useFilterAtoms`** hooks; **`useFilteredReleases()`** / **`useMemoizedFilteredReleases()`** drive tables, cards, mosaic input, and random release. Dashboard/analytics read the same list via **`useAllReleases()`**.
 
+**Persistence**: User-selected filter inputs (styles, years, formats, sort, style operator, search query) persist in **`localStorage`** under **`filtermydiscogs_filters`** via **`atomWithStorage`** in [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts), with parse/validation in [`filtersStorage.ts`](../../src/utils/filtersStorage.ts). Collection data, random-mode pick, and the searching flag are **not** persisted. Cleared on **Clear stored data** (About/Legal), not on logout—same scope as view mode (one filter state per browser).
+
 **Lint guardrails**: Biome **`noRestrictedImports`** discourages **`useFilters`** / **`useView`** in application code—prefer **`useFilterAtoms`** / **`useViewAtoms`**. Context modules and test files are exempt.
 
 Add filter dimensions by extending filter atoms/helpers and UI—not by filtering ad hoc in leaf components. Release note text is included in search via **`getReleaseNotesSearchText`** in [`filterReleases.ts`](../../src/utils/filterReleases.ts).
@@ -131,7 +133,7 @@ See [database.md](database.md) for schema details.
 
 ## Clear stored data
 
-About/Legal **Clear stored data** calls **`clearData`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/auth/clear-data`**, which deletes the user's crates and clears session cookies. Client reset uses **`useCollectionReset`** ([`useCollectionReset.hook.ts`](../../src/hooks/useCollectionReset.hook.ts)) and clears client **`localStorage`** keys including release playback resume state ([`releasePlaybackStorage.ts`](../../src/utils/releasePlaybackStorage.ts)).
+About/Legal **Clear stored data** calls **`clearData`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/auth/clear-data`**, which deletes the user's crates and clears session cookies. Client reset uses **`useCollectionReset`** ([`useCollectionReset.hook.ts`](../../src/hooks/useCollectionReset.hook.ts)) and **`clearClientStoredData`** ([`clearClientStoredData.ts`](../../src/utils/clearClientStoredData.ts)) to remove filter preferences, view state, theme, legacy crate migration data, and release playback resume state from **`localStorage`**. Logout clears playback only—not filter or view preferences.
 
 ## Metadata and OG images
 

@@ -10,6 +10,8 @@ import {
 } from "src/services/auth.service";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
+import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
 import { act, renderHook, waitFor } from "test-utils";
 import { AuthProvider, useAuth } from "./auth.context";
 
@@ -251,6 +253,54 @@ describe("AuthProvider", () => {
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
     expect(mockRouter.replace).toHaveBeenCalledWith("/");
+  });
+
+  it("preserves filter preferences in localStorage on logout", async () => {
+    const savedFilters = {
+      selectedStyles: ["Rock"],
+      selectedYears: [],
+      selectedFormats: [],
+      selectedSort: "DateAddedNew",
+      styleOperator: "OR",
+      searchQuery: "test",
+    };
+
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(savedFilters));
+    localStorage.setItem(
+      RELEASE_PLAYBACK_STORAGE_KEY,
+      JSON.stringify({
+        instanceId: "123",
+        trackPosition: "A1",
+      }),
+    );
+
+    mockCheckAuth.mockResolvedValue({
+      isAuthenticated: true,
+      username: "testuser",
+      userId: "123",
+      rateLimited: false,
+    });
+    mockApiResponse(
+      true,
+      mockLogoutApi,
+      { success: true },
+      new Error("Logout failed"),
+    );
+
+    const { result } = renderAuthHook();
+
+    await waitFor(() => {
+      expect(result.current.state.isAuthenticated).toBe(true);
+    });
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBe(
+      JSON.stringify(savedFilters),
+    );
+    expect(localStorage.getItem(RELEASE_PLAYBACK_STORAGE_KEY)).toBeNull();
   });
 
   it("handles logout error", async () => {

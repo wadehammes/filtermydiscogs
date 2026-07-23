@@ -1,6 +1,13 @@
 import { atom, type Getter, type Setter } from "jotai";
+import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import type { DiscogsRelease } from "src/types";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
+import {
+  defaultPersistedFilters,
+  FILTERS_STORAGE_KEY,
+  type PersistedFiltersState,
+  parsePersistedFilters,
+} from "src/utils/filtersStorage";
 import { getAvailableFormats } from "src/utils/getAvailableFormats";
 import { getAvailableStyles } from "src/utils/getAvailableStyles";
 import { getAvailableYears } from "src/utils/getAvailableYears";
@@ -208,15 +215,70 @@ const pickRandomReleaseForMode = ({
   };
 };
 
+const filtersStorage = createJSONStorage<PersistedFiltersState>(() => ({
+  getItem: (key) => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(key);
+  },
+  setItem: (key, value) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(key, value);
+  },
+  removeItem: (key) => {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(key);
+  },
+}));
+
+const persistedFiltersAtom = atomWithStorage<PersistedFiltersState>(
+  FILTERS_STORAGE_KEY,
+  defaultPersistedFilters,
+  {
+    ...filtersStorage,
+    getItem: (key, initialValue) => {
+      if (typeof window === "undefined") return initialValue;
+      const stored = localStorage.getItem(key);
+      return parsePersistedFilters(stored);
+    },
+  },
+);
+
+const persistableFieldAtom = <K extends keyof PersistedFiltersState>(key: K) =>
+  atom(
+    (get) => get(persistedFiltersAtom)[key],
+    (get, set, value: PersistedFiltersState[K]) => {
+      set(persistedFiltersAtom, {
+        ...get(persistedFiltersAtom),
+        [key]: value,
+      });
+    },
+  );
+
 export const allReleasesAtom = atom<DiscogsRelease[]>([]);
-export const selectedStylesAtom = atom<string[]>([]);
-export const selectedYearsAtom = atom<number[]>([]);
-export const selectedFormatsAtom = atom<string[]>([]);
-export const selectedSortAtom = atom<SortValues>(SortValues.DateAddedNew);
-export const styleOperatorAtom = atom<StyleOperator>("OR");
+export const selectedStylesAtom = persistableFieldAtom("selectedStyles");
+export const selectedYearsAtom = persistableFieldAtom("selectedYears");
+export const selectedFormatsAtom = persistableFieldAtom("selectedFormats");
+export const selectedSortAtom = atom(
+  (get) => get(persistedFiltersAtom).selectedSort as SortValues,
+  (get, set, value: SortValues) => {
+    set(persistedFiltersAtom, {
+      ...get(persistedFiltersAtom),
+      selectedSort: value,
+    });
+  },
+);
+export const styleOperatorAtom = atom(
+  (get) => get(persistedFiltersAtom).styleOperator as StyleOperator,
+  (get, set, value: StyleOperator) => {
+    set(persistedFiltersAtom, {
+      ...get(persistedFiltersAtom),
+      styleOperator: value,
+    });
+  },
+);
+export const searchQueryAtom = persistableFieldAtom("searchQuery");
 export const isRandomModeAtom = atom(false);
 export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
-export const searchQueryAtom = atom("");
 export const isSearchingAtom = atom(false);
 
 export const availableStylesAtom = atom((get) =>

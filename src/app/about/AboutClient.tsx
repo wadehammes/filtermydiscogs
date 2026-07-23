@@ -12,7 +12,7 @@ import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
-import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
+import { clearClientStoredData } from "src/utils/clearClientStoredData";
 import styles from "./page.module.css";
 
 export function AboutClient() {
@@ -44,14 +44,7 @@ export function AboutClient() {
       // Clear all cookies (authentication tokens)
       await clearData();
 
-      // Clear localStorage
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("filtermydiscogs_selected_releases");
-        localStorage.removeItem("fmd_username");
-        localStorage.removeItem("filtermydiscogs_theme");
-        localStorage.removeItem("filtermydiscogs_view_state");
-        clearPersistedReleasePlayback();
-      }
+      clearClientStoredData();
 
       // Clear React Query cache and reset collection state
       queryClient.clear();
