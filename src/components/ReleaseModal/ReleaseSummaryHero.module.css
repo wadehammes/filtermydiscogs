@@ -1,19 +1,54 @@
+/* Layout: toolbar row, then cover + metadata. Keep .hero as column — toolbar + .heroMain are siblings. */
 .hero {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.heroToolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+
+  @media (width >= 768px) {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+.toolbarActions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.heroMain {
   align-items: stretch;
   display: flex;
+  flex-direction: column;
   gap: 0;
   width: 100%;
 
   @media (width >= 768px) {
     align-items: center;
+    flex-direction: row;
   }
 }
 
 .coverWrapper {
   flex-shrink: 0;
-  height: 8rem;
+  height: 10rem;
   overflow: hidden;
-  width: 8rem;
+  width: 100%;
+
+  @media (width >= 768px) {
+    height: 9rem;
+    width: 9rem;
+  }
 }
 
 .cover {
@@ -32,13 +67,6 @@
   padding: var(--space-3) var(--space-4);
 }
 
-.detailsHeader {
-  align-items: flex-start;
-  display: flex;
-  gap: var(--space-3);
-  justify-content: space-between;
-}
-
 .detailsText {
   display: flex;
   flex: 1;
@@ -55,13 +83,17 @@
 
 .title {
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   display: -webkit-box;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   line-height: 1.25;
   margin: 0;
   overflow: hidden;
+
+  @media (width >= 768px) {
+    -webkit-line-clamp: 2;
+  }
 }
 
 .metaLine {
@@ -72,12 +104,6 @@
   margin: var(--space-2) 0 0 0;
 }
 
-.actionButtons {
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--space-2);
-}
-
 .actionButton {
   align-items: center;
   background: color-mix(in srgb, var(--background) 60%, transparent);
@@ -86,6 +112,7 @@
   color: var(--foreground);
   cursor: pointer;
   display: inline-flex;
+  flex-shrink: 0;
   height: var(--button-height-sm);
   justify-content: center;
   text-decoration: none;

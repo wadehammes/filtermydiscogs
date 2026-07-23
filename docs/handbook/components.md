@@ -79,11 +79,11 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | File | Role |
 |------|------|
 | `ReleaseModal.component.tsx` | Backdrop, hero header (cover, metadata, crate/Discogs/close), scrollable body, analytics on open |
-| `ReleaseModalBody.component.tsx` | Notes section, tracklist via **`useReleaseModalPlayback`** |
-| `ReleaseSummaryHero.component.tsx` | Cover + metadata (label, year, catno, format/style pills) + crate add/remove toggle + Discogs link + optional close button (modal header) |
+| `ReleaseModalBody.component.tsx` | Tracklist via **`useReleaseModalPlayback`**, then notes at the bottom |
+| `ReleaseSummaryHero.component.tsx` | Top toolbar (crate, Discogs, close) + stacked cover/metadata on mobile, side-by-side on desktop |
 | `ReleasePlaybackFallback.component.tsx` | YouTube search + external video links when no embeddable video is available |
 | `ReleaseTracklist.component.tsx` | Clickable track rows; click starts background playback; click the active dock track again to play/pause; animated bars or pause icon on the dock’s active track |
-| `useReleaseModalPlayback.hook.ts` | Modal playback state; track select calls **`startPlayback`** (no in-modal video) |
+| `useReleaseModalPlayback.hook.ts` | Modal playback state; track select calls **`startPlayback`** |
 
 ## Feature example: ReleasePlayback
 

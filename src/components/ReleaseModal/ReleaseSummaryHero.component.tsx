@@ -80,20 +80,69 @@ export const ReleaseSummaryHero = ({
 
   return (
     <div className={styles.hero} data-testid="fmdReleaseSummaryHero">
-      <div className={styles.coverWrapper}>
-        {thumbUrl ? (
-          <Image
-            src={thumbUrl}
-            alt={basicInfo.title}
-            width={96}
-            height={96}
-            className={styles.cover}
-            sizes="96px"
-          />
+      <div className={styles.heroToolbar}>
+        <div className={styles.toolbarActions}>
+          <button
+            type="button"
+            className={classNames(styles.actionButton, styles.crateButton, {
+              [styles.crateButtonActive]: inCrate,
+            })}
+            onClick={handleCrateToggle}
+            aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+            title={inCrate ? "Remove from Crate" : "Add to Crate"}
+          >
+            {inCrate ? (
+              <MinusIcon className={styles.actionIcon} />
+            ) : (
+              <PlusIcon className={styles.actionIcon} />
+            )}
+          </button>
+          {releaseUrl ? (
+            <a
+              href={releaseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={classNames(styles.actionButton, styles.discogsButton)}
+              aria-label="View on Discogs"
+              title="View on Discogs"
+              onClick={() => {
+                trackEvent("releaseClicked", {
+                  action: "releaseClicked",
+                  category: "releaseModal",
+                  label: "View on Discogs",
+                  value: releaseUrl,
+                });
+              }}
+            >
+              <ExternalLinkIcon className={styles.actionIcon} />
+            </a>
+          ) : null}
+        </div>
+        {onClose ? (
+          <button
+            type="button"
+            className={classNames(styles.actionButton, styles.closeButton)}
+            onClick={onClose}
+            aria-label="Close modal"
+          >
+            <XIcon className={styles.actionIcon} />
+          </button>
         ) : null}
       </div>
-      <div className={styles.details}>
-        <div className={styles.detailsHeader}>
+      <div className={styles.heroMain}>
+        <div className={styles.coverWrapper}>
+          {thumbUrl ? (
+            <Image
+              src={thumbUrl}
+              alt={basicInfo.title}
+              width={96}
+              height={96}
+              className={styles.cover}
+              sizes="96px"
+            />
+          ) : null}
+        </div>
+        <div className={styles.details}>
           <div className={styles.detailsText}>
             <p
               className={classNames(
@@ -161,66 +210,16 @@ export const ReleaseSummaryHero = ({
               </HorizontalScrollRow>
             ) : null}
           </div>
-          <div className={styles.actionButtons}>
-            <button
-              type="button"
-              className={classNames(styles.actionButton, styles.crateButton, {
-                [styles.crateButtonActive]: inCrate,
-              })}
-              onClick={handleCrateToggle}
-              aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-              title={inCrate ? "Remove from Crate" : "Add to Crate"}
+          {release.rating > 0 ? (
+            <div
+              className={styles.ratingBadge}
+              title={`Rating: ${release.rating}/5`}
             >
-              {inCrate ? (
-                <MinusIcon className={styles.actionIcon} />
-              ) : (
-                <PlusIcon className={styles.actionIcon} />
-              )}
-            </button>
-            {releaseUrl ? (
-              <a
-                href={releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={classNames(
-                  styles.actionButton,
-                  styles.discogsButton,
-                )}
-                aria-label="View on Discogs"
-                title="View on Discogs"
-                onClick={() => {
-                  trackEvent("releaseClicked", {
-                    action: "releaseClicked",
-                    category: "releaseModal",
-                    label: "View on Discogs",
-                    value: releaseUrl,
-                  });
-                }}
-              >
-                <ExternalLinkIcon className={styles.actionIcon} />
-              </a>
-            ) : null}
-            {onClose ? (
-              <button
-                type="button"
-                className={classNames(styles.actionButton, styles.closeButton)}
-                onClick={onClose}
-                aria-label="Close modal"
-              >
-                <XIcon className={styles.actionIcon} />
-              </button>
-            ) : null}
-          </div>
+              <StarIcon className={styles.starIcon} />
+              {release.rating}
+            </div>
+          ) : null}
         </div>
-        {release.rating > 0 ? (
-          <div
-            className={styles.ratingBadge}
-            title={`Rating: ${release.rating}/5`}
-          >
-            <StarIcon className={styles.starIcon} />
-            {release.rating}
-          </div>
-        ) : null}
       </div>
     </div>
   );

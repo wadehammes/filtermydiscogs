@@ -1,3 +1,5 @@
+"use client";
+
 import classNames from "classnames";
 import { useCallback, useEffect } from "react";
 import { trackEvent } from "src/analytics/analytics";

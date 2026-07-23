@@ -22,6 +22,10 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import { definedProps } from "src/utils/definedProps";
+import {
+  markPlaybackVideoIntroSeen,
+  PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
+} from "src/utils/playbackVideoIntroStorage";
 import { render, screen, waitFor } from "test-utils";
 
 jest.mock("src/hooks/queries/useDiscogsReleaseQuery");
@@ -88,6 +92,7 @@ describe("ReleaseMiniPlayer", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
+    markPlaybackVideoIntroSeen();
     setupDefaultCrateApiMocks(mockApi);
     setupDiscogsReleaseQueryMock(releaseDetail);
     mockApiResponse(
@@ -126,6 +131,46 @@ describe("ReleaseMiniPlayer", () => {
       "hidden",
     );
     expect(screen.getByText("Never Gonna Give You Up")).toBeInTheDocument();
+  });
+
+  it("expands the dock video panel the first time playback becomes ready", async () => {
+    localStorage.clear();
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
+      "data-variant",
+      "visible",
+    );
+    expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBe("true");
+  });
+
+  it("does not auto-expand the dock video panel after the intro has been seen", async () => {
+    localStorage.clear();
+    markPlaybackVideoIntroSeen();
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
+    expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
+      "data-variant",
+      "hidden",
+    );
   });
 
   it("expands and collapses the video panel without changing the embed src", async () => {

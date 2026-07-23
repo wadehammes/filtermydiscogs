@@ -46,6 +46,14 @@ describe("ReleaseSummaryHero", () => {
     mockUseMediaQuery.mockReturnValue(false);
   });
 
+  it("exports toolbar layout classes for the modal hero structure", async () => {
+    const styles = await import("./ReleaseSummaryHero.module.css");
+
+    expect(styles.default.heroToolbar).toBeTruthy();
+    expect(styles.default.heroMain).toBeTruthy();
+    expect(styles.default.toolbarActions).toBeTruthy();
+  });
+
   it("adds release to crate and opens drawer on desktop", async () => {
     const release = releaseFactory.build();
     const user = userEvent.setup();

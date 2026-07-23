@@ -39,13 +39,6 @@ export const ReleaseModalBody = ({
   return (
     <ReleaseNotesEditorProvider release={release}>
       <div className={styles.body} data-testid="fmdReleaseModalBody">
-        <section
-          className={classNames(styles.modalCard, styles.notesSection)}
-          aria-label="Release notes"
-        >
-          <ReleaseNotes release={release} variant="modal" />
-        </section>
-
         {isLoading ? (
           <div className={styles.loadingState}>
             <Spinner size="md" aria-label="Loading release details" />
@@ -91,6 +84,13 @@ export const ReleaseModalBody = ({
             />
           </section>
         ) : null}
+
+        <section
+          className={classNames(styles.modalCard, styles.notesSection)}
+          aria-label="Release notes"
+        >
+          <ReleaseNotes release={release} variant="modal" />
+        </section>
       </div>
     </ReleaseNotesEditorProvider>
   );
