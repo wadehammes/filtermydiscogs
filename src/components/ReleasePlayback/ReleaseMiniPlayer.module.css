@@ -111,16 +111,52 @@
   border-color: var(--foreground);
 }
 
-.crateIcon,
-.videoIcon {
+.controlIcon {
   display: block;
-  height: 0.875rem;
-  width: 0.875rem;
+  flex-shrink: 0;
+}
 
-  @media (width >= 768px) {
-    height: 0.75rem;
-    width: 0.75rem;
+.controlButton {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  height: var(--release-mini-player-control-size, 2rem);
+  justify-content: center;
+  line-height: 0;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+  width: var(--release-mini-player-control-size, 2rem);
+
+  & svg {
+    display: block;
+    flex-shrink: 0;
+    height: var(--space-4);
+    width: var(--space-4);
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--muted);
+  }
+}
+
+.previousIcon {
+  transform: rotate(180deg);
 }
 
 .cover {
@@ -163,73 +199,5 @@
     gap: var(--space-1);
     justify-content: flex-start;
     width: auto;
-  }
-}
-
-.controlButton {
-  align-items: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  color: var(--foreground);
-  cursor: pointer;
-  display: inline-flex;
-  height: var(--release-mini-player-control-size, 2rem);
-  justify-content: center;
-  transition:
-    background-color var(--transition-normal),
-    border-color var(--transition-normal),
-    color var(--transition-normal);
-  width: var(--release-mini-player-control-size, 2rem);
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  &:hover:not(:disabled) {
-    background: var(--muted);
-  }
-}
-
-.previousButton {
-  transform: rotate(180deg);
-}
-
-.previousIcon,
-.nextIcon,
-.playPauseIcon,
-.closeIcon {
-  height: 0.875rem;
-  width: 0.875rem;
-
-  @media (width >= 768px) {
-    height: 0.75rem;
-    width: 0.75rem;
-  }
-}
-
-.playPauseIcon {
-  height: 0.9375rem;
-  width: 0.9375rem;
-
-  @media (width >= 768px) {
-    height: 0.8125rem;
-    width: 0.8125rem;
-  }
-}
-
-.closeIcon {
-  height: 1rem;
-  width: 1rem;
-
-  @media (width >= 768px) {
-    height: 0.875rem;
-    width: 0.875rem;
   }
 }

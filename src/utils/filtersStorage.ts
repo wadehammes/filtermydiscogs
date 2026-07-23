@@ -75,8 +75,12 @@ export const parsePersistedFilters = (
     if (isValidPersistedFilters(parsed)) {
       return parsed;
     }
-  } catch (error) {
-    console.warn("Failed to load filters from localStorage:", error);
+  } catch {
+    // Corrupt storage falls back to defaults below.
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(FILTERS_STORAGE_KEY);
   }
 
   return defaultPersistedFilters;
