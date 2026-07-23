@@ -32,15 +32,16 @@ describe("filtersStorage", () => {
     ).toEqual(saved);
   });
 
-  it("returns defaults for invalid JSON", () => {
+  it("returns defaults for invalid JSON and clears corrupt storage", () => {
     localStorage.setItem(FILTERS_STORAGE_KEY, "{ invalid");
 
     expect(
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
     ).toEqual(defaultPersistedFilters);
+    expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
   });
 
-  it("returns defaults for invalid filter shapes", () => {
+  it("returns defaults for invalid filter shapes and clears corrupt storage", () => {
     localStorage.setItem(
       FILTERS_STORAGE_KEY,
       JSON.stringify({
@@ -56,6 +57,7 @@ describe("filtersStorage", () => {
     expect(
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
     ).toEqual(defaultPersistedFilters);
+    expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
   });
 
   it("returns defaults for invalid sort and style operator values", () => {

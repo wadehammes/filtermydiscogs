@@ -60,10 +60,12 @@ export const useDraggablePanel = ({
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const resizeStartRef = useRef({ x: 0, y: 0, width: 0 });
   const maxWidthRef = useRef<number | null>(null);
+  const hasHydratedLayoutRef = useRef(false);
   const storedLayout = storageKey ? readVideoPanelLayout(storageKey) : null;
-  const [position, setPosition] = useState<VideoPanelPosition | null>(
-    storedLayout?.position ?? null,
+  const [hasHydratedLayout, setHasHydratedLayout] = useState(
+    () => !storedLayout?.position,
   );
+  const [position, setPosition] = useState<VideoPanelPosition | null>(null);
   const [scale, setScale] = useState(() =>
     clampScale({
       scale: storedLayout?.scale ?? DEFAULT_MAX_SCALE,
@@ -193,6 +195,71 @@ export const useDraggablePanel = ({
   }, [enabled, measureMaxWidth]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    if (hasHydratedLayoutRef.current) {
+      return;
+    }
+
+    let frameId = 0;
+
+    const hydrateStoredLayout = () => {
+      const panel = panelRef.current;
+      const storedPosition = storageKey
+        ? readVideoPanelLayout(storageKey)?.position
+        : null;
+
+      if (!storedPosition) {
+        hasHydratedLayoutRef.current = true;
+        setHasHydratedLayout(true);
+        return;
+      }
+
+      if (!panel) {
+        frameId = requestAnimationFrame(hydrateStoredLayout);
+        return;
+      }
+
+      const { width, height } = panel.getBoundingClientRect();
+
+      if (width <= 0 || height <= 0) {
+        frameId = requestAnimationFrame(hydrateStoredLayout);
+        return;
+      }
+
+      measureMaxWidth();
+
+      const clamped = clampPosition({
+        x: storedPosition.x,
+        y: storedPosition.y,
+        width,
+        height,
+      });
+      const fitsCurrentViewport =
+        clamped.x === storedPosition.x && clamped.y === storedPosition.y;
+
+      if (fitsCurrentViewport) {
+        setPosition(clamped);
+      } else if (storageKey) {
+        clearVideoPanelLayout(storageKey);
+      }
+
+      hasHydratedLayoutRef.current = true;
+      setHasHydratedLayout(true);
+    };
+
+    frameId = requestAnimationFrame(hydrateStoredLayout);
+
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+  }, [enabled, measureMaxWidth, storageKey]);
+
+  useEffect(() => {
     if (!isDragging) {
       return;
     }
@@ -281,7 +348,7 @@ export const useDraggablePanel = ({
   }, [clampPanelPosition, isResizing, maxScale, minScale]);
 
   useEffect(() => {
-    if (!storageKey || isDragging || isResizing) {
+    if (!storageKey || isDragging || isResizing || !hasHydratedLayout) {
       return;
     }
 
@@ -293,7 +360,7 @@ export const useDraggablePanel = ({
     const layout: VideoPanelLayout = { position, scale };
 
     writeVideoPanelLayout(storageKey, layout);
-  }, [isDragging, isResizing, position, scale, storageKey]);
+  }, [hasHydratedLayout, isDragging, isResizing, position, scale, storageKey]);
 
   useEffect(() => {
     if (!enabled) {

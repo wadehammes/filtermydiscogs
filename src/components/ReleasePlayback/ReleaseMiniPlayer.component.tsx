@@ -169,17 +169,20 @@ export const ReleaseMiniPlayer = ({
               aria-controls="release-playback-video-panel"
               aria-label={isVideoExpanded ? "Hide video" : "Show video"}
             >
-              <VideoIcon className={styles.videoIcon} aria-hidden />
+              <VideoIcon className={styles.controlIcon} aria-hidden />
             </button>
           ) : null}
           <button
             type="button"
-            className={classNames(styles.controlButton, styles.previousButton)}
+            className={styles.controlButton}
             onClick={playPrevious}
             disabled={!hasPrevious}
             aria-label="Previous track"
           >
-            <ChevronRightIcon className={styles.previousIcon} aria-hidden />
+            <ChevronRightIcon
+              className={classNames(styles.controlIcon, styles.previousIcon)}
+              aria-hidden
+            />
           </button>
           <button
             type="button"
@@ -189,9 +192,9 @@ export const ReleaseMiniPlayer = ({
             aria-label={isPaused ? "Play" : "Pause"}
           >
             {isPaused ? (
-              <PlayIcon className={styles.playPauseIcon} aria-hidden />
+              <PlayIcon className={styles.controlIcon} aria-hidden />
             ) : (
-              <PauseIcon className={styles.playPauseIcon} aria-hidden />
+              <PauseIcon className={styles.controlIcon} aria-hidden />
             )}
           </button>
           <button
@@ -201,7 +204,7 @@ export const ReleaseMiniPlayer = ({
             disabled={!hasNext}
             aria-label="Next track"
           >
-            <ChevronRightIcon className={styles.nextIcon} aria-hidden />
+            <ChevronRightIcon className={styles.controlIcon} aria-hidden />
           </button>
           <button
             type="button"
@@ -209,7 +212,7 @@ export const ReleaseMiniPlayer = ({
             onClick={stopPlayback}
             aria-label="Stop playback"
           >
-            <XIcon className={styles.closeIcon} aria-hidden />
+            <XIcon className={styles.controlIcon} aria-hidden />
           </button>
           <button
             type="button"
@@ -220,9 +223,9 @@ export const ReleaseMiniPlayer = ({
             aria-label={inCrate ? "Remove from crate" : "Add to crate"}
           >
             {inCrate ? (
-              <MinusIcon className={styles.crateIcon} aria-hidden />
+              <MinusIcon className={styles.controlIcon} aria-hidden />
             ) : (
-              <PlusIcon className={styles.crateIcon} aria-hidden />
+              <PlusIcon className={styles.controlIcon} aria-hidden />
             )}
           </button>
         </div>
