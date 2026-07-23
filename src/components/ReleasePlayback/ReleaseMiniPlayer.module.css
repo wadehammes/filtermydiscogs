@@ -1,59 +1,28 @@
 .miniPlayerShell {
-  --release-mini-player-bar-height: 3.25rem;
-  --release-mini-player-video-height: 9rem;
-
   bottom: 0;
   left: 0;
   position: fixed;
   right: 0;
   z-index: var(--z-3-fixed);
-
-  @media (width >= 768px) {
-    --release-mini-player-video-height: 16.1rem;
-  }
-}
-
-.videoControl {
-  display: inline-flex;
-  position: relative;
-}
-
-.videoPanel {
-  bottom: calc(100% + var(--space-2));
-  height: 0;
-  left: 50%;
-  overflow: hidden;
-  pointer-events: none;
-  position: absolute;
-  transform: translateX(-50%);
-  visibility: hidden;
-  width: 0;
-}
-
-.videoPanelExpanded {
-  background: var(--background);
-  border-radius: var(--radius-ui);
-  box-shadow: 0 -4px 16px rgb(0 0 0 / 10%);
-  height: var(--release-mini-player-video-height);
-  overflow: hidden;
-  pointer-events: auto;
-  visibility: visible;
-  width: calc(var(--release-mini-player-video-height) * 16 / 9);
 }
 
 .miniPlayerBar {
-  align-items: center;
+  align-items: stretch;
   backdrop-filter: blur(8px);
   background: color-mix(in srgb, var(--card) 92%, transparent);
   border-top: 1px solid var(--border);
   display: flex;
+  flex-direction: column;
   gap: var(--space-3);
-  min-height: var(--release-mini-player-bar-height);
+  min-height: var(--release-mini-player-bar-height, 3.25rem);
   padding: var(--space-2) var(--space-4);
   padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
   width: 100%;
 
   @media (width >= 768px) {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-3);
     padding-left: var(--space-5);
     padding-right: var(--space-5);
   }
@@ -62,15 +31,30 @@
 .releaseArea {
   display: flex;
   flex: 1;
+  justify-content: center;
   min-width: 0;
+
+  @media (width >= 768px) {
+    justify-content: flex-start;
+  }
 }
 
 .metaRow {
   align-items: center;
   display: flex;
-  flex: 1;
-  gap: var(--space-4);
+  flex: 0 1 auto;
+  gap: var(--space-3);
+  justify-content: center;
+  max-width: 100%;
   min-width: 0;
+  width: 100%;
+
+  @media (width >= 768px) {
+    flex: 1;
+    gap: var(--space-4);
+    justify-content: flex-start;
+    width: auto;
+  }
 }
 
 .openReleaseButton {
@@ -83,10 +67,18 @@
   flex: 0 1 auto;
   font: inherit;
   gap: var(--space-3);
+  justify-content: center;
   min-width: 0;
   overflow: hidden;
   padding: 0;
-  text-align: left;
+  text-align: center;
+  width: 100%;
+
+  @media (width >= 768px) {
+    justify-content: flex-start;
+    text-align: left;
+    width: auto;
+  }
 
   &:focus-visible {
     border-radius: var(--radius-sm);
@@ -100,12 +92,17 @@
 }
 
 .metaLines {
+  align-items: center;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   justify-content: center;
   min-width: 0;
   overflow: hidden;
+
+  @media (width >= 768px) {
+    align-items: stretch;
+  }
 }
 
 .crateButtonActive,
@@ -117,16 +114,21 @@
 .crateIcon,
 .videoIcon {
   display: block;
-  height: 0.75rem;
-  width: 0.75rem;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  @media (width >= 768px) {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
 }
 
 .cover {
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  height: 2.5rem;
+  height: var(--release-mini-player-cover-size, 2.5rem);
   object-fit: cover;
-  width: 2.5rem;
+  width: var(--release-mini-player-cover-size, 2.5rem);
 }
 
 .artist {
@@ -153,7 +155,15 @@
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  justify-content: center;
+  width: 100%;
+
+  @media (width >= 768px) {
+    gap: var(--space-1);
+    justify-content: flex-start;
+    width: auto;
+  }
 }
 
 .controlButton {
@@ -164,13 +174,13 @@
   color: var(--foreground);
   cursor: pointer;
   display: inline-flex;
-  height: 2rem;
+  height: var(--release-mini-player-control-size, 2rem);
   justify-content: center;
   transition:
     background-color var(--transition-normal),
     border-color var(--transition-normal),
     color var(--transition-normal);
-  width: 2rem;
+  width: var(--release-mini-player-control-size, 2rem);
 
   &:disabled {
     cursor: not-allowed;
@@ -195,16 +205,31 @@
 .nextIcon,
 .playPauseIcon,
 .closeIcon {
-  height: 0.75rem;
-  width: 0.75rem;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  @media (width >= 768px) {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
 }
 
 .playPauseIcon {
-  height: 0.8125rem;
-  width: 0.8125rem;
+  height: 0.9375rem;
+  width: 0.9375rem;
+
+  @media (width >= 768px) {
+    height: 0.8125rem;
+    width: 0.8125rem;
+  }
 }
 
 .closeIcon {
-  height: 0.875rem;
-  width: 0.875rem;
+  height: 1rem;
+  width: 1rem;
+
+  @media (width >= 768px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
 }

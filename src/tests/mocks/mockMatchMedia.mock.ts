@@ -6,7 +6,16 @@ function queryMatches(query: string, desktop: boolean) {
   if (query.includes("min-width: 1024px")) {
     return desktop;
   }
+  if (query.includes("min-width: 768px")) {
+    return desktop;
+  }
   if (query.includes("max-width: 1023px")) {
+    return !desktop;
+  }
+  if (
+    query.includes("max-width: 768px") ||
+    query.includes("max-width: 767px")
+  ) {
     return !desktop;
   }
   return false;

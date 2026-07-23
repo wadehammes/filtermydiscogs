@@ -8,6 +8,7 @@ import {
   useIsSearching,
   useSearchQuery,
 } from "src/hooks/useFilterAtoms.hook";
+import SearchIcon from "src/styles/icons/search-thin.svg";
 import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
@@ -115,6 +116,9 @@ export const SearchBar = ({
       data-testid="fmdSearchBar"
     >
       <div className={styles.inputContainer}>
+        <span className={styles.searchIcon} aria-hidden>
+          <SearchIcon />
+        </span>
         <input
           ref={inputRef}
           type="text"

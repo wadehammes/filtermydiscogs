@@ -219,4 +219,4 @@ export function getPoolMetrics() {
 }
 
 // Re-export Prisma types
-export type { Crate, CrateRelease, Prisma } from "@prisma/client";
+export type { Prisma } from "@prisma/client";

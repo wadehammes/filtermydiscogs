@@ -60,11 +60,19 @@
 }
 
 .icon {
+  align-items: center;
   color: var(--muted-foreground);
+  display: flex;
+  flex-shrink: 0;
   font-size: var(--text-xs);
   margin-left: var(--space-2);
   transform: rotate(90deg);
   transition: transform var(--transition-normal);
+
+  & svg {
+    height: var(--space-4);
+    width: var(--space-4);
+  }
 }
 
 .iconOpen {

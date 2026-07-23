@@ -14,6 +14,7 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupDiscogsReleaseQueryMock } from "src/tests/mocks/setupDiscogsReleaseQueryMock";
 import {
@@ -153,6 +154,60 @@ describe("ReleaseMiniPlayer", () => {
     );
     expect(iframe).toHaveAttribute("data-variant", "hidden");
     expect(iframe.getAttribute("src")).toBe(embedSrc);
+  });
+
+  it("shows drag and resize handles when the video panel is expanded on desktop", async () => {
+    setupMockMatchMedia({ desktop: true });
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    expect(
+      screen.queryByTestId("fmdReleasePlaybackVideoPanelHandle"),
+    ).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanelHandle"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanel"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanelResizeHandle"),
+    ).toBeInTheDocument();
+  });
+
+  it("uses a full-width docked video panel on mobile with a close bar", async () => {
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanel"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanelCloseButton"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdReleasePlaybackVideoPanelHandle"),
+    ).toBeNull();
+    expect(
+      screen.queryByTestId("fmdReleasePlaybackVideoPanelResizeHandle"),
+    ).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Close video panel" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
   });
 
   it("advances to the next track from the dock controls", async () => {
