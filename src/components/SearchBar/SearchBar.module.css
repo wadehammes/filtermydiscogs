@@ -14,6 +14,7 @@
 .input {
   width: 100%;
   padding: var(--space-2) var(--space-3);
+  padding-left: calc(var(--space-3) + var(--space-4) + var(--space-2));
   padding-right: 3rem;
   border: 1px solid var(--input);
   border-radius: var(--radius-ui);
@@ -51,6 +52,22 @@
 
   &::placeholder {
     color: var(--muted-foreground);
+  }
+}
+
+.searchIcon {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  left: var(--space-3);
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  & svg {
+    height: var(--space-4);
+    width: var(--space-4);
   }
 }
 

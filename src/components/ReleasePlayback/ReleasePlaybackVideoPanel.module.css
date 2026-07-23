@@ -1,0 +1,182 @@
+.videoPanel {
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  visibility: hidden;
+  width: 0;
+  z-index: calc(var(--z-3-fixed) + 1);
+}
+
+.videoContent {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+}
+
+.videoPanelExpanded {
+  --panel-scale: 1;
+  --video-max-height: 16.1rem;
+
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 0;
+  bottom: calc(
+    var(--release-mini-player-bar-height, 3.25rem) +
+    env(safe-area-inset-bottom, 0px)
+  );
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 12%);
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  left: 0;
+  overflow: hidden;
+  pointer-events: auto;
+  right: 0;
+  transform: none;
+  visibility: visible;
+  width: 100%;
+
+  @media (width >= 768px) {
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-ui);
+    bottom: calc(
+      var(--release-mini-player-bar-height, 3.25rem) +
+      env(safe-area-inset-bottom, 0px) +
+      var(--space-2)
+    );
+    box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+    height: calc(1.25rem + var(--video-max-height) * var(--panel-scale));
+    left: auto;
+    right: var(--space-5);
+    transform: none;
+    width: calc(var(--video-max-height) * var(--panel-scale) * 16 / 9);
+  }
+}
+
+.videoPanelExpanded .videoContent {
+  aspect-ratio: 16 / 9;
+  flex: none;
+  height: auto;
+  width: 100%;
+
+  @media (width >= 768px) {
+    aspect-ratio: auto;
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+}
+
+.videoPanelPositioned {
+  bottom: auto;
+  transform: none;
+}
+
+.videoPanelDragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.dragHandle {
+  align-items: center;
+  background: color-mix(in srgb, var(--muted) 80%, transparent);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  cursor: grab;
+  display: none;
+  flex-shrink: 0;
+  height: 1.25rem;
+  justify-content: center;
+  padding: 0;
+  touch-action: none;
+  width: 100%;
+
+  @media (width >= 768px) {
+    display: flex;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.dragHandleGrip {
+  background: var(--muted-foreground);
+  border-radius: var(--radius-full);
+  display: block;
+  height: 0.125rem;
+  opacity: 0.55;
+  width: 2rem;
+}
+
+.mobileCloseBar {
+  align-items: center;
+  background: color-mix(in srgb, var(--muted) 80%, transparent);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0 var(--space-3);
+  width: 100%;
+
+  @media (width >= 768px) {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}
+
+.mobileCloseIcon {
+  display: block;
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.videoContentInteractive {
+  pointer-events: auto;
+}
+
+.videoPanel:not(.videoPanelExpanded) .videoContent {
+  height: 100%;
+}
+
+.resizeHandle {
+  align-items: end;
+  background: transparent;
+  border: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+  display: none;
+  height: 1.25rem;
+  justify-content: end;
+  padding: 0 var(--space-1) var(--space-1) 0;
+  position: absolute;
+  right: 0;
+  touch-action: none;
+  width: 1.25rem;
+
+  @media (width >= 768px) {
+    display: flex;
+  }
+}
+
+.resizeHandleIcon {
+  border-bottom: 2px solid var(--muted-foreground);
+  border-right: 2px solid var(--muted-foreground);
+  display: block;
+  height: 0.625rem;
+  opacity: 0.55;
+  width: 0.625rem;
+}

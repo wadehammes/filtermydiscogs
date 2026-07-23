@@ -14,25 +14,25 @@
 }
 
 .withMiniPlayer {
-  --release-mini-player-bar-height: 3.25rem;
-  --release-mini-player-video-height: 0px;
+  --release-mini-player-cover-size: 2.5rem;
+  --release-mini-player-control-size: 2.5rem;
+  --release-mini-player-bar-height: calc(
+    var(--release-mini-player-cover-size) +
+    var(--release-mini-player-control-size) +
+    var(--space-2) *
+    2 +
+    var(--space-3)
+  );
   --release-mini-player-bar-offset: calc(
     var(--release-mini-player-bar-height) +
     env(safe-area-inset-bottom, 0px)
   );
-  --release-mini-player-total-height: calc(
-    var(--release-mini-player-bar-offset) +
-    var(--release-mini-player-video-height)
-  );
 
-  padding-bottom: var(--release-mini-player-total-height);
+  padding-bottom: var(--release-mini-player-bar-offset);
 
-  &:has([data-video-expanded="true"]) {
-    --release-mini-player-video-height: 9rem;
-
-    @media (width >= 768px) {
-      --release-mini-player-video-height: 16.1rem;
-    }
+  @media (width >= 768px) {
+    --release-mini-player-control-size: 2rem;
+    --release-mini-player-bar-height: 3.25rem;
   }
 }
 
@@ -214,12 +214,14 @@
 }
 
 .crateFabWithMiniPlayer {
-  bottom: calc(var(--release-mini-player-total-height) + var(--space-4));
+  /* Floating video panel does not add dock height; match back-to-top offset. */
+  bottom: calc(var(--release-mini-player-bar-offset) + var(--space-4));
 }
 
 .backToTopWithMiniPlayer {
+  /* Uses bar offset only so Back to top stays above the dock, not the video panel. */
   bottom: calc(var(--release-mini-player-bar-offset) + var(--space-4));
-  z-index: calc(var(--z-3-fixed) + 1);
+  z-index: calc(var(--z-3-fixed) - 1);
 }
 
 .fabContent {
