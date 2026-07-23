@@ -146,7 +146,13 @@ const ReleasesClientContent = () => {
               isFetchingNextPage={isFetchingNextPage}
               infiniteScrollRef={infiniteScrollRef}
             />
-            <BackToTop />
+            <BackToTop
+              {...definedProps({
+                className: isPlaying
+                  ? styles.backToTopWithMiniPlayer
+                  : undefined,
+              })}
+            />
           </div>
 
           <div className={styles.sidebar}>

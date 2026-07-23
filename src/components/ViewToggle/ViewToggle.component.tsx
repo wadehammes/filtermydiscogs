@@ -2,6 +2,8 @@ import classNames from "classnames";
 import type { ViewMode } from "src/atoms/view.atoms";
 import CratesIcon from "src/styles/icons/crates-thin.svg";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
+import GridIcon from "src/styles/icons/grid-thin.svg";
+import ListIcon from "src/styles/icons/list-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import styles from "./ViewToggle.module.css";
 
@@ -45,12 +47,7 @@ export const ViewToggle = ({
           title="Card view"
         >
           <span className={styles.segmentIcon} aria-hidden>
-            <svg viewBox="0 0 16 16" fill="currentColor">
-              <rect x="1" y="1" width="6" height="6" rx="1" />
-              <rect x="9" y="1" width="6" height="6" rx="1" />
-              <rect x="1" y="9" width="6" height="6" rx="1" />
-              <rect x="9" y="9" width="6" height="6" rx="1" />
-            </svg>
+            <GridIcon />
           </span>
           <span>Grid</span>
         </button>
@@ -71,11 +68,7 @@ export const ViewToggle = ({
           title="List view"
         >
           <span className={styles.segmentIcon} aria-hidden>
-            <svg viewBox="0 0 16 16" fill="currentColor">
-              <rect x="1" y="2" width="14" height="2" rx="1" />
-              <rect x="1" y="7" width="14" height="2" rx="1" />
-              <rect x="1" y="12" width="14" height="2" rx="1" />
-            </svg>
+            <ListIcon />
           </span>
           <span>Table</span>
         </button>

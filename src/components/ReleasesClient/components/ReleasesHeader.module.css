@@ -50,6 +50,12 @@
   font-family: inherit;
   font-size: inherit;
   gap: var(--space-1);
+
+  & svg {
+    flex-shrink: 0;
+    height: 0.75rem;
+    width: 0.75rem;
+  }
 }
 
 .viewToggleMobile {

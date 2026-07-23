@@ -6,7 +6,11 @@ import styles from "./BackToTop.module.css";
 
 const SCROLL_THRESHOLD = 400; // Show button after scrolling 400px
 
-export const BackToTop = () => {
+interface BackToTopProps {
+  className?: string;
+}
+
+export const BackToTop = ({ className }: BackToTopProps) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export const BackToTop = () => {
     <button
       type="button"
       onClick={scrollToTop}
-      className={classNames(styles.backToTop, {
+      className={classNames(styles.backToTop, className, {
         [styles.visible]: isVisible,
       })}
       data-testid="fmdBackToTop"

@@ -16,10 +16,13 @@
 .withMiniPlayer {
   --release-mini-player-bar-height: 3.25rem;
   --release-mini-player-video-height: 0px;
-  --release-mini-player-total-height: calc(
+  --release-mini-player-bar-offset: calc(
     var(--release-mini-player-bar-height) +
-    var(--release-mini-player-video-height) +
     env(safe-area-inset-bottom, 0px)
+  );
+  --release-mini-player-total-height: calc(
+    var(--release-mini-player-bar-offset) +
+    var(--release-mini-player-video-height)
   );
 
   padding-bottom: var(--release-mini-player-total-height);
@@ -212,6 +215,11 @@
 
 .crateFabWithMiniPlayer {
   bottom: calc(var(--release-mini-player-total-height) + var(--space-4));
+}
+
+.backToTopWithMiniPlayer {
+  bottom: calc(var(--release-mini-player-bar-offset) + var(--space-4));
+  z-index: calc(var(--z-3-fixed) + 1);
 }
 
 .fabContent {
