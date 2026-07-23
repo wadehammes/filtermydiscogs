@@ -11,9 +11,9 @@
 
 .coverWrapper {
   flex-shrink: 0;
-  height: 6rem;
+  height: 8rem;
   overflow: hidden;
-  width: 6rem;
+  width: 8rem;
 }
 
 .cover {
@@ -66,6 +66,10 @@
 
 .metaLine {
   margin: 0;
+}
+
+.tagsRow {
+  margin: var(--space-2) 0 0 0;
 }
 
 .actionButtons {

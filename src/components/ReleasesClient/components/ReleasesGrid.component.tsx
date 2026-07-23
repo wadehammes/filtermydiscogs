@@ -53,30 +53,9 @@ const ReleasesGridComponent = ({
     if (isActuallyRandomMode) {
       return styles.releasesGridRandom;
     }
-    if (isCardView) {
-      return styles.releasesGrid;
-    }
-    return styles.releasesList;
-  }, [isActuallyRandomMode, isCardView]);
 
-  const gridStyle = useMemo(() => {
-    if (isActuallyRandomMode) {
-      return undefined;
-    }
-
-    if (isCardView) {
-      return {
-        display: "grid",
-        gap: "var(--space-4)",
-        gridTemplateColumns: isMobile
-          ? "1fr"
-          : "repeat(auto-fill, minmax(280px, 1fr))",
-        padding: "0 var(--space-4)",
-      };
-    }
-
-    return undefined;
-  }, [isCardView, isActuallyRandomMode, isMobile]);
+    return styles.releasesGrid;
+  }, [isActuallyRandomMode]);
 
   if (isListView) {
     return (
@@ -89,11 +68,7 @@ const ReleasesGridComponent = ({
   }
 
   return (
-    <div
-      className={gridClassName}
-      style={gridStyle}
-      key={`grid-${view}-${isRandomMode}`}
-    >
+    <div className={gridClassName} key={`grid-${view}-${isRandomMode}`}>
       {releasesToShow.map((release: DiscogsRelease) => (
         <div
           key={release.instance_id}

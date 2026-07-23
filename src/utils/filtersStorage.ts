@@ -36,6 +36,16 @@ export const defaultPersistedFilters: PersistedFiltersState = {
   searchQuery: "",
 };
 
+/** Baseline selections used while the collection is still paginating. */
+export const inactiveFilterSelectionDefaults = {
+  selectedStyles: defaultPersistedFilters.selectedStyles,
+  selectedYears: defaultPersistedFilters.selectedYears,
+  selectedFormats: defaultPersistedFilters.selectedFormats,
+  searchQuery: defaultPersistedFilters.searchQuery,
+  selectedSort: defaultPersistedFilters.selectedSort,
+  styleOperator: defaultPersistedFilters.styleOperator,
+} as const;
+
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
 

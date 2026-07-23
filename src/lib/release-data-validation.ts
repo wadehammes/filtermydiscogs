@@ -67,3 +67,15 @@ export function validateReleaseDataForStorage(
     },
   };
 }
+
+/**
+ * Strip private collection fields before exposing release snapshots on public crates.
+ */
+export function toPublicReleaseSnapshot(
+  release: DiscogsRelease,
+): Pick<DiscogsRelease, "instance_id" | "basic_information"> {
+  return {
+    instance_id: String(release.instance_id),
+    basic_information: sanitizeBasicInformation(release.basic_information),
+  };
+}

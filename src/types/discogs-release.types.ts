@@ -9,6 +9,7 @@ export interface DiscogsLabel {
   name: string;
   id?: number;
   resource_url?: string;
+  catno?: string;
   [key: string]: unknown;
 }
 

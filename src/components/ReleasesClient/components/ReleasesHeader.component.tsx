@@ -10,7 +10,7 @@ import styles from "./ReleasesHeader.module.css";
 
 interface ReleasesHeaderProps {
   releaseCount: number;
-  isFetchingNextPage: boolean;
+  isCollectionLoading: boolean;
   showAllLoadedMessage: boolean;
   isRandomMode: boolean;
   currentView: "card" | "list" | "random";
@@ -22,7 +22,7 @@ interface ReleasesHeaderProps {
 
 export const ReleasesHeader = ({
   releaseCount,
-  isFetchingNextPage,
+  isCollectionLoading,
   showAllLoadedMessage,
   isRandomMode,
   currentView,
@@ -54,6 +54,9 @@ export const ReleasesHeader = ({
     };
   }, []);
 
+  const showInitialLoading = isCollectionLoading && releaseCount === 0;
+  const showLoadingMore = isCollectionLoading && releaseCount > 0;
+
   return (
     <>
       <div ref={sentinelRef} className={styles.stickySentinel} aria-hidden />
@@ -63,19 +66,26 @@ export const ReleasesHeader = ({
         })}
       >
         <div className={styles.headerText}>
-          Showing {releaseCount} releases
-          {isFetchingNextPage && (
+          {showInitialLoading ? (
+            <span className={styles.loadingIcon}>
+              <Spinner size="xs" aria-label="Loading releases" />
+              <span>Loading releases...</span>
+            </span>
+          ) : (
+            <>Showing {releaseCount} releases</>
+          )}
+          {showLoadingMore ? (
             <span className={styles.loadingIcon}>
               <Spinner size="xs" aria-label="Loading more" />
               <span>Loading more...</span>
             </span>
-          )}
-          {showAllLoadedMessage && (
+          ) : null}
+          {!isCollectionLoading && showAllLoadedMessage ? (
             <span className={styles.loadingIcon}>
               <Check />
               <span>All releases loaded</span>
             </span>
-          )}
+          ) : null}
         </div>
         <ViewToggle
           currentView={isRandomMode ? "random" : currentView}

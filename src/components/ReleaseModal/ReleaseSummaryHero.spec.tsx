@@ -30,6 +30,15 @@ jest.mock("src/hooks/useMediaQuery.hook", () => ({
   useMediaQuery: () => mockUseMediaQuery(),
 }));
 
+jest.mock("src/hooks/useFilterAtoms.hook", () => ({
+  useSelectedFormats: () => [],
+  useSelectedStyles: () => [],
+}));
+
+jest.mock("src/hooks/usePillClickHandler.hook", () => ({
+  usePillClickHandler: () => jest.fn(),
+}));
+
 describe("ReleaseSummaryHero", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -75,5 +84,31 @@ describe("ReleaseSummaryHero", () => {
 
     expect(mockAddToCrate).toHaveBeenCalledWith(release);
     expect(mockOpenDrawer).not.toHaveBeenCalled();
+  });
+
+  it("shows catalog number, format tags, and style tags", () => {
+    const release = releaseFactory.build({
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        labels: [{ name: "Test Label", catno: "ABC-123" }],
+        formats: [{ name: "Vinyl", descriptions: ["LP"] }],
+        styles: ["Rock", "Indie Rock"],
+      },
+    });
+
+    render(<ReleaseSummaryHero release={release} />);
+
+    expect(
+      screen.getByText(/Test Label · \d{4} · ABC-123/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Filter by Vinyl format" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Filter by Rock style" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Filter by Indie Rock style" }),
+    ).toBeInTheDocument();
   });
 });

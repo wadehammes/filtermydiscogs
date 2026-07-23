@@ -93,8 +93,10 @@ export function sanitizeError(error: unknown): {
     };
   }
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   return {
-    message: sanitized,
+    message: isProduction ? "An unexpected error occurred" : sanitized,
     status: 500,
   };
 }

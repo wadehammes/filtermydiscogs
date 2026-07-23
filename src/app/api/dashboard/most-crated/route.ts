@@ -115,13 +115,9 @@ export async function GET(request: NextRequest) {
     }
 
     const sanitized = sanitizeError(error);
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch most crated releases";
 
     return NextResponse.json(
-      { error: errorMessage },
+      { error: "Failed to fetch most crated releases" },
       { status: sanitized.status || 500 },
     );
   }

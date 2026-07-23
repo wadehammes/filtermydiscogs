@@ -4,8 +4,14 @@ import classNames from "classnames";
 import Image from "next/image";
 import { useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
+import {
+  useSelectedFormats,
+  useSelectedStyles,
+} from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
@@ -14,6 +20,7 @@ import XIcon from "src/styles/icons/x-thin.svg";
 import typographyStyles from "src/styles/typography.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
+import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
@@ -35,10 +42,18 @@ export const ReleaseSummaryHero = ({
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const inCrate = isInCrate(release.instance_id);
+  const selectedStyles = useSelectedStyles();
+  const selectedFormats = useSelectedFormats();
+  const handlePillClick = usePillClickHandler({ category: "releaseModal" });
 
   const { basic_information: basicInfo } = release;
+  const { formats: releaseFormats, styles: releaseStyles } = basicInfo;
+  const formatTags =
+    releaseFormats && releaseFormats.length > 0
+      ? getReleaseFormatTags(releaseFormats)
+      : [];
   const artistNames = formatArtistNames(release);
-  const metaLine = formatReleaseMetaLine({ release, includeCatno: false });
+  const metaLine = formatReleaseMetaLine({ release });
   const releaseUrl = getResourceUrl({
     resourceUrl: basicInfo.resource_url,
     type: "release",
@@ -100,6 +115,50 @@ export const ReleaseSummaryHero = ({
               >
                 {metaLine}
               </p>
+            ) : null}
+            {formatTags.length > 0 || (releaseStyles?.length ?? 0) > 0 ? (
+              <HorizontalScrollRow className={styles.tagsRow}>
+                {formatTags.map((formatName) => (
+                  <button
+                    key={formatName}
+                    type="button"
+                    className={classNames("pill", "pillFormat", {
+                      pillSelected: selectedFormats.includes(formatName),
+                    })}
+                    onClick={(e) =>
+                      handlePillClick({
+                        event: e,
+                        value: formatName,
+                        type: "format",
+                        eventLabel: "Format Pill Clicked",
+                      })
+                    }
+                    aria-label={`Filter by ${formatName} format`}
+                  >
+                    {formatName}
+                  </button>
+                ))}
+                {releaseStyles?.map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    className={classNames("pill", "pillStyle", {
+                      pillSelected: selectedStyles.includes(style),
+                    })}
+                    onClick={(e) =>
+                      handlePillClick({
+                        event: e,
+                        value: style,
+                        type: "style",
+                        eventLabel: "Style Pill Clicked",
+                      })
+                    }
+                    aria-label={`Filter by ${style} style`}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </HorizontalScrollRow>
             ) : null}
           </div>
           <div className={styles.actionButtons}>

@@ -29,12 +29,20 @@ export default function MosaicClient() {
   const { state } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const allReleases = useAllReleases();
-  const { isLoading: collectionLoading } = useCollectionData(
+  const {
+    isLoading: collectionLoading,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useCollectionData(
     state.username,
     state.isAuthenticated,
     state.rateLimited,
   );
-  const needsCollectionLoad = useNeedsCollectionLoad(collectionLoading);
+  const needsCollectionLoad = useNeedsCollectionLoad({
+    isLoading: collectionLoading,
+    hasNextPage,
+    isFetchingNextPage,
+  });
   const showLoading = isCheckingAuth || needsCollectionLoad;
   const currentView = useCurrentView();
   const viewDispatch = useViewDispatch();

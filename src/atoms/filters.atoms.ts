@@ -5,6 +5,7 @@ import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import {
   defaultPersistedFilters,
   FILTERS_STORAGE_KEY,
+  inactiveFilterSelectionDefaults,
   type PersistedFiltersState,
   parsePersistedFilters,
 } from "src/utils/filtersStorage";
@@ -255,6 +256,32 @@ const persistableFieldAtom = <K extends keyof PersistedFiltersState>(key: K) =>
   );
 
 export const allReleasesAtom = atom<DiscogsRelease[]>([]);
+/** When false, persisted filter prefs are ignored until the collection finishes loading. */
+export const collectionFiltersActiveAtom = atom(false);
+
+const getActiveFilterInputs = (get: Getter) => {
+  if (!get(collectionFiltersActiveAtom)) {
+    return {
+      selectedStyles: [...inactiveFilterSelectionDefaults.selectedStyles],
+      selectedYears: [...inactiveFilterSelectionDefaults.selectedYears],
+      selectedFormats: [...inactiveFilterSelectionDefaults.selectedFormats],
+      searchQuery: inactiveFilterSelectionDefaults.searchQuery,
+      selectedSort: SortValues.DateAddedNew,
+      styleOperator:
+        inactiveFilterSelectionDefaults.styleOperator as StyleOperator,
+    };
+  }
+
+  return {
+    selectedStyles: get(selectedStylesAtom),
+    selectedYears: get(selectedYearsAtom),
+    selectedFormats: get(selectedFormatsAtom),
+    searchQuery: get(searchQueryAtom),
+    selectedSort: get(selectedSortAtom),
+    styleOperator: get(styleOperatorAtom),
+  };
+};
+
 export const selectedStylesAtom = persistableFieldAtom("selectedStyles");
 export const selectedYearsAtom = persistableFieldAtom("selectedYears");
 export const selectedFormatsAtom = persistableFieldAtom("selectedFormats");
@@ -282,28 +309,35 @@ export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
 export const isSearchingAtom = atom(false);
 
 export const availableStylesAtom = atom((get) =>
-  getAvailableStyles(get(allReleasesAtom)),
+  get(collectionFiltersActiveAtom)
+    ? getAvailableStyles(get(allReleasesAtom))
+    : [],
 );
 
 export const availableYearsAtom = atom((get) =>
-  getAvailableYears(get(allReleasesAtom)),
+  get(collectionFiltersActiveAtom)
+    ? getAvailableYears(get(allReleasesAtom))
+    : [],
 );
 
 export const availableFormatsAtom = atom((get) =>
-  getAvailableFormats(get(allReleasesAtom)),
+  get(collectionFiltersActiveAtom)
+    ? getAvailableFormats(get(allReleasesAtom))
+    : [],
 );
 
-export const sortedFilteredReleasesAtom = atom((get) =>
-  computeSortedFilteredReleases({
-    allReleases: get(allReleasesAtom),
-    selectedStyles: get(selectedStylesAtom),
-    selectedYears: get(selectedYearsAtom),
-    selectedFormats: get(selectedFormatsAtom),
-    searchQuery: get(searchQueryAtom),
-    selectedSort: get(selectedSortAtom),
-    styleOperator: get(styleOperatorAtom),
-  }),
-);
+export const sortedFilteredReleasesAtom = atom((get) => {
+  const allReleases = get(allReleasesAtom);
+
+  if (!get(collectionFiltersActiveAtom)) {
+    return allReleases;
+  }
+
+  return computeSortedFilteredReleases({
+    allReleases,
+    ...getActiveFilterInputs(get),
+  });
+});
 
 export const filteredReleasesAtom = atom((get) => {
   if (get(isRandomModeAtom)) {
@@ -398,21 +432,13 @@ export const filtersDispatchAtom = atom(
 
       case FiltersActionTypes.SetAllReleases: {
         set(allReleasesAtom, action.payload);
-        const sortedFilteredReleases = computeSortedFilteredReleases({
-          allReleases: action.payload,
-          selectedStyles: get(selectedStylesAtom),
-          selectedYears: get(selectedYearsAtom),
-          selectedFormats: get(selectedFormatsAtom),
-          searchQuery: get(searchQueryAtom),
-          selectedSort: get(selectedSortAtom),
-          styleOperator: get(styleOperatorAtom),
-        });
-        const { randomRelease } = pickRandomReleaseForMode({
-          isRandomMode: get(isRandomModeAtom),
-          sortedFilteredReleases,
-          currentRandomRelease: get(randomReleaseAtom),
-        });
+
         if (get(isRandomModeAtom)) {
+          const { randomRelease } = pickRandomReleaseForMode({
+            isRandomMode: true,
+            sortedFilteredReleases: get(sortedFilteredReleasesAtom),
+            currentRandomRelease: get(randomReleaseAtom),
+          });
           set(randomReleaseAtom, randomRelease);
         }
         return;

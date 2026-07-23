@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getPaginationParams, sanitizeError } from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
 import { prisma } from "src/lib/db";
+import { toPublicReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
 
 /**
@@ -97,14 +98,13 @@ export async function GET(
     });
 
     // Map releases and ensure instance_id is consistent
-    const mappedReleases = releases.map((r: { release_data: unknown }) => {
-      const releaseData = r.release_data as DiscogsRelease;
-      // Ensure instance_id matches the stored string format
-      if (releaseData && typeof releaseData.instance_id !== "string") {
-        releaseData.instance_id = String(releaseData.instance_id);
-      }
-      return releaseData;
-    });
+    const mappedReleases = releases
+      .map((r: { release_data: unknown }) => r.release_data as DiscogsRelease)
+      .filter(
+        (releaseData) =>
+          releaseData?.instance_id && releaseData.basic_information,
+      )
+      .map((releaseData) => toPublicReleaseSnapshot(releaseData));
 
     return NextResponse.json(
       {

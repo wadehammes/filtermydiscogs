@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { useSetAtom } from "jotai";
+import { collectionFiltersActiveAtom } from "src/atoms/filters.atoms";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
@@ -155,6 +157,53 @@ describe("FiltersProvider", () => {
     });
 
     expect(result.current.state.allReleases).toEqual(mockReleases);
+  });
+
+  it("ignores persisted filters until collectionFiltersActive is true", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Rock"],
+        selectedYears: [],
+        selectedFormats: [],
+        selectedSort: SortValues.AZTitle,
+        styleOperator: "OR",
+        searchQuery: "",
+      }),
+    );
+
+    const mockReleases = releaseFactory.buildList(3);
+    mockFilterReleases.mockImplementation(({ releases, selectedStyles }) =>
+      selectedStyles.length > 0 ? [] : releases,
+    );
+
+    const { result } = renderHook(
+      () => {
+        const filters = useFilters();
+        const setCollectionFiltersActive = useSetAtom(
+          collectionFiltersActiveAtom,
+        );
+        return { filters, setCollectionFiltersActive };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
+
+    act(() => {
+      result.current.filters.dispatch({
+        type: FiltersActionTypes.SetAllReleases,
+        payload: mockReleases,
+      });
+    });
+
+    expect(result.current.filters.state.filteredReleases).toEqual(mockReleases);
+
+    act(() => {
+      result.current.setCollectionFiltersActive(true);
+    });
+
+    expect(result.current.filters.state.filteredReleases).toEqual([]);
   });
 
   it("toggles style filter", () => {
@@ -415,28 +464,38 @@ describe("FiltersProvider", () => {
     const filteredReleases = releaseFactory.buildList(2);
     mockFilterReleases.mockReturnValue(filteredReleases);
 
-    const { result } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderHook(
+      () => {
+        const filters = useFilters();
+        const setCollectionFiltersActive = useSetAtom(
+          collectionFiltersActiveAtom,
+        );
+        return { filters, setCollectionFiltersActive };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
-    // Set releases
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetAllReleases,
         payload: mockReleases,
       });
+      result.current.setCollectionFiltersActive(true);
     });
 
-    // Apply filter
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetStyles,
         payload: ["Rock"],
       });
     });
 
     expect(mockFilterReleases).toHaveBeenCalled();
-    expect(result.current.state.filteredReleases).toEqual(filteredReleases);
+    expect(result.current.filters.state.filteredReleases).toEqual(
+      filteredReleases,
+    );
   });
 
   it("computes availableYears from allReleases, not filtered releases", () => {
@@ -447,31 +506,41 @@ describe("FiltersProvider", () => {
     mockFilterReleases.mockReturnValue(filteredReleases);
     mockGetAvailableYears.mockReturnValue(allYears);
 
-    const { result } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderHook(
+      () => {
+        const filters = useFilters();
+        const setCollectionFiltersActive = useSetAtom(
+          collectionFiltersActiveAtom,
+        );
+        return { filters, setCollectionFiltersActive };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetAllReleases,
         payload: allReleases,
       });
+      result.current.setCollectionFiltersActive(true);
     });
 
     expect(mockGetAvailableYears).toHaveBeenCalledWith(allReleases);
-    expect(result.current.state.availableYears).toEqual(allYears);
+    expect(result.current.filters.state.availableYears).toEqual(allYears);
 
     mockGetAvailableYears.mockClear();
     mockGetAvailableYears.mockReturnValue(allYears);
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetYears,
         payload: [2020],
       });
     });
 
-    expect(result.current.state.availableYears).toEqual(allYears);
+    expect(result.current.filters.state.availableYears).toEqual(allYears);
     expect(mockGetAvailableYears).not.toHaveBeenCalled();
   });
 
@@ -483,31 +552,41 @@ describe("FiltersProvider", () => {
     mockFilterReleases.mockReturnValue(filteredReleases);
     mockGetAvailableStyles.mockReturnValue(allStyles);
 
-    const { result } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderHook(
+      () => {
+        const filters = useFilters();
+        const setCollectionFiltersActive = useSetAtom(
+          collectionFiltersActiveAtom,
+        );
+        return { filters, setCollectionFiltersActive };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetAllReleases,
         payload: allReleases,
       });
+      result.current.setCollectionFiltersActive(true);
     });
 
     expect(mockGetAvailableStyles).toHaveBeenCalledWith(allReleases);
-    expect(result.current.state.availableStyles).toEqual(allStyles);
+    expect(result.current.filters.state.availableStyles).toEqual(allStyles);
 
     mockGetAvailableStyles.mockClear();
     mockGetAvailableStyles.mockReturnValue(allStyles);
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.ToggleStyle,
         payload: "Rock",
       });
     });
 
-    expect(result.current.state.availableStyles).toEqual(allStyles);
+    expect(result.current.filters.state.availableStyles).toEqual(allStyles);
     expect(mockGetAvailableStyles).not.toHaveBeenCalled();
   });
 
@@ -519,31 +598,41 @@ describe("FiltersProvider", () => {
     mockFilterReleases.mockReturnValue(filteredReleases);
     mockGetAvailableFormats.mockReturnValue(allFormats);
 
-    const { result } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderHook(
+      () => {
+        const filters = useFilters();
+        const setCollectionFiltersActive = useSetAtom(
+          collectionFiltersActiveAtom,
+        );
+        return { filters, setCollectionFiltersActive };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetAllReleases,
         payload: allReleases,
       });
+      result.current.setCollectionFiltersActive(true);
     });
 
     expect(mockGetAvailableFormats).toHaveBeenCalledWith(allReleases);
-    expect(result.current.state.availableFormats).toEqual(allFormats);
+    expect(result.current.filters.state.availableFormats).toEqual(allFormats);
 
     mockGetAvailableFormats.mockClear();
     mockGetAvailableFormats.mockReturnValue(allFormats);
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.ToggleFormat,
         payload: '12"',
       });
     });
 
-    expect(result.current.state.availableFormats).toEqual(allFormats);
+    expect(result.current.filters.state.availableFormats).toEqual(allFormats);
     expect(mockGetAvailableFormats).not.toHaveBeenCalled();
   });
 

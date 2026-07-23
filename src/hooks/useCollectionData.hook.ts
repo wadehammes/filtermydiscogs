@@ -1,5 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useSetAtom } from "jotai";
+import { useEffect, useMemo, useRef } from "react";
+import { collectionFiltersActiveAtom } from "src/atoms/filters.atoms";
 import { ERROR_FETCHING } from "src/constants";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -17,6 +19,7 @@ export const useCollectionData = (
     useCollectionContext();
 
   const filtersDispatch = useFiltersDispatch();
+  const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
 
   const queryEnabled = isAuthenticated && !!username && !rateLimited;
 
@@ -33,16 +36,16 @@ export const useCollectionData = (
     enabled: queryEnabled,
   });
 
-  // Only invalidate queries when username actually changes, not on every auth check
   const prevUsernameRef = useRef<string | null>(null);
   useEffect(() => {
     if (isAuthenticated && username && username !== prevUsernameRef.current) {
       prevUsernameRef.current = username;
+      setCollectionFiltersActive(false);
       queryClient.invalidateQueries({
         queryKey: DiscogsCollectionQueryKeys.byUsername(username),
       });
     }
-  }, [isAuthenticated, username, queryClient]);
+  }, [isAuthenticated, username, queryClient, setCollectionFiltersActive]);
 
   useEffect(() => {
     if (isAuthenticated && username && hasNextPage && !isFetchingNextPage) {
@@ -74,33 +77,58 @@ export const useCollectionData = (
     };
   }, [collectionData?.pages]);
 
-  const handleDataUpdate = useCallback(() => {
+  const isCollectionFullyLoaded =
+    queryEnabled &&
+    !isLoading &&
+    !(hasNextPage || isFetchingNextPage) &&
+    !!processedData;
+
+  useEffect(() => {
+    if (!queryEnabled) {
+      dispatchFetchingCollection(false);
+      setCollectionFiltersActive(false);
+      filtersDispatch({
+        type: FiltersActionTypes.SetAllReleases,
+        payload: [],
+      });
+      return;
+    }
+
+    if (isError) {
+      dispatchFetchingCollection(false);
+      dispatchError(queryError?.message || ERROR_FETCHING);
+      return;
+    }
+
     if (processedData) {
       const { allReleases, collection } = processedData;
 
       if (collection) {
         dispatchCollection(collection);
       }
-      dispatchFetchingCollection(false);
-      dispatchError(null);
 
       filtersDispatch({
         type: FiltersActionTypes.SetAllReleases,
         payload: allReleases,
       });
-    } else if (!queryEnabled) {
-      dispatchFetchingCollection(false);
-      filtersDispatch({
-        type: FiltersActionTypes.SetAllReleases,
-        payload: [],
-      });
-    } else if (isError) {
-      dispatchFetchingCollection(false);
-      dispatchError(queryError?.message || ERROR_FETCHING);
-    } else if (isLoading) {
+
+      if (isCollectionFullyLoaded) {
+        dispatchFetchingCollection(false);
+        dispatchError(null);
+        setCollectionFiltersActive(true);
+      } else {
+        dispatchFetchingCollection(true);
+        setCollectionFiltersActive(false);
+      }
+      return;
+    }
+
+    if (isLoading) {
       dispatchFetchingCollection(true);
+      setCollectionFiltersActive(false);
     }
   }, [
+    isCollectionFullyLoaded,
     processedData,
     queryEnabled,
     isError,
@@ -110,17 +138,13 @@ export const useCollectionData = (
     dispatchFetchingCollection,
     dispatchError,
     filtersDispatch,
+    setCollectionFiltersActive,
   ]);
-
-  useEffect(() => {
-    handleDataUpdate();
-  }, [handleDataUpdate]);
 
   return {
     isLoading,
     isError,
     queryError,
-    fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   };

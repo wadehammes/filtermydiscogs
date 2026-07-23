@@ -32,12 +32,12 @@ Cookie names and security flags: [discogs.md](discogs.md).
 
 ## Protected routes
 
-Authenticated app routes use [`useRedirectIfUnauthenticated`](../../src/hooks/useRedirectIfUnauthenticated.hook.ts): while **`isCheckingAuth`**, render nothing briefly; when unauthenticated, **`router.replace("/")`**. While a page or its collection is loading, show [`AppPageLoading`](../../src/components/AppPageLoading/AppPageLoading.component.tsx) with page-specific copy (**Loading releases…**, **Loading dashboard…**, **Loading mosaic…**). Collection loading UI uses [`useNeedsCollectionLoad`](../../src/hooks/useNeedsCollectionLoad.hook.ts) so cached releases skip the spinner when navigating between app pages.
+Authenticated app routes use [`useRedirectIfUnauthenticated`](../../src/hooks/useRedirectIfUnauthenticated.hook.ts): while **`isCheckingAuth`**, render nothing briefly; when unauthenticated, **`router.replace("/")`**. **`/releases`** streams paginated collection pages into the grid as they arrive; [`StickyHeaderBar`](../../src/components/StickyHeaderBar/StickyHeaderBar.component.tsx) shows [`FiltersBarSkeleton`](../../src/components/StickyHeaderBar/components/FiltersBarSkeleton.component.tsx) until **`allReleasesLoaded`**, then swaps in the real [`FiltersBar`](../../src/components/StickyHeaderBar/components/FiltersBar.tsx). Persisted filter prefs from **`localStorage`** apply only after the full collection load via **`collectionFiltersActiveAtom`** in [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts) (set by [`useCollectionData`](../../src/hooks/useCollectionData.hook.ts)). **`/dashboard`** and **`/mosaic`** still block on first load via [`useNeedsCollectionLoad`](../../src/hooks/useNeedsCollectionLoad.hook.ts) when Jotai has no releases yet.
 
 | Route | While `isCheckingAuth` | When unauthenticated | Collection loading |
 |-------|------------------------|----------------------|--------------------|
 | `/` | Landing + toast | Landing | — |
-| `/releases` | Header + loader (first load only) | Redirect to `/` | Skip when releases already in Jotai |
+| `/releases` | null while checking auth | Redirect to `/` | Stream pages into grid; filter skeleton until done |
 | `/dashboard`, `/mosaic` | Header + skeleton/loader (first load only) | Redirect to `/` | Skip when releases already in Jotai |
 | `/admin` | Server gate + brief null | Redirect to `/` | — |
 
@@ -87,14 +87,14 @@ Hook rules (single params object, no side effects in hook files): [conventions.m
 
 ## Filtering and sorting
 
-1. **`useCollectionData`** loads paginated Discogs pages and writes releases once via **`FiltersActionTypes.SetAllReleases`** → **`allReleasesAtom`** (single source of truth). Collection context keeps pagination metadata (`collection`, `fetchingCollection`, `error`) only—not a duplicate release list.
+1. **`useCollectionData`** auto-chains paginated Discogs pages and dispatches **`FiltersActionTypes.SetAllReleases`** after **each** page so the releases grid fills in incrementally. **`collectionFiltersActiveAtom`** stays false until pagination finishes, so persisted **`localStorage`** filter prefs do not winnow the in-progress list. When the last page arrives, **`useCollectionData`** sets **`collectionFiltersActiveAtom`** to true and the saved filters apply. Collection context keeps pagination metadata (`collection`, `fetchingCollection`, `error`) only—not a duplicate release list.
 2. **Filter atoms** ([`filters.atoms.ts`](../../src/atoms/filters.atoms.ts)) derive **`filteredReleases`** from filter inputs via:
    - [`filterReleases.ts`](../../src/utils/filterReleases.ts)
    - [`sortReleases.ts`](../../src/utils/sortReleases.ts)
    - [`getAvailableStyles/Years/Formats`](../../src/utils/) for filter chip options
 3. UI components (`FiltersBar`, `FiltersDrawer`, release pills) dispatch filter actions through **`useFiltersDispatch()`** and read state via **`useFilterAtoms`** hooks; **`useFilteredReleases()`** / **`useMemoizedFilteredReleases()`** drive tables, cards, mosaic input, and random release. Dashboard/analytics read the same list via **`useAllReleases()`**.
 
-**Persistence**: User-selected filter inputs (styles, years, formats, sort, style operator, search query) persist in **`localStorage`** under **`filtermydiscogs_filters`** via **`atomWithStorage`** in [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts), with parse/validation in [`filtersStorage.ts`](../../src/utils/filtersStorage.ts). Collection data, random-mode pick, and the searching flag are **not** persisted. Cleared on **Clear stored data** (About/Legal), not on logout—same scope as view mode (one filter state per browser).
+**Persistence**: User-selected filter inputs (styles, years, formats, sort, style operator, search query) persist in **`localStorage`** under **`filtermydiscogs_filters`** via **`atomWithStorage`** in [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts), with parse/validation in [`filtersStorage.ts`](../../src/utils/filtersStorage.ts). They hydrate into atoms on load but do not affect **`filteredReleases`** until **`collectionFiltersActiveAtom`** is true (full collection fetched). Collection data, random-mode pick, and the searching flag are **not** persisted. Cleared on **Clear stored data** (About/Legal), not on logout—same scope as view mode (one filter state per browser).
 
 **Lint guardrails**: Biome **`noRestrictedImports`** discourages **`useFilters`** / **`useView`** in application code—prefer **`useFilterAtoms`** / **`useViewAtoms`**. Context modules and test files are exempt.
 

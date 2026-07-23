@@ -53,12 +53,20 @@ const StyleEvolution = dynamic(
 export default function DashboardClient() {
   const { state: authState } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
-  const { isLoading: collectionLoading } = useCollectionData(
+  const {
+    isLoading: collectionLoading,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useCollectionData(
     authState.username,
     authState.isAuthenticated,
     authState.rateLimited,
   );
-  const needsCollectionLoad = useNeedsCollectionLoad(collectionLoading);
+  const needsCollectionLoad = useNeedsCollectionLoad({
+    isLoading: collectionLoading,
+    hasNextPage,
+    isFetchingNextPage,
+  });
   const showLoading = isCheckingAuth || needsCollectionLoad;
 
   const analytics = useCollectionAnalytics();
