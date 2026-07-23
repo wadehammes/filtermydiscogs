@@ -46,10 +46,12 @@
 }
 
 .sidebar {
-  display: none;
+  display: contents;
   grid-area: sidebar;
 
   @media (width >= 1024px) {
+    display: none;
+
     .withSidebar & {
       display: block;
     }
@@ -216,6 +218,7 @@
 .crateFabWithMiniPlayer {
   /* Floating video panel does not add dock height; match back-to-top offset. */
   bottom: calc(var(--release-mini-player-bar-offset) + var(--space-4));
+  z-index: calc(var(--z-3-fixed) + 1);
 }
 
 .backToTopWithMiniPlayer {
