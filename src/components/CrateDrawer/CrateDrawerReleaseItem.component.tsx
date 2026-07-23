@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import Image from "next/image";
-import XIcon from "src/styles/icons/x.svg";
+import XIcon from "src/styles/icons/x-thin.svg";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import styles from "./CrateDrawer.module.css";

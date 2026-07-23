@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import type { AutocompleteOption } from "./AutocompleteSelect.component";
 import styles from "./AutocompleteSelect.module.css";
 

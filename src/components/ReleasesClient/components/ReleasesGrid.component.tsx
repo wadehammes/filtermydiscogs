@@ -4,7 +4,7 @@ import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
-import DiceSolid from "src/styles/icons/dice-solid.svg";
+import DiceIcon from "src/styles/icons/dice-thin.svg";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
 
@@ -133,7 +133,7 @@ const ReleasesGridComponent = ({
             onClick={onRandomClick}
             aria-label="Get another random release"
           >
-            <DiceSolid width="16" height="16" />
+            <DiceIcon width="16" height="16" />
             <span>Get Another Random Release</span>
           </button>
           <button

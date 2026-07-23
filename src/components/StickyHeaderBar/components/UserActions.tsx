@@ -8,7 +8,7 @@ import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.compon
 import { useAuth } from "src/context/auth.context";
 import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
-import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
 import styles from "./UserActions.module.css";
 

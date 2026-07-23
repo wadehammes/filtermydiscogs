@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { memo, useCallback, useEffect, useReducer, useRef } from "react";
-import Check from "src/styles/icons/check-solid.svg";
-import Chevron from "src/styles/icons/chevron-right-solid.svg";
+import Check from "src/styles/icons/check-thin.svg";
+import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import { isOptionSelected } from "src/utils/selectHelpers";
 import styles from "./Select.module.css";
 

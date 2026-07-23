@@ -6,7 +6,7 @@ import Select from "src/components/Select/Select.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
-import PlusIcon from "src/styles/icons/plus-solid.svg";
+import PlusIcon from "src/styles/icons/plus-thin.svg";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./CrateSelector.module.css";
 

@@ -9,7 +9,6 @@ import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "./ReleasePlaybackFallback.component";
-import { ReleaseSummaryHero } from "./ReleaseSummaryHero.component";
 import { ReleaseTracklist } from "./ReleaseTracklist.component";
 import { useReleaseModalPlayback } from "./useReleaseModalPlayback.hook";
 
@@ -40,10 +39,6 @@ export const ReleaseModalBody = ({
   return (
     <ReleaseNotesEditorProvider release={release}>
       <div className={styles.body} data-testid="fmdReleaseModalBody">
-        <div className={classNames(styles.modalCard, styles.heroSection)}>
-          <ReleaseSummaryHero release={release} titleId="release-modal-title" />
-        </div>
-
         <section
           className={classNames(styles.modalCard, styles.notesSection)}
           aria-label="Release notes"

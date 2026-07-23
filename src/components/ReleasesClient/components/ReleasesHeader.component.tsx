@@ -4,7 +4,7 @@ import classNames from "classnames";
 import { useEffect, useRef, useState } from "react";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
-import Check from "src/styles/icons/check-solid.svg";
+import Check from "src/styles/icons/check-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleasesHeader.module.css";
 

@@ -5,7 +5,7 @@ import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
-import StarIcon from "src/styles/icons/star-solid.svg";
+import StarIcon from "src/styles/icons/star-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";

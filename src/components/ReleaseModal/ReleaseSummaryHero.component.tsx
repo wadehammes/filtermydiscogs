@@ -1,8 +1,16 @@
+"use client";
+
 import classNames from "classnames";
 import Image from "next/image";
+import { useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
-import StarIcon from "src/styles/icons/star-solid.svg";
+import { useCrate } from "src/context/crate.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
+import MinusIcon from "src/styles/icons/minus-thin.svg";
+import PlusIcon from "src/styles/icons/plus-thin.svg";
+import StarIcon from "src/styles/icons/star-thin.svg";
+import XIcon from "src/styles/icons/x-thin.svg";
 import typographyStyles from "src/styles/typography.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -16,12 +24,18 @@ import styles from "./ReleaseSummaryHero.module.css";
 interface ReleaseSummaryHeroProps {
   release: DiscogsRelease;
   titleId?: string;
+  onClose?: () => void;
 }
 
 export const ReleaseSummaryHero = ({
   release,
   titleId,
+  onClose,
 }: ReleaseSummaryHeroProps) => {
+  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+  const inCrate = isInCrate(release.instance_id);
+
   const { basic_information: basicInfo } = release;
   const artistNames = formatArtistNames(release);
   const metaLine = formatReleaseMetaLine({ release, includeCatno: false });
@@ -36,6 +50,18 @@ export const ReleaseSummaryHero = ({
     height: 200,
     preferCoverImage: true,
   });
+
+  const handleCrateToggle = useCallback(() => {
+    if (inCrate) {
+      removeFromCrate(release.instance_id);
+      return;
+    }
+
+    addToCrate(release);
+    if (!isMobile) {
+      openDrawer();
+    }
+  }, [addToCrate, inCrate, isMobile, openDrawer, release, removeFromCrate]);
 
   return (
     <div className={styles.hero} data-testid="fmdReleaseSummaryHero">
@@ -76,26 +102,56 @@ export const ReleaseSummaryHero = ({
               </p>
             ) : null}
           </div>
-          {releaseUrl ? (
-            <a
-              href={releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.discogsButton}
-              aria-label="View on Discogs"
-              title="View on Discogs"
-              onClick={() => {
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category: "releaseModal",
-                  label: "View on Discogs",
-                  value: releaseUrl,
-                });
-              }}
+          <div className={styles.actionButtons}>
+            <button
+              type="button"
+              className={classNames(styles.actionButton, styles.crateButton, {
+                [styles.crateButtonActive]: inCrate,
+              })}
+              onClick={handleCrateToggle}
+              aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+              title={inCrate ? "Remove from Crate" : "Add to Crate"}
             >
-              <ExternalLinkIcon className={styles.discogsIcon} />
-            </a>
-          ) : null}
+              {inCrate ? (
+                <MinusIcon className={styles.actionIcon} />
+              ) : (
+                <PlusIcon className={styles.actionIcon} />
+              )}
+            </button>
+            {releaseUrl ? (
+              <a
+                href={releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={classNames(
+                  styles.actionButton,
+                  styles.discogsButton,
+                )}
+                aria-label="View on Discogs"
+                title="View on Discogs"
+                onClick={() => {
+                  trackEvent("releaseClicked", {
+                    action: "releaseClicked",
+                    category: "releaseModal",
+                    label: "View on Discogs",
+                    value: releaseUrl,
+                  });
+                }}
+              >
+                <ExternalLinkIcon className={styles.actionIcon} />
+              </a>
+            ) : null}
+            {onClose ? (
+              <button
+                type="button"
+                className={classNames(styles.actionButton, styles.closeButton)}
+                onClick={onClose}
+                aria-label="Close modal"
+              >
+                <XIcon className={styles.actionIcon} />
+              </button>
+            ) : null}
+          </div>
         </div>
         {release.rating > 0 ? (
           <div

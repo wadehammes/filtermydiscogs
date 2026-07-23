@@ -68,14 +68,20 @@
   margin: 0;
 }
 
-.discogsButton {
+.actionButtons {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.actionButton {
   align-items: center;
   background: color-mix(in srgb, var(--background) 60%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--foreground);
+  cursor: pointer;
   display: inline-flex;
-  flex-shrink: 0;
   height: var(--button-height-sm);
   justify-content: center;
   text-decoration: none;
@@ -95,7 +101,26 @@
   }
 }
 
-.discogsIcon {
+.crateButton {
+  padding: 0;
+}
+
+.crateButtonActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+
+  &:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+}
+
+.closeButton {
+  padding: 0;
+}
+
+.actionIcon {
   height: 0.875rem;
   width: 0.875rem;
 }

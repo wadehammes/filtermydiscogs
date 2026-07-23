@@ -1,8 +1,10 @@
+import classNames from "classnames";
 import { useCallback, useEffect } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleaseModal.module.css";
 import { ReleaseModalBody } from "./ReleaseModalBody.component";
+import { ReleaseSummaryHero } from "./ReleaseSummaryHero.component";
 
 interface ReleaseModalProps {
   isOpen: boolean;
@@ -52,8 +54,6 @@ export const ReleaseModal = ({
     return null;
   }
 
-  const modalTitle = release.basic_information.title;
-
   return (
     <div
       className={styles.backdrop}
@@ -65,16 +65,12 @@ export const ReleaseModal = ({
       data-testid="fmdReleaseModal"
     >
       <div className={styles.modal}>
-        <div className={styles.toolbar}>
-          <h2 className={styles.toolbarTitle}>{modalTitle}</h2>
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close modal"
-          >
-            ×
-          </button>
+        <div className={classNames(styles.header, styles.heroSection)}>
+          <ReleaseSummaryHero
+            release={release}
+            titleId="release-modal-title"
+            onClose={onClose}
+          />
         </div>
         <div className={styles.content}>
           <ReleaseModalBody release={release} isOpen={isOpen} />

@@ -2,7 +2,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import { Suspense } from "react";
 import { PageFooterStats } from "src/components/Page/PageFooterStats.server";
-import Heart from "src/styles/icons/heart-solid.svg";
+import Heart from "src/styles/icons/heart-thin.svg";
 import styles from "./Page.module.css";
 
 type PageFooterProps = {

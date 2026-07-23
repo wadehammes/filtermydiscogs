@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
-import XIcon from "src/styles/icons/x.svg";
+import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./BottomDrawer.module.css";
 
 interface BottomDrawerProps {
