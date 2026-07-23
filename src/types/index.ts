@@ -11,6 +11,12 @@ export type {
   ReleaseNote,
 } from "./discogs-release.types";
 
+export type {
+  DiscogsReleaseDetail,
+  DiscogsTrack,
+  DiscogsVideo,
+} from "./discogs-release-detail.types";
+
 export interface DiscogsReleaseJson {
   uri: string;
   [key: string]: unknown;
@@ -59,12 +65,14 @@ export interface ReleaseCardProps {
   isHighlighted?: boolean;
   isRandomMode?: boolean;
   onExitRandomMode?: () => void;
+  onReleaseClick?: (instanceId: string) => void;
 }
 
 export interface ReleaseListItemProps {
   release: DiscogsRelease;
   isHighlighted?: boolean;
   onExitRandomMode?: () => void;
+  onReleaseClick?: (instanceId: string) => void;
 }
 
 export interface SelectOption {

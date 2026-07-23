@@ -31,7 +31,7 @@ export const BottomDrawer = ({
       <button
         type="button"
         className={classNames(styles.overlay, {
-          [styles.open as string]: isOpen,
+          [styles.open]: isOpen,
         })}
         onClick={onClose}
         aria-label="Close drawer overlay"
@@ -49,7 +49,7 @@ export const BottomDrawer = ({
       )}
       <div
         className={classNames(styles.drawer, {
-          [styles.open as string]: isOpen,
+          [styles.open]: isOpen,
         })}
         data-testid="fmdBottomDrawer"
         onClick={(e) => {

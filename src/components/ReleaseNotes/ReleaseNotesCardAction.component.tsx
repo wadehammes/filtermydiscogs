@@ -4,6 +4,7 @@ import classNames from "classnames";
 import mobileCardStyles from "src/components/ReleaseCard/MobileReleaseCard.module.css";
 import cardStyles from "src/components/ReleaseCard/ReleaseCard.module.css";
 import NoteStickyIcon from "src/styles/icons/note-sticky-solid.svg";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 
 type ReleaseNotesCardActionVariant = "card" | "mobile";
@@ -25,10 +26,9 @@ export const ReleaseNotesCardAction = ({
   const notesButton = (
     <button
       type="button"
-      className={classNames(
-        styles.listButton,
-        hasNotes && styles.notesButtonActive,
-      )}
+      className={classNames(segmentedStyles.segment, styles.actionSegment, {
+        [segmentedStyles.active]: hasNotes,
+      })}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -37,20 +37,20 @@ export const ReleaseNotesCardAction = ({
       aria-label={hasNotes ? "Edit release notes" : "Add release notes"}
       title={hasNotes ? "Edit release notes" : "Add release notes"}
     >
-      <NoteStickyIcon className={styles.listButtonIcon} />
+      <NoteStickyIcon className={styles.actionIcon} />
     </button>
   );
 
-  if (variant === "mobile") {
-    return <div className={mobileCardStyles.actionSlot}>{notesButton}</div>;
+  if (variant === "card") {
+    return (
+      <div className={cardStyles.segmentSlot}>
+        {notesButton}
+        <span className={cardStyles.tooltip}>
+          {hasNotes ? "Edit release notes" : "Add release notes"}
+        </span>
+      </div>
+    );
   }
 
-  return (
-    <div className={styles.buttonWrapper}>
-      {notesButton}
-      <span className={cardStyles.tooltip}>
-        {hasNotes ? "Edit release notes" : "Add release notes"}
-      </span>
-    </div>
-  );
+  return notesButton;
 };

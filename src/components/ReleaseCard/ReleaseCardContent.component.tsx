@@ -7,6 +7,7 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import styles from "./ReleaseCard.module.css";
 import {
@@ -20,6 +21,7 @@ interface ReleaseCardContentProps {
   releaseUrl: string | null;
   labelUrl: string | null;
   onExitRandomMode?: () => void;
+  onReleaseOpen?: () => void;
 }
 
 export function ReleaseCardContent({
@@ -27,6 +29,7 @@ export function ReleaseCardContent({
   releaseUrl,
   labelUrl,
   onExitRandomMode,
+  onReleaseOpen,
 }: ReleaseCardContentProps) {
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
@@ -57,6 +60,7 @@ export function ReleaseCardContent({
           releaseUrl={releaseUrl}
           resourceUrl={resource_url}
           analyticsCategory="home"
+          {...definedProps({ onReleaseOpen })}
         />
         <ReleaseCardMeta
           labelName={labels[0]?.name}

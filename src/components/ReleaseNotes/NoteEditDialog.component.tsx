@@ -9,6 +9,10 @@ import modalInputStyles from "src/styles/modal-input.module.css";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
+  formatArtistNames,
+  formatReleaseMetaLine,
+} from "src/utils/releaseDisplay";
+import {
   getReleaseNotes,
   isEditableCollectionField,
   normalizeFieldId,
@@ -27,33 +31,6 @@ interface NoteEditDialogProps {
 }
 
 type NoteFormValues = Record<string, string>;
-
-const formatArtistNames = (release: DiscogsRelease): string => {
-  return release.basic_information.artists
-    .map((artist) => artist.name)
-    .filter(Boolean)
-    .join(", ");
-};
-
-const formatMetaLine = (release: DiscogsRelease): string => {
-  const { labels, year } = release.basic_information;
-  const parts: string[] = [];
-
-  if (labels[0]?.name) {
-    parts.push(labels[0].name);
-  }
-
-  if (year > 0) {
-    parts.push(String(year));
-  }
-
-  const catno = labels[0]?.catno ? String(labels[0].catno) : "";
-  if (catno) {
-    parts.push(catno);
-  }
-
-  return parts.join(" · ");
-};
 
 export const NoteEditDialog = ({
   isOpen,
@@ -172,7 +149,7 @@ export const NoteEditDialog = ({
     height: 120,
     preferCoverImage: true,
   });
-  const metaLine = formatMetaLine(release);
+  const metaLine = formatReleaseMetaLine({ release });
   const releaseId = parseReleaseId(release);
 
   return (

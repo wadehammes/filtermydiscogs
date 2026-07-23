@@ -1,7 +1,6 @@
 {
   "$schema": "./node_modules/knip/schema.json",
   "ignoreFiles": ["public/theme-init.js"],
-  "ignoreBinaries": ["scripts/scaffold.sh"],
   "ignoreDependencies": ["@svgr/webpack"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {

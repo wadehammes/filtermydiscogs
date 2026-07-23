@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
@@ -42,7 +43,9 @@ export default function MosaicControls({
           />
         </div>
 
-        <div className={`${styles.controlGroup} ${styles.aspectRatioGroup}`}>
+        <div
+          className={classNames(styles.controlGroup, styles.aspectRatioGroup)}
+        >
           <Select
             label="Aspect Ratio"
             options={Object.entries(MOSAIC_CONSTANTS.ASPECT_RATIOS).map(

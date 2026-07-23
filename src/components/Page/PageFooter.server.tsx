@@ -19,7 +19,7 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
   return (
     <footer
       className={classNames(styles.footerShell, {
-        [styles.footerShellGradient as string]: variant === "gradient",
+        [styles.footerShellGradient]: variant === "gradient",
       })}
     >
       <Suspense fallback={null}>
@@ -27,7 +27,7 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
       </Suspense>
       <div
         className={classNames(styles.footer, {
-          [styles.footerGradient as string]: variant === "gradient",
+          [styles.footerGradient]: variant === "gradient",
         })}
       >
         <p>
@@ -37,7 +37,7 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
             target="_blank"
             rel="noreferrer"
             className={classNames({
-              [styles.onGradientMuted as string]: variant === "gradient",
+              [styles.onGradientMuted]: variant === "gradient",
             })}
           >
             Wade Hammes
@@ -46,7 +46,7 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
         <p className={styles.footerCopyrightMeta}>
           <span
             className={classNames({
-              [styles.onGradientMuted as string]: variant === "gradient",
+              [styles.onGradientMuted]: variant === "gradient",
             })}
           >
             <Link href="/about">About</Link>
@@ -54,7 +54,7 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
           &bull;
           <span
             className={classNames({
-              [styles.onGradientMuted as string]: variant === "gradient",
+              [styles.onGradientMuted]: variant === "gradient",
             })}
           >
             <a
@@ -67,7 +67,7 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
           </span>
           <span
             className={classNames({
-              [styles.onGradientMuted as string]: variant === "gradient",
+              [styles.onGradientMuted]: variant === "gradient",
             })}
           >
             &copy; {currentYear}

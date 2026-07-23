@@ -1,7 +1,8 @@
-import { useCallback } from "react";
-import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
+import { useCallback, useEffect } from "react";
+import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleaseModal.module.css";
+import { ReleaseModalBody } from "./ReleaseModalBody.component";
 
 interface ReleaseModalProps {
   isOpen: boolean;
@@ -32,8 +33,26 @@ export const ReleaseModal = ({
     [onClose],
   );
 
-  if (!isOpen) return null;
-  if (!release) return null;
+  useEffect(() => {
+    if (isOpen && release) {
+      trackEvent("releaseClicked", {
+        action: "releaseClicked",
+        category: "releaseModal",
+        label: "Release Detail Opened",
+        value: release.basic_information.resource_url,
+      });
+    }
+  }, [isOpen, release]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  if (!release) {
+    return null;
+  }
+
+  const modalTitle = release.basic_information.title;
 
   return (
     <div
@@ -43,20 +62,22 @@ export const ReleaseModal = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="release-modal-title"
+      data-testid="fmdReleaseModal"
     >
       <div className={styles.modal}>
-        <button
-          type="button"
-          className={styles.closeButton}
-          onClick={onClose}
-          aria-label="Close modal"
-        >
-          ×
-        </button>
+        <div className={styles.toolbar}>
+          <h2 className={styles.toolbarTitle}>{modalTitle}</h2>
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close modal"
+          >
+            ×
+          </button>
+        </div>
         <div className={styles.content}>
-          <div className={styles.releaseCardWrapper}>
-            <ReleaseCard release={release} isHighlighted={false} />
-          </div>
+          <ReleaseModalBody release={release} isOpen={isOpen} />
         </div>
       </div>
     </div>

@@ -2,7 +2,9 @@ import classNames from "classnames";
 import { memo } from "react";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { useCrate } from "src/context/crate.context";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseCard.module.css";
 import { ReleaseCardContent } from "./ReleaseCardContent.component";
@@ -13,8 +15,13 @@ const ReleaseCardComponent = ({
   isHighlighted = false,
   isRandomMode = false,
   onExitRandomMode,
+  onReleaseClick,
 }: ReleaseCardProps) => {
   const { isInCrate } = useCrate();
+  const { openRelease, canOpen } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
+  });
 
   const thumbUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
@@ -38,9 +45,9 @@ const ReleaseCardComponent = ({
     <ReleaseNotesEditorProvider release={release}>
       <div
         className={classNames(styles.releaseCard, {
-          [styles.highlighted as string]: isHighlighted,
-          [styles.inCrate as string]: isInCrate(release.instance_id),
-          [styles.randomMode as string]: isRandomMode,
+          [styles.highlighted]: isHighlighted,
+          [styles.inCrate]: isInCrate(release.instance_id),
+          [styles.randomMode]: isRandomMode,
         })}
         data-testid="fmdReleaseCard"
       >
@@ -48,12 +55,18 @@ const ReleaseCardComponent = ({
           release={release}
           thumbUrl={thumbUrl}
           resourceUrl={releaseUrl}
+          {...definedProps({
+            onReleaseOpen: canOpen ? openRelease : undefined,
+          })}
         />
         <ReleaseCardContent
           release={release}
           releaseUrl={releaseUrl}
           labelUrl={labelUrl}
-          {...(onExitRandomMode && { onExitRandomMode })}
+          {...definedProps({
+            onExitRandomMode,
+            onReleaseOpen: canOpen ? openRelease : undefined,
+          })}
         />
       </div>
     </ReleaseNotesEditorProvider>

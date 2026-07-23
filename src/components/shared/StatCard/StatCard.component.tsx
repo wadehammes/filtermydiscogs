@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import styles from "./StatCard.module.css";
 
@@ -12,7 +13,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, subtext, className }: StatCardProps) {
   return (
-    <div className={`${styles.statCard} ${className || ""}`}>
+    <div className={classNames(styles.statCard, className)}>
       <div className={styles.statLabel}>{label}</div>
       <div className={styles.statValue}>{value}</div>
       {subtext && <div className={styles.statSubtext}>{subtext}</div>}

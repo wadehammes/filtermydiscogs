@@ -14,13 +14,17 @@ import {
   useSelectedStyles,
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
-import MinusIcon from "src/styles/icons/minus-solid.svg";
-import PlusIcon from "src/styles/icons/plus-solid.svg";
+import MinusIcon from "src/styles/icons/minus-thin.svg";
+import PlusIcon from "src/styles/icons/plus-thin.svg";
 import StarIcon from "src/styles/icons/star-solid.svg";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { ReleaseCardProps } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./MobileReleaseCard.module.css";
 import {
   ReleaseCardCatalog,
@@ -35,6 +39,7 @@ const MobileReleaseCardComponent = ({
   isHighlighted = false,
   isRandomMode = false,
   onExitRandomMode,
+  onReleaseClick,
 }: ReleaseCardProps) => {
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
   const selectedStyles = useSelectedStyles();
@@ -91,13 +96,25 @@ const MobileReleaseCardComponent = ({
     onExitRandomMode,
   });
 
+  const { openRelease, canOpen } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
+  });
+
+  const imageActivateProps = canOpen
+    ? getReleaseActivateProps({
+        onActivate: openRelease,
+        ariaLabel: `Open ${title} details`,
+      })
+    : undefined;
+
   return release ? (
     <ReleaseNotesEditorProvider release={release}>
       <div
         className={classNames(styles.releaseCard, {
-          [styles.highlighted as string]: isHighlighted,
-          [styles.inCrate as string]: isInCrate(release.instance_id),
-          [styles.randomMode as string]: isRandomMode,
+          [styles.highlighted]: isHighlighted,
+          [styles.inCrate]: isInCrate(release.instance_id),
+          [styles.randomMode]: isRandomMode,
         })}
       >
         <div
@@ -110,6 +127,7 @@ const MobileReleaseCardComponent = ({
                 }
               : undefined
           }
+          {...definedProps(imageActivateProps ?? {})}
         >
           {release.rating > 0 && (
             <div
@@ -152,6 +170,9 @@ const MobileReleaseCardComponent = ({
                 releaseUrl={releaseUrl}
                 resourceUrl={resource_url}
                 className={titleStyles.titleGroupMobile}
+                {...definedProps({
+                  onReleaseOpen: canOpen ? openRelease : undefined,
+                })}
               />
               <ReleaseCardMeta
                 labelName={labels[0]?.name}
@@ -220,12 +241,21 @@ const MobileReleaseCardComponent = ({
           </HorizontalScrollRow>
         </div>
         <div className={styles.actionButtonsContainer}>
-          <div className={styles.actionSlot}>
+          <div
+            className={classNames(
+              segmentedStyles.container,
+              segmentedStyles.containerVertical,
+              styles.actionSegmented,
+            )}
+          >
             <button
               type="button"
               className={classNames(
-                styles.listButton,
-                isInCrate(release.instance_id) && styles.removeButton,
+                segmentedStyles.segment,
+                styles.actionSegment,
+                {
+                  [segmentedStyles.active]: isInCrate(release.instance_id),
+                },
               )}
               onClick={handleCrateToggle}
               aria-label={
@@ -235,21 +265,23 @@ const MobileReleaseCardComponent = ({
               }
             >
               {isInCrate(release.instance_id) ? (
-                <MinusIcon className={styles.listButtonIcon} />
+                <MinusIcon className={styles.actionIcon} />
               ) : (
-                <PlusIcon className={styles.listButtonIcon} />
+                <PlusIcon className={styles.actionIcon} />
               )}
             </button>
-          </div>
-          <ReleaseNotesCardAction variant="mobile" />
-          {releaseUrl && (
-            <div className={styles.actionSlot}>
+            <ReleaseNotesCardAction variant="mobile" />
+            {releaseUrl ? (
               <a
                 href={releaseUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.discogsButton}
-                onClick={() => {
+                className={classNames(
+                  segmentedStyles.segment,
+                  styles.actionSegment,
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
                   trackEvent("releaseClicked", {
                     action: "releaseClicked",
                     category: "home",
@@ -260,10 +292,10 @@ const MobileReleaseCardComponent = ({
                 aria-label="View on Discogs"
                 title="View on Discogs"
               >
-                <ExternalLinkIcon className={styles.externalLinkIcon} />
+                <ExternalLinkIcon className={styles.actionIcon} />
               </a>
-            </div>
-          )}
+            ) : null}
+          </div>
         </div>
       </div>
     </ReleaseNotesEditorProvider>

@@ -13,6 +13,12 @@
   }
 }
 
+.withMiniPlayer {
+  --release-mini-player-height: 3.25rem;
+
+  padding-bottom: var(--release-mini-player-height);
+}
+
 .mainContent {
   background-color: var(--background);
   background-image: var(--pattern-microdot);
@@ -188,6 +194,10 @@
   @media (width >= 1024px) {
     display: none;
   }
+}
+
+.crateFabWithMiniPlayer {
+  bottom: calc(3.25rem + var(--space-4));
 }
 
 .fabContent {

@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import Link from "next/link";
 import Button from "src/components/Button/Button.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
@@ -138,7 +139,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
           </div>
         )}
 
-        <section className={`${styles.section} ${styles.aboutSection}`}>
+        <section className={classNames(styles.section, styles.aboutSection)}>
           <div className={styles.twoColumnLayout}>
             <div className={styles.aboutContent}>
               <h2 className={styles.heading}>About FilterMyDiscogs</h2>

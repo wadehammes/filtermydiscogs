@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import classNames from "classnames";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
+import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 import styles from "./page.module.css";
 
 export function AboutClient() {
@@ -48,6 +50,7 @@ export function AboutClient() {
         localStorage.removeItem("fmd_username");
         localStorage.removeItem("filtermydiscogs_theme");
         localStorage.removeItem("filtermydiscogs_view_state");
+        clearPersistedReleasePlayback();
       }
 
       // Clear React Query cache and reset collection state
@@ -96,7 +99,7 @@ export function AboutClient() {
           </p>
         </section>
 
-        <section className={`${styles.section} ${styles.donationSection}`}>
+        <section className={classNames(styles.section, styles.donationSection)}>
           <h2>Support This Project</h2>
           <p>
             If you find this app useful and want to support its development,

@@ -35,7 +35,9 @@ export function AutocompleteTrigger({
 }: AutocompleteTriggerProps) {
   return (
     <div
-      className={classNames(styles.trigger, disabled && styles.disabled)}
+      className={classNames(styles.trigger, {
+        [styles.disabled]: disabled,
+      })}
       role="combobox"
       aria-controls={isOpen ? listboxId : undefined}
       aria-label={label}
@@ -70,7 +72,11 @@ export function AutocompleteTrigger({
           <span className={styles.value}>{displayValue}</span>
         )}
       </div>
-      <span className={classNames(styles.icon, isOpen && styles.iconOpen)}>
+      <span
+        className={classNames(styles.icon, {
+          [styles.iconOpen]: isOpen,
+        })}
+      >
         <Chevron />
       </span>
     </div>

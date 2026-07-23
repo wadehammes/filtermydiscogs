@@ -35,7 +35,7 @@ export const ViewToggle = ({
         <button
           type="button"
           className={classNames(segmentedStyles.segment, {
-            [segmentedStyles.active as string]: currentView === "card",
+            [segmentedStyles.active]: currentView === "card",
           })}
           onClick={() => {
             scrollPageToTop();
@@ -60,7 +60,7 @@ export const ViewToggle = ({
             segmentedStyles.segment,
             styles.listViewButton,
             {
-              [segmentedStyles.active as string]: currentView === "list",
+              [segmentedStyles.active]: currentView === "list",
             },
           )}
           onClick={() => {
@@ -82,7 +82,7 @@ export const ViewToggle = ({
         <button
           type="button"
           className={classNames(segmentedStyles.segment, {
-            [segmentedStyles.active as string]: currentView === "random",
+            [segmentedStyles.active]: currentView === "random",
           })}
           onClick={() => {
             scrollPageToTop();
@@ -112,7 +112,7 @@ export const ViewToggle = ({
           <button
             type="button"
             className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active as string]: isCratesOpen,
+              [segmentedStyles.active]: isCratesOpen,
             })}
             onClick={onCratesClick}
             aria-label={isCratesOpen ? "Close crates" : "Open crates"}

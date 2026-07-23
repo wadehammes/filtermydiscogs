@@ -37,6 +37,10 @@
   overflow: hidden;
   width: 100%;
 
+  &[role="button"] {
+    cursor: pointer;
+  }
+
   @media (width >= 768px) {
     height: 7.5rem;
     width: 7.5rem;

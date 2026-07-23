@@ -34,7 +34,7 @@ export const BackToTop = () => {
       type="button"
       onClick={scrollToTop}
       className={classNames(styles.backToTop, {
-        [styles.visible as string]: isVisible,
+        [styles.visible]: isVisible,
       })}
       data-testid="fmdBackToTop"
       aria-label="Back to top"

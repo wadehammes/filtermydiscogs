@@ -4,6 +4,7 @@ import { memo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { ReleaseCardProps } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -55,7 +56,7 @@ const PublicMobileReleaseCardComponent = ({
   return release ? (
     <div
       className={classNames(styles.releaseCard, {
-        [styles.highlighted as string]: isHighlighted,
+        [styles.highlighted]: isHighlighted,
       })}
     >
       <div
@@ -136,13 +137,22 @@ const PublicMobileReleaseCardComponent = ({
         </HorizontalScrollRow>
       </div>
       <div className={styles.actionButtonsContainer}>
-        {releaseUrl && (
-          <div className={styles.actionSlot}>
+        {releaseUrl ? (
+          <div
+            className={classNames(
+              segmentedStyles.container,
+              segmentedStyles.containerVertical,
+              styles.actionSegmented,
+            )}
+          >
             <a
               href={releaseUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.discogsButton}
+              className={classNames(
+                segmentedStyles.segment,
+                styles.actionSegment,
+              )}
               onClick={() => {
                 trackEvent("releaseClicked", {
                   action: "releaseClicked",
@@ -154,10 +164,10 @@ const PublicMobileReleaseCardComponent = ({
               aria-label="View on Discogs"
               title="View on Discogs"
             >
-              <ExternalLinkIcon className={styles.externalLinkIcon} />
+              <ExternalLinkIcon className={styles.actionIcon} />
             </a>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   ) : null;

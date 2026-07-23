@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import styles from "./Skeleton.module.css";
 
 const HORIZONTAL_BAR_WIDTHS = [92, 78, 65, 54, 48, 40, 34, 28];
@@ -5,9 +6,9 @@ const HORIZONTAL_BAR_WIDTHS = [92, 78, 65, 54, 48, 40, 34, 28];
 export function SkeletonCard() {
   return (
     <div className={styles.skeletonCard}>
-      <div className={`${styles.skeletonText} ${styles.skeletonTextSm}`} />
-      <div className={`${styles.skeletonText} ${styles.skeletonTextMd}`} />
-      <div className={`${styles.skeletonText} ${styles.skeletonTextLg}`} />
+      <div className={classNames(styles.skeletonText, styles.skeletonTextSm)} />
+      <div className={classNames(styles.skeletonText, styles.skeletonTextMd)} />
+      <div className={classNames(styles.skeletonText, styles.skeletonTextLg)} />
     </div>
   );
 }

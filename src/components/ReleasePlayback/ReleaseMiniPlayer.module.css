@@ -1,0 +1,195 @@
+.miniPlayer {
+  align-items: center;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border-top: 1px solid var(--border);
+  bottom: 0;
+  display: flex;
+  gap: var(--space-3);
+  left: 0;
+  min-height: 3.25rem;
+  padding: var(--space-2) var(--space-4);
+  position: fixed;
+  right: 0;
+  z-index: var(--z-3-fixed);
+
+  @media (width >= 768px) {
+    padding: var(--space-2) var(--space-5);
+  }
+}
+
+.releaseArea {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.metaRow {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.openReleaseButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex: 0 1 auto;
+  font: inherit;
+  gap: var(--space-3);
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+
+  &:focus-visible {
+    border-radius: var(--radius-sm);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    opacity: 0.92;
+  }
+}
+
+.metaLines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.crateButton {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.75rem;
+  justify-content: center;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+  width: 1.75rem;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    border-color: var(--input);
+    color: var(--foreground);
+  }
+}
+
+.crateButtonActive {
+  background: var(--card);
+  border-color: var(--foreground);
+}
+
+.crateIcon {
+  display: block;
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.cover {
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  height: 2.5rem;
+  object-fit: cover;
+  width: 2.5rem;
+}
+
+.artist {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.2;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.controls {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-1);
+}
+
+.controlButton {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+  width: 2rem;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--muted);
+  }
+}
+
+.previousButton {
+  transform: rotate(180deg);
+}
+
+.previousIcon,
+.nextIcon,
+.playPauseIcon,
+.closeIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.playPauseIcon {
+  height: 0.8125rem;
+  width: 0.8125rem;
+}
+
+.closeIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}

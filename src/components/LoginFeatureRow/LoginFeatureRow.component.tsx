@@ -12,7 +12,7 @@ type LoginFeatureRowProps = {
 export const LoginFeatureRow = ({ feature, index }: LoginFeatureRowProps) => (
   <section
     className={classNames(styles.featureRow, {
-      [styles.featureRowReverse as string]: index % 2 === 1,
+      [styles.featureRowReverse]: index % 2 === 1,
     })}
     aria-labelledby={`feature-${index}`}
   >

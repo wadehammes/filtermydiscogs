@@ -49,6 +49,39 @@ describe("ReleaseNotes", () => {
     expect(screen.getByText("Near mint")).toBeInTheDocument();
   });
 
+  it("renders modal notes with add and edit actions", async () => {
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { level: 3, name: "Notes" }),
+      ).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Add notes" }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders modal note text and edit action when notes are present", async () => {
+    const release = releaseFactory.withNotes([
+      { field_id: 3, value: "Signed copy" },
+    ]);
+
+    po.renderReleaseNotes({ release, variant: "modal" });
+
+    expect(screen.getByText("Signed copy")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Edit notes" }),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("renders nothing for inline variant when there are no notes and editing is unavailable", () => {
     po.renderReleaseNotes({
       release: releaseFactory.withEmptyNotes(),

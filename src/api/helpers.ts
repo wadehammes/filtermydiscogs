@@ -2,7 +2,7 @@ import type {
   DiscogsCollection,
   DiscogsCollectionFieldsResponse,
   DiscogsRelease,
-  DiscogsReleaseJson,
+  DiscogsReleaseDetail,
   DiscogsSearchResponse,
 } from "src/types";
 import type {
@@ -152,7 +152,7 @@ export const updateCollectionNote = async ({
 
 export const fetchDiscogsRelease = async (
   releaseId: string,
-): Promise<DiscogsReleaseJson> => {
+): Promise<DiscogsReleaseDetail> => {
   try {
     const response = await fetch(`/api/release/${releaseId}`, {
       method: "GET",

@@ -39,7 +39,7 @@ export const PageFooterFun = ({
   return (
     <div
       className={classNames(styles.fun, {
-        [styles.funGradient as string]: variant === "gradient",
+        [styles.funGradient]: variant === "gradient",
       })}
       data-testid="fmdPageFooterFun"
     >
@@ -49,7 +49,7 @@ export const PageFooterFun = ({
         </p>
         <p
           className={classNames(styles.purpose, {
-            [styles.onGradientMuted as string]: variant === "gradient",
+            [styles.onGradientMuted]: variant === "gradient",
           })}
         >
           Live totals from collectors using FilterMyDiscogs.
@@ -81,7 +81,7 @@ export const PageFooterFun = ({
                 </span>
                 <span
                   className={classNames(styles.statLabel, {
-                    [styles.onGradientMuted as string]: variant === "gradient",
+                    [styles.onGradientMuted]: variant === "gradient",
                   })}
                 >
                   {item.label}

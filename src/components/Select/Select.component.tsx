@@ -211,7 +211,9 @@ const SelectComponent = ({
           })()}
         </span>
         <span
-          className={classNames(styles.icon, state.isOpen && styles.iconOpen)}
+          className={classNames(styles.icon, {
+            [styles.iconOpen]: state.isOpen,
+          })}
         >
           <Chevron />
         </span>
@@ -219,10 +221,9 @@ const SelectComponent = ({
       {state.isOpen && options.length > 0 && (
         <ul
           ref={listboxRef}
-          className={classNames(
-            styles.listbox,
-            state.openUpward && styles.listboxUpward,
-          )}
+          className={classNames(styles.listbox, {
+            [styles.listboxUpward]: state.openUpward,
+          })}
           // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
           role="listbox"
           aria-label={label}
@@ -233,11 +234,10 @@ const SelectComponent = ({
               // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
               role="option"
               aria-selected={isOptionSelected(value, option.value)}
-              className={classNames(
-                styles.option,
-                isOptionSelected(value, option.value) && styles.selected,
-                state.focusedIndex === index && styles.focused,
-              )}
+              className={classNames(styles.option, {
+                [styles.selected]: isOptionSelected(value, option.value),
+                [styles.focused]: state.focusedIndex === index,
+              })}
               tabIndex={state.focusedIndex === index ? 0 : -1}
               onClick={(e) => {
                 e.stopPropagation();

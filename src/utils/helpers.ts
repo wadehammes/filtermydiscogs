@@ -42,51 +42,27 @@ export const getResourceUrl = ({
 };
 
 /**
- * Gets the current theme from the document
- * @returns 'light' or 'dark'
- */
-const getCurrentTheme = (): "light" | "dark" => {
-  if (typeof window === "undefined") return "light";
-  const theme = document.documentElement.getAttribute("data-theme");
-  return theme === "dark" ? "dark" : "light";
-};
-
-/**
- * Creates an SVG placeholder image with a missing image icon as a data URI
+ * Creates an SVG placeholder: solid black with a subtle X
  * @param width - Width of the image
  * @param height - Height of the image
- * @param backgroundColor - Background color hex (without #)
- * @param iconColor - Icon color hex (without #)
  * @returns SVG data URI
  */
-const createSvgPlaceholder = (
-  width: number,
-  height: number,
-  backgroundColor: string,
-  iconColor: string,
-): string => {
-  // Calculate icon size (make it about 40% of the smaller dimension)
-  const iconSize = Math.min(width, height) * 0.4;
+const createSvgPlaceholder = (width: number, height: number): string => {
+  const iconSize = Math.min(width, height) * 0.35;
   const centerX = width / 2;
   const centerY = height / 2;
-  const strokeWidth = Math.max(2, iconSize / 20);
+  const half = iconSize / 2;
+  const strokeWidth = Math.max(1.5, iconSize / 16);
 
-  // Create a missing image icon: rectangle with diagonal line
   const svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-  <rect width="${width}" height="${height}" fill="#${backgroundColor}"/>
-  <g transform="translate(${centerX}, ${centerY})">
-    <rect x="${-iconSize / 2}" y="${-iconSize / 2}" width="${iconSize}" height="${iconSize}" fill="none" stroke="#${iconColor}" stroke-width="${strokeWidth}" rx="${iconSize / 12}"/>
-    <line x1="${-iconSize / 3}" y1="${-iconSize / 3}" x2="${iconSize / 3}" y2="${iconSize / 3}" stroke="#${iconColor}" stroke-width="${strokeWidth}" stroke-linecap="round"/>
+  <rect width="${width}" height="${height}" fill="#000000"/>
+  <g stroke="#ffffff" stroke-opacity="0.28" stroke-width="${strokeWidth}" stroke-linecap="round">
+    <line x1="${centerX - half}" y1="${centerY - half}" x2="${centerX + half}" y2="${centerY + half}"/>
+    <line x1="${centerX + half}" y1="${centerY - half}" x2="${centerX - half}" y2="${centerY + half}"/>
   </g>
 </svg>`;
 
-  // Encode SVG for data URI (works in both browser and Node.js)
-  const encoded =
-    typeof window !== "undefined"
-      ? encodeURIComponent(svg)
-      : encodeURIComponent(svg);
-
-  return `data:image/svg+xml,${encoded}`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
 /**
@@ -120,9 +96,5 @@ export const getReleaseImageUrl = ({
     return imageUrl;
   }
 
-  const theme = getCurrentTheme();
-  const bgHex = theme === "dark" ? "1a1a2e" : "e8f4f8";
-  const iconHex = theme === "dark" ? "a8d8ea" : "2c3e50";
-
-  return createSvgPlaceholder(width, height, bgHex, iconHex);
+  return createSvgPlaceholder(width, height);
 };

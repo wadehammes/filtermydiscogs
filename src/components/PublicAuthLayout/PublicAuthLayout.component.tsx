@@ -32,7 +32,7 @@ export const PublicAuthLayout = ({
       )}
       <main
         className={classNames(styles.main, {
-          [styles.mainCentered as string]: centerMain,
+          [styles.mainCentered]: centerMain,
         })}
       >
         {children}

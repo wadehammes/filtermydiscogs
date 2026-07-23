@@ -74,7 +74,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
           <SearchBar
             placeholder="Search your collection..."
             disabled={!collection}
-            className={styles.searchBar || ""}
+            className={styles.searchBar}
           />
         </div>
 

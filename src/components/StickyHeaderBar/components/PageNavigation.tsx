@@ -40,15 +40,15 @@ export const PageNavigation = ({
   return (
     <nav
       className={classNames(styles.navigation, {
-        [styles.disabled as string]: isDisabled,
+        [styles.disabled]: isDisabled,
       })}
     >
       {showDashboard && (
         <Link
           href="/dashboard"
           className={classNames(styles.navItem, {
-            [styles.active as string]: currentPage === "dashboard",
-            [styles.disabled as string]: isDisabled,
+            [styles.active]: currentPage === "dashboard",
+            [styles.disabled]: isDisabled,
           })}
           onClick={(e) => handleNavigation(e, "Dashboard")}
           aria-label="View dashboard"
@@ -66,8 +66,8 @@ export const PageNavigation = ({
         <Link
           href="/releases"
           className={classNames(styles.navItem, {
-            [styles.active as string]: currentPage === "releases",
-            [styles.disabled as string]: isDisabled,
+            [styles.active]: currentPage === "releases",
+            [styles.disabled]: isDisabled,
           })}
           onClick={(e) => handleNavigation(e, "Releases")}
           aria-label="View releases"
@@ -85,8 +85,8 @@ export const PageNavigation = ({
         <Link
           href="/mosaic"
           className={classNames(styles.navItem, {
-            [styles.active as string]: currentPage === "mosaic",
-            [styles.disabled as string]: isDisabled,
+            [styles.active]: currentPage === "mosaic",
+            [styles.disabled]: isDisabled,
           })}
           onClick={(e) => handleNavigation(e, "Mosaic")}
           aria-label="View mosaic"

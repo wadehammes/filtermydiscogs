@@ -59,7 +59,7 @@ export const ReleasesHeader = ({
       <div ref={sentinelRef} className={styles.stickySentinel} aria-hidden />
       <div
         className={classNames(styles.releasesHeader, {
-          [styles.stuck as string]: isStuck,
+          [styles.stuck]: isStuck,
         })}
       >
         <div className={styles.headerText}>
