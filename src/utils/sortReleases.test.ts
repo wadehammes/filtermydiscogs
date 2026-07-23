@@ -113,6 +113,43 @@ describe("sortReleases", () => {
     expect(result[2]).toEqual(release2);
   });
 
+  it("sorts by CommunityRatingHigh using cached community averages", () => {
+    const release1 = releaseFactory.build({
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 1,
+      },
+    });
+    const release2 = releaseFactory.build({
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 2,
+      },
+    });
+    const release3 = releaseFactory.build({
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 3,
+      },
+    });
+
+    const result = sortReleases(
+      [release1, release2, release3],
+      SortValues.CommunityRatingHigh,
+      {
+        communityRatingsByReleaseId: {
+          "1": 3.2,
+          "2": 4.8,
+          "3": null,
+        },
+      },
+    );
+
+    expect(result[0]).toEqual(release2);
+    expect(result[1]).toEqual(release1);
+    expect(result[2]).toEqual(release3);
+  });
+
   it("sorts by AZArtist (A-Z)", () => {
     const release1 = releaseFactory.build();
     release1.basic_information.artists = [{ name: "Zebra" }];

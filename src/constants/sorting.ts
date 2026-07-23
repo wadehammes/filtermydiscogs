@@ -5,8 +5,16 @@ export const SORTING_OPTIONS = [
   { name: "Date Added (Old to New)", value: SortValues.DateAddedOld },
   { name: "Release Year (New to Old)", value: SortValues.AlbumYearNew },
   { name: "Release Year (Old to New)", value: SortValues.AlbumYearOld },
-  { name: "Rating (High to Low)", value: SortValues.RatingHigh },
-  { name: "Rating (Low to High)", value: SortValues.RatingLow },
+  { name: "Your Rating (High to Low)", value: SortValues.RatingHigh },
+  { name: "Your Rating (Low to High)", value: SortValues.RatingLow },
+  {
+    name: "Community Rating (High to Low)",
+    value: SortValues.CommunityRatingHigh,
+  },
+  {
+    name: "Community Rating (Low to High)",
+    value: SortValues.CommunityRatingLow,
+  },
   { name: "Artist (A-Z)", value: SortValues.AZArtist },
   { name: "Artist (Z-A)", value: SortValues.ZAArtist },
   { name: "Title (A-Z)", value: SortValues.AZTitle },
@@ -31,7 +39,15 @@ export const SORTING_CATEGORIES = {
     { name: "Release Year (Old to New)", value: SortValues.AlbumYearOld },
   ],
   rating: [
-    { name: "Rating (High to Low)", value: SortValues.RatingHigh },
-    { name: "Rating (Low to High)", value: SortValues.RatingLow },
+    { name: "Your Rating (High to Low)", value: SortValues.RatingHigh },
+    { name: "Your Rating (Low to High)", value: SortValues.RatingLow },
+    {
+      name: "Community Rating (High to Low)",
+      value: SortValues.CommunityRatingHigh,
+    },
+    {
+      name: "Community Rating (Low to High)",
+      value: SortValues.CommunityRatingLow,
+    },
   ],
 } as const;

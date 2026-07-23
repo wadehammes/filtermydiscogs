@@ -5,7 +5,6 @@ import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
-import StarIcon from "src/styles/icons/star-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -55,15 +54,6 @@ export const ReleaseCardImage = ({
         style={thumbUrl ? { backgroundImage: `url(${thumbUrl})` } : undefined}
         {...definedProps(activateProps ?? {})}
       >
-        {release.rating > 0 && (
-          <div
-            className={styles.ratingBadge}
-            title={`Rating: ${release.rating}/5`}
-          >
-            <StarIcon className={styles.starIcon} />
-            {release.rating}
-          </div>
-        )}
         {thumbUrl && (
           <Image
             src={thumbUrl}

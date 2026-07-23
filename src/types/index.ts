@@ -12,6 +12,9 @@ export type {
 } from "./discogs-release.types";
 
 export type {
+  DiscogsCommunityRating,
+  DiscogsExtraArtist,
+  DiscogsReleaseCommunity,
   DiscogsReleaseDetail,
   DiscogsTrack,
   DiscogsVideo,

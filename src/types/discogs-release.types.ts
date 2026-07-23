@@ -1,5 +1,7 @@
 export interface DiscogsArtist {
   name: string;
+  anv?: string;
+  join?: string;
   id?: number;
   resource_url?: string;
   [key: string]: unknown;

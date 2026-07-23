@@ -1,9 +1,32 @@
+import type { DiscogsArtist } from "./discogs-release.types";
+
 export interface DiscogsTrack {
   position: string;
   title: string;
   duration?: string;
   type_?: string;
+  artists?: DiscogsArtist[];
+  extraartists?: DiscogsExtraArtist[];
   sub_tracks?: DiscogsTrack[];
+  [key: string]: unknown;
+}
+
+export interface DiscogsExtraArtist extends DiscogsArtist {
+  anv?: string;
+  join?: string;
+  role?: string;
+  tracks?: string;
+}
+
+export interface DiscogsCommunityRating {
+  average: number;
+  count: number;
+}
+
+export interface DiscogsReleaseCommunity {
+  have?: number;
+  want?: number;
+  rating?: DiscogsCommunityRating;
   [key: string]: unknown;
 }
 
@@ -27,6 +50,7 @@ export interface DiscogsReleaseDetail {
   notes?: string;
   tracklist?: DiscogsTrack[];
   videos?: DiscogsVideo[];
+  community?: DiscogsReleaseCommunity;
   thumb?: string;
   images?: Array<{ uri: string; [key: string]: unknown }>;
   [key: string]: unknown;

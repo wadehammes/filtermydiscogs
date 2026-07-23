@@ -1,0 +1,130 @@
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.pulse {
+  animation: pulse 1.4s ease-in-out infinite;
+  background: var(--muted);
+}
+
+.card {
+  align-items: stretch;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: row;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.cover {
+  composes: pulse;
+  flex: 0 0 7rem;
+  min-height: 7rem;
+  width: 7rem;
+}
+
+.content {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mainContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+.lineCatalog,
+.lineArtist,
+.lineMeta {
+  border-radius: var(--radius-ui);
+  composes: pulse;
+  height: 0.625rem;
+}
+
+.lineCatalog {
+  width: 35%;
+}
+
+.lineArtist {
+  width: 55%;
+}
+
+.lineTitle {
+  border-radius: var(--radius-ui);
+  composes: pulse;
+  height: 0.875rem;
+  width: 85%;
+}
+
+.lineMeta {
+  width: 45%;
+}
+
+.notesBlock {
+  border-radius: var(--radius-ui);
+  composes: pulse;
+  height: 2.5rem;
+  margin-top: var(--space-1);
+  width: 100%;
+}
+
+.pillsRow {
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.pill,
+.pillWide {
+  border-radius: var(--radius-full);
+  composes: pulse;
+  flex-shrink: 0;
+  height: 1.5rem;
+}
+
+.pill {
+  width: 3.5rem;
+}
+
+.pillWide {
+  width: 5rem;
+}
+
+.actions {
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex: 0 0 4rem;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 0;
+  padding: var(--space-1);
+  width: 4rem;
+}
+
+.actionButton {
+  border-radius: var(--radius-ui);
+  composes: pulse;
+  flex: 1 1 0;
+  min-height: 0;
+}

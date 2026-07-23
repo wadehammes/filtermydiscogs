@@ -4,6 +4,8 @@ import { ReleaseTracklist } from "src/components/ReleaseModal/ReleaseTracklist.c
 import type { DiscogsTrack } from "src/types";
 import { render, screen } from "test-utils";
 
+const releaseArtistNames = "Rick Astley";
+
 const tracks: DiscogsTrack[] = [
   {
     position: "A",
@@ -27,6 +29,7 @@ describe("ReleaseTracklist", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition="A"
         onTrackSelect={onTrackSelect}
       />,
@@ -52,6 +55,7 @@ describe("ReleaseTracklist", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition="A"
         showPlayingIndicatorOnActiveTrack
         onTrackSelect={() => undefined}
@@ -69,6 +73,7 @@ describe("ReleaseTracklist", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition="A"
         showPlayingIndicatorOnActiveTrack
         isPlaybackPaused
@@ -91,6 +96,7 @@ describe("ReleaseTracklist", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition="A"
         showPlayingIndicatorOnActiveTrack
         onTrackSelect={onTrackSelect}
@@ -110,6 +116,7 @@ describe("ReleaseTracklist", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition="A"
         onTrackSelect={() => undefined}
       />,
@@ -118,10 +125,31 @@ describe("ReleaseTracklist", () => {
     expect(screen.queryByTestId("fmdPlayingIndicator")).toBeNull();
   });
 
+  it("shows per-track credits on Various Artists releases", () => {
+    render(
+      <ReleaseTracklist
+        tracks={[
+          {
+            position: "A1",
+            title: "First Song",
+            type_: "track",
+            artists: [{ name: "Guest Artist" }],
+          },
+        ]}
+        releaseArtistNames="Various"
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Guest Artist")).toBeInTheDocument();
+  });
+
   it("renders empty message when there are no tracks", () => {
     render(
       <ReleaseTracklist
         tracks={[]}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition={null}
         onTrackSelect={() => undefined}
       />,

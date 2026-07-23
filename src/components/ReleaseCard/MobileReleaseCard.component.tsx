@@ -16,7 +16,6 @@ import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
-import StarIcon from "src/styles/icons/star-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -127,15 +126,6 @@ const MobileReleaseCardComponent = ({
           }
           {...definedProps(imageActivateProps ?? {})}
         >
-          {release.rating > 0 && (
-            <div
-              className={styles.ratingBadge}
-              title={`Rating: ${release.rating}/5`}
-            >
-              <StarIcon className={styles.starIcon} />
-              {release.rating}
-            </div>
-          )}
           {thumbUrl && (
             <Image
               src={thumbUrl}

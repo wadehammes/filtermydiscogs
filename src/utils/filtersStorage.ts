@@ -12,6 +12,8 @@ const VALID_SORT_VALUES = new Set([
   "DateAddedOld",
   "RatingHigh",
   "RatingLow",
+  "CommunityRatingHigh",
+  "CommunityRatingLow",
   "AlbumYearNew",
   "AlbumYearOld",
 ]);

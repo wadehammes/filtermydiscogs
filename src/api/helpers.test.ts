@@ -18,6 +18,7 @@ import {
   fetchCrates,
   fetchDiscogsCollection,
   fetchDiscogsRelease,
+  fetchDiscogsReleaseCommunityRating,
   fetchDiscogsSearch,
   logout,
   removeReleaseFromCrate,
@@ -133,6 +134,33 @@ describe("fetchDiscogsRelease", () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
     await expect(fetchDiscogsRelease("123")).rejects.toThrow("Network error");
+  });
+});
+
+describe("fetchDiscogsReleaseCommunityRating", () => {
+  beforeEach(() => {
+    resetFetchMock();
+  });
+
+  it("fetches community rating successfully", async () => {
+    const mockRating = {
+      release_id: 123,
+      rating: {
+        average: 4.2,
+        count: 10,
+      },
+    };
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockRating));
+
+    const result = await fetchDiscogsReleaseCommunityRating("123");
+
+    expect(result).toEqual(mockRating);
+    expect(mockFetch).toHaveBeenCalledWith("/api/release/123/rating", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   });
 });
 
