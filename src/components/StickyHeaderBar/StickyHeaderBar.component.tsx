@@ -1,5 +1,6 @@
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersBar } from "./components/FiltersBar";
+import { FiltersBarSkeleton } from "./components/FiltersBarSkeleton.component";
 import { HeaderTitle } from "./components/HeaderTitle";
 import { MobileMenu } from "./components/MobileMenu";
 import { PageNavigation } from "./components/PageNavigation";
@@ -27,6 +28,7 @@ export const StickyHeaderBar = ({
   const hasValidCollection = isCollectionReady && hasCollection;
   const shouldShowFilters =
     !hideFilters && hasValidCollection && allReleasesLoaded;
+  const shouldShowFiltersSkeleton = !(hideFilters || allReleasesLoaded);
 
   return (
     <>
@@ -63,9 +65,10 @@ export const StickyHeaderBar = ({
         </div>
       </div>
 
-      {shouldShowFilters && (
+      {shouldShowFilters ? (
         <FiltersBar category={filterCategory} disabled={!collection} />
-      )}
+      ) : null}
+      {shouldShowFiltersSkeleton ? <FiltersBarSkeleton /> : null}
     </>
   );
 };

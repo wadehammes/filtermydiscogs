@@ -4,6 +4,10 @@
   min-height: calc(100vh - var(--sticky-header-height));
 }
 
+.contentWithSkeleton {
+  min-height: 0;
+}
+
 .loaderArea {
   align-items: center;
   display: flex;
@@ -13,9 +17,18 @@
   justify-content: center;
 }
 
-.progressText {
+.statusBar {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.statusText {
   color: var(--muted-foreground);
   font-family: var(--font-family-meta);
-  font-size: var(--text-sm);
+  font-size: var(--text-meta-sm);
+  margin: 0;
   text-align: center;
 }

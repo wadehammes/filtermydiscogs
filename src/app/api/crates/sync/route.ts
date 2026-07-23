@@ -40,13 +40,13 @@ export async function POST(request: NextRequest) {
 
     // SAFETY CHECK: Require minimum collection size to prevent syncing with incomplete data
     const MIN_COLLECTION_SIZE = 10;
-    if (collectionInstanceIds.length < MIN_COLLECTION_SIZE && !force) {
+    if (collectionInstanceIds.length < MIN_COLLECTION_SIZE) {
       console.warn(
         `Sync blocked: Collection too small (${collectionInstanceIds.length} < ${MIN_COLLECTION_SIZE}). This may indicate incomplete data.`,
       );
       return privateRouteJson(
         {
-          error: `Collection appears incomplete (${collectionInstanceIds.length} items). Sync requires at least ${MIN_COLLECTION_SIZE} items or force=true.`,
+          error: `Collection appears incomplete (${collectionInstanceIds.length} items). Sync requires at least ${MIN_COLLECTION_SIZE} items.`,
           collectionSize: collectionInstanceIds.length,
           minRequired: MIN_COLLECTION_SIZE,
         },

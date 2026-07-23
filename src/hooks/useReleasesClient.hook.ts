@@ -12,8 +12,10 @@ import {
   useRandomRelease,
   useSearchQuery,
   useSelectedFormats,
+  useSelectedSort,
   useSelectedStyles,
   useSelectedYears,
+  useStyleOperator,
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
@@ -42,6 +44,8 @@ export const useReleasesClient = () => {
   const selectedStyles = useSelectedStyles();
   const selectedYears = useSelectedYears();
   const selectedFormats = useSelectedFormats();
+  const selectedSort = useSelectedSort();
+  const styleOperator = useStyleOperator();
   const searchQuery = useSearchQuery();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
@@ -53,8 +57,11 @@ export const useReleasesClient = () => {
   );
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
 
-  const { isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useCollectionData(username, isAuthenticated, rateLimited);
+  const { isLoading, hasNextPage, isFetchingNextPage } = useCollectionData(
+    username,
+    isAuthenticated,
+    rateLimited,
+  );
   const { error, hasReleases, hasError } = useReleasesDisplay();
 
   const { ref, inView } = useInView({
@@ -113,20 +120,23 @@ export const useReleasesClient = () => {
   }, [hasNextPage, isFetchingNextPage, hasReleases]);
 
   useEffect(() => {
-    if (inView) {
-      if (hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      } else if (hasMoreVisible) {
-        setVisibleCount((prev) => prev + VISIBLE_BATCH_SIZE);
-      }
+    if (inView && hasMoreVisible) {
+      setVisibleCount((prev) => prev + VISIBLE_BATCH_SIZE);
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage, hasMoreVisible]);
+  }, [inView, hasMoreVisible]);
 
-  // Reset the visible count when filters change or random mode toggles
-  // biome-ignore lint/correctness/useExhaustiveDependencies: filteredReleases reference changes when filters change, which is what we want to track
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset visible batch when filter inputs or random mode change
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_RELEASES);
-  }, [filteredReleases, isRandomMode]);
+  }, [
+    selectedStyles,
+    selectedYears,
+    selectedFormats,
+    searchQuery,
+    selectedSort,
+    styleOperator,
+    isRandomMode,
+  ]);
 
   const handleReleaseClick = useCallback((instanceId: string) => {
     setSelectedReleaseId(instanceId);
@@ -213,10 +223,11 @@ export const useReleasesClient = () => {
 
   return {
     isLoading,
+    hasNextPage,
+    isFetchingNextPage,
     hasError,
     error,
     hasReleases,
-    isFetchingNextPage,
     showAllLoadedMessage,
 
     filteredReleases,

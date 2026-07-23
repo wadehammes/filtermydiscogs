@@ -1,23 +1,21 @@
 "use client";
 
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import styles from "./AppPageLoading.module.css";
+import type { AppPage } from "./appPageLoadingMessages";
+import { formatLoadingMessage } from "./appPageLoadingMessages";
 
-export type AppPage = "releases" | "dashboard" | "mosaic";
-
-const LOADING_MESSAGES: Record<AppPage, string> = {
-  releases: "Loading releases...",
-  dashboard: "Loading dashboard...",
-  mosaic: "Loading mosaic...",
-};
+export type { AppPage } from "./appPageLoadingMessages";
 
 interface AppPageLoadingProps {
   currentPage: AppPage;
   allReleasesLoaded?: boolean;
   hideFilters?: boolean;
-  progressText?: ReactNode;
+  loadedCount?: number;
   children?: ReactNode;
 }
 
@@ -25,9 +23,12 @@ export const AppPageLoading = ({
   currentPage,
   allReleasesLoaded = false,
   hideFilters = false,
-  progressText,
+  loadedCount,
   children,
 }: AppPageLoadingProps) => {
+  const message = formatLoadingMessage(currentPage, loadedCount);
+  const hasSkeleton = children != null;
+
   return (
     <>
       <StickyHeaderBar
@@ -35,13 +36,21 @@ export const AppPageLoading = ({
         currentPage={currentPage}
         hideFilters={hideFilters}
       />
-      <div className={styles.content}>
-        <div className={styles.loaderArea}>
-          <PageLoader message={LOADING_MESSAGES[currentPage]} size="3xl" />
-          {progressText ? (
-            <div className={styles.progressText}>{progressText}</div>
-          ) : null}
-        </div>
+      <div
+        className={classNames(styles.content, {
+          [styles.contentWithSkeleton]: hasSkeleton,
+        })}
+      >
+        {hasSkeleton ? (
+          <div className={styles.statusBar}>
+            <Spinner size="sm" aria-label={message} />
+            <p className={styles.statusText}>{message}</p>
+          </div>
+        ) : (
+          <div className={styles.loaderArea}>
+            <PageLoader message={message} size="3xl" />
+          </div>
+        )}
         {children}
       </div>
     </>

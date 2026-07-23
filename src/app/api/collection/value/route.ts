@@ -56,12 +56,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Collection value API error:", error);
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch collection value";
 
-    // Log more details in development
     if (process.env.NODE_ENV === "development") {
       console.error("Collection value error details:", {
         error,
@@ -69,6 +64,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch collection value" },
+      { status: 500 },
+    );
   }
 }

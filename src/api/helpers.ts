@@ -8,12 +8,112 @@ import type {
 import type {
   CratesResponse,
   CrateWithReleasesResponse,
+  PaginationInfo,
 } from "src/types/crate.types";
 import type {
   AdminStats,
   CollectionValue,
   MostCratedRelease,
 } from "src/types/dashboard.types";
+
+const CRATE_PAGE_SIZE = 100;
+
+async function fetchPaginatedCrateReleases({
+  buildUrl,
+  init,
+  notFoundMessage,
+}: {
+  buildUrl: (page: number) => string;
+  init: RequestInit;
+  notFoundMessage?: string;
+}): Promise<CrateWithReleasesResponse> {
+  let page = 1;
+  let result: CrateWithReleasesResponse | null = null;
+
+  while (true) {
+    const response = await fetch(buildUrl(page), init);
+
+    if (!response.ok) {
+      if (notFoundMessage && response.status === 404) {
+        throw new Error(notFoundMessage);
+      }
+
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = (await response.json()) as CrateWithReleasesResponse;
+
+    if (!result) {
+      result = {
+        crate: data.crate,
+        releases: [...data.releases],
+        ...(data.pagination !== undefined
+          ? { pagination: data.pagination }
+          : {}),
+      };
+    } else {
+      result.releases.push(...data.releases);
+      if (data.pagination !== undefined) {
+        result.pagination = data.pagination;
+      }
+    }
+
+    if (!data.pagination?.hasNextPage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  if (!result) {
+    throw new Error("Failed to fetch crate");
+  }
+
+  return result;
+}
+
+async function fetchAllCrates(): Promise<CratesResponse["crates"]> {
+  const crates: CratesResponse["crates"] = [];
+  let page = 1;
+
+  while (true) {
+    const response = await fetch(
+      `/api/crates?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = (await response.json()) as {
+      data?: CratesResponse["crates"];
+      crates?: CratesResponse["crates"];
+      pagination?: PaginationInfo;
+    };
+
+    const pageCrates = data.data ?? data.crates ?? [];
+    if (!Array.isArray(pageCrates)) {
+      return [];
+    }
+
+    crates.push(...pageCrates);
+
+    if (!data.pagination?.hasNextPage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return crates;
+}
 
 async function messageFromFailedApiResponse(
   response: Response,
@@ -219,34 +319,7 @@ export const fetchDiscogsSearch = async (
 
 export const fetchCrates = async (): Promise<CratesResponse> => {
   try {
-    const response = await fetch("/api/crates", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Transform paginated response to backward-compatible format
-    // API now returns { data: [...], pagination: {...} }
-    // but we need { crates: [...] } for backward compatibility
-    if (data.data && Array.isArray(data.data)) {
-      return { crates: data.data };
-    }
-
-    // Fallback for old format (if API still returns it)
-    if (data.crates && Array.isArray(data.crates)) {
-      return data;
-    }
-
-    // If neither format, return empty array
-    return { crates: [] };
+    return { crates: await fetchAllCrates() };
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -259,22 +332,17 @@ export const fetchPublicCrate = async (
   crateId: string,
 ): Promise<CrateWithReleasesResponse> => {
   try {
-    const response = await fetch(`/api/crates/public/${crateId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    return fetchPaginatedCrateReleases({
+      buildUrl: (page) =>
+        `/api/crates/public/${crateId}?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
+      init: {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
+      notFoundMessage: "Crate not found or is private",
     });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error("Crate not found or is private");
-      }
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -288,19 +356,17 @@ export const fetchCrate = async (
   crateId: string,
 ): Promise<CrateWithReleasesResponse> => {
   try {
-    const response = await fetch(`/api/crates/${crateId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    return fetchPaginatedCrateReleases({
+      buildUrl: (page) =>
+        `/api/crates/${crateId}?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
+      init: {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
       },
-      credentials: "include",
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
   } catch (error) {
     if (error instanceof Error) {
       throw error;

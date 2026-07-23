@@ -3,6 +3,17 @@
   width: 100%;
 }
 
+.releasesGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  padding: 0 var(--space-4);
+
+  @media (width > 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
 .loadingContainer {
   align-items: center;
   display: flex;

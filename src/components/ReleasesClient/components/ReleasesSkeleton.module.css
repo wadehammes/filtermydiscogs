@@ -1,0 +1,60 @@
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.pulse {
+  animation: pulse 1.4s ease-in-out infinite;
+  background: var(--muted);
+}
+
+.root {
+  padding-bottom: var(--space-4);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cover {
+  aspect-ratio: 1 / 1;
+  composes: pulse;
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.lineSm,
+.lineMd {
+  border-radius: var(--radius-ui);
+  composes: pulse;
+}
+
+.lineSm {
+  height: 0.75rem;
+  width: 45%;
+}
+
+.lineMd {
+  height: 1rem;
+  width: 80%;
+}

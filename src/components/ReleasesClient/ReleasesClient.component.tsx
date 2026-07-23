@@ -1,7 +1,6 @@
 "use client";
 
 import classNames from "classnames";
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { Page } from "src/components/Page/Page.component";
@@ -13,7 +12,6 @@ import {
   ReleasePlaybackProvider,
   useReleasePlayback,
 } from "src/context/releasePlayback.context";
-import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { definedProps } from "src/utils/definedProps";
@@ -21,6 +19,7 @@ import { EmptyState } from "./components/EmptyState.component";
 import { LoadingTrigger } from "./components/LoadingTrigger.component";
 import { ReleasesGrid } from "./components/ReleasesGrid.component";
 import { ReleasesHeader } from "./components/ReleasesHeader.component";
+import { ReleasesSkeleton } from "./components/ReleasesSkeleton.component";
 import styles from "./ReleasesClient.module.css";
 
 const ReleasesClientContent = () => {
@@ -37,10 +36,11 @@ const ReleasesClientContent = () => {
   const crateName = activeCrate?.name;
   const {
     isLoading,
+    hasNextPage,
+    isFetchingNextPage,
     hasError,
     error,
     hasReleases,
-    isFetchingNextPage,
     showAllLoadedMessage,
     visibleReleases,
     releaseCount,
@@ -59,32 +59,10 @@ const ReleasesClientContent = () => {
     handleExitRandomMode,
   } = useReleasesClient();
 
-  const loadingProgress = hasReleases
-    ? {
-        current: releaseCount,
-      }
-    : undefined;
+  const allReleasesLoaded = !(isLoading || hasNextPage || isFetchingNextPage);
 
-  const needsCollectionLoad = useNeedsCollectionLoad(isLoading);
-  const showLoading = isCheckingAuth || needsCollectionLoad;
-
-  if (shouldRedirectHome) {
+  if (shouldRedirectHome || isCheckingAuth) {
     return null;
-  }
-
-  if (showLoading) {
-    return (
-      <Page>
-        <AppPageLoading
-          currentPage="releases"
-          progressText={
-            needsCollectionLoad && loadingProgress
-              ? `${loadingProgress.current} releases loaded`
-              : undefined
-          }
-        />
-      </Page>
-    );
   }
 
   if (hasError) {
@@ -106,17 +84,20 @@ const ReleasesClientContent = () => {
           [styles.withMiniPlayer]: isPlaying,
         })}
       >
-        <StickyHeaderBar allReleasesLoaded={true} currentPage="releases" />
+        <StickyHeaderBar
+          allReleasesLoaded={allReleasesLoaded}
+          currentPage="releases"
+        />
         <div
           className={classNames(styles.container, {
             [styles.withSidebar]: isDrawerOpen,
           })}
         >
           <div ref={mainContentRef} className={styles.mainContent}>
-            {hasReleases ? (
+            {hasReleases || !allReleasesLoaded ? (
               <ReleasesHeader
                 releaseCount={releaseCount}
-                isFetchingNextPage={isFetchingNextPage}
+                isCollectionLoading={!allReleasesLoaded}
                 showAllLoadedMessage={showAllLoadedMessage}
                 isRandomMode={isRandomMode}
                 currentView={currentView}
@@ -138,6 +119,8 @@ const ReleasesClientContent = () => {
                 onReleaseClick={handleReleaseClick}
                 randomRelease={randomRelease}
               />
+            ) : !allReleasesLoaded ? (
+              <ReleasesSkeleton />
             ) : (
               <EmptyState />
             )}
