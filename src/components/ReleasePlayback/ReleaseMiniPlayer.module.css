@@ -3,8 +3,6 @@
   --release-mini-player-video-height: 9rem;
 
   bottom: 0;
-  display: flex;
-  flex-direction: column;
   left: 0;
   position: fixed;
   right: 0;
@@ -15,25 +13,31 @@
   }
 }
 
-.videoPanel {
-  align-self: flex-start;
-  height: 0;
-  margin-left: var(--space-3);
-  overflow: hidden;
+.videoControl {
+  display: inline-flex;
   position: relative;
-  width: 0;
+}
 
-  @media (width >= 768px) {
-    margin-left: var(--space-4);
-  }
+.videoPanel {
+  bottom: calc(100% + var(--space-2));
+  height: 0;
+  left: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  visibility: hidden;
+  width: 0;
 }
 
 .videoPanelExpanded {
   background: var(--background);
-  border-radius: var(--radius-ui) var(--radius-ui) 0 0;
+  border-radius: var(--radius-ui);
   box-shadow: 0 -4px 16px rgb(0 0 0 / 10%);
   height: var(--release-mini-player-video-height);
   overflow: hidden;
+  pointer-events: auto;
+  visibility: visible;
   width: calc(var(--release-mini-player-video-height) * 16 / 9);
 }
 
@@ -53,51 +57,6 @@
     padding-left: var(--space-5);
     padding-right: var(--space-5);
   }
-}
-
-.videoTab {
-  align-self: stretch;
-  align-items: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  display: inline-flex;
-  flex-shrink: 0;
-  justify-content: center;
-  min-height: 2.5rem;
-  transition:
-    background-color var(--transition-normal),
-    border-color var(--transition-normal),
-    color var(--transition-normal);
-  width: 1.5rem;
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  &:hover {
-    background: var(--muted);
-    color: var(--foreground);
-  }
-}
-
-.videoTabExpanded {
-  background: var(--muted);
-  border-color: var(--foreground);
-  color: var(--foreground);
-}
-
-.videoTabChevron {
-  height: 0.625rem;
-  transform: rotate(-90deg);
-  width: 0.625rem;
-}
-
-.videoTabChevronExpanded {
-  transform: rotate(90deg);
 }
 
 .releaseArea {
@@ -149,12 +108,14 @@
   overflow: hidden;
 }
 
-.crateButtonActive {
+.crateButtonActive,
+.videoButtonActive {
   background: var(--muted);
   border-color: var(--foreground);
 }
 
-.crateIcon {
+.crateIcon,
+.videoIcon {
   display: block;
   height: 0.75rem;
   width: 0.75rem;

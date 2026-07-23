@@ -91,7 +91,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 | File | Role |
 |------|------|
-| `ReleaseMiniPlayer.component.tsx` | Video panel above the mini bar (chevron toggle); bar has cover/title, crate +/-, transport |
+| `ReleaseMiniPlayer.component.tsx` | Video panel above the video toggle in the transport cluster; bar has cover/title, transport, crate +/- |
 | `PersistentYoutubeIframe.component.tsx` | Off-screen iframe that carries actual playback audio/video |
 
 Closing **`ReleaseModal`** does not stop playback. **Play in background** or a track row click calls **`startPlayback`** and overwrites whatever is in the dock. Prev/next walk the flattened tracklist for the active release (v1 album queue). Helpers live in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts).

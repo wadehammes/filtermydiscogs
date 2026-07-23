@@ -10,6 +10,7 @@ import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
+import VideoIcon from "src/styles/icons/video-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { formatArtistNames } from "src/utils/releaseDisplay";
@@ -119,42 +120,7 @@ export const ReleaseMiniPlayer = ({
       {...(isVideoExpanded && { "data-video-expanded": true })}
       aria-label="Now playing"
     >
-      <div
-        id="release-playback-video-panel"
-        className={classNames(styles.videoPanel, {
-          [styles.videoPanelExpanded]: isVideoExpanded,
-        })}
-      >
-        {isPlaybackReady && activeTrack && activeVideoId ? (
-          <PersistentYoutubeIframe
-            videoId={activeVideoId}
-            videoTitle={activeTrack.title}
-            playbackKey={`${activeTrack.position}-${activeVideoId}`}
-            autoplay={shouldAutoplayEmbed}
-            variant={isVideoExpanded ? "visible" : "hidden"}
-          />
-        ) : null}
-      </div>
       <div className={styles.miniPlayerBar}>
-        {isPlaybackReady ? (
-          <button
-            type="button"
-            className={classNames(styles.videoTab, {
-              [styles.videoTabExpanded]: isVideoExpanded,
-            })}
-            onClick={handleVideoToggle}
-            aria-expanded={isVideoExpanded}
-            aria-controls="release-playback-video-panel"
-            aria-label={isVideoExpanded ? "Hide video" : "Show video"}
-          >
-            <ChevronRightIcon
-              className={classNames(styles.videoTabChevron, {
-                [styles.videoTabChevronExpanded]: isVideoExpanded,
-              })}
-              aria-hidden
-            />
-          </button>
-        ) : null}
         <div className={styles.releaseArea}>
           <div className={styles.metaRow}>
             {onReleaseClick ? (
@@ -176,6 +142,38 @@ export const ReleaseMiniPlayer = ({
           </div>
         </div>
         <div className={styles.controls}>
+          {isPlaybackReady ? (
+            <div className={styles.videoControl}>
+              <div
+                id="release-playback-video-panel"
+                className={classNames(styles.videoPanel, {
+                  [styles.videoPanelExpanded]: isVideoExpanded,
+                })}
+              >
+                {activeTrack && activeVideoId ? (
+                  <PersistentYoutubeIframe
+                    videoId={activeVideoId}
+                    videoTitle={activeTrack.title}
+                    playbackKey={`${activeTrack.position}-${activeVideoId}`}
+                    autoplay={shouldAutoplayEmbed}
+                    variant={isVideoExpanded ? "visible" : "hidden"}
+                  />
+                ) : null}
+              </div>
+              <button
+                type="button"
+                className={classNames(styles.controlButton, {
+                  [styles.videoButtonActive]: isVideoExpanded,
+                })}
+                onClick={handleVideoToggle}
+                aria-expanded={isVideoExpanded}
+                aria-controls="release-playback-video-panel"
+                aria-label={isVideoExpanded ? "Hide video" : "Show video"}
+              >
+                <VideoIcon className={styles.videoIcon} aria-hidden />
+              </button>
+            </div>
+          ) : null}
           <button
             type="button"
             className={classNames(styles.controlButton, styles.previousButton)}
