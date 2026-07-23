@@ -13,6 +13,10 @@ import PlusIcon from "src/styles/icons/plus-thin.svg";
 import VideoIcon from "src/styles/icons/video-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import { getReleaseImageUrl } from "src/utils/helpers";
+import {
+  hasSeenPlaybackVideoIntro,
+  markPlaybackVideoIntroSeen,
+} from "src/utils/playbackVideoIntroStorage";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import { PersistentYoutubeIframe } from "./PersistentYoutubeIframe.component";
 import styles from "./ReleaseMiniPlayer.module.css";
@@ -52,6 +56,15 @@ export const ReleaseMiniPlayer = ({
     }
   }, [isPlaying]);
 
+  useEffect(() => {
+    if (!isPlaybackReady || hasSeenPlaybackVideoIntro()) {
+      return;
+    }
+
+    setIsVideoExpanded(true);
+    markPlaybackVideoIntroSeen();
+  }, [isPlaybackReady]);
+
   const handleCrateToggle = useCallback(() => {
     if (!release) {
       return;
@@ -66,6 +79,7 @@ export const ReleaseMiniPlayer = ({
   }, [addToCrate, inCrate, release, removeFromCrate]);
 
   const handleVideoToggle = useCallback(() => {
+    markPlaybackVideoIntroSeen();
     setIsVideoExpanded((expanded) => !expanded);
   }, []);
 

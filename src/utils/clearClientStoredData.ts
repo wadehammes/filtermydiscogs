@@ -1,4 +1,5 @@
 import { clearPersistedFilters } from "src/utils/filtersStorage";
+import { clearPlaybackVideoIntroSeen } from "src/utils/playbackVideoIntroStorage";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 
 export const SELECTED_RELEASES_STORAGE_KEY =
@@ -18,4 +19,5 @@ export const clearClientStoredData = (): void => {
   localStorage.removeItem(VIEW_STATE_STORAGE_KEY);
   clearPersistedFilters();
   clearPersistedReleasePlayback();
+  clearPlaybackVideoIntroSeen();
 };

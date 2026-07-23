@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import { PLAYBACK_VIDEO_INTRO_STORAGE_KEY } from "src/utils/playbackVideoIntroStorage";
 import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
 import {
   clearClientStoredData,
@@ -21,6 +22,7 @@ describe("clearClientStoredData", () => {
     localStorage.setItem(VIEW_STATE_STORAGE_KEY, "{}");
     localStorage.setItem(FILTERS_STORAGE_KEY, "{}");
     localStorage.setItem(RELEASE_PLAYBACK_STORAGE_KEY, "{}");
+    localStorage.setItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY, "true");
 
     clearClientStoredData();
 
@@ -30,5 +32,6 @@ describe("clearClientStoredData", () => {
     expect(localStorage.getItem(VIEW_STATE_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(RELEASE_PLAYBACK_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBeNull();
   });
 });
