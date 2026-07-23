@@ -143,10 +143,10 @@ importers:
         version: 13.4.1(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))
       postcss:
         specifier: '>=8.5.10'
-        version: 8.5.21
+        version: 8.5.22
       postcss-custom-media:
         specifier: ^12.0.1
-        version: 12.0.1(postcss@8.5.21)
+        version: 12.0.1(postcss@8.5.22)
       prisma:
         specifier: ^7.9.0
         version: 7.9.0(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
@@ -4131,6 +4131,10 @@ packages:
 
   postcss@8.5.21:
     resolution: {integrity: sha512-v4sDNP3fdNiWMfabO7OwOQdOX8TiQSztKyT1Wj0w+j7LDallJThJRBBBmzVGyYj0crMh7jlV4zepPkiNu9UwDQ==}
+    engines: {node: ^10 || ^12 || >=14}
+
+  postcss@8.5.22:
+    resolution: {integrity: sha512-KBDEIpLrvpv16pp3K0Fw+UCoZfopFjjgeB+0tA/aaThfEE74kKDLrgg603YvOWJyg3+WYtyq3xYsQWsIyZlPqQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   postgres-array@2.0.0:
@@ -9099,13 +9103,13 @@ snapshots:
       exsolve: 1.1.0
       pathe: 2.0.3
 
-  postcss-custom-media@12.0.1(postcss@8.5.21):
+  postcss-custom-media@12.0.1(postcss@8.5.22):
     dependencies:
       '@csstools/cascade-layer-name-parser': 3.0.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
       '@csstools/media-query-list-parser': 5.0.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      postcss: 8.5.21
+      postcss: 8.5.22
 
   postcss-media-query-parser@0.2.3:
     optional: true
@@ -9125,6 +9129,12 @@ snapshots:
   postcss-value-parser@4.2.0: {}
 
   postcss@8.5.21:
+    dependencies:
+      nanoid: 3.3.16
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
+  postcss@8.5.22:
     dependencies:
       nanoid: 3.3.16
       picocolors: 1.1.1
