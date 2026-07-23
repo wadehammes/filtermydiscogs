@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
+import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { getAvailableFormats } from "src/utils/getAvailableFormats";
 import { getAvailableStyles } from "src/utils/getAvailableStyles";
 import { getAvailableYears } from "src/utils/getAvailableYears";
@@ -22,6 +23,7 @@ const mockGetAvailableFormats = jest.mocked(getAvailableFormats);
 
 describe("FiltersProvider", () => {
   beforeEach(() => {
+    localStorage.clear();
     jest.clearAllMocks();
 
     // Setup default mocks
@@ -44,6 +46,99 @@ describe("FiltersProvider", () => {
     expect(result.current.state.filteredReleases).toEqual([]);
     expect(result.current.state.allReleases).toEqual([]);
     expect(result.current.state.isRandomMode).toBe(false);
+  });
+
+  it("loads saved filter state from localStorage", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Rock"],
+        selectedYears: [1984],
+        selectedFormats: ["LP"],
+        selectedSort: SortValues.AZTitle,
+        styleOperator: "AND",
+        searchQuery: "test query",
+      }),
+    );
+
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    expect(result.current.state.selectedStyles).toEqual(["Rock"]);
+    expect(result.current.state.selectedYears).toEqual([1984]);
+    expect(result.current.state.selectedFormats).toEqual(["LP"]);
+    expect(result.current.state.selectedSort).toBe(SortValues.AZTitle);
+    expect(result.current.state.styleOperator).toBe("AND");
+    expect(result.current.state.searchQuery).toBe("test query");
+  });
+
+  it("saves filter state to localStorage when filters change", () => {
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetStyles,
+        payload: ["Jazz"],
+      });
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetSearchQuery,
+        payload: "blue note",
+      });
+    });
+
+    const saved = JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? "{}");
+
+    expect(saved.selectedStyles).toEqual(["Jazz"]);
+    expect(saved.searchQuery).toBe("blue note");
+  });
+
+  it("handles invalid localStorage data gracefully", () => {
+    localStorage.setItem(FILTERS_STORAGE_KEY, "invalid json");
+
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    expect(result.current.state.selectedStyles).toEqual([]);
+    expect(result.current.state.selectedSort).toBe(SortValues.DateAddedNew);
+    expect(result.current.state.searchQuery).toBe("");
+  });
+
+  it("restores filter state after remount", () => {
+    const { result, unmount } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetStyles,
+        payload: ["Electronic"],
+      });
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetSearchQuery,
+        payload: "ambient",
+      });
+    });
+
+    unmount();
+
+    const { result: remountedResult } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    expect(remountedResult.current.state.selectedStyles).toEqual([
+      "Electronic",
+    ]);
+    expect(remountedResult.current.state.searchQuery).toBe("ambient");
   });
 
   it("sets all releases", () => {
@@ -307,6 +402,12 @@ describe("FiltersProvider", () => {
     expect(result.current.state.selectedYears).toEqual([]);
     expect(result.current.state.selectedFormats).toEqual([]);
     expect(result.current.state.searchQuery).toBe("");
+
+    const saved = JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? "{}");
+    expect(saved.selectedStyles).toEqual([]);
+    expect(saved.selectedYears).toEqual([]);
+    expect(saved.selectedFormats).toEqual([]);
+    expect(saved.searchQuery).toBe("");
   });
 
   it("computes filtered releases when filters change", () => {

@@ -24,7 +24,7 @@ export const SearchBar = ({
   const filtersDispatch = useFiltersDispatch();
   const searchQuery = useSearchQuery();
   const isSearching = useIsSearching();
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(searchQuery);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -77,11 +77,14 @@ export const SearchBar = ({
     [handleClear],
   );
 
-  // Sync local input value when search query is cleared externally (e.g., Clear All Filters)
-  // Only clear if searchQuery changed from non-empty to empty (external clear), not during typing
+  // Sync local input when searchQuery changes externally (persisted restore, Clear All Filters)
   useEffect(() => {
     const previousQuery = previousSearchQueryRef.current;
     const currentQuery = searchQuery;
+
+    if (previousQuery === "" && currentQuery !== "" && inputValue === "") {
+      setInputValue(currentQuery);
+    }
 
     // If searchQuery was cleared externally (changed from non-empty to empty)
     // and we have a local input value, clear it
