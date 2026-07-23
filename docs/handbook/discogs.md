@@ -113,7 +113,7 @@ Typed response fields live in [`src/types/discogs-release-detail.types.ts`](../.
 
 **Playback (v1):** Discogs does not stream audio. When a release has embeddable YouTube links in **`videos`**, [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx) (via [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx)) keeps playback alive when the modal closes. The modal and mini player share album queue state; track rows call **`findVideoForTrack`** in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts) to pick the best match; otherwise the UI links out to YouTube search. Coverage depends on community-submitted videos—many releases have none.
 
-**Card click:** On **`/releases`**, clicking cover art or title on desktop/mobile cards (not the Discogs external-link icon) opens the release detail modal via **`onReleaseClick`** from [`useReleasesClient`](../../src/hooks/useReleasesClient.hook.ts). Public crate cards keep external Discogs links only.
+**Card click:** On **`/releases`**, clicking cover art or title on desktop/mobile cards opens the release detail modal via **`onReleaseClick`** from [`useReleasesClient`](../../src/hooks/useReleasesClient.hook.ts). Discogs links remain on title, artist, and label text. Collection card overlays expose notes + crate actions only; public crate cards have no overlay actions.
 
 ## Collection notes (custom fields)
 

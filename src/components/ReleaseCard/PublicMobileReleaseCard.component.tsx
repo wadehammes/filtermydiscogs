@@ -1,10 +1,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
-import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
-import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { ReleaseCardProps } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -135,39 +132,6 @@ const PublicMobileReleaseCardComponent = ({
               </span>
             ))}
         </HorizontalScrollRow>
-      </div>
-      <div className={styles.actionButtonsContainer}>
-        {releaseUrl ? (
-          <div
-            className={classNames(
-              segmentedStyles.container,
-              segmentedStyles.containerVertical,
-              styles.actionSegmented,
-            )}
-          >
-            <a
-              href={releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={classNames(
-                segmentedStyles.segment,
-                styles.actionSegment,
-              )}
-              onClick={() => {
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category: "publicCrate",
-                  label: "Release Clicked",
-                  value: resource_url,
-                });
-              }}
-              aria-label="View on Discogs"
-              title="View on Discogs"
-            >
-              <ExternalLinkIcon className={styles.actionIcon} />
-            </a>
-          </div>
-        ) : null}
       </div>
     </div>
   ) : null;

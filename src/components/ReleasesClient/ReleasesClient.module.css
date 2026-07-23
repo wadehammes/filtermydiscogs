@@ -14,9 +14,23 @@
 }
 
 .withMiniPlayer {
-  --release-mini-player-height: 3.25rem;
+  --release-mini-player-bar-height: 3.25rem;
+  --release-mini-player-video-height: 0px;
+  --release-mini-player-total-height: calc(
+    var(--release-mini-player-bar-height) +
+    var(--release-mini-player-video-height) +
+    env(safe-area-inset-bottom, 0px)
+  );
 
-  padding-bottom: var(--release-mini-player-height);
+  padding-bottom: var(--release-mini-player-total-height);
+
+  &:has([data-video-expanded="true"]) {
+    --release-mini-player-video-height: 9rem;
+
+    @media (width >= 768px) {
+      --release-mini-player-video-height: 16.1rem;
+    }
+  }
 }
 
 .mainContent {
@@ -197,7 +211,7 @@
 }
 
 .crateFabWithMiniPlayer {
-  bottom: calc(3.25rem + var(--space-4));
+  bottom: calc(var(--release-mini-player-total-height) + var(--space-4));
 }
 
 .fabContent {

@@ -2,7 +2,6 @@ import classNames from "classnames";
 import Image from "next/image";
 import type React from "react";
 import { memo, useCallback } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import notesStyles from "src/components/ReleaseNotes/ReleaseNotes.module.css";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
@@ -15,7 +14,6 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
-import ExternalLinkIcon from "src/styles/icons/external-link-solid.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import StarIcon from "src/styles/icons/star-solid.svg";
@@ -271,30 +269,6 @@ const MobileReleaseCardComponent = ({
               )}
             </button>
             <ReleaseNotesCardAction variant="mobile" />
-            {releaseUrl ? (
-              <a
-                href={releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={classNames(
-                  segmentedStyles.segment,
-                  styles.actionSegment,
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  trackEvent("releaseClicked", {
-                    action: "releaseClicked",
-                    category: "home",
-                    label: "Release Clicked",
-                    value: resource_url,
-                  });
-                }}
-                aria-label="View on Discogs"
-                title="View on Discogs"
-              >
-                <ExternalLinkIcon className={styles.actionIcon} />
-              </a>
-            ) : null}
           </div>
         </div>
       </div>

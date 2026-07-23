@@ -120,7 +120,106 @@ describe("ReleaseMiniPlayer", () => {
       "src",
       expect.stringContaining("youtube-nocookie.com/embed/te2jJncBVG4"),
     );
+    expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
+      "data-variant",
+      "hidden",
+    );
     expect(screen.getByText("Never Gonna Give You Up")).toBeInTheDocument();
+  });
+
+  it("expands and collapses the video panel without changing the embed src", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    const embedSrc = iframe.getAttribute("src");
+
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+      "data-video-expanded",
+      "true",
+    );
+    expect(iframe).toHaveAttribute("data-variant", "visible");
+    expect(iframe.getAttribute("src")).toBe(embedSrc);
+
+    await user.click(screen.getByRole("button", { name: "Hide video" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
+    expect(iframe).toHaveAttribute("data-variant", "hidden");
+    expect(iframe.getAttribute("src")).toBe(embedSrc);
+  });
+
+  it("advances to the next track from the dock controls", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("returns to the previous track from the dock controls", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Previous track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText("Never Gonna Give You Up").length,
+      ).toBeGreaterThan(0);
+    });
+  });
+
+  it("stops playback and hides the dock", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    await user.click(screen.getByRole("button", { name: "Stop playback" }));
+
+    expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
+    expect(screen.queryByTestId("fmdPersistentYoutubeIframe")).toBeNull();
   });
 
   it("toggles play and pause from the dock controls", async () => {

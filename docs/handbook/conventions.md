@@ -59,7 +59,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
   - **Conditionals**: prefer **object notation** — `classNames(styles.base, { [styles.active]: isActive })`
   - **Optional `className` prop**: `classNames(styles.container, className)` — `classNames` ignores `undefined`
   - **Single module class, no conditionals**: `className={styles.block}` is fine without `classNames`
-  - CSS module typing lives in [`cssprops.d.ts`](../../cssprops.d.ts) so object notation works without casts under `noUncheckedIndexedAccess`
+  - **No `as string` casts** on CSS module keys in object notation — [`cssprops.d.ts`](../../cssprops.d.ts) types `*.module.css` imports so `{ [styles.active]: isActive }` works under `noUncheckedIndexedAccess` without `[styles.active as string]`
 - **Raster images**: Use **`next/image`**. Avoid bare **`<img>`** except rare documented exceptions. Every **`Image`** needs **`alt`**. Discogs covers use **`i.discogs.com`** (allowlisted in `next.config.ts`).
 - **Links**: Use **`next/link`**’s **`Link`** for navigational links—internal paths and external URLs—not a bare **`<a>`** unless you have a rare, documented exception. For new tabs, set **`target`** and **`rel="noopener noreferrer"`**.
 - **Context + reducer** for cross-page UI state with side effects (auth session, collection pagination); **Jotai** for high-churn derived client state (filters, view); **React Query** for server-backed data (see [patterns.md](patterns.md)).

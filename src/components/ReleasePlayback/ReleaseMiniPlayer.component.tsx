@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import ChevronRightIcon from "src/styles/icons/chevron-right-solid.svg";
@@ -40,8 +40,15 @@ export const ReleaseMiniPlayer = ({
     stopPlayback,
   } = useReleasePlayback();
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
+  const [isVideoExpanded, setIsVideoExpanded] = useState(false);
 
   const inCrate = isInCrate(release?.instance_id ?? "");
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setIsVideoExpanded(false);
+    }
+  }, [isPlaying]);
 
   const handleCrateToggle = useCallback(() => {
     if (!release) {
@@ -55,6 +62,10 @@ export const ReleaseMiniPlayer = ({
 
     addToCrate(release);
   }, [addToCrate, inCrate, release, removeFromCrate]);
+
+  const handleVideoToggle = useCallback(() => {
+    setIsVideoExpanded((expanded) => !expanded);
+  }, []);
 
   if (!(isPlaying && release)) {
     return null;
@@ -101,23 +112,49 @@ export const ReleaseMiniPlayer = ({
       </>
     );
 
-  const releaseMeta = <div className={styles.metaLines}>{metaLines}</div>;
-
   return (
-    <>
-      {isPlaybackReady && activeTrack && activeVideoId ? (
-        <PersistentYoutubeIframe
-          videoId={activeVideoId}
-          videoTitle={activeTrack.title}
-          playbackKey={`${activeTrack.position}-${activeVideoId}`}
-          autoplay={shouldAutoplayEmbed}
-        />
-      ) : null}
-      <section
-        className={styles.miniPlayer}
-        data-testid="fmdReleaseMiniPlayer"
-        aria-label="Now playing"
+    <section
+      className={styles.miniPlayerShell}
+      data-testid="fmdReleaseMiniPlayer"
+      {...(isVideoExpanded && { "data-video-expanded": true })}
+      aria-label="Now playing"
+    >
+      <div
+        id="release-playback-video-panel"
+        className={classNames(styles.videoPanel, {
+          [styles.videoPanelExpanded]: isVideoExpanded,
+        })}
       >
+        {isPlaybackReady && activeTrack && activeVideoId ? (
+          <PersistentYoutubeIframe
+            videoId={activeVideoId}
+            videoTitle={activeTrack.title}
+            playbackKey={`${activeTrack.position}-${activeVideoId}`}
+            autoplay={shouldAutoplayEmbed}
+            variant={isVideoExpanded ? "visible" : "hidden"}
+          />
+        ) : null}
+      </div>
+      <div className={styles.miniPlayerBar}>
+        {isPlaybackReady ? (
+          <button
+            type="button"
+            className={classNames(styles.videoTab, {
+              [styles.videoTabExpanded]: isVideoExpanded,
+            })}
+            onClick={handleVideoToggle}
+            aria-expanded={isVideoExpanded}
+            aria-controls="release-playback-video-panel"
+            aria-label={isVideoExpanded ? "Hide video" : "Show video"}
+          >
+            <ChevronRightIcon
+              className={classNames(styles.videoTabChevron, {
+                [styles.videoTabChevronExpanded]: isVideoExpanded,
+              })}
+              aria-hidden
+            />
+          </button>
+        ) : null}
         <div className={styles.releaseArea}>
           <div className={styles.metaRow}>
             {onReleaseClick ? (
@@ -128,28 +165,14 @@ export const ReleaseMiniPlayer = ({
                 aria-label={`Open ${release.basic_information.title}`}
               >
                 {cover}
-                {releaseMeta}
+                <div className={styles.metaLines}>{metaLines}</div>
               </button>
             ) : (
               <>
                 {cover}
-                {releaseMeta}
+                <div className={styles.metaLines}>{metaLines}</div>
               </>
             )}
-            <button
-              type="button"
-              className={classNames(styles.crateButton, {
-                [styles.crateButtonActive]: inCrate,
-              })}
-              onClick={handleCrateToggle}
-              aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-            >
-              {inCrate ? (
-                <MinusIcon className={styles.crateIcon} aria-hidden />
-              ) : (
-                <PlusIcon className={styles.crateIcon} aria-hidden />
-              )}
-            </button>
           </div>
         </div>
         <div className={styles.controls}>
@@ -192,8 +215,22 @@ export const ReleaseMiniPlayer = ({
           >
             <XIcon className={styles.closeIcon} aria-hidden />
           </button>
+          <button
+            type="button"
+            className={classNames(styles.controlButton, {
+              [styles.crateButtonActive]: inCrate,
+            })}
+            onClick={handleCrateToggle}
+            aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+          >
+            {inCrate ? (
+              <MinusIcon className={styles.crateIcon} aria-hidden />
+            ) : (
+              <PlusIcon className={styles.crateIcon} aria-hidden />
+            )}
+          </button>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };

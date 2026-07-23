@@ -54,7 +54,6 @@ const ReleaseCardComponent = ({
         <ReleaseCardImage
           release={release}
           thumbUrl={thumbUrl}
-          resourceUrl={releaseUrl}
           {...definedProps({
             onReleaseOpen: canOpen ? openRelease : undefined,
           })}

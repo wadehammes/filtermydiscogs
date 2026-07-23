@@ -232,7 +232,6 @@
   background: var(--card);
   flex: 1;
   min-height: 0;
-  overflow: visible;
 }
 
 .actionSegment {

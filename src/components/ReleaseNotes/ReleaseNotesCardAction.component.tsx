@@ -26,9 +26,7 @@ export const ReleaseNotesCardAction = ({
   const notesButton = (
     <button
       type="button"
-      className={classNames(segmentedStyles.segment, styles.actionSegment, {
-        [segmentedStyles.active]: hasNotes,
-      })}
+      className={classNames(segmentedStyles.segment, styles.actionSegment)}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
