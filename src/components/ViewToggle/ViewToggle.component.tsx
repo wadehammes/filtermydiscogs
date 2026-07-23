@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import type { ViewMode } from "src/atoms/view.atoms";
-import CratesIcon from "src/styles/icons/crates-solid.svg";
-import DiceSolid from "src/styles/icons/dice-solid.svg";
+import CratesIcon from "src/styles/icons/crates-thin.svg";
+import DiceIcon from "src/styles/icons/dice-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import styles from "./ViewToggle.module.css";
 
@@ -104,7 +104,7 @@ export const ViewToggle = ({
           }
         >
           <span className={styles.segmentIcon} aria-hidden>
-            <DiceSolid />
+            <DiceIcon />
           </span>
           <span>Random</span>
         </button>

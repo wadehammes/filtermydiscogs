@@ -1,8 +1,8 @@
 import classNames from "classnames";
-import DiceSolid from "src/styles/icons/dice-solid.svg";
-import FilterSolid from "src/styles/icons/filter-solid.svg";
-import MenuIcon from "src/styles/icons/menu.svg";
-import XIcon from "src/styles/icons/x.svg";
+import DiceIcon from "src/styles/icons/dice-thin.svg";
+import FilterIcon from "src/styles/icons/filter-thin.svg";
+import MenuIcon from "src/styles/icons/menu-thin.svg";
+import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuHeaderProps {
@@ -37,7 +37,7 @@ export function MobileMenuHeader({
             }
           >
             <span className={styles.filterIcon}>
-              <DiceSolid />
+              <DiceIcon />
             </span>
           </button>
           <button
@@ -47,7 +47,7 @@ export function MobileMenuHeader({
             aria-label="Open filters"
           >
             <span className={styles.filterIcon}>
-              <FilterSolid />
+              <FilterIcon />
             </span>
           </button>
         </>

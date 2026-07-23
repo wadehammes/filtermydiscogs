@@ -3,8 +3,8 @@
 import classNames from "classnames";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
-import Moon from "src/styles/icons/moon.svg";
-import Sun from "src/styles/icons/sun.svg";
+import Moon from "src/styles/icons/moon-thin.svg";
+import Sun from "src/styles/icons/sun-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import styles from "./ThemeSwitcher.module.css";
 

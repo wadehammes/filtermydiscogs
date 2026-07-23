@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import Check from "src/styles/icons/check-solid.svg";
+import Check from "src/styles/icons/check-thin.svg";
 import { isOptionSelected } from "src/utils/selectHelpers";
 import styles from "./AutocompleteSelect.module.css";
 

@@ -3,7 +3,7 @@
 import classNames from "classnames";
 import mobileCardStyles from "src/components/ReleaseCard/MobileReleaseCard.module.css";
 import cardStyles from "src/components/ReleaseCard/ReleaseCard.module.css";
-import NoteStickyIcon from "src/styles/icons/note-sticky-solid.svg";
+import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 
