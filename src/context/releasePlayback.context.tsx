@@ -15,7 +15,11 @@ import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
-import { matchesInstanceId, parseReleaseId } from "src/utils/releaseNotes";
+import {
+  isSameReleaseInstance,
+  matchesInstanceId,
+  parseReleaseId,
+} from "src/utils/releaseNotes";
 import {
   findPlayableTrackIndex,
   findTrackIndexByPosition,
@@ -88,9 +92,12 @@ export const ReleasePlaybackProvider = ({
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const releaseRef = useRef<DiscogsRelease | null>(null);
   const startPlaybackRef = useRef<(params: StartPlaybackParams) => void>(
     () => undefined,
   );
+
+  releaseRef.current = release;
 
   const releaseId = release ? parseReleaseId(release) : null;
 
@@ -201,7 +208,7 @@ export const ReleasePlaybackProvider = ({
   ]);
 
   useEffect(() => {
-    if (tracks.length === 0) {
+    if (tracks.length === 0 || pendingTrackPosition) {
       return;
     }
 
@@ -209,7 +216,7 @@ export const ReleasePlaybackProvider = ({
       setActiveTrackIndex(0);
       setIsPaused(false);
     }
-  }, [activeTrackIndex, tracks.length]);
+  }, [activeTrackIndex, pendingTrackPosition, tracks.length]);
 
   const startPlayback = useCallback(
     ({
@@ -217,8 +224,18 @@ export const ReleasePlaybackProvider = ({
       trackPosition,
       startPaused = false,
     }: StartPlaybackParams) => {
+      const isSameRelease = isSameReleaseInstance(
+        releaseRef.current,
+        nextRelease,
+      );
+
       setPendingTrackPosition(trackPosition);
       setRelease(nextRelease);
+
+      if (!isSameRelease) {
+        setActiveTrackIndex(0);
+      }
+
       setIsPlaying(true);
       setIsPaused(startPaused);
       setShouldAutoplayEmbed(!startPaused);
