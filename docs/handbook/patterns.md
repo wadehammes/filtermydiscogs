@@ -74,6 +74,7 @@ Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpe
 | `useCollectionFieldsQuery` | `CollectionFieldsQueryKeys.byUsername` | Discogs collection custom-field definitions (notes editor) |
 | `useCollectionValueQuery` | `CollectionValueQueryKeys.byUsername` | Collection dollar value |
 | `useDiscogsReleaseQuery` | `DiscogsReleaseQueryKeys.byId` | Single release fetch |
+| `useCommunityRatingsLoader` | Jotai `communityRatingsByReleaseIdAtom` | Batch-load Discogs community averages when community sort is active |
 | `useCratesQuery` / `useCrateQuery` | `CratesQueryKeys` / `CrateQueryKeys` | Crate list and detail (`useCrateQuery` is exported from [`useCratesQuery.ts`](../../src/hooks/queries/useCratesQuery.ts)) |
 | `usePublicCrateQuery` | `PublicCrateQueryKeys.byId` | Public crate page |
 | `useMostCratedQuery` | `MostCratedQueryKeys.list` | Dashboard stats |

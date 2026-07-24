@@ -7,6 +7,7 @@ import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseN
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
+import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "./ReleasePlaybackFallback.component";
 import { ReleaseTracklist } from "./ReleaseTracklist.component";
@@ -70,6 +71,7 @@ export const ReleaseModalBody = ({
             ) : null}
             <ReleaseTracklist
               tracks={tracks}
+              releaseArtistNames={formatArtistNames(release)}
               activeTrackPosition={activeTrackPosition}
               showPlayingIndicatorOnActiveTrack={isPlayingThisReleaseInBar}
               isPlaybackPaused={

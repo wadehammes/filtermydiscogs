@@ -1,5 +1,6 @@
 import { atom, type Getter, type Setter } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import { communityRatingsByReleaseIdAtom } from "src/atoms/communityRatings.atoms";
 import type { DiscogsRelease } from "src/types";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import {
@@ -25,6 +26,8 @@ export enum SortValues {
   DateAddedOld = "DateAddedOld",
   RatingHigh = "RatingHigh",
   RatingLow = "RatingLow",
+  CommunityRatingHigh = "CommunityRatingHigh",
+  CommunityRatingLow = "CommunityRatingLow",
   AlbumYearNew = "AlbumYearNew",
   AlbumYearOld = "AlbumYearOld",
 }
@@ -171,6 +174,7 @@ const computeSortedFilteredReleases = ({
   searchQuery,
   selectedSort,
   styleOperator,
+  communityRatingsByReleaseId,
 }: {
   allReleases: DiscogsRelease[];
   selectedStyles: string[];
@@ -179,6 +183,7 @@ const computeSortedFilteredReleases = ({
   searchQuery: string;
   selectedSort: SortValues;
   styleOperator: StyleOperator;
+  communityRatingsByReleaseId: Record<string, number | null>;
 }) => {
   const filtered = filterReleasesUtil({
     releases: allReleases,
@@ -188,7 +193,9 @@ const computeSortedFilteredReleases = ({
     searchQuery,
     styleOperator,
   });
-  return sortReleasesUtil(filtered, selectedSort);
+  return sortReleasesUtil(filtered, selectedSort, {
+    communityRatingsByReleaseId,
+  });
 };
 
 const pickRandomReleaseForMode = ({
@@ -336,6 +343,7 @@ export const sortedFilteredReleasesAtom = atom((get) => {
   return computeSortedFilteredReleases({
     allReleases,
     ...getActiveFilterInputs(get),
+    communityRatingsByReleaseId: get(communityRatingsByReleaseIdAtom),
   });
 });
 
@@ -408,6 +416,7 @@ const applyFilterChange = (
     searchQuery: updates.searchQuery ?? get(searchQueryAtom),
     selectedSort: updates.selectedSort ?? get(selectedSortAtom),
     styleOperator: updates.styleOperator ?? get(styleOperatorAtom),
+    communityRatingsByReleaseId: get(communityRatingsByReleaseIdAtom),
   });
 
   const { randomRelease } = pickRandomReleaseForMode({

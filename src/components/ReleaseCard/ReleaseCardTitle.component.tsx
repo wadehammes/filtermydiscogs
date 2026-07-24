@@ -3,6 +3,7 @@ import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsArtist } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
+import { normalizeDiscogsJoin } from "src/utils/releaseDisplay";
 import styles from "./ReleaseCardTitle.module.css";
 
 interface ReleaseCardTitleProps {
@@ -108,7 +109,9 @@ export const ReleaseCardTitle = ({
               ) : (
                 artist.name
               )}
-              {index < artists.length - 1 && ", "}
+              {index < artists.length - 1
+                ? normalizeDiscogsJoin(artist.join)
+                : null}
             </span>
           );
         })}

@@ -1,11 +1,13 @@
 import classNames from "classnames";
 import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
+import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
 import { PlayingIndicator } from "./PlayingIndicator.component";
 import styles from "./ReleaseTracklist.module.css";
 
 interface ReleaseTracklistProps {
   tracks: DiscogsTrack[];
+  releaseArtistNames: string;
   activeTrackPosition: string | null;
   showPlayingIndicatorOnActiveTrack?: boolean;
   isPlaybackPaused?: boolean;
@@ -15,6 +17,7 @@ interface ReleaseTracklistProps {
 
 export const ReleaseTracklist = ({
   tracks,
+  releaseArtistNames,
   activeTrackPosition,
   showPlayingIndicatorOnActiveTrack = false,
   isPlaybackPaused = false,
@@ -35,6 +38,10 @@ export const ReleaseTracklist = ({
         const isActive = track.position === activeTrackPosition;
         const isPlaying =
           showPlayingIndicatorOnActiveTrack && isActive && onActiveTrackToggle;
+        const trackCreditsLine = formatTrackCreditsLine({
+          track,
+          releaseArtistNames,
+        });
 
         return (
           <li key={`${track.position}-${track.title}`}>
@@ -60,7 +67,14 @@ export const ReleaseTracklist = ({
                 {isPlaying ? (
                   <PlayingIndicator isPaused={isPlaybackPaused} />
                 ) : null}
-                <span className={styles.trackTitleText}>{track.title}</span>
+                <span className={styles.trackTitleStack}>
+                  <span className={styles.trackTitleText}>{track.title}</span>
+                  {trackCreditsLine ? (
+                    <span className={styles.trackCredits}>
+                      {trackCreditsLine}
+                    </span>
+                  ) : null}
+                </span>
               </span>
               {track.duration ? (
                 <span className={styles.trackDuration}>{track.duration}</span>

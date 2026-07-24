@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { COMMUNITY_RATINGS_STORAGE_KEY } from "src/utils/communityRatingsStorage";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { PLAYBACK_VIDEO_INTRO_STORAGE_KEY } from "src/utils/playbackVideoIntroStorage";
 import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
@@ -23,6 +24,7 @@ describe("clearClientStoredData", () => {
     localStorage.setItem(FILTERS_STORAGE_KEY, "{}");
     localStorage.setItem(RELEASE_PLAYBACK_STORAGE_KEY, "{}");
     localStorage.setItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY, "true");
+    localStorage.setItem(COMMUNITY_RATINGS_STORAGE_KEY, "{}");
 
     clearClientStoredData();
 
@@ -33,5 +35,6 @@ describe("clearClientStoredData", () => {
     expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(RELEASE_PLAYBACK_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(COMMUNITY_RATINGS_STORAGE_KEY)).toBeNull();
   });
 });

@@ -1,3 +1,4 @@
+import { ApiFetchError } from "src/api/apiFetchError";
 import type {
   DiscogsCollection,
   DiscogsCollectionFieldsResponse,
@@ -262,7 +263,7 @@ export const fetchDiscogsRelease = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new ApiFetchError(response.status);
     }
 
     return response.json();
@@ -271,6 +272,30 @@ export const fetchDiscogsRelease = async (
       throw error;
     }
     throw new Error("Failed to fetch release");
+  }
+};
+
+export const fetchDiscogsReleaseCommunityRating = async (
+  releaseId: string,
+): Promise<unknown> => {
+  try {
+    const response = await fetch(`/api/release/${releaseId}/rating`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new ApiFetchError(response.status);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch release community rating");
   }
 };
 

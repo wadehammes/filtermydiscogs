@@ -1,0 +1,59 @@
+import { type NextRequest, NextResponse } from "next/server";
+import { getVerifiedUserFromRequest } from "src/lib/auth-request";
+import { discogsOAuthService } from "src/services/discogs-oauth.service";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id: releaseId } = await params;
+
+    if (!releaseId) {
+      return NextResponse.json(
+        { error: "Release ID is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!/^\d+$/.test(releaseId) || releaseId.length > 10) {
+      return NextResponse.json(
+        { error: "Invalid release ID format" },
+        { status: 400 },
+      );
+    }
+
+    const verified = await getVerifiedUserFromRequest(request);
+    if ("error" in verified) {
+      return verified.error;
+    }
+
+    const accessToken = request.cookies.get("discogs_access_token")?.value;
+    const accessTokenSecret = request.cookies.get(
+      "discogs_access_token_secret",
+    )?.value;
+
+    if (!(accessToken && accessTokenSecret)) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const rating = await discogsOAuthService.makeAuthenticatedRequest(
+      `https://api.discogs.com/releases/${releaseId}/rating`,
+      "GET",
+      accessToken,
+      accessTokenSecret,
+    );
+
+    return NextResponse.json(rating, {
+      headers: {
+        "Cache-Control": "private, max-age=3600, stale-while-revalidate=7200",
+      },
+    });
+  } catch (error) {
+    console.error("Release community rating API error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch release community rating" },
+      { status: 500 },
+    );
+  }
+}

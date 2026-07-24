@@ -65,7 +65,8 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 | Concern | Pattern |
 |---------|---------|
-| Layout | Horizontal flex: fixed **`6rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`3rem`** action column with **`.actionSlot`** children (**`flex: 1 1 0`**) for equal-height icon buttons |
+| Layout | Horizontal flex: fixed **`7rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`4rem`** action column with stacked segmented controls |
+| Loading | [`MobileReleaseCardSkeleton`](../../src/components/ReleasesClient/components/MobileReleaseCardSkeleton.component.tsx) mirrors this row layout while collection pages stream in; desktop uses [`DesktopReleaseCardSkeleton`](../../src/components/ReleasesClient/components/DesktopReleaseCardSkeleton.component.tsx) |
 | Pills | **`HorizontalScrollRow`** — wrapper needs **`min-width: 0`** + **`overflow: hidden`** so pill rows do not expand card width |
 | Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
@@ -82,7 +83,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | `ReleaseModalBody.component.tsx` | Tracklist via **`useReleaseModalPlayback`**, then notes at the bottom |
 | `ReleaseSummaryHero.component.tsx` | Top toolbar (crate, Discogs, close) + stacked cover/metadata on mobile, side-by-side on desktop |
 | `ReleasePlaybackFallback.component.tsx` | YouTube search + external video links when no embeddable video is available |
-| `ReleaseTracklist.component.tsx` | Clickable track rows; click starts background playback; click the active dock track again to play/pause; animated bars or pause icon on the dock’s active track |
+| `ReleaseTracklist.component.tsx` | Clickable track rows with optional per-track **`artists`** / **`extraartists`** credits (shown on Various Artists comps and when credits differ from the release artist); click starts background playback; click the active dock track again to play/pause; animated bars or pause icon on the dock’s active track |
 | `useReleaseModalPlayback.hook.ts` | Modal playback state; track select calls **`startPlayback`** |
 
 ## Feature example: ReleasePlayback
@@ -96,7 +97,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 Closing **`ReleaseModal`** does not stop playback. **Play in background** or a track row click calls **`startPlayback`** and overwrites whatever is in the dock. Prev/next walk the flattened tracklist for the active release (v1 album queue). Helpers live in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts).
 
-Crate, notes, and filter pill clicks do **not** open the modal. Discogs links live on title, artist, and label text—not on the image overlay action group.
+Crate, notes, and card filter pill clicks do **not** open the modal. Discogs links live on title, artist, and label text—not on the image overlay action group. The release modal hero shows toolbar, cover, artist/title, a single meta line (label, year, catalog, ratings), and format/style filter pills below it.
 
 ## Feature example: ReleaseNotes
 

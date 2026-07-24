@@ -1,3 +1,4 @@
+import { clearCommunityRatingsCache } from "src/utils/communityRatingsStorage";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import { clearPlaybackVideoIntroSeen } from "src/utils/playbackVideoIntroStorage";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
@@ -18,6 +19,7 @@ export const clearClientStoredData = (): void => {
   localStorage.removeItem(THEME_STORAGE_KEY);
   localStorage.removeItem(VIEW_STATE_STORAGE_KEY);
   clearPersistedFilters();
+  clearCommunityRatingsCache();
   clearPersistedReleasePlayback();
   clearPlaybackVideoIntroSeen();
 };

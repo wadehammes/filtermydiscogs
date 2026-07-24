@@ -6,12 +6,14 @@ import { useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
+import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import {
   useSelectedFormats,
   useSelectedStyles,
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
+import { useSyncCommunityRatingFromReleaseDetail } from "src/hooks/useSyncCommunityRatingFromReleaseDetail.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
@@ -24,8 +26,11 @@ import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
-  formatReleaseMetaLine,
+  formatCommunityRatingAverage,
+  formatReleaseHeroMetaLine,
+  getCommunityRatingFromReleaseDetail,
 } from "src/utils/releaseDisplay";
+import { parseReleaseId } from "src/utils/releaseNotes";
 import styles from "./ReleaseSummaryHero.module.css";
 
 interface ReleaseSummaryHeroProps {
@@ -53,7 +58,19 @@ export const ReleaseSummaryHero = ({
       ? getReleaseFormatTags(releaseFormats)
       : [];
   const artistNames = formatArtistNames(release);
-  const metaLine = formatReleaseMetaLine({ release });
+  const releaseId = parseReleaseId(release);
+  const { data: releaseDetail } = useDiscogsReleaseQuery({
+    releaseId: releaseId !== null ? String(releaseId) : "",
+    enabled: releaseId !== null,
+  });
+  useSyncCommunityRatingFromReleaseDetail({ releaseId, releaseDetail });
+  const communityRating = getCommunityRatingFromReleaseDetail(releaseDetail);
+  const heroMetaLine = formatReleaseHeroMetaLine({
+    release,
+    communityRating,
+  });
+  const showHeroMetaLine =
+    heroMetaLine.text.length > 0 || heroMetaLine.communityRating !== null;
   const releaseUrl = getResourceUrl({
     resourceUrl: basicInfo.resource_url,
     type: "release",
@@ -155,14 +172,29 @@ export const ReleaseSummaryHero = ({
             <h2 className={styles.title} {...definedProps({ id: titleId })}>
               {basicInfo.title}
             </h2>
-            {metaLine ? (
+            {showHeroMetaLine ? (
               <p
                 className={classNames(
                   typographyStyles.metaCaption,
                   styles.metaLine,
                 )}
               >
-                {metaLine}
+                {heroMetaLine.text ? <span>{heroMetaLine.text}</span> : null}
+                {heroMetaLine.text && heroMetaLine.communityRating
+                  ? " · "
+                  : null}
+                {heroMetaLine.communityRating ? (
+                  <span className={styles.communityRating}>
+                    <StarIcon
+                      className={styles.communityStarIcon}
+                      aria-hidden
+                    />
+                    {formatCommunityRatingAverage(
+                      heroMetaLine.communityRating.average,
+                    )}{" "}
+                    ({heroMetaLine.communityRating.count})
+                  </span>
+                ) : null}
               </p>
             ) : null}
             {formatTags.length > 0 || (releaseStyles?.length ?? 0) > 0 ? (
@@ -210,15 +242,6 @@ export const ReleaseSummaryHero = ({
               </HorizontalScrollRow>
             ) : null}
           </div>
-          {release.rating > 0 ? (
-            <div
-              className={styles.ratingBadge}
-              title={`Rating: ${release.rating}/5`}
-            >
-              <StarIcon className={styles.starIcon} />
-              {release.rating}
-            </div>
-          ) : null}
         </div>
       </div>
     </div>
