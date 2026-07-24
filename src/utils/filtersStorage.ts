@@ -12,8 +12,6 @@ const VALID_SORT_VALUES = new Set([
   "DateAddedOld",
   "RatingHigh",
   "RatingLow",
-  "CommunityRatingHigh",
-  "CommunityRatingLow",
   "AlbumYearNew",
   "AlbumYearOld",
 ]);
@@ -54,6 +52,14 @@ const isStringArray = (value: unknown): value is string[] =>
 const isNumberArray = (value: unknown): value is number[] =>
   Array.isArray(value) && value.every((item) => typeof item === "number");
 
+const migratePersistedSort = (sort: string): string => {
+  if (sort === "CommunityRatingHigh" || sort === "CommunityRatingLow") {
+    return defaultPersistedFilters.selectedSort;
+  }
+
+  return sort;
+};
+
 const isValidPersistedFilters = (
   value: unknown,
 ): value is PersistedFiltersState => {
@@ -84,6 +90,12 @@ export const parsePersistedFilters = (
 
   try {
     const parsed: unknown = JSON.parse(value);
+
+    if (parsed && typeof parsed === "object" && "selectedSort" in parsed) {
+      const state = parsed as PersistedFiltersState;
+      state.selectedSort = migratePersistedSort(state.selectedSort);
+    }
+
     if (isValidPersistedFilters(parsed)) {
       return parsed;
     }

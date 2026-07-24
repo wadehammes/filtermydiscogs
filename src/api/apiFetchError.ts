@@ -6,11 +6,3 @@ export class ApiFetchError extends Error {
     this.status = status;
   }
 }
-
-export const getApiFetchErrorStatus = (error: unknown): number | null => {
-  if (error instanceof ApiFetchError) {
-    return error.status;
-  }
-
-  return null;
-};

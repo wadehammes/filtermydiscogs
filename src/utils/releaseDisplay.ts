@@ -4,7 +4,6 @@ import type {
   DiscogsReleaseDetail,
   DiscogsTrack,
 } from "src/types";
-import { parseCommunityRatingAverage } from "src/utils/communityRatingSort";
 
 interface DiscogsCreditName {
   name: string;
@@ -112,6 +111,26 @@ export const formatTrackCreditsLine = ({
   }
 
   return null;
+};
+
+const parseCommunityRatingAverage = (payload: unknown): number | null => {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const rating = (payload as { rating?: { average?: number; count?: number } })
+    .rating;
+
+  if (
+    !rating ||
+    typeof rating.average !== "number" ||
+    rating.average <= 0 ||
+    !rating.count
+  ) {
+    return null;
+  }
+
+  return rating.average;
 };
 
 export const getCommunityRatingFromReleaseDetail = (

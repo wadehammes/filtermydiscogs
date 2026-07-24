@@ -13,7 +13,6 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
-import { useSyncCommunityRatingFromReleaseDetail } from "src/hooks/useSyncCommunityRatingFromReleaseDetail.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
@@ -63,7 +62,6 @@ export const ReleaseSummaryHero = ({
     releaseId: releaseId !== null ? String(releaseId) : "",
     enabled: releaseId !== null,
   });
-  useSyncCommunityRatingFromReleaseDetail({ releaseId, releaseDetail });
   const communityRating = getCommunityRatingFromReleaseDetail(releaseDetail);
   const heroMetaLine = formatReleaseHeroMetaLine({
     release,
