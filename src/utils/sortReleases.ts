@@ -1,10 +1,5 @@
 import { SortValues } from "src/context/filters.context";
 import type { DiscogsRelease } from "src/types";
-import { getCommunityRatingSortValue } from "src/utils/communityRatingSort";
-
-export interface SortReleasesOptions {
-  communityRatingsByReleaseId?: Record<string, number | null>;
-}
 
 const compareNumeric = (a: number, b: number, descending: boolean) =>
   descending ? b - a : a - b;
@@ -73,10 +68,8 @@ const getLabel = (release: DiscogsRelease) =>
 export const sortReleases = (
   releases: DiscogsRelease[],
   sort: SortValues,
-  options: SortReleasesOptions = {},
 ): DiscogsRelease[] => {
   const sorted = [...releases];
-  const communityRatingsByReleaseId = options.communityRatingsByReleaseId ?? {};
 
   switch (sort) {
     case SortValues.DateAddedNew:
@@ -108,52 +101,6 @@ export const sortReleases = (
       return sorted.sort((a, b) =>
         compareNumeric(getRating(a), getRating(b), false),
       );
-
-    case SortValues.CommunityRatingHigh:
-      return sorted.sort((a, b) => {
-        const ratingCompare = compareNumeric(
-          getCommunityRatingSortValue({
-            release: a,
-            communityRatingsByReleaseId,
-            sort: SortValues.CommunityRatingHigh,
-          }),
-          getCommunityRatingSortValue({
-            release: b,
-            communityRatingsByReleaseId,
-            sort: SortValues.CommunityRatingHigh,
-          }),
-          true,
-        );
-
-        if (ratingCompare !== 0) {
-          return ratingCompare;
-        }
-
-        return compareNumeric(getDateAdded(a), getDateAdded(b), true);
-      });
-
-    case SortValues.CommunityRatingLow:
-      return sorted.sort((a, b) => {
-        const ratingCompare = compareNumeric(
-          getCommunityRatingSortValue({
-            release: a,
-            communityRatingsByReleaseId,
-            sort: SortValues.CommunityRatingLow,
-          }),
-          getCommunityRatingSortValue({
-            release: b,
-            communityRatingsByReleaseId,
-            sort: SortValues.CommunityRatingLow,
-          }),
-          false,
-        );
-
-        if (ratingCompare !== 0) {
-          return ratingCompare;
-        }
-
-        return compareNumeric(getDateAdded(a), getDateAdded(b), true);
-      });
 
     case SortValues.AZArtist:
       return sorted.sort((a, b) =>

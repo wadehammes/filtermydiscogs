@@ -12,7 +12,6 @@ import {
   ReleasePlaybackProvider,
   useReleasePlayback,
 } from "src/context/releasePlayback.context";
-import { useCommunityRatingsLoader } from "src/hooks/useCommunityRatingsLoader.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { definedProps } from "src/utils/definedProps";
@@ -59,8 +58,6 @@ const ReleasesClientContent = () => {
     handleRandomClick,
     handleExitRandomMode,
   } = useReleasesClient();
-
-  useCommunityRatingsLoader();
 
   const allReleasesLoaded = !(isLoading || hasNextPage || isFetchingNextPage);
 

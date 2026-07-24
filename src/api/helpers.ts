@@ -275,30 +275,6 @@ export const fetchDiscogsRelease = async (
   }
 };
 
-export const fetchDiscogsReleaseCommunityRating = async (
-  releaseId: string,
-): Promise<unknown> => {
-  try {
-    const response = await fetch(`/api/release/${releaseId}/rating`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new ApiFetchError(response.status);
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Failed to fetch release community rating");
-  }
-};
-
 export const fetchDiscogsSearch = async (
   query: string,
   page: number = 1,

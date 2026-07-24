@@ -60,6 +60,20 @@ describe("filtersStorage", () => {
     expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
   });
 
+  it("migrates deprecated community rating sort to date added", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        ...defaultPersistedFilters,
+        selectedSort: "CommunityRatingHigh",
+      }),
+    );
+
+    expect(
+      parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
+    ).toEqual(defaultPersistedFilters);
+  });
+
   it("returns defaults for invalid sort and style operator values", () => {
     localStorage.setItem(
       FILTERS_STORAGE_KEY,
