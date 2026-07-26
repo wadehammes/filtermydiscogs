@@ -148,7 +148,7 @@ describe("buildYoutubeSearchUrl", () => {
 describe("buildYoutubeEmbedUrl", () => {
   it("builds a nocookie embed URL with player API params", () => {
     expect(buildYoutubeEmbedUrl({ videoId: "te2jJncBVG4" })).toBe(
-      "https://www.youtube-nocookie.com/embed/te2jJncBVG4?enablejsapi=1&rel=0",
+      "https://www.youtube-nocookie.com/embed/te2jJncBVG4?enablejsapi=1&playsinline=1&rel=0",
     );
   });
 
@@ -156,7 +156,7 @@ describe("buildYoutubeEmbedUrl", () => {
     expect(
       buildYoutubeEmbedUrl({ videoId: "te2jJncBVG4", autoplay: true }),
     ).toBe(
-      "https://www.youtube-nocookie.com/embed/te2jJncBVG4?enablejsapi=1&rel=0&autoplay=1",
+      "https://www.youtube-nocookie.com/embed/te2jJncBVG4?enablejsapi=1&playsinline=1&rel=0&autoplay=1",
     );
   });
 
@@ -167,7 +167,7 @@ describe("buildYoutubeEmbedUrl", () => {
         origin: "http://localhost:6767",
       }),
     ).toBe(
-      "https://www.youtube-nocookie.com/embed/te2jJncBVG4?enablejsapi=1&rel=0&origin=http%3A%2F%2Flocalhost%3A6767",
+      "https://www.youtube-nocookie.com/embed/te2jJncBVG4?enablejsapi=1&playsinline=1&rel=0&origin=http%3A%2F%2Flocalhost%3A6767",
     );
   });
 });

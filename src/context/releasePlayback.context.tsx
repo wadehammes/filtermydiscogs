@@ -25,6 +25,7 @@ import {
   findTrackIndexByPosition,
   findVideoForTrack,
   flattenTracklist,
+  PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
@@ -60,6 +61,7 @@ interface ReleasePlaybackContextValue {
   playPrevious: () => void;
   togglePlayback: () => void;
   registerPlaybackIframe: (iframe: HTMLIFrameElement | null) => void;
+  resumePlaybackFromGesture: () => void;
   stopPlayback: () => void;
 }
 
@@ -125,7 +127,7 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
-    for (const delay of [0, 150, 400, 800]) {
+    for (const delay of PLAY_FROM_GESTURE_RETRY_DELAYS_MS) {
       playFromGestureRetryTimeoutsRef.current.push(
         window.setTimeout(() => {
           attemptPlayFromGesture();
@@ -133,6 +135,10 @@ export const ReleasePlaybackProvider = ({
       );
     }
   }, [attemptPlayFromGesture, clearPlayFromGestureRetries, isPaused]);
+
+  const resumePlaybackFromGesture = useCallback(() => {
+    schedulePlayFromGestureAttempts();
+  }, [schedulePlayFromGestureAttempts]);
 
   releaseRef.current = release;
 
@@ -496,6 +502,7 @@ export const ReleasePlaybackProvider = ({
       playPrevious,
       togglePlayback,
       registerPlaybackIframe,
+      resumePlaybackFromGesture,
       stopPlayback,
     }),
     [
@@ -518,6 +525,7 @@ export const ReleasePlaybackProvider = ({
       playPrevious,
       togglePlayback,
       registerPlaybackIframe,
+      resumePlaybackFromGesture,
       stopPlayback,
     ],
   );
