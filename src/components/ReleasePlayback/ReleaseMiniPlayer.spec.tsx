@@ -210,6 +210,14 @@ describe("ReleaseMiniPlayer", () => {
 
     await user.click(screen.getByRole("button", { name: "Show video" }));
 
+    expect(screen.getByRole("button", { name: "Hide video" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(
+      screen.getByRole("button", { name: "Hide video" }).className,
+    ).toMatch(/videoButtonActive/);
+
     expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
       "data-video-expanded",
       "true",
