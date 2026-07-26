@@ -138,6 +138,24 @@ export const ReleaseMiniPlayer = ({
       </>
     );
 
+  const crateToggleButton = (
+    <button
+      type="button"
+      className={classNames(styles.controlButton, styles.crateButton, {
+        [styles.crateButtonActive]: inCrate,
+      })}
+      onClick={handleCrateToggle}
+      aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+      title={inCrate ? "Remove from Crate" : "Add to Crate"}
+    >
+      {inCrate ? (
+        <MinusIcon className={styles.controlIcon} aria-hidden />
+      ) : (
+        <PlusIcon className={styles.controlIcon} aria-hidden />
+      )}
+    </button>
+  );
+
   return (
     <section
       className={styles.miniPlayerShell}
@@ -163,21 +181,7 @@ export const ReleaseMiniPlayer = ({
       <div className={styles.miniPlayerBar}>
         <div className={styles.releaseArea}>
           <div className={styles.metaRow}>
-            <button
-              type="button"
-              className={classNames(styles.controlButton, styles.crateButton, {
-                [styles.crateButtonActive]: inCrate,
-              })}
-              onClick={handleCrateToggle}
-              aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-              title={inCrate ? "Remove from Crate" : "Add to Crate"}
-            >
-              {inCrate ? (
-                <MinusIcon className={styles.controlIcon} aria-hidden />
-              ) : (
-                <PlusIcon className={styles.controlIcon} aria-hidden />
-              )}
-            </button>
+            {!isMobileLayout ? crateToggleButton : null}
             {onReleaseClick ? (
               <button
                 type="button"
@@ -198,6 +202,7 @@ export const ReleaseMiniPlayer = ({
           </div>
         </div>
         <div className={styles.controls}>
+          {isMobileLayout ? crateToggleButton : null}
           {isPlaybackReady ? (
             <button
               type="button"
