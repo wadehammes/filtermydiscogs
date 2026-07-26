@@ -57,6 +57,25 @@
   }
 }
 
+.crateButton {
+  flex-shrink: 0;
+}
+
+.releaseInfo {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--space-3);
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+
+  @media (width >= 768px) {
+    gap: var(--space-4);
+    justify-content: flex-start;
+  }
+}
+
 .openReleaseButton {
   align-items: center;
   background: transparent;
@@ -64,7 +83,7 @@
   color: inherit;
   cursor: pointer;
   display: flex;
-  flex: 0 1 auto;
+  flex: 1;
   font: inherit;
   gap: var(--space-3);
   justify-content: center;
@@ -72,12 +91,11 @@
   overflow: hidden;
   padding: 0;
   text-align: center;
-  width: 100%;
 
   @media (width >= 768px) {
+    gap: var(--space-4);
     justify-content: flex-start;
     text-align: left;
-    width: auto;
   }
 
   &:focus-visible {
@@ -104,12 +122,6 @@
   @media (width >= 768px) {
     align-items: stretch;
   }
-}
-
-.crateButtonActive,
-.videoButtonActive {
-  background: var(--muted);
-  border-color: var(--foreground);
 }
 
 .controlIcon {
@@ -153,6 +165,23 @@
 
   &:hover:not(:disabled) {
     background: var(--muted);
+  }
+
+  &.crateButtonActive {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+
+    &:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: var(--primary-foreground);
+    }
+  }
+
+  &.videoButtonActive {
+    background: var(--muted);
+    border-color: var(--foreground);
   }
 }
 

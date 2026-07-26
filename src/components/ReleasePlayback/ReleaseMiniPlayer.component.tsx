@@ -163,21 +163,37 @@ export const ReleaseMiniPlayer = ({
       <div className={styles.miniPlayerBar}>
         <div className={styles.releaseArea}>
           <div className={styles.metaRow}>
+            <button
+              type="button"
+              className={classNames(styles.controlButton, styles.crateButton, {
+                [styles.crateButtonActive]: inCrate,
+              })}
+              onClick={handleCrateToggle}
+              aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+              title={inCrate ? "Remove from Crate" : "Add to Crate"}
+            >
+              {inCrate ? (
+                <MinusIcon className={styles.controlIcon} aria-hidden />
+              ) : (
+                <PlusIcon className={styles.controlIcon} aria-hidden />
+              )}
+            </button>
             {onReleaseClick ? (
               <button
                 type="button"
                 className={styles.openReleaseButton}
                 onClick={handleOpenRelease}
                 aria-label={`Open ${release.basic_information.title}`}
+                title="Open release details"
               >
                 {cover}
                 <div className={styles.metaLines}>{metaLines}</div>
               </button>
             ) : (
-              <>
+              <div className={styles.releaseInfo}>
                 {cover}
                 <div className={styles.metaLines}>{metaLines}</div>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -192,6 +208,7 @@ export const ReleaseMiniPlayer = ({
               aria-expanded={isVideoExpanded}
               aria-controls="release-playback-video-panel"
               aria-label={isVideoExpanded ? "Hide video" : "Show video"}
+              title={isVideoExpanded ? "Hide video" : "Show video"}
             >
               <VideoIcon className={styles.controlIcon} aria-hidden />
             </button>
@@ -202,6 +219,7 @@ export const ReleaseMiniPlayer = ({
             onClick={playPrevious}
             disabled={!hasPrevious}
             aria-label="Previous track"
+            title="Previous track"
           >
             <ChevronRightIcon
               className={classNames(styles.controlIcon, styles.previousIcon)}
@@ -214,6 +232,7 @@ export const ReleaseMiniPlayer = ({
             onClick={togglePlayback}
             disabled={!isPlaybackReady}
             aria-label={isPaused ? "Play" : "Pause"}
+            title={isPaused ? "Play" : "Pause"}
           >
             {isPaused ? (
               <PlayIcon className={styles.controlIcon} aria-hidden />
@@ -227,6 +246,7 @@ export const ReleaseMiniPlayer = ({
             onClick={playNext}
             disabled={!hasNext}
             aria-label="Next track"
+            title="Next track"
           >
             <ChevronRightIcon className={styles.controlIcon} aria-hidden />
           </button>
@@ -235,22 +255,9 @@ export const ReleaseMiniPlayer = ({
             className={styles.controlButton}
             onClick={stopPlayback}
             aria-label="Stop playback"
+            title="Stop playback"
           >
             <XIcon className={styles.controlIcon} aria-hidden />
-          </button>
-          <button
-            type="button"
-            className={classNames(styles.controlButton, {
-              [styles.crateButtonActive]: inCrate,
-            })}
-            onClick={handleCrateToggle}
-            aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-          >
-            {inCrate ? (
-              <MinusIcon className={styles.controlIcon} aria-hidden />
-            ) : (
-              <PlusIcon className={styles.controlIcon} aria-hidden />
-            )}
           </button>
         </div>
       </div>
