@@ -92,13 +92,14 @@
 }
 
 .metaLines {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   justify-content: center;
   min-width: 0;
   overflow: hidden;
+  text-align: left;
 
   @media (width >= 768px) {
     align-items: stretch;

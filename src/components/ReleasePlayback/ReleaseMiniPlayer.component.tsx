@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ChevronRightIcon from "src/styles/icons/chevron-right-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
@@ -46,6 +47,7 @@ export const ReleaseMiniPlayer = ({
     stopPlayback,
   } = useReleasePlayback();
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
+  const isMobileLayout = useMediaQuery("(max-width: 768px)");
   const [isVideoExpanded, setIsVideoExpanded] = useState(false);
 
   const inCrate = isInCrate(release?.instance_id ?? "");
@@ -64,6 +66,14 @@ export const ReleaseMiniPlayer = ({
     setIsVideoExpanded(true);
     markPlaybackVideoIntroSeen();
   }, [isPlaybackReady]);
+
+  useEffect(() => {
+    if (!(isMobileLayout && isPlaybackReady && shouldAutoplayEmbed)) {
+      return;
+    }
+
+    setIsVideoExpanded(true);
+  }, [isMobileLayout, isPlaybackReady, shouldAutoplayEmbed]);
 
   const handleCrateToggle = useCallback(() => {
     if (!release) {

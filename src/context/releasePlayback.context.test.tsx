@@ -21,6 +21,7 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
+import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
   readPersistedReleasePlayback,
   writePersistedReleasePlayback,
@@ -29,6 +30,14 @@ import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/hooks/queries/useDiscogsReleaseQuery");
 jest.mock("src/api/helpers");
+jest.mock("src/utils/releasePlayback", () => ({
+  ...jest.requireActual("src/utils/releasePlayback"),
+  postYoutubePlayerCommand: jest.fn(),
+}));
+
+const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand, {
+  shallow: true,
+});
 
 const mockApi = jest.mocked(apiHelpers);
 
@@ -134,6 +143,7 @@ describe("ReleasePlaybackProvider", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
+    mockPostYoutubePlayerCommand.mockClear();
     setupDefaultCrateApiMocks(mockApi);
     setupDiscogsReleaseQueryMock(releaseDetail);
   });
@@ -157,6 +167,43 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.activeTrackPosition).toBe("A1");
     expect(result.current.activeVideoId).toBe("te2jJncBVG4");
     expect(result.current.isPlaying).toBe(true);
+  });
+
+  it("requests playVideo when the embed iframe registers after a user gesture", async () => {
+    jest.useFakeTimers();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    const iframe = document.createElement("iframe");
+
+    act(() => {
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(800);
+    });
+
+    const playVideoCalls = mockPostYoutubePlayerCommand.mock.calls.filter(
+      ([args]) => args.command === "playVideo" && args.iframe === iframe,
+    );
+
+    expect(playVideoCalls.length).toBeGreaterThan(0);
+
+    jest.useRealTimers();
   });
 
   it("toggles paused state while playback is active", async () => {

@@ -91,11 +91,48 @@ export const ReleasePlaybackProvider = ({
   >(null);
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
+  const pendingPlayFromGestureRef = useRef(false);
+  const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
   const releaseRef = useRef<DiscogsRelease | null>(null);
   const startPlaybackRef = useRef<(params: StartPlaybackParams) => void>(
     () => undefined,
   );
+
+  const clearPlayFromGestureRetries = useCallback(() => {
+    for (const timeoutId of playFromGestureRetryTimeoutsRef.current) {
+      window.clearTimeout(timeoutId);
+    }
+
+    playFromGestureRetryTimeoutsRef.current = [];
+  }, []);
+
+  const attemptPlayFromGesture = useCallback(() => {
+    if (!pendingPlayFromGestureRef.current || isPaused) {
+      return;
+    }
+
+    postYoutubePlayerCommand({
+      iframe: playbackIframeRef.current,
+      command: "playVideo",
+    });
+  }, [isPaused]);
+
+  const schedulePlayFromGestureAttempts = useCallback(() => {
+    clearPlayFromGestureRetries();
+
+    if (!pendingPlayFromGestureRef.current || isPaused) {
+      return;
+    }
+
+    for (const delay of [0, 150, 400, 800]) {
+      playFromGestureRetryTimeoutsRef.current.push(
+        window.setTimeout(() => {
+          attemptPlayFromGesture();
+        }, delay),
+      );
+    }
+  }, [attemptPlayFromGesture, clearPlayFromGestureRetries, isPaused]);
 
   releaseRef.current = release;
 
@@ -163,6 +200,21 @@ export const ReleasePlaybackProvider = ({
       }) !== null
     );
   }, [activeTrackIndex, isPlaybackReady, tracks, videos]);
+
+  useEffect(() => {
+    return () => {
+      clearPlayFromGestureRetries();
+    };
+  }, [clearPlayFromGestureRetries]);
+
+  useEffect(() => {
+    if (!(isPlaybackReady && pendingPlayFromGestureRef.current)) {
+      return;
+    }
+
+    schedulePlayFromGestureAttempts();
+    // biome-ignore lint/correctness/useExhaustiveDependencies: retry play when the active embed changes
+  }, [activeVideoId, isPlaybackReady, schedulePlayFromGestureAttempts]);
 
   useEffect(() => {
     if (
@@ -247,12 +299,18 @@ export const ReleasePlaybackProvider = ({
       setIsPaused(startPaused);
       setShouldAutoplayEmbed(!startPaused);
       awaitingResumeGestureRef.current = startPaused;
+      pendingPlayFromGestureRef.current = !startPaused;
+
+      if (startPaused) {
+        clearPlayFromGestureRetries();
+      }
+
       writePersistedReleasePlayback({
         instanceId: String(nextRelease.instance_id),
         trackPosition,
       });
     },
-    [],
+    [clearPlayFromGestureRetries],
   );
 
   const playNext = useCallback(() => {
@@ -296,29 +354,42 @@ export const ReleasePlaybackProvider = ({
   const registerPlaybackIframe = useCallback(
     (iframe: HTMLIFrameElement | null) => {
       playbackIframeRef.current = iframe;
+
+      if (iframe) {
+        schedulePlayFromGestureAttempts();
+        return;
+      }
+
+      clearPlayFromGestureRetries();
     },
-    [],
+    [clearPlayFromGestureRetries, schedulePlayFromGestureAttempts],
   );
 
   const togglePlayback = useCallback(() => {
     if (isPaused) {
       awaitingResumeGestureRef.current = false;
+      pendingPlayFromGestureRef.current = true;
       postYoutubePlayerCommand({
         iframe: playbackIframeRef.current,
         command: "playVideo",
       });
+      schedulePlayFromGestureAttempts();
       setIsPaused(false);
       return;
     }
 
+    pendingPlayFromGestureRef.current = false;
+    clearPlayFromGestureRetries();
     postYoutubePlayerCommand({
       iframe: playbackIframeRef.current,
       command: "pauseVideo",
     });
     setIsPaused(true);
-  }, [isPaused]);
+  }, [clearPlayFromGestureRetries, isPaused, schedulePlayFromGestureAttempts]);
 
   const stopPlayback = useCallback(() => {
+    pendingPlayFromGestureRef.current = false;
+    clearPlayFromGestureRetries();
     setIsPlaying(false);
     setIsPaused(false);
     setShouldAutoplayEmbed(false);
@@ -326,7 +397,7 @@ export const ReleasePlaybackProvider = ({
     setActiveTrackIndex(0);
     setPendingTrackPosition(null);
     clearPersistedReleasePlayback();
-  }, []);
+  }, [clearPlayFromGestureRetries]);
 
   startPlaybackRef.current = startPlayback;
 
