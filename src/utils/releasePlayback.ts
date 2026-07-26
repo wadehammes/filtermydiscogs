@@ -108,6 +108,7 @@ export const buildYoutubeEmbedUrl = ({
 }): string => {
   const params = new URLSearchParams({
     enablejsapi: "1",
+    playsinline: "1",
     rel: "0",
   });
 
@@ -121,6 +122,10 @@ export const buildYoutubeEmbedUrl = ({
 
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 };
+
+export const PLAY_FROM_GESTURE_RETRY_DELAYS_MS = [
+  0, 150, 400, 800, 1500, 3000,
+] as const;
 
 export type YoutubePlayerCommand = "playVideo" | "pauseVideo";
 

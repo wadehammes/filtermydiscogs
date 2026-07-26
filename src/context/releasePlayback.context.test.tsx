@@ -194,7 +194,7 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(800);
+      jest.advanceTimersByTime(3000);
     });
 
     const playVideoCalls = mockPostYoutubePlayerCommand.mock.calls.filter(

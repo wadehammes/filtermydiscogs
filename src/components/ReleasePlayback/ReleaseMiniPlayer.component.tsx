@@ -48,32 +48,40 @@ export const ReleaseMiniPlayer = ({
   } = useReleasePlayback();
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
   const isMobileLayout = useMediaQuery("(max-width: 768px)");
-  const [isVideoExpanded, setIsVideoExpanded] = useState(false);
+  const [videoPanelOverride, setVideoPanelOverride] = useState<
+    null | "open" | "closed"
+  >(null);
+  const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
 
   const inCrate = isInCrate(release?.instance_id ?? "");
 
   useEffect(() => {
     if (!isPlaying) {
-      setIsVideoExpanded(false);
+      setVideoPanelOverride(null);
+      setLatchedIntroExpand(false);
     }
   }, [isPlaying]);
 
   useEffect(() => {
-    if (!isPlaybackReady || hasSeenPlaybackVideoIntro()) {
+    setVideoPanelOverride(null);
+  }, [activeVideoId]);
+
+  const shouldExpandForMobileAutoplay =
+    isMobileLayout && isPlaybackReady && shouldAutoplayEmbed;
+
+  useEffect(() => {
+    if (!(isPlaybackReady && !hasSeenPlaybackVideoIntro())) {
       return;
     }
 
-    setIsVideoExpanded(true);
+    setLatchedIntroExpand(true);
     markPlaybackVideoIntroSeen();
   }, [isPlaybackReady]);
 
-  useEffect(() => {
-    if (!(isMobileLayout && isPlaybackReady && shouldAutoplayEmbed)) {
-      return;
-    }
-
-    setIsVideoExpanded(true);
-  }, [isMobileLayout, isPlaybackReady, shouldAutoplayEmbed]);
+  const isVideoPanelExpanded =
+    videoPanelOverride === "open" ||
+    (videoPanelOverride !== "closed" &&
+      (shouldExpandForMobileAutoplay || latchedIntroExpand));
 
   const handleCrateToggle = useCallback(() => {
     if (!release) {
@@ -90,8 +98,8 @@ export const ReleaseMiniPlayer = ({
 
   const handleVideoToggle = useCallback(() => {
     markPlaybackVideoIntroSeen();
-    setIsVideoExpanded((expanded) => !expanded);
-  }, []);
+    setVideoPanelOverride(isVideoPanelExpanded ? "closed" : "open");
+  }, [isVideoPanelExpanded]);
 
   if (!(isPlaying && release)) {
     return null;
@@ -160,13 +168,13 @@ export const ReleaseMiniPlayer = ({
     <section
       className={styles.miniPlayerShell}
       data-testid="fmdReleaseMiniPlayer"
-      {...(isVideoExpanded && { "data-video-expanded": true })}
+      {...(isVideoPanelExpanded && { "data-video-expanded": true })}
       aria-label="Now playing"
     >
       {isPlaybackReady && activeTrack && activeVideoId ? (
         <ReleasePlaybackVideoPanel
           panelId="release-playback-video-panel"
-          isExpanded={isVideoExpanded}
+          isExpanded={isVideoPanelExpanded}
           onClose={handleVideoToggle}
         >
           <PersistentYoutubeIframe
@@ -174,7 +182,7 @@ export const ReleaseMiniPlayer = ({
             videoTitle={activeTrack.title}
             playbackKey={`${activeTrack.position}-${activeVideoId}`}
             autoplay={shouldAutoplayEmbed}
-            variant={isVideoExpanded ? "visible" : "hidden"}
+            variant={isVideoPanelExpanded ? "visible" : "hidden"}
           />
         </ReleasePlaybackVideoPanel>
       ) : null}
@@ -207,13 +215,13 @@ export const ReleaseMiniPlayer = ({
             <button
               type="button"
               className={classNames(styles.controlButton, {
-                [styles.videoButtonActive]: isVideoExpanded,
+                [styles.videoButtonActive]: isVideoPanelExpanded,
               })}
               onClick={handleVideoToggle}
-              aria-expanded={isVideoExpanded}
+              aria-expanded={isVideoPanelExpanded}
               aria-controls="release-playback-video-panel"
-              aria-label={isVideoExpanded ? "Hide video" : "Show video"}
-              title={isVideoExpanded ? "Hide video" : "Show video"}
+              aria-label={isVideoPanelExpanded ? "Hide video" : "Show video"}
+              title={isVideoPanelExpanded ? "Hide video" : "Show video"}
             >
               <VideoIcon className={styles.controlIcon} aria-hidden />
             </button>

@@ -22,7 +22,8 @@ export const PersistentYoutubeIframe = ({
   autoplay = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
-  const { registerPlaybackIframe } = useReleasePlayback();
+  const { registerPlaybackIframe, resumePlaybackFromGesture } =
+    useReleasePlayback();
 
   const embedUrl = useMemo(() => {
     const origin =
@@ -40,6 +41,14 @@ export const PersistentYoutubeIframe = ({
       registerPlaybackIframe(null);
     };
   }, [registerPlaybackIframe]);
+
+  useEffect(() => {
+    if (variant !== "visible") {
+      return;
+    }
+
+    resumePlaybackFromGesture();
+  }, [playbackKey, resumePlaybackFromGesture, variant]);
 
   return (
     <iframe
