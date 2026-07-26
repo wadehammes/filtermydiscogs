@@ -93,6 +93,7 @@ describe("ReleaseMiniPlayer", () => {
     jest.resetAllMocks();
     localStorage.clear();
     markPlaybackVideoIntroSeen();
+    setupMockMatchMedia({ desktop: true });
     setupDefaultCrateApiMocks(mockApi);
     setupDiscogsReleaseQueryMock(releaseDetail);
     mockApiResponse(
@@ -158,6 +159,7 @@ describe("ReleaseMiniPlayer", () => {
   it("does not auto-expand the dock video panel after the intro has been seen", async () => {
     localStorage.clear();
     markPlaybackVideoIntroSeen();
+    setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
@@ -170,6 +172,29 @@ describe("ReleaseMiniPlayer", () => {
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
       "hidden",
+    );
+  });
+
+  it("auto-expands the dock video panel on mobile when autoplay playback starts", async () => {
+    localStorage.clear();
+    markPlaybackVideoIntroSeen();
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
+      "data-variant",
+      "visible",
     );
   });
 
@@ -233,7 +258,13 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
 
     expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanel"),
