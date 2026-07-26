@@ -10,9 +10,7 @@
 }
 
 .main {
-  background-color: var(--background);
-  background-image: var(--pattern-microdot);
-  background-size: var(--pattern-microdot-size);
+  composes: microdotbackground from "../../styles/patterns.module.css";
   align-items: stretch;
   display: flex;
   flex: 1;
