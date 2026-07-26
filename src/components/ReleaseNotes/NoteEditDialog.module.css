@@ -45,6 +45,7 @@
 }
 
 .releaseSummary {
+  composes: microdotoverlay from "../../styles/patterns.module.css";
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);
@@ -52,24 +53,6 @@
   display: flex;
   gap: var(--space-4);
   padding: 0;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    background-image: var(--pattern-microdot);
-    background-size: var(--pattern-microdot-size);
-    border-radius: inherit;
-    content: "";
-    inset: 0;
-    pointer-events: none;
-    position: absolute;
-    z-index: 0;
-  }
-
-  & > * {
-    position: relative;
-    z-index: 1;
-  }
 }
 
 .coverWrapper {

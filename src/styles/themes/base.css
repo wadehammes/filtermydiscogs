@@ -100,10 +100,10 @@
   /* Patterns */
   --pattern-microdot: radial-gradient(
     circle,
-    color-mix(in srgb, var(--foreground) 7.5%, transparent) 0.75px,
-    transparent 0.75px
+    color-mix(in srgb, var(--foreground) 6.75%, transparent) 0.65px,
+    transparent 0.65px
   );
-  --pattern-microdot-size: 7px 7px;
+  --pattern-microdot-size: 6px 6px;
 
   /* Z-index - numbered for hierarchy (higher number = higher z-index) */
   --z-1-dropdown: 1000;

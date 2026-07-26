@@ -160,7 +160,8 @@ Each **`.module.css`** file is organized around **block classes** (the `styles.*
 
 - **Custom properties**: Use theme tokens from [`src/styles/themes/`](../../src/styles/themes/) and [`src/styles/global.css`](../../src/styles/global.css)—not magic numbers.
 - **Theme files** ([`src/styles/themes/`](../../src/styles/themes/)):
-  - **`base.css`** — spacing, typography, transitions, z-index (non-color tokens).
+  - **`base.css`** — spacing, typography, transitions, z-index, pattern tokens (`--pattern-microdot`, `--pattern-microdot-size`).
+  - **[`patterns.module.css`](../../src/styles/patterns.module.css)** — composable **`microdotbackground`** and **`microdotoverlay`** (`::before`) helpers that consume those tokens.
   - **`colors.css`** — semantic colors via **`light-dark()`** and **`color-scheme`**; **`--on-primary`**, **`--on-success`**, etc. for filled surfaces.
   - **`theming.css`** — global utility classes (`.theme-surface-elevated`, `.theme-highlighted-surface`, `.theme-gradient-surface`, `.theme-on-gradient-muted`).
   - **`index.css`** — imports the three files above; loaded from [`global.css`](../../src/styles/global.css).
