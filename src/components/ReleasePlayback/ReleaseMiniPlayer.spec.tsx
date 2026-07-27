@@ -116,7 +116,7 @@ describe("ReleaseMiniPlayer", () => {
     expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
   });
 
-  it("renders the dock and hidden iframe when playback is active", async () => {
+  it("renders the dock and visible iframe when autoplay playback is active", async () => {
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
@@ -129,7 +129,7 @@ describe("ReleaseMiniPlayer", () => {
     );
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "hidden",
+      "visible",
     );
     expect(screen.getByText("Never Gonna Give You Up")).toBeInTheDocument();
   });
@@ -156,7 +156,7 @@ describe("ReleaseMiniPlayer", () => {
     expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBe("true");
   });
 
-  it("does not auto-expand the dock video panel after the intro has been seen", async () => {
+  it("auto-expands the dock video panel when autoplay playback starts", async () => {
     localStorage.clear();
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: true });
@@ -166,12 +166,16 @@ describe("ReleaseMiniPlayer", () => {
 
     await startPlaybackAndWaitForPlayer(user);
 
-    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
-      "data-video-expanded",
-    );
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "hidden",
+      "visible",
     );
   });
 
@@ -208,8 +212,6 @@ describe("ReleaseMiniPlayer", () => {
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const embedSrc = iframe.getAttribute("src");
 
-    await user.click(screen.getByRole("button", { name: "Show video" }));
-
     expect(screen.getByRole("button", { name: "Hide video" })).toHaveAttribute(
       "aria-expanded",
       "true",
@@ -232,6 +234,15 @@ describe("ReleaseMiniPlayer", () => {
     );
     expect(iframe).toHaveAttribute("data-variant", "hidden");
     expect(iframe.getAttribute("src")).toBe(embedSrc);
+
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+      "data-video-expanded",
+      "true",
+    );
+    expect(iframe).toHaveAttribute("data-variant", "visible");
+    expect(iframe.getAttribute("src")).toBe(embedSrc);
   });
 
   it("shows drag and resize handles when the video panel is expanded on desktop", async () => {
@@ -242,11 +253,12 @@ describe("ReleaseMiniPlayer", () => {
 
     await startPlaybackAndWaitForPlayer(user);
 
-    expect(
-      screen.queryByTestId("fmdReleasePlaybackVideoPanelHandle"),
-    ).toBeNull();
-
-    await user.click(screen.getByRole("button", { name: "Show video" }));
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
 
     expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanelHandle"),
@@ -291,6 +303,44 @@ describe("ReleaseMiniPlayer", () => {
 
     expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
       "data-video-expanded",
+    );
+  });
+
+  it("keeps the video panel open when advancing tracks", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+      "data-video-expanded",
+      "true",
+    );
+    expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
+      "data-variant",
+      "visible",
     );
   });
 
@@ -352,8 +402,6 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await user.click(screen.getByRole("button", { name: "Show video" }));
 
     await user.click(screen.getByRole("button", { name: "Stop playback" }));
 
