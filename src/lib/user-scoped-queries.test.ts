@@ -14,6 +14,7 @@ describe("clearUserScopedQueries", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
     queryClient.setQueryData(CratesQueryKeys.byUserId("123"), {
@@ -26,6 +27,7 @@ describe("clearUserScopedQueries", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
     expect(

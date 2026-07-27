@@ -9,6 +9,7 @@ type LoginConnectButtonProps = {
   disabled?: boolean;
   isLoading?: boolean;
   onClick: () => void;
+  reconnectUsername?: string | null;
 };
 
 export const LoginConnectButton = ({
@@ -16,20 +17,37 @@ export const LoginConnectButton = ({
   disabled = false,
   isLoading = false,
   onClick,
-}: LoginConnectButtonProps) => (
-  <Button
-    variant="primary"
-    size="lg"
-    onClick={onClick}
-    disabled={disabled}
-    isLoading={isLoading}
-    loadingText="Connecting..."
-    className={classNames(styles.button, className)}
-  >
-    <span className={styles.label}>
-      Connect with
-      <DiscogsLogo className={styles.logo} aria-hidden />
-      <span className={accessibilityStyles.visuallyHidden}>Discogs</span>
-    </span>
-  </Button>
-);
+  reconnectUsername = null,
+}: LoginConnectButtonProps) => {
+  const accessibleName = reconnectUsername
+    ? `Connect with ${reconnectUsername}`
+    : "Connect with Discogs";
+
+  return (
+    <Button
+      variant="primary"
+      size="lg"
+      onClick={onClick}
+      disabled={disabled}
+      isLoading={isLoading}
+      loadingText="Connecting..."
+      className={classNames(styles.button, className)}
+      aria-label={accessibleName}
+    >
+      <span className={styles.label} aria-hidden={Boolean(reconnectUsername)}>
+        {reconnectUsername ? (
+          <>
+            Connect with{" "}
+            <span className={styles.username}>{reconnectUsername}</span>
+          </>
+        ) : (
+          <>
+            Connect with
+            <DiscogsLogo className={styles.logo} aria-hidden />
+            <span className={accessibilityStyles.visuallyHidden}>Discogs</span>
+          </>
+        )}
+      </span>
+    </Button>
+  );
+};

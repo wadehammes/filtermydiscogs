@@ -1,6 +1,8 @@
 import type { NextRequest, NextResponse } from "next/server";
 import {
-  getVerifiedUserFromRequest,
+  clearDiscogsSessionCookie,
+  clearReconnectUsernameCookie,
+  getVerifiedUserFromStoredTokens,
   syncIdentityCookies,
 } from "src/lib/auth-request";
 import { privateRouteRedirect } from "src/lib/private-route-response";
@@ -33,6 +35,9 @@ function clearSessionCookies(response: NextResponse): void {
   response.cookies.set("discogs_access_token_secret", "", clearCookieOptions);
   response.cookies.set("oauth_token", "", clearCookieOptions);
   response.cookies.set("oauth_token_secret", "", clearCookieOptions);
+
+  clearDiscogsSessionCookie(response);
+  clearReconnectUsernameCookie(response);
 }
 
 export async function GET(request: NextRequest) {
@@ -44,9 +49,8 @@ export async function GET(request: NextRequest) {
       "discogs_access_token_secret",
     )?.value;
 
-    // Reuse existing tokens only when the user did not explicitly request re-auth.
     if (!forceReauth && accessToken && accessTokenSecret) {
-      const verified = await getVerifiedUserFromRequest(request);
+      const verified = await getVerifiedUserFromStoredTokens(request);
 
       if (!("error" in verified)) {
         const identity = verified.user;

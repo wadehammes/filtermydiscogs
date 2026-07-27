@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { GET } from "src/app/api/release/[id]/route";
+import { DISCOGS_SESSION_COOKIE } from "src/lib/auth-request";
 import {
   clearCachedIdentity,
   getIdentityCacheKey,
@@ -30,6 +31,7 @@ const createRequest = (
   });
 
 const authenticatedCookies = {
+  [DISCOGS_SESSION_COOKIE]: "1",
   discogs_access_token: accessToken,
   discogs_access_token_secret: accessTokenSecret,
 };

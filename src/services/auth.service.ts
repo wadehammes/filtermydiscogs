@@ -5,6 +5,7 @@ export interface AuthStatus {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  reconnectUsername: string | null;
   rateLimited: boolean;
 }
 
@@ -12,11 +13,13 @@ export const normalizeAuthStatus = (data: {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  reconnectUsername?: string | null;
   rateLimited?: boolean;
 }): AuthStatus => ({
   isAuthenticated: data.isAuthenticated,
   username: data.username || null,
   userId: data.userId || null,
+  reconnectUsername: data.reconnectUsername || null,
   rateLimited: data.rateLimited === true,
 });
 
@@ -25,14 +28,19 @@ export const getUsernameFromCookies = (): string | null => {
   return Cookies.get("discogs_username") || null;
 };
 
-export const clearAuthCookies = (): void => {
+export const clearSessionAuthCookies = (): void => {
   if (typeof document === "undefined") return;
 
-  // Clear display/session cookies readable by client JS.
-  // httpOnly cookies (discogs_user_id, OAuth tokens) are cleared by API routes.
   Cookies.remove("discogs_username");
   Cookies.remove("oauth_token");
   Cookies.remove("oauth_token_secret");
+};
+
+export const clearAuthCookies = (): void => {
+  if (typeof document === "undefined") return;
+
+  clearSessionAuthCookies();
+  Cookies.remove("discogs_reconnect_username");
 };
 
 export const clearUrlParams = (): void => {
@@ -60,11 +68,11 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
   try {
     return normalizeAuthStatus(await checkAuthApi());
   } catch (_error) {
-    // Silent fail
     return {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     };
   }

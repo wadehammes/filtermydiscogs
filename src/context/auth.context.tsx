@@ -17,16 +17,25 @@ import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
 import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import {
-  clearAuthCookies,
+  clearSessionAuthCookies,
   clearUrlParams,
   parseAuthUrlParams,
 } from "src/services/auth.service";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 
+export type LoginOptions = {
+  force?: boolean;
+};
+
+export type LogoutOptions = {
+  preserveTokens?: boolean;
+};
+
 export interface AuthState {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  reconnectUsername: string | null;
   isCheckingAuth: boolean;
   isLoading: boolean;
   isLoggingOut: boolean;
@@ -92,11 +101,17 @@ const initialUiState: AuthUiState = {
 
 const unauthenticatedSession: Pick<
   AuthState,
-  "isAuthenticated" | "username" | "userId" | "rateLimited" | "isCheckingAuth"
+  | "isAuthenticated"
+  | "username"
+  | "userId"
+  | "reconnectUsername"
+  | "rateLimited"
+  | "isCheckingAuth"
 > = {
   isAuthenticated: false,
   username: null,
   userId: null,
+  reconnectUsername: null,
   rateLimited: false,
   isCheckingAuth: false,
 };
@@ -104,8 +119,8 @@ const unauthenticatedSession: Pick<
 const AuthContext = createContext<{
   state: AuthState;
   dispatch: React.Dispatch<AuthActions>;
-  login: () => void;
-  logout: () => Promise<void>;
+  login: (options?: LoginOptions) => void;
+  logout: (options?: LogoutOptions) => Promise<void>;
 } | null>(null);
 
 interface AuthProviderProps extends PropsWithChildren {
@@ -151,6 +166,7 @@ export const AuthProvider = ({
         isAuthenticated: initialStateOverride.isAuthenticated,
         username: initialStateOverride.username,
         userId: initialStateOverride.userId,
+        reconnectUsername: initialStateOverride.reconnectUsername,
         rateLimited: initialStateOverride.rateLimited,
         isCheckingAuth: initialStateOverride.isCheckingAuth,
       };
@@ -164,6 +180,9 @@ export const AuthProvider = ({
       isAuthenticated: Boolean(authData?.isAuthenticated && authData.username),
       username: authData?.username ?? null,
       userId: authData?.userId ?? null,
+      reconnectUsername: authData?.isAuthenticated
+        ? null
+        : (authData?.reconnectUsername ?? null),
       rateLimited: authData?.rateLimited ?? false,
       isCheckingAuth:
         isCompletingOAuth || !hasCompletedAuthCheck || (isPending && !authData),
@@ -262,18 +281,25 @@ export const AuthProvider = ({
     skipInitialAuthCheck,
   ]);
 
-  const login = () => {
+  const login = (options?: LoginOptions) => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
     dispatch({ type: AuthActionTypes.SetError, payload: null });
-    window.location.href = "/api/auth/discogs?force=1";
+    window.location.href = options?.force
+      ? "/api/auth/discogs?force=1"
+      : "/api/auth/discogs";
   };
 
-  const logout = async () => {
+  const logout = async (options?: LogoutOptions) => {
+    const preserveTokens = options?.preserveTokens ?? true;
+    const reconnectUsername = preserveTokens ? sessionState.username : null;
+
     try {
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: true });
 
-      await logoutApi();
-      clearAuthCookies();
+      await logoutApi({
+        preserveTokens,
+      });
+      clearSessionAuthCookies();
       clearPersistedReleasePlayback();
       dispatch({ type: AuthActionTypes.Logout, payload: undefined });
       queryClient.setQueryData(AuthQueryKeys.all(), {
@@ -281,7 +307,9 @@ export const AuthProvider = ({
         username: null,
         userId: null,
         rateLimited: false,
+        reconnectUsername,
       });
+      void refetch();
       router.replace("/");
       clearUserScopedQueries(queryClient);
     } catch (_error) {

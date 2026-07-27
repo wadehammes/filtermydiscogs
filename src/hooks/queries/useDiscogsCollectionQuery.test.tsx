@@ -51,6 +51,7 @@ describe("useDiscogsCollectionQuery", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
 
@@ -72,6 +73,7 @@ describe("useDiscogsCollectionQuery", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
   });
@@ -84,6 +86,7 @@ describe("useDiscogsCollectionQuery", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     });
 
@@ -99,6 +102,7 @@ describe("useDiscogsCollectionQuery", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     });
   });

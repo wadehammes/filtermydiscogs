@@ -79,7 +79,7 @@ export const PublicPageHeader = ({
               Legal
             </Link>
             <Link
-              href="/api/auth/discogs?force=1"
+              href="/api/auth/discogs"
               className={classNames(navStyles.link, {
                 [styles.navLinkGradient]: variant === "gradient",
               })}
