@@ -1,16 +1,14 @@
 import type { DiscogsRelease } from "src/types";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 
 export const getAvailableStyles = (releases: DiscogsRelease[]): string[] => {
-  const styleSet = new Set<string>();
+  const tagSet = new Set<string>();
 
   releases.forEach((release) => {
-    const styles = release.basic_information.styles;
-    styles.forEach((style) => {
-      if (style?.trim()) {
-        styleSet.add(style);
-      }
+    getReleaseGenreStyleTags(release.basic_information).forEach((tag) => {
+      tagSet.add(tag);
     });
   });
 
-  return Array.from(styleSet).sort();
+  return Array.from(tagSet).sort();
 };

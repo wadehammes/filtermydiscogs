@@ -26,6 +26,7 @@ export interface DiscogsBasicInformation {
   id?: number;
   resource_url: string;
   uri: string;
+  genres?: string[];
   styles: string[];
   master_id: number;
   master_url: string | null;

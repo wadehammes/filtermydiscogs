@@ -74,11 +74,12 @@ export function calculateCollectionStats(
   const artistSet = new Set<string>();
   const labelSet = new Set<string>();
   const styleSet = new Set<string>();
+  const genreSet = new Set<string>();
   let totalRating = 0;
   let ratedCount = 0;
 
   releases.forEach((release) => {
-    const { artists, labels, styles, rating } = release.basic_information;
+    const { artists, labels, styles, genres } = release.basic_information;
 
     artists.forEach((artist) => {
       if (artist.name) {
@@ -93,10 +94,18 @@ export function calculateCollectionStats(
     });
 
     styles.forEach((style) => {
-      styleSet.add(style.toLowerCase());
+      if (style?.trim()) {
+        styleSet.add(style.toLowerCase());
+      }
     });
 
-    const ratingNum = typeof rating === "number" ? rating : 0;
+    genres?.forEach((genre) => {
+      if (genre?.trim()) {
+        genreSet.add(genre.toLowerCase());
+      }
+    });
+
+    const ratingNum = typeof release.rating === "number" ? release.rating : 0;
     if (ratingNum > 0) {
       totalRating += ratingNum;
       ratedCount++;
@@ -109,7 +118,7 @@ export function calculateCollectionStats(
     uniqueLabels: labelSet.size,
     averageRating: ratedCount > 0 ? totalRating / ratedCount : 0,
     totalStyles: styleSet.size,
-    totalGenres: 0, // Genres not always available in basic_information
+    totalGenres: genreSet.size,
   };
 }
 

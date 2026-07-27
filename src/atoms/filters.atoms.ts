@@ -12,6 +12,7 @@ import {
 import { getAvailableFormats } from "src/utils/getAvailableFormats";
 import { getAvailableStyles } from "src/utils/getAvailableStyles";
 import { getAvailableYears } from "src/utils/getAvailableYears";
+import { getFacetSourceReleases } from "src/utils/getFacetSourceReleases";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
 
 export enum SortValues {
@@ -307,22 +308,44 @@ export const searchQueryAtom = persistableFieldAtom("searchQuery");
 export const isRandomModeAtom = atom(false);
 export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
 export const isSearchingAtom = atom(false);
+const getFacetReleases = (
+  get: Getter,
+  excludeDimension: "styles" | "years" | "formats",
+) => {
+  const {
+    selectedStyles,
+    selectedYears,
+    selectedFormats,
+    searchQuery,
+    styleOperator,
+  } = getActiveFilterInputs(get);
+
+  return getFacetSourceReleases({
+    releases: get(allReleasesAtom),
+    selectedStyles,
+    selectedYears,
+    selectedFormats,
+    searchQuery,
+    styleOperator,
+    excludeDimension,
+  });
+};
 
 export const availableStylesAtom = atom((get) =>
   get(collectionFiltersActiveAtom)
-    ? getAvailableStyles(get(allReleasesAtom))
+    ? getAvailableStyles(getFacetReleases(get, "styles"))
     : [],
 );
 
 export const availableYearsAtom = atom((get) =>
   get(collectionFiltersActiveAtom)
-    ? getAvailableYears(get(allReleasesAtom))
+    ? getAvailableYears(getFacetReleases(get, "years"))
     : [],
 );
 
 export const availableFormatsAtom = atom((get) =>
   get(collectionFiltersActiveAtom)
-    ? getAvailableFormats(get(allReleasesAtom))
+    ? getAvailableFormats(getFacetReleases(get, "formats"))
     : [],
 );
 

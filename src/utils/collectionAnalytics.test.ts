@@ -1,11 +1,56 @@
 import { describe, expect, it } from "@jest/globals";
+import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  calculateCollectionStats,
   calculateFormatMixSummary,
   calculateFormatTagDistribution,
   calculateMediaFormatSubtypeBreakdown,
   calculateMediaTypeDistribution,
 } from "src/utils/collectionAnalytics";
+
+describe("calculateCollectionStats", () => {
+  it("counts genres and reads ratings from the release instance", () => {
+    const releases = [
+      releaseFactory.build({
+        rating: 4,
+        basic_information: basicInformationFactory.build({
+          genres: ["Electronic", "Rock"],
+          styles: ["Techno"],
+          artists: [{ name: "Artist One" }],
+          labels: [{ name: "Label One" }],
+        }),
+      }),
+      releaseFactory.build({
+        rating: 5,
+        basic_information: basicInformationFactory.build({
+          genres: ["Rock"],
+          styles: ["Indie Rock"],
+          artists: [{ name: "Artist Two" }],
+          labels: [{ name: "Label Two" }],
+        }),
+      }),
+      releaseFactory.build({
+        rating: 0,
+        basic_information: basicInformationFactory.build({
+          genres: [],
+          styles: ["Jazz"],
+          artists: [{ name: "Artist Three" }],
+          labels: [{ name: "Label Three" }],
+        }),
+      }),
+    ];
+
+    expect(calculateCollectionStats(releases)).toEqual({
+      totalReleases: 3,
+      uniqueArtists: 3,
+      uniqueLabels: 3,
+      averageRating: 4.5,
+      totalStyles: 3,
+      totalGenres: 2,
+    });
+  });
+});
 
 describe("calculateMediaTypeDistribution", () => {
   it("counts one primary media type per release", () => {

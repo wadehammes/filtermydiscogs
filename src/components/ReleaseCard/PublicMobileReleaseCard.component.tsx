@@ -8,6 +8,7 @@ import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./MobileReleaseCard.module.css";
 import {
   ReleaseCardCatalog,
@@ -33,12 +34,12 @@ const PublicMobileReleaseCardComponent = ({
     title,
     thumb,
     cover_image,
-    styles: releaseStyles,
     formats: releaseFormats,
     resource_url,
   } = release.basic_information;
 
   const catno = labels[0]?.catno ? String(labels[0].catno) : null;
+  const genreStyleTags = getReleaseGenreStyleTags(release.basic_information);
 
   const thumbUrl = getReleaseImageUrl({
     thumb,
@@ -137,16 +138,14 @@ const PublicMobileReleaseCardComponent = ({
               </span>
             ))}
 
-          {releaseStyles &&
-            releaseStyles.length > 0 &&
-            releaseStyles.map((style: string) => (
-              <span
-                key={style}
-                className={classNames("pill", "pillStyle", styles.stylePill)}
-              >
-                {style}
-              </span>
-            ))}
+          {genreStyleTags.map((tag) => (
+            <span
+              key={tag}
+              className={classNames("pill", "pillStyle", styles.stylePill)}
+            >
+              {tag}
+            </span>
+          ))}
         </HorizontalScrollRow>
       </div>
     </div>
