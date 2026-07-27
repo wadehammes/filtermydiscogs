@@ -2,9 +2,12 @@ import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./MobileReleaseCard.module.css";
 import {
   ReleaseCardCatalog,
@@ -17,7 +20,12 @@ import titleStyles from "./ReleaseCardTitle.module.css";
 const PublicMobileReleaseCardComponent = ({
   release,
   isHighlighted = false,
+  onReleaseClick,
 }: Omit<ReleaseCardProps, "isRandomMode" | "onExitRandomMode">) => {
+  const { openRelease, canOpen } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
+  });
   const {
     labels,
     year,
@@ -50,6 +58,13 @@ const PublicMobileReleaseCardComponent = ({
     type: "label",
   });
 
+  const activateProps = canOpen
+    ? getReleaseActivateProps({
+        onActivate: openRelease,
+        ariaLabel: `Open release details for ${title}`,
+      })
+    : undefined;
+
   return release ? (
     <div
       className={classNames(styles.releaseCard, {
@@ -66,6 +81,7 @@ const PublicMobileReleaseCardComponent = ({
               }
             : undefined
         }
+        {...definedProps(activateProps ?? {})}
       >
         {thumbUrl && (
           <Image

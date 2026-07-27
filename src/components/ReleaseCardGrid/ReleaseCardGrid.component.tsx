@@ -3,13 +3,18 @@ import { PublicMobileReleaseCard } from "src/components/ReleaseCard/PublicMobile
 import { PublicReleaseCard } from "src/components/ReleaseCard/PublicReleaseCard.component";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseCardGrid.module.css";
 
 interface ReleaseCardGridProps {
   releases: DiscogsRelease[];
+  onReleaseClick?: (instanceId: string) => void;
 }
 
-const ReleaseCardGridComponent = ({ releases }: ReleaseCardGridProps) => {
+const ReleaseCardGridComponent = ({
+  releases,
+  onReleaseClick,
+}: ReleaseCardGridProps) => {
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const gridStyle = useMemo(
@@ -29,9 +34,15 @@ const ReleaseCardGridComponent = ({ releases }: ReleaseCardGridProps) => {
       {releases.map((release: DiscogsRelease) => (
         <div key={release.instance_id} id={`release-${release.instance_id}`}>
           {isMobile ? (
-            <PublicMobileReleaseCard release={release} />
+            <PublicMobileReleaseCard
+              release={release}
+              {...definedProps({ onReleaseClick })}
+            />
           ) : (
-            <PublicReleaseCard release={release} />
+            <PublicReleaseCard
+              release={release}
+              {...definedProps({ onReleaseClick })}
+            />
           )}
         </div>
       ))}

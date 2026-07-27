@@ -97,6 +97,13 @@ class DiscogsOAuthService {
     return oauthHeaders as OAuthHeaders;
   }
 
+  async makeConsumerRequest(
+    url: string,
+    method: string = "GET",
+  ): Promise<unknown> {
+    return this.makeAuthenticatedRequest(url, method, "", "", {});
+  }
+
   async makeAuthenticatedRequest(
     url: string,
     method: string = "GET",

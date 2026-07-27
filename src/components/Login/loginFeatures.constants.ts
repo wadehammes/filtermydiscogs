@@ -21,19 +21,19 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Browse",
     title: "Browse, search, and filter your collection",
     description:
-      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Add or edit notes on any release from the card or list, kept in sync with your Discogs collection.",
+      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Open any release to browse its tracklist and preview tracks with the in-app player, then add or edit notes from the card or list—kept in sync with your Discogs collection.",
     imageBase: "releases",
     imageAlt:
-      "Releases page with search, filters, grid and table views, and release cards",
+      "Releases page with search, filters, tracklist, in-app player, and release cards",
   },
   {
     eyebrow: "Crates",
     title: "Create and manage crates",
     description:
-      "Build crates for DJ gigs, themed lists, or long-term favorites. Add releases while you browse, keep multiple crates in sync, and share public crates when you want someone else to explore your picks.",
+      "Build crates for DJ gigs, themed lists, or long-term favorites. Add releases while you browse, mark each album packed once it's in the bag for your gig, and share public crates when you want someone else to explore your picks.",
     imageBase: "crates",
     imageAlt:
-      "Crate drawer showing saved crates and releases organized into a custom list",
+      "Crate drawer with gig packing checklist and releases organized into a custom list",
   },
   {
     eyebrow: "Mosaics",

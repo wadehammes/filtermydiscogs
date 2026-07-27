@@ -59,7 +59,7 @@ export const CrateDrawerReleases = () => {
       {packedCount > 0 ? (
         <div className={styles.releasesListHeader}>
           <span className={styles.foundProgress}>
-            {packedCount} of {selectedReleases.length} packed
+            {packedCount} of {selectedReleases.length} packed for gig
           </span>
           <label className={styles.packedFilterLabel}>
             <input
@@ -67,16 +67,16 @@ export const CrateDrawerReleases = () => {
               className={styles.checkbox}
               checked={hidePackedItems}
               onChange={(event) => setHidePackedItems(event.target.checked)}
-              aria-label="Hide items marked as packed"
-              title="Hide items marked as packed"
+              aria-label="Hide albums packed for your gig"
+              title="Hide albums packed for your gig"
             />
-            <span>Hide packed items</span>
+            <span>Hide packed albums</span>
           </label>
         </div>
       ) : null}
       {showAllPackedState ? (
         <div className={styles.emptyState}>
-          <p>All items are packed.</p>
+          <p>All albums packed for your gig.</p>
         </div>
       ) : visibleReleases.length > 0 ? (
         <div className={styles.releasesList}>

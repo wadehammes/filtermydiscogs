@@ -107,6 +107,8 @@ Full release metadata (tracklist, community videos) is **not** included in colle
 |-----------|-----------|-------------|
 | Read release detail | `GET /api/release/{releaseId}` | `GET /releases/{release_id}` |
 
+Authenticated sessions use the user's OAuth tokens. Visitors without Discogs cookies get the same release payload via application (consumer) credentials so public crate pages can open the release modal and mini player.
+
 Client helper: **`fetchDiscogsRelease`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). React Query: **`useDiscogsReleaseQuery`** ([`src/hooks/queries/useDiscogsReleaseQuery.ts`](../../src/hooks/queries/useDiscogsReleaseQuery.ts)) with **`DiscogsReleaseQueryKeys`**.
 
 **Testing:** Assert the route contract in [`route.test.ts`](../../src/app/api/release/[id]/route.test.ts) and the client helper in [`helpers.test.ts`](../../src/api/helpers.test.ts). UI tests mock **`fetchDiscogsRelease`** via **`src/api/helpers`** and let **`useDiscogsReleaseQuery`** run on **`TestProviders`** (see [conventions.md → Testing](conventions.md#testing)).
@@ -117,7 +119,7 @@ Typed response fields live in [`src/types/discogs-release-detail.types.ts`](../.
 
 **Playback (v1):** Discogs does not stream audio. When a release has embeddable YouTube links in **`videos`**, [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx) (via [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx)) keeps playback alive when the modal closes. The modal and mini player share album queue state — track rows in the modal call **`startPlayback`**, but the YouTube embed stays in the dock. Track rows call **`findVideoForTrack`** in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts) to pick the best match; otherwise the UI links out to YouTube search. Coverage depends on community-submitted videos—many releases have none.
 
-**Card click:** On **`/releases`**, clicking **cover art** or the overlay **Release details** button on desktop/mobile cards opens the release detail modal via **`onReleaseClick`**. **Title**, artist, and label text link to Discogs in a new tab, as does the overlay **View on Discogs** button. The modal toolbar also includes **View on Discogs**. Collection card overlays expose details, Discogs, notes, and crate actions; public crate cards have no overlay actions.
+**Card click:** On **`/releases`**, clicking **cover art** or the overlay **Release details** button on desktop/mobile cards opens the release detail modal via **`onReleaseClick`**. On **`/crate/[id]`** (public crates), clicking **cover art** opens **`PublicReleaseModal`** (tracklist + mini player via **`ReleasePlaybackProvider`** on [`PublicCrateClient`](../../src/app/crate/[id]/PublicCrateClient.tsx)) — no collection notes, no crate toolbar, and format/style pills are static (not filter actions). **Title**, artist, and label text on cards link to Discogs in a new tab. The public modal toolbar includes **View on Discogs** and **Close** only.
 
 ## Collection notes (custom fields)
 

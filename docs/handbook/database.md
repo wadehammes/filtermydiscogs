@@ -22,13 +22,13 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 | `username` | Discogs username (for public crate attribution) |
 | `is_default` | One default crate per user |
 | `private` | When `false`, crate is publicly viewable at `/crate/[id]` |
-| `packed_enabled` | When `true`, owner sees packed checklist UI in the crate drawer (default **`false`**) |
+| `packed_enabled` | When `true`, owner sees gig packing checklist UI in the crate drawer (default **`false`**) |
 
 Composite primary key: **`[user_id, id]`**.
 
 ### `CrateRelease`
 
-Stores a release snapshot as **`release_data` JSON** keyed by Discogs **`instance_id`**. Optional **`found_at`** timestamp marks items **packed** while digging (owner-only; not exposed on public crate routes).
+Stores a release snapshot as **`release_data` JSON** keyed by Discogs **`instance_id`**. Optional **`found_at`** timestamp marks albums **packed for a gig** (owner-only; not exposed on public crate routes).
 
 Composite primary key: **`[user_id, crate_id, instance_id]`**. Cascades on crate delete.
 
