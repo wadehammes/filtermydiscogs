@@ -8,12 +8,21 @@ import { FiltersActionTypes } from "src/context/filters.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
+import { getEffectiveCollectionPages } from "src/utils/collectionPagination";
 
-export const useCollectionData = (
-  username: string | null,
-  isAuthenticated: boolean,
+export interface UseCollectionDataParams {
+  username: string | null;
+  isAuthenticated: boolean;
+  rateLimited?: boolean;
+  isCheckingAuth?: boolean;
+}
+
+export const useCollectionData = ({
+  username,
+  isAuthenticated,
   rateLimited = false,
-) => {
+  isCheckingAuth = false,
+}: UseCollectionDataParams) => {
   const queryClient = useQueryClient();
   const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
     useCollectionContext();
@@ -21,7 +30,8 @@ export const useCollectionData = (
   const filtersDispatch = useFiltersDispatch();
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
 
-  const queryEnabled = isAuthenticated && !!username && !rateLimited;
+  const queryEnabled =
+    isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
 
   const {
     data: collectionData,
@@ -48,21 +58,17 @@ export const useCollectionData = (
   }, [isAuthenticated, username, queryClient, setCollectionFiltersActive]);
 
   useEffect(() => {
-    if (isAuthenticated && username && hasNextPage && !isFetchingNextPage) {
+    if (queryEnabled && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    isAuthenticated,
-    username,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  ]);
+  }, [queryEnabled, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const processedData = useMemo(() => {
-    if (!collectionData?.pages) return null;
+    if (!collectionData?.pages) {
+      return null;
+    }
 
-    const pages = collectionData.pages;
+    const pages = getEffectiveCollectionPages({ pages: collectionData.pages });
     const allReleases = pages.flatMap((page) =>
       page.releases.map((release) => ({
         ...release,

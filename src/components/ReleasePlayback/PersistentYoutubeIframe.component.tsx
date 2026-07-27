@@ -43,7 +43,7 @@ export const PersistentYoutubeIframe = ({
   }, [registerPlaybackIframe]);
 
   useEffect(() => {
-    if (variant !== "visible") {
+    if (variant !== "visible" || !playbackKey) {
       return;
     }
 

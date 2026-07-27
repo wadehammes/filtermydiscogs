@@ -43,7 +43,10 @@ describe("fetchDiscogsCollection", () => {
     const mockCollection = collectionFactory.build();
     mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCollection));
 
-    const result = await fetchDiscogsCollection("testuser", 1);
+    const result = await fetchDiscogsCollection({
+      username: "testuser",
+      page: 1,
+    });
 
     expect(result).toEqual(mockCollection);
     expect(mockFetch).toHaveBeenCalledWith(
@@ -53,6 +56,7 @@ describe("fetchDiscogsCollection", () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
       },
     );
   });
@@ -61,7 +65,7 @@ describe("fetchDiscogsCollection", () => {
     const mockCollection = collectionFactory.build();
     mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCollection));
 
-    await fetchDiscogsCollection("testuser");
+    await fetchDiscogsCollection({ username: "testuser" });
 
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringMatching(/page=1.*per_page=100/),
@@ -72,9 +76,9 @@ describe("fetchDiscogsCollection", () => {
   it("throws error when response is not ok", async () => {
     mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
-    await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
-      "HTTP error! status: 500",
-    );
+    await expect(
+      fetchDiscogsCollection({ username: "testuser" }),
+    ).rejects.toThrow("HTTP error! status: 500");
   });
 
   it("uses API error message when response is not ok", async () => {
@@ -85,7 +89,9 @@ describe("fetchDiscogsCollection", () => {
       }),
     );
 
-    await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
+    await expect(
+      fetchDiscogsCollection({ username: "testuser" }),
+    ).rejects.toThrow(
       "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
     );
   });
@@ -93,17 +99,17 @@ describe("fetchDiscogsCollection", () => {
   it("throws error on network failure", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-    await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
-      "Network error",
-    );
+    await expect(
+      fetchDiscogsCollection({ username: "testuser" }),
+    ).rejects.toThrow("Network error");
   });
 
   it("throws generic error on non-Error rejection", async () => {
     mockFetch.mockRejectedValueOnce("String error");
 
-    await expect(fetchDiscogsCollection("testuser")).rejects.toThrow(
-      "Failed to fetch collection",
-    );
+    await expect(
+      fetchDiscogsCollection({ username: "testuser" }),
+    ).rejects.toThrow("Failed to fetch collection");
   });
 });
 
@@ -124,6 +130,7 @@ describe("fetchDiscogsRelease", () => {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
   });
 

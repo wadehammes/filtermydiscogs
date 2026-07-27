@@ -8,6 +8,18 @@ export interface AuthStatus {
   rateLimited: boolean;
 }
 
+export const normalizeAuthStatus = (data: {
+  isAuthenticated: boolean;
+  username: string | null;
+  userId: string | null;
+  rateLimited?: boolean;
+}): AuthStatus => ({
+  isAuthenticated: data.isAuthenticated,
+  username: data.username || null,
+  userId: data.userId || null,
+  rateLimited: data.rateLimited === true,
+});
+
 export const getUsernameFromCookies = (): string | null => {
   if (typeof document === "undefined") return null;
   return Cookies.get("discogs_username") || null;
@@ -46,13 +58,7 @@ export const parseAuthUrlParams = (): {
 
 export const checkAuthStatus = async (): Promise<AuthStatus> => {
   try {
-    const data = await checkAuthApi();
-    return {
-      isAuthenticated: data.isAuthenticated,
-      username: data.username || null,
-      userId: data.userId || null,
-      rateLimited: data.rateLimited === true,
-    };
+    return normalizeAuthStatus(await checkAuthApi());
   } catch (_error) {
     // Silent fail
     return {

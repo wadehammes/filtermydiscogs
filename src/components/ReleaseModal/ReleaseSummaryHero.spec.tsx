@@ -122,7 +122,7 @@ describe("ReleaseSummaryHero", () => {
     expect(mockOpenDrawer).not.toHaveBeenCalled();
   });
 
-  it("shows label, year, catalog number, and ratings in one meta line", async () => {
+  it("shows label, year, catalog number, and community rating in one meta line", async () => {
     setupReleaseDetailMock({
       community: {
         rating: {
@@ -144,8 +144,9 @@ describe("ReleaseSummaryHero", () => {
     render(<ReleaseSummaryHero release={release} />);
 
     expect(
-      screen.getByText(/Test Label · \d{4} · ABC-123 · You 4\/5/),
+      screen.getByText(/Test Label · \d{4} · ABC-123/),
     ).toBeInTheDocument();
+    expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
     await waitFor(() => {
       expect(screen.getByText(/3\.4 \(45\)/)).toBeInTheDocument();
@@ -178,12 +179,12 @@ describe("ReleaseSummaryHero", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows your collection rating and the community average when both are available", async () => {
+  it("shows the community average without a personal rating", async () => {
     setupReleaseDetailMock({
       community: {
         rating: {
-          average: 3.42,
-          count: 45,
+          average: 4.19,
+          count: 47,
         },
       },
     });
@@ -198,36 +199,7 @@ describe("ReleaseSummaryHero", () => {
 
     render(<ReleaseSummaryHero release={release} />);
 
-    expect(screen.getByText(/You 4\/5/)).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText(/3\.4 \(45\)/)).toBeInTheDocument();
-    });
-
-    expect(screen.queryByText(/^Community /)).toBeNull();
-  });
-
-  it("shows only the community average when you have not rated the release", async () => {
-    setupReleaseDetailMock({
-      community: {
-        rating: {
-          average: 4.19,
-          count: 47,
-        },
-      },
-    });
-
-    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
-      rating: 0,
-      basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
-        id: RELEASE_ID,
-      },
-    });
-
-    render(<ReleaseSummaryHero release={release} />);
-
-    expect(screen.queryByText(/You /)).toBeNull();
+    expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
     await waitFor(() => {
       expect(screen.getByText(/4\.2 \(47\)/)).toBeInTheDocument();

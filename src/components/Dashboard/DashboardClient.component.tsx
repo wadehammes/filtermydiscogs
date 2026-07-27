@@ -57,11 +57,12 @@ export default function DashboardClient() {
     isLoading: collectionLoading,
     hasNextPage,
     isFetchingNextPage,
-  } = useCollectionData(
-    authState.username,
-    authState.isAuthenticated,
-    authState.rateLimited,
-  );
+  } = useCollectionData({
+    username: authState.username,
+    isAuthenticated: authState.isAuthenticated,
+    rateLimited: authState.rateLimited,
+    isCheckingAuth: authState.isCheckingAuth,
+  });
   const needsCollectionLoad = useNeedsCollectionLoad({
     isLoading: collectionLoading,
     hasNextPage,

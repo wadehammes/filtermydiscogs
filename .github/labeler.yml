@@ -1,35 +1,45 @@
-# Add 'javascript` label to any change in the src folder
 javascript:
-  - src/**/*
-  - scripts/**/*
-  - public/**/*
-  - .tool-versions
-  - docs/**/*
-  - CLAUDE.md
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/**/*
+          - scripts/**/*
+          - public/**/*
+          - .tool-versions
+          - docs/**/*
+          - CLAUDE.md
 
 documentation:
-  - docs/**/*
-  - CLAUDE.md
-  - AGENTS.md
-  - README.md
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**/*
+          - CLAUDE.md
+          - AGENTS.md
+          - README.md
 
 configuration:
-  - next.config.js
-  - next-env.d.ts
-  - postcss.config.js
-  - biome.json
-  - jest.config.js
-  - tsconfig.json
-  - vercel.json
-  - i18next.config.js
-  - .browserslistrc
-  - stylelint.config.ts
-  - knip.json
-  - tsconfig.json
+  - changed-files:
+      - any-glob-to-any-file:
+          - next.config.ts
+          - next-env.d.ts
+          - postcss.config.js
+          - biome.json
+          - jest.config.ts
+          - tsconfig.json
+          - vercel.json
+          - .browserslistrc
+          - stylelint.config.ts
+          - knip.json
 
-# Add `dependencies` label to any changes to package.json or pnpm-lock.yaml
 dependencies:
-  - .tool-versions
-  - package.json
-  - pnpm-lock.yaml
-  - pnpm-workspace.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - .tool-versions
+          - package.json
+          - pnpm-lock.yaml
+          - pnpm-workspace.yaml
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**/*
+          - .github/labeler.yml

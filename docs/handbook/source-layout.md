@@ -8,7 +8,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/components/`](../../src/components/) | Feature UI (Dashboard, ReleaseCard, StickyHeaderBar, …). |
 | [`src/atoms/`](../../src/atoms/) | Jotai atoms: filters, view mode, shared `JotaiProvider`. |
 | [`src/context/`](../../src/context/) | Auth, collection, crate, theme providers; filters/view scope markers (state in Jotai). |
-| [`src/constants/`](../../src/constants/) | Topic constants (`sorting.ts`, `mosaic.ts`) alongside root [`constants.ts`](../../src/constants.ts). |
+| [`src/constants/`](../../src/constants/) | Topic constants (`sorting.ts`, `mosaic.ts`, `collection.ts`) alongside root [`constants.ts`](../../src/constants.ts). |
 | [`src/services/`](../../src/services/) | Discogs OAuth service, client auth/cookie helpers. |
 | [`src/api/`](../../src/api/) | Browser-side fetch helpers for `/api/...` routes. |
 | [`src/hooks/`](../../src/hooks/) | Custom hooks; React Query under `hooks/queries/`. |

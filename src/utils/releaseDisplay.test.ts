@@ -117,7 +117,7 @@ describe("formatTrackCreditsLine", () => {
 });
 
 describe("formatReleaseHeroMetaLine", () => {
-  it("combines release meta and ratings into one line", () => {
+  it("combines release meta with community rating separately", () => {
     const release = releaseFactory.build({
       rating: 5,
       basic_information: {
@@ -136,7 +136,7 @@ describe("formatReleaseHeroMetaLine", () => {
         },
       }),
     ).toEqual({
-      text: "P.O.D CROSS · 2019 · PODCROSS 005 · You 5/5",
+      text: "P.O.D CROSS · 2019 · PODCROSS 005",
       communityRating: {
         average: 4.6,
         count: 14,

@@ -124,6 +124,8 @@ export const AuthProvider = ({
   const prevRateLimitedRef = useRef(false);
   const hasHandledAuthUrlRef = useRef(false);
   const [isCompletingOAuth, setIsCompletingOAuth] = useState(false);
+  const [hasCompletedAuthCheck, setHasCompletedAuthCheck] =
+    useState(skipInitialAuthCheck);
 
   const {
     data: authData,
@@ -134,6 +136,14 @@ export const AuthProvider = ({
   } = useAuthQuery({
     enabled: !skipInitialAuthCheck,
   });
+
+  useEffect(() => {
+    if (skipInitialAuthCheck || isPending || isFetching) {
+      return;
+    }
+
+    setHasCompletedAuthCheck(true);
+  }, [isFetching, isPending, skipInitialAuthCheck]);
 
   const sessionState = useMemo(() => {
     if (skipInitialAuthCheck && initialStateOverride) {
@@ -156,13 +166,13 @@ export const AuthProvider = ({
       userId: authData?.userId ?? null,
       rateLimited: authData?.rateLimited ?? false,
       isCheckingAuth:
-        isPending || isCompletingOAuth || (isFetching && !authData),
+        isCompletingOAuth || !hasCompletedAuthCheck || (isPending && !authData),
     };
   }, [
     authData,
+    hasCompletedAuthCheck,
     initialStateOverride,
     isCompletingOAuth,
-    isFetching,
     isPending,
     skipInitialAuthCheck,
   ]);
@@ -183,7 +193,7 @@ export const AuthProvider = ({
     }
 
     if (!sessionState.isAuthenticated) {
-      queryClient.clear();
+      clearUserScopedQueries(queryClient);
     }
   }, [
     isPending,
@@ -195,7 +205,7 @@ export const AuthProvider = ({
   useEffect(() => {
     if (isError) {
       console.error("Error checking auth");
-      queryClient.clear();
+      clearUserScopedQueries(queryClient);
     }
   }, [isError, queryClient]);
 
@@ -273,7 +283,7 @@ export const AuthProvider = ({
         rateLimited: false,
       });
       router.replace("/");
-      queryClient.clear();
+      clearUserScopedQueries(queryClient);
     } catch (_error) {
       dispatch({ type: AuthActionTypes.SetError, payload: "Logout failed" });
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: false });
