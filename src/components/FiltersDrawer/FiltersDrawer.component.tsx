@@ -80,15 +80,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {styleOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Style</h3>
+            <h3 className={styles.sectionTitle}>Genre & Style</h3>
             <Select
-              label="Style"
+              label="Genre & Style"
               options={styleOptions}
               value={selectedStyles}
               onChange={handleStyleChange}
               disabled={!collection}
               multiple={true}
-              placeholder="Select styles..."
+              placeholder="Select genres & styles..."
             />
             {selectedStyles.length > 1 && (
               <Select

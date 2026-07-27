@@ -58,6 +58,32 @@ describe("filterReleases", () => {
     expect(result[0]).toEqual(release1);
   });
 
+  it("filters by single genre", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        genres: ["Electronic"],
+        styles: [],
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        genres: ["Rock"],
+        styles: [],
+      }),
+    });
+    const releases = [release1, release2];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: ["Electronic"],
+      selectedYears: [],
+      selectedFormats: [],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(release1);
+  });
+
   it("filters by multiple styles", () => {
     const release1 = releaseFactory.build({
       basic_information: basicInformationFactory.build({

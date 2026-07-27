@@ -8,6 +8,7 @@ import {
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleaseCard.module.css";
 import {
   ReleaseCardCatalog,
@@ -41,10 +42,10 @@ export function ReleaseCardContent({
     artists,
     title,
     resource_url,
-    styles: releaseStyles,
     formats: releaseFormats,
   } = release.basic_information;
 
+  const genreStyleTags = getReleaseGenreStyleTags(release.basic_information);
   const catno = labels[0]?.catno ? String(labels[0].catno) : null;
 
   return (
@@ -88,28 +89,26 @@ export function ReleaseCardContent({
               {formatName}
             </button>
           ))}
-        {releaseStyles &&
-          releaseStyles.length > 0 &&
-          releaseStyles.map((style: string) => (
-            <button
-              key={style}
-              type="button"
-              className={classNames("pill", "pillStyle", styles.stylePill, {
-                pillSelected: selectedStyles.includes(style),
-              })}
-              onClick={(e) =>
-                handlePillClick({
-                  event: e,
-                  value: style,
-                  type: "style",
-                  eventLabel: "Style Pill Clicked",
-                })
-              }
-              aria-label={`Filter by ${style} style`}
-            >
-              {style}
-            </button>
-          ))}
+        {genreStyleTags.map((tag) => (
+          <button
+            key={tag}
+            type="button"
+            className={classNames("pill", "pillStyle", styles.stylePill, {
+              pillSelected: selectedStyles.includes(tag),
+            })}
+            onClick={(e) =>
+              handlePillClick({
+                event: e,
+                value: tag,
+                type: "style",
+                eventLabel: "Genre Style Pill Clicked",
+              })
+            }
+            aria-label={`Filter by ${tag}`}
+          >
+            {tag}
+          </button>
+        ))}
       </HorizontalScrollRow>
     </div>
   );

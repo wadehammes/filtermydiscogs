@@ -17,6 +17,7 @@ import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./MobileReleaseCard.module.css";
 import {
   ReleaseCardCatalog,
@@ -44,7 +45,6 @@ const MobileReleaseCardComponent = ({
     title,
     thumb,
     cover_image,
-    styles: releaseStyles,
     formats: releaseFormats,
     resource_url,
   } = release.basic_information;
@@ -68,6 +68,7 @@ const MobileReleaseCardComponent = ({
   });
 
   const catno = labels[0]?.catno ? String(labels[0].catno) : null;
+  const genreStyleTags = getReleaseGenreStyleTags(release.basic_information);
 
   const handlePillClick = usePillClickHandler({
     category: "releaseCard",
@@ -182,28 +183,26 @@ const MobileReleaseCardComponent = ({
                 </button>
               ))}
 
-            {releaseStyles &&
-              releaseStyles.length > 0 &&
-              releaseStyles.map((style: string) => (
-                <button
-                  key={style}
-                  type="button"
-                  className={classNames("pill", "pillStyle", styles.stylePill, {
-                    pillSelected: selectedStyles.includes(style),
-                  })}
-                  onClick={(e) =>
-                    handlePillClick({
-                      event: e,
-                      value: style,
-                      type: "style",
-                      eventLabel: "Style Pill Clicked",
-                    })
-                  }
-                  aria-label={`Filter by ${style} style`}
-                >
-                  {style}
-                </button>
-              ))}
+            {genreStyleTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                className={classNames("pill", "pillStyle", styles.stylePill, {
+                  pillSelected: selectedStyles.includes(tag),
+                })}
+                onClick={(e) =>
+                  handlePillClick({
+                    event: e,
+                    value: tag,
+                    type: "style",
+                    eventLabel: "Genre Style Pill Clicked",
+                  })
+                }
+                aria-label={`Filter by ${tag}`}
+              >
+                {tag}
+              </button>
+            ))}
           </HorizontalScrollRow>
         </div>
         <div className={styles.actionButtonsContainer}>

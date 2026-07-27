@@ -1,9 +1,9 @@
 import type { StyleOperator } from "src/context/filters.context";
 import type { DiscogsRelease } from "src/types";
 import { releaseMatchesFormatFilters } from "src/utils/formatFilterTags";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import { getReleaseNotesSearchText } from "src/utils/releaseNotes";
 
-// Cache for searchable text to avoid recomputation
 const searchTextCache = new Map<string, string>();
 
 export const clearSearchCache = () => {
@@ -49,25 +49,24 @@ export const filterReleases = ({
     }
 
     if (selectedStylesSet) {
-      const releaseStyles = release.basic_information.styles;
+      const releaseGenreStyleTags = getReleaseGenreStyleTags(
+        release.basic_information,
+      );
       if (styleOperator === "AND") {
-        // AND: release must have ALL selected styles
-        const hasAllStyles = selectedStyles.every((style) =>
-          releaseStyles.includes(style),
+        const hasAllTags = selectedStyles.every((tag) =>
+          releaseGenreStyleTags.includes(tag),
         );
-        if (!hasAllStyles) return false;
+        if (!hasAllTags) return false;
       } else if (styleOperator === "NONE") {
-        // NONE: exclude releases that have ANY of the selected styles
-        const hasAnySelectedStyle = releaseStyles.some((style) =>
-          selectedStylesSet.has(style),
+        const hasAnySelectedTag = releaseGenreStyleTags.some((tag) =>
+          selectedStylesSet.has(tag),
         );
-        if (hasAnySelectedStyle) return false;
+        if (hasAnySelectedTag) return false;
       } else {
-        // OR: release must have ANY of the selected styles (default)
-        const hasMatchingStyle = releaseStyles.some((style) =>
-          selectedStylesSet.has(style),
+        const hasMatchingTag = releaseGenreStyleTags.some((tag) =>
+          selectedStylesSet.has(tag),
         );
-        if (!hasMatchingStyle) return false;
+        if (!hasMatchingTag) return false;
       }
     }
 
@@ -101,6 +100,10 @@ export const filterReleases = ({
         const notesText = getReleaseNotesSearchText(release);
         if (notesText) {
           parts.push(notesText);
+        }
+
+        for (const tag of getReleaseGenreStyleTags(release.basic_information)) {
+          parts.push(tag.toLowerCase());
         }
 
         searchableText = parts.join(" ");

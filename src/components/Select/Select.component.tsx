@@ -219,53 +219,57 @@ const SelectComponent = ({
         </span>
       </button>
       {state.isOpen && options.length > 0 && (
-        <ul
-          ref={listboxRef}
-          className={classNames(styles.listbox, {
+        <div
+          className={classNames(styles.listboxPanel, {
             [styles.listboxUpward]: state.openUpward,
           })}
-          // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
-          role="listbox"
-          aria-label={label}
         >
-          {options.map((option, index) => (
-            <li
-              key={option.value}
-              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
-              role="option"
-              aria-selected={isOptionSelected(value, option.value)}
-              className={classNames(styles.option, {
-                [styles.selected]: isOptionSelected(value, option.value),
-                [styles.focused]: state.focusedIndex === index,
-              })}
-              tabIndex={state.focusedIndex === index ? 0 : -1}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOptionClick(option.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
+          <ul
+            ref={listboxRef}
+            className={styles.listbox}
+            // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
+            role="listbox"
+            aria-label={label}
+          >
+            {options.map((option, index) => (
+              <li
+                key={option.value}
+                // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
+                role="option"
+                aria-selected={isOptionSelected(value, option.value)}
+                className={classNames(styles.option, {
+                  [styles.selected]: isOptionSelected(value, option.value),
+                  [styles.focused]: state.focusedIndex === index,
+                })}
+                tabIndex={state.focusedIndex === index ? 0 : -1}
+                onClick={(e) => {
+                  e.stopPropagation();
                   handleOptionClick(option.value);
-                }
-              }}
-            >
-              <span className={styles.optionContent}>
-                {isOptionSelected(value, option.value) && (
-                  <span className={styles.checkmark}>
-                    <Check />
-                  </span>
-                )}
-                <span className={styles.optionLabel}>
-                  <span>{option.label}</span>
-                  {option.isDefault && (
-                    <span className={styles.defaultBadge}>Default</span>
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleOptionClick(option.value);
+                  }
+                }}
+              >
+                <span className={styles.optionContent}>
+                  {isOptionSelected(value, option.value) && (
+                    <span className={styles.checkmark}>
+                      <Check />
+                    </span>
                   )}
+                  <span className={styles.optionLabel}>
+                    <span>{option.label}</span>
+                    {option.isDefault && (
+                      <span className={styles.defaultBadge}>Default</span>
+                    )}
+                  </span>
                 </span>
-              </span>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

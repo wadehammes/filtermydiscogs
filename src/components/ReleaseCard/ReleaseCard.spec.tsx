@@ -45,10 +45,10 @@ describe("ReleaseCard", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: "Filter by Rock style" }),
+      screen.getByRole("button", { name: "Filter by Rock" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Filter by Pop style" }),
+      screen.getByRole("button", { name: "Filter by Pop" }),
     ).toBeInTheDocument();
   });
 
@@ -132,7 +132,7 @@ describe("ReleaseCard", () => {
     });
 
     const stylePill = screen.getByRole("button", {
-      name: "Filter by Rock style",
+      name: "Filter by Rock",
     });
     await user.click(stylePill);
 

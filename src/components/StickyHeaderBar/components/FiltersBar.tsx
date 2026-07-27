@@ -86,13 +86,13 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
           />
           <div className={styles.styleFilterGroup}>
             <AutocompleteSelect
-              label="Style"
+              label="Genre & Style"
               options={styleOptions}
               value={selectedStyles}
               onChange={handleStyleChange}
               disabled={!collection}
               multiple={true}
-              placeholder="Select styles..."
+              placeholder="Select genres & styles..."
             />
 
             {selectedStyles.length > 1 && (
