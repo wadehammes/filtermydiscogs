@@ -9,8 +9,6 @@ import styles from "./AppPageLoading.module.css";
 import type { AppPage } from "./appPageLoadingMessages";
 import { formatLoadingMessage } from "./appPageLoadingMessages";
 
-export type { AppPage } from "./appPageLoadingMessages";
-
 interface AppPageLoadingProps {
   currentPage: AppPage;
   allReleasesLoaded?: boolean;

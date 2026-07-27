@@ -348,13 +348,19 @@ describe("filterReleases", () => {
 
   it("filters by search query matching title", () => {
     const release1 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         title: "Dark Side of the Moon",
+        artists: [{ name: "Artist One" }],
+        labels: [{ name: "Label One" }],
       }),
     });
     const release2 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         title: "Abbey Road",
+        artists: [{ name: "Artist Two" }],
+        labels: [{ name: "Label Two" }],
       }),
     });
     const releases = [release1, release2];
@@ -373,13 +379,19 @@ describe("filterReleases", () => {
 
   it("filters by search query matching artist", () => {
     const release1 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
+        title: "Title One",
         artists: [{ name: "Pink Floyd" }],
+        labels: [{ name: "Label One" }],
       }),
     });
     const release2 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
+        title: "Title Two",
         artists: [{ name: "The Beatles" }],
+        labels: [{ name: "Label Two" }],
       }),
     });
     const releases = [release1, release2];
@@ -398,6 +410,7 @@ describe("filterReleases", () => {
 
   it("filters by search query matching label", () => {
     const release1 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         labels: [{ name: "EMI Records" }],
         artists: [{ name: "Test Artist" }],
@@ -405,6 +418,7 @@ describe("filterReleases", () => {
       }),
     });
     const release2 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         labels: [{ name: "Columbia Records" }],
         artists: [{ name: "Other Artist" }],
@@ -427,6 +441,7 @@ describe("filterReleases", () => {
 
   it("filters by search query matching catalog number", () => {
     const release1 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         labels: [{ name: "Test Label", catno: "ABC-123" }],
         artists: [{ name: "Test Artist" }],
@@ -434,6 +449,7 @@ describe("filterReleases", () => {
       }),
     });
     const release2 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         labels: [{ name: "Other Label", catno: "XYZ-456" }],
         artists: [{ name: "Other Artist" }],
@@ -456,9 +472,11 @@ describe("filterReleases", () => {
 
   it("search query is case insensitive", () => {
     const release1 = releaseFactory.build({
+      notes: [],
       basic_information: basicInformationFactory.build({
         title: "Dark Side",
         artists: [{ name: "Pink Floyd" }],
+        labels: [{ name: "Label One" }],
       }),
     });
     const releases = [release1];

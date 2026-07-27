@@ -41,7 +41,7 @@ Authenticated app routes use [`useRedirectIfUnauthenticated`](../../src/hooks/us
 | `/dashboard`, `/mosaic` | Header + skeleton/loader (first load only) | Redirect to `/` | Skip when releases already in Jotai |
 | `/admin` | Server gate + brief null | Redirect to `/` | — |
 
-Authenticated app routes use segment **`loading.tsx`** with **`AppPageLoading`** ( **`StickyHeaderBar`**, not **`PublicAuthLayout`** ). Root [`loading.tsx`](../../src/app/loading.tsx) switches to the same shell when the user is authenticated on `/releases`, `/dashboard`, `/mosaic`, or `/admin`.
+Authenticated app routes use segment **`loading.tsx`** with **`AppPageLoading`** ( **`StickyHeaderBar`**, not **`PublicAuthLayout`** ). Root [`loading.tsx`](../../src/app/loading.tsx) is a provider-free **`PageLoader`** only — Next also mounts it under **`/_global-error`**, which replaces the root layout (no **`Providers`**). Root layout failures use [`global-error.tsx`](../../src/app/global-error.tsx) (own document shell; no **`Providers`** / **`useAuth`**).
 
 ## Public pages
 
@@ -129,7 +129,7 @@ See [database.md](database.md) for schema details.
 
 - **Page**: [`/mosaic`](../../src/app/mosaic/page.tsx) → [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) (client `dynamic` with `ssr: false`; [`AppPageLoading`](../../src/components/AppPageLoading/AppPageLoading.component.tsx) while the chunk loads) → [`MosaicClient`](../../src/components/MosaicClient/MosaicClient.component.tsx).
 - **Hook**: [`useMosaicGenerator`](../../src/hooks/useMosaicGenerator.hook.ts) builds canvas grids from filtered releases.
-- **Images**: [`src/utils/imageLoader.ts`](../../src/utils/imageLoader.ts) fetches resized covers via **`GET /api/image-proxy`** (Sharp server-side).
+- **Images**: [`src/utils/imageLoader.ts`](../../src/utils/imageLoader.ts) fetches resized covers via **`GET /api/image-proxy`** (Sharp server-side). Production builds use **`next build --webpack`** so Sharp’s linux-x64 binaries are traced into the Vercel function (default Turbopack hashed externals break this).
 
 ## Clear stored data
 

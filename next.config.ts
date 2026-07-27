@@ -96,6 +96,8 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
   compress: true,
+  // Native module — must stay external so Vercel traces linux sharp binaries.
+  serverExternalPackages: ["sharp"],
   // Faker 10+ is ESM-only; Next’s Jest SWC pipeline must transpile it (see next/dist/build/jest/jest.js).
   transpilePackages: ["@faker-js/faker"],
   logging: {

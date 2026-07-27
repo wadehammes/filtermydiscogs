@@ -24,7 +24,7 @@ Run the same locally before pushing when possible.
 | Script | Purpose |
 |--------|---------|
 | `pnpm dev` | Next dev server on **port 6767** (webpack mode). |
-| `pnpm build` | `db:generate` + production build. |
+| `pnpm build` | `db:generate` + production build (**`--webpack`**; Turbopack’s hashed `sharp` externals omit linux native binaries on Vercel). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds under webpack. |
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
 | `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
@@ -54,6 +54,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 ## `next.config.ts` highlights
 
 - **Images**: remote patterns for **`i.discogs.com`** and placeholders.
+- **`serverExternalPackages: ["sharp"]`**: keeps the image-proxy native module out of the bundler so Vercel can include **`@img/sharp-linux-*`** binaries.
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging. Playback embeds use **`youtube-nocookie.com`** — both **`*.youtube.com`** and **`*.youtube-nocookie.com`** must stay in **`frame-src`** / **`child-src`**. Vercel preview **`script-src`** also allows **`vercel.live`** for the Live feedback widget.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
