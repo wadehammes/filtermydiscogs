@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767 --webpack",
-    "build": "pnpm run db:generate && next build",
+    "build": "pnpm run db:generate && next build --webpack",
     "postinstall": "prisma generate",
     "start": "next start -p 6767",
     "tsc:ci": "pnpm db:generate && tsc --strict",
