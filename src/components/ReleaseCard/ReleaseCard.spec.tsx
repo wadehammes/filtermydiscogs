@@ -203,7 +203,7 @@ describe("ReleaseCard", () => {
     expect(image).toHaveAttribute("src", expect.stringContaining("thumb.jpg"));
   });
 
-  it("calls onReleaseClick when title is clicked and handler is provided", async () => {
+  it("calls onReleaseClick when cover is clicked and handler is provided", async () => {
     const release = releaseFactory.withEmptyNotes();
     const onReleaseClick = jest.fn();
     const user = userEvent.setup();
@@ -211,9 +211,59 @@ describe("ReleaseCard", () => {
     po.renderReleaseCard({ release, onReleaseClick });
 
     await user.click(
-      screen.getByRole("button", { name: release.basic_information.title }),
+      screen.getByRole("button", {
+        name: `Open release details for ${release.basic_information.title}`,
+      }),
     );
 
     expect(onReleaseClick).toHaveBeenCalledWith(String(release.instance_id));
+  });
+
+  it("opens release details from the overlay details button", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const onReleaseClick = jest.fn();
+    const user = userEvent.setup();
+
+    po.renderReleaseCard({ release, onReleaseClick });
+
+    await user.click(
+      screen.getByRole("button", { name: "Open release details" }),
+    );
+
+    expect(onReleaseClick).toHaveBeenCalledWith(String(release.instance_id));
+  });
+
+  it("renders a View on Discogs overlay button when onReleaseClick is provided", () => {
+    const release = releaseFactory.withTitle("Test Release", 456);
+
+    po.renderReleaseCard({
+      release,
+      onReleaseClick: jest.fn(),
+    });
+
+    expect(
+      screen.getByRole("link", { name: "View on Discogs" }),
+    ).toHaveAttribute("href", "https://www.discogs.com/release/456");
+  });
+
+  it("opens Discogs when title is clicked even if onReleaseClick is provided", async () => {
+    const release = releaseFactory.withTitle("Test Release", 456);
+    const onReleaseClick = jest.fn();
+    const user = userEvent.setup();
+
+    po.renderReleaseCard({ release, onReleaseClick });
+
+    const titleLink = screen.getByRole("link", {
+      name: "Test Release",
+    });
+
+    expect(titleLink).toHaveAttribute(
+      "href",
+      "https://www.discogs.com/release/456",
+    );
+
+    await user.click(titleLink);
+
+    expect(onReleaseClick).not.toHaveBeenCalled();
   });
 });

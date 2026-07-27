@@ -152,6 +152,59 @@
   background: var(--card);
 }
 
+.overlayActions {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.overlayActionSlot {
+  align-items: stretch;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.overlayAction {
+  align-items: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  &:hover:not(.overlayActionActive) {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+}
+
+.overlayActionActive {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
 .segmentSlot {
   display: flex;
   position: relative;
@@ -213,6 +266,16 @@
   min-height: 1.75rem;
   min-width: 1.75rem;
   padding: var(--space-1);
+}
+
+.actionSegmented .segmentSlot:first-child .actionSegment {
+  border-bottom-left-radius: calc(var(--radius-ui) - 1px);
+  border-top-left-radius: calc(var(--radius-ui) - 1px);
+}
+
+.actionSegmented .segmentSlot:last-child .actionSegment {
+  border-bottom-right-radius: calc(var(--radius-ui) - 1px);
+  border-top-right-radius: calc(var(--radius-ui) - 1px);
 }
 
 .actionIcon {

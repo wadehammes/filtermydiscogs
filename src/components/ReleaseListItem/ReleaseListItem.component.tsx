@@ -157,21 +157,13 @@ const ReleaseListItemComponent = ({
                 );
               })}{" "}
               -{" "}
-              {canOpen ? (
-                <button
-                  type="button"
-                  onClick={openRelease}
-                  className={styles.titleLink}
-                  title="Open release details"
-                >
-                  {title}
-                </button>
-              ) : releaseUrl ? (
+              {releaseUrl ? (
                 <a
                   href={releaseUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => {
+                  onClick={(event) => {
+                    event.stopPropagation();
                     trackEvent("releaseClicked", {
                       action: "releaseClicked",
                       category: "home",

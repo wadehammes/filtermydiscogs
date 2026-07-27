@@ -1,10 +1,8 @@
 import classNames from "classnames";
 import Image from "next/image";
-import type React from "react";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import notesStyles from "src/components/ReleaseNotes/ReleaseNotes.module.css";
-import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
@@ -14,9 +12,6 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
-import PlusIcon from "src/styles/icons/plus-thin.svg";
-import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
@@ -28,6 +23,7 @@ import {
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
 import metaStyles from "./ReleaseCardMeta.module.css";
+import { ReleaseCardOverlayActions } from "./ReleaseCardOverlayActions.component";
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
 import titleStyles from "./ReleaseCardTitle.module.css";
 
@@ -38,7 +34,7 @@ const MobileReleaseCardComponent = ({
   onExitRandomMode,
   onReleaseClick,
 }: ReleaseCardProps) => {
-  const { addToCrate, removeFromCrate, isInCrate } = useCrate();
+  const { isInCrate } = useCrate();
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
   const {
@@ -73,21 +69,6 @@ const MobileReleaseCardComponent = ({
 
   const catno = labels[0]?.catno ? String(labels[0].catno) : null;
 
-  const handleCrateToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (isInCrate(release.instance_id)) {
-        removeFromCrate(release.instance_id);
-      } else {
-        addToCrate(release);
-        // Don't open drawer on mobile
-      }
-    },
-    [isInCrate, addToCrate, removeFromCrate, release],
-  );
-
   const handlePillClick = usePillClickHandler({
     category: "releaseCard",
     onExitRandomMode,
@@ -101,7 +82,7 @@ const MobileReleaseCardComponent = ({
   const imageActivateProps = canOpen
     ? getReleaseActivateProps({
         onActivate: openRelease,
-        ariaLabel: `Open ${title} details`,
+        ariaLabel: `Open release details for ${title}`,
       })
     : undefined;
 
@@ -158,9 +139,6 @@ const MobileReleaseCardComponent = ({
                 releaseUrl={releaseUrl}
                 resourceUrl={resource_url}
                 className={titleStyles.titleGroupMobile}
-                {...definedProps({
-                  onReleaseOpen: canOpen ? openRelease : undefined,
-                })}
               />
               <ReleaseCardMeta
                 labelName={labels[0]?.name}
@@ -229,37 +207,16 @@ const MobileReleaseCardComponent = ({
           </HorizontalScrollRow>
         </div>
         <div className={styles.actionButtonsContainer}>
-          <div
-            className={classNames(
-              segmentedStyles.container,
-              segmentedStyles.containerVertical,
-              styles.actionSegmented,
-            )}
-          >
-            <button
-              type="button"
-              className={classNames(
-                segmentedStyles.segment,
-                styles.actionSegment,
-                {
-                  [segmentedStyles.active]: isInCrate(release.instance_id),
-                },
-              )}
-              onClick={handleCrateToggle}
-              aria-label={
-                isInCrate(release.instance_id)
-                  ? "Remove from crate"
-                  : "Add to crate"
-              }
-            >
-              {isInCrate(release.instance_id) ? (
-                <MinusIcon className={styles.actionIcon} />
-              ) : (
-                <PlusIcon className={styles.actionIcon} />
-              )}
-            </button>
-            <ReleaseNotesCardAction variant="mobile" />
-          </div>
+          <ReleaseCardOverlayActions
+            release={release}
+            releaseUrl={releaseUrl}
+            resourceUrl={resource_url}
+            layout="vertical"
+            notesVariant="mobile"
+            {...definedProps({
+              onReleaseOpen: canOpen ? openRelease : undefined,
+            })}
+          />
         </div>
       </div>
     </ReleaseNotesEditorProvider>

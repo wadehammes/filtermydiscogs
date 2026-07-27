@@ -65,13 +65,14 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 | Concern | Pattern |
 |---------|---------|
-| Layout | Horizontal flex: fixed **`7rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`4rem`** action column with stacked segmented controls |
+| Layout | Horizontal flex: fixed **`7rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`4rem`** action column with full-height overlay actions |
 | Loading | [`MobileReleaseCardSkeleton`](../../src/components/ReleasesClient/components/MobileReleaseCardSkeleton.component.tsx) mirrors this row layout while collection pages stream in; desktop uses [`DesktopReleaseCardSkeleton`](../../src/components/ReleasesClient/components/DesktopReleaseCardSkeleton.component.tsx) |
 | Pills | **`HorizontalScrollRow`** — wrapper needs **`min-width: 0`** + **`overflow: hidden`** so pill rows do not expand card width |
 | Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
 | Notes action | **`ReleaseNotesCardAction variant="mobile"`** — stacked column button styles; desktop overlay uses default **`variant="card"`** |
-| Open detail modal | Cover + title call optional **`onReleaseClick`**; title/artist/label links open Discogs in a new tab |
+| Open detail modal | Cover art or **Release details** overlay button call optional **`onReleaseClick`**; title links to Discogs in a new tab |
+| Overlay actions | **`ReleaseCardOverlayActions`**: release details (menu icon), View on Discogs (external link), notes, crate — desktop segmented row on cover; mobile full-height column with **`border-top`** separators (no inner frame) |
 
 ## Feature example: ReleaseModal
 
@@ -97,7 +98,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 Closing **`ReleaseModal`** does not stop playback. **Play in background** or a track row click calls **`startPlayback`** and overwrites whatever is in the dock. Prev/next walk the flattened tracklist for the active release (v1 album queue). Helpers live in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts).
 
-Crate, notes, and card filter pill clicks do **not** open the modal. Discogs links live on title, artist, and label text—not on the image overlay action group. The release modal hero shows toolbar, cover, artist/title, a single meta line (label, year, catalog, ratings), and format/style filter pills below it.
+Crate, notes, and card filter pill clicks do **not** open the modal. Discogs links live on title, artist, label text, and the cover overlay **View on Discogs** button. On **`/releases`**, **cover art** or the overlay **Release details** button opens the in-app modal; **title** still opens Discogs.
 
 ## Feature example: ReleaseNotes
 
