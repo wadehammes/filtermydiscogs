@@ -42,25 +42,37 @@
 
 /* Style pill styles */
 .pillStyle {
-  background: color-mix(in srgb, var(--success) 15%, var(--background));
+  background: color-mix(
+    in srgb,
+    var(--pill-style-border) 15%,
+    var(--background)
+  );
   border: 1px solid var(--pill-style-border);
   color: var(--pill-style-foreground);
 
   &:hover {
-    background: var(--success-hover);
-    border-color: var(--success-active);
-    color: var(--on-success-hover);
+    background: color-mix(
+      in srgb,
+      var(--pill-style-border) 30%,
+      var(--background)
+    );
+    border-color: var(--pill-style-border);
+    color: var(--pill-style-foreground);
   }
 
   &.pillSelected {
-    background: var(--success-hover);
-    border-color: var(--success-active);
-    color: var(--on-success-hover);
+    background: var(--pill-style-border);
+    border-color: var(--pill-style-border);
+    color: var(--pill-style-selected-foreground);
 
     &:hover {
-      background: var(--success-active);
-      border-color: var(--success-active);
-      color: var(--on-success);
+      background: color-mix(
+        in srgb,
+        var(--pill-style-border) 90%,
+        var(--foreground)
+      );
+      border-color: var(--pill-style-border);
+      color: var(--pill-style-selected-foreground);
     }
   }
 }

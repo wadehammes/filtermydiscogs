@@ -4,6 +4,7 @@ import classNames from "classnames";
 import cardStyles from "src/components/ReleaseCard/ReleaseCard.module.css";
 import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
+import stackStyles from "src/styles/vertical-action-stack.module.css";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 
 type ReleaseNotesCardActionVariant = "card" | "mobile";
@@ -27,7 +28,7 @@ export const ReleaseNotesCardAction = ({
     <button
       type="button"
       className={classNames(
-        isMobile ? cardStyles.overlayAction : segmentedStyles.segment,
+        isMobile ? stackStyles.overlayAction : segmentedStyles.segment,
         !isMobile && cardStyles.actionSegment,
       )}
       onClick={(event) => {
@@ -38,12 +39,12 @@ export const ReleaseNotesCardAction = ({
       aria-label={label}
       title={label}
     >
-      <NoteStickyIcon className={cardStyles.actionIcon} />
+      <NoteStickyIcon className={stackStyles.actionIcon} />
     </button>
   );
 
   if (isMobile) {
-    return <div className={cardStyles.overlayActionSlot}>{notesButton}</div>;
+    return <div className={stackStyles.overlayActionSlot}>{notesButton}</div>;
   }
 
   return (

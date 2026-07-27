@@ -18,9 +18,11 @@ import {
 } from "src/hooks/queries/querykeys.constants";
 import {
   useAddReleaseToCrateMutation,
+  useClearAllPackedInCrateMutation,
   useCreateCrateMutation,
   useDeleteCrateMutation,
   useRemoveReleaseFromCrateMutation,
+  useSetReleasePackedInCrateMutation,
   useUpdateCrateMutation,
 } from "src/hooks/queries/useCrateMutations";
 import {
@@ -42,6 +44,10 @@ interface CrateContextType {
   addToCrate: (release: DiscogsRelease) => void;
   removeFromCrate: (releaseId: string) => void;
   isInCrate: (releaseId: string) => boolean;
+  isPacked: (releaseId: string) => boolean;
+  setPacked: (releaseId: string, packed: boolean) => void;
+  clearAllPacked: () => void;
+  packedReleaseCount: number;
   clearCrate: () => void;
   createCrate: (name: string) => Promise<void>;
   selectCrate: (crateId: string) => void;
@@ -104,13 +110,20 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     crateId: activeCrateId,
     enabled: canLoadCrates,
   });
-  const activeCrateReleases = activeCrateData?.releases || [];
+  const crateReleaseItems = activeCrateData?.releases ?? [];
+
+  const packedReleaseCount = useMemo(
+    () => crateReleaseItems.filter((item) => item.found_at !== null).length,
+    [crateReleaseItems],
+  );
 
   const createCrateMutation = useCreateCrateMutation(userId);
   const updateCrateMutation = useUpdateCrateMutation(userId);
   const deleteCrateMutation = useDeleteCrateMutation(userId);
   const addReleaseMutation = useAddReleaseToCrateMutation(userId);
   const removeReleaseMutation = useRemoveReleaseFromCrateMutation(userId);
+  const setPackedMutation = useSetReleasePackedInCrateMutation(userId);
+  const clearAllPackedMutation = useClearAllPackedInCrateMutation(userId);
 
   const findDefaultCrate = useCallback(
     ({ crateList }: { crateList: typeof crates }) =>
@@ -216,7 +229,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
     if (
       expectedReleaseCount > 0 &&
-      activeCrateReleases.length === 0 &&
+      crateReleaseItems.length === 0 &&
       mismatchRefetchKeyRef.current !== mismatchKey
     ) {
       mismatchRefetchKeyRef.current = mismatchKey;
@@ -227,7 +240,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     }
   }, [
     activeCrateId,
-    activeCrateReleases.length,
+    crateReleaseItems.length,
     canLoadCrates,
     crates,
     isCrateError,
@@ -238,7 +251,10 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     userId,
   ]);
 
-  const selectedReleases = activeCrateReleases;
+  const selectedReleases = useMemo(
+    () => crateReleaseItems.map((item) => item.release),
+    [crateReleaseItems],
+  );
 
   const addToCrate = useCallback(
     (release: DiscogsRelease) => {
@@ -322,22 +338,59 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
   const isInCrate = useCallback(
     (releaseId: string | number) =>
-      activeCrateReleases.some(
-        (r) => String(r.instance_id) === String(releaseId),
-      ),
-    [activeCrateReleases],
+      selectedReleases.some((r) => String(r.instance_id) === String(releaseId)),
+    [selectedReleases],
   );
+
+  const isPacked = useCallback(
+    (releaseId: string | number) =>
+      crateReleaseItems.some(
+        (item) =>
+          String(item.release.instance_id) === String(releaseId) &&
+          item.found_at !== null,
+      ),
+    [crateReleaseItems],
+  );
+
+  const setPacked = useCallback(
+    (releaseId: string | number, packed: boolean) => {
+      let crateIdToUse = activeCrateId;
+
+      if (!crateIdToUse && crates.length > 0) {
+        const defaultCrate = findDefaultCrate({ crateList: crates });
+        if (defaultCrate) {
+          crateIdToUse = defaultCrate.id;
+          setActiveCrateId(defaultCrate.id);
+        }
+      }
+
+      if (!crateIdToUse) return;
+
+      setPackedMutation.mutate({
+        crateId: crateIdToUse,
+        releaseId: String(releaseId),
+        found: packed,
+      });
+    },
+    [activeCrateId, crates, findDefaultCrate, setPackedMutation],
+  );
+
+  const clearAllPacked = useCallback(() => {
+    if (!activeCrateId) return;
+
+    clearAllPackedMutation.mutate({ crateId: activeCrateId });
+  }, [activeCrateId, clearAllPackedMutation]);
 
   const clearCrate = useCallback(() => {
     if (!activeCrateId) return;
 
-    activeCrateReleases.forEach((release) => {
+    selectedReleases.forEach((release) => {
       removeReleaseMutation.mutate({
         crateId: activeCrateId,
         releaseId: release.instance_id,
       });
     });
-  }, [activeCrateId, activeCrateReleases, removeReleaseMutation]);
+  }, [activeCrateId, selectedReleases, removeReleaseMutation]);
 
   const createCrate = useCallback(
     async (name: string) => {
@@ -415,6 +468,10 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       addToCrate,
       removeFromCrate,
       isInCrate,
+      isPacked,
+      setPacked,
+      clearAllPacked,
+      packedReleaseCount,
       clearCrate,
       createCrate,
       selectCrate,
@@ -437,6 +494,10 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       addToCrate,
       removeFromCrate,
       isInCrate,
+      isPacked,
+      setPacked,
+      clearAllPacked,
+      packedReleaseCount,
       clearCrate,
       createCrate,
       selectCrate,

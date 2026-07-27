@@ -13,7 +13,9 @@ interface CrateDrawerProviderProps {
 
 type CrateDrawerContextValue = ReturnType<typeof useCrateDrawerState> & {
   currentView: ReturnType<typeof useCurrentView>;
+  isPacked: ReturnType<typeof useCrate>["isPacked"];
   removeFromCrate: ReturnType<typeof useCrate>["removeFromCrate"];
+  setPacked: ReturnType<typeof useCrate>["setPacked"];
   onReleaseClick?: (instanceId: string) => void;
 };
 
@@ -24,7 +26,7 @@ export const CrateDrawerProvider = ({
   onReleaseClick,
 }: CrateDrawerProviderProps) => {
   const drawerState = useCrateDrawerState();
-  const { removeFromCrate } = useCrate();
+  const { isPacked, removeFromCrate, setPacked } = useCrate();
   const currentView = useCurrentView();
 
   return (
@@ -32,7 +34,9 @@ export const CrateDrawerProvider = ({
       value={{
         ...drawerState,
         currentView,
+        isPacked,
         removeFromCrate,
+        setPacked,
         ...definedProps({ onReleaseClick }),
       }}
     >

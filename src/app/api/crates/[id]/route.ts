@@ -4,9 +4,9 @@ import {
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
+import { mapCrateReleaseRow } from "src/lib/crate-release-mapper";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
-import type { DiscogsRelease } from "src/types/discogs-release.types";
 
 export const dynamic = "force-dynamic";
 
@@ -70,19 +70,12 @@ export async function GET(
         take,
         select: {
           release_data: true,
+          found_at: true,
         },
       }),
     ]);
 
-    // Map releases and ensure instance_id is consistent
-    const mappedReleases = releases.map((r: { release_data: unknown }) => {
-      const releaseData = r.release_data as DiscogsRelease;
-      // Ensure instance_id matches the stored string format
-      if (releaseData && typeof releaseData.instance_id !== "string") {
-        releaseData.instance_id = String(releaseData.instance_id);
-      }
-      return releaseData;
-    });
+    const mappedReleases = releases.map(mapCrateReleaseRow);
 
     return privateRouteJson({
       crate,

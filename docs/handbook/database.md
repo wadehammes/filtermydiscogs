@@ -27,7 +27,7 @@ Composite primary key: **`[user_id, id]`**.
 
 ### `CrateRelease`
 
-Stores a release snapshot as **`release_data` JSON** keyed by Discogs **`instance_id`**.
+Stores a release snapshot as **`release_data` JSON** keyed by Discogs **`instance_id`**. Optional **`found_at`** timestamp marks items **packed** while digging (owner-only; not exposed on public crate routes).
 
 Composite primary key: **`[user_id, crate_id, instance_id]`**. Cascades on crate delete.
 
@@ -53,8 +53,8 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 |-------|---------|---------|
 | `/api/crates` | GET, POST | List/create crates for authenticated user |
 | `/api/crates/[id]` | GET, PATCH, DELETE | Single crate CRUD; can toggle `private`, update `username` |
-| `/api/crates/[id]/releases` | GET, POST | List/add releases in crate |
-| `/api/crates/[id]/releases/[releaseId]` | DELETE | Remove release from crate |
+| `/api/crates/[id]/releases` | GET, POST, PATCH | List/add releases; bulk clear packed (`clear_found`) |
+| `/api/crates/[id]/releases/[releaseId]` | PATCH, DELETE | Mark packed / remove release from crate |
 | `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private) |
 | `/api/crates/sync` | POST | Sync local crate state with server |
 | `/api/crates/health` | GET | Health check |

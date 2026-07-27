@@ -3,12 +3,22 @@ import { BaseFactory } from "src/tests/factories/BaseFactory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsRelease } from "src/types";
-import type { Crate, CrateWithReleasesResponse } from "src/types/crate.types";
+import type {
+  Crate,
+  CrateReleaseItem,
+  CrateWithReleasesResponse,
+} from "src/types/crate.types";
 
 type CrateWithReleasesResponseFactoryOptions = {
   crate?: Crate;
   releaseCount?: number;
 };
+
+const toCrateReleaseItems = (releases: DiscogsRelease[]): CrateReleaseItem[] =>
+  releases.map((release) => ({
+    release,
+    found_at: null,
+  }));
 
 class CrateWithReleasesResponseFactory extends BaseFactory<
   CrateWithReleasesResponse,
@@ -24,7 +34,7 @@ class CrateWithReleasesResponseFactory extends BaseFactory<
 
     const instance = {
       crate,
-      releases: releaseFactory.buildList(releaseCount),
+      releases: toCrateReleaseItems(releaseFactory.buildList(releaseCount)),
     } satisfies CrateWithReleasesResponse;
 
     return {
@@ -51,7 +61,21 @@ class CrateWithReleasesResponseFactory extends BaseFactory<
     releases: DiscogsRelease[],
     attributes: Partial<CrateWithReleasesResponse> = {},
   ): CrateWithReleasesResponse {
-    return this.build({ crate, releases, ...attributes });
+    return this.build(
+      { crate, releases: toCrateReleaseItems(releases), ...attributes },
+      { crate, releaseCount: releases.length },
+    );
+  }
+
+  withReleaseItems(
+    crate: Crate,
+    releases: CrateReleaseItem[],
+    attributes: Partial<CrateWithReleasesResponse> = {},
+  ): CrateWithReleasesResponse {
+    return this.build(
+      { crate, releases, ...attributes },
+      { crate, releaseCount: releases.length },
+    );
   }
 }
 

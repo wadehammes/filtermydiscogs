@@ -131,7 +131,7 @@ export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
 
         {releases.length > 0 ? (
           <div className={styles.section}>
-            <ReleaseCardGrid releases={releases} />
+            <ReleaseCardGrid releases={releases.map((item) => item.release)} />
           </div>
         ) : (
           <div className={styles.section}>

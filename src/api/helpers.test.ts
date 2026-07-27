@@ -11,6 +11,7 @@ import {
 import {
   addReleaseToCrate,
   checkAuth,
+  clearAllPackedInCrate,
   clearData,
   createCrate,
   deleteCrate,
@@ -21,12 +22,17 @@ import {
   fetchDiscogsSearch,
   logout,
   removeReleaseFromCrate,
+  setReleasePackedInCrate,
   syncCrates,
   updateCrate,
 } from "./helpers";
 
 global.fetch = jest.fn();
 const mockFetch = jest.mocked(fetch);
+
+const wrapCrateReleases = (
+  releases: ReturnType<typeof releaseFactory.buildList>,
+) => releases.map((release) => ({ release, found_at: null }));
 
 describe("fetchDiscogsCollection", () => {
   beforeEach(() => {
@@ -268,7 +274,7 @@ describe("fetchCrate", () => {
     const crateId = "crate-123";
     const mockCrate = {
       crate: crateFactory.build({ id: crateId }),
-      releases: releaseFactory.buildList(5),
+      releases: wrapCrateReleases(releaseFactory.buildList(5)),
       pagination: {
         page: 1,
         pageSize: 100,
@@ -303,7 +309,7 @@ describe("fetchCrate", () => {
       .mockResolvedValueOnce(
         mockFetchSuccess({
           crate,
-          releases: releaseFactory.buildList(2),
+          releases: wrapCrateReleases(releaseFactory.buildList(2)),
           pagination: {
             page: 1,
             pageSize: 2,
@@ -317,7 +323,7 @@ describe("fetchCrate", () => {
       .mockResolvedValueOnce(
         mockFetchSuccess({
           crate,
-          releases: releaseFactory.buildList(1),
+          releases: wrapCrateReleases(releaseFactory.buildList(1)),
           pagination: {
             page: 2,
             pageSize: 2,
@@ -517,6 +523,72 @@ describe("removeReleaseFromCrate", () => {
     await expect(
       removeReleaseFromCrate("crate-123", "release-456"),
     ).rejects.toThrow("HTTP error! status: 404");
+  });
+});
+
+describe("setReleasePackedInCrate", () => {
+  beforeEach(() => {
+    resetFetchMock();
+  });
+
+  it("updates packed status successfully", async () => {
+    const crateId = "crate-123";
+    const releaseId = "release-456";
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess({
+        success: true,
+        found_at: "2026-07-27T00:00:00.000Z",
+      }),
+    );
+
+    const result = await setReleasePackedInCrate(crateId, releaseId, true);
+
+    expect(result).toEqual({
+      success: true,
+      found_at: "2026-07-27T00:00:00.000Z",
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      `/api/crates/${crateId}/releases/${releaseId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ found: true }),
+      },
+    );
+  });
+});
+
+describe("clearAllPackedInCrate", () => {
+  beforeEach(() => {
+    resetFetchMock();
+  });
+
+  it("clears packed status successfully", async () => {
+    const crateId = "crate-123";
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess({
+        success: true,
+        cleared_count: 2,
+      }),
+    );
+
+    const result = await clearAllPackedInCrate(crateId);
+
+    expect(result).toEqual({
+      success: true,
+      cleared_count: 2,
+    });
+    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}/releases`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ clear_found: true }),
+    });
   });
 });
 

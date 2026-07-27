@@ -1,19 +1,23 @@
 import classNames from "classnames";
 import Image from "next/image";
-import XIcon from "src/styles/icons/x-thin.svg";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import styles from "./CrateDrawer.module.css";
+import { CrateDrawerReleaseActions } from "./CrateDrawerReleaseActions.component";
 
 interface CrateDrawerReleaseItemProps {
   release: DiscogsRelease;
+  packed: boolean;
   onReleaseClick?: (instanceId: string) => void;
+  onPackedChange: (packed: boolean) => void;
   onRemove: (releaseId: string) => void;
 }
 
 export const CrateDrawerReleaseItem = ({
   release,
+  packed,
   onReleaseClick,
+  onPackedChange,
   onRemove,
 }: CrateDrawerReleaseItemProps) => {
   const { basic_information } = release;
@@ -30,9 +34,11 @@ export const CrateDrawerReleaseItem = ({
   };
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: Cannot use button here due to nested button (remove button)
+    // biome-ignore lint/a11y/useSemanticElements: row opens modal; action column holds separate buttons
     <div
-      className={styles.listItem}
+      className={classNames(styles.listItem, {
+        [styles.listItemFound]: packed,
+      })}
       role="button"
       tabIndex={0}
       onClick={handleActivate}
@@ -65,18 +71,12 @@ export const CrateDrawerReleaseItem = ({
           {basic_information.labels[0]?.name} &bull; {basic_information.year}
         </span>
       </div>
-      <button
-        type="button"
-        className={styles.removeButton}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          onRemove(String(release.instance_id));
-        }}
-        aria-label={`Remove ${basic_information.title} from crate`}
-      >
-        <XIcon className={styles.removeIcon} aria-hidden />
-      </button>
+      <CrateDrawerReleaseActions
+        packed={packed}
+        releaseTitle={basic_information.title}
+        onPackedChange={onPackedChange}
+        onRemove={() => onRemove(String(release.instance_id))}
+      />
     </div>
   );
 };

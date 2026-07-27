@@ -40,9 +40,9 @@ export const CrateDrawerDialogs = () => {
 
       <ConfirmDialog
         isOpen={showClearDialog}
-        title="Clear Crate"
+        title="Empty Crate"
         message={`Are you sure you want to remove all ${releaseCount} release${releaseCount !== 1 ? "s" : ""} from "${crateName}"? This action cannot be undone.`}
-        confirmLabel="Clear"
+        confirmLabel="Empty Crate"
         cancelLabel="Cancel"
         variant="danger"
         onConfirm={handleClearConfirm}

@@ -34,6 +34,7 @@ model CrateRelease {
   instance_id String
   release_data Json
   added_at    DateTime @default(now())
+  found_at    DateTime?
 
   crate Crate @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
 
