@@ -1,5 +1,8 @@
 import type { NextRequest } from "next/server";
-import { primeVerifiedIdentityCache } from "src/lib/auth-request";
+import {
+  primeVerifiedIdentityCache,
+  syncIdentityCookies,
+} from "src/lib/auth-request";
 import { privateRouteRedirect } from "src/lib/private-route-response";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -11,14 +14,12 @@ export async function GET(request: NextRequest) {
     const oauthToken = searchParams.get("oauth_token");
     const oauthVerifier = searchParams.get("oauth_verifier");
 
-    // Validate OAuth callback parameters
     if (!(oauthToken && oauthVerifier)) {
       return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
       );
     }
 
-    // Validate token format (should be alphanumeric, typically 40+ chars)
     if (!/^[a-zA-Z0-9_-]+$/.test(oauthToken) || oauthToken.length < 20) {
       return privateRouteRedirect(
         new URL("/?error=oauth_callback_invalid", request.url),
@@ -31,7 +32,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get stored tokens from cookies
     const storedOAuthToken = request.cookies.get("oauth_token")?.value;
     const storedOAuthTokenSecret =
       request.cookies.get("oauth_token_secret")?.value;
@@ -48,14 +48,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Exchange request token for access token
     const accessTokens = await discogsOAuthService.getAccessToken(
       storedOAuthToken,
       storedOAuthTokenSecret,
       oauthVerifier,
     );
 
-    // Get user identity to verify authentication
     const verifiedIdentity = await discogsOAuthService.getIdentity(
       accessTokens.oauth_token,
       accessTokens.oauth_token_secret,
@@ -70,21 +68,19 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    // Store access tokens securely
     const response = privateRouteRedirect(
       new URL("/releases?auth=success", request.url),
     );
 
-    // Use secure: false for development, true for production
     const secureFlag = process.env.NODE_ENV === "production";
+    const cookieMaxAge = 60 * 60 * 24 * 30;
 
-    // Store access tokens in secure cookies
     response.cookies.set("discogs_access_token", accessTokens.oauth_token, {
       httpOnly: true,
       secure: secureFlag,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: cookieMaxAge,
     });
 
     response.cookies.set(
@@ -95,28 +91,15 @@ export async function GET(request: NextRequest) {
         secure: secureFlag,
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        maxAge: cookieMaxAge,
       },
     );
 
-    // Store user info for display; authorization always re-verifies OAuth tokens.
-    response.cookies.set("discogs_username", verifiedIdentity.username, {
-      httpOnly: false,
-      secure: secureFlag,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+    syncIdentityCookies(response, {
+      userId: verifiedIdentity.id,
+      username: verifiedIdentity.username,
     });
 
-    response.cookies.set("discogs_user_id", verifiedIdentity.id.toString(), {
-      httpOnly: true,
-      secure: secureFlag,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    });
-
-    // Clear request tokens
     response.cookies.delete("oauth_token");
     response.cookies.delete("oauth_token_secret");
 

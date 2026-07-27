@@ -34,6 +34,8 @@ Set in [`src/app/api/auth/callback/route.ts`](../../src/app/api/auth/callback/ro
 
 | Cookie | httpOnly | Purpose |
 |--------|----------|---------|
+| `discogs_reconnect_username` | no | Last connected Discogs username for quick re-login after logout; display only |
+| `discogs_session` | yes | Active app session; cleared on logout while OAuth tokens may remain for quick re-login |
 | `discogs_access_token` | yes | OAuth access token |
 | `discogs_access_token_secret` | yes | OAuth access token secret |
 | `discogs_username` | no | Display name; readable by client JS |
@@ -87,7 +89,7 @@ Discogs may return **429** (rate limit) or **5xx** (upstream errors). Route hand
 
 **OAuth identity lookups** (`getVerifiedUserFromRequest` in [`src/lib/auth-request.ts`](../../src/lib/auth-request.ts)) are cached in memory for a short TTL ([`src/lib/identity-cache.ts`](../../src/lib/identity-cache.ts)) so `/api/auth/check` and crate routes do not call `oauth/identity` on every request. Concurrent lookups for the same token pair share one in-flight request. On Discogs **429**, data routes reuse only a recently cached identity keyed to the current OAuth token pair; they **never** fall back to `discogs_user_id` / `discogs_username` cookies. **`/api/auth/check`** alone may return a display-only identity from those cookies with **`rateLimited: true`**; the client blocks collection and crate fetches until verification succeeds.
 
-**Explicit login** always uses **`GET /api/auth/discogs?force=1`**, which clears any existing session and requires a fresh Discogs authorization (prevents silently reusing another user's tokens on a shared browser).
+**Connect with Discogs** reuses stored OAuth tokens when available (typical after logout on the same browser). When tokens remain, the landing page shows **Connect with {username}** and **Use a different Discogs account** (`force=1`) below both connect buttons.
 
 Auth route handlers must not be CDN-cached; see [platform.md](platform.md) (**Private session API responses**) for **`privateRouteJson`**, **`privateRouteRedirect`**, and [`src/proxy.ts`](../../src/proxy.ts).
 

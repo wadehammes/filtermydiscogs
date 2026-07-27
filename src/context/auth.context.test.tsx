@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { checkAuth, logout as logoutApi } from "src/api/helpers";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
-  clearAuthCookies,
+  clearSessionAuthCookies,
   clearUrlParams,
   getUsernameFromCookies,
   parseAuthUrlParams,
@@ -22,6 +22,7 @@ jest.mock("src/services/auth.service", () => ({
     "src/services/auth.service",
   ),
   clearAuthCookies: jest.fn(),
+  clearSessionAuthCookies: jest.fn(),
   clearUrlParams: jest.fn(),
   getUsernameFromCookies: jest.fn(),
   parseAuthUrlParams: jest.fn(),
@@ -30,7 +31,7 @@ jest.mock("src/services/auth.service", () => ({
 const mockUseRouter = jest.mocked(useRouter);
 const mockCheckAuth = jest.mocked(checkAuth);
 const mockLogoutApi = jest.mocked(logoutApi);
-const mockClearAuthCookies = jest.mocked(clearAuthCookies);
+const mockClearSessionAuthCookies = jest.mocked(clearSessionAuthCookies);
 const mockClearUrlParams = jest.mocked(clearUrlParams);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -69,6 +70,7 @@ describe("AuthProvider", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
@@ -96,6 +98,7 @@ describe("AuthProvider", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
 
@@ -115,6 +118,7 @@ describe("AuthProvider", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     });
 
@@ -132,6 +136,7 @@ describe("AuthProvider", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     });
 
@@ -174,6 +179,7 @@ describe("AuthProvider", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
@@ -200,6 +206,7 @@ describe("AuthProvider", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
       rateLimited: false,
     });
     mockParseAuthUrlParams.mockReturnValue({
@@ -217,6 +224,44 @@ describe("AuthProvider", () => {
     });
 
     expect(mockClearUrlParams).toHaveBeenCalled();
+  });
+
+  it("calls login with force when switching accounts", async () => {
+    let locationHref = "http://localhost/";
+    const originalHrefDescriptor = Object.getOwnPropertyDescriptor(
+      window.location,
+      "href",
+    );
+
+    try {
+      Object.defineProperty(window.location, "href", {
+        configurable: true,
+        get() {
+          return locationHref;
+        },
+        set(value: string) {
+          locationHref = value;
+        },
+      });
+    } catch {
+      return;
+    }
+
+    const { result } = renderAuthHook();
+
+    await waitFor(() => {
+      expect(result.current.state.isCheckingAuth).toBe(false);
+    });
+
+    act(() => {
+      result.current.login({ force: true });
+    });
+
+    expect(locationHref).toBe("/api/auth/discogs?force=1");
+
+    if (originalHrefDescriptor) {
+      Object.defineProperty(window.location, "href", originalHrefDescriptor);
+    }
   });
 
   it("calls login function", async () => {
@@ -252,7 +297,7 @@ describe("AuthProvider", () => {
 
     expect(result.current.state.isLoading).toBe(true);
     expect(result.current.state.error).toBeNull();
-    expect(locationHref).toBe("/api/auth/discogs?force=1");
+    expect(locationHref).toBe("/api/auth/discogs");
 
     if (originalHrefDescriptor) {
       Object.defineProperty(window.location, "href", originalHrefDescriptor);
@@ -264,12 +309,14 @@ describe("AuthProvider", () => {
       isAuthenticated: boolean;
       username: string | null;
       userId: string | null;
+      reconnectUsername: string | null;
       rateLimited: boolean;
     }) => void = () => {};
     const pendingCheck = new Promise<{
       isAuthenticated: boolean;
       username: string | null;
       userId: string | null;
+      reconnectUsername: string | null;
       rateLimited: boolean;
     }>((resolve) => {
       resolveCheck = resolve;
@@ -279,6 +326,7 @@ describe("AuthProvider", () => {
       isAuthenticated: true,
       username: "cacheduser",
       userId: "999",
+      reconnectUsername: null,
       rateLimited: false,
     });
 
@@ -295,6 +343,7 @@ describe("AuthProvider", () => {
         isAuthenticated: true,
         username: "cacheduser",
         userId: "999",
+        reconnectUsername: null,
         rateLimited: false,
       });
     });
@@ -309,6 +358,7 @@ describe("AuthProvider", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
     mockApiResponse(
@@ -329,11 +379,12 @@ describe("AuthProvider", () => {
     });
 
     expect(mockLogoutApi).toHaveBeenCalled();
-    expect(mockClearAuthCookies).toHaveBeenCalled();
+    expect(mockClearSessionAuthCookies).toHaveBeenCalled();
     expect(removeQueriesSpy).toHaveBeenCalled();
     expect(clearSpy).not.toHaveBeenCalled();
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
+    expect(result.current.state.reconnectUsername).toBe("testuser");
     expect(mockRouter.replace).toHaveBeenCalledWith("/");
   });
 
@@ -360,6 +411,7 @@ describe("AuthProvider", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123",
+      reconnectUsername: null,
       rateLimited: false,
     });
     mockApiResponse(

@@ -22,8 +22,40 @@ export type VerifiedUserResult =
 
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
+export const DISCOGS_SESSION_COOKIE = "discogs_session";
+
+export const DISCOGS_RECONNECT_USERNAME_COOKIE = "discogs_reconnect_username";
+
 function getSecureCookieFlag(): boolean {
   return process.env.NODE_ENV === "production";
+}
+
+export function hasActiveDiscogsSession(request: NextRequest): boolean {
+  return request.cookies.get(DISCOGS_SESSION_COOKIE)?.value === "1";
+}
+
+export function setDiscogsSessionCookie(response: NextResponse): void {
+  const secureFlag = getSecureCookieFlag();
+
+  response.cookies.set(DISCOGS_SESSION_COOKIE, "1", {
+    httpOnly: true,
+    secure: secureFlag,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_COOKIE_MAX_AGE,
+  });
+}
+
+export function clearDiscogsSessionCookie(response: NextResponse): void {
+  const secureFlag = getSecureCookieFlag();
+
+  response.cookies.set(DISCOGS_SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: secureFlag,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 function getDiscogsRateLimitResponse(): NextResponse {
@@ -38,13 +70,13 @@ function getDiscogsRateLimitResponse(): NextResponse {
   );
 }
 
-/**
- * Display-only identity from session cookies. Used by /api/auth/check when
- * Discogs identity verification is rate-limited. Never use for data routes.
- */
 export function getDisplayIdentityFromCookies(
   request: NextRequest,
 ): VerifiedDiscogsUser | null {
+  if (!hasActiveDiscogsSession(request)) {
+    return null;
+  }
+
   const userIdCookie = request.cookies.get("discogs_user_id")?.value;
   const usernameCookie = request.cookies.get("discogs_username")?.value;
 
@@ -63,7 +95,6 @@ export function getDisplayIdentityFromCookies(
   };
 }
 
-/** Keep display cookies aligned with a verified OAuth identity. */
 export function syncIdentityCookies(
   response: NextResponse,
   identity: VerifiedDiscogsUser,
@@ -85,6 +116,51 @@ export function syncIdentityCookies(
     path: "/",
     maxAge: SESSION_COOKIE_MAX_AGE,
   });
+
+  setDiscogsSessionCookie(response);
+  setReconnectUsernameCookie(response, identity.username);
+}
+
+export function setReconnectUsernameCookie(
+  response: NextResponse,
+  username: string,
+): void {
+  const secureFlag = getSecureCookieFlag();
+
+  response.cookies.set(DISCOGS_RECONNECT_USERNAME_COOKIE, username, {
+    httpOnly: false,
+    secure: secureFlag,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_COOKIE_MAX_AGE,
+  });
+}
+
+export function clearReconnectUsernameCookie(response: NextResponse): void {
+  const secureFlag = getSecureCookieFlag();
+
+  response.cookies.set(DISCOGS_RECONNECT_USERNAME_COOKIE, "", {
+    httpOnly: false,
+    secure: secureFlag,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
+export function getStoredReconnectUsername(
+  request: NextRequest,
+): string | null {
+  const accessToken = request.cookies.get("discogs_access_token")?.value;
+  const accessTokenSecret = request.cookies.get(
+    "discogs_access_token_secret",
+  )?.value;
+
+  if (!(accessToken && accessTokenSecret)) {
+    return null;
+  }
+
+  return request.cookies.get(DISCOGS_RECONNECT_USERNAME_COOKIE)?.value ?? null;
 }
 
 export function primeVerifiedIdentityCache(
@@ -146,11 +222,7 @@ async function fetchVerifiedIdentity(
   };
 }
 
-/**
- * Resolve the authenticated Discogs user from httpOnly OAuth cookies.
- * Never trust discogs_user_id or discogs_username cookies for authorization.
- */
-export async function getVerifiedUserFromRequest(
+async function getVerifiedUserFromOAuthCookies(
   request: NextRequest,
 ): Promise<VerifiedUserResult> {
   const accessToken = request.cookies.get("discogs_access_token")?.value;
@@ -193,9 +265,24 @@ export async function getVerifiedUserFromRequest(
   }
 }
 
-/**
- * Optional identity lookup for routes that behave differently for signed-in viewers.
- */
+export async function getVerifiedUserFromRequest(
+  request: NextRequest,
+): Promise<VerifiedUserResult> {
+  if (!hasActiveDiscogsSession(request)) {
+    return {
+      error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+
+  return getVerifiedUserFromOAuthCookies(request);
+}
+
+export async function getVerifiedUserFromStoredTokens(
+  request: NextRequest,
+): Promise<VerifiedUserResult> {
+  return getVerifiedUserFromOAuthCookies(request);
+}
+
 export async function getOptionalVerifiedUserFromRequest(
   request: NextRequest,
 ): Promise<VerifiedDiscogsUser | null> {
@@ -216,9 +303,6 @@ export type AuthenticatedDiscogsSession =
     }
   | { error: NextResponse };
 
-/**
- * Verify OAuth session and ensure the caller may act as the requested username.
- */
 export async function requireAuthenticatedDiscogsUser(
   request: NextRequest,
   requestedUsername: string,

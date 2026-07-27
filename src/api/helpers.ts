@@ -669,6 +669,7 @@ export const checkAuth = async (): Promise<{
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  reconnectUsername: string | null;
   rateLimited?: boolean;
 }> => {
   try {
@@ -710,9 +711,16 @@ export const clearData = async (): Promise<{ success: boolean }> => {
   }
 };
 
-export const logout = async (): Promise<{ success: boolean }> => {
+export type LogoutOptions = {
+  preserveTokens?: boolean;
+};
+
+export const logout = async ({
+  preserveTokens = true,
+}: LogoutOptions = {}): Promise<{ success: boolean }> => {
   try {
-    const response = await fetch("/api/auth/logout", {
+    const query = preserveTokens ? "" : "?preserve_tokens=false";
+    const response = await fetch(`/api/auth/logout${query}`, {
       method: "POST",
       credentials: "include",
     });

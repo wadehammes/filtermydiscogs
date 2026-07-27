@@ -1,5 +1,10 @@
 import type { NextRequest } from "next/server";
-import { clearVerifiedIdentityCache } from "src/lib/auth-request";
+import {
+  clearDiscogsSessionCookie,
+  clearReconnectUsernameCookie,
+  clearVerifiedIdentityCache,
+  setReconnectUsernameCookie,
+} from "src/lib/auth-request";
 import { privateRouteJson } from "src/lib/private-route-response";
 
 export const dynamic = "force-dynamic";
@@ -16,9 +21,12 @@ export async function POST(request: NextRequest) {
 
   const response = privateRouteJson({ success: true });
 
-  // Preserve OAuth tokens only when explicitly requested (shared-device convenience).
   const preserveTokens =
-    request.nextUrl.searchParams.get("preserve_tokens") === "true";
+    request.nextUrl.searchParams.get("preserve_tokens") !== "false";
+
+  const reconnectUsername = preserveTokens
+    ? request.cookies.get("discogs_username")?.value
+    : null;
 
   const secureFlag = process.env.NODE_ENV === "production";
 
@@ -42,6 +50,14 @@ export async function POST(request: NextRequest) {
   response.cookies.set("discogs_user_id", "", clearCookieOptions);
   response.cookies.set("oauth_token", "", clearCookieOptions);
   response.cookies.set("oauth_token_secret", "", clearCookieOptions);
+
+  clearDiscogsSessionCookie(response);
+
+  if (reconnectUsername) {
+    setReconnectUsernameCookie(response, reconnectUsername);
+  } else {
+    clearReconnectUsernameCookie(response);
+  }
 
   if (!preserveTokens) {
     response.cookies.set("discogs_access_token", "", clearCookieOptions);

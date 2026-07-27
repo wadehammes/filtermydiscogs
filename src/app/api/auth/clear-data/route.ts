@@ -1,5 +1,9 @@
 import type { NextRequest } from "next/server";
-import { getVerifiedUserFromRequest } from "src/lib/auth-request";
+import {
+  clearDiscogsSessionCookie,
+  clearReconnectUsernameCookie,
+  getVerifiedUserFromRequest,
+} from "src/lib/auth-request";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
@@ -49,6 +53,9 @@ export async function POST(request: NextRequest) {
   response.cookies.set("discogs_access_token_secret", "", clearCookieOptions);
   response.cookies.set("oauth_token", "", clearCookieOptions);
   response.cookies.set("oauth_token_secret", "", clearCookieOptions);
+
+  clearDiscogsSessionCookie(response);
+  clearReconnectUsernameCookie(response);
 
   return response;
 }

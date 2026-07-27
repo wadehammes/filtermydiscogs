@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 import {
+  DISCOGS_SESSION_COOKIE,
   getDisplayIdentityFromCookies,
+  getStoredReconnectUsername,
   getVerifiedUserFromRequest,
 } from "./auth-request";
 import { clearCachedIdentity, getIdentityCacheKey } from "./identity-cache";
@@ -34,8 +36,9 @@ describe("auth-request", () => {
   });
 
   describe("getDisplayIdentityFromCookies", () => {
-    it("returns identity when both session cookies are present", () => {
+    it("returns identity when session and display cookies are present", () => {
       const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
         discogs_user_id: "42",
         discogs_username: "crate-digger",
       });
@@ -53,6 +56,27 @@ describe("auth-request", () => {
     });
   });
 
+  describe("getStoredReconnectUsername", () => {
+    it("returns username when stored tokens and reconnect cookie exist", () => {
+      const request = createRequest({
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+        discogs_reconnect_username: "crate-digger",
+      });
+
+      expect(getStoredReconnectUsername(request)).toBe("crate-digger");
+    });
+
+    it("returns null when reconnect cookie is missing", () => {
+      const request = createRequest({
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      expect(getStoredReconnectUsername(request)).toBeNull();
+    });
+  });
+
   describe("getVerifiedUserFromRequest", () => {
     it("returns verified identity from Discogs", async () => {
       jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
@@ -63,6 +87,7 @@ describe("auth-request", () => {
       });
 
       const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
         discogs_access_token: accessToken,
         discogs_access_token_secret: accessTokenSecret,
       });
@@ -74,6 +99,18 @@ describe("auth-request", () => {
       });
     });
 
+    it("returns unauthorized when the app session cookie is missing", async () => {
+      const request = createRequest({
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await getVerifiedUserFromRequest(request);
+
+      expect("error" in result).toBe(true);
+      expect("user" in result).toBe(false);
+    });
+
     it("does not fall back to cookies when Discogs returns 429", async () => {
       jest
         .spyOn(discogsOAuthService, "getIdentity")
@@ -82,6 +119,7 @@ describe("auth-request", () => {
         );
 
       const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
         discogs_access_token: accessToken,
         discogs_access_token_secret: accessTokenSecret,
         discogs_user_id: "42",

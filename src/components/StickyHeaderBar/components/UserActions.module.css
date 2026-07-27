@@ -60,14 +60,22 @@
   font-weight: var(--font-semibold);
 }
 
-.chevron {
-  height: var(--space-3);
-  transition: transform var(--transition-fast);
+.chevronIcon {
+  align-items: center;
+  color: currentcolor;
+  display: flex;
+  flex-shrink: 0;
   transform: rotate(90deg);
-  width: var(--space-3);
+  transform-origin: center;
+  transition: transform var(--transition-fast);
+
+  & svg {
+    block-size: var(--space-4);
+    inline-size: var(--space-4);
+  }
 }
 
-.chevronOpen {
+.chevronIconOpen {
   transform: rotate(270deg);
 }
 

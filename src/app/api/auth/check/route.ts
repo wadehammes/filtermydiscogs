@@ -1,11 +1,29 @@
 import type { NextRequest } from "next/server";
 import {
   getDisplayIdentityFromCookies,
+  getStoredReconnectUsername,
   getVerifiedUserFromRequest,
+  getVerifiedUserFromStoredTokens,
 } from "src/lib/auth-request";
 import { privateRouteJson } from "src/lib/private-route-response";
 
 export const dynamic = "force-dynamic";
+
+async function resolveReconnectUsername(
+  request: NextRequest,
+): Promise<string | null> {
+  const reconnectUsername = getStoredReconnectUsername(request);
+  if (reconnectUsername) {
+    return reconnectUsername;
+  }
+
+  const stored = await getVerifiedUserFromStoredTokens(request);
+  if ("error" in stored) {
+    return null;
+  }
+
+  return stored.user.username;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +39,7 @@ export async function GET(request: NextRequest) {
             username: displayIdentity?.username ?? null,
             userId: displayIdentity ? String(displayIdentity.userId) : null,
             rateLimited: true,
+            reconnectUsername: null,
           },
           {
             headers: { "Retry-After": "60" },
@@ -28,11 +47,14 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      const reconnectUsername = await resolveReconnectUsername(request);
+
       return privateRouteJson({
         isAuthenticated: false,
         username: null,
         userId: null,
         rateLimited: false,
+        reconnectUsername,
       });
     }
 
@@ -41,6 +63,7 @@ export async function GET(request: NextRequest) {
       username: verified.user.username,
       userId: String(verified.user.userId),
       rateLimited: false,
+      reconnectUsername: null,
     });
   } catch (error) {
     console.error("Auth check error:", error);
@@ -49,6 +72,7 @@ export async function GET(request: NextRequest) {
       username: null,
       userId: null,
       rateLimited: false,
+      reconnectUsername: null,
     });
   }
 }

@@ -641,6 +641,7 @@ describe("checkAuth", () => {
       isAuthenticated: true,
       username: "testuser",
       userId: "123456",
+      reconnectUsername: null,
     };
     mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
 
@@ -658,6 +659,7 @@ describe("checkAuth", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      reconnectUsername: null,
     };
     mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
 
@@ -712,6 +714,20 @@ describe("logout", () => {
       method: "POST",
       credentials: "include",
     });
+  });
+
+  it("revokes tokens when preserveTokens is false", async () => {
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+
+    await logout({ preserveTokens: false });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/auth/logout?preserve_tokens=false",
+      {
+        method: "POST",
+        credentials: "include",
+      },
+    );
   });
 
   it("throws error when response is not ok", async () => {

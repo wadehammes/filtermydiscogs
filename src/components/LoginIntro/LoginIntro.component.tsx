@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ErrorMessage } from "src/components/ErrorMessage/ErrorMessage.component";
 import { LoginPreviewDemo } from "src/components/Login/LoginPreviewDemo.component";
 import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
+import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/LoginSwitchAccountLink.component";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
 import typography from "src/styles/typography.module.css";
 import styles from "./LoginIntro.module.css";
@@ -10,13 +11,17 @@ import styles from "./LoginIntro.module.css";
 type LoginIntroProps = {
   error: string | null;
   isLoading: boolean;
+  reconnectUsername: string | null;
   onConnect: () => void;
+  onConnectDifferentAccount: () => void;
 };
 
 export const LoginIntro = ({
   error,
   isLoading,
+  reconnectUsername,
   onConnect,
+  onConnectDifferentAccount,
 }: LoginIntroProps) => (
   <div className={styles.intro}>
     <hgroup className={styles.introHeading}>
@@ -42,8 +47,15 @@ export const LoginIntro = ({
         onClick={onConnect}
         disabled={isLoading}
         isLoading={isLoading}
-        className={styles.loginButton}
+        reconnectUsername={reconnectUsername}
       />
+
+      {reconnectUsername ? (
+        <LoginSwitchAccountLink
+          onClick={onConnectDifferentAccount}
+          disabled={isLoading}
+        />
+      ) : null}
 
       <p className={classNames(typography.metaCaption, styles.finePrint)}>
         <Link href="/legal" className={styles.termsLink}>

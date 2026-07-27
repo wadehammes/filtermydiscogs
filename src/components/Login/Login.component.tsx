@@ -11,8 +11,11 @@ import { LOGIN_FEATURES } from "./loginFeatures.constants";
 
 export const Login = () => {
   const { state, login } = useAuth();
-  const { isLoading, error, isAuthenticated } = state;
+  const { isLoading, error, isAuthenticated, reconnectUsername } = state;
   const router = useRouter();
+
+  const connect = () => login();
+  const connectDifferentAccount = () => login({ force: true });
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,7 +25,13 @@ export const Login = () => {
 
   return (
     <div className={styles.landing} data-testid="fmdLogin">
-      <LoginIntro error={error} isLoading={isLoading} onConnect={login} />
+      <LoginIntro
+        error={error}
+        isLoading={isLoading}
+        reconnectUsername={reconnectUsername}
+        onConnect={connect}
+        onConnectDifferentAccount={connectDifferentAccount}
+      />
 
       <div className={styles.features}>
         {LOGIN_FEATURES.map((feature, index) => (
@@ -34,7 +43,12 @@ export const Login = () => {
         ))}
       </div>
 
-      <LoginBottomCta isLoading={isLoading} onConnect={login} />
+      <LoginBottomCta
+        isLoading={isLoading}
+        reconnectUsername={reconnectUsername}
+        onConnect={connect}
+        onConnectDifferentAccount={connectDifferentAccount}
+      />
     </div>
   );
 };

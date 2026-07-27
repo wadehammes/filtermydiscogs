@@ -173,11 +173,14 @@ export const UserActions = ({
             aria-haspopup="true"
           >
             <span className={styles.username}>{username}</span>
-            <Chevron
-              className={classNames(styles.chevron, {
-                [styles.chevronOpen]: isDropdownOpen,
+            <span
+              className={classNames(styles.chevronIcon, {
+                [styles.chevronIconOpen]: isDropdownOpen,
               })}
-            />
+              aria-hidden
+            >
+              <Chevron />
+            </span>
           </button>
           {isDropdownOpen && (
             <div className={styles.dropdown}>
