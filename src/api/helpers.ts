@@ -1,4 +1,5 @@
 import { ApiFetchError } from "src/api/apiFetchError";
+import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import type {
   DiscogsCollection,
   DiscogsCollectionFieldsResponse,
@@ -147,11 +148,17 @@ async function parseSuccessResponse<T>(response: Response): Promise<T> {
   return JSON.parse(bodyText) as T;
 }
 
-export const fetchDiscogsCollection = async (
-  username: string,
-  page: number = 1,
-  perPage: number = 100,
-): Promise<DiscogsCollection> => {
+export interface FetchDiscogsCollectionParams {
+  username: string;
+  page?: number;
+  perPage?: number;
+}
+
+export const fetchDiscogsCollection = async ({
+  username,
+  page = 1,
+  perPage = COLLECTION_PAGE_SIZE,
+}: FetchDiscogsCollectionParams): Promise<DiscogsCollection> => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -166,10 +173,14 @@ export const fetchDiscogsCollection = async (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
-      throw new Error(await messageFromFailedApiResponse(response));
+      throw new ApiFetchError(
+        response.status,
+        await messageFromFailedApiResponse(response),
+      );
     }
 
     return response.json();
@@ -191,6 +202,7 @@ export const fetchCollectionFields = async (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -231,6 +243,7 @@ export const updateCollectionNote = async ({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           username,
           releaseId,
@@ -262,6 +275,7 @@ export const fetchDiscogsRelease = async (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -305,6 +319,7 @@ export const fetchDiscogsSearch = async (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -728,6 +743,7 @@ export const fetchCollectionValue = async (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {

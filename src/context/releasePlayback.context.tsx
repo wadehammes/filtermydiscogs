@@ -214,12 +214,13 @@ export const ReleasePlaybackProvider = ({
   }, [clearPlayFromGestureRetries]);
 
   useEffect(() => {
-    if (!(isPlaybackReady && pendingPlayFromGestureRef.current)) {
+    if (
+      !(activeVideoId && isPlaybackReady && pendingPlayFromGestureRef.current)
+    ) {
       return;
     }
 
     schedulePlayFromGestureAttempts();
-    // biome-ignore lint/correctness/useExhaustiveDependencies: retry play when the active embed changes
   }, [activeVideoId, isPlaybackReady, schedulePlayFromGestureAttempts]);
 
   useEffect(() => {

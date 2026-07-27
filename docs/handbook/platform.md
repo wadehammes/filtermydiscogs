@@ -76,6 +76,8 @@ Cookie-authenticated **`/api/auth/*`** and authenticated **`/api/crates/*`** rou
 
 Do **not** use bare **`NextResponse.json`** on private session routes—use **`privateRouteJson`** (or **`createErrorResponse`** in `catch` blocks). Public crate reads keep their own cache policy in [`/api/crates/public/[id]`](../../src/app/api/crates/public/[id]/route.ts).
 
+Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`, `/api/collection/value`) use **`export const dynamic = "force-dynamic"`** and success responses with **`Cache-Control: private, max-age=…`** plus **`Vary: Cookie`** (browser-private cache keyed by session). Auth failures still return **`privateRouteJson`** via **`requireAuthenticatedDiscogsUser`**. Client helpers for these routes send **`credentials: "include"`**.
+
 ## Jest
 
 [`jest.config.ts`](../../jest.config.ts) uses **`next/jest`** with:

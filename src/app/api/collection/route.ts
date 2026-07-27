@@ -1,7 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+
+export const dynamic = "force-dynamic";
 
 // Valid sort values from Discogs API
 const VALID_SORT_VALUES = [
@@ -49,14 +52,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate and sanitize perPage parameter (Discogs allows 1-500)
+    // Validate and sanitize perPage parameter (Discogs allows 1-100)
     const perPage = Math.max(
       1,
-      Math.min(500, parseInt(perPageParam || "100", 10)),
+      Math.min(
+        COLLECTION_PAGE_SIZE,
+        parseInt(perPageParam || String(COLLECTION_PAGE_SIZE), 10),
+      ),
     );
     if (Number.isNaN(perPage) || perPage < 1) {
       return NextResponse.json(
-        { error: "Invalid per_page parameter (must be 1-500)" },
+        {
+          error: `Invalid per_page parameter (must be 1-${COLLECTION_PAGE_SIZE})`,
+        },
         { status: 400 },
       );
     }
@@ -102,6 +110,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(collection, {
       headers: {
         "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+        Vary: "Cookie",
       },
     });
   } catch (error) {

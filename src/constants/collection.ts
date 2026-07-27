@@ -1,0 +1,2 @@
+export const COLLECTION_FIRST_PAGE_SIZE = 50;
+export const COLLECTION_PAGE_SIZE = 100;

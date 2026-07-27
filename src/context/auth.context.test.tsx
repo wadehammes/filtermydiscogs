@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { checkAuth, logout as logoutApi } from "src/api/helpers";
+import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
   clearAuthCookies,
   clearUrlParams,
@@ -16,7 +17,15 @@ import { act, renderHook, waitFor } from "test-utils";
 import { AuthProvider, useAuth } from "./auth.context";
 
 jest.mock("src/api/helpers");
-jest.mock("src/services/auth.service");
+jest.mock("src/services/auth.service", () => ({
+  ...jest.requireActual<typeof import("src/services/auth.service")>(
+    "src/services/auth.service",
+  ),
+  clearAuthCookies: jest.fn(),
+  clearUrlParams: jest.fn(),
+  getUsernameFromCookies: jest.fn(),
+  parseAuthUrlParams: jest.fn(),
+}));
 
 const mockUseRouter = jest.mocked(useRouter);
 const mockCheckAuth = jest.mocked(checkAuth);
@@ -101,7 +110,7 @@ describe("AuthProvider", () => {
     expect(result.current.state.username).toBe("testuser");
   });
 
-  it("clears query cache when not authenticated", async () => {
+  it("clears user-scoped query cache when not authenticated", async () => {
     mockCheckAuth.mockResolvedValueOnce({
       isAuthenticated: false,
       username: null,
@@ -112,8 +121,34 @@ describe("AuthProvider", () => {
     renderAuthHook();
 
     await waitFor(() => {
-      expect(clearSpy).toHaveBeenCalled();
+      expect(removeQueriesSpy).toHaveBeenCalled();
     });
+
+    expect(clearSpy).not.toHaveBeenCalled();
+  });
+
+  it("does not refetch auth in a loop when unauthenticated", async () => {
+    mockCheckAuth.mockResolvedValue({
+      isAuthenticated: false,
+      username: null,
+      userId: null,
+      rateLimited: false,
+    });
+
+    const { result } = renderAuthHook();
+
+    await waitFor(() => {
+      expect(result.current.state.isCheckingAuth).toBe(false);
+    });
+
+    const callsAfterSettle = mockCheckAuth.mock.calls.length;
+    expect(callsAfterSettle).toBeGreaterThan(0);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(mockCheckAuth.mock.calls.length).toBe(callsAfterSettle);
   });
 
   it("handles auth check error", async () => {
@@ -127,9 +162,10 @@ describe("AuthProvider", () => {
 
     await waitFor(() => {
       expect(result.current.state.isCheckingAuth).toBe(false);
-      expect(clearSpy).toHaveBeenCalled();
+      expect(removeQueriesSpy).toHaveBeenCalled();
     });
 
+    expect(clearSpy).not.toHaveBeenCalled();
     consoleSpy.mockRestore();
   });
 
@@ -223,6 +259,51 @@ describe("AuthProvider", () => {
     }
   });
 
+  it("keeps isCheckingAuth true until the mount auth revalidation settles", async () => {
+    let resolveCheck: (value: {
+      isAuthenticated: boolean;
+      username: string | null;
+      userId: string | null;
+      rateLimited: boolean;
+    }) => void = () => {};
+    const pendingCheck = new Promise<{
+      isAuthenticated: boolean;
+      username: string | null;
+      userId: string | null;
+      rateLimited: boolean;
+    }>((resolve) => {
+      resolveCheck = resolve;
+    });
+
+    queryClient.setQueryData(AuthQueryKeys.all(), {
+      isAuthenticated: true,
+      username: "cacheduser",
+      userId: "999",
+      rateLimited: false,
+    });
+
+    mockCheckAuth.mockReturnValueOnce(pendingCheck);
+
+    const { result } = renderAuthHook();
+
+    expect(result.current.state.isCheckingAuth).toBe(true);
+    expect(result.current.state.isAuthenticated).toBe(true);
+    expect(result.current.state.username).toBe("cacheduser");
+
+    await act(async () => {
+      resolveCheck({
+        isAuthenticated: true,
+        username: "cacheduser",
+        userId: "999",
+        rateLimited: false,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.state.isCheckingAuth).toBe(false);
+    });
+  });
+
   it("calls logout function", async () => {
     mockCheckAuth.mockResolvedValue({
       isAuthenticated: true,
@@ -249,7 +330,8 @@ describe("AuthProvider", () => {
 
     expect(mockLogoutApi).toHaveBeenCalled();
     expect(mockClearAuthCookies).toHaveBeenCalled();
-    expect(clearSpy).toHaveBeenCalled();
+    expect(removeQueriesSpy).toHaveBeenCalled();
+    expect(clearSpy).not.toHaveBeenCalled();
     expect(result.current.state.isAuthenticated).toBe(false);
     expect(result.current.state.username).toBeNull();
     expect(mockRouter.replace).toHaveBeenCalledWith("/");

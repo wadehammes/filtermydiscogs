@@ -114,6 +114,10 @@ describe("GET /api/release/[id]", () => {
   });
 
   it("returns 500 when Discogs request fails", async () => {
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
     jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
       id: 42,
       username: "crate-digger",
@@ -135,5 +139,7 @@ describe("GET /api/release/[id]", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Failed to fetch release",
     });
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });

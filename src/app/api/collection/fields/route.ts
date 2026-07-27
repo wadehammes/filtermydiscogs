@@ -3,6 +3,8 @@ import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const username = request.nextUrl.searchParams.get("username");
@@ -35,6 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(fields, {
       headers: {
         "Cache-Control": "private, max-age=3600, stale-while-revalidate=7200",
+        Vary: "Cookie",
       },
     });
   } catch (error) {

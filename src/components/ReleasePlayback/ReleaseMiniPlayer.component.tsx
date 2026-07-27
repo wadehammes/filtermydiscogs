@@ -62,9 +62,11 @@ export const ReleaseMiniPlayer = ({
     }
   }, [isPlaying]);
 
-  useEffect(() => {
+  const [prevActiveVideoId, setPrevActiveVideoId] = useState(activeVideoId);
+  if (activeVideoId !== prevActiveVideoId) {
+    setPrevActiveVideoId(activeVideoId);
     setVideoPanelOverride(null);
-  }, [activeVideoId]);
+  }
 
   const shouldExpandForMobileAutoplay =
     isMobileLayout && isPlaybackReady && shouldAutoplayEmbed;

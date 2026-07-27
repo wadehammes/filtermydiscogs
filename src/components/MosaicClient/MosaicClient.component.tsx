@@ -33,11 +33,12 @@ export default function MosaicClient() {
     isLoading: collectionLoading,
     hasNextPage,
     isFetchingNextPage,
-  } = useCollectionData(
-    state.username,
-    state.isAuthenticated,
-    state.rateLimited,
-  );
+  } = useCollectionData({
+    username: state.username,
+    isAuthenticated: state.isAuthenticated,
+    rateLimited: state.rateLimited,
+    isCheckingAuth: state.isCheckingAuth,
+  });
   const needsCollectionLoad = useNeedsCollectionLoad({
     isLoading: collectionLoading,
     hasNextPage,

@@ -194,20 +194,7 @@ export const formatReleaseHeroMetaLine = ({
 }): {
   text: string;
   communityRating: { average: number; count: number } | null;
-} => {
-  const parts: string[] = [];
-  const releaseMeta = formatReleaseMetaLine({ release });
-
-  if (releaseMeta) {
-    parts.push(releaseMeta);
-  }
-
-  if (release.rating > 0) {
-    parts.push(`You ${release.rating}/5`);
-  }
-
-  return {
-    text: parts.join(" · "),
-    communityRating,
-  };
-};
+} => ({
+  text: formatReleaseMetaLine({ release }),
+  communityRating,
+});

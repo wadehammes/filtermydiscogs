@@ -9,19 +9,19 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
-/**
- * Validates and sanitizes the DATABASE_URL connection string
- * Ensures SSL is enforced in production
- */
+/** Sanitize DATABASE_URL; pin SSL aliases to verify-full ahead of pg v9. */
 function validateAndSanitizeConnectionString(connectionString: string): string {
   const url = new URL(connectionString);
 
-  // Enforce SSL in production
-  if (process.env.NODE_ENV === "production") {
-    const sslMode = url.searchParams.get("sslmode");
-    if (!sslMode || sslMode !== "require") {
-      url.searchParams.set("sslmode", "require");
-    }
+  const sslMode = url.searchParams.get("sslmode");
+  if (
+    sslMode === "prefer" ||
+    sslMode === "require" ||
+    sslMode === "verify-ca"
+  ) {
+    url.searchParams.set("sslmode", "verify-full");
+  } else if (process.env.NODE_ENV === "production" && !sslMode) {
+    url.searchParams.set("sslmode", "verify-full");
   }
 
   // Add performance-related connection parameters

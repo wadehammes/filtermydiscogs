@@ -95,7 +95,9 @@ If collection fetches fail after login, verify OAuth tokens (re-login), consumer
 
 ## Client-side collection access
 
-Browsers call **`fetchDiscogsCollection`** in [`src/api/helpers.ts`](../../src/api/helpers.ts), which hits **`/api/collection`** with the authenticated user's username—not the Discogs API directly.
+Browsers call **`fetchDiscogsCollection`** in [`src/api/helpers.ts`](../../src/api/helpers.ts), which hits **`/api/collection`** with the authenticated user's username—not the Discogs API directly. Collection (and related fields/value/release/search) fetches use **`credentials: "include"`**. Collection route handlers are **`force-dynamic`** with **`Vary: Cookie`** on success responses; see [platform.md](platform.md). On **401**, the collection React Query hook revalidates **`/api/auth/check`** before surfacing an error (see [patterns.md](patterns.md)).
+
+**Adaptive pagination:** the first request uses **`COLLECTION_FIRST_PAGE_SIZE` (50)** for a faster first paint. If more pages remain, pagination **restarts** at Discogs page 1 with **`COLLECTION_PAGE_SIZE` (100)**—Discogs is page-based, so changing `per_page` mid-stream would skip or duplicate items. [`useCollectionData`](../../src/hooks/useCollectionData.hook.ts) drops the bootstrap page once full-size pages arrive ([`collectionPagination.ts`](../../src/utils/collectionPagination.ts)). Constants live in [`src/constants/collection.ts`](../../src/constants/collection.ts). The collection API route caps `per_page` at **100** (Discogs documented max).
 
 ## Release detail and in-app playback
 
