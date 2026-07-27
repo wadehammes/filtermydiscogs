@@ -62,14 +62,7 @@ export const ReleaseMiniPlayer = ({
     }
   }, [isPlaying]);
 
-  const [prevActiveVideoId, setPrevActiveVideoId] = useState(activeVideoId);
-  if (activeVideoId !== prevActiveVideoId) {
-    setPrevActiveVideoId(activeVideoId);
-    setVideoPanelOverride(null);
-  }
-
-  const shouldExpandForMobileAutoplay =
-    isMobileLayout && isPlaybackReady && shouldAutoplayEmbed;
+  const shouldExpandForAutoplay = isPlaybackReady && shouldAutoplayEmbed;
 
   useEffect(() => {
     if (!(isPlaybackReady && !hasSeenPlaybackVideoIntro())) {
@@ -83,7 +76,7 @@ export const ReleaseMiniPlayer = ({
   const isVideoPanelExpanded =
     videoPanelOverride === "open" ||
     (videoPanelOverride !== "closed" &&
-      (shouldExpandForMobileAutoplay || latchedIntroExpand));
+      (shouldExpandForAutoplay || latchedIntroExpand));
 
   const handleCrateToggle = useCallback(() => {
     if (!release) {
