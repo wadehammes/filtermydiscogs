@@ -16,6 +16,7 @@
 .table {
   border-collapse: collapse;
   min-width: 56rem;
+  table-layout: fixed;
   width: 100%;
 }
 
@@ -263,11 +264,20 @@
 }
 
 .stylesCell {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
+  padding: var(--space-1) 0 var(--space-1) var(--space-2);
+  width: 100%;
+}
+
+.formatStylesCell {
+  max-width: 11.25rem;
+  overflow: hidden;
+  padding: var(--space-1) 0 var(--space-1) var(--space-1);
+  width: 11.25rem;
+}
+
+.tagsRow {
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
 }
 
 .moreStyles {

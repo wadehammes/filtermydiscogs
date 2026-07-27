@@ -51,6 +51,31 @@
   padding: var(--space-2) var(--space-3);
 }
 
+.styleFilterPrimaryShell,
+.operatorShell {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: space-between;
+  min-height: var(--input-height);
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--space-2) var(--space-3);
+}
+
+.styleFilterPrimaryShell {
+  border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+}
+
+.operatorShell {
+  border-left: 1px solid var(--input);
+  border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
+  flex: 0 0 5.5rem;
+}
+
 .buttonShell {
   background: var(--card);
   border-color: var(--border);

@@ -2,8 +2,12 @@
   display: grid;
   grid-template-areas: "main";
   grid-template-columns: 1fr;
-  min-height: calc(100vh - 89px);
+  min-height: calc(100vh - var(--sticky-header-height));
   width: 100%;
+
+  @media (width >= 1024px) {
+    min-height: calc(100vh - var(--sticky-header-total-height));
+  }
 
   &.withSidebar {
     @media (width >= 1024px) {

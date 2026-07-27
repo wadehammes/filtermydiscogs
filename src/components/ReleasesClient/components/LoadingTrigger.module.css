@@ -1,6 +1,10 @@
 .loadingTrigger {
-  min-height: 3.75rem;
+  min-height: 0;
   position: relative;
+}
+
+.loadingTriggerFetching {
+  min-height: 3.75rem;
 }
 
 .overlay {

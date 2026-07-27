@@ -55,12 +55,13 @@ export function HorizontalScrollRow({
     <div className={styles.wrapper}>
       <div
         ref={scrollRef}
-        className={classNames(styles.scroll, className)}
+        className={classNames(styles.scroll, className, {
+          [styles.scrollFadeEnd]: showEndShadow,
+        })}
         onScroll={updateEndShadow}
       >
         {children}
       </div>
-      {showEndShadow ? <div aria-hidden className={styles.endShadow} /> : null}
     </div>
   );
 }

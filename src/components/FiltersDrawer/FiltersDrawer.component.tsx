@@ -81,25 +81,27 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
         {styleOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
             <h3 className={styles.sectionTitle}>Genre & Style</h3>
-            <Select
-              label="Genre & Style"
-              options={styleOptions}
-              value={selectedStyles}
-              onChange={handleStyleChange}
-              disabled={!collection}
-              multiple={true}
-              placeholder="Select genres & styles..."
-            />
-            {selectedStyles.length > 1 && (
+            <div className={styles.styleFilterGroup}>
               <Select
-                label="Match"
-                options={styleOperatorOptions}
-                value={styleOperator}
-                onChange={handleStyleOperatorChange}
+                label="Genre & Style"
+                options={styleOptions}
+                value={selectedStyles}
+                onChange={handleStyleChange}
                 disabled={!collection}
-                placeholder="Select operator..."
+                multiple={true}
+                placeholder="Select genres & styles..."
               />
-            )}
+              {selectedStyles.length > 1 && (
+                <Select
+                  label="Match"
+                  options={styleOperatorOptions}
+                  value={styleOperator}
+                  onChange={handleStyleOperatorChange}
+                  disabled={!collection}
+                  placeholder="Select operator..."
+                />
+              )}
+            </div>
           </div>
         )}
 
