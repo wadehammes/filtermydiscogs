@@ -32,7 +32,7 @@ import {
 import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import type { DiscogsRelease } from "src/types";
-import type { Crate, CrateWithCount } from "src/types/crate.types";
+import type { CrateUpdatePayload, CrateWithCount } from "src/types/crate.types";
 
 interface CrateContextType {
   crates: CrateWithCount[];
@@ -51,7 +51,10 @@ interface CrateContextType {
   clearCrate: () => void;
   createCrate: (name: string) => Promise<void>;
   selectCrate: (crateId: string) => void;
-  updateCrate: (crateId: string, updates: Partial<Crate>) => Promise<void>;
+  updateCrate: (
+    crateId: string,
+    updates: Partial<CrateUpdatePayload>,
+  ) => Promise<void>;
   deleteCrate: (crateId: string) => Promise<void>;
   isDrawerOpen: boolean;
   toggleDrawer: () => void;
@@ -366,6 +369,9 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
       if (!crateIdToUse) return;
 
+      const crateToUpdate = crates.find((crate) => crate.id === crateIdToUse);
+      if (!crateToUpdate?.packed_enabled) return;
+
       setPackedMutation.mutate({
         crateId: crateIdToUse,
         releaseId: String(releaseId),
@@ -378,8 +384,11 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   const clearAllPacked = useCallback(() => {
     if (!activeCrateId) return;
 
+    const activeCrate = crates.find((crate) => crate.id === activeCrateId);
+    if (!activeCrate?.packed_enabled) return;
+
     clearAllPackedMutation.mutate({ crateId: activeCrateId });
-  }, [activeCrateId, clearAllPackedMutation]);
+  }, [activeCrateId, clearAllPackedMutation, crates]);
 
   const clearCrate = useCallback(() => {
     if (!activeCrateId) return;
@@ -407,24 +416,10 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   }, []);
 
   const updateCrate = useCallback(
-    async (crateId: string, updates: Partial<Crate>) => {
-      const updateData: {
-        name?: string;
-        is_default?: boolean;
-        private?: boolean;
-      } = {};
-      if (updates.name !== undefined) {
-        updateData.name = updates.name;
-      }
-      if (updates.is_default !== undefined) {
-        updateData.is_default = updates.is_default;
-      }
-      if (updates.private !== undefined) {
-        updateData.private = updates.private;
-      }
+    async (crateId: string, updates: Partial<CrateUpdatePayload>) => {
       await updateCrateMutation.mutateAsync({
         crateId,
-        updates: updateData,
+        updates,
       });
     },
     [updateCrateMutation],

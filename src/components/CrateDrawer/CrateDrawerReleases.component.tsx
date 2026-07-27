@@ -13,6 +13,7 @@ export const CrateDrawerReleases = () => {
     isLoadingReleases,
     onReleaseClick,
     packedCount,
+    packedEnabled,
     removeFromCrate,
     selectedReleases,
     setPacked,
@@ -20,12 +21,12 @@ export const CrateDrawerReleases = () => {
   } = useCrateDrawerContext();
 
   const visibleReleases = useMemo(() => {
-    if (!hidePackedItems) {
+    if (!(packedEnabled && hidePackedItems)) {
       return selectedReleases;
     }
 
     return selectedReleases.filter((release) => !isPacked(release.instance_id));
-  }, [hidePackedItems, isPacked, selectedReleases]);
+  }, [hidePackedItems, isPacked, packedEnabled, selectedReleases]);
 
   if (isLoadingReleases) {
     return (
@@ -48,6 +49,11 @@ export const CrateDrawerReleases = () => {
     );
   }
 
+  const showAllPackedState =
+    packedEnabled &&
+    visibleReleases.length === 0 &&
+    selectedReleases.length > 0;
+
   return (
     <div className={styles.releasesSection}>
       {packedCount > 0 ? (
@@ -68,17 +74,17 @@ export const CrateDrawerReleases = () => {
           </label>
         </div>
       ) : null}
-      {visibleReleases.length === 0 ? (
+      {showAllPackedState ? (
         <div className={styles.emptyState}>
           <p>All items are packed.</p>
         </div>
-      ) : (
+      ) : visibleReleases.length > 0 ? (
         <div className={styles.releasesList}>
           {visibleReleases.map((release) => (
             <CrateDrawerReleaseItem
               key={release.instance_id}
               release={release}
-              packed={isPacked(release.instance_id)}
+              packed={packedEnabled ? isPacked(release.instance_id) : false}
               onPackedChange={(packed) =>
                 setPacked(release.instance_id, packed)
               }
@@ -87,7 +93,7 @@ export const CrateDrawerReleases = () => {
             />
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

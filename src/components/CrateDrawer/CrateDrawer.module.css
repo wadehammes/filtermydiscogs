@@ -302,6 +302,11 @@
   flex-direction: column;
   min-width: 0;
   padding: var(--space-1);
+  justify-content: center;
+
+  > * {
+    line-height: 1.25;
+  }
 }
 
 .itemTitle {

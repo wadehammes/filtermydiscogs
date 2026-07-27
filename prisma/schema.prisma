@@ -16,6 +16,7 @@ model Crate {
   username   String?
   is_default Boolean   @default(false)
   private    Boolean   @default(true)
+  packed_enabled Boolean @default(false)
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
 

@@ -2,6 +2,7 @@ import classNames from "classnames";
 import Image from "next/image";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
+import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateDrawer.module.css";
 import { CrateDrawerReleaseActions } from "./CrateDrawerReleaseActions.component";
 
@@ -20,6 +21,7 @@ export const CrateDrawerReleaseItem = ({
   onPackedChange,
   onRemove,
 }: CrateDrawerReleaseItemProps) => {
+  const { packedEnabled } = useCrateDrawerContext();
   const { basic_information } = release;
   const imageUrl = getReleaseImageUrl({
     thumb: basic_information.thumb,
@@ -37,7 +39,7 @@ export const CrateDrawerReleaseItem = ({
     // biome-ignore lint/a11y/useSemanticElements: row opens modal; action column holds separate buttons
     <div
       className={classNames(styles.listItem, {
-        [styles.listItemFound]: packed,
+        [styles.listItemFound]: packedEnabled && packed,
       })}
       role="button"
       tabIndex={0}

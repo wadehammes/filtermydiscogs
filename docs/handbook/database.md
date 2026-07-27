@@ -22,6 +22,7 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 | `username` | Discogs username (for public crate attribution) |
 | `is_default` | One default crate per user |
 | `private` | When `false`, crate is publicly viewable at `/crate/[id]` |
+| `packed_enabled` | When `true`, owner sees packed checklist UI in the crate drawer (default **`false`**) |
 
 Composite primary key: **`[user_id, id]`**.
 
