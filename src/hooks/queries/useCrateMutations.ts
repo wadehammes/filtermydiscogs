@@ -2,9 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   addReleaseToCrate,
+  clearAllPackedInCrate,
   createCrate,
   deleteCrate,
   removeReleaseFromCrate,
+  setReleasePackedInCrate,
   syncCrates,
   updateCrate,
 } from "src/api/helpers";
@@ -111,6 +113,16 @@ const invalidateCrateQueries = (
   }
 };
 
+const cancelCrateDetailQuery = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+  userId: string | null,
+  crateId: string,
+) => {
+  await queryClient.cancelQueries({
+    queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
+  });
+};
+
 const getCrateQuerySnapshots = (
   queryClient: ReturnType<typeof useQueryClient>,
   userId: string | null,
@@ -145,6 +157,54 @@ const rollbackOptimisticUpdate = (
       context.previousCratesData,
     );
   }
+};
+
+const applyClearPackedToCrateCache = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  userId: string | null,
+  crateId: string,
+) => {
+  queryClient.setQueryData<CrateWithReleasesResponse>(
+    CrateQueryKeys.byUserAndId(userId, crateId),
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        releases: old.releases.map((item) => ({
+          ...item,
+          found_at: null,
+        })),
+      };
+    },
+  );
+};
+
+const applyFoundAtToCrateRelease = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  userId: string | null,
+  crateId: string,
+  releaseId: string,
+  foundAt: string | null,
+) => {
+  queryClient.setQueryData<CrateWithReleasesResponse>(
+    CrateQueryKeys.byUserAndId(userId, crateId),
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        releases: old.releases.map((item) =>
+          String(item.release.instance_id) === String(releaseId)
+            ? {
+                ...item,
+                found_at: foundAt,
+              }
+            : item,
+        ),
+      };
+    },
+  );
 };
 
 const applyCratesListUpdate = ({
@@ -388,12 +448,12 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
                 created_at: new Date(),
                 updated_at: new Date(),
               },
-              releases: [normalizedRelease],
+              releases: [{ release: normalizedRelease, found_at: null }],
             };
           }
 
           const alreadyExists = old.releases.some(
-            (r: DiscogsRelease) => String(r.instance_id) === releaseId,
+            (item) => String(item.release.instance_id) === releaseId,
           );
 
           if (alreadyExists) {
@@ -402,7 +462,10 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
 
           return {
             ...old,
-            releases: [normalizedRelease, ...old.releases],
+            releases: [
+              { release: normalizedRelease, found_at: null },
+              ...old.releases,
+            ],
           };
         },
       );
@@ -466,8 +529,7 @@ export const useRemoveReleaseFromCrateMutation = (userId: string | null) => {
           return {
             ...old,
             releases: old.releases.filter(
-              (r: DiscogsRelease) =>
-                String(r.instance_id) !== String(releaseId),
+              (item) => String(item.release.instance_id) !== String(releaseId),
             ),
           };
         },
@@ -514,6 +576,90 @@ export const useSyncCratesMutation = (userId: string | null) => {
     },
     onSuccess: () => {
       invalidateCrateQueries(queryClient, userId);
+    },
+  });
+};
+
+export const useSetReleasePackedInCrateMutation = (userId: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    { success: boolean; found_at: string | null },
+    Error,
+    { crateId: string; releaseId: string; found: boolean },
+    OptimisticUpdateContext
+  >({
+    mutationKey: ["setReleasePackedInCrate"],
+    mutationFn: async ({ crateId, releaseId, found }) => {
+      return setReleasePackedInCrate(crateId, releaseId, found);
+    },
+    onMutate: async ({ crateId, releaseId, found }) => {
+      await cancelCrateDetailQuery(queryClient, userId, crateId);
+
+      const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
+        queryClient,
+        userId,
+        crateId,
+      );
+
+      applyFoundAtToCrateRelease(
+        queryClient,
+        userId,
+        crateId,
+        releaseId,
+        found ? new Date().toISOString() : null,
+      );
+
+      return { previousCrateData, previousCratesData };
+    },
+    onError: (error, variables, context) => {
+      rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
+      showCrateMutationError("Failed to update packed status", error);
+    },
+    onSuccess: (data, { crateId, releaseId }) => {
+      applyFoundAtToCrateRelease(
+        queryClient,
+        userId,
+        crateId,
+        releaseId,
+        data.found_at,
+      );
+    },
+  });
+};
+
+export const useClearAllPackedInCrateMutation = (userId: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    { success: boolean; cleared_count: number },
+    Error,
+    { crateId: string },
+    OptimisticUpdateContext
+  >({
+    mutationKey: ["clearAllPackedInCrate"],
+    mutationFn: async ({ crateId }) => {
+      return clearAllPackedInCrate(crateId);
+    },
+    onMutate: async ({ crateId }) => {
+      await cancelCrateDetailQuery(queryClient, userId, crateId);
+
+      const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
+        queryClient,
+        userId,
+        crateId,
+      );
+
+      applyClearPackedToCrateCache(queryClient, userId, crateId);
+
+      return { previousCrateData, previousCratesData };
+    },
+    onError: (error, variables, context) => {
+      rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
+      showCrateMutationError("Failed to clear packed items", error);
+    },
+    onSuccess: (_data, { crateId }) => {
+      applyClearPackedToCrateCache(queryClient, userId, crateId);
     },
   });
 };

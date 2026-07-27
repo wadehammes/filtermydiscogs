@@ -59,7 +59,10 @@
 
 .footer {
   background: var(--background);
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
+  gap: var(--space-3);
   position: relative;
   z-index: 1;
 
@@ -69,19 +72,48 @@
   }
 }
 
+.footerSegmented {
+  width: 100%;
+}
+
+.footerSegment {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-2);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.footerSegmentIcon {
+  display: flex;
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.footerSegmentDanger {
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--destructive) 15%, var(--background));
+    color: var(--destructive-hover);
+  }
+}
+
 .sharingSection {
   align-items: center;
   border-top: 1px dashed var(--border);
   display: flex;
   gap: var(--space-3);
   justify-content: space-between;
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-
-  @media (width >= 1024px) {
-    margin-top: var(--space-3);
-    padding-top: var(--space-3);
-  }
+  padding-top: var(--space-3);
+  width: 100%;
 }
 
 .checkboxLabel {
@@ -99,7 +131,7 @@
   }
 }
 
-.checkbox {
+.sharingCheckbox {
   accent-color: var(--primary);
   cursor: pointer;
   height: 1rem;
@@ -108,13 +140,6 @@
   &:disabled {
     cursor: not-allowed;
   }
-}
-
-.footerActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  justify-content: flex-end;
 }
 
 .emptyState {
@@ -143,6 +168,51 @@
   }
 }
 
+.releasesSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.releasesListHeader {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: 0 var(--space-4);
+
+  @media (width >= 1024px) {
+    padding: 0;
+  }
+
+  .foundProgress,
+  .packedFilterLabel {
+    font-family: var(--font-family-meta);
+    font-size: var(--text-meta-xs);
+    line-height: 1.25;
+  }
+
+  .foundProgress {
+    color: var(--muted-foreground);
+    min-height: 1rem;
+    min-width: 0;
+  }
+
+  .packedFilterLabel {
+    align-items: center;
+    color: color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground));
+    cursor: pointer;
+    display: flex;
+    gap: var(--space-1);
+    user-select: none;
+  }
+
+  .checkbox {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
 .releasesList {
   display: flex;
   flex-direction: column;
@@ -161,7 +231,7 @@
 }
 
 .listItem {
-  align-items: center;
+  align-items: stretch;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -171,7 +241,6 @@
   outline: 1px solid transparent;
   outline-offset: 1px;
   padding: 0;
-  padding-right: var(--space-4);
   position: relative;
   text-decoration: none;
   transition: all var(--transition-normal);
@@ -189,6 +258,27 @@
   &:focus {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+}
+
+.listItemActions {
+  align-self: stretch;
+  border-left: 1px solid var(--border);
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  display: flex;
+  flex: 0 0 4rem;
+  min-height: 0;
+  overflow: hidden;
+  width: 4rem;
+}
+
+.removeAction {
+  color: color-mix(in srgb, var(--destructive) 70%, var(--muted-foreground));
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--destructive) 18%, var(--background));
+    color: var(--destructive-hover);
   }
 }
 
@@ -241,27 +331,13 @@
   white-space: nowrap;
 }
 
-.removeButton {
-  background: color-mix(in srgb, var(--destructive) 15%, var(--background));
-  border: 1px solid var(--destructive-hover);
-  border-radius: var(--radius-full);
-  color: var(--destructive-hover);
-  cursor: pointer;
-  display: grid;
-  flex-shrink: 0;
-  height: 1.5rem;
-  padding: 0;
-  place-items: center;
-  transition: all var(--transition-normal);
-  width: 1.5rem;
-
-  .removeIcon {
-    height: 0.75rem;
-    width: 0.75rem;
+.listItemFound {
+  .itemArtist,
+  .itemTitle {
+    color: var(--muted-foreground);
   }
 
-  &:hover {
-    background: color-mix(in srgb, var(--destructive) 20%, var(--background));
-    color: var(--destructive);
+  .itemImage img {
+    opacity: 0.75;
   }
 }

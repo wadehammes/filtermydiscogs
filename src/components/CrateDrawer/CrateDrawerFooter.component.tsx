@@ -1,4 +1,7 @@
+import classNames from "classnames";
 import Button from "src/components/Button/Button.component";
+import StarIcon from "src/styles/icons/star-thin.svg";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateDrawer.module.css";
 
@@ -6,12 +9,14 @@ export const CrateDrawerFooter = () => {
   const {
     activeCrateId,
     copySuccess,
+    handleClearPacked,
     handleCopyLink,
     handlePrivacyToggle,
     isDefaultCrate,
     isDeletingCrate,
     isPublic,
     isUpdatingCrate,
+    packedCount,
     selectedReleases,
     setShowClearDialog,
     setShowEditCrateDialog,
@@ -23,32 +28,61 @@ export const CrateDrawerFooter = () => {
 
   return (
     <div className={styles.footer}>
-      <div className={styles.footerActions}>
-        <Button
-          variant="secondary"
-          size="sm"
-          onPress={() => setShowEditCrateDialog(true)}
+      <div
+        className={classNames(
+          segmentedStyles.container,
+          styles.footerSegmented,
+        )}
+      >
+        <button
+          type="button"
+          className={classNames(segmentedStyles.segment, styles.footerSegment)}
+          onClick={() => setShowEditCrateDialog(true)}
           disabled={!activeCrateId || isBusy}
         >
-          Edit Crate
-        </Button>
-        <Button
-          variant="danger"
-          size="sm"
-          onPress={() => setShowClearDialog(true)}
+          Edit
+        </button>
+        {packedCount > 0 ? (
+          <button
+            type="button"
+            className={classNames(
+              segmentedStyles.segment,
+              styles.footerSegment,
+            )}
+            onClick={handleClearPacked}
+            disabled={isBusy}
+            aria-label="Clear all packed items"
+          >
+            Clear packed
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={classNames(
+            segmentedStyles.segment,
+            styles.footerSegment,
+            styles.footerSegmentDanger,
+          )}
+          onClick={() => setShowClearDialog(true)}
           disabled={releaseCount === 0}
         >
-          Clear Crate
-        </Button>
+          Empty Crate
+        </button>
         {!isDefaultCrate ? (
-          <Button
-            variant="outlinePrimary"
-            size="sm"
-            onPress={() => setShowMakeDefaultDialog(true)}
+          <button
+            type="button"
+            className={classNames(
+              segmentedStyles.segment,
+              styles.footerSegment,
+            )}
+            onClick={() => setShowMakeDefaultDialog(true)}
             disabled={isBusy}
           >
-            {isUpdatingCrate ? "Making Default..." : "Make Default"}
-          </Button>
+            <span className={styles.footerSegmentIcon} aria-hidden>
+              <StarIcon />
+            </span>
+            <span>{isUpdatingCrate ? "Default…" : "Default"}</span>
+          </button>
         ) : null}
       </div>
       <div className={styles.sharingSection}>
@@ -58,7 +92,7 @@ export const CrateDrawerFooter = () => {
             checked={isPublic}
             onChange={() => void handlePrivacyToggle()}
             disabled={isBusy || !activeCrateId}
-            className={styles.checkbox}
+            className={styles.sharingCheckbox}
           />
           <span>Make shareable</span>
         </label>

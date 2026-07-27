@@ -20,9 +20,14 @@ export interface PaginationInfo {
   hasPreviousPage: boolean;
 }
 
+export interface CrateReleaseItem {
+  release: DiscogsRelease;
+  found_at: string | null;
+}
+
 export interface CrateWithReleasesResponse {
   crate: Crate;
-  releases: DiscogsRelease[];
+  releases: CrateReleaseItem[];
   pagination?: PaginationInfo;
 }
 

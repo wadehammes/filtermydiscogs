@@ -11,6 +11,92 @@ import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 export const dynamic = "force-dynamic";
 
 /**
+ * Clear packed status for all releases in a crate
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const verified = await getVerifiedUserFromRequestWithRateLimit(
+      request,
+      true,
+    );
+    if ("error" in verified) {
+      return verified.error;
+    }
+    const { userId: userIdNum } = verified.user;
+
+    const { id } = await params;
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch (error) {
+      console.error("Failed to parse request body:", error);
+      return privateRouteJson(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
+
+    if (!body || typeof body !== "object") {
+      return privateRouteJson(
+        { error: "Request body must be an object" },
+        { status: 400 },
+      );
+    }
+
+    const clearFound = (body as Record<string, unknown>).clear_found;
+    if (clearFound !== true) {
+      return privateRouteJson(
+        { error: "clear_found must be true" },
+        { status: 400 },
+      );
+    }
+
+    const crate = await prisma.crate.findUnique({
+      where: {
+        user_id_id: {
+          user_id: userIdNum,
+          id,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!crate) {
+      return privateRouteJson({ error: "Crate not found" }, { status: 404 });
+    }
+
+    const result = await prisma.crateRelease.updateMany({
+      where: {
+        user_id: userIdNum,
+        crate_id: id,
+        found_at: { not: null },
+      },
+      data: {
+        found_at: null,
+      },
+    });
+
+    auditDatabaseOperation(userIdNum, "CrateRelease", "update", id, {
+      crate_id: id,
+      clear_found: true,
+      cleared_count: result.count,
+    });
+
+    return privateRouteJson({
+      success: true,
+      cleared_count: result.count,
+    });
+  } catch (error) {
+    console.error("Error clearing crate release packed status:", error);
+    return createErrorResponse(error);
+  }
+}
+
+/**
  * Add a release to a crate
  */
 export async function POST(

@@ -9,6 +9,7 @@ import MenuIcon from "src/styles/icons/menu-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
+import stackStyles from "src/styles/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseCard.module.css";
@@ -35,13 +36,15 @@ export const ReleaseCardOverlayActions = ({
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const isVertical = layout === "vertical";
-  const slotClass = isVertical ? styles.overlayActionSlot : styles.segmentSlot;
+  const slotClass = isVertical
+    ? stackStyles.overlayActionSlot
+    : styles.segmentSlot;
   const inCrate = isInCrate(release.instance_id);
 
   const actionClass = (active = false) =>
     isVertical
-      ? classNames(styles.overlayAction, {
-          [styles.overlayActionActive]: active,
+      ? classNames(stackStyles.overlayAction, {
+          [stackStyles.overlayActionActive]: active,
         })
       : classNames(segmentedStyles.segment, styles.actionSegment, {
           [segmentedStyles.active]: active,
@@ -71,7 +74,7 @@ export const ReleaseCardOverlayActions = ({
   return (
     <div
       className={classNames(
-        isVertical ? styles.overlayActions : segmentedStyles.container,
+        isVertical ? stackStyles.overlayActions : segmentedStyles.container,
         {
           [segmentedStyles.containerAllowOverflow]: !isVertical,
         },
@@ -88,7 +91,7 @@ export const ReleaseCardOverlayActions = ({
             aria-label="Open release details"
             title="Release details"
           >
-            <MenuIcon className={styles.actionIcon} />
+            <MenuIcon className={stackStyles.actionIcon} />
           </button>
           {!isVertical ? (
             <span className={styles.tooltip}>Release details</span>
@@ -114,7 +117,7 @@ export const ReleaseCardOverlayActions = ({
             aria-label="View on Discogs"
             title="View on Discogs"
           >
-            <ExternalLinkIcon className={styles.actionIcon} />
+            <ExternalLinkIcon className={stackStyles.actionIcon} />
           </a>
           {!isVertical ? (
             <span className={styles.tooltip}>View on Discogs</span>
@@ -131,9 +134,9 @@ export const ReleaseCardOverlayActions = ({
           title={inCrate ? "Remove from Crate" : "Add to Crate"}
         >
           {inCrate ? (
-            <MinusIcon className={styles.actionIcon} />
+            <MinusIcon className={stackStyles.actionIcon} />
           ) : (
-            <PlusIcon className={styles.actionIcon} />
+            <PlusIcon className={stackStyles.actionIcon} />
           )}
         </button>
         {!isVertical ? (

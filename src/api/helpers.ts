@@ -333,17 +333,66 @@ export const fetchPublicCrate = async (
   crateId: string,
 ): Promise<CrateWithReleasesResponse> => {
   try {
-    return fetchPaginatedCrateReleases({
-      buildUrl: (page) =>
+    let page = 1;
+    let result: CrateWithReleasesResponse | null = null;
+
+    while (true) {
+      const response = await fetch(
         `/api/crates/public/${crateId}?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
-      init: {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      },
-      notFoundMessage: "Crate not found or is private",
-    });
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Crate not found or is private");
+        }
+
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = (await response.json()) as {
+        crate: CrateWithReleasesResponse["crate"];
+        releases: DiscogsRelease[];
+        pagination?: PaginationInfo;
+      };
+
+      const wrappedReleases = data.releases.map((release) => ({
+        release,
+        found_at: null,
+      }));
+
+      if (!result) {
+        result = {
+          crate: data.crate,
+          releases: [...wrappedReleases],
+          ...(data.pagination !== undefined
+            ? { pagination: data.pagination }
+            : {}),
+        };
+      } else {
+        result.releases.push(...wrappedReleases);
+        if (data.pagination !== undefined) {
+          result.pagination = data.pagination;
+        }
+      }
+
+      if (!data.pagination?.hasNextPage) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    if (!result) {
+      throw new Error("Failed to fetch public crate");
+    }
+
+    return result;
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -523,6 +572,63 @@ export const removeReleaseFromCrate = async (
       throw error;
     }
     throw new Error("Failed to remove release from crate");
+  }
+};
+
+export const setReleasePackedInCrate = async (
+  crateId: string,
+  releaseId: string,
+  found: boolean,
+): Promise<{ success: boolean; found_at: string | null }> => {
+  try {
+    const response = await fetch(
+      `/api/crates/${crateId}/releases/${releaseId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ found }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update crate release found status");
+  }
+};
+
+export const clearAllPackedInCrate = async (
+  crateId: string,
+): Promise<{ success: boolean; cleared_count: number }> => {
+  try {
+    const response = await fetch(`/api/crates/${crateId}/releases`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ clear_found: true }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to clear packed status in crate");
   }
 };
 
