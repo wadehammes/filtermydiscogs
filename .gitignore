@@ -63,3 +63,4 @@ tsconfig.tsbuildinfo
 .env*.local
 
 next-env.d.ts
+.env*

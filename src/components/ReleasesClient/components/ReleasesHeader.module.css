@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   justify-content: space-between;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-1);
   padding: var(--space-4);
   position: sticky;
   top: var(--sticky-header-height);

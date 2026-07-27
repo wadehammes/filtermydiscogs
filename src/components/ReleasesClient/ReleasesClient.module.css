@@ -37,6 +37,27 @@
     }
   }
 
+  :global([data-testid="fmdBottomDrawer"]) {
+    bottom: calc(
+      var(--release-mini-player-bar-offset) +
+      var(--release-mini-player-video-panel-offset)
+    );
+    max-height: calc(
+      80vh -
+      var(--release-mini-player-bar-offset) -
+      var(--release-mini-player-video-panel-offset)
+    );
+  }
+
+  :global([data-crate-drawer-desktop]) {
+    height: calc(
+      100vh -
+      var(--sticky-header-total-height) -
+      var(--release-mini-player-bar-offset) -
+      var(--release-mini-player-video-panel-offset)
+    );
+  }
+
   @media (width >= 768px) {
     --release-mini-player-control-size: 2rem;
     --release-mini-player-bar-height: 3.25rem;
