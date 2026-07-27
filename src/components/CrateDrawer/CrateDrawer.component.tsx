@@ -38,7 +38,7 @@ export const CrateDrawer = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
           </div>
         </BottomDrawer>
       ) : (
-        <div className={styles.drawer}>
+        <div className={styles.drawer} data-crate-drawer-desktop>
           <div className={styles.header}>{crateSelector}</div>
           <div className={styles.content}>
             <CrateDrawerReleases />

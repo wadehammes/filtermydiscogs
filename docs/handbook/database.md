@@ -34,12 +34,27 @@ Composite primary key: **`[user_id, crate_id, instance_id]`**. Cascades on crate
 ## Migrations
 
 ```bash
-pnpm db:migrate      # dev: create/apply migrations (.env.local)
-pnpm db:migrate:prod # production deploy
-pnpm db:push         # prototype schema push (script loads env)
-pnpm db:studio       # Prisma Studio
-pnpm db:generate     # regenerate client (also runs on build/postinstall)
+pnpm db:migrate        # dev: create/apply migrations (.env.local)
+pnpm db:pull:staging   # pull staging/preview DATABASE_URL into .env.local (Vercel CLI)
+pnpm db:migrate:staging # apply pending migrations to staging (.env.local)
+pnpm db:pull:prod      # pull production DATABASE_URL into .env.local
+pnpm db:migrate:prod   # apply pending migrations to production (.env.local)
+pnpm db:push           # prototype schema push (script loads env)
+pnpm db:studio         # Prisma Studio
+pnpm db:generate       # regenerate client (also runs on build/postinstall)
 ```
+
+Vercel exposes **`DATABASE_URL`** per deployment target: **Preview/Development** share the non-prod Postgres (use this for local work against staging); **Production** is separate. There is no fourth “staging” env in Vercel—the **`staging`** git branch deploys to **Preview**.
+
+For local dev against the staging database:
+
+```bash
+pnpm db:pull:staging    # writes preview DATABASE_URL to .env.local
+pnpm db:migrate:staging # apply migrations (e.g. found_at) to that DB
+pnpm dev                # app uses .env.local
+```
+
+**`db:pull:dev`** pulls the **Development** target (same **`DATABASE_URL`** as Preview on this project). Use **`db:pull:prod`** / **`db:migrate:prod`** only when intentionally touching production.
 
 Generated Prisma client output is **not committed** (`/prisma/node_modules` and root `node_modules/.prisma/client` are gitignored; CI and `postinstall` run `prisma generate`).
 
