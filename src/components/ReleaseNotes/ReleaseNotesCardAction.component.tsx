@@ -1,7 +1,6 @@
 "use client";
 
 import classNames from "classnames";
-import mobileCardStyles from "src/components/ReleaseCard/MobileReleaseCard.module.css";
 import cardStyles from "src/components/ReleaseCard/ReleaseCard.module.css";
 import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
@@ -17,7 +16,8 @@ export const ReleaseNotesCardAction = ({
   variant = "card",
 }: ReleaseNotesCardActionProps) => {
   const { canEdit, hasNotes, openDialog } = useReleaseNotesEditorContext();
-  const styles = variant === "mobile" ? mobileCardStyles : cardStyles;
+  const isMobile = variant === "mobile";
+  const label = hasNotes ? "Edit release notes" : "Add release notes";
 
   if (!canEdit) {
     return null;
@@ -26,29 +26,30 @@ export const ReleaseNotesCardAction = ({
   const notesButton = (
     <button
       type="button"
-      className={classNames(segmentedStyles.segment, styles.actionSegment)}
+      className={classNames(
+        isMobile ? cardStyles.overlayAction : segmentedStyles.segment,
+        !isMobile && cardStyles.actionSegment,
+      )}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
         openDialog();
       }}
-      aria-label={hasNotes ? "Edit release notes" : "Add release notes"}
-      title={hasNotes ? "Edit release notes" : "Add release notes"}
+      aria-label={label}
+      title={label}
     >
-      <NoteStickyIcon className={styles.actionIcon} />
+      <NoteStickyIcon className={cardStyles.actionIcon} />
     </button>
   );
 
-  if (variant === "card") {
-    return (
-      <div className={cardStyles.segmentSlot}>
-        {notesButton}
-        <span className={cardStyles.tooltip}>
-          {hasNotes ? "Edit release notes" : "Add release notes"}
-        </span>
-      </div>
-    );
+  if (isMobile) {
+    return <div className={cardStyles.overlayActionSlot}>{notesButton}</div>;
   }
 
-  return notesButton;
+  return (
+    <div className={cardStyles.segmentSlot}>
+      {notesButton}
+      <span className={cardStyles.tooltip}>{label}</span>
+    </div>
+  );
 };

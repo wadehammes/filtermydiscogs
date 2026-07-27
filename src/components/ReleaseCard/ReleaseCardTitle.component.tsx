@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsArtist } from "src/types";
-import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
 import { normalizeDiscogsJoin } from "src/utils/releaseDisplay";
 import styles from "./ReleaseCardTitle.module.css";
@@ -13,42 +12,27 @@ interface ReleaseCardTitleProps {
   resourceUrl: string | null;
   analyticsCategory?: "releaseCard" | "publicCrate" | "home";
   className?: string | undefined;
-  onReleaseOpen?: () => void;
 }
 
 const renderReleaseTitle = ({
   title,
-  onReleaseOpen,
   releaseUrl,
   resourceUrl,
   analyticsCategory,
 }: {
   title: string;
-  onReleaseOpen?: () => void;
   releaseUrl: string | null;
   resourceUrl: string | null;
   analyticsCategory: "releaseCard" | "publicCrate" | "home";
 }) => {
-  if (onReleaseOpen) {
-    return (
-      <button
-        type="button"
-        onClick={onReleaseOpen}
-        className={styles.titleLink}
-        title="Open release details"
-      >
-        {title}
-      </button>
-    );
-  }
-
   if (releaseUrl) {
     return (
       <a
         href={releaseUrl}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => {
+        onClick={(event) => {
+          event.stopPropagation();
           trackEvent("releaseClicked", {
             action: "releaseClicked",
             category: analyticsCategory,
@@ -74,7 +58,6 @@ export const ReleaseCardTitle = ({
   resourceUrl,
   analyticsCategory = "releaseCard",
   className,
-  onReleaseOpen,
 }: ReleaseCardTitleProps) => {
   return (
     <div className={classNames(styles.titleGroup, className)}>
@@ -122,7 +105,6 @@ export const ReleaseCardTitle = ({
           releaseUrl,
           resourceUrl,
           analyticsCategory,
-          ...definedProps({ onReleaseOpen }),
         })}
       </h3>
     </div>

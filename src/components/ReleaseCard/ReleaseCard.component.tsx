@@ -54,6 +54,8 @@ const ReleaseCardComponent = ({
         <ReleaseCardImage
           release={release}
           thumbUrl={thumbUrl}
+          releaseUrl={releaseUrl}
+          resourceUrl={release.basic_information.resource_url}
           {...definedProps({
             onReleaseOpen: canOpen ? openRelease : undefined,
           })}
@@ -64,7 +66,6 @@ const ReleaseCardComponent = ({
           labelUrl={labelUrl}
           {...definedProps({
             onExitRandomMode,
-            onReleaseOpen: canOpen ? openRelease : undefined,
           })}
         />
       </div>

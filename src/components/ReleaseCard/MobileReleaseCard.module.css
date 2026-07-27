@@ -195,28 +195,6 @@
   display: flex;
   flex: 0 0 4rem;
   min-height: 0;
-  padding: var(--space-1);
   width: 4rem;
   z-index: 10;
-}
-
-.actionSegmented {
-  background: var(--card);
-  flex: 1;
-  min-height: 0;
-}
-
-.actionSegment {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  padding: var(--space-1);
-  position: relative;
-}
-
-.actionIcon {
-  display: flex;
-  flex-shrink: 0;
-  height: 0.875rem;
-  width: 0.875rem;
 }

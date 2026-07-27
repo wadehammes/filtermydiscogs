@@ -3,7 +3,7 @@ import type { ViewMode } from "src/atoms/view.atoms";
 import CratesIcon from "src/styles/icons/crates-thin.svg";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import GridIcon from "src/styles/icons/grid-thin.svg";
-import ListIcon from "src/styles/icons/list-thin.svg";
+import TableIcon from "src/styles/icons/table-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import styles from "./ViewToggle.module.css";
 
@@ -68,7 +68,7 @@ export const ViewToggle = ({
           title="List view"
         >
           <span className={styles.segmentIcon} aria-hidden>
-            <ListIcon />
+            <TableIcon />
           </span>
           <span>Table</span>
         </button>
