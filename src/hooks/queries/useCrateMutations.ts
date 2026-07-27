@@ -13,6 +13,7 @@ import {
 import type { DiscogsRelease } from "src/types";
 import type {
   CratesResponse,
+  CrateUpdatePayload,
   CrateWithCount,
   CrateWithReleasesResponse,
   OptimisticUpdateContext,
@@ -23,33 +24,13 @@ interface CreateCrateRequest {
   name: string;
 }
 
-interface UpdateCrateRequest {
-  name?: string;
-  is_default?: boolean;
-  private?: boolean;
-}
+interface UpdateCrateRequest extends Partial<CrateUpdatePayload> {}
 
-interface CreateCrateResponse {
-  crate: {
+interface CrateMutationResponse {
+  crate: CrateUpdatePayload & {
     user_id: number;
     id: string;
-    name: string;
     username: string | null;
-    is_default: boolean;
-    private: boolean;
-    created_at: Date;
-    updated_at: Date;
-  };
-}
-
-interface UpdateCrateResponse {
-  crate: {
-    user_id: number;
-    id: string;
-    name: string;
-    username: string | null;
-    is_default: boolean;
-    private: boolean;
     created_at: Date;
     updated_at: Date;
   };
@@ -71,6 +52,10 @@ const getUpdateCrateErrorTitle = (updates: UpdateCrateRequest): string => {
 
   if (updates.private !== undefined) {
     return "Failed to update crate privacy";
+  }
+
+  if (updates.packed_enabled !== undefined) {
+    return "Failed to update packed checklist setting";
   }
 
   if (updates.name !== undefined) {
@@ -216,7 +201,7 @@ const applyCratesListUpdate = ({
   crates: CrateWithCount[];
   crateId: string;
   updates: UpdateCrateRequest;
-  serverCrate?: UpdateCrateResponse["crate"];
+  serverCrate?: CrateMutationResponse["crate"];
 }): CrateWithCount[] =>
   crates.map((crate) => {
     if (crate.id === crateId) {
@@ -238,7 +223,7 @@ const mergeCrateDetailCache = (
   queryClient: ReturnType<typeof useQueryClient>,
   userId: string | null,
   crateId: string,
-  crateUpdates: Partial<UpdateCrateResponse["crate"]>,
+  crateUpdates: Partial<CrateMutationResponse["crate"]>,
 ) => {
   queryClient.setQueryData<CrateWithReleasesResponse>(
     CrateQueryKeys.byUserAndId(userId, crateId),
@@ -259,7 +244,7 @@ const mergeCrateDetailCache = (
 export const useCreateCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
 
-  return useMutation<CreateCrateResponse, Error, CreateCrateRequest>({
+  return useMutation<CrateMutationResponse, Error, CreateCrateRequest>({
     mutationFn: async (data) => {
       return createCrate(data.name);
     },
@@ -296,7 +281,7 @@ export const useUpdateCrateMutation = (userId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    UpdateCrateResponse,
+    CrateMutationResponse,
     Error,
     { crateId: string; updates: UpdateCrateRequest },
     OptimisticUpdateContext
@@ -445,6 +430,7 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
                 username: null,
                 is_default: false,
                 private: true,
+                packed_enabled: false,
                 created_at: new Date(),
                 updated_at: new Date(),
               },

@@ -3,6 +3,11 @@ import type { DiscogsRelease } from "./discogs-release.types";
 
 export type Crate = PrismaCrate;
 
+export type CrateUpdatePayload = Pick<
+  Crate,
+  "name" | "is_default" | "private" | "packed_enabled"
+>;
+
 export type CrateWithCount = Crate & {
   releaseCount?: number;
 };

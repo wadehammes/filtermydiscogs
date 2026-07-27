@@ -4,21 +4,14 @@ import { useCrateDrawerContext } from "./CrateDrawer.context";
 
 export const CrateDrawerDialogs = () => {
   const {
-    canDelete,
     crateName,
     handleClearConfirm,
-    handleDeleteCrate,
     handleMakeDefaultConfirm,
-    handleSaveCrateName,
-    isDefaultCrate,
-    isDeletingCrate,
     isUpdatingCrate,
     selectedReleases,
     setShowClearDialog,
-    setShowEditCrateDialog,
     setShowMakeDefaultDialog,
     showClearDialog,
-    showEditCrateDialog,
     showMakeDefaultDialog,
   } = useCrateDrawerContext();
 
@@ -26,17 +19,7 @@ export const CrateDrawerDialogs = () => {
 
   return (
     <>
-      <EditCrateDialog
-        isOpen={showEditCrateDialog}
-        crateName={crateName}
-        isDefaultCrate={isDefaultCrate}
-        canDelete={canDelete}
-        isUpdatingCrate={isUpdatingCrate}
-        isDeletingCrate={isDeletingCrate}
-        onClose={() => setShowEditCrateDialog(false)}
-        onSaveName={handleSaveCrateName}
-        onDelete={handleDeleteCrate}
-      />
+      <EditCrateDialog />
 
       <ConfirmDialog
         isOpen={showClearDialog}

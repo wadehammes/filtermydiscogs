@@ -40,7 +40,24 @@ export const useCrateDrawerState = () => {
     (hasReleaseCountMismatch && (isFetchingCrate || isLoadingCrate));
   const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
+  const packedEnabled = activeCrate?.packed_enabled ?? false;
   const canDelete = crates.length > 1 && !isDefaultCrate;
+
+  const toggleCrateBoolean = useCallback(
+    async (
+      field: "private" | "packed_enabled",
+      afterToggle?: (nextValue: boolean) => void,
+    ) => {
+      if (!activeCrate) {
+        return;
+      }
+
+      const nextValue = !activeCrate[field];
+      await updateCrate(activeCrate.id, { [field]: nextValue });
+      afterToggle?.(nextValue);
+    },
+    [activeCrate, updateCrate],
+  );
 
   const handleClearConfirm = useCallback(() => {
     clearCrate();
@@ -71,12 +88,16 @@ export const useCrateDrawerState = () => {
   }, [activeCrateId, updateCrate]);
 
   const handlePrivacyToggle = useCallback(async () => {
-    if (!activeCrate) {
-      return;
-    }
+    await toggleCrateBoolean("private");
+  }, [toggleCrateBoolean]);
 
-    await updateCrate(activeCrate.id, { private: !activeCrate.private });
-  }, [activeCrate, updateCrate]);
+  const handlePackedEnabledToggle = useCallback(async () => {
+    await toggleCrateBoolean("packed_enabled", (nextPackedEnabled) => {
+      if (!nextPackedEnabled) {
+        setHidePackedItems(false);
+      }
+    });
+  }, [toggleCrateBoolean]);
 
   const handleCopyLink = useCallback(async () => {
     if (!activeCrateId) {
@@ -140,10 +161,12 @@ export const useCrateDrawerState = () => {
     handleCopyLink,
     handleDeleteCrate,
     handleMakeDefaultConfirm,
+    handlePackedEnabledToggle,
     handlePrivacyToggle,
     handleSaveCrateName,
     hidePackedItems,
-    packedCount: packedReleaseCount,
+    packedCount: packedEnabled ? packedReleaseCount : 0,
+    packedEnabled,
     setHidePackedItems,
   };
 };

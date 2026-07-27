@@ -31,6 +31,7 @@ class CrateFactory extends BaseFactory<Crate, CrateFactoryOptions> {
       username: nullish([faker.internet.username()]),
       is_default: isDefault,
       private: faker.datatype.boolean(),
+      packed_enabled: false,
       created_at: faker.date.past(),
       updated_at: faker.date.recent(),
     } satisfies Crate;

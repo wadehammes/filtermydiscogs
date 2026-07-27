@@ -11,6 +11,7 @@ export const crateDrawerPackedAt = "2026-07-27T00:00:00.000Z";
 export const crateDrawerDefaultCrate = crateWithCountFactory.build({
   id: "crate-1",
   is_default: true,
+  packed_enabled: true,
   releaseCount: 2,
 });
 

@@ -7,7 +7,9 @@ import type {
   DiscogsSearchResponse,
 } from "src/types";
 import type {
+  Crate,
   CratesResponse,
+  CrateUpdatePayload,
   CrateWithReleasesResponse,
   PaginationInfo,
 } from "src/types/crate.types";
@@ -435,6 +437,7 @@ export const createCrate = async (
     username: string | null;
     is_default: boolean;
     private: boolean;
+    packed_enabled: boolean;
     created_at: Date;
     updated_at: Date;
   };
@@ -464,19 +467,8 @@ export const createCrate = async (
 
 export const updateCrate = async (
   crateId: string,
-  updates: { name?: string; is_default?: boolean; private?: boolean },
-): Promise<{
-  crate: {
-    user_id: number;
-    id: string;
-    name: string;
-    username: string | null;
-    is_default: boolean;
-    private: boolean;
-    created_at: Date;
-    updated_at: Date;
-  };
-}> => {
+  updates: Partial<CrateUpdatePayload>,
+): Promise<{ crate: Crate }> => {
   try {
     const bodyString = JSON.stringify(updates);
     const response = await fetch(`/api/crates/${crateId}`, {

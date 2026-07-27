@@ -10,6 +10,35 @@ import { privateRouteJson } from "src/lib/private-route-response";
 
 export const dynamic = "force-dynamic";
 
+type CrateUpdateData = {
+  name?: string;
+  username?: string | null;
+  is_default?: boolean;
+  private?: boolean;
+  packed_enabled?: boolean;
+};
+
+function assignOptionalBoolean(
+  value: unknown,
+  fieldName: string,
+  updateData: CrateUpdateData,
+  key: "private" | "packed_enabled",
+): ReturnType<typeof privateRouteJson> | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (typeof value !== "boolean") {
+    return privateRouteJson(
+      { error: `${fieldName} must be a boolean` },
+      { status: 400 },
+    );
+  }
+
+  updateData[key] = value;
+  return null;
+}
+
 /**
  * Get a single crate with its releases
  */
@@ -42,6 +71,7 @@ export async function GET(
         username: true,
         is_default: true,
         private: true,
+        packed_enabled: true,
         created_at: true,
         updated_at: true,
       },
@@ -139,6 +169,7 @@ export async function PUT(
     const is_default = bodyObj.is_default;
     // Access 'private' using bracket notation to avoid reserved keyword issues
     const privateField = bodyObj.private;
+    const packedEnabled = bodyObj.packed_enabled;
 
     // Verify crate exists and belongs to user
     const existingCrate = await prisma.crate.findUnique({
@@ -148,19 +179,20 @@ export async function PUT(
           id,
         },
       },
-      select: { id: true, name: true, is_default: true, private: true },
+      select: {
+        id: true,
+        name: true,
+        is_default: true,
+        private: true,
+        packed_enabled: true,
+      },
     });
 
     if (!existingCrate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
-    const updateData: {
-      name?: string;
-      username?: string | null;
-      is_default?: boolean;
-      private?: boolean;
-    } = {};
+    const updateData: CrateUpdateData = {};
 
     // Always update username if available (to keep it current)
     if (username) {
@@ -243,21 +275,28 @@ export async function PUT(
       updateData.is_default = is_default;
     }
 
-    // Check if private field was explicitly provided (can be true or false)
-    if (privateField !== undefined && privateField !== null) {
-      if (typeof privateField !== "boolean") {
-        return privateRouteJson(
-          { error: "private must be a boolean" },
-          { status: 400 },
-        );
-      }
+    const privateError = assignOptionalBoolean(
+      privateField,
+      "private",
+      updateData,
+      "private",
+    );
+    if (privateError) {
+      return privateError;
+    }
 
-      updateData.private = privateField;
+    if (updateData.private === false && username) {
+      updateData.username = username;
+    }
 
-      // When making a crate public, ensure username is set
-      if (privateField === false && username) {
-        updateData.username = username;
-      }
+    const packedEnabledError = assignOptionalBoolean(
+      packedEnabled,
+      "packed_enabled",
+      updateData,
+      "packed_enabled",
+    );
+    if (packedEnabledError) {
+      return packedEnabledError;
     }
 
     if (Object.keys(updateData).length === 0) {

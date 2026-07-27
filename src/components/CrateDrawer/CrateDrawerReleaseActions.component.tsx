@@ -3,6 +3,7 @@ import type { MouseEvent } from "react";
 import CheckIcon from "src/styles/icons/check-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import stackStyles from "src/styles/vertical-action-stack.module.css";
+import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateDrawer.module.css";
 
 interface CrateDrawerReleaseActionsProps {
@@ -18,6 +19,8 @@ export const CrateDrawerReleaseActions = ({
   onPackedChange,
   onRemove,
 }: CrateDrawerReleaseActionsProps) => {
+  const { packedEnabled } = useCrateDrawerContext();
+
   const handlePackedToggle = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -33,23 +36,25 @@ export const CrateDrawerReleaseActions = ({
   return (
     <div className={styles.listItemActions}>
       <div className={stackStyles.overlayActions}>
-        <div className={stackStyles.overlayActionSlot}>
-          <button
-            type="button"
-            className={classNames(stackStyles.overlayAction, {
-              [stackStyles.overlayActionActive]: packed,
-            })}
-            onClick={handlePackedToggle}
-            aria-label={
-              packed
-                ? `Unmark ${releaseTitle} as packed`
-                : `Mark ${releaseTitle} as packed`
-            }
-            title={packed ? "Unmark as packed" : "Mark as packed"}
-          >
-            <CheckIcon className={stackStyles.actionIcon} aria-hidden />
-          </button>
-        </div>
+        {packedEnabled ? (
+          <div className={stackStyles.overlayActionSlot}>
+            <button
+              type="button"
+              className={classNames(stackStyles.overlayAction, {
+                [stackStyles.overlayActionActive]: packed,
+              })}
+              onClick={handlePackedToggle}
+              aria-label={
+                packed
+                  ? `Unmark ${releaseTitle} as packed`
+                  : `Mark ${releaseTitle} as packed`
+              }
+              title={packed ? "Unmark as packed" : "Mark as packed"}
+            >
+              <CheckIcon className={stackStyles.actionIcon} aria-hidden />
+            </button>
+          </div>
+        ) : null}
         <div className={stackStyles.overlayActionSlot}>
           <button
             type="button"

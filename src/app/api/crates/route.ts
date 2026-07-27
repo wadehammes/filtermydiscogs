@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         username: true,
         is_default: true,
         private: true,
+        packed_enabled: true,
         created_at: true,
         updated_at: true,
         _count: {
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest) {
           username: true,
           is_default: true,
           private: true,
+          packed_enabled: true,
           created_at: true,
           updated_at: true,
           _count: {
@@ -88,6 +90,7 @@ export async function GET(request: NextRequest) {
         username: defaultCrate.username,
         is_default: defaultCrate.is_default,
         private: defaultCrate.private,
+        packed_enabled: defaultCrate.packed_enabled,
         created_at: defaultCrate.created_at,
         updated_at: defaultCrate.updated_at,
         releaseCount: defaultCrate._count.releases,
@@ -114,6 +117,7 @@ export async function GET(request: NextRequest) {
       username: crate.username,
       is_default: crate.is_default,
       private: crate.private,
+      packed_enabled: crate.packed_enabled,
       created_at: crate.created_at,
       updated_at: crate.updated_at,
       releaseCount: crate._count.releases,

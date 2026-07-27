@@ -2,6 +2,8 @@ import classNames from "classnames";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
+import drawerStyles from "src/components/CrateDrawer/CrateDrawer.module.css";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./EditCrateDialog.module.css";
 
@@ -10,29 +12,21 @@ type EditCrateFormValues = {
   deleteConfirm: string;
 };
 
-type EditCrateDialogProps = {
-  isOpen: boolean;
-  crateName: string;
-  isDefaultCrate: boolean;
-  canDelete: boolean;
-  isUpdatingCrate: boolean;
-  isDeletingCrate: boolean;
-  onClose: () => void;
-  onSaveName: (name: string) => Promise<void>;
-  onDelete: () => void;
-};
+export const EditCrateDialog = () => {
+  const {
+    canDelete,
+    crateName,
+    handleDeleteCrate,
+    handlePackedEnabledToggle,
+    handleSaveCrateName,
+    isDefaultCrate,
+    isDeletingCrate,
+    isUpdatingCrate,
+    packedEnabled,
+    setShowEditCrateDialog,
+    showEditCrateDialog,
+  } = useCrateDrawerContext();
 
-export const EditCrateDialog = ({
-  isOpen,
-  crateName,
-  isDefaultCrate,
-  canDelete,
-  isUpdatingCrate,
-  isDeletingCrate,
-  onClose,
-  onSaveName,
-  onDelete,
-}: EditCrateDialogProps) => {
   const titleId = useId();
   const isBusy = isUpdatingCrate || isDeletingCrate;
 
@@ -49,13 +43,17 @@ export const EditCrateDialog = ({
   const deleteConfirmValue = watch("deleteConfirm");
 
   useEffect(() => {
-    if (isOpen) {
+    if (showEditCrateDialog) {
       reset({
         name: crateName,
         deleteConfirm: "",
       });
     }
-  }, [crateName, isOpen, reset]);
+  }, [crateName, reset, showEditCrateDialog]);
+
+  const onClose = useCallback(() => {
+    setShowEditCrateDialog(false);
+  }, [setShowEditCrateDialog]);
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
@@ -77,7 +75,7 @@ export const EditCrateDialog = ({
       return;
     }
 
-    await onSaveName(trimmedName);
+    await handleSaveCrateName(trimmedName);
   });
 
   const trimmedNameValue = nameValue.trim();
@@ -87,7 +85,7 @@ export const EditCrateDialog = ({
     deleteConfirmValue.trim() === crateName.trim() &&
     crateName.trim().length > 0;
 
-  if (!isOpen) {
+  if (!showEditCrateDialog) {
     return null;
   }
 
@@ -142,6 +140,30 @@ export const EditCrateDialog = ({
           </div>
         </form>
 
+        <section
+          className={styles.section}
+          aria-labelledby={`${titleId}-packed-setting`}
+        >
+          <h3 id={`${titleId}-packed-setting`} className={styles.sectionTitle}>
+            Packed checklist
+          </h3>
+          <p className={styles.settingDescription}>
+            When you&apos;re digging through crates, mark each release as packed
+            once you&apos;ve found it. Turn this off to hide the checklist in
+            this crate—your packed status is still saved.
+          </p>
+          <label className={drawerStyles.checkboxLabel}>
+            <input
+              type="checkbox"
+              className={drawerStyles.sharingCheckbox}
+              checked={packedEnabled}
+              onChange={() => void handlePackedEnabledToggle()}
+              disabled={isBusy}
+            />
+            <span>Enable packed checklist for this crate</span>
+          </label>
+        </section>
+
         {canDelete ? (
           <section
             className={styles.dangerSection}
@@ -171,7 +193,7 @@ export const EditCrateDialog = ({
                 type="button"
                 variant="danger"
                 size="sm"
-                onPress={onDelete}
+                onPress={handleDeleteCrate}
                 disabled={!isDeleteConfirmMatch || isBusy}
               >
                 {isDeletingCrate ? "Deleting..." : "Delete crate"}
