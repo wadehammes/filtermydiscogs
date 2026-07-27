@@ -145,12 +145,12 @@ export const EditCrateDialog = () => {
           aria-labelledby={`${titleId}-packed-setting`}
         >
           <h3 id={`${titleId}-packed-setting`} className={styles.sectionTitle}>
-            Packed checklist
+            Gig packing checklist
           </h3>
           <p className={styles.settingDescription}>
-            When you&apos;re digging through crates, mark each release as packed
-            once you&apos;ve found it. Turn this off to hide the checklist in
-            this crate—your packed status is still saved.
+            Mark each album as packed once it&apos;s in the bag for your gig.
+            Turn this off to hide the checklist in this crate—your packed marks
+            are still saved.
           </p>
           <label className={drawerStyles.checkboxLabel}>
             <input
@@ -160,7 +160,7 @@ export const EditCrateDialog = () => {
               onChange={() => void handlePackedEnabledToggle()}
               disabled={isBusy}
             />
-            <span>Enable packed checklist for this crate</span>
+            <span>Show gig packing checklist</span>
           </label>
         </section>
 

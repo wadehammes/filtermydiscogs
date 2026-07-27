@@ -46,10 +46,12 @@ export const CrateDrawerReleaseActions = ({
               onClick={handlePackedToggle}
               aria-label={
                 packed
-                  ? `Unmark ${releaseTitle} as packed`
-                  : `Mark ${releaseTitle} as packed`
+                  ? `Unmark ${releaseTitle} as packed for gig`
+                  : `Mark ${releaseTitle} as packed for gig`
               }
-              title={packed ? "Unmark as packed" : "Mark as packed"}
+              title={
+                packed ? "Unmark as packed for gig" : "Mark as packed for gig"
+              }
             >
               <CheckIcon className={stackStyles.actionIcon} aria-hidden />
             </button>

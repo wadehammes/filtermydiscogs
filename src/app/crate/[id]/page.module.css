@@ -9,6 +9,36 @@
   }
 }
 
+.withMiniPlayer {
+  --release-mini-player-cover-size: 2.5rem;
+  --release-mini-player-control-size: 2.5rem;
+  --release-mini-player-bar-height: calc(
+    var(--release-mini-player-cover-size) +
+    var(--release-mini-player-control-size) +
+    var(--space-2) *
+    2 +
+    var(--space-3)
+  );
+  --release-mini-player-bar-offset: calc(
+    var(--release-mini-player-bar-height) +
+    env(safe-area-inset-bottom, 0px)
+  );
+  --release-mini-player-video-panel-offset: 0px;
+
+  padding-bottom: var(--release-mini-player-bar-offset);
+
+  &:has([data-video-expanded="true"]) {
+    @media (width < 768px) {
+      --release-mini-player-video-panel-offset: calc(2rem + 100vw * 9 / 16);
+    }
+  }
+
+  @media (width >= 768px) {
+    --release-mini-player-control-size: 2rem;
+    --release-mini-player-bar-height: 3.25rem;
+  }
+}
+
 .content {
   color: var(--foreground);
   line-height: 1.6;

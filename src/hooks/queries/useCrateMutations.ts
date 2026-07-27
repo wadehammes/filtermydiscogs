@@ -55,7 +55,7 @@ const getUpdateCrateErrorTitle = (updates: UpdateCrateRequest): string => {
   }
 
   if (updates.packed_enabled !== undefined) {
-    return "Failed to update packed checklist setting";
+    return "Failed to update gig packing checklist setting";
   }
 
   if (updates.name !== undefined) {

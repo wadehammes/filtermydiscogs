@@ -72,12 +72,12 @@ describe("Login", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Releases page with search, filters, grid and table views, and release cards",
+        name: "Releases page with search, filters, tracklist, in-app player, and release cards",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Crate drawer showing saved crates and releases organized into a custom list",
+        name: "Crate drawer with gig packing checklist and releases organized into a custom list",
       }),
     ).toBeInTheDocument();
     expect(

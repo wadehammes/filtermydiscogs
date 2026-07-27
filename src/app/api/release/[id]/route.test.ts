@@ -71,18 +71,7 @@ describe("GET /api/release/[id]", () => {
     });
   });
 
-  it("returns 401 when OAuth cookies are missing", async () => {
-    const response = await GET(createRequest(RELEASE_ID), {
-      params: Promise.resolve({ id: RELEASE_ID }),
-    });
-
-    expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({
-      error: "Unauthorized",
-    });
-  });
-
-  it("returns release detail from Discogs", async () => {
+  it("returns release detail from Discogs for signed-in users", async () => {
     jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
       id: 42,
       username: "crate-digger",
@@ -110,6 +99,26 @@ describe("GET /api/release/[id]", () => {
     );
     expect(response.headers.get("Cache-Control")).toBe(
       "private, max-age=3600, stale-while-revalidate=7200",
+    );
+  });
+
+  it("returns release detail from Discogs for visitors without OAuth cookies", async () => {
+    jest
+      .spyOn(discogsOAuthService, "makeConsumerRequest")
+      .mockResolvedValue(releaseDetail);
+
+    const response = await GET(createRequest(RELEASE_ID), {
+      params: Promise.resolve({ id: RELEASE_ID }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(releaseDetail);
+    expect(discogsOAuthService.makeConsumerRequest).toHaveBeenCalledWith(
+      `https://api.discogs.com/releases/${RELEASE_ID}`,
+      "GET",
+    );
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, max-age=3600, stale-while-revalidate=7200",
     );
   });
 

@@ -120,6 +120,10 @@
   margin: var(--space-2) 0 0 0;
 }
 
+.staticPill {
+  pointer-events: none;
+}
+
 .actionButton {
   align-items: center;
   background: color-mix(in srgb, var(--background) 60%, transparent);

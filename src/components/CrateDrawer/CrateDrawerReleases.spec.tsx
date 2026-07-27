@@ -57,7 +57,7 @@ describe("CrateDrawerReleases", () => {
         name: /hide items marked as packed/i,
       }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText("Hide packed items")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hide packed albums")).not.toBeInTheDocument();
   });
 
   it("shows the hide filter when at least one item is packed", async () => {
@@ -77,13 +77,13 @@ describe("CrateDrawerReleases", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("1 of 2 packed")).toBeInTheDocument();
+      expect(screen.getByText("1 of 2 packed for gig")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Hide packed items")).toBeInTheDocument();
+    expect(screen.getByText("Hide packed albums")).toBeInTheDocument();
     expect(
       screen.getByRole("checkbox", {
-        name: /hide items marked as packed/i,
+        name: /hide albums packed for your gig/i,
       }),
     ).toBeInTheDocument();
   });
