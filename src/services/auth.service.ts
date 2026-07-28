@@ -64,6 +64,9 @@ export const parseAuthUrlParams = (): {
   };
 };
 
+export const hasAuthSuccessUrlParam = (): boolean =>
+  parseAuthUrlParams().authStatus === "success";
+
 export const checkAuthStatus = async (): Promise<AuthStatus> => {
   try {
     return normalizeAuthStatus(await checkAuthApi());

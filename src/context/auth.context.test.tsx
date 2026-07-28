@@ -93,6 +93,19 @@ describe("AuthProvider", () => {
     });
   });
 
+  it("keeps isCheckingAuth true when auth=success is in the URL on mount", () => {
+    mockParseAuthUrlParams.mockReturnValue({
+      authStatus: "success",
+      errorStatus: null,
+    });
+
+    mockCheckAuth.mockReturnValueOnce(new Promise(() => {}));
+
+    const { result } = renderAuthHook();
+
+    expect(result.current.state.isCheckingAuth).toBe(true);
+  });
+
   it("checks auth status on mount", async () => {
     mockCheckAuth.mockResolvedValueOnce({
       isAuthenticated: true,

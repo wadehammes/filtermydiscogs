@@ -19,6 +19,7 @@ import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import {
   clearSessionAuthCookies,
   clearUrlParams,
+  hasAuthSuccessUrlParam,
   parseAuthUrlParams,
 } from "src/services/auth.service";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
@@ -138,7 +139,9 @@ export const AuthProvider = ({
   const router = useRouter();
   const prevRateLimitedRef = useRef(false);
   const hasHandledAuthUrlRef = useRef(false);
-  const [isCompletingOAuth, setIsCompletingOAuth] = useState(false);
+  const [isCompletingOAuth, setIsCompletingOAuth] = useState(
+    hasAuthSuccessUrlParam,
+  );
   const [hasCompletedAuthCheck, setHasCompletedAuthCheck] =
     useState(skipInitialAuthCheck);
 

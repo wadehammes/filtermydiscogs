@@ -78,7 +78,8 @@ export const useUserPreferencesSync = () => {
       if (
         localTheme !== preferences.theme &&
         preferences.theme === "light" &&
-        localTheme !== "light"
+        localTheme !== "light" &&
+        localTheme !== "system"
       ) {
         seedPatch.theme = localTheme;
       }
