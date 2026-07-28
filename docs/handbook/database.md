@@ -23,6 +23,7 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 | `is_default` | One default crate per user |
 | `private` | When `false`, crate is publicly viewable at `/crate/[id]` |
 | `packed_enabled` | When `true`, owner sees gig packing checklist UI in the crate drawer (default **`false`**) |
+| `notes` | Optional free-text notes for the crate; editable in **Edit crate** and shown on public crate pages when set |
 
 Composite primary key: **`[user_id, id]`**.
 

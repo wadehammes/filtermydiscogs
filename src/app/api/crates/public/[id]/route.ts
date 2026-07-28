@@ -30,6 +30,7 @@ export async function GET(
         username: true,
         is_default: true,
         private: true,
+        notes: true,
         created_at: true,
         updated_at: true,
       },
@@ -69,6 +70,7 @@ export async function GET(
       username: finalUsername,
       is_default: crate.is_default,
       private: crate.private,
+      notes: crate.notes,
       created_at: crate.created_at,
       updated_at: crate.updated_at,
     };

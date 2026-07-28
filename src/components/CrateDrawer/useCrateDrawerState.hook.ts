@@ -23,6 +23,7 @@ export const useCrateDrawerState = () => {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
   const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
+  const [showCrateNotesDialog, setShowCrateNotesDialog] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [hidePackedItems, setHidePackedItems] = useState(false);
 
@@ -32,6 +33,7 @@ export const useCrateDrawerState = () => {
   );
 
   const crateName = activeCrate?.name || "My Crate";
+  const crateNotes = activeCrate?.notes ?? "";
   const expectedReleaseCount = activeCrate?.releaseCount ?? 0;
   const hasReleaseCountMismatch =
     expectedReleaseCount > 0 && selectedReleases.length === 0;
@@ -127,6 +129,25 @@ export const useCrateDrawerState = () => {
     [activeCrateId, updateCrate],
   );
 
+  const handleSaveCrateNotes = useCallback(
+    async (notes: string) => {
+      if (!activeCrateId) {
+        return;
+      }
+
+      const trimmedNotes = notes.trim();
+      const normalizedNotes = trimmedNotes.length === 0 ? null : trimmedNotes;
+      const currentNotes = activeCrate?.notes ?? null;
+
+      if (normalizedNotes === currentNotes) {
+        return;
+      }
+
+      await updateCrate(activeCrateId, { notes: normalizedNotes });
+    },
+    [activeCrate, activeCrateId, updateCrate],
+  );
+
   const prevActiveCrateIdRef = useRef(activeCrateId);
 
   useEffect(() => {
@@ -136,6 +157,7 @@ export const useCrateDrawerState = () => {
 
     prevActiveCrateIdRef.current = activeCrateId;
     setShowEditCrateDialog(false);
+    setShowCrateNotesDialog(false);
     setHidePackedItems(false);
   }, [activeCrateId]);
 
@@ -144,6 +166,7 @@ export const useCrateDrawerState = () => {
     canDelete,
     copySuccess,
     crateName,
+    crateNotes,
     isDefaultCrate,
     isDeletingCrate,
     isLoadingReleases,
@@ -152,9 +175,11 @@ export const useCrateDrawerState = () => {
     selectedReleases,
     showClearDialog,
     showEditCrateDialog,
+    showCrateNotesDialog,
     showMakeDefaultDialog,
     setShowClearDialog,
     setShowEditCrateDialog,
+    setShowCrateNotesDialog,
     setShowMakeDefaultDialog,
     handleClearConfirm,
     handleClearPacked,
@@ -164,6 +189,7 @@ export const useCrateDrawerState = () => {
     handlePackedEnabledToggle,
     handlePrivacyToggle,
     handleSaveCrateName,
+    handleSaveCrateNotes,
     hidePackedItems,
     packedCount: packedEnabled ? packedReleaseCount : 0,
     packedEnabled,

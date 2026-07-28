@@ -89,6 +89,15 @@
   }
 }
 
+.notes {
+  color: var(--muted-foreground);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 70ch;
+  white-space: pre-wrap;
+}
+
 .heading {
   color: var(--foreground);
   font-size: var(--text-xl);

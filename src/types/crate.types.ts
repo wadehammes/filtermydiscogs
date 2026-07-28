@@ -5,7 +5,7 @@ export type Crate = PrismaCrate;
 
 export type CrateUpdatePayload = Pick<
   Crate,
-  "name" | "is_default" | "private" | "packed_enabled"
+  "name" | "is_default" | "private" | "packed_enabled" | "notes"
 >;
 
 export type CrateWithCount = Crate & {

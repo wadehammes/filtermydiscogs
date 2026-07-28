@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
+import { CRATE_NAME_MAX_LENGTH } from "src/constants/crate";
 import {
   createErrorResponse,
   createPaginatedResponse,
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
         is_default: true,
         private: true,
         packed_enabled: true,
+        notes: true,
         created_at: true,
         updated_at: true,
         _count: {
@@ -72,6 +74,7 @@ export async function GET(request: NextRequest) {
           is_default: true,
           private: true,
           packed_enabled: true,
+          notes: true,
           created_at: true,
           updated_at: true,
           _count: {
@@ -91,6 +94,7 @@ export async function GET(request: NextRequest) {
         is_default: defaultCrate.is_default,
         private: defaultCrate.private,
         packed_enabled: defaultCrate.packed_enabled,
+        notes: defaultCrate.notes,
         created_at: defaultCrate.created_at,
         updated_at: defaultCrate.updated_at,
         releaseCount: defaultCrate._count.releases,
@@ -118,6 +122,7 @@ export async function GET(request: NextRequest) {
       is_default: crate.is_default,
       private: crate.private,
       packed_enabled: crate.packed_enabled,
+      notes: crate.notes,
       created_at: crate.created_at,
       updated_at: crate.updated_at,
       releaseCount: crate._count.releases,
@@ -154,9 +159,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (name.length > 100) {
+    if (name.length > CRATE_NAME_MAX_LENGTH) {
       return privateRouteJson(
-        { error: "Crate name must be 100 characters or less" },
+        {
+          error: `Crate name must be ${CRATE_NAME_MAX_LENGTH} characters or less`,
+        },
         { status: 400 },
       );
     }

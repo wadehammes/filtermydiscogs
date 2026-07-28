@@ -1,0 +1,2 @@
+export const CRATE_NAME_MAX_LENGTH = 100;
+export const CRATE_NOTES_MAX_LENGTH = 2000;
