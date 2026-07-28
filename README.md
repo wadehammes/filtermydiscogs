@@ -45,7 +45,7 @@ DISCOGS_CONSUMER_SECRET=your_consumer_secret_here
 # OAuth Callback URL (optional, defaults to http://localhost:6767/api/auth/callback)
 DISCOGS_CALLBACK_URL=http://localhost:6767/api/auth/callback
 
-# Site URL (optional, defaults to https://www.filtermydisco.gs)
+# Site URL (optional, defaults to https://filtermydisco.gs)
 NEXT_PUBLIC_SITE_URL=http://localhost:6767
 
 # Database URL (for Prisma)

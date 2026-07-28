@@ -2,30 +2,34 @@ import type { Metadata } from "next";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
+import {
+  getMetadataSiteUrl,
+  PAGE_DESCRIPTIONS,
+  SITE_NAME,
+  sitePageTitle,
+} from "src/constants/siteMetadata";
 import { AboutClient } from "./AboutClient";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
+const baseUrl = getMetadataSiteUrl();
+const title = sitePageTitle("About");
+const description = PAGE_DESCRIPTIONS.about;
 
 export const metadata: Metadata = {
-  title: "About | FilterMyDisco.gs",
-  description:
-    "About FilterMyDisco.gs, contact information, and how to support the project",
+  title,
+  description,
   openGraph: {
-    title: "About | FilterMyDisco.gs",
-    description:
-      "About FilterMyDisco.gs, contact information, and how to support the project",
+    title,
+    description,
     url: `${baseUrl}/about`,
-    siteName: "FilterMyDisco.gs",
+    siteName: SITE_NAME,
     type: "website",
     locale: "en-US",
     images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "About | FilterMyDisco.gs",
-    description:
-      "About FilterMyDisco.gs, contact information, and how to support the project",
+    title,
+    description,
     images: [DEFAULT_TWITTER_IMAGE],
   },
 };

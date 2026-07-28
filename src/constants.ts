@@ -3,7 +3,7 @@ export const ERROR_FETCHING =
 export const USERNAME_STORAGE_PARAM = "fmd_username";
 
 export const DEFAULT_SOCIAL_IMAGE_ALT =
-  "App preview showing the main interface with release cards, filters, and crate functionality";
+  "FilterMyDiscogs app preview showing release cards, filters, crates, and collection insights";
 
 export const DEFAULT_OPEN_GRAPH_IMAGE = {
   url: "/opengraph-image.png",

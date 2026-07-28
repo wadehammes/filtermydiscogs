@@ -1,10 +1,12 @@
+import { DEFAULT_SITE_URL } from "src/constants/siteMetadata";
+
 export const isBrowser = () => {
   return Boolean(typeof window !== "undefined");
 };
 
 const envUrl = () => {
   return process.env.NODE_ENV === "production"
-    ? "https://filtermydisco.gs"
+    ? DEFAULT_SITE_URL
     : "http://localhost:6767";
 };
 

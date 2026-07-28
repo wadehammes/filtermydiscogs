@@ -1,1 +1,1 @@
-FilterMyDiscogs, a Discogs collection management tool
+FilterMyDiscogs — browse, filter, and organize your Discogs collection

@@ -2,27 +2,34 @@ import type { Metadata } from "next";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
+import {
+  getMetadataSiteUrl,
+  PAGE_DESCRIPTIONS,
+  SITE_NAME,
+  sitePageTitle,
+} from "src/constants/siteMetadata";
 import { LegalClient } from "./LegalClient";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
+const baseUrl = getMetadataSiteUrl();
+const title = sitePageTitle("Terms & Privacy");
+const description = PAGE_DESCRIPTIONS.legal;
 
 export const metadata: Metadata = {
-  title: "Terms & Privacy | FilterMyDisco.gs",
-  description: "Terms of Service and Privacy Policy for FilterMyDisco.gs",
+  title,
+  description,
   openGraph: {
-    title: "Terms & Privacy | FilterMyDisco.gs",
-    description: "Terms of Service and Privacy Policy for FilterMyDisco.gs",
+    title,
+    description,
     url: `${baseUrl}/legal`,
-    siteName: "FilterMyDisco.gs",
+    siteName: SITE_NAME,
     type: "website",
     locale: "en-US",
     images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Terms & Privacy | FilterMyDisco.gs",
-    description: "Terms of Service and Privacy Policy for FilterMyDisco.gs",
+    title,
+    description,
     images: [DEFAULT_TWITTER_IMAGE],
   },
 };

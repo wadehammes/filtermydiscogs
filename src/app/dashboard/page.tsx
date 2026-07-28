@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { PAGE_DESCRIPTIONS, sitePageTitle } from "src/constants/siteMetadata";
 
 const DashboardClient = dynamic(
   () => import("src/components/Dashboard/DashboardClient.component"),
@@ -12,8 +13,8 @@ const DashboardClient = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: "Dashboard | FilterMyDisco.gs",
-  description: "View analytics and insights about your Discogs collection.",
+  title: sitePageTitle("Dashboard"),
+  description: PAGE_DESCRIPTIONS.dashboard,
 };
 
 export default function DashboardPage() {
