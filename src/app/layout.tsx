@@ -10,6 +10,7 @@ import {
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
   SITE_NAME,
+  siteCanonicalUrl,
 } from "src/constants/siteMetadata";
 
 import "src/styles/global.css";
@@ -35,6 +36,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(getMetadataSiteUrl()),
   title: SITE_DEFAULT_TITLE,
   description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: siteCanonicalUrl("/"),
+  },
   icons: {
     icon: "/favicon.ico",
   },

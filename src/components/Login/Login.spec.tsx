@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { LoginPageObject } from "src/components/Login/Login.po";
+import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
 import { screen } from "test-utils";
 
 let po: LoginPageObject;
@@ -41,7 +42,7 @@ describe("Login", () => {
     expect(screen.getByTestId("fmdLoginPreviewDemo")).toBeInTheDocument();
     expect(screen.getByLabelText("Filter My Discogs")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Digging made easier.",
+      /Digging made easier\./,
     );
     expect(
       screen.getByText(
@@ -50,7 +51,7 @@ describe("Login", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "App preview showing the main interface with release cards, filters, and crate functionality",
+        name: LOGIN_PREVIEW_ALT,
       }),
     ).toBeInTheDocument();
   });

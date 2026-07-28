@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
-import { PAGE_DESCRIPTIONS, sitePageTitle } from "src/constants/siteMetadata";
+import {
+  PAGE_DESCRIPTIONS,
+  PRIVATE_PAGE_ROBOTS,
+  sitePageTitle,
+} from "src/constants/siteMetadata";
 
 const DashboardClient = dynamic(
   () => import("src/components/Dashboard/DashboardClient.component"),
@@ -15,6 +19,7 @@ const DashboardClient = dynamic(
 export const metadata: Metadata = {
   title: sitePageTitle("Dashboard"),
   description: PAGE_DESCRIPTIONS.dashboard,
+  robots: PRIVATE_PAGE_ROBOTS,
 };
 
 export default function DashboardPage() {

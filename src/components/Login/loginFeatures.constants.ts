@@ -21,7 +21,7 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Browse",
     title: "Browse, search, and filter your collection",
     description:
-      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Open any release to browse its tracklist and preview tracks with the in-app player, then add or edit notes from the card or list—kept in sync with your Discogs collection.",
+      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Open any release to browse its tracklist and preview tracks with the in-app player, then add or edit notes from the card or list, kept in sync with your Discogs collection.",
     imageBase: "releases",
     imageAlt:
       "Releases page with search, filters, tracklist, in-app player, and release cards",

@@ -4,6 +4,7 @@ import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
   getMetadataSiteUrl,
   PAGE_DESCRIPTIONS,
+  PRIVATE_PAGE_ROBOTS,
   SITE_NAME,
   sitePageTitle,
 } from "src/constants/siteMetadata";
@@ -15,6 +16,7 @@ const description = PAGE_DESCRIPTIONS.mosaic;
 export const metadata: Metadata = {
   title,
   description,
+  robots: PRIVATE_PAGE_ROBOTS,
   openGraph: {
     title,
     description,

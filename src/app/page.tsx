@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HomeJsonLd } from "src/components/Login/HomeJsonLd.component";
 import { Login } from "src/components/Login/Login.component";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
@@ -8,6 +9,7 @@ import {
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
   SITE_NAME,
+  siteCanonicalUrl,
 } from "src/constants/siteMetadata";
 
 const baseUrl = getMetadataSiteUrl();
@@ -15,6 +17,9 @@ const baseUrl = getMetadataSiteUrl();
 export const metadata: Metadata = {
   title: SITE_DEFAULT_TITLE,
   description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: siteCanonicalUrl("/"),
+  },
   openGraph: {
     title: SITE_DEFAULT_TITLE,
     description: SITE_DESCRIPTION,
@@ -34,8 +39,11 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <PublicAuthLayout centerMain currentPage="home" footer={<PageFooter />}>
-      <Login />
-    </PublicAuthLayout>
+    <>
+      <HomeJsonLd />
+      <PublicAuthLayout centerMain currentPage="home" footer={<PageFooter />}>
+        <Login />
+      </PublicAuthLayout>
+    </>
   );
 }

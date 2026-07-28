@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import pageStyles from "src/components/Page/Page.module.css";
+import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import styles from "./page.module.css";
@@ -55,9 +56,9 @@ export function AboutClient() {
               Wade Hammes
             </a>
             . A passion project to help you discover, organize, and explore your
-            music collection, whether it's vinyl, CDs, cassettes, or digital
-            releases. Create crates for DJ sets, organize by theme, or just
-            rediscover what you already own.
+            music collection, including {COLLECTION_FORMATS_PHRASE}. Create
+            crates for DJ sets, organize by theme, or just rediscover what you
+            already own.
           </p>
           <p>
             For legal information, see our{" "}

@@ -1,13 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import { themeUsesDarkAssets } from "src/utils/themeAppearance";
 import styles from "./LoginPreviewDemo.module.css";
-
-const PREVIEW_ALT =
-  "App preview showing the main interface with release cards, filters, and crate functionality";
 
 export const LoginPreviewDemo = () => {
   const { resolvedTheme } = useTheme();
@@ -29,7 +27,7 @@ export const LoginPreviewDemo = () => {
         <div className={styles.viewport}>
           <Image
             src={previewImageSrc}
-            alt={PREVIEW_ALT}
+            alt={LOGIN_PREVIEW_ALT}
             className={styles.previewImage}
             fill
             priority
