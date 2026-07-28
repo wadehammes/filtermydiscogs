@@ -2,13 +2,15 @@
 
 import { Toaster } from "sonner";
 import { useTheme } from "src/context/theme.context";
+import { toSonnerTheme } from "src/utils/themeAppearance";
 
 export function AppToaster() {
   const { resolvedTheme } = useTheme();
 
   return (
     <Toaster
-      theme={resolvedTheme}
+      theme={toSonnerTheme(resolvedTheme)}
+      richColors
       position="bottom-right"
       closeButton={false}
       expand={false}
@@ -18,6 +20,7 @@ export function AppToaster() {
         classNames: {
           toast: "fmd-toast",
           title: "fmd-toast-title",
+          description: "fmd-toast-description",
         },
       }}
     />

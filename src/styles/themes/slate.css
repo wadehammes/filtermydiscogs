@@ -1,0 +1,15 @@
+[data-theme="slate"] {
+  color-scheme: light;
+
+  --background: #9aaaba;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 45%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #14532d;
+  --pill-style-border: #15803d;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #78350f;
+  --pill-format-border: #92400e;
+}

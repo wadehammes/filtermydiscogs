@@ -25,7 +25,6 @@ export const useCrateDrawerState = () => {
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
   const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
   const [showCrateNotesDialog, setShowCrateNotesDialog] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [hidePackedItems, setHidePackedItems] = useState(false);
 
   const activeCrate = useMemo(
@@ -112,8 +111,7 @@ export const useCrateDrawerState = () => {
     const success = await copyToClipboard(crateUrl);
 
     if (success) {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+      toast.success("Link copied to clipboard");
     } else {
       toast.error("Failed to copy link to clipboard");
     }
@@ -167,7 +165,6 @@ export const useCrateDrawerState = () => {
   return {
     activeCrateId,
     canDelete,
-    copySuccess,
     crateName,
     crateNotes,
     isDefaultCrate,

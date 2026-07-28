@@ -1,6 +1,7 @@
 @import url("./custom-media.css");
 @import url("./pills.css");
 @import url("./themes/index.css");
+@import url("./sonner.css");
 
 *,
 *::before,
@@ -255,21 +256,4 @@ button {
   & > *:not(h1) {
     flex: 1;
   }
-}
-
-[data-sonner-toaster] {
-  --normal-bg: var(--card);
-  --normal-border: var(--border);
-  --normal-text: var(--foreground);
-}
-
-[data-sonner-toast].fmd-toast {
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-md);
-  font-family: var(--font-family-meta);
-  font-size: var(--text-meta-sm);
-}
-
-[data-sonner-toast] .fmd-toast-title {
-  font-weight: var(--font-medium);
 }

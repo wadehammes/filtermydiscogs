@@ -19,9 +19,10 @@
 
   &.stuck {
     backdrop-filter: blur(10px);
-    background: light-dark(
-      oklch(100% 0 0deg / 50%),
-      oklch(18.22% 0 0deg / 50%)
+    background: color-mix(
+      in srgb,
+      var(--sticky-header-background) 82%,
+      transparent
     );
   }
 

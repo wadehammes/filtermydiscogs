@@ -270,6 +270,7 @@ const AutocompleteSelectComponent = ({
         onTriggerClick={handleTriggerClick}
         onTriggerKeyDown={handleTriggerKeyDown}
         onClearOption={handleClearOption}
+        placeholder={placeholder}
       />
       {state.isOpen && (
         <AutocompleteDropdown

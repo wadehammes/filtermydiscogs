@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { useAuth } from "src/context/auth.context";
 import {
   CrateQueryKeys,
@@ -271,7 +272,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
           errorMessage.includes("Prisma Client") ||
           errorMessage.includes("DATABASE_URL")
         ) {
-          alert(
+          toast.error(
             "Database not set up. Please run 'pnpm db:generate' and 'pnpm db:push' in your terminal.",
           );
         }

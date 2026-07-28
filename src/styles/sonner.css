@@ -1,0 +1,36 @@
+[data-sonner-toaster][data-sonner-theme="light"],
+[data-sonner-toaster][data-sonner-theme="dark"] {
+  --normal-bg: var(--card);
+  --normal-bg-hover: var(--accent);
+  --normal-border: var(--border);
+  --normal-border-hover: var(--input);
+  --normal-text: var(--card-foreground);
+  --success-bg: color-mix(in srgb, var(--success) 15%, var(--card));
+  --success-border: var(--success);
+  --success-text: var(--success);
+  --info-bg: color-mix(in srgb, var(--primary) 15%, var(--card));
+  --info-border: var(--primary);
+  --info-text: var(--primary);
+  --warning-bg: color-mix(in srgb, var(--warning) 15%, var(--card));
+  --warning-border: var(--warning);
+  --warning-text: var(--warning);
+  --error-bg: color-mix(in srgb, var(--destructive) 15%, var(--card));
+  --error-border: var(--destructive);
+  --error-text: var(--destructive);
+}
+
+[data-sonner-toast].fmd-toast {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
+}
+
+[data-sonner-toast] .fmd-toast-title {
+  font-weight: var(--font-medium);
+}
+
+[data-sonner-toast] .fmd-toast-description {
+  color: var(--muted-foreground);
+  font-size: var(--text-meta-sm);
+}

@@ -1,9 +1,8 @@
 import type { StoredTheme } from "src/types/userPreferences.types";
-
-const VALID_THEMES = new Set<StoredTheme>(["light", "dark"]);
+import { isStoredTheme as isStoredThemeValue } from "src/utils/themeAppearance";
 
 export const isValidStoredTheme = (value: unknown): value is StoredTheme =>
-  typeof value === "string" && VALID_THEMES.has(value as StoredTheme);
+  typeof value === "string" && isStoredThemeValue(value);
 
 export const parseStoredTheme = (
   value: unknown,

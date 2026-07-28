@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
@@ -30,7 +31,7 @@ export function LegalClient() {
       await clearAllUserData();
     } catch (error) {
       console.error("Error clearing data:", error);
-      alert("Failed to clear all data. Please try again.");
+      toast.error("Failed to clear all data. Please try again.");
     }
   };
 
@@ -112,12 +113,12 @@ export function LegalClient() {
             </li>
             <li>
               When you&apos;re logged in, account preferences also live in
-              Postgres: theme (light/dark), default view (grid or table),
-              whether to remember filter selections, and—when that option is
-              on—your saved filter and sort choices (styles, years, formats,
-              sort order, style match mode, and search text). That lets settings
-              follow you across browsers. I don&apos;t store your full
-              collection there.
+              Postgres: theme (light, dim, sepia, slate, dark, midnight, high
+              contrast, or system), default view (grid or table), whether to
+              remember filter selections, and—when that option is on—your saved
+              filter and sort choices (styles, years, formats, sort order, style
+              match mode, and search text). That lets settings follow you across
+              browsers. I don&apos;t store your full collection there.
             </li>
             <li>
               I don't sell your data, share it, or do anything sketchy with it.

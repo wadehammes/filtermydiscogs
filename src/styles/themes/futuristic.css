@@ -1,0 +1,21 @@
+[data-theme="futuristic"] {
+  color-scheme: dark;
+
+  --background: #0a1018;
+  --gradient-surface: color-mix(in oklch, #00ffe0 35%, var(--background));
+  --pill-style-foreground: #34d399;
+  --pill-style-border: #34d399;
+  --pill-style-selected-foreground: #052e16;
+  --pill-format-foreground: #fbbf24;
+  --pill-format-border: #fbbf24;
+  --shadow-sm: 0 0 8px 0 color-mix(in srgb, var(--primary) 8%, transparent);
+  --shadow-md:
+    0 0 12px 0 color-mix(in srgb, var(--primary) 10%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+  --shadow-lg:
+    0 0 20px 0 color-mix(in srgb, var(--primary) 12%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+  --shadow-xl:
+    0 0 28px 0 color-mix(in srgb, var(--primary) 14%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}

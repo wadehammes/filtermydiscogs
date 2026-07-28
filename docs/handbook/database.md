@@ -28,7 +28,7 @@ One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user
 | Field | Default | Purpose |
 |-------|---------|---------|
 | `persistFilters` | `true` | When `false`, filter/sort selections are not restored on the next visit |
-| `theme` | `"light"` | App color theme (`light` or `dark`) |
+| `theme` | `"light"` | App color theme (`light`, `dim`, `sepia`, `slate`, `dark`, `midnight`, `futuristic`, `high-contrast`, or `system`) |
 | `view` | `{ currentView: "card", previousView: "card" }` | Default releases view (`card`, `list`, or `random`) |
 | `filters` | Default empty filter state | Saved filter selections when `persistFilters` is `true` (styles, years, formats, sort, style operator, search query) |
 

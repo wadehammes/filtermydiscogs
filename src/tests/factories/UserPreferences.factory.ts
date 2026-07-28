@@ -77,7 +77,17 @@ class UserPreferencesFactory extends BaseFactory<
       currentView: faker.helpers.arrayElement(["card", "list", "random"]),
       previousView: faker.helpers.arrayElement(["card", "list", "random"]),
     };
-    const theme: StoredTheme = faker.helpers.arrayElement(["light", "dark"]);
+    const theme: StoredTheme = faker.helpers.arrayElement([
+      "light",
+      "dim",
+      "dark",
+      "sepia",
+      "slate",
+      "midnight",
+      "futuristic",
+      "high-contrast",
+      "system",
+    ]);
 
     const instance = {
       version: USER_PREFERENCES_VERSION,

@@ -11,6 +11,7 @@ const FILTER_DEBOUNCE_MS = 400;
 
 export type PersistPreferencesOptions = {
   onSuccess?: (response: { preferences: UserPreferences }) => void;
+  onError?: (error: Error) => void;
   onSettled?: () => void;
 };
 
@@ -76,6 +77,9 @@ const flushPendingPatch = (mutate: PersistMutate) => {
         lastPersistedFilters = patch.filters;
       }
       options?.onSuccess?.(response);
+    },
+    onError: (error) => {
+      options?.onError?.(error);
     },
     onSettled: () => {
       options?.onSettled?.();

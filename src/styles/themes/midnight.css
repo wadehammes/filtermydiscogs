@@ -1,0 +1,15 @@
+[data-theme="midnight"] {
+  color-scheme: dark;
+
+  --background: #0f172a;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 40%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #22c55e;
+  --pill-style-border: #22c55e;
+  --pill-style-selected-foreground: #052e16;
+  --pill-format-foreground: #f59e0b;
+  --pill-format-border: #f59e0b;
+}

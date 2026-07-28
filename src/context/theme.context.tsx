@@ -6,47 +6,61 @@ import {
   useCallback,
   useContext,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
 import { useMounted } from "src/hooks/useMounted.hook";
+import type {
+  PaletteTheme,
+  StoredTheme,
+} from "src/types/userPreferences.types";
+import {
+  isPaletteTheme,
+  isStoredTheme,
+  resolvePaletteTheme,
+} from "src/utils/themeAppearance";
 import { useMediaQuery } from "usehooks-ts";
 
-export type Theme = "light" | "dark" | "system";
-
 interface ThemeContextType {
-  theme: "light" | "dark";
-  resolvedTheme: "light" | "dark";
-  setTheme: (theme: "light" | "dark") => void;
+  theme: StoredTheme;
+  resolvedTheme: PaletteTheme;
+  setTheme: (theme: StoredTheme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const getStoredTheme = (
-  storageKey: string,
-): "light" | "dark" | "system" | null => {
-  if (typeof window === "undefined") return null;
+const readStoredThemePreference = (storageKey: string): StoredTheme | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   try {
     const stored = localStorage.getItem(storageKey);
-    if (stored === "light" || stored === "dark" || stored === "system") {
+    if (stored && isStoredTheme(stored)) {
       return stored;
     }
   } catch {
     return null;
   }
+
   return null;
 };
 
-const applyThemeToDocument = (theme: "light" | "dark") => {
-  if (typeof document === "undefined") return;
+const applyThemeToDocument = (paletteTheme: PaletteTheme) => {
+  if (typeof document === "undefined") {
+    return;
+  }
 
   const rootElement = document.documentElement;
   const currentTheme = rootElement.getAttribute("data-theme");
 
-  if (currentTheme === theme) return;
+  if (currentTheme === paletteTheme) {
+    return;
+  }
 
-  rootElement.setAttribute("data-theme", theme);
+  rootElement.setAttribute("data-theme", paletteTheme);
 
   if (currentTheme) {
     rootElement.classList.add("theme-transitioning");
@@ -56,35 +70,27 @@ const applyThemeToDocument = (theme: "light" | "dark") => {
   }
 };
 
-const getInitialThemeFromDOM = (): "light" | "dark" | null => {
-  if (typeof document === "undefined") return null;
+const getInitialPaletteThemeFromDOM = (): PaletteTheme | null => {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
   const theme = document.documentElement.getAttribute("data-theme");
-  if (theme === "light" || theme === "dark") {
+  if (theme && isPaletteTheme(theme)) {
     return theme;
   }
+
   return null;
 };
 
-const getInitialThemeSync = (): "light" | "dark" => {
-  if (typeof window === "undefined") return "light";
-
-  const dataTheme = document.documentElement.getAttribute("data-theme");
-  if (dataTheme === "light" || dataTheme === "dark") {
-    return dataTheme;
+const getInitialThemePreference = (): StoredTheme => {
+  if (typeof window === "undefined") {
+    return "light";
   }
 
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === "light" || stored === "dark") {
+  const stored = readStoredThemePreference(THEME_STORAGE_KEY);
+  if (stored) {
     return stored;
-  }
-
-  if (stored === "system") {
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    const systemTheme = prefersDark ? "dark" : "light";
-    localStorage.setItem(THEME_STORAGE_KEY, systemTheme);
-    return systemTheme;
   }
 
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -101,78 +107,59 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   });
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
-  const systemThemeRef = useRef<"light" | "dark">(
-    prefersDark ? "dark" : "light",
-  );
   const mounted = useMounted();
 
-  const resolveTheme = useCallback(
-    (stored: "light" | "dark" | "system" | null): "light" | "dark" => {
-      if (stored === "light" || stored === "dark") {
-        return stored;
-      }
-      return systemThemeRef.current;
-    },
-    [],
+  const [theme, setThemeState] = useState<StoredTheme>(() =>
+    getInitialThemePreference(),
   );
 
-  const [theme, setThemeState] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-    return getInitialThemeSync();
-  });
+  const resolvedTheme = useMemo(
+    () => resolvePaletteTheme(theme, prefersDark),
+    [theme, prefersDark],
+  );
 
-  const setTheme = useCallback((newTheme: "light" | "dark") => {
-    if (typeof window === "undefined") return;
+  const setTheme = useCallback((newTheme: StoredTheme) => {
+    if (typeof window === "undefined") {
+      return;
+    }
 
     try {
       localStorage.setItem(THEME_STORAGE_KEY, newTheme);
     } catch {}
 
     setThemeState(newTheme);
-    applyThemeToDocument(newTheme);
   }, []);
 
   useLayoutEffect(() => {
-    if (!mounted) return;
-
-    const currentSystemTheme = prefersDark ? "dark" : "light";
-    systemThemeRef.current = currentSystemTheme;
-
-    const stored = getStoredTheme(THEME_STORAGE_KEY);
-    if (stored === "system") {
-      const resolved = resolveTheme(stored);
-      if (resolved !== theme) {
-        setThemeState(resolved);
-        applyThemeToDocument(resolved);
-      }
+    if (!mounted) {
+      return;
     }
-  }, [prefersDark, mounted, theme, resolveTheme]);
+
+    const domTheme = getInitialPaletteThemeFromDOM();
+    if (domTheme && domTheme !== resolvedTheme) {
+      applyThemeToDocument(resolvedTheme);
+      return;
+    }
+
+    applyThemeToDocument(resolvedTheme);
+  }, [mounted, resolvedTheme]);
 
   useLayoutEffect(() => {
-    if (!mounted) return;
-
-    const currentTheme = getInitialThemeFromDOM();
-    if (currentTheme && currentTheme !== theme) {
-      setThemeState(currentTheme);
-    } else {
-      applyThemeToDocument(theme);
+    if (!mounted) {
+      return;
     }
-  }, [mounted, theme]);
-
-  useLayoutEffect(() => {
-    if (!mounted) return;
 
     if (pathnameRef.current !== pathname) {
       pathnameRef.current = pathname;
       const currentTheme = document.documentElement.getAttribute("data-theme");
-      if (currentTheme !== theme) {
-        applyThemeToDocument(theme);
+      if (currentTheme !== resolvedTheme) {
+        applyThemeToDocument(resolvedTheme);
       }
     }
-  }, [pathname, theme, mounted]);
+  }, [pathname, resolvedTheme, mounted]);
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme: theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

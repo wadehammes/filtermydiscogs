@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
@@ -33,7 +34,7 @@ export function AboutClient() {
       await clearAllUserData();
     } catch (error) {
       console.error("Error clearing data:", error);
-      alert("Failed to clear all data. Please try again.");
+      toast.error("Failed to clear all data. Please try again.");
     }
   };
 

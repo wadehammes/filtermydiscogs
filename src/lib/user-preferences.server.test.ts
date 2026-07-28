@@ -78,18 +78,18 @@ describe("user-preferences.server", () => {
 
   it("validates preference patch fields", () => {
     expect(isValidStoredTheme("dark")).toBe(true);
-    expect(isValidStoredTheme("sepia")).toBe(false);
+    expect(isValidStoredTheme("sepia")).toBe(true);
     expect(
       isValidStoredViewPatch({
         currentView: "list",
         previousView: "card",
       }),
     ).toBe(true);
-    expect(isValidUserPreferencesPatch({ theme: "dark" })).toBeNull();
+    expect(isValidUserPreferencesPatch({ theme: "sepia" })).toBeNull();
     expect(
       isValidUserPreferencesPatch({
-        theme: "sepia",
+        theme: "table",
       } as unknown as UserPreferencesPatch),
-    ).toBe("theme must be light or dark");
+    ).toBe("theme must be a supported theme value");
   });
 });

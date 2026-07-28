@@ -41,13 +41,15 @@
   align-items: center;
   display: flex;
   flex: 1;
-  min-height: 1.25rem;
+  min-width: 0;
 }
 
 .value {
   color: var(--foreground);
   flex: 1;
+  min-width: 0;
   overflow: hidden;
+  padding-block: 0.0625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -55,7 +57,11 @@
 .placeholder {
   flex: 1;
   color: var(--muted-foreground);
-  font-style: italic;
+  min-width: 0;
+  overflow: hidden;
+  padding-block: 0.0625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pillsContainer {

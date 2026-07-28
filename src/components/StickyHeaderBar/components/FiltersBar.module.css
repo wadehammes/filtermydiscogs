@@ -51,7 +51,6 @@
     & > * > :first-child {
       border-color: transparent;
       border-radius: 0;
-      overflow: hidden;
     }
 
     & > :only-child > :first-child {

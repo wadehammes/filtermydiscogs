@@ -1,8 +1,11 @@
 "use client";
 
 import classNames from "classnames";
+import { useSetAtom, useStore } from "jotai";
 import { useState } from "react";
+import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
+import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
@@ -12,7 +15,8 @@ import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
-import { useCurrentView, useViewDispatch } from "src/hooks/useViewAtoms.hook";
+import { useCurrentView } from "src/hooks/useViewAtoms.hook";
+import type { StoredViewState } from "src/types/userPreferences.types";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import styles from "./SettingsClient.module.css";
@@ -34,6 +38,17 @@ const CLEAR_DATA_MESSAGE =
 
 const COMPLETE_LOGOUT_MESSAGE =
   "This signs you out and revokes stored OAuth tokens on this browser. Your crates and local preferences stay saved—you can sign in again with Discogs when you are ready.";
+
+const PREFERENCES_SAVED_MESSAGE = "Preferences saved";
+const PREFERENCES_SAVE_ERROR_MESSAGE = "Failed to save preferences";
+
+const showPreferencesSavedToast = () => {
+  toast.success(PREFERENCES_SAVED_MESSAGE);
+};
+
+const showPreferencesSaveErrorToast = () => {
+  toast.error(PREFERENCES_SAVE_ERROR_MESSAGE);
+};
 
 export default function SettingsClient() {
   const { logout, state: authState } = useAuth();
@@ -61,7 +76,8 @@ export default function SettingsClient() {
     });
   const { persistPreferences, isPending: isPreferencesSaving } =
     usePersistUserPreferences();
-  const viewDispatch = useViewDispatch();
+  const dispatchView = useSetAtom(viewDispatchAtom);
+  const store = useStore();
   const currentView = useCurrentView();
 
   if (shouldRedirectHome || isCheckingAuth) {
@@ -92,6 +108,30 @@ export default function SettingsClient() {
           if (!response.preferences.persistFilters) {
             clearPersistedFilters();
           }
+          showPreferencesSavedToast();
+        },
+        onError: () => {
+          showPreferencesSaveErrorToast();
+        },
+      },
+    );
+  };
+
+  const handleViewChange = (view: "card" | "list") => {
+    dispatchView({
+      type: ViewActionTypes.SetView,
+      payload: view,
+    });
+    const { currentView, previousView } = store.get(viewStateAtom);
+    const persistedView: StoredViewState = { currentView, previousView };
+    persistPreferences(
+      { view: persistedView },
+      {
+        onSuccess: () => {
+          showPreferencesSavedToast();
+        },
+        onError: () => {
+          showPreferencesSaveErrorToast();
         },
       },
     );
@@ -114,12 +154,9 @@ export default function SettingsClient() {
             settingsViewValue={settingsViewValue}
             isPreferencesLoading={isPreferencesLoading}
             isPreferencesSaving={isPreferencesSaving}
-            onViewChange={(view) => {
-              viewDispatch({
-                type: ViewActionTypes.SetView,
-                payload: view,
-              });
-            }}
+            onViewChange={handleViewChange}
+            onThemePersisted={showPreferencesSavedToast}
+            onThemePersistError={showPreferencesSaveErrorToast}
           />
         );
       case "filters":
@@ -229,7 +266,7 @@ export default function SettingsClient() {
         variant="danger"
         onConfirm={() => {
           void handleCompleteLogout().catch(() => {
-            alert("Logout failed. Please try again.");
+            toast.error("Logout failed. Please try again.");
           });
         }}
         onCancel={() => setShowCompleteLogoutDialog(false)}
@@ -259,7 +296,7 @@ export default function SettingsClient() {
           void clearAllUserData()
             .then(() => setShowClearDataDialog(false))
             .catch(() => {
-              alert("Failed to clear all data. Please try again.");
+              toast.error("Failed to clear all data. Please try again.");
             });
         }}
         onCancel={() => setShowClearDataDialog(false)}

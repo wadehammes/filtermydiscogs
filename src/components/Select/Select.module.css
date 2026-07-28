@@ -54,7 +54,9 @@
 }
 
 .valueText {
+  min-width: 0;
   overflow: hidden;
+  padding-block: 0.0625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
