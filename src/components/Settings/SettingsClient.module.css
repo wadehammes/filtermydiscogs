@@ -1,12 +1,26 @@
-.container {
+.pageShell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.page {
   composes: microdotbackground from "../../styles/patterns.module.css";
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--sticky-header-height));
+  width: 100%;
+}
+
+.container {
   margin: 0 auto;
-  max-width: 40rem;
+  max-width: 56rem;
   padding: var(--space-6) var(--space-4) var(--space-10);
   width: 100%;
 }
 
-.header {
+.pageHeader {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -26,25 +40,148 @@
   margin: 0;
 }
 
-.sections {
+.layout {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
+
+  @media (width >= 768px) {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: var(--space-8);
+  }
 }
 
-.section {
+.sidebar {
+  width: 100%;
+
+  @media (width >= 768px) {
+    flex-shrink: 0;
+    position: sticky;
+    top: calc(var(--space-6) + 3.5rem);
+    width: 14rem;
+  }
+}
+
+.sidebarList {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  overflow-x: auto;
+  padding: 0;
+  scrollbar-width: thin;
+
+  @media (width >= 768px) {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+}
+
+.sidebarButton {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  min-width: 8.5rem;
+  padding: var(--space-3);
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+
+  &:hover {
+    background: var(--secondary);
+    border-color: var(--input);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  @media (width >= 768px) {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.sidebarButtonActive {
+  background: var(--secondary);
+  border-color: var(--primary);
+}
+
+.sidebarButtonLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.sidebarButtonDescription {
+  color: var(--muted-foreground);
+  display: none;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+
+  @media (width >= 768px) {
+    display: block;
+  }
+}
+
+.panel {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  min-width: 0;
   padding: var(--space-5);
+  width: 100%;
 }
 
-.sectionTitle {
+.panelHeader {
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-4);
+}
+
+.panelTitle {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.panelLead {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.panelBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.panelBlockTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
   margin: 0;
 }
 
@@ -74,13 +211,34 @@
   margin: 0;
 }
 
+.fieldControl {
+  max-width: 16rem;
+  width: 100%;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
 
-.themeSelect {
-  max-width: 16rem;
-  width: 100%;
+.settingToggle {
+  align-items: center;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  user-select: none;
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.settingCheckbox {
+  accent-color: var(--primary);
+  height: 1rem;
+  width: 1rem;
 }

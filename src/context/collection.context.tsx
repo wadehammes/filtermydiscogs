@@ -52,6 +52,10 @@ export const CollectionReducer = (
 ) => {
   switch (action.type) {
     case CollectionActionTypes.SetCollection:
+      if (state.collection === action.payload) {
+        return state;
+      }
+
       return {
         ...state,
         collection: action.payload,

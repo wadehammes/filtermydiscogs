@@ -1,6 +1,8 @@
 import {
+  type RenderHookOptions,
   type RenderOptions,
   render as rtlRender,
+  renderHook as rtlRenderHook,
 } from "@testing-library/react";
 import type { ComponentType, ReactElement, ReactNode } from "react";
 import {
@@ -8,36 +10,99 @@ import {
   type TestProvidersProps,
 } from "src/tests/utils/testProviders";
 
+type TestProviderOptions = Pick<
+  TestProvidersProps,
+  "authInitialState" | "skipInitialAuthCheck" | "queryClient" | "includeCrate"
+>;
+
 interface CustomRenderOptions
   extends Omit<RenderOptions, "queries">,
-    Pick<TestProvidersProps, "authInitialState" | "skipInitialAuthCheck"> {
+    TestProviderOptions {
   wrapper?: ComponentType<{ children: ReactNode }>;
 }
+
+const buildTestProvidersWrapper =
+  (options: TestProviderOptions = {}) =>
+  ({ children }: { children: ReactNode }) => (
+    <TestProviders
+      {...(options.authInitialState !== undefined
+        ? { authInitialState: options.authInitialState }
+        : {})}
+      {...(options.skipInitialAuthCheck !== undefined
+        ? { skipInitialAuthCheck: options.skipInitialAuthCheck }
+        : {})}
+      {...(options.queryClient !== undefined
+        ? { queryClient: options.queryClient }
+        : {})}
+      {...(options.includeCrate !== undefined
+        ? { includeCrate: options.includeCrate }
+        : {})}
+    >
+      {children}
+    </TestProviders>
+  );
 
 const render = (ui: ReactElement, options?: CustomRenderOptions) => {
   const {
     wrapper: Wrapper,
     authInitialState,
     skipInitialAuthCheck,
+    queryClient,
+    includeCrate,
     ...renderOptions
   } = options ?? {};
 
   const ResolvedWrapper =
     Wrapper ??
-    (({ children }: { children: ReactNode }) => (
-      <TestProviders
-        {...(authInitialState !== undefined ? { authInitialState } : {})}
-        {...(skipInitialAuthCheck !== undefined
-          ? { skipInitialAuthCheck }
-          : {})}
-      >
-        {children}
-      </TestProviders>
-    ));
+    buildTestProvidersWrapper({
+      ...(authInitialState !== undefined ? { authInitialState } : {}),
+      ...(skipInitialAuthCheck !== undefined ? { skipInitialAuthCheck } : {}),
+      ...(queryClient !== undefined ? { queryClient } : {}),
+      ...(includeCrate !== undefined ? { includeCrate } : {}),
+    });
 
   return rtlRender(ui, { wrapper: ResolvedWrapper, ...renderOptions });
 };
 
+const renderHookWithTestProviders = <TProps, TResult>(
+  hook: (props: TProps) => TResult,
+  options?: Omit<RenderHookOptions<TProps>, "wrapper"> & TestProviderOptions,
+) => {
+  const {
+    authInitialState,
+    skipInitialAuthCheck,
+    queryClient,
+    includeCrate,
+    ...renderHookOptions
+  } = options ?? {};
+
+  return rtlRenderHook(hook, {
+    ...renderHookOptions,
+    wrapper: buildTestProvidersWrapper({
+      ...(authInitialState !== undefined ? { authInitialState } : {}),
+      ...(skipInitialAuthCheck !== undefined ? { skipInitialAuthCheck } : {}),
+      ...(queryClient !== undefined ? { queryClient } : {}),
+      ...(includeCrate !== undefined ? { includeCrate } : {}),
+    }),
+  });
+};
+
+const renderFeatureHook = <TProps, TResult>(
+  hook: (props: TProps) => TResult,
+  options?: Omit<RenderHookOptions<TProps>, "wrapper"> &
+    Omit<TestProviderOptions, "includeCrate"> &
+    Pick<TestProviderOptions, "includeCrate">,
+) =>
+  renderHookWithTestProviders(hook, {
+    includeCrate: false,
+    ...options,
+  });
+
 export * from "@testing-library/react";
 
-export { render, TestProviders };
+export {
+  render,
+  renderFeatureHook,
+  renderHookWithTestProviders,
+  TestProviders,
+};

@@ -68,7 +68,7 @@ See [patterns.md](patterns.md). **`collection.context.tsx`** holds pagination me
 
 ### [`src/constants/`](../../src/constants/)
 
-Topic-specific constants alongside root [`src/constants.ts`](../../src/constants.ts): [`sorting.ts`](../../src/constants/sorting.ts) (`SortValues`), [`mosaic.ts`](../../src/constants/mosaic.ts), [`collection.ts`](../../src/constants/collection.ts) (adaptive collection page sizes).
+Topic-specific constants alongside root [`src/constants.ts`](../../src/constants.ts): [`sortValues.ts`](../../src/constants/sortValues.ts) (`SortValues` enum), [`sorting.ts`](../../src/constants/sorting.ts) (sort UI labels), [`storageKeys.ts`](../../src/constants/storageKeys.ts) (shared `localStorage` keys), [`mosaic.ts`](../../src/constants/mosaic.ts), [`collection.ts`](../../src/constants/collection.ts) (adaptive collection page sizes).
 
 ### [`src/services/`](../../src/services/)
 

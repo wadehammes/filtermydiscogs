@@ -1,10 +1,13 @@
 import { atom, type Getter, type Setter } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import { SortValues } from "src/constants/sortValues";
+import { FILTERS_STORAGE_KEY } from "src/constants/storageKeys";
 import type { DiscogsRelease } from "src/types";
+import type { StyleOperator } from "src/types/filters.types";
+import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import {
   defaultPersistedFilters,
-  FILTERS_STORAGE_KEY,
   inactiveFilterSelectionDefaults,
   type PersistedFiltersState,
   parsePersistedFilters,
@@ -15,22 +18,8 @@ import { getAvailableYears } from "src/utils/getAvailableYears";
 import { getFacetSourceReleases } from "src/utils/getFacetSourceReleases";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
 
-export enum SortValues {
-  AZLabel = "AZLabel",
-  ZALabel = "ZALabel",
-  AZArtist = "AZArtist",
-  ZAArtist = "ZAArtist",
-  AZTitle = "AZTitle",
-  ZATitle = "ZATitle",
-  DateAddedNew = "DateAddedNew",
-  DateAddedOld = "DateAddedOld",
-  RatingHigh = "RatingHigh",
-  RatingLow = "RatingLow",
-  AlbumYearNew = "AlbumYearNew",
-  AlbumYearOld = "AlbumYearOld",
-}
-
-export type StyleOperator = "AND" | "OR" | "NONE";
+export { SortValues } from "src/constants/sortValues";
+export type { StyleOperator } from "src/types/filters.types";
 
 export interface FiltersState {
   selectedStyles: string[];
@@ -224,6 +213,7 @@ const filtersStorage = createJSONStorage<PersistedFiltersState>(() => ({
   },
   setItem: (key, value) => {
     if (typeof window === "undefined") return;
+    if (!getFilterPersistenceEnabled()) return;
     localStorage.setItem(key, value);
   },
   removeItem: (key) => {
@@ -232,13 +222,16 @@ const filtersStorage = createJSONStorage<PersistedFiltersState>(() => ({
   },
 }));
 
-const persistedFiltersAtom = atomWithStorage<PersistedFiltersState>(
+export const persistedFiltersAtom = atomWithStorage<PersistedFiltersState>(
   FILTERS_STORAGE_KEY,
   defaultPersistedFilters,
   {
     ...filtersStorage,
     getItem: (key, initialValue) => {
       if (typeof window === "undefined") return initialValue;
+      if (!getFilterPersistenceEnabled()) {
+        return defaultPersistedFilters;
+      }
       const stored = localStorage.getItem(key);
       return parsePersistedFilters(stored);
     },
@@ -257,7 +250,6 @@ const persistableFieldAtom = <K extends keyof PersistedFiltersState>(key: K) =>
   );
 
 export const allReleasesAtom = atom<DiscogsRelease[]>([]);
-/** When false, persisted filter prefs are ignored until the collection finishes loading. */
 export const collectionFiltersActiveAtom = atom(false);
 
 const getActiveFilterInputs = (get: Getter) => {
@@ -268,8 +260,7 @@ const getActiveFilterInputs = (get: Getter) => {
       selectedFormats: [...inactiveFilterSelectionDefaults.selectedFormats],
       searchQuery: inactiveFilterSelectionDefaults.searchQuery,
       selectedSort: SortValues.DateAddedNew,
-      styleOperator:
-        inactiveFilterSelectionDefaults.styleOperator as StyleOperator,
+      styleOperator: inactiveFilterSelectionDefaults.styleOperator,
     };
   }
 
@@ -286,24 +277,8 @@ const getActiveFilterInputs = (get: Getter) => {
 export const selectedStylesAtom = persistableFieldAtom("selectedStyles");
 export const selectedYearsAtom = persistableFieldAtom("selectedYears");
 export const selectedFormatsAtom = persistableFieldAtom("selectedFormats");
-export const selectedSortAtom = atom(
-  (get) => get(persistedFiltersAtom).selectedSort as SortValues,
-  (get, set, value: SortValues) => {
-    set(persistedFiltersAtom, {
-      ...get(persistedFiltersAtom),
-      selectedSort: value,
-    });
-  },
-);
-export const styleOperatorAtom = atom(
-  (get) => get(persistedFiltersAtom).styleOperator as StyleOperator,
-  (get, set, value: StyleOperator) => {
-    set(persistedFiltersAtom, {
-      ...get(persistedFiltersAtom),
-      styleOperator: value,
-    });
-  },
-);
+export const selectedSortAtom = persistableFieldAtom("selectedSort");
+export const styleOperatorAtom = persistableFieldAtom("styleOperator");
 export const searchQueryAtom = persistableFieldAtom("searchQuery");
 export const isRandomModeAtom = atom(false);
 export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
@@ -443,6 +418,25 @@ const applyFilterChange = (
     set(randomReleaseAtom, randomRelease);
   }
 };
+
+const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
+  FiltersActionTypes.ToggleStyle,
+  FiltersActionTypes.ToggleYear,
+  FiltersActionTypes.ToggleFormat,
+  FiltersActionTypes.SetSort,
+  FiltersActionTypes.ClearStyles,
+  FiltersActionTypes.SetStyles,
+  FiltersActionTypes.SetStyleOperator,
+  FiltersActionTypes.ClearYears,
+  FiltersActionTypes.SetYears,
+  FiltersActionTypes.ClearFormats,
+  FiltersActionTypes.SetFormats,
+  FiltersActionTypes.ClearAllFilters,
+  FiltersActionTypes.SetSearchQuery,
+]);
+
+export const isPersistedFiltersAction = (action: FiltersActions): boolean =>
+  persistedFilterActionTypes.has(action.type);
 
 export const filtersDispatchAtom = atom(
   null,

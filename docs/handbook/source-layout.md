@@ -17,7 +17,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/utils/`](../../src/utils/) | Pure helpers: filter, sort, format tags, sync collection, image loader, `definedProps` (optional prop spreads). |
 | [`src/types/`](../../src/types/) | Shared TypeScript types (Discogs shapes, crate, dashboard, public stats). |
 | [`src/styles/`](../../src/styles/) | Global CSS, theme tokens ([`themes/base.css`](../../src/styles/themes/base.css), [`colors.css`](../../src/styles/themes/colors.css), [`theming.css`](../../src/styles/theming.css)), shared modules ([`typography.module.css`](../../src/styles/typography.module.css), [`accessibility.module.css`](../../src/styles/accessibility.module.css), nav/segmented controls), Stylelint custom properties. |
-| [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, mocks ([`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts), [`setupDiscogsReleaseQueryMock.ts`](../../src/tests/mocks/setupDiscogsReleaseQueryMock.ts)). |
+| [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, mocks ([`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts)). |
 | [`public/images/`](../../public/images/) | Static marketing/login preview images. |
 | [`prisma/`](../../prisma/) | Schema and migrations; datasource in [`prisma.config.ts`](../../prisma.config.ts). |
 | [`scripts/`](../../scripts/) | Scaffold, env loading, DB pull helpers. |
@@ -39,6 +39,7 @@ Quick map of **`src/`** and related top-level folders.
 | Settings page | [`SettingsClient`](../../src/components/Settings/SettingsClient.component.tsx), [`/settings`](../../src/app/settings/page.tsx) |
 | Add global UI state | Jotai atoms in [`src/atoms/`](../../src/atoms/) for derived client state; context in [`src/context/`](../../src/context/) for auth/session/server-backed flows; register providers in [`Providers.tsx`](../../src/components/Providers.tsx). Feature-scoped providers (e.g. release notes) live next to the component folder. |
 | Add a React Query hook | [`src/hooks/queries/`](../../src/hooks/queries/) |
+| Test a feature hook (mock API, assert outcomes) | **`jest.mock("src/api/helpers", () => ({ …: jest.fn() }))`** + [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx); see [conventions.md → Do not test React Query](conventions.md#do-not-test-react-query-in-feature-tests) |
 | Change filter logic | [`src/utils/filterReleases.ts`](../../src/utils/filterReleases.ts) + [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts) |
 | Crate DB changes | [`prisma/schema.prisma`](../../prisma/schema.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
 | Crate drawer open/closed state | [`useCrateDrawer.hook.ts`](../../src/hooks/useCrateDrawer.hook.ts) + [`crate.context.tsx`](../../src/context/crate.context.tsx); layout in [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) |

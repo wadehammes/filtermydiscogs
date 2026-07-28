@@ -1,16 +1,33 @@
 "use client";
 
+import classNames from "classnames";
 import { useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import Button from "src/components/Button/Button.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
-import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
+import { ViewActionTypes } from "src/context/view.context";
+import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
+import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
+import { useCurrentView, useViewDispatch } from "src/hooks/useViewAtoms.hook";
+import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
+import { clearPersistedFilters } from "src/utils/filtersStorage";
 import styles from "./SettingsClient.module.css";
+import {
+  SettingsAccountPanel,
+  SettingsAppearancePanel,
+  SettingsCollectionPanel,
+  SettingsDataPanel,
+  SettingsFiltersPanel,
+} from "./SettingsSectionPanels.component";
+import {
+  DEFAULT_SETTINGS_SECTION,
+  SETTINGS_SECTIONS,
+  type SettingsSectionId,
+} from "./settingsSections.constants";
 
 const CLEAR_DATA_MESSAGE =
   "This will log you out, clear all authentication tokens, delete all your stored crates, and remove all preferences and cached data. You will need to authorize the app again to continue using Filter My Discogs.";
@@ -22,6 +39,9 @@ export default function SettingsClient() {
   const { logout, state: authState } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { clearAllUserData, isClearing } = useClearAllUserData();
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>(
+    DEFAULT_SETTINGS_SECTION,
+  );
   const [showClearDataDialog, setShowClearDataDialog] = useState(false);
   const [showCompleteLogoutDialog, setShowCompleteLogoutDialog] =
     useState(false);
@@ -34,10 +54,23 @@ export default function SettingsClient() {
     openSyncDialog,
     showSyncDialog,
   } = useCrateCollectionSync();
+  const { data: preferences, isPending: isPreferencesLoading } =
+    useUserPreferencesQuery({
+      userId: authState.userId,
+      enabled: true,
+    });
+  const { persistPreferences, isPending: isPreferencesSaving } =
+    usePersistUserPreferences();
+  const viewDispatch = useViewDispatch();
+  const currentView = useCurrentView();
 
   if (shouldRedirectHome || isCheckingAuth) {
     return null;
   }
+
+  const activeSectionMeta = SETTINGS_SECTIONS.find(
+    (section) => section.id === activeSection,
+  );
 
   const handleCompleteLogout = async () => {
     await logout({ preserveTokens: false });
@@ -50,118 +83,140 @@ export default function SettingsClient() {
     setShowCompleteLogoutDialog(false);
   };
 
+  const handlePersistFiltersChange = (enabled: boolean) => {
+    persistPreferences(
+      { persistFilters: enabled },
+      {
+        onSuccess: (response) => {
+          setFilterPersistenceEnabled(response.preferences.persistFilters);
+          if (!response.preferences.persistFilters) {
+            clearPersistedFilters();
+          }
+        },
+      },
+    );
+  };
+
+  const settingsViewValue = currentView === "list" ? "list" : "card";
+
+  const renderActivePanel = () => {
+    switch (activeSection) {
+      case "account":
+        return (
+          <SettingsAccountPanel
+            authState={authState}
+            onCompleteLogout={() => setShowCompleteLogoutDialog(true)}
+          />
+        );
+      case "appearance":
+        return (
+          <SettingsAppearancePanel
+            settingsViewValue={settingsViewValue}
+            isPreferencesLoading={isPreferencesLoading}
+            isPreferencesSaving={isPreferencesSaving}
+            onViewChange={(view) => {
+              viewDispatch({
+                type: ViewActionTypes.SetView,
+                payload: view,
+              });
+            }}
+          />
+        );
+      case "filters":
+        return (
+          <SettingsFiltersPanel
+            persistFilters={preferences?.persistFilters ?? true}
+            isPreferencesLoading={isPreferencesLoading}
+            isPreferencesSaving={isPreferencesSaving}
+            onPersistFiltersChange={handlePersistFiltersChange}
+          />
+        );
+      case "collection":
+        return (
+          <SettingsCollectionPanel
+            isSyncDisabled={isSyncDisabled}
+            isSyncing={isSyncing}
+            isCollectionLoading={isCollectionLoading}
+            onSyncClick={openSyncDialog}
+          />
+        );
+      case "data":
+        return (
+          <SettingsDataPanel
+            isClearing={isClearing}
+            onClearData={() => setShowClearDataDialog(true)}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
-      <StickyHeaderBar
-        allReleasesLoaded={true}
-        currentPage="settings"
-        hideFilters={true}
-      />
+      <div className={styles.pageShell}>
+        <StickyHeaderBar
+          allReleasesLoaded={true}
+          currentPage="settings"
+          hideFilters={true}
+        />
 
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Settings</h1>
-          <p className={styles.subtitle}>
-            Manage your account preferences and stored app data.
-          </p>
-        </div>
+        <div className={styles.page}>
+          <div className={styles.container}>
+            <header className={styles.pageHeader}>
+              <h1 className={styles.title}>Settings</h1>
+              <p className={styles.subtitle}>
+                Manage your account preferences and stored app data.
+              </p>
+            </header>
 
-        <div className={styles.sections}>
-          <section
-            className={styles.section}
-            aria-labelledby="settings-account"
-          >
-            <h2 id="settings-account" className={styles.sectionTitle}>
-              Account
-            </h2>
-            <div className={styles.field}>
-              <span className={styles.fieldLabel}>Discogs username</span>
-              <p className={styles.fieldValue}>{authState.username}</p>
-            </div>
-            <p className={styles.sectionDescription}>
-              Sign out and revoke stored OAuth tokens on this browser. Your
-              crates and preferences stay saved.
-            </p>
-            <div className={styles.actions}>
-              <Button
-                variant="secondary"
-                size="md"
-                onPress={() => setShowCompleteLogoutDialog(true)}
-                disabled={authState.isLoggingOut}
+            <div className={styles.layout}>
+              <nav className={styles.sidebar} aria-label="Settings sections">
+                <ul className={styles.sidebarList}>
+                  {SETTINGS_SECTIONS.map((section) => {
+                    const isActive = section.id === activeSection;
+
+                    return (
+                      <li key={section.id}>
+                        <button
+                          type="button"
+                          className={classNames(styles.sidebarButton, {
+                            [styles.sidebarButtonActive]: isActive,
+                          })}
+                          aria-current={isActive ? "page" : undefined}
+                          onClick={() => setActiveSection(section.id)}
+                        >
+                          <span className={styles.sidebarButtonLabel}>
+                            {section.label}
+                          </span>
+                          <span className={styles.sidebarButtonDescription}>
+                            {section.description}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+
+              <section
+                className={styles.panel}
+                aria-labelledby="settings-panel-title"
               >
-                {authState.isLoggingOut ? "Logging out..." : "Complete logout"}
-              </Button>
+                <header className={styles.panelHeader}>
+                  <h2 id="settings-panel-title" className={styles.panelTitle}>
+                    {activeSectionMeta?.label}
+                  </h2>
+                  {activeSectionMeta ? (
+                    <p className={styles.panelLead}>
+                      {activeSectionMeta.description}
+                    </p>
+                  ) : null}
+                </header>
+                <div className={styles.panelBody}>{renderActivePanel()}</div>
+              </section>
             </div>
-          </section>
-
-          <section
-            className={styles.section}
-            aria-labelledby="settings-appearance"
-          >
-            <h2 id="settings-appearance" className={styles.sectionTitle}>
-              Appearance
-            </h2>
-            <p className={styles.sectionDescription}>
-              Choose light or dark mode for the app interface.
-            </p>
-            <div className={styles.field}>
-              <span className={styles.fieldLabel} id="settings-theme-label">
-                Theme
-              </span>
-              <ThemeSwitcher
-                variant="dropdown"
-                className={styles.themeSelect}
-              />
-            </div>
-          </section>
-
-          <section
-            className={styles.section}
-            aria-labelledby="settings-collection"
-          >
-            <h2 id="settings-collection" className={styles.sectionTitle}>
-              Collection
-            </h2>
-            <p className={styles.sectionDescription}>
-              Remove crate entries for releases that are no longer in your
-              Discogs collection.
-            </p>
-            <div className={styles.actions}>
-              <Button
-                variant="secondary"
-                size="md"
-                onPress={openSyncDialog}
-                disabled={isSyncDisabled}
-              >
-                {isSyncing
-                  ? "Syncing..."
-                  : isCollectionLoading
-                    ? "Loading collection..."
-                    : "Sync collection"}
-              </Button>
-            </div>
-          </section>
-
-          <section className={styles.section} aria-labelledby="settings-data">
-            <h2 id="settings-data" className={styles.sectionTitle}>
-              Stored data
-            </h2>
-            <p className={styles.sectionDescription}>
-              Delete your crates, clear local preferences, and sign out. You
-              will need to authorize the app again to continue using Filter My
-              Discogs.
-            </p>
-            <div className={styles.actions}>
-              <Button
-                variant="danger"
-                size="md"
-                onPress={() => setShowClearDataDialog(true)}
-                disabled={isClearing}
-              >
-                {isClearing ? "Clearing..." : "Clear all stored data"}
-              </Button>
-            </div>
-          </section>
+          </div>
         </div>
       </div>
 

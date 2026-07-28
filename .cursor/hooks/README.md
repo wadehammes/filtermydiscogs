@@ -31,6 +31,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `handbook-sync-nudge.sh` | `postToolUse` | Advisory reminder to update the matching handbook chapter. |
 | `check-css-nesting.sh` | `postToolUse` | Advisory when CSS nests selectors 4+ levels deep. |
 | `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update. |
+| `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
 
 ### Not ported
 

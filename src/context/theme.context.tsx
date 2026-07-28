@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -21,8 +22,6 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-const THEME_STORAGE_KEY = "filtermydiscogs_theme";
 
 const getStoredTheme = (
   storageKey: string,

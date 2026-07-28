@@ -1,43 +1,15 @@
 import { atom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import { VIEW_STATE_STORAGE_KEY } from "src/constants/storageKeys";
+import {
+  defaultViewState,
+  parseViewStateJson,
+  type ViewMode,
+  type ViewState,
+} from "src/types/view.types";
 
-export type ViewMode = "card" | "list" | "random";
-
-export interface ViewState {
-  currentView: ViewMode;
-  previousView: ViewMode;
-}
-
-const VIEW_STORAGE_KEY = "filtermydiscogs_view_state";
-
-const defaultViewState: ViewState = {
-  currentView: "card",
-  previousView: "card",
-};
-
-const isValidViewState = (value: unknown): value is ViewState => {
-  if (!value || typeof value !== "object") return false;
-  const state = value as Partial<ViewState>;
-  return (
-    typeof state.currentView === "string" &&
-    typeof state.previousView === "string"
-  );
-};
-
-const parseViewState = (value: string | null): ViewState => {
-  if (!value) return defaultViewState;
-
-  try {
-    const parsed: unknown = JSON.parse(value);
-    if (isValidViewState(parsed)) {
-      return parsed;
-    }
-  } catch (error) {
-    console.warn("Failed to load view state from localStorage:", error);
-  }
-
-  return defaultViewState;
-};
+export type { ViewMode, ViewState } from "src/types/view.types";
+export { defaultViewState, parseViewStateJson as parseViewState };
 
 const viewStorage = createJSONStorage<ViewState>(() => ({
   getItem: (key) => {
@@ -55,14 +27,14 @@ const viewStorage = createJSONStorage<ViewState>(() => ({
 }));
 
 export const viewStateAtom = atomWithStorage<ViewState>(
-  VIEW_STORAGE_KEY,
+  VIEW_STATE_STORAGE_KEY,
   defaultViewState,
   {
     ...viewStorage,
     getItem: (key, initialValue) => {
       if (typeof window === "undefined") return initialValue;
       const stored = localStorage.getItem(key);
-      return parseViewState(stored);
+      return parseViewStateJson(stored);
     },
   },
 );

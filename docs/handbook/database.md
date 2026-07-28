@@ -18,9 +18,21 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 |-------|-------|
 | `discogs_user_id` | Primary key — Discogs user ID from **verified OAuth identity** |
 | `username` | Discogs username (updated on login) |
+| `preferences` | JSON blob for account settings (see below) |
 | `created_at` / `updated_at` | Row timestamps |
 
 One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user_id`** with **`ON DELETE CASCADE`**. Rows are upserted on OAuth login via [`upsertDiscogsUser`](../../src/lib/user.server.ts) in the auth callback and token-reuse paths.
+
+**`preferences`** (versioned JSON, typed as [`UserPreferencesJson`](../../src/types/userPreferences.types.ts), parsed by [`user-preferences.server.ts`](../../src/lib/user-preferences.server.ts); Prisma field typing via [`prisma-json-types-generator`](https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields) + [`src/types/prisma-json.d.ts`](../../src/types/prisma-json.d.ts)):
+
+| Field | Default | Purpose |
+|-------|---------|---------|
+| `persistFilters` | `true` | When `false`, filter/sort selections are not restored on the next visit |
+| `theme` | `"light"` | App color theme (`light` or `dark`) |
+| `view` | `{ currentView: "card", previousView: "card" }` | Default releases view (`card`, `list`, or `random`) |
+| `filters` | Default empty filter state | Saved filter selections when `persistFilters` is `true` (styles, years, formats, sort, style operator, search query) |
+
+Client reads/writes via **`GET`** / **`PATCH`** [`/api/user/preferences`](../../src/app/api/user/preferences/route.ts). **`GET`** is read-only: it **`findUnique`**s the authenticated **`User`** row and returns defaults when missing (user rows are created on OAuth login or the first **`PATCH`**). [`useUserPreferencesSync`](../../src/hooks/useUserPreferencesSync.hook.ts) (mounted from [`Providers.tsx`](../../src/components/Providers.tsx)) on first login **seeds local → server only when the server field is still at its default** (e.g. filters saved on preview/staging hydrate into a fresh local browser instead of being overwritten by empty **`localStorage`**); otherwise it applies server prefs via **`setTheme`**, **`viewStateAtom`**, and **`persistedFiltersAtom`**. Authenticated **`PATCH`** calls go through [`usePersistUserPreferences`](../../src/hooks/usePersistUserPreferences.hook.ts) and [`userPreferencesPersistQueue.ts`](../../src/utils/userPreferencesPersistQueue.ts) (debounced filter writes, merged patches)—from [`ThemeSwitcher`](../../src/components/ThemeSwitcher/ThemeSwitcher.component.tsx), [`useViewDispatch`](../../src/hooks/useViewAtoms.hook.ts), [`useFiltersDispatch`](../../src/hooks/useFilterAtoms.hook.ts), [`SettingsClient`](../../src/components/Settings/SettingsClient.component.tsx), and the sync hook’s first-login seed. **`PATCH`** upserts preferences in one Prisma round trip.
 
 ### `Crate`
 

@@ -12,15 +12,21 @@ import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
+import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
 
 interface ProvidersProps {
   children: React.ReactNode;
 }
 
-function LogoutOverlayWrapper() {
+const LogoutOverlayWrapper = () => {
   const { state: authState } = useAuth();
   return <LogoutOverlay isVisible={authState.isLoggingOut} />;
-}
+};
+
+const UserPreferencesSync = () => {
+  useUserPreferencesSync();
+  return null;
+};
 
 export const Providers = ({ children }: ProvidersProps) => {
   const queryClient = useMemo(
@@ -49,6 +55,7 @@ export const Providers = ({ children }: ProvidersProps) => {
               <FiltersProvider>
                 <CrateProvider>
                   <ViewProvider>
+                    <UserPreferencesSync />
                     {children}
                     <LogoutOverlayWrapper />
                     <AuthCheckingToast />

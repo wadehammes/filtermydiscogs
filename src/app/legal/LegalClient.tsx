@@ -18,7 +18,8 @@ export function LegalClient() {
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
-          "• Clear all preferences and cached data\n\n" +
+          "• Delete your saved account preferences (theme, default view, and filter selections)\n" +
+          "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",
       )
     ) {
@@ -106,8 +107,17 @@ export function LegalClient() {
               database.
             </li>
             <li>
-              Your crates? Those live in my Postgres database so they stick
-              around between sessions. That's the only server-side storage I do.
+              Your crates and which releases are in them live in my Postgres
+              database so they stick around between sessions.
+            </li>
+            <li>
+              When you&apos;re logged in, account preferences also live in
+              Postgres: theme (light/dark), default view (grid or table),
+              whether to remember filter selections, and—when that option is
+              on—your saved filter and sort choices (styles, years, formats,
+              sort order, style match mode, and search text). That lets settings
+              follow you across browsers. I don&apos;t store your full
+              collection there.
             </li>
             <li>
               I don't sell your data, share it, or do anything sketchy with it.
@@ -127,14 +137,20 @@ export function LegalClient() {
             </li>
             <li>
               Collection data runs through your browser and hits my API routes,
-              which proxy Discogs. Your crates get saved to my Postgres database
-              so they don't disappear when you close the tab.
+              which proxy Discogs. Your crates and account preferences get saved
+              to Postgres so they don&apos;t disappear when you close the tab.
             </li>
             <li>
-              Want to nuke everything on my side? Hit "Clear All Data" below and
-              I'll wipe your crates from the database and clear local app data.
-              That does not delete or change your Discogs collection or notes.
-              You'd need to edit or remove those on Discogs itself.
+              Theme, view, and filter preferences are also kept in your browser
+              for fast loads and offline-style continuity on this device. When
+              you&apos;re signed in, changes sync to your account.
+            </li>
+            <li>
+              Want to nuke everything on my side? Hit &quot;Clear All Data&quot;
+              below and I&apos;ll wipe your crates and saved preferences from
+              the database and clear local app data on this browser. That does
+              not delete or change your Discogs collection or notes. You&apos;d
+              need to edit or remove those on Discogs itself.
             </li>
           </ul>
           <h3>Cookies & Storage</h3>
@@ -144,8 +160,11 @@ export function LegalClient() {
               without exposing tokens to JavaScript.
             </li>
             <li>
-              Local storage holds your preferences (theme, view settings,
-              filters, and similar UI state). Just quality-of-life stuff.
+              Local storage on this browser holds theme, default view, filter
+              and sort selections (when &quot;Remember filter selections&quot;
+              is on), in-progress playback position, and similar UI state. When
+              you&apos;re logged in, the same preferences are also stored on the
+              server (see above).
             </li>
             <li>
               I use Google Tag Manager for basic analytics (page views, clicks,
@@ -173,13 +192,21 @@ export function LegalClient() {
           <h2>Data Management</h2>
           <p>Want to start fresh? Clear everything out. This button wipes:</p>
           <ul>
-            <li>All your auth tokens and session stuff</li>
+            <li>All your auth tokens and session cookies</li>
             <li>
-              Every crate you've created (deleted from Postgres, gone forever.
-              No takebacks)
+              Every crate you&apos;ve created, including which releases are in
+              each crate (deleted from Postgres, gone forever. No takebacks)
             </li>
-            <li>All your preferences and settings</li>
-            <li>All cached collection data in the app</li>
+            <li>
+              Your saved account preferences on our server: theme, default view
+              (grid or table), and filter/sort selections when &quot;Remember
+              filter selections&quot; is enabled in Settings
+            </li>
+            <li>
+              Local preferences on this browser: theme, view mode, filters,
+              in-progress playback position, and similar UI state
+            </li>
+            <li>Cached collection data for the current session</li>
             <li>
               Your Discogs collection and any notes you saved there are not
               affected. You can still see and edit them on Discogs or after you
@@ -187,11 +214,12 @@ export function LegalClient() {
             </li>
           </ul>
           <p>
-            <strong>Heads up:</strong> This logs you out and you'll need to
-            reconnect with Discogs. All your crates get permanently deleted from
-            the database. Useful if you're on a shared computer or just want a
-            clean slate on this app. It is not a way to undo note edits on
-            Discogs.
+            <strong>Heads up:</strong> This logs you out and you&apos;ll need to
+            reconnect with Discogs. Crates and saved preferences are permanently
+            deleted from our database. Logging out without clearing data keeps
+            your crates and preferences—you can sign in again later. Useful on a
+            shared computer or when you want a clean slate on this app. It is
+            not a way to undo note edits on Discogs.
           </p>
           <div className={styles.clearDataButton}>
             <Button

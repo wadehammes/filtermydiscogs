@@ -3,10 +3,12 @@
 import classNames from "classnames";
 import Select from "src/components/Select/Select.component";
 import { useMounted } from "src/hooks/useMounted.hook";
+import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Moon from "src/styles/icons/moon-thin.svg";
 import Sun from "src/styles/icons/sun-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
+import type { StoredTheme } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ThemeSwitcher.module.css";
 
@@ -25,9 +27,15 @@ export const ThemeSwitcher = ({
   className,
 }: ThemeSwitcherProps) => {
   const { resolvedTheme, setTheme } = useTheme();
+  const { persistPreferences } = usePersistUserPreferences();
   const mounted = useMounted();
 
   const activeTheme = mounted ? resolvedTheme : "light";
+
+  const handleThemeChange = (nextTheme: StoredTheme) => {
+    setTheme(nextTheme);
+    persistPreferences({ theme: nextTheme });
+  };
 
   const getLabel = () => {
     if (!mounted) {
@@ -44,7 +52,7 @@ export const ThemeSwitcher = ({
         options={THEME_OPTIONS}
         value={activeTheme}
         onChange={(value) => {
-          setTheme(value as "light" | "dark");
+          handleThemeChange(value as StoredTheme);
         }}
         placeholder="Select theme"
         {...definedProps({ className })}
@@ -63,7 +71,7 @@ export const ThemeSwitcher = ({
               [segmentedStyles.active]: activeTheme === "light",
             })}
             onClick={() => {
-              setTheme("light");
+              handleThemeChange("light");
             }}
             aria-pressed={activeTheme === "light"}
           >
@@ -75,7 +83,7 @@ export const ThemeSwitcher = ({
               [segmentedStyles.active]: activeTheme === "dark",
             })}
             onClick={() => {
-              setTheme("dark");
+              handleThemeChange("dark");
             }}
             aria-pressed={activeTheme === "dark"}
           >
@@ -87,7 +95,7 @@ export const ThemeSwitcher = ({
   }
 
   const handleThemeToggle = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    handleThemeChange(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   const getIcon = () => {

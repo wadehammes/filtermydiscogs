@@ -21,7 +21,8 @@ export function AboutClient() {
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
-          "• Clear all preferences and cached data\n\n" +
+          "• Delete your saved account preferences (theme, default view, and filter selections)\n" +
+          "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",
       )
     ) {
@@ -106,24 +107,33 @@ export function AboutClient() {
           <h2>Data Management</h2>
           <p>Want to start fresh? Clear everything out. This button wipes:</p>
           <ul>
-            <li>All your auth tokens and session stuff</li>
+            <li>All your auth tokens and session cookies</li>
             <li>
-              Every crate you've created (deleted from Postgres, gone forever.
-              No takebacks)
+              Every crate you&apos;ve created, including which releases are in
+              each crate (deleted from Postgres, gone forever. No takebacks)
             </li>
-            <li>All your preferences and settings</li>
-            <li>All cached collection data in the app</li>
+            <li>
+              Your saved account preferences on our server: theme, default view
+              (grid or table), and filter/sort selections when &quot;Remember
+              filter selections&quot; is enabled in Settings
+            </li>
+            <li>
+              Local preferences on this browser: theme, view mode, filters,
+              in-progress playback position, and similar UI state
+            </li>
+            <li>Cached collection data for the current session</li>
             <li>
               Your Discogs collection and saved notes are not deleted. Only
               app-side data here
             </li>
           </ul>
           <p>
-            <strong>Heads up:</strong> This logs you out and you'll need to
-            reconnect with Discogs. All your crates get permanently deleted from
-            the database. Useful if you're on a shared computer or just want a
-            clean slate on this app. It is not a way to undo note edits on
-            Discogs.
+            <strong>Heads up:</strong> This logs you out and you&apos;ll need to
+            reconnect with Discogs. Crates and saved preferences are permanently
+            deleted from our database. Logging out without clearing data keeps
+            your crates and preferences—you can sign in again later. Useful on a
+            shared computer or when you want a clean slate on this app. It is
+            not a way to undo note edits on Discogs.
           </p>
           <div className={styles.clearDataButton}>
             <Button

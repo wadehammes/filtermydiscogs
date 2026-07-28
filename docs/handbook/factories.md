@@ -114,6 +114,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`CrateWithReleasesResponse.factory.ts`](../../src/tests/factories/CrateWithReleasesResponse.factory.ts) | `crateWithReleasesResponseFactory` | `CrateWithReleasesResponse` |
 | [`CreateCrateResponse.factory.ts`](../../src/tests/factories/CreateCrateResponse.factory.ts) | `createCrateResponseFactory` | `{ crate: Crate }` API payloads |
 | [`CrateMutationSuccess.factory.ts`](../../src/tests/factories/CrateMutationSuccess.factory.ts) | `crateMutationSuccessFactory` | Crate mutation success payloads |
+| [`UserPreferences.factory.ts`](../../src/tests/factories/UserPreferences.factory.ts) | `userPreferencesFactory`, `persistedFiltersFactory` | `UserPreferences`, `PersistedFiltersState` (uses [`SortValues`](../../src/constants/sortValues.ts)) |
 | [`DiscogsReleaseJson.factory.ts`](../../src/tests/factories/DiscogsReleaseJson.factory.ts) | `discogsReleaseJsonFactory` | `DiscogsReleaseJson` |
 
 ### Preset methods
@@ -131,6 +132,8 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) | (helper, not a factory) | PO / hook tests that mock **`src/api/helpers`** and mount authenticated **`TestProviders`** without custom crate dataâ€”uses **`defaultTestCrate()`** presets above |
 | `createCrateResponseFactory` | `forCrate()`, `named()` | `createCrate` / `updateCrate` API response |
 | `crateMutationSuccessFactory` | `build()`, `sync()` | Add/remove crate and sync success payloads |
+| `userPreferencesFactory` | `defaults()` | `/api/user/preferences` route tests and default account prefs |
+| `persistedFiltersFactory` | `empty()` | Default filter state in preferences tests |
 | `discogsReleaseJsonFactory` | `forReleaseId()` | `fetchDiscogsRelease` URI payload |
 | `discogsCollectionFieldFactory` | `notesField()` | Notes field for release-notes editor tests |
 | `discogsCollectionFieldsResponseFactory` | `forReleaseNotes()` | Collection fields API for notes editor |
