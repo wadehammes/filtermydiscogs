@@ -13,14 +13,12 @@ export const CrateDrawerFooter = () => {
   const {
     activeCrateId,
     copySuccess,
-    handleClearPacked,
     handleCopyLink,
     handlePrivacyToggle,
     isDefaultCrate,
     isDeletingCrate,
     isPublic,
     isUpdatingCrate,
-    packedCount,
     selectedReleases,
     setShowClearDialog,
     setShowCrateNotesDialog,
@@ -69,20 +67,6 @@ export const CrateDrawerFooter = () => {
             </span>
             <span>Notes</span>
           </button>
-          {packedCount > 0 ? (
-            <button
-              type="button"
-              className={classNames(
-                segmentedStyles.segment,
-                styles.footerSegment,
-              )}
-              onClick={handleClearPacked}
-              disabled={isBusy}
-              aria-label="Clear all packed items"
-            >
-              Clear packed
-            </button>
-          ) : null}
           {!isDefaultCrate ? (
             <button
               type="button"

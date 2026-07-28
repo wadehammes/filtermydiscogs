@@ -1,4 +1,6 @@
 .container {
+  --crate-sidebar-width: 440px;
+
   display: grid;
   grid-template-areas: "main";
   grid-template-columns: 1fr;
@@ -12,7 +14,7 @@
   &.withSidebar {
     @media (width >= 1024px) {
       grid-template-areas: "main sidebar";
-      grid-template-columns: 1fr 400px;
+      grid-template-columns: 1fr var(--crate-sidebar-width);
     }
   }
 }

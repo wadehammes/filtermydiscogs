@@ -9,15 +9,18 @@ export const CrateDrawerReleases = () => {
   const {
     currentView,
     hidePackedItems,
-    isPacked,
+    isDeletingCrate,
     isLoadingReleases,
+    isPacked,
+    isUpdatingCrate,
     onReleaseClick,
     packedCount,
     packedEnabled,
     removeFromCrate,
     selectedReleases,
-    setPacked,
     setHidePackedItems,
+    setPacked,
+    setShowClearPackedDialog,
   } = useCrateDrawerContext();
 
   const visibleReleases = useMemo(() => {
@@ -53,6 +56,7 @@ export const CrateDrawerReleases = () => {
     packedEnabled &&
     visibleReleases.length === 0 &&
     selectedReleases.length > 0;
+  const isBusy = isUpdatingCrate || isDeletingCrate;
 
   return (
     <div className={styles.releasesSection}>
@@ -61,17 +65,28 @@ export const CrateDrawerReleases = () => {
           <span className={styles.foundProgress}>
             {packedCount} of {selectedReleases.length} packed for gig
           </span>
-          <label className={styles.packedFilterLabel}>
-            <input
-              type="checkbox"
-              className={styles.checkbox}
-              checked={hidePackedItems}
-              onChange={(event) => setHidePackedItems(event.target.checked)}
-              aria-label="Hide albums packed for your gig"
-              title="Hide albums packed for your gig"
-            />
-            <span>Hide packed albums</span>
-          </label>
+          <div className={styles.packingActions}>
+            <button
+              type="button"
+              className={styles.clearPackedButton}
+              onClick={() => setShowClearPackedDialog(true)}
+              disabled={isBusy}
+              aria-label="Clear all packed items"
+            >
+              Clear packed
+            </button>
+            <label className={styles.packedFilterLabel}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                checked={hidePackedItems}
+                onChange={(event) => setHidePackedItems(event.target.checked)}
+                aria-label="Hide albums packed for your gig"
+                title="Hide albums packed for your gig"
+              />
+              <span>Hide packed albums</span>
+            </label>
+          </div>
         </div>
       ) : null}
       {showAllPackedState ? (
