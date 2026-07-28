@@ -1,18 +1,29 @@
 "use client";
 
 import classNames from "classnames";
+import Select from "src/components/Select/Select.component";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Moon from "src/styles/icons/moon-thin.svg";
 import Sun from "src/styles/icons/sun-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ThemeSwitcher.module.css";
 
+const THEME_OPTIONS = [
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
+
 interface ThemeSwitcherProps {
-  variant?: "desktop" | "mobile" | "segmented";
+  variant?: "desktop" | "mobile" | "segmented" | "dropdown";
+  className?: string;
 }
 
-export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
+export const ThemeSwitcher = ({
+  variant = "desktop",
+  className,
+}: ThemeSwitcherProps) => {
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
 
@@ -25,6 +36,21 @@ export const ThemeSwitcher = ({ variant = "desktop" }: ThemeSwitcherProps) => {
 
     return resolvedTheme === "dark" ? "Dark" : "Light";
   };
+
+  if (variant === "dropdown") {
+    return (
+      <Select
+        label="Theme"
+        options={THEME_OPTIONS}
+        value={activeTheme}
+        onChange={(value) => {
+          setTheme(value as "light" | "dark");
+        }}
+        placeholder="Select theme"
+        {...definedProps({ className })}
+      />
+    );
+  }
 
   if (variant === "segmented") {
     return (

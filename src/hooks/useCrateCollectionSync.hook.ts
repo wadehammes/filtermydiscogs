@@ -1,0 +1,104 @@
+import { useCallback, useEffect, useState } from "react";
+import { trackEvent } from "src/analytics/analytics";
+import { useAuth } from "src/context/auth.context";
+import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
+import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
+import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
+
+export const useCrateCollectionSync = () => {
+  const { state: authState } = useAuth();
+  const { username, isAuthenticated, rateLimited, userId, isCheckingAuth } =
+    authState;
+  const [showSyncDialog, setShowSyncDialog] = useState(false);
+
+  const syncMutation = useSyncCratesMutation(userId);
+  const queryEnabled =
+    isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
+
+  const {
+    data: collectionData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useDiscogsCollectionQuery({
+    username: username || "",
+    enabled: queryEnabled,
+  });
+
+  useEffect(() => {
+    if (queryEnabled && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [queryEnabled, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const isCollectionLoading = isLoading || hasNextPage || isFetchingNextPage;
+  const isSyncDisabled = syncMutation.isPending || isCollectionLoading;
+
+  const openSyncDialog = useCallback(() => {
+    setShowSyncDialog(true);
+  }, []);
+
+  const closeSyncDialog = useCallback(() => {
+    setShowSyncDialog(false);
+  }, []);
+
+  const confirmSync = useCallback(() => {
+    const syncResult = prepareCollectionForSync(
+      collectionData,
+      hasNextPage,
+      isFetchingNextPage,
+    );
+
+    if (!syncResult.isValid) {
+      alert(syncResult.error);
+      setShowSyncDialog(false);
+      return;
+    }
+
+    if (!syncResult.instanceIds) {
+      alert("No instance IDs found.");
+      setShowSyncDialog(false);
+      return;
+    }
+
+    syncMutation.mutate(
+      { collectionInstanceIds: syncResult.instanceIds },
+      {
+        onSuccess: (data) => {
+          setShowSyncDialog(false);
+          trackEvent("crateSync", {
+            action: "crateSyncManual",
+            category: "crate",
+            label: "Manual Crate Sync",
+            value: data.removedCount.toString(),
+          });
+          if (data.removedCount > 0) {
+            alert(
+              `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,
+            );
+          } else {
+            alert(
+              "Sync complete: All releases in your crates are still in your collection.",
+            );
+          }
+        },
+        onError: (error) => {
+          alert(
+            `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+        },
+      },
+    );
+  }, [collectionData, hasNextPage, isFetchingNextPage, syncMutation]);
+
+  return {
+    closeSyncDialog,
+    confirmSync,
+    isCollectionLoading,
+    isSyncDisabled,
+    isSyncing: syncMutation.isPending,
+    openSyncDialog,
+    showSyncDialog,
+  };
+};

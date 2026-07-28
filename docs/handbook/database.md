@@ -12,6 +12,16 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 
 ## Models
 
+### `User`
+
+| Field | Notes |
+|-------|-------|
+| `discogs_user_id` | Primary key — Discogs user ID from **verified OAuth identity** |
+| `username` | Discogs username (updated on login) |
+| `created_at` / `updated_at` | Row timestamps |
+
+One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user_id`** with **`ON DELETE CASCADE`**. Rows are upserted on OAuth login via [`upsertDiscogsUser`](../../src/lib/user.server.ts) in the auth callback and token-reuse paths.
+
 ### `Crate`
 
 | Field | Notes |
@@ -77,7 +87,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/health` | GET | Health check |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates |
-| `/api/auth/clear-data` | POST | Delete authenticated user's crates and clear session cookies |
+| `/api/auth/clear-data` | POST | Delete authenticated user's **`User`** row (cascades crates) and clear session cookies |
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 

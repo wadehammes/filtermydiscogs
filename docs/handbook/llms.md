@@ -19,7 +19,8 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Crate drawer defaults, login drawer reset, sidebar vs mobile shell | [patterns.md](patterns.md) (Crates) + [conventions.md](conventions.md) (Testing → `setupMockMatchMedia`) |
 | Dashboard / collection analytics | [patterns.md](patterns.md) (Dashboard analytics) + [components.md](components.md) (`Dashboard/`) |
 | Mosaic generator / image proxy | [patterns.md](patterns.md) (Mosaic generator) |
-| Clear user data (About/Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
+| Clear user data (Settings / About / Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
+| Settings page (theme, sync, clear data) | [patterns.md](patterns.md) + [components.md](components.md) (`Settings/`) |
 | CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |

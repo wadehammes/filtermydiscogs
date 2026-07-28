@@ -9,6 +9,17 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  discogs_user_id Int      @id
+  username        String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  crates Crate[]
+
+  @@map("users")
+}
+
 model Crate {
   user_id    Int
   id         String    @default(uuid())
@@ -21,6 +32,7 @@ model Crate {
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
 
+  user     User           @relation(fields: [user_id], references: [discogs_user_id], onDelete: Cascade)
   releases CrateRelease[]
 
   @@id([user_id, id])
