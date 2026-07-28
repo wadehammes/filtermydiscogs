@@ -88,7 +88,7 @@
     "lighthouse": "^13.4.1",
     "postcss": "^8.5.23",
     "postcss-custom-media": "^12.0.1",
-    "prisma": "^7.9.0",
+    "prisma": "^7.9.1",
     "prisma-json-types-generator": "^5.1.1",
     "react-is": "^19.2.8",
     "stylelint": "^17.14.1",
