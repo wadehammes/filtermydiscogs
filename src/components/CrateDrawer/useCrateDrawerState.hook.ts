@@ -21,6 +21,7 @@ export const useCrateDrawerState = () => {
   } = useCrate();
 
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showClearPackedDialog, setShowClearPackedDialog] = useState(false);
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
   const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
   const [showCrateNotesDialog, setShowCrateNotesDialog] = useState(false);
@@ -66,9 +67,10 @@ export const useCrateDrawerState = () => {
     setShowClearDialog(false);
   }, [clearCrate]);
 
-  const handleClearPacked = useCallback(() => {
+  const handleClearPackedConfirm = useCallback(() => {
     clearAllPacked();
     setHidePackedItems(false);
+    setShowClearPackedDialog(false);
   }, [clearAllPacked]);
 
   const handleDeleteCrate = useCallback(async () => {
@@ -158,6 +160,7 @@ export const useCrateDrawerState = () => {
     prevActiveCrateIdRef.current = activeCrateId;
     setShowEditCrateDialog(false);
     setShowCrateNotesDialog(false);
+    setShowClearPackedDialog(false);
     setHidePackedItems(false);
   }, [activeCrateId]);
 
@@ -174,15 +177,17 @@ export const useCrateDrawerState = () => {
     isUpdatingCrate,
     selectedReleases,
     showClearDialog,
+    showClearPackedDialog,
     showEditCrateDialog,
     showCrateNotesDialog,
     showMakeDefaultDialog,
     setShowClearDialog,
+    setShowClearPackedDialog,
     setShowEditCrateDialog,
     setShowCrateNotesDialog,
     setShowMakeDefaultDialog,
     handleClearConfirm,
-    handleClearPacked,
+    handleClearPackedConfirm,
     handleCopyLink,
     handleDeleteCrate,
     handleMakeDefaultConfirm,

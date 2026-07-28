@@ -7,12 +7,16 @@ export const CrateDrawerDialogs = () => {
   const {
     crateName,
     handleClearConfirm,
+    handleClearPackedConfirm,
     handleMakeDefaultConfirm,
     isUpdatingCrate,
+    packedCount,
     selectedReleases,
     setShowClearDialog,
+    setShowClearPackedDialog,
     setShowMakeDefaultDialog,
     showClearDialog,
+    showClearPackedDialog,
     showMakeDefaultDialog,
   } = useCrateDrawerContext();
 
@@ -32,6 +36,17 @@ export const CrateDrawerDialogs = () => {
         variant="danger"
         onConfirm={handleClearConfirm}
         onCancel={() => setShowClearDialog(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showClearPackedDialog}
+        title="Clear packed marks"
+        message={`Clear packed marks for ${packedCount} release${packedCount !== 1 ? "s" : ""} in "${crateName}"? Releases stay in the crate.`}
+        confirmLabel="Clear marks"
+        cancelLabel="Cancel"
+        variant="default"
+        onConfirm={handleClearPackedConfirm}
+        onCancel={() => setShowClearPackedDialog(false)}
       />
 
       <ConfirmDialog

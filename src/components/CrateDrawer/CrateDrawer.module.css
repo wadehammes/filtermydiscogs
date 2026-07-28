@@ -218,8 +218,43 @@
     color: color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground));
     cursor: pointer;
     display: flex;
+    flex-shrink: 0;
     gap: var(--space-1);
     user-select: none;
+  }
+
+  .packingActions {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--space-3);
+  }
+
+  .clearPackedButton {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-family: var(--font-family-meta);
+    font-size: var(--text-meta-xs);
+    line-height: 1.25;
+    padding: 0;
+    text-decoration: underline;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      color: var(--primary-hover);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
   }
 
   .checkbox {
