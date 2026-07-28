@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { PAGE_DESCRIPTIONS, sitePageTitle } from "src/constants/siteMetadata";
 
 const SettingsClient = dynamic(
   () => import("src/components/Settings/SettingsClient.component"),
@@ -10,9 +11,8 @@ const SettingsClient = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: "Settings | FilterMyDisco.gs",
-  description:
-    "Manage your Filter My Discogs account settings and preferences.",
+  title: sitePageTitle("Settings"),
+  description: PAGE_DESCRIPTIONS.settings,
 };
 
 export default function SettingsPage() {

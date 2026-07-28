@@ -5,6 +5,12 @@ import { Assistant, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Providers } from "src/components/Providers";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
+import {
+  getMetadataSiteUrl,
+  SITE_DEFAULT_TITLE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+} from "src/constants/siteMetadata";
 
 import "src/styles/global.css";
 import "src/styles/pills.css";
@@ -26,23 +32,24 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs",
-  ),
-  title: "FilterMyDisco.gs - a Discogs collection management tool",
-  description: "a Discogs collection management tool",
+  metadataBase: new URL(getMetadataSiteUrl()),
+  title: SITE_DEFAULT_TITLE,
+  description: SITE_DESCRIPTION,
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "FilterMyDisco.gs",
-    description: "a Discogs collection management tool",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
     type: "website",
     locale: "en-US",
+    siteName: SITE_NAME,
     images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
     images: [DEFAULT_TWITTER_IMAGE],
   },
 };

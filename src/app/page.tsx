@@ -3,29 +3,31 @@ import { Login } from "src/components/Login/Login.component";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
+import {
+  getMetadataSiteUrl,
+  SITE_DEFAULT_TITLE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+} from "src/constants/siteMetadata";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
+const baseUrl = getMetadataSiteUrl();
 
 export const metadata: Metadata = {
-  title: "FilterMyDisco.gs - A Discogs collection management tool",
-  description:
-    "View, filter and sort your Discogs collection and build a crate as you browse",
+  title: SITE_DEFAULT_TITLE,
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: "FilterMyDisco.gs - A Discogs collection management tool",
-    description:
-      "View, filter and sort your Discogs collection and build a crate as you browse",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
     url: baseUrl,
-    siteName: "FilterMyDisco.gs",
+    siteName: SITE_NAME,
     type: "website",
     locale: "en-US",
     images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FilterMyDisco.gs - A Discogs collection management tool",
-    description:
-      "View, filter and sort your Discogs collection and build a crate as you browse",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
     images: [DEFAULT_TWITTER_IMAGE],
   },
 };

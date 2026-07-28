@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SITE_NAME } from "src/constants/siteMetadata";
 import { getPublicCrateForOg } from "src/lib/public-crate.server";
 
 export const revalidate = 300;
@@ -13,8 +14,8 @@ export async function GET(
   const crate = await getPublicCrateForOg(id);
   const title = crate?.name ?? "Crate";
   const line2 = crate?.username
-    ? `by ${crate.username} · FilterMyDisco.gs`
-    : "FilterMyDisco.gs";
+    ? `by ${crate.username} · ${SITE_NAME}`
+    : SITE_NAME;
 
   return new ImageResponse(
     <div

@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
+import {
+  getMetadataSiteUrl,
+  PAGE_DESCRIPTIONS,
+  SITE_NAME,
+  sitePageTitle,
+} from "src/constants/siteMetadata";
 import { fetchPublicCrateMetadata } from "src/lib/api-helpers";
 import { PublicCrateClient } from "./PublicCrateClient";
 
@@ -11,8 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
+  const baseUrl = getMetadataSiteUrl();
   const crateUrl = `${baseUrl}/crate/${id}`;
   const ogImageUrl = new URL(`/api/og/crate/${id}`, baseUrl).href;
 
@@ -23,17 +28,17 @@ export async function generateMetadata({
     const releaseCount = data.pagination.total;
     const username = data.crate.username;
     const description = username
-      ? `Public crate "${crateName}" by ${username} with ${releaseCount} release${releaseCount !== 1 ? "s" : ""} on FilterMyDisco.gs`
-      : `Public crate "${crateName}" with ${releaseCount} release${releaseCount !== 1 ? "s" : ""} on FilterMyDisco.gs`;
+      ? `Public crate "${crateName}" by ${username} with ${releaseCount} release${releaseCount !== 1 ? "s" : ""} on ${SITE_NAME}`
+      : `Public crate "${crateName}" with ${releaseCount} release${releaseCount !== 1 ? "s" : ""} on ${SITE_NAME}`;
 
     return {
-      title: `${crateName}${username ? ` by ${username}` : ""} | FilterMyDisco.gs`,
+      title: `${crateName}${username ? ` by ${username}` : ""} | ${SITE_NAME}`,
       description,
       openGraph: {
         title: `${crateName}${username ? ` by ${username}` : ""}`,
         description,
         url: crateUrl,
-        siteName: "FilterMyDisco.gs",
+        siteName: SITE_NAME,
         type: "website",
         locale: "en-US",
         images: [
@@ -59,14 +64,17 @@ export async function generateMetadata({
     };
   }
 
+  const fallbackTitle = sitePageTitle("Crate");
+  const fallbackDescription = PAGE_DESCRIPTIONS.crateFallback;
+
   return {
-    title: "Crate | FilterMyDisco.gs",
-    description: "A public crate on FilterMyDisco.gs",
+    title: fallbackTitle,
+    description: fallbackDescription,
     openGraph: {
-      title: "Crate | FilterMyDisco.gs",
-      description: "A public crate on FilterMyDisco.gs",
+      title: fallbackTitle,
+      description: fallbackDescription,
       url: crateUrl,
-      siteName: "FilterMyDisco.gs",
+      siteName: SITE_NAME,
       type: "website",
       locale: "en-US",
       images: [
@@ -80,8 +88,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: "Crate | FilterMyDisco.gs",
-      description: "Public crate on FilterMyDisco.gs",
+      title: fallbackTitle,
+      description: fallbackDescription,
       images: [
         {
           url: ogImageUrl,

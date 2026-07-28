@@ -146,6 +146,7 @@ About/Legal/Settings **Clear stored data** calls **`clearData`** in [`src/api/he
 
 ## Metadata and OG images
 
+- Shared site name, tagline, descriptions, and URL helpers in [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts).
 - Root metadata defaults in [`src/app/layout.tsx`](../../src/app/layout.tsx).
 - Per-route metadata in `page.tsx` files (e.g. public crate title/description).
 - Default social images: static [`opengraph-image.png`](../../src/app/opengraph-image.png) and [`twitter-image.png`](../../src/app/twitter-image.png) in `src/app/` with matching [`opengraph-image.alt.txt`](../../src/app/opengraph-image.alt.txt) / [`twitter-image.alt.txt`](../../src/app/twitter-image.alt.txt). Shared alt text and metadata objects live in [`src/constants.ts`](../../src/constants.ts) (`DEFAULT_OPEN_GRAPH_IMAGE`, `DEFAULT_TWITTER_IMAGE`). Per-route metadata references those constants with `metadataBase` from [`layout.tsx`](../../src/app/layout.tsx).

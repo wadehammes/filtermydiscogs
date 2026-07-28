@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
 import MosaicClientWrapper from "src/components/MosaicClient/MosaicClientWrapper.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
+import {
+  getMetadataSiteUrl,
+  PAGE_DESCRIPTIONS,
+  SITE_NAME,
+  sitePageTitle,
+} from "src/constants/siteMetadata";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.filtermydisco.gs";
+const baseUrl = getMetadataSiteUrl();
+const title = sitePageTitle("Mosaic");
+const description = PAGE_DESCRIPTIONS.mosaic;
 
 export const metadata: Metadata = {
-  title: "Mosaic | FilterMyDisco.gs",
-  description: "Create a mosaic of your Discogs collection.",
+  title,
+  description,
   openGraph: {
-    title: "Mosaic | FilterMyDisco.gs",
-    description: "Create a mosaic of your Discogs collection.",
+    title,
+    description,
     url: `${baseUrl}/mosaic`,
-    siteName: "FilterMyDisco.gs",
+    siteName: SITE_NAME,
     type: "website",
     locale: "en-US",
     images: [DEFAULT_OPEN_GRAPH_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mosaic | FilterMyDisco.gs",
-    description: "Create a mosaic of your Discogs collection.",
+    title,
+    description,
     images: [DEFAULT_TWITTER_IMAGE],
   },
 };
