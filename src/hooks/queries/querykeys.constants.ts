@@ -48,3 +48,9 @@ export const MostCratedQueryKeys = {
 export const AdminStatsQueryKeys = {
   all: () => ["adminStats"] as const,
 };
+
+export const UserPreferencesQueryKeys = {
+  all: () => ["userPreferences"] as const,
+  byUserId: (userId: string | number | null) =>
+    [...UserPreferencesQueryKeys.all(), userId] as const,
+};

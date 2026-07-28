@@ -1,4 +1,4 @@
-import { SortValues } from "src/context/filters.context";
+import { SortValues } from "src/constants/sortValues";
 
 export const SORTING_OPTIONS = [
   { name: "Date Added (New to Old)", value: SortValues.DateAddedNew },

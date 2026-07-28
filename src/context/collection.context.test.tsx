@@ -28,6 +28,21 @@ describe("CollectionReducer", () => {
     expect(result.collection).toEqual(mockCollection);
   });
 
+  it("returns state unchanged when collection payload is identical", () => {
+    const mockCollection = collectionFactory.build();
+    const state = {
+      ...initialState,
+      collection: mockCollection,
+    };
+    const action = {
+      type: CollectionActionTypes.SetCollection,
+      payload: mockCollection,
+    } as const;
+    const result = CollectionReducer(state, action);
+
+    expect(result).toBe(state);
+  });
+
   it("sets fetching collection state", () => {
     const action = {
       type: CollectionActionTypes.SetFetchingCollection,

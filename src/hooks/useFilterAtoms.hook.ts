@@ -1,6 +1,7 @@
 "use client";
 
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom, useStore } from "jotai";
+import { useCallback } from "react";
 import {
   allReleasesAtom,
   availableFormatsAtom,
@@ -9,8 +10,10 @@ import {
   type FiltersActions,
   filteredReleasesAtom,
   filtersDispatchAtom,
+  isPersistedFiltersAction,
   isRandomModeAtom,
   isSearchingAtom,
+  persistedFiltersAtom,
   randomReleaseAtom,
   searchQueryAtom,
   selectedFormatsAtom,
@@ -20,11 +23,32 @@ import {
   styleOperatorAtom,
 } from "src/atoms/filters.atoms";
 import { useFiltersScope } from "src/context/filters.context";
+import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
+import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
+import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
 
 export const useFiltersDispatch = () => {
   useFiltersScope();
+  const store = useStore();
+  const baseDispatch = useSetAtom(filtersDispatchAtom);
+  const { persistPreferences } = usePersistUserPreferences();
 
-  return useSetAtom(filtersDispatchAtom) as React.Dispatch<FiltersActions>;
+  return useCallback(
+    (action: FiltersActions) => {
+      baseDispatch(action);
+
+      if (
+        !(isPersistedFiltersAction(action) && getFilterPersistenceEnabled())
+      ) {
+        return;
+      }
+
+      const nextFilters = store.get(persistedFiltersAtom);
+      markFiltersPendingPersist(nextFilters);
+      persistPreferences({ filters: nextFilters });
+    },
+    [baseDispatch, persistPreferences, store],
+  );
 };
 
 export const useAllReleases = () => {

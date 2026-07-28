@@ -66,6 +66,11 @@
         "command": ".cursor/hooks/handbook-drift-check.sh",
         "timeout": 15,
         "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/terms-and-privacy-drift-check.sh",
+        "timeout": 15,
+        "loop_limit": 1
       }
     ]
   }

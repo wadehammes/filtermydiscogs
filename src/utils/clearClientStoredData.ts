@@ -1,14 +1,17 @@
+import {
+  LEGACY_COMMUNITY_RATINGS_STORAGE_KEY,
+  SELECTED_RELEASES_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  USERNAME_STORAGE_KEY,
+  VIEW_STATE_STORAGE_KEY,
+} from "src/constants/storageKeys";
+import {
+  PERSIST_FILTERS_STORAGE_KEY,
+  resetFilterPersistenceCache,
+} from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import { clearPlaybackVideoIntroSeen } from "src/utils/playbackVideoIntroStorage";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
-
-export const SELECTED_RELEASES_STORAGE_KEY =
-  "filtermydiscogs_selected_releases";
-export const USERNAME_STORAGE_KEY = "fmd_username";
-export const THEME_STORAGE_KEY = "filtermydiscogs_theme";
-export const VIEW_STATE_STORAGE_KEY = "filtermydiscogs_view_state";
-export const LEGACY_COMMUNITY_RATINGS_STORAGE_KEY =
-  "filtermydiscogs_community_ratings";
 
 export const clearClientStoredData = (): void => {
   if (typeof window === "undefined") {
@@ -20,6 +23,8 @@ export const clearClientStoredData = (): void => {
   localStorage.removeItem(THEME_STORAGE_KEY);
   localStorage.removeItem(VIEW_STATE_STORAGE_KEY);
   localStorage.removeItem(LEGACY_COMMUNITY_RATINGS_STORAGE_KEY);
+  localStorage.removeItem(PERSIST_FILTERS_STORAGE_KEY);
+  resetFilterPersistenceCache();
   clearPersistedFilters();
   clearPersistedReleasePlayback();
   clearPlaybackVideoIntroSeen();

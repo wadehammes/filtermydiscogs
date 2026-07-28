@@ -1,13 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { useEffect, useMemo, useRef } from "react";
-import { collectionFiltersActiveAtom } from "src/atoms/filters.atoms";
+import {
+  collectionFiltersActiveAtom,
+  filtersDispatchAtom,
+} from "src/atoms/filters.atoms";
 import { ERROR_FETCHING } from "src/constants";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
-import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
+import type { DiscogsCollection } from "src/types";
 import { getEffectiveCollectionPages } from "src/utils/collectionPagination";
 
 export interface UseCollectionDataParams {
@@ -27,8 +30,10 @@ export const useCollectionData = ({
   const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
     useCollectionContext();
 
-  const filtersDispatch = useFiltersDispatch();
+  const filtersDispatch = useSetAtom(filtersDispatchAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
+  const lastAllReleasesCountRef = useRef(0);
+  const lastCollectionRef = useRef<DiscogsCollection | null>(null);
 
   const queryEnabled =
     isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
@@ -50,6 +55,8 @@ export const useCollectionData = ({
   useEffect(() => {
     if (isAuthenticated && username && username !== prevUsernameRef.current) {
       prevUsernameRef.current = username;
+      lastAllReleasesCountRef.current = 0;
+      lastCollectionRef.current = null;
       setCollectionFiltersActive(false);
       queryClient.invalidateQueries({
         queryKey: DiscogsCollectionQueryKeys.byUsername(username),
@@ -93,6 +100,8 @@ export const useCollectionData = ({
     if (!queryEnabled) {
       dispatchFetchingCollection(false);
       setCollectionFiltersActive(false);
+      lastAllReleasesCountRef.current = 0;
+      lastCollectionRef.current = null;
       filtersDispatch({
         type: FiltersActionTypes.SetAllReleases,
         payload: [],
@@ -109,14 +118,18 @@ export const useCollectionData = ({
     if (processedData) {
       const { allReleases, collection } = processedData;
 
-      if (collection) {
+      if (collection && collection !== lastCollectionRef.current) {
         dispatchCollection(collection);
+        lastCollectionRef.current = collection;
       }
 
-      filtersDispatch({
-        type: FiltersActionTypes.SetAllReleases,
-        payload: allReleases,
-      });
+      if (allReleases.length !== lastAllReleasesCountRef.current) {
+        filtersDispatch({
+          type: FiltersActionTypes.SetAllReleases,
+          payload: allReleases,
+        });
+        lastAllReleasesCountRef.current = allReleases.length;
+      }
 
       if (isCollectionFullyLoaded) {
         dispatchFetchingCollection(false);

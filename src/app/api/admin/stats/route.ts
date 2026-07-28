@@ -57,30 +57,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Get overview stats
-    const [uniqueUsers, totalCrates, totalReleases] = await Promise.all([
-      prisma.crate.groupBy({
-        by: ["user_id"],
-        _count: true,
-      }),
-      prisma.crate.count(),
-      prisma.crateRelease.count(),
-    ]);
-
-    const totalUsers = uniqueUsers.length;
-
-    // Calculate date ranges
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get recent activity
     const [
+      totalUsers,
+      totalCrates,
+      totalReleases,
+      usersLast7Days,
+      usersLast30Days,
       cratesLast7Days,
       cratesLast30Days,
       releasesLast7Days,
       releasesLast30Days,
     ] = await Promise.all([
+      prisma.user.count(),
+      prisma.crate.count(),
+      prisma.crateRelease.count(),
+      prisma.user.count({
+        where: {
+          created_at: {
+            gte: sevenDaysAgo,
+          },
+        },
+      }),
+      prisma.user.count({
+        where: {
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+        },
+      }),
       prisma.crate.count({
         where: {
           created_at: {
@@ -110,26 +118,6 @@ export async function GET(request: NextRequest) {
         },
       }),
     ]);
-
-    // Get new users (users who created their first crate in the period)
-    // First, get all users' first crate dates
-    const allUserFirstCrates = await prisma.crate.groupBy({
-      by: ["user_id"],
-      _min: {
-        created_at: true,
-      },
-    });
-
-    // Filter to find users whose first crate was created in the period
-    const firstCratesLast7Days = allUserFirstCrates.filter((user) => {
-      const firstCrateDate = user._min.created_at;
-      return firstCrateDate && firstCrateDate >= sevenDaysAgo;
-    });
-
-    const firstCratesLast30Days = allUserFirstCrates.filter((user) => {
-      const firstCrateDate = user._min.created_at;
-      return firstCrateDate && firstCrateDate >= thirtyDaysAgo;
-    });
 
     // Get top users by crate count
     const topUsersByCrates = await prisma.crate.groupBy({
@@ -159,8 +147,15 @@ export async function GET(request: NextRequest) {
       take: 10,
     });
 
-    // Get growth data - group by month
-    // Get all crates with their creation dates
+    const allUsers = await prisma.user.findMany({
+      select: {
+        created_at: true,
+      },
+      orderBy: {
+        created_at: "asc",
+      },
+    });
+
     const allCrates = await prisma.crate.findMany({
       select: {
         created_at: true,
@@ -193,17 +188,7 @@ export async function GET(request: NextRequest) {
         .sort((a, b) => a.month.localeCompare(b.month));
     };
 
-    // Calculate cumulative users over time
-    const userFirstCrates = await prisma.crate.groupBy({
-      by: ["user_id"],
-      _min: {
-        created_at: true,
-      },
-    });
-
-    const userGrowthDates = userFirstCrates
-      .map((u) => u._min.created_at)
-      .filter((d): d is Date => d !== null);
+    const userGrowthDates = allUsers.map((user) => user.created_at);
 
     const stats: AdminStats = {
       overview: {
@@ -213,12 +198,12 @@ export async function GET(request: NextRequest) {
       },
       recentActivity: {
         last7Days: {
-          newUsers: firstCratesLast7Days.length,
+          newUsers: usersLast7Days,
           newCrates: cratesLast7Days,
           newReleases: releasesLast7Days,
         },
         last30Days: {
-          newUsers: firstCratesLast30Days.length,
+          newUsers: usersLast30Days,
           newCrates: cratesLast30Days,
           newReleases: releasesLast30Days,
         },

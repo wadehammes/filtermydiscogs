@@ -19,22 +19,23 @@ export type TestProvidersProps = {
   queryClient?: QueryClient;
   authInitialState?: AuthState;
   skipInitialAuthCheck?: boolean;
+  includeCrate?: boolean;
 };
 
-export const TestProviders = ({
+export const AppTestProviders = ({
   children,
-  queryClient: queryClientOverride,
+  queryClient,
   authInitialState,
   skipInitialAuthCheck = true,
-}: TestProvidersProps) => {
+}: Omit<TestProvidersProps, "includeCrate">) => {
   const defaultQueryClient = useMemo(() => createTestQueryClient(), []);
-  const queryClient = queryClientOverride ?? defaultQueryClient;
+  const resolvedQueryClient = queryClient ?? defaultQueryClient;
   const resolvedAuthInitialState =
     authInitialState ??
     (skipInitialAuthCheck ? testUnauthenticatedAuthState : undefined);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={resolvedQueryClient}>
       <JotaiProvider>
         <ThemeProvider>
           <AuthProvider
@@ -45,9 +46,7 @@ export const TestProviders = ({
           >
             <CollectionContextProvider>
               <FiltersProvider>
-                <CrateProvider>
-                  <ViewProvider>{children}</ViewProvider>
-                </CrateProvider>
+                <ViewProvider>{children}</ViewProvider>
               </FiltersProvider>
             </CollectionContextProvider>
           </AuthProvider>
@@ -56,5 +55,21 @@ export const TestProviders = ({
     </QueryClientProvider>
   );
 };
+
+export const TestProviders = ({
+  children,
+  queryClient,
+  authInitialState,
+  skipInitialAuthCheck = true,
+  includeCrate = true,
+}: TestProvidersProps) => (
+  <AppTestProviders
+    {...(queryClient !== undefined ? { queryClient } : {})}
+    {...(authInitialState !== undefined ? { authInitialState } : {})}
+    skipInitialAuthCheck={skipInitialAuthCheck}
+  >
+    {includeCrate ? <CrateProvider>{children}</CrateProvider> : children}
+  </AppTestProviders>
+);
 
 export { testAuthenticatedAuthState, testUnauthenticatedAuthState };

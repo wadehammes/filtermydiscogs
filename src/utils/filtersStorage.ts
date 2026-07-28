@@ -1,42 +1,23 @@
-export const FILTERS_STORAGE_KEY = "filtermydiscogs_filters";
+import { SortValues, VALID_SORT_VALUES } from "src/constants/sortValues";
+import { FILTERS_STORAGE_KEY } from "src/constants/storageKeys";
+import type { PersistedFiltersState } from "src/types/filters.types";
+import {
+  type StyleOperator,
+  VALID_STYLE_OPERATORS,
+} from "src/types/filters.types";
 
-/** Must stay aligned with `SortValues` in `src/atoms/filters.atoms.ts`. */
-const VALID_SORT_VALUES = new Set([
-  "AZLabel",
-  "ZALabel",
-  "AZArtist",
-  "ZAArtist",
-  "AZTitle",
-  "ZATitle",
-  "DateAddedNew",
-  "DateAddedOld",
-  "RatingHigh",
-  "RatingLow",
-  "AlbumYearNew",
-  "AlbumYearOld",
-]);
-
-const VALID_STYLE_OPERATORS = new Set(["AND", "OR", "NONE"]);
-
-export interface PersistedFiltersState {
-  selectedStyles: string[];
-  selectedYears: number[];
-  selectedFormats: string[];
-  selectedSort: string;
-  styleOperator: string;
-  searchQuery: string;
-}
+export type { PersistedFiltersState } from "src/types/filters.types";
+export { FILTERS_STORAGE_KEY };
 
 export const defaultPersistedFilters: PersistedFiltersState = {
   selectedStyles: [],
   selectedYears: [],
   selectedFormats: [],
-  selectedSort: "DateAddedNew",
+  selectedSort: SortValues.DateAddedNew,
   styleOperator: "OR",
   searchQuery: "",
 };
 
-/** Baseline selections used while the collection is still paginating. */
 export const inactiveFilterSelectionDefaults = {
   selectedStyles: defaultPersistedFilters.selectedStyles,
   selectedYears: defaultPersistedFilters.selectedYears,
@@ -52,12 +33,16 @@ const isStringArray = (value: unknown): value is string[] =>
 const isNumberArray = (value: unknown): value is number[] =>
   Array.isArray(value) && value.every((item) => typeof item === "number");
 
-const migratePersistedSort = (sort: string): string => {
+const migratePersistedSort = (sort: string): SortValues => {
   if (sort === "CommunityRatingHigh" || sort === "CommunityRatingLow") {
     return defaultPersistedFilters.selectedSort;
   }
 
-  return sort;
+  if (VALID_SORT_VALUES.has(sort)) {
+    return sort as SortValues;
+  }
+
+  return defaultPersistedFilters.selectedSort;
 };
 
 const isValidPersistedFilters = (
@@ -76,10 +61,33 @@ const isValidPersistedFilters = (
     typeof state.selectedSort === "string" &&
     VALID_SORT_VALUES.has(state.selectedSort) &&
     typeof state.styleOperator === "string" &&
-    VALID_STYLE_OPERATORS.has(state.styleOperator) &&
+    VALID_STYLE_OPERATORS.has(state.styleOperator as StyleOperator) &&
     typeof state.searchQuery === "string"
   );
 };
+
+const parsePersistedFiltersValue = (
+  parsed: unknown,
+): PersistedFiltersState | null => {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return null;
+  }
+
+  const candidate = { ...(parsed as PersistedFiltersState) };
+
+  if ("selectedSort" in candidate) {
+    candidate.selectedSort = migratePersistedSort(candidate.selectedSort);
+  }
+
+  if (isValidPersistedFilters(candidate)) {
+    return candidate;
+  }
+
+  return null;
+};
+
+const normalizePersistedFilters = (value: unknown): PersistedFiltersState =>
+  parsePersistedFiltersValue(value) ?? defaultPersistedFilters;
 
 export const parsePersistedFilters = (
   value: string | null,
@@ -89,18 +97,15 @@ export const parsePersistedFilters = (
   }
 
   try {
-    const parsed: unknown = JSON.parse(value);
-
-    if (parsed && typeof parsed === "object" && "selectedSort" in parsed) {
-      const state = parsed as PersistedFiltersState;
-      state.selectedSort = migratePersistedSort(state.selectedSort);
-    }
-
-    if (isValidPersistedFilters(parsed)) {
+    const parsed = parsePersistedFiltersValue(JSON.parse(value));
+    if (parsed) {
       return parsed;
     }
   } catch {
-    // Corrupt storage falls back to defaults below.
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(FILTERS_STORAGE_KEY);
+    }
+    return defaultPersistedFilters;
   }
 
   if (typeof window !== "undefined") {
@@ -117,3 +122,16 @@ export const clearPersistedFilters = (): void => {
 
   localStorage.removeItem(FILTERS_STORAGE_KEY);
 };
+
+export const parseStoredFiltersObject = (
+  value: unknown,
+): PersistedFiltersState => normalizePersistedFilters(value);
+
+export const isValidStoredFiltersPatch = (
+  value: unknown,
+): value is PersistedFiltersState => parsePersistedFiltersValue(value) !== null;
+
+export const persistedFiltersEqual = (
+  left: PersistedFiltersState,
+  right: PersistedFiltersState,
+): boolean => JSON.stringify(left) === JSON.stringify(right);

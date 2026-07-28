@@ -5,6 +5,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider = "postgresql"
 }
@@ -12,6 +16,8 @@ datasource db {
 model User {
   discogs_user_id Int      @id
   username        String
+  /// [UserPreferences]
+  preferences     Json     @default("{}")
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 

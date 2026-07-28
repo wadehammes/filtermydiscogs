@@ -1,0 +1,219 @@
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
+import { useAtomValue } from "jotai";
+import { fetchUserPreferences, updateUserPreferences } from "src/api/helpers";
+import { persistedFiltersAtom } from "src/atoms/filters.atoms";
+import { viewStateAtom } from "src/atoms/view.atoms";
+import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
+import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
+import {
+  persistedFiltersFactory,
+  userPreferencesFactory,
+} from "src/tests/factories/UserPreferences.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { testAuthenticatedAuthState } from "src/tests/utils/testProviders";
+import { resetFilterPersistenceCache } from "src/utils/filterPersistence";
+import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
+import { act, renderFeatureHook, waitFor } from "test-utils";
+
+jest.mock("src/api/helpers", () => ({
+  fetchUserPreferences: jest.fn(),
+  updateUserPreferences: jest.fn(),
+}));
+
+const mockFetchUserPreferences = jest.mocked(fetchUserPreferences);
+const mockUpdateUserPreferences = jest.mocked(updateUserPreferences);
+
+describe("useUserPreferencesSync", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetFilterPersistenceCache();
+    document.documentElement.removeAttribute("data-theme");
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("seeds local theme to the server when GET preferences differ", async () => {
+    localStorage.setItem(THEME_STORAGE_KEY, "dark");
+    const serverPreferences = userPreferencesFactory.build({ theme: "light" });
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+    mockUpdateUserPreferences.mockResolvedValue({
+      preferences: userPreferencesFactory.build({ theme: "dark" }),
+    });
+
+    renderFeatureHook(() => useUserPreferencesSync(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateUserPreferences).toHaveBeenCalledWith(
+        expect.objectContaining({ theme: "dark" }),
+      );
+    });
+  });
+
+  it("hydrates theme and view from GET preferences", async () => {
+    localStorage.setItem(THEME_STORAGE_KEY, "dark");
+
+    const serverPreferences = userPreferencesFactory.build({
+      theme: "light",
+      view: { currentView: "list", previousView: "card" },
+    });
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+    mockUpdateUserPreferences.mockResolvedValue({
+      preferences: userPreferencesFactory.build({
+        theme: "dark",
+        view: { currentView: "list", previousView: "card" },
+      }),
+    });
+
+    const { result } = renderFeatureHook(
+      () => {
+        useUserPreferencesSync();
+
+        return useAtomValue(viewStateAtom);
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    });
+
+    await waitFor(() => {
+      expect(result.current.currentView).toBe("list");
+    });
+  });
+
+  it("keeps pending local filters when the server echoes the in-flight persist", async () => {
+    const localFilters = persistedFiltersFactory.build({
+      selectedStyles: ["Rock"],
+    });
+    const serverPreferences = userPreferencesFactory.build({
+      persistFilters: true,
+      filters: persistedFiltersFactory.build({ selectedStyles: ["Rock"] }),
+    });
+
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(localFilters));
+    markFiltersPendingPersist(localFilters);
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+
+    renderFeatureHook(() => useUserPreferencesSync(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(mockFetchUserPreferences).toHaveBeenCalled();
+    });
+
+    expect(
+      JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? "{}"),
+    ).toEqual(localFilters);
+  });
+
+  it("seeds local filters to the server when the server still has defaults", async () => {
+    const localFilters = persistedFiltersFactory.build({
+      selectedStyles: ["Rock"],
+    });
+    const serverPreferences = userPreferencesFactory.build({
+      persistFilters: true,
+      filters: persistedFiltersFactory.empty(),
+    });
+
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(localFilters));
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+    mockUpdateUserPreferences.mockResolvedValue({
+      preferences: userPreferencesFactory.build({ filters: localFilters }),
+    });
+
+    const { result } = renderFeatureHook(
+      () => {
+        useUserPreferencesSync();
+
+        return useAtomValue(persistedFiltersAtom);
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.selectedStyles).toEqual(["Rock"]);
+    });
+
+    jest.useFakeTimers();
+
+    act(() => {
+      jest.advanceTimersByTime(400);
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateUserPreferences).toHaveBeenCalledWith(
+        expect.objectContaining({ filters: localFilters }),
+      );
+    });
+  });
+
+  it("hydrates server filters when local storage is still at defaults", async () => {
+    const serverFilters = persistedFiltersFactory.build({
+      selectedStyles: ["Rock"],
+    });
+    const serverPreferences = userPreferencesFactory.build({
+      persistFilters: true,
+      filters: serverFilters,
+    });
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+
+    const { result } = renderFeatureHook(
+      () => {
+        useUserPreferencesSync();
+
+        return useAtomValue(persistedFiltersAtom);
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.selectedStyles).toEqual(["Rock"]);
+    });
+
+    expect(mockUpdateUserPreferences).not.toHaveBeenCalled();
+  });
+});
