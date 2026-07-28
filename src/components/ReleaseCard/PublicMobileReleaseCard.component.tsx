@@ -71,6 +71,7 @@ const PublicMobileReleaseCardComponent = ({
       className={classNames(styles.releaseCard, {
         [styles.highlighted]: isHighlighted,
       })}
+      data-testid="fmdPublicMobileReleaseCard"
     >
       <div
         className={styles.imageContainer}

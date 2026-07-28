@@ -102,7 +102,7 @@ export default function DashboardClient() {
         currentPage="dashboard"
         hideFilters={true}
       />
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="fmdDashboardClient">
         <div className={styles.header}>
           <h1>Collection Dashboard</h1>
           <p className={styles.subtitle}>

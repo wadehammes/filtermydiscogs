@@ -13,7 +13,9 @@ import {
 type TestProviderOptions = Pick<
   TestProvidersProps,
   "authInitialState" | "skipInitialAuthCheck" | "queryClient" | "includeCrate"
->;
+> & {
+  wrapper?: ComponentType<{ children: ReactNode }>;
+};
 
 interface CustomRenderOptions
   extends Omit<RenderOptions, "queries">,
@@ -73,17 +75,28 @@ const renderHookWithTestProviders = <TProps, TResult>(
     skipInitialAuthCheck,
     queryClient,
     includeCrate,
+    wrapper: UserWrapper,
     ...renderHookOptions
   } = options ?? {};
 
+  const ProviderWrapper = buildTestProvidersWrapper({
+    ...(authInitialState !== undefined ? { authInitialState } : {}),
+    ...(skipInitialAuthCheck !== undefined ? { skipInitialAuthCheck } : {}),
+    ...(queryClient !== undefined ? { queryClient } : {}),
+    ...(includeCrate !== undefined ? { includeCrate } : {}),
+  });
+
+  const ComposedWrapper = UserWrapper
+    ? ({ children }: { children: ReactNode }) => (
+        <ProviderWrapper>
+          <UserWrapper>{children}</UserWrapper>
+        </ProviderWrapper>
+      )
+    : ProviderWrapper;
+
   return rtlRenderHook(hook, {
     ...renderHookOptions,
-    wrapper: buildTestProvidersWrapper({
-      ...(authInitialState !== undefined ? { authInitialState } : {}),
-      ...(skipInitialAuthCheck !== undefined ? { skipInitialAuthCheck } : {}),
-      ...(queryClient !== undefined ? { queryClient } : {}),
-      ...(includeCrate !== undefined ? { includeCrate } : {}),
-    }),
+    wrapper: ComposedWrapper,
   });
 };
 

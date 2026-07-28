@@ -95,6 +95,7 @@ const MobileReleaseCardComponent = ({
           [styles.inCrate]: isInCrate(release.instance_id),
           [styles.randomMode]: isRandomMode,
         })}
+        data-testid="fmdMobileReleaseCard"
       >
         <div
           className={styles.imageContainer}

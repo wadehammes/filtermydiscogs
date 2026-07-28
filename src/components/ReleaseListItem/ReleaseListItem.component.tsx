@@ -103,6 +103,7 @@ const ReleaseListItemComponent = ({
 
   return (
     <div
+      data-testid="fmdReleaseListItem"
       className={classNames(styles.releaseItem, {
         [styles.highlighted]: isHighlighted,
         [styles.inCrate]: isInCrate(release.instance_id),

@@ -28,6 +28,7 @@ Run the same locally before pushing when possible.
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
 | `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
+| `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
 | `pnpm knip` | Find unused exports/files locally ([`knip.json`](../../knip.json)). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |

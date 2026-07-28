@@ -69,6 +69,7 @@ const PublicReleaseCardComponent = ({
       className={classNames(styles.releaseCard, {
         [styles.highlighted]: isHighlighted,
       })}
+      data-testid="fmdPublicReleaseCard"
     >
       <div className={styles.imageShell}>
         <div
