@@ -1,0 +1,91 @@
+.dialogroot {
+  background: transparent;
+  border: none;
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  padding: 0;
+  width: 100%;
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--background) 50%, transparent);
+  }
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  left: 50%;
+  max-height: min(
+    85dvh,
+    calc(
+      100dvh -
+      2 *
+      var(--space-4) -
+      env(safe-area-inset-top, 0px) -
+      env(safe-area-inset-bottom, 0px)
+    )
+  );
+  max-width: 32rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-6);
+  position: fixed;
+  top: max(env(safe-area-inset-top, 0px), var(--space-4));
+  transform: translateX(-50%);
+  width: 90%;
+
+  @media (width >= 768px) {
+    max-height: 85vh;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.backdrop {
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--background) 50%, transparent);
+  display: flex;
+  height: 100dvh;
+  justify-content: center;
+  left: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(env(safe-area-inset-top, 0px), var(--space-4)) var(--space-4)
+    max(env(safe-area-inset-bottom, 0px), var(--space-4));
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: var(--z-6-popover);
+
+  @media (width >= 768px) {
+    align-items: center;
+    height: 100vh;
+    overflow-y: visible;
+    padding: 0;
+  }
+}
+
+.backdroppanel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--space-4);
+  max-height: min(90dvh, 100%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  width: 90%;
+
+  @media (width >= 768px) {
+    max-height: 90vh;
+  }
+}

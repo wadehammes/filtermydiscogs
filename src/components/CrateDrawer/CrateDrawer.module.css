@@ -289,7 +289,7 @@
   display: flex;
   gap: var(--space-4);
   outline: 1px solid transparent;
-  outline-offset: 1px;
+  outline-offset: -1px;
   padding: 0;
   position: relative;
   text-decoration: none;
@@ -305,9 +305,9 @@
     outline-color: var(--ring);
   }
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
 }
 

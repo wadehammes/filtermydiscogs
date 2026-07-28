@@ -1,27 +1,12 @@
 .backdrop {
-  align-items: center;
-  background: color-mix(in srgb, var(--background) 50%, transparent);
-  display: flex;
-  height: 100vh;
-  justify-content: center;
-  left: 0;
-  position: fixed;
-  top: 0;
-  width: 100vw;
-  z-index: var(--z-6-popover);
+  composes: backdrop from "../../styles/modal-dialog.module.css";
 }
 
 .dialog {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
+  composes: backdroppanel from "../../styles/modal-dialog.module.css";
   gap: var(--space-4);
   max-width: 25rem;
   padding: var(--space-6);
-  width: 90%;
 
   .title {
     color: var(--foreground);
