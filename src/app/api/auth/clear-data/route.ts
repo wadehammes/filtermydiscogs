@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await prisma.crate.deleteMany({
-      where: { user_id: verified.user.userId },
+    await prisma.user.delete({
+      where: { discogs_user_id: verified.user.userId },
     });
   } catch (error) {
     console.error("Error clearing crate data for user:", error);

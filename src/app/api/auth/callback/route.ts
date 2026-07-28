@@ -4,6 +4,7 @@ import {
   syncIdentityCookies,
 } from "src/lib/auth-request";
 import { privateRouteRedirect } from "src/lib/private-route-response";
+import { upsertDiscogsUser } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export const dynamic = "force-dynamic";
@@ -67,6 +68,11 @@ export async function GET(request: NextRequest) {
         username: verifiedIdentity.username,
       },
     );
+
+    await upsertDiscogsUser({
+      discogsUserId: verifiedIdentity.id,
+      username: verifiedIdentity.username,
+    });
 
     const response = privateRouteRedirect(
       new URL("/releases?auth=success", request.url),

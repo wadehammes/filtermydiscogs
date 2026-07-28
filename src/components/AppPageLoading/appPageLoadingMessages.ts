@@ -1,9 +1,10 @@
-export type AppPage = "releases" | "dashboard" | "mosaic";
+export type AppPage = "releases" | "dashboard" | "mosaic" | "settings";
 
 export const LOADING_MESSAGES: Record<AppPage, string> = {
   releases: "Loading releases...",
   dashboard: "Loading dashboard...",
   mosaic: "Loading mosaic...",
+  settings: "Loading settings...",
 };
 
 export function formatLoadingMessage(

@@ -3,13 +3,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import Button from "src/components/Button/Button.component";
-import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
-import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
-import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
-import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
-import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
 import styles from "./UserActions.module.css";
 
 interface UserActionsProps {
@@ -24,20 +19,9 @@ export const UserActions = ({
   showUsername = true,
 }: UserActionsProps) => {
   const { logout, state: authState } = useAuth();
-  const { username, isAuthenticated, rateLimited } = authState;
+  const { username } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [showSyncDialog, setShowSyncDialog] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const syncMutation = useSyncCratesMutation(authState.userId);
-  const {
-    data: collectionData,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useDiscogsCollectionQuery({
-    username: username || "",
-    enabled: isAuthenticated && !rateLimited,
-  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -78,76 +62,19 @@ export const UserActions = ({
     });
   };
 
-  const handleAboutClick = () => {
+  const handleNavigationClick = (label: string, value: string) => {
     setIsDropdownOpen(false);
     trackEvent("pageNavigation", {
       action: "pageNavigation",
       category: "navigation",
-      label: "Navigate to About",
-      value: "about",
+      label: `Navigate to ${label}`,
+      value,
     });
-  };
-
-  const handleSyncClick = () => {
-    setIsDropdownOpen(false);
-    setShowSyncDialog(true);
-  };
-
-  const handleSyncConfirm = () => {
-    const syncResult = prepareCollectionForSync(
-      collectionData,
-      hasNextPage,
-      isFetchingNextPage,
-    );
-
-    if (!syncResult.isValid) {
-      alert(syncResult.error);
-      setShowSyncDialog(false);
-      return;
-    }
-
-    if (!syncResult.instanceIds) {
-      alert("No instance IDs found.");
-      setShowSyncDialog(false);
-      return;
-    }
-
-    syncMutation.mutate(
-      { collectionInstanceIds: syncResult.instanceIds },
-      {
-        onSuccess: (data) => {
-          setShowSyncDialog(false);
-          trackEvent("crateSync", {
-            action: "crateSyncManual",
-            category: "crate",
-            label: "Manual Crate Sync",
-            value: data.removedCount.toString(),
-          });
-          if (data.removedCount > 0) {
-            alert(
-              `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,
-            );
-          } else {
-            alert(
-              "Sync complete: All releases in your crates are still in your collection.",
-            );
-          }
-        },
-        onError: (error) => {
-          alert(
-            `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-          );
-        },
-      },
-    );
   };
 
   const buttonSize = "sm";
   const containerClass =
     variant === "mobile" ? styles.mobileActions : styles.userSection;
-
-  const isCollectionLoading = hasNextPage || isFetchingNextPage;
-  const isSyncDisabled = syncMutation.isPending || isCollectionLoading;
 
   return (
     <div className={containerClass}>
@@ -186,29 +113,21 @@ export const UserActions = ({
             <div className={styles.dropdown}>
               <div className={styles.dropdownItem}>
                 <Link
-                  href="/about"
+                  href="/settings"
                   className={styles.dropdownLink}
-                  onClick={handleAboutClick}
+                  onClick={() => handleNavigationClick("Settings", "settings")}
                 >
-                  About
+                  Settings
                 </Link>
               </div>
               <div className={styles.dropdownItem}>
-                <ThemeSwitcher variant="desktop" />
-              </div>
-              <div className={styles.dropdownItem}>
-                <Button
-                  variant="secondary"
-                  size={buttonSize}
-                  onPress={handleSyncClick}
-                  disabled={isSyncDisabled}
+                <Link
+                  href="/about"
+                  className={styles.dropdownLink}
+                  onClick={() => handleNavigationClick("About", "about")}
                 >
-                  {syncMutation.isPending
-                    ? "Syncing..."
-                    : isCollectionLoading
-                      ? "Loading..."
-                      : "Sync Collection"}
-                </Button>
+                  About
+                </Link>
               </div>
               <div className={styles.dropdownItem}>
                 <Button
@@ -223,18 +142,6 @@ export const UserActions = ({
           )}
         </div>
       )}
-
-      <ConfirmDialog
-        isOpen={showSyncDialog}
-        title="Sync Collection"
-        message="This will sync your crates with your Discogs collection and remove any releases from your crates that are no longer in your collection. This action cannot be undone. Continue?"
-        confirmLabel={syncMutation.isPending ? "Syncing..." : "Sync"}
-        cancelLabel="Cancel"
-        variant="danger"
-        onConfirm={handleSyncConfirm}
-        onCancel={() => setShowSyncDialog(false)}
-        isConfirming={syncMutation.isPending}
-      />
     </div>
   );
 };

@@ -1,24 +1,14 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { clearData } from "src/api/helpers";
 import Button from "src/components/Button/Button.component";
 import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
-import { useCrate } from "src/context/crate.context";
-import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
-import { clearClientStoredData } from "src/utils/clearClientStoredData";
+import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import styles from "./page.module.css";
 
 export function LegalClient() {
-  const { state: authState, logout } = useAuth();
-  const resetCollection = useCollectionReset();
-  const { clearCrate } = useCrate();
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const [isClearing, setIsClearing] = useState(false);
+  const { state: authState } = useAuth();
+  const { clearAllUserData, isClearing } = useClearAllUserData();
   const isAuthenticated = authState.isAuthenticated;
 
   const handleClearAllData = async () => {
@@ -35,27 +25,11 @@ export function LegalClient() {
       return;
     }
 
-    setIsClearing(true);
-
     try {
-      // Clear all cookies (authentication tokens)
-      await clearData();
-
-      clearClientStoredData();
-
-      // Clear React Query cache and reset collection state
-      queryClient.clear();
-      resetCollection();
-      clearCrate();
-
-      // Logout and redirect to home
-      await logout();
-      router.replace("/");
+      await clearAllUserData();
     } catch (error) {
       console.error("Error clearing data:", error);
       alert("Failed to clear all data. Please try again.");
-    } finally {
-      setIsClearing(false);
     }
   };
 
