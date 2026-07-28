@@ -2,12 +2,12 @@
 
 # FilterMyDisco.gs
 
-A web application to filter and explore your Discogs vinyl collection.
+A web application to filter and explore your Discogs collection, including vinyl, CDs, tapes, and every other format Discogs supports.
 
 ## Features
 
 - 🔐 **OAuth Authentication** - Secure login with your Discogs account
-- 🎵 **Complete Collection Access** - Browse your entire vinyl collection
+- 🎵 **Complete Collection Access** - Browse your entire collection across every format Discogs supports
 - 🎨 **Style Filtering** — Filter by style, genre, year, and format
 - 📊 **Advanced Sorting** — Sort by label, artist, title, date added, year, rating, and more
 - 🎲 **Random Release** — View a random release from your collection
@@ -45,7 +45,7 @@ DISCOGS_CONSUMER_SECRET=your_consumer_secret_here
 # OAuth Callback URL (optional, defaults to http://localhost:6767/api/auth/callback)
 DISCOGS_CALLBACK_URL=http://localhost:6767/api/auth/callback
 
-# Site URL (optional, defaults to https://filtermydisco.gs)
+# Site URL (optional, defaults to https://www.filtermydisco.gs)
 NEXT_PUBLIC_SITE_URL=http://localhost:6767
 
 # Database URL (for Prisma)

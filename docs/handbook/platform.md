@@ -45,7 +45,7 @@ Full list: [`package.json`](../../package.json).
 | `DISCOGS_CALLBACK_URL` | OAuth redirect (optional; has dev default) |
 | `DISCOGS_API_USER_AGENT` | Optional Discogs API User-Agent override |
 | `DATABASE_URL` | Postgres connection string for Prisma |
-| `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional) |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
 
 [`next.config.ts`](../../next.config.ts) **`env`** block exposes only **`DISCOGS_CONSUMER_KEY`** and **`DISCOGS_CALLBACK_URL`** to the Next bundle. **`DISCOGS_CONSUMER_SECRET`** stays a runtime server env var (used by [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) only). Do not add server-only secrets to **`env`**.
@@ -74,7 +74,7 @@ Cookie-authenticated **`/api/auth/*`** and authenticated **`/api/crates/*`** rou
 | Route handlers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts) | Return JSON via **`privateRouteJson`**, redirects via **`privateRouteRedirect`** (`Cache-Control: private, no-store`, **`Vary: Cookie`**) |
 | Error bodies | [`createErrorResponse`](../../src/lib/api-helpers.ts) in [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts) | Sanitized errors wrapped in **`privateRouteJson`** |
 | Dynamic rendering | `export const dynamic = "force-dynamic"` on each auth/crate handler | Prevents Next.js from caching handler output |
-| Edge pass-through | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 network proxy (replaces deprecated **`middleware.ts`**); applies the same cache headers when a handler omits them |
+| Edge pass-through | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 network proxy; applies private cache headers on auth and authenticated crate API routes when a handler omits them |
 
 Do **not** use bare **`NextResponse.json`** on private session routes—use **`privateRouteJson`** (or **`createErrorResponse`** in `catch` blocks). Public crate reads keep their own cache policy in [`/api/crates/public/[id]`](../../src/app/api/crates/public/[id]/route.ts).
 

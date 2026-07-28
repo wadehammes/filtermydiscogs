@@ -51,7 +51,7 @@ Server `page.tsx` files for home, about, legal, and public crates share one clie
 2. **`PageFooter`** (server component) — community stats (`PageFooterStats` / `PageFooterFun`) plus About / Contribute links. Pass as the layout `footer` prop from each `page.tsx`.
 3. **Page content** — e.g. [`Login`](../../src/components/Login/Login.component.tsx) on `/`, `AboutClient` / `LegalClient`, or public crate client.
 
-Home renders the landing immediately during **`isCheckingAuth`**; authenticated users redirect from `Login` via `router.replace("/releases")`. Protected app routes use **`AppPageLoading`** (see Protected routes above), not a blocking auth shell on `/`.
+Home renders the landing immediately during **`isCheckingAuth`**; authenticated users redirect from **`Login`** via `router.replace("/releases")`. Protected app routes use **`AppPageLoading`** (see Protected routes above), not a blocking auth shell on `/`.
 
 ## API layer
 
@@ -146,11 +146,15 @@ About/Legal/Settings **Clear stored data** calls **`clearData`** in [`src/api/he
 
 ## Metadata and OG images
 
-- Shared site name, tagline, descriptions, and URL helpers in [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts).
-- Root metadata defaults in [`src/app/layout.tsx`](../../src/app/layout.tsx).
+- Shared site name, tagline, descriptions, URL helpers, canonical URL builder (**`siteCanonicalUrl`**), collection format phrase (**`COLLECTION_FORMATS_PHRASE`**: vinyl, CDs, tapes, and any Discogs format), preview image alt (**`LOGIN_PREVIEW_ALT`**), private-route robots defaults (**`PRIVATE_PAGE_ROBOTS`**, used on `/releases`, `/dashboard`, `/settings`, `/mosaic`, `/admin`), and home JSON-LD payload (**`homeStructuredData`**) in [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts).
+- Root metadata defaults in [`src/app/layout.tsx`](../../src/app/layout.tsx) (`metadataBase`, **`alternates.canonical`** via **`siteCanonicalUrl`**).
 - Per-route metadata in `page.tsx` files (e.g. public crate title/description).
 - Default social images: static [`opengraph-image.png`](../../src/app/opengraph-image.png) and [`twitter-image.png`](../../src/app/twitter-image.png) in `src/app/` with matching [`opengraph-image.alt.txt`](../../src/app/opengraph-image.alt.txt) / [`twitter-image.alt.txt`](../../src/app/twitter-image.alt.txt). Shared alt text and metadata objects live in [`src/constants.ts`](../../src/constants.ts) (`DEFAULT_OPEN_GRAPH_IMAGE`, `DEFAULT_TWITTER_IMAGE`). Per-route metadata references those constants with `metadataBase` from [`layout.tsx`](../../src/app/layout.tsx).
 - Dynamic OG routes: [`src/app/api/og/crate/[id]/route.tsx`](../../src/app/api/og/crate/[id]/route.tsx) for public crate shares.
+- **Sitemap**: [`src/app/sitemap.ts`](../../src/app/sitemap.ts) lists indexable static pages only (`/`, `/about`, `/legal`). Public crate URLs are **not** included.
+- **Robots**: [`src/app/robots.ts`](../../src/app/robots.ts) allows `/`, disallows `/admin` and `/api/`, and references the sitemap URL from **`getMetadataSiteUrl()`**.
+- **Canonical URL**: **`DEFAULT_SITE_URL`** and sitemap entries use **`https://www.filtermydisco.gs`**. Apex → `www` redirect is handled by **Vercel domain settings**, not app code.
+- **Home JSON-LD**: [`HomeJsonLd`](../../src/components/Login/HomeJsonLd.component.tsx) on [`page.tsx`](../../src/app/page.tsx).
 
 Do not add a dynamic `opengraph-image.tsx` alongside the PNG; the code route overrides the static file and replaces the app preview art.
 

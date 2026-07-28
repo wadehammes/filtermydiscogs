@@ -8,6 +8,7 @@ import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { PublicReleaseModal } from "src/components/ReleaseModal/PublicReleaseModal.component";
 import { ReleaseMiniPlayer } from "src/components/ReleasePlayback/ReleaseMiniPlayer.component";
+import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import {
   ReleasePlaybackProvider,
@@ -30,8 +31,8 @@ function PublicCrateAboutSections() {
       <h2 className={styles.heading}>About FilterMyDiscogs</h2>
       <p className={styles.text}>
         FilterMyDisco.gs is a passion project to help you discover, organize,
-        and explore your music collection, whether it's vinyl, CDs, cassettes,
-        or digital releases.
+        and explore your music collection, including {COLLECTION_FORMATS_PHRASE}
+        .
       </p>
       <p className={styles.text}>Key features:</p>
       <ul className={styles.list}>

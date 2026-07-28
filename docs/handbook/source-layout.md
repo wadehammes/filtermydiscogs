@@ -8,7 +8,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/components/`](../../src/components/) | Feature UI (Dashboard, ReleaseCard, StickyHeaderBar, …). |
 | [`src/atoms/`](../../src/atoms/) | Jotai atoms: filters, view mode, shared `JotaiProvider`. |
 | [`src/context/`](../../src/context/) | Auth, collection, crate, theme providers; filters/view scope markers (state in Jotai). |
-| [`src/constants/`](../../src/constants/) | Topic constants (`sorting.ts`, `mosaic.ts`, `collection.ts`) alongside root [`constants.ts`](../../src/constants.ts). |
+| [`src/constants/`](../../src/constants/) | Topic constants (`sortValues.ts`, mosaic sizes, [`siteMetadata.ts`](../../src/constants/siteMetadata.ts)) alongside root [`constants.ts`](../../src/constants.ts). |
 | [`src/services/`](../../src/services/) | Discogs OAuth service, client auth/cookie helpers. |
 | [`src/api/`](../../src/api/) | Browser-side fetch helpers for `/api/...` routes. |
 | [`src/hooks/`](../../src/hooks/) | Custom hooks; React Query under `hooks/queries/`. |
@@ -45,6 +45,7 @@ Quick map of **`src/`** and related top-level folders.
 | Crate drawer open/closed state | [`useCrateDrawer.hook.ts`](../../src/hooks/useCrateDrawer.hook.ts) + [`crate.context.tsx`](../../src/context/crate.context.tsx); layout in [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) |
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
 | Private session API cache headers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |
+| Site metadata / sitemap / robots | [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts), [`src/app/sitemap.ts`](../../src/app/sitemap.ts), [`src/app/robots.ts`](../../src/app/robots.ts) — see [patterns.md → Metadata and OG images](patterns.md#metadata-and-og-images) |
 | Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home content in [`Login/`](../../src/components/Login/) |
 | Unused code / dead exports | [`knip.json`](../../knip.json), `pnpm knip` |
 
