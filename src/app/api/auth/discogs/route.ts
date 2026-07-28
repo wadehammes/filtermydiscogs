@@ -62,10 +62,14 @@ export async function GET(request: NextRequest) {
 
         syncIdentityCookies(response, identity);
 
-        await upsertDiscogsUser({
-          discogsUserId: identity.userId,
-          username: identity.username,
-        });
+        try {
+          await upsertDiscogsUser({
+            discogsUserId: identity.userId,
+            username: identity.username,
+          });
+        } catch (error) {
+          console.error("Failed to upsert user on token reuse login:", error);
+        }
 
         return response;
       }

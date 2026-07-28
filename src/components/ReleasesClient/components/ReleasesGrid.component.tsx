@@ -57,6 +57,8 @@ const ReleasesGridComponent = ({
     return styles.releasesGrid;
   }, [isActuallyRandomMode]);
 
+  const useDesktopCard = !isMobile || isActuallyRandomMode;
+
   if (isListView) {
     return (
       <ReleasesTable
@@ -76,15 +78,15 @@ const ReleasesGridComponent = ({
           className={styles.releaseItem}
         >
           {isCardView ? (
-            isMobile ? (
-              <MobileReleaseCard
+            useDesktopCard ? (
+              <ReleaseCard
                 release={release}
                 isRandomMode={isActuallyRandomMode}
                 onExitRandomMode={onExitRandomMode}
                 onReleaseClick={onReleaseClick}
               />
             ) : (
-              <ReleaseCard
+              <MobileReleaseCard
                 release={release}
                 isRandomMode={isActuallyRandomMode}
                 onExitRandomMode={onExitRandomMode}
