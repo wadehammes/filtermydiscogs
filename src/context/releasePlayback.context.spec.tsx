@@ -21,7 +21,7 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
-import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
+import { postYoutubePlayerCommand } from "src/utils/postYoutubePlayerCommand";
 import {
   readPersistedReleasePlayback,
   writePersistedReleasePlayback,
@@ -30,14 +30,11 @@ import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/hooks/queries/useDiscogsReleaseQuery");
 jest.mock("src/api/helpers");
-jest.mock("src/utils/releasePlayback", () => ({
-  ...jest.requireActual("src/utils/releasePlayback"),
+jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
 }));
 
-const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand, {
-  shallow: true,
-});
+const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
 
 const mockApi = jest.mocked(apiHelpers);
 

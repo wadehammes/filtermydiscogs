@@ -18,21 +18,14 @@ const mockApi = jest.mocked(apiHelpers);
 const apiError = new Error("API request failed");
 const RELEASE_ID = 249504;
 
-jest.mock("src/context/crate.context", () => {
-  const actual = jest.requireActual<typeof import("src/context/crate.context")>(
-    "src/context/crate.context",
-  );
-
-  return {
-    ...actual,
-    useCrate: () => ({
-      addToCrate: mockAddToCrate,
-      removeFromCrate: mockRemoveFromCrate,
-      isInCrate: mockIsInCrate,
-      openDrawer: mockOpenDrawer,
-    }),
-  };
-});
+jest.mock("src/context/crate.context", () => ({
+  useCrate: () => ({
+    addToCrate: mockAddToCrate,
+    removeFromCrate: mockRemoveFromCrate,
+    isInCrate: mockIsInCrate,
+    openDrawer: mockOpenDrawer,
+  }),
+}));
 
 jest.mock("src/hooks/useMediaQuery.hook", () => ({
   useMediaQuery: () => mockUseMediaQuery(),
@@ -86,7 +79,7 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID);
     const user = userEvent.setup();
 
-    render(<ReleaseSummaryHero release={release} />);
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
     await user.click(screen.getByRole("button", { name: "Add to crate" }));
 
@@ -100,7 +93,7 @@ describe("ReleaseSummaryHero", () => {
     const user = userEvent.setup();
     mockIsInCrate.mockReturnValue(true);
 
-    render(<ReleaseSummaryHero release={release} />);
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
     await user.click(screen.getByRole("button", { name: "Remove from crate" }));
 
@@ -114,7 +107,7 @@ describe("ReleaseSummaryHero", () => {
     const user = userEvent.setup();
     mockUseMediaQuery.mockReturnValue(true);
 
-    render(<ReleaseSummaryHero release={release} />);
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
     await user.click(screen.getByRole("button", { name: "Add to crate" }));
 
@@ -141,7 +134,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
     expect(
       screen.getByText(/Test Label · \d{4} · ABC-123/),
@@ -166,7 +159,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
     expect(
       screen.getByRole("button", { name: "Filter by Vinyl format" }),
@@ -197,7 +190,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
     expect(screen.queryByText(/You \d\/5/)).toBeNull();
 

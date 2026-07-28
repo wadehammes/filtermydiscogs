@@ -104,9 +104,11 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await user.click(
-      screen.getByTestId("fmdPlayingIndicator").closest("button")!,
-    );
+    const activeTrackButton = screen
+      .getByTestId("fmdPlayingIndicator")
+      .closest("button");
+    expect(activeTrackButton).toBeTruthy();
+    await user.click(activeTrackButton as HTMLButtonElement);
 
     expect(onActiveTrackToggle).toHaveBeenCalledTimes(1);
     expect(onTrackSelect).not.toHaveBeenCalled();

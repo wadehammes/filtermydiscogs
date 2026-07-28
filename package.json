@@ -20,6 +20,7 @@
     "format:fix": "biome format --write src",
     "test": "jest --runInBand --detectOpenHandles",
     "test:ci": "jest --passWithNoTests",
+    "test:coverage": "jest --coverage --runInBand --detectOpenHandles",
     "test:file": "jest --runInBand --detectOpenHandles --watch --",
     "scaffold": "scripts/scaffold.sh",
     "db:generate": "prisma generate",

@@ -113,7 +113,7 @@ Authenticated sessions use the user's OAuth tokens. Visitors without Discogs coo
 
 Client helper: **`fetchDiscogsRelease`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). React Query: **`useDiscogsReleaseQuery`** ([`src/hooks/queries/useDiscogsReleaseQuery.ts`](../../src/hooks/queries/useDiscogsReleaseQuery.ts)) with **`DiscogsReleaseQueryKeys`**.
 
-**Testing:** Assert the route contract in [`route.test.ts`](../../src/app/api/release/[id]/route.test.ts) and the client helper in [`helpers.test.ts`](../../src/api/helpers.test.ts). UI tests mock **`fetchDiscogsRelease`** via **`src/api/helpers`** and let **`useDiscogsReleaseQuery`** run on **`TestProviders`** (see [conventions.md → Testing](conventions.md#testing)).
+**Testing:** Assert the route contract in [`route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts) and the client helper in [`helpers.spec.ts`](../../src/api/helpers.spec.ts). UI tests mock **`fetchDiscogsRelease`** via **`src/api/helpers`** and let **`useDiscogsReleaseQuery`** run on **`TestProviders`** (see [conventions.md → Testing](conventions.md#testing)).
 
 Typed response fields live in [`src/types/discogs-release-detail.types.ts`](../../src/types/discogs-release-detail.types.ts): **`tracklist`** (position, title, duration, nested **`sub_tracks`**, per-track **`artists`** and **`extraartists`**), **`videos`** (YouTube **`uri`**, **`title`**, **`embed`**), **`community.rating`** (Discogs average **`average`** and **`count`**).
 

@@ -127,28 +127,7 @@ export const PLAY_FROM_GESTURE_RETRY_DELAYS_MS = [
   0, 150, 400, 800, 1500, 3000,
 ] as const;
 
-export type YoutubePlayerCommand = "playVideo" | "pauseVideo";
-
-export const postYoutubePlayerCommand = ({
-  iframe,
-  command,
-}: {
-  iframe: HTMLIFrameElement | null;
-  command: YoutubePlayerCommand;
-}): void => {
-  if (!iframe?.contentWindow) {
-    return;
-  }
-
-  iframe.contentWindow.postMessage(
-    JSON.stringify({
-      event: "command",
-      func: command,
-      args: "",
-    }),
-    "*",
-  );
-};
+export { postYoutubePlayerCommand } from "./postYoutubePlayerCommand";
 
 export const findPlayableTrackIndex = ({
   tracks,

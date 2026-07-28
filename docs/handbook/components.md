@@ -7,8 +7,7 @@ How UI is organized under `src/components/` and how we test it.
 - **Feature components**: [`src/components/<Name>/`](../../src/components/) — typically:
   - `Name.component.tsx` — main React export (arrow function, typed props)
   - `Name.module.css` — scoped styles
-  - Optional `Name.spec.tsx` + `Name.po.tsx` for new tested components (see [conventions.md → Testing](conventions.md#testing))
-  - Context/hook/util tests may use `*.test.tsx`; component PO tests use `*.spec.tsx`
+  - Optional `Name.spec.tsx` + `Name.po.tsx` for tested components (see [conventions.md → Testing](conventions.md#testing))
 
 - **Shared primitives**: [`src/components/shared/`](../../src/components/shared/) — reusable layout/stats pieces.
 
@@ -51,7 +50,7 @@ Add factories under **`src/tests/factories/`** when structured test data is need
 
 ## Testing
 
-- Colocate specs with the component when adding coverage (`*.spec.tsx` for PO-backed components; `*.test.tsx` for other tests; optional **`*.po.tsx`**).
+- Colocate specs with the component when adding coverage (`*.spec.tsx`; optional **`*.po.tsx`**).
 - Use **`render`** from **`test-utils`** when auth, filters, or crate context is required **without** mocking (default wrapper is **`TestProviders`**). Context-heavy component tests usually mock context in the PO and use **`render`** instead (see [conventions.md → Testing](conventions.md#testing)).
 - **Page composition in POs**: When production mounts a component inside a layout plus server footer (e.g. home = `PublicAuthLayout` + `PageFooter` + `Login`), the PO **`render*`** helper should mirror that tree. Put **`jest.mock("src/components/Page/PageFooter.server")`** in the PO and render `<PageFooter />` in the layout’s `footer` prop—do not inline a partial footer that omits links the spec asserts on.
 

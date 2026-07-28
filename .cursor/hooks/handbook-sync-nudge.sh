@@ -10,7 +10,7 @@ file="$(tool_file_path)"
 
 chapter=""
 case "$file" in
-  *.spec.ts | *.spec.tsx | *.test.ts | *.test.tsx)
+  *.spec.ts | *.spec.tsx)
     chapter="conventions.md#testing (page objects, specs, screen queries)" ;;
   *.module.css)
     chapter="conventions.md (CSS Modules: mobile-first base + nested @media)" ;;

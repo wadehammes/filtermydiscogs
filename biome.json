@@ -103,12 +103,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "src/context/**",
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.tsx"
-      ],
+      "includes": ["src/context/**", "**/*.spec.ts", "**/*.spec.tsx"],
       "linter": {
         "rules": {
           "style": {

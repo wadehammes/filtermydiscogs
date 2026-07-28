@@ -17,16 +17,34 @@ import { act, renderHook, waitFor } from "test-utils";
 import { AuthProvider, useAuth } from "./auth.context";
 
 jest.mock("src/api/helpers");
-jest.mock("src/services/auth.service", () => ({
-  ...jest.requireActual<typeof import("src/services/auth.service")>(
-    "src/services/auth.service",
-  ),
-  clearAuthCookies: jest.fn(),
-  clearSessionAuthCookies: jest.fn(),
-  clearUrlParams: jest.fn(),
-  getUsernameFromCookies: jest.fn(),
-  parseAuthUrlParams: jest.fn(),
-}));
+jest.mock("src/services/auth.service", () => {
+  const parseAuthUrlParams = jest.fn(() => ({
+    authStatus: null,
+    errorStatus: null,
+  }));
+
+  return {
+    clearAuthCookies: jest.fn(),
+    clearSessionAuthCookies: jest.fn(),
+    clearUrlParams: jest.fn(),
+    getUsernameFromCookies: jest.fn(),
+    parseAuthUrlParams,
+    hasAuthSuccessUrlParam: () => parseAuthUrlParams().authStatus === "success",
+    normalizeAuthStatus: (data: {
+      isAuthenticated: boolean;
+      username: string | null;
+      userId: string | null;
+      reconnectUsername?: string | null;
+      rateLimited?: boolean;
+    }) => ({
+      isAuthenticated: data.isAuthenticated,
+      username: data.username || null,
+      userId: data.userId || null,
+      reconnectUsername: data.reconnectUsername || null,
+      rateLimited: data.rateLimited === true,
+    }),
+  };
+});
 
 const mockUseRouter = jest.mocked(useRouter);
 const mockCheckAuth = jest.mocked(checkAuth);
