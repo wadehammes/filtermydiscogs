@@ -93,8 +93,9 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 ### File naming
 
 - **`MyComponent.component.tsx`** + **`MyComponent.module.css`**. Use the `styles.*` object in TSX.
-- **Shared style modules** under [`src/styles/`](../../src/styles/) (e.g. [`nav-links.module.css`](../../src/styles/nav-links.module.css), [`segmented-control.module.css`](../../src/styles/segmented-control.module.css), [`modal-input.module.css`](../../src/styles/modal-input.module.css)) for cross-component patterns. Import directly from the module path; do not re-export through barrel files.
+- **Shared style modules** under [`src/styles/`](../../src/styles/) (e.g. [`nav-links.module.css`](../../src/styles/nav-links.module.css), [`segmented-control.module.css`](../../src/styles/segmented-control.module.css), [`modal-input.module.css`](../../src/styles/modal-input.module.css), [`modal-dialog.module.css`](../../src/styles/modal-dialog.module.css)) for cross-component patterns. Import directly from the module path; do not re-export through barrel files.
 - **Modal / dialog inputs** (`input`, `textarea`, `select` in dialogs, bottom drawers, and edit modals): use **`16px`** font size via [`modal-input.module.css`](../../src/styles/modal-input.module.css) (`.field`) — not `rem` tokens — so iOS Safari does not zoom on focus when root `html` font-size scales below 16px.
+- **Modal / dialog layout** (native `<dialog>` panels and backdrop dialogs such as **`CrateNotesDialog`**, **`NoteEditDialog`**, **`EditCrateDialog`**, **`ConfirmDialog`**): compose from [`modal-dialog.module.css`](../../src/styles/modal-dialog.module.css) — on mobile, top-align panels with **`dvh`** max-height and scrollable backdrops so the keyboard does not clip the title; desktop keeps centered layout at **`width >= 768px`**.
 
 ### Component block structure
 
