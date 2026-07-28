@@ -1,13 +1,11 @@
 "use client";
 
-import classNames from "classnames";
 import Select from "src/components/Select/Select.component";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import Moon from "src/styles/icons/moon-thin.svg";
 import Sun from "src/styles/icons/sun-thin.svg";
-import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { StoredTheme } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
 import {
@@ -25,7 +23,7 @@ const THEME_OPTIONS = (Object.keys(THEME_LABELS) as StoredTheme[]).map(
 );
 
 interface ThemeSwitcherProps {
-  variant?: "desktop" | "mobile" | "segmented" | "dropdown";
+  variant?: "desktop" | "mobile" | "dropdown";
   className?: string;
   onThemePersisted?: () => void;
   onThemePersistError?: () => void;
@@ -72,36 +70,6 @@ export const ThemeSwitcher = ({
         placeholder="Select theme"
         {...definedProps({ className })}
       />
-    );
-  }
-
-  if (variant === "segmented") {
-    return (
-      <fieldset className={styles.segmentedGroup}>
-        <legend className={styles.segmentedLegend}>Theme</legend>
-        <div
-          className={classNames(
-            segmentedStyles.container,
-            styles.segmentedThemes,
-          )}
-        >
-          {THEME_OPTIONS.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              className={classNames(segmentedStyles.segment, {
-                [segmentedStyles.active]: activeTheme === value,
-              })}
-              onClick={() => {
-                handleThemeChange(value);
-              }}
-              aria-pressed={activeTheme === value}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </fieldset>
     );
   }
 

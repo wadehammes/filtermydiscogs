@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import Link from "next/link";
-import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import Logo from "src/styles/icons/fmd-logo.svg";
 import InstagramIcon from "src/styles/icons/instagram.svg";
 import navStyles from "src/styles/nav-links.module.css";
@@ -88,7 +87,6 @@ export const PublicPageHeader = ({
             </Link>
           </div>
           <div className={navStyles.actions}>
-            <ThemeSwitcher variant="segmented" />
             <a
               href="https://www.instagram.com/filtermydiscogs"
               target="_blank"

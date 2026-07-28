@@ -15,9 +15,14 @@
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
+    const hasSession = document.cookie
+      .split(";")
+      .some((cookie) => cookie.trim().startsWith("discogs_session=1"));
     let resolvedTheme;
 
-    if (stored && paletteThemes.has(stored)) {
+    if (!hasSession) {
+      resolvedTheme = prefersDark ? "dark" : "light";
+    } else if (stored && paletteThemes.has(stored)) {
       resolvedTheme = stored;
     } else if (stored === "system") {
       resolvedTheme = prefersDark ? "dark" : "light";

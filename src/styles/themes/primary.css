@@ -1,10 +1,3 @@
-[data-theme="dark"] {
-  --primary: #00d4ff;
-  --primary-hover: color-mix(in srgb, var(--primary) 78%, white 22%);
-  --primary-active: color-mix(in srgb, var(--primary) 82%, black 18%);
-  --ring: var(--primary);
-}
-
 [data-theme="dim"] {
   --primary: #2d4f6e;
   --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
@@ -45,7 +38,6 @@
 }
 
 :is(
-  [data-theme="dark"],
   [data-theme="slate"],
   [data-theme="midnight"],
   [data-theme="futuristic"],

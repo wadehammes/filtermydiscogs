@@ -77,26 +77,3 @@
 .label {
   font-size: var(--text-xs);
 }
-
-.segmentedGroup {
-  border: 0;
-  margin: 0;
-  min-width: 0;
-  padding: 0;
-}
-
-.segmentedLegend {
-  border: 0;
-  clip-path: inset(50%);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-}
-
-.segmentedThemes {
-  flex-wrap: wrap;
-}
