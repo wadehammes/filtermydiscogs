@@ -17,7 +17,13 @@ export function FiltersBarSkeleton() {
           <div className={styles.placeholderLineWide} />
         </div>
         <div className={filtersBarStyles.styleFilterGroup}>
-          <div className={styles.selectShell} aria-hidden>
+          <div className={styles.styleFilterPrimaryShell} aria-hidden>
+            <div className={styles.placeholderLineWide} />
+            <span className={styles.chevron}>
+              <ChevronIcon />
+            </span>
+          </div>
+          <div className={styles.operatorShell} aria-hidden>
             <div className={styles.placeholderLine} />
             <span className={styles.chevron}>
               <ChevronIcon />

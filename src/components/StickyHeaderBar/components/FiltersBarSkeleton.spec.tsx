@@ -7,6 +7,6 @@ describe("FiltersBarSkeleton", () => {
     const { container } = render(<FiltersBarSkeleton />);
 
     expect(screen.getByTestId("fmdFiltersBarSkeleton")).toBeInTheDocument();
-    expect(container.querySelectorAll("svg")).toHaveLength(5);
+    expect(container.querySelectorAll("svg")).toHaveLength(6);
   });
 });

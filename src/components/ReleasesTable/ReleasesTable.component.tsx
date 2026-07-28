@@ -11,6 +11,7 @@ import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
+import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
 import {
   useSelectedFormats,
@@ -20,6 +21,7 @@ import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleasesTable.module.css";
 
 interface ReleasesTableProps {
@@ -278,62 +280,63 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           id: "formatStyles",
           header: "Format/Styles",
           cell: ({ row }) => {
-            const releaseFormats = row.original.basic_information.formats;
-            const releaseStyles = row.original.basic_information.styles;
+            const { formats: releaseFormats } = row.original.basic_information;
             const formatTags =
               releaseFormats && releaseFormats.length > 0
                 ? getReleaseFormatTags(releaseFormats)
                 : [];
+            const genreStyleTags = getReleaseGenreStyleTags(
+              row.original.basic_information,
+            );
 
-            if (
-              formatTags.length === 0 &&
-              (!releaseStyles || releaseStyles.length === 0)
-            ) {
+            if (formatTags.length === 0 && genreStyleTags.length === 0) {
               return null;
             }
 
             return (
               <div className={styles.stylesCell}>
-                {formatTags.map((formatName) => (
-                  <button
-                    key={formatName}
-                    type="button"
-                    className={classNames("pill", "pillFormat", {
-                      pillSelected: selectedFormats.includes(formatName),
-                    })}
-                    onClick={(e) =>
-                      handlePillClick({
-                        event: e,
-                        value: formatName,
-                        type: "format",
-                        eventLabel: "Format Pill Clicked",
-                      })
-                    }
-                    aria-label={`Filter by ${formatName} format`}
-                  >
-                    {formatName}
-                  </button>
-                ))}
-                {releaseStyles?.map((style: string) => (
-                  <button
-                    key={style}
-                    type="button"
-                    className={classNames("pill", "pillStyle", {
-                      pillSelected: selectedStyles.includes(style),
-                    })}
-                    onClick={(e) =>
-                      handlePillClick({
-                        event: e,
-                        value: style,
-                        type: "style",
-                        eventLabel: "Style Pill Clicked",
-                      })
-                    }
-                    aria-label={`Filter by ${style} style`}
-                  >
-                    {style}
-                  </button>
-                ))}
+                <HorizontalScrollRow className={styles.tagsRow}>
+                  {formatTags.map((formatName) => (
+                    <button
+                      key={formatName}
+                      type="button"
+                      className={classNames("pill", "pillFormat", {
+                        pillSelected: selectedFormats.includes(formatName),
+                      })}
+                      onClick={(e) =>
+                        handlePillClick({
+                          event: e,
+                          value: formatName,
+                          type: "format",
+                          eventLabel: "Format Pill Clicked",
+                        })
+                      }
+                      aria-label={`Filter by ${formatName} format`}
+                    >
+                      {formatName}
+                    </button>
+                  ))}
+                  {genreStyleTags.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={classNames("pill", "pillStyle", {
+                        pillSelected: selectedStyles.includes(tag),
+                      })}
+                      onClick={(e) =>
+                        handlePillClick({
+                          event: e,
+                          value: tag,
+                          type: "style",
+                          eventLabel: "Genre Style Pill Clicked",
+                        })
+                      }
+                      aria-label={`Filter by ${tag}`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </HorizontalScrollRow>
               </div>
             );
           },
@@ -423,7 +426,13 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   })}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={styles.dataCell}>
+                    <td
+                      key={cell.id}
+                      className={classNames(styles.dataCell, {
+                        [styles.formatStylesCell]:
+                          cell.column.id === "formatStyles",
+                      })}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

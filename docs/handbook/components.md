@@ -67,12 +67,22 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 |---------|---------|
 | Layout | Horizontal flex: fixed **`7rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`4rem`** action column with full-height overlay actions |
 | Loading | [`MobileReleaseCardSkeleton`](../../src/components/ReleasesClient/components/MobileReleaseCardSkeleton.component.tsx) mirrors this row layout while collection pages stream in; desktop uses [`DesktopReleaseCardSkeleton`](../../src/components/ReleasesClient/components/DesktopReleaseCardSkeleton.component.tsx) |
-| Pills | **`HorizontalScrollRow`** — wrapper needs **`min-width: 0`** + **`overflow: hidden`** so pill rows do not expand card width |
+| Pills | **`HorizontalScrollRow`** — wrapper needs **`min-width: 0`** + **`overflow: hidden`** so pill rows scroll horizontally instead of wrapping (same component in [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx)) |
 | Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
 | Notes action | **`ReleaseNotesCardAction variant="mobile"`** — stacked column button styles; desktop overlay uses default **`variant="card"`** |
 | Open detail modal | Cover art or **Release details** overlay button call optional **`onReleaseClick`**; title links to Discogs in a new tab |
 | Overlay actions | **`ReleaseCardOverlayActions`**: release details (menu icon), View on Discogs (external link), notes, crate — desktop segmented row on cover; mobile full-height column with **`border-top`** separators (no inner frame) |
+
+## Feature example: ReleasesTable
+
+[`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) is the desktop **list** view on **`/releases`** when view mode is list (see [architecture.md](architecture.md) → view atoms). TanStack Table renders checkbox, cover, artist/title, label, year, **Format/Styles**, and notes columns.
+
+| Concern | Pattern |
+|---------|---------|
+| Format/Styles column | Format pills plus genre/style tags from [`getReleaseGenreStyleTags`](../../src/utils/releaseGenreStyleTags.ts), wrapped in **`HorizontalScrollRow`** inside a fixed-width cell (**`min-width: 0`**) so tags scroll horizontally instead of wrapping |
+| Filter pills | Same **`usePillClickHandler`** / **`useFilterAtoms`** wiring as release cards — pills toggle format and genre/style filters |
+| Notes | **`ReleaseNotes variant="table"`** — no per-row **`ReleaseNotesEditorProvider`** (see ReleaseNotes feature example) |
 
 ## Feature example: ReleaseModal
 

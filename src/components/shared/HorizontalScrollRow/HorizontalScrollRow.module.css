@@ -26,12 +26,11 @@
   }
 }
 
-.endShadow {
-  background: linear-gradient(to right, transparent, var(--card) 85%);
-  bottom: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 2rem;
+.scrollFadeEnd {
+  mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 calc(100% - var(--horizontal-scroll-fade-width, 2rem)),
+    transparent 100%
+  );
 }

@@ -31,7 +31,7 @@
   justify-content: center;
   letter-spacing: var(--nav-link-letter-spacing);
   line-height: var(--nav-link-line-height);
-  padding: var(--space-2) var(--space-3);
+  padding: 0.675rem var(--space-4);
   text-decoration: none;
   transition: var(--transition-fast);
   white-space: nowrap;

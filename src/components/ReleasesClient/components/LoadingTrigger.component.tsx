@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./LoadingTrigger.module.css";
 
@@ -11,7 +12,12 @@ export const LoadingTrigger = ({
   infiniteScrollRef,
 }: LoadingTriggerProps) => {
   return (
-    <div ref={infiniteScrollRef} className={styles.loadingTrigger}>
+    <div
+      ref={infiniteScrollRef}
+      className={classNames(styles.loadingTrigger, {
+        [styles.loadingTriggerFetching]: isFetchingNextPage,
+      })}
+    >
       {isFetchingNextPage && (
         <div className={styles.overlay}>
           <div className={styles.content}>
