@@ -1,6 +1,7 @@
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { EditCrateDialog } from "src/components/EditCrateDialog/EditCrateDialog.component";
 import { useCrateDrawerContext } from "./CrateDrawer.context";
+import { CrateNotesDialog } from "./CrateNotesDialog.component";
 
 export const CrateDrawerDialogs = () => {
   const {
@@ -20,6 +21,7 @@ export const CrateDrawerDialogs = () => {
   return (
     <>
       <EditCrateDialog />
+      <CrateNotesDialog />
 
       <ConfirmDialog
         isOpen={showClearDialog}

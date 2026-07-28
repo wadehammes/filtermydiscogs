@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import Check from "src/styles/icons/check-thin.svg";
@@ -31,26 +31,18 @@ export const ReleasesHeader = ({
   onCratesClick,
   isCratesOpen,
 }: ReleasesHeaderProps) => {
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const [isStuck, setIsStuck] = useState(false);
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) {
-      return;
-    }
+    const updateStuck = () => {
+      setIsStuck(window.scrollY > 0);
+    };
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsStuck(entry ? !entry.isIntersecting : false);
-      },
-      { threshold: 0 },
-    );
-
-    observer.observe(sentinel);
+    updateStuck();
+    window.addEventListener("scroll", updateStuck, { passive: true });
 
     return () => {
-      observer.disconnect();
+      window.removeEventListener("scroll", updateStuck);
     };
   }, []);
 
@@ -58,43 +50,40 @@ export const ReleasesHeader = ({
   const showLoadingMore = isCollectionLoading && releaseCount > 0;
 
   return (
-    <>
-      <div ref={sentinelRef} className={styles.stickySentinel} aria-hidden />
-      <div
-        className={classNames(styles.releasesHeader, {
-          [styles.stuck]: isStuck,
-        })}
-      >
-        <div className={styles.headerText}>
-          {showInitialLoading ? (
-            <span className={styles.loadingIcon}>
-              <Spinner size="xs" aria-label="Loading releases" />
-              <span>Loading releases...</span>
-            </span>
-          ) : (
-            <>Showing {releaseCount} releases</>
-          )}
-          {showLoadingMore ? (
-            <span className={styles.loadingIcon}>
-              <Spinner size="xs" aria-label="Loading more" />
-              <span>Loading more...</span>
-            </span>
-          ) : null}
-          {!isCollectionLoading && showAllLoadedMessage ? (
-            <span className={styles.loadingIcon}>
-              <Check />
-              <span>All releases loaded</span>
-            </span>
-          ) : null}
-        </div>
-        <ViewToggle
-          currentView={isRandomMode ? "random" : currentView}
-          onViewChange={onViewChange}
-          onRandomClick={onRandomClick}
-          className={classNames(styles.viewToggleMobile)}
-          {...definedProps({ onCratesClick, isCratesOpen })}
-        />
+    <div
+      className={classNames(styles.releasesHeader, {
+        [styles.stuck]: isStuck,
+      })}
+    >
+      <div className={styles.headerText}>
+        {showInitialLoading ? (
+          <span className={styles.loadingIcon}>
+            <Spinner size="xs" aria-label="Loading releases" />
+            <span>Loading releases...</span>
+          </span>
+        ) : (
+          <>Showing {releaseCount} releases</>
+        )}
+        {showLoadingMore ? (
+          <span className={styles.loadingIcon}>
+            <Spinner size="xs" aria-label="Loading more" />
+            <span>Loading more...</span>
+          </span>
+        ) : null}
+        {!isCollectionLoading && showAllLoadedMessage ? (
+          <span className={styles.loadingIcon}>
+            <Check />
+            <span>All releases loaded</span>
+          </span>
+        ) : null}
       </div>
-    </>
+      <ViewToggle
+        currentView={isRandomMode ? "random" : currentView}
+        onViewChange={onViewChange}
+        onRandomClick={onRandomClick}
+        className={classNames(styles.viewToggleMobile)}
+        {...definedProps({ onCratesClick, isCratesOpen })}
+      />
+    </div>
   );
 };

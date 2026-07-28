@@ -1,5 +1,9 @@
 import type { NextRequest } from "next/server";
 import {
+  CRATE_NAME_MAX_LENGTH,
+  CRATE_NOTES_MAX_LENGTH,
+} from "src/constants/crate";
+import {
   createErrorResponse,
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
@@ -16,6 +20,7 @@ type CrateUpdateData = {
   is_default?: boolean;
   private?: boolean;
   packed_enabled?: boolean;
+  notes?: string | null;
 };
 
 function assignOptionalBoolean(
@@ -72,6 +77,7 @@ export async function GET(
         is_default: true,
         private: true,
         packed_enabled: true,
+        notes: true,
         created_at: true,
         updated_at: true,
       },
@@ -170,6 +176,7 @@ export async function PUT(
     // Access 'private' using bracket notation to avoid reserved keyword issues
     const privateField = bodyObj.private;
     const packedEnabled = bodyObj.packed_enabled;
+    const notes = bodyObj.notes;
 
     // Verify crate exists and belongs to user
     const existingCrate = await prisma.crate.findUnique({
@@ -207,9 +214,11 @@ export async function PUT(
         );
       }
 
-      if (name.length > 100) {
+      if (name.length > CRATE_NAME_MAX_LENGTH) {
         return privateRouteJson(
-          { error: "Crate name must be 100 characters or less" },
+          {
+            error: `Crate name must be ${CRATE_NAME_MAX_LENGTH} characters or less`,
+          },
           { status: 400 },
         );
       }
@@ -297,6 +306,28 @@ export async function PUT(
     );
     if (packedEnabledError) {
       return packedEnabledError;
+    }
+
+    if (notes !== undefined) {
+      if (notes === null) {
+        updateData.notes = null;
+      } else if (typeof notes !== "string") {
+        return privateRouteJson(
+          { error: "notes must be a string or null" },
+          { status: 400 },
+        );
+      } else {
+        const trimmedNotes = notes.trim();
+        if (trimmedNotes.length > CRATE_NOTES_MAX_LENGTH) {
+          return privateRouteJson(
+            {
+              error: `Crate notes must be ${CRATE_NOTES_MAX_LENGTH} characters or less`,
+            },
+            { status: 400 },
+          );
+        }
+        updateData.notes = trimmedNotes.length === 0 ? null : trimmedNotes;
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

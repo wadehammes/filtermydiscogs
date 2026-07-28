@@ -17,6 +17,7 @@ model Crate {
   is_default Boolean   @default(false)
   private    Boolean   @default(true)
   packed_enabled Boolean @default(false)
+  notes      String?
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
 

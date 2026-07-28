@@ -62,6 +62,10 @@ const getUpdateCrateErrorTitle = (updates: UpdateCrateRequest): string => {
     return "Failed to rename crate";
   }
 
+  if (updates.notes !== undefined) {
+    return "Failed to update crate notes";
+  }
+
   return "Failed to update crate";
 };
 
@@ -431,6 +435,7 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
                 is_default: false,
                 private: true,
                 packed_enabled: false,
+                notes: null,
                 created_at: new Date(),
                 updated_at: new Date(),
               },

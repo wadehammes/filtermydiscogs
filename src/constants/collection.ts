@@ -1,2 +1,3 @@
 export const COLLECTION_FIRST_PAGE_SIZE = 50;
 export const COLLECTION_PAGE_SIZE = 100;
+export const COLLECTION_NOTE_MAX_LENGTH = 10_000;

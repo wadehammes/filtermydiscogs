@@ -453,6 +453,7 @@ export const createCrate = async (
     is_default: boolean;
     private: boolean;
     packed_enabled: boolean;
+    notes: string | null;
     created_at: Date;
     updated_at: Date;
   };

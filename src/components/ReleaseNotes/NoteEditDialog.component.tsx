@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -70,9 +71,20 @@ export const NoteEditDialog = ({
     return values;
   }, [editableFields, initialValues]);
 
-  const { register, handleSubmit, reset } = useForm<NoteFormValues>({
-    defaultValues: defaultFormValues,
+  const { register, handleSubmit, reset, watch, formState } =
+    useForm<NoteFormValues>({
+      defaultValues: defaultFormValues,
+      mode: "onChange",
+    });
+
+  const formValues = watch();
+  const hasNoteLengthErrors = editableFields.some((field) => {
+    const value = formValues[String(field.id)] ?? "";
+    return value.length > COLLECTION_NOTE_MAX_LENGTH;
   });
+  const hasNoteValidationErrors = editableFields.some((field) =>
+    Boolean(formState.errors[String(field.id)]),
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -191,22 +203,62 @@ export const NoteEditDialog = ({
             No editable text fields are configured in your Discogs collection.
           </p>
         ) : (
-          editableFields.map((field) => (
-            <div className={styles.fieldGroup} key={field.id}>
-              <label
-                className={styles.label}
-                htmlFor={`note-field-${field.id}`}
-              >
-                {field.name}
-              </label>
-              <textarea
-                id={`note-field-${field.id}`}
-                className={classNames(styles.textarea, modalInputStyles.field)}
-                disabled={isSaving}
-                {...register(String(field.id))}
-              />
-            </div>
-          ))
+          editableFields.map((field) => {
+            const fieldKey = String(field.id);
+            const fieldValue = formValues[fieldKey] ?? "";
+            const fieldLength = fieldValue.length;
+            const fieldError = formState.errors[fieldKey];
+            const isFieldOverLimit = fieldLength > COLLECTION_NOTE_MAX_LENGTH;
+
+            return (
+              <div className={styles.fieldGroup} key={field.id}>
+                <label
+                  className={styles.label}
+                  htmlFor={`note-field-${field.id}`}
+                >
+                  {field.name}
+                </label>
+                <textarea
+                  id={`note-field-${field.id}`}
+                  className={classNames(
+                    styles.textarea,
+                    modalInputStyles.field,
+                    (fieldError || isFieldOverLimit) && styles.textareaInvalid,
+                  )}
+                  disabled={isSaving}
+                  maxLength={COLLECTION_NOTE_MAX_LENGTH}
+                  aria-describedby={`note-field-${field.id}-length`}
+                  aria-invalid={
+                    fieldError || isFieldOverLimit ? true : undefined
+                  }
+                  {...register(fieldKey, {
+                    maxLength: {
+                      value: COLLECTION_NOTE_MAX_LENGTH,
+                      message: `Notes must be ${COLLECTION_NOTE_MAX_LENGTH} characters or less`,
+                    },
+                  })}
+                />
+                <div className={styles.fieldFooter}>
+                  {fieldError ? (
+                    <p className={styles.fieldError} role="alert">
+                      {fieldError.message}
+                    </p>
+                  ) : (
+                    <span className={styles.fieldFooterSpacer} aria-hidden />
+                  )}
+                  <p
+                    id={`note-field-${field.id}-length`}
+                    className={classNames(
+                      styles.charCount,
+                      isFieldOverLimit && styles.charCountLimit,
+                    )}
+                  >
+                    {fieldLength} / {COLLECTION_NOTE_MAX_LENGTH}
+                  </p>
+                </div>
+              </div>
+            );
+          })
         )}
 
         {errorMessage ? <p className={styles.error}>{errorMessage}</p> : null}
@@ -225,7 +277,13 @@ export const NoteEditDialog = ({
             type="submit"
             variant="primary"
             size="md"
-            disabled={isSaving || editableFields.length === 0 || !releaseId}
+            disabled={
+              isSaving ||
+              editableFields.length === 0 ||
+              !releaseId ||
+              hasNoteLengthErrors ||
+              hasNoteValidationErrors
+            }
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>

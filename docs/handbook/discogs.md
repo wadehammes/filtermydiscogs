@@ -145,6 +145,8 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 - **`folderId`**: **`getReleaseFolderId`** reads **`release.folder_id`**; defaults to **`0`** (All) when missing.
 - **`instanceId`**: collection item **`instance_id`**.
 
+**Length limit:** Discogs does not document a single global max for free-text note values; the app enforces **`COLLECTION_NOTE_MAX_LENGTH` (10,000)** in [`NoteEditDialog`](../../src/components/ReleaseNotes/NoteEditDialog.component.tsx) (inline counter + React Hook Form validation) and the collection note write route. Constant lives in [`src/constants/collection.ts`](../../src/constants/collection.ts).
+
 **Editing scope (v1):** text and textarea field types only (**`isEditableCollectionField`**). Dropdown/boolean fields (e.g. Media/Sleeve Condition) are hidden from release-card and table display via **`forCard: true`** / **`isCardDisplayNoteField`**; the default **`inline`** list variant may still show all fields.
 
 **Card UI:** every release card shows a **Notes** heading and a fixed-height scroll region (**`max-height: 4lh`**). Cards without notes show an **Add notes** link when editing is available. The sticky-note icon and inline link share one dialog via **`ReleaseNotesEditorProvider`** on **`ReleaseCard`** / **`MobileReleaseCard`**.

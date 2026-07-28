@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
-
-const MAX_NOTE_LENGTH = 10_000;
 
 interface UpdateCollectionNoteBody {
   username?: string;
@@ -66,10 +65,10 @@ export async function POST(
       );
     }
 
-    if (value.length > MAX_NOTE_LENGTH) {
+    if (value.length > COLLECTION_NOTE_MAX_LENGTH) {
       return NextResponse.json(
         {
-          error: `Note value must be ${MAX_NOTE_LENGTH} characters or less`,
+          error: `Note value must be ${COLLECTION_NOTE_MAX_LENGTH} characters or less`,
         },
         { status: 400 },
       );

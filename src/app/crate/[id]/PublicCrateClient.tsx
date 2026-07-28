@@ -126,6 +126,9 @@ function PublicCrateLoadedContent({
                 )}
             </div>
           </div>
+          {crate.notes?.trim() ? (
+            <p className={styles.notes}>{crate.notes}</p>
+          ) : null}
         </div>
 
         {releases.length > 0 ? (
