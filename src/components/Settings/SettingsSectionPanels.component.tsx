@@ -46,6 +46,8 @@ type SettingsAppearancePanelProps = {
   isPreferencesLoading: boolean;
   isPreferencesSaving: boolean;
   onViewChange: (view: "card" | "list") => void;
+  onThemePersisted: () => void;
+  onThemePersistError: () => void;
 };
 
 export function SettingsAppearancePanel({
@@ -53,12 +55,19 @@ export function SettingsAppearancePanel({
   isPreferencesLoading,
   isPreferencesSaving,
   onViewChange,
+  onThemePersisted,
+  onThemePersistError,
 }: SettingsAppearancePanelProps) {
   return (
     <>
       <div className={styles.field}>
         <span className={styles.fieldLabel}>Theme</span>
-        <ThemeSwitcher variant="dropdown" className={styles.fieldControl} />
+        <ThemeSwitcher
+          variant="dropdown"
+          className={styles.fieldControl}
+          onThemePersisted={onThemePersisted}
+          onThemePersistError={onThemePersistError}
+        />
       </div>
       <div className={styles.field}>
         <span className={styles.fieldLabel}>Default view</span>

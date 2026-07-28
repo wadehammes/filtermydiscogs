@@ -12,7 +12,6 @@ import { CrateDrawerNotes } from "./CrateDrawerNotes.component";
 export const CrateDrawerFooter = () => {
   const {
     activeCrateId,
-    copySuccess,
     handleCopyLink,
     handlePrivacyToggle,
     isDefaultCrate,
@@ -115,7 +114,7 @@ export const CrateDrawerFooter = () => {
             onPress={() => void handleCopyLink()}
             disabled={isBusy}
           >
-            {copySuccess ? "Copied!" : "Copy Link"}
+            Copy Link
           </Button>
         ) : null}
       </div>

@@ -33,7 +33,7 @@
   /* Border and input */
   --border: light-dark(#cbd5e0, #333);
   --input: light-dark(#cbd5e0, #333);
-  --ring: light-dark(#06c, #4da3ff);
+  --ring: light-dark(#06c, #00d4ff);
 
   /* Card */
   --card: light-dark(#fff, #1a1a1a);
@@ -48,8 +48,8 @@
 
   /* Primary */
   --primary: #06c;
-  --primary-hover: #0052a3;
-  --primary-active: #003d7a;
+  --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
+  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
   --on-primary: #fff;
   --on-primary-hover: #fff;
   --on-primary-active: #fff;
@@ -63,29 +63,29 @@
 
   /* Destructive */
   --destructive: #dc2626;
-  --destructive-hover: #b91c1c;
-  --destructive-active: #991b1b;
-  --on-destructive: #fff;
-  --on-destructive-hover: #fff;
-  --on-destructive-active: #fff;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, black 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, black 24%);
+  --on-destructive: contrast-color(var(--destructive));
+  --on-destructive-hover: contrast-color(var(--destructive-hover));
+  --on-destructive-active: contrast-color(var(--destructive-active));
   --destructive-foreground: var(--on-destructive);
 
   /* Success */
   --success: #15803d;
-  --success-hover: #166534;
-  --success-active: #14532d;
-  --on-success: #fff;
-  --on-success-hover: #fff;
-  --on-success-active: #fff;
+  --success-hover: color-mix(in srgb, var(--success) 88%, black 12%);
+  --success-active: color-mix(in srgb, var(--success) 76%, black 24%);
+  --on-success: contrast-color(var(--success));
+  --on-success-hover: contrast-color(var(--success-hover));
+  --on-success-active: contrast-color(var(--success-active));
   --success-foreground: var(--on-success);
 
   /* Warning */
   --warning: #b45309;
-  --warning-hover: #92400e;
-  --warning-active: #78350f;
-  --on-warning: #fff;
-  --on-warning-hover: #fff;
-  --on-warning-active: #fff;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, black 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);
+  --on-warning: contrast-color(var(--warning));
+  --on-warning-hover: contrast-color(var(--warning-hover));
+  --on-warning-active: contrast-color(var(--warning-active));
   --warning-foreground: var(--on-warning);
   --pill-style-foreground: light-dark(var(--success-hover), #22c55e);
   --pill-style-border: light-dark(var(--success), #22c55e);
@@ -101,20 +101,48 @@
   --on-gradient-surface: contrast-color(var(--gradient-surface));
 
   /* Elevation — shadows in light mode, subtle border glow in dark mode */
-  --shadow-sm: 0 1px 2px 0 light-dark(rgb(0 0 0 / 5%), transparent);
+  --shadow-sm: 0 1px 2px 0
+    light-dark(
+      color-mix(in srgb, var(--foreground) 5%, transparent),
+      transparent
+    );
   --shadow-md:
-    0 4px 6px -1px light-dark(rgb(0 0 0 / 10%), transparent),
-    0 2px 4px -2px light-dark(rgb(0 0 0 / 10%), transparent),
+    0 4px 6px -1px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    0 2px 4px -2px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
     inset 0 0 0 1px
     light-dark(transparent, color-mix(in srgb, var(--border) 80%, transparent));
   --shadow-lg:
-    0 10px 15px -3px light-dark(rgb(0 0 0 / 10%), transparent),
-    0 4px 6px -4px light-dark(rgb(0 0 0 / 10%), transparent),
+    0 10px 15px -3px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    0 4px 6px -4px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
     inset 0 0 0 1px
     light-dark(transparent, color-mix(in srgb, var(--border) 60%, transparent));
   --shadow-xl:
-    0 20px 25px -5px light-dark(rgb(0 0 0 / 10%), transparent),
-    0 8px 10px -6px light-dark(rgb(0 0 0 / 10%), transparent),
+    0 20px 25px -5px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    0 8px 10px -6px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
     inset 0 0 0 1px
     light-dark(transparent, color-mix(in srgb, var(--border) 50%, transparent));
 

@@ -82,7 +82,7 @@ describe("ThemeProvider", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("migrates 'system' theme to explicit theme", async () => {
+  it("keeps system preference and resolves the OS palette", async () => {
     localStorage.setItem("filtermydiscogs_theme", "system");
     mockUseMediaQuery.mockReturnValue(true);
 
@@ -105,8 +105,10 @@ describe("ThemeProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.theme).toBe("dark");
-      expect(localStorage.getItem("filtermydiscogs_theme")).toBe("dark");
+      expect(result.current.theme).toBe("system");
+      expect(result.current.resolvedTheme).toBe("dark");
+      expect(localStorage.getItem("filtermydiscogs_theme")).toBe("system");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     });
   });
 
@@ -120,6 +122,39 @@ describe("ThemeProvider", () => {
 
     await waitFor(() => {
       expect(result.current.theme).toBe("light");
+    });
+  });
+
+  it("applies dim theme to document element", async () => {
+    mockUseMediaQuery.mockReturnValue(false);
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBeDefined();
+    });
+
+    act(() => {
+      result.current.setTheme("dim");
+    });
+
+    expect(result.current.theme).toBe("dim");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dim");
+  });
+
+  it("loads stored dim theme from localStorage", async () => {
+    localStorage.setItem("filtermydiscogs_theme", "dim");
+    mockUseMediaQuery.mockReturnValue(false);
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => {
+      expect(result.current.theme).toBe("dim");
+      expect(result.current.resolvedTheme).toBe("dim");
     });
   });
 
@@ -173,8 +208,8 @@ describe("ThemeProvider", () => {
     rafSpy.mockRestore();
   });
 
-  it("reads initial theme from DOM if available", async () => {
-    document.documentElement.setAttribute("data-theme", "dark");
+  it("applies stored preference to the document on mount", async () => {
+    localStorage.setItem("filtermydiscogs_theme", "midnight");
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
@@ -182,11 +217,15 @@ describe("ThemeProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.theme).toBe("dark");
+      expect(result.current.theme).toBe("midnight");
+      expect(result.current.resolvedTheme).toBe("midnight");
+      expect(document.documentElement.getAttribute("data-theme")).toBe(
+        "midnight",
+      );
     });
   });
 
-  it("prioritizes DOM theme over localStorage", async () => {
+  it("prioritizes localStorage over a stale DOM theme", async () => {
     localStorage.setItem("filtermydiscogs_theme", "light");
     document.documentElement.setAttribute("data-theme", "dark");
     mockUseMediaQuery.mockReturnValue(false);
@@ -196,7 +235,9 @@ describe("ThemeProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.theme).toBe("dark");
+      expect(result.current.theme).toBe("light");
+      expect(result.current.resolvedTheme).toBe("light");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     });
   });
 

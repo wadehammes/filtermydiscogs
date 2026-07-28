@@ -18,6 +18,7 @@ interface AutocompleteTriggerProps {
     e: React.MouseEvent | React.KeyboardEvent,
   ) => void;
   value?: string | string[] | undefined;
+  placeholder?: string | undefined;
 }
 
 export function AutocompleteTrigger({
@@ -32,7 +33,13 @@ export function AutocompleteTrigger({
   onTriggerKeyDown,
   onClearOption,
   value,
+  placeholder,
 }: AutocompleteTriggerProps) {
+  const isEmpty = multiple
+    ? !Array.isArray(value) || value.length === 0
+    : !value;
+  const showPlaceholder = isEmpty && Boolean(placeholder);
+
   return (
     <div
       className={classNames(styles.trigger, {
@@ -69,7 +76,9 @@ export function AutocompleteTrigger({
             ))}
           </div>
         ) : (
-          <span className={styles.value}>{displayValue}</span>
+          <span className={showPlaceholder ? styles.placeholder : styles.value}>
+            {displayValue}
+          </span>
         )}
       </div>
       <span

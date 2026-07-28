@@ -1,0 +1,58 @@
+[data-theme="dark"] {
+  --primary: #00d4ff;
+  --primary-hover: color-mix(in srgb, var(--primary) 78%, white 22%);
+  --primary-active: color-mix(in srgb, var(--primary) 82%, black 18%);
+  --ring: var(--primary);
+}
+
+[data-theme="dim"] {
+  --primary: #2d4f6e;
+  --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
+  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --ring: var(--primary);
+  --on-primary: #fff;
+  --on-primary-hover: #fff;
+  --on-primary-active: #fff;
+  --primary-foreground: var(--on-primary);
+}
+
+[data-theme="slate"] {
+  --primary: #005aad;
+  --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
+  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --ring: var(--primary);
+}
+
+[data-theme="midnight"] {
+  --primary: #60a5fa;
+  --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
+  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --ring: var(--primary);
+}
+
+[data-theme="futuristic"] {
+  --primary: #22d3ee;
+  --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
+  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --ring: var(--primary);
+}
+
+[data-theme="high-contrast"] {
+  --primary: #6eb5ff;
+  --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
+  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --ring: var(--primary);
+}
+
+:is(
+  [data-theme="dark"],
+  [data-theme="slate"],
+  [data-theme="midnight"],
+  [data-theme="futuristic"],
+  [data-theme="high-contrast"]
+) {
+  --on-primary: contrast-color(var(--primary));
+  --on-primary-hover: contrast-color(var(--primary-hover));
+  --on-primary-active: contrast-color(var(--primary-active));
+  --primary-foreground: var(--on-primary);
+}

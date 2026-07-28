@@ -1,0 +1,15 @@
+[data-theme="sepia"] {
+  color-scheme: light;
+
+  --background: #e8dcc8;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 58%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #166534;
+  --pill-style-border: #15803d;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #92400e;
+  --pill-format-border: #b45309;
+}

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
+import { themeUsesDarkAssets } from "src/utils/themeAppearance";
 import styles from "./LoginPreviewDemo.module.css";
 
 const PREVIEW_ALT =
@@ -13,10 +14,9 @@ export const LoginPreviewDemo = () => {
   const mounted = useMounted();
 
   const activeTheme = mounted ? resolvedTheme : "light";
-  const previewImageSrc =
-    activeTheme === "dark"
-      ? "/images/app-preview--dark.png"
-      : "/images/app-preview--light.png";
+  const previewImageSrc = themeUsesDarkAssets(activeTheme)
+    ? "/images/app-preview--dark.png"
+    : "/images/app-preview--light.png";
 
   return (
     <div className={styles.demo} data-testid="fmdLoginPreviewDemo">

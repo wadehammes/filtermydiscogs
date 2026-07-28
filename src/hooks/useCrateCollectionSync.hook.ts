@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
 import { useAuth } from "src/context/auth.context";
 import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
@@ -51,13 +52,13 @@ export const useCrateCollectionSync = () => {
     );
 
     if (!syncResult.isValid) {
-      alert(syncResult.error);
+      toast.error(syncResult.error ?? "Unable to sync crates.");
       setShowSyncDialog(false);
       return;
     }
 
     if (!syncResult.instanceIds) {
-      alert("No instance IDs found.");
+      toast.error("No instance IDs found.");
       setShowSyncDialog(false);
       return;
     }
@@ -74,17 +75,17 @@ export const useCrateCollectionSync = () => {
             value: data.removedCount.toString(),
           });
           if (data.removedCount > 0) {
-            alert(
+            toast.success(
               `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,
             );
           } else {
-            alert(
+            toast.success(
               "Sync complete: All releases in your crates are still in your collection.",
             );
           }
         },
         onError: (error) => {
-          alert(
+          toast.error(
             `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
           );
         },

@@ -4,6 +4,7 @@ import classNames from "classnames";
 import Image from "next/image";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
+import { themeUsesDarkAssets } from "src/utils/themeAppearance";
 import styles from "./LoginFeatureVisual.module.css";
 
 type LoginFeatureVisualProps = {
@@ -35,7 +36,7 @@ export const LoginFeatureVisual = ({
 
   const imageSrc = themeIndependent
     ? `/images/${imageBase}.png`
-    : `/images/${imageBase}--${activeTheme === "dark" ? "dark" : "light"}.png`;
+    : `/images/${imageBase}--${themeUsesDarkAssets(activeTheme) ? "dark" : "light"}.png`;
 
   return (
     <div className={classNames(styles.visual, className)}>

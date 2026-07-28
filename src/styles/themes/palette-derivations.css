@@ -1,0 +1,189 @@
+[data-theme="dim"],
+[data-theme="sepia"],
+[data-theme="slate"] {
+  --foreground: contrast-color(var(--background));
+  --card: color-mix(in srgb, var(--background) 70%, white 30%);
+  --card-foreground: contrast-color(var(--card));
+  --muted: color-mix(
+    in srgb,
+    var(--background) 86%,
+    contrast-color(var(--background)) 14%
+  );
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--foreground) 60%,
+    var(--background) 40%
+  );
+  --accent: color-mix(
+    in srgb,
+    var(--background) 80%,
+    contrast-color(var(--background)) 20%
+  );
+  --accent-foreground: var(--foreground);
+  --border: color-mix(
+    in srgb,
+    var(--background) 55%,
+    contrast-color(var(--background)) 45%
+  );
+  --input: var(--border);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --sticky-header-background: color-mix(
+    in srgb,
+    var(--background) 88%,
+    contrast-color(var(--background)) 12%
+  );
+  --secondary: color-mix(
+    in srgb,
+    var(--background) 76%,
+    contrast-color(var(--background)) 24%
+  );
+  --secondary-foreground: color-mix(
+    in srgb,
+    var(--foreground) 88%,
+    var(--background) 12%
+  );
+  --secondary-hover: color-mix(
+    in srgb,
+    var(--secondary) 82%,
+    contrast-color(var(--secondary)) 18%
+  );
+  --secondary-active: color-mix(
+    in srgb,
+    var(--secondary) 68%,
+    contrast-color(var(--secondary)) 32%
+  );
+  --shadow-sm: 0 1px 2px 0
+    color-mix(in srgb, var(--foreground) 10%, transparent);
+  --shadow-md:
+    0 4px 6px -1px color-mix(in srgb, var(--foreground) 12%, transparent),
+    0 2px 4px -2px color-mix(in srgb, var(--foreground) 10%, transparent);
+  --shadow-lg:
+    0 10px 15px -3px color-mix(in srgb, var(--foreground) 12%, transparent),
+    0 4px 6px -4px color-mix(in srgb, var(--foreground) 10%, transparent);
+  --shadow-xl:
+    0 20px 25px -5px color-mix(in srgb, var(--foreground) 14%, transparent),
+    0 8px 10px -6px color-mix(in srgb, var(--foreground) 10%, transparent);
+  --white: var(--card);
+  --black: var(--foreground);
+  --gray-50: var(--card);
+  --gray-100: color-mix(in srgb, var(--background) 80%, white 20%);
+  --gray-200: var(--background);
+  --gray-300: var(--muted);
+  --gray-400: var(--accent);
+  --gray-500: color-mix(in srgb, var(--foreground) 45%, var(--background) 55%);
+  --gray-600: color-mix(in srgb, var(--foreground) 65%, var(--background) 35%);
+  --gray-700: var(--muted-foreground);
+  --gray-800: color-mix(in srgb, var(--foreground) 85%, var(--background) 15%);
+  --gray-900: var(--foreground);
+  --destructive: #7f1d1d;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, black 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, black 24%);
+  --on-destructive: #fff;
+  --on-destructive-hover: #fff;
+  --on-destructive-active: #fff;
+  --destructive-foreground: var(--on-destructive);
+  --success: #14532d;
+  --success-hover: color-mix(in srgb, var(--success) 88%, black 12%);
+  --success-active: color-mix(in srgb, var(--success) 76%, black 24%);
+  --warning: #78350f;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, black 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);
+}
+
+[data-theme="midnight"],
+[data-theme="futuristic"] {
+  --foreground: contrast-color(var(--background));
+  --card: color-mix(in srgb, var(--background) 78%, white 22%);
+  --card-foreground: contrast-color(var(--card));
+  --muted: color-mix(in srgb, var(--background) 88%, white 12%);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--foreground) 68%,
+    var(--background) 32%
+  );
+  --accent: color-mix(in srgb, var(--background) 84%, white 16%);
+  --accent-foreground: var(--foreground);
+  --border: color-mix(in srgb, var(--background) 62%, var(--foreground) 38%);
+  --input: var(--border);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --sticky-header-background: color-mix(
+    in srgb,
+    var(--background) 92%,
+    black 8%
+  );
+  --secondary: color-mix(in srgb, var(--background) 82%, white 18%);
+  --secondary-foreground: color-mix(
+    in srgb,
+    var(--foreground) 88%,
+    var(--background) 12%
+  );
+  --secondary-hover: color-mix(in srgb, var(--secondary) 86%, white 14%);
+  --secondary-active: color-mix(in srgb, var(--secondary) 72%, white 28%);
+  --shadow-sm: 0 1px 2px 0 transparent;
+  --shadow-md:
+    0 4px 6px -1px transparent, 0 2px 4px -2px transparent,
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 80%, transparent);
+  --shadow-lg:
+    0 10px 15px -3px transparent, 0 4px 6px -4px transparent,
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+  --shadow-xl:
+    0 20px 25px -5px transparent, 0 8px 10px -6px transparent,
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+  --white: var(--foreground);
+  --black: var(--background);
+  --gray-50: var(--background);
+  --gray-100: var(--card);
+  --gray-200: var(--muted);
+  --gray-300: var(--accent);
+  --gray-400: var(--secondary-active);
+  --gray-500: var(--border);
+  --gray-600: color-mix(in srgb, var(--foreground) 55%, var(--background) 45%);
+  --gray-700: var(--muted-foreground);
+  --gray-800: color-mix(in srgb, var(--foreground) 82%, var(--background) 18%);
+  --gray-900: var(--foreground);
+  --destructive: #f87171;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, white 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, white 24%);
+  --on-destructive: #000;
+  --on-destructive-hover: #000;
+  --on-destructive-active: #000;
+  --destructive-foreground: var(--on-destructive);
+  --success: #22c55e;
+  --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
+  --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
+  --warning: #fbbf24;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
+}
+
+[data-theme="high-contrast"] {
+  --foreground: contrast-color(var(--background));
+  --card: color-mix(in srgb, var(--background) 88%, white 12%);
+  --card-foreground: contrast-color(var(--card));
+  --muted: color-mix(in srgb, var(--background) 90%, white 10%);
+  --muted-foreground: var(--foreground);
+  --accent: color-mix(in srgb, var(--background) 84%, white 16%);
+  --accent-foreground: var(--foreground);
+  --border: var(--foreground);
+  --input: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --sticky-header-background: var(--background);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --secondary-hover: color-mix(in srgb, var(--secondary) 80%, white 20%);
+  --secondary-active: color-mix(in srgb, var(--secondary) 65%, white 35%);
+  --white: var(--foreground);
+  --black: var(--background);
+  --gray-50: var(--background);
+  --gray-100: var(--card);
+  --gray-200: var(--muted);
+  --gray-300: var(--accent);
+  --gray-900: var(--foreground);
+  --on-destructive: #000;
+  --on-destructive-hover: #000;
+  --on-destructive-active: #000;
+  --destructive-foreground: var(--on-destructive);
+}

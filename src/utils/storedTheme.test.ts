@@ -9,13 +9,17 @@ import { isValidStoredTheme, parseStoredTheme } from "./storedTheme";
 describe("storedTheme", () => {
   it("accepts light and dark", () => {
     expect(isValidStoredTheme("light")).toBe(true);
+    expect(isValidStoredTheme("dim")).toBe(true);
     expect(isValidStoredTheme("dark")).toBe(true);
-    expect(parseStoredTheme("dark")).toBe("dark");
+    expect(isValidStoredTheme("sepia")).toBe(true);
+    expect(isValidStoredTheme("high-contrast")).toBe(true);
+    expect(isValidStoredTheme("system")).toBe(true);
+    expect(parseStoredTheme("midnight")).toBe("midnight");
   });
 
-  it("rejects system and unknown values", () => {
-    expect(isValidStoredTheme("system")).toBe(false);
-    expect(parseStoredTheme("system", "light")).toBe("light");
+  it("rejects unknown values", () => {
+    expect(isValidStoredTheme("table")).toBe(false);
+    expect(parseStoredTheme("table", "light")).toBe("light");
   });
 });
 

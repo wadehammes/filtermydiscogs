@@ -10,40 +10,55 @@ import Sun from "src/styles/icons/sun-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { StoredTheme } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
+import {
+  cycleTheme,
+  THEME_LABELS,
+  themeUsesDarkAssets,
+} from "src/utils/themeAppearance";
 import styles from "./ThemeSwitcher.module.css";
 
-const THEME_OPTIONS = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-];
+const THEME_OPTIONS = (Object.keys(THEME_LABELS) as StoredTheme[]).map(
+  (value) => ({
+    value,
+    label: THEME_LABELS[value],
+  }),
+);
 
 interface ThemeSwitcherProps {
   variant?: "desktop" | "mobile" | "segmented" | "dropdown";
   className?: string;
+  onThemePersisted?: () => void;
+  onThemePersistError?: () => void;
 }
 
 export const ThemeSwitcher = ({
   variant = "desktop",
   className,
+  onThemePersisted,
+  onThemePersistError,
 }: ThemeSwitcherProps) => {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const { persistPreferences } = usePersistUserPreferences();
   const mounted = useMounted();
 
-  const activeTheme = mounted ? resolvedTheme : "light";
+  const activeTheme = mounted ? theme : "light";
 
   const handleThemeChange = (nextTheme: StoredTheme) => {
     setTheme(nextTheme);
-    persistPreferences({ theme: nextTheme });
+    persistPreferences(
+      { theme: nextTheme },
+      {
+        onSuccess: () => {
+          onThemePersisted?.();
+        },
+        onError: () => {
+          onThemePersistError?.();
+        },
+      },
+    );
   };
 
-  const getLabel = () => {
-    if (!mounted) {
-      return "Light";
-    }
-
-    return resolvedTheme === "dark" ? "Dark" : "Light";
-  };
+  const getLabel = () => (mounted ? THEME_LABELS[theme] : "Light");
 
   if (variant === "dropdown") {
     return (
@@ -64,38 +79,34 @@ export const ThemeSwitcher = ({
     return (
       <fieldset className={styles.segmentedGroup}>
         <legend className={styles.segmentedLegend}>Theme</legend>
-        <div className={segmentedStyles.container}>
-          <button
-            type="button"
-            className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active]: activeTheme === "light",
-            })}
-            onClick={() => {
-              handleThemeChange("light");
-            }}
-            aria-pressed={activeTheme === "light"}
-          >
-            Light
-          </button>
-          <button
-            type="button"
-            className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active]: activeTheme === "dark",
-            })}
-            onClick={() => {
-              handleThemeChange("dark");
-            }}
-            aria-pressed={activeTheme === "dark"}
-          >
-            Dark
-          </button>
+        <div
+          className={classNames(
+            segmentedStyles.container,
+            styles.segmentedThemes,
+          )}
+        >
+          {THEME_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              className={classNames(segmentedStyles.segment, {
+                [segmentedStyles.active]: activeTheme === value,
+              })}
+              onClick={() => {
+                handleThemeChange(value);
+              }}
+              aria-pressed={activeTheme === value}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </fieldset>
     );
   }
 
   const handleThemeToggle = () => {
-    handleThemeChange(resolvedTheme === "dark" ? "light" : "dark");
+    handleThemeChange(cycleTheme(theme));
   };
 
   const getIcon = () => {
@@ -108,7 +119,7 @@ export const ThemeSwitcher = ({
       );
     }
 
-    return resolvedTheme === "dark" ? (
+    return themeUsesDarkAssets(resolvedTheme) ? (
       <Moon className={styles.iconSvg} />
     ) : (
       <Sun className={styles.iconSvg} />

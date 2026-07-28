@@ -1,0 +1,18 @@
+[data-theme="high-contrast"] {
+  color-scheme: dark;
+
+  --background: #000;
+  --destructive: #ff6b6b;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, white 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, white 24%);
+  --gradient-surface: var(--background);
+  --pill-style-foreground: #7dff9a;
+  --pill-style-border: #7dff9a;
+  --pill-style-selected-foreground: var(--background);
+  --pill-format-foreground: #ffd166;
+  --pill-format-border: #ffd166;
+  --shadow-sm: 0 0 0 1px var(--foreground);
+  --shadow-md: 0 0 0 1px var(--foreground);
+  --shadow-lg: 0 0 0 2px var(--foreground);
+  --shadow-xl: 0 0 0 2px var(--foreground);
+}

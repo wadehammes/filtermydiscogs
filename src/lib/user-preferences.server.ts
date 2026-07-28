@@ -108,7 +108,7 @@ export const isValidUserPreferencesPatch = (
   }
 
   if (patch.theme !== undefined && !isValidStoredTheme(patch.theme)) {
-    return "theme must be light or dark";
+    return "theme must be a supported theme value";
   }
 
   if (patch.view !== undefined && !isValidStoredViewPatch(patch.view)) {
