@@ -85,7 +85,7 @@ const getInitialPaletteThemeFromDOM = (): PaletteTheme | null => {
 
 const getInitialThemePreference = (): StoredTheme => {
   if (typeof window === "undefined") {
-    return "light";
+    return "system";
   }
 
   const stored = readStoredThemePreference(THEME_STORAGE_KEY);
@@ -93,8 +93,7 @@ const getInitialThemePreference = (): StoredTheme => {
     return stored;
   }
 
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  return prefersDark ? "dark" : "light";
+  return "system";
 };
 
 interface ThemeProviderProps {

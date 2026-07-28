@@ -17,7 +17,7 @@ describe("ThemeProvider", () => {
     mockUsePathname.mockReturnValue("/");
   });
 
-  it("provides default theme based on system preference", async () => {
+  it("provides default system theme when nothing is stored", async () => {
     mockUseMediaQuery.mockReturnValue(false);
 
     const { result } = renderHook(() => useTheme(), {
@@ -25,7 +25,7 @@ describe("ThemeProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.theme).toBe("light");
+      expect(result.current.theme).toBe("system");
       expect(result.current.resolvedTheme).toBe("light");
     });
   });
@@ -121,7 +121,8 @@ describe("ThemeProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.theme).toBe("light");
+      expect(result.current.theme).toBe("system");
+      expect(result.current.resolvedTheme).toBe("light");
     });
   });
 

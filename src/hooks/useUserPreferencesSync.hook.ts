@@ -49,6 +49,11 @@ export const useUserPreferencesSync = () => {
       setFilterPersistenceEnabled(true);
       appliedPreferencesKeyRef.current = null;
       hasSeededLocalPreferencesRef.current = false;
+
+      if (!isCheckingAuth && themeRef.current !== "system") {
+        setTheme("system");
+      }
+
       return;
     }
 
@@ -148,6 +153,7 @@ export const useUserPreferencesSync = () => {
     }
   }, [
     isAuthenticated,
+    isCheckingAuth,
     preferences,
     persistPreferences,
     setPersistedFilters,

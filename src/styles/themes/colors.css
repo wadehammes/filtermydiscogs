@@ -33,7 +33,7 @@
   /* Border and input */
   --border: light-dark(#cbd5e0, #333);
   --input: light-dark(#cbd5e0, #333);
-  --ring: light-dark(#06c, #00d4ff);
+  --ring: light-dark(#06c, #4da3ff);
 
   /* Card */
   --card: light-dark(#fff, #1a1a1a);

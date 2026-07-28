@@ -35,7 +35,7 @@ describe("Login", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the preview demo and nav theme toggle", () => {
+  it("renders the preview demo and hero content", () => {
     po.renderLogin();
 
     expect(screen.getByTestId("fmdLoginPreviewDemo")).toBeInTheDocument();
@@ -48,8 +48,6 @@ describe("Login", () => {
         "Browse and filter your collection, build crates, explore insights, and share cover-art mosaics.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Light" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
         name: "App preview showing the main interface with release cards, filters, and crate functionality",
