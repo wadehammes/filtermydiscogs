@@ -1,0 +1,154 @@
+.menuRoot {
+  flex-shrink: 0;
+  isolation: isolate;
+  margin-left: auto;
+  position: relative;
+  z-index: var(--z-6-popover);
+}
+
+.menuTrigger {
+  align-items: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.25rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.25rem;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--muted) 35%, transparent);
+  }
+}
+
+.menuTriggerIcon {
+  display: flex;
+  height: 1rem;
+  width: 1rem;
+}
+
+.menu {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 13rem;
+  padding: var(--space-1);
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  z-index: var(--z-6-popover);
+}
+
+.menuItem {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  gap: var(--space-2);
+  line-height: 1.25;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--muted);
+    color: var(--primary);
+  }
+}
+
+.menuItemDanger {
+  color: var(--destructive);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--destructive) 8%, transparent);
+    color: var(--destructive);
+  }
+}
+
+.menuItemIcon {
+  display: flex;
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.menuItemCheckbox {
+  align-items: center;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  gap: var(--space-2);
+  line-height: 1.25;
+  padding: var(--space-2) var(--space-3);
+  user-select: none;
+  width: 100%;
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:has(input:not(:disabled)) {
+    background: var(--muted);
+  }
+}
+
+.menuCheckbox {
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.menuSeparator {
+  background: var(--border);
+  border: 0;
+  height: 1px;
+  margin: 0;
+  width: 100%;
+}

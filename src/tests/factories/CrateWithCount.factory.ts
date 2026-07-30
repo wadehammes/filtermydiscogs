@@ -1,10 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
-import type { Crate } from "src/types/crate.types";
+import type { Crate, CrateWithCount } from "src/types/crate.types";
 import type { KeysMatch } from "src/types/KeysMatch";
-
-export type CrateWithCount = Crate & { releaseCount: number };
 
 type CrateWithCountFactoryOptions = {
   releaseCount?: number;
@@ -36,7 +34,7 @@ class CrateWithCountFactory extends BaseFactory<
     };
 
     const _allKeysMustBeInTheInstance: KeysMatch<
-      CrateWithCount,
+      Omit<CrateWithCount, "previewThumbs">,
       typeof instance
     > = undefined;
 

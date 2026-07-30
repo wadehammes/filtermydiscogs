@@ -32,6 +32,18 @@ describe("CrateSelector", () => {
     ).toBeInTheDocument();
   });
 
+  it("hides crate creation when allowCreate is false", async () => {
+    po.renderCrateSelector({ allowCreate: false });
+    await po.waitUntilLoaded();
+
+    expect(
+      screen.getByRole("button", { name: /Select crate/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "New Crate" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("displays active crate in select", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();

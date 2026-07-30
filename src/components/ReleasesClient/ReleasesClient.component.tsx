@@ -142,6 +142,7 @@ const ReleasesClientContent = () => {
             <CrateDrawer
               isOpen={isDrawerOpen}
               onReleaseClick={handleReleaseClick}
+              aboveMiniPlayer={isPlaying}
             />
           </div>
         </div>

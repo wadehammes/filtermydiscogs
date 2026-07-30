@@ -141,17 +141,35 @@ try {
 
   const adapter = new PrismaPg(pool);
 
-  // Prisma Client configuration with optimizations
+  const prismaClientLog =
+    process.env.NODE_ENV === "development"
+      ? (["error", "warn", "query"] as const)
+      : process.env.DB_LOG_QUERIES === "true"
+        ? (["error", "warn", "query"] as const)
+        : (["error"] as const);
+
+  const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
+    "crateSetMarker" in client;
+
+  if (
+    globalForPrisma.prisma &&
+    !isCachedPrismaClientCurrent(globalForPrisma.prisma)
+  ) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[DB] Cached Prisma client is missing new models; recreating client.",
+      );
+    }
+
+    void globalForPrisma.prisma.$disconnect().catch(() => {});
+    globalForPrisma.prisma = undefined;
+  }
+
   prismaInstance =
     globalForPrisma.prisma ??
     new PrismaClient({
       adapter,
-      log:
-        process.env.NODE_ENV === "development"
-          ? ["error", "warn", "query"]
-          : process.env.DB_LOG_QUERIES === "true"
-            ? ["error", "warn", "query"]
-            : ["error"],
+      log: [...prismaClientLog],
     });
 
   // Connection health check with exponential backoff

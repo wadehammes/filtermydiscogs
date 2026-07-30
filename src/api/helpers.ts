@@ -9,6 +9,9 @@ import type {
 } from "src/types";
 import type {
   Crate,
+  CrateLayoutPutRequest,
+  CrateReleaseItem,
+  CrateSetMarker,
   CratesResponse,
   CrateUpdatePayload,
   CrateWithReleasesResponse,
@@ -55,6 +58,7 @@ async function fetchPaginatedCrateReleases({
       result = {
         crate: data.crate,
         releases: [...data.releases],
+        markers: [...(data.markers ?? [])],
         ...(data.pagination !== undefined
           ? { pagination: data.pagination }
           : {}),
@@ -382,15 +386,17 @@ export const fetchPublicCrate = async (
         pagination?: PaginationInfo;
       };
 
-      const wrappedReleases = data.releases.map((release) => ({
+      const wrappedReleases = data.releases.map((release, index) => ({
         release,
         found_at: null,
+        sort_order: (index + 1) * 1000,
       }));
 
       if (!result) {
         result = {
           crate: data.crate,
           releases: [...wrappedReleases],
+          markers: [],
           ...(data.pagination !== undefined
             ? { pagination: data.pagination }
             : {}),
@@ -482,6 +488,40 @@ export const createCrate = async (
       throw error;
     }
     throw new Error("Failed to create crate");
+  }
+};
+
+export const updateCrateLayout = async (
+  crateId: string,
+  layout: CrateLayoutPutRequest,
+): Promise<{
+  success: boolean;
+  releases: CrateReleaseItem[];
+  markers: CrateSetMarker[];
+}> => {
+  try {
+    const response = await fetch(`/api/crates/${crateId}/layout`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(layout),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage =
+        errorData?.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update crate layout");
   }
 };
 

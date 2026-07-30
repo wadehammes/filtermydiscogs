@@ -10,6 +10,7 @@ export type CrateUpdatePayload = Pick<
 
 export type CrateWithCount = Crate & {
   releaseCount?: number;
+  previewThumbs?: string[];
 };
 
 export interface CratesResponse {
@@ -28,11 +29,53 @@ export interface PaginationInfo {
 export interface CrateReleaseItem {
   release: DiscogsRelease;
   found_at: string | null;
+  sort_order: number;
+}
+
+export interface CrateSetMarker {
+  id: string;
+  label: string;
+  sort_order: number;
+}
+
+export interface CrateLayoutReleaseItem {
+  kind: "release";
+  instance_id: string;
+  sort_order: number;
+  release: DiscogsRelease;
+  found_at: string | null;
+}
+
+export interface CrateLayoutMarkerItem {
+  kind: "marker";
+  id: string;
+  label: string;
+  sort_order: number;
+}
+
+export type CrateLayoutItem = CrateLayoutReleaseItem | CrateLayoutMarkerItem;
+
+export type CrateLayoutPutMarkerItem =
+  | { kind: "marker"; id: string; label: string }
+  | { kind: "marker"; label: string };
+
+export type CrateLayoutPutReleaseItem = {
+  kind: "release";
+  instance_id: string;
+};
+
+export type CrateLayoutPutItem =
+  | CrateLayoutPutMarkerItem
+  | CrateLayoutPutReleaseItem;
+
+export interface CrateLayoutPutRequest {
+  items: CrateLayoutPutItem[];
 }
 
 export interface CrateWithReleasesResponse {
   crate: Crate;
   releases: CrateReleaseItem[];
+  markers: CrateSetMarker[];
   pagination?: PaginationInfo;
 }
 

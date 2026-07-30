@@ -233,12 +233,15 @@ describe("useClearAllPackedInCrateMutation", () => {
         {
           release: packedRelease,
           found_at: "2026-07-27T00:00:00.000Z",
+          sort_order: 1000,
         },
         {
           release: unpackedRelease,
           found_at: null,
+          sort_order: 2000,
         },
       ],
+      markers: [],
     };
 
     queryClient.setQueryData(

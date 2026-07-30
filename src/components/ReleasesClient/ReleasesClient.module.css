@@ -32,7 +32,8 @@
     var(--release-mini-player-control-size) +
     var(--space-2) *
     2 +
-    var(--space-3)
+    var(--space-3) +
+    4px
   );
   --release-mini-player-bar-offset: calc(
     var(--release-mini-player-bar-height) +
@@ -49,32 +50,19 @@
     }
   }
 
-  :global([data-testid="fmdBottomDrawer"]) {
-    bottom: calc(
-      var(--release-mini-player-bar-offset) +
-      var(--release-mini-player-video-panel-offset)
-    );
-    min-height: 0;
-    max-height: calc(
-      100dvh -
-      var(--release-mini-player-bar-offset) -
-      var(--release-mini-player-video-panel-offset) -
-      var(--release-mini-player-drawer-gap)
-    );
-  }
-
   :global([data-crate-drawer-desktop]) {
     height: calc(
       100vh -
       var(--sticky-header-total-height) -
       var(--release-mini-player-bar-offset) -
-      var(--release-mini-player-video-panel-offset)
+      var(--release-mini-player-video-panel-offset) -
+      4px
     );
   }
 
   @media (width >= 768px) {
     --release-mini-player-control-size: 2rem;
-    --release-mini-player-bar-height: 3.25rem;
+    --release-mini-player-bar-height: calc(3.25rem + 1px);
   }
 }
 
@@ -82,15 +70,6 @@
   .withMiniPlayer:not(:has([data-video-expanded="true"])) {
   @media (width < 768px) {
     --release-mini-player-video-panel-offset: 0px;
-
-    :global([data-testid="fmdBottomDrawer"]) {
-      max-height: calc(
-        100dvh -
-        var(--sticky-header-height) -
-        var(--release-mini-player-bar-offset) -
-        var(--release-mini-player-drawer-gap)
-      );
-    }
   }
 }
 

@@ -11,6 +11,7 @@ export const crateDrawerPackedAt = "2026-07-27T00:00:00.000Z";
 export const crateDrawerDefaultCrate = crateWithCountFactory.build({
   id: "crate-1",
   is_default: true,
+  notes: null,
   packed_enabled: true,
   releaseCount: 2,
 });
@@ -30,8 +31,16 @@ export const crateDrawerReleaseUnpacked = releaseFactory.build({
 
 export const crateDrawerPartiallyPackedResponse =
   crateWithReleasesResponseFactory.withReleaseItems(crateDrawerDefaultDetail, [
-    { release: crateDrawerReleasePacked, found_at: crateDrawerPackedAt },
-    { release: crateDrawerReleaseUnpacked, found_at: null },
+    {
+      release: crateDrawerReleasePacked,
+      found_at: crateDrawerPackedAt,
+      sort_order: 1000,
+    },
+    {
+      release: crateDrawerReleaseUnpacked,
+      found_at: null,
+      sort_order: 2000,
+    },
   ]);
 
 export const setupCrateDrawerTests = (

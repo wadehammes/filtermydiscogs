@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getPaginationParams, sanitizeError } from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
+import { findCrateReleasesForLayout } from "src/lib/crate-layout-query.server";
 import { prisma } from "src/lib/db";
 import { toPublicReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
@@ -84,19 +85,13 @@ export async function GET(
     });
 
     // Get releases separately with pagination to avoid loading all at once
-    const releases = await prisma.crateRelease.findMany({
+    const releases = await findCrateReleasesForLayout({
       where: {
         user_id: crate.user_id,
         crate_id: id,
       },
-      orderBy: {
-        added_at: "desc",
-      },
       skip,
       take,
-      select: {
-        release_data: true,
-      },
     });
 
     // Map releases and ensure instance_id is consistent

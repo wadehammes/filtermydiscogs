@@ -1,0 +1,94 @@
+.toolbar {
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  padding: var(--space-3) var(--space-4);
+  position: sticky;
+  top: var(--sticky-header-height);
+  z-index: var(--z-2-sticky);
+
+  @media (width >= 1024px) {
+    padding: var(--space-3) var(--space-5);
+  }
+}
+
+.inner {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  justify-content: space-between;
+}
+
+.progress {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.25;
+  padding: 0;
+  text-decoration: underline;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--primary-hover);
+  }
+}
+
+.checkboxLabel {
+  align-items: center;
+  color: color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground));
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  gap: var(--space-1);
+  line-height: 1.25;
+  user-select: none;
+  white-space: nowrap;
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.checkbox {
+  accent-color: var(--primary);
+  cursor: pointer;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}

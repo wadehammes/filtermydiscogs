@@ -4,6 +4,7 @@ import {
   createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
+import { getNextCrateLayoutSortOrder } from "src/lib/crate-layout.server";
 import { type Prisma, prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
@@ -171,17 +172,25 @@ export async function POST(
     // Normalize release data - ensure instance_id is a string in the JSON
     const normalizedRelease = {
       ...release,
-      instance_id: instanceId, // Use the string version
+      instance_id: instanceId,
     };
 
-    // Add release to crate
-    await prisma.crateRelease.create({
-      data: {
-        user_id: userIdNum,
-        crate_id: id,
-        instance_id: instanceId,
-        release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
-      },
+    await prisma.$transaction(async (tx) => {
+      const sortOrder = await getNextCrateLayoutSortOrder({
+        userId: userIdNum,
+        crateId: id,
+        tx,
+      });
+
+      await tx.crateRelease.create({
+        data: {
+          user_id: userIdNum,
+          crate_id: id,
+          instance_id: instanceId,
+          release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
+          sort_order: sortOrder,
+        },
+      });
     });
 
     // Audit log

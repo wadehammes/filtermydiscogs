@@ -1,0 +1,189 @@
+"use client";
+
+import classNames from "classnames";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
+import { CRATE_NOTES_MAX_LENGTH } from "src/constants/crate";
+import styles from "./CrateSetNotesScratchpad.module.css";
+
+export const CRATE_SET_NOTES_SCRATCHPAD_ID = "fmdCrateSetNotesScratchpad";
+
+const SAVE_DEBOUNCE_MS = 700;
+
+export function focusCrateSetNotesScratchpad() {
+  const element = document.getElementById(CRATE_SET_NOTES_SCRATCHPAD_ID);
+
+  if (!(element instanceof HTMLTextAreaElement)) {
+    return;
+  }
+
+  element.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  element.focus();
+}
+
+type SaveState = "idle" | "pending" | "saved";
+
+interface CrateSetNotesScratchpadProps {
+  className?: string | undefined;
+  variant?: "default" | "panel";
+}
+
+export const CrateSetNotesScratchpad = ({
+  className,
+  variant = "default",
+}: CrateSetNotesScratchpadProps) => {
+  const { activeCrateId, crateNotes, handleSaveCrateNotes } =
+    useCrateDrawerContext();
+
+  const [draft, setDraft] = useState(crateNotes);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFocusedRef = useRef(false);
+  const prevCrateIdRef = useRef(activeCrateId);
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (prevCrateIdRef.current !== activeCrateId) {
+      prevCrateIdRef.current = activeCrateId;
+      setDraft(crateNotes);
+      setSaveState("idle");
+      return;
+    }
+
+    if (!isFocusedRef.current) {
+      setDraft(crateNotes);
+    }
+  }, [activeCrateId, crateNotes]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      if (savedTimeoutRef.current) {
+        clearTimeout(savedTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const persist = useCallback(
+    async (value: string) => {
+      if (value.length > CRATE_NOTES_MAX_LENGTH) {
+        return;
+      }
+
+      setSaveState("pending");
+
+      try {
+        await handleSaveCrateNotes(value);
+        setSaveState("saved");
+
+        if (savedTimeoutRef.current) {
+          clearTimeout(savedTimeoutRef.current);
+        }
+
+        savedTimeoutRef.current = setTimeout(() => {
+          setSaveState("idle");
+        }, 2000);
+      } catch {
+        setSaveState("idle");
+      }
+    },
+    [handleSaveCrateNotes],
+  );
+
+  const schedulePersist = useCallback(
+    (value: string) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(() => {
+        debounceRef.current = null;
+        void persist(value);
+      }, SAVE_DEBOUNCE_MS);
+    },
+    [persist],
+  );
+
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = event.target.value;
+      setDraft(value);
+      schedulePersist(value);
+    },
+    [schedulePersist],
+  );
+
+  const handleBlur = useCallback(() => {
+    isFocusedRef.current = false;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+
+    void persist(draft);
+  }, [draft, persist]);
+
+  const handleFocus = useCallback(() => {
+    isFocusedRef.current = true;
+  }, []);
+
+  const notesLength = draft.length;
+  const isNotesOverLimit = notesLength > CRATE_NOTES_MAX_LENGTH;
+  const isDisabled = !activeCrateId;
+  const statusLabel =
+    saveState === "pending"
+      ? "Saving…"
+      : saveState === "saved"
+        ? "Saved"
+        : null;
+
+  return (
+    <section
+      className={classNames(styles.section, className, {
+        [styles.sectionInPanel]: variant === "panel",
+      })}
+      data-testid="fmdCrateSetNotesScratchpad"
+    >
+      <textarea
+        id={CRATE_SET_NOTES_SCRATCHPAD_ID}
+        className={classNames(
+          variant === "panel" ? styles.textareaPanel : styles.textarea,
+          isNotesOverLimit && styles.textareaInvalid,
+        )}
+        disabled={isDisabled}
+        maxLength={CRATE_NOTES_MAX_LENGTH}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        placeholder="Add set notes for this gig"
+        rows={4}
+        value={draft}
+        aria-label="Set notes"
+        aria-describedby="crate-set-notes-length"
+        aria-invalid={isNotesOverLimit ? true : undefined}
+      />
+      <div className={styles.footer}>
+        {statusLabel ? (
+          <p className={styles.status} aria-live="polite">
+            {statusLabel}
+          </p>
+        ) : (
+          <span aria-hidden />
+        )}
+        <p
+          id="crate-set-notes-length"
+          className={classNames(
+            styles.charCount,
+            isNotesOverLimit && styles.charCountLimit,
+          )}
+        >
+          {notesLength} / {CRATE_NOTES_MAX_LENGTH}
+        </p>
+      </div>
+    </section>
+  );
+};

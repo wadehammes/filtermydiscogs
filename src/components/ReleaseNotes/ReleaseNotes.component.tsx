@@ -4,12 +4,13 @@ import classNames from "classnames";
 import type { DiscogsRelease } from "src/types";
 import { NoteEditDialog } from "./NoteEditDialog.component";
 import styles from "./ReleaseNotes.module.css";
+import { ReleaseNotesCrateScratchpad } from "./ReleaseNotesCrateScratchpad.component";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
 interface ReleaseNotesProps {
   release: DiscogsRelease;
-  variant?: "inline" | "displayOnly" | "table" | "modal";
+  variant?: "inline" | "displayOnly" | "table" | "crate" | "modal";
   className?: string | undefined;
 }
 
@@ -222,6 +223,10 @@ const ReleaseNotesTable = ({ release }: { release: DiscogsRelease }) => {
   );
 };
 
+const ReleaseNotesCrate = ({ release }: { release: DiscogsRelease }) => {
+  return <ReleaseNotesCrateScratchpad release={release} />;
+};
+
 const ReleaseNotesInline = ({ release }: { release: DiscogsRelease }) => {
   const {
     canEdit,
@@ -295,6 +300,10 @@ export const ReleaseNotes = ({
 
   if (variant === "table") {
     return <ReleaseNotesTable release={release} />;
+  }
+
+  if (variant === "crate") {
+    return <ReleaseNotesCrate release={release} />;
   }
 
   return <ReleaseNotesInline release={release} />;

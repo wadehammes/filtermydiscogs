@@ -14,8 +14,7 @@
   align-items: center;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
+  border-radius: 5px;
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
@@ -44,9 +43,9 @@
   }
 
   &.active {
-    border-bottom-color: var(--primary);
     color: var(--primary);
     font-weight: var(--font-semibold);
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   }
 
   &.disabled {

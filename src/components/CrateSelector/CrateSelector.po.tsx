@@ -30,7 +30,9 @@ const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
 const apiError = new Error("API request failed");
 
 export type CrateSelectorRenderProps = {
+  allowCreate?: boolean;
   className?: string;
+  onNavigate?: (crateId: string) => void;
 };
 
 export class CrateSelectorPageObject extends BasePageObject {
