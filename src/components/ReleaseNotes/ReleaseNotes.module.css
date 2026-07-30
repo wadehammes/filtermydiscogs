@@ -48,11 +48,10 @@
   color: var(--muted-foreground);
   font-size: var(--text-xs);
   line-height: 1.4;
+  max-height: 3lh;
   min-width: 0;
   overflow-y: auto;
   width: 100%;
-  max-height: 3lh;
-  min-height: 1lh;
 }
 
 .noteContent {

@@ -37,12 +37,6 @@ export const PersistentYoutubeIframe = ({
   }, [autoplay, videoId]);
 
   useEffect(() => {
-    return () => {
-      registerPlaybackIframe(null);
-    };
-  }, [registerPlaybackIframe]);
-
-  useEffect(() => {
     if (variant !== "visible" || !playbackKey) {
       return;
     }

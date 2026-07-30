@@ -80,7 +80,7 @@ const ReleasesClientContent = () => {
   return (
     <Page>
       <div
-        className={classNames({
+        className={classNames(styles.releasesShell, {
           [styles.withMiniPlayer]: isPlaying,
         })}
       >

@@ -1,10 +1,16 @@
 .pageContainer {
   background: var(--background);
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
   width: 100%;
 }
 
 .pageContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
   width: 100%;
 }
 

@@ -96,10 +96,13 @@ export const ReleasePlaybackProvider = ({
   const pendingPlayFromGestureRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const isPausedRef = useRef(isPaused);
   const releaseRef = useRef<DiscogsRelease | null>(null);
   const startPlaybackRef = useRef<(params: StartPlaybackParams) => void>(
     () => undefined,
   );
+
+  isPausedRef.current = isPaused;
 
   const clearPlayFromGestureRetries = useCallback(() => {
     for (const timeoutId of playFromGestureRetryTimeoutsRef.current) {
@@ -110,7 +113,7 @@ export const ReleasePlaybackProvider = ({
   }, []);
 
   const attemptPlayFromGesture = useCallback(() => {
-    if (!pendingPlayFromGestureRef.current || isPaused) {
+    if (!pendingPlayFromGestureRef.current || isPausedRef.current) {
       return;
     }
 
@@ -118,12 +121,12 @@ export const ReleasePlaybackProvider = ({
       iframe: playbackIframeRef.current,
       command: "playVideo",
     });
-  }, [isPaused]);
+  }, []);
 
   const schedulePlayFromGestureAttempts = useCallback(() => {
     clearPlayFromGestureRetries();
 
-    if (!pendingPlayFromGestureRef.current || isPaused) {
+    if (!pendingPlayFromGestureRef.current || isPausedRef.current) {
       return;
     }
 
@@ -134,7 +137,7 @@ export const ReleasePlaybackProvider = ({
         }, delay),
       );
     }
-  }, [attemptPlayFromGesture, clearPlayFromGestureRetries, isPaused]);
+  }, [attemptPlayFromGesture, clearPlayFromGestureRetries]);
 
   const resumePlaybackFromGesture = useCallback(() => {
     schedulePlayFromGestureAttempts();
