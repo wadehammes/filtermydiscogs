@@ -11,7 +11,9 @@ import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./CrateSelector.module.css";
 
 interface CrateSelectorProps {
+  allowCreate?: boolean;
   className?: string;
+  onNavigate?: (crateId: string) => void;
 }
 
 type EditorMode = "idle" | "create";
@@ -20,7 +22,11 @@ type CreateCrateFormValues = {
   name: string;
 };
 
-export const CrateSelector = ({ className }: CrateSelectorProps) => {
+export const CrateSelector = ({
+  allowCreate = true,
+  className,
+  onNavigate,
+}: CrateSelectorProps) => {
   const {
     state: { userId },
   } = useAuth();
@@ -51,10 +57,15 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
   const handleCrateChange = useCallback(
     (value: string | string[]) => {
       if (typeof value === "string") {
+        if (onNavigate) {
+          onNavigate(value);
+          return;
+        }
+
         selectCrate(value);
       }
     },
-    [selectCrate],
+    [onNavigate, selectCrate],
   );
 
   const handleCreateCrate = handleSubmit(async ({ name }) => {
@@ -67,9 +78,7 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
       await createCrate(trimmedName);
       reset({ name: "" });
       setEditorMode("idle");
-    } catch {
-      // Error toast is handled by useCrateMutations; keep the create form open.
-    }
+    } catch {}
   });
 
   const handleCancelEditor = useCallback(() => {
@@ -123,19 +132,21 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
             placeholder="Select a crate"
             className={classNames(styles.select)}
           />
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.newCrateButton}
-              onClick={handleStartCreate}
-              disabled={isUpdatingCrate}
-              aria-label="New Crate"
-            >
-              <PlusIcon className={styles.newCrateIcon} aria-hidden />
-            </button>
-          </div>
+          {allowCreate ? (
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.newCrateButton}
+                onClick={handleStartCreate}
+                disabled={isUpdatingCrate}
+                aria-label="New Crate"
+              >
+                <PlusIcon className={styles.newCrateIcon} aria-hidden />
+              </button>
+            </div>
+          ) : null}
         </>
-      ) : (
+      ) : allowCreate ? (
         <form
           className={styles.createForm}
           onSubmit={handleCreateCrate}
@@ -170,7 +181,7 @@ export const CrateSelector = ({ className }: CrateSelectorProps) => {
             Cancel
           </Button>
         </form>
-      )}
+      ) : null}
     </div>
   );
 };

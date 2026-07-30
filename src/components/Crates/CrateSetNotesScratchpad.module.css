@@ -1,0 +1,53 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.textarea {
+  composes: textarea from "../../styles/scratchpad-textarea.module.css";
+  min-height: 6.5rem;
+
+  @media (width >= 1024px) {
+    min-height: 12rem;
+  }
+}
+
+.textareaPanel {
+  composes: textareaembedded from "../../styles/scratchpad-textarea.module.css";
+  min-height: 6.5rem;
+
+  @media (width >= 1024px) {
+    min-height: 12rem;
+    font-size: 16px;
+  }
+}
+
+.textareaInvalid {
+  composes: textareainvalid from "../../styles/scratchpad-textarea.module.css";
+}
+
+.footer {
+  composes: footer from "../../styles/scratchpad-textarea.module.css";
+}
+
+.status {
+  composes: status from "../../styles/scratchpad-textarea.module.css";
+}
+
+.charCount {
+  composes: charcount from "../../styles/scratchpad-textarea.module.css";
+}
+
+.charCountLimit {
+  composes: charcountlimit from "../../styles/scratchpad-textarea.module.css";
+}
+
+.sectionInPanel {
+  padding: var(--space-3) var(--space-4);
+
+  @media (width >= 1024px) {
+    padding: var(--space-3) var(--space-5);
+  }
+}

@@ -183,6 +183,10 @@
   }
 }
 
+.openCrateLink {
+  flex: 1;
+}
+
 .releasesSection {
   display: flex;
   flex-direction: column;
@@ -285,14 +289,12 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  cursor: pointer;
   display: flex;
   gap: var(--space-4);
   outline: 1px solid transparent;
   outline-offset: -1px;
   padding: 0;
   position: relative;
-  text-decoration: none;
   transition: all var(--transition-normal);
 
   & > * {
@@ -305,9 +307,28 @@
     outline-color: var(--ring);
   }
 
-  &:focus-visible {
+  &:has(.listItemMain:focus-visible) {
     outline: 2px solid var(--ring);
     outline-offset: -2px;
+  }
+}
+
+.listItemMain {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  font: inherit;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+
+  &:focus-visible {
+    outline: none;
   }
 }
 

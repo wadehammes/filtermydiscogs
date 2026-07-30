@@ -32,14 +32,21 @@ import {
 } from "src/hooks/queries/useCratesQuery";
 import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
+import { buildCrateLayout } from "src/lib/crate-layout";
 import type { DiscogsRelease } from "src/types";
-import type { CrateUpdatePayload, CrateWithCount } from "src/types/crate.types";
+import type {
+  CrateLayoutItem,
+  CrateUpdatePayload,
+  CrateWithCount,
+} from "src/types/crate.types";
 
 interface CrateContextType {
   crates: CrateWithCount[];
   activeCrateId: string | null;
   selectedReleases: DiscogsRelease[];
+  layoutItems: CrateLayoutItem[];
   isLoading: boolean;
+  isPendingCrate: boolean;
   isLoadingCrate: boolean;
   isFetchingCrate: boolean;
   addToCrate: (release: DiscogsRelease) => void;
@@ -105,6 +112,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
   const {
     data: activeCrateData,
+    isPending: isPendingCrate,
     isLoading: isLoadingCrate,
     isFetching: isFetchingCrate,
     isError: isCrateError,
@@ -115,6 +123,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     enabled: canLoadCrates,
   });
   const crateReleaseItems = activeCrateData?.releases ?? [];
+  const crateMarkers = activeCrateData?.markers ?? [];
 
   const packedReleaseCount = useMemo(
     () => crateReleaseItems.filter((item) => item.found_at !== null).length,
@@ -254,6 +263,15 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     refetchActiveCrate,
     userId,
   ]);
+
+  const layoutItems = useMemo(
+    () =>
+      buildCrateLayout({
+        releases: crateReleaseItems,
+        markers: crateMarkers,
+      }),
+    [crateMarkers, crateReleaseItems],
+  );
 
   const selectedReleases = useMemo(
     () => crateReleaseItems.map((item) => item.release),
@@ -458,7 +476,9 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       crates,
       activeCrateId,
       selectedReleases,
+      layoutItems,
       isLoading,
+      isPendingCrate,
       isLoadingCrate,
       isFetchingCrate,
       addToCrate,
@@ -484,7 +504,9 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       crates,
       activeCrateId,
       selectedReleases,
+      layoutItems,
       isLoading,
+      isPendingCrate,
       isLoadingCrate,
       isFetchingCrate,
       addToCrate,

@@ -12,6 +12,7 @@ interface BottomDrawerProps {
   footer?: ReactNode;
   closeButtonAriaLabel?: string;
   dataAttribute?: string;
+  aboveMiniPlayer?: boolean;
 }
 
 export const BottomDrawer = ({
@@ -23,6 +24,7 @@ export const BottomDrawer = ({
   footer,
   closeButtonAriaLabel = "Close drawer",
   dataAttribute,
+  aboveMiniPlayer = false,
 }: BottomDrawerProps) => {
   if (!isOpen) return null;
 
@@ -50,6 +52,7 @@ export const BottomDrawer = ({
       <div
         className={classNames(styles.drawer, {
           [styles.open]: isOpen,
+          [styles.aboveMiniPlayer]: aboveMiniPlayer,
         })}
         data-testid="fmdBottomDrawer"
         onClick={(e) => {

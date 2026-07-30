@@ -13,9 +13,14 @@ import { CrateDrawerReleases } from "./CrateDrawerReleases.component";
 interface CrateDrawerProps {
   isOpen: boolean;
   onReleaseClick?: (instanceId: string) => void;
+  aboveMiniPlayer?: boolean;
 }
 
-export const CrateDrawer = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
+export const CrateDrawer = ({
+  isOpen,
+  onReleaseClick,
+  aboveMiniPlayer = false,
+}: CrateDrawerProps) => {
   const { toggleDrawer } = useCrate();
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -32,6 +37,7 @@ export const CrateDrawer = ({ isOpen, onReleaseClick }: CrateDrawerProps) => {
           closeButtonAriaLabel="Close crate drawer"
           headerContent={crateSelector}
           footer={<CrateDrawerFooter />}
+          aboveMiniPlayer={aboveMiniPlayer}
         >
           <div className={styles.content}>
             <CrateDrawerReleases />

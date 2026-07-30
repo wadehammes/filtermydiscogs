@@ -1,0 +1,189 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.listHeader {
+  display: none;
+
+  @media (width >= 1024px) {
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted-foreground);
+    display: grid;
+    font-size: var(--text-xxs);
+    font-weight: var(--font-semibold);
+    gap: var(--space-4) var(--space-5);
+    grid-template-columns: minmax(0, 1.75fr) minmax(13rem, 1fr) auto;
+    letter-spacing: 0.04em;
+    list-style: none;
+    padding: var(--space-2) var(--space-5) var(--space-3);
+    text-transform: uppercase;
+  }
+}
+
+.listHeaderNotes {
+  grid-column: 1;
+}
+
+.listHeaderRelease {
+  grid-column: 2;
+}
+
+.listHeaderActions {
+  grid-column: 3;
+  text-align: right;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-3) var(--space-4);
+  grid-template-areas:
+    "identity identity actions"
+    "notes notes notes";
+  grid-template-columns: 1fr auto;
+
+  @media (width < 1024px) {
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  @media (width >= 1024px) {
+    align-items: center;
+    gap: var(--space-4) var(--space-5);
+    grid-template-areas: "notes identity actions";
+    grid-template-columns: minmax(0, 1.75fr) minmax(13rem, 1fr) auto;
+    padding: var(--space-3) var(--space-1);
+  }
+}
+
+.packedRow {
+  background: color-mix(in srgb, var(--primary) 6%, var(--background));
+}
+
+.rowDivided {
+  @media (width < 1024px) {
+    border-bottom: 1px dotted var(--border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  @media (width >= 1024px) {
+    border-bottom: 1px dotted var(--border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.noteSlot {
+  grid-area: notes;
+  min-width: 0;
+}
+
+.identity {
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  gap: var(--space-3);
+  grid-area: identity;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+
+  &:focus-visible {
+    border-radius: var(--radius-ui);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.cover {
+  border-radius: var(--radius-ui);
+  flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    display: block;
+    height: 2.5rem;
+    object-fit: cover;
+    width: 2.5rem;
+
+    @media (width >= 1024px) {
+      height: 2.75rem;
+      width: 2.75rem;
+    }
+  }
+}
+
+.identityText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.identityArtist {
+  color: var(--muted-foreground);
+  font-size: var(--text-xxs);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityTitle {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+
+  @media (width >= 1024px) {
+    font-size: var(--text-base);
+    white-space: normal;
+  }
+}
+
+.identity:hover .identityTitle {
+  color: var(--primary);
+}
+
+.identityMeta {
+  color: var(--muted-foreground);
+  font-size: var(--text-xxs);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  align-self: center;
+  grid-area: actions;
+}
+
+.emptyState {
+  color: var(--muted-foreground);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+}

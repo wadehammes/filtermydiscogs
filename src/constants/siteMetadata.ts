@@ -41,6 +41,10 @@ export const PAGE_DESCRIPTIONS = {
     "Explore collection insights: milestones, style evolution, growth trends, and more.",
   mosaic:
     "Create cover-art mosaic grids from your collection or crates for social sharing.",
+  crates:
+    "Review crate releases in a table, edit collection notes, and pack albums for your gig.",
+  cratesDetail:
+    "Open a crate to review releases, edit collection notes, and pack for your gig.",
   settings:
     "Manage theme, sync preferences, and stored data for your FilterMyDiscogs account.",
   about: `FilterMyDiscogs helps you browse, filter, and organize your Discogs collection, including ${COLLECTION_FORMATS_PHRASE}. Contact, support, and open-source details.`,

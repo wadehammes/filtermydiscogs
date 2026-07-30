@@ -1,0 +1,204 @@
+.pageShell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.page {
+  composes: microdotbackground from "../../styles/patterns.module.css";
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--sticky-header-height));
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-4) var(--space-10);
+  width: 100%;
+
+  @media (width >= 768px) {
+    padding: var(--space-5) var(--space-6) var(--space-10);
+  }
+
+  @media (width >= 1280px) {
+    padding: var(--space-6) var(--space-10) var(--space-12);
+  }
+}
+
+.withMiniPlayer {
+  --release-mini-player-cover-size: 2.5rem;
+  --release-mini-player-control-size: 2.5rem;
+  --release-mini-player-bar-height: calc(
+    var(--release-mini-player-cover-size) +
+    var(--release-mini-player-control-size) +
+    var(--space-2) *
+    2 +
+    var(--space-3)
+  );
+  --release-mini-player-bar-offset: calc(
+    var(--release-mini-player-bar-height) +
+    env(safe-area-inset-bottom, 0px)
+  );
+
+  .container {
+    padding-bottom: calc(
+      var(--space-10) +
+      var(--release-mini-player-bar-offset)
+    );
+
+    @media (width >= 1280px) {
+      padding-bottom: calc(
+        var(--space-12) +
+        var(--release-mini-player-bar-offset)
+      );
+    }
+  }
+
+  [data-testid="fmdReleaseMiniPlayer"] {
+    bottom: 0;
+  }
+
+  @media (width >= 768px) {
+    --release-mini-player-control-size: 2rem;
+    --release-mini-player-bar-height: 3.25rem;
+  }
+}
+
+.detailMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.masthead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+
+  @media (width >= 1024px) {
+    gap: var(--space-4);
+  }
+}
+
+.mastheadControls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.crateSelector {
+  flex: 1 1 12rem;
+  min-width: 0;
+
+  [data-testid="fmdSelect"],
+  [data-filter-control-trigger] {
+    width: 100%;
+  }
+
+  @media (width >= 768px) {
+    flex: 0 1 16rem;
+    max-width: 16rem;
+    width: auto;
+  }
+}
+
+.backLink {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  width: fit-content;
+
+  &:hover {
+    color: var(--foreground);
+  }
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+
+  @media (width >= 1024px) {
+    align-items: start;
+    flex-direction: row;
+    gap: var(--space-8);
+  }
+}
+
+.releasesColumn {
+  flex: 1;
+  min-width: 0;
+  order: 2;
+  width: 100%;
+
+  @media (width >= 1024px) {
+    order: 1;
+  }
+}
+
+.releasesPanel {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  width: 100%;
+}
+
+.notesPanel {
+  background: color-mix(in srgb, var(--muted) 15%, var(--background));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  width: 100%;
+}
+
+.releasesPanelToolbar {
+  border-top-left-radius: calc(var(--radius-card) - 1px);
+  border-top-right-radius: calc(var(--radius-card) - 1px);
+}
+
+.releasesPanelBody {
+  border-bottom-left-radius: calc(var(--radius-card) - 1px);
+  border-bottom-right-radius: calc(var(--radius-card) - 1px);
+  overflow: hidden;
+
+  &:first-child {
+    border-top-left-radius: calc(var(--radius-card) - 1px);
+    border-top-right-radius: calc(var(--radius-card) - 1px);
+  }
+}
+
+.notesColumn {
+  order: 1;
+  width: 100%;
+
+  @media (width >= 1024px) {
+    flex: 0 0 min(100%, 36rem);
+    max-width: 40rem;
+    order: 2;
+    position: sticky;
+    top: calc(var(--sticky-header-height) + var(--space-4));
+  }
+}
+
+.emptyState {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+}
+
+.loadingState {
+  padding: var(--space-10) var(--space-4);
+}

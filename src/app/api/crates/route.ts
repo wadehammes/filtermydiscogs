@@ -7,6 +7,7 @@ import {
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
+import { fetchCratePreviewThumbs } from "src/lib/crate-preview.server";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
@@ -98,6 +99,7 @@ export async function GET(request: NextRequest) {
         created_at: defaultCrate.created_at,
         updated_at: defaultCrate.updated_at,
         releaseCount: defaultCrate._count.releases,
+        previewThumbs: [],
       };
 
       return privateRouteJson({
@@ -114,6 +116,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Map crates to include release count in a cleaner format
+    const previewThumbsByCrateId = await fetchCratePreviewThumbs({
+      userId: userIdNum,
+      crateIds: crates.map((crate) => crate.id),
+    });
+
     const cratesWithCounts = crates.map((crate) => ({
       user_id: crate.user_id,
       id: crate.id,
@@ -126,6 +133,7 @@ export async function GET(request: NextRequest) {
       created_at: crate.created_at,
       updated_at: crate.updated_at,
       releaseCount: crate._count.releases,
+      previewThumbs: previewThumbsByCrateId.get(crate.id) ?? [],
     }));
 
     return createPaginatedResponse(cratesWithCounts, total, page, pageSize);

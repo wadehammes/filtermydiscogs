@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import Link from "next/link";
+import Crates from "src/styles/icons/crates-thin.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
@@ -10,6 +11,7 @@ interface MobileMenuNavProps {
   showMosaic?: boolean;
   showReleases?: boolean;
   showDashboard?: boolean;
+  showCrates?: boolean;
   isDisabled?: boolean;
   onNavigation: (e: React.MouseEvent<HTMLAnchorElement>, label: string) => void;
 }
@@ -19,6 +21,7 @@ export function MobileMenuNav({
   showMosaic = true,
   showReleases = true,
   showDashboard = true,
+  showCrates = true,
   isDisabled = false,
   onNavigation,
 }: MobileMenuNavProps) {
@@ -57,6 +60,24 @@ export function MobileMenuNav({
             <VinylRecord />
           </span>
           <span>Releases</span>
+        </Link>
+      )}
+
+      {showCrates && (
+        <Link
+          href="/crates"
+          className={classNames(styles.menuItem, {
+            [styles.active]: currentPage === "crates",
+            [styles.disabled]: isDisabled,
+          })}
+          onClick={(e) => onNavigation(e, "Crates")}
+          aria-disabled={isDisabled}
+          tabIndex={isDisabled ? -1 : undefined}
+        >
+          <span className={styles.menuIcon}>
+            <Crates />
+          </span>
+          <span>Crates</span>
         </Link>
       )}
 

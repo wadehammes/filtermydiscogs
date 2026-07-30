@@ -25,6 +25,9 @@ jest.mock("src/lib/db", () => ({
       count: jest.fn(),
       findMany: jest.fn(),
     },
+    crateSetMarker: {
+      findMany: jest.fn(),
+    },
   },
 }));
 
@@ -78,6 +81,9 @@ let mockReleaseCount: jest.MockedFunction<
 >;
 let mockReleaseFindMany: jest.MockedFunction<
   DbModule["prisma"]["crateRelease"]["findMany"]
+>;
+let mockMarkerFindMany: jest.MockedFunction<
+  DbModule["prisma"]["crateSetMarker"]["findMany"]
 >;
 let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 
@@ -135,6 +141,7 @@ beforeAll(async () => {
   mockCrateCount = jest.mocked(db.prisma.crate.count);
   mockReleaseCount = jest.mocked(db.prisma.crateRelease.count);
   mockReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
+  mockMarkerFindMany = jest.mocked(db.prisma.crateSetMarker.findMany);
   mockAudit = jest.mocked(apiHelpers.auditDatabaseOperation);
 });
 
@@ -151,8 +158,10 @@ describe("GET /api/crates/[id]", () => {
       {
         release_data: releaseFactory.withDisplayDefaults(),
         found_at: null,
+        sort_order: 1000,
       },
     ] as Awaited<ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>>);
+    mockMarkerFindMany.mockResolvedValue([]);
   });
 
   it("returns a crate with paginated releases", async () => {
@@ -164,6 +173,7 @@ describe("GET /api/crates/[id]", () => {
     const body = await response.json();
     expect(body.crate.id).toBe(CRATE_ID);
     expect(body.releases).toHaveLength(1);
+    expect(body.markers).toEqual([]);
     expect(body.pagination.total).toBe(1);
   });
 

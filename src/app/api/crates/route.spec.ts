@@ -21,6 +21,10 @@ jest.mock("src/lib/db", () => ({
   },
 }));
 
+jest.mock("src/lib/crate-preview.server", () => ({
+  fetchCratePreviewThumbs: jest.fn(async () => new Map()),
+}));
+
 jest.mock("src/lib/api-helpers", () => ({
   getVerifiedUserFromRequestWithRateLimit: jest.fn(),
   auditDatabaseOperation: jest.fn(),
@@ -173,6 +177,7 @@ describe("GET /api/crates", () => {
           created_at: crate.created_at.toISOString(),
           updated_at: crate.updated_at.toISOString(),
           releaseCount: 0,
+          previewThumbs: [],
         },
       ],
       pagination: {
@@ -215,6 +220,7 @@ describe("GET /api/crates", () => {
           name: "My Crate",
           is_default: true,
           releaseCount: 0,
+          previewThumbs: [],
         }),
       ],
       pagination: {

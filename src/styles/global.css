@@ -251,7 +251,7 @@ button {
   position: sticky;
   top: 0;
   width: 100%;
-  z-index: var(--z-3-fixed);
+  z-index: var(--z-app-header);
 
   & > *:not(h1) {
     flex: 1;

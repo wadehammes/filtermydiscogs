@@ -1,18 +1,16 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import * as apiHelpers from "src/api/helpers";
-import { CrateDrawerFooter } from "src/components/CrateDrawer/CrateDrawerFooter.component";
+import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
-import {
-  crateDrawerDefaultCrate,
-  setupCrateDrawerTests,
-} from "src/components/CrateDrawer/crateDrawerTestSetup";
+import { setupCrateDrawerTests } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CRATE_NOTES_MAX_LENGTH } from "src/constants/crate";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { screen, waitFor, within } from "test-utils";
 import {
+  crateDrawerDefaultCrate,
   crateDrawerDefaultDetail,
   crateDrawerReleaseUnpacked,
 } from "./crateDrawerTestSetup";
@@ -25,6 +23,16 @@ const getDialogSaveButton = (dialog: HTMLElement) => {
   const buttons = within(dialog).getAllByTestId("fmdButton");
   expect(buttons.length).toBeGreaterThanOrEqual(2);
   return buttons[1] as HTMLElement;
+};
+
+const OpenNotesDialogButton = () => {
+  const { setShowCrateNotesDialog } = useCrateDrawerContext();
+
+  return (
+    <button type="button" onClick={() => setShowCrateNotesDialog(true)}>
+      Open notes dialog
+    </button>
+  );
 };
 
 describe("CrateNotesDialog", () => {
@@ -41,15 +49,11 @@ describe("CrateNotesDialog", () => {
 
     const user = userEvent.setup();
 
-    renderCrateDrawerTree(<CrateDrawerFooter />);
+    renderCrateDrawerTree(<OpenNotesDialogButton />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /^notes$/i }),
-      ).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole("button", { name: /^notes$/i }));
+    await user.click(
+      screen.getByRole("button", { name: /open notes dialog/i }),
+    );
 
     const dialog = await screen.findByTestId("fmdCrateNotesDialog");
 
@@ -69,15 +73,11 @@ describe("CrateNotesDialog", () => {
 
     const user = userEvent.setup();
 
-    renderCrateDrawerTree(<CrateDrawerFooter />);
+    renderCrateDrawerTree(<OpenNotesDialogButton />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /^notes$/i }),
-      ).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole("button", { name: /^notes$/i }));
+    await user.click(
+      screen.getByRole("button", { name: /open notes dialog/i }),
+    );
 
     const dialog = await screen.findByTestId("fmdCrateNotesDialog");
     const notesInput = within(dialog).getByLabelText(/^notes$/i);
@@ -105,13 +105,11 @@ describe("CrateNotesDialog", () => {
 
     const user = userEvent.setup();
 
-    renderCrateDrawerTree(<CrateDrawerFooter />);
+    renderCrateDrawerTree(<OpenNotesDialogButton />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Existing notes")).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole("button", { name: /^notes$/i }));
+    await user.click(
+      screen.getByRole("button", { name: /open notes dialog/i }),
+    );
 
     const dialog = await screen.findByTestId("fmdCrateNotesDialog");
 
@@ -151,15 +149,11 @@ describe("CrateNotesDialog", () => {
 
     const user = userEvent.setup();
 
-    renderCrateDrawerTree(<CrateDrawerFooter />);
+    renderCrateDrawerTree(<OpenNotesDialogButton />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /^notes$/i }),
-      ).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole("button", { name: /^notes$/i }));
+    await user.click(
+      screen.getByRole("button", { name: /open notes dialog/i }),
+    );
 
     const dialog = await screen.findByTestId("fmdCrateNotesDialog");
     const notesInput = within(dialog).getByLabelText(/^notes$/i);

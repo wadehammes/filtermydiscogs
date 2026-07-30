@@ -7,6 +7,7 @@ import { getSiteUrl } from "src/utils/helpers";
 export const useCrateDrawerState = () => {
   const {
     selectedReleases,
+    layoutItems,
     clearCrate,
     clearAllPacked,
     deleteCrate,
@@ -15,8 +16,7 @@ export const useCrateDrawerState = () => {
     activeCrateId,
     isUpdatingCrate,
     isDeletingCrate,
-    isLoadingCrate,
-    isFetchingCrate,
+    isPendingCrate,
     packedReleaseCount,
   } = useCrate();
 
@@ -34,12 +34,7 @@ export const useCrateDrawerState = () => {
 
   const crateName = activeCrate?.name || "My Crate";
   const crateNotes = activeCrate?.notes ?? "";
-  const expectedReleaseCount = activeCrate?.releaseCount ?? 0;
-  const hasReleaseCountMismatch =
-    expectedReleaseCount > 0 && selectedReleases.length === 0;
-  const isLoadingReleases =
-    isLoadingCrate ||
-    (hasReleaseCountMismatch && (isFetchingCrate || isLoadingCrate));
+  const isLoadingReleases = isPendingCrate && selectedReleases.length === 0;
   const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
   const packedEnabled = activeCrate?.packed_enabled ?? false;
@@ -173,6 +168,7 @@ export const useCrateDrawerState = () => {
     isPublic,
     isUpdatingCrate,
     selectedReleases,
+    layoutItems,
     showClearDialog,
     showClearPackedDialog,
     showEditCrateDialog,

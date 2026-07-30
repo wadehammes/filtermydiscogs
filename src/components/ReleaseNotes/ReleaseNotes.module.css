@@ -97,6 +97,133 @@
   font-size: var(--text-xs);
 }
 
+.notesCrate {
+  gap: var(--space-2);
+  line-height: 1.45;
+  padding-top: 0;
+  width: 100%;
+
+  .addNotesLink {
+    color: var(--muted-foreground);
+    font-size: var(--text-xs);
+    font-style: italic;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--foreground);
+      text-decoration: underline;
+    }
+  }
+
+  .emptyNotes {
+    color: var(--muted-foreground);
+    font-size: var(--text-xs);
+    font-style: italic;
+  }
+}
+
+.notesCrateFilled {
+  font-size: var(--text-xs);
+  gap: var(--space-1);
+  line-height: 1.4;
+
+  .noteContent {
+    color: var(--muted-foreground);
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: var(--font-normal);
+    line-height: inherit;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  .editButton {
+    background: transparent;
+    border: none;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--text-xxs);
+    padding: 0;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    width: fit-content;
+
+    &:hover {
+      color: var(--foreground);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+}
+
+.notesCrateEmpty {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-style: italic;
+  padding: var(--space-2) 0;
+}
+
+.notesCrateScratchpad {
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.notesCrateScratchpadField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.notesCrateScratchpadLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-xxs);
+  font-weight: var(--font-normal);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.notesCrateScratchpadInput {
+  composes: textarea from "../../styles/scratchpad-textarea.module.css";
+  min-height: 2.75rem;
+}
+
+.notesCrateScratchpadInputInvalid {
+  composes: textareainvalid from "../../styles/scratchpad-textarea.module.css";
+}
+
+.notesCrateScratchpadFooter {
+  composes: footer from "../../styles/scratchpad-textarea.module.css";
+}
+
+.notesCrateScratchpadStatus {
+  composes: status from "../../styles/scratchpad-textarea.module.css";
+}
+
+.notesCrateScratchpadCount {
+  composes: charcount from "../../styles/scratchpad-textarea.module.css";
+}
+
+.notesCrateScratchpadCountLimit {
+  composes: charcountlimit from "../../styles/scratchpad-textarea.module.css";
+}
+
+.notesCrateScratchpadError {
+  color: var(--destructive);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
 .notesTable {
   font-size: var(--text-xs);
   gap: 0.125rem;

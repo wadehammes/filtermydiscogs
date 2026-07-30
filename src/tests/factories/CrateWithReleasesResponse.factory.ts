@@ -15,9 +15,10 @@ type CrateWithReleasesResponseFactoryOptions = {
 };
 
 const toCrateReleaseItems = (releases: DiscogsRelease[]): CrateReleaseItem[] =>
-  releases.map((release) => ({
+  releases.map((release, index) => ({
     release,
     found_at: null,
+    sort_order: (index + 1) * 1000,
   }));
 
 class CrateWithReleasesResponseFactory extends BaseFactory<
@@ -35,6 +36,7 @@ class CrateWithReleasesResponseFactory extends BaseFactory<
     const instance = {
       crate,
       releases: toCrateReleaseItems(releaseFactory.buildList(releaseCount)),
+      markers: [],
     } satisfies CrateWithReleasesResponse;
 
     return {

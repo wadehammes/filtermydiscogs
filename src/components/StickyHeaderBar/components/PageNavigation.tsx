@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import Link from "next/link";
 import { trackEvent } from "src/analytics/analytics";
+import Crates from "src/styles/icons/crates-thin.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
@@ -11,6 +12,7 @@ interface PageNavigationProps {
   showMosaic?: boolean;
   showReleases?: boolean;
   showDashboard?: boolean;
+  showCrates?: boolean;
   isDisabled?: boolean;
 }
 
@@ -19,6 +21,7 @@ export const PageNavigation = ({
   showMosaic = true,
   showReleases = true,
   showDashboard = true,
+  showCrates = true,
   isDisabled = false,
 }: PageNavigationProps) => {
   const handleNavigation = (
@@ -78,6 +81,25 @@ export const PageNavigation = ({
             <VinylRecord />
           </span>
           <span>Releases</span>
+        </Link>
+      )}
+
+      {showCrates && (
+        <Link
+          href="/crates"
+          className={classNames(styles.navItem, {
+            [styles.active]: currentPage === "crates",
+            [styles.disabled]: isDisabled,
+          })}
+          onClick={(e) => handleNavigation(e, "Crates")}
+          aria-label="View crates"
+          aria-disabled={isDisabled}
+          tabIndex={isDisabled ? -1 : undefined}
+        >
+          <span className={styles.icon}>
+            <Crates />
+          </span>
+          <span>Crates</span>
         </Link>
       )}
 

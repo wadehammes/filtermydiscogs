@@ -8,7 +8,14 @@ import {
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
-import { mapCrateReleaseRow } from "src/lib/crate-release-mapper";
+import {
+  findCrateReleasesForLayout,
+  findCrateSetMarkersForLayout,
+} from "src/lib/crate-layout-query.server";
+import {
+  mapCrateReleaseRow,
+  mapCrateSetMarkerRow,
+} from "src/lib/crate-release-mapper";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
@@ -87,35 +94,32 @@ export async function GET(
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
-    const [total, releases] = await Promise.all([
+    const releaseWhere = {
+      user_id: userIdNum,
+      crate_id: id,
+    };
+
+    const [total, releases, markers] = await Promise.all([
       prisma.crateRelease.count({
-        where: {
-          user_id: userIdNum,
-          crate_id: id,
-        },
+        where: releaseWhere,
       }),
-      prisma.crateRelease.findMany({
-        where: {
-          user_id: userIdNum,
-          crate_id: id,
-        },
-        orderBy: {
-          added_at: "desc",
-        },
+      findCrateReleasesForLayout({
+        where: releaseWhere,
         skip,
         take,
-        select: {
-          release_data: true,
-          found_at: true,
-        },
+      }),
+      findCrateSetMarkersForLayout({
+        where: releaseWhere,
       }),
     ]);
 
     const mappedReleases = releases.map(mapCrateReleaseRow);
+    const mappedMarkers = markers.map(mapCrateSetMarkerRow);
 
     return privateRouteJson({
       crate,
       releases: mappedReleases,
+      markers: mappedMarkers,
       pagination: {
         page,
         pageSize,

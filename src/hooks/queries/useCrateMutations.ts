@@ -9,9 +9,14 @@ import {
   setReleasePackedInCrate,
   syncCrates,
   updateCrate,
+  updateCrateLayout,
 } from "src/api/helpers";
+import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
+import { splitCrateLayoutItemsForCache } from "src/lib/crate-layout";
 import type { DiscogsRelease } from "src/types";
 import type {
+  CrateLayoutItem,
+  CrateLayoutPutRequest,
   CratesResponse,
   CrateUpdatePayload,
   CrateWithCount,
@@ -439,7 +444,14 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
                 created_at: new Date(),
                 updated_at: new Date(),
               },
-              releases: [{ release: normalizedRelease, found_at: null }],
+              releases: [
+                {
+                  release: normalizedRelease,
+                  found_at: null,
+                  sort_order: CRATE_LAYOUT_SORT_STEP,
+                },
+              ],
+              markers: [],
             };
           }
 
@@ -451,10 +463,25 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
             return old;
           }
 
+          const maxSortOrder = old.releases.reduce(
+            (max, item) => Math.max(max, item.sort_order ?? 0),
+            0,
+          );
+          const markerMax = (old.markers ?? []).reduce(
+            (max, marker) => Math.max(max, marker.sort_order),
+            0,
+          );
+          const nextSortOrder =
+            Math.max(maxSortOrder, markerMax) + CRATE_LAYOUT_SORT_STEP;
+
           return {
             ...old,
             releases: [
-              { release: normalizedRelease, found_at: null },
+              {
+                release: normalizedRelease,
+                found_at: null,
+                sort_order: nextSortOrder,
+              },
               ...old.releases,
             ],
           };
@@ -651,6 +678,78 @@ export const useClearAllPackedInCrateMutation = (userId: string | null) => {
     },
     onSuccess: (_data, { crateId }) => {
       applyClearPackedToCrateCache(queryClient, userId, crateId);
+    },
+  });
+};
+
+interface UpdateCrateLayoutRequest {
+  crateId: string;
+  layout: CrateLayoutPutRequest;
+  optimisticLayoutItems: CrateLayoutItem[];
+}
+
+export const useUpdateCrateLayoutMutation = (userId: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    {
+      success: boolean;
+      releases: CrateWithReleasesResponse["releases"];
+      markers: CrateWithReleasesResponse["markers"];
+    },
+    Error,
+    UpdateCrateLayoutRequest,
+    OptimisticUpdateContext
+  >({
+    mutationKey: ["updateCrateLayout"],
+    mutationFn: async ({ crateId, layout }) => {
+      return updateCrateLayout(crateId, layout);
+    },
+    onMutate: async ({ crateId, optimisticLayoutItems }) => {
+      await cancelCrateDetailQuery(queryClient, userId, crateId);
+
+      const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
+        queryClient,
+        userId,
+        crateId,
+      );
+
+      queryClient.setQueryData<CrateWithReleasesResponse>(
+        CrateQueryKeys.byUserAndId(userId, crateId),
+        (old) => {
+          if (!old) return old;
+
+          const { releases, markers } = splitCrateLayoutItemsForCache(
+            optimisticLayoutItems,
+          );
+
+          return {
+            ...old,
+            releases,
+            markers,
+          };
+        },
+      );
+
+      return { previousCrateData, previousCratesData };
+    },
+    onError: (error, variables, context) => {
+      rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
+      showCrateMutationError("Failed to update crate layout", error);
+    },
+    onSuccess: (data, { crateId }) => {
+      queryClient.setQueryData<CrateWithReleasesResponse>(
+        CrateQueryKeys.byUserAndId(userId, crateId),
+        (old) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            releases: data.releases,
+            markers: data.markers,
+          };
+        },
+      );
     },
   });
 };

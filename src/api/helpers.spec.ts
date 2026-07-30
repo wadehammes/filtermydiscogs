@@ -282,6 +282,7 @@ describe("fetchCrate", () => {
     const mockCrate = {
       crate: crateFactory.build({ id: crateId }),
       releases: wrapCrateReleases(releaseFactory.buildList(5)),
+      markers: [],
       pagination: {
         page: 1,
         pageSize: 100,

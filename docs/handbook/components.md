@@ -113,11 +113,11 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 ## Feature example: ReleasePlayback
 
-[`src/components/ReleasePlayback/`](../../src/components/ReleasePlayback/) hosts the persistent background player on **`/releases`** and public **`/crate/[id]`** pages. [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx) wraps **`ReleasesClient`** and **`PublicCrateClient`** (not global **`Providers`**).
+[`src/components/ReleasePlayback/`](../../src/components/ReleasePlayback/) hosts the persistent background player on **`/releases`**, **`/crates/[id]`**, and public **`/crate/[id]`** pages. [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx) wraps **`ReleasesClient`**, [`CrateDetailClient`](../../src/components/Crates/CrateDetailClient.component.tsx), and **`PublicCrateClient`** (not global **`Providers`**).
 
 | File | Role |
 |------|------|
-| `ReleaseMiniPlayer.component.tsx` | Video panel above the video toggle in the transport cluster. **Desktop:** crate +/- left of cover/title, then transport controls. **Mobile:** centered cover/title on the top row; transport row is crate, video, prev/play/next, stop (centered, `2.5rem` controls, `var(--space-2)` gap). [`ReleasePlaybackVideoPanel`](../../src/components/ReleasePlayback/ReleasePlaybackVideoPanel.component.tsx) is full viewport width on mobile; bar height tokens on `.withMiniPlayer` offset page padding, the mobile crate FAB, Back to top, and the crate drawer (mobile bottom drawer **`bottom`**, desktop sidebar height). When the mobile video panel is expanded, `.withMiniPlayer:has([data-video-expanded])` adds `--release-mini-player-video-panel-offset` so the crate FAB and Back to top sit above the 16:9 panel (FAB z-index drops below the panel). |
+| `ReleaseMiniPlayer.component.tsx` | Video panel above the video toggle in the transport cluster. **Desktop:** crate +/- left of cover/title, then transport controls. **Mobile:** centered cover/title on the top row; transport row is crate, video, prev/play/next, stop (centered, `2.5rem` controls, `var(--space-2)` gap). [`ReleasePlaybackVideoPanel`](../../src/components/ReleasePlayback/ReleasePlaybackVideoPanel.component.tsx) is full viewport width on mobile; bar height tokens on `.withMiniPlayer` offset page padding, the mobile crate FAB, Back to top, and the crate drawer. On mobile, [`BottomDrawer`](../../src/components/BottomDrawer/BottomDrawer.component.tsx) receives **`aboveMiniPlayer={isPlaying}`** so the drawer shell (and footer) sit above the dock via **`.aboveMiniPlayer`** (`bottom` / `max-height` from inherited CSS vars); desktop sidebar height uses the same tokens. When the mobile video panel is expanded, `.withMiniPlayer:has([data-video-expanded])` adds `--release-mini-player-video-panel-offset` so the crate FAB and Back to top sit above the 16:9 panel (FAB z-index drops below the panel). |
 | `PersistentYoutubeIframe.component.tsx` | Off-screen iframe that carries actual playback audio/video |
 
 Closing **`ReleaseModal`** does not stop playback. **Play in background** or a track row click calls **`startPlayback`** and overwrites whatever is in the dock. Prev/next walk the flattened tracklist for the active release (v1 album queue). Helpers live in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts).
@@ -130,7 +130,7 @@ Crate, notes, and card filter pill clicks do **not** open the modal. Discogs lin
 
 | File | Role |
 |------|------|
-| `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`), list display (`inline`), release modal (`variant="modal"`) |
+| `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`), list display (`inline`), release modal (`variant="modal"`), crates page (`variant="crate"` — inline scratchpad via [`ReleaseNotesCrateScratchpad`](../../src/components/ReleaseNotes/ReleaseNotesCrateScratchpad.component.tsx)) |
 | `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); no active styling when notes exist |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
@@ -141,12 +141,15 @@ Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorPro
 
 List/table rows use **`ReleaseNotes`** without the provider; only the **`inline`** subcomponent calls **`useReleaseNotesEditor`** directly.
 
+**`variant="crate"`** (crate detail rows): empty state uses a dashed **Add notes** affordance; filled notes are plain muted body copy with a small underlined **Edit notes** link below.
+
 ## Client page shells
 
 | Shell | Route | Layout |
 |-------|-------|--------|
 | [`Login`](../../src/components/Login/Login.component.tsx) + [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) | `/`, about, legal, public crate | Server `PageFooter`, optional authenticated header |
 | [`ReleasesClient`](../../src/components/ReleasesClient/ReleasesClient.component.tsx) | `/releases` | [`Page`](../../src/components/Page/Page.component.tsx) + [`StickyHeaderBar`](../../src/components/StickyHeaderBar/StickyHeaderBar.component.tsx) + [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) |
+| [`CratesClient`](../../src/components/Crates/CratesClient.component.tsx) / [`CrateHubCard`](../../src/components/Crates/CrateHubCard.component.tsx) / [`CrateDetailClient`](../../src/components/Crates/CrateDetailClient.component.tsx) | `/crates`, `/crates/[id]` | Hub card grid (first-three cover collage) + full-width owner page with [`CrateDetailHeader`](../../src/components/Crates/CrateDetailHeader.component.tsx), [`CrateReleaseListToolbar`](../../src/components/Crates/CrateReleaseListToolbar.component.tsx), [`CrateSetNotesScratchpad`](../../src/components/Crates/CrateSetNotesScratchpad.component.tsx), [`CrateLayoutList`](../../src/components/Crates/CrateLayoutList.component.tsx) (DnD reorder + [`CrateSetMarkerRow`](../../src/components/Crates/CrateSetMarkerRow.component.tsx)), and [`ReleaseModal`](../../src/components/ReleaseModal/ReleaseModal.component.tsx) |
 | [`DashboardClient`](../../src/components/Dashboard/DashboardClient.component.tsx) | `/dashboard` | Analytics charts (Recharts) |
 | [`SettingsClient`](../../src/components/Settings/SettingsClient.component.tsx) | `/settings` | Sidebar navigation + section panels (account, appearance, filters, collection, data) |
 | [`MosaicClient`](../../src/components/MosaicClient/MosaicClient.component.tsx) | `/mosaic` | Canvas mosaic via [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) |

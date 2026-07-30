@@ -107,13 +107,14 @@
   --pattern-microdot-size: 18px 18px;
 
   /* Z-index - numbered for hierarchy (higher number = higher z-index) */
-  --z-1-dropdown: 1000;
-  --z-2-sticky: 1020;
-  --z-3-fixed: 1030;
-  --z-4-backdrop: 1040;
-  --z-5-modal: 1050;
-  --z-6-popover: 1060;
-  --z-7-tooltip: 1070;
+  --z-1-dropdown: 996;
+  --z-2-sticky: 997;
+  --z-3-fixed: 998;
+  --z-app-header: 999;
+  --z-4-backdrop: 1050;
+  --z-5-modal: 1060;
+  --z-6-popover: 998;
+  --z-7-tooltip: 1080;
 }
 
 /* Disable transitions during theme switching to prevent scroll jank */

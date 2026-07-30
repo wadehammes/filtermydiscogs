@@ -20,6 +20,7 @@ interface MobileMenuProps {
   showMosaic?: boolean;
   showReleases?: boolean;
   showDashboard?: boolean;
+  showCrates?: boolean;
   showFilters?: boolean;
   isDisabled?: boolean;
 }
@@ -29,6 +30,7 @@ export const MobileMenu = ({
   showMosaic = true,
   showReleases = true,
   showDashboard = true,
+  showCrates = true,
   showFilters = true,
   isDisabled = false,
 }: MobileMenuProps) => {
@@ -157,6 +159,7 @@ export const MobileMenu = ({
           showMosaic={showMosaic}
           showReleases={showReleases}
           showDashboard={showDashboard}
+          showCrates={showCrates}
           isDisabled={isDisabled}
           onNavigation={handleNavigation}
         />

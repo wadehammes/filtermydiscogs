@@ -42,6 +42,37 @@
     min-height: 50vh;
   }
 
+  &.aboveMiniPlayer {
+    bottom: calc(
+      var(--release-mini-player-bar-offset, 0px) +
+      var(--release-mini-player-video-panel-offset, 0px) +
+      var(--release-mini-player-drawer-gap, 0px)
+    );
+    max-height: calc(
+      100dvh -
+      var(--release-mini-player-bar-offset, 0px) -
+      var(--release-mini-player-video-panel-offset, 0px) -
+      var(--release-mini-player-drawer-gap, 0px)
+    );
+
+    @media (width < 768px) {
+      :global(
+          body:has([data-filters-drawer-open="true"]):not(
+            :has([data-video-expanded="true"])
+          )
+        )
+        & {
+        max-height: calc(
+          100dvh -
+          var(--sticky-header-height) -
+          var(--release-mini-player-bar-offset, 0px) -
+          var(--release-mini-player-video-panel-offset, 0px) -
+          var(--release-mini-player-drawer-gap, 0px)
+        );
+      }
+    }
+  }
+
   &.open {
     transform: translateY(0);
   }

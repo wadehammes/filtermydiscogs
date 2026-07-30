@@ -1,0 +1,158 @@
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    border-color var(--transition-bounce),
+    box-shadow var(--transition-bounce),
+    transform var(--transition-bounce);
+
+  &:hover {
+    border-color: var(--input);
+    box-shadow: var(--shadow-lg);
+    color: inherit;
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.visual {
+  align-items: center;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--muted) 80%, var(--background)),
+    var(--background)
+  );
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.visualEmpty {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary) 8%, var(--muted)),
+    color-mix(in srgb, var(--primary) 4%, var(--background))
+  );
+}
+
+.collage {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  padding: var(--space-4);
+  position: relative;
+  width: 100%;
+}
+
+.cover {
+  aspect-ratio: 1;
+  border: 2px solid color-mix(in srgb, var(--background) 88%, transparent);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0;
+  height: auto;
+  object-fit: cover;
+  width: min(28%, 6.5rem);
+}
+
+.coverLeft {
+  transform: rotate(-12deg) translateY(0.35rem);
+  z-index: 1;
+}
+
+.coverCenter {
+  transform: translateY(-0.35rem);
+  width: min(36%, 8.5rem);
+  z-index: 3;
+}
+
+.coverRight {
+  transform: rotate(12deg) translateY(0.35rem);
+  z-index: 2;
+}
+
+.collageSingle {
+  .coverCenter {
+    transform: none;
+    width: min(46%, 9rem);
+  }
+}
+
+.collagePair {
+  gap: var(--space-3);
+
+  .coverLeft,
+  .coverRight {
+    transform: rotate(0);
+    width: min(34%, 7rem);
+  }
+}
+
+.emptyVisual {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+.emptyGlyph {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--primary) 35%, var(--border));
+  border-radius: var(--radius-full);
+  display: block;
+  height: 4.5rem;
+  position: relative;
+  width: 4.5rem;
+
+  &::before {
+    background: color-mix(in srgb, var(--primary) 28%, transparent);
+    border-radius: var(--radius-full);
+    content: "";
+    inset: 0.85rem;
+    position: absolute;
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.titleRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.meta {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  margin: 0;
+}

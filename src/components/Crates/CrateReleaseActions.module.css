@@ -1,0 +1,74 @@
+.actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+
+  @media (width >= 1024px) {
+    gap: var(--space-1);
+  }
+}
+
+.action {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  height: var(--touch-target-min);
+  justify-content: center;
+  padding: 0;
+  transition: var(--transition-fast);
+  width: var(--touch-target-min);
+
+  @media (width >= 1024px) {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover:not(.actionActive) {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+}
+
+.actionActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+
+  &:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: var(--primary-foreground);
+  }
+}
+
+.removeAction {
+  color: color-mix(in srgb, var(--destructive) 70%, var(--muted-foreground));
+
+  &:hover {
+    background: color-mix(in srgb, var(--destructive) 12%, var(--background));
+    border-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+    color: var(--destructive);
+  }
+}
+
+.actionIcon {
+  display: flex;
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
