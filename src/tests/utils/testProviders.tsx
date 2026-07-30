@@ -2,6 +2,7 @@ import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
+import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, type AuthState } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
@@ -44,11 +45,13 @@ export const AppTestProviders = ({
               : {})}
             skipInitialAuthCheck={skipInitialAuthCheck}
           >
-            <CollectionContextProvider>
-              <FiltersProvider>
-                <ViewProvider>{children}</ViewProvider>
-              </FiltersProvider>
-            </CollectionContextProvider>
+            <AnalyticsConsentProvider>
+              <CollectionContextProvider>
+                <FiltersProvider>
+                  <ViewProvider>{children}</ViewProvider>
+                </FiltersProvider>
+              </CollectionContextProvider>
+            </AnalyticsConsentProvider>
           </AuthProvider>
         </ThemeProvider>
       </JotaiProvider>

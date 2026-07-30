@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
   LEGACY_COMMUNITY_RATINGS_STORAGE_KEY,
   SELECTED_RELEASES_STORAGE_KEY,
   THEME_STORAGE_KEY,
@@ -27,6 +28,7 @@ describe("clearClientStoredData", () => {
     localStorage.setItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY, "true");
     localStorage.setItem(LEGACY_COMMUNITY_RATINGS_STORAGE_KEY, "{}");
     localStorage.setItem(PERSIST_FILTERS_STORAGE_KEY, "false");
+    localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "granted");
 
     clearClientStoredData();
 
@@ -41,5 +43,6 @@ describe("clearClientStoredData", () => {
       localStorage.getItem(LEGACY_COMMUNITY_RATINGS_STORAGE_KEY),
     ).toBeNull();
     expect(localStorage.getItem(PERSIST_FILTERS_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY)).toBeNull();
   });
 });

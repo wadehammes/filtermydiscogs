@@ -3,7 +3,10 @@ import { useAtomValue } from "jotai";
 import { fetchUserPreferences, updateUserPreferences } from "src/api/helpers";
 import { persistedFiltersAtom } from "src/atoms/filters.atoms";
 import { viewStateAtom } from "src/atoms/view.atoms";
-import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
+import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+} from "src/constants/storageKeys";
 import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
 import {
   persistedFiltersFactory,
@@ -13,6 +16,7 @@ import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { testAuthenticatedAuthState } from "src/tests/utils/testProviders";
 import { resetFilterPersistenceCache } from "src/utils/filterPersistence";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import { resetUserPreferencesPersistQueue } from "src/utils/userPreferencesPersistQueue";
 import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
@@ -28,6 +32,7 @@ describe("useUserPreferencesSync", () => {
   beforeEach(() => {
     localStorage.clear();
     resetFilterPersistenceCache();
+    resetUserPreferencesPersistQueue();
     document.documentElement.removeAttribute("data-theme");
     jest.clearAllMocks();
   });
@@ -215,5 +220,53 @@ describe("useUserPreferencesSync", () => {
     });
 
     expect(mockUpdateUserPreferences).not.toHaveBeenCalled();
+  });
+
+  it("seeds local analytics consent to the server when the server field is unset", async () => {
+    localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "granted");
+    const serverPreferences = userPreferencesFactory.defaults();
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+    mockUpdateUserPreferences.mockResolvedValue({
+      preferences: userPreferencesFactory.build({ analyticsConsent: true }),
+    });
+
+    renderFeatureHook(() => useUserPreferencesSync(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateUserPreferences).toHaveBeenCalledWith(
+        expect.objectContaining({ analyticsConsent: true }),
+      );
+    });
+  });
+
+  it("hydrates analytics consent from server preferences into local storage", async () => {
+    const serverPreferences = userPreferencesFactory.build({
+      analyticsConsent: false,
+    });
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+
+    renderFeatureHook(() => useUserPreferencesSync(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY)).toBe(
+        "denied",
+      );
+    });
   });
 });

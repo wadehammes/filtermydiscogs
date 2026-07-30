@@ -34,14 +34,13 @@ describe("user-preferences.server", () => {
     });
 
     expect(
-      parseUserPreferences(
-        userPreferencesFactory.build({
-          persistFilters: false,
-          theme: "dark",
-          view: { currentView: "list", previousView: "card" },
-          filters,
-        }),
-      ),
+      parseUserPreferences({
+        version: 1,
+        persistFilters: false,
+        theme: "dark",
+        view: { currentView: "list", previousView: "card" },
+        filters,
+      }),
     ).toEqual({
       version: 1,
       persistFilters: false,
@@ -74,6 +73,27 @@ describe("user-preferences.server", () => {
       view: { currentView: "card", previousView: "card" },
       filters,
     });
+  });
+
+  it("parses and merges analyticsConsent", () => {
+    expect(
+      parseUserPreferences(
+        userPreferencesFactory.build({ analyticsConsent: true }),
+      ).analyticsConsent,
+    ).toBe(true);
+
+    expect(
+      mergeUserPreferences(defaultUserPreferences(), {
+        analyticsConsent: false,
+      }).analyticsConsent,
+    ).toBe(false);
+
+    expect(isValidUserPreferencesPatch({ analyticsConsent: true })).toBeNull();
+    expect(
+      isValidUserPreferencesPatch({
+        analyticsConsent: "yes",
+      } as unknown as UserPreferencesPatch),
+    ).toBe("analyticsConsent must be a boolean");
   });
 
   it("validates preference patch fields", () => {

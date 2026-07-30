@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { SettingsClientPageObject } from "src/components/Settings/SettingsClient.po";
-import { screen, waitFor } from "test-utils";
+import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
+import { screen, waitFor, within } from "test-utils";
 
 let po: SettingsClientPageObject;
 
@@ -37,6 +38,7 @@ describe("SettingsClient", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "Data" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Allow analytics cookies")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Clear all stored data" }),
     ).toBeInTheDocument();
@@ -73,5 +75,46 @@ describe("SettingsClient", () => {
 
     expect(screen.getByText("Theme")).toBeInTheDocument();
     expect(screen.getByText("Default view")).toBeInTheDocument();
+  });
+
+  it("enables analytics cookies in local storage", async () => {
+    localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "denied");
+
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    await user.click(
+      screen.getByRole("button", { name: "Data Stored app data" }),
+    );
+
+    const checkbox = screen.getByRole("checkbox", {
+      name: /allow analytics cookies/i,
+    });
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY)).toBe("granted");
+    expect(checkbox).toBeChecked();
+  });
+
+  it("shows analytics consent in the clear-data dialog message", async () => {
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    await user.click(
+      screen.getByRole("button", { name: "Data Stored app data" }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Clear all stored data" }),
+    );
+
+    expect(
+      within(screen.getByRole("dialog")).getByText(
+        /including your analytics cookie choice/i,
+      ),
+    ).toBeInTheDocument();
   });
 });

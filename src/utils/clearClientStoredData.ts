@@ -5,6 +5,7 @@ import {
   USERNAME_STORAGE_KEY,
   VIEW_STATE_STORAGE_KEY,
 } from "src/constants/storageKeys";
+import { clearAnalyticsConsentChoice } from "src/utils/analyticsConsentStorage";
 import {
   PERSIST_FILTERS_STORAGE_KEY,
   resetFilterPersistenceCache,
@@ -28,4 +29,5 @@ export const clearClientStoredData = (): void => {
   clearPersistedFilters();
   clearPersistedReleasePlayback();
   clearPlaybackVideoIntroSeen();
+  clearAnalyticsConsentChoice();
 };

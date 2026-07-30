@@ -23,7 +23,7 @@ export function AboutClient() {
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
-          "• Delete your saved account preferences (theme, default view, and filter selections)\n" +
+          "• Delete your saved account preferences (theme, default view, filter selections, and analytics cookie choice)\n" +
           "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",
       )
@@ -116,12 +116,14 @@ export function AboutClient() {
             </li>
             <li>
               Your saved account preferences on our server: theme, default view
-              (grid or table), and filter/sort selections when &quot;Remember
-              filter selections&quot; is enabled in Settings
+              (grid or table), your analytics cookie choice, and filter/sort
+              selections when &quot;Remember filter selections&quot; is enabled
+              in Settings
             </li>
             <li>
               Local preferences on this browser: theme, view mode, filters,
-              in-progress playback position, and similar UI state
+              analytics cookie choice (you will be asked about analytics cookies
+              again), in-progress playback position, and similar UI state
             </li>
             <li>Cached collection data for the current session</li>
             <li>

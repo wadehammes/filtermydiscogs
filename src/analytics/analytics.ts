@@ -1,3 +1,4 @@
+import { isAnalyticsConsentGranted } from "src/utils/analyticsConsentStorage";
 import { isBrowser } from "src/utils/helpers";
 
 interface EventProps {
@@ -8,10 +9,8 @@ interface EventProps {
   [key: string]: string | number | boolean;
 }
 
-// Define a proper type for Google Analytics dataLayer
 type DataLayerItem = Record<string, unknown>;
 
-// Extend Window interface to include dataLayer
 declare global {
   interface Window {
     dataLayer?: DataLayerItem[];
@@ -19,9 +18,10 @@ declare global {
 }
 
 export const trackEvent = (event: string, properties: EventProps) => {
-  if (isBrowser()) {
-    window.dataLayer = window.dataLayer || [];
+  if (!(isBrowser() && isAnalyticsConsentGranted())) {
+    return;
   }
 
-  window.dataLayer?.push({ event, ...properties });
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...properties });
 };

@@ -4,6 +4,7 @@ import { TextEncoder } from "node:util";
 import fetchMock from "jest-fetch-mock";
 import "src/tests/mocks/mockCanvas.mock";
 import React from "react";
+import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { setupIntersectionObserverMock } from "src/tests/mocks/mockIntersectionObserver.mock";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { mockedUseRouterReturnValue } from "src/tests/mocks/mockNextRouter.mock";
@@ -92,6 +93,7 @@ beforeEach(() => {
   fetchMock.resetMocks();
   setupMockMatchMedia();
   window.scrollTo = jest.fn();
+  localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "denied");
 });
 
 afterAll(() => {

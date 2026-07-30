@@ -5,7 +5,10 @@ import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
 import { AppToaster } from "src/components/AppToaster/AppToaster.component";
 import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthCheckingToast.component";
+import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
+import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
+import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
@@ -27,6 +30,15 @@ const UserPreferencesSync = () => {
   useUserPreferencesSync();
   return null;
 };
+
+const AnalyticsShell = ({ children }: { children: React.ReactNode }) => (
+  <AnalyticsConsentProvider>
+    <UserPreferencesSync />
+    <GoogleTagManagerLoader />
+    {children}
+    <CookieConsentBanner />
+  </AnalyticsConsentProvider>
+);
 
 export const Providers = ({ children }: ProvidersProps) => {
   const queryClient = useMemo(
@@ -55,10 +67,11 @@ export const Providers = ({ children }: ProvidersProps) => {
               <FiltersProvider>
                 <CrateProvider>
                   <ViewProvider>
-                    <UserPreferencesSync />
-                    {children}
-                    <LogoutOverlayWrapper />
-                    <AuthCheckingToast />
+                    <AnalyticsShell>
+                      {children}
+                      <LogoutOverlayWrapper />
+                      <AuthCheckingToast />
+                    </AnalyticsShell>
                   </ViewProvider>
                 </CrateProvider>
               </FiltersProvider>

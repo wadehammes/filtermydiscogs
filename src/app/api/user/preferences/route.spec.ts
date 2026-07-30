@@ -75,10 +75,10 @@ describe("/api/user/preferences", () => {
       preferences: defaultPreferences,
     } as Awaited<ReturnType<DbModule["prisma"]["user"]["findUnique"]>>);
     mockUpsert.mockResolvedValue({
-      preferences: userPreferencesFactory.build({
+      preferences: {
         ...defaultPreferences,
         theme: "dark",
-      }),
+      },
     } as Awaited<ReturnType<DbModule["prisma"]["user"]["upsert"]>>);
   });
 

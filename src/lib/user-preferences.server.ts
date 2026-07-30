@@ -81,6 +81,9 @@ export const parseUserPreferences = (
     theme: parseThemeField(storedPreferences.theme, defaults.theme),
     view: parseViewPreference(storedPreferences.view ?? null),
     filters: parseStoredFiltersObject(storedPreferences.filters),
+    ...(typeof storedPreferences.analyticsConsent === "boolean"
+      ? { analyticsConsent: storedPreferences.analyticsConsent }
+      : {}),
   };
 };
 
@@ -123,10 +126,18 @@ export const isValidUserPreferencesPatch = (
   }
 
   if (
+    patch.analyticsConsent !== undefined &&
+    typeof patch.analyticsConsent !== "boolean"
+  ) {
+    return "analyticsConsent must be a boolean";
+  }
+
+  if (
     patch.persistFilters === undefined &&
     patch.theme === undefined &&
     patch.view === undefined &&
-    patch.filters === undefined
+    patch.filters === undefined &&
+    patch.analyticsConsent === undefined
   ) {
     return "No supported preference fields to update";
   }

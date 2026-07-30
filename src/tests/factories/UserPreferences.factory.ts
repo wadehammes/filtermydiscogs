@@ -95,6 +95,7 @@ class UserPreferencesFactory extends BaseFactory<
       theme,
       view,
       filters: persistedFiltersFactory.build(),
+      analyticsConsent: faker.datatype.boolean(),
     } satisfies UserPreferences;
 
     const factoryBuilt: UserPreferences = {
@@ -111,12 +112,13 @@ class UserPreferencesFactory extends BaseFactory<
   }
 
   defaults(): UserPreferences {
-    return this.build({
+    return {
+      version: USER_PREFERENCES_VERSION,
       persistFilters: true,
       theme: "light",
       view: { currentView: "card", previousView: "card" },
       filters: persistedFiltersFactory.empty(),
-    });
+    };
   }
 }
 

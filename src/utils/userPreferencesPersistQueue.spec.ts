@@ -86,6 +86,17 @@ describe("userPreferencesPersistQueue", () => {
     expect(mutate).not.toHaveBeenCalled();
   });
 
+  it("flushes analytics consent immediately without debouncing", () => {
+    const mutate = jest.fn();
+
+    scheduleUserPreferencesPersist({ analyticsConsent: true }, mutate);
+
+    expect(mutate).toHaveBeenCalledWith(
+      { analyticsConsent: true },
+      expect.objectContaining({}),
+    );
+  });
+
   it("flushUserPreferencesPersist sends pending filters", () => {
     const mutate = jest.fn();
     const filters = persistedFiltersFactory.build({

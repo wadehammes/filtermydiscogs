@@ -93,7 +93,20 @@ Faker transpilation depends on **`transpilePackages`** in `next.config.ts` **and
 
 ## Analytics
 
-[`src/app/layout.tsx`](../../src/app/layout.tsx) mounts **Google Tag Manager** (`GTM-NCP5CSG`) via **`@next/third-parties/google`**.
+Google Tag Manager (`GOOGLE_TAG_MANAGER_ID` in [`analytics.ts`](../../src/constants/analytics.ts), currently `GTM-NCP5CSG`) loads only after the visitor opts in to analytics cookies. Consent is hybrid:
+
+| Storage | Role |
+|---------|------|
+| **`localStorage`** (`filtermydiscogs_analytics_consent`: `granted` \| `denied`; absent = pending) | Source of truth for whether GTM may load on this browser (logged-out visitors included) |
+| **`User.preferences.analyticsConsent`** | Syncs choice across devices when signed in; seeded from local on first login |
+
+- **`AnalyticsConsentProvider`** ([`analyticsConsent.context.tsx`](../../src/context/analyticsConsent.context.tsx)) + **`CookieConsentBanner`** show a bottom bar while consent is pending.
+- **`GoogleTagManagerLoader`** ([`GoogleTagManagerLoader.component.tsx`](../../src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component.tsx)) imperatively injects the GTM script inside **`Providers`** once when consent is **`granted`** (never unmounts via React—avoids `removeChild` errors from conditional **`next/script`** cleanup). Root [`layout.tsx`](../../src/app/layout.tsx) does **not** load GTM unconditionally.
+- **`trackEvent`** ([`analytics.ts`](../../src/analytics/analytics.ts)) no-ops unless local consent is **`granted`** ([`analyticsConsentStorage.ts`](../../src/utils/analyticsConsentStorage.ts)).
+- Settings → **Data** toggle updates consent and persists when authenticated; revoking reloads the page so injected GTM scripts stop.
+- **Clear all stored data** clears analytics consent (user is re-prompted). Normal logout does **not** reset consent.
+
+Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM container to default-deny until consent.
 
 ## Cursor hooks
 
