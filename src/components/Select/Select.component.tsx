@@ -1,7 +1,14 @@
 import classNames from "classnames";
-import { memo, useCallback, useEffect, useReducer, useRef } from "react";
+import { memo, useCallback, useEffect, useId, useReducer, useRef } from "react";
+import { AnchoredPopoverPortal } from "src/components/shared/AnchoredPopoverPortal/AnchoredPopoverPortal.component";
+import { useAnchoredPopoverLayout } from "src/hooks/useAnchoredPopoverLayout.hook";
+import anchoredPopoverStyles from "src/styles/anchored-popover.module.css";
 import Check from "src/styles/icons/check-thin.svg";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
+import {
+  estimateSelectMenuHeight,
+  shouldOpenPopoverUpward,
+} from "src/utils/popoverPlacement";
 import { isOptionSelected } from "src/utils/selectHelpers";
 import styles from "./Select.module.css";
 
@@ -20,6 +27,7 @@ interface SelectProps {
   multiple?: boolean;
   placeholder?: string;
   className?: string;
+  showLabel?: boolean;
 }
 
 type SelectState = {
@@ -69,19 +77,33 @@ const SelectComponent = ({
   multiple = false,
   placeholder,
   className,
+  showLabel = false,
 }: SelectProps) => {
+  const labelId = useId();
   const [state, dispatch] = useReducer(selectReducer, initialState);
   const containerRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLButtonElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { anchorStyle } = useAnchoredPopoverLayout({
+    isOpen: state.isOpen,
+    openUpward: state.openUpward,
+    anchorRef,
+    panelRef,
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        containerRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
       ) {
-        dispatch({ type: "CLOSE" });
+        return;
       }
+
+      dispatch({ type: "CLOSE" });
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -89,14 +111,13 @@ const SelectComponent = ({
   }, []);
 
   useEffect(() => {
-    if (state.isOpen && containerRef.current && listboxRef.current) {
-      const triggerRect = containerRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - triggerRect.bottom;
-      const estimatedMenuHeight = Math.min(200, options.length * 40);
+    if (state.isOpen && anchorRef.current) {
       dispatch({
         type: "SET_OPEN_UPWARD",
-        payload: spaceBelow < estimatedMenuHeight + 20,
+        payload: shouldOpenPopoverUpward({
+          trigger: anchorRef.current,
+          estimatedMenuHeight: estimateSelectMenuHeight(options.length),
+        }),
       });
     }
   }, [state.isOpen, options.length]);
@@ -189,10 +210,22 @@ const SelectComponent = ({
       className={classNames(styles.container, className)}
       data-testid="fmdSelect"
     >
+      {showLabel ? (
+        <span id={labelId} className={styles.label} data-filter-field-label>
+          {label}
+        </span>
+      ) : null}
       <button
-        className={styles.trigger}
+        ref={anchorRef}
+        className={classNames(
+          styles.trigger,
+          anchoredPopoverStyles.popoverAnchor,
+        )}
+        style={anchorStyle}
         type="button"
-        aria-label={label}
+        aria-labelledby={showLabel ? labelId : undefined}
+        aria-label={showLabel ? undefined : label}
+        data-filter-control-trigger
         aria-haspopup="listbox"
         aria-expanded={state.isOpen}
         onClick={() => !disabled && dispatch({ type: "TOGGLE" })}
@@ -218,59 +251,67 @@ const SelectComponent = ({
           <Chevron />
         </span>
       </button>
-      {state.isOpen && options.length > 0 && (
-        <div
-          className={classNames(styles.listboxPanel, {
-            [styles.listboxUpward]: state.openUpward,
-          })}
-        >
-          <ul
-            ref={listboxRef}
-            className={styles.listbox}
-            // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
-            role="listbox"
-            aria-label={label}
+      {state.isOpen && options.length > 0 ? (
+        <AnchoredPopoverPortal>
+          <div
+            ref={panelRef}
+            style={anchorStyle}
+            className={classNames(
+              anchoredPopoverStyles.popoverPanel,
+              styles.listboxPanel,
+              {
+                [anchoredPopoverStyles.popoverPanelUpward]: state.openUpward,
+              },
+            )}
           >
-            {options.map((option, index) => (
-              <li
-                key={option.value}
-                // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
-                role="option"
-                aria-selected={isOptionSelected(value, option.value)}
-                className={classNames(styles.option, {
-                  [styles.selected]: isOptionSelected(value, option.value),
-                  [styles.focused]: state.focusedIndex === index,
-                })}
-                tabIndex={state.focusedIndex === index ? 0 : -1}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOptionClick(option.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
+            <ul
+              ref={listboxRef}
+              className={styles.listbox}
+              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul> with role="listbox" is valid ARIA pattern
+              role="listbox"
+              aria-label={label}
+            >
+              {options.map((option, index) => (
+                <li
+                  key={option.value}
+                  // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> with role="option" is valid ARIA pattern
+                  role="option"
+                  aria-selected={isOptionSelected(value, option.value)}
+                  className={classNames(styles.option, {
+                    [styles.selected]: isOptionSelected(value, option.value),
+                    [styles.focused]: state.focusedIndex === index,
+                  })}
+                  tabIndex={state.focusedIndex === index ? 0 : -1}
+                  onClick={(e) => {
+                    e.stopPropagation();
                     handleOptionClick(option.value);
-                  }
-                }}
-              >
-                <span className={styles.optionContent}>
-                  {isOptionSelected(value, option.value) && (
-                    <span className={styles.checkmark}>
-                      <Check />
-                    </span>
-                  )}
-                  <span className={styles.optionLabel}>
-                    <span>{option.label}</span>
-                    {option.isDefault && (
-                      <span className={styles.defaultBadge}>Default</span>
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleOptionClick(option.value);
+                    }
+                  }}
+                >
+                  <span className={styles.optionContent}>
+                    {isOptionSelected(value, option.value) && (
+                      <span className={styles.checkmark}>
+                        <Check />
+                      </span>
                     )}
+                    <span className={styles.optionLabel}>
+                      <span>{option.label}</span>
+                      {option.isDefault && (
+                        <span className={styles.defaultBadge}>Default</span>
+                      )}
+                    </span>
                   </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </AnchoredPopoverPortal>
+      ) : null}
     </div>
   );
 };

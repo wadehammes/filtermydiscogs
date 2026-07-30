@@ -21,15 +21,14 @@
   animation: slideUp 0.15s ease-out;
   background: var(--background);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
-  border-top: 1px solid var(--border);
   bottom: 0;
   box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
   height: auto;
   left: 0;
-  max-height: 80vh;
-  min-height: 50vh;
+  max-height: 80dvh;
+  min-height: 0;
   overflow: hidden;
   pointer-events: auto;
   position: fixed;
@@ -38,6 +37,10 @@
   transition: transform var(--transition-normal);
   width: 100%;
   z-index: var(--z-5-modal);
+
+  @media (width >= 768px) {
+    min-height: 50vh;
+  }
 
   &.open {
     transform: translateY(0);
@@ -89,7 +92,6 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-lg);
   color: var(--foreground);
   cursor: pointer;
   display: grid;
@@ -112,7 +114,6 @@
   &:hover {
     background: var(--muted);
     border-color: var(--input);
-    box-shadow: var(--shadow-xl);
     transform: translateY(-1px);
   }
 

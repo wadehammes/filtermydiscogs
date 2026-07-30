@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ChevronRightIcon from "src/styles/icons/chevron-right-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
@@ -48,6 +49,7 @@ export const ReleaseMiniPlayer = ({
   } = useReleasePlayback();
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
   const isMobileLayout = useMediaQuery("(max-width: 768px)");
+  const filtersDrawerOpen = useFiltersDrawerOpen();
   const [videoPanelOverride, setVideoPanelOverride] = useState<
     null | "open" | "closed"
   >(null);
@@ -61,6 +63,12 @@ export const ReleaseMiniPlayer = ({
       setLatchedIntroExpand(false);
     }
   }, [isPlaying]);
+
+  useEffect(() => {
+    if (filtersDrawerOpen) {
+      setVideoPanelOverride("closed");
+    }
+  }, [filtersDrawerOpen]);
 
   const shouldExpandForAutoplay = isPlaybackReady && shouldAutoplayEmbed;
 

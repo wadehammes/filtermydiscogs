@@ -1,5 +1,10 @@
 import classNames from "classnames";
 import { memo, useCallback, useEffect, useId, useReducer, useRef } from "react";
+import { useAnchoredPopoverLayout } from "src/hooks/useAnchoredPopoverLayout.hook";
+import {
+  estimateAutocompleteMenuHeight,
+  shouldOpenPopoverUpward,
+} from "src/utils/popoverPlacement";
 import { AutocompleteDropdown } from "./AutocompleteDropdown.component";
 import styles from "./AutocompleteSelect.module.css";
 import { AutocompleteTrigger } from "./AutocompleteTrigger.component";
@@ -18,6 +23,7 @@ interface AutocompleteSelectProps {
   multiple?: boolean;
   placeholder?: string;
   className?: string;
+  showLabel?: boolean;
 }
 
 type AutocompleteState = {
@@ -83,13 +89,22 @@ const AutocompleteSelectComponent = ({
   multiple = false,
   placeholder,
   className,
+  showLabel = false,
 }: AutocompleteSelectProps) => {
+  const labelId = useId();
   const [state, dispatch] = useReducer(autocompleteReducer, initialState);
   const containerRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
+  const { anchorStyle } = useAnchoredPopoverLayout({
+    isOpen: state.isOpen,
+    openUpward: state.openUpward,
+    anchorRef,
+    panelRef: dropdownRef,
+  });
 
   const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(state.searchTerm.toLowerCase()),
@@ -97,12 +112,16 @@ const AutocompleteSelectComponent = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        containerRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
       ) {
-        dispatch({ type: "CLOSE" });
+        return;
       }
+
+      dispatch({ type: "CLOSE" });
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -116,17 +135,15 @@ const AutocompleteSelectComponent = ({
   }, [state.isOpen]);
 
   useEffect(() => {
-    if (state.isOpen && containerRef.current && dropdownRef.current) {
-      const triggerRect = containerRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - triggerRect.bottom;
-      const estimatedMenuHeight = Math.min(
-        250,
-        filteredOptions.length * 40 + 60,
-      );
+    if (state.isOpen && anchorRef.current) {
       dispatch({
         type: "SET_OPEN_UPWARD",
-        payload: spaceBelow < estimatedMenuHeight + 20,
+        payload: shouldOpenPopoverUpward({
+          trigger: anchorRef.current,
+          estimatedMenuHeight: estimateAutocompleteMenuHeight(
+            filteredOptions.length,
+          ),
+        }),
       });
     }
   }, [state.isOpen, filteredOptions.length]);
@@ -258,8 +275,16 @@ const AutocompleteSelectComponent = ({
 
   return (
     <div ref={containerRef} className={classNames(styles.container, className)}>
+      {showLabel ? (
+        <span id={labelId} className={styles.label} data-filter-field-label>
+          {label}
+        </span>
+      ) : null}
       <AutocompleteTrigger
+        ref={anchorRef}
         label={label}
+        labelId={showLabel ? labelId : undefined}
+        showLabel={showLabel}
         disabled={disabled}
         isOpen={state.isOpen}
         listboxId={listboxId}
@@ -271,8 +296,9 @@ const AutocompleteSelectComponent = ({
         onTriggerKeyDown={handleTriggerKeyDown}
         onClearOption={handleClearOption}
         placeholder={placeholder}
+        anchorStyle={anchorStyle}
       />
-      {state.isOpen && (
+      {state.isOpen ? (
         <AutocompleteDropdown
           listboxId={listboxId}
           label={label}
@@ -287,8 +313,9 @@ const AutocompleteSelectComponent = ({
           inputRef={inputRef}
           dropdownRef={dropdownRef}
           listboxRef={listboxRef}
+          anchorStyle={anchorStyle}
         />
-      )}
+      ) : null}
     </div>
   );
 };

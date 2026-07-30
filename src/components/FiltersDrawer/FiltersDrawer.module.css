@@ -7,62 +7,39 @@
 .filterSection {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-}
-
-.sectionTitle {
-  color: var(--foreground);
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  margin: 0;
+  gap: var(--space-4);
 }
 
 .searchBar {
   width: 100%;
 }
 
-.styleFilterGroup {
-  align-items: stretch;
-  background: var(--background);
-  border: 1px solid var(--input);
-  border-radius: var(--radius-ui);
+.footer {
   display: flex;
-  gap: 0;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.activeFiltersHint {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+  text-align: center;
+}
+
+.clearAllButton {
+  width: 100%;
+}
+
+.sortFilterGroup {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-2);
   width: 100%;
 
-  & > :first-child {
-    flex: 1 1 auto;
+  & > * {
+    flex: 1 1 0;
     min-width: 0;
-  }
-
-  & > :last-child:not(:only-child) {
-    border-left: 1px solid var(--input);
-    flex: 0 0 5.5rem;
-  }
-
-  & > * > :first-child {
-    border-color: transparent;
-    border-radius: 0;
-  }
-
-  & > :only-child > :first-child {
-    border-radius: var(--radius-ui);
-  }
-
-  & > :first-child:not(:only-child) > :first-child {
-    border-radius: var(--radius-ui) 0 0 var(--radius-ui);
-  }
-
-  & > :last-child:not(:only-child) > :first-child {
-    border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
-  }
-
-  & > * > :first-child:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--foreground) 4%, var(--background));
-    border-color: transparent;
-  }
-
-  & > * > :first-child:focus-visible {
-    outline-offset: -2px;
   }
 }

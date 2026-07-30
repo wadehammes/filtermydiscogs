@@ -124,7 +124,7 @@ export const MobileMenu = ({
 
   const hasValidCollection =
     !(fetchingCollection || error) && Boolean(collection);
-  const shouldShowFilters = showFilters && hasValidCollection;
+  const shouldShowFilters = showFilters && hasValidCollection && !isDisabled;
 
   return (
     <>

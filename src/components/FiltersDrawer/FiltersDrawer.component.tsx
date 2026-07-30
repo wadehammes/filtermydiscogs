@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
+import Button from "src/components/Button/Button.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
+import { FiltersActionTypes } from "src/context/filters.context";
+import {
+  useFiltersDispatch,
+  useSearchQuery,
+} from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersDrawer.module.css";
 
@@ -14,6 +21,8 @@ interface FiltersDrawerProps {
 
 export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   const { state: collectionState } = useCollectionContext();
+  const filtersDispatch = useFiltersDispatch();
+  const searchQuery = useSearchQuery();
   const [sortCategory, setSortCategory] =
     useState<keyof typeof SORTING_CATEGORIES>("alphabetical");
 
@@ -36,6 +45,28 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
   const { fetchingCollection, collection, error } = collectionState;
 
+  const hasActiveFilters = useMemo(() => {
+    return (
+      selectedStyles.length > 0 ||
+      selectedYears.length > 0 ||
+      selectedFormats.length > 0 ||
+      searchQuery.trim().length > 0
+    );
+  }, [searchQuery, selectedFormats, selectedStyles, selectedYears]);
+
+  const handleClearAllFilters = () => {
+    filtersDispatch({
+      type: FiltersActionTypes.ClearAllFilters,
+      payload: undefined,
+    });
+    trackEvent("filtersCleared", {
+      action: "clearAllFilters",
+      category: "mobile_filters",
+      label: "Clear All Filters",
+      value: "mobile",
+    });
+  };
+
   const categoryOptions = [
     { value: "alphabetical", label: "Alphabetical" },
     { value: "chronological", label: "Chronological" },
@@ -53,7 +84,6 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     ) as keyof typeof SORTING_CATEGORIES;
     setSortCategory(category);
 
-    // Reset to first option in the new category
     const firstOption = SORTING_CATEGORIES[category][0];
     if (firstOption) {
       handleSortChange(firstOption.value);
@@ -67,11 +97,28 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
       title="Filters"
       closeButtonAriaLabel="Close filters"
       dataAttribute="data-filters-drawer-open"
+      footer={
+        <div className={styles.footer}>
+          {hasActiveFilters ? (
+            <p className={styles.activeFiltersHint}>Filters are applied</p>
+          ) : null}
+          <Button
+            variant="secondary"
+            size="md"
+            onPress={handleClearAllFilters}
+            disabled={!(collection && hasActiveFilters)}
+            aria-label="Clear all filters"
+            className={styles.clearAllButton}
+          >
+            Clear All
+          </Button>
+        </div>
+      }
     >
       <div className={styles.content}>
         <div className={styles.filterSection}>
-          <h3 className={styles.sectionTitle}>Search</h3>
           <SearchBar
+            showLabel
             placeholder="Search your collection..."
             disabled={!collection}
             className={styles.searchBar}
@@ -80,35 +127,34 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {styleOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Genre & Style</h3>
-            <div className={styles.styleFilterGroup}>
+            <Select
+              showLabel
+              label="Genre & Style"
+              options={styleOptions}
+              value={selectedStyles}
+              onChange={handleStyleChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="Select genres & styles..."
+            />
+            {selectedStyles.length > 1 ? (
               <Select
-                label="Genre & Style"
-                options={styleOptions}
-                value={selectedStyles}
-                onChange={handleStyleChange}
+                showLabel
+                label="Match"
+                options={styleOperatorOptions}
+                value={styleOperator}
+                onChange={handleStyleOperatorChange}
                 disabled={!collection}
-                multiple={true}
-                placeholder="Select genres & styles..."
+                placeholder="Select operator..."
               />
-              {selectedStyles.length > 1 && (
-                <Select
-                  label="Match"
-                  options={styleOperatorOptions}
-                  value={styleOperator}
-                  onChange={handleStyleOperatorChange}
-                  disabled={!collection}
-                  placeholder="Select operator..."
-                />
-              )}
-            </div>
+            ) : null}
           </div>
         )}
 
         {yearOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Release Year</h3>
             <Select
+              showLabel
               label="Release Year"
               options={yearOptions}
               value={selectedYears.map((year) => year.toString())}
@@ -122,8 +168,8 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {formatOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <h3 className={styles.sectionTitle}>Format Type</h3>
             <Select
+              showLabel
               label="Format Type"
               options={formatOptions}
               value={selectedFormats}
@@ -136,23 +182,26 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
         )}
 
         <div className={styles.filterSection}>
-          <h3 className={styles.sectionTitle}>Sort</h3>
-          <Select
-            label="Sort by"
-            options={categoryOptions}
-            value={sortCategory}
-            onChange={handleCategoryChange}
-            disabled={fetchingCollection}
-            placeholder="Select category..."
-          />
-          <Select
-            label="Order"
-            options={currentSortOptions}
-            value={selectedSort}
-            onChange={handleSortChange}
-            disabled={fetchingCollection}
-            placeholder="Select order..."
-          />
+          <div className={styles.sortFilterGroup}>
+            <Select
+              showLabel
+              label="Sort by"
+              options={categoryOptions}
+              value={sortCategory}
+              onChange={handleCategoryChange}
+              disabled={fetchingCollection}
+              placeholder="Select category..."
+            />
+            <Select
+              showLabel
+              label="Order"
+              options={currentSortOptions}
+              value={selectedSort}
+              onChange={handleSortChange}
+              disabled={fetchingCollection}
+              placeholder="Select order..."
+            />
+          </div>
         </div>
       </div>
     </BottomDrawer>

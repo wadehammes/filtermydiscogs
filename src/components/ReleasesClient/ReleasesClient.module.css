@@ -34,6 +34,7 @@
     env(safe-area-inset-bottom, 0px)
   );
   --release-mini-player-video-panel-offset: 0px;
+  --release-mini-player-drawer-gap: var(--space-2);
 
   padding-bottom: var(--release-mini-player-bar-offset);
 
@@ -48,10 +49,12 @@
       var(--release-mini-player-bar-offset) +
       var(--release-mini-player-video-panel-offset)
     );
+    min-height: 0;
     max-height: calc(
-      80vh -
+      100dvh -
       var(--release-mini-player-bar-offset) -
-      var(--release-mini-player-video-panel-offset)
+      var(--release-mini-player-video-panel-offset) -
+      var(--release-mini-player-drawer-gap)
     );
   }
 
@@ -67,6 +70,22 @@
   @media (width >= 768px) {
     --release-mini-player-control-size: 2rem;
     --release-mini-player-bar-height: 3.25rem;
+  }
+}
+
+:global(body:has([data-filters-drawer-open="true"]))
+  .withMiniPlayer:not(:has([data-video-expanded="true"])) {
+  @media (width < 768px) {
+    --release-mini-player-video-panel-offset: 0px;
+
+    :global([data-testid="fmdBottomDrawer"]) {
+      max-height: calc(
+        100dvh -
+        var(--sticky-header-height) -
+        var(--release-mini-player-bar-offset) -
+        var(--release-mini-player-drawer-gap)
+      );
+    }
   }
 }
 

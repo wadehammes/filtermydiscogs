@@ -1,0 +1,23 @@
+.popoverAnchor {
+  anchor-name: var(--popover-anchor-name);
+}
+
+.popoverPanel {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  bottom: var(--popover-fallback-bottom, auto);
+  left: var(--popover-fallback-left, 0);
+  max-height: var(--popover-max-height, none);
+  overflow: hidden;
+  position: fixed;
+  text-align: left;
+  top: var(--popover-fallback-top, auto);
+  width: var(--popover-fallback-width, 100%);
+  z-index: var(--z-6-popover);
+}
+
+.popoverPanelUpward {
+  bottom: var(--popover-fallback-bottom, auto);
+  top: auto;
+}
