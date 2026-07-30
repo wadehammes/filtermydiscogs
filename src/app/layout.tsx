@@ -1,4 +1,3 @@
-import { GoogleTagManager } from "@next/third-parties/google";
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { Assistant, JetBrains_Mono } from "next/font/google";
@@ -81,7 +80,6 @@ export default function RootLayout({
           src="/theme-init.js"
         />
         <Providers>{children}</Providers>
-        <GoogleTagManager gtmId="GTM-NCP5CSG" />
       </body>
     </html>
   );

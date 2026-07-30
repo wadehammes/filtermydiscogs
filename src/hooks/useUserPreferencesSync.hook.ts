@@ -8,12 +8,17 @@ import {
   FILTERS_STORAGE_KEY,
   VIEW_STATE_STORAGE_KEY,
 } from "src/constants/storageKeys";
+import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import { useAuth } from "src/context/auth.context";
 import { useTheme } from "src/context/theme.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { UserPreferencesPatch } from "src/types/userPreferences.types";
 import { defaultViewState, parseViewStateJson } from "src/types/view.types";
+import {
+  analyticsConsentChoiceToBoolean,
+  readAnalyticsConsentChoice,
+} from "src/utils/analyticsConsentStorage";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import {
   clearPersistedFilters,
@@ -43,6 +48,7 @@ export const useUserPreferencesSync = () => {
     enabled: isAuthenticated && !isCheckingAuth,
   });
   const { persistPreferences } = usePersistUserPreferences();
+  const { syncFromServerPreference } = useAnalyticsConsent();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -110,6 +116,15 @@ export const useUserPreferencesSync = () => {
         seedPatch.filters = localFilters;
       }
 
+      const localAnalyticsChoice = readAnalyticsConsentChoice();
+      if (
+        localAnalyticsChoice !== null &&
+        preferences.analyticsConsent === undefined
+      ) {
+        seedPatch.analyticsConsent =
+          analyticsConsentChoiceToBoolean(localAnalyticsChoice);
+      }
+
       hasSeededLocalPreferencesRef.current = true;
 
       if (Object.keys(seedPatch).length > 0) {
@@ -152,6 +167,8 @@ export const useUserPreferencesSync = () => {
     if (!viewStateMatches(currentView, preferences.view)) {
       setViewState(preferences.view);
     }
+
+    syncFromServerPreference(preferences.analyticsConsent);
   }, [
     isAuthenticated,
     isCheckingAuth,
@@ -161,5 +178,6 @@ export const useUserPreferencesSync = () => {
     setTheme,
     setViewState,
     store,
+    syncFromServerPreference,
   ]);
 };

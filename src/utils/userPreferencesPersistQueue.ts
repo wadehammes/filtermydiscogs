@@ -37,13 +37,15 @@ const isFiltersOnlyPatch = (patch: UserPreferencesPatch): boolean =>
   patch.filters !== undefined &&
   patch.theme === undefined &&
   patch.view === undefined &&
-  patch.persistFilters === undefined;
+  patch.persistFilters === undefined &&
+  patch.analyticsConsent === undefined;
 
 const hasPendingFields = (patch: UserPreferencesPatch): boolean =>
   patch.persistFilters !== undefined ||
   patch.theme !== undefined ||
   patch.view !== undefined ||
-  patch.filters !== undefined;
+  patch.filters !== undefined ||
+  patch.analyticsConsent !== undefined;
 
 const flushPendingPatch = (mutate: PersistMutate) => {
   if (debounceTimer) {
@@ -111,7 +113,8 @@ export const scheduleUserPreferencesPersist = (
     pendingPatch.filters !== undefined &&
     pendingPatch.theme === undefined &&
     pendingPatch.view === undefined &&
-    pendingPatch.persistFilters === undefined;
+    pendingPatch.persistFilters === undefined &&
+    pendingPatch.analyticsConsent === undefined;
 
   if (filtersOnlyPending) {
     if (debounceTimer) {

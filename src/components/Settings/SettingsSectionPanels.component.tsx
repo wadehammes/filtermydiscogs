@@ -1,6 +1,9 @@
+"use client";
+
 import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
+import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
 import styles from "./SettingsClient.module.css";
 
@@ -169,23 +172,54 @@ export function SettingsDataPanel({
   isClearing,
   onClearData,
 }: SettingsDataPanelProps) {
+  const {
+    isAnalyticsEnabled,
+    isReady: isAnalyticsConsentReady,
+    setAnalyticsEnabled,
+  } = useAnalyticsConsent();
+
   return (
-    <div className={styles.panelBlock}>
-      <h3 className={styles.panelBlockTitle}>Clear all stored data</h3>
-      <p className={styles.sectionDescription}>
-        Delete your crates, clear local preferences, and sign out. You will need
-        to authorize the app again to continue using Filter My Discogs.
-      </p>
-      <div className={styles.actions}>
-        <Button
-          variant="danger"
-          size="md"
-          onPress={onClearData}
-          disabled={isClearing}
-        >
-          {isClearing ? "Clearing..." : "Clear all stored data"}
-        </Button>
+    <>
+      <div className={styles.panelBlock}>
+        <label className={styles.settingToggle}>
+          <input
+            type="checkbox"
+            checked={isAnalyticsEnabled}
+            onChange={(event) => setAnalyticsEnabled(event.target.checked)}
+            disabled={!isAnalyticsConsentReady}
+            className={styles.settingCheckbox}
+          />
+          <span>Allow analytics cookies</span>
+        </label>
+        <p className={styles.sectionDescription}>
+          When enabled, Google Tag Manager may set analytics cookies to measure
+          page views and interactions. Essential Discogs login cookies always
+          apply. See the{" "}
+          <a href="/legal#cookies" className={styles.inlineLink}>
+            cookie notice
+          </a>{" "}
+          for details. Disabling analytics reloads the page so tracking scripts
+          stop running.
+        </p>
       </div>
-    </div>
+      <div className={styles.panelBlock}>
+        <h3 className={styles.panelBlockTitle}>Clear all stored data</h3>
+        <p className={styles.sectionDescription}>
+          Delete your crates, clear local preferences (including your analytics
+          cookie choice), and sign out. You will need to authorize the app again
+          to continue using Filter My Discogs.
+        </p>
+        <div className={styles.actions}>
+          <Button
+            variant="danger"
+            size="md"
+            onPress={onClearData}
+            disabled={isClearing}
+          >
+            {isClearing ? "Clearing..." : "Clear all stored data"}
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }

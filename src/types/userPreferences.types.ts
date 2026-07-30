@@ -26,10 +26,14 @@ export type UserPreferencesJson = {
   theme: StoredTheme;
   view: StoredViewState;
   filters: PersistedFiltersJson;
+  analyticsConsent?: boolean;
 };
 
 export type UserPreferences = UserPreferencesJson;
 
 export type UserPreferencesPatch = Partial<
-  Pick<UserPreferences, "persistFilters" | "theme" | "view" | "filters">
+  Pick<
+    UserPreferences,
+    "persistFilters" | "theme" | "view" | "filters" | "analyticsConsent"
+  >
 >;

@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@11.18.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767 --webpack",
@@ -15,7 +15,7 @@
     "lint:check": "biome check --changed --since origin/main --no-errors-on-unmatched --verbose --write --diagnostic-level=error",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
-    "lint:all": "pnpm lint:check && pnpm lint:css:fix",
+    "lint:all": "pnpm lint:check && pnpm lint:css:fix && pnpm tsc:ci && pnpm knip:ci",
     "format": "biome format src",
     "format:fix": "biome format --write src",
     "test": "jest --runInBand --detectOpenHandles",
@@ -43,9 +43,8 @@
     "knip:ci": "knip --no-progress"
   },
   "dependencies": {
-    "@next/third-parties": "^16.2.12",
-    "@prisma/adapter-pg": "^7.9.0",
-    "@prisma/client": "^7.9.0",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
     "@svgr/webpack": "^8.1.0",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-table": "^8.21.3",
@@ -65,7 +64,7 @@
     "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.5",
+    "@biomejs/biome": "^2.5.6",
     "@faker-js/faker": "10.5.0",
     "@jest/globals": "^30.4.1",
     "@jest/types": "^30.4.1",
@@ -76,7 +75,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.1.2",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "dotenv-cli": "^11.0.0",
@@ -86,9 +85,9 @@
     "jest-fetch-mock": "^4.2.0",
     "knip": "^6.29.0",
     "lighthouse": "^13.4.1",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.25",
     "postcss-custom-media": "^12.0.1",
-    "prisma": "^7.9.0",
+    "prisma": "^7.9.1",
     "prisma-json-types-generator": "^5.1.1",
     "react-is": "^19.2.8",
     "stylelint": "^17.14.1",

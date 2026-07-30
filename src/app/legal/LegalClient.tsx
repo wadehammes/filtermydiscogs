@@ -19,7 +19,7 @@ export function LegalClient() {
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
-          "• Delete your saved account preferences (theme, default view, and filter selections)\n" +
+          "• Delete your saved account preferences (theme, default view, filter selections, and analytics cookie choice)\n" +
           "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",
       )
@@ -115,10 +115,11 @@ export function LegalClient() {
               When you&apos;re logged in, account preferences also live in
               Postgres: theme (light, dim, sepia, slate, dark, midnight, high
               contrast, or system), default view (grid or table), whether to
-              remember filter selections, and—when that option is on—your saved
-              filter and sort choices (styles, years, formats, sort order, style
-              match mode, and search text). That lets settings follow you across
-              browsers. I don&apos;t store your full collection there.
+              remember filter selections, your analytics cookie choice (when
+              set), and—when that option is on—your saved filter and sort
+              choices (styles, years, formats, sort order, style match mode, and
+              search text). That lets settings follow you across browsers. I
+              don&apos;t store your full collection there.
             </li>
             <li>
               I don't sell your data, share it, or do anything sketchy with it.
@@ -142,9 +143,9 @@ export function LegalClient() {
               to Postgres so they don&apos;t disappear when you close the tab.
             </li>
             <li>
-              Theme, view, and filter preferences are also kept in your browser
-              for fast loads and offline-style continuity on this device. When
-              you&apos;re signed in, changes sync to your account.
+              Theme, view, filter, and analytics cookie preferences are also
+              kept in your browser for fast loads and continuity on this device.
+              When you&apos;re signed in, changes sync to your account.
             </li>
             <li>
               Want to nuke everything on my side? Hit &quot;Clear All Data&quot;
@@ -154,22 +155,27 @@ export function LegalClient() {
               need to edit or remove those on Discogs itself.
             </li>
           </ul>
-          <h3>Cookies & Storage</h3>
+          <h3 id="cookies">Cookies & Storage</h3>
           <ul>
             <li>
-              HttpOnly cookies hold your OAuth session so you stay logged in
-              without exposing tokens to JavaScript.
+              <strong>Essential cookies:</strong> HttpOnly cookies hold your
+              OAuth session so you stay logged in without exposing tokens to
+              JavaScript. These are required for the app to work and do not need
+              separate consent.
             </li>
             <li>
-              Local storage on this browser holds theme, default view, filter
-              and sort selections (when &quot;Remember filter selections&quot;
-              is on), in-progress playback position, and similar UI state. When
-              you&apos;re logged in, the same preferences are also stored on the
-              server (see above).
+              <strong>Local storage:</strong> Theme, default view, filter and
+              sort selections (when &quot;Remember filter selections&quot; is
+              on), your analytics cookie choice, in-progress playback position,
+              and similar UI state. When you&apos;re logged in, the same
+              preferences are also stored on the server (see above).
             </li>
             <li>
-              I use Google Tag Manager for basic analytics (page views, clicks,
-              that kind of thing). Standard web stuff. Nothing personal.
+              <strong>Optional analytics cookies:</strong> When you opt in,
+              Google Tag Manager may set analytics cookies to measure page views
+              and basic interactions. Analytics does not run until you accept.
+              You can change your choice anytime in Settings under Data, or use
+              Essential only on the consent banner.
             </li>
           </ul>
           <h3>Third-Party Stuff</h3>
@@ -179,8 +185,8 @@ export function LegalClient() {
               relationship.
             </li>
             <li>
-              Google Tag Manager handles analytics. Google's privacy policy
-              applies there.
+              Google Tag Manager handles analytics when you opt in.
+              Google&apos;s privacy policy applies there.
             </li>
             <li>
               Images get proxied for speed, but I don't hoard them. They're
@@ -200,12 +206,14 @@ export function LegalClient() {
             </li>
             <li>
               Your saved account preferences on our server: theme, default view
-              (grid or table), and filter/sort selections when &quot;Remember
-              filter selections&quot; is enabled in Settings
+              (grid or table), your analytics cookie choice, and filter/sort
+              selections when &quot;Remember filter selections&quot; is enabled
+              in Settings
             </li>
             <li>
               Local preferences on this browser: theme, view mode, filters,
-              in-progress playback position, and similar UI state
+              analytics cookie choice (you will be asked about analytics cookies
+              again), in-progress playback position, and similar UI state
             </li>
             <li>Cached collection data for the current session</li>
             <li>

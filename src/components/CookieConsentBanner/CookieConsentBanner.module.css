@@ -1,0 +1,62 @@
+.banner {
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--card) 75%, transparent);
+  border-top: 1px solid var(--border);
+  bottom: 0;
+  box-shadow: 0 -4px 24px color-mix(in srgb, var(--background) 8%, transparent);
+  left: 0;
+  padding: var(--space-4);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  position: fixed;
+  right: 0;
+  z-index: var(--z-3-fixed);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0 auto;
+  max-width: var(--page-max-width, 72rem);
+
+  @media (width >= 768px) {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-4);
+  }
+}
+
+.copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin: 0;
+}
+
+.description {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 100ch;
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
