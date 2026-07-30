@@ -4,4 +4,6 @@
 :root {
   --font-assistant: system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
+  --popover-anchor-name: --popover-fallback;
+  --popover-max-height: 20rem;
 }

@@ -4,6 +4,7 @@ import {
   mockFiltersDispatch,
   SearchBarPageObject,
 } from "src/components/SearchBar/SearchBar.po";
+import { FiltersActionTypes } from "src/context/filters.context";
 import { screen, waitFor } from "test-utils";
 
 let po: SearchBarPageObject;
@@ -207,7 +208,7 @@ describe("SearchBar", () => {
     expect(mockFiltersDispatch).not.toHaveBeenCalled();
   });
 
-  it("cleans up debounce timeout on unmount", async () => {
+  it("flushes pending search query on unmount", async () => {
     jest.useFakeTimers();
     const user = userEvent.setup({ delay: null });
     const { unmount } = po.renderSearchBar();
@@ -215,11 +216,13 @@ describe("SearchBar", () => {
     const input = screen.getByPlaceholderText("Search your collection...");
     await user.type(input, "test");
 
+    mockFiltersDispatch.mockClear();
     unmount();
 
-    expect(() => {
-      jest.advanceTimersByTime(300);
-    }).not.toThrow();
+    expect(mockFiltersDispatch).toHaveBeenCalledWith({
+      type: FiltersActionTypes.SetSearchQuery,
+      payload: "test",
+    });
 
     jest.useRealTimers();
   });

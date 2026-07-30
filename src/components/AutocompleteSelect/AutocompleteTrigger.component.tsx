@@ -1,10 +1,14 @@
 import classNames from "classnames";
+import { forwardRef } from "react";
+import anchoredPopoverStyles from "src/styles/anchored-popover.module.css";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import type { AutocompleteOption } from "./AutocompleteSelect.component";
 import styles from "./AutocompleteSelect.module.css";
 
 interface AutocompleteTriggerProps {
   label: string;
+  labelId?: string | undefined;
+  showLabel?: boolean;
   disabled: boolean;
   isOpen: boolean;
   listboxId: string;
@@ -19,22 +23,32 @@ interface AutocompleteTriggerProps {
   ) => void;
   value?: string | string[] | undefined;
   placeholder?: string | undefined;
+  anchorStyle?: React.CSSProperties;
 }
 
-export function AutocompleteTrigger({
-  label,
-  disabled,
-  isOpen,
-  listboxId,
-  displayValue,
-  selectedOptions,
-  multiple,
-  onTriggerClick,
-  onTriggerKeyDown,
-  onClearOption,
-  value,
-  placeholder,
-}: AutocompleteTriggerProps) {
+export const AutocompleteTrigger = forwardRef<
+  HTMLDivElement,
+  AutocompleteTriggerProps
+>(function AutocompleteTrigger(
+  {
+    label,
+    labelId,
+    showLabel = false,
+    disabled,
+    isOpen,
+    listboxId,
+    displayValue,
+    selectedOptions,
+    multiple,
+    onTriggerClick,
+    onTriggerKeyDown,
+    onClearOption,
+    value,
+    placeholder,
+    anchorStyle,
+  },
+  ref,
+) {
   const isEmpty = multiple
     ? !Array.isArray(value) || value.length === 0
     : !value;
@@ -42,14 +56,22 @@ export function AutocompleteTrigger({
 
   return (
     <div
-      className={classNames(styles.trigger, {
-        [styles.disabled]: disabled,
-      })}
+      ref={ref}
+      style={anchorStyle}
+      className={classNames(
+        styles.trigger,
+        anchoredPopoverStyles.popoverAnchor,
+        {
+          [styles.disabled]: disabled,
+        },
+      )}
       role="combobox"
       aria-controls={isOpen ? listboxId : undefined}
-      aria-label={label}
+      aria-labelledby={showLabel ? labelId : undefined}
+      aria-label={showLabel ? undefined : label}
       aria-haspopup="listbox"
       aria-expanded={isOpen}
+      data-filter-control-trigger
       onClick={onTriggerClick}
       onKeyDown={onTriggerKeyDown}
       tabIndex={disabled ? -1 : 0}
@@ -90,4 +112,4 @@ export function AutocompleteTrigger({
       </span>
     </div>
   );
-}
+});

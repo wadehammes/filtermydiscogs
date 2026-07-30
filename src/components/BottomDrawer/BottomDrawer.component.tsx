@@ -74,7 +74,11 @@ export const BottomDrawer = ({
           </div>
         )}
         <div className={styles.content}>{children}</div>
-        {footer && <div className={styles.footer}>{footer}</div>}
+        {footer && (
+          <div className={styles.footer} data-bottom-drawer-footer>
+            {footer}
+          </div>
+        )}
       </div>
     </>
   );

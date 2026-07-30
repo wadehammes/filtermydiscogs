@@ -24,6 +24,7 @@
   --input-height: 2.5rem;
   --input-padding: var(--space-2);
   --input-padding-full: var(--space-2) var(--space-3);
+  --touch-target-min: 2.75rem;
   --transition-button: all var(--transition-normal);
 
   /* Sticky header heights - fixed for consistent positioning */

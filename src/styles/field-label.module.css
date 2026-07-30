@@ -1,0 +1,9 @@
+.label {
+  color: var(--muted-foreground);
+  display: block;
+  font-size: var(--text-xxs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}

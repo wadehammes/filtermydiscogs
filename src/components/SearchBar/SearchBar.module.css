@@ -1,7 +1,14 @@
 .searchBar {
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+  gap: var(--space-2);
   position: relative;
   width: 100%;
-  flex: 2;
+}
+
+.label {
+  composes: label from "../../styles/field-label.module.css";
 }
 
 .inputContainer {
@@ -12,21 +19,25 @@
 }
 
 .input {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  padding-left: calc(var(--space-3) + var(--space-4) + var(--space-2));
-  padding-right: 3rem;
+  background-color: var(--background);
   border: 1px solid var(--input);
   border-radius: var(--radius-ui);
-  font-family: inherit;
-  font-size: 16px;
-  min-height: var(--input-height);
-  background-color: var(--background);
   color: var(--foreground);
+  font-family: inherit;
+  font-size: 1rem;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+  padding-left: calc(var(--space-4) + var(--space-4) + var(--space-2));
+  padding-right: calc(var(--space-4) + var(--space-6));
   transition: all var(--transition-normal);
+  width: 100%;
 
-  @media (width >= 640px) {
+  @media (width >= 768px) {
     font-size: var(--text-sm);
+    min-height: var(--input-height);
+    padding: var(--space-2) var(--space-3);
+    padding-left: calc(var(--space-3) + var(--space-4) + var(--space-2));
+    padding-right: 3rem;
   }
 
   &:focus {
@@ -59,11 +70,15 @@
   align-items: center;
   color: var(--muted-foreground);
   display: flex;
-  left: var(--space-3);
+  left: var(--space-4);
   pointer-events: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+
+  @media (width >= 768px) {
+    left: var(--space-3);
+  }
 
   & svg {
     height: var(--space-4);
@@ -84,11 +99,15 @@
   padding: 0;
   place-items: center;
   position: absolute;
-  right: var(--space-3);
+  right: var(--space-4);
   top: 50%;
   transform: translateY(-50%);
   transition: all var(--transition-normal);
   width: var(--space-6);
+
+  @media (width >= 768px) {
+    right: var(--space-3);
+  }
 
   &:hover {
     background-color: var(--accent);

@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
   useFiltersDispatch,
@@ -15,12 +15,16 @@ interface SearchBarProps {
   className?: string;
   placeholder?: string;
   disabled?: boolean;
+  label?: string;
+  showLabel?: boolean;
 }
 
 export const SearchBar = ({
   className,
   placeholder = "Search your collection...",
   disabled = false,
+  label = "Search",
+  showLabel = false,
 }: SearchBarProps) => {
   const filtersDispatch = useFiltersDispatch();
   const searchQuery = useSearchQuery();
@@ -28,8 +32,10 @@ export const SearchBar = ({
   const [inputValue, setInputValue] = useState(searchQuery);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousSearchQueryRef = useRef<string>(searchQuery);
+  const pendingInputValueRef = useRef(searchQuery);
 
   const debouncedSearch = useCallback(
     (query: string) => {
@@ -51,6 +57,7 @@ export const SearchBar = ({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setInputValue(value);
+      pendingInputValueRef.current = value;
       debouncedSearch(value);
     },
     [debouncedSearch],
@@ -58,6 +65,7 @@ export const SearchBar = ({
 
   const handleClear = useCallback(() => {
     setInputValue("");
+    pendingInputValueRef.current = "";
     filtersDispatch({
       type: FiltersActionTypes.SetSearching,
       payload: false,
@@ -78,49 +86,68 @@ export const SearchBar = ({
     [handleClear],
   );
 
-  // Sync local input when searchQuery changes externally (persisted restore, Clear All Filters)
   useEffect(() => {
     const previousQuery = previousSearchQueryRef.current;
     const currentQuery = searchQuery;
 
     if (previousQuery === "" && currentQuery !== "" && inputValue === "") {
       setInputValue(currentQuery);
+      pendingInputValueRef.current = currentQuery;
     }
 
-    // If searchQuery was cleared externally (changed from non-empty to empty)
-    // and we have a local input value, clear it
     if (previousQuery !== "" && currentQuery === "" && inputValue !== "") {
-      // Clear the debounce timeout if it exists
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
         debounceTimeoutRef.current = null;
       }
       setInputValue("");
+      pendingInputValueRef.current = "";
     }
 
-    // Update the ref for next comparison
     previousSearchQueryRef.current = currentQuery;
   }, [searchQuery, inputValue]);
 
   useEffect(() => {
     return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+      if (!debounceTimeoutRef.current) {
+        return;
       }
+
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+
+      if (disabled) {
+        return;
+      }
+
+      filtersDispatch({
+        type: FiltersActionTypes.SetSearchQuery,
+        payload: pendingInputValueRef.current,
+      });
     };
-  }, []);
+  }, [disabled, filtersDispatch]);
 
   return (
     <div
       className={classNames(styles.searchBar, className)}
       data-testid="fmdSearchBar"
     >
+      {showLabel ? (
+        <label
+          htmlFor={inputId}
+          className={styles.label}
+          data-filter-field-label
+        >
+          {label}
+        </label>
+      ) : null}
       <div className={styles.inputContainer}>
         <span className={styles.searchIcon} aria-hidden>
           <SearchIcon />
         </span>
         <input
           ref={inputRef}
+          id={inputId}
           type="text"
           value={inputValue}
           onChange={handleInputChange}
@@ -130,10 +157,10 @@ export const SearchBar = ({
           className={classNames(styles.input, {
             [styles.searching]: isSearching,
           })}
-          aria-label="Search collection"
+          aria-label={showLabel ? undefined : "Search collection"}
         />
 
-        {inputValue && (
+        {inputValue ? (
           <button
             type="button"
             onClick={handleClear}
@@ -142,7 +169,7 @@ export const SearchBar = ({
           >
             ×
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -306,6 +306,64 @@ describe("ReleaseMiniPlayer", () => {
     );
   });
 
+  it("collapses the mobile video panel when the filters drawer opens", async () => {
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      '<div data-filters-drawer-open="true"></div>',
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+        "data-video-expanded",
+      );
+    });
+
+    document.querySelector("[data-filters-drawer-open]")?.remove();
+  });
+
+  it("re-opens the mobile video panel while the filters drawer stays open", async () => {
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      '<div data-filters-drawer-open="true"></div>',
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+        "data-video-expanded",
+      );
+    });
+
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+      "data-video-expanded",
+      "true",
+    );
+
+    document.querySelector("[data-filters-drawer-open]")?.remove();
+  });
+
   it("keeps the video panel open when advancing tracks", async () => {
     const user = userEvent.setup();
 
