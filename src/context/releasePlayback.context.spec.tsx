@@ -232,6 +232,47 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPaused).toBe(false);
   });
 
+  it("posts YouTube commands on each play/pause toggle after iframe registration", async () => {
+    const iframe = document.createElement("iframe");
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    mockPostYoutubePlayerCommand.mockClear();
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    expect(mockPostYoutubePlayerCommand.mock.calls).toContainEqual([
+      { iframe, command: "pauseVideo" },
+    ]);
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    expect(mockPostYoutubePlayerCommand.mock.calls.at(-1)).toEqual([
+      { iframe, command: "playVideo" },
+    ]);
+  });
+
   it("plays the selected track when switching from a longer release queue", async () => {
     const longTracklistRelease =
       discogsReleaseJsonFactory.withTracklistAndVideos({

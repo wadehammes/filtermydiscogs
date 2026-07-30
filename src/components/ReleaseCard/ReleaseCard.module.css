@@ -208,7 +208,7 @@
   }
 }
 
-.actionSegment {
+.actionSegmented .actionSegment {
   box-shadow: none;
   min-height: 1.75rem;
   min-width: 1.75rem;
