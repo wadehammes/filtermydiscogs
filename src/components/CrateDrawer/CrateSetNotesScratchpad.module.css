@@ -7,21 +7,26 @@
 
 .textarea {
   composes: textarea from "../../styles/scratchpad-textarea.module.css";
-  min-height: 6.5rem;
+  min-height: 10lh;
 
   @media (width >= 1024px) {
-    min-height: 12rem;
+    min-height: 20lh;
   }
 }
 
 .textareaPanel {
   composes: textareaembedded from "../../styles/scratchpad-textarea.module.css";
-  min-height: 6.5rem;
+  min-height: 10lh;
 
   @media (width >= 1024px) {
-    min-height: 12rem;
+    min-height: 20lh;
     font-size: 16px;
   }
+}
+
+.textareaDrawer {
+  composes: textarea from "../../styles/scratchpad-textarea.module.css";
+  min-height: 6lh;
 }
 
 .textareaInvalid {
@@ -50,4 +55,10 @@
   @media (width >= 1024px) {
     padding: var(--space-3) var(--space-5);
   }
+}
+
+.sectionInDrawer {
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  padding-bottom: var(--space-3);
 }

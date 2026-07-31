@@ -7,38 +7,6 @@
   padding: 0;
 }
 
-.listHeader {
-  display: none;
-
-  @media (width >= 1024px) {
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    color: var(--muted-foreground);
-    display: grid;
-    font-size: var(--text-xxs);
-    font-weight: var(--font-semibold);
-    gap: var(--space-4) var(--space-5);
-    grid-template-columns: minmax(0, 1.75fr) minmax(13rem, 1fr) auto;
-    letter-spacing: 0.04em;
-    list-style: none;
-    padding: var(--space-2) var(--space-5) var(--space-3);
-    text-transform: uppercase;
-  }
-}
-
-.listHeaderNotes {
-  grid-column: 1;
-}
-
-.listHeaderRelease {
-  grid-column: 2;
-}
-
-.listHeaderActions {
-  grid-column: 3;
-  text-align: right;
-}
-
 .row {
   display: grid;
   gap: var(--space-3) var(--space-4);

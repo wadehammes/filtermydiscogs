@@ -2,18 +2,6 @@
   width: 100%;
 }
 
-.listHeader {
-  list-style: none;
-  padding: var(--space-3) var(--space-4) var(--space-2);
-
-  @media (width >= 1024px) {
-    border-bottom: 1px solid var(--border);
-    margin-inline: var(--space-5);
-    padding: var(--space-3) var(--space-5);
-    width: auto;
-  }
-}
-
 .layoutReleaseRow {
   border-bottom: 1px dotted var(--border);
   margin-inline: var(--space-4);
@@ -63,35 +51,6 @@
 
 .layoutMarkerRow {
   border-top: 1px solid var(--border);
-}
-
-.listHeaderColumns {
-  color: var(--muted-foreground);
-  display: none;
-  font-size: var(--text-xxs);
-  font-weight: var(--font-semibold);
-  gap: var(--space-4) var(--space-5);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-
-  @media (width >= 1024px) {
-    align-items: center;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1.75fr) minmax(13rem, 1fr) auto;
-  }
-}
-
-.listHeaderNotes {
-  grid-column: 2;
-}
-
-.listHeaderRelease {
-  grid-column: 3;
-}
-
-.listHeaderActions {
-  grid-column: 4;
-  text-align: right;
 }
 
 .insertZone {
@@ -162,6 +121,51 @@
 .insertZone:focus-within .insertButton {
   opacity: 1;
   pointer-events: auto;
+  transform: scale(1);
+}
+
+.insertZoneEdgeTop,
+.insertZoneEdgeBottom {
+  height: 0;
+  list-style: none;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  pointer-events: none;
+  position: relative;
+  width: 100%;
+  z-index: calc(var(--z-2-sticky) + 1);
+}
+
+.insertZoneEdgeTop .insertZoneHitArea,
+.insertZoneEdgeBottom .insertZoneHitArea {
+  height: 1.5rem;
+  inset: auto;
+  left: 0;
+  pointer-events: auto;
+  position: absolute;
+  right: 0;
+}
+
+.insertZoneEdgeTop .insertZoneHitArea {
+  top: 0;
+  transform: translateY(-50%);
+}
+
+.insertZoneEdgeBottom .insertZoneHitArea {
+  bottom: 0;
+  transform: translateY(50%);
+}
+
+.insertZoneEdgeTop:hover .insertButton,
+.insertZoneEdgeTop:focus-within .insertButton,
+.insertZoneEdgeBottom:hover .insertButton,
+.insertZoneEdgeBottom:focus-within .insertButton {
+  transform: scale(1);
+}
+
+.insertZoneEdgeTop .insertButton:focus-visible,
+.insertZoneEdgeBottom .insertButton:focus-visible {
   transform: scale(1);
 }
 

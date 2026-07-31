@@ -19,6 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 import classNames from "classnames";
 import Image from "next/image";
 import {
+  type ElementType,
   Fragment,
   memo,
   useCallback,
@@ -27,6 +28,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useAuth } from "src/context/auth.context";
@@ -59,6 +61,17 @@ import { CrateReleaseActions } from "./CrateReleaseActions.component";
 import listStyles from "./CrateReleaseList.module.css";
 import { CrateSetMarkerRow } from "./CrateSetMarkerRow.component";
 
+type CrateLayoutInsertZoneVariant = "inline" | "edgeTop" | "edgeBottom";
+
+interface CrateLayoutInsertZoneProps {
+  insertIndex: number;
+  disabled: boolean;
+  onInsert: (insertIndex: number) => void;
+  as?: ElementType;
+  variant?: CrateLayoutInsertZoneVariant;
+  className?: string;
+}
+
 interface CrateLayoutListProps {
   crateId: string;
   layoutItems: CrateLayoutItem[];
@@ -68,6 +81,8 @@ interface CrateLayoutListProps {
   setPacked: (instanceId: string, packed: boolean) => void;
   removeFromCrate: (instanceId: string) => void;
   onReleaseClick: (instanceId: string) => void;
+  topInsertMount?: HTMLElement | null;
+  bottomInsertMount?: HTMLElement | null;
 }
 
 interface SortableReleaseRowProps {
@@ -219,18 +234,20 @@ const SortableMarkerRow = ({
   );
 };
 
-interface CrateLayoutInsertZoneProps {
-  insertIndex: number;
-  disabled: boolean;
-  onInsert: (insertIndex: number) => void;
-}
-
 const CrateLayoutInsertZone = ({
   insertIndex,
   disabled,
   onInsert,
+  as: Tag = "li",
+  variant = "inline",
+  className,
 }: CrateLayoutInsertZoneProps) => (
-  <li className={styles.insertZone}>
+  <Tag
+    className={classNames(styles.insertZone, className, {
+      [styles.insertZoneEdgeTop]: variant === "edgeTop",
+      [styles.insertZoneEdgeBottom]: variant === "edgeBottom",
+    })}
+  >
     <div className={styles.insertZoneHitArea}>
       <button
         type="button"
@@ -242,7 +259,7 @@ const CrateLayoutInsertZone = ({
         <PlusIcon className={styles.insertButtonIcon} aria-hidden="true" />
       </button>
     </div>
-  </li>
+  </Tag>
 );
 
 const CrateLayoutListComponent = ({
@@ -254,6 +271,8 @@ const CrateLayoutListComponent = ({
   setPacked,
   removeFromCrate,
   onReleaseClick,
+  topInsertMount,
+  bottomInsertMount,
 }: CrateLayoutListProps) => {
   const { state: authState } = useAuth();
   const updateLayoutMutation = useUpdateCrateLayoutMutation(authState.userId);
@@ -263,7 +282,19 @@ const CrateLayoutListComponent = ({
   const localLayoutRef = useRef(localLayoutItems);
 
   useEffect(() => {
-    setLocalLayoutItems(layoutItems);
+    setLocalLayoutItems((current) => {
+      const hasUnsavedTempMarker = current.some(
+        (item) =>
+          item.kind === "marker" &&
+          item.id.startsWith(CRATE_TEMP_MARKER_PREFIX),
+      );
+
+      if (hasUnsavedTempMarker) {
+        return current;
+      }
+
+      return layoutItems;
+    });
   }, [layoutItems]);
 
   useEffect(() => {
@@ -388,14 +419,28 @@ const CrateLayoutListComponent = ({
       });
 
       setFocusMarkerId(nextMarkerId);
-      persistLayout(nextItems);
+      setLocalLayoutItems(nextItems);
     },
-    [hidePackedItems, isPacked, persistLayout],
+    [hidePackedItems, isPacked],
   );
 
   const handleMarkerLabelChange = useCallback(
     (markerId: string, label: string) => {
-      const nextItems = localLayoutRef.current.map((item) =>
+      const currentItems = localLayoutRef.current;
+      const existingMarker = currentItems.find(
+        (item): item is CrateLayoutMarkerItem =>
+          item.kind === "marker" && item.id === markerId,
+      );
+
+      if (
+        existingMarker &&
+        existingMarker.label === label &&
+        !markerId.startsWith(CRATE_TEMP_MARKER_PREFIX)
+      ) {
+        return;
+      }
+
+      const nextItems = currentItems.map((item) =>
         item.kind === "marker" && item.id === markerId
           ? { ...item, label }
           : item,
@@ -410,6 +455,12 @@ const CrateLayoutListComponent = ({
       const nextItems = localLayoutRef.current.filter(
         (item) => !(item.kind === "marker" && item.id === markerId),
       );
+
+      if (markerId.startsWith(CRATE_TEMP_MARKER_PREFIX)) {
+        setLocalLayoutItems(nextItems);
+        return;
+      }
+
       persistLayout(nextItems);
     },
     [persistLayout],
@@ -425,6 +476,27 @@ const CrateLayoutListComponent = ({
   );
 
   const isSavingLayout = updateLayoutMutation.isPending;
+  const useEdgeInsertMounts = Boolean(topInsertMount && bottomInsertMount);
+
+  const topInsertZone = (
+    <CrateLayoutInsertZone
+      as={useEdgeInsertMounts ? "div" : "li"}
+      variant={useEdgeInsertMounts ? "edgeTop" : "inline"}
+      insertIndex={0}
+      disabled={isSavingLayout}
+      onInsert={handleAddSectionAt}
+    />
+  );
+
+  const bottomInsertZone = (
+    <CrateLayoutInsertZone
+      as={useEdgeInsertMounts ? "div" : "li"}
+      variant={useEdgeInsertMounts ? "edgeBottom" : "inline"}
+      insertIndex={visibleLayoutItems.length}
+      disabled={isSavingLayout}
+      onInsert={handleAddSectionAt}
+    />
+  );
 
   if (releaseCount === 0 && visibleLayoutItems.length === 0) {
     return (
@@ -439,70 +511,68 @@ const CrateLayoutListComponent = ({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={sortableIds}
-        strategy={verticalListSortingStrategy}
+    <>
+      {useEdgeInsertMounts && topInsertMount
+        ? createPortal(topInsertZone, topInsertMount)
+        : null}
+      {useEdgeInsertMounts && bottomInsertMount
+        ? createPortal(bottomInsertZone, bottomInsertMount)
+        : null}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <ul
-          className={classNames(listStyles.list, styles.layoutList)}
-          data-testid="fmdCrateReleasesTable"
+        <SortableContext
+          items={sortableIds}
+          strategy={verticalListSortingStrategy}
         >
-          <li className={styles.listHeader} aria-hidden="true">
-            <div className={styles.listHeaderColumns}>
-              <span className={styles.listHeaderNotes}>Notes</span>
-              <span className={styles.listHeaderRelease}>Release</span>
-              <span className={styles.listHeaderActions}>Actions</span>
-            </div>
-          </li>
-          <CrateLayoutInsertZone
-            insertIndex={0}
-            disabled={isSavingLayout}
-            onInsert={handleAddSectionAt}
-          />
-          {visibleLayoutItems.map((item, index) => {
-            const row =
-              item.kind === "marker" ? (
-                <SortableMarkerRow
-                  key={item.id}
-                  marker={item}
-                  autoFocus={focusMarkerId === item.id}
-                  onLabelChange={handleMarkerLabelChange}
-                  onDelete={handleMarkerDelete}
-                />
-              ) : (
-                <SortableReleaseRow
-                  key={item.instance_id}
-                  item={item}
-                  packedEnabled={packedEnabled}
-                  packed={packedEnabled ? isPacked(item.instance_id) : false}
-                  setPacked={setPacked}
-                  removeFromCrate={removeFromCrate}
-                  onReleaseClick={onReleaseClick}
-                />
-              );
-
-            return (
-              <Fragment key={getCrateLayoutSortableId(item)}>
-                {row}
-                {item.kind !== "marker" &&
-                index + 1 < visibleLayoutItems.length ? (
-                  <CrateLayoutInsertZone
-                    insertIndex={index + 1}
-                    disabled={isSavingLayout}
-                    onInsert={handleAddSectionAt}
+          <ul
+            className={classNames(listStyles.list, styles.layoutList)}
+            data-testid="fmdCrateReleasesTable"
+          >
+            {useEdgeInsertMounts ? null : topInsertZone}
+            {visibleLayoutItems.map((item, index) => {
+              const row =
+                item.kind === "marker" ? (
+                  <SortableMarkerRow
+                    key={item.id}
+                    marker={item}
+                    autoFocus={focusMarkerId === item.id}
+                    onLabelChange={handleMarkerLabelChange}
+                    onDelete={handleMarkerDelete}
                   />
-                ) : null}
-              </Fragment>
-            );
-          })}
-        </ul>
-      </SortableContext>
-    </DndContext>
+                ) : (
+                  <SortableReleaseRow
+                    key={item.instance_id}
+                    item={item}
+                    packedEnabled={packedEnabled}
+                    packed={packedEnabled ? isPacked(item.instance_id) : false}
+                    setPacked={setPacked}
+                    removeFromCrate={removeFromCrate}
+                    onReleaseClick={onReleaseClick}
+                  />
+                );
+
+              return (
+                <Fragment key={getCrateLayoutSortableId(item)}>
+                  {row}
+                  {item.kind !== "marker" &&
+                  index + 1 < visibleLayoutItems.length ? (
+                    <CrateLayoutInsertZone
+                      insertIndex={index + 1}
+                      disabled={isSavingLayout}
+                      onInsert={handleAddSectionAt}
+                    />
+                  ) : null}
+                </Fragment>
+              );
+            })}
+            {useEdgeInsertMounts ? null : bottomInsertZone}
+          </ul>
+        </SortableContext>
+      </DndContext>
+    </>
   );
 };
 

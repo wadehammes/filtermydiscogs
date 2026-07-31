@@ -181,7 +181,7 @@
 .notesCrateScratchpadField {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   width: 100%;
 }
 
@@ -195,7 +195,7 @@
 
 .notesCrateScratchpadInput {
   composes: textarea from "../../styles/scratchpad-textarea.module.css";
-  min-height: 2.75rem;
+  min-height: 4lh;
 }
 
 .notesCrateScratchpadInputInvalid {

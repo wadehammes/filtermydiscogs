@@ -44,12 +44,11 @@
 }
 
 .secondary {
-  background: var(--card);
+  background: transparent;
   border-color: var(--border);
   color: var(--card-foreground);
 
   &:hover:not(:disabled) {
-    background: var(--muted);
     border-color: var(--input);
     color: var(--foreground);
   }
@@ -79,18 +78,16 @@
 }
 
 .danger {
-  background: var(--card);
+  background: transparent;
   border-color: var(--destructive);
   color: var(--destructive);
 
   &:hover:not(:disabled) {
-    background: var(--destructive);
     border-color: var(--destructive-hover);
     color: var(--on-destructive-hover);
   }
 
   &:active:not(:disabled) {
-    background: var(--destructive-active);
     border-color: var(--destructive-active);
     color: var(--on-destructive-active);
   }

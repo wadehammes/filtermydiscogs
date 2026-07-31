@@ -3,7 +3,7 @@ import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
-import drawerStyles from "src/components/CrateDrawer/CrateDrawer.module.css";
+import footerStyles from "src/components/CrateDrawer/CrateDrawerFooter.module.css";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./EditCrateDialog.module.css";
 
@@ -152,10 +152,10 @@ export const EditCrateDialog = () => {
             Turn this off to hide the checklist in this crate—your packed marks
             are still saved.
           </p>
-          <label className={drawerStyles.checkboxLabel}>
+          <label className={footerStyles.checkboxLabel}>
             <input
               type="checkbox"
-              className={drawerStyles.sharingCheckbox}
+              className={footerStyles.sharingCheckbox}
               checked={packedEnabled}
               onChange={() => void handlePackedEnabledToggle()}
               disabled={isBusy}

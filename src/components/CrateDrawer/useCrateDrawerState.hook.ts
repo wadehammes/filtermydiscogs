@@ -1,3 +1,4 @@
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useCrate } from "src/context/crate.context";
@@ -20,11 +21,13 @@ export const useCrateDrawerState = () => {
     packedReleaseCount,
   } = useCrate();
 
+  const router = useRouter();
+  const pathname = usePathname();
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showClearPackedDialog, setShowClearPackedDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
   const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
-  const [showCrateNotesDialog, setShowCrateNotesDialog] = useState(false);
   const [hidePackedItems, setHidePackedItems] = useState(false);
 
   const activeCrate = useMemo(
@@ -38,7 +41,18 @@ export const useCrateDrawerState = () => {
   const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
   const packedEnabled = activeCrate?.packed_enabled ?? false;
-  const canDelete = crates.length > 1 && !isDefaultCrate;
+  const deleteBlockedReason = useMemo(() => {
+    if (crates.length <= 1) {
+      return "You need at least one crate.";
+    }
+
+    if (isDefaultCrate) {
+      return "Set another crate as default first.";
+    }
+
+    return null;
+  }, [crates.length, isDefaultCrate]);
+  const canDelete = deleteBlockedReason === null;
 
   const toggleCrateBoolean = useCallback(
     async (
@@ -68,13 +82,19 @@ export const useCrateDrawerState = () => {
   }, [clearAllPacked]);
 
   const handleDeleteCrate = useCallback(async () => {
-    if (!activeCrateId) {
+    if (!(activeCrateId && canDelete)) {
       return;
     }
 
-    await deleteCrate(activeCrateId);
+    const deletedCrateId = activeCrateId;
+    await deleteCrate(deletedCrateId);
     setShowEditCrateDialog(false);
-  }, [activeCrateId, deleteCrate]);
+    setShowDeleteDialog(false);
+
+    if (pathname === `/crates/${deletedCrateId}`) {
+      router.push("/crates");
+    }
+  }, [activeCrateId, canDelete, deleteCrate, pathname, router]);
 
   const handleMakeDefaultConfirm = useCallback(async () => {
     if (!activeCrateId) {
@@ -88,6 +108,17 @@ export const useCrateDrawerState = () => {
   const handlePrivacyToggle = useCallback(async () => {
     await toggleCrateBoolean("private");
   }, [toggleCrateBoolean]);
+
+  const handleSetCratePublic = useCallback(
+    async (nextIsPublic: boolean) => {
+      if (!activeCrate || nextIsPublic === (activeCrate.private === false)) {
+        return;
+      }
+
+      await updateCrate(activeCrate.id, { private: !nextIsPublic });
+    },
+    [activeCrate, updateCrate],
+  );
 
   const handlePackedEnabledToggle = useCallback(async () => {
     await toggleCrateBoolean("packed_enabled", (nextPackedEnabled) => {
@@ -152,8 +183,8 @@ export const useCrateDrawerState = () => {
 
     prevActiveCrateIdRef.current = activeCrateId;
     setShowEditCrateDialog(false);
-    setShowCrateNotesDialog(false);
     setShowClearPackedDialog(false);
+    setShowDeleteDialog(false);
     setHidePackedItems(false);
   }, [activeCrateId]);
 
@@ -162,6 +193,7 @@ export const useCrateDrawerState = () => {
     canDelete,
     crateName,
     crateNotes,
+    deleteBlockedReason,
     isDefaultCrate,
     isDeletingCrate,
     isLoadingReleases,
@@ -171,13 +203,13 @@ export const useCrateDrawerState = () => {
     layoutItems,
     showClearDialog,
     showClearPackedDialog,
+    showDeleteDialog,
     showEditCrateDialog,
-    showCrateNotesDialog,
     showMakeDefaultDialog,
     setShowClearDialog,
     setShowClearPackedDialog,
+    setShowDeleteDialog,
     setShowEditCrateDialog,
-    setShowCrateNotesDialog,
     setShowMakeDefaultDialog,
     handleClearConfirm,
     handleClearPackedConfirm,
@@ -188,6 +220,7 @@ export const useCrateDrawerState = () => {
     handlePrivacyToggle,
     handleSaveCrateName,
     handleSaveCrateNotes,
+    handleSetCratePublic,
     hidePackedItems,
     packedCount: packedEnabled ? packedReleaseCount : 0,
     packedEnabled,

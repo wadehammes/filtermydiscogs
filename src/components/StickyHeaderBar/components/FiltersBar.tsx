@@ -77,7 +77,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
 
   return (
     <>
-      <div className={styles.filtersBar}>
+      <div className={styles.filtersBar} data-filters-bar>
         <div className={styles.desktopFilters}>
           <SearchBar
             placeholder="Search your collection..."

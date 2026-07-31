@@ -1,15 +1,17 @@
 "use client";
 
 import classNames from "classnames";
-import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
+import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateReleaseListToolbar.module.css";
 
 interface CrateReleaseListToolbarProps {
   className?: string | undefined;
+  sticky?: boolean;
 }
 
 export const CrateReleaseListToolbar = ({
   className,
+  sticky = true,
 }: CrateReleaseListToolbarProps) => {
   const {
     hidePackedItems,
@@ -32,7 +34,9 @@ export const CrateReleaseListToolbar = ({
 
   return (
     <section
-      className={classNames(styles.toolbar, className)}
+      className={classNames(styles.toolbar, className, {
+        [styles.toolbarStickyPanel]: sticky,
+      })}
       data-testid="fmdCrateReleaseListToolbar"
       aria-label="Gig packing"
     >
@@ -46,6 +50,7 @@ export const CrateReleaseListToolbar = ({
             className={styles.clearButton}
             onClick={() => setShowClearPackedDialog(true)}
             disabled={isBusy}
+            aria-label="Clear all packed items"
           >
             Clear packed
           </button>

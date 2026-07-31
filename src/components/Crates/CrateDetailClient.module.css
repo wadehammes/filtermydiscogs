@@ -152,6 +152,8 @@
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  overflow: visible;
+  position: relative;
   width: 100%;
 }
 
@@ -159,13 +161,33 @@
   background: color-mix(in srgb, var(--muted) 15%, var(--background));
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  outline: 1px dashed var(--border);
+  outline-offset: 2px;
   overflow: hidden;
   width: 100%;
+
+  &:focus-within {
+    outline-color: var(--ring);
+  }
+}
+
+.releasesPanelToolbarWrap {
+  position: relative;
 }
 
 .releasesPanelToolbar {
   border-top-left-radius: calc(var(--radius-card) - 1px);
   border-top-right-radius: calc(var(--radius-card) - 1px);
+}
+
+.releasesPanelEdgeInsertMount {
+  bottom: 0;
+  height: 0;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: calc(var(--z-2-sticky) + 1);
 }
 
 .releasesPanelBody {

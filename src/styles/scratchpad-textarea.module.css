@@ -1,6 +1,6 @@
 .textarea {
   background: var(--background);
-  border: 1px dashed var(--input);
+  border: 1px solid var(--input);
   border-radius: var(--radius-ui);
   color: var(--foreground);
   font-family: inherit;
@@ -11,6 +11,8 @@
   resize: vertical;
   transition: border-color var(--transition-normal);
   width: 100%;
+  outline: 1px dashed var(--border);
+  outline-offset: 2px;
 
   @media (width >= 768px) {
     font-size: var(--text-xs);
@@ -21,8 +23,7 @@
   }
 
   &:focus {
-    border-color: var(--ring);
-    outline: none;
+    outline-color: var(--ring);
   }
 
   &:disabled {

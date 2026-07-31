@@ -14,7 +14,7 @@
   text-align: left;
   top: var(--popover-fallback-top, auto);
   width: var(--popover-fallback-width, 100%);
-  z-index: var(--z-6-popover);
+  z-index: var(--popover-z-index, var(--z-6-popover));
 }
 
 .popoverPanelUpward {

@@ -13,6 +13,7 @@ export const crateDrawerDefaultCrate = crateWithCountFactory.build({
   is_default: true,
   notes: null,
   packed_enabled: true,
+  private: true,
   releaseCount: 2,
 });
 

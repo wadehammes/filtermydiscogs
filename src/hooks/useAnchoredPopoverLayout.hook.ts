@@ -67,6 +67,13 @@ export const useAnchoredPopoverLayout = ({
       const spaceBelow = bottomLimit - rect.bottom - POPOVER_GAP_PX;
       const spaceAbove = rect.top - POPOVER_GAP_PX;
       const availableSpace = openUpward ? spaceAbove : spaceBelow;
+      const inFiltersBar = anchor.closest("[data-filters-bar]") !== null;
+
+      if (inFiltersBar) {
+        panel.style.setProperty("--popover-z-index", "var(--z-app-header)");
+      } else {
+        panel.style.removeProperty("--popover-z-index");
+      }
 
       panel.style.setProperty(
         "--popover-max-height",
