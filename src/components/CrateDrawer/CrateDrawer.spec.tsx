@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import userEvent from "@testing-library/user-event";
 import * as apiHelpers from "src/api/helpers";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import releasesClientStyles from "src/components/ReleasesClient/ReleasesClient.module.css";
@@ -64,11 +65,14 @@ describe("CrateDrawer", () => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
     });
 
-    expect(
-      screen.getByTestId("fmdCrateSetNotesScratchpad"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).not.toBeVisible();
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: /^notes$/i }));
+
     expect(
       screen.getByPlaceholderText("Add set notes for this gig"),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 });

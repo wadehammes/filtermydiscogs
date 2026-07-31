@@ -13,6 +13,10 @@
   }
 }
 
+.drawerNotesWrap {
+  width: 100%;
+}
+
 .footerActionsRow {
   align-items: stretch;
   display: flex;
