@@ -36,7 +36,7 @@
   width: 100%;
 
   &:focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--ring);
     outline-offset: -2px;
   }
 
@@ -49,6 +49,10 @@
 .overlayActionActive {
   background: var(--primary);
   color: var(--primary-foreground);
+
+  &:focus-visible {
+    outline-color: var(--primary-foreground);
+  }
 }
 
 .actionIcon {

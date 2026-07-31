@@ -6,20 +6,26 @@ import {
   formatArtistNames,
   formatReleaseMetaLine,
 } from "src/utils/releaseDisplay";
-import styles from "./CrateDrawer.module.css";
+import { useCrateDrawerContext } from "./CrateDrawer.context";
 import { CrateDrawerReleaseActions } from "./CrateDrawerReleaseActions.component";
+import styles from "./CrateDrawerReleaseItem.module.css";
 
 interface CrateDrawerReleaseItemProps {
   release: DiscogsRelease;
+  packed: boolean;
   onReleaseClick?: (instanceId: string) => void;
+  onPackedChange: (packed: boolean) => void;
   onRemove: (releaseId: string) => void;
 }
 
 export const CrateDrawerReleaseItem = ({
   release,
+  packed,
   onReleaseClick,
+  onPackedChange,
   onRemove,
 }: CrateDrawerReleaseItemProps) => {
+  const { packedEnabled } = useCrateDrawerContext();
   const { basic_information } = release;
   const imageUrl = getReleaseImageUrl({
     thumb: basic_information.thumb,
@@ -37,7 +43,11 @@ export const CrateDrawerReleaseItem = ({
   const meta = formatReleaseMetaLine({ release, includeCatno: false }) || null;
 
   return (
-    <div className={styles.listItem}>
+    <div
+      className={classNames(styles.listItem, {
+        [styles.listItemFound]: packedEnabled && packed,
+      })}
+    >
       <button
         type="button"
         className={styles.listItemMain}
@@ -69,7 +79,9 @@ export const CrateDrawerReleaseItem = ({
         </div>
       </button>
       <CrateDrawerReleaseActions
+        packed={packed}
         releaseTitle={basic_information.title}
+        onPackedChange={onPackedChange}
         onRemove={() => onRemove(String(release.instance_id))}
       />
     </div>

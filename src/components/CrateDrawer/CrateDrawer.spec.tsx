@@ -63,5 +63,12 @@ describe("CrateDrawer", () => {
     await waitFor(() => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
     });
+
+    expect(
+      screen.getByTestId("fmdCrateSetNotesScratchpad"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Add set notes for this gig"),
+    ).toBeInTheDocument();
   });
 });

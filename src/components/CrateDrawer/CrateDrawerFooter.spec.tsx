@@ -18,7 +18,7 @@ describe("CrateDrawerFooter", () => {
     setupCrateDrawerTests(mockApi);
   });
 
-  it("renders view/edit crate and empty actions", async () => {
+  it("renders crate management actions and open crate link", async () => {
     render(
       <CrateDrawerProvider>
         <CrateDrawerFooter />
@@ -33,20 +33,26 @@ describe("CrateDrawerFooter", () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("link", { name: /view\/edit crate/i }),
-      ).toHaveAttribute("href", "/crates/crate-1");
+      expect(screen.getByRole("link", { name: /open crate/i })).toHaveAttribute(
+        "href",
+        "/crates/crate-1",
+      );
     });
 
     expect(
       screen.getByRole("button", { name: /^empty$/i }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /^edit$/i }),
+      screen.getByRole("switch", { name: /public link/i }),
+    ).not.toBeChecked();
+    expect(
+      screen.queryByRole("button", { name: /^copy link$/i }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/only you can view this crate/i),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /^notes$/i }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText(/make shareable/i)).not.toBeInTheDocument();
   });
 });

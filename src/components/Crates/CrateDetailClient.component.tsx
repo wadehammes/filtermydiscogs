@@ -2,12 +2,14 @@
 
 import classNames from "classnames";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CrateDrawerProvider,
   useCrateDrawerContext,
 } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateDrawerDialogs } from "src/components/CrateDrawer/CrateDrawerDialogs.component";
+import { CrateReleaseListToolbar } from "src/components/CrateDrawer/CrateReleaseListToolbar.component";
+import { CrateSetNotesScratchpad } from "src/components/CrateDrawer/CrateSetNotesScratchpad.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
 import { ReleaseMiniPlayer } from "src/components/ReleasePlayback/ReleaseMiniPlayer.component";
@@ -24,8 +26,6 @@ import { definedProps } from "src/utils/definedProps";
 import styles from "./CrateDetailClient.module.css";
 import { CrateDetailHeader } from "./CrateDetailHeader.component";
 import { CrateLayoutList } from "./CrateLayoutList.component";
-import { CrateReleaseListToolbar } from "./CrateReleaseListToolbar.component";
-import { CrateSetNotesScratchpad } from "./CrateSetNotesScratchpad.component";
 
 interface CrateDetailClientProps {
   crateId: string;
@@ -49,6 +49,11 @@ const CrateDetailWorkspace = () => {
     handleReleaseClick,
     handleCloseModal,
   } = useSelectedReleaseModal(selectedReleases);
+  const [topInsertMount, setTopInsertMount] = useState<HTMLElement | null>(
+    null,
+  );
+  const [bottomInsertMount, setBottomInsertMount] =
+    useState<HTMLElement | null>(null);
 
   const visibleReleaseCount = useMemo(
     () =>
@@ -78,6 +83,8 @@ const CrateDetailWorkspace = () => {
       setPacked={setPacked}
       removeFromCrate={removeFromCrate}
       onReleaseClick={handleReleaseClick}
+      topInsertMount={topInsertMount}
+      bottomInsertMount={bottomInsertMount}
     />
   ) : null;
 
@@ -94,8 +101,22 @@ const CrateDetailWorkspace = () => {
 
         <div className={styles.releasesColumn}>
           <div className={styles.releasesPanel}>
-            <CrateReleaseListToolbar className={styles.releasesPanelToolbar} />
+            <div className={styles.releasesPanelToolbarWrap}>
+              <CrateReleaseListToolbar
+                className={styles.releasesPanelToolbar}
+              />
+              <div
+                ref={setTopInsertMount}
+                className={styles.releasesPanelEdgeInsertMount}
+                data-testid="fmdCrateLayoutTopInsertMount"
+              />
+            </div>
             <div className={styles.releasesPanelBody}>{releasesContent}</div>
+            <div
+              ref={setBottomInsertMount}
+              className={styles.releasesPanelEdgeInsertMount}
+              data-testid="fmdCrateLayoutBottomInsertMount"
+            />
           </div>
         </div>
       </div>

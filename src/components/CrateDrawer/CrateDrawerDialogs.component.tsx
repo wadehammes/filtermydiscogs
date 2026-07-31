@@ -1,22 +1,25 @@
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { EditCrateDialog } from "src/components/EditCrateDialog/EditCrateDialog.component";
 import { useCrateDrawerContext } from "./CrateDrawer.context";
-import { CrateNotesDialog } from "./CrateNotesDialog.component";
 
 export const CrateDrawerDialogs = () => {
   const {
     crateName,
     handleClearConfirm,
     handleClearPackedConfirm,
+    handleDeleteCrate,
     handleMakeDefaultConfirm,
+    isDeletingCrate,
     isUpdatingCrate,
     packedCount,
     selectedReleases,
     setShowClearDialog,
     setShowClearPackedDialog,
+    setShowDeleteDialog,
     setShowMakeDefaultDialog,
     showClearDialog,
     showClearPackedDialog,
+    showDeleteDialog,
     showMakeDefaultDialog,
   } = useCrateDrawerContext();
 
@@ -25,7 +28,6 @@ export const CrateDrawerDialogs = () => {
   return (
     <>
       <EditCrateDialog />
-      <CrateNotesDialog />
 
       <ConfirmDialog
         isOpen={showClearDialog}
@@ -59,6 +61,18 @@ export const CrateDrawerDialogs = () => {
         onConfirm={handleMakeDefaultConfirm}
         onCancel={() => setShowMakeDefaultDialog(false)}
         isConfirming={isUpdatingCrate}
+      />
+
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Delete crate"
+        message={`Delete "${crateName}" and all ${releaseCount} release${releaseCount !== 1 ? "s" : ""} in it? This permanently removes the crate and cannot be undone.`}
+        confirmLabel={isDeletingCrate ? "Deleting..." : "Delete crate"}
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={() => void handleDeleteCrate()}
+        onCancel={() => setShowDeleteDialog(false)}
+        isConfirming={isDeletingCrate}
       />
     </>
   );

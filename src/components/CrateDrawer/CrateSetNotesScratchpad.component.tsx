@@ -2,30 +2,19 @@
 
 import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CRATE_NOTES_MAX_LENGTH } from "src/constants/crate";
+import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateSetNotesScratchpad.module.css";
 
 export const CRATE_SET_NOTES_SCRATCHPAD_ID = "fmdCrateSetNotesScratchpad";
 
 const SAVE_DEBOUNCE_MS = 700;
 
-export function focusCrateSetNotesScratchpad() {
-  const element = document.getElementById(CRATE_SET_NOTES_SCRATCHPAD_ID);
-
-  if (!(element instanceof HTMLTextAreaElement)) {
-    return;
-  }
-
-  element.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  element.focus();
-}
-
 type SaveState = "idle" | "pending" | "saved";
 
 interface CrateSetNotesScratchpadProps {
   className?: string | undefined;
-  variant?: "default" | "panel";
+  variant?: "default" | "panel" | "drawer";
 }
 
 export const CrateSetNotesScratchpad = ({
@@ -134,6 +123,7 @@ export const CrateSetNotesScratchpad = ({
   const notesLength = draft.length;
   const isNotesOverLimit = notesLength > CRATE_NOTES_MAX_LENGTH;
   const isDisabled = !activeCrateId;
+  const textareaRows = variant === "drawer" ? 3 : 4;
   const statusLabel =
     saveState === "pending"
       ? "Saving…"
@@ -145,13 +135,18 @@ export const CrateSetNotesScratchpad = ({
     <section
       className={classNames(styles.section, className, {
         [styles.sectionInPanel]: variant === "panel",
+        [styles.sectionInDrawer]: variant === "drawer",
       })}
       data-testid="fmdCrateSetNotesScratchpad"
     >
       <textarea
         id={CRATE_SET_NOTES_SCRATCHPAD_ID}
         className={classNames(
-          variant === "panel" ? styles.textareaPanel : styles.textarea,
+          variant === "panel"
+            ? styles.textareaPanel
+            : variant === "drawer"
+              ? styles.textareaDrawer
+              : styles.textarea,
           isNotesOverLimit && styles.textareaInvalid,
         )}
         disabled={isDisabled}
@@ -160,7 +155,7 @@ export const CrateSetNotesScratchpad = ({
         onChange={handleChange}
         onFocus={handleFocus}
         placeholder="Add set notes for this gig"
-        rows={4}
+        rows={textareaRows}
         value={draft}
         aria-label="Set notes"
         aria-describedby="crate-set-notes-length"

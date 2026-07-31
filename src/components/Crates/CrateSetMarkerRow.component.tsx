@@ -48,9 +48,12 @@ export const CrateSetMarkerRow = ({
 }: CrateSetMarkerRowProps) => {
   const [label, setLabel] = useState(marker.label);
   const localInputRef = useRef<HTMLInputElement>(null);
+  const isFocusedRef = useRef(false);
 
   useEffect(() => {
-    setLabel(marker.label);
+    if (!isFocusedRef.current) {
+      setLabel(marker.label);
+    }
   }, [marker.label]);
 
   useEffect(() => {
@@ -66,6 +69,7 @@ export const CrateSetMarkerRow = ({
   };
 
   const handleBlur = () => {
+    isFocusedRef.current = false;
     const trimmedLabel = label.trim();
 
     if (trimmedLabel.length === 0) {
@@ -74,10 +78,11 @@ export const CrateSetMarkerRow = ({
     }
 
     setLabel(trimmedLabel);
+    onLabelChange?.(trimmedLabel);
+  };
 
-    if (trimmedLabel !== marker.label) {
-      onLabelChange?.(trimmedLabel);
-    }
+  const handleFocus = () => {
+    isFocusedRef.current = true;
   };
 
   if (readOnly) {
@@ -126,6 +131,7 @@ export const CrateSetMarkerRow = ({
           maxLength={CRATE_MARKER_MAX_LENGTH}
           aria-label="Section label"
           onChange={(event) => handleLabelChange(event.target.value)}
+          onFocus={handleFocus}
           onBlur={handleBlur}
         />
         <span className={styles.rule} aria-hidden="true" />

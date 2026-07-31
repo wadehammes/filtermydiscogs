@@ -3,13 +3,16 @@
   border-bottom: 1px solid var(--border);
   margin-bottom: 0;
   padding: var(--space-3) var(--space-4);
-  position: sticky;
-  top: var(--sticky-header-height);
-  z-index: var(--z-2-sticky);
 
   @media (width >= 1024px) {
     padding: var(--space-3) var(--space-5);
   }
+}
+
+.toolbarStickyPanel {
+  position: sticky;
+  top: var(--sticky-header-height);
+  z-index: var(--z-2-sticky);
 }
 
 .inner {
