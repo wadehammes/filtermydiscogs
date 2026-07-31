@@ -29,6 +29,7 @@ export const useCrateDrawerState = () => {
   const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
   const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
   const [hidePackedItems, setHidePackedItems] = useState(false);
+  const [drawerNotesOpen, setDrawerNotesOpen] = useState(false);
 
   const activeCrate = useMemo(
     () => crates.find((crate) => crate.id === activeCrateId),
@@ -186,6 +187,7 @@ export const useCrateDrawerState = () => {
     setShowClearPackedDialog(false);
     setShowDeleteDialog(false);
     setHidePackedItems(false);
+    setDrawerNotesOpen(false);
   }, [activeCrateId]);
 
   return {
@@ -194,6 +196,7 @@ export const useCrateDrawerState = () => {
     crateName,
     crateNotes,
     deleteBlockedReason,
+    drawerNotesOpen,
     isDefaultCrate,
     isDeletingCrate,
     isLoadingReleases,
@@ -211,6 +214,7 @@ export const useCrateDrawerState = () => {
     setShowDeleteDialog,
     setShowEditCrateDialog,
     setShowMakeDefaultDialog,
+    setDrawerNotesOpen,
     handleClearConfirm,
     handleClearPackedConfirm,
     handleCopyLink,

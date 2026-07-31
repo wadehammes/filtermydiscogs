@@ -1,22 +1,29 @@
 import classNames from "classnames";
 import Link from "next/link";
+import { useEffect } from "react";
 import Button from "src/components/Button/Button.component";
 import EditIcon from "src/styles/icons/edit-thin.svg";
+import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
 import StarIcon from "src/styles/icons/star-thin.svg";
 import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateDrawerFooter.module.css";
-import { CrateSetNotesScratchpad } from "./CrateSetNotesScratchpad.component";
+import {
+  CRATE_SET_NOTES_SCRATCHPAD_ID,
+  CrateSetNotesScratchpad,
+} from "./CrateSetNotesScratchpad.component";
 import { CrateShareControls } from "./CrateShareControls.component";
 
 export const CrateDrawerFooter = () => {
   const {
     activeCrateId,
+    drawerNotesOpen,
     isDefaultCrate,
     isDeletingCrate,
     isUpdatingCrate,
     selectedReleases,
+    setDrawerNotesOpen,
     setShowClearDialog,
     setShowMakeDefaultDialog,
   } = useCrateDrawerContext();
@@ -24,9 +31,23 @@ export const CrateDrawerFooter = () => {
   const releaseCount = selectedReleases.length;
   const isBusy = isUpdatingCrate || isDeletingCrate;
 
+  useEffect(() => {
+    if (!drawerNotesOpen) {
+      return;
+    }
+
+    const textarea = document.getElementById(CRATE_SET_NOTES_SCRATCHPAD_ID);
+
+    if (textarea instanceof HTMLTextAreaElement) {
+      textarea.focus();
+    }
+  }, [drawerNotesOpen]);
+
   return (
     <div className={styles.footer}>
-      <CrateSetNotesScratchpad variant="drawer" />
+      <div hidden={!drawerNotesOpen} className={styles.drawerNotesWrap}>
+        <CrateSetNotesScratchpad variant="drawer" />
+      </div>
       <div className={styles.footerActionsRow}>
         <div
           className={classNames(
@@ -62,6 +83,26 @@ export const CrateDrawerFooter = () => {
               <span>Open crate</span>
             </span>
           )}
+          <button
+            type="button"
+            className={classNames(
+              segmentedStyles.segment,
+              styles.footerSegment,
+              {
+                [segmentedStyles.active]: drawerNotesOpen,
+              },
+            )}
+            onClick={() => setDrawerNotesOpen((open) => !open)}
+            disabled={!activeCrateId || isBusy}
+            aria-pressed={drawerNotesOpen}
+            aria-controls={CRATE_SET_NOTES_SCRATCHPAD_ID}
+            aria-expanded={drawerNotesOpen}
+          >
+            <span className={styles.footerSegmentIcon} aria-hidden>
+              <NoteStickyIcon />
+            </span>
+            <span>Notes</span>
+          </button>
           {!isDefaultCrate ? (
             <button
               type="button"
