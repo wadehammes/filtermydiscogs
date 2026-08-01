@@ -97,7 +97,9 @@ export default function DashboardClient() {
         allReleasesLoaded={false}
         loadedCount={allReleases.length}
       >
-        <DashboardSkeleton />
+        <div className={styles.container}>
+          <DashboardSkeleton />
+        </div>
       </AppPageLoading>
     );
   }
