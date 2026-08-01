@@ -45,6 +45,7 @@ const apiError = new Error("API request failed");
 
 export type DashboardClientRenderOptions = {
   releaseCount?: number;
+  paginatedFirstPage?: boolean;
 };
 
 export class DashboardClientPageObject extends BasePageObject {
@@ -60,6 +61,18 @@ export class DashboardClientPageObject extends BasePageObject {
     setupMockMatchMedia({ desktop: true });
 
     const releaseCount = options.releaseCount ?? 3;
+    const collectionPage = options.paginatedFirstPage
+      ? collectionFactory.build(
+          {},
+          { page: 1, totalPages: 3, releaseCount: 50 },
+        )
+      : collectionFactory.build({}, { page: 1, totalPages: 1, releaseCount });
+
+    if (options.paginatedFirstPage) {
+      collectionPage.pagination.per_page = 50;
+      collectionPage.pagination.urls.next =
+        "https://api.discogs.com/users/testuser/collection/folders/0/releases?page=2&per_page=50";
+    }
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue({
@@ -84,7 +97,7 @@ export class DashboardClientPageObject extends BasePageObject {
     mockApiResponse(
       true,
       mockApi.fetchDiscogsCollection,
-      collectionFactory.build({}, { page: 1, totalPages: 1, releaseCount }),
+      collectionPage,
       apiError,
     );
     mockApiResponse(

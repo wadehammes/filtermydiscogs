@@ -12,7 +12,7 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Insights",
     title: "Collections Insights Dashboard",
     description:
-      "Discover collection milestones, style evolution over time, and growth trends with clear charts and stats. See how your taste has changed, spot patterns in your buying habits, and celebrate the story your records tell.",
+      "Discover collection milestones, style evolution over time, and growth trends with clear charts and stats. See how your taste has changed, spot patterns in your buying habits, and follow the story your records tell.",
     imageBase: "dashboard",
     imageAlt:
       "Collections insights dashboard with stats, charts, and collection milestones",
@@ -28,12 +28,12 @@ export const LOGIN_FEATURES: LoginFeature[] = [
   },
   {
     eyebrow: "Crates",
-    title: "Create and manage crates",
+    title: "Organize and share your crates",
     description:
-      "Build crates for DJ gigs, themed lists, or long-term favorites. Add releases while you browse, mark each album packed once it's in the bag for your gig, and share public crates when you want someone else to explore your picks.",
+      "Build crates for DJ gigs, themed lists, or long-term favorites. Add releases while you browse, then open a crate page to reorder your set, add section markers, write set notes, and track gig-packing progress. Make a crate public when you want someone else to explore your picks.",
     imageBase: "crates",
     imageAlt:
-      "Crate drawer with gig packing checklist and releases organized into a custom list",
+      "Crate detail page with section markers, set notes, gig-packing checklist, and an organized release list",
   },
   {
     eyebrow: "Mosaics",

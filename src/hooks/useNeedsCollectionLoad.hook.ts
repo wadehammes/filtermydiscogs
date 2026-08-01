@@ -1,5 +1,3 @@
-import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
-
 export interface UseNeedsCollectionLoadParams {
   isLoading: boolean;
   hasNextPage?: boolean;
@@ -11,8 +9,5 @@ export const useNeedsCollectionLoad = ({
   hasNextPage = false,
   isFetchingNextPage = false,
 }: UseNeedsCollectionLoadParams) => {
-  const allReleases = useAllReleases();
-  const isPaginating = hasNextPage || isFetchingNextPage;
-
-  return (isLoading || isPaginating) && allReleases.length === 0;
+  return isLoading || hasNextPage || isFetchingNextPage;
 };

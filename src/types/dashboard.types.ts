@@ -68,23 +68,33 @@ export interface AdminStatsGrowthDataPoint {
   count: number;
 }
 
+export interface AdminStatsCrateFeatures {
+  publicCrates: number;
+  packedEnabledCrates: number;
+  cratesWithNotes: number;
+  totalSetMarkers: number;
+  packedReleases: number;
+}
+
+export interface AdminStatsRecentActivityPeriod {
+  newUsers: number;
+  newCrates: number;
+  newReleases: number;
+  newPublicCrates: number;
+  newSetMarkers: number;
+  newPackedReleases: number;
+}
+
 export interface AdminStats {
   overview: {
     totalUsers: number;
     totalCrates: number;
     totalReleases: number;
+    crateFeatures: AdminStatsCrateFeatures;
   };
   recentActivity: {
-    last7Days: {
-      newUsers: number;
-      newCrates: number;
-      newReleases: number;
-    };
-    last30Days: {
-      newUsers: number;
-      newCrates: number;
-      newReleases: number;
-    };
+    last7Days: AdminStatsRecentActivityPeriod;
+    last30Days: AdminStatsRecentActivityPeriod;
   };
   topUsers: {
     byCrates: AdminStatsTopUser[];
@@ -94,6 +104,8 @@ export interface AdminStats {
     users: AdminStatsGrowthDataPoint[];
     crates: AdminStatsGrowthDataPoint[];
     releases: AdminStatsGrowthDataPoint[];
+    publicCrates: AdminStatsGrowthDataPoint[];
+    setMarkers: AdminStatsGrowthDataPoint[];
   };
 }
 

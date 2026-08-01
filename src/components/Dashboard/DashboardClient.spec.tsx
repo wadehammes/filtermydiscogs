@@ -35,6 +35,18 @@ describe("DashboardClient", () => {
     );
   });
 
+  it("shows loading indication while additional release pages are fetching", async () => {
+    po.renderDashboardClient({ paginatedFirstPage: true });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Loading releases… 50 releases loaded"),
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();
+  });
+
   it("shows an empty state when the collection has no releases", async () => {
     po.renderDashboardClient({ releaseCount: 0 });
 

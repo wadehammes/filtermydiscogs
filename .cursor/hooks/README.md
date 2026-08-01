@@ -32,6 +32,8 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `check-css-nesting.sh` | `postToolUse` | Advisory when CSS nests selectors 4+ levels deep. |
 | `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update. |
 | `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
+| `block-login-page-copy-violations.sh` | `preToolUse` | Denies login landing copy edits that add em dashes, embellishment, or banned inaccurate phrases. |
+| `login-page-copy-drift-check.sh` | `stop` | Runs login page literary-rule Jest tests when landing copy source files changed. |
 
 ### Not ported
 

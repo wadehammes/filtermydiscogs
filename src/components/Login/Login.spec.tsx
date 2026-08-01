@@ -46,7 +46,7 @@ describe("Login", () => {
     );
     expect(
       screen.getByText(
-        "Browse and filter your collection, build crates, explore insights, and share cover-art mosaics.",
+        "Browse and filter your collection, organize crates with set notes and gig packing, explore insights, and share cover-art mosaics.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -76,7 +76,7 @@ describe("Login", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Crate drawer with gig packing checklist and releases organized into a custom list",
+        name: "Crate detail page with section markers, set notes, gig-packing checklist, and an organized release list",
       }),
     ).toBeInTheDocument();
     expect(
@@ -86,6 +86,9 @@ describe("Login", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText("Browse, search, and filter your collection"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Organize and share your crates"),
     ).toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: "About" }).length,

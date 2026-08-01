@@ -6,10 +6,6 @@ import { prisma } from "src/lib/db";
 import { toPublicReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
 
-/**
- * Get a public crate by ID (no authentication required)
- * Only returns crates where private === false
- */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -18,7 +14,6 @@ export async function GET(
     const { id } = await params;
     const { skip, take, page, pageSize } = getPaginationParams(request);
 
-    // Get the crate - only return if it exists and is public
     const crate = await prisma.crate.findFirst({
       where: {
         id,
@@ -31,7 +26,6 @@ export async function GET(
         username: true,
         is_default: true,
         private: true,
-        notes: true,
         created_at: true,
         updated_at: true,
       },
@@ -44,7 +38,6 @@ export async function GET(
       );
     }
 
-    // If username is missing, backfill when the verified owner is viewing their crate.
     const viewer = await getOptionalVerifiedUserFromRequest(request);
     const isOwner = viewer?.userId === crate.user_id;
 
@@ -71,12 +64,10 @@ export async function GET(
       username: finalUsername,
       is_default: crate.is_default,
       private: crate.private,
-      notes: crate.notes,
       created_at: crate.created_at,
       updated_at: crate.updated_at,
     };
 
-    // Get total count for pagination
     const total = await prisma.crateRelease.count({
       where: {
         user_id: crate.user_id,
@@ -84,7 +75,6 @@ export async function GET(
       },
     });
 
-    // Get releases separately with pagination to avoid loading all at once
     const releases = await findCrateReleasesForLayout({
       where: {
         user_id: crate.user_id,
@@ -94,7 +84,6 @@ export async function GET(
       take,
     });
 
-    // Map releases and ensure instance_id is consistent
     const mappedReleases = releases
       .map((r: { release_data: unknown }) => r.release_data as DiscogsRelease)
       .filter(

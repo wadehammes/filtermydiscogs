@@ -45,7 +45,7 @@ Client reads/writes via **`GET`** / **`PATCH`** [`/api/user/preferences`](../../
 | `is_default` | One default crate per user |
 | `private` | When `false`, crate is publicly viewable at `/crate/[id]` |
 | `packed_enabled` | When `true`, owner sees gig-packing checklist UI on the crate detail page ([`/crates/[id]`](../../src/app/crates/[id]/page.tsx); default **`false`**) |
-| `notes` | Optional free-text notes for the crate; editable in **Edit crate** and shown on public crate pages when set |
+| `notes` | Optional free-text notes for the crate; editable in **Edit crate** and the owner detail page set-notes scratchpad (not exposed on public crate routes) |
 
 Composite primary key: **`[user_id, id]`**.
 
@@ -103,7 +103,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/sync` | POST | Sync local crate state with server |
 | `/api/crates/health` | GET | Health check |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
-| `/api/admin/stats` | GET | Admin-only aggregates |
+| `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, plus crate feature adoption: public crates, gig packing, notes, set markers, packed releases) |
 | `/api/auth/clear-data` | POST | Delete authenticated user's **`User`** row (cascades crates) and clear session cookies |
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.

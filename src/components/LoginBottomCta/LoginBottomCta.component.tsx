@@ -1,5 +1,6 @@
 import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
 import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/LoginSwitchAccountLink.component";
+import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import typography from "src/styles/typography.module.css";
 import styles from "./LoginBottomCta.module.css";
 
@@ -18,7 +19,7 @@ export const LoginBottomCta = ({
 }: LoginBottomCtaProps) => (
   <section className={styles.bottomCta} aria-labelledby="bottom-cta-heading">
     <h2 id="bottom-cta-heading" className={typography.subsectionHeading}>
-      Ready to explore your collection?
+      {LOGIN_PAGE_UI_COPY.bottomCtaHeading}
     </h2>
     <LoginConnectButton
       onClick={onConnect}

@@ -8,6 +8,7 @@ import { useAuth } from "src/context/auth.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { CollectionHealth } from "./components/CollectionHealth.component";
@@ -68,6 +69,7 @@ export default function DashboardClient() {
     hasNextPage,
     isFetchingNextPage,
   });
+  const allReleases = useAllReleases();
   const showLoading = isCheckingAuth || needsCollectionLoad;
 
   const analytics = useCollectionAnalytics();
@@ -89,7 +91,12 @@ export default function DashboardClient() {
 
   if (showLoading) {
     return (
-      <AppPageLoading currentPage="dashboard" hideFilters={true}>
+      <AppPageLoading
+        currentPage="dashboard"
+        hideFilters={true}
+        allReleasesLoaded={false}
+        loadedCount={allReleases.length}
+      >
         <DashboardSkeleton />
       </AppPageLoading>
     );

@@ -7,7 +7,7 @@ export type AppPage =
 
 export const LOADING_MESSAGES: Record<AppPage, string> = {
   releases: "Loading releases...",
-  dashboard: "Loading dashboard...",
+  dashboard: "Loading releases...",
   mosaic: "Loading mosaic...",
   settings: "Loading settings...",
   crates: "Loading crates...",
@@ -23,7 +23,8 @@ export function formatLoadingMessage(
     return baseMessage;
   }
 
-  const loadedLabel = currentPage === "dashboard" ? "items loaded" : "loaded";
+  const loadedLabel =
+    currentPage === "dashboard" ? "releases loaded" : "loaded";
 
   return `${baseMessage.replace(/\.\.\.$/, "")}… ${loadedCount.toLocaleString()} ${loadedLabel}`;
 }

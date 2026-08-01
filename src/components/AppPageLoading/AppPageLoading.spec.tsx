@@ -9,6 +9,19 @@ jest.mock("src/components/StickyHeaderBar/StickyHeaderBar.component", () => ({
 describe("AppPageLoading", () => {
   it("combines loading message with loaded count", () => {
     render(
+      <AppPageLoading currentPage="dashboard" loadedCount={400}>
+        <div data-testid="skeleton" />
+      </AppPageLoading>,
+    );
+
+    expect(
+      screen.getByText("Loading releases… 400 releases loaded"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("skeleton")).toBeInTheDocument();
+  });
+
+  it("combines releases loading message with loaded count", () => {
+    render(
       <AppPageLoading currentPage="releases" loadedCount={400}>
         <div data-testid="skeleton" />
       </AppPageLoading>,

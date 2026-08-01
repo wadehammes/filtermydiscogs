@@ -8,6 +8,7 @@ import { StatCard } from "src/components/shared/StatCard/StatCard.component";
 import { StatsGrid } from "src/components/shared/StatsGrid/StatsGrid.component";
 import { useAdminStatsQuery } from "src/hooks/queries/useAdminStatsQuery";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
+import type { AdminStatsRecentActivityPeriod } from "src/types/dashboard.types";
 import styles from "./AdminDashboardClient.module.css";
 
 const GrowthAreaChart = dynamic(
@@ -29,6 +30,55 @@ export default function AdminDashboardClient() {
   const formatNumber = (value: number): string => {
     return new Intl.NumberFormat("en-US").format(value);
   };
+
+  const formatPercent = (value: number, total: number): string => {
+    if (total === 0) {
+      return "0% of crates";
+    }
+
+    return `${Math.round((value / total) * 100)}% of crates`;
+  };
+
+  const renderRecentActivity = (period: AdminStatsRecentActivityPeriod) => (
+    <div className={styles.activityStats}>
+      <div className={styles.activityStat}>
+        <span className={styles.activityLabel}>New Users:</span>
+        <span className={styles.activityValue}>
+          {formatNumber(period.newUsers)}
+        </span>
+      </div>
+      <div className={styles.activityStat}>
+        <span className={styles.activityLabel}>New Crates:</span>
+        <span className={styles.activityValue}>
+          {formatNumber(period.newCrates)}
+        </span>
+      </div>
+      <div className={styles.activityStat}>
+        <span className={styles.activityLabel}>New Releases:</span>
+        <span className={styles.activityValue}>
+          {formatNumber(period.newReleases)}
+        </span>
+      </div>
+      <div className={styles.activityStat}>
+        <span className={styles.activityLabel}>New Public Crates:</span>
+        <span className={styles.activityValue}>
+          {formatNumber(period.newPublicCrates)}
+        </span>
+      </div>
+      <div className={styles.activityStat}>
+        <span className={styles.activityLabel}>New Set Markers:</span>
+        <span className={styles.activityValue}>
+          {formatNumber(period.newSetMarkers)}
+        </span>
+      </div>
+      <div className={styles.activityStat}>
+        <span className={styles.activityLabel}>Albums Packed:</span>
+        <span className={styles.activityValue}>
+          {formatNumber(period.newPackedReleases)}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -64,7 +114,6 @@ export default function AdminDashboardClient() {
 
         {stats && (
           <div className={sharedStyles.content}>
-            {/* Overview Cards */}
             <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
               <StatCard
                 label="Total Users"
@@ -80,70 +129,76 @@ export default function AdminDashboardClient() {
               />
             </StatsGrid>
 
-            {/* Recent Activity */}
+            <DashboardSection title="Crate Features">
+              <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
+                <StatCard
+                  label="Public Crates"
+                  value={formatNumber(
+                    stats.overview.crateFeatures.publicCrates,
+                  )}
+                  subtext={formatPercent(
+                    stats.overview.crateFeatures.publicCrates,
+                    stats.overview.totalCrates,
+                  )}
+                />
+                <StatCard
+                  label="Gig Packing Enabled"
+                  value={formatNumber(
+                    stats.overview.crateFeatures.packedEnabledCrates,
+                  )}
+                  subtext={formatPercent(
+                    stats.overview.crateFeatures.packedEnabledCrates,
+                    stats.overview.totalCrates,
+                  )}
+                />
+                <StatCard
+                  label="Crates With Notes"
+                  value={formatNumber(
+                    stats.overview.crateFeatures.cratesWithNotes,
+                  )}
+                  subtext={formatPercent(
+                    stats.overview.crateFeatures.cratesWithNotes,
+                    stats.overview.totalCrates,
+                  )}
+                />
+                <StatCard
+                  label="Set Markers"
+                  value={formatNumber(
+                    stats.overview.crateFeatures.totalSetMarkers,
+                  )}
+                />
+                <StatCard
+                  label="Packed Albums"
+                  value={formatNumber(
+                    stats.overview.crateFeatures.packedReleases,
+                  )}
+                  subtext={
+                    stats.overview.totalReleases > 0
+                      ? `${Math.round(
+                          (stats.overview.crateFeatures.packedReleases /
+                            stats.overview.totalReleases) *
+                            100,
+                        )}% of saved releases`
+                      : "0% of saved releases"
+                  }
+                />
+              </StatsGrid>
+            </DashboardSection>
+
             <DashboardSection title="Recent Activity">
               <div className={styles.activityGrid}>
                 <div className={styles.activityCard}>
                   <h3 className={styles.activityTitle}>Last 7 Days</h3>
-                  <div className={styles.activityStats}>
-                    <div className={styles.activityStat}>
-                      <span className={styles.activityLabel}>New Users:</span>
-                      <span className={styles.activityValue}>
-                        {formatNumber(stats.recentActivity.last7Days.newUsers)}
-                      </span>
-                    </div>
-                    <div className={styles.activityStat}>
-                      <span className={styles.activityLabel}>New Crates:</span>
-                      <span className={styles.activityValue}>
-                        {formatNumber(stats.recentActivity.last7Days.newCrates)}
-                      </span>
-                    </div>
-                    <div className={styles.activityStat}>
-                      <span className={styles.activityLabel}>
-                        New Releases:
-                      </span>
-                      <span className={styles.activityValue}>
-                        {formatNumber(
-                          stats.recentActivity.last7Days.newReleases,
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                  {renderRecentActivity(stats.recentActivity.last7Days)}
                 </div>
 
                 <div className={styles.activityCard}>
                   <h3 className={styles.activityTitle}>Last 30 Days</h3>
-                  <div className={styles.activityStats}>
-                    <div className={styles.activityStat}>
-                      <span className={styles.activityLabel}>New Users:</span>
-                      <span className={styles.activityValue}>
-                        {formatNumber(stats.recentActivity.last30Days.newUsers)}
-                      </span>
-                    </div>
-                    <div className={styles.activityStat}>
-                      <span className={styles.activityLabel}>New Crates:</span>
-                      <span className={styles.activityValue}>
-                        {formatNumber(
-                          stats.recentActivity.last30Days.newCrates,
-                        )}
-                      </span>
-                    </div>
-                    <div className={styles.activityStat}>
-                      <span className={styles.activityLabel}>
-                        New Releases:
-                      </span>
-                      <span className={styles.activityValue}>
-                        {formatNumber(
-                          stats.recentActivity.last30Days.newReleases,
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                  {renderRecentActivity(stats.recentActivity.last30Days)}
                 </div>
               </div>
             </DashboardSection>
 
-            {/* Top Users */}
             <DashboardSection title="Top Users">
               <div className={styles.topUsersGrid}>
                 <div className={styles.topUsersCard}>
@@ -208,7 +263,6 @@ export default function AdminDashboardClient() {
               </div>
             </DashboardSection>
 
-            {/* Growth Charts */}
             <DashboardSection title="Growth Over Time">
               <div className={sharedStyles.chartsGrid}>
                 <GrowthAreaChart
@@ -236,6 +290,24 @@ export default function AdminDashboardClient() {
                   formatter={(value: unknown) => {
                     if (typeof value !== "number") return ["", ""];
                     return [value.toLocaleString(), "Releases"];
+                  }}
+                />
+                <GrowthAreaChart
+                  title="Public Crates"
+                  data={stats.growth.publicCrates}
+                  gradientId="colorPublicCrates"
+                  formatter={(value: unknown) => {
+                    if (typeof value !== "number") return ["", ""];
+                    return [value.toLocaleString(), "Public Crates"];
+                  }}
+                />
+                <GrowthAreaChart
+                  title="Set Markers"
+                  data={stats.growth.setMarkers}
+                  gradientId="colorSetMarkers"
+                  formatter={(value: unknown) => {
+                    if (typeof value !== "number") return ["", ""];
+                    return [value.toLocaleString(), "Set Markers"];
                   }}
                 />
               </div>
