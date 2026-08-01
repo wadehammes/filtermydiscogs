@@ -47,6 +47,11 @@
         "command": ".cursor/hooks/enforce-factory-location.sh",
         "matcher": "Write",
         "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-login-page-copy-violations.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
       }
     ],
     "postToolUse": [
@@ -70,6 +75,11 @@
       {
         "command": ".cursor/hooks/terms-and-privacy-drift-check.sh",
         "timeout": 15,
+        "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/login-page-copy-drift-check.sh",
+        "timeout": 30,
         "loop_limit": 1
       }
     ]

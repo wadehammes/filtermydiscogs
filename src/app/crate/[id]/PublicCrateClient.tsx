@@ -41,8 +41,9 @@ function PublicCrateAboutSections() {
           favorite albums and artists
         </li>
         <li className={styles.listItem}>
-          <strong>Create and manage crates</strong>: perfect for DJ gigs,
-          organizing by theme, or tracking favorites
+          <strong>Organize crates for gigs and sharing</strong>: reorder
+          releases, add section markers, write set notes, and track gig-packing
+          progress
         </li>
         <li className={styles.listItem}>
           <strong>Generate mosaic grids</strong>: different formats and sizes;
@@ -127,9 +128,6 @@ function PublicCrateLoadedContent({
                 )}
             </div>
           </div>
-          {crate.notes?.trim() ? (
-            <p className={styles.notes}>{crate.notes}</p>
-          ) : null}
         </div>
 
         {releases.length > 0 ? (
@@ -166,8 +164,9 @@ function PublicCrateLoadedContent({
                   your favorite albums and artists
                 </li>
                 <li className={styles.listItem}>
-                  <strong>Create and manage crates</strong>: perfect for DJ
-                  gigs, organizing by theme, or tracking favorites
+                  <strong>Organize crates for gigs and sharing</strong>: reorder
+                  releases, add section markers, write set notes, and track
+                  gig-packing progress
                 </li>
                 <li className={styles.listItem}>
                   <strong>Generate mosaic grids</strong>: different formats and

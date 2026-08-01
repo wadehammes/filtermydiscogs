@@ -9,6 +9,7 @@ import { LoginBottomCta } from "src/components/LoginBottomCta/LoginBottomCta.com
 import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
 import { LoginFeatureRow } from "src/components/LoginFeatureRow/LoginFeatureRow.component";
 import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/LoginSwitchAccountLink.component";
+import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import { SITE_LEAD, SITE_NAME, SITE_TAGLINE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import accessibilityStyles from "src/styles/accessibility.module.css";
@@ -72,14 +73,14 @@ export const Login = () => {
 
           <p className={classNames(typography.metaCaption, styles.finePrint)}>
             <Link href="/legal" className={styles.termsLink}>
-              Terms & Privacy
+              {LOGIN_PAGE_UI_COPY.termsPrivacyLink}
             </Link>
             <span aria-hidden="true"> · </span>
-            Free to use (
+            {LOGIN_PAGE_UI_COPY.finePrintFreePrefix}
             <Link href="/about" className={styles.supportLink}>
-              support is greatly appreciated
+              {LOGIN_PAGE_UI_COPY.finePrintSupportLink}
             </Link>
-            )
+            {LOGIN_PAGE_UI_COPY.finePrintFreeSuffix}
           </p>
         </section>
       </div>

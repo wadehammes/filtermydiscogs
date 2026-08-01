@@ -1,20 +1,23 @@
+import {
+  buildLoginPreviewAlt,
+  LOGIN_PAGE_SITE_COPY,
+} from "./loginPageCopy.registry";
+
 export const SITE_NAME = "FilterMyDiscogs";
 export const DEFAULT_SITE_URL = "https://www.filtermydisco.gs";
 export const SITE_GITHUB_URL = "https://github.com/wadehammes/filtermydiscogs";
 export const SITE_INSTAGRAM_URL = "https://www.instagram.com/filtermydiscogs";
 
-export const SITE_TAGLINE = "Digging made easier.";
-export const SITE_DESCRIPTION =
-  "Browse and filter your Discogs collection, build crates, explore insights, and share cover-art mosaics.";
-export const SITE_LEAD =
-  "Browse and filter your collection, build crates, explore insights, and share cover-art mosaics.";
+export const SITE_TAGLINE = LOGIN_PAGE_SITE_COPY.tagline;
+export const SITE_DESCRIPTION = LOGIN_PAGE_SITE_COPY.description;
+export const SITE_LEAD = LOGIN_PAGE_SITE_COPY.lead;
 
 export const COLLECTION_FORMATS_PHRASE =
   "vinyl, CDs, and tapes, plus any other format Discogs supports";
 
 export const SITE_DEFAULT_TITLE = `${SITE_NAME} | ${SITE_TAGLINE}`;
 
-export const LOGIN_PREVIEW_ALT = `${SITE_NAME} app preview showing release cards, filters, crates, and collection insights`;
+export const LOGIN_PREVIEW_ALT = buildLoginPreviewAlt(SITE_NAME);
 
 export const sitePageTitle = (page: string): string => `${page} | ${SITE_NAME}`;
 

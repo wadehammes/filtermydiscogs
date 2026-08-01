@@ -306,6 +306,10 @@ Multiple helpers: add each name to the factory object (e.g. **`fetchUserPreferen
 - **Viewport / `matchMedia`**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) calls [`setupMockMatchMedia`](../../src/tests/mocks/mockMatchMedia.mock.ts) each test (defaults to mobile). Pass **`{ desktop: true }`** when a test needs desktop **`(min-width: 1024px)`** / **`(max-width: 1023px)`** behavior (e.g. **`useCrateDrawer`**, **`CrateProvider`** login drawer tests).
 - **Assertions**: Prefer asserting final DOM/output; avoid `expect(mockFn).toHaveBeenCalledWith(...)` when un-mocking—the output already proves wiring.
 
+#### Login page copy
+
+Landing marketing strings live in [`loginPageCopy.registry.ts`](../../src/constants/loginPageCopy.registry.ts) (with feature rows in [`loginFeatures.constants.ts`](../../src/components/Login/loginFeatures.constants.ts)). [`loginPageCopyLiteraryRules.spec.ts`](../../src/tests/utils/loginPageCopyLiteraryRules.spec.ts) enforces factual tone: no em dashes, embellishment terms, or banned inaccurate phrases (see [`loginPageCopyLiteraryRules.ts`](../../src/tests/utils/loginPageCopyLiteraryRules.ts)). Cursor hooks block violating edits and run the spec on session stop when copy sources change (see [`.cursor/hooks/README.md`](../../.cursor/hooks/README.md)).
+
 ### Jest notes
 
 - **Faker 10+** is ESM-only; transpiled via **`transpilePackages`** in `next.config.ts` (see [platform.md](platform.md)).
