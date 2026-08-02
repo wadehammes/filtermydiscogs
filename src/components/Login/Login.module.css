@@ -37,14 +37,15 @@
 
 .tagline {
   margin-inline: auto;
-  max-width: min(100%, 22ch);
+  max-width: min(100%, 60ch);
   text-align: center;
   width: 100%;
+  text-wrap: balance;
 }
 
 .subtitle {
   margin-inline: auto;
-  max-width: 42ch;
+  max-width: 60ch;
   text-align: center;
   width: 100%;
 }
