@@ -6,16 +6,13 @@ import { Page } from "src/components/Page/Page.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import styles from "./error.module.css";
 
-/**
- * Error boundary for the mosaic page.
- * Catches errors and displays a user-friendly error message.
- */
 export default function MosaicError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -37,7 +34,7 @@ export default function MosaicError({
             <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
         )}
-        <Button variant="primary" size="md" onClick={reset}>
+        <Button variant="primary" size="md" onClick={() => retry()}>
           Retry
         </Button>
       </div>

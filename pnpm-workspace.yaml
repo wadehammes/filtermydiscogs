@@ -15,6 +15,7 @@ minimumReleaseAgeExclude:
   - '@next/swc-win32-arm64-msvc@16.3.0'
   - '@next/swc-win32-x64-msvc@16.3.0'
   - next@16.3.0
+  - '@next/playwright@16.3.0'
 overrides:
   '@types/pg': 8.20.0
   svgo: '>=3.3.3'

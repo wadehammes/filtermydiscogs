@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import {
   createContext,
+  Suspense,
   useCallback,
   useContext,
   useLayoutEffect,
@@ -100,7 +101,13 @@ interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
-export const ThemeProvider = ({ children }: ThemeProviderProps) => {
+const themeProviderFallbackValue: ThemeContextType = {
+  theme: "system",
+  resolvedTheme: "light",
+  setTheme: () => {},
+};
+
+function ThemeProviderInner({ children }: ThemeProviderProps) {
   const prefersDark = useMediaQuery("(prefers-color-scheme: dark)", {
     defaultValue: false,
   });
@@ -162,7 +169,19 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       {children}
     </ThemeContext.Provider>
   );
-};
+}
+
+export const ThemeProvider = ({ children }: ThemeProviderProps) => (
+  <Suspense
+    fallback={
+      <ThemeContext.Provider value={themeProviderFallbackValue}>
+        {children}
+      </ThemeContext.Provider>
+    }
+  >
+    <ThemeProviderInner>{children}</ThemeProviderInner>
+  </Suspense>
+);
 
 export function useTheme() {
   const context = useContext(ThemeContext);

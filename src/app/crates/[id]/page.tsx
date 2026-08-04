@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import {
   PAGE_DESCRIPTIONS,
   PRIVATE_PAGE_ROBOTS,
   sitePageTitle,
 } from "src/constants/siteMetadata";
-
-export const instant = false;
 
 const CrateDetailClient = dynamic(
   () => import("src/components/Crates/CrateDetailClient.component"),
@@ -26,10 +25,18 @@ interface CrateDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function CrateDetailPage({
-  params,
-}: CrateDetailPageProps) {
+async function CrateDetailPageContent({ params }: CrateDetailPageProps) {
   const { id } = await params;
 
   return <CrateDetailClient crateId={id} />;
+}
+
+export default function CrateDetailPage({ params }: CrateDetailPageProps) {
+  return (
+    <Suspense
+      fallback={<AppPageLoading currentPage="crates" hideFilters={true} />}
+    >
+      <CrateDetailPageContent params={params} />
+    </Suspense>
+  );
 }

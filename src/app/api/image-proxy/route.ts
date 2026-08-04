@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
-import { checkIpRateLimit } from "src/lib/ip-rate-limit";
+import {
+  checkIpRateLimit,
+  IMAGE_PROXY_RATE_LIMIT_CONFIG,
+} from "src/lib/ip-rate-limit";
 
 // Maximum dimensions and file size limits to prevent DoS
 const MAX_IMAGE_DIMENSION = 5000;
@@ -9,7 +12,7 @@ const MAX_QUALITY = 100;
 const MIN_QUALITY = 1;
 
 export async function GET(request: NextRequest) {
-  const rateLimit = checkIpRateLimit(request);
+  const rateLimit = checkIpRateLimit(request, IMAGE_PROXY_RATE_LIMIT_CONFIG);
   if (!rateLimit.allowed) {
     return rateLimit.response;
   }

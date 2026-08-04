@@ -9,8 +9,6 @@ import {
 } from "src/constants/siteMetadata";
 import { verifyAdminUser } from "src/lib/admin-helpers";
 
-export const instant = false;
-
 const AdminDashboardClient = dynamic(
   () => import("src/components/AdminDashboard/AdminDashboardClient.component"),
   {

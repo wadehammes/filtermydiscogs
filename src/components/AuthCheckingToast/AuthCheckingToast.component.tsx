@@ -1,13 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "src/context/auth.context";
 
 const AUTH_CHECK_TOAST_ID = "auth-check";
 
-export const AuthCheckingToast = () => {
+function AuthCheckingToastInner() {
   const pathname = usePathname();
   const {
     state: { isCheckingAuth },
@@ -31,4 +31,10 @@ export const AuthCheckingToast = () => {
   }, [isCheckingAuth, pathname]);
 
   return null;
-};
+}
+
+export const AuthCheckingToast = () => (
+  <Suspense fallback={null}>
+    <AuthCheckingToastInner />
+  </Suspense>
+);

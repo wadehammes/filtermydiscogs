@@ -83,12 +83,14 @@ export const getReleaseImageUrl = ({
   width = 400,
   height = 400,
   preferCoverImage = true,
+  fallbackToPlaceholder = true,
 }: {
   thumb?: string | null;
   cover_image?: string | null;
   width?: number;
   height?: number;
   preferCoverImage?: boolean;
+  fallbackToPlaceholder?: boolean;
 }): string => {
   const imageUrl = preferCoverImage
     ? cover_image || thumb
@@ -96,6 +98,10 @@ export const getReleaseImageUrl = ({
 
   if (imageUrl) {
     return imageUrl;
+  }
+
+  if (!fallbackToPlaceholder) {
+    return "";
   }
 
   return createSvgPlaceholder(width, height);

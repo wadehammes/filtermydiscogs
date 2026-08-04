@@ -118,7 +118,7 @@ Aggregate crate totals for the public footer (crates, public crates, saved relea
 
 ## Public crates
 
-When **`private: false`**, [`src/lib/public-crate.server.ts`](../../src/lib/public-crate.server.ts) loads crate metadata and releases for SSR/SEO on **`/crate/[id]`**. Public API responses strip private collection fields (`notes`, `rating`, `date_added`) via [`toPublicReleaseSnapshot`](../../src/lib/release-data-validation.ts) before returning `release_data`. OG images: [`src/app/api/og/crate/[id]/route.tsx`](../../src/app/api/og/crate/[id]/route.tsx).
+When **`private: false`**, [`src/lib/public-crate.server.ts`](../../src/lib/public-crate.server.ts) loads crate metadata and releases for SSR/SEO on **`/crate/[id]`**. **`getPublicCrateIdsForStaticGeneration()`** (cached, up to **`PUBLIC_CRATE_STATIC_PARAMS_LIMIT`** = 100 recent public crates) feeds **`generateStaticParams`** on [`/crate/[id]/page.tsx`](../../src/app/crate/[id]/page.tsx) and public crate URLs in [`sitemap.ts`](../../src/app/sitemap.ts). Returns **`[]`** when **`DATABASE_URL`** is missing (local builds without a DB). Public API responses strip private collection fields (`notes`, `rating`, `date_added`) via [`toPublicReleaseSnapshot`](../../src/lib/release-data-validation.ts) before returning `release_data`. OG images: [`src/app/api/og/crate/[id]/route.tsx`](../../src/app/api/og/crate/[id]/route.tsx).
 
 If **`username`** is missing on an older public crate, the public API may backfill from the viewer's cookie when they own the crate.
 

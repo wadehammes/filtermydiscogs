@@ -8,7 +8,7 @@ import {
   SITE_NAME,
   sitePageTitle,
 } from "src/constants/siteMetadata";
-import { LegalClient } from "./LegalClient";
+import { LegalPageContent } from "./LegalPageContent.server";
 
 const baseUrl = getMetadataSiteUrl();
 const title = sitePageTitle("Terms & Privacy");
@@ -41,7 +41,7 @@ export default function LegalPage() {
       currentPage="legal"
       footer={<PageFooter />}
     >
-      <LegalClient />
+      <LegalPageContent />
     </PublicAuthLayout>
   );
 }

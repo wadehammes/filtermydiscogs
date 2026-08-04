@@ -94,6 +94,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  reactCompiler: {
+    compilationMode: "annotation",
+  },
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
@@ -131,8 +134,15 @@ const nextConfig: NextConfig = {
     qualities: [75, 80, 85, 90, 95, 100],
   },
   experimental: {
-    // optimizePackageImports is still experimental in Next.js 16.1
-    optimizePackageImports: ["@tanstack/react-query", "@tanstack/react-table"],
+    optimizePackageImports: [
+      "@tanstack/react-query",
+      "@tanstack/react-table",
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/utilities",
+      "recharts",
+      "sonner",
+    ],
   },
   trailingSlash: false,
   turbopack: {
@@ -158,41 +168,6 @@ const nextConfig: NextConfig = {
         ],
       },
     },
-  },
-  webpack(config) {
-    const fileLoaderRule = config.module.rules.find((rule: { test?: RegExp }) =>
-      rule.test?.test?.(".svg"),
-    );
-
-    // Add SVGR loader for SVG files
-    config.module.rules.push({
-      issuer: fileLoaderRule?.issuer,
-      test: /\.svg$/i,
-      use: [
-        {
-          loader: "@svgr/webpack",
-          options: {
-            ref: true,
-            svgoConfig: {
-              plugins: [
-                {
-                  active: false,
-                  name: "removeViewBox",
-                },
-              ],
-            },
-            titleProp: true,
-          },
-        },
-      ],
-    });
-
-    // Modify the file loader rule to ignore *.svg, since we have it handled now.
-    if (fileLoaderRule) {
-      fileLoaderRule.exclude = /\.svg$/i;
-    }
-
-    return config;
   },
   async headers() {
     return [

@@ -9,8 +9,6 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 
-export const instant = false;
-
 const baseUrl = getMetadataSiteUrl();
 const title = sitePageTitle("Mosaic");
 const description = PAGE_DESCRIPTIONS.mosaic;

@@ -5,16 +5,13 @@ import Button from "src/components/Button/Button.component";
 import { Page } from "src/components/Page/Page.component";
 import styles from "./error.module.css";
 
-/**
- * Root error boundary.
- * Catches errors in the root layout and displays a user-friendly error message.
- */
 export default function RootError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -35,7 +32,7 @@ export default function RootError({
             <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
         )}
-        <Button variant="primary" size="md" onClick={reset}>
+        <Button variant="primary" size="md" onClick={() => retry()}>
           Try again
         </Button>
       </div>
