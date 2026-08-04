@@ -10,6 +10,7 @@ import {
   parseAuthUrlParams,
 } from "src/services/auth.service";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
@@ -59,14 +60,7 @@ describe("AuthProvider", () => {
   let clearSpy: jest.SpiedFunction<QueryClient["clear"]>;
   let removeQueriesSpy: jest.SpiedFunction<QueryClient["removeQueries"]>;
 
-  const mockRouter = {
-    replace: jest.fn(),
-    push: jest.fn(),
-    refresh: jest.fn(),
-    back: jest.fn(),
-    forward: jest.fn(),
-    prefetch: jest.fn(),
-  } as ReturnType<typeof useRouter>;
+  const mockRouter = createMockAppRouter();
 
   const renderAuthHook = () =>
     renderHook(() => useAuth(), {

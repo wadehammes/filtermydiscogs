@@ -61,9 +61,35 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
 - **SVGR**: webpack + turbopack rules for SVG-as-React components. Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
 - **`experimental.optimizePackageImports`**: tree-shaking for TanStack packages.
-- **TypeScript**: pin **`typescript@^6`** until Next.js 16.2 stable supports TypeScript 7 (Next 16.3+ adds `experimental.useTypeScriptCli`). TypeScript 7 removes `lib/typescript.js`, which `next build` still probes for during type checking.
+- **Cache Components** (`cacheComponents: true`): enables Partial Prerendering (PPR) and the `"use cache"` directive. Required for Instant Navigations prefetching.
+- **Partial Prefetching** (`partialPrefetching: true`): prefetches only the static shell for linked routes so navigations can feel instant before dynamic data resolves.
+- **TypeScript**: **`typescript@^7`** with Next.js 16.3+ (native TS 7 support in `next build`).
 
 If you add a new third-party script domain, update **CSP** in the same change.
+
+## Cache Components and Instant Navigations
+
+Next.js 16.3 **Cache Components** (PPR + `"use cache"`) are enabled in [`next.config.ts`](../../next.config.ts). **`pnpm build --webpack`** is still required (Sharp/Vercel tracing); Turbopack-specific wins do not apply to dev/build here.
+
+### Route opt-out during migration
+
+The codemod **`@next/codemod cache-components-instant-false`** added **`export const instant = false`** on app routes and root [`layout.tsx`](../../src/app/layout.tsx) so existing client-heavy pages keep classic navigations until audited. Remove **`instant = false`** route-by-route after verifying behavior (start with static public pages: `/`, `/about`, `/legal`, `/crate/[id]`).
+
+Use **Next DevTools → Instant Insights / Navigation Inspector** in `pnpm dev` when removing opt-outs on authenticated routes (`/releases`, `/dashboard`, `/crates`, `/settings`, `/mosaic`).
+
+### Cached helpers (prerender-safe)
+
+| Location | Pattern |
+|----------|---------|
+| [`PageFooter.server.tsx`](../../src/components/Page/PageFooter.server.tsx) | `getCopyrightYear()` with `"use cache"` + `cacheLife("max")` — avoids `new Date()` breaking static prerender |
+| [`sitemap.ts`](../../src/app/sitemap.ts) | `buildSitemap()` with `"use cache"` + `cacheLife("days")` |
+| [`/api/og/crate/[id]`](../../src/app/api/og/crate/[id]/route.tsx) | Cached OG image helper with `"use cache"` + `cacheLife({ revalidate: 300 })` |
+
+Do not call **`new Date()`** (or other non-deterministic APIs) directly in components that must prerender as static — wrap in a `"use cache"` helper or move to a dynamic boundary.
+
+### Test mocks
+
+[`createMockAppRouter`](../../src/tests/mocks/mockAppRouter.mock.ts) includes **`bfcacheId: ""`** — required by Next.js 16.3 **`AppRouterInstance`** typing in Jest.
 
 ## Private session API responses
 
@@ -73,12 +99,12 @@ Cookie-authenticated **`/api/auth/*`** and authenticated **`/api/crates/*`** rou
 |-----------|----------|------|
 | Route handlers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts) | Return JSON via **`privateRouteJson`**, redirects via **`privateRouteRedirect`** (`Cache-Control: private, no-store`, **`Vary: Cookie`**) |
 | Error bodies | [`createErrorResponse`](../../src/lib/api-helpers.ts) in [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts) | Sanitized errors wrapped in **`privateRouteJson`** |
-| Dynamic rendering | `export const dynamic = "force-dynamic"` on each auth/crate handler | Prevents Next.js from caching handler output |
+| Dynamic rendering | Cookie / `searchParams` access in handlers | With **`cacheComponents`**, routes that read **`request.cookies`** or **`nextUrl.searchParams`** bail out of prerender automatically — do **not** add **`export const dynamic = "force-dynamic"`** (incompatible with Cache Components) |
 | Edge pass-through | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 network proxy; applies private cache headers on auth and authenticated crate API routes when a handler omits them |
 
 Do **not** use bare **`NextResponse.json`** on private session routes—use **`privateRouteJson`** (or **`createErrorResponse`** in `catch` blocks). Public crate reads keep their own cache policy in [`/api/crates/public/[id]`](../../src/app/api/crates/public/[id]/route.ts).
 
-Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`, `/api/collection/value`) use **`export const dynamic = "force-dynamic"`** and success responses with **`Cache-Control: private, max-age=…`** plus **`Vary: Cookie`** (browser-private cache keyed by session). Auth failures still return **`privateRouteJson`** via **`requireAuthenticatedDiscogsUser`**. Client helpers for these routes send **`credentials: "include"`**.
+Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`, `/api/collection/value`) return success responses with **`Cache-Control: private, max-age=…`** plus **`Vary: Cookie`** (browser-private cache keyed by session). Auth failures still return **`privateRouteJson`** via **`requireAuthenticatedDiscogsUser`**. Client helpers for these routes send **`credentials: "include"`**.
 
 ## Jest
 

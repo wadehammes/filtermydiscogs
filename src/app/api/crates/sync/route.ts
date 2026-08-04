@@ -7,8 +7,6 @@ import {
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Sync crates with collection - removes releases from crates that are no longer in the collection
  *

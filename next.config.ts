@@ -92,6 +92,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
   poweredByHeader: false,

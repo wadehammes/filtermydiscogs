@@ -10,6 +10,8 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 
+export const instant = false;
+
 const ReleasesClient = dynamic(
   () => import("src/components/ReleasesClient/ReleasesClient.component"),
   {

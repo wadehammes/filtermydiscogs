@@ -10,8 +10,6 @@ import {
 } from "src/lib/user-preferences.server";
 import type { UserPreferencesPatch } from "src/types/userPreferences.types";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(request: NextRequest) {
   const verified = await getVerifiedUserFromRequestWithRateLimit(request);
   if ("error" in verified) {

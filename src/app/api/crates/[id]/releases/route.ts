@@ -9,8 +9,6 @@ import { type Prisma, prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Clear packed status for all releases in a crate
  */

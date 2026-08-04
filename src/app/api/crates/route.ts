@@ -11,8 +11,6 @@ import { fetchCratePreviewThumbs } from "src/lib/crate-preview.server";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Get all crates for the authenticated user
  * Automatically creates a default crate if none exists

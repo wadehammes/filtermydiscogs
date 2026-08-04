@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
 import { PageFooterStats } from "src/components/Page/PageFooterStats.server";
@@ -9,12 +10,15 @@ type PageFooterProps = {
   variant?: "default" | "gradient";
 };
 
-/**
- * Server Component for the page footer.
- * This reduces client bundle size by rendering the footer on the server.
- */
-export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
-  const currentYear = new Date().getFullYear();
+async function getCopyrightYear() {
+  "use cache";
+  cacheLife("max");
+
+  return new Date().getFullYear();
+}
+
+export async function PageFooter({ variant = "default" }: PageFooterProps) {
+  const currentYear = await getCopyrightYear();
 
   return (
     <footer
@@ -76,4 +80,4 @@ export const PageFooter = ({ variant = "default" }: PageFooterProps) => {
       </div>
     </footer>
   );
-};
+}

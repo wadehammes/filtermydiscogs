@@ -3,8 +3,6 @@ import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const username = searchParams.get("username");

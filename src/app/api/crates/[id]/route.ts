@@ -19,8 +19,6 @@ import {
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 type CrateUpdateData = {
   name?: string;
   username?: string | null;

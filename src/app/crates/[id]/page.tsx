@@ -7,6 +7,8 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 
+export const instant = false;
+
 const CrateDetailClient = dynamic(
   () => import("src/components/Crates/CrateDetailClient.component"),
   {

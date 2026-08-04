@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useRouter } from "next/navigation";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { act, renderHook, TestProviders } from "test-utils";
 import {
   CollectionActionTypes,
@@ -92,14 +93,7 @@ describe("CollectionReducer", () => {
 
 describe("CollectionContextProvider", () => {
   beforeEach(() => {
-    mockUseRouter.mockReturnValue({
-      replace: jest.fn(),
-      push: jest.fn(),
-      refresh: jest.fn(),
-      back: jest.fn(),
-      forward: jest.fn(),
-      prefetch: jest.fn(),
-    } as ReturnType<typeof useRouter>);
+    mockUseRouter.mockReturnValue(createMockAppRouter());
     localStorage.clear();
   });
 
@@ -129,14 +123,9 @@ describe("CollectionContextProvider", () => {
 
   it("dispatches reset state", () => {
     const mockReplace = jest.fn();
-    mockUseRouter.mockReturnValue({
-      replace: mockReplace,
-      push: jest.fn(),
-      refresh: jest.fn(),
-      back: jest.fn(),
-      forward: jest.fn(),
-      prefetch: jest.fn(),
-    } as ReturnType<typeof useRouter>);
+    mockUseRouter.mockReturnValue(
+      createMockAppRouter({ replace: mockReplace }),
+    );
 
     const originalHrefDescriptor = Object.getOwnPropertyDescriptor(
       window.location,

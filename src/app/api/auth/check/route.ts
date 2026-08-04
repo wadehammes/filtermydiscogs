@@ -7,8 +7,6 @@ import {
 } from "src/lib/auth-request";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 async function resolveReconnectUsername(
   request: NextRequest,
 ): Promise<string | null> {

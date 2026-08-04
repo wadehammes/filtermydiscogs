@@ -21,8 +21,6 @@ import {
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

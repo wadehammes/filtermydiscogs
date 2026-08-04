@@ -15,6 +15,8 @@ import {
 import "src/styles/global.css";
 import "src/styles/pills.css";
 
+export const instant = false;
+
 const assistant = Assistant({
   subsets: ["latin"],
   weight: ["300", "400", "600", "700"],

@@ -27,7 +27,7 @@ configuration:
           - tsconfig.json
           - vercel.json
           - .browserslistrc
-          - stylelint.config.ts
+          - stylelint.config.mjs
           - knip.json
 
 dependencies:

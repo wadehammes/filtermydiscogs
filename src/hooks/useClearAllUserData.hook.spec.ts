@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { clearData, logout } from "src/api/helpers";
 import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
+import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
@@ -25,14 +26,9 @@ describe("useClearAllUserData", () => {
 
   it("clears server data, local storage, and redirects home", async () => {
     const mockReplace = jest.fn();
-    mockUseRouter.mockReturnValue({
-      replace: mockReplace,
-      push: jest.fn(),
-      refresh: jest.fn(),
-      back: jest.fn(),
-      forward: jest.fn(),
-      prefetch: jest.fn(),
-    });
+    mockUseRouter.mockReturnValue(
+      createMockAppRouter({ replace: mockReplace }),
+    );
 
     localStorage.setItem(THEME_STORAGE_KEY, "dark");
 

@@ -7,6 +7,8 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 
+export const instant = false;
+
 const DashboardClient = dynamic(
   () => import("src/components/Dashboard/DashboardClient.component"),
   {
