@@ -4,8 +4,6 @@ import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
-export const dynamic = "force-dynamic";
-
 // Valid sort values from Discogs API
 const VALID_SORT_VALUES = [
   "added",

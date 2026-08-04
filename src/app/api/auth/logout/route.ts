@@ -7,8 +7,6 @@ import {
 } from "src/lib/auth-request";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get("discogs_access_token")?.value;
   const accessTokenSecret = request.cookies.get(

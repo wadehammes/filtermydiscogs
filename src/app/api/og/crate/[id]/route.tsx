@@ -1,17 +1,21 @@
+import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
 import { SITE_NAME } from "src/constants/siteMetadata";
 import { getPublicCrateForOg } from "src/lib/public-crate.server";
 
-export const revalidate = 300;
+async function getCachedCrateForOg(id: string) {
+  "use cache";
+  cacheLife({ revalidate: 300 });
 
-export const runtime = "nodejs";
+  return getPublicCrateForOg(id);
+}
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const crate = await getPublicCrateForOg(id);
+  const crate = await getCachedCrateForOg(id);
   const title = crate?.name ?? "Crate";
   const line2 = crate?.username
     ? `by ${crate.username} · ${SITE_NAME}`

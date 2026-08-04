@@ -5,8 +5,6 @@ import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Admin-only health check for debugging production issues.
  */

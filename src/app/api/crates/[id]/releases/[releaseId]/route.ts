@@ -8,8 +8,6 @@ import {
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Update packed status for a release in a crate
  */
