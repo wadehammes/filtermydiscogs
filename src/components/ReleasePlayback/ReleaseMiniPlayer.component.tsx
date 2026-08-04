@@ -31,6 +31,7 @@ interface ReleaseMiniPlayerProps {
 export const ReleaseMiniPlayer = ({
   onReleaseClick,
 }: ReleaseMiniPlayerProps) => {
+  "use memo";
   const {
     release,
     activeTrack,

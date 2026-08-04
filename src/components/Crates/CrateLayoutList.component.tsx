@@ -274,6 +274,7 @@ const CrateLayoutListComponent = ({
   topInsertMount,
   bottomInsertMount,
 }: CrateLayoutListProps) => {
+  "use memo";
   const { state: authState } = useAuth();
   const updateLayoutMutation = useUpdateCrateLayoutMutation(authState.userId);
   const [localLayoutItems, setLocalLayoutItems] = useState(layoutItems);

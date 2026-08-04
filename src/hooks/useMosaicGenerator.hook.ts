@@ -187,6 +187,7 @@ export function useMosaicGenerator({
           width: cellSize,
           height: cellSize,
           preferCoverImage: releases.length <= 100,
+          fallbackToPlaceholder: false,
         });
 
         const drawPlaceholder = () => {
@@ -206,11 +207,7 @@ export function useMosaicGenerator({
           );
         };
 
-        // Validate and sanitize image URL
-        if (originalImageUrl && !isValidImageUrl(originalImageUrl)) {
-          console.warn(
-            `Invalid image URL for ${release.basic_information.title}: ${originalImageUrl}`,
-          );
+        if (!originalImageUrl) {
           drawPlaceholder();
           statsRef.current.failedImages++;
           setState((prev) => ({
@@ -220,7 +217,10 @@ export function useMosaicGenerator({
           return;
         }
 
-        if (!originalImageUrl) {
+        if (!isValidImageUrl(originalImageUrl)) {
+          console.warn(
+            `Invalid image URL for ${release.basic_information.title}: ${originalImageUrl}`,
+          );
           drawPlaceholder();
           statsRef.current.failedImages++;
           setState((prev) => ({

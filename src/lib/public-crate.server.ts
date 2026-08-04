@@ -1,4 +1,36 @@
+import { cacheLife } from "next/cache";
 import { prisma } from "src/lib/db";
+
+export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
+
+async function listRecentPublicCrateIds(): Promise<string[]> {
+  "use cache";
+  cacheLife({ revalidate: 300 });
+
+  const crates = await prisma.crate.findMany({
+    where: { private: false },
+    select: { id: true },
+    orderBy: { updated_at: "desc" },
+    take: PUBLIC_CRATE_STATIC_PARAMS_LIMIT,
+  });
+
+  return crates.map((crate) => crate.id);
+}
+
+export async function getPublicCrateIdsForStaticGeneration(): Promise<
+  string[]
+> {
+  if (!process.env.DATABASE_URL) {
+    return [];
+  }
+
+  try {
+    return await listRecentPublicCrateIds();
+  } catch (error) {
+    console.error("Failed to list public crates for static generation:", error);
+    return [];
+  }
+}
 
 export async function getPublicCrateForOg(crateId: string): Promise<{
   name: string;
@@ -21,6 +53,9 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
   crate: { name: string; username: string | null };
   pagination: { total: number };
 } | null> {
+  "use cache";
+  cacheLife({ revalidate: 300 });
+
   const crate = await prisma.crate.findFirst({
     select: {
       id: true,

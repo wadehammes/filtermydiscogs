@@ -8,7 +8,11 @@ const customJestConfig: Config.InitialOptions = {
   setupFiles: ["<rootDir>/.jest/setEnvVars.ts"],
   setupFilesAfterEnv: ["<rootDir>/.jest/setupTests.ts"],
   testEnvironment: "jest-environment-jsdom",
-  testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+  testPathIgnorePatterns: [
+    "<rootDir>/.next/",
+    "<rootDir>/node_modules/",
+    "<rootDir>/e2e/",
+  ],
   // pnpm: skip the store root (`node_modules/.pnpm/...`) so inner `node_modules/<pkg>` can opt out of ignore.
   // `@faker-js/faker` is transpiled via `transpilePackages` in next.config; excluding it here avoids an extra OR match.
   transformIgnorePatterns: [

@@ -7,9 +7,24 @@ interface IpRateLimitEntry {
 
 const ipRateLimitStore = new Map<string, IpRateLimitEntry>();
 
-const IP_RATE_LIMIT_CONFIG = {
+export type IpRateLimitConfig = {
+  maxRequests: number;
+  windowMs: number;
+};
+
+const DEFAULT_IP_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   maxRequests: parseInt(process.env.IP_RATE_LIMIT_MAX || "120", 10),
   windowMs: parseInt(process.env.IP_RATE_LIMIT_WINDOW || "60000", 10),
+};
+
+export const IMAGE_PROXY_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
+  maxRequests: parseInt(process.env.IMAGE_PROXY_RATE_LIMIT_MAX || "2500", 10),
+  windowMs: parseInt(
+    process.env.IMAGE_PROXY_RATE_LIMIT_WINDOW ||
+      process.env.IP_RATE_LIMIT_WINDOW ||
+      "60000",
+    10,
+  ),
 };
 
 export function getClientIp(request: NextRequest): string {
@@ -23,6 +38,7 @@ export function getClientIp(request: NextRequest): string {
 
 export function checkIpRateLimit(
   request: NextRequest,
+  config: IpRateLimitConfig = DEFAULT_IP_RATE_LIMIT_CONFIG,
 ): { allowed: true } | { allowed: false; response: NextResponse } {
   const ip = getClientIp(request);
   const now = new Date();
@@ -39,12 +55,12 @@ export function checkIpRateLimit(
   if (!entry || entry.resetAt < now) {
     ipRateLimitStore.set(ip, {
       count: 1,
-      resetAt: new Date(now.getTime() + IP_RATE_LIMIT_CONFIG.windowMs),
+      resetAt: new Date(now.getTime() + config.windowMs),
     });
     return { allowed: true };
   }
 
-  if (entry.count >= IP_RATE_LIMIT_CONFIG.maxRequests) {
+  if (entry.count >= config.maxRequests) {
     return {
       allowed: false,
       response: NextResponse.json(

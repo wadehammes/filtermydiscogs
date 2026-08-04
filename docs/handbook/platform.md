@@ -23,8 +23,8 @@ Run the same locally before pushing when possible.
 
 | Script | Purpose |
 |--------|---------|
-| `pnpm dev` | Next dev server on **port 6767** (webpack mode). |
-| `pnpm build` | `db:generate` + production build (**`--webpack`**; Turbopack’s hashed `sharp` externals omit linux native binaries on Vercel). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds under webpack. |
+| `pnpm dev` | Next dev server on **port 6767** (Turbopack). |
+| `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
 | `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
@@ -34,6 +34,7 @@ Run the same locally before pushing when possible.
 | `pnpm scaffold` | New component scaffold script. |
 | `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
 | `pnpm analyze` / `pnpm lighthouse` | Bundle and performance tooling. |
+| `pnpm test:e2e` / `pnpm test:e2e:install` | Playwright instant-navigation regression tests ([`e2e/`](../../e2e/)); run **`test:e2e:install`** once for Chromium. |
 
 Full list: [`package.json`](../../package.json).
 
@@ -47,6 +48,8 @@ Full list: [`package.json`](../../package.json).
 | `DATABASE_URL` | Postgres connection string for Prisma |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
+| `IP_RATE_LIMIT_MAX` / `IP_RATE_LIMIT_WINDOW` | Default per-IP API rate limit (120 requests / 60s) |
+| `IMAGE_PROXY_RATE_LIMIT_MAX` / `IMAGE_PROXY_RATE_LIMIT_WINDOW` | Higher limit for [`/api/image-proxy`](../../src/app/api/image-proxy/route.ts) (default **2500** / 60s) so mosaic export can load one tile per release |
 
 [`next.config.ts`](../../next.config.ts) **`env`** block exposes only **`DISCOGS_CONSUMER_KEY`** and **`DISCOGS_CALLBACK_URL`** to the Next bundle. **`DISCOGS_CONSUMER_SECRET`** stays a runtime server env var (used by [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) only). Do not add server-only secrets to **`env`**.
 
@@ -59,23 +62,43 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging. Playback embeds use **`youtube-nocookie.com`** — both **`*.youtube.com`** and **`*.youtube-nocookie.com`** must stay in **`frame-src`** / **`child-src`**. Vercel preview **`script-src`** also allows **`vercel.live`** for the Live feedback widget.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
 - **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
-- **SVGR**: webpack + turbopack rules for SVG-as-React components. Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
-- **`experimental.optimizePackageImports`**: tree-shaking for TanStack packages.
+- **SVGR**: [`turbopack.rules`](../../next.config.ts) for SVG-as-React components in dev/build (no separate **`webpack()`** hook — Turbopack is the default). Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
+- **`experimental.optimizePackageImports`**: tree-shaking for TanStack, **`@dnd-kit/*`**, **`recharts`**, and **`sonner`**.
 - **Cache Components** (`cacheComponents: true`): enables Partial Prerendering (PPR) and the `"use cache"` directive. Required for Instant Navigations prefetching.
 - **Partial Prefetching** (`partialPrefetching: true`): prefetches only the static shell for linked routes so navigations can feel instant before dynamic data resolves.
 - **TypeScript**: **`typescript@^7`** with Next.js 16.3+ (native TS 7 support in `next build`).
+- **React Compiler** (`reactCompiler.compilationMode: "annotation"`): opt-in per component via **`"use memo"`**. The experimental Rust Turbopack port is **off** for now — it triggered dev Instant Insights validation bugs (`moduleLoading` / work-store invariants on routes like **`/legal`**). Re-enable **`experimental.turbopackRustReactCompiler`** after a Next.js patch. Annotated components: [`ReleaseCardGrid`](../../src/components/ReleaseCardGrid/ReleaseCardGrid.component.tsx), [`CrateLayoutList`](../../src/components/Crates/CrateLayoutList.component.tsx), [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx).
+- **Bundle analysis**: **`pnpm analyze`** / **`@next/bundle-analyzer`** still require **`next build --webpack`** — Turbopack production builds do not emit webpack stats yet.
 
 If you add a new third-party script domain, update **CSP** in the same change.
 
 ## Cache Components and Instant Navigations
 
-Next.js 16.3 **Cache Components** (PPR + `"use cache"`) are enabled in [`next.config.ts`](../../next.config.ts). **`pnpm build --webpack`** is still required (Sharp/Vercel tracing); Turbopack-specific wins do not apply to dev/build here.
+Next.js 16.3 **Cache Components** (PPR + `"use cache"`) are enabled in [`next.config.ts`](../../next.config.ts).
 
-### Route opt-out during migration
+### Turbopack and Sharp
 
-The codemod **`@next/codemod cache-components-instant-false`** added **`export const instant = false`** on app routes and root [`layout.tsx`](../../src/app/layout.tsx) so existing client-heavy pages keep classic navigations until audited. Remove **`instant = false`** route-by-route after verifying behavior (start with static public pages: `/`, `/about`, `/legal`, `/crate/[id]`).
+Dev and production use **Turbopack** (no **`--webpack`** in [`package.json`](../../package.json)). Keep **`serverExternalPackages: ["sharp"]`** so [`/api/image-proxy`](../../src/app/api/image-proxy/route.ts) and **`next/image`** trace **`@img/sharp-*`** / **`@img/sharp-libvips-*`** native binaries on Vercel. Next.js 16.3+ fixed Turbopack file tracing for Sharp 0.35+. After deploy, smoke-test **`/api/image-proxy`** and mosaic export on the preview URL.
 
-Use **Next DevTools → Instant Insights / Navigation Inspector** in `pnpm dev` when removing opt-outs on authenticated routes (`/releases`, `/dashboard`, `/crates`, `/settings`, `/mosaic`).
+### Instant Navigations (app-wide)
+
+The codemod **`@next/codemod cache-components-instant-false`** added **`export const instant = false`** during the Cache Components migration. Those opt-outs are **removed app-wide** (including root [`layout.tsx`](../../src/app/layout.tsx)). Routes show **◐ Partial Prerender** in **`next build`** output where applicable.
+
+When adding routes or root-level client components, use **Next DevTools → Instant Insights** to confirm shells prefetch cleanly.
+
+### PPR and blocking client hooks
+
+Cache Components prerender static shells. Client hooks that depend on request-time data (**`usePathname`**, **`useSearchParams`**, **`useMediaQuery`**, etc.) must sit inside a **`<Suspense>`** boundary or the build fails with **`CLIENT_HOOK_DYNAMIC`**.
+
+| Component | Pattern |
+|-----------|---------|
+| [`ThemeProvider`](../../src/context/theme.context.tsx) | **`ThemeProviderInner`** (uses **`useMediaQuery`** + **`usePathname`**) wrapped in **`<Suspense>`**; fallback exposes a static theme context while **`/theme-init.js`** keeps the correct **`data-theme`** on **`html`** |
+| [`AuthCheckingToast`](../../src/components/AuthCheckingToast/AuthCheckingToast.component.tsx) | Inner component with **`usePathname`** wrapped in **`<Suspense fallback={null}>`** |
+| Dynamic **`params`** on [`/crates/[id]`](../../src/app/crates/[id]/page.tsx) and [`/crate/[id]`](../../src/app/crate/[id]/page.tsx) | **`await params`** in an inner async server component wrapped in **`<Suspense>`** with **`AppPageLoading`** / **`PageLoader`** fallback — keeps the route shell instant |
+
+Do not re-add **`export const instant = false`** on the root layout to paper over missing Suspense boundaries — fix the hook site instead.
+
+Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/app/legal/LegalPageContent.server.tsx); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/app/legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
 
 ### Cached helpers (prerender-safe)
 
@@ -90,6 +113,12 @@ Do not call **`new Date()`** (or other non-deterministic APIs) directly in compo
 ### Test mocks
 
 [`createMockAppRouter`](../../src/tests/mocks/mockAppRouter.mock.ts) includes **`bfcacheId: ""`** — required by Next.js 16.3 **`AppRouterInstance`** typing in Jest.
+
+### Playwright instant navigation tests
+
+[`e2e/instant-navigation.spec.ts`](../../e2e/instant-navigation.spec.ts) uses **`instant()`** from **`@next/playwright`** to assert public-route shells appear during navigation without waiting for dynamic data. Config: [`playwright.config.ts`](../../playwright.config.ts) (starts **`pnpm dev`** on port **6767**). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).
+
+Add similar tests when authenticated instant routes stabilize (header nav to **`/releases`**, **`/dashboard`**, etc.).
 
 ## Private session API responses
 

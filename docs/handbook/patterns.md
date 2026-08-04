@@ -8,7 +8,7 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 
 1. **QueryClientProvider** — TanStack Query defaults (10 min stale time, limited refetch).
 2. **JotaiProvider** — shared Jotai store for client UI state ([`src/atoms/JotaiProvider.tsx`](../../src/atoms/JotaiProvider.tsx)).
-3. **ThemeProvider** — palette themes (`light`, `dim`, `sepia`, `slate`, `dark`, `midnight`, `futuristic`, `high-contrast`) plus **`system`** (follows OS light/dark). Token files under [`src/styles/themes/`](../../src/styles/themes/).
+3. **ThemeProvider** — palette themes (`light`, `dim`, `sepia`, `slate`, `dark`, `midnight`, `futuristic`, `high-contrast`) plus **`system`** (follows OS light/dark). Token files under [`src/styles/themes/`](../../src/styles/themes/). For PPR, the inner provider (media query + pathname sync) is wrapped in **`<Suspense>`** — see [platform.md](platform.md) (PPR and blocking client hooks).
 4. **AuthProvider** — OAuth session state.
 5. **CollectionContextProvider** — collection pagination metadata only (not the release list).
 6. **FiltersProvider** — scope marker for filter hooks (state lives in [`src/atoms/filters.atoms.ts`](../../src/atoms/filters.atoms.ts)).
@@ -41,7 +41,7 @@ Authenticated app routes use [`useRedirectIfUnauthenticated`](../../src/hooks/us
 | `/dashboard`, `/mosaic` | Header + skeleton/loader until full collection load | Redirect to `/` | Skip when collection pagination is complete |
 | `/admin` | Server gate + brief null | Redirect to `/` | — |
 
-Authenticated app routes use segment **`loading.tsx`** with **`AppPageLoading`** ( **`StickyHeaderBar`**, not **`PublicAuthLayout`** ). Root [`loading.tsx`](../../src/app/loading.tsx) is a provider-free **`PageLoader`** only — Next also mounts it under **`/_global-error`**, which replaces the root layout (no **`Providers`**). Root layout failures use [`global-error.tsx`](../../src/app/global-error.tsx) (own document shell; no **`Providers`** / **`useAuth`**).
+Authenticated app routes use segment **`loading.tsx`** with **`AppPageLoading`** ( **`StickyHeaderBar`**, not **`PublicAuthLayout`** ). Segment **`error.tsx`** files ([`releases`](../../src/app/releases/error.tsx), [`mosaic`](../../src/app/mosaic/error.tsx)) call **`retry()`** from Next.js 16.3 so recovery re-fetches server content, not just client state. Root [`loading.tsx`](../../src/app/loading.tsx) is a provider-free **`PageLoader`** only — Next also mounts it under **`/_global-error`**, which replaces the root layout (no **`Providers`**). Root layout failures use [`global-error.tsx`](../../src/app/global-error.tsx) (own document shell; no **`Providers`** / **`useAuth`**).
 
 ## Public pages
 
@@ -49,7 +49,7 @@ Server `page.tsx` files for home, about, legal, and public crates share one clie
 
 1. **`PublicAuthLayout`** — header (`PublicAuthHeader` → `PublicPageHeader` or authenticated `StickyHeaderBar`), `<main>`, optional `footer`.
 2. **`PageFooter`** (server component) — community stats (`PageFooterStats` / `PageFooterFun`) plus About / Contribute links. Pass as the layout `footer` prop from each `page.tsx`.
-3. **Page content** — e.g. [`Login`](../../src/components/Login/Login.component.tsx) on `/`, `AboutClient` / `LegalClient`, or public crate client.
+3. **Page content** — e.g. [`Login`](../../src/components/Login/Login.component.tsx) on `/`, `AboutClient` / [`LegalPageContent`](../../src/app/legal/LegalPageContent.server.tsx), or public crate client.
 
 Home renders the landing immediately during **`isCheckingAuth`**; authenticated users redirect from **`Login`** via `router.replace("/releases")`. Protected app routes use **`AppPageLoading`** (see Protected routes above), not a blocking auth shell on `/`.
 
@@ -131,7 +131,7 @@ See [database.md](database.md) for schema details.
 
 - **Page**: [`/mosaic`](../../src/app/mosaic/page.tsx) → [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) (client `dynamic` with `ssr: false`; [`AppPageLoading`](../../src/components/AppPageLoading/AppPageLoading.component.tsx) while the chunk loads) → [`MosaicClient`](../../src/components/MosaicClient/MosaicClient.component.tsx).
 - **Hook**: [`useMosaicGenerator`](../../src/hooks/useMosaicGenerator.hook.ts) builds canvas grids from filtered releases.
-- **Images**: [`src/utils/imageLoader.ts`](../../src/utils/imageLoader.ts) fetches resized covers via **`GET /api/image-proxy`** (Sharp server-side). Production builds use **`next build --webpack`** so Sharp’s linux-x64 binaries are traced into the Vercel function (default Turbopack hashed externals break this).
+- **Images**: [`src/utils/imageLoader.ts`](../../src/utils/imageLoader.ts) fetches resized covers via **`GET /api/image-proxy`** (Sharp server-side). Mosaic canvas generation calls **`getReleaseImageUrl({ fallbackToPlaceholder: false })`** so releases without art draw the ♪ tile instead of failing on SVG data URIs. **`IMAGE_PROXY_RATE_LIMIT_MAX`** (default 2500/min) avoids the global 120/min cap mid-export.
 
 ## Settings
 

@@ -15,6 +15,7 @@ const ReleaseCardGridComponent = ({
   releases,
   onReleaseClick,
 }: ReleaseCardGridProps) => {
+  "use memo";
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const gridStyle = useMemo(

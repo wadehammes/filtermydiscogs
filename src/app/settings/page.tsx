@@ -7,8 +7,6 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 
-export const instant = false;
-
 const SettingsClient = dynamic(
   () => import("src/components/Settings/SettingsClient.component"),
   {

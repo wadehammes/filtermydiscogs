@@ -225,6 +225,8 @@ Mono text uses **`--text-meta-*`** size tokens (2px smaller than the matching **
 
 Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTests.ts`](../../.jest/setupTests.ts)). Prefer **`screen`** and **`userEvent`** in specs.
 
+**Playwright** ([`playwright.config.ts`](../../playwright.config.ts), [`e2e/`](../../e2e/)): instant-navigation regression tests with **`instant()`** from **`@next/playwright`**. Run **`pnpm test:e2e:install`** once, then **`pnpm test:e2e`** (starts dev on port **6767**). Not part of CI yet.
+
 **Behavior first:** Write tests for the behavior you expect—user-visible outcomes, hook side effects, API contracts—not for whatever the current implementation happens to do. If a new or updated test fails, treat that as a signal to fix the production code (or the test setup), not to weaken the assertion so it passes. Prefer correcting bugs and regressions over bending specs to match broken behavior.
 
 ### Page object pattern

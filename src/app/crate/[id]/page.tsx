@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { PageFooter } from "src/components/Page/PageFooter.server";
+import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import {
   getMetadataSiteUrl,
@@ -8,7 +10,13 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 import { fetchPublicCrateMetadata } from "src/lib/api-helpers";
+import { getPublicCrateIdsForStaticGeneration } from "src/lib/public-crate.server";
 import { PublicCrateClient } from "./PublicCrateClient";
+
+export async function generateStaticParams() {
+  const ids = await getPublicCrateIdsForStaticGeneration();
+  return ids.map((id) => ({ id }));
+}
 
 export async function generateMetadata({
   params,
@@ -100,16 +108,26 @@ export async function generateMetadata({
   };
 }
 
-export default async function PublicCratePage({
+async function PublicCratePageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
 
+  return <PublicCrateClient crateId={id} />;
+}
+
+export default function PublicCratePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   return (
     <PublicAuthLayout footer={<PageFooter />}>
-      <PublicCrateClient crateId={id} />
+      <Suspense fallback={<PageLoader />}>
+        <PublicCratePageContent params={params} />
+      </Suspense>
     </PublicAuthLayout>
   );
 }
