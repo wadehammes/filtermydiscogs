@@ -1,0 +1,11 @@
+.description {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  margin: 0;
+  padding: var(--space-2) var(--space-4) var(--space-3);
+
+  @media (width >= 768px) {
+    padding: var(--space-2) var(--space-5) var(--space-3);
+  }
+}

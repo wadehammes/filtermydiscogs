@@ -1,22 +1,29 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
+import { ReleaseMiniPlayer } from "src/components/ReleasePlayback/ReleaseMiniPlayer.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
+import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
+import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
+import { buildDashboardStory } from "src/utils/dashboardStory";
+import { definedProps } from "src/utils/definedProps";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
+import { DashboardHero } from "./components/DashboardHero.component";
+import { DashboardSection } from "./components/DashboardSection.component";
 import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
 import { MostCrated } from "./components/MostCrated.component";
 import { OnThisDay } from "./components/OnThisDay.component";
-import { StatsCards } from "./components/StatsCards.component";
 import styles from "./DashboardClient.module.css";
 
 const ArtistLabelCharts = dynamic(
@@ -51,7 +58,7 @@ const StyleEvolution = dynamic(
   { ssr: false },
 );
 
-export default function DashboardClient() {
+function DashboardClientContent() {
   const { state: authState } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const {
@@ -71,6 +78,12 @@ export default function DashboardClient() {
   });
   const allReleases = useAllReleases();
   const showLoading = isCheckingAuth || needsCollectionLoad;
+  const {
+    selectedRelease,
+    selectedReleaseId,
+    handleReleaseClick,
+    handleCloseModal,
+  } = useSelectedReleaseModal(allReleases);
 
   const analytics = useCollectionAnalytics();
   const {
@@ -78,6 +91,18 @@ export default function DashboardClient() {
     isLoading: valueLoading,
     error: valueError,
   } = useCollectionValueQuery({ username: authState.username });
+
+  const story = useMemo(() => {
+    if (!analytics) {
+      return null;
+    }
+
+    return buildDashboardStory({
+      analytics,
+      releases: allReleases,
+      username: authState.username,
+    });
+  }, [analytics, allReleases, authState.username]);
 
   useEffect(() => {
     if (valueError && process.env.NODE_ENV === "development") {
@@ -112,35 +137,44 @@ export default function DashboardClient() {
         hideFilters={true}
       />
       <div className={styles.container} data-testid="fmdDashboardClient">
-        <div className={styles.header}>
-          <h1>Collection Dashboard</h1>
-          <p className={styles.subtitle}>
-            Insights and analytics about your Discogs collection
-          </p>
-        </div>
-
         {!(collectionLoading || analytics) && (
           <div className={styles.emptyState}>
-            <h1>No collection data</h1>
-            <p>Your collection appears to be empty.</p>
+            <h1>Nothing on the shelf yet</h1>
+            <p>Add records to your Discogs collection to see them here.</p>
           </div>
         )}
 
-        {!collectionLoading && analytics && (
+        {!collectionLoading && analytics && story && (
           <div className={styles.content}>
-            <StatsCards
+            <DashboardHero
+              story={story}
               stats={analytics.stats}
-              formatMix={analytics.formatMix}
               collectionValue={collectionValue}
               isLoadingValue={valueLoading}
               valueError={valueError}
             />
 
-            <div className={styles.chartsSection}>
-              <GrowthChart growthData={analytics.growth} />
-            </div>
+            <DashboardSection
+              lede={story.sections.today.lede}
+              title={story.sections.today.title}
+            >
+              <OnThisDay
+                hideHeading={true}
+                onReleaseClick={handleReleaseClick}
+              />
+            </DashboardSection>
 
-            <div className={styles.chartsSection}>
+            <DashboardSection
+              lede={story.sections.growth.lede}
+              title={story.sections.growth.title}
+            >
+              <GrowthChart growthData={analytics.growth} hideHeading={true} />
+            </DashboardSection>
+
+            <DashboardSection
+              lede={story.sections.sound.lede}
+              title={story.sections.sound.title}
+            >
               <DistributionCharts
                 styleDistribution={analytics.styleDistribution}
                 decadeDistribution={analytics.decadeDistribution}
@@ -150,39 +184,73 @@ export default function DashboardClient() {
                   analytics.mediaFormatSubtypeBreakdown ?? []
                 }
               />
-            </div>
+              <StyleEvolution
+                hideHeading={true}
+                sectionCopy={story.sections.styleEvolution}
+              />
+            </DashboardSection>
 
-            <div className={styles.chartsSection}>
+            <DashboardSection
+              lede={story.sections.names.lede}
+              title={story.sections.names.title}
+            >
               <ArtistLabelCharts
                 artistDistribution={analytics.artistDistribution}
                 labelDistribution={analytics.labelDistribution}
               />
-            </div>
+            </DashboardSection>
 
-            <div className={styles.sideBySideSection}>
-              <div className={styles.chartsSection}>
-                <CollectionMilestones />
-              </div>
-              <div className={styles.chartsSection}>
-                <StyleEvolution />
-              </div>
-            </div>
+            <DashboardSection
+              lede={story.sections.markers.lede}
+              title={story.sections.markers.title}
+            >
+              <CollectionMilestones
+                hideHeading={true}
+                onReleaseClick={handleReleaseClick}
+              />
+            </DashboardSection>
 
-            <div className={styles.sideBySideSection}>
-              <div className={styles.chartsSection}>
-                <OnThisDay />
-              </div>
-              <div className={styles.chartsSection}>
-                <MostCrated />
-              </div>
-            </div>
+            <div className={styles.storyPair}>
+              <DashboardSection
+                lede={story.sections.share.lede}
+                title={story.sections.share.title}
+              >
+                <MostCrated
+                  hideHeading={true}
+                  onReleaseClick={handleReleaseClick}
+                />
+              </DashboardSection>
 
-            <div className={styles.healthSection}>
-              <CollectionHealth health={analytics.health} />
+              <DashboardSection
+                lede={story.sections.upkeep.lede}
+                title={story.sections.upkeep.title}
+              >
+                <CollectionHealth
+                  health={analytics.health}
+                  hideHeading={true}
+                  onReleaseClick={handleReleaseClick}
+                />
+              </DashboardSection>
             </div>
           </div>
         )}
       </div>
+      <ReleaseModal
+        isOpen={selectedReleaseId !== null}
+        release={selectedRelease}
+        onClose={handleCloseModal}
+      />
+      <ReleaseMiniPlayer
+        {...definedProps({ onReleaseClick: handleReleaseClick })}
+      />
     </>
+  );
+}
+
+export default function DashboardClient() {
+  return (
+    <ReleasePlaybackProvider>
+      <DashboardClientContent />
+    </ReleasePlaybackProvider>
   );
 }

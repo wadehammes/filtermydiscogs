@@ -37,71 +37,18 @@
 .chartWrapper {
   display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 350px;
   overflow: visible;
-  padding-bottom: 0;
-  padding-top: 0;
   width: 100%;
 
-  :global(.recharts-responsive-container) {
-    flex: 1;
-    height: 100% !important;
-    min-height: 350px;
-  }
-
-  :global(.recharts-pie-label-text) {
-    fill: var(--foreground) !important;
-    font-size: 11px;
-    font-weight: var(--font-semibold);
-    text-shadow:
-      0 0 3px var(--background),
-      0 0 3px var(--background),
-      0 0 3px var(--background);
-  }
-
-  :global(.recharts-tooltip-wrapper) {
+  :global(.fmd-chart-tooltip) {
+    background-color: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: 4px;
     color: var(--popover-foreground);
+    padding: 8px 12px;
   }
-
-  :global(.recharts-default-tooltip) {
-    background-color: var(--popover) !important;
-    border: 1px solid var(--border) !important;
-    color: var(--popover-foreground) !important;
-  }
-
-  :global(.recharts-tooltip-item-value),
-  :global(.recharts-tooltip-item-name) {
-    color: var(--popover-foreground) !important;
-  }
-}
-
-.chartWrapper :global(.recharts-legend-wrapper) {
-  overflow: visible;
-  padding-top: 20px;
-  width: 100%;
-}
-
-.chartWrapper :global(.recharts-default-legend) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  justify-content: center;
-  width: 100%;
-}
-
-.chartWrapper :global(.recharts-legend-item) {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.chartWrapper :global(.recharts-legend-item-text) {
-  color: var(--foreground);
-  font-size: 12px;
-  line-height: 1.4;
 }
 
 .chartWrapper :global(*),
@@ -109,6 +56,6 @@
 .chartWrapper :global(*:focus-visible),
 .chartWrapper :global(svg:focus),
 .chartWrapper :global(svg:focus-visible) {
-  outline: none !important;
   border: none !important;
+  outline: none !important;
 }

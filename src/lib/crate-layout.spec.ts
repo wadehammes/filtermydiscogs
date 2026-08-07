@@ -75,8 +75,14 @@ describe("mergeReorderedVisibleCrateLayout", () => {
       buildReleaseItem("2", 3000),
       buildReleaseItem("3", 4000),
     ];
-    const visibleItems = [fullItems[0]!, fullItems[1]!, fullItems[3]!];
-    const reorderedVisible = [fullItems[0]!, fullItems[3]!, fullItems[1]!];
+    const marker = fullItems[0];
+    const release1 = fullItems[1];
+    const release3 = fullItems[3];
+    if (!(marker && release1 && release3)) {
+      throw new Error("Expected marker and release fixture items");
+    }
+    const visibleItems = [marker, release1, release3];
+    const reorderedVisible = [marker, release3, release1];
 
     const merged = mergeReorderedVisibleCrateLayout({
       fullItems,

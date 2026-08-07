@@ -16,7 +16,7 @@ const customJestConfig: Config.InitialOptions = {
   // pnpm: skip the store root (`node_modules/.pnpm/...`) so inner `node_modules/<pkg>` can opt out of ignore.
   // `@faker-js/faker` is transpiled via `transpilePackages` in next.config; excluding it here avoids an extra OR match.
   transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|@tanstack/react-table|@tanstack/table-core)",
+    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape)",
   ],
   verbose: true,
 };

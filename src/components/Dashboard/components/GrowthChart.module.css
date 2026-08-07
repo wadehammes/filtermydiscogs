@@ -14,8 +14,13 @@
 .chartHeader {
   align-items: center;
   display: flex;
+  gap: var(--space-3);
   justify-content: space-between;
   margin-bottom: var(--space-4);
+}
+
+.chartHeaderCompact {
+  justify-content: flex-end;
 }
 
 .chartHeader h2 {

@@ -61,9 +61,9 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **`serverExternalPackages: ["sharp"]`**: keeps the image-proxy native module out of the bundler so Vercel can include **`@img/sharp-linux-*`** binaries.
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging. Playback embeds use **`youtube-nocookie.com`** — both **`*.youtube.com`** and **`*.youtube-nocookie.com`** must stay in **`frame-src`** / **`child-src`**. Vercel preview **`script-src`** also allows **`vercel.live`** for the Live feedback widget.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
-- **`transpilePackages: ["@faker-js/faker"]`**: required because Faker 10+ is ESM-only and Jest must transpile it.
+- **`transpilePackages`**: **`@faker-js/faker`** (ESM-only), **`@tanstack/react-table`** / **`@tanstack/table-core`**, and **`@tanstack/charts`** / **`@tanstack/charts-scales`** / **`@tanstack/react-charts`** (ESM dashboard charts), plus **`d3-shape`** for pie layouts — required so Next/Jest can transpile them.
 - **SVGR**: [`turbopack.rules`](../../next.config.ts) for SVG-as-React components in dev/build (no separate **`webpack()`** hook — Turbopack is the default). Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
-- **`experimental.optimizePackageImports`**: tree-shaking for TanStack, **`@dnd-kit/*`**, **`recharts`**, and **`sonner`**.
+- **`experimental.optimizePackageImports`**: tree-shaking for TanStack (**`@tanstack/react-charts`** on dashboard), **`@dnd-kit/*`**, and **`sonner`**.
 - **Cache Components** (`cacheComponents: true`): enables Partial Prerendering (PPR) and the `"use cache"` directive. Required for Instant Navigations prefetching.
 - **Partial Prefetching** (`partialPrefetching: true`): prefetches only the static shell for linked routes so navigations can feel instant before dynamic data resolves.
 - **TypeScript**: **`typescript@^7`** with Next.js 16.3+ (native TS 7 support in `next build`).
@@ -142,9 +142,9 @@ Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`
 - **`test-utils`** alias → [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)
 - **`src/`** path alias
 - SVG and CSS mocks under **`.jest/`**
-- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`** and **`@tanstack/react-table`** / **`@tanstack/table-core`** (see comments in config)
+- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`**, **`@tanstack/react-table`** / **`@tanstack/table-core`**, **`@tanstack/charts`** packages, and **`d3-shape`** (see comments in config)
 
-Faker and TanStack Table transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
+Faker, TanStack Table, and TanStack Charts transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
 
 ## Analytics
 

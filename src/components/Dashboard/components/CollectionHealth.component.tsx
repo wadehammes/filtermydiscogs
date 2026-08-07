@@ -1,31 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "src/context/auth.context";
 import type { CollectionHealth as CollectionHealthType } from "src/types/dashboard.types";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./CollectionHealth.module.css";
-import { DuplicatesList } from "./DuplicatesList.component";
+import { DuplicatesDetailModal } from "./DuplicatesDetailModal.component";
+
+type DuplicateDetailModal = "duplicates" | "potential";
 
 interface CollectionHealthComponentProps {
   health: CollectionHealthType;
+  hideHeading?: boolean;
+  onReleaseClick?: (instanceId: string) => void;
 }
 
-export function CollectionHealth({ health }: CollectionHealthComponentProps) {
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+export function CollectionHealth({
+  health,
+  hideHeading = false,
+  onReleaseClick,
+}: CollectionHealthComponentProps) {
+  const [detailModal, setDetailModal] = useState<DuplicateDetailModal | null>(
+    null,
+  );
   const { state: authState } = useAuth();
   const { username } = authState;
-
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
 
   const collectionUrl = username
     ? `https://www.discogs.com/user/${username}/collection`
     : null;
 
+  const exactDuplicateGroups = useMemo(
+    () => health.duplicateGroups.filter((group) => group.type === "master_id"),
+    [health.duplicateGroups],
+  );
+
+  const potentialDuplicateGroups = useMemo(
+    () =>
+      health.duplicateGroups.filter((group) => group.type === "title_artist"),
+    [health.duplicateGroups],
+  );
+
+  const activeModal =
+    detailModal === "duplicates"
+      ? {
+          title: "Exact duplicates",
+          description: "Releases with the same master ID",
+          duplicateGroups: exactDuplicateGroups,
+        }
+      : detailModal === "potential"
+        ? {
+            title: "Potential duplicates",
+            description: "Releases with the same title and artist",
+            duplicateGroups: potentialDuplicateGroups,
+          }
+        : null;
+
   return (
     <div className={styles.healthContainer}>
-      <h2>Collection Health</h2>
+      {!hideHeading && <h2>Collection Health</h2>}
 
       <div className={styles.healthGrid}>
         <div className={styles.healthCard}>
@@ -38,9 +71,9 @@ export function CollectionHealth({ health }: CollectionHealthComponentProps) {
             <button
               type="button"
               className={styles.expandButton}
-              onClick={() => toggleSection("duplicates")}
+              onClick={() => setDetailModal("duplicates")}
             >
-              {expandedSection === "duplicates" ? "Hide" : "Show"} Details
+              Show details
             </button>
           )}
         </div>
@@ -55,9 +88,9 @@ export function CollectionHealth({ health }: CollectionHealthComponentProps) {
             <button
               type="button"
               className={styles.expandButton}
-              onClick={() => toggleSection("potential")}
+              onClick={() => setDetailModal("potential")}
             >
-              {expandedSection === "potential" ? "Hide" : "Show"} Details
+              Show details
             </button>
           )}
         </div>
@@ -83,17 +116,14 @@ export function CollectionHealth({ health }: CollectionHealthComponentProps) {
         </div>
       </div>
 
-      {expandedSection && (
-        <div className={styles.detailsSection}>
-          <DuplicatesList
-            duplicateGroups={health.duplicateGroups.filter((g) =>
-              expandedSection === "duplicates"
-                ? g.type === "master_id"
-                : g.type === "title_artist",
-            )}
-          />
-        </div>
-      )}
+      <DuplicatesDetailModal
+        isOpen={activeModal !== null}
+        title={activeModal?.title ?? ""}
+        description={activeModal?.description ?? ""}
+        duplicateGroups={activeModal?.duplicateGroups ?? []}
+        onClose={() => setDetailModal(null)}
+        {...definedProps({ onReleaseClick })}
+      />
     </div>
   );
 }

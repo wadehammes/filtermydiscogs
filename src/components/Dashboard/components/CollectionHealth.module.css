@@ -64,7 +64,6 @@
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  margin-top: var(--space-2);
   padding: var(--space-2) var(--space-3);
   transition: var(--transition-fast);
 
@@ -78,7 +77,6 @@
   display: inline-block;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  margin-top: var(--space-2);
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color var(--transition-fast);
@@ -86,9 +84,4 @@
   &:hover {
     color: var(--primary-hover);
   }
-}
-
-.detailsSection {
-  margin-top: var(--space-4);
-  width: 100%;
 }

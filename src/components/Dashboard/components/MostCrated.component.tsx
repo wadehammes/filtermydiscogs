@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { useMostCratedQuery } from "src/hooks/queries/useMostCratedQuery";
+import { definedProps } from "src/utils/definedProps";
 import { DashboardReleaseItem } from "./DashboardReleaseItem.component";
 import styles from "./MostCrated.module.css";
 
-export function MostCrated() {
+interface MostCratedProps {
+  hideHeading?: boolean;
+  onReleaseClick?: (instanceId: string) => void;
+}
+
+export function MostCrated({
+  hideHeading = false,
+  onReleaseClick,
+}: MostCratedProps) {
   const {
     data: mostCratedReleases,
     isLoading,
@@ -17,7 +26,7 @@ export function MostCrated() {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <h2>Most Crated Releases</h2>
+        {!hideHeading && <h2>Most Crated Releases</h2>}
         <p className={styles.loading}>Loading...</p>
       </div>
     );
@@ -26,7 +35,7 @@ export function MostCrated() {
   if (error) {
     return (
       <div className={styles.container}>
-        <h2>Most Crated Releases</h2>
+        {!hideHeading && <h2>Most Crated Releases</h2>}
         <p className={styles.error}>Unable to load most crated releases.</p>
       </div>
     );
@@ -35,11 +44,11 @@ export function MostCrated() {
   if (!mostCratedReleases || mostCratedReleases.length === 0) {
     return (
       <div className={styles.container}>
-        <h2>Most Crated Releases</h2>
+        {!hideHeading && <h2>Most Crated Releases</h2>}
         <div className={styles.emptyState}>
-          <p>No releases appear in multiple crates yet.</p>
+          <p>No records in multiple crates yet.</p>
           <p className={styles.emptyStateSubtext}>
-            Add releases to multiple crates to see them here.
+            Pack the same record into two crates to see it here.
           </p>
           <Link href="/releases" className={styles.emptyStateLink}>
             Go to Releases
@@ -51,14 +60,20 @@ export function MostCrated() {
 
   return (
     <div className={styles.container}>
-      <h2>Most Crated Releases</h2>
-      <p className={styles.subtitle}>
-        Releases that appear in multiple of your crates
-      </p>
+      {!hideHeading && <h2>Most Crated Releases</h2>}
+      {!hideHeading && (
+        <p className={styles.subtitle}>
+          Records that show up in more than one crate
+        </p>
+      )}
       <div className={styles.releasesList}>
         {mostCratedReleases.map((item) => (
           <div key={item.instance_id} className={styles.releaseItem}>
-            <DashboardReleaseItem release={item.release} category="mostCrated">
+            <DashboardReleaseItem
+              release={item.release}
+              category="mostCrated"
+              {...definedProps({ onReleaseClick })}
+            >
               <div className={styles.crateCount}>
                 <span className={styles.countNumber}>{item.crate_count}</span>
                 <span className={styles.countLabel}>

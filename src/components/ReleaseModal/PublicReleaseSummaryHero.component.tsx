@@ -4,10 +4,13 @@ import classNames from "classnames";
 import Image from "next/image";
 import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
+import {
+  ModalToolbar,
+  ModalToolbarLink,
+} from "src/components/shared/ModalToolbar/ModalToolbar.component";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import StarIcon from "src/styles/icons/star-thin.svg";
-import XIcon from "src/styles/icons/x-thin.svg";
 import typographyStyles from "src/styles/typography.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -66,40 +69,27 @@ export const PublicReleaseSummaryHero = ({
 
   return (
     <div className={styles.hero} data-testid="fmdPublicReleaseSummaryHero">
-      <div className={styles.heroToolbar}>
-        <div className={styles.toolbarActions}>
-          {releaseUrl ? (
-            <a
-              href={releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={classNames(styles.actionButton, styles.discogsButton)}
-              aria-label="View on Discogs"
-              title="View on Discogs"
-              onClick={() => {
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category: "publicReleaseModal",
-                  label: "View on Discogs",
-                  value: releaseUrl,
-                });
-              }}
-            >
-              <ExternalLinkIcon className={styles.actionIcon} />
-            </a>
-          ) : null}
-        </div>
-        {onClose ? (
-          <button
-            type="button"
-            className={classNames(styles.actionButton, styles.closeButton)}
-            onClick={onClose}
-            aria-label="Close modal"
+      <ModalToolbar {...definedProps({ onClose })}>
+        {releaseUrl ? (
+          <ModalToolbarLink
+            href={releaseUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View on Discogs"
+            title="View on Discogs"
+            onClick={() => {
+              trackEvent("releaseClicked", {
+                action: "releaseClicked",
+                category: "publicReleaseModal",
+                label: "View on Discogs",
+                value: releaseUrl,
+              });
+            }}
           >
-            <XIcon className={styles.actionIcon} />
-          </button>
+            <ExternalLinkIcon className={styles.actionIcon} aria-hidden />
+          </ModalToolbarLink>
         ) : null}
-      </div>
+      </ModalToolbar>
       <div className={styles.heroMain}>
         <div className={styles.coverWrapper}>
           {thumbUrl ? (

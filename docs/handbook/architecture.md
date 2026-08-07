@@ -13,7 +13,7 @@ Map of FilterMyDisco.gs: technologies, top-level folders, and how Discogs collec
   - **React Context** — auth and collection pagination (**useReducer**); crate drawer/selection (**React Query** + local state); theme (**useState**). [`FiltersProvider`](../../src/context/filters.context.tsx) and [`ViewProvider`](../../src/context/view.context.tsx) are scope markers over Jotai, not duplicate state.
   - **TanStack React Query** — server-backed data (collection pages, crate mutations, dashboard stats, public crates).
 - **Forms**: **React Hook Form** for submit-style dialogs and create/edit flows (see [conventions.md](conventions.md)).
-- **UI libraries**: **TanStack Table** (releases list), **Recharts** (dashboard), **Sonner** (toasts), **Sharp** (image proxy for mosaic).
+- **UI libraries**: **TanStack Table** (releases list), **TanStack Charts** (dashboard), **Sonner** (toasts), **Sharp** (image proxy for mosaic).
 - **Styling**: **CSS Modules** (`.module.css`) plus global styles and theme tokens under [`src/styles/`](../../src/styles/).
 - **Tooling**: **pnpm**, **Biome**, **Stylelint**, **Jest** + Testing Library, **Knip** (unused-code detection in CI).
 

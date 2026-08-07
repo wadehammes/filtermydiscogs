@@ -2,20 +2,25 @@
 
 import Image from "next/image";
 import { trackEvent } from "src/analytics/analytics";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
+import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./DashboardReleaseItem.module.css";
 
 interface DashboardReleaseItemProps {
   release: DiscogsRelease;
   category: string;
   children?: React.ReactNode;
+  onReleaseClick?: (instanceId: string) => void;
 }
 
 export function DashboardReleaseItem({
   release,
   category,
   children,
+  onReleaseClick,
 }: DashboardReleaseItemProps) {
   const { title, artists, labels, thumb, year, resource_url } =
     release.basic_information;
@@ -25,11 +30,43 @@ export function DashboardReleaseItem({
   });
   const primaryLabel = labels[0];
   const artistNames = artists.map((a) => a.name).join(", ");
+  const { openRelease, canOpen } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
+  });
+
+  const imageActivateProps = canOpen
+    ? getReleaseActivateProps({
+        onActivate: () => {
+          trackEvent("releaseClicked", {
+            action: "releaseClicked",
+            category,
+            label: `Release Clicked (${category})`,
+            value: resource_url,
+          });
+          openRelease();
+        },
+        ariaLabel: `Open release details for ${title}`,
+      })
+    : undefined;
+
+  const handleTitleOpen = () => {
+    trackEvent("releaseClicked", {
+      action: "releaseClicked",
+      category,
+      label: `Release Clicked (${category})`,
+      value: resource_url,
+    });
+    openRelease();
+  };
 
   return (
     <div className={styles.releaseItemContainer}>
       {thumb && (
-        <div className={styles.imageWrapper}>
+        <div
+          className={styles.imageWrapper}
+          {...definedProps(imageActivateProps ?? {})}
+        >
           <Image
             src={thumb}
             alt={`${title} by ${artistNames}`}
@@ -75,7 +112,15 @@ export function DashboardReleaseItem({
             );
           })}{" "}
           -{" "}
-          {releaseUrl ? (
+          {canOpen ? (
+            <button
+              type="button"
+              className={styles.releaseTitleButton}
+              onClick={handleTitleOpen}
+            >
+              {title}
+            </button>
+          ) : releaseUrl ? (
             <a
               href={releaseUrl}
               target="_blank"

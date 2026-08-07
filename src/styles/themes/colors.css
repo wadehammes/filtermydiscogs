@@ -132,6 +132,17 @@
     ),
     inset 0 0 0 1px
     light-dark(transparent, color-mix(in srgb, var(--border) 60%, transparent));
+  --shadow-modal:
+    0 10px 15px -3px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    0 4px 6px -4px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    );
   --shadow-xl:
     0 20px 25px -5px
     light-dark(

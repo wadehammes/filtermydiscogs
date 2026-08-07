@@ -108,6 +108,9 @@ const nextConfig: NextConfig = {
     "@faker-js/faker",
     "@tanstack/react-table",
     "@tanstack/table-core",
+    "@tanstack/charts",
+    "@tanstack/charts-scales",
+    "@tanstack/react-charts",
   ],
   logging: {
     fetches: {
@@ -141,10 +144,10 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "@tanstack/react-query",
       "@tanstack/react-table",
+      "@tanstack/react-charts",
       "@dnd-kit/core",
       "@dnd-kit/sortable",
       "@dnd-kit/utilities",
-      "recharts",
       "sonner",
     ],
   },
@@ -201,26 +204,6 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "s-maxage=1, stale-while-revalidate",
-          },
-          ...securityHeaders,
-        ],
-      },
-      {
-        source: "/fonts/averta-font/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, stale-while-revalidate",
-          },
-          ...securityHeaders,
-        ],
-      },
-      {
-        source: "/fonts/fontface.css",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, stale-while-revalidate",
           },
           ...securityHeaders,
         ],

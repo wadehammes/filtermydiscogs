@@ -67,12 +67,13 @@ describe("ReleaseSummaryHero", () => {
     setupReleaseDetailMock();
   });
 
-  it("exports toolbar layout classes for the modal hero structure", async () => {
-    const styles = await import("./ReleaseSummaryHero.module.css");
+  it("exports shared modal toolbar classes for hero actions", async () => {
+    const toolbarStyles = await import(
+      "../shared/ModalToolbar/ModalToolbar.module.css"
+    );
 
-    expect(styles.default.heroToolbar).toBeTruthy();
-    expect(styles.default.heroMain).toBeTruthy();
-    expect(styles.default.toolbarActions).toBeTruthy();
+    expect(toolbarStyles.default.toolbar).toBeTruthy();
+    expect(toolbarStyles.default.actionButton).toBeTruthy();
   });
 
   it("adds release to crate and opens drawer on desktop", async () => {

@@ -1,24 +1,42 @@
 "use client";
 
+import classNames from "classnames";
 import { useMemo } from "react";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
-import { calculateMilestones } from "src/utils/milestones";
+import { definedProps } from "src/utils/definedProps";
+import {
+  calculateMilestones,
+  sortMilestonesChronologically,
+} from "src/utils/milestones";
 import styles from "./CollectionMilestones.module.css";
 import { DashboardReleaseItem } from "./DashboardReleaseItem.component";
 
-export function CollectionMilestones() {
+interface CollectionMilestonesProps {
+  hideHeading?: boolean;
+  onReleaseClick?: (instanceId: string) => void;
+}
+
+const getMilestoneMarker = (value: string): string => {
+  const [firstPart] = value.split("•");
+  return firstPart?.trim() ?? value;
+};
+
+export function CollectionMilestones({
+  hideHeading = false,
+  onReleaseClick,
+}: CollectionMilestonesProps) {
   const releases = useAllReleases();
 
   const milestones = useMemo(() => {
-    return calculateMilestones(releases || []);
+    return sortMilestonesChronologically(calculateMilestones(releases || []));
   }, [releases]);
 
   if (milestones.length === 0) {
     return (
       <div className={styles.container}>
-        <h2>Collection Milestones</h2>
+        {!hideHeading && <h2>Collection Milestones</h2>}
         <div className={styles.emptyState}>
-          <p>No milestones yet. Start adding releases to see your progress!</p>
+          <p>Milestones appear here as the shelf grows.</p>
         </div>
       </div>
     );
@@ -26,33 +44,69 @@ export function CollectionMilestones() {
 
   return (
     <div className={styles.container}>
-      <h2>Collection Milestones</h2>
-      <div className={styles.milestonesList}>
-        {milestones.map((milestone) => (
-          <div
-            key={`${milestone.label}-${milestone.release?.instance_id ?? milestone.value}`}
-            className={styles.milestoneItem}
+      {!hideHeading && <h2>Collection Milestones</h2>}
+      <div className={styles.zigzagTrack}>
+        <div className={styles.zigzagScroller}>
+          <ol
+            aria-label="Collection milestones in chronological order"
+            className={styles.zigzagList}
           >
-            <div className={styles.milestoneHeader}>
-              <div className={styles.milestoneLabel}>{milestone.label}</div>
-              <div className={styles.milestoneValue}>{milestone.value}</div>
-            </div>
-            {milestone.release ? (
-              <div className={styles.releaseWrapper}>
-                <DashboardReleaseItem
-                  release={milestone.release}
-                  category="milestones"
-                />
-              </div>
-            ) : (
-              milestone.description && (
-                <div className={styles.milestoneDescription}>
-                  {milestone.description}
-                </div>
-              )
-            )}
-          </div>
-        ))}
+            {milestones.map((milestone, index) => {
+              const isTop = index % 2 === 0;
+              const marker = getMilestoneMarker(milestone.value);
+
+              const card = (
+                <article className={styles.zigzagCard}>
+                  <header className={styles.zigzagCardHeader}>
+                    <h3 className={styles.zigzagLabel}>{milestone.label}</h3>
+                    <p className={styles.zigzagMarker}>{marker}</p>
+                    {milestone.description && (
+                      <p className={styles.zigzagDescription}>
+                        {milestone.description}
+                      </p>
+                    )}
+                  </header>
+                  {milestone.release && (
+                    <div className={styles.zigzagRelease}>
+                      <DashboardReleaseItem
+                        release={milestone.release}
+                        category="milestones"
+                        {...definedProps({ onReleaseClick })}
+                      />
+                    </div>
+                  )}
+                </article>
+              );
+
+              return (
+                <li
+                  key={`${milestone.label}-${milestone.release?.instance_id ?? milestone.value}`}
+                  className={classNames(styles.zigzagItem, {
+                    [styles.zigzagItemTop]: isTop,
+                    [styles.zigzagItemBottom]: !isTop,
+                  })}
+                >
+                  {isTop ? (
+                    card
+                  ) : (
+                    <div aria-hidden="true" className={styles.zigzagSpacer} />
+                  )}
+
+                  <div className={styles.zigzagNode}>
+                    <span aria-hidden="true" className={styles.zigzagStem} />
+                    <span aria-hidden="true" className={styles.zigzagDot} />
+                  </div>
+
+                  {isTop ? (
+                    <div aria-hidden="true" className={styles.zigzagSpacer} />
+                  ) : (
+                    card
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
     </div>
   );

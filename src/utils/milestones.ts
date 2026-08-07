@@ -7,6 +7,53 @@ export interface CollectionMilestone {
   release?: DiscogsRelease;
 }
 
+export const getMilestoneSortTimestamp = (
+  milestone: CollectionMilestone,
+): number => {
+  if (milestone.label === "Oldest Release") {
+    const pressingYear =
+      milestone.release?.basic_information.year ??
+      Number.parseInt(milestone.value, 10);
+
+    if (!Number.isNaN(pressingYear) && pressingYear > 0) {
+      return new Date(pressingYear, 6, 1).getTime();
+    }
+  }
+
+  if (milestone.label === "Most Active Year") {
+    const year = Number.parseInt(milestone.value, 10);
+    if (!Number.isNaN(year)) {
+      return new Date(year, 11, 31).getTime();
+    }
+  }
+
+  if (milestone.release) {
+    const dateAdded = new Date(milestone.release.date_added);
+    if (!Number.isNaN(dateAdded.getTime())) {
+      return dateAdded.getTime();
+    }
+  }
+
+  const parsed = Date.parse(milestone.value);
+  if (!Number.isNaN(parsed)) {
+    return parsed;
+  }
+
+  const yearMatch = milestone.value.match(/\b(19|20)\d{2}\b/);
+  if (yearMatch?.[0]) {
+    return new Date(Number.parseInt(yearMatch[0], 10), 0, 1).getTime();
+  }
+
+  return 0;
+};
+
+export const sortMilestonesChronologically = (
+  milestones: CollectionMilestone[],
+): CollectionMilestone[] =>
+  [...milestones].sort(
+    (a, b) => getMilestoneSortTimestamp(a) - getMilestoneSortTimestamp(b),
+  );
+
 export function calculateMilestones(
   releases: DiscogsRelease[],
 ): CollectionMilestone[] {

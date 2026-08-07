@@ -14,5 +14,6 @@
   --shadow-sm: 0 0 0 1px var(--foreground);
   --shadow-md: 0 0 0 1px var(--foreground);
   --shadow-lg: 0 0 0 2px var(--foreground);
+  --shadow-modal: none;
   --shadow-xl: 0 0 0 2px var(--foreground);
 }
