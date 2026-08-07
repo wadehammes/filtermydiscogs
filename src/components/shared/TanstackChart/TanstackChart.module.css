@@ -1,5 +1,7 @@
 .chart {
-  color: var(--foreground);
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xs);
   height: 100%;
   width: 100%;
 
@@ -11,6 +13,15 @@
   --ts-chart-6: var(--chart-6, #61ccf0);
 }
 
+.chart :global(.ts-chart__grid) {
+  opacity: 0.28;
+  stroke-width: 1;
+}
+
+.chart :global(.ts-chart__axes line) {
+  opacity: 0.35;
+}
+
 .chart :global(*),
 .chart :global(*:focus),
 .chart :global(*:focus-visible),
@@ -18,4 +29,15 @@
 .chart :global(svg:focus-visible) {
   border: none !important;
   outline: none !important;
+}
+
+.chart :global(.fmd-chart-tooltip) {
+  background-color: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-modal);
+  color: var(--popover-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
 }

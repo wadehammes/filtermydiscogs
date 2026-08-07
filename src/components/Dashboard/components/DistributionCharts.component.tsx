@@ -3,10 +3,7 @@
 import { useMemo } from "react";
 import { PieChartLegend } from "src/components/shared/PieChartLegend/PieChartLegend.component";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
-import type {
-  DistributionData,
-  MediaFormatSubtypeGroup,
-} from "src/types/dashboard.types";
+import type { DistributionData } from "src/types/dashboard.types";
 import { useChartColors } from "src/utils/chartColors";
 import {
   createDistributionPieChartDefinition,
@@ -17,18 +14,18 @@ import styles from "./DistributionCharts.module.css";
 
 interface DistributionChartsProps {
   styleDistribution: DistributionData[];
+  genreDistribution: DistributionData[];
   decadeDistribution: DistributionData[];
   mediaTypeDistribution: DistributionData[];
   formatTagDistribution: DistributionData[];
-  mediaFormatSubtypeBreakdown?: MediaFormatSubtypeGroup[];
 }
 
 export const DistributionCharts = ({
   styleDistribution,
+  genreDistribution,
   decadeDistribution,
   mediaTypeDistribution,
   formatTagDistribution,
-  mediaFormatSubtypeBreakdown = [],
 }: DistributionChartsProps) => {
   const colors = useChartColors();
 
@@ -68,6 +65,14 @@ export const DistributionCharts = ({
       }),
     [mediaTypeDistribution, colors],
   );
+  const genrePieDefinition = useMemo(
+    () =>
+      createDistributionPieChartDefinition({
+        data: genreDistribution,
+        colors,
+      }),
+    [genreDistribution, colors],
+  );
 
   return (
     <div className={styles.distributionLayout}>
@@ -93,7 +98,7 @@ export const DistributionCharts = ({
         </div>
       </div>
 
-      <div className={styles.chartsGrid}>
+      <div className={styles.chartsGridThree}>
         <div className={styles.chartContainer}>
           <h2>By Decade</h2>
           <div className={styles.chartWrapper}>
@@ -117,30 +122,19 @@ export const DistributionCharts = ({
             <PieChartLegend colors={colors} data={mediaTypeDistribution} />
           </div>
         </div>
-      </div>
 
-      {mediaFormatSubtypeBreakdown.length > 0 && (
-        <div className={styles.chartsGrid}>
-          {mediaFormatSubtypeBreakdown.map((group) => {
-            const subtypeBarData = withBarColors(group.subtypes, colors);
-            const subtypeDefinition = createVerticalBarChartDefinition({
-              data: subtypeBarData,
-            });
-
-            return (
-              <div className={styles.chartContainer} key={group.mediaType}>
-                <h2>{group.mediaType} Subtypes</h2>
-                <div className={styles.chartWrapper}>
-                  <TanstackChart
-                    ariaLabel={`${group.mediaType} subtypes distribution`}
-                    definition={subtypeDefinition}
-                  />
-                </div>
-              </div>
-            );
-          })}
+        <div className={styles.chartContainer}>
+          <h2>Top Genres</h2>
+          <div className={styles.chartWrapper}>
+            <TanstackChart
+              ariaLabel="Top genres distribution"
+              definition={genrePieDefinition}
+              height={240}
+            />
+            <PieChartLegend colors={colors} data={genreDistribution} />
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

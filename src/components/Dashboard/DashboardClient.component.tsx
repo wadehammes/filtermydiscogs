@@ -177,12 +177,10 @@ function DashboardClientContent() {
             >
               <DistributionCharts
                 styleDistribution={analytics.styleDistribution}
+                genreDistribution={analytics.genreDistribution}
                 decadeDistribution={analytics.decadeDistribution}
                 mediaTypeDistribution={analytics.mediaTypeDistribution}
                 formatTagDistribution={analytics.formatTagDistribution}
-                mediaFormatSubtypeBreakdown={
-                  analytics.mediaFormatSubtypeBreakdown ?? []
-                }
               />
               <StyleEvolution
                 hideHeading={true}

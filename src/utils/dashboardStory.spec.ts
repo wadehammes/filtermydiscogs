@@ -26,10 +26,10 @@ const baseAnalytics = (): CollectionAnalytics => ({
     { label: "House", value: 30, count: 30 },
     { label: "Techno", value: 20, count: 20 },
   ],
+  genreDistribution: [{ label: "Electronic", value: 50, count: 50 }],
   decadeDistribution: [{ label: "1990s", value: 40, count: 40 }],
   mediaTypeDistribution: [{ label: "Vinyl", value: 90, count: 90 }],
   formatTagDistribution: [{ label: "LP", value: 70, count: 70 }],
-  mediaFormatSubtypeBreakdown: [],
   formatMix: {
     topMediaType: "Vinyl",
     topMediaTypePercent: 75,

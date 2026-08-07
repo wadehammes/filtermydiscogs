@@ -4,12 +4,8 @@ import type {
   DistributionData,
   DuplicateGroup,
   FormatMixSummary,
-  MediaFormatSubtypeGroup,
 } from "src/types/dashboard.types";
-import {
-  getFormatSubtypeTags,
-  getReleaseFormatTags,
-} from "src/utils/formatFilterTags";
+import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 
 const MEDIA_TYPE_NAMES = new Set([
   "vinyl",
@@ -206,6 +202,25 @@ export function calculateStyleDistribution(
     .slice(0, 10); // Top 10 styles
 }
 
+export function calculateGenreDistribution(
+  releases: DiscogsRelease[],
+): DistributionData[] {
+  const genreCounts = new Map<string, number>();
+
+  releases.forEach((release) => {
+    for (const genre of release.basic_information.genres ?? []) {
+      const label = formatDistributionLabel(genre);
+      if (!label) {
+        continue;
+      }
+
+      genreCounts.set(label, (genreCounts.get(label) || 0) + 1);
+    }
+  });
+
+  return toDistributionData(genreCounts);
+}
+
 export function calculateDecadeDistribution(
   releases: DiscogsRelease[],
 ): DistributionData[] {
@@ -248,67 +263,6 @@ export function calculateMediaTypeDistribution(
   });
 
   return toDistributionData(mediaTypeCounts);
-}
-
-export function calculateMediaFormatSubtypeBreakdown(
-  releases: DiscogsRelease[],
-  options?: { maxMediaTypes?: number; subtypeLimit?: number },
-): MediaFormatSubtypeGroup[] {
-  const maxMediaTypes = options?.maxMediaTypes ?? 2;
-  const subtypeLimit = options?.subtypeLimit ?? 8;
-  const releaseCounts = new Map<string, number>();
-  const subtypeCountsByMediaType = new Map<string, Map<string, number>>();
-
-  releases.forEach((release) => {
-    const format = release.basic_information.formats[0];
-    const mediaTypeName = format?.name?.trim();
-    if (!(format && mediaTypeName)) {
-      return;
-    }
-
-    const mediaType = formatDistributionLabel(mediaTypeName);
-    releaseCounts.set(mediaType, (releaseCounts.get(mediaType) || 0) + 1);
-
-    const subtypeTags = getFormatSubtypeTags(format);
-    const countedTags = new Set<string>();
-    const subtypeCounts =
-      subtypeCountsByMediaType.get(mediaType) || new Map<string, number>();
-
-    if (subtypeTags.length === 0) {
-      const unspecifiedLabel = "Unspecified";
-      subtypeCounts.set(
-        unspecifiedLabel,
-        (subtypeCounts.get(unspecifiedLabel) || 0) + 1,
-      );
-      subtypeCountsByMediaType.set(mediaType, subtypeCounts);
-      return;
-    }
-
-    subtypeTags.forEach((tag) => {
-      const label = formatDistributionLabel(tag);
-      if (countedTags.has(label)) {
-        return;
-      }
-
-      countedTags.add(label);
-      subtypeCounts.set(label, (subtypeCounts.get(label) || 0) + 1);
-    });
-
-    subtypeCountsByMediaType.set(mediaType, subtypeCounts);
-  });
-
-  return Array.from(releaseCounts.entries())
-    .sort((left, right) => right[1] - left[1])
-    .map(([mediaType, releaseCount]) => ({
-      mediaType,
-      releaseCount,
-      subtypes: toDistributionData(
-        subtypeCountsByMediaType.get(mediaType) || new Map(),
-        subtypeLimit,
-      ),
-    }))
-    .filter((group) => group.subtypes.length > 1)
-    .slice(0, maxMediaTypes);
 }
 
 export function calculateFormatTagDistribution(

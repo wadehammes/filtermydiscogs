@@ -2,17 +2,18 @@ import {
   areaY,
   barX,
   barY,
+  type ChartAxisPresentationOptions,
   type ChartDefinition,
   type ChartPoint,
+  d3Curve,
   defineChart,
-  text,
 } from "@tanstack/charts";
 import { polar, radialArc } from "@tanstack/charts/polar";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { scaleBand } from "@tanstack/charts-scales/band";
 import { scaleLinear } from "@tanstack/charts-scales/linear";
 import { scalePoint } from "@tanstack/charts-scales/point";
-import { type PieArcDatum, pie } from "d3-shape";
+import { curveMonotoneX, type PieArcDatum, pie } from "d3-shape";
 import type {
   DistributionData,
   GrowthDataPoint,
@@ -62,6 +63,60 @@ const barEnterMotion = {
   },
 };
 
+const smoothAreaCurve = d3Curve(curveMonotoneX);
+
+const TIME_SERIES_TICK_SPACING_PX = 80;
+const TIME_SERIES_TICK_MIN = 3;
+const TIME_SERIES_TICK_MAX = 8;
+
+const modernAxisPresentation = {
+  line: false,
+  ticks: { size: 0, padding: 8 },
+} satisfies ChartAxisPresentationOptions;
+
+const resolveTimeSeriesTickCount = (width: number): number =>
+  Math.max(
+    TIME_SERIES_TICK_MIN,
+    Math.min(
+      TIME_SERIES_TICK_MAX,
+      Math.floor(width / TIME_SERIES_TICK_SPACING_PX),
+    ),
+  );
+
+const pickEvenlySpacedTickValues = <T extends string>(
+  values: readonly T[],
+  maxTicks: number,
+): T[] => {
+  if (values.length === 0) {
+    return [];
+  }
+
+  if (values.length <= maxTicks) {
+    return [...values];
+  }
+
+  const picks: T[] = [];
+  const lastIndex = values.length - 1;
+
+  for (let index = 0; index < maxTicks; index += 1) {
+    const valueIndex = Math.round((index * lastIndex) / (maxTicks - 1));
+    const value = values[valueIndex];
+
+    if (value !== undefined && picks.at(-1) !== value) {
+      picks.push(value);
+    }
+  }
+
+  return picks;
+};
+
+const modernValueAxis = {
+  scale: scaleLinear,
+  nice: true,
+  grid: true,
+  axis: modernAxisPresentation,
+};
+
 interface GrowthAreaChartOptions {
   color: string;
   formatX: (value: string) => string;
@@ -98,86 +153,100 @@ export const createCollectionGrowthAreaChartDefinition = (
   data: readonly GrowthDataPoint[],
   options: GrowthAreaChartOptions,
 ): ChartDefinition =>
-  defineChart({
-    ...chartMotion,
-    marks: [
-      areaY(data, {
-        x: "date",
-        y: "cumulative",
-        fill: options.color,
-        fillOpacity: 0.35,
-        stroke: options.color,
-        strokeWidth: 2,
-      }),
-    ],
-    x: {
-      scale: () => scalePoint<string>().padding(0.2),
-      axis: {
-        ticks: {
-          format: (value: string | number) => options.formatX(String(value)),
+  defineChart(({ width }) => {
+    const tickValues = pickEvenlySpacedTickValues(
+      data.map((point) => point.date),
+      resolveTimeSeriesTickCount(width),
+    );
+
+    return {
+      ...chartMotion,
+      marks: [
+        areaY(data, {
+          x: "date",
+          y: "cumulative",
+          fill: options.color,
+          fillOpacity: 0.16,
+          stroke: options.color,
+          strokeWidth: 2.5,
+          curve: smoothAreaCurve,
+        }),
+      ],
+      x: {
+        scale: () => scalePoint<string>().padding(0.35),
+        axis: {
+          ...modernAxisPresentation,
+          ticks: {
+            ...modernAxisPresentation.ticks,
+            values: tickValues,
+            format: (value: string | number) => options.formatX(String(value)),
+          },
         },
       },
-    },
-    y: {
-      scale: scaleLinear,
-      nice: true,
-      grid: true,
-    },
-    tooltip: {
-      ...chartTooltip,
-      format(point: ChartPoint<GrowthDataPoint>) {
-        const xValue = String(point.xValue ?? "");
-        const yValue =
-          typeof point.yValue === "number"
-            ? point.yValue.toLocaleString()
-            : String(point.yValue ?? "");
+      y: modernValueAxis,
+      tooltip: {
+        ...chartTooltip,
+        format(point: ChartPoint<GrowthDataPoint>) {
+          const xValue = String(point.xValue ?? "");
+          const yValue =
+            typeof point.yValue === "number"
+              ? point.yValue.toLocaleString()
+              : String(point.yValue ?? "");
 
-        return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
+          return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
+        },
       },
-    },
+    };
   });
 
 export const createAdminGrowthAreaChartDefinition = (
   data: readonly AdminGrowthPoint[],
   options: GrowthAreaChartOptions,
 ): ChartDefinition =>
-  defineChart({
-    ...chartMotion,
-    marks: [
-      areaY(data, {
-        x: "month",
-        y: "count",
-        fill: options.color,
-        fillOpacity: 0.35,
-        stroke: options.color,
-        strokeWidth: 2,
-      }),
-    ],
-    x: {
-      scale: () => scalePoint<string>().padding(0.2),
-      axis: {
-        ticks: {
-          format: (value: string | number) => options.formatX(String(value)),
+  defineChart(({ width }) => {
+    const tickValues = pickEvenlySpacedTickValues(
+      data.map((point) => point.month),
+      resolveTimeSeriesTickCount(width),
+    );
+
+    return {
+      ...chartMotion,
+      marks: [
+        areaY(data, {
+          x: "month",
+          y: "count",
+          fill: options.color,
+          fillOpacity: 0.16,
+          stroke: options.color,
+          strokeWidth: 2.5,
+          curve: smoothAreaCurve,
+        }),
+      ],
+      x: {
+        scale: () => scalePoint<string>().padding(0.35),
+        axis: {
+          ...modernAxisPresentation,
+          ticks: {
+            ...modernAxisPresentation.ticks,
+            values: tickValues,
+            format: (value: string | number) => options.formatX(String(value)),
+          },
         },
       },
-    },
-    y: {
-      scale: scaleLinear,
-      nice: true,
-      grid: true,
-    },
-    tooltip: {
-      ...chartTooltip,
-      format(point: ChartPoint<AdminGrowthPoint>) {
-        const xValue = String(point.xValue ?? "");
-        const yValue =
-          typeof point.yValue === "number"
-            ? point.yValue.toLocaleString()
-            : String(point.yValue ?? "");
+      y: modernValueAxis,
+      tooltip: {
+        ...chartTooltip,
+        format(point: ChartPoint<AdminGrowthPoint>) {
+          const xValue = String(point.xValue ?? "");
+          const yValue =
+            typeof point.yValue === "number"
+              ? point.yValue.toLocaleString()
+              : String(point.yValue ?? "");
 
-        return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
+          return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
+        },
       },
-    },
+    };
   });
 
 export const createVerticalBarChartDefinition = ({
@@ -194,30 +263,27 @@ export const createVerticalBarChartDefinition = ({
         x: "label",
         y: "count",
         fill: (datum) => datum.fill,
-        radius: 2,
+        radius: 0,
         key: "label",
         ...barEnterMotion,
-      }),
-      text(data, {
-        x: "label",
-        y: "count",
-        text: (datum) => String(datum.count),
-        dy: -6,
-        anchor: "middle",
-        fill: "currentColor",
-        fontSize: 12,
-        fontWeight: 600,
+        states: [
+          {
+            when: { focus: "primary" },
+            style: { fillOpacity: 0.82 },
+          },
+        ],
       }),
     ],
     x: {
-      scale: () => scaleBand<string>().padding(0.25),
-      ...(rotateXLabels ? { axis: { tickLabels: { rotate: -45 } } } : {}),
+      scale: () => scaleBand<string>().padding(0.38),
+      axis: rotateXLabels
+        ? {
+            ...modernAxisPresentation,
+            tickLabels: { rotate: -40, thin: false },
+          }
+        : modernAxisPresentation,
     },
-    y: {
-      scale: scaleLinear,
-      nice: true,
-      grid: true,
-    },
+    y: modernValueAxis,
     tooltip: {
       ...chartTooltip,
       format(point: ChartPoint<BarDatum>) {
@@ -239,34 +305,21 @@ export const createHorizontalBarChartDefinition = ({
         x: "count",
         y: "label",
         fill: (datum) => datum.fill,
-        radius: 2,
+        radius: 0,
         key: "label",
         ...barEnterMotion,
         states: [
           {
             when: { focus: "primary" },
-            style: { fillOpacity: 0.85 },
+            style: { fillOpacity: 0.82 },
           },
         ],
       }),
-      text(data, {
-        x: "count",
-        y: "label",
-        text: (datum) => String(datum.count),
-        dx: 6,
-        anchor: "start",
-        fill: "currentColor",
-        fontSize: 12,
-        fontWeight: 600,
-      }),
     ],
-    x: {
-      scale: scaleLinear,
-      nice: true,
-      grid: true,
-    },
+    x: modernValueAxis,
     y: {
-      scale: () => scaleBand<string>().padding(0.25),
+      scale: () => scaleBand<string>().padding(0.38),
+      axis: modernAxisPresentation,
     },
     tooltip: {
       ...chartTooltip,
@@ -277,28 +330,28 @@ export const createHorizontalBarChartDefinition = ({
     },
   });
 
-const buildPieSlices = (data: PieDatum[]) => {
-  const pieLayout = pie<PieDatum>()
-    .sort(null)
-    .value((datum) => datum.count);
+const PIE_SLICE_PAD = 0.018;
 
-  return pieLayout([...data]);
-};
+const buildPieSlices = (data: PieDatum[]) =>
+  pie<PieDatum>()
+    .sort(null)
+    .value((datum) => datum.count)
+    .padAngle(PIE_SLICE_PAD)([...data]);
 
 const createPiePolarMark = (
   slices: PieArcDatum<PieDatum>[],
   fill: (slice: PieArcDatum<PieDatum>) => string,
 ) =>
   polar({
-    inset: 8,
-    radiusRatio: 0.82,
+    inset: 4,
+    radiusRatio: 0.9,
     marks: [
       radialArc(slices, {
         startAngle: "startAngle",
         endAngle: "endAngle",
         padAngle: "padAngle",
-        innerRadius: 0,
-        cornerRadius: 2,
+        innerRadius: (layout) => layout.radius * 0.56,
+        cornerRadius: 0,
         fill,
         key: (slice) => slice.data.label,
       }),

@@ -39,12 +39,6 @@ export interface FormatMixSummary {
   topTags: Array<{ label: string; count: number }>;
 }
 
-export interface MediaFormatSubtypeGroup {
-  mediaType: string;
-  releaseCount: number;
-  subtypes: DistributionData[];
-}
-
 export interface CollectionHealth {
   duplicateCount: number;
   potentialDuplicates: number;
@@ -125,10 +119,10 @@ export interface CollectionAnalytics {
   growth: GrowthDataPoint[];
   health: CollectionHealth;
   styleDistribution: DistributionData[];
+  genreDistribution: DistributionData[];
   decadeDistribution: DistributionData[];
   mediaTypeDistribution: DistributionData[];
   formatTagDistribution: DistributionData[];
-  mediaFormatSubtypeBreakdown: MediaFormatSubtypeGroup[];
   formatMix: FormatMixSummary | null;
   artistDistribution: DistributionData[];
   labelDistribution: DistributionData[];
