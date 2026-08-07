@@ -20,6 +20,7 @@ import type {
 } from "src/types/dashboard.types";
 import { getChartColor } from "src/utils/chartColors";
 import { CHART_TOOLTIP_CLASS } from "src/utils/chartConfig";
+import type { DualSeriesPoint } from "src/utils/tagGrowthTracker";
 
 export interface AdminGrowthPoint {
   month: string;
@@ -123,6 +124,15 @@ interface GrowthAreaChartOptions {
   tooltipValueLabel: string;
 }
 
+interface DualSeriesAreaChartOptions {
+  primaryColor: string;
+  secondaryColor: string;
+  primaryLabel: string;
+  secondaryLabel: string;
+  formatX: (value: string) => string;
+  valueFormat: "count" | "percent";
+}
+
 export const formatMonthYear = (date: string): string => {
   const parts = date.split("-");
   const year = parts[0];
@@ -194,6 +204,95 @@ export const createCollectionGrowthAreaChartDefinition = (
               : String(point.yValue ?? "");
 
           return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
+        },
+      },
+    };
+  });
+
+const formatSeriesValue = (
+  value: number,
+  valueFormat: DualSeriesAreaChartOptions["valueFormat"],
+): string => (valueFormat === "percent" ? `${value}%` : value.toLocaleString());
+
+const shareValueAxis = {
+  scale: scaleLinear,
+  nice: true,
+  grid: true,
+  axis: {
+    ...modernAxisPresentation,
+    ticks: {
+      ...modernAxisPresentation.ticks,
+      format: (value: number) => `${value}%`,
+    },
+  },
+};
+
+export const createDualSeriesAreaChartDefinition = (
+  data: readonly DualSeriesPoint[],
+  options: DualSeriesAreaChartOptions,
+): ChartDefinition =>
+  defineChart(({ width }) => {
+    const tickValues = pickEvenlySpacedTickValues(
+      data.map((point) => point.date),
+      resolveTimeSeriesTickCount(width),
+    );
+
+    return {
+      ...chartMotion,
+      marks: [
+        areaY(data, {
+          x: "date",
+          y: "primaryValue",
+          fill: options.primaryColor,
+          fillOpacity: 0.12,
+          stroke: options.primaryColor,
+          strokeWidth: 2.5,
+          curve: smoothAreaCurve,
+        }),
+        areaY(data, {
+          x: "date",
+          y: "secondaryValue",
+          fill: options.secondaryColor,
+          fillOpacity: 0.12,
+          stroke: options.secondaryColor,
+          strokeWidth: 2.5,
+          curve: smoothAreaCurve,
+        }),
+      ],
+      x: {
+        scale: () => scalePoint<string>().padding(0.35),
+        axis: {
+          ...modernAxisPresentation,
+          ticks: {
+            ...modernAxisPresentation.ticks,
+            values: tickValues,
+            format: (value: string | number) => options.formatX(String(value)),
+          },
+        },
+      },
+      y: options.valueFormat === "percent" ? shareValueAxis : modernValueAxis,
+      tooltip: {
+        ...chartTooltip,
+        format(point: ChartPoint<DualSeriesPoint>) {
+          const datum = point.datum;
+
+          if (!datum) {
+            return "";
+          }
+
+          const periodLabel = options.formatX(String(datum.date));
+          const primaryValue = formatSeriesValue(
+            datum.primaryValue,
+            options.valueFormat,
+          );
+          const secondaryValue = formatSeriesValue(
+            datum.secondaryValue,
+            options.valueFormat,
+          );
+          const suffix =
+            options.valueFormat === "percent" ? " of adds" : " records";
+
+          return `${periodLabel}\n${options.primaryLabel}: ${primaryValue}${suffix}\n${options.secondaryLabel}: ${secondaryValue}${suffix}`;
         },
       },
     };

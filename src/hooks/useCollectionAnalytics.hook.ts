@@ -13,6 +13,10 @@ import {
   calculateStyleDistribution,
   detectDuplicates,
 } from "src/utils/collectionAnalytics";
+import {
+  calculateAcquisitionStreaks,
+  calculateYearInReview,
+} from "src/utils/collectionRhythm";
 import { analyzeGrowthFromDates } from "src/utils/growthTracker";
 import { calculateMilestones } from "src/utils/milestones";
 import { calculateStyleEvolution } from "src/utils/styleEvolution";
@@ -42,6 +46,8 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
     };
 
     const growth = analyzeGrowthFromDates(releases);
+    const yearInReview = calculateYearInReview(releases);
+    const acquisitionStreaks = calculateAcquisitionStreaks(releases);
     const styleDistribution = calculateStyleDistribution(releases);
     const genreDistribution = calculateGenreDistribution(releases);
     const decadeDistribution = calculateDecadeDistribution(releases);
@@ -57,6 +63,8 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       stats,
       growth,
       health,
+      yearInReview,
+      acquisitionStreaks,
       styleDistribution,
       genreDistribution,
       decadeDistribution,

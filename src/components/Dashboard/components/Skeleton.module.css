@@ -24,7 +24,7 @@
 .skeletonCard {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -54,7 +54,7 @@
 .skeletonChart {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   display: flex;
   flex-direction: column;
   min-height: 400px;
@@ -149,7 +149,7 @@
 }
 
 .skeletonListItem {
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   height: 5rem;
   width: 100%;
 }
