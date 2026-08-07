@@ -142,9 +142,9 @@ Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`
 - **`test-utils`** alias → [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)
 - **`src/`** path alias
 - SVG and CSS mocks under **`.jest/`**
-- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`** (see comments in config)
+- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`** and **`@tanstack/react-table`** / **`@tanstack/table-core`** (see comments in config)
 
-Faker transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding faker from the custom ignore pattern.
+Faker and TanStack Table transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
 
 ## Analytics
 

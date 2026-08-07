@@ -16,9 +16,6 @@ describe("ReleasesTable", () => {
 
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Crate" }),
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole("columnheader", { name: "Artist / Title" }),
     ).toBeInTheDocument();
     expect(

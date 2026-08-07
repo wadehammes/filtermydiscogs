@@ -1,4 +1,5 @@
 .tableWrapper {
+  min-width: 0;
   width: 100%;
   padding: 0 var(--space-4);
 }
@@ -8,6 +9,8 @@
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   display: block;
+  max-width: 100%;
+  min-width: 0;
   overflow: auto hidden;
   width: 100%;
   border-radius: var(--radius-ui);
@@ -35,18 +38,60 @@
   font-size: var(--text-xxs);
   font-weight: var(--font-semibold);
   letter-spacing: 0.025em;
-  padding: var(--space-1) var(--space-2);
+  padding: 0;
   text-align: left;
   text-transform: uppercase;
   transition: var(--transition-fast);
+  vertical-align: middle;
 
   &:last-child {
     border-right: none;
   }
 
+  &.isResizing {
+    user-select: none;
+  }
+}
+
+.headerInner {
+  align-items: center;
+  display: flex;
+  gap: var(--space-1);
+  min-height: 100%;
+  padding: var(--space-1) var(--space-2);
+  position: relative;
+
   @media (width >= 768px) {
     padding: var(--space-4) var(--space-3);
   }
+}
+
+.headerLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.resizeHandle {
+  background: var(--border);
+  bottom: 0;
+  cursor: col-resize;
+  inset-inline-end: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  touch-action: none;
+  transition: opacity var(--transition-fast);
+  width: 3px;
+}
+
+.resizeHandle:hover,
+.resizeHandleActive {
+  background: var(--primary);
+}
+
+.headerCell:hover .resizeHandle,
+.resizeHandleActive {
+  opacity: 1;
 }
 
 .tbody {
@@ -76,6 +121,7 @@
 
 .dataCell {
   border-right: 1px solid var(--border);
+  overflow: hidden;
   padding: var(--space-1);
   vertical-align: middle;
 
@@ -150,10 +196,6 @@
   letter-spacing: 0.025em;
   text-align: center;
   text-transform: uppercase;
-  width: var(--button-height-md);
-  min-width: var(--button-height-md);
-  max-width: var(--button-height-md);
-  padding: var(--space-1);
 }
 
 .artistCell,
@@ -254,8 +296,7 @@
 }
 
 .notesCell {
-  max-width: 16rem;
-  min-width: 10rem;
+  min-width: 0;
   padding: var(--space-1) var(--space-2);
 
   > div {
@@ -270,10 +311,9 @@
 }
 
 .formatStylesCell {
-  max-width: 11.25rem;
+  min-width: 0;
   overflow: hidden;
   padding: var(--space-1) 0 var(--space-1) var(--space-1);
-  width: 11.25rem;
 }
 
 .tagsRow {
