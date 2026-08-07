@@ -1,0 +1,9 @@
+.dock {
+  pointer-events: none;
+  position: fixed;
+  z-index: var(--z-3-fixed);
+
+  & > * {
+    pointer-events: auto;
+  }
+}

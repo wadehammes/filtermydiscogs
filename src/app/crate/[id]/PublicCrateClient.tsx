@@ -7,18 +7,14 @@ import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConne
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { PublicReleaseModal } from "src/components/ReleaseModal/PublicReleaseModal.component";
-import { ReleaseMiniPlayer } from "src/components/ReleasePlayback/ReleaseMiniPlayer.component";
+import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
 import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
-import {
-  ReleasePlaybackProvider,
-  useReleasePlayback,
-} from "src/context/releasePlayback.context";
+import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import type { DiscogsRelease } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
-import { definedProps } from "src/utils/definedProps";
 import styles from "./page.module.css";
 
 interface PublicCrateClientProps {
@@ -79,7 +75,6 @@ function PublicCrateLoadedContent({
   >["pagination"];
 }) {
   const { login } = useAuth();
-  const { isPlaying } = useReleasePlayback();
   const {
     selectedRelease,
     selectedReleaseId,
@@ -87,134 +82,133 @@ function PublicCrateLoadedContent({
     handleCloseModal,
   } = useSelectedReleaseModal(releases);
 
+  useRegisterPlaybackReleaseClick(handleReleaseClick);
+
   if (!pagination) {
     throw new Error("Pagination data is missing");
   }
 
   return (
-    <div
-      className={classNames(styles.container, {
-        [styles.withMiniPlayer]: isPlaying,
-      })}
+    <PlaybackPageShell
+      overlays={
+        <PublicReleaseModal
+          isOpen={selectedReleaseId !== null}
+          release={selectedRelease}
+          onClose={handleCloseModal}
+        />
+      }
     >
-      <div className={styles.content}>
-        {crate.username ? (
-          <div className={styles.notice}>
-            <p className={styles.noticeText}>
-              You are viewing a public crate for {crate.username}
-            </p>
-          </div>
-        ) : null}
-        <div className={styles.section}>
-          <h1 className={styles.title}>{crate.name}</h1>
-          <div className={styles.meta}>
-            {crate.username ? (
-              <>
-                By {crate.username}
-                {" · "}
-              </>
-            ) : null}
-            {pagination.total} release{pagination.total !== 1 ? "s" : ""}
-            <div className={styles.metaContainer}>
-              {crate.created_at ? (
-                <span>Created {formatDate(String(crate.created_at))}</span>
+      <div className={styles.container}>
+        <div className={styles.content}>
+          {crate.username ? (
+            <div className={styles.notice}>
+              <p className={styles.noticeText}>
+                You are viewing a public crate for {crate.username}
+              </p>
+            </div>
+          ) : null}
+          <div className={styles.section}>
+            <h1 className={styles.title}>{crate.name}</h1>
+            <div className={styles.meta}>
+              {crate.username ? (
+                <>
+                  By {crate.username}
+                  {" · "}
+                </>
               ) : null}
-              {crate.updated_at &&
-                new Date(crate.updated_at).getTime() !==
-                  new Date(crate.created_at).getTime() && (
-                  <time dateTime={String(crate.updated_at)}>
-                    Updated {formatDate(String(crate.updated_at))}
-                  </time>
-                )}
-            </div>
-          </div>
-        </div>
-
-        {releases.length > 0 ? (
-          <div className={styles.section}>
-            <ReleaseCardGrid
-              releases={releases}
-              onReleaseClick={handleReleaseClick}
-            />
-          </div>
-        ) : (
-          <div className={styles.section}>
-            <p className={styles.text}>This crate is empty.</p>
-          </div>
-        )}
-
-        <section className={classNames(styles.section, styles.aboutSection)}>
-          <div className={styles.twoColumnLayout}>
-            <div className={styles.aboutContent}>
-              <h2 className={styles.heading}>About FilterMyDiscogs</h2>
-              <p className={styles.text}>
-                FilterMyDisco.gs is a passion project to help you better and
-                more effectively discover, organize, and explore your
-                collection.
-              </p>
-              <p className={styles.text}>Key features:</p>
-              <ul className={styles.list}>
-                <li className={styles.listItem}>
-                  <strong>Collection analytics</strong>: discover your
-                  collection milestones, style evolution over time, growth
-                  trends, and more with beautiful visualizations
-                </li>
-                <li className={styles.listItem}>
-                  <strong>Browse and filter your collection</strong>: rediscover
-                  your favorite albums and artists
-                </li>
-                <li className={styles.listItem}>
-                  <strong>Organize crates for gigs and sharing</strong>: reorder
-                  releases, add section markers, write set notes, and track
-                  gig-packing progress
-                </li>
-                <li className={styles.listItem}>
-                  <strong>Generate mosaic grids</strong>: different formats and
-                  sizes; perfect for social sharing
-                </li>
-                <li className={styles.listItem}>
-                  <strong>Share public crates</strong>: make your crates public
-                  and share them with others
-                </li>
-              </ul>
-              <p className={styles.text}>
-                <Link href="/about" className={styles.inlineLink}>
-                  Learn more
-                </Link>
-              </p>
-            </div>
-
-            <div className={styles.loginModule}>
-              <h2 className={styles.heading}>Get Started</h2>
-              <p className={styles.text}>
-                Connect your Discogs account to start exploring and organizing
-                your collection.
-              </p>
-              <div className={styles.loginButtonContainer}>
-                <LoginConnectButton
-                  onClick={login}
-                  className={styles.connectButton}
-                />
+              {pagination.total} release{pagination.total !== 1 ? "s" : ""}
+              <div className={styles.metaContainer}>
+                {crate.created_at ? (
+                  <span>Created {formatDate(String(crate.created_at))}</span>
+                ) : null}
+                {crate.updated_at &&
+                  new Date(crate.updated_at).getTime() !==
+                    new Date(crate.created_at).getTime() && (
+                    <time dateTime={String(crate.updated_at)}>
+                      Updated {formatDate(String(crate.updated_at))}
+                    </time>
+                  )}
               </div>
-              <p className={styles.loginNote}>
-                <Link href="/legal" className={styles.inlineLink}>
-                  Terms & Privacy
-                </Link>
-              </p>
             </div>
           </div>
-        </section>
-      </div>
 
-      <PublicReleaseModal
-        isOpen={selectedReleaseId !== null}
-        release={selectedRelease}
-        onClose={handleCloseModal}
-      />
-      <ReleaseMiniPlayer
-        {...definedProps({ onReleaseClick: handleReleaseClick })}
-      />
-    </div>
+          {releases.length > 0 ? (
+            <div className={styles.section}>
+              <ReleaseCardGrid
+                releases={releases}
+                onReleaseClick={handleReleaseClick}
+              />
+            </div>
+          ) : (
+            <div className={styles.section}>
+              <p className={styles.text}>This crate is empty.</p>
+            </div>
+          )}
+
+          <section className={classNames(styles.section, styles.aboutSection)}>
+            <div className={styles.twoColumnLayout}>
+              <div className={styles.aboutContent}>
+                <h2 className={styles.heading}>About FilterMyDiscogs</h2>
+                <p className={styles.text}>
+                  FilterMyDisco.gs is a passion project to help you better and
+                  more effectively discover, organize, and explore your
+                  collection.
+                </p>
+                <p className={styles.text}>Key features:</p>
+                <ul className={styles.list}>
+                  <li className={styles.listItem}>
+                    <strong>Collection analytics</strong>: discover your
+                    collection milestones, style evolution over time, growth
+                    trends, and more with beautiful visualizations
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Browse and filter your collection</strong>:
+                    rediscover your favorite albums and artists
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Organize crates for gigs and sharing</strong>:
+                    reorder releases, add section markers, write set notes, and
+                    track gig-packing progress
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Generate mosaic grids</strong>: different formats
+                    and sizes; perfect for social sharing
+                  </li>
+                  <li className={styles.listItem}>
+                    <strong>Share public crates</strong>: make your crates
+                    public and share them with others
+                  </li>
+                </ul>
+                <p className={styles.text}>
+                  <Link href="/about" className={styles.inlineLink}>
+                    Learn more
+                  </Link>
+                </p>
+              </div>
+
+              <div className={styles.loginModule}>
+                <h2 className={styles.heading}>Get Started</h2>
+                <p className={styles.text}>
+                  Connect your Discogs account to start exploring and organizing
+                  your collection.
+                </p>
+                <div className={styles.loginButtonContainer}>
+                  <LoginConnectButton
+                    onClick={login}
+                    className={styles.connectButton}
+                  />
+                </div>
+                <p className={styles.loginNote}>
+                  <Link href="/legal" className={styles.inlineLink}>
+                    Terms & Privacy
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </PlaybackPageShell>
   );
 }
 
@@ -277,9 +271,5 @@ function PublicCrateClientContent({ crateId }: PublicCrateClientProps) {
 }
 
 export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
-  return (
-    <ReleasePlaybackProvider>
-      <PublicCrateClientContent crateId={crateId} />
-    </ReleasePlaybackProvider>
-  );
+  return <PublicCrateClientContent crateId={crateId} />;
 }

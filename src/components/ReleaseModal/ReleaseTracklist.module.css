@@ -9,38 +9,50 @@
   padding: 0;
 }
 
-.tracklist li:not(:last-child) {
-  border-bottom: 1px dotted var(--border);
+.trackItem {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  transition: background-color var(--transition-normal);
+
+  &:hover,
+  &:focus-within {
+    background: var(--muted);
+  }
 }
 
-.trackRow {
+.trackItem:not(:last-child) {
+  border-bottom: 1px dashed var(--border);
+}
+
+.trackItemActive {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+
+  &:hover,
+  &:focus-within {
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+}
+
+.trackMainButton {
   align-items: center;
   background: transparent;
   border: none;
-  border-radius: 0;
   color: inherit;
   cursor: pointer;
   display: grid;
   font: inherit;
   gap: var(--space-2);
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-width: 0;
   padding: var(--space-2) var(--space-3);
   text-align: left;
-  transition: background-color var(--transition-normal);
   width: 100%;
-
-  &:hover {
-    background: var(--muted);
-  }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
-}
-
-.trackRowActive {
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .trackPosition {
@@ -83,11 +95,20 @@
   white-space: nowrap;
 }
 
+.trackTrailing {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  padding-inline: var(--space-2) var(--space-3);
+}
+
 .trackDuration {
-  align-self: center;
   color: var(--muted-foreground);
   font-size: var(--text-xs);
   line-height: 1;
+  min-width: 2.5rem;
+  text-align: right;
   white-space: nowrap;
 }
 
@@ -96,4 +117,55 @@
   font-size: var(--text-sm);
   margin: 0;
   padding: var(--space-4);
+}
+
+.queueButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.75rem;
+  justify-content: center;
+  opacity: 0;
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal),
+    opacity var(--transition-normal);
+  width: 1.75rem;
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--foreground) 8%, transparent);
+    color: var(--foreground);
+  }
+
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+
+.trackItem:hover .queueButton,
+.trackItem:focus-within .queueButton,
+.queueButtonQueued {
+  opacity: 1;
+}
+
+.queueButtonQueued {
+  color: var(--primary);
+  cursor: default;
+}
+
+.queueButtonIcon {
+  display: block;
+  height: 0.875rem;
+  width: 0.875rem;
 }

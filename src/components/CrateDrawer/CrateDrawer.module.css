@@ -15,6 +15,13 @@
   }
 }
 
+:global([data-releases-workspace]) .drawer {
+  height: 100%;
+  max-height: none;
+  position: static;
+  top: auto;
+}
+
 .header {
   align-items: center;
   border-bottom: 1px solid var(--border);

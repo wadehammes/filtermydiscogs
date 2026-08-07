@@ -1,4 +1,6 @@
 import * as apiHelpers from "src/api/helpers";
+import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
+import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -87,8 +89,15 @@ export class ReleasesClientPageObject extends BasePageObject {
   }
 
   renderReleasesClient(): RenderResult {
-    return render(<ReleasesClient />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    return render(
+      <ReleasePlaybackProvider>
+        <PlaybackReleaseClickProvider>
+          <ReleasesClient />
+        </PlaybackReleaseClickProvider>
+      </ReleasePlaybackProvider>,
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
   }
 }

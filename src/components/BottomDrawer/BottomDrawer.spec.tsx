@@ -51,6 +51,34 @@ describe("BottomDrawer", () => {
     expect(screen.getByText("Footer Content")).toBeInTheDocument();
   });
 
+  it("renders close button in the header when closeButtonPlacement is header", () => {
+    po.renderBottomDrawer({
+      title: "Test Drawer",
+      closeButtonPlacement: "header",
+      closeButtonAriaLabel: "Close test drawer",
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Close test drawer" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: "Close test drawer" }),
+    ).toHaveLength(1);
+  });
+
+  it("calls onClose when header close button is clicked", async () => {
+    const user = userEvent.setup();
+    po.renderBottomDrawer({
+      title: "Test Drawer",
+      closeButtonPlacement: "header",
+      closeButtonAriaLabel: "Close test drawer",
+    });
+
+    await user.click(screen.getByRole("button", { name: "Close test drawer" }));
+
+    expect(po.onClose).toHaveBeenCalledTimes(1);
+  });
+
   it("renders close button", () => {
     po.renderBottomDrawer();
 

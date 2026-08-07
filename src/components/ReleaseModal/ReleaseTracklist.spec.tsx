@@ -159,4 +159,44 @@ describe("ReleaseTracklist", () => {
 
     expect(screen.getByTestId("fmdReleaseTracklistEmpty")).toBeInTheDocument();
   });
+
+  it("calls onTrackQueue when the add-to-queue control is clicked", async () => {
+    const user = userEvent.setup();
+    const onTrackQueue = jest.fn();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={onTrackQueue}
+      />,
+    );
+
+    const queueButtons = screen.getAllByTestId("fmdReleaseTrackQueueButton");
+
+    await user.click(queueButtons[1] as HTMLButtonElement);
+
+    expect(onTrackQueue).toHaveBeenCalledWith("B");
+  });
+
+  it("disables the add-to-queue control when the track is already queued", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        isTrackQueued={(position) => position === "A"}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: "Never Gonna Give You Up is already in the queue",
+      }),
+    ).toBeDisabled();
+  });
 });

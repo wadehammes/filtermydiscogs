@@ -2,31 +2,46 @@
 
 import classNames from "classnames";
 import { useEffect, useState } from "react";
+import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import styles from "./BackToTop.module.css";
 
 const SCROLL_THRESHOLD = 400; // Show button after scrolling 400px
 
 interface BackToTopProps {
+  aboveDock?: boolean;
   className?: string;
 }
 
-export const BackToTop = ({ className }: BackToTopProps) => {
+export const BackToTop = ({ aboveDock = false, className }: BackToTopProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const scrollElement = usePlaybackPageScrollElement();
 
   useEffect(() => {
+    const getScrollY = () =>
+      scrollElement
+        ? scrollElement.scrollTop
+        : window.scrollY || document.documentElement.scrollTop;
+
     const handleScroll = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      setIsVisible(scrollY > SCROLL_THRESHOLD);
+      setIsVisible(getScrollY() > SCROLL_THRESHOLD);
     };
 
-    // Check initial scroll position
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const scrollTarget: HTMLElement | Window = scrollElement ?? window;
+    scrollTarget.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollTarget.removeEventListener("scroll", handleScroll);
+  }, [scrollElement]);
 
   const scrollToTop = () => {
+    if (scrollElement) {
+      scrollElement.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      return;
+    }
+
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -38,6 +53,7 @@ export const BackToTop = ({ className }: BackToTopProps) => {
       type="button"
       onClick={scrollToTop}
       className={classNames(styles.backToTop, className, {
+        [styles.aboveDock]: aboveDock,
         [styles.visible]: isVisible,
       })}
       data-testid="fmdBackToTop"

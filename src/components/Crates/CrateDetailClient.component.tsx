@@ -1,6 +1,5 @@
 "use client";
 
-import classNames from "classnames";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -12,17 +11,13 @@ import { CrateReleaseListToolbar } from "src/components/CrateDrawer/CrateRelease
 import { CrateSetNotesScratchpad } from "src/components/CrateDrawer/CrateSetNotesScratchpad.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
-import { ReleaseMiniPlayer } from "src/components/ReleasePlayback/ReleaseMiniPlayer.component";
+import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
-import {
-  ReleasePlaybackProvider,
-  useReleasePlayback,
-} from "src/context/releasePlayback.context";
+import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { countVisibleCrateReleases } from "src/lib/crate-layout";
-import { definedProps } from "src/utils/definedProps";
 import styles from "./CrateDetailClient.module.css";
 import { CrateDetailHeader } from "./CrateDetailHeader.component";
 import { CrateLayoutList } from "./CrateLayoutList.component";
@@ -31,7 +26,13 @@ interface CrateDetailClientProps {
   crateId: string;
 }
 
-const CrateDetailWorkspace = () => {
+interface CrateDetailWorkspaceProps {
+  onReleaseClick: (instanceId: string) => void;
+}
+
+const CrateDetailWorkspace = ({
+  onReleaseClick,
+}: CrateDetailWorkspaceProps) => {
   const {
     activeCrateId,
     hidePackedItems,
@@ -43,12 +44,6 @@ const CrateDetailWorkspace = () => {
     setPacked,
   } = useCrateDrawerContext();
 
-  const {
-    selectedRelease,
-    selectedReleaseId,
-    handleReleaseClick,
-    handleCloseModal,
-  } = useSelectedReleaseModal(selectedReleases);
   const [topInsertMount, setTopInsertMount] = useState<HTMLElement | null>(
     null,
   );
@@ -82,7 +77,7 @@ const CrateDetailWorkspace = () => {
       isPacked={isPacked}
       setPacked={setPacked}
       removeFromCrate={removeFromCrate}
-      onReleaseClick={handleReleaseClick}
+      onReleaseClick={onReleaseClick}
       topInsertMount={topInsertMount}
       bottomInsertMount={bottomInsertMount}
     />
@@ -122,22 +117,21 @@ const CrateDetailWorkspace = () => {
       </div>
 
       <CrateDrawerDialogs />
-      <ReleaseModal
-        isOpen={selectedReleaseId !== null}
-        release={selectedRelease}
-        onClose={handleCloseModal}
-      />
-      <ReleaseMiniPlayer
-        {...definedProps({ onReleaseClick: handleReleaseClick })}
-      />
     </div>
   );
 };
 
 function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
-  const { crates, isLoading, selectCrate } = useCrate();
-  const { isPlaying } = useReleasePlayback();
+  const { crates, isLoading, selectCrate, selectedReleases } = useCrate();
+  const {
+    selectedRelease,
+    selectedReleaseId,
+    handleReleaseClick,
+    handleCloseModal,
+  } = useSelectedReleaseModal(selectedReleases);
+
+  useRegisterPlaybackReleaseClick(handleReleaseClick);
 
   useEffect(() => {
     if (crateId) {
@@ -152,18 +146,24 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
   }
 
   return (
-    <div
-      className={classNames(styles.pageShell, {
-        [styles.withMiniPlayer]: isPlaying,
-      })}
-      data-testid="fmdCrateDetailClient"
+    <PlaybackPageShell
+      fillViewport
+      header={
+        <StickyHeaderBar
+          allReleasesLoaded={true}
+          currentPage="crates"
+          hideFilters={true}
+        />
+      }
+      overlays={
+        <ReleaseModal
+          isOpen={selectedReleaseId !== null}
+          release={selectedRelease}
+          onClose={handleCloseModal}
+        />
+      }
     >
-      <StickyHeaderBar
-        allReleasesLoaded={true}
-        currentPage="crates"
-        hideFilters={true}
-      />
-      <main className={styles.page}>
+      <main className={styles.page} data-testid="fmdCrateDetailClient">
         <div className={styles.container}>
           {isLoading ? (
             <div className={styles.loadingState}>
@@ -177,20 +177,16 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
               </Link>
             </div>
           ) : (
-            <CrateDrawerProvider>
-              <CrateDetailWorkspace />
+            <CrateDrawerProvider onReleaseClick={handleReleaseClick}>
+              <CrateDetailWorkspace onReleaseClick={handleReleaseClick} />
             </CrateDrawerProvider>
           )}
         </div>
       </main>
-    </div>
+    </PlaybackPageShell>
   );
 }
 
 export default function CrateDetailClient({ crateId }: CrateDetailClientProps) {
-  return (
-    <ReleasePlaybackProvider>
-      <CrateDetailClientContent crateId={crateId} />
-    </ReleasePlaybackProvider>
-  );
+  return <CrateDetailClientContent crateId={crateId} />;
 }

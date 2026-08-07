@@ -1,0 +1,191 @@
+.emptyMessage {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-4);
+}
+
+.queueDrawer {
+  @media (width >= 768px) {
+    border-radius: var(--radius-card);
+    left: auto;
+    max-width: 31.25rem;
+    right: var(--space-4);
+    width: min(100% - var(--space-8), 31.25rem);
+  }
+
+  :global([data-bottom-drawer-footer]) {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.queueList li:not(:last-child) {
+  border-bottom: 1px dotted var(--border);
+}
+
+.queueItem {
+  align-items: stretch;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+}
+
+.queueItemDragging {
+  opacity: 0.85;
+  position: relative;
+  z-index: 1;
+}
+
+.queueItemActive {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.dragHandle {
+  align-items: center;
+  align-self: center;
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: grab;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 2rem;
+  justify-content: center;
+  padding: 0 var(--space-1);
+  touch-action: none;
+  width: 1.75rem;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-ui);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.dragHandleIcon {
+  display: block;
+  flex-shrink: 0;
+  height: 1.125rem;
+  opacity: 0.55;
+  width: 1.125rem;
+}
+
+.queuePlayButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  font: inherit;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  &:hover {
+    background: var(--muted);
+  }
+}
+
+.queueCover {
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  height: 3rem;
+  object-fit: cover;
+  width: 3rem;
+}
+
+.queueText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.queueTrackTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.3;
+}
+
+.queueReleaseMeta {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queueRemoveButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  transition: color var(--transition-normal);
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  &:hover {
+    color: var(--foreground);
+  }
+}
+
+.queueRemoveIcon {
+  display: block;
+  height: var(--space-4);
+  width: var(--space-4);
+}
+
+.clearButton {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background: var(--muted);
+  }
+}

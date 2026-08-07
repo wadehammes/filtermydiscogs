@@ -1,4 +1,5 @@
 import * as apiHelpers from "src/api/helpers";
+import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -130,8 +131,13 @@ export class CratesClientPageObject extends BasePageObject {
 
     this.setupMocks([crate]);
 
-    return render(<CrateDetailClient crateId={crateId} />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    return render(
+      <ReleasePlaybackProvider>
+        <CrateDetailClient crateId={crateId} />
+      </ReleasePlaybackProvider>,
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
   }
 }

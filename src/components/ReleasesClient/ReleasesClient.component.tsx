@@ -1,20 +1,19 @@
 "use client";
 
 import classNames from "classnames";
+import { useCallback, useState } from "react";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { Page } from "src/components/Page/Page.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
-import { ReleaseMiniPlayer } from "src/components/ReleasePlayback/ReleaseMiniPlayer.component";
+import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
+import { PlaybackScrollSpacer } from "src/components/ReleasePlayback/PlaybackScrollSpacer.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
-import {
-  ReleasePlaybackProvider,
-  useReleasePlayback,
-} from "src/context/releasePlayback.context";
+import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
+import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
-import { definedProps } from "src/utils/definedProps";
 import { EmptyState } from "./components/EmptyState.component";
 import { LoadingTrigger } from "./components/LoadingTrigger.component";
 import { ReleasesGrid } from "./components/ReleasesGrid.component";
@@ -59,7 +58,18 @@ const ReleasesClientContent = () => {
     handleExitRandomMode,
   } = useReleasesClient();
 
+  useRegisterPlaybackReleaseClick(handleReleaseClick);
+
   const allReleasesLoaded = !(isLoading || hasNextPage || isFetchingNextPage);
+  const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
+
+  const setMainContentNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      mainContentRef.current = node;
+      setScrollRoot(node);
+    },
+    [mainContentRef],
+  );
 
   if (shouldRedirectHome || isCheckingAuth) {
     return null;
@@ -79,111 +89,116 @@ const ReleasesClientContent = () => {
 
   return (
     <Page>
-      <div
-        className={classNames(styles.releasesShell, {
-          [styles.withMiniPlayer]: isPlaying,
-        })}
+      <PlaybackPageShell
+        fillViewport
+        mainClassName={styles.shellMain}
+        scrollElement={scrollRoot}
+        header={
+          <StickyHeaderBar
+            allReleasesLoaded={allReleasesLoaded}
+            currentPage="releases"
+          />
+        }
+        overlays={
+          <>
+            {isMobile && activeCrateId ? (
+              <button
+                type="button"
+                className={classNames(styles.crateFab, {
+                  [styles.crateFabAboveDock]: isPlaying,
+                })}
+                onClick={toggleDrawer}
+                aria-label={`${isDrawerOpen ? "Close" : "Open"} crate with ${selectedReleases.length} items`}
+              >
+                <div className={styles.fabContent}>
+                  <div className={styles.fabMain}>
+                    <span className={styles.fabMainContent}>
+                      {crateName ? (
+                        <span>{crateName}</span>
+                      ) : (
+                        <span>Crate</span>
+                      )}
+                    </span>
+                    <span className={styles.fabCount}>
+                      {selectedReleases.length}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ) : null}
+            <ReleaseModal
+              isOpen={selectedReleaseId !== null}
+              release={selectedRelease}
+              onClose={handleCloseModal}
+            />
+          </>
+        }
       >
-        <StickyHeaderBar
-          allReleasesLoaded={allReleasesLoaded}
-          currentPage="releases"
-        />
         <div
           className={classNames(styles.container, {
             [styles.withSidebar]: isDrawerOpen,
           })}
+          data-releases-workspace
         >
-          <div ref={mainContentRef} className={styles.mainContent}>
-            {hasReleases || !allReleasesLoaded ? (
-              <ReleasesHeader
-                releaseCount={releaseCount}
-                isCollectionLoading={!allReleasesLoaded}
-                showAllLoadedMessage={showAllLoadedMessage}
-                isRandomMode={isRandomMode}
-                currentView={currentView}
-                onViewChange={handleViewChange}
-                onRandomClick={handleRandomClick}
-                onCratesClick={toggleDrawer}
-                isCratesOpen={isDrawerOpen}
-              />
-            ) : null}
+          <div className={styles.workspaceRow}>
+            <div
+              ref={setMainContentNode}
+              className={styles.mainContent}
+              data-releases-scroll-root
+            >
+              {hasReleases || !allReleasesLoaded ? (
+                <ReleasesHeader
+                  releaseCount={releaseCount}
+                  isCollectionLoading={!allReleasesLoaded}
+                  showAllLoadedMessage={showAllLoadedMessage}
+                  isRandomMode={isRandomMode}
+                  currentView={currentView}
+                  onViewChange={handleViewChange}
+                  onRandomClick={handleRandomClick}
+                  onCratesClick={toggleDrawer}
+                  isCratesOpen={isDrawerOpen}
+                />
+              ) : null}
 
-            {hasReleases ? (
-              <ReleasesGrid
-                releases={visibleReleases}
-                view={currentView}
-                isMobile={isMobile}
-                isRandomMode={isRandomMode}
-                onExitRandomMode={handleExitRandomMode}
-                onRandomClick={handleRandomClick}
+              {hasReleases ? (
+                <ReleasesGrid
+                  releases={visibleReleases}
+                  view={currentView}
+                  isMobile={isMobile}
+                  isRandomMode={isRandomMode}
+                  onExitRandomMode={handleExitRandomMode}
+                  onRandomClick={handleRandomClick}
+                  onReleaseClick={handleReleaseClick}
+                  randomRelease={randomRelease}
+                />
+              ) : !allReleasesLoaded ? (
+                <ReleasesSkeleton isMobile={isMobile} />
+              ) : (
+                <EmptyState />
+              )}
+
+              <LoadingTrigger
+                isFetchingNextPage={isFetchingNextPage}
+                infiniteScrollRef={infiniteScrollRef}
+              />
+              <BackToTop aboveDock={isPlaying} />
+              <PlaybackScrollSpacer />
+            </div>
+
+            <div className={styles.sidebar}>
+              <CrateDrawer
+                isOpen={isDrawerOpen}
                 onReleaseClick={handleReleaseClick}
-                randomRelease={randomRelease}
+                aboveMiniPlayer={isPlaying}
               />
-            ) : !allReleasesLoaded ? (
-              <ReleasesSkeleton isMobile={isMobile} />
-            ) : (
-              <EmptyState />
-            )}
-
-            <LoadingTrigger
-              isFetchingNextPage={isFetchingNextPage}
-              infiniteScrollRef={infiniteScrollRef}
-            />
-            <BackToTop
-              {...definedProps({
-                className: isPlaying
-                  ? styles.backToTopWithMiniPlayer
-                  : undefined,
-              })}
-            />
-          </div>
-
-          <div className={styles.sidebar}>
-            <CrateDrawer
-              isOpen={isDrawerOpen}
-              onReleaseClick={handleReleaseClick}
-              aboveMiniPlayer={isPlaying}
-            />
+            </div>
           </div>
         </div>
-        {isMobile && activeCrateId ? (
-          <button
-            type="button"
-            className={classNames(styles.crateFab, {
-              [styles.crateFabWithMiniPlayer]: isPlaying,
-            })}
-            onClick={toggleDrawer}
-            aria-label={`${isDrawerOpen ? "Close" : "Open"} crate with ${selectedReleases.length} items`}
-          >
-            <div className={styles.fabContent}>
-              <div className={styles.fabMain}>
-                <span className={styles.fabMainContent}>
-                  {crateName ? <span>{crateName}</span> : <span>Crate</span>}
-                </span>
-                <span className={styles.fabCount}>
-                  {selectedReleases.length}
-                </span>
-              </div>
-            </div>
-          </button>
-        ) : null}
-        <ReleaseModal
-          isOpen={selectedReleaseId !== null}
-          release={selectedRelease}
-          onClose={handleCloseModal}
-        />
-        <ReleaseMiniPlayer
-          {...definedProps({ onReleaseClick: handleReleaseClick })}
-        />
-      </div>
+      </PlaybackPageShell>
     </Page>
   );
 };
 
 export default function ReleasesClient() {
-  return (
-    <ReleasePlaybackProvider>
-      <ReleasesClientContent />
-    </ReleasePlaybackProvider>
-  );
+  return <ReleasesClientContent />;
 }

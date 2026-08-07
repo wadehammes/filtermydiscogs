@@ -1,0 +1,92 @@
+.dockGlobals {
+  --playback-dock-module-loaded: initial;
+}
+
+:global(html:has([data-global-playback-dock])) {
+  --release-mini-player-cover-size: 2.5rem;
+  --release-mini-player-control-size: 2.5rem;
+  --release-mini-player-bar-height: calc(
+    var(--release-mini-player-cover-size) +
+    var(--release-mini-player-control-size) +
+    var(--space-2) *
+    2 +
+    var(--space-3) +
+    4px
+  );
+  --release-mini-player-bar-offset: calc(
+    var(--release-mini-player-bar-height) +
+    env(safe-area-inset-bottom, 0px)
+  );
+  --release-mini-player-video-panel-offset: 0px;
+  --release-mini-player-stack-offset: calc(
+    var(--release-mini-player-bar-offset) +
+    var(--release-mini-player-video-panel-offset)
+  );
+
+  &:has([data-video-expanded="true"]) {
+    --release-mini-player-video-panel-offset: calc(2rem + 100vw * 9 / 16);
+
+    @media (width >= 768px) {
+      --release-mini-player-video-panel-offset: 0px;
+    }
+  }
+
+  @media (width >= 768px) {
+    --release-mini-player-control-size: 2rem;
+    --release-mini-player-bar-height: calc(3.25rem + 1px);
+  }
+}
+
+:global(
+  body:has([data-filters-drawer-open="true"]):not(
+    :has([data-video-expanded="true"])
+  )
+) {
+  --release-mini-player-video-panel-offset: 0px;
+}
+
+:global([data-playback-scroll-spacer]) {
+  block-size: var(
+    --release-mini-player-bar-offset,
+    calc(3.25rem + 1px + env(safe-area-inset-bottom, 0px))
+  );
+  flex-shrink: 0;
+  min-block-size: calc(
+    2.5rem +
+    2.5rem +
+    var(--space-2) *
+    2 +
+    var(--space-3) +
+    4px +
+    env(safe-area-inset-bottom, 0px)
+  );
+  pointer-events: none;
+  width: 100%;
+
+  @media (width >= 768px) {
+    min-block-size: calc(3.25rem + 1px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+:global([data-playback-dock-spacer]) {
+  block-size: var(--release-mini-player-stack-offset, 0);
+  flex-shrink: 0;
+  min-block-size: 0;
+  pointer-events: none;
+  width: 100%;
+}
+
+:global(
+  html:has([data-playback-queue-open="true"])
+    [data-testid="fmdReleaseMiniPlayer"]
+) {
+  z-index: calc(var(--z-5-modal) + 1);
+}
+
+:global([data-playback-page-shell-main]) {
+  scroll-padding-bottom: var(--release-mini-player-bar-offset, 0);
+}
+
+:global(html:has([data-global-playback-dock]) [data-releases-scroll-root]) {
+  scroll-padding-bottom: var(--release-mini-player-bar-offset, 0);
+}

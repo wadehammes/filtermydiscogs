@@ -2,6 +2,7 @@
   background: var(--background);
   display: flex;
   flex-direction: column;
+  height: 100dvh;
   min-height: 100dvh;
   width: 100%;
 }
@@ -11,6 +12,7 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   width: 100%;
 }
 

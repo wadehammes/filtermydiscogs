@@ -1,4 +1,5 @@
 import * as apiHelpers from "src/api/helpers";
+import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -114,8 +115,13 @@ export class DashboardClientPageObject extends BasePageObject {
   ): RenderResult {
     this.setupMocks(options);
 
-    return render(<DashboardClient />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    return render(
+      <ReleasePlaybackProvider>
+        <DashboardClient />
+      </ReleasePlaybackProvider>,
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
   }
 }

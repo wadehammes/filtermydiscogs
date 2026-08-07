@@ -7,6 +7,7 @@ import {
   ReleasePlaybackProvider,
   useReleasePlayback,
 } from "src/context/releasePlayback.context";
+import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
@@ -451,6 +452,116 @@ describe("ReleaseMiniPlayer", () => {
       expect(
         screen.getAllByText("Never Gonna Give You Up").length,
       ).toBeGreaterThan(0);
+    });
+  });
+
+  it("advances through a queued track added from another release", async () => {
+    const secondRelease = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-100002",
+      basic_information: basicInformationFactory.build({
+        id: 100002,
+        title: "Short EP",
+        resource_url: "https://api.discogs.com/releases/100002",
+      }),
+    });
+
+    jest
+      .mocked(useDiscogsReleaseQuery)
+      .mockImplementation(({ enabled, releaseId }) => {
+        if (!enabled) {
+          return {
+            data: undefined,
+            isLoading: false,
+            isError: false,
+            refetch: jest.fn(),
+          } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
+        }
+
+        const detail =
+          releaseId === "100002"
+            ? discogsReleaseJsonFactory.withTracklistAndVideos({
+                id: 100002,
+                tracklist: [
+                  {
+                    position: "1",
+                    title: "Short A",
+                    duration: "2:00",
+                    type_: "track",
+                  },
+                ],
+              })
+            : releaseDetail;
+
+        return {
+          data: {
+            ...detail,
+            id: Number(releaseId) || detail.id,
+          },
+          isLoading: false,
+          isError: false,
+          refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
+      });
+
+    const QueueAndPlaybackControls = () => {
+      const { startPlayback, addToQueue, queueIndex } = useReleasePlayback();
+
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              startPlayback({ release: collectionRelease, trackPosition: "A" });
+            }}
+          >
+            Start playback
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              addToQueue({
+                release: secondRelease,
+                trackPosition: "1",
+                trackTitle: "Short A",
+              });
+            }}
+          >
+            Queue second release
+          </button>
+          <span data-testid="fmdQueueIndex">{queueIndex}</span>
+        </>
+      );
+    };
+
+    const user = userEvent.setup();
+
+    render(<QueueAndPlaybackControls />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Queue second release" }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Short A")).toBeInTheDocument();
+      expect(screen.getByTestId("fmdQueueIndex")).toHaveTextContent("2");
     });
   });
 

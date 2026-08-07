@@ -1,4 +1,8 @@
+"use client";
+
 import classNames from "classnames";
+import CheckIcon from "src/styles/icons/check-thin.svg";
+import ListIcon from "src/styles/icons/list-thin.svg";
 import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
@@ -11,7 +15,9 @@ interface ReleaseTracklistProps {
   activeTrackPosition: string | null;
   showPlayingIndicatorOnActiveTrack?: boolean;
   isPlaybackPaused?: boolean;
+  isTrackQueued?: (position: string) => boolean;
   onTrackSelect: (position: string) => void;
+  onTrackQueue?: (position: string) => void;
   onActiveTrackToggle?: () => void;
 }
 
@@ -21,7 +27,9 @@ export const ReleaseTracklist = ({
   activeTrackPosition,
   showPlayingIndicatorOnActiveTrack = false,
   isPlaybackPaused = false,
+  isTrackQueued,
   onTrackSelect,
+  onTrackQueue,
   onActiveTrackToggle,
 }: ReleaseTracklistProps) => {
   if (tracks.length === 0) {
@@ -38,18 +46,22 @@ export const ReleaseTracklist = ({
         const isActive = track.position === activeTrackPosition;
         const isPlaying =
           showPlayingIndicatorOnActiveTrack && isActive && onActiveTrackToggle;
+        const isQueued = isTrackQueued?.(track.position) ?? false;
         const trackCreditsLine = formatTrackCreditsLine({
           track,
           releaseArtistNames,
         });
 
         return (
-          <li key={`${track.position}-${track.title}`}>
+          <li
+            key={`${track.position}-${track.title}`}
+            className={classNames(styles.trackItem, {
+              [styles.trackItemActive]: isActive,
+            })}
+          >
             <button
               type="button"
-              className={classNames(styles.trackRow, {
-                [styles.trackRowActive]: isActive,
-              })}
+              className={styles.trackMainButton}
               onClick={() => {
                 if (isPlaying && onActiveTrackToggle) {
                   onActiveTrackToggle();
@@ -76,10 +88,37 @@ export const ReleaseTracklist = ({
                   ) : null}
                 </span>
               </span>
+            </button>
+            <div className={styles.trackTrailing}>
               {track.duration ? (
                 <span className={styles.trackDuration}>{track.duration}</span>
               ) : null}
-            </button>
+              {onTrackQueue ? (
+                <button
+                  type="button"
+                  className={classNames(styles.queueButton, {
+                    [styles.queueButtonQueued]: isQueued,
+                  })}
+                  onClick={() => {
+                    onTrackQueue(track.position);
+                  }}
+                  disabled={isQueued}
+                  aria-label={
+                    isQueued
+                      ? `${track.title} is already in the queue`
+                      : `Add ${track.title} to queue`
+                  }
+                  title={isQueued ? "In queue" : "Add to queue"}
+                  data-testid="fmdReleaseTrackQueueButton"
+                >
+                  {isQueued ? (
+                    <CheckIcon className={styles.queueButtonIcon} aria-hidden />
+                  ) : (
+                    <ListIcon className={styles.queueButtonIcon} aria-hidden />
+                  )}
+                </button>
+              ) : null}
+            </div>
           </li>
         );
       })}

@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useEffect, useState } from "react";
+import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
 import Check from "src/styles/icons/check-thin.svg";
@@ -32,19 +33,27 @@ export const ReleasesHeader = ({
   isCratesOpen,
 }: ReleasesHeaderProps) => {
   const [isStuck, setIsStuck] = useState(false);
+  const scrollElement = usePlaybackPageScrollElement();
 
   useEffect(() => {
+    const getScrollY = () =>
+      scrollElement
+        ? scrollElement.scrollTop
+        : window.scrollY || document.documentElement.scrollTop;
+
     const updateStuck = () => {
-      setIsStuck(window.scrollY > 0);
+      setIsStuck(getScrollY() > 0);
     };
 
     updateStuck();
-    window.addEventListener("scroll", updateStuck, { passive: true });
+
+    const scrollTarget: HTMLElement | Window = scrollElement ?? window;
+    scrollTarget.addEventListener("scroll", updateStuck, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", updateStuck);
+      scrollTarget.removeEventListener("scroll", updateStuck);
     };
-  }, []);
+  }, [scrollElement]);
 
   const showInitialLoading = isCollectionLoading && releaseCount === 0;
   const showLoadingMore = isCollectionLoading && releaseCount > 0;
