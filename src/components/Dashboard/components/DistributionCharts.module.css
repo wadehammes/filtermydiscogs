@@ -16,6 +16,21 @@
   }
 }
 
+.chartsGridThree {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (width >= 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .chartContainer {
   background: var(--card);
   border: 1px solid var(--border);
@@ -29,9 +44,10 @@
 
 .chartContainer h2 {
   color: var(--foreground);
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  margin: 0 0 var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-3);
 }
 
 .chartWrapper {
@@ -41,14 +57,6 @@
   min-height: 350px;
   overflow: visible;
   width: 100%;
-
-  :global(.fmd-chart-tooltip) {
-    background-color: var(--popover);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--popover-foreground);
-    padding: 8px 12px;
-  }
 }
 
 .chartWrapper :global(*),

@@ -7,8 +7,8 @@ import {
   calculateDecadeDistribution,
   calculateFormatMixSummary,
   calculateFormatTagDistribution,
+  calculateGenreDistribution,
   calculateLabelDistribution,
-  calculateMediaFormatSubtypeBreakdown,
   calculateMediaTypeDistribution,
   calculateStyleDistribution,
   detectDuplicates,
@@ -43,11 +43,10 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
 
     const growth = analyzeGrowthFromDates(releases);
     const styleDistribution = calculateStyleDistribution(releases);
+    const genreDistribution = calculateGenreDistribution(releases);
     const decadeDistribution = calculateDecadeDistribution(releases);
     const mediaTypeDistribution = calculateMediaTypeDistribution(releases);
     const formatTagDistribution = calculateFormatTagDistribution(releases);
-    const mediaFormatSubtypeBreakdown =
-      calculateMediaFormatSubtypeBreakdown(releases);
     const formatMix = calculateFormatMixSummary(releases);
     const artistDistribution = calculateArtistDistribution(releases);
     const labelDistribution = calculateLabelDistribution(releases);
@@ -59,10 +58,10 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       growth,
       health,
       styleDistribution,
+      genreDistribution,
       decadeDistribution,
       mediaTypeDistribution,
       formatTagDistribution,
-      mediaFormatSubtypeBreakdown,
       formatMix,
       artistDistribution,
       labelDistribution,

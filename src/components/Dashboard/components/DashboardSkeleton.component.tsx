@@ -64,7 +64,8 @@ export function DashboardSkeleton() {
             <SkeletonBarChart />
             <SkeletonBarChart />
           </div>
-          <div className={skeletonLayout.chartsGrid}>
+          <div className={skeletonLayout.chartsGridThree}>
+            <SkeletonPieChart />
             <SkeletonPieChart />
             <SkeletonPieChart />
           </div>

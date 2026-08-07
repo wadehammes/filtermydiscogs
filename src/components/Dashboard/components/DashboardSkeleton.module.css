@@ -16,6 +16,21 @@
   }
 }
 
+.chartsGridThree {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (width >= 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .healthGrid {
   display: grid;
   gap: var(--space-4);

@@ -1,32 +1,33 @@
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 16px;
+  gap: var(--space-2) var(--space-4);
   justify-content: center;
   list-style: none;
   margin: 0;
   overflow: visible;
-  padding: 20px 0 0;
+  padding: var(--space-4) 0 0;
   width: 100%;
 }
 
 .legendItem {
   align-items: center;
   display: inline-flex;
-  gap: 6px;
+  gap: var(--space-2);
   margin: 0;
   white-space: nowrap;
 }
 
 .swatch {
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
-  height: 10px;
-  width: 10px;
+  height: 0.625rem;
+  width: 0.625rem;
 }
 
 .legendText {
-  color: var(--foreground);
-  font-size: 12px;
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xs);
   line-height: 1.4;
 }

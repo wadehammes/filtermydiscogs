@@ -14,7 +14,7 @@ interface GrowthChartProps {
   hideHeading?: boolean;
 }
 
-const CHART_COLOR = "#5e5365";
+const CHART_COLOR = "var(--primary)";
 
 export const GrowthChart = ({
   growthData,
