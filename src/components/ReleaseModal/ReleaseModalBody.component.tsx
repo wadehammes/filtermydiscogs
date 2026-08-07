@@ -32,6 +32,8 @@ export const ReleaseModalBody = ({
     isError,
     refetch,
     handleTrackSelect,
+    handleTrackQueue,
+    isTrackQueued,
     handleActiveTrackToggle,
     isPlayingThisReleaseInBar,
     isPlaybackPaused,
@@ -79,6 +81,8 @@ export const ReleaseModalBody = ({
               }
               onTrackSelect={handleTrackSelect}
               {...definedProps({
+                isTrackQueued: hasEmbeddableVideo ? isTrackQueued : undefined,
+                onTrackQueue: hasEmbeddableVideo ? handleTrackQueue : undefined,
                 onActiveTrackToggle: isPlayingThisReleaseInBar
                   ? handleActiveTrackToggle
                   : undefined,

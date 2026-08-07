@@ -1,15 +1,9 @@
-.pageShell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100dvh;
-}
-
 .page {
   composes: microdotbackground from "../../styles/patterns.module.css";
   display: flex;
-  flex: 1 1 auto;
+  flex: 1;
   flex-direction: column;
-  min-height: calc(100dvh - var(--sticky-header-height));
+  min-height: 0;
   width: 100%;
 }
 
@@ -26,45 +20,6 @@
 
   @media (width >= 1280px) {
     padding: var(--space-6) var(--space-10) var(--space-12);
-  }
-}
-
-.withMiniPlayer {
-  --release-mini-player-cover-size: 2.5rem;
-  --release-mini-player-control-size: 2.5rem;
-  --release-mini-player-bar-height: calc(
-    var(--release-mini-player-cover-size) +
-    var(--release-mini-player-control-size) +
-    var(--space-2) *
-    2 +
-    var(--space-3)
-  );
-  --release-mini-player-bar-offset: calc(
-    var(--release-mini-player-bar-height) +
-    env(safe-area-inset-bottom, 0px)
-  );
-
-  .container {
-    padding-bottom: calc(
-      var(--space-10) +
-      var(--release-mini-player-bar-offset)
-    );
-
-    @media (width >= 1280px) {
-      padding-bottom: calc(
-        var(--space-12) +
-        var(--release-mini-player-bar-offset)
-      );
-    }
-  }
-
-  [data-testid="fmdReleaseMiniPlayer"] {
-    bottom: 0;
-  }
-
-  @media (width >= 768px) {
-    --release-mini-player-control-size: 2rem;
-    --release-mini-player-bar-height: 3.25rem;
   }
 }
 

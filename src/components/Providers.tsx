@@ -8,11 +8,14 @@ import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthChecking
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
+import { GlobalPlaybackDock } from "src/components/ReleasePlayback/GlobalPlaybackDock.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
+import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
+import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
@@ -65,15 +68,20 @@ export const Providers = ({ children }: ProvidersProps) => {
           <AuthProvider>
             <CollectionContextProvider>
               <FiltersProvider>
-                <CrateProvider>
-                  <ViewProvider>
-                    <AnalyticsShell>
-                      {children}
-                      <LogoutOverlayWrapper />
-                      <AuthCheckingToast />
-                    </AnalyticsShell>
-                  </ViewProvider>
-                </CrateProvider>
+                <ReleasePlaybackProvider>
+                  <PlaybackReleaseClickProvider>
+                    <CrateProvider>
+                      <ViewProvider>
+                        <AnalyticsShell>
+                          {children}
+                          <GlobalPlaybackDock />
+                          <LogoutOverlayWrapper />
+                          <AuthCheckingToast />
+                        </AnalyticsShell>
+                      </ViewProvider>
+                    </CrateProvider>
+                  </PlaybackReleaseClickProvider>
+                </ReleasePlaybackProvider>
               </FiltersProvider>
             </CollectionContextProvider>
           </AuthProvider>

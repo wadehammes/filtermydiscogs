@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
@@ -64,10 +65,12 @@ export const useReleasesClient = () => {
     isCheckingAuth,
   });
   const { error, hasReleases, hasError } = useReleasesDisplay();
+  const scrollElement = usePlaybackPageScrollElement();
 
   const { ref, inView } = useInView({
     threshold: 0,
     rootMargin: "100px",
+    root: scrollElement,
   });
 
   const releaseCount = filteredReleases.length;

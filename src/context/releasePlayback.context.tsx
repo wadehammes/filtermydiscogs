@@ -15,13 +15,22 @@ import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
+import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import {
+  adjustQueueIndexAfterReorder,
+  appendQueueItem,
+  buildPlayableAlbumQueue,
+  createQueueItem,
+  findQueueItemIndex,
+  removeQueueItemAtIndex,
+  reorderQueueItems,
+} from "src/utils/playbackQueue";
 import {
   isSameReleaseInstance,
   matchesInstanceId,
   parseReleaseId,
 } from "src/utils/releaseNotes";
 import {
-  findPlayableTrackIndex,
   findTrackIndexByPosition,
   findVideoForTrack,
   flattenTracklist,
@@ -38,6 +47,19 @@ import {
 interface StartPlaybackParams {
   release: DiscogsRelease;
   trackPosition: string;
+  trackTitle?: string;
+  startPaused?: boolean;
+}
+
+interface AddToQueueParams {
+  release: DiscogsRelease;
+  trackPosition: string;
+  trackTitle: string;
+}
+
+interface PlayQueueItemOptions {
+  autoplay?: boolean;
+  rebuildAlbumQueue?: boolean;
   startPaused?: boolean;
 }
 
@@ -45,6 +67,8 @@ interface ReleasePlaybackContextValue {
   release: DiscogsRelease | null;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
+  queue: PlaybackQueueItem[];
+  queueIndex: number;
   activeTrackIndex: number;
   activeTrackPosition: string | null;
   activeTrack: DiscogsTrack | null;
@@ -57,6 +81,10 @@ interface ReleasePlaybackContextValue {
   canPlayNext: boolean;
   isLoading: boolean;
   startPlayback: (params: StartPlaybackParams) => void;
+  addToQueue: (params: AddToQueueParams) => void;
+  removeFromQueue: (index: number) => void;
+  reorderQueue: (fromIndex: number, toIndex: number) => void;
+  playQueueAtIndex: (index: number) => void;
   playNext: () => void;
   playPrevious: () => void;
   togglePlayback: () => void;
@@ -84,6 +112,8 @@ export const ReleasePlaybackProvider = ({
   const hasMoreCollectionPages = Boolean(collection?.pagination?.urls?.next);
   const allReleases = useAllReleases();
   const [release, setRelease] = useState<DiscogsRelease | null>(null);
+  const [queue, setQueue] = useState<PlaybackQueueItem[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
   const [activeTrackIndex, setActiveTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -94,15 +124,27 @@ export const ReleasePlaybackProvider = ({
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
   const pendingPlayFromGestureRef = useRef(false);
+  const shouldRebuildAlbumQueueRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
   const isPausedRef = useRef(isPaused);
   const releaseRef = useRef<DiscogsRelease | null>(null);
+  const queueRef = useRef(queue);
+  const queueIndexRef = useRef(queueIndex);
+  const tracksRef = useRef<DiscogsTrack[]>([]);
+  const releaseDetailIdRef = useRef<number | undefined>(undefined);
   const startPlaybackRef = useRef<(params: StartPlaybackParams) => void>(
     () => undefined,
   );
+  const playQueueItemRef = useRef<
+    (item: PlaybackQueueItem, options?: PlayQueueItemOptions) => void
+  >(() => undefined);
+  const stopPlaybackRef = useRef<() => void>(() => undefined);
 
   isPausedRef.current = isPaused;
+  releaseRef.current = release;
+  queueRef.current = queue;
+  queueIndexRef.current = queueIndex;
 
   const clearPlayFromGestureRetries = useCallback(() => {
     for (const timeoutId of playFromGestureRetryTimeoutsRef.current) {
@@ -143,8 +185,6 @@ export const ReleasePlaybackProvider = ({
     schedulePlayFromGestureAttempts();
   }, [schedulePlayFromGestureAttempts]);
 
-  releaseRef.current = release;
-
   const releaseId = release ? parseReleaseId(release) : null;
 
   const { data: releaseDetail, isLoading } = useDiscogsReleaseQuery({
@@ -161,6 +201,9 @@ export const ReleasePlaybackProvider = ({
     () => releaseDetail?.videos ?? [],
     [releaseDetail?.videos],
   );
+
+  tracksRef.current = tracks;
+  releaseDetailIdRef.current = releaseDetail?.id;
 
   const activeTrack = tracks[activeTrackIndex] ?? null;
 
@@ -180,35 +223,8 @@ export const ReleasePlaybackProvider = ({
 
   const isPlaybackReady = isPlaying && activeVideoId !== null;
 
-  const canPlayPrevious = useMemo(() => {
-    if (!isPlaybackReady) {
-      return false;
-    }
-
-    return (
-      findPlayableTrackIndex({
-        tracks,
-        videos,
-        startIndex: activeTrackIndex,
-        direction: -1,
-      }) !== null
-    );
-  }, [activeTrackIndex, isPlaybackReady, tracks, videos]);
-
-  const canPlayNext = useMemo(() => {
-    if (!isPlaybackReady) {
-      return false;
-    }
-
-    return (
-      findPlayableTrackIndex({
-        tracks,
-        videos,
-        startIndex: activeTrackIndex,
-        direction: 1,
-      }) !== null
-    );
-  }, [activeTrackIndex, isPlaybackReady, tracks, videos]);
+  const canPlayPrevious = isPlaybackReady && queueIndex > 0;
+  const canPlayNext = isPlaybackReady && queueIndex < queue.length - 1;
 
   useEffect(() => {
     return () => {
@@ -231,7 +247,7 @@ export const ReleasePlaybackProvider = ({
       !pendingTrackPosition ||
       tracks.length === 0 ||
       releaseId === null ||
-      releaseDetail?.id !== releaseId
+      Number(releaseDetail?.id) !== Number(releaseId)
     ) {
       return;
     }
@@ -245,6 +261,8 @@ export const ReleasePlaybackProvider = ({
       setShouldAutoplayEmbed(false);
       setRelease(null);
       setActiveTrackIndex(0);
+      setQueue([]);
+      setQueueIndex(0);
       clearPersistedReleasePlayback();
       return;
     }
@@ -256,8 +274,33 @@ export const ReleasePlaybackProvider = ({
     }
 
     awaitingResumeGestureRef.current = false;
+
+    if (shouldRebuildAlbumQueueRef.current && release) {
+      const albumQueue = buildPlayableAlbumQueue({
+        release,
+        tracks,
+        videos,
+        startPosition: pendingTrackPosition,
+      });
+      const nextIndex = findQueueItemIndex(albumQueue, {
+        instanceId: String(release.instance_id),
+        trackPosition: pendingTrackPosition,
+      });
+
+      setQueue(albumQueue);
+      setQueueIndex(nextIndex >= 0 ? nextIndex : 0);
+      shouldRebuildAlbumQueueRef.current = false;
+    }
+
     setPendingTrackPosition(null);
-  }, [pendingTrackPosition, tracks, releaseDetail?.id, releaseId]);
+  }, [
+    pendingTrackPosition,
+    release,
+    tracks,
+    videos,
+    releaseDetail?.id,
+    releaseId,
+  ]);
 
   useEffect(() => {
     if (!isPlaying || isLoading || pendingTrackPosition) {
@@ -287,19 +330,50 @@ export const ReleasePlaybackProvider = ({
     }
   }, [activeTrackIndex, pendingTrackPosition, tracks.length]);
 
-  const startPlayback = useCallback(
-    ({
-      release: nextRelease,
-      trackPosition,
-      startPaused = false,
-    }: StartPlaybackParams) => {
-      const isSameRelease = isSameReleaseInstance(
-        releaseRef.current,
-        nextRelease,
+  const resolveQueueItemPlayback = useCallback(
+    (item: PlaybackQueueItem): boolean => {
+      const itemReleaseId = parseReleaseId(item.release);
+
+      if (
+        itemReleaseId === null ||
+        Number(releaseDetailIdRef.current) !== itemReleaseId ||
+        tracksRef.current.length === 0
+      ) {
+        return false;
+      }
+
+      const index = findTrackIndexByPosition(
+        tracksRef.current,
+        item.trackPosition,
       );
 
-      setPendingTrackPosition(trackPosition);
-      setRelease(nextRelease);
+      if (index < 0) {
+        return false;
+      }
+
+      setActiveTrackIndex(index);
+      setPendingTrackPosition(null);
+      return true;
+    },
+    [],
+  );
+
+  const playQueueItem = useCallback(
+    (
+      item: PlaybackQueueItem,
+      {
+        startPaused = false,
+        autoplay = true,
+        rebuildAlbumQueue = false,
+      }: PlayQueueItemOptions = {},
+    ) => {
+      shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
+      const isSameRelease = isSameReleaseInstance(
+        releaseRef.current,
+        item.release,
+      );
+
+      setRelease(item.release);
 
       if (!isSameRelease) {
         setActiveTrackIndex(0);
@@ -307,59 +381,136 @@ export const ReleasePlaybackProvider = ({
 
       setIsPlaying(true);
       setIsPaused(startPaused);
-      setShouldAutoplayEmbed(!startPaused);
+      setShouldAutoplayEmbed(autoplay && !startPaused);
       awaitingResumeGestureRef.current = startPaused;
-      pendingPlayFromGestureRef.current = !startPaused;
+      pendingPlayFromGestureRef.current = autoplay && !startPaused;
 
       if (startPaused) {
         clearPlayFromGestureRetries();
       }
 
       writePersistedReleasePlayback({
-        instanceId: String(nextRelease.instance_id),
-        trackPosition,
+        instanceId: item.instanceId,
+        trackPosition: item.trackPosition,
       });
+
+      if (!rebuildAlbumQueue && resolveQueueItemPlayback(item)) {
+        return;
+      }
+
+      setPendingTrackPosition(item.trackPosition);
     },
-    [clearPlayFromGestureRetries],
+    [clearPlayFromGestureRetries, resolveQueueItemPlayback],
   );
 
-  const playNext = useCallback(() => {
-    const nextIndex = findPlayableTrackIndex({
-      tracks,
-      videos,
-      startIndex: activeTrackIndex,
-      direction: 1,
-    });
+  const startPlayback = useCallback(
+    ({
+      release: nextRelease,
+      trackPosition,
+      trackTitle = trackPosition,
+      startPaused = false,
+    }: StartPlaybackParams) => {
+      const item = createQueueItem({
+        release: nextRelease,
+        trackPosition,
+        trackTitle,
+      });
 
-    if (nextIndex === null) {
-      setIsPlaying(false);
-      clearPersistedReleasePlayback();
+      shouldRebuildAlbumQueueRef.current = true;
+      setQueue([item]);
+      setQueueIndex(0);
+      playQueueItem(item, {
+        autoplay: !startPaused,
+        rebuildAlbumQueue: true,
+        startPaused,
+      });
+    },
+    [playQueueItem],
+  );
+
+  const addToQueue = useCallback(
+    ({ release, trackPosition, trackTitle }: AddToQueueParams) => {
+      const item = createQueueItem({ release, trackPosition, trackTitle });
+      setQueue((previousQueue) => appendQueueItem(previousQueue, item));
+    },
+    [],
+  );
+
+  const playQueueAtIndex = useCallback(
+    (index: number) => {
+      const item = queueRef.current[index];
+
+      if (!item) {
+        return;
+      }
+
+      setQueueIndex(index);
+      playQueueItem(item, { autoplay: true });
+    },
+    [playQueueItem],
+  );
+
+  const removeFromQueue = useCallback(
+    (index: number) => {
+      const previousQueue = queueRef.current;
+      const previousIndex = queueIndexRef.current;
+      const nextQueue = removeQueueItemAtIndex(previousQueue, index);
+
+      setQueue(nextQueue);
+
+      if (index < previousIndex) {
+        setQueueIndex(previousIndex - 1);
+        return;
+      }
+
+      if (index > previousIndex) {
+        return;
+      }
+
+      if (nextQueue.length === 0) {
+        stopPlaybackRef.current();
+        return;
+      }
+
+      const nextIndex = Math.min(previousIndex, nextQueue.length - 1);
+      const nextItem = nextQueue[nextIndex];
+
+      if (!nextItem) {
+        return;
+      }
+
+      setQueueIndex(nextIndex);
+      playQueueItem(nextItem, { autoplay: true });
+    },
+    [playQueueItem],
+  );
+
+  const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
+    const previousQueue = queueRef.current;
+    const previousIndex = queueIndexRef.current;
+    const nextQueue = reorderQueueItems(previousQueue, fromIndex, toIndex);
+
+    if (nextQueue === previousQueue) {
       return;
     }
 
-    setActiveTrackIndex(nextIndex);
-    setIsPlaying(true);
-    setIsPaused(false);
-    setShouldAutoplayEmbed(true);
-  }, [activeTrackIndex, tracks, videos]);
+    setQueue(nextQueue);
+    setQueueIndex(
+      adjustQueueIndexAfterReorder({
+        queueIndex: previousIndex,
+        fromIndex,
+        toIndex,
+      }),
+    );
+  }, []);
+
+  const playNext = useCallback(() => {
+    playQueueAtIndex(queueIndexRef.current + 1);
+  }, [playQueueAtIndex]);
 
   const playPrevious = useCallback(() => {
-    const previousIndex = findPlayableTrackIndex({
-      tracks,
-      videos,
-      startIndex: activeTrackIndex,
-      direction: -1,
-    });
-
-    if (previousIndex === null) {
-      return;
-    }
-
-    setActiveTrackIndex(previousIndex);
-    setIsPlaying(true);
-    setIsPaused(false);
-    setShouldAutoplayEmbed(true);
-  }, [activeTrackIndex, tracks, videos]);
+    playQueueAtIndex(queueIndexRef.current - 1);
+  }, [playQueueAtIndex]);
 
   const registerPlaybackIframe = useCallback(
     (iframe: HTMLIFrameElement | null) => {
@@ -400,16 +551,21 @@ export const ReleasePlaybackProvider = ({
   const stopPlayback = useCallback(() => {
     pendingPlayFromGestureRef.current = false;
     clearPlayFromGestureRetries();
+    shouldRebuildAlbumQueueRef.current = false;
     setIsPlaying(false);
     setIsPaused(false);
     setShouldAutoplayEmbed(false);
     setRelease(null);
     setActiveTrackIndex(0);
     setPendingTrackPosition(null);
+    setQueue([]);
+    setQueueIndex(0);
     clearPersistedReleasePlayback();
   }, [clearPlayFromGestureRetries]);
 
   startPlaybackRef.current = startPlayback;
+  playQueueItemRef.current = playQueueItem;
+  stopPlaybackRef.current = stopPlayback;
 
   useEffect(() => {
     if (
@@ -490,6 +646,8 @@ export const ReleasePlaybackProvider = ({
       release,
       tracks,
       videos,
+      queue,
+      queueIndex,
       activeTrackIndex,
       activeTrackPosition,
       activeTrack,
@@ -502,6 +660,10 @@ export const ReleasePlaybackProvider = ({
       canPlayNext,
       isLoading,
       startPlayback,
+      addToQueue,
+      removeFromQueue,
+      reorderQueue,
+      playQueueAtIndex,
       playNext,
       playPrevious,
       togglePlayback,
@@ -513,6 +675,8 @@ export const ReleasePlaybackProvider = ({
       release,
       tracks,
       videos,
+      queue,
+      queueIndex,
       activeTrackIndex,
       activeTrackPosition,
       activeTrack,
@@ -525,6 +689,10 @@ export const ReleasePlaybackProvider = ({
       canPlayNext,
       isLoading,
       startPlayback,
+      addToQueue,
+      removeFromQueue,
+      reorderQueue,
+      playQueueAtIndex,
       playNext,
       playPrevious,
       togglePlayback,

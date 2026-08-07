@@ -94,6 +94,10 @@
     transform: translateY(0);
   }
 
+  &.aboveDock {
+    bottom: calc(var(--release-mini-player-stack-offset, 0) + var(--space-4));
+  }
+
   @media (width >= 768px) {
     height: var(--button-height-md);
     left: var(--space-6);

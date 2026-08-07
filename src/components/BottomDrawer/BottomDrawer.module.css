@@ -15,6 +15,10 @@
   &.open {
     opacity: 1;
   }
+
+  &.aboveMiniPlayer {
+    bottom: var(--release-mini-player-stack-offset, 0);
+  }
 }
 
 .drawer {
@@ -43,17 +47,8 @@
   }
 
   &.aboveMiniPlayer {
-    bottom: calc(
-      var(--release-mini-player-bar-offset, 0px) +
-      var(--release-mini-player-video-panel-offset, 0px) +
-      var(--release-mini-player-drawer-gap, 0px)
-    );
-    max-height: calc(
-      100dvh -
-      var(--release-mini-player-bar-offset, 0px) -
-      var(--release-mini-player-video-panel-offset, 0px) -
-      var(--release-mini-player-drawer-gap, 0px)
-    );
+    bottom: var(--release-mini-player-stack-offset, 0);
+    max-height: calc(100dvh - var(--release-mini-player-stack-offset, 0));
 
     @media (width < 768px) {
       :global(
@@ -65,9 +60,7 @@
         max-height: calc(
           100dvh -
           var(--sticky-header-height) -
-          var(--release-mini-player-bar-offset, 0px) -
-          var(--release-mini-player-video-panel-offset, 0px) -
-          var(--release-mini-player-drawer-gap, 0px)
+          var(--release-mini-player-stack-offset, 0)
         );
       }
     }
@@ -157,6 +150,40 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+}
+
+.headerCloseButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--button-height-md);
+  justify-content: center;
+  padding: 0;
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+  width: var(--button-height-md);
+
+  &:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.headerCloseIcon {
+  display: block;
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 .content {

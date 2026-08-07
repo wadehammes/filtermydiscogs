@@ -76,10 +76,37 @@ export const useReleaseModalPlayback = ({
 
   const handleTrackSelect = useCallback(
     (trackPosition: string) => {
+      const track = tracks.find((entry) => entry.position === trackPosition);
       setSelectedTrackPosition(trackPosition);
-      playback.startPlayback({ release, trackPosition });
+      playback.startPlayback({
+        release,
+        trackPosition,
+        trackTitle: track?.title ?? trackPosition,
+      });
     },
-    [playback.startPlayback, release],
+    [playback.startPlayback, release, tracks],
+  );
+
+  const handleTrackQueue = useCallback(
+    (trackPosition: string) => {
+      const track = tracks.find((entry) => entry.position === trackPosition);
+      playback.addToQueue({
+        release,
+        trackPosition,
+        trackTitle: track?.title ?? trackPosition,
+      });
+    },
+    [playback.addToQueue, release, tracks],
+  );
+
+  const isTrackQueued = useCallback(
+    (trackPosition: string) =>
+      playback.queue.some(
+        (item) =>
+          item.instanceId === String(release.instance_id) &&
+          item.trackPosition === trackPosition,
+      ),
+    [playback.queue, release.instance_id],
   );
 
   const handleActiveTrackToggle = useCallback(() => {
@@ -96,6 +123,8 @@ export const useReleaseModalPlayback = ({
     isError: isPlayingThisReleaseInBar ? false : isError,
     refetch,
     handleTrackSelect,
+    handleTrackQueue,
+    isTrackQueued,
     handleActiveTrackToggle,
     isPlayingThisReleaseInBar,
     isPlaybackPaused: playback.isPaused,

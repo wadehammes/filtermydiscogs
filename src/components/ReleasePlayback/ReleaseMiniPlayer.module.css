@@ -1,5 +1,8 @@
 .miniPlayerShell {
   bottom: 0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
   left: 0;
   position: fixed;
   right: 0;
@@ -186,6 +189,33 @@
     background: var(--muted);
     border-color: var(--foreground);
   }
+
+  &.queueButton {
+    position: relative;
+  }
+
+  &.queueButtonActive {
+    background: var(--muted);
+    border-color: var(--foreground);
+  }
+}
+
+.queueCount {
+  align-items: center;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  color: var(--primary-foreground);
+  display: inline-flex;
+  font-size: 0.625rem;
+  font-weight: var(--font-medium);
+  height: 1rem;
+  justify-content: center;
+  line-height: 1;
+  min-width: 1rem;
+  padding: 0 0.2rem;
+  position: absolute;
+  right: -0.15rem;
+  top: -0.15rem;
 }
 
 .previousIcon {

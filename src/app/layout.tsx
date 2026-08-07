@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { Assistant, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 import { Providers } from "src/components/Providers";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
@@ -73,12 +72,10 @@ export default function RootLayout({
       className={classNames(assistant.variable, jetbrainsMono.variable)}
       suppressHydrationWarning
     >
+      <head>
+        <script src="/theme-init.js" />
+      </head>
       <body suppressHydrationWarning>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          src="/theme-init.js"
-        />
         <Providers>{children}</Providers>
       </body>
     </html>

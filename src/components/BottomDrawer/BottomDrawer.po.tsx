@@ -14,6 +14,7 @@ export type BottomDrawerRenderProps = {
   headerContent?: ReactNode;
   footer?: ReactNode;
   closeButtonAriaLabel?: string;
+  closeButtonPlacement?: "floating" | "header";
   dataAttribute?: string;
   children?: ReactNode;
 };

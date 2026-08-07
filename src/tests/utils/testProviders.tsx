@@ -7,6 +7,7 @@ import { AuthProvider, type AuthState } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
+import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 import {
@@ -71,7 +72,9 @@ export const TestProviders = ({
     {...(authInitialState !== undefined ? { authInitialState } : {})}
     skipInitialAuthCheck={skipInitialAuthCheck}
   >
-    {includeCrate ? <CrateProvider>{children}</CrateProvider> : children}
+    <PlaybackReleaseClickProvider>
+      {includeCrate ? <CrateProvider>{children}</CrateProvider> : children}
+    </PlaybackReleaseClickProvider>
   </AppTestProviders>
 );
 

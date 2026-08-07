@@ -1,6 +1,7 @@
 .toolbar {
   composes: microdotoverlay from "../../../styles/patterns.module.css";
   align-items: center;
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-shrink: 0;
   gap: var(--space-2);

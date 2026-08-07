@@ -11,7 +11,9 @@ interface BottomDrawerProps {
   children: ReactNode;
   footer?: ReactNode;
   closeButtonAriaLabel?: string;
+  closeButtonPlacement?: "floating" | "header";
   dataAttribute?: string;
+  drawerClassName?: string;
   aboveMiniPlayer?: boolean;
 }
 
@@ -23,10 +25,35 @@ export const BottomDrawer = ({
   children,
   footer,
   closeButtonAriaLabel = "Close drawer",
+  closeButtonPlacement = "floating",
   dataAttribute,
+  drawerClassName,
   aboveMiniPlayer = false,
 }: BottomDrawerProps) => {
   if (!isOpen) return null;
+
+  const closeButton = (
+    <button
+      type="button"
+      className={
+        closeButtonPlacement === "header"
+          ? styles.headerCloseButton
+          : styles.closeButton
+      }
+      onClick={onClose}
+      aria-label={closeButtonAriaLabel}
+      data-testid="fmdBottomDrawerCloseButton"
+    >
+      <XIcon
+        className={
+          closeButtonPlacement === "header"
+            ? styles.headerCloseIcon
+            : styles.closeIcon
+        }
+        aria-hidden
+      />
+    </button>
+  );
 
   return (
     <>
@@ -34,23 +61,15 @@ export const BottomDrawer = ({
         type="button"
         className={classNames(styles.overlay, {
           [styles.open]: isOpen,
+          [styles.aboveMiniPlayer]: aboveMiniPlayer,
         })}
         onClick={onClose}
         aria-label="Close drawer overlay"
         {...(dataAttribute ? { [dataAttribute]: "true" } : {})}
       />
-      {isOpen && (
-        <button
-          type="button"
-          className={styles.closeButton}
-          onClick={onClose}
-          aria-label={closeButtonAriaLabel}
-        >
-          <XIcon className={styles.closeIcon} aria-hidden />
-        </button>
-      )}
+      {closeButtonPlacement === "floating" ? closeButton : null}
       <div
-        className={classNames(styles.drawer, {
+        className={classNames(styles.drawer, drawerClassName, {
           [styles.open]: isOpen,
           [styles.aboveMiniPlayer]: aboveMiniPlayer,
         })}
@@ -74,6 +93,7 @@ export const BottomDrawer = ({
               {title && <h2 className={styles.title}>{title}</h2>}
               {headerContent}
             </div>
+            {closeButtonPlacement === "header" ? closeButton : null}
           </div>
         )}
         <div className={styles.content}>{children}</div>

@@ -30,9 +30,7 @@ describe("ReleaseModal", () => {
     });
 
     expect(
-      screen.getByRole("button", {
-        name: /Never Gonna Give You Up \(Instrumental\)/,
-      }),
+      screen.getByText("Never Gonna Give You Up (Instrumental)"),
     ).toBeInTheDocument();
   });
 

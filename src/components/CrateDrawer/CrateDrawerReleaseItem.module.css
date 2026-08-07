@@ -5,6 +5,7 @@
   border-radius: var(--radius-card);
   display: flex;
   gap: var(--space-4);
+  overflow: hidden;
   padding: 0;
   position: relative;
   transition:
@@ -37,17 +38,14 @@
   text-align: left;
 
   &:focus-visible {
-    border-radius: calc(var(--radius-card) - 1px) 0 0
-      calc(var(--radius-card) - 1px);
     outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
 }
 
 .listItemActions {
   align-self: stretch;
   border-left: 1px solid var(--border);
-  border-radius: 0 var(--radius-card) var(--radius-card) 0;
   display: flex;
   flex: 0 0 4rem;
   min-height: 0;
@@ -66,7 +64,6 @@
 }
 
 .itemImage {
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
   flex-shrink: 0;
   height: 6.25rem;
   overflow: hidden;

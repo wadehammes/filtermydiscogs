@@ -568,4 +568,216 @@ describe("ReleasePlaybackProvider", () => {
     expect(readPersistedReleasePlayback()).not.toBeNull();
     expect(result.current.isPlaying).toBe(false);
   });
+
+  it("rebuilds the album queue when playback starts on a track", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(2);
+    });
+
+    expect(result.current.queueIndex).toBe(0);
+    expect(result.current.canPlayNext).toBe(true);
+    expect(result.current.queue[0]?.trackPosition).toBe("A1");
+    expect(result.current.queue[1]?.trackPosition).toBe("B1");
+  });
+
+  it("appends tracks to the queue without duplicates", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+  });
+
+  it("advances through a cross-release queue with playNext", async () => {
+    const shortRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100002,
+        title: "Short EP",
+        resource_url: "https://api.discogs.com/releases/100002",
+      }),
+    });
+
+    jest
+      .mocked(useDiscogsReleaseQuery)
+      .mockImplementation(({ enabled, releaseId }) => {
+        if (!enabled) {
+          return {
+            data: undefined,
+            isLoading: false,
+            isError: false,
+            refetch: jest.fn(),
+          } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
+        }
+
+        const detail =
+          releaseId === "100002"
+            ? discogsReleaseJsonFactory.withTracklistAndVideos({
+                id: 100002,
+                tracklist: [
+                  {
+                    position: "1",
+                    title: "Short A",
+                    duration: "2:00",
+                    type_: "track",
+                  },
+                ],
+              })
+            : releaseDetail;
+
+        return {
+          data: {
+            ...detail,
+            id: Number(releaseId) || detail.id,
+          },
+          isLoading: false,
+          isError: false,
+          refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
+      });
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: shortRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(3);
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.release?.basic_information.id).toBe(100002);
+    });
+  });
+
+  it("clears the queue when playback stops", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue.length).toBeGreaterThan(0);
+    });
+
+    act(() => {
+      result.current.stopPlayback();
+    });
+
+    expect(result.current.queue).toHaveLength(0);
+    expect(result.current.queueIndex).toBe(0);
+  });
+
+  it("reorders the queue without restarting the active track", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+
+    act(() => {
+      result.current.reorderQueue(0, 1);
+    });
+
+    expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+      "B1",
+      "A1",
+    ]);
+    expect(result.current.queueIndex).toBe(1);
+    expect(result.current.activeTrackPosition).toBe("A1");
+    expect(result.current.isPlaying).toBe(true);
+  });
 });
