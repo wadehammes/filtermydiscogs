@@ -61,6 +61,9 @@
   --shadow-lg:
     0 10px 15px -3px color-mix(in srgb, var(--foreground) 12%, transparent),
     0 4px 6px -4px color-mix(in srgb, var(--foreground) 10%, transparent);
+  --shadow-modal:
+    0 10px 15px -3px color-mix(in srgb, var(--foreground) 12%, transparent),
+    0 4px 6px -4px color-mix(in srgb, var(--foreground) 10%, transparent);
   --shadow-xl:
     0 20px 25px -5px color-mix(in srgb, var(--foreground) 14%, transparent),
     0 8px 10px -6px color-mix(in srgb, var(--foreground) 10%, transparent);
@@ -128,6 +131,7 @@
   --shadow-lg:
     0 10px 15px -3px transparent, 0 4px 6px -4px transparent,
     inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+  --shadow-modal: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
   --shadow-xl:
     0 20px 25px -5px transparent, 0 8px 10px -6px transparent,
     inset 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);

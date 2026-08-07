@@ -113,7 +113,7 @@ The app will be available at `http://localhost:6767`.
 - **State Management**: Jotai (filters, view) + React Context (auth, collection, crate, theme)
 - **Data Fetching**: TanStack Query (React Query)
 - **Forms**: React Hook Form
-- **Charts**: Recharts (dashboard)
+- **Charts**: TanStack Charts (dashboard)
 - **Toasts**: Sonner
 - **Tables**: TanStack Table
 - **Database**: Prisma with Vercel Postgres

@@ -268,7 +268,6 @@ export default function AdminDashboardClient() {
                 <GrowthAreaChart
                   title="Users"
                   data={stats.growth.users}
-                  gradientId="colorUsers"
                   formatter={(value: unknown) => {
                     if (typeof value !== "number") return ["", ""];
                     return [value.toLocaleString(), "Users"];
@@ -277,7 +276,6 @@ export default function AdminDashboardClient() {
                 <GrowthAreaChart
                   title="Crates"
                   data={stats.growth.crates}
-                  gradientId="colorCrates"
                   formatter={(value: unknown) => {
                     if (typeof value !== "number") return ["", ""];
                     return [value.toLocaleString(), "Crates"];
@@ -286,7 +284,6 @@ export default function AdminDashboardClient() {
                 <GrowthAreaChart
                   title="Releases"
                   data={stats.growth.releases}
-                  gradientId="colorReleases"
                   formatter={(value: unknown) => {
                     if (typeof value !== "number") return ["", ""];
                     return [value.toLocaleString(), "Releases"];
@@ -295,7 +292,6 @@ export default function AdminDashboardClient() {
                 <GrowthAreaChart
                   title="Public Crates"
                   data={stats.growth.publicCrates}
-                  gradientId="colorPublicCrates"
                   formatter={(value: unknown) => {
                     if (typeof value !== "number") return ["", ""];
                     return [value.toLocaleString(), "Public Crates"];
@@ -304,7 +300,6 @@ export default function AdminDashboardClient() {
                 <GrowthAreaChart
                   title="Set Markers"
                   data={stats.growth.setMarkers}
-                  gradientId="colorSetMarkers"
                   formatter={(value: unknown) => {
                     if (typeof value !== "number") return ["", ""];
                     return [value.toLocaleString(), "Set Markers"];

@@ -1,0 +1,21 @@
+.chart {
+  color: var(--foreground);
+  height: 100%;
+  width: 100%;
+
+  --ts-chart-1: var(--chart-1, #5e5365);
+  --ts-chart-2: var(--chart-2, #f05278);
+  --ts-chart-3: var(--chart-3, #54bd83);
+  --ts-chart-4: var(--chart-4, #f37231);
+  --ts-chart-5: var(--chart-5, #7153a2);
+  --ts-chart-6: var(--chart-6, #61ccf0);
+}
+
+.chart :global(*),
+.chart :global(*:focus),
+.chart :global(*:focus-visible),
+.chart :global(svg:focus),
+.chart :global(svg:focus-visible) {
+  border: none !important;
+  outline: none !important;
+}

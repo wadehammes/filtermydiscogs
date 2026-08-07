@@ -30,3 +30,88 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.sectionHeader {
+  border-left: 3px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-4);
+}
+
+.sectionTitle,
+.sectionLede,
+.heroEyebrow,
+.heroTitle,
+.heroCount,
+.heroLine,
+.metricLabel,
+.metricValue {
+  animation: pulse 1.5s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+}
+
+.sectionTitle {
+  height: 1.5rem;
+  width: min(100%, 12rem);
+}
+
+.sectionLede {
+  height: 1rem;
+  width: min(100%, 24rem);
+}
+
+.heroCountBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.metricLabel {
+  height: 0.75rem;
+  width: 5.5rem;
+}
+
+.metricValue {
+  height: 1.25rem;
+  width: 4rem;
+}
+
+.heroEyebrow {
+  height: 0.75rem;
+  width: 6rem;
+}
+
+.heroTitle {
+  height: 1.75rem;
+  width: min(100%, 14rem);
+}
+
+.heroCount {
+  height: 3rem;
+  width: min(100%, 8rem);
+}
+
+.heroLine {
+  height: 1rem;
+  width: min(100%, 24rem);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}

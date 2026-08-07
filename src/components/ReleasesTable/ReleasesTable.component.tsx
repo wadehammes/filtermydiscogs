@@ -25,6 +25,15 @@ import styles from "./ReleasesTable.module.css";
 import { releasesTableFeatures } from "./releasesTableFeatures";
 import { useReleasesTableLayout } from "./useReleasesTableLayout.hook";
 
+const releasesTableMountKey = [
+  styles.table,
+  styles.thead,
+  styles.tbody,
+  styles.headerRow,
+  styles.dataRow,
+  styles.dataCell,
+].join("-");
+
 interface ReleasesTableProps {
   releases: DiscogsRelease[];
   onExitRandomMode: () => void;
@@ -384,24 +393,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       ],
     );
 
-    const tableKey = useMemo(() => {
-      return [
-        styles.table,
-        styles.thead,
-        styles.tbody,
-        styles.headerRow,
-        styles.dataRow,
-        styles.dataCell,
-      ].join("-");
-    }, [
-      styles.table,
-      styles.thead,
-      styles.tbody,
-      styles.headerRow,
-      styles.dataRow,
-      styles.dataCell,
-    ]);
-
     const table = useTable({
       features: releasesTableFeatures,
       data: releases,
@@ -418,7 +409,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       <div className={styles.tableWrapper} data-testid="fmdReleasesTable">
         <div className={styles.tableContainer}>
           <table
-            key={tableKey}
+            key={releasesTableMountKey}
             className={styles.table}
             style={{ minWidth: table.getTotalSize() }}
           >

@@ -15,6 +15,7 @@
   --shadow-lg:
     0 0 20px 0 color-mix(in srgb, var(--primary) 12%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+  --shadow-modal: 0 0 20px 0 color-mix(in srgb, var(--primary) 12%, transparent);
   --shadow-xl:
     0 0 28px 0 color-mix(in srgb, var(--primary) 14%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);

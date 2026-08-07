@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { DashboardClientPageObject } from "src/components/Dashboard/DashboardClient.po";
-import { screen, waitFor, within } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
 let po: DashboardClientPageObject;
 
@@ -17,19 +17,15 @@ describe("DashboardClient", () => {
     });
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Collection Dashboard" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "testuser's collection",
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Total Releases")).toBeInTheDocument();
-    const totalReleasesCard = screen
-      .getByText("Total Releases")
-      .closest(".statCard");
-    expect(totalReleasesCard).toBeTruthy();
-    expect(
-      within(totalReleasesCard as HTMLElement).getByText("3"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Estimated Collection Value")).toBeInTheDocument();
+    expect(screen.getByTestId("fmdDashboardHeroCount")).toHaveTextContent("3");
+    expect(screen.getByText("Estimated value")).toBeInTheDocument();
     expect(screen.getByText("$500")).toBeInTheDocument();
-    expect(screen.getByText("Collection Health")).toBeInTheDocument();
+    expect(screen.getByText("Exact Duplicates")).toBeInTheDocument();
     expect(screen.getAllByTestId("fmdDynamicChartStub").length).toBeGreaterThan(
       0,
     );
@@ -52,12 +48,14 @@ describe("DashboardClient", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { name: "No collection data" }),
+        screen.getByRole("heading", { name: "Nothing on the shelf yet" }),
       ).toBeInTheDocument();
     });
 
     expect(
-      screen.getByText("Your collection appears to be empty."),
+      screen.getByText(
+        "Add records to your Discogs collection to see them here.",
+      ),
     ).toBeInTheDocument();
   });
 });
