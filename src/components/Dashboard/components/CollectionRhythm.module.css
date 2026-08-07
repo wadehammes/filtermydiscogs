@@ -1,0 +1,335 @@
+.rhythmGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.card {
+  --surface: var(--card);
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.eyebrow {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.cardTitle {
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.heroStat {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.heroValue {
+  color: var(--foreground);
+  font-size: clamp(2.25rem, 7vw, 3.25rem);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.heroLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+}
+
+.changePill {
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
+  font-weight: var(--font-semibold);
+  padding: 0.25rem 0.65rem;
+}
+
+.changePillPositive {
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+}
+
+.changePillNegative {
+  background: color-mix(in srgb, var(--destructive) 14%, transparent);
+  color: var(--destructive);
+}
+
+.compareBars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.compareRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.compareRowHeader {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.compareLabel {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.compareCount {
+  color: var(--foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
+  font-weight: var(--font-semibold);
+}
+
+.compareTrack {
+  background: var(--muted);
+  border-radius: var(--radius-full);
+  height: 0.5rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.compareFill {
+  border-radius: var(--radius-full);
+  height: 100%;
+  min-width: 0.35rem;
+}
+
+.compareFillRecent {
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    color-mix(in srgb, var(--primary) 70%, var(--chart-6, #61ccf0))
+  );
+}
+
+.compareFillPrior {
+  background: color-mix(in srgb, var(--muted-foreground) 42%, transparent);
+}
+
+.detailsPanel {
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+}
+
+.detailBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.detailLabel {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.artistList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.artistChip {
+  align-items: center;
+  background: color-mix(in srgb, var(--primary) 10%, var(--background));
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  gap: var(--space-2);
+  padding: 0.3rem 0.65rem;
+}
+
+.artistName {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.2;
+}
+
+.artistCount {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
+}
+
+.driftList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.driftRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.driftRowHeader {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.driftGenre {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.3;
+}
+
+.driftDelta {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-semibold);
+}
+
+.driftDeltaPositive {
+  color: var(--success);
+}
+
+.driftDeltaNegative {
+  color: var(--destructive);
+}
+
+.driftTrack {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 0.375rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.driftFill {
+  border-radius: var(--radius-sm);
+  height: 100%;
+  min-width: 2px;
+}
+
+.statsGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.statTile {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.statLabel {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.statPeriod {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.statNumberRow {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+}
+
+.statNumber {
+  color: var(--foreground);
+  font-size: var(--text-2xl);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.statNumberSuffix {
+  color: var(--muted-foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  line-height: 1.2;
+}
+
+.statDescription {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  margin: 0;
+}

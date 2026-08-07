@@ -19,6 +19,7 @@ import { buildDashboardStory } from "src/utils/dashboardStory";
 import { definedProps } from "src/utils/definedProps";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
+import { CollectionRhythm } from "./components/CollectionRhythm.component";
 import { DashboardHero } from "./components/DashboardHero.component";
 import { DashboardSection } from "./components/DashboardSection.component";
 import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
@@ -54,6 +55,14 @@ const StyleEvolution = dynamic(
   () =>
     import("./components/StyleEvolution.component").then((m) => ({
       default: m.StyleEvolution,
+    })),
+  { ssr: false },
+);
+
+const ComparativeGrowthCharts = dynamic(
+  () =>
+    import("./components/ComparativeGrowthCharts.component").then((m) => ({
+      default: m.ComparativeGrowthCharts,
     })),
   { ssr: false },
 );
@@ -168,6 +177,10 @@ function DashboardClientContent() {
               lede={story.sections.growth.lede}
               title={story.sections.growth.title}
             >
+              <CollectionRhythm
+                acquisitionStreaks={analytics.acquisitionStreaks}
+                yearInReview={analytics.yearInReview}
+              />
               <GrowthChart growthData={analytics.growth} hideHeading={true} />
             </DashboardSection>
 
@@ -182,6 +195,7 @@ function DashboardClientContent() {
                 mediaTypeDistribution={analytics.mediaTypeDistribution}
                 formatTagDistribution={analytics.formatTagDistribution}
               />
+              <ComparativeGrowthCharts hideHeading={true} />
               <StyleEvolution
                 hideHeading={true}
                 sectionCopy={story.sections.styleEvolution}

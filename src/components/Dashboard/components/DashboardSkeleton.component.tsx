@@ -55,6 +55,10 @@ export function DashboardSkeleton() {
       </SkeletonSection>
 
       <SkeletonSection>
+        <div className={skeletonLayout.rhythmGrid}>
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
         <SkeletonGrowthChart />
       </SkeletonSection>
 
@@ -68,6 +72,11 @@ export function DashboardSkeleton() {
             <SkeletonPieChart />
             <SkeletonPieChart />
             <SkeletonPieChart />
+          </div>
+          <div className={skeletonLayout.comparativeGrid}>
+            <SkeletonGrowthChart />
+            <SkeletonGrowthChart />
+            <SkeletonGrowthChart />
           </div>
         </div>
       </SkeletonSection>

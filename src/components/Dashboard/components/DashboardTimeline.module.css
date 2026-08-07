@@ -79,7 +79,7 @@
 .content {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   min-width: 0;
   transition: var(--transition-fast);
 

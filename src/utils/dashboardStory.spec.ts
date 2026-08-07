@@ -22,6 +22,31 @@ const baseAnalytics = (): CollectionAnalytics => ({
     releasesWithoutRating: 0,
     duplicateGroups: [],
   },
+  yearInReview: {
+    recentPeriodAdds: 12,
+    priorPeriodAdds: 10,
+    addsChangePercent: 20,
+    topNewArtists: [{ label: "Aphex Twin", count: 3 }],
+    genreDrift: [
+      {
+        label: "Electronic",
+        recentCount: 8,
+        priorCount: 6,
+        recentShare: 66.7,
+        priorShare: 60,
+        changePoints: 6.7,
+      },
+    ],
+  },
+  acquisitionStreaks: {
+    longestGapDays: 90,
+    longestGapStart: "Jan 2023",
+    longestGapEnd: "Apr 2023",
+    busiestDay: { label: "Aug 1, 2024", count: 5 },
+    busiestMonth: { label: "Aug 2024", count: 12 },
+    busiestQuarter: { label: "Q2 2024", count: 8 },
+    leastBusyQuarter: { label: "Q1 2024", count: 2 },
+  },
   styleDistribution: [
     { label: "House", value: 30, count: 30 },
     { label: "Techno", value: 20, count: 20 },

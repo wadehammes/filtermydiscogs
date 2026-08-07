@@ -21,6 +21,43 @@ export interface GrowthDataPoint {
   cumulative: number;
 }
 
+export interface YearInReviewArtistEntry {
+  label: string;
+  count: number;
+}
+
+export interface YearInReviewGenreDriftEntry {
+  label: string;
+  recentCount: number;
+  priorCount: number;
+  recentShare: number;
+  priorShare: number;
+  changePoints: number;
+}
+
+export interface YearInReviewSummary {
+  recentPeriodAdds: number;
+  priorPeriodAdds: number;
+  addsChangePercent: number | null;
+  topNewArtists: YearInReviewArtistEntry[];
+  genreDrift: YearInReviewGenreDriftEntry[];
+}
+
+export interface AcquisitionPeriodHighlight {
+  label: string;
+  count: number;
+}
+
+export interface AcquisitionStreaksSummary {
+  longestGapDays: number;
+  longestGapStart: string | null;
+  longestGapEnd: string | null;
+  busiestDay: AcquisitionPeriodHighlight | null;
+  busiestMonth: AcquisitionPeriodHighlight | null;
+  busiestQuarter: AcquisitionPeriodHighlight | null;
+  leastBusyQuarter: AcquisitionPeriodHighlight | null;
+}
+
 export interface DuplicateGroup {
   key: string;
   type: "master_id" | "title_artist";
@@ -118,6 +155,8 @@ export interface CollectionAnalytics {
   stats: CollectionStats;
   growth: GrowthDataPoint[];
   health: CollectionHealth;
+  yearInReview: YearInReviewSummary | null;
+  acquisitionStreaks: AcquisitionStreaksSummary | null;
   styleDistribution: DistributionData[];
   genreDistribution: DistributionData[];
   decadeDistribution: DistributionData[];

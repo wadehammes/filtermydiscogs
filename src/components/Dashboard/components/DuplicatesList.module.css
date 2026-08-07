@@ -8,7 +8,7 @@
 .duplicateGroup {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   display: flex;
   flex-direction: column;
   padding: var(--space-4);
@@ -57,7 +57,7 @@
 .emptyState {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   color: var(--muted-foreground);
   padding: var(--space-6);
   text-align: center;

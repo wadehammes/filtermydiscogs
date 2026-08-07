@@ -3,7 +3,7 @@
 
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
   composes: theme-surface-elevated from global;
   display: flex;
   flex-direction: column;
