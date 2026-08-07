@@ -92,6 +92,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | Concern | Pattern |
 |---------|---------|
 | Format/Styles column | Format pills plus genre/style tags from [`getReleaseGenreStyleTags`](../../src/utils/releaseGenreStyleTags.ts), wrapped in **`HorizontalScrollRow`** inside a fixed-width cell (**`min-width: 0`**) so tags scroll horizontally instead of wrapping |
+| Column resizing | TanStack Table v9 **`columnResizingFeature`**: drag header edges to resize (double-click resets); widths persisted in **`localStorage`** via **`RELEASES_TABLE_LAYOUT_STORAGE_KEY`** ([`useReleasesTableLayout.hook.ts`](../../src/components/ReleasesTable/useReleasesTableLayout.hook.ts)). Each resizable header uses a **`<button type="button">`** handle (**`aria-label`**, wide hit area, 3px **`::after`** rail) — not a static **`<div>`** — so Biome **`noStaticElementInteractions`** passes. Wide tables scroll inside **`.tableContainer`** — **`min-width: 0`** on **`.mainContent`** (releases grid) and table wrappers keeps the crate sidebar in the layout |
 | Filter pills | Same **`usePillClickHandler`** / **`useFilterAtoms`** wiring as release cards — pills toggle format and genre/style filters |
 | Notes | **`ReleaseNotes variant="table"`** — no per-row **`ReleaseNotesEditorProvider`** (see ReleaseNotes feature example) |
 

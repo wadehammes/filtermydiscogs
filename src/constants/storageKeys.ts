@@ -8,3 +8,5 @@ export const LEGACY_COMMUNITY_RATINGS_STORAGE_KEY =
   "filtermydiscogs_community_ratings";
 export const ANALYTICS_CONSENT_STORAGE_KEY =
   "filtermydiscogs_analytics_consent";
+export const RELEASES_TABLE_LAYOUT_STORAGE_KEY =
+  "filtermydiscogs_releases_table_layout";
