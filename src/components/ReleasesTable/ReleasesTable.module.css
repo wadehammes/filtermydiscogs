@@ -72,21 +72,52 @@
 }
 
 .resizeHandle {
-  background: var(--border);
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   bottom: 0;
+  color: inherit;
   cursor: col-resize;
+  display: block;
+  font: inherit;
   inset-inline-end: 0;
+  line-height: 0;
+  margin: 0;
+  min-height: 0;
+  min-width: 0;
   opacity: 0;
+  padding: 0;
   position: absolute;
   top: 0;
   touch-action: none;
   transition: opacity var(--transition-fast);
-  width: 3px;
-}
+  width: 0.75rem;
 
-.resizeHandle:hover,
-.resizeHandleActive {
-  background: var(--primary);
+  &::after {
+    background: var(--border);
+    content: "";
+    height: 100%;
+    inset-inline-end: 0;
+    position: absolute;
+    top: 0;
+    transition: background-color var(--transition-fast);
+    width: 3px;
+  }
+
+  &:hover::after,
+  &.resizeHandleActive::after {
+    background: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:focus-visible::after {
+    background: var(--primary);
+    opacity: 1;
+  }
 }
 
 .headerCell:hover .resizeHandle,

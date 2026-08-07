@@ -22,9 +22,7 @@ import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleasesTable.module.css";
-import {
-  releasesTableFeatures,
-} from "./releasesTableFeatures";
+import { releasesTableFeatures } from "./releasesTableFeatures";
 import { useReleasesTableLayout } from "./useReleasesTableLayout.hook";
 
 interface ReleasesTableProps {
@@ -284,9 +282,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             cell: ({ getValue }) => {
               const year = getValue();
               return (
-                <div className={styles.yearCell}>
-                  {year !== 0 ? year : "—"}
-                </div>
+                <div className={styles.yearCell}>{year !== 0 ? year : "—"}</div>
               );
             },
             size: 60,
@@ -448,7 +444,9 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                             )}
                           </div>
                           {column.getCanResize() && (
-                            <div
+                            <button
+                              type="button"
+                              aria-label={`Resize ${column.id} column`}
                               className={classNames(styles.resizeHandle, {
                                 [styles.resizeHandleActive]:
                                   column.getIsResizing(),
