@@ -1,5 +1,4 @@
 import * as apiHelpers from "src/api/helpers";
-import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
@@ -91,9 +90,7 @@ export class ReleasesClientPageObject extends BasePageObject {
   renderReleasesClient(): RenderResult {
     return render(
       <ReleasePlaybackProvider>
-        <PlaybackReleaseClickProvider>
-          <ReleasesClient />
-        </PlaybackReleaseClickProvider>
+        <ReleasesClient />
       </ReleasePlaybackProvider>,
       {
         authInitialState: testAuthenticatedAuthState,

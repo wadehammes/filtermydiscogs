@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
+import { afterEach, describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { CollectionAnalytics } from "src/types/dashboard.types";
 import { buildDashboardStory } from "src/utils/dashboardStory";
@@ -67,7 +67,14 @@ const baseAnalytics = (): CollectionAnalytics => ({
 });
 
 describe("buildDashboardStory", () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("builds a personalized hero and section ledes from analytics", () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-08-07T12:00:00"));
+
     const releases = [
       releaseFactory.build({
         date_added: "2018-08-07T12:00:00",
@@ -76,7 +83,7 @@ describe("buildDashboardStory", () => {
         date_added: "2020-08-07T12:00:00",
       }),
       releaseFactory.build({
-        date_added: new Date().toISOString(),
+        date_added: "2026-08-07T15:00:00",
       }),
     ];
 
