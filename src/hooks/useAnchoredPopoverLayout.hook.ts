@@ -68,8 +68,15 @@ export const useAnchoredPopoverLayout = ({
       const spaceAbove = rect.top - POPOVER_GAP_PX;
       const availableSpace = openUpward ? spaceAbove : spaceBelow;
       const inFiltersBar = anchor.closest("[data-filters-bar]") !== null;
+      const inBottomDrawer =
+        anchor.closest('[data-testid="fmdBottomDrawer"]') !== null;
 
-      if (inFiltersBar) {
+      if (inBottomDrawer) {
+        panel.style.setProperty(
+          "--popover-z-index",
+          "calc(var(--z-5-modal) + 1)",
+        );
+      } else if (inFiltersBar) {
         panel.style.setProperty("--popover-z-index", "var(--z-app-header)");
       } else {
         panel.style.removeProperty("--popover-z-index");
