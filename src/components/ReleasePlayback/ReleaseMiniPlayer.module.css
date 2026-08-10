@@ -218,10 +218,6 @@
   top: -0.15rem;
 }
 
-.previousIcon {
-  transform: rotate(180deg);
-}
-
 .cover {
   border-radius: var(--radius-sm);
   flex-shrink: 0;

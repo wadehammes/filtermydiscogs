@@ -1,9 +1,5 @@
 .container {
   background: var(--background);
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
   padding: var(--space-12) var(--space-4);
   width: 100%;
 

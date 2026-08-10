@@ -8,7 +8,6 @@ import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import ChevronRightIcon from "src/styles/icons/chevron-right-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
@@ -25,6 +24,10 @@ import { PersistentYoutubeIframe } from "./PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawer } from "./PlaybackQueueDrawer.component";
 import styles from "./ReleaseMiniPlayer.module.css";
 import { ReleasePlaybackVideoPanel } from "./ReleasePlaybackVideoPanel.component";
+import {
+  TransportSkipNextIcon,
+  TransportSkipPreviousIcon,
+} from "./TransportSkipIcons.component";
 
 interface ReleaseMiniPlayerProps {
   onReleaseClick?: (instanceId: string) => void;
@@ -265,10 +268,7 @@ export const ReleaseMiniPlayer = ({
               aria-label="Previous track"
               title="Previous track"
             >
-              <ChevronRightIcon
-                className={classNames(styles.controlIcon, styles.previousIcon)}
-                aria-hidden
-              />
+              <TransportSkipPreviousIcon className={styles.controlIcon} />
             </button>
             <button
               type="button"
@@ -292,7 +292,7 @@ export const ReleaseMiniPlayer = ({
               aria-label="Next track"
               title="Next track"
             >
-              <ChevronRightIcon className={styles.controlIcon} aria-hidden />
+              <TransportSkipNextIcon className={styles.controlIcon} />
             </button>
             <button
               type="button"
