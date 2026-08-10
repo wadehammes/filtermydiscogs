@@ -29,7 +29,7 @@ Next.js routes, layouts, and **Route Handlers** under `app/api/`.
 - **Root error UI**: [`error.tsx`](../../src/app/error.tsx) (under Providers). [`global-error.tsx`](../../src/app/global-error.tsx) replaces the root layout — own `html`/`body`, no Providers.
 - **Root loading**: [`loading.tsx`](../../src/app/loading.tsx) — provider-free **`PageLoader`** only (Next also mounts it under `/_global-error`). Authenticated shells use segment [`releases/loading.tsx`](../../src/app/releases/loading.tsx), [`dashboard/loading.tsx`](../../src/app/dashboard/loading.tsx), [`mosaic/loading.tsx`](../../src/app/mosaic/loading.tsx).
 
-Most feature pages are **client components** (`*Client.tsx`) wrapped by thin server `page.tsx` shells that set metadata. Mosaic uses [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) (`ssr: false` must live in a client component) with [`AppPageLoading`](../../src/components/AppPageLoading/AppPageLoading.component.tsx) while the chunk loads.
+Most feature pages are **client components** (`*Client.tsx`) wrapped by thin server `page.tsx` shells that set metadata and **static-import** the client module (segment **`loading.tsx`** supplies **`AppPageLoading`** during navigation — do **not** wrap `*Client` in **`next/dynamic`**; Turbopack dev breaks lazy client chunks with **“module factory is not available”**). Mosaic still uses [`MosaicClientWrapper`](../../src/components/MosaicClient/MosaicClientWrapper.component.tsx) (`ssr: false` in a client wrapper only).
 
 ### [`src/components/`](../../src/components/)
 

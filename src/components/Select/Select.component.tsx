@@ -1,9 +1,9 @@
 import classNames from "classnames";
 import { memo, useCallback, useEffect, useId, useReducer, useRef } from "react";
 import { AnchoredPopoverPortal } from "src/components/shared/AnchoredPopoverPortal/AnchoredPopoverPortal.component";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
 import { useAnchoredPopoverLayout } from "src/hooks/useAnchoredPopoverLayout.hook";
 import anchoredPopoverStyles from "src/styles/anchored-popover.module.css";
-import Check from "src/styles/icons/check-thin.svg";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import {
   estimateSelectMenuHeight,
@@ -296,7 +296,7 @@ const SelectComponent = ({
                   <span className={styles.optionContent}>
                     {isOptionSelected(value, option.value) && (
                       <span className={styles.checkmark}>
-                        <Check />
+                        <CheckThinIcon />
                       </span>
                     )}
                     <span className={styles.optionLabel}>

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import ReleasesClient from "src/components/ReleasesClient/ReleasesClient.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
   getMetadataSiteUrl,
@@ -9,13 +8,6 @@ import {
   SITE_NAME,
   sitePageTitle,
 } from "src/constants/siteMetadata";
-
-const ReleasesClient = dynamic(
-  () => import("src/components/ReleasesClient/ReleasesClient.component"),
-  {
-    loading: () => <AppPageLoading currentPage="releases" />,
-  },
-);
 
 const baseUrl = getMetadataSiteUrl();
 const title = sitePageTitle("Releases");

@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { checkAuth } from "src/api/helpers";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
-import {
-  type AuthStatus,
-  normalizeAuthStatus,
-} from "src/services/auth.service";
+import { type AuthStatus, checkAuthStatus } from "src/services/auth.service";
 
 export interface UseAuthQueryParams {
   enabled?: boolean;
@@ -13,7 +9,7 @@ export interface UseAuthQueryParams {
 export const useAuthQuery = ({ enabled = true }: UseAuthQueryParams = {}) => {
   return useQuery<AuthStatus>({
     queryKey: AuthQueryKeys.all(),
-    queryFn: async () => normalizeAuthStatus(await checkAuth()),
+    queryFn: checkAuthStatus,
     enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

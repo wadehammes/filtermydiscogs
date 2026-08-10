@@ -9,15 +9,6 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { ReleasesGrid } from "./ReleasesGrid.component";
 
-jest.mock("next/dynamic", () => ({
-  __esModule: true,
-  default:
-    () =>
-    ({ releases }: { releases: DiscogsRelease[] }) => (
-      <div data-testid="fmdReleasesTable">{`${releases.length} table rows`}</div>
-    ),
-}));
-
 jest.mock("src/components/ReleasesTable/ReleasesTable.component", () => ({
   ReleasesTable: ({ releases }: { releases: DiscogsRelease[] }) => (
     <div data-testid="fmdReleasesTable">{`${releases.length} table rows`}</div>

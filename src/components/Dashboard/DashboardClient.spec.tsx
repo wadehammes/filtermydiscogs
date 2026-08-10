@@ -26,9 +26,7 @@ describe("DashboardClient", () => {
     expect(screen.getByText("Estimated value")).toBeInTheDocument();
     expect(screen.getByText("$500")).toBeInTheDocument();
     expect(screen.getByText("Exact Duplicates")).toBeInTheDocument();
-    expect(screen.getAllByTestId("fmdDynamicChartStub").length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.getAllByTestId("fmdChartStub").length).toBeGreaterThan(0);
   });
 
   it("shows loading indication while additional release pages are fetching", async () => {

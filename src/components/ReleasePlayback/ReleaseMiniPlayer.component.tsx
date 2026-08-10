@@ -3,12 +3,12 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { ListThinIcon } from "src/components/shared/icons/ListThinIcon.component";
 import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ChevronRightIcon from "src/styles/icons/chevron-right-thin.svg";
-import ListIcon from "src/styles/icons/list-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
@@ -237,7 +237,7 @@ export const ReleaseMiniPlayer = ({
               }
               title="Playback queue"
             >
-              <ListIcon className={styles.controlIcon} aria-hidden />
+              <ListThinIcon className={styles.controlIcon} aria-hidden />
               {queue.length > 0 ? (
                 <span className={styles.queueCount}>{queue.length}</span>
               ) : null}

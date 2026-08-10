@@ -4,8 +4,8 @@ import classNames from "classnames";
 import { useEffect, useState } from "react";
 import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import { Spinner } from "src/components/Spinner/Spinner.component";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
-import Check from "src/styles/icons/check-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleasesHeader.module.css";
 
@@ -81,7 +81,7 @@ export const ReleasesHeader = ({
         ) : null}
         {!isCollectionLoading && showAllLoadedMessage ? (
           <span className={styles.loadingIcon}>
-            <Check />
+            <CheckThinIcon />
             <span>All releases loaded</span>
           </span>
         ) : null}

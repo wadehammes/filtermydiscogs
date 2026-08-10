@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import type { MouseEvent } from "react";
-import CheckIcon from "src/styles/icons/check-thin.svg";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import styles from "./CrateReleaseActions.module.css";
 
@@ -49,7 +49,7 @@ export const CrateReleaseActions = ({
           }
           title={packed ? "Unmark as packed for gig" : "Mark as packed for gig"}
         >
-          <CheckIcon className={styles.actionIcon} aria-hidden />
+          <CheckThinIcon className={styles.actionIcon} aria-hidden />
         </button>
       ) : null}
       <button

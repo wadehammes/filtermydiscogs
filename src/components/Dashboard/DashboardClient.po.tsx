@@ -19,9 +19,20 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import DashboardClient from "./DashboardClient.component";
 
-jest.mock("next/dynamic", () => ({
-  __esModule: true,
-  default: () => () => <div data-testid="fmdDynamicChartStub" />,
+jest.mock("./components/ArtistLabelCharts.component", () => ({
+  ArtistLabelCharts: () => <div data-testid="fmdChartStub" />,
+}));
+jest.mock("./components/ComparativeGrowthCharts.component", () => ({
+  ComparativeGrowthCharts: () => <div data-testid="fmdChartStub" />,
+}));
+jest.mock("./components/DistributionCharts.component", () => ({
+  DistributionCharts: () => <div data-testid="fmdChartStub" />,
+}));
+jest.mock("./components/GrowthChart.component", () => ({
+  GrowthChart: () => <div data-testid="fmdChartStub" />,
+}));
+jest.mock("./components/StyleEvolution.component", () => ({
+  StyleEvolution: () => <div data-testid="fmdChartStub" />,
 }));
 
 jest.mock("src/api/helpers", () => ({

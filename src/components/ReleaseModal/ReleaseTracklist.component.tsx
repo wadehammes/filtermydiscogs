@@ -1,8 +1,8 @@
 "use client";
 
 import classNames from "classnames";
-import CheckIcon from "src/styles/icons/check-thin.svg";
-import ListIcon from "src/styles/icons/list-thin.svg";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
+import { ListThinIcon } from "src/components/shared/icons/ListThinIcon.component";
 import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
@@ -112,9 +112,15 @@ export const ReleaseTracklist = ({
                   data-testid="fmdReleaseTrackQueueButton"
                 >
                   {isQueued ? (
-                    <CheckIcon className={styles.queueButtonIcon} aria-hidden />
+                    <CheckThinIcon
+                      className={styles.queueButtonIcon}
+                      aria-hidden
+                    />
                   ) : (
-                    <ListIcon className={styles.queueButtonIcon} aria-hidden />
+                    <ListThinIcon
+                      className={styles.queueButtonIcon}
+                      aria-hidden
+                    />
                   )}
                 </button>
               ) : null}
