@@ -3,9 +3,57 @@ import type {
   AcquisitionPeriodHighlight,
   AcquisitionStreaksSummary,
   YearInReviewSummary,
+  YearInReviewTimeframe,
+  YearInReviewTimeframeMeta,
 } from "src/types/dashboard.types";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+export const YEAR_IN_REVIEW_TIMEFRAME_OPTIONS: Array<{
+  value: YearInReviewTimeframe;
+  label: string;
+}> = [
+  { value: "week", label: "Last week" },
+  { value: "month", label: "Last month" },
+  { value: "quarter", label: "Last quarter" },
+  { value: "year", label: "Last year" },
+];
+
+export const YEAR_IN_REVIEW_TIMEFRAME_META: Record<
+  YearInReviewTimeframe,
+  YearInReviewTimeframeMeta
+> = {
+  week: {
+    eyebrow: "Last 7 days",
+    recentLabel: "This week",
+    priorLabel: "Prior week",
+    compareLabel: "vs prior week",
+  },
+  month: {
+    eyebrow: "Last 30 days",
+    recentLabel: "This month",
+    priorLabel: "Prior month",
+    compareLabel: "vs prior month",
+  },
+  quarter: {
+    eyebrow: "Last 90 days",
+    recentLabel: "This quarter",
+    priorLabel: "Prior quarter",
+    compareLabel: "vs prior quarter",
+  },
+  year: {
+    eyebrow: "Rolling 12 months",
+    recentLabel: "This year",
+    priorLabel: "Prior year",
+    compareLabel: "vs prior year",
+  },
+};
+
+const TIMEFRAME_MS: Record<Exclude<YearInReviewTimeframe, "year">, number> = {
+  week: 7 * MS_PER_DAY,
+  month: 30 * MS_PER_DAY,
+  quarter: 90 * MS_PER_DAY,
+};
 
 const formatGenreLabel = (genreName: string): string => {
   const trimmed = genreName.trim();
@@ -36,6 +84,25 @@ const getRollingYearBounds = (referenceDate: Date) => {
 
   const priorStart = new Date(referenceDate);
   priorStart.setFullYear(priorStart.getFullYear() - 2);
+
+  return {
+    recentStart,
+    priorStart,
+    priorEnd: recentStart,
+  };
+};
+
+const getPeriodBounds = (
+  timeframe: YearInReviewTimeframe,
+  referenceDate: Date,
+) => {
+  if (timeframe === "year") {
+    return getRollingYearBounds(referenceDate);
+  }
+
+  const durationMs = TIMEFRAME_MS[timeframe];
+  const recentStart = new Date(referenceDate.getTime() - durationMs);
+  const priorStart = new Date(recentStart.getTime() - durationMs);
 
   return {
     recentStart,
@@ -120,13 +187,16 @@ const toPeriodHighlight = (
 export const calculateYearInReview = (
   releases: DiscogsRelease[],
   referenceDate = new Date(),
+  timeframe: YearInReviewTimeframe = "year",
 ): YearInReviewSummary | null => {
   if (releases.length === 0) {
     return null;
   }
 
-  const { recentStart, priorStart, priorEnd } =
-    getRollingYearBounds(referenceDate);
+  const { recentStart, priorStart, priorEnd } = getPeriodBounds(
+    timeframe,
+    referenceDate,
+  );
   let recentPeriodAdds = 0;
   let priorPeriodAdds = 0;
   const artistFirstAdded = new Map<string, Date>();

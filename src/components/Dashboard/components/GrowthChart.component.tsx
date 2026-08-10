@@ -62,12 +62,12 @@ export const GrowthChart = ({
 
   return (
     <div className={styles.chartContainer}>
-      <div
-        className={classNames(styles.chartHeader, {
-          [styles.chartHeaderCompact]: hideHeading,
-        })}
-      >
-        {!hideHeading && <h2>Collection Growth</h2>}
+      <div className={styles.chartHeader}>
+        {hideHeading ? (
+          <h3 className={styles.chartTitle}>Collection growth</h3>
+        ) : (
+          <h2 className={styles.chartTitle}>Collection growth</h2>
+        )}
         <div className={styles.viewToggle}>
           <button
             type="button"

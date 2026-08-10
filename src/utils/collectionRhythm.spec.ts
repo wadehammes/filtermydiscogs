@@ -48,7 +48,7 @@ describe("calculateYearInReview", () => {
       }),
     ];
 
-    const result = calculateYearInReview(releases, referenceDate);
+    const result = calculateYearInReview(releases, referenceDate, "year");
 
     expect(result).toMatchObject({
       recentPeriodAdds: 3,
@@ -70,6 +70,28 @@ describe("calculateYearInReview", () => {
 
   it("returns null for an empty collection", () => {
     expect(calculateYearInReview([], referenceDate)).toBeNull();
+  });
+
+  it("compares rolling week windows", () => {
+    const releases = [
+      releaseFactory.build({
+        date_added: "2025-08-01T12:00:00.000Z",
+      }),
+      releaseFactory.build({
+        date_added: "2025-08-05T12:00:00.000Z",
+      }),
+      releaseFactory.build({
+        date_added: "2025-07-25T12:00:00.000Z",
+      }),
+    ];
+
+    const result = calculateYearInReview(releases, referenceDate, "week");
+
+    expect(result).toMatchObject({
+      recentPeriodAdds: 2,
+      priorPeriodAdds: 1,
+      addsChangePercent: 100,
+    });
   });
 });
 

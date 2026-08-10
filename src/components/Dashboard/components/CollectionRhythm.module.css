@@ -24,9 +24,24 @@
 }
 
 .cardHeader {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.cardHeaderMain {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-width: 0;
+}
+
+.timeframeSelect {
+  flex: 1 1 9rem;
+  max-width: 11rem;
+  min-width: 9rem;
 }
 
 .eyebrow {

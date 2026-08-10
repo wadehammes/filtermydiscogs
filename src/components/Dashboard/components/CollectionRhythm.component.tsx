@@ -1,16 +1,22 @@
 "use client";
 
 import classNames from "classnames";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import Select from "src/components/Select/Select.component";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type {
   AcquisitionStreaksSummary,
-  YearInReviewSummary,
+  YearInReviewTimeframe,
 } from "src/types/dashboard.types";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
+import {
+  calculateYearInReview,
+  YEAR_IN_REVIEW_TIMEFRAME_META,
+  YEAR_IN_REVIEW_TIMEFRAME_OPTIONS,
+} from "src/utils/collectionRhythm";
 import styles from "./CollectionRhythm.module.css";
 
 interface CollectionRhythmProps {
-  yearInReview: YearInReviewSummary | null;
   acquisitionStreaks: AcquisitionStreaksSummary | null;
 }
 
@@ -64,10 +70,18 @@ function RhythmStat({
 }
 
 export function CollectionRhythm({
-  yearInReview,
   acquisitionStreaks,
 }: CollectionRhythmProps) {
+  const releases = useAllReleases();
   const colors = useChartColors();
+  const [timeframe, setTimeframe] = useState<YearInReviewTimeframe>("year");
+
+  const timeframeMeta = YEAR_IN_REVIEW_TIMEFRAME_META[timeframe];
+
+  const yearInReview = useMemo(
+    () => calculateYearInReview(releases, new Date(), timeframe),
+    [releases, timeframe],
+  );
 
   const compareMaxAdds = useMemo(() => {
     if (!yearInReview) {
@@ -96,10 +110,25 @@ export function CollectionRhythm({
   return (
     <div className={styles.rhythmGrid}>
       {yearInReview && (
-        <article className={styles.card} data-testid="fmdYearInReviewCard">
+        <article className={styles.card} data-testid="fmdCollectionRecapCard">
           <header className={styles.cardHeader}>
-            <p className={styles.eyebrow}>Rolling 12 months</p>
-            <h3 className={styles.cardTitle}>Year in review</h3>
+            <div className={styles.cardHeaderMain}>
+              <p className={styles.eyebrow}>{timeframeMeta.eyebrow}</p>
+              <h3 className={styles.cardTitle}>Collection recap</h3>
+            </div>
+            <Select
+              className={styles.timeframeSelect}
+              label="Time frame"
+              options={YEAR_IN_REVIEW_TIMEFRAME_OPTIONS}
+              value={timeframe}
+              onChange={(value) => {
+                const next = Array.isArray(value) ? value[0] : value;
+                if (next) {
+                  setTimeframe(next as YearInReviewTimeframe);
+                }
+              }}
+              placeholder="Select time frame"
+            />
           </header>
 
           <div className={styles.heroStat}>
@@ -117,8 +146,8 @@ export function CollectionRhythm({
                       yearInReview.addsChangePercent < 0,
                   })}
                 >
-                  {formatSignedPercent(yearInReview.addsChangePercent)} vs prior
-                  year
+                  {formatSignedPercent(yearInReview.addsChangePercent)}{" "}
+                  {timeframeMeta.compareLabel}
                 </span>
               )}
           </div>
@@ -126,7 +155,9 @@ export function CollectionRhythm({
           <div className={styles.compareBars}>
             <div className={styles.compareRow}>
               <div className={styles.compareRowHeader}>
-                <span className={styles.compareLabel}>This year</span>
+                <span className={styles.compareLabel}>
+                  {timeframeMeta.recentLabel}
+                </span>
                 <span className={styles.compareCount}>
                   {formatCount(yearInReview.recentPeriodAdds)}
                 </span>
@@ -146,7 +177,9 @@ export function CollectionRhythm({
             </div>
             <div className={styles.compareRow}>
               <div className={styles.compareRowHeader}>
-                <span className={styles.compareLabel}>Prior year</span>
+                <span className={styles.compareLabel}>
+                  {timeframeMeta.priorLabel}
+                </span>
                 <span className={styles.compareCount}>
                   {formatCount(yearInReview.priorPeriodAdds)}
                 </span>
@@ -242,8 +275,10 @@ export function CollectionRhythm({
           data-testid="fmdAcquisitionStreaksCard"
         >
           <header className={styles.cardHeader}>
-            <p className={styles.eyebrow}>Buying rhythm</p>
-            <h3 className={styles.cardTitle}>Acquisition streaks</h3>
+            <div className={styles.cardHeaderMain}>
+              <p className={styles.eyebrow}>Buying rhythm</p>
+              <h3 className={styles.cardTitle}>Acquisition streaks</h3>
+            </div>
           </header>
 
           <div className={styles.statsGrid}>

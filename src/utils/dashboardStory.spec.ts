@@ -22,22 +22,6 @@ const baseAnalytics = (): CollectionAnalytics => ({
     releasesWithoutRating: 0,
     duplicateGroups: [],
   },
-  yearInReview: {
-    recentPeriodAdds: 12,
-    priorPeriodAdds: 10,
-    addsChangePercent: 20,
-    topNewArtists: [{ label: "Aphex Twin", count: 3 }],
-    genreDrift: [
-      {
-        label: "Electronic",
-        recentCount: 8,
-        priorCount: 6,
-        recentShare: 66.7,
-        priorShare: 60,
-        changePoints: 6.7,
-      },
-    ],
-  },
   acquisitionStreaks: {
     longestGapDays: 90,
     longestGapStart: "Jan 2023",

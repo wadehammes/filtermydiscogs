@@ -43,6 +43,15 @@ export interface YearInReviewSummary {
   genreDrift: YearInReviewGenreDriftEntry[];
 }
 
+export type YearInReviewTimeframe = "week" | "month" | "quarter" | "year";
+
+export interface YearInReviewTimeframeMeta {
+  eyebrow: string;
+  recentLabel: string;
+  priorLabel: string;
+  compareLabel: string;
+}
+
 export interface AcquisitionPeriodHighlight {
   label: string;
   count: number;
@@ -155,7 +164,6 @@ export interface CollectionAnalytics {
   stats: CollectionStats;
   growth: GrowthDataPoint[];
   health: CollectionHealth;
-  yearInReview: YearInReviewSummary | null;
   acquisitionStreaks: AcquisitionStreaksSummary | null;
   styleDistribution: DistributionData[];
   genreDistribution: DistributionData[];
