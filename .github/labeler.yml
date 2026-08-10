@@ -21,7 +21,6 @@ configuration:
       - any-glob-to-any-file:
           - next.config.ts
           - next-env.d.ts
-          - postcss.config.js
           - biome.json
           - jest.config.ts
           - tsconfig.json

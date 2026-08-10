@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useMemo } from "react";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { formatLoadingMessage } from "src/components/AppPageLoading/appPageLoadingMessages";
@@ -19,55 +18,20 @@ import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { buildDashboardStory } from "src/utils/dashboardStory";
+import { ArtistLabelCharts } from "./components/ArtistLabelCharts.component";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
 import { CollectionRhythm } from "./components/CollectionRhythm.component";
+import { ComparativeGrowthCharts } from "./components/ComparativeGrowthCharts.component";
 import { DashboardHero } from "./components/DashboardHero.component";
 import { DashboardSection } from "./components/DashboardSection.component";
 import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
+import { DistributionCharts } from "./components/DistributionCharts.component";
+import { GrowthChart } from "./components/GrowthChart.component";
 import { MostCrated } from "./components/MostCrated.component";
 import { OnThisDay } from "./components/OnThisDay.component";
+import { StyleEvolution } from "./components/StyleEvolution.component";
 import styles from "./DashboardClient.module.css";
-
-const ArtistLabelCharts = dynamic(
-  () =>
-    import("./components/ArtistLabelCharts.component").then((m) => ({
-      default: m.ArtistLabelCharts,
-    })),
-  { ssr: false },
-);
-
-const DistributionCharts = dynamic(
-  () =>
-    import("./components/DistributionCharts.component").then((m) => ({
-      default: m.DistributionCharts,
-    })),
-  { ssr: false },
-);
-
-const GrowthChart = dynamic(
-  () =>
-    import("./components/GrowthChart.component").then((m) => ({
-      default: m.GrowthChart,
-    })),
-  { ssr: false },
-);
-
-const StyleEvolution = dynamic(
-  () =>
-    import("./components/StyleEvolution.component").then((m) => ({
-      default: m.StyleEvolution,
-    })),
-  { ssr: false },
-);
-
-const ComparativeGrowthCharts = dynamic(
-  () =>
-    import("./components/ComparativeGrowthCharts.component").then((m) => ({
-      default: m.ComparativeGrowthCharts,
-    })),
-  { ssr: false },
-);
 
 function DashboardClientContent() {
   const { state: authState } = useAuth();

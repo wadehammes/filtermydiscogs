@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import CratesClient from "src/components/Crates/CratesClient.component";
 import {
   PAGE_DESCRIPTIONS,
   PRIVATE_PAGE_ROBOTS,
   sitePageTitle,
 } from "src/constants/siteMetadata";
-
-const CratesClient = dynamic(
-  () => import("src/components/Crates/CratesClient.component"),
-  {
-    loading: () => <AppPageLoading currentPage="crates" hideFilters={true} />,
-  },
-);
 
 export const metadata: Metadata = {
   title: sitePageTitle("Crates"),

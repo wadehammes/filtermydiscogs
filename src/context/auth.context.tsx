@@ -149,7 +149,6 @@ export const AuthProvider = ({
     data: authData,
     isPending,
     isFetching,
-    isError,
     refetch,
   } = useAuthQuery({
     enabled: !skipInitialAuthCheck,
@@ -223,13 +222,6 @@ export const AuthProvider = ({
     sessionState.isAuthenticated,
     skipInitialAuthCheck,
   ]);
-
-  useEffect(() => {
-    if (isError) {
-      console.error("Error checking auth");
-      clearUserScopedQueries(queryClient);
-    }
-  }, [isError, queryClient]);
 
   useEffect(() => {
     if (skipInitialAuthCheck || hasHandledAuthUrlRef.current) {

@@ -317,7 +317,7 @@ Landing marketing strings live in [`loginPageCopy.registry.ts`](../../src/consta
 ### Jest notes
 
 - **Faker 10+** is ESM-only; transpiled via **`transpilePackages`** in `next.config.ts` (see [platform.md](platform.md)).
-- **SVG icons**: UI icons live in [`src/styles/icons/`](../../src/styles/icons/). Prefer **`*-thin.svg`** assets (16×16 viewBox, `stroke-width="1"`, stroke-based) for controls and actions. Keep filled brand assets (logos, Discogs mark) as-is. Import thin icons directly—do not mix legacy `*-solid.svg` or text glyphs (e.g. `×`) in button rows beside thin icons.
+- **SVG icons**: UI icons live in [`src/styles/icons/`](../../src/styles/icons/). Prefer **`*-thin.svg`** assets (16×16 viewBox, `stroke-width="1"`, stroke-based) for controls and actions. Keep filled brand assets (logos, Discogs mark) as-is. Import thin icons directly—do not mix legacy `*-solid.svg` or text glyphs (e.g. `×`) in button rows beside thin icons. When Turbopack dev hits **“module factory is not available”** on an SVGR chunk (common in modals, playback, and portaled selects), use matching TSX components under [`src/components/shared/icons/`](../../src/components/shared/icons/) instead of `*.svg` imports for that icon.
 - **SVG (tests)**: mocked globally via [`.jest/__mocks__/svg.js`](../../.jest/__mocks__/svg.js).
 - **fetchMock**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) enables and resets **`jest-fetch-mock`** each test (rhythm-marketing pattern).
 - **jsdom globals**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) stubs **`window.scrollTo`** (jsdom does not implement it) and **`ResizeObserver`** each test. Specs that assert scroll behavior (e.g. **`ViewToggle.po.tsx`**) may replace **`window.scrollTo`** with a spy in the test or PO helper.

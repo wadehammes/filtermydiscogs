@@ -1,14 +1,14 @@
 "use client";
 
-import type { ChartDefinition } from "@tanstack/charts";
+import type { DomChartDefinition } from "@tanstack/charts";
 import { motion } from "@tanstack/charts/motion";
-import { Chart } from "@tanstack/react-charts/core";
+import { Chart, type ChartProps } from "@tanstack/react-charts/core";
 import classNames from "classnames";
 import { useMemo } from "react";
 import styles from "./TanstackChart.module.css";
 
 interface TanstackChartProps {
-  definition: ChartDefinition;
+  definition: DomChartDefinition;
   ariaLabel: string;
   ariaDescription?: string;
   height?: number;
@@ -28,7 +28,7 @@ export const TanstackChart = ({
   className,
 }: TanstackChartProps) => {
   const chartProps = useMemo(
-    () => ({
+    (): ChartProps => ({
       definition,
       ariaLabel,
       renderer: chartRenderer,

@@ -19,31 +19,22 @@ import { AuthProvider, useAuth } from "./auth.context";
 
 jest.mock("src/api/helpers");
 jest.mock("src/services/auth.service", () => {
+  const actual = jest.requireActual<typeof import("src/services/auth.service")>(
+    "src/services/auth.service",
+  );
   const parseAuthUrlParams = jest.fn(() => ({
     authStatus: null,
     errorStatus: null,
   }));
 
   return {
+    ...actual,
     clearAuthCookies: jest.fn(),
     clearSessionAuthCookies: jest.fn(),
     clearUrlParams: jest.fn(),
     getUsernameFromCookies: jest.fn(),
     parseAuthUrlParams,
     hasAuthSuccessUrlParam: () => parseAuthUrlParams().authStatus === "success",
-    normalizeAuthStatus: (data: {
-      isAuthenticated: boolean;
-      username: string | null;
-      userId: string | null;
-      reconnectUsername?: string | null;
-      rateLimited?: boolean;
-    }) => ({
-      isAuthenticated: data.isAuthenticated,
-      username: data.username || null,
-      userId: data.userId || null,
-      reconnectUsername: data.reconnectUsername || null,
-      rateLimited: data.rateLimited === true,
-    }),
   };
 });
 
@@ -181,22 +172,18 @@ describe("AuthProvider", () => {
     expect(mockCheckAuth.mock.calls.length).toBe(callsAfterSettle);
   });
 
-  it("handles auth check error", async () => {
-    const consoleSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
+  it("treats auth check failures as unauthenticated", async () => {
     mockCheckAuth.mockRejectedValue(new Error("Auth check failed"));
 
     const { result } = renderAuthHook();
 
     await waitFor(() => {
       expect(result.current.state.isCheckingAuth).toBe(false);
+      expect(result.current.state.isAuthenticated).toBe(false);
       expect(removeQueriesSpy).toHaveBeenCalled();
     });
 
     expect(clearSpy).not.toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 
   it("handles successful auth from URL params", async () => {

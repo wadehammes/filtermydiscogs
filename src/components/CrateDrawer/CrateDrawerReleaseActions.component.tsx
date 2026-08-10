@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import type { MouseEvent } from "react";
-import CheckIcon from "src/styles/icons/check-thin.svg";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import stackStyles from "src/styles/vertical-action-stack.module.css";
 import { useCrateDrawerContext } from "./CrateDrawer.context";
@@ -53,7 +53,7 @@ export const CrateDrawerReleaseActions = ({
                 packed ? "Unmark as packed for gig" : "Mark as packed for gig"
               }
             >
-              <CheckIcon className={stackStyles.actionIcon} aria-hidden />
+              <CheckThinIcon className={stackStyles.actionIcon} aria-hidden />
             </button>
           </div>
         ) : null}

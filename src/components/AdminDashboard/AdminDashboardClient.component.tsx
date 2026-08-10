@@ -1,23 +1,15 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import sharedStyles from "src/components/shared/DashboardLayout/DashboardLayout.module.css";
 import { DashboardSection } from "src/components/shared/DashboardSection/DashboardSection.component";
+import { GrowthAreaChart } from "src/components/shared/GrowthAreaChart/GrowthAreaChart.component";
 import { StatCard } from "src/components/shared/StatCard/StatCard.component";
 import { StatsGrid } from "src/components/shared/StatsGrid/StatsGrid.component";
 import { useAdminStatsQuery } from "src/hooks/queries/useAdminStatsQuery";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import type { AdminStatsRecentActivityPeriod } from "src/types/dashboard.types";
 import styles from "./AdminDashboardClient.module.css";
-
-const GrowthAreaChart = dynamic(
-  () =>
-    import(
-      "src/components/shared/GrowthAreaChart/GrowthAreaChart.component"
-    ).then((m) => ({ default: m.GrowthAreaChart })),
-  { ssr: false },
-);
 
 export default function AdminDashboardClient() {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();

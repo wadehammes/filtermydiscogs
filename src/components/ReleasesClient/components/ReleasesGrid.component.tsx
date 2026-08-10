@@ -1,22 +1,11 @@
-import dynamic from "next/dynamic";
 import { memo, useMemo } from "react";
-import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
-import DiceIcon from "src/styles/icons/dice-thin.svg";
+import { ReleasesTable } from "src/components/ReleasesTable/ReleasesTable.component";
+import { DiceThinIcon } from "src/components/shared/icons/DiceThinIcon.component";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
-
-const ReleasesTable = dynamic(
-  () =>
-    import("src/components/ReleasesTable/ReleasesTable.component").then(
-      (mod) => mod.ReleasesTable,
-    ),
-  {
-    loading: () => <PageLoader message="Loading table view..." size="lg" />,
-  },
-);
 
 interface ReleasesGridProps {
   releases: DiscogsRelease[];
@@ -110,7 +99,7 @@ const ReleasesGridComponent = ({
             onClick={onRandomClick}
             aria-label="Get another random release"
           >
-            <DiceIcon width="16" height="16" />
+            <DiceThinIcon width="16" height="16" />
             <span>Get Another Random Release</span>
           </button>
           <button

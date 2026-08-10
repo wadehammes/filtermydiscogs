@@ -3,8 +3,8 @@ import {
   barX,
   barY,
   type ChartAxisPresentationOptions,
-  type ChartDefinition,
   type ChartPoint,
+  type DomChartDefinition,
   d3Curve,
   defineChart,
 } from "@tanstack/charts";
@@ -162,7 +162,7 @@ export const withBarColors = (
 export const createCollectionGrowthAreaChartDefinition = (
   data: readonly GrowthDataPoint[],
   options: GrowthAreaChartOptions,
-): ChartDefinition =>
+): DomChartDefinition =>
   defineChart(({ width }) => {
     const tickValues = pickEvenlySpacedTickValues(
       data.map((point) => point.date),
@@ -230,7 +230,7 @@ const shareValueAxis = {
 export const createDualSeriesAreaChartDefinition = (
   data: readonly DualSeriesPoint[],
   options: DualSeriesAreaChartOptions,
-): ChartDefinition =>
+): DomChartDefinition =>
   defineChart(({ width }) => {
     const tickValues = pickEvenlySpacedTickValues(
       data.map((point) => point.date),
@@ -301,7 +301,7 @@ export const createDualSeriesAreaChartDefinition = (
 export const createAdminGrowthAreaChartDefinition = (
   data: readonly AdminGrowthPoint[],
   options: GrowthAreaChartOptions,
-): ChartDefinition =>
+): DomChartDefinition =>
   defineChart(({ width }) => {
     const tickValues = pickEvenlySpacedTickValues(
       data.map((point) => point.month),
@@ -354,7 +354,7 @@ export const createVerticalBarChartDefinition = ({
 }: {
   data: BarDatum[];
   rotateXLabels?: boolean;
-}): ChartDefinition =>
+}): DomChartDefinition =>
   defineChart({
     ...chartMotion,
     marks: [
@@ -390,13 +390,13 @@ export const createVerticalBarChartDefinition = ({
         return `${datum.label}: ${datum.count.toLocaleString()}`;
       },
     },
-  });
+  }) as DomChartDefinition;
 
 export const createHorizontalBarChartDefinition = ({
   data,
 }: {
   data: BarDatum[];
-}): ChartDefinition =>
+}): DomChartDefinition =>
   defineChart({
     ...chartMotion,
     marks: [
@@ -427,7 +427,7 @@ export const createHorizontalBarChartDefinition = ({
         return `${datum.label}: ${datum.count.toLocaleString()}`;
       },
     },
-  });
+  }) as DomChartDefinition;
 
 const PIE_SLICE_PAD = 0.018;
 
@@ -467,7 +467,7 @@ const createPieChartDefinition = ({
   colors: string[];
   formatTooltip: (datum: PieDatum, percent: string) => string;
   fill?: (slice: PieArcDatum<PieDatum>) => string;
-}): ChartDefinition => {
+}): DomChartDefinition => {
   const slices = buildPieSlices(data);
   const total = data.reduce((sum, item) => sum + item.count, 0);
   const resolveFill =
@@ -491,7 +491,7 @@ const createPieChartDefinition = ({
         return formatTooltip(slice.data, percent);
       },
     },
-  });
+  }) as DomChartDefinition;
 };
 
 export const createDistributionPieChartDefinition = ({
@@ -500,7 +500,7 @@ export const createDistributionPieChartDefinition = ({
 }: {
   data: PieDatum[];
   colors: string[];
-}): ChartDefinition =>
+}): DomChartDefinition =>
   createPieChartDefinition({
     data,
     colors,

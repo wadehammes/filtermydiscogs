@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { AnchoredPopoverPortal } from "src/components/shared/AnchoredPopoverPortal/AnchoredPopoverPortal.component";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
 import anchoredPopoverStyles from "src/styles/anchored-popover.module.css";
-import Check from "src/styles/icons/check-thin.svg";
 import { isOptionSelected } from "src/utils/selectHelpers";
 import styles from "./AutocompleteSelect.module.css";
 
@@ -94,7 +94,7 @@ export function AutocompleteDropdown({
                 <span className={styles.optionContent}>
                   {isOptionSelected(value, option.value) && (
                     <span className={styles.checkmark}>
-                      <Check />
+                      <CheckThinIcon />
                     </span>
                   )}
                   <span className={styles.optionLabel}>{option.label}</span>
