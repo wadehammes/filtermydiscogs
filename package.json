@@ -1,10 +1,11 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@11.20.0",
+  "packageManager": "pnpm@11.21.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767",
+    "dev:webpack": "NODE_OPTIONS='--inspect' next dev --webpack -p 6767",
     "build": "pnpm run db:generate && next build",
     "postinstall": "prisma generate",
     "start": "next start -p 6767",

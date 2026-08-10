@@ -7,6 +7,7 @@ import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
 import {
+  useAppliedFilterCount,
   useFiltersDispatch,
   useIsRandomMode,
 } from "src/hooks/useFilterAtoms.hook";
@@ -43,6 +44,7 @@ export const MobileMenu = ({
   const filtersDispatch = useFiltersDispatch();
   const viewDispatch = useViewDispatch();
   const isRandomMode = useIsRandomMode();
+  const appliedFilterCount = useAppliedFilterCount();
 
   const handleNavigation = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -134,6 +136,7 @@ export const MobileMenu = ({
         isOpen={isOpen}
         isRandomMode={isRandomMode}
         shouldShowFilters={shouldShowFilters}
+        appliedFilterCount={appliedFilterCount}
         onToggleMenu={() => setIsOpen(!isOpen)}
         onFiltersClick={handleFiltersClick}
         onRandomModeToggle={handleRandomModeToggle}

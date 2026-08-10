@@ -77,4 +77,63 @@ describe("FiltersDrawer", () => {
       screen.getByRole("button", { name: "Clear all filters" }),
     ).toBeDisabled();
   });
+
+  it("shows applied filter count in the drawer title and footer", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Rock"],
+        selectedYears: [1999],
+        selectedFormats: [],
+        selectedSort: "DateAddedNew",
+        styleOperator: "OR",
+        searchQuery: "",
+      }),
+    );
+
+    po.renderFiltersDrawer();
+
+    expect(
+      screen.getByRole("heading", { name: "Filters (2)" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("2 filters applied")).toBeInTheDocument();
+  });
+
+  it("clears a multi-select filter from its Clear control", async () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Rock"],
+        selectedYears: [],
+        selectedFormats: [],
+        selectedSort: "DateAddedNew",
+        styleOperator: "OR",
+        searchQuery: "",
+      }),
+    );
+
+    const user = userEvent.setup();
+    po.renderFiltersDrawer();
+
+    await user.click(
+      screen.getByRole("button", { name: "Clear Genre & Style" }),
+    );
+
+    const saved = JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? "{}");
+    expect(saved.selectedStyles).toEqual([]);
+  });
+
+  it("filters genre options when searching in the autocomplete dropdown", async () => {
+    const user = userEvent.setup();
+    po.renderFiltersDrawer();
+
+    await user.click(screen.getByRole("combobox", { name: "Genre & Style" }));
+    await user.type(
+      screen.getByPlaceholderText("Search genre & style..."),
+      "jazz",
+    );
+
+    expect(screen.getByText("No genre & style found")).toBeInTheDocument();
+    expect(screen.queryByText("Rock")).not.toBeInTheDocument();
+  });
 });

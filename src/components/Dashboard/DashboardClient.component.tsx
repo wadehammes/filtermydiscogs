@@ -18,6 +18,7 @@ import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { buildDashboardStory } from "src/utils/dashboardStory";
+import { isLocalDevHost } from "src/utils/isLocalDevHost";
 import { ArtistLabelCharts } from "./components/ArtistLabelCharts.component";
 import { CollectionHealth } from "./components/CollectionHealth.component";
 import { CollectionMilestones } from "./components/CollectionMilestones.component";
@@ -82,7 +83,7 @@ function DashboardClientContent() {
   }, [analytics, allReleases, authState.username]);
 
   useEffect(() => {
-    if (valueError && process.env.NODE_ENV === "development") {
+    if (valueError && isLocalDevHost()) {
       console.error("Collection value error:", valueError);
     }
   }, [valueError]);

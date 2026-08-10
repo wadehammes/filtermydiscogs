@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import Button from "src/components/Button/Button.component";
 import { Page } from "src/components/Page/Page.component";
+import { isLocalDevHost } from "src/utils/isLocalDevHost";
 import styles from "./error.module.css";
 
 export default function RootError({
@@ -13,11 +13,13 @@ export default function RootError({
   reset: () => void;
   retry: () => void;
 }) {
+  const showErrorDetails = isLocalDevHost();
+
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (showErrorDetails) {
       console.error("Root error:", error);
     }
-  }, [error]);
+  }, [error, showErrorDetails]);
 
   return (
     <Page>
@@ -26,15 +28,19 @@ export default function RootError({
         <p className={styles.message}>
           We encountered an unexpected error. Please try again.
         </p>
-        {process.env.NODE_ENV === "development" && (
+        {showErrorDetails ? (
           <details className={styles.details}>
             <summary>Error details (development only)</summary>
             <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
-        )}
-        <Button variant="primary" size="md" onClick={() => retry()}>
+        ) : null}
+        <button
+          type="button"
+          className={styles.retryButton}
+          onClick={() => retry()}
+        >
           Try again
-        </Button>
+        </button>
       </div>
     </Page>
   );

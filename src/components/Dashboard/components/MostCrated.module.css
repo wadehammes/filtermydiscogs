@@ -66,9 +66,12 @@
 }
 
 .emptyState {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   color: var(--muted-foreground);
   display: flex;
   flex-direction: column;

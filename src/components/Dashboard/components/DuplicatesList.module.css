@@ -6,9 +6,12 @@
 }
 
 .duplicateGroup {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   display: flex;
   flex-direction: column;
   padding: var(--space-4);
@@ -55,9 +58,12 @@
 }
 
 .emptyState {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   color: var(--muted-foreground);
   padding: var(--space-6);
   text-align: center;

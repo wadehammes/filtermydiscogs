@@ -24,6 +24,7 @@ Run the same locally before pushing when possible.
 | Script | Purpose |
 |--------|---------|
 | `pnpm dev` | Next dev server on **port 6767** (Turbopack). |
+| `pnpm dev:webpack` | Same as **`pnpm dev`** but **Webpack** — use when Turbopack dev hits “module factory is not available” on lazy chunks. |
 | `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
@@ -62,6 +63,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging. Playback embeds use **`youtube-nocookie.com`** — both **`*.youtube.com`** and **`*.youtube-nocookie.com`** must stay in **`frame-src`** / **`child-src`**. Vercel preview **`script-src`** also allows **`vercel.live`** for the Live feedback widget.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
 - **`transpilePackages`**: **`@faker-js/faker`** (ESM-only), **`@tanstack/react-table`** / **`@tanstack/table-core`**, and **`@tanstack/charts`** / **`@tanstack/charts-scales`** / **`@tanstack/react-charts`** (ESM dashboard charts), plus **`d3-shape`** for pie layouts — required so Next/Jest can transpile them.
+- **PostCSS**: [`postcss.config.cjs`](../../postcss.config.cjs) (not `.js`) — Turbopack 16.3 treats `postcss.config.js` as an async module and can fail with `__turbopack_context__.a is not a function` on large CSS builds; `.cjs` avoids the broken loader path.
 - **SVGR**: [`turbopack.rules`](../../next.config.ts) for SVG-as-React components in dev/build (no separate **`webpack()`** hook — Turbopack is the default). Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
 - **`experimental.optimizePackageImports`**: tree-shaking for TanStack (**`@tanstack/react-charts`** on dashboard), **`@dnd-kit/*`**, and **`sonner`**.
 - **Cache Components** (`cacheComponents: true`): enables Partial Prerendering (PPR) and the `"use cache"` directive. Required for Instant Navigations prefetching.

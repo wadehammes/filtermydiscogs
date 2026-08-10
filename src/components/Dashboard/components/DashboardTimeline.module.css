@@ -77,15 +77,17 @@
 }
 
 .content {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   min-width: 0;
   transition: var(--transition-fast);
 
   &:hover {
     border-color: var(--input);
-    box-shadow: var(--shadow-sm);
   }
 }
 

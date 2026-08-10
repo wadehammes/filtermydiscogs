@@ -13,9 +13,12 @@
 }
 
 .emptyState {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   color: var(--muted-foreground);
   padding: var(--space-4);
   text-align: center;
@@ -134,10 +137,13 @@
 }
 
 .zigzagCard {
+  --surface: var(--card);
+
   align-self: stretch;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -148,7 +154,6 @@
 
   &:hover {
     border-color: var(--input);
-    box-shadow: var(--shadow-sm);
   }
 }
 
