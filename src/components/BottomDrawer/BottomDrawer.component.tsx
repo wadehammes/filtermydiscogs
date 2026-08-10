@@ -14,6 +14,7 @@ interface BottomDrawerProps {
   closeButtonPlacement?: "floating" | "header";
   dataAttribute?: string;
   drawerClassName?: string;
+  contentClassName?: string;
   aboveMiniPlayer?: boolean;
 }
 
@@ -28,6 +29,7 @@ export const BottomDrawer = ({
   closeButtonPlacement = "floating",
   dataAttribute,
   drawerClassName,
+  contentClassName,
   aboveMiniPlayer = false,
 }: BottomDrawerProps) => {
   if (!isOpen) return null;
@@ -96,7 +98,9 @@ export const BottomDrawer = ({
             {closeButtonPlacement === "header" ? closeButton : null}
           </div>
         )}
-        <div className={styles.content}>{children}</div>
+        <div className={classNames(styles.content, contentClassName)}>
+          {children}
+        </div>
         {footer && (
           <div className={styles.footer} data-bottom-drawer-footer>
             {footer}

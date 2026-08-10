@@ -39,15 +39,31 @@
 }
 
 .content {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
   overflow-y: auto;
+
+  @media (width >= 1024px) {
+    padding: var(--space-4);
+  }
+}
+
+.contentFlushTop {
+  @media (width >= 1024px) {
+    padding-top: 0;
+  }
+}
+
+.mobileContent {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   min-height: 0;
-  padding-top: 0;
+}
 
-  @media (width >= 1024px) {
-    padding: 0 var(--space-4) var(--space-4);
-  }
+.mobileDrawerContentFlushTop {
+  padding-top: 0;
 }
