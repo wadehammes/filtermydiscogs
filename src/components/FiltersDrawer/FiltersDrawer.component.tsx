@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
@@ -8,8 +9,8 @@ import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
+  useAppliedFilterCount,
   useFiltersDispatch,
-  useSearchQuery,
 } from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersDrawer.module.css";
@@ -22,7 +23,7 @@ interface FiltersDrawerProps {
 export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   const { state: collectionState } = useCollectionContext();
   const filtersDispatch = useFiltersDispatch();
-  const searchQuery = useSearchQuery();
+  const appliedFilterCount = useAppliedFilterCount();
   const [sortCategory, setSortCategory] =
     useState<keyof typeof SORTING_CATEGORIES>("alphabetical");
 
@@ -45,14 +46,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
   const { fetchingCollection, collection, error } = collectionState;
 
-  const hasActiveFilters = useMemo(() => {
-    return (
-      selectedStyles.length > 0 ||
-      selectedYears.length > 0 ||
-      selectedFormats.length > 0 ||
-      searchQuery.trim().length > 0
-    );
-  }, [searchQuery, selectedFormats, selectedStyles, selectedYears]);
+  const hasActiveFilters = appliedFilterCount > 0;
+
+  const drawerTitle = useMemo(() => {
+    if (appliedFilterCount === 0) {
+      return "Filters";
+    }
+
+    return `Filters (${appliedFilterCount})`;
+  }, [appliedFilterCount]);
 
   const handleClearAllFilters = () => {
     filtersDispatch({
@@ -94,13 +96,17 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     <BottomDrawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Filters"
+      title={drawerTitle}
       closeButtonAriaLabel="Close filters"
       dataAttribute="data-filters-drawer-open"
       footer={
         <div className={styles.footer}>
           {hasActiveFilters ? (
-            <p className={styles.activeFiltersHint}>Filters are applied</p>
+            <p className={styles.activeFiltersHint}>
+              {appliedFilterCount === 1
+                ? "1 filter applied"
+                : `${appliedFilterCount} filters applied`}
+            </p>
           ) : null}
           <Button
             variant="secondary"
@@ -127,8 +133,9 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {styleOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <Select
+            <AutocompleteSelect
               showLabel
+              clearable
               label="Genre & Style"
               options={styleOptions}
               value={selectedStyles}
@@ -153,8 +160,9 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {yearOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <Select
+            <AutocompleteSelect
               showLabel
+              clearable
               label="Release Year"
               options={yearOptions}
               value={selectedYears.map((year) => year.toString())}
@@ -168,8 +176,9 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {formatOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <Select
+            <AutocompleteSelect
               showLabel
+              clearable
               label="Format Type"
               options={formatOptions}
               value={selectedFormats}

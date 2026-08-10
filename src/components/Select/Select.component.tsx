@@ -1,10 +1,11 @@
 import classNames from "classnames";
 import { memo, useCallback, useEffect, useId, useReducer, useRef } from "react";
+import Button from "src/components/Button/Button.component";
 import { AnchoredPopoverPortal } from "src/components/shared/AnchoredPopoverPortal/AnchoredPopoverPortal.component";
 import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
+import { ChevronRightThinIcon } from "src/components/shared/icons/ChevronRightThinIcon.component";
 import { useAnchoredPopoverLayout } from "src/hooks/useAnchoredPopoverLayout.hook";
 import anchoredPopoverStyles from "src/styles/anchored-popover.module.css";
-import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import {
   estimateSelectMenuHeight,
   shouldOpenPopoverUpward,
@@ -28,6 +29,7 @@ interface SelectProps {
   placeholder?: string;
   className?: string;
   showLabel?: boolean;
+  clearable?: boolean;
 }
 
 type SelectState = {
@@ -78,6 +80,7 @@ const SelectComponent = ({
   placeholder,
   className,
   showLabel = false,
+  clearable = false,
 }: SelectProps) => {
   const labelId = useId();
   const [state, dispatch] = useReducer(selectReducer, initialState);
@@ -91,6 +94,10 @@ const SelectComponent = ({
     anchorRef,
     panelRef,
   });
+
+  const hasSelectedValues =
+    multiple && Array.isArray(value) && value.length > 0;
+  const showClearButton = clearable && hasSelectedValues && !disabled;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -130,6 +137,11 @@ const SelectComponent = ({
     const option = options.find((opt) => opt.value === value);
     return option?.label || placeholder || "";
   }, [value, placeholder, options]);
+
+  const handleClear = useCallback(() => {
+    onChange([]);
+    dispatch({ type: "CLOSE" });
+  }, [onChange]);
 
   const handleOptionClick = useCallback(
     (optionValue: string) => {
@@ -204,6 +216,46 @@ const SelectComponent = ({
     [state.isOpen, state.focusedIndex, options, handleOptionClick],
   );
 
+  const trigger = (
+    <button
+      ref={anchorRef}
+      className={classNames(
+        styles.trigger,
+        showClearButton && styles.triggerWithClear,
+        anchoredPopoverStyles.popoverAnchor,
+      )}
+      style={anchorStyle}
+      type="button"
+      aria-labelledby={showLabel ? labelId : undefined}
+      aria-label={showLabel ? undefined : label}
+      data-filter-control-trigger
+      aria-haspopup="listbox"
+      aria-expanded={state.isOpen}
+      onClick={() => !disabled && dispatch({ type: "TOGGLE" })}
+      onKeyDown={handleKeyDown}
+      disabled={disabled}
+    >
+      <span className={styles.value}>
+        <span className={styles.valueText}>{getDisplayValue()}</span>
+        {(() => {
+          const selectedOption = options.find(
+            (opt) => opt.value === (Array.isArray(value) ? value[0] : value),
+          );
+          return selectedOption?.isDefault ? (
+            <span className={styles.defaultBadge}>Default</span>
+          ) : null;
+        })()}
+      </span>
+      <span
+        className={classNames(styles.icon, {
+          [styles.iconOpen]: state.isOpen,
+        })}
+      >
+        <ChevronRightThinIcon />
+      </span>
+    </button>
+  );
+
   return (
     <div
       ref={containerRef}
@@ -215,42 +267,22 @@ const SelectComponent = ({
           {label}
         </span>
       ) : null}
-      <button
-        ref={anchorRef}
-        className={classNames(
-          styles.trigger,
-          anchoredPopoverStyles.popoverAnchor,
-        )}
-        style={anchorStyle}
-        type="button"
-        aria-labelledby={showLabel ? labelId : undefined}
-        aria-label={showLabel ? undefined : label}
-        data-filter-control-trigger
-        aria-haspopup="listbox"
-        aria-expanded={state.isOpen}
-        onClick={() => !disabled && dispatch({ type: "TOGGLE" })}
-        onKeyDown={handleKeyDown}
-        disabled={disabled}
-      >
-        <span className={styles.value}>
-          <span className={styles.valueText}>{getDisplayValue()}</span>
-          {(() => {
-            const selectedOption = options.find(
-              (opt) => opt.value === (Array.isArray(value) ? value[0] : value),
-            );
-            return selectedOption?.isDefault ? (
-              <span className={styles.defaultBadge}>Default</span>
-            ) : null;
-          })()}
-        </span>
-        <span
-          className={classNames(styles.icon, {
-            [styles.iconOpen]: state.isOpen,
-          })}
-        >
-          <Chevron />
-        </span>
-      </button>
+      {showClearButton ? (
+        <div className={styles.controlRow}>
+          {trigger}
+          <Button
+            variant="secondary"
+            size="md"
+            className={styles.clearButton}
+            onPress={handleClear}
+            aria-label={`Clear ${label}`}
+          >
+            Clear
+          </Button>
+        </div>
+      ) : (
+        trigger
+      )}
       {state.isOpen && options.length > 0 ? (
         <AnchoredPopoverPortal>
           <div

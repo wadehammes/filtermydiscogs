@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import Button from "src/components/Button/Button.component";
 import { Page } from "src/components/Page/Page.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
+import { isLocalDevHost } from "src/utils/isLocalDevHost";
 import styles from "./error.module.css";
 
 export default function ReleasesError({
@@ -14,29 +13,34 @@ export default function ReleasesError({
   reset: () => void;
   retry: () => void;
 }) {
+  const showErrorDetails = isLocalDevHost();
+
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (showErrorDetails) {
       console.error("Releases page error:", error);
     }
-  }, [error]);
+  }, [error, showErrorDetails]);
 
   return (
     <Page>
-      <StickyHeaderBar allReleasesLoaded={false} />
       <div className={styles.container}>
         <h2 className={styles.title}>Failed to load releases</h2>
         <p className={styles.message}>
           We couldn't load your collection. Please try again.
         </p>
-        {process.env.NODE_ENV === "development" && (
+        {showErrorDetails ? (
           <details className={styles.details}>
             <summary>Error details (development only)</summary>
             <pre className={styles.detailsContent}>{error.message}</pre>
           </details>
-        )}
-        <Button variant="primary" size="md" onClick={() => retry()}>
+        ) : null}
+        <button
+          type="button"
+          className={styles.retryButton}
+          onClick={() => retry()}
+        >
           Retry
-        </Button>
+        </button>
       </div>
     </Page>
   );

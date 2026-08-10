@@ -317,16 +317,34 @@ describe("Select", () => {
     expect(trigger).toBeInTheDocument();
   });
 
-  it("does not show dropdown when options are empty", async () => {
+  it("clears multi-select values when clearable and Clear is pressed", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
-    po.renderSelect({ options: [], onChange: handleChange });
+    po.renderSelect({
+      onChange: handleChange,
+      multiple: true,
+      clearable: true,
+      showLabel: true,
+      value: ["option1", "option2"],
+    });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
+    await user.click(screen.getByRole("button", { name: "Clear Test Select" }));
+
+    expect(handleChange).toHaveBeenCalledWith([]);
+  });
+
+  it("does not render clear control until multi-select has selections", () => {
+    const handleChange = jest.fn();
+    const { container } = po.renderSelect({
+      onChange: handleChange,
+      multiple: true,
+      clearable: true,
+      showLabel: true,
+      value: [],
+    });
 
     expect(
-      screen.queryByRole("listbox", { name: "Test Select" }),
+      container.querySelector('[aria-label="Clear Test Select"]'),
     ).not.toBeInTheDocument();
   });
 });

@@ -19,6 +19,8 @@ export type SelectRenderProps = {
   multiple?: boolean;
   placeholder?: string;
   className?: string;
+  clearable?: boolean;
+  showLabel?: boolean;
 };
 
 export class SelectPageObject extends BasePageObject {

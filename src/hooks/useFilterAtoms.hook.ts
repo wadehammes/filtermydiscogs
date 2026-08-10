@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtomValue, useSetAtom, useStore } from "jotai";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   allReleasesAtom,
   availableFormatsAtom,
@@ -25,6 +25,7 @@ import {
 import { useFiltersScope } from "src/context/filters.context";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
+import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
 import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
 
 export const useFiltersDispatch = () => {
@@ -133,4 +134,23 @@ export const useFilteredReleases = () => {
   useFiltersScope();
 
   return useAtomValue(filteredReleasesAtom);
+};
+
+export const useAppliedFilterCount = () => {
+  useFiltersScope();
+  const searchQuery = useAtomValue(searchQueryAtom);
+  const selectedStyles = useAtomValue(selectedStylesAtom);
+  const selectedYears = useAtomValue(selectedYearsAtom);
+  const selectedFormats = useAtomValue(selectedFormatsAtom);
+
+  return useMemo(
+    () =>
+      getAppliedFilterCount({
+        searchQuery,
+        selectedStyles,
+        selectedYears,
+        selectedFormats,
+      }),
+    [searchQuery, selectedFormats, selectedStyles, selectedYears],
+  );
 };

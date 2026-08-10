@@ -30,12 +30,17 @@
     color: var(--primary);
   }
 
+  .filterIconActive {
+    color: var(--primary);
+  }
+
   .filterIcon {
     align-items: center;
     display: flex;
     font-size: var(--text-lg);
     height: 2rem;
     justify-content: center;
+    position: relative;
     width: 2rem;
 
     :global(svg) {
@@ -44,6 +49,24 @@
       max-width: 100%;
       width: 100%;
     }
+  }
+
+  .filterBadge {
+    align-items: center;
+    background: var(--primary);
+    border-radius: var(--radius-full);
+    color: var(--primary-foreground);
+    display: flex;
+    font-size: var(--text-xxs);
+    font-weight: var(--font-bold);
+    height: var(--space-4);
+    justify-content: center;
+    line-height: 1;
+    min-width: var(--space-4);
+    padding: 0 var(--space-1);
+    position: absolute;
+    right: -0.125rem;
+    top: -0.125rem;
   }
 }
 

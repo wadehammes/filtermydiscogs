@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { memo, useCallback, useEffect, useId, useReducer, useRef } from "react";
+import Button from "src/components/Button/Button.component";
 import { useAnchoredPopoverLayout } from "src/hooks/useAnchoredPopoverLayout.hook";
 import {
   estimateAutocompleteMenuHeight,
@@ -24,6 +25,7 @@ interface AutocompleteSelectProps {
   placeholder?: string;
   className?: string;
   showLabel?: boolean;
+  clearable?: boolean;
 }
 
 type AutocompleteState = {
@@ -90,6 +92,7 @@ const AutocompleteSelectComponent = ({
   placeholder,
   className,
   showLabel = false,
+  clearable = false,
 }: AutocompleteSelectProps) => {
   const labelId = useId();
   const [state, dispatch] = useReducer(autocompleteReducer, initialState);
@@ -109,6 +112,10 @@ const AutocompleteSelectComponent = ({
   const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(state.searchTerm.toLowerCase()),
   );
+
+  const hasSelectedValues =
+    multiple && Array.isArray(value) && value.length > 0;
+  const showClearButton = clearable && hasSelectedValues && !disabled;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -196,6 +203,11 @@ const AutocompleteSelectComponent = ({
     [multiple, value, onChange],
   );
 
+  const handleClearAll = useCallback(() => {
+    onChange([]);
+    dispatch({ type: "CLOSE" });
+  }, [onChange]);
+
   const handleInputChange = useCallback(
     (searchValue: string) => {
       dispatch({ type: "SET_SEARCH", payload: searchValue });
@@ -280,24 +292,57 @@ const AutocompleteSelectComponent = ({
           {label}
         </span>
       ) : null}
-      <AutocompleteTrigger
-        ref={anchorRef}
-        label={label}
-        labelId={showLabel ? labelId : undefined}
-        showLabel={showLabel}
-        disabled={disabled}
-        isOpen={state.isOpen}
-        listboxId={listboxId}
-        displayValue={getDisplayValue()}
-        selectedOptions={getSelectedOptions()}
-        multiple={multiple}
-        value={value}
-        onTriggerClick={handleTriggerClick}
-        onTriggerKeyDown={handleTriggerKeyDown}
-        onClearOption={handleClearOption}
-        placeholder={placeholder}
-        anchorStyle={anchorStyle}
-      />
+      {showClearButton ? (
+        <div className={styles.controlRow}>
+          <AutocompleteTrigger
+            ref={anchorRef}
+            label={label}
+            labelId={showLabel ? labelId : undefined}
+            showLabel={showLabel}
+            disabled={disabled}
+            isOpen={state.isOpen}
+            listboxId={listboxId}
+            displayValue={getDisplayValue()}
+            selectedOptions={getSelectedOptions()}
+            multiple={multiple}
+            value={value}
+            onTriggerClick={handleTriggerClick}
+            onTriggerKeyDown={handleTriggerKeyDown}
+            onClearOption={handleClearOption}
+            placeholder={placeholder}
+            anchorStyle={anchorStyle}
+            className={styles.triggerWithClear}
+          />
+          <Button
+            variant="secondary"
+            size="md"
+            className={styles.clearButton}
+            onPress={handleClearAll}
+            aria-label={`Clear ${label}`}
+          >
+            Clear
+          </Button>
+        </div>
+      ) : (
+        <AutocompleteTrigger
+          ref={anchorRef}
+          label={label}
+          labelId={showLabel ? labelId : undefined}
+          showLabel={showLabel}
+          disabled={disabled}
+          isOpen={state.isOpen}
+          listboxId={listboxId}
+          displayValue={getDisplayValue()}
+          selectedOptions={getSelectedOptions()}
+          multiple={multiple}
+          value={value}
+          onTriggerClick={handleTriggerClick}
+          onTriggerKeyDown={handleTriggerKeyDown}
+          onClearOption={handleClearOption}
+          placeholder={placeholder}
+          anchorStyle={anchorStyle}
+        />
+      )}
       {state.isOpen ? (
         <AutocompleteDropdown
           listboxId={listboxId}

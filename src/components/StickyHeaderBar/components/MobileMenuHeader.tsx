@@ -9,6 +9,7 @@ interface MobileMenuHeaderProps {
   isOpen: boolean;
   isRandomMode: boolean;
   shouldShowFilters: boolean;
+  appliedFilterCount: number;
   onToggleMenu: () => void;
   onFiltersClick: () => void;
   onRandomModeToggle: () => void;
@@ -18,10 +19,16 @@ export function MobileMenuHeader({
   isOpen,
   isRandomMode,
   shouldShowFilters,
+  appliedFilterCount,
   onToggleMenu,
   onFiltersClick,
   onRandomModeToggle,
 }: MobileMenuHeaderProps) {
+  const filterButtonLabel =
+    appliedFilterCount > 0
+      ? `Open filters (${appliedFilterCount} applied)`
+      : "Open filters";
+
   return (
     <div className={styles.mobileNav}>
       {shouldShowFilters && (
@@ -42,12 +49,23 @@ export function MobileMenuHeader({
           </button>
           <button
             type="button"
-            className={styles.filtersButton}
+            className={classNames(styles.filtersButton, {
+              [styles.active]: appliedFilterCount > 0,
+            })}
             onClick={onFiltersClick}
-            aria-label="Open filters"
+            aria-label={filterButtonLabel}
           >
             <span className={styles.filterIcon}>
-              <FilterIcon />
+              <FilterIcon
+                className={classNames({
+                  [styles.filterIconActive]: appliedFilterCount > 0,
+                })}
+              />
+              {appliedFilterCount > 0 ? (
+                <span className={styles.filterBadge} aria-hidden="true">
+                  {appliedFilterCount}
+                </span>
+              ) : null}
             </span>
           </button>
         </>

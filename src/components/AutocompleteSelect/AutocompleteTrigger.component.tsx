@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { forwardRef } from "react";
+import { ChevronRightThinIcon } from "src/components/shared/icons/ChevronRightThinIcon.component";
 import anchoredPopoverStyles from "src/styles/anchored-popover.module.css";
-import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import type { AutocompleteOption } from "./AutocompleteSelect.component";
 import styles from "./AutocompleteSelect.module.css";
 
@@ -24,6 +24,7 @@ interface AutocompleteTriggerProps {
   value?: string | string[] | undefined;
   placeholder?: string | undefined;
   anchorStyle?: React.CSSProperties;
+  className?: string | undefined;
 }
 
 export const AutocompleteTrigger = forwardRef<
@@ -46,6 +47,7 @@ export const AutocompleteTrigger = forwardRef<
     value,
     placeholder,
     anchorStyle,
+    className,
   },
   ref,
 ) {
@@ -61,6 +63,7 @@ export const AutocompleteTrigger = forwardRef<
       className={classNames(
         styles.trigger,
         anchoredPopoverStyles.popoverAnchor,
+        className,
         {
           [styles.disabled]: disabled,
         },
@@ -108,7 +111,7 @@ export const AutocompleteTrigger = forwardRef<
           [styles.iconOpen]: isOpen,
         })}
       >
-        <Chevron />
+        <ChevronRightThinIcon />
       </span>
     </div>
   );

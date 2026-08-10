@@ -4,6 +4,7 @@
   flex: 1;
   gap: var(--space-2);
   position: relative;
+  width: 100%;
 }
 
 .label {
@@ -11,6 +12,7 @@
 }
 
 .trigger {
+  width: 100%;
   align-items: center;
   background: var(--background);
   border: 1px solid var(--input);
@@ -52,6 +54,26 @@
   &:hover:not(:disabled) {
     border-color: var(--border);
   }
+}
+
+.controlRow {
+  align-items: stretch;
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+
+  .clearButton {
+    align-self: stretch;
+    flex-shrink: 0;
+    height: auto;
+    min-height: auto;
+  }
+}
+
+.triggerWithClear {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
 }
 
 .valueContainer {
@@ -228,8 +250,8 @@
   cursor: pointer;
   display: flex;
   font-size: var(--text-base);
-  min-height: var(--touch-target-min);
-  padding: var(--space-3) var(--space-4);
+  min-height: 3rem;
+  padding: var(--space-4);
 
   @media (width >= 768px) {
     font-size: var(--text-sm);
@@ -285,38 +307,10 @@
   flex: 1;
 }
 
-.clearButton {
-  background: none;
-  border: none;
-  border-radius: var(--radius-ui);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  display: grid;
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  height: var(--space-5);
-  line-height: 1;
-  margin-left: var(--space-2);
-  min-width: var(--space-5);
-  padding: 0;
-  place-items: center;
-  transition: all var(--transition-normal);
-
-  &:hover {
-    background: var(--accent);
-    color: var(--accent-foreground);
-  }
-
-  &:focus {
-    outline: 2px solid var(--ring);
-    outline-offset: 1px;
-  }
-}
-
 .noResults {
   color: var(--muted-foreground);
   font-size: var(--text-base);
-  min-height: var(--touch-target-min);
+  min-height: 3rem;
   padding: var(--space-4);
   text-align: center;
 
