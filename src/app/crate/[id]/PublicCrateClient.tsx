@@ -7,7 +7,7 @@ import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConne
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { PublicReleaseModal } from "src/components/ReleaseModal/PublicReleaseModal.component";
-import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
+import { PlaybackScrollSpacer } from "src/components/ReleasePlayback/PlaybackScrollSpacer.component";
 import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -89,15 +89,7 @@ function PublicCrateLoadedContent({
   }
 
   return (
-    <PlaybackPageShell
-      overlays={
-        <PublicReleaseModal
-          isOpen={selectedReleaseId !== null}
-          release={selectedRelease}
-          onClose={handleCloseModal}
-        />
-      }
-    >
+    <>
       <div className={styles.container}>
         <div className={styles.content}>
           {crate.username ? (
@@ -206,9 +198,15 @@ function PublicCrateLoadedContent({
               </div>
             </div>
           </section>
+          <PlaybackScrollSpacer />
         </div>
       </div>
-    </PlaybackPageShell>
+      <PublicReleaseModal
+        isOpen={selectedReleaseId !== null}
+        release={selectedRelease}
+        onClose={handleCloseModal}
+      />
+    </>
   );
 }
 

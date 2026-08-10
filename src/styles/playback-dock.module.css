@@ -90,3 +90,11 @@
 :global(html:has([data-global-playback-dock]) [data-releases-scroll-root]) {
   scroll-padding-bottom: var(--release-mini-player-bar-offset, 0);
 }
+
+:global(
+  html:has([data-global-playback-dock])
+    [data-testid="fmdPublicAuthLayout"]
+    > footer
+) {
+  padding-bottom: var(--release-mini-player-stack-offset, 0);
+}
