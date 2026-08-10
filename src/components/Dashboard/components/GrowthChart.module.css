@@ -14,19 +14,18 @@
 .chartHeader {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
   justify-content: space-between;
   margin-bottom: var(--space-4);
 }
 
-.chartHeaderCompact {
-  justify-content: flex-end;
-}
-
-.chartHeader h2 {
+.chartTitle {
   color: var(--foreground);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   margin: 0;
 }
 

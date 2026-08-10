@@ -171,7 +171,6 @@ function DashboardClientContent() {
                 >
                   <CollectionRhythm
                     acquisitionStreaks={analytics.acquisitionStreaks}
-                    yearInReview={analytics.yearInReview}
                   />
                   <GrowthChart
                     growthData={analytics.growth}

@@ -73,9 +73,12 @@
     }
 
     & > * > [data-filter-control-trigger]:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--foreground) 4%, var(--background));
       border-color: transparent;
     }
+  }
+
+  .desktopFilters [data-filter-control-trigger]:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--foreground) 4%, var(--background));
   }
 
   .mobileFilters {
