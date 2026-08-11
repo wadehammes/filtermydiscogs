@@ -5,6 +5,7 @@ import cardStyles from "src/components/ReleaseCard/ReleaseCard.module.css";
 import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import stackStyles from "src/styles/vertical-action-stack.module.css";
+import styles from "./ReleaseNotesCardAction.module.css";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 
 type ReleaseNotesCardActionVariant = "card" | "mobile";
@@ -39,7 +40,16 @@ export const ReleaseNotesCardAction = ({
       aria-label={label}
       title={label}
     >
-      <NoteStickyIcon className={stackStyles.actionIcon} />
+      <span className={styles.iconWrap}>
+        <NoteStickyIcon className={stackStyles.actionIcon} />
+        {hasNotes ? (
+          <span
+            className={styles.notesDot}
+            data-testid="fmdReleaseNotesIndicator"
+            aria-hidden="true"
+          />
+        ) : null}
+      </span>
     </button>
   );
 

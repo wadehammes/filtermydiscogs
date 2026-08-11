@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import {
   useSelectedFormats,
@@ -64,7 +63,6 @@ export function ReleaseCardContent({
           labelUrl={labelUrl}
           year={year}
         />
-        <ReleaseNotes release={release} variant="displayOnly" />
       </div>
       <HorizontalScrollRow className={styles.genresContainer}>
         {releaseFormats &&

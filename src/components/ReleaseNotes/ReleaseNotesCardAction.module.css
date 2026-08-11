@@ -1,0 +1,17 @@
+.iconWrap {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.notesDot {
+  background: var(--primary);
+  border: 1px solid var(--card);
+  border-radius: var(--radius-full);
+  height: 0.375rem;
+  position: absolute;
+  right: -0.125rem;
+  top: -0.125rem;
+  width: 0.375rem;
+}

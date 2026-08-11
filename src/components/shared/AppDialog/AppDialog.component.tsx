@@ -58,7 +58,7 @@ export const AppDialog = ({
         <Dialog.Popup
           aria-modal={true}
           className={classNames(
-            backdropVariant === "modal" ? styles.popupModal : styles.popup,
+            backdropVariant === "default" ? styles.popup : styles.popupModal,
             panelClassName,
           )}
           {...definedProps({
