@@ -21,81 +21,51 @@ const ReleaseNotesCardDisplay = ({
   release: DiscogsRelease;
   className?: string | undefined;
 }) => {
-  const {
-    canEdit,
-    cardDisplayedNotes,
-    closeDialog,
-    errorMessage,
-    fields,
-    handleSave,
-    isDialogOpen,
-    isSaving,
-    openDialog,
-  } = useReleaseNotesEditorContext();
+  const { canEdit, cardDisplayedNotes, openDialog } =
+    useReleaseNotesEditorContext();
 
   const hasNotes = cardDisplayedNotes.length > 0;
 
   return (
-    <>
-      <div
-        className={classNames(styles.notes, styles.notesCard, className)}
-        data-testid="fmdReleaseNotes"
+    <div
+      className={classNames(styles.notes, styles.notesCard, className)}
+      data-testid="fmdReleaseNotes"
+    >
+      {hasNotes ? (
+        <h4 className={styles.noteHeading} id="release-notes-heading">
+          Notes
+        </h4>
+      ) : null}
+      <section
+        aria-labelledby="release-notes-heading"
+        className={styles.noteScroll}
       >
         {hasNotes ? (
-          <h4 className={styles.noteHeading} id="release-notes-heading">
-            Notes
-          </h4>
-        ) : null}
-        <section
-          aria-labelledby="release-notes-heading"
-          className={styles.noteScroll}
-        >
-          {hasNotes ? (
-            cardDisplayedNotes.map((note) => (
-              <p
-                className={styles.noteContent}
-                key={`${release.instance_id}-${note.fieldId}`}
-              >
-                {note.value}
-              </p>
-            ))
-          ) : canEdit ? (
-            <button
-              type="button"
-              className={styles.addNotesLink}
-              onClick={openDialog}
+          cardDisplayedNotes.map((note) => (
+            <p
+              className={styles.noteContent}
+              key={`${release.instance_id}-${note.fieldId}`}
             >
-              Add notes
-            </button>
-          ) : null}
-        </section>
-      </div>
-
-      <NoteEditDialog
-        isOpen={isDialogOpen}
-        release={release}
-        fields={fields}
-        isSaving={isSaving}
-        errorMessage={errorMessage}
-        onClose={closeDialog}
-        onSave={handleSave}
-      />
-    </>
+              {note.value}
+            </p>
+          ))
+        ) : canEdit ? (
+          <button
+            type="button"
+            className={styles.addNotesLink}
+            onClick={openDialog}
+          >
+            Add notes
+          </button>
+        ) : null}
+      </section>
+    </div>
   );
 };
 
 const ReleaseNotesModal = ({ release }: { release: DiscogsRelease }) => {
-  const {
-    canEdit,
-    cardDisplayedNotes,
-    closeDialog,
-    errorMessage,
-    fields,
-    handleSave,
-    isDialogOpen,
-    isSaving,
-    openDialog,
-  } = useReleaseNotesEditorContext();
+  const { canEdit, cardDisplayedNotes, openDialog } =
+    useReleaseNotesEditorContext();
 
   const hasNotes = cardDisplayedNotes.length > 0;
 
@@ -104,58 +74,46 @@ const ReleaseNotesModal = ({ release }: { release: DiscogsRelease }) => {
   }
 
   return (
-    <>
-      <div
-        className={classNames(styles.notes, styles.notesModal)}
-        data-testid="fmdReleaseNotes"
+    <div
+      className={classNames(styles.notes, styles.notesModal)}
+      data-testid="fmdReleaseNotes"
+    >
+      <h3 className={styles.noteHeading} id="release-modal-notes-heading">
+        Notes
+      </h3>
+      <section
+        aria-labelledby="release-modal-notes-heading"
+        className={styles.noteScrollModal}
       >
-        <h3 className={styles.noteHeading} id="release-modal-notes-heading">
-          Notes
-        </h3>
-        <section
-          aria-labelledby="release-modal-notes-heading"
-          className={styles.noteScrollModal}
-        >
-          {hasNotes ? (
-            cardDisplayedNotes.map((note) => (
-              <p
-                className={styles.noteContent}
-                key={`${release.instance_id}-${note.fieldId}`}
-              >
-                {note.value}
-              </p>
-            ))
-          ) : (
-            <button
-              type="button"
-              className={styles.addNotesLink}
-              onClick={openDialog}
+        {hasNotes ? (
+          cardDisplayedNotes.map((note) => (
+            <p
+              className={styles.noteContent}
+              key={`${release.instance_id}-${note.fieldId}`}
             >
-              Add notes
-            </button>
-          )}
-        </section>
-        {canEdit && hasNotes ? (
+              {note.value}
+            </p>
+          ))
+        ) : (
           <button
             type="button"
-            className={styles.editButton}
+            className={styles.addNotesLink}
             onClick={openDialog}
           >
-            Edit notes
+            Add notes
           </button>
-        ) : null}
-      </div>
-
-      <NoteEditDialog
-        isOpen={isDialogOpen}
-        release={release}
-        fields={fields}
-        isSaving={isSaving}
-        errorMessage={errorMessage}
-        onClose={closeDialog}
-        onSave={handleSave}
-      />
-    </>
+        )}
+      </section>
+      {canEdit && hasNotes ? (
+        <button
+          type="button"
+          className={styles.editButton}
+          onClick={openDialog}
+        >
+          Edit notes
+        </button>
+      ) : null}
+    </div>
   );
 };
 

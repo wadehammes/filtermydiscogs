@@ -2,6 +2,7 @@
 
 import { createContext, type ReactNode, useContext } from "react";
 import type { DiscogsRelease } from "src/types";
+import { ReleaseNotesEditorDialog } from "./ReleaseNotesEditorDialog.component";
 import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
 type ReleaseNotesEditorState = ReturnType<typeof useReleaseNotesEditor>;
@@ -24,6 +25,7 @@ export const ReleaseNotesEditorProvider = ({
   return (
     <ReleaseNotesEditorContext.Provider value={editor}>
       {children}
+      <ReleaseNotesEditorDialog release={release} />
     </ReleaseNotesEditorContext.Provider>
   );
 };

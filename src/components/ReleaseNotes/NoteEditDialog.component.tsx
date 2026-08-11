@@ -1,12 +1,12 @@
 "use client";
 
-import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
-import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
+import { ModalToolbar } from "src/components/shared/ModalToolbar/ModalToolbar.component";
+import { ScrollModal } from "src/components/shared/ScrollModal/ScrollModal.component";
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
@@ -29,6 +29,7 @@ interface NoteEditDialogProps {
   fields: DiscogsCollectionField[];
   isSaving: boolean;
   errorMessage?: string | null;
+  title?: string;
   onClose: () => void;
   onSave: (values: Array<{ fieldId: number; value: string }>) => void;
 }
@@ -41,6 +42,7 @@ export const NoteEditDialog = ({
   fields,
   isSaving,
   errorMessage,
+  title = "Add release notes",
   onClose,
   onSave,
 }: NoteEditDialogProps) => {
@@ -141,19 +143,20 @@ export const NoteEditDialog = ({
   const releaseId = parseReleaseId(release);
 
   return (
-    <AppDialog
-      open={isOpen}
+    <ScrollModal
+      isOpen={isOpen}
       onClose={handleClose}
       testId="fmdNoteEditDialog"
       ariaLabelledBy="note-edit-title"
-      backdropVariant="modal"
-      panelClassName={styles.dialog}
+      header={
+        <ModalToolbar
+          title={title}
+          titleId="note-edit-title"
+          onClose={handleCancel}
+        />
+      }
     >
       <form className={styles.form} onSubmit={handleSave}>
-        <Dialog.Title id="note-edit-title" className={styles.title}>
-          Add release notes
-        </Dialog.Title>
-
         <div className={styles.releaseSummary}>
           {thumbUrl ? (
             <div className={styles.coverWrapper}>
@@ -265,6 +268,6 @@ export const NoteEditDialog = ({
           </Button>
         </div>
       </form>
-    </AppDialog>
+    </ScrollModal>
   );
 };

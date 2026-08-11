@@ -67,6 +67,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | Shell | **`1px`** border on **`--border`**; **`--shadow-sm`** at rest; hover darkens border to **`--input`** and lifts to **`--shadow-lg`** |
 | Highlight | **`.highlighted`** — **`2px`** primary border + **`theme-highlighted-surface`** |
 | In crate | **`.inCrate`** — primary **`outline`** on the card shell |
+| Notes | Cover overlay **`ReleaseNotesCardAction`** only — no inline note body on the card |
 
 ## Feature example: MobileReleaseCard
 
@@ -134,14 +135,15 @@ Crate, notes, and card filter pill clicks do **not** open the modal. Discogs lin
 
 | File | Role |
 |------|------|
-| `ReleaseNotes.component.tsx` | Card display (`variant="displayOnly"`), list display (`inline`), release modal (`variant="modal"`), crates page (`variant="crate"` — inline scratchpad via [`ReleaseNotesCrateScratchpad`](../../src/components/ReleaseNotes/ReleaseNotesCrateScratchpad.component.tsx)) |
-| `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); no active styling when notes exist |
+| `ReleaseNotes.component.tsx` | Mobile list display (`displayOnly`), list display (`inline`), release modal (`variant="modal"`), crates page (`variant="crate"` — inline scratchpad via [`ReleaseNotesCrateScratchpad`](../../src/components/ReleaseNotes/ReleaseNotesCrateScratchpad.component.tsx)) |
+| `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); primary dot badge when notes exist |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
+| `ReleaseNotesEditorDialog.component.tsx` | Renders **`NoteEditDialog`** from provider context (grid overlay icon, mobile body, modal) |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
-| `NoteEditDialog.component.tsx` | Release notes editor via **`AppDialog`** (`data-testid="fmdNoteEditDialog"`) |
+| `NoteEditDialog.component.tsx` | Release notes editor via **`ScrollModal`** + **`ModalToolbar`** (`data-testid="fmdNoteEditDialog"`) |
 | `ReleaseNotes.po.tsx` / `ReleaseNotes.spec.tsx` | Page object + tests (`data-testid="fmdReleaseNotes"`) |
 
-Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** and card **`ReleaseNotes`** (`displayOnly`) must consume **`useReleaseNotesEditorContext`**—do not call **`useReleaseNotesEditor`** twice on the same card.
+Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** (grid overlay / mobile action column) reads **`useReleaseNotesEditorContext()`** to open **`NoteEditDialog`**. **`MobileReleaseCard`** still renders **`ReleaseNotes`** (`displayOnly`) in the row body; desktop grid cards do not—do not call **`useReleaseNotesEditor`** twice on the same card.
 
 List/table rows use **`ReleaseNotes`** without the provider; only the **`inline`** subcomponent calls **`useReleaseNotesEditor`** directly.
 

@@ -1,7 +1,10 @@
+"use client";
+
 import classNames from "classnames";
 import type { MouseEvent } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
+import { useReleaseNotesEditorContext } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
@@ -33,6 +36,7 @@ export const ReleaseCardOverlayActions = ({
   layout = "horizontal",
   className,
 }: ReleaseCardOverlayActionsProps) => {
+  const { isDialogOpen } = useReleaseNotesEditorContext();
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const isVertical = layout === "vertical";
@@ -70,6 +74,10 @@ export const ReleaseCardOverlayActions = ({
     event.stopPropagation();
     onReleaseOpen?.();
   };
+
+  if (isDialogOpen) {
+    return null;
+  }
 
   return (
     <div

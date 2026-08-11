@@ -105,8 +105,8 @@ Add filter dimensions by extending filter atoms/helpers and UI—not by filterin
 
 Release-card notes use a **feature-local provider**, not a global entry in **`Providers.tsx`**:
 
-1. **`ReleaseNotesEditorProvider`** wraps each **`ReleaseCard`** / **`MobileReleaseCard`** and calls **`useReleaseNotesEditor(release)`** once.
-2. **`ReleaseNotes`** (`displayOnly`) and **`ReleaseNotesCardAction`** read **`useReleaseNotesEditorContext()`** so the body, **Add notes** link, and icon open the same **`NoteEditDialog`**.
+1. **`ReleaseNotesEditorProvider`** wraps each **`ReleaseCard`** / **`MobileReleaseCard`** (and release modal notes) and calls **`useReleaseNotesEditor(release)`** once; it mounts **`ReleaseNotesEditorDialog`** so overlay icons open **`NoteEditDialog`** even when the card body omits inline notes.
+2. **`ReleaseNotesCardAction`** (and **`ReleaseNotes`** on mobile list rows) read **`useReleaseNotesEditorContext()`** to open the same **`NoteEditDialog`**. Desktop grid cards show the notes icon on the cover overlay only—a primary dot badge when notes exist, no inline note preview.
 3. Saves go through **`updateCollectionNote`** in [`src/api/helpers.ts`](../../src/api/helpers.ts) → **`POST /api/collection/instances/.../fields/...`** → **`discogsOAuthService.updateCollectionInstanceField`**.
 
 Colocate feature hooks under the component folder ([`useReleaseNotesEditor.hook.ts`](../../src/components/ReleaseNotes/useReleaseNotesEditor.hook.ts)); keep shared React Query hooks in [`src/hooks/queries/`](../../src/hooks/queries/).

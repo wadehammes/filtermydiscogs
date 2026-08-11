@@ -156,10 +156,6 @@
   display: flex;
   position: relative;
 
-  & + & {
-    box-shadow: inset 1px 0 0 var(--border);
-  }
-
   .tooltip {
     background: var(--popover);
     border: 1px solid var(--border);
@@ -178,7 +174,7 @@
     transition: opacity var(--transition-normal);
     visibility: hidden;
     white-space: nowrap;
-    z-index: var(--z-7-tooltip);
+    z-index: 1;
 
     &::after {
       border-bottom: 4px solid var(--popover);
@@ -212,7 +208,11 @@
   box-shadow: none;
   min-height: 1.75rem;
   min-width: 1.75rem;
-  padding: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+}
+
+.actionSegmented .segmentSlot + .segmentSlot .actionSegment {
+  border-left: 1px solid var(--border);
 }
 
 .actionSegmented .segmentSlot:first-child .actionSegment {

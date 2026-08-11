@@ -18,4 +18,5 @@
 .backdropStrong {
   composes: backdrop;
   background: color-mix(in srgb, var(--background) 80%, transparent);
+  z-index: var(--z-5-modal);
 }

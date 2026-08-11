@@ -29,7 +29,9 @@
   padding: var(--space-3) var(--space-4);
   padding-left: calc(var(--space-4) + var(--space-4) + var(--space-2));
   padding-right: calc(var(--space-4) + var(--space-6));
-  transition: all var(--transition-normal);
+  outline: none;
+  transition: border-color var(--transition-normal);
+  -webkit-tap-highlight-color: transparent;
   width: 100%;
 
   @media (width >= 768px) {
@@ -40,9 +42,12 @@
     padding-right: 3rem;
   }
 
-  &:focus {
-    outline: 1px solid var(--ring);
-    outline-offset: 1px;
+  &:focus,
+  &:focus-visible {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: none;
+    outline-offset: 0;
   }
 
   &:disabled {
@@ -51,7 +56,7 @@
     cursor: not-allowed;
   }
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled, :focus, :focus-visible) {
     border-color: var(--border);
   }
 
