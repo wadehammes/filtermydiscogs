@@ -1,4 +1,5 @@
 import * as apiHelpers from "src/api/helpers";
+import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
@@ -128,6 +129,7 @@ export class DashboardClientPageObject extends BasePageObject {
 
     return render(
       <ReleasePlaybackProvider>
+        <CollectionLoadingToast />
         <DashboardClient />
       </ReleasePlaybackProvider>,
       {

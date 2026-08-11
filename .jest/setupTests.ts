@@ -19,6 +19,20 @@ if (typeof globalThis.ResizeObserver === "undefined") {
   };
 }
 
+if (typeof globalThis.PointerEvent === "undefined") {
+  class PointerEventPolyfill extends MouseEvent {
+    readonly pointerId: number;
+
+    constructor(type: string, params: PointerEventInit = {}) {
+      super(type, params);
+      this.pointerId = params.pointerId ?? 0;
+    }
+  }
+
+  globalThis.PointerEvent =
+    PointerEventPolyfill as typeof globalThis.PointerEvent;
+}
+
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
@@ -84,6 +98,17 @@ console.warn = (...args: unknown[]) => {
 beforeAll(() => {
   setupIntersectionObserverMock();
   setupMockMatchMedia();
+
+  const baseUiTestStyles = document.createElement("style");
+  baseUiTestStyles.textContent = `
+    [data-starting-style],
+    [data-ending-style] {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: none !important;
+    }
+  `;
+  document.head.appendChild(baseUiTestStyles);
 });
 
 beforeEach(() => {
@@ -94,6 +119,17 @@ beforeEach(() => {
   setupMockMatchMedia();
   window.scrollTo = jest.fn();
   localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "denied");
+  jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    x: 100,
+    y: 200,
+    width: 240,
+    height: 44,
+    top: 200,
+    left: 100,
+    right: 340,
+    bottom: 244,
+    toJSON: () => {},
+  } as DOMRect);
 });
 
 afterAll(() => {

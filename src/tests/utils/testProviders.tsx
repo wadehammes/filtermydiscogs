@@ -2,6 +2,7 @@ import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
+import { CollectionDataSync } from "src/components/CollectionDataSync/CollectionDataSync.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, type AuthState } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
@@ -22,6 +23,7 @@ export type TestProvidersProps = {
   authInitialState?: AuthState;
   skipInitialAuthCheck?: boolean;
   includeCrate?: boolean;
+  includeCollectionSync?: boolean;
 };
 
 export const AppTestProviders = ({
@@ -29,6 +31,7 @@ export const AppTestProviders = ({
   queryClient,
   authInitialState,
   skipInitialAuthCheck = true,
+  includeCollectionSync = true,
 }: Omit<TestProvidersProps, "includeCrate">) => {
   const defaultQueryClient = useMemo(() => createTestQueryClient(), []);
   const resolvedQueryClient = queryClient ?? defaultQueryClient;
@@ -49,7 +52,10 @@ export const AppTestProviders = ({
             <AnalyticsConsentProvider>
               <CollectionContextProvider>
                 <FiltersProvider>
-                  <ViewProvider>{children}</ViewProvider>
+                  <ViewProvider>
+                    {includeCollectionSync ? <CollectionDataSync /> : null}
+                    {children}
+                  </ViewProvider>
                 </FiltersProvider>
               </CollectionContextProvider>
             </AnalyticsConsentProvider>
@@ -66,11 +72,13 @@ export const TestProviders = ({
   authInitialState,
   skipInitialAuthCheck = true,
   includeCrate = true,
+  includeCollectionSync = true,
 }: TestProvidersProps) => (
   <AppTestProviders
     {...(queryClient !== undefined ? { queryClient } : {})}
     {...(authInitialState !== undefined ? { authInitialState } : {})}
     skipInitialAuthCheck={skipInitialAuthCheck}
+    includeCollectionSync={includeCollectionSync}
   >
     <PlaybackReleaseClickProvider>
       {includeCrate ? <CrateProvider>{children}</CrateProvider> : children}

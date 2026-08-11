@@ -36,6 +36,7 @@ describe("useCollectionReset", () => {
         };
       },
       {
+        includeCollectionSync: false,
         wrapper: ({ children }) => (
           <SeedCollectionFilters releases={releases}>
             {children}

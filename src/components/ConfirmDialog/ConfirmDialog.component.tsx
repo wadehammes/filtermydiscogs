@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import Button from "src/components/Button/Button.component";
+import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
 import styles from "./ConfirmDialog.module.css";
 
 interface ConfirmDialogProps {
@@ -25,58 +26,39 @@ export const ConfirmDialog = ({
   onCancel,
   isConfirming = false,
 }: ConfirmDialogProps) => {
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        onCancel();
-      }
-    },
-    [onCancel],
-  );
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className={styles.backdrop}
-      data-testid="fmdConfirmDialog"
-      onClick={handleBackdropClick}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") {
-          onCancel();
-        }
-      }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="dialog-title"
-      aria-describedby="dialog-message"
+    <AppDialog
+      open={isOpen}
+      onClose={onCancel}
+      testId="fmdConfirmDialog"
+      ariaLabelledBy="dialog-title"
+      ariaDescribedBy="dialog-message"
+      panelClassName={styles.dialog}
     >
-      <div className={styles.dialog}>
-        <h2 id="dialog-title" className={styles.title}>
-          {title}
-        </h2>
-        <p id="dialog-message" className={styles.message}>
-          {message}
-        </p>
-        <div className={styles.actions}>
-          <Button
-            variant="secondary"
-            size="md"
-            onPress={onCancel}
-            disabled={isConfirming}
-          >
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={variant === "danger" ? "danger" : "primary"}
-            size="md"
-            onPress={onConfirm}
-            disabled={isConfirming}
-          >
-            {confirmLabel}
-          </Button>
-        </div>
+      <Dialog.Title id="dialog-title" className={styles.title}>
+        {title}
+      </Dialog.Title>
+      <Dialog.Description id="dialog-message" className={styles.message}>
+        {message}
+      </Dialog.Description>
+      <div className={styles.actions}>
+        <Button
+          variant="secondary"
+          size="md"
+          onPress={onCancel}
+          disabled={isConfirming}
+        >
+          {cancelLabel}
+        </Button>
+        <Button
+          variant={variant === "danger" ? "danger" : "primary"}
+          size="md"
+          onPress={onConfirm}
+          disabled={isConfirming}
+        >
+          {confirmLabel}
+        </Button>
       </div>
-    </div>
+    </AppDialog>
   );
 };

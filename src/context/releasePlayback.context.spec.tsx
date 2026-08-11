@@ -113,7 +113,10 @@ const createWrapper = (
   },
 ) => {
   return ({ children }: { children: ReactNode }) => (
-    <TestProviders authInitialState={testAuthenticatedAuthState}>
+    <TestProviders
+      authInitialState={testAuthenticatedAuthState}
+      includeCollectionSync={false}
+    >
       <SeedCollectionReleases releases={releases} {...collectionOptions}>
         <ReleasePlaybackProvider>{children}</ReleasePlaybackProvider>
       </SeedCollectionReleases>

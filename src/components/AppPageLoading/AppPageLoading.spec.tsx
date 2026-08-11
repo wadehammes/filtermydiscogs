@@ -7,30 +7,17 @@ jest.mock("src/components/StickyHeaderBar/StickyHeaderBar.component", () => ({
 }));
 
 describe("AppPageLoading", () => {
-  it("combines loading message with loaded count", () => {
+  it("renders skeleton children without an inline status bar", () => {
     render(
       <AppPageLoading currentPage="dashboard" loadedCount={400}>
         <div data-testid="skeleton" />
       </AppPageLoading>,
     );
 
-    expect(
-      screen.getByText("Loading releases… 400 releases loaded"),
-    ).toBeInTheDocument();
     expect(screen.getByTestId("skeleton")).toBeInTheDocument();
-  });
-
-  it("combines releases loading message with loaded count", () => {
-    render(
-      <AppPageLoading currentPage="releases" loadedCount={400}>
-        <div data-testid="skeleton" />
-      </AppPageLoading>,
-    );
-
     expect(
-      screen.getByText("Loading releases… 400 loaded"),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("skeleton")).toBeInTheDocument();
+      screen.queryByText("Loading releases… 400 releases loaded"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows default message without loaded count", () => {

@@ -2,8 +2,9 @@
    Used by Stylelint only — do not import this file in the app. */
 
 :root {
+  --anchor-width: 0px;
+  --available-height: 100dvh;
   --font-assistant: system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
-  --popover-anchor-name: --popover-fallback;
-  --popover-max-height: 20rem;
+  --transform-origin: center;
 }

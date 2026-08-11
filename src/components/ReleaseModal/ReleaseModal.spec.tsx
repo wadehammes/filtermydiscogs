@@ -50,7 +50,7 @@ describe("ReleaseModal", () => {
 
     po.renderReleaseModal({ onClose });
 
-    const backdrop = screen.getByTestId(po.testId);
+    const backdrop = screen.getByTestId(`${po.testId}-backdrop`);
     await user.click(backdrop);
 
     expect(onClose).toHaveBeenCalledTimes(1);

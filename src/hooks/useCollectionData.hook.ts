@@ -6,6 +6,7 @@ import {
   filtersDispatchAtom,
 } from "src/atoms/filters.atoms";
 import { ERROR_FETCHING } from "src/constants";
+import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
@@ -166,5 +167,26 @@ export const useCollectionData = ({
     queryError,
     hasNextPage,
     isFetchingNextPage,
+  };
+};
+
+export const useCollectionLoadState = () => {
+  const { state: authState } = useAuth();
+  const { username, isAuthenticated, rateLimited, isCheckingAuth } = authState;
+
+  const queryEnabled =
+    isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
+
+  const query = useDiscogsCollectionQuery({
+    username: username || "",
+    enabled: queryEnabled,
+  });
+
+  return {
+    isLoading: query.isLoading,
+    isError: query.isError,
+    queryError: query.error,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
   };
 };

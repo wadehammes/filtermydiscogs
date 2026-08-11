@@ -12,6 +12,7 @@ import {
 } from "src/constants/siteMetadata";
 
 import "src/styles/global.css";
+import "src/styles/base-ui-setup.css";
 import "src/styles/pills.css";
 
 const assistant = Assistant({
@@ -76,7 +77,9 @@ export default function RootLayout({
         <script src="/theme-init.js" />
       </head>
       <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <div className="appRoot">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );

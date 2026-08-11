@@ -92,6 +92,11 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     }
   };
 
+  const selectedYearValues = useMemo(
+    () => selectedYears.map((year) => year.toString()),
+    [selectedYears],
+  );
+
   return (
     <BottomDrawer
       isOpen={isOpen}
@@ -165,7 +170,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
               clearable
               label="Release Year"
               options={yearOptions}
-              value={selectedYears.map((year) => year.toString())}
+              value={selectedYearValues}
               onChange={handleYearChange}
               disabled={!collection}
               multiple={true}

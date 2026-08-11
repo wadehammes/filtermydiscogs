@@ -1,9 +1,15 @@
 .dialog {
-  composes: dialogroot from "../../styles/modal-dialog.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 32rem;
+  padding: var(--space-6);
 }
 
-.dialogContent {
-  composes: panel from "../../styles/modal-dialog.module.css";
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 
   & input:not(:is([type="checkbox"], [type="radio"])),
   & textarea,

@@ -1,0 +1,23 @@
+.card {
+  --surface: var(--card);
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
+  transition: var(--transition-fast);
+  width: 100%;
+
+  &:hover {
+    border-color: var(--input);
+  }
+}
+
+.releaseRow {
+  composes: card;
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  position: relative;
+}

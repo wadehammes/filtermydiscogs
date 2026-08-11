@@ -99,7 +99,9 @@ describe("CollectionContextProvider", () => {
 
   it("provides initial state", () => {
     const { result } = renderHook(() => useCollectionContext(), {
-      wrapper: TestProviders,
+      wrapper: ({ children }) => (
+        <TestProviders includeCollectionSync={false}>{children}</TestProviders>
+      ),
     });
 
     expect(result.current.state.collection).toBeNull();

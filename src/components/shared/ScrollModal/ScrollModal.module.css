@@ -1,27 +1,11 @@
-.backdrop {
-  align-items: center;
-  background: color-mix(in srgb, var(--background) 80%, transparent);
-  display: flex;
-  height: 100vh;
-  justify-content: center;
-  left: 0;
-  overflow-y: auto;
-  position: fixed;
-  top: 0;
-  width: 100vw;
-  z-index: var(--z-5-modal);
-}
-
 .modal {
   composes: shell from "../../../styles/modal-dialog.module.css";
   display: flex;
   flex-direction: column;
-  margin: var(--space-4);
   max-height: calc(100vh - var(--space-8));
   max-width: 42rem;
   overflow: hidden;
-  position: relative;
-  width: min(100%, 42rem);
+  width: min(calc(100vw - var(--space-8)), 42rem);
 }
 
 .header {

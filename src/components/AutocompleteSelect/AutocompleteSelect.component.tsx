@@ -1,14 +1,19 @@
+"use client";
+
+import { Combobox } from "@base-ui/react/combobox";
 import classNames from "classnames";
-import { memo, useCallback, useEffect, useId, useReducer, useRef } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import Button from "src/components/Button/Button.component";
-import { useAnchoredPopoverLayout } from "src/hooks/useAnchoredPopoverLayout.hook";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
+import { ChevronRightThinIcon } from "src/components/shared/icons/ChevronRightThinIcon.component";
+import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
+import { definedProps } from "src/utils/definedProps";
 import {
-  estimateAutocompleteMenuHeight,
-  shouldOpenPopoverUpward,
-} from "src/utils/popoverPlacement";
-import { AutocompleteDropdown } from "./AutocompleteDropdown.component";
+  applyFilterValueChange,
+  getFilterControlledValue,
+} from "src/utils/filterControlValue";
 import styles from "./AutocompleteSelect.module.css";
-import { AutocompleteTrigger } from "./AutocompleteTrigger.component";
 
 export interface AutocompleteOption {
   value: string;
@@ -28,59 +33,8 @@ interface AutocompleteSelectProps {
   clearable?: boolean;
 }
 
-type AutocompleteState = {
-  isOpen: boolean;
-  searchTerm: string;
-  focusedIndex: number;
-  openUpward: boolean;
-};
-
-type AutocompleteAction =
-  | { type: "CLOSE" }
-  | { type: "OPEN" }
-  | { type: "TOGGLE" }
-  | { type: "SET_SEARCH"; payload: string }
-  | { type: "SET_FOCUSED"; payload: number }
-  | { type: "SET_OPEN_UPWARD"; payload: boolean }
-  | { type: "RESET_FOCUS" };
-
-const initialState: AutocompleteState = {
-  isOpen: false,
-  searchTerm: "",
-  focusedIndex: -1,
-  openUpward: false,
-};
-
-function autocompleteReducer(
-  state: AutocompleteState,
-  action: AutocompleteAction,
-): AutocompleteState {
-  switch (action.type) {
-    case "CLOSE":
-      return {
-        ...state,
-        isOpen: false,
-        searchTerm: "",
-        focusedIndex: -1,
-      };
-    case "OPEN":
-      return { ...state, isOpen: true, searchTerm: "", focusedIndex: -1 };
-    case "TOGGLE":
-      return state.isOpen
-        ? { ...state, isOpen: false, searchTerm: "", focusedIndex: -1 }
-        : { ...state, isOpen: true, searchTerm: "", focusedIndex: -1 };
-    case "SET_SEARCH":
-      return { ...state, searchTerm: action.payload, focusedIndex: -1 };
-    case "SET_FOCUSED":
-      return { ...state, focusedIndex: action.payload };
-    case "SET_OPEN_UPWARD":
-      return { ...state, openUpward: action.payload };
-    case "RESET_FOCUS":
-      return { ...state, focusedIndex: -1 };
-    default:
-      return state;
-  }
-}
+const getComboboxItems = (options: AutocompleteOption[]) =>
+  options.map(({ value, label }) => ({ value, label }));
 
 const AutocompleteSelectComponent = ({
   label,
@@ -94,273 +48,235 @@ const AutocompleteSelectComponent = ({
   showLabel = false,
   clearable = false,
 }: AutocompleteSelectProps) => {
-  const labelId = useId();
-  const [state, dispatch] = useReducer(autocompleteReducer, initialState);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listboxRef = useRef<HTMLUListElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const listboxId = useId();
-  const { anchorStyle } = useAnchoredPopoverLayout({
-    isOpen: state.isOpen,
-    openUpward: state.openUpward,
-    anchorRef,
-    panelRef: dropdownRef,
-  });
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const { positionerStyle, handleOpenChange } =
+    useFilterControlPositionerZIndex(triggerRef);
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(state.searchTerm.toLowerCase()),
-  );
+  const comboboxItems = getComboboxItems(options);
+  const controlledValue = getFilterControlledValue(value, multiple);
 
   const hasSelectedValues =
     multiple && Array.isArray(value) && value.length > 0;
   const showClearButton = clearable && hasSelectedValues && !disabled;
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      if (
-        containerRef.current?.contains(target) ||
-        dropdownRef.current?.contains(target)
-      ) {
-        return;
-      }
-
-      dispatch({ type: "CLOSE" });
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (state.isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 0);
+  const selectedOptions = useMemo((): AutocompleteOption[] => {
+    if (!value) {
+      return [];
     }
-  }, [state.isOpen]);
 
-  useEffect(() => {
-    if (state.isOpen && anchorRef.current) {
-      dispatch({
-        type: "SET_OPEN_UPWARD",
-        payload: shouldOpenPopoverUpward({
-          trigger: anchorRef.current,
-          estimatedMenuHeight: estimateAutocompleteMenuHeight(
-            filteredOptions.length,
-          ),
-        }),
-      });
-    }
-  }, [state.isOpen, filteredOptions.length]);
-
-  const getDisplayValue = useCallback((): string => {
-    if (!value) return placeholder || "";
-    if (Array.isArray(value)) {
-      return value.length > 0 ? value.join(", ") : placeholder || "";
-    }
-    const option = options.find((opt) => opt.value === value);
-    return option?.label || placeholder || "";
-  }, [value, placeholder, options]);
-
-  const getSelectedOptions = useCallback((): AutocompleteOption[] => {
-    if (!value) return [];
     if (Array.isArray(value)) {
       return options.filter((option) => value.includes(option.value));
     }
-    const option = options.find((opt) => opt.value === value);
+
+    const option = options.find((item) => item.value === value);
     return option ? [option] : [];
-  }, [value, options]);
+  }, [options, value]);
 
-  const handleOptionClick = useCallback(
-    (optionValue: string) => {
-      if (multiple) {
-        const currentValue = Array.isArray(value) ? value : [];
-        const isCurrentlySelected = currentValue.includes(optionValue);
-
-        if (isCurrentlySelected) {
-          onChange(currentValue.filter((v) => v !== optionValue));
-        } else {
-          onChange([...currentValue, optionValue]);
-        }
-      } else {
-        onChange(optionValue);
-        dispatch({ type: "CLOSE" });
-      }
+  const handleValueChange = useCallback(
+    (newValue: string | string[] | null) => {
+      applyFilterValueChange({ multiple, onChange, newValue });
     },
-    [multiple, value, onChange],
-  );
-
-  const handleClearOption = useCallback(
-    (optionValue: string, event: React.MouseEvent | React.KeyboardEvent) => {
-      event.stopPropagation();
-      if (multiple) {
-        const currentValue = Array.isArray(value) ? value : [];
-        onChange(currentValue.filter((v) => v !== optionValue));
-      }
-    },
-    [multiple, value, onChange],
+    [multiple, onChange],
   );
 
   const handleClearAll = useCallback(() => {
     onChange([]);
-    dispatch({ type: "CLOSE" });
   }, [onChange]);
 
-  const handleInputChange = useCallback(
-    (searchValue: string) => {
-      dispatch({ type: "SET_SEARCH", payload: searchValue });
-      if (!state.isOpen) {
-        dispatch({ type: "OPEN" });
+  const handleClearOption = useCallback(
+    (
+      optionValue: string,
+      event: MouseEvent | KeyboardEvent<HTMLButtonElement>,
+    ) => {
+      if ("key" in event && event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      event.stopPropagation();
+      event.preventDefault();
+
+      if (multiple && Array.isArray(value)) {
+        onChange(value.filter((item) => item !== optionValue));
       }
     },
-    [state.isOpen],
+    [multiple, onChange, value],
   );
 
-  const handleTriggerKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (!state.isOpen) {
-        if (
-          event.key === "Enter" ||
-          event.key === " " ||
-          event.key === "ArrowDown"
-        ) {
-          event.preventDefault();
-          dispatch({ type: "OPEN" });
-        }
+  const renderSingleValue = useCallback(
+    (selected: string | null) => {
+      if (typeof selected !== "string") {
+        return placeholder ?? "";
       }
+
+      const option = options.find((item) => item.value === selected);
+      return option?.label ?? placeholder ?? "";
     },
-    [state.isOpen],
+    [options, placeholder],
   );
 
-  const handleInputKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!state.isOpen) return;
-
-      switch (event.key) {
-        case "Enter":
-          event.preventDefault();
-          if (
-            state.focusedIndex >= 0 &&
-            state.focusedIndex < filteredOptions.length
-          ) {
-            const option = filteredOptions[state.focusedIndex];
-            if (option) handleOptionClick(option.value);
-          }
-          break;
-        case "ArrowDown":
-          event.preventDefault();
-          dispatch({
-            type: "SET_FOCUSED",
-            payload:
-              state.focusedIndex < filteredOptions.length - 1
-                ? state.focusedIndex + 1
-                : 0,
-          });
-          break;
-        case "ArrowUp":
-          event.preventDefault();
-          dispatch({
-            type: "SET_FOCUSED",
-            payload:
-              state.focusedIndex > 0
-                ? state.focusedIndex - 1
-                : filteredOptions.length - 1,
-          });
-          break;
-        case "Escape":
-        case "Tab":
-          event.preventDefault();
-          dispatch({ type: "CLOSE" });
-          break;
-      }
-    },
-    [state.isOpen, state.focusedIndex, filteredOptions, handleOptionClick],
+  const triggerIcon = (
+    <span className={styles.icon}>
+      <ChevronRightThinIcon />
+    </span>
   );
 
-  const handleTriggerClick = useCallback(() => {
-    if (!disabled) {
-      dispatch({ type: "TOGGLE" });
-    }
-  }, [disabled]);
+  const multipleTrigger =
+    selectedOptions.length === 0 ? (
+      <Combobox.Trigger
+        ref={triggerRef}
+        className={classNames(
+          styles.trigger,
+          showClearButton && styles.triggerWithClear,
+        )}
+        data-filter-control-trigger
+        disabled={disabled}
+        {...definedProps({
+          "aria-label": showLabel ? undefined : label,
+        })}
+      >
+        <span className={styles.placeholder}>{placeholder}</span>
+        {triggerIcon}
+      </Combobox.Trigger>
+    ) : (
+      <div
+        className={classNames(
+          styles.triggerShell,
+          showClearButton && styles.triggerWithClear,
+        )}
+        data-filter-control-trigger
+      >
+        <div className={styles.valueContainer}>
+          <div className={styles.pillsContainer}>
+            {selectedOptions.map((option) => (
+              <span key={option.value} className={styles.pill}>
+                <span className={styles.pillLabel}>{option.label}</span>
+                <button
+                  type="button"
+                  className={styles.pillClear}
+                  onClick={(event) => {
+                    handleClearOption(option.value, event);
+                  }}
+                  onKeyDown={(event) => {
+                    handleClearOption(option.value, event);
+                  }}
+                  aria-label={`Remove ${option.label}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+        <Combobox.Trigger
+          ref={triggerRef}
+          className={styles.triggerActivator}
+          disabled={disabled}
+          {...definedProps({
+            "aria-label": showLabel ? undefined : label,
+          })}
+        >
+          {triggerIcon}
+        </Combobox.Trigger>
+      </div>
+    );
+
+  const singleTrigger = (
+    <Combobox.Trigger
+      ref={triggerRef}
+      className={classNames(
+        styles.trigger,
+        showClearButton && styles.triggerWithClear,
+      )}
+      data-filter-control-trigger
+      disabled={disabled}
+      {...definedProps({
+        "aria-label": showLabel ? undefined : label,
+      })}
+    >
+      <div className={styles.valueContainer}>
+        <Combobox.Value placeholder={placeholder}>
+          {(selected) => (
+            <span className={styles.value}>{renderSingleValue(selected)}</span>
+          )}
+        </Combobox.Value>
+      </div>
+      {triggerIcon}
+    </Combobox.Trigger>
+  );
+
+  const trigger = multiple ? multipleTrigger : singleTrigger;
 
   return (
-    <div ref={containerRef} className={classNames(styles.container, className)}>
-      {showLabel ? (
-        <span id={labelId} className={styles.label} data-filter-field-label>
-          {label}
-        </span>
-      ) : null}
-      {showClearButton ? (
-        <div className={styles.controlRow}>
-          <AutocompleteTrigger
-            ref={anchorRef}
-            label={label}
-            labelId={showLabel ? labelId : undefined}
-            showLabel={showLabel}
-            disabled={disabled}
-            isOpen={state.isOpen}
-            listboxId={listboxId}
-            displayValue={getDisplayValue()}
-            selectedOptions={getSelectedOptions()}
-            multiple={multiple}
-            value={value}
-            onTriggerClick={handleTriggerClick}
-            onTriggerKeyDown={handleTriggerKeyDown}
-            onClearOption={handleClearOption}
-            placeholder={placeholder}
-            anchorStyle={anchorStyle}
-            className={styles.triggerWithClear}
-          />
-          <Button
-            variant="secondary"
-            size="md"
-            className={styles.clearButton}
-            onPress={handleClearAll}
-            aria-label={`Clear ${label}`}
+    <div
+      className={classNames(styles.container, className)}
+      data-testid="fmdAutocompleteSelect"
+    >
+      <Combobox.Root
+        items={comboboxItems}
+        value={controlledValue}
+        onValueChange={handleValueChange}
+        onOpenChange={handleOpenChange}
+        disabled={disabled}
+        modal={false}
+        {...definedProps({ multiple: multiple ? true : undefined })}
+      >
+        {showLabel ? (
+          <Combobox.Label className={styles.label} data-filter-field-label>
+            {label}
+          </Combobox.Label>
+        ) : null}
+        {showClearButton ? (
+          <div className={styles.controlRow}>
+            {trigger}
+            <Button
+              variant="secondary"
+              size="md"
+              className={styles.clearButton}
+              onPress={handleClearAll}
+              aria-label={`Clear ${label}`}
+            >
+              Clear
+            </Button>
+          </div>
+        ) : (
+          trigger
+        )}
+        <Combobox.Portal>
+          <Combobox.Positioner
+            className={styles.positioner}
+            sideOffset={4}
+            style={positionerStyle}
           >
-            Clear
-          </Button>
-        </div>
-      ) : (
-        <AutocompleteTrigger
-          ref={anchorRef}
-          label={label}
-          labelId={showLabel ? labelId : undefined}
-          showLabel={showLabel}
-          disabled={disabled}
-          isOpen={state.isOpen}
-          listboxId={listboxId}
-          displayValue={getDisplayValue()}
-          selectedOptions={getSelectedOptions()}
-          multiple={multiple}
-          value={value}
-          onTriggerClick={handleTriggerClick}
-          onTriggerKeyDown={handleTriggerKeyDown}
-          onClearOption={handleClearOption}
-          placeholder={placeholder}
-          anchorStyle={anchorStyle}
-        />
-      )}
-      {state.isOpen ? (
-        <AutocompleteDropdown
-          listboxId={listboxId}
-          label={label}
-          searchTerm={state.searchTerm}
-          filteredOptions={filteredOptions}
-          focusedIndex={state.focusedIndex}
-          openUpward={state.openUpward}
-          value={value}
-          onSearchChange={handleInputChange}
-          onOptionClick={handleOptionClick}
-          onInputKeyDown={handleInputKeyDown}
-          inputRef={inputRef}
-          dropdownRef={dropdownRef}
-          listboxRef={listboxRef}
-          anchorStyle={anchorStyle}
-        />
-      ) : null}
+            <Combobox.Popup className={styles.popup} aria-label={label}>
+              <div className={styles.searchContainer}>
+                <Combobox.Input
+                  className={styles.searchInput}
+                  placeholder={`Search ${label.toLowerCase()}...`}
+                />
+              </div>
+              <Combobox.Empty className={styles.noResults}>
+                No {label.toLowerCase()} found
+              </Combobox.Empty>
+              <Combobox.List className={styles.listbox}>
+                {(option: AutocompleteOption) => (
+                  <Combobox.Item
+                    key={option.value}
+                    value={option.value}
+                    className={styles.option}
+                  >
+                    <span className={styles.optionContent}>
+                      <Combobox.ItemIndicator className={styles.checkmark}>
+                        <CheckThinIcon />
+                      </Combobox.ItemIndicator>
+                      <span className={styles.optionLabel}>{option.label}</span>
+                    </span>
+                  </Combobox.Item>
+                )}
+              </Combobox.List>
+            </Combobox.Popup>
+          </Combobox.Positioner>
+        </Combobox.Portal>
+      </Combobox.Root>
     </div>
   );
 };

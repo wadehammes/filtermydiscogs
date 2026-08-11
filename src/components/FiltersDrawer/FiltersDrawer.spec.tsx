@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { FiltersDrawerPageObject } from "src/components/FiltersDrawer/FiltersDrawer.po";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
-import { screen } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
 let po: FiltersDrawerPageObject;
 
@@ -124,16 +124,23 @@ describe("FiltersDrawer", () => {
   });
 
   it("filters genre options when searching in the autocomplete dropdown", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0, delay: null });
     po.renderFiltersDrawer();
 
     await user.click(screen.getByRole("combobox", { name: "Genre & Style" }));
-    await user.type(
-      screen.getByPlaceholderText("Search genre & style..."),
-      "jazz",
-    );
 
-    expect(screen.getByText("No genre & style found")).toBeInTheDocument();
-    expect(screen.queryByText("Rock")).not.toBeInTheDocument();
+    const searchInput = await screen.findByPlaceholderText(
+      "Search genre & style...",
+    );
+    await user.click(searchInput);
+    await user.type(searchInput, "jazz");
+
+    await waitFor(
+      () => {
+        expect(screen.getByText("No genre & style found")).toBeInTheDocument();
+        expect(screen.queryByText("Rock")).not.toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 });

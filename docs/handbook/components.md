@@ -9,7 +9,7 @@ How UI is organized under `src/components/` and how we test it.
   - `Name.module.css` — scoped styles
   - Optional `Name.spec.tsx` + `Name.po.tsx` for tested components (see [conventions.md → Testing](conventions.md#testing))
 
-- **Shared primitives**: [`src/components/shared/`](../../src/components/shared/) — reusable layout/stats pieces. Thin stroke icons used where SVGR Turbopack chunks fail: [`icons/`](../../src/components/shared/icons/) (**`CheckThinIcon`**, **`ChevronRightThinIcon`**, **`ListThinIcon`**, **`DiceThinIcon`**, …). Dashboard charts: [`TanstackChart/`](../../src/components/shared/TanstackChart/) (motion renderer host + shared axis/grid/tooltip styling), [`GrowthAreaChart/`](../../src/components/shared/GrowthAreaChart/) (admin growth areas), [`PieChartLegend/`](../../src/components/shared/PieChartLegend/) (HTML percent labels under donut pies). Scrollable card modals: [`ScrollModal/`](../../src/components/shared/ScrollModal/) (backdrop + panel + scroll body), [`ModalToolbar/`](../../src/components/shared/ModalToolbar/) (microdot toolbar: optional left actions, optional **`title`**, close **X**).
+- **Shared primitives**: [`src/components/shared/`](../../src/components/shared/) — reusable layout/stats pieces. **Base UI** ([`@base-ui/react`](https://base-ui.com/react/overview/quick-start)) powers headless overlays and pickers: [`AppDialog/`](../../src/components/shared/AppDialog/) (controlled **`Dialog`** shell: backdrop + centered popup, focus trap, Escape/backdrop dismiss), [`ScrollModal/`](../../src/components/shared/ScrollModal/) (scrollable card modal built on **`AppDialog`**), plus feature components on **`Select`**, **`Combobox`**, and **`Menu`** — filter controls ([`Select/`](../../src/components/Select/), [`AutocompleteSelect/`](../../src/components/AutocompleteSelect/)), header/crate menus ([`UserActions`](../../src/components/StickyHeaderBar/components/UserActions.tsx), [`CrateDetailActionsMenu`](../../src/components/Crates/CrateDetailActionsMenu.component.tsx)). Global portal setup: [`.appRoot`](../../src/app/layout.tsx) + [`base-ui-setup.css`](../../src/styles/base-ui-setup.css) (`isolation: isolate`; `body { position: relative }` for iOS Safari backdrops). Shared backdrop tokens: [`base-ui-portal.module.css`](../../src/styles/base-ui-portal.module.css). Thin stroke icons used where SVGR Turbopack chunks fail: [`icons/`](../../src/components/shared/icons/) (**`CheckThinIcon`**, **`ChevronRightThinIcon`**, **`ListThinIcon`**, **`DiceThinIcon`**, …). Dashboard charts: [`TanstackChart/`](../../src/components/shared/TanstackChart/) (motion renderer host + shared axis/grid/tooltip styling), [`GrowthAreaChart/`](../../src/components/shared/GrowthAreaChart/) (admin growth areas), [`PieChartLegend/`](../../src/components/shared/PieChartLegend/) (HTML percent labels under donut pies). [`ModalToolbar/`](../../src/components/shared/ModalToolbar/) (microdot toolbar: optional left actions, optional **`title`**, close **X**).
 
 - **Providers**: [`src/components/Providers.tsx`](../../src/components/Providers.tsx) — root QueryClient + context stack. Global toasts use **[Sonner](https://sonner.emilkowal.ski/)** via [`AppToaster`](../../src/components/AppToaster/AppToaster.component.tsx): **`richColors`**, app token styling in [`sonner.css`](../../src/styles/sonner.css) (maps Sonner CSS variables to **`--card`**, **`--destructive`**, etc. so every palette theme matches), and **`toSonnerTheme`** for Sonner’s light/dark shell. Import **`toast`** from **`sonner`** for user feedback — prefer toasts over **`alert()`** for non-blocking errors and success messages. Auth session feedback on `/` uses [`AuthCheckingToast`](../../src/components/AuthCheckingToast/AuthCheckingToast.component.tsx).
 - **Public pages**: [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) is the single client shell for home, about, legal, and public crate pages (`data-testid="fmdPublicAuthLayout"`). Server `page.tsx` files pass [`PageFooter`](../../src/components/Page/PageFooter.server.tsx) as the `footer` prop. [`PublicAuthHeader`](../../src/components/PublicAuthLayout/PublicAuthHeader.component.tsx) renders [`PublicPageHeader`](../../src/components/PublicPageHeader/PublicPageHeader.component.tsx) for visitors or [`StickyHeaderBar`](../../src/components/StickyHeaderBar/StickyHeaderBar.component.tsx) when `authenticatedNavPage` is set and the user is signed in. Props: `currentPage` (`home` \| `about` \| `legal`), `centerMain` (home), `authenticatedNavPage`, optional `header` override, optional `footer`.
@@ -138,7 +138,7 @@ Crate, notes, and card filter pill clicks do **not** open the modal. Discogs lin
 | `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); no active styling when notes exist |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
-| `NoteEditDialog.component.tsx` | Native `<dialog>` editor (`data-testid="fmdNoteEditDialog"`) |
+| `NoteEditDialog.component.tsx` | Release notes editor via **`AppDialog`** (`data-testid="fmdNoteEditDialog"`) |
 | `ReleaseNotes.po.tsx` / `ReleaseNotes.spec.tsx` | Page object + tests (`data-testid="fmdReleaseNotes"`) |
 
 Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** and card **`ReleaseNotes`** (`displayOnly`) must consume **`useReleaseNotesEditorContext`**—do not call **`useReleaseNotesEditor`** twice on the same card.
@@ -146,6 +146,17 @@ Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorPro
 List/table rows use **`ReleaseNotes`** without the provider; only the **`inline`** subcomponent calls **`useReleaseNotesEditor`** directly.
 
 **`variant="crate"`** (crate detail rows): empty state uses a dashed **Add notes** affordance; filled notes are plain muted body copy with a small underlined **Edit notes** link below.
+
+## Dashboard release rows
+
+Dashboard sections that list releases (On this day, most crated, milestones, duplicates modal list, etc.) share one layout — do not invent per-section cover/title/meta markup or card chrome:
+
+| Piece | Location |
+|-------|----------|
+| Card shell | [`dashboard-card.module.css`](../../src/styles/dashboard-card.module.css) — **`.releaseRow`** for bordered list rows (composes **`.card`**) |
+| Row content | [`DashboardReleaseItem.component.tsx`](../../src/components/Dashboard/components/DashboardReleaseItem.component.tsx) + [`DashboardReleaseItem.module.css`](../../src/components/Dashboard/components/DashboardReleaseItem.module.css) |
+
+Section modules may add layout wrappers (grids, year headings, badges) around **`.releaseRow`**, but the inner release presentation stays in **`DashboardReleaseItem`**. See [patterns.md → Dashboard analytics → Card chrome](patterns.md#dashboard-analytics).
 
 ## Client page shells
 

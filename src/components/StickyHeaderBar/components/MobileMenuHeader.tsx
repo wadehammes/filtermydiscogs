@@ -77,6 +77,7 @@ export function MobileMenuHeader({
         onClick={onToggleMenu}
         aria-label={isOpen ? "Close menu" : "Open menu"}
         aria-expanded={isOpen}
+        data-popup-open={isOpen ? true : undefined}
       >
         {isOpen ? (
           <XIcon className={styles.menuIcon} />

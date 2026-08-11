@@ -1,8 +1,7 @@
-import classNames from "classnames";
+import { Menu } from "@base-ui/react/menu";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import Button from "src/components/Button/Button.component";
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import styles from "./UserActions.module.css";
@@ -21,28 +20,8 @@ export const UserActions = ({
   const { logout, state: authState } = useAuth();
   const { username } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return undefined;
-  }, [isDropdownOpen]);
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setIsDropdownOpen(false);
     await logout();
     trackEvent("logout", {
@@ -51,7 +30,7 @@ export const UserActions = ({
       label: "User Logged Out",
       value: username || "unknown",
     });
-  };
+  }, [logout, username]);
 
   const handleMosaicClick = () => {
     trackEvent("mosaicNavigation", {
@@ -62,7 +41,7 @@ export const UserActions = ({
     });
   };
 
-  const handleNavigationClick = (label: string, value: string) => {
+  const handleNavigationClick = useCallback((label: string, value: string) => {
     setIsDropdownOpen(false);
     trackEvent("pageNavigation", {
       action: "pageNavigation",
@@ -70,9 +49,8 @@ export const UserActions = ({
       label: `Navigate to ${label}`,
       value,
     });
-  };
+  }, []);
 
-  const buttonSize = "sm";
   const containerClass =
     variant === "mobile" ? styles.mobileActions : styles.userSection;
 
@@ -91,56 +69,58 @@ export const UserActions = ({
       )}
 
       {showUsername && username && (
-        <div className={styles.userDropdown} ref={containerRef}>
-          <button
-            type="button"
-            className={styles.usernameTrigger}
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            aria-expanded={isDropdownOpen}
-            aria-haspopup="true"
-          >
+        <Menu.Root
+          open={isDropdownOpen}
+          onOpenChange={setIsDropdownOpen}
+          modal={false}
+        >
+          <Menu.Trigger className={styles.usernameTrigger}>
             <span className={styles.username}>{username}</span>
-            <span
-              className={classNames(styles.chevronIcon, {
-                [styles.chevronIconOpen]: isDropdownOpen,
-              })}
-              aria-hidden
-            >
+            <span className={styles.chevronIcon} aria-hidden>
               <Chevron />
             </span>
-          </button>
-          {isDropdownOpen && (
-            <div className={styles.dropdown}>
-              <div className={styles.dropdownItem}>
-                <Link
-                  href="/settings"
-                  className={styles.dropdownLink}
-                  onClick={() => handleNavigationClick("Settings", "settings")}
+          </Menu.Trigger>
+          <Menu.Portal>
+            <Menu.Positioner
+              align="end"
+              className={styles.positioner}
+              sideOffset={8}
+            >
+              <Menu.Popup className={styles.dropdown}>
+                <Menu.LinkItem
+                  closeOnClick
+                  render={
+                    <Link href="/settings" className={styles.dropdownLink} />
+                  }
+                  onClick={() => {
+                    handleNavigationClick("Settings", "settings");
+                  }}
                 >
                   Settings
-                </Link>
-              </div>
-              <div className={styles.dropdownItem}>
-                <Link
-                  href="/about"
-                  className={styles.dropdownLink}
-                  onClick={() => handleNavigationClick("About", "about")}
+                </Menu.LinkItem>
+                <Menu.LinkItem
+                  closeOnClick
+                  render={
+                    <Link href="/about" className={styles.dropdownLink} />
+                  }
+                  onClick={() => {
+                    handleNavigationClick("About", "about");
+                  }}
                 >
                   About
-                </Link>
-              </div>
-              <div className={styles.dropdownItem}>
-                <Button
-                  variant="danger"
-                  size={buttonSize}
-                  onPress={handleLogout}
+                </Menu.LinkItem>
+                <Menu.Item
+                  className={styles.logoutItem}
+                  onClick={() => {
+                    void handleLogout();
+                  }}
                 >
                   Logout
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+                </Menu.Item>
+              </Menu.Popup>
+            </Menu.Positioner>
+          </Menu.Portal>
+        </Menu.Root>
       )}
     </div>
   );

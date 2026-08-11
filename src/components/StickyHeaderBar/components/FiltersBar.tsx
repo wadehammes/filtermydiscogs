@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
@@ -71,6 +71,11 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
 
   const isDisabled = disabled || fetchingCollection || !collection || error;
 
+  const selectedYearValues = useMemo(
+    () => selectedYears.map((year) => year.toString()),
+    [selectedYears],
+  );
+
   if (isDisabled) {
     return null;
   }
@@ -109,7 +114,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
           <AutocompleteSelect
             label="Release Year"
             options={yearOptions}
-            value={selectedYears.map((year) => year.toString())}
+            value={selectedYearValues}
             onChange={handleYearChange}
             disabled={!collection}
             multiple={true}
