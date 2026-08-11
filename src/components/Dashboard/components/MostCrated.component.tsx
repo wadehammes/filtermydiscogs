@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMostCratedQuery } from "src/hooks/queries/useMostCratedQuery";
+import dashboardCardStyles from "src/styles/dashboard-card.module.css";
 import { definedProps } from "src/utils/definedProps";
 import { DashboardReleaseItem } from "./DashboardReleaseItem.component";
 import styles from "./MostCrated.module.css";
@@ -68,7 +69,10 @@ export function MostCrated({
       )}
       <div className={styles.releasesList}>
         {mostCratedReleases.map((item) => (
-          <div key={item.instance_id} className={styles.releaseItem}>
+          <div
+            key={item.instance_id}
+            className={dashboardCardStyles.releaseRow}
+          >
             <DashboardReleaseItem
               release={item.release}
               category="mostCrated"

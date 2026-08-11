@@ -3,7 +3,6 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
-import { Spinner } from "src/components/Spinner/Spinner.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import styles from "./AppPageLoading.module.css";
 import type { AppPage } from "./appPageLoadingMessages";
@@ -40,16 +39,12 @@ export const AppPageLoading = ({
         })}
       >
         {hasSkeleton ? (
-          <div className={styles.statusBar}>
-            <Spinner size="sm" aria-label={message} />
-            <p className={styles.statusText}>{message}</p>
-          </div>
+          children
         ) : (
           <div className={styles.loaderArea}>
             <PageLoader message={message} size="3xl" />
           </div>
         )}
-        {children}
       </div>
     </>
   );

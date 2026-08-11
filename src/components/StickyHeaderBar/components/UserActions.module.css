@@ -26,8 +26,8 @@
   }
 }
 
-.userDropdown {
-  position: relative;
+.positioner {
+  z-index: var(--z-6-popover);
 }
 
 .usernameTrigger {
@@ -66,17 +66,16 @@
   display: flex;
   flex-shrink: 0;
   transform: rotate(90deg);
-  transform-origin: center;
   transition: transform var(--transition-fast);
 
   & svg {
     block-size: var(--space-4);
     inline-size: var(--space-4);
   }
-}
 
-.chevronIconOpen {
-  transform: rotate(270deg);
+  .usernameTrigger[data-popup-open] & {
+    transform: rotate(270deg);
+  }
 }
 
 .dropdown {
@@ -89,19 +88,29 @@
   gap: var(--space-2);
   min-width: 10rem;
   padding: var(--space-2);
-  position: absolute;
-  right: 0;
-  top: calc(100% + var(--space-2));
-  z-index: var(--z-6-popover);
 }
 
-.dropdownItem {
-  align-items: center;
-  display: flex;
+.logoutItem {
+  background: var(--destructive);
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--destructive-foreground);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
   width: 100%;
 
-  button {
-    width: 100%;
+  &:hover,
+  &[data-highlighted] {
+    background: color-mix(in srgb, var(--destructive) 88%, var(--foreground));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }
 
@@ -116,7 +125,8 @@
   transition: var(--transition-fast);
   width: 100%;
 
-  &:hover {
+  &:hover,
+  &[data-highlighted] {
     background: var(--muted);
     color: var(--primary);
   }

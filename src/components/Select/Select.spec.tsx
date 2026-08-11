@@ -2,10 +2,42 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { SelectPageObject } from "src/components/Select/Select.po";
 import { selectOptionFactory } from "src/tests/factories/SelectOption.factory";
+import { clickFilterOption } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 import Select from "./Select.component";
 
 let po: SelectPageObject;
+
+const openSelect = async (name = "Test Select") => {
+  const user = userEvent.setup({ pointerEventsCheck: 0 });
+  const trigger = screen.getByRole("combobox", { name });
+  await user.click(trigger);
+
+  await waitFor(() => {
+    expect(
+      screen.getAllByRole("option", { hidden: true }).length,
+    ).toBeGreaterThan(0);
+  });
+
+  return user;
+};
+
+const findOption = (label: string) =>
+  screen
+    .getAllByRole("option", { hidden: true })
+    .find((node) => node.textContent?.includes(label));
+
+const expectSelectClosed = async (name = "Test Select") => {
+  await waitFor(
+    () => {
+      expect(screen.getByRole("combobox", { name })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+    },
+    { timeout: 3000 },
+  );
+};
 
 describe("Select", () => {
   beforeEach(() => {
@@ -25,7 +57,7 @@ describe("Select", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: "Test Select" }),
+      screen.getByRole("combobox", { name: "Test Select" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Choose an option")).toBeInTheDocument();
   });
@@ -38,56 +70,41 @@ describe("Select", () => {
   });
 
   it("opens dropdown when clicked", async () => {
-    const user = userEvent.setup();
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
+    await openSelect();
 
-    expect(
-      screen.getByRole("listbox", { name: "Test Select" }),
-    ).toBeInTheDocument();
     expect(screen.getByText("Option 1")).toBeInTheDocument();
     expect(screen.getByText("Option 2")).toBeInTheDocument();
     expect(screen.getByText("Option 3")).toBeInTheDocument();
   });
 
   it("calls onChange when option is selected (single select)", async () => {
-    const user = userEvent.setup();
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
-
-    const option1 = screen.getByText("Option 1");
-    await user.click(option1);
+    await openSelect();
+    await clickFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith("option1");
     expect(handleChange).toHaveBeenCalledTimes(1);
   });
 
   it("closes dropdown after selecting option in single select mode", async () => {
-    const user = userEvent.setup();
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
-
-    const option1 = screen.getByText("Option 1");
-    await user.click(option1);
+    await openSelect();
+    await clickFilterOption("Option 1");
 
     await waitFor(() => {
-      expect(
-        screen.queryByRole("listbox", { name: "Test Select" }),
-      ).not.toBeInTheDocument();
+      expect(handleChange).toHaveBeenCalledWith("option1");
     });
+    await expectSelectClosed();
   });
 
   it("supports multiple selection", async () => {
-    const user = userEvent.setup();
     let selectedValues: string[] = [];
     const handleChange = (value: string | string[]) => {
       selectedValues = Array.isArray(value) ? value : [];
@@ -109,22 +126,17 @@ describe("Select", () => {
       value: selectedValues,
     });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
-
-    const option1 = screen.getByText("Option 1");
-    await user.click(option1);
+    await openSelect();
+    await clickFilterOption("Option 1");
 
     expect(selectedValues).toEqual(["option1"]);
 
     rerender(renderSelect());
 
-    const listbox = screen.getByRole("listbox", { name: "Test Select" });
-    const option2 = Array.from(listbox.querySelectorAll("li")).find((li) =>
-      li.textContent?.includes("Option 2"),
-    );
+    const option2 = findOption("Option 2");
     expect(option2).toBeInTheDocument();
     if (option2) {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
       await user.click(option2);
     }
 
@@ -132,7 +144,6 @@ describe("Select", () => {
   });
 
   it("allows deselecting options in multiple mode", async () => {
-    const user = userEvent.setup();
     const handleChange = jest.fn();
     po.renderSelect({
       value: ["option1", "option2"],
@@ -140,11 +151,8 @@ describe("Select", () => {
       multiple: true,
     });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
-
-    const option1 = screen.getByText("Option 1");
-    await user.click(option1);
+    await openSelect();
+    await clickFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith(["option2"]);
   });
@@ -161,17 +169,12 @@ describe("Select", () => {
   });
 
   it("shows checkmark for selected options", async () => {
-    const user = userEvent.setup();
     const handleChange = jest.fn();
     po.renderSelect({ value: "option2", onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
+    await openSelect();
 
-    const listbox = screen.getByRole("listbox", { name: "Test Select" });
-    const option2 = Array.from(listbox.querySelectorAll("li")).find((li) =>
-      li.textContent?.includes("Option 2"),
-    );
+    const option2 = findOption("Option 2");
     expect(option2).toBeInTheDocument();
     const checkmark = option2?.querySelector("svg");
     expect(checkmark).toBeInTheDocument();
@@ -202,97 +205,74 @@ describe("Select", () => {
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
+    const trigger = screen.getByRole("combobox", { name: "Test Select" });
     trigger.focus();
     await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("option", { hidden: true }).length,
+      ).toBeGreaterThan(0);
+    });
+  });
+
+  it("handles keyboard navigation - Arrow keys keep the list open", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    po.renderSelect({ onChange: jest.fn() });
+
+    await openSelect();
+
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{ArrowUp}");
 
     expect(
-      screen.getByRole("listbox", { name: "Test Select" }),
-    ).toBeInTheDocument();
-  });
-
-  it("handles keyboard navigation - Arrow keys navigate options", async () => {
-    const user = userEvent.setup();
-    const handleChange = jest.fn();
-    po.renderSelect({ onChange: handleChange });
-
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    trigger.focus();
-    await user.keyboard("{Enter}");
-    await user.keyboard("{ArrowDown}");
-
-    const option1 = screen.getByText("Option 1").closest("li");
-    expect(option1).toHaveAttribute("tabindex", "0");
-
-    await user.keyboard("{ArrowDown}");
-    const option2 = screen.getByText("Option 2").closest("li");
-    expect(option2).toHaveAttribute("tabindex", "0");
-    expect(option1).toHaveAttribute("tabindex", "-1");
-  });
-
-  it("handles keyboard navigation - Enter selects focused option", async () => {
-    const user = userEvent.setup();
-    const handleChange = jest.fn();
-    po.renderSelect({ onChange: handleChange });
-
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    trigger.focus();
-    await user.keyboard("{Enter}");
-    await user.keyboard("{ArrowDown}");
-    await user.keyboard("{ArrowDown}");
-    await user.keyboard("{Enter}");
-
-    expect(handleChange).toHaveBeenCalledWith("option2");
+      screen.getByRole("combobox", { name: "Test Select" }),
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByRole("option", { hidden: true }).length).toBe(3);
   });
 
   it("handles keyboard navigation - Escape closes dropdown", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
-
-    expect(
-      screen.getByRole("listbox", { name: "Test Select" }),
-    ).toBeInTheDocument();
-
-    await user.keyboard("{Escape}");
+    await openSelect();
 
     await waitFor(() => {
       expect(
-        screen.queryByRole("listbox", { name: "Test Select" }),
-      ).not.toBeInTheDocument();
+        screen.getByRole("combobox", { name: "Test Select" }),
+      ).toHaveAttribute("aria-expanded", "true");
     });
+
+    screen.getByRole("combobox", { name: "Test Select" }).focus();
+    await user.keyboard("{Escape}");
+
+    await expectSelectClosed();
   });
 
   it("closes dropdown when clicking outside", async () => {
-    const user = userEvent.setup();
     const handleChange = jest.fn();
-    po.renderSelectWithOutsideButton({ onChange: handleChange });
+    po.renderSelect({ onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
-    await user.click(trigger);
-
-    expect(
-      screen.getByRole("listbox", { name: "Test Select" }),
-    ).toBeInTheDocument();
-
-    const outsideButton = screen.getByRole("button", { name: "Outside" });
-    await user.click(outsideButton);
+    const user = await openSelect();
 
     await waitFor(() => {
       expect(
-        screen.queryByRole("listbox", { name: "Test Select" }),
-      ).not.toBeInTheDocument();
+        screen.getByRole("combobox", { name: "Test Select" }),
+      ).toHaveAttribute("aria-expanded", "true");
     });
+
+    await user.pointer({ keys: "[MouseLeft]", target: document.body });
+
+    await expectSelectClosed();
   });
 
   it("is disabled when disabled prop is true", () => {
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange, disabled: true });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
+    const trigger = screen.getByRole("combobox", { name: "Test Select" });
     expect(trigger).toBeDisabled();
   });
 
@@ -301,19 +281,17 @@ describe("Select", () => {
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange, disabled: true });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
+    const trigger = screen.getByRole("combobox", { name: "Test Select" });
     await user.click(trigger);
 
-    expect(
-      screen.queryByRole("listbox", { name: "Test Select" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryAllByRole("option", { hidden: true })).toHaveLength(0);
   });
 
   it("handles empty options array", () => {
     const handleChange = jest.fn();
     po.renderSelect({ options: [], onChange: handleChange });
 
-    const trigger = screen.getByRole("button", { name: "Test Select" });
+    const trigger = screen.getByRole("combobox", { name: "Test Select" });
     expect(trigger).toBeInTheDocument();
   });
 

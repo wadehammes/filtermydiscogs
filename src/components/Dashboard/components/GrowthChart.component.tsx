@@ -56,7 +56,7 @@ export const GrowthChart = ({
     return createCollectionGrowthAreaChartDefinition(chartData, {
       color: CHART_COLOR,
       formatX: formatDate,
-      tooltipValueLabel: "Cumulative Releases",
+      xTickStrategy: viewMode === "yearly" ? "all" : "auto",
     });
   }, [chartData, viewMode]);
 

@@ -12,7 +12,11 @@ import {
 
 type TestProviderOptions = Pick<
   TestProvidersProps,
-  "authInitialState" | "skipInitialAuthCheck" | "queryClient" | "includeCrate"
+  | "authInitialState"
+  | "skipInitialAuthCheck"
+  | "queryClient"
+  | "includeCrate"
+  | "includeCollectionSync"
 > & {
   wrapper?: ComponentType<{ children: ReactNode }>;
 };
@@ -39,6 +43,9 @@ const buildTestProvidersWrapper =
       {...(options.includeCrate !== undefined
         ? { includeCrate: options.includeCrate }
         : {})}
+      {...(options.includeCollectionSync !== undefined
+        ? { includeCollectionSync: options.includeCollectionSync }
+        : {})}
     >
       {children}
     </TestProviders>
@@ -51,6 +58,7 @@ const render = (ui: ReactElement, options?: CustomRenderOptions) => {
     skipInitialAuthCheck,
     queryClient,
     includeCrate,
+    includeCollectionSync,
     ...renderOptions
   } = options ?? {};
 
@@ -61,6 +69,7 @@ const render = (ui: ReactElement, options?: CustomRenderOptions) => {
       ...(skipInitialAuthCheck !== undefined ? { skipInitialAuthCheck } : {}),
       ...(queryClient !== undefined ? { queryClient } : {}),
       ...(includeCrate !== undefined ? { includeCrate } : {}),
+      ...(includeCollectionSync !== undefined ? { includeCollectionSync } : {}),
     });
 
   return rtlRender(ui, { wrapper: ResolvedWrapper, ...renderOptions });
@@ -75,6 +84,7 @@ const renderHookWithTestProviders = <TProps, TResult>(
     skipInitialAuthCheck,
     queryClient,
     includeCrate,
+    includeCollectionSync,
     wrapper: UserWrapper,
     ...renderHookOptions
   } = options ?? {};
@@ -84,6 +94,7 @@ const renderHookWithTestProviders = <TProps, TResult>(
     ...(skipInitialAuthCheck !== undefined ? { skipInitialAuthCheck } : {}),
     ...(queryClient !== undefined ? { queryClient } : {}),
     ...(includeCrate !== undefined ? { includeCrate } : {}),
+    ...(includeCollectionSync !== undefined ? { includeCollectionSync } : {}),
   });
 
   const ComposedWrapper = UserWrapper

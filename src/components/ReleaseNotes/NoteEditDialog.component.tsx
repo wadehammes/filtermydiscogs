@@ -1,10 +1,12 @@
 "use client";
 
+import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
@@ -42,7 +44,6 @@ export const NoteEditDialog = ({
   onClose,
   onSave,
 }: NoteEditDialogProps) => {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const editableFields = useMemo(
     () => fields.filter((field) => isEditableCollectionField(field)),
     [fields],
@@ -92,43 +93,18 @@ export const NoteEditDialog = ({
     }
   }, [defaultFormValues, isOpen, reset]);
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) {
-      return;
+  const handleClose = useCallback(() => {
+    if (!isSaving) {
+      onClose();
     }
-
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-      return;
-    }
-
-    if (!isOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOpen]);
+  }, [isSaving, onClose]);
 
   const handleCancel = useCallback(
     (event?: React.SyntheticEvent) => {
       event?.preventDefault();
-      if (!isSaving) {
-        onClose();
-      }
+      handleClose();
     },
-    [isSaving, onClose],
+    [handleClose],
   );
 
   const handleSave = handleSubmit((data) => {
@@ -165,18 +141,18 @@ export const NoteEditDialog = ({
   const releaseId = parseReleaseId(release);
 
   return (
-    <dialog
-      ref={dialogRef}
-      className={styles.dialog}
-      data-testid="fmdNoteEditDialog"
-      onCancel={handleCancel}
-      onClose={handleCancel}
-      aria-labelledby="note-edit-title"
+    <AppDialog
+      open={isOpen}
+      onClose={handleClose}
+      testId="fmdNoteEditDialog"
+      ariaLabelledBy="note-edit-title"
+      backdropVariant="modal"
+      panelClassName={styles.dialog}
     >
-      <form className={styles.dialogContent} onSubmit={handleSave}>
-        <h2 id="note-edit-title" className={styles.title}>
+      <form className={styles.form} onSubmit={handleSave}>
+        <Dialog.Title id="note-edit-title" className={styles.title}>
           Add release notes
-        </h2>
+        </Dialog.Title>
 
         <div className={styles.releaseSummary}>
           {thumbUrl ? (
@@ -289,6 +265,6 @@ export const NoteEditDialog = ({
           </Button>
         </div>
       </form>
-    </dialog>
+    </AppDialog>
   );
 };

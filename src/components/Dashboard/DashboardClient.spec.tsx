@@ -1,6 +1,17 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { toast } from "sonner";
+import { COLLECTION_LOADING_TOAST_ID } from "src/components/CollectionLoadingToast/collectionLoadingToast";
 import { DashboardClientPageObject } from "src/components/Dashboard/DashboardClient.po";
 import { screen, waitFor } from "test-utils";
+
+jest.mock("sonner", () => ({
+  toast: {
+    loading: jest.fn(),
+    dismiss: jest.fn(),
+  },
+}));
+
+const mockToastLoading = jest.mocked(toast.loading);
 
 let po: DashboardClientPageObject;
 
@@ -33,9 +44,13 @@ describe("DashboardClient", () => {
     po.renderDashboardClient({ paginatedFirstPage: true });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Loading releases… 50 releases loaded"),
-      ).toBeInTheDocument();
+      expect(mockToastLoading).toHaveBeenCalledWith(
+        "Loading releases… 50 loaded",
+        expect.objectContaining({
+          id: COLLECTION_LOADING_TOAST_ID,
+          duration: Number.POSITIVE_INFINITY,
+        }),
+      );
     });
 
     expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();

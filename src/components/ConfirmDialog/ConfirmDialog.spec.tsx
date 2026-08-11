@@ -67,7 +67,7 @@ describe("ConfirmDialog", () => {
 
     po.renderConfirmDialog({ onCancel });
 
-    const backdrop = screen.getByRole("dialog");
+    const backdrop = screen.getByTestId(`${po.testId}-backdrop`);
     await user.click(backdrop);
 
     expect(onCancel).toHaveBeenCalledTimes(1);

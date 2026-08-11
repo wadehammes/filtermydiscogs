@@ -1,9 +1,6 @@
-.backdrop {
-  composes: backdrop from "../../styles/modal-dialog.module.css";
-}
-
 .dialog {
-  composes: backdroppanel from "../../styles/modal-dialog.module.css";
+  display: flex;
+  flex-direction: column;
   gap: var(--space-5);
   max-width: 28rem;
   padding: var(--space-6);
@@ -117,7 +114,6 @@
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
-  margin-top: var(--space-1);
 }
 
 .sectionActions {

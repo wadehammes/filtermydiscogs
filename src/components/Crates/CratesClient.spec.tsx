@@ -44,7 +44,7 @@ describe("CrateDetailClient", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /Select crate/i }),
+        screen.getByRole("combobox", { name: /Select crate/i }),
       ).toHaveTextContent("Weekend Set (0)");
     });
 

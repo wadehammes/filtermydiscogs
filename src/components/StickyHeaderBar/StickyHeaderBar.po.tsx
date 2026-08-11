@@ -64,6 +64,7 @@ export class StickyHeaderBarPageObject extends BasePageObject {
   ): RenderResult {
     return render(this.stickyHeaderBarElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

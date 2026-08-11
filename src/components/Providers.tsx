@@ -5,6 +5,8 @@ import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
 import { AppToaster } from "src/components/AppToaster/AppToaster.component";
 import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthCheckingToast.component";
+import { CollectionDataSync } from "src/components/CollectionDataSync/CollectionDataSync.component";
+import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
@@ -73,10 +75,12 @@ export const Providers = ({ children }: ProvidersProps) => {
                     <CrateProvider>
                       <ViewProvider>
                         <AnalyticsShell>
+                          <CollectionDataSync />
                           {children}
                           <GlobalPlaybackDock />
                           <LogoutOverlayWrapper />
                           <AuthCheckingToast />
+                          <CollectionLoadingToast />
                         </AnalyticsShell>
                       </ViewProvider>
                     </CrateProvider>

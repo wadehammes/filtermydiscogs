@@ -40,6 +40,10 @@
   width: 1rem;
 }
 
+.positioner {
+  z-index: var(--z-6-popover);
+}
+
 .menu {
   background: var(--popover);
   border: 1px solid var(--border);
@@ -49,10 +53,6 @@
   gap: var(--space-1);
   min-width: 15rem;
   padding: var(--space-1);
-  position: absolute;
-  right: 0;
-  top: calc(100% + var(--space-2));
-  z-index: var(--z-6-popover);
 }
 
 .menuItem {
@@ -82,7 +82,8 @@
     opacity: 0.5;
   }
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled),
+  &[data-highlighted]:not([data-disabled]) {
     background: var(--muted);
     color: var(--primary);
   }
@@ -91,7 +92,8 @@
 .menuItemDanger {
   color: var(--destructive);
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled),
+  &[data-highlighted]:not([data-disabled]) {
     background: color-mix(in srgb, var(--destructive) 8%, transparent);
     color: var(--destructive);
   }

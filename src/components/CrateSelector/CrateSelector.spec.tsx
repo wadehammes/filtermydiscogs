@@ -22,7 +22,7 @@ describe("CrateSelector", () => {
     await po.waitUntilLoaded();
 
     expect(
-      screen.getByRole("button", { name: /Select crate/i }),
+      screen.getByRole("combobox", { name: /Select crate/i }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Rename" }),
@@ -37,7 +37,7 @@ describe("CrateSelector", () => {
     await po.waitUntilLoaded();
 
     expect(
-      screen.getByRole("button", { name: /Select crate/i }),
+      screen.getByRole("combobox", { name: /Select crate/i }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "New Crate" }),
@@ -51,13 +51,18 @@ describe("CrateSelector", () => {
 
     expect(screen.getByText("Crate 1 (5)")).toBeInTheDocument();
 
-    const select = screen.getByRole("button", { name: /Select crate/i });
+    const select = screen.getByRole("combobox", { name: /Select crate/i });
     await user.click(select);
 
-    const listbox = screen.getByRole("listbox", { name: /Select crate/i });
-    const crate1Option = Array.from(listbox.querySelectorAll("li")).find((li) =>
-      li.textContent?.includes("Crate 1 (5)"),
-    );
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("option", { hidden: true }).length,
+      ).toBeGreaterThan(0);
+    });
+
+    const crate1Option = screen
+      .getAllByRole("option", { hidden: true })
+      .find((option) => option.textContent?.includes("Crate 1 (5)"));
     expect(crate1Option).toBeInTheDocument();
   });
 
@@ -66,18 +71,24 @@ describe("CrateSelector", () => {
     po.renderCrateSelector();
     await po.waitUntilLoaded();
 
-    const select = screen.getByRole("button", { name: /Select crate/i });
+    const select = screen.getByRole("combobox", { name: /Select crate/i });
     await user.click(select);
 
-    const listbox = screen.getByRole("listbox", { name: /Select crate/i });
-    const crate1Option = Array.from(listbox.querySelectorAll("li")).find((li) =>
-      li.textContent?.includes("Crate 1 (5)"),
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("option", { hidden: true }).length,
+      ).toBeGreaterThan(0);
+    });
+
+    const options = screen.getAllByRole("option", { hidden: true });
+    const crate1Option = options.find((option) =>
+      option.textContent?.includes("Crate 1 (5)"),
     );
-    const crate2Option = Array.from(listbox.querySelectorAll("li")).find((li) =>
-      li.textContent?.includes("Crate 2 (3)"),
+    const crate2Option = options.find((option) =>
+      option.textContent?.includes("Crate 2 (3)"),
     );
-    const crate3Option = Array.from(listbox.querySelectorAll("li")).find((li) =>
-      li.textContent?.includes("Crate 3 (0)"),
+    const crate3Option = options.find((option) =>
+      option.textContent?.includes("Crate 3 (0)"),
     );
     expect(crate1Option).toBeInTheDocument();
     expect(crate2Option).toBeInTheDocument();
@@ -89,11 +100,21 @@ describe("CrateSelector", () => {
     po.renderCrateSelector();
     await po.waitUntilLoaded();
 
-    const select = screen.getByRole("button", { name: /Select crate/i });
+    const select = screen.getByRole("combobox", { name: /Select crate/i });
     await user.click(select);
 
-    const option2 = screen.getByText("Crate 2 (3)");
-    await user.click(option2);
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("option", { hidden: true }).length,
+      ).toBeGreaterThan(0);
+    });
+
+    const option2 = screen
+      .getAllByRole("option", { hidden: true })
+      .find((option) => option.textContent?.includes("Crate 2 (3)"));
+    expect(option2).toBeDefined();
+    const clickUser = userEvent.setup({ pointerEventsCheck: 0 });
+    await clickUser.click(option2 as Element);
 
     await waitFor(() => {
       expect(po.mockApiHelpers.fetchCrate).toHaveBeenCalledWith("2");

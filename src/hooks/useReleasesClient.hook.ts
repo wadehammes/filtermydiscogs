@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
-import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
-import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import {
   useAllReleases,
   useFilteredReleases,
@@ -32,8 +31,6 @@ const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
 
 export const useReleasesClient = () => {
-  const { state: authState } = useAuth();
-  const { username, isAuthenticated, rateLimited, isCheckingAuth } = authState;
   const currentView = useCurrentView();
   const previousView = usePreviousView();
   const viewDispatch = useViewDispatch();
@@ -58,12 +55,8 @@ export const useReleasesClient = () => {
   );
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
 
-  const { isLoading, hasNextPage, isFetchingNextPage } = useCollectionData({
-    username,
-    isAuthenticated,
-    rateLimited,
-    isCheckingAuth,
-  });
+  const { isLoading, hasNextPage, isFetchingNextPage } =
+    useCollectionLoadState();
   const { error, hasReleases, hasError } = useReleasesDisplay();
   const scrollElement = usePlaybackPageScrollElement();
 

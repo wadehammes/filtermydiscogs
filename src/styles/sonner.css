@@ -34,3 +34,8 @@
   color: var(--muted-foreground);
   font-size: var(--text-meta-sm);
 }
+
+[data-sonner-toast] [data-icon] {
+  align-self: center;
+  flex-shrink: 0;
+}

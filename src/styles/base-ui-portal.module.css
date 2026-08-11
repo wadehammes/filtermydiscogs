@@ -1,0 +1,21 @@
+.backdrop {
+  background: color-mix(in srgb, var(--background) 50%, transparent);
+  inset: 0;
+  min-height: 100dvh;
+  position: fixed;
+  z-index: var(--z-6-popover);
+
+  @supports (-webkit-touch-callout: none) {
+    position: absolute;
+  }
+}
+
+.backdropModal {
+  composes: backdrop;
+  z-index: var(--z-5-modal);
+}
+
+.backdropStrong {
+  composes: backdrop;
+  background: color-mix(in srgb, var(--background) 80%, transparent);
+}

@@ -55,7 +55,8 @@
 
     & > * > [data-filter-control-trigger]:focus,
     & > * > [data-filter-control-trigger]:focus-visible,
-    & > * > [data-filter-control-trigger][aria-expanded="true"] {
+    & > * > [data-filter-control-trigger][aria-expanded="true"],
+    & > * > [data-filter-control-trigger][data-popup-open] {
       border-color: var(--primary);
       outline: none;
     }

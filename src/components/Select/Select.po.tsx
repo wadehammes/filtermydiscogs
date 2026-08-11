@@ -47,15 +47,4 @@ export class SelectPageObject extends BasePageObject {
   renderSelect(overrides: SelectRenderProps = {}): RenderResult {
     return render(this.selectElement(overrides));
   }
-
-  renderSelectWithOutsideButton(
-    overrides: SelectRenderProps = {},
-  ): RenderResult {
-    return render(
-      <div>
-        {this.selectElement(overrides)}
-        <button type="button">Outside</button>
-      </div>,
-    );
-  }
 }

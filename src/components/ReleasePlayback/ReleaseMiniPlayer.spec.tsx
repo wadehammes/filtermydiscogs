@@ -91,7 +91,7 @@ const startPlaybackAndWaitForPlayer = async (
 
 describe("ReleaseMiniPlayer", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
     localStorage.clear();
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: true });

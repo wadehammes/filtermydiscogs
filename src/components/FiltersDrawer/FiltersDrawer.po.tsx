@@ -65,6 +65,7 @@ export class FiltersDrawerPageObject extends BasePageObject {
   renderFiltersDrawer(overrides: FiltersDrawerRenderProps = {}): RenderResult {
     return render(this.filtersDrawerElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

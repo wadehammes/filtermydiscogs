@@ -25,24 +25,6 @@
   width: 100%;
 }
 
-.releaseItem {
-  --surface: var(--card);
-
-  align-items: center;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  composes: theme-surface-elevated from global;
-  display: flex;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  transition: var(--transition-fast);
-
-  &:hover {
-    border-color: var(--input);
-  }
-}
-
 .crateCount {
   align-items: center;
   display: flex;

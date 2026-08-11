@@ -6,13 +6,12 @@ import MosaicControls from "src/components/MosaicClient/MosaicControls.component
 import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
-import { useAuth } from "src/context/auth.context";
 import {
   FiltersActionTypes,
   useMemoizedFilteredReleases,
 } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
-import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import {
   useAllReleases,
   useFiltersDispatch,
@@ -26,19 +25,13 @@ import { useCurrentView, useViewDispatch } from "src/hooks/useViewAtoms.hook";
 import styles from "./MosaicClient.module.css";
 
 export default function MosaicClient() {
-  const { state } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const allReleases = useAllReleases();
   const {
     isLoading: collectionLoading,
     hasNextPage,
     isFetchingNextPage,
-  } = useCollectionData({
-    username: state.username,
-    isAuthenticated: state.isAuthenticated,
-    rateLimited: state.rateLimited,
-    isCheckingAuth: state.isCheckingAuth,
-  });
+  } = useCollectionLoadState();
   const needsCollectionLoad = useNeedsCollectionLoad({
     isLoading: collectionLoading,
     hasNextPage,

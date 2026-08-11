@@ -121,7 +121,8 @@ const modernValueAxis = {
 interface GrowthAreaChartOptions {
   color: string;
   formatX: (value: string) => string;
-  tooltipValueLabel: string;
+  tooltipValueLabel?: string;
+  xTickStrategy?: "auto" | "all";
 }
 
 interface DualSeriesAreaChartOptions {
@@ -150,6 +151,62 @@ export const formatMonthYear = (date: string): string => {
   });
 };
 
+const resolveGrowthTotal = (
+  point: ChartPoint<GrowthDataPoint>,
+): number | null => {
+  if (typeof point.datum?.cumulative === "number") {
+    return point.datum.cumulative;
+  }
+
+  if (typeof point.yValue === "number") {
+    return point.yValue;
+  }
+
+  return null;
+};
+
+const formatGrowthTooltipContent = (
+  point: ChartPoint<GrowthDataPoint>,
+  formatX: (value: string) => string,
+) => {
+  const periodLabel = formatX(String(point.datum?.date ?? point.xValue ?? ""));
+  const total = resolveGrowthTotal(point);
+
+  if (total == null) {
+    return { title: periodLabel, rows: [] };
+  }
+
+  return {
+    title: periodLabel,
+    rows: [{ label: "", value: `${total.toLocaleString()} total records` }],
+  };
+};
+
+export const isGrowthTooltipContent = (
+  content: unknown,
+): content is {
+  title: string;
+  rows: Array<{ label: string; value: string }>;
+} => {
+  if (
+    typeof content !== "object" ||
+    content === null ||
+    !("title" in content)
+  ) {
+    return false;
+  }
+
+  const rows = (content as { rows?: unknown }).rows;
+
+  return (
+    Array.isArray(rows) &&
+    rows.length === 1 &&
+    typeof rows[0]?.value === "string" &&
+    rows[0].value.includes("total records") &&
+    rows[0].label === ""
+  );
+};
+
 export const withBarColors = (
   data: DistributionData[],
   colors: string[],
@@ -163,51 +220,61 @@ export const createCollectionGrowthAreaChartDefinition = (
   data: readonly GrowthDataPoint[],
   options: GrowthAreaChartOptions,
 ): DomChartDefinition =>
-  defineChart(({ width }) => {
-    const tickValues = pickEvenlySpacedTickValues(
-      data.map((point) => point.date),
-      resolveTimeSeriesTickCount(width),
-    );
+  defineChart({
+    chart: ({ width }) => {
+      const dates = data.map((point) => point.date);
+      const tickValues =
+        options.xTickStrategy === "all"
+          ? [...dates]
+          : pickEvenlySpacedTickValues(
+              dates,
+              resolveTimeSeriesTickCount(width),
+            );
 
-    return {
-      ...chartMotion,
-      marks: [
-        areaY(data, {
-          x: "date",
-          y: "cumulative",
-          fill: options.color,
-          fillOpacity: 0.16,
-          stroke: options.color,
-          strokeWidth: 2.5,
-          curve: smoothAreaCurve,
-        }),
-      ],
-      x: {
-        scale: () => scalePoint<string>().padding(0.35),
-        axis: {
-          ...modernAxisPresentation,
-          ticks: {
-            ...modernAxisPresentation.ticks,
-            values: tickValues,
-            format: (value: string | number) => options.formatX(String(value)),
+      return {
+        ...chartMotion,
+        marks: [
+          areaY(data, {
+            x: "date",
+            y: "cumulative",
+            fill: options.color,
+            fillOpacity: 0.16,
+            stroke: options.color,
+            strokeWidth: 2.5,
+            curve: smoothAreaCurve,
+          }),
+        ],
+        x: {
+          scale: () => scalePoint<string>().padding(0.35),
+          axis: {
+            ...modernAxisPresentation,
+            ...(options.xTickStrategy === "all" && tickValues.length > 10
+              ? { tickLabels: { thin: true } }
+              : {}),
+            ticks: {
+              ...modernAxisPresentation.ticks,
+              values: tickValues,
+              format: (value: string | number) =>
+                options.formatX(String(value)),
+            },
           },
         },
-      },
-      y: modernValueAxis,
-      tooltip: {
-        ...chartTooltip,
-        format(point: ChartPoint<GrowthDataPoint>) {
-          const xValue = String(point.xValue ?? "");
-          const yValue =
-            typeof point.yValue === "number"
-              ? point.yValue.toLocaleString()
-              : String(point.yValue ?? "");
+        y: modernValueAxis,
+      };
+    },
+    tooltip: {
+      ...chartTooltip,
+      content(points) {
+        const point = points[0] as ChartPoint<GrowthDataPoint> | undefined;
 
-          return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
-        },
+        if (!point) {
+          return { rows: [] };
+        }
+
+        return formatGrowthTooltipContent(point, options.formatX);
       },
-    };
-  });
+    },
+  }) as DomChartDefinition;
 
 const formatSeriesValue = (
   value: number,
@@ -231,122 +298,130 @@ export const createDualSeriesAreaChartDefinition = (
   data: readonly DualSeriesPoint[],
   options: DualSeriesAreaChartOptions,
 ): DomChartDefinition =>
-  defineChart(({ width }) => {
-    const tickValues = pickEvenlySpacedTickValues(
-      data.map((point) => point.date),
-      resolveTimeSeriesTickCount(width),
-    );
+  defineChart({
+    chart: ({ width }) => {
+      const tickValues = pickEvenlySpacedTickValues(
+        data.map((point) => point.date),
+        resolveTimeSeriesTickCount(width),
+      );
 
-    return {
-      ...chartMotion,
-      marks: [
-        areaY(data, {
-          x: "date",
-          y: "primaryValue",
-          fill: options.primaryColor,
-          fillOpacity: 0.12,
-          stroke: options.primaryColor,
-          strokeWidth: 2.5,
-          curve: smoothAreaCurve,
-        }),
-        areaY(data, {
-          x: "date",
-          y: "secondaryValue",
-          fill: options.secondaryColor,
-          fillOpacity: 0.12,
-          stroke: options.secondaryColor,
-          strokeWidth: 2.5,
-          curve: smoothAreaCurve,
-        }),
-      ],
-      x: {
-        scale: () => scalePoint<string>().padding(0.35),
-        axis: {
-          ...modernAxisPresentation,
-          ticks: {
-            ...modernAxisPresentation.ticks,
-            values: tickValues,
-            format: (value: string | number) => options.formatX(String(value)),
+      return {
+        ...chartMotion,
+        marks: [
+          areaY(data, {
+            x: "date",
+            y: "primaryValue",
+            fill: options.primaryColor,
+            fillOpacity: 0.12,
+            stroke: options.primaryColor,
+            strokeWidth: 2.5,
+            curve: smoothAreaCurve,
+          }),
+          areaY(data, {
+            x: "date",
+            y: "secondaryValue",
+            fill: options.secondaryColor,
+            fillOpacity: 0.12,
+            stroke: options.secondaryColor,
+            strokeWidth: 2.5,
+            curve: smoothAreaCurve,
+          }),
+        ],
+        x: {
+          scale: () => scalePoint<string>().padding(0.35),
+          axis: {
+            ...modernAxisPresentation,
+            ticks: {
+              ...modernAxisPresentation.ticks,
+              values: tickValues,
+              format: (value: string | number) =>
+                options.formatX(String(value)),
+            },
           },
         },
+        y: options.valueFormat === "percent" ? shareValueAxis : modernValueAxis,
+      };
+    },
+    tooltip: {
+      ...chartTooltip,
+      formatGroup(points) {
+        const datum = (points[0] as ChartPoint<DualSeriesPoint> | undefined)
+          ?.datum;
+
+        if (!datum) {
+          return "";
+        }
+
+        const periodLabel = options.formatX(String(datum.date));
+        const primaryValue = formatSeriesValue(
+          datum.primaryValue,
+          options.valueFormat,
+        );
+        const secondaryValue = formatSeriesValue(
+          datum.secondaryValue,
+          options.valueFormat,
+        );
+        const suffix =
+          options.valueFormat === "percent" ? " of adds" : " total records";
+
+        return `${periodLabel}\n${options.primaryLabel}: ${primaryValue}${suffix}\n${options.secondaryLabel}: ${secondaryValue}${suffix}`;
       },
-      y: options.valueFormat === "percent" ? shareValueAxis : modernValueAxis,
-      tooltip: {
-        ...chartTooltip,
-        format(point: ChartPoint<DualSeriesPoint>) {
-          const datum = point.datum;
-
-          if (!datum) {
-            return "";
-          }
-
-          const periodLabel = options.formatX(String(datum.date));
-          const primaryValue = formatSeriesValue(
-            datum.primaryValue,
-            options.valueFormat,
-          );
-          const secondaryValue = formatSeriesValue(
-            datum.secondaryValue,
-            options.valueFormat,
-          );
-          const suffix =
-            options.valueFormat === "percent" ? " of adds" : " records";
-
-          return `${periodLabel}\n${options.primaryLabel}: ${primaryValue}${suffix}\n${options.secondaryLabel}: ${secondaryValue}${suffix}`;
-        },
-      },
-    };
-  });
+    },
+  }) as DomChartDefinition;
 
 export const createAdminGrowthAreaChartDefinition = (
   data: readonly AdminGrowthPoint[],
   options: GrowthAreaChartOptions,
 ): DomChartDefinition =>
-  defineChart(({ width }) => {
-    const tickValues = pickEvenlySpacedTickValues(
-      data.map((point) => point.month),
-      resolveTimeSeriesTickCount(width),
-    );
+  defineChart({
+    chart: ({ width }) => {
+      const tickValues = pickEvenlySpacedTickValues(
+        data.map((point) => point.month),
+        resolveTimeSeriesTickCount(width),
+      );
 
-    return {
-      ...chartMotion,
-      marks: [
-        areaY(data, {
-          x: "month",
-          y: "count",
-          fill: options.color,
-          fillOpacity: 0.16,
-          stroke: options.color,
-          strokeWidth: 2.5,
-          curve: smoothAreaCurve,
-        }),
-      ],
-      x: {
-        scale: () => scalePoint<string>().padding(0.35),
-        axis: {
-          ...modernAxisPresentation,
-          ticks: {
-            ...modernAxisPresentation.ticks,
-            values: tickValues,
-            format: (value: string | number) => options.formatX(String(value)),
+      return {
+        ...chartMotion,
+        marks: [
+          areaY(data, {
+            x: "month",
+            y: "count",
+            fill: options.color,
+            fillOpacity: 0.16,
+            stroke: options.color,
+            strokeWidth: 2.5,
+            curve: smoothAreaCurve,
+          }),
+        ],
+        x: {
+          scale: () => scalePoint<string>().padding(0.35),
+          axis: {
+            ...modernAxisPresentation,
+            ticks: {
+              ...modernAxisPresentation.ticks,
+              values: tickValues,
+              format: (value: string | number) =>
+                options.formatX(String(value)),
+            },
           },
         },
-      },
-      y: modernValueAxis,
-      tooltip: {
-        ...chartTooltip,
-        format(point: ChartPoint<AdminGrowthPoint>) {
-          const xValue = String(point.xValue ?? "");
-          const yValue =
-            typeof point.yValue === "number"
-              ? point.yValue.toLocaleString()
-              : String(point.yValue ?? "");
+        y: modernValueAxis,
+      };
+    },
+    tooltip: {
+      ...chartTooltip,
+      format(point) {
+        const typedPoint = point as ChartPoint<AdminGrowthPoint>;
+        const xValue = String(typedPoint.xValue ?? "");
+        const yValue =
+          typeof typedPoint.yValue === "number"
+            ? typedPoint.yValue.toLocaleString()
+            : String(typedPoint.yValue ?? "");
 
-          return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel}`;
-        },
+        return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel ?? "records"}`;
       },
-    };
-  });
+    },
+  }) as DomChartDefinition;
 
 export const createVerticalBarChartDefinition = ({
   data,

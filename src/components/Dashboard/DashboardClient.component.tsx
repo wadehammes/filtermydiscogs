@@ -2,17 +2,15 @@
 
 import { useEffect, useMemo } from "react";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
-import { formatLoadingMessage } from "src/components/AppPageLoading/appPageLoadingMessages";
 import { Page } from "src/components/Page/Page.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
 import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
-import { Spinner } from "src/components/Spinner/Spinner.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
-import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
@@ -41,12 +39,7 @@ function DashboardClientContent() {
     isLoading: collectionLoading,
     hasNextPage,
     isFetchingNextPage,
-  } = useCollectionData({
-    username: authState.username,
-    isAuthenticated: authState.isAuthenticated,
-    rateLimited: authState.rateLimited,
-    isCheckingAuth: authState.isCheckingAuth,
-  });
+  } = useCollectionLoadState();
   const needsCollectionLoad = useNeedsCollectionLoad({
     isLoading: collectionLoading,
     hasNextPage,
@@ -93,11 +86,6 @@ function DashboardClientContent() {
   }
 
   if (showLoading) {
-    const loadingMessage = formatLoadingMessage(
-      "dashboard",
-      allReleases.length,
-    );
-
     return (
       <Page>
         <PlaybackPageShell
@@ -111,10 +99,6 @@ function DashboardClientContent() {
           }
         >
           <div className={appLoadingStyles.contentWithSkeleton}>
-            <div className={appLoadingStyles.statusBar}>
-              <Spinner size="sm" aria-label={loadingMessage} />
-              <p className={appLoadingStyles.statusText}>{loadingMessage}</p>
-            </div>
             <div className={styles.container}>
               <DashboardSkeleton />
             </div>
