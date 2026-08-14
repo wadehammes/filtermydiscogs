@@ -2,14 +2,16 @@
   color-scheme: dark;
 
   --background: #0f172a;
+  --gradientPink: #1a2844;
+  --gradientTeal: #243558;
   --gradient-surface: color-mix(
     in oklch,
-    var(--gradientPink) 40%,
+    var(--gradientPink) 42%,
     var(--gradientTeal)
   );
-  --pill-style-foreground: #22c55e;
-  --pill-style-border: #22c55e;
+  --pill-style-foreground: #6ee7a0;
+  --pill-style-border: #5dd997;
   --pill-style-selected-foreground: #052e16;
-  --pill-format-foreground: #f59e0b;
-  --pill-format-border: #f59e0b;
+  --pill-format-foreground: #e8b86a;
+  --pill-format-border: #d4a055;
 }

@@ -154,6 +154,7 @@
   &:hover {
     background: var(--primary-hover);
     box-shadow: var(--shadow-xl);
+    color: var(--on-primary-hover);
     transform: translateY(-2px);
   }
 

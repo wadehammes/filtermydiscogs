@@ -4,7 +4,7 @@
   cursor: pointer;
   font-size: var(--text-xxs);
   font-weight: var(--font-medium);
-  padding: 0.15rem 0.5rem 0.2rem;
+  padding: 0.1rem 0.5rem 0.125rem;
   transition:
     background-color var(--transition-normal),
     border-color var(--transition-normal),

@@ -83,11 +83,13 @@
   color: var(--destructive);
 
   &:hover:not(:disabled) {
+    background: var(--destructive-hover);
     border-color: var(--destructive-hover);
     color: var(--on-destructive-hover);
   }
 
   &:active:not(:disabled) {
+    background: var(--destructive-active);
     border-color: var(--destructive-active);
     color: var(--on-destructive-active);
   }

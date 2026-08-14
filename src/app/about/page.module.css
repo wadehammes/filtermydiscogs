@@ -122,6 +122,7 @@
   &:hover {
     background: var(--primary-hover);
     border-color: var(--primary-hover);
+    color: var(--on-primary-hover);
     transform: translateY(-2px);
   }
 
@@ -268,6 +269,7 @@
     background: var(--primary-hover);
     border-color: var(--primary-hover);
     box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 40%, transparent);
+    color: var(--on-primary-hover);
     transform: translateY(-2px);
   }
 

@@ -86,6 +86,17 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | Open detail modal | Cover art or **Release details** overlay button call optional **`onReleaseClick`**; title links to Discogs in a new tab |
 | Overlay actions | **`ReleaseCardOverlayActions`**: release details (menu icon), View on Discogs (external link), notes, crate — desktop segmented row on cover; mobile full-height column with **`border-top`** separators (no inner frame) |
 
+## Feature example: CrateDrawerReleaseItem
+
+[`CrateDrawerReleaseItem`](../../src/components/CrateDrawer/CrateDrawerReleaseItem.component.tsx) + [`CrateDrawerReleaseActions`](../../src/components/CrateDrawer/CrateDrawerReleaseActions.component.tsx) render each release row in the **`/releases`** drawer and share the same horizontal layout as **`MobileReleaseCard`** (cover | meta | **`4rem`** action column). Styles live in [`CrateDrawerReleaseItem.module.css`](../../src/components/CrateDrawer/CrateDrawerReleaseItem.module.css); actions compose [`vertical-action-stack.module.css`](../../src/styles/vertical-action-stack.module.css).
+
+| Concern | Pattern |
+|---------|---------|
+| Shell | **`--card`** background; **`1px`** border on **`--border`**; **`--shadow-sm`** at rest; hover darkens border to **`--input`** and lifts to **`--shadow-md`** — do **not** swap the row to **`--muted`** (avoids a harsh cover vs. text split on warm palettes) |
+| Layout | Clickable main area (cover + artist/title/meta) opens **`ReleaseModal`**; action column is a full-height stack separated by **`border-left`** |
+| Packed | **`.listItemFound`** — primary outer border when **`packed_enabled`** and release is marked packed; packed toggle sets **`aria-pressed`** |
+| Action hover | Default stack buttons tint with **`color-mix(..., var(--card))`**; packed toggle keeps primary fill on hover; remove uses a destructive tint on **`--card`**, not **`--background`** |
+
 ## Feature example: ReleasesTable
 
 [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) is the desktop **list** view on **`/releases`** when view mode is list (see [architecture.md](architecture.md) → view atoms). TanStack Table renders checkbox, cover, artist/title, label, year, **Format/Styles**, and notes columns.

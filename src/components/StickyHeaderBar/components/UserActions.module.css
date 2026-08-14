@@ -90,6 +90,14 @@
   padding: var(--space-2);
 }
 
+.menuSeparator {
+  background: var(--border);
+  border: 0;
+  height: 1px;
+  margin: 0;
+  width: 100%;
+}
+
 .logoutItem {
   background: var(--destructive);
   border: none;

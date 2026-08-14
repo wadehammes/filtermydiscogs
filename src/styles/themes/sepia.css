@@ -1,15 +1,17 @@
 [data-theme="sepia"] {
   color-scheme: light;
 
-  --background: #e8dcc8;
+  --background: #ebe4d6;
+  --gradientPink: #dcc9b0;
+  --gradientTeal: #c4ad8f;
   --gradient-surface: color-mix(
     in oklch,
-    var(--gradientPink) 58%,
+    var(--gradientPink) 52%,
     var(--gradientTeal)
   );
-  --pill-style-foreground: #166534;
-  --pill-style-border: #15803d;
+  --pill-style-foreground: #4a6741;
+  --pill-style-border: #5c7a52;
   --pill-style-selected-foreground: #fff;
-  --pill-format-foreground: #92400e;
-  --pill-format-border: #b45309;
+  --pill-format-foreground: #8b6914;
+  --pill-format-border: #a67c00;
 }

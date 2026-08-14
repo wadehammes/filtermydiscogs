@@ -1,6 +1,9 @@
 "use client";
 
+import { Menu } from "@base-ui/react/menu";
 import Select from "src/components/Select/Select.component";
+import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
+import { ChevronRightThinIcon } from "src/components/shared/icons/ChevronRightThinIcon.component";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
@@ -10,20 +13,19 @@ import type { StoredTheme } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
 import {
   cycleTheme,
+  STORED_THEMES,
   THEME_LABELS,
   themeUsesDarkAssets,
 } from "src/utils/themeAppearance";
 import styles from "./ThemeSwitcher.module.css";
 
-const THEME_OPTIONS = (Object.keys(THEME_LABELS) as StoredTheme[]).map(
-  (value) => ({
-    value,
-    label: THEME_LABELS[value],
-  }),
-);
+const THEME_OPTIONS = STORED_THEMES.map((value) => ({
+  value,
+  label: THEME_LABELS[value],
+}));
 
 interface ThemeSwitcherProps {
-  variant?: "desktop" | "mobile" | "dropdown";
+  variant?: "desktop" | "mobile" | "dropdown" | "menu";
   className?: string;
   onThemePersisted?: () => void;
   onThemePersistError?: () => void;
@@ -57,6 +59,50 @@ export const ThemeSwitcher = ({
   };
 
   const getLabel = () => (mounted ? THEME_LABELS[theme] : "Light");
+
+  if (variant === "menu") {
+    return (
+      <Menu.SubmenuRoot>
+        <Menu.SubmenuTrigger className={styles.submenuTrigger}>
+          <span className={styles.submenuLabel}>Theme</span>
+          <span className={styles.submenuValue} suppressHydrationWarning>
+            {getLabel()}
+          </span>
+          <ChevronRightThinIcon className={styles.submenuChevron} />
+        </Menu.SubmenuTrigger>
+        <Menu.Portal>
+          <Menu.Positioner
+            align="start"
+            className={styles.submenuPositioner}
+            sideOffset={4}
+          >
+            <Menu.Popup className={styles.submenuPopup}>
+              <Menu.RadioGroup
+                value={activeTheme}
+                onValueChange={(value) => {
+                  handleThemeChange(value as StoredTheme);
+                }}
+              >
+                {THEME_OPTIONS.map(({ value, label }) => (
+                  <Menu.RadioItem
+                    key={value}
+                    className={styles.radioItem}
+                    label={label}
+                    value={value}
+                  >
+                    <Menu.RadioItemIndicator className={styles.radioIndicator}>
+                      <CheckThinIcon className={styles.radioCheck} />
+                    </Menu.RadioItemIndicator>
+                    {label}
+                  </Menu.RadioItem>
+                ))}
+              </Menu.RadioGroup>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.SubmenuRoot>
+    );
+  }
 
   if (variant === "dropdown") {
     return (

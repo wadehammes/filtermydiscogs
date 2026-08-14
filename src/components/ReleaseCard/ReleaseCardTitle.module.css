@@ -1,7 +1,7 @@
 .titleGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: calc(var(--space-1) * 1.5);
 }
 
 .titleGroupMobile {
@@ -27,7 +27,7 @@
   display: -webkit-box;
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
-  line-height: 1.5;
+  line-height: 1.25;
   margin: 0;
   overflow: hidden;
   text-align: left;

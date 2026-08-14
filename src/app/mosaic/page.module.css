@@ -52,6 +52,7 @@
 
   &:hover:not(:disabled) {
     background: var(--primary-hover);
+    color: var(--on-primary-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-lg);
   }

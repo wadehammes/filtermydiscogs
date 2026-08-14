@@ -77,3 +77,108 @@
 .label {
   font-size: var(--text-xs);
 }
+
+.submenuTrigger {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  transition: var(--transition-fast);
+  width: 100%;
+
+  &:hover,
+  &[data-highlighted] {
+    background: var(--muted);
+    color: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.submenuLabel {
+  flex: 1;
+}
+
+.submenuValue {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+}
+
+.submenuChevron {
+  flex-shrink: 0;
+  height: var(--space-4);
+  width: var(--space-4);
+}
+
+.submenuPositioner {
+  z-index: var(--z-6-popover);
+}
+
+.submenuPopup {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: min(20rem, 70dvh);
+  min-width: 10rem;
+  overflow-y: auto;
+  padding: var(--space-1);
+}
+
+.radioItem {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  width: 100%;
+
+  &:hover,
+  &[data-highlighted] {
+    background: var(--muted);
+    color: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}
+
+.radioIndicator {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--space-4);
+  justify-content: center;
+  width: var(--space-4);
+}
+
+.radioCheck {
+  height: 0.875rem;
+  width: 0.875rem;
+}

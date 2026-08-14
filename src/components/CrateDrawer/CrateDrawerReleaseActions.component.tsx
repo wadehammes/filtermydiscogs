@@ -44,6 +44,7 @@ export const CrateDrawerReleaseActions = ({
                 [stackStyles.overlayActionActive]: packed,
               })}
               onClick={handlePackedToggle}
+              aria-pressed={packed}
               aria-label={
                 packed
                   ? `Unmark ${releaseTitle} as packed for gig`
