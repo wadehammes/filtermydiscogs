@@ -46,4 +46,22 @@ describe("UserActions", () => {
       screen.getByRole("menuitem", { name: "Logout" }),
     ).toBeInTheDocument();
   });
+
+  it("opens theme submenu with palette options", async () => {
+    po.renderUserActions({ variant: "desktop" });
+
+    const user = await openUserMenu();
+
+    await user.click(screen.getByRole("menuitem", { name: /Theme/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitemradio", { name: "Dark", hidden: true }),
+      ).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole("menuitemradio", { name: "System", hidden: true }),
+    ).toBeInTheDocument();
+  });
 });

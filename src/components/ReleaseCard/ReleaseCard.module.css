@@ -91,6 +91,7 @@
     position: relative;
     width: 65%;
     z-index: 2;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 20%);
   }
 }
 
@@ -123,7 +124,7 @@
   color: var(--foreground);
   font-size: var(--text-sm);
   font-weight: var(--font-normal);
-  line-height: 1.4;
+  line-height: 1.5;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;

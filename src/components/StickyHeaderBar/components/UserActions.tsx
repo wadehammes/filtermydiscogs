@@ -2,6 +2,7 @@ import { Menu } from "@base-ui/react/menu";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import styles from "./UserActions.module.css";
@@ -109,6 +110,9 @@ export const UserActions = ({
                 >
                   About
                 </Menu.LinkItem>
+                <Menu.Separator className={styles.menuSeparator} />
+                <ThemeSwitcher variant="menu" />
+                <Menu.Separator className={styles.menuSeparator} />
                 <Menu.Item
                   className={styles.logoutItem}
                   onClick={() => {

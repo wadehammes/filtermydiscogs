@@ -181,7 +181,7 @@
     &:hover:not(:disabled) {
       background: var(--primary-hover);
       border-color: var(--primary-hover);
-      color: var(--primary-foreground);
+      color: var(--on-primary-hover);
     }
   }
 

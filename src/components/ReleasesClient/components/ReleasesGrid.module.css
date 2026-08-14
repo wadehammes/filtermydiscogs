@@ -76,6 +76,7 @@
   &:hover {
     background: var(--primary-hover);
     border-color: var(--primary-hover);
+    color: var(--on-primary-hover);
   }
 
   &:active {
