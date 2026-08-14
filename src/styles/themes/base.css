@@ -36,6 +36,7 @@
   );
 
   /* Typography */
+  --text-xxxs: 0.5rem;
   --text-xxs: 0.625rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
