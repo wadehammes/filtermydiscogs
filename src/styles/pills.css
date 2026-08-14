@@ -2,9 +2,10 @@
 .pill {
   border-radius: var(--radius-full);
   cursor: pointer;
-  font-size: var(--text-xxs);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xxxs);
   font-weight: var(--font-medium);
-  padding: 0.1rem 0.5rem 0.125rem;
+  padding: 0.125rem 0.45rem;
   transition:
     background-color var(--transition-normal),
     border-color var(--transition-normal),

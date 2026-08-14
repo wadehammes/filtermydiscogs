@@ -201,6 +201,7 @@
   border-radius: var(--radius-ui);
   color: var(--primary);
   display: inline-flex;
+  font-family: var(--font-family-meta);
   font-size: var(--text-xxs);
   height: var(--space-5);
   max-width: 7.5rem;
