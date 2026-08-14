@@ -17,17 +17,29 @@ export function FiltersBarSkeleton() {
           <div className={styles.placeholderLineWide} />
         </div>
         <div className={filtersBarStyles.styleFilterGroup}>
-          <div className={styles.styleFilterPrimaryShell} aria-hidden>
-            <div className={styles.placeholderLineWide} />
-            <span className={styles.chevron}>
-              <ChevronIcon />
-            </span>
+          <div data-testid="fmdAutocompleteSelect" aria-hidden>
+            <div
+              className={styles.styleFilterPrimaryShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div className={styles.placeholderLineWide} />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
           </div>
-          <div className={styles.operatorShell} aria-hidden>
-            <div className={styles.placeholderLine} />
-            <span className={styles.chevron}>
-              <ChevronIcon />
-            </span>
+          <div data-testid="fmdSelect" aria-hidden>
+            <div
+              className={styles.operatorShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div className={styles.placeholderLine} />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
           </div>
         </div>
         {Array.from({ length: 3 }, (_, index) => (

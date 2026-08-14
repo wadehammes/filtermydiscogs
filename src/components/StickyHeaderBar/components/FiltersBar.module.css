@@ -46,11 +46,13 @@
     height: var(--input-height);
     min-width: 0;
 
-    & > * {
+    & > [data-testid="fmdAutocompleteSelect"],
+    & > [data-testid="fmdSelect"] {
       display: flex;
       flex-direction: column;
       height: 100%;
       min-height: 0;
+      min-width: 0;
     }
 
     & > :first-child {
