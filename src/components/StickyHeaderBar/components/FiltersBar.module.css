@@ -22,6 +22,13 @@
     height: 100%;
     margin: 0 auto;
     padding: 0 var(--space-4);
+
+    & [data-filter-control-trigger],
+    & .searchBar .input {
+      height: var(--input-height);
+      max-height: var(--input-height);
+      min-height: var(--input-height);
+    }
   }
 
   .searchBar {
@@ -36,7 +43,15 @@
     display: flex;
     flex: 2;
     gap: 0;
+    height: var(--input-height);
     min-width: 0;
+
+    & > * {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
 
     & > :first-child {
       flex: 4 1 0;
@@ -51,6 +66,9 @@
     & > * > [data-filter-control-trigger] {
       border-color: transparent;
       border-radius: 0;
+      height: 100%;
+      max-height: none;
+      min-height: 0;
     }
 
     & > * > [data-filter-control-trigger]:focus,
