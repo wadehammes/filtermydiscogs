@@ -23,12 +23,16 @@
   justify-content: space-between;
   min-height: var(--touch-target-min);
   padding: var(--space-3) var(--space-4);
+  position: relative;
   text-align: left;
   width: 100%;
 
   @media (width >= 768px) {
     font-size: var(--text-sm);
+    height: var(--input-height);
+    max-height: var(--input-height);
     min-height: var(--input-height);
+    overflow: hidden;
     padding: var(--space-2) var(--space-3);
   }
 
@@ -36,36 +40,36 @@
     border-color: var(--primary);
   }
 
-  &:has(.triggerActivator:disabled) {
+  &:has(.triggerOverlay:disabled) {
     background: var(--muted);
     color: var(--muted-foreground);
     cursor: not-allowed;
   }
 
-  &:hover:not(:has(.triggerActivator:disabled)) {
+  &:hover:not(:has(.triggerOverlay:disabled)) {
     border-color: var(--border);
   }
 }
 
-.triggerActivator {
+.triggerOverlay {
   align-items: center;
-  background: none;
+  background: transparent;
   border: none;
   color: inherit;
   cursor: pointer;
-  display: inline-flex;
-  flex-shrink: 0;
+  display: flex;
   font-family: inherit;
-  margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-4))
-    calc(-1 * var(--space-3)) 0;
-  min-height: var(--touch-target-min);
+  inset: 0;
+  justify-content: flex-end;
+  margin: 0;
+  min-height: 0;
   padding: var(--space-3) var(--space-4);
+  position: absolute;
+  width: 100%;
+  z-index: 0;
   -webkit-tap-highlight-color: transparent;
 
   @media (width >= 768px) {
-    margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3))
-      calc(-1 * var(--space-2)) 0;
-    min-height: var(--input-height);
     padding: var(--space-2) var(--space-3);
   }
 
@@ -99,6 +103,8 @@
 
   @media (width >= 768px) {
     font-size: var(--text-sm);
+    height: var(--input-height);
+    max-height: var(--input-height);
     min-height: var(--input-height);
     padding: var(--space-2) var(--space-3);
   }
@@ -149,6 +155,9 @@
   display: flex;
   flex: 1;
   min-width: 0;
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 .value {
@@ -179,6 +188,10 @@
   gap: var(--space-1);
   max-height: 1.5rem;
   overflow: hidden;
+
+  .triggerShell & {
+    padding-right: calc(var(--space-4) + var(--space-2));
+  }
 }
 
 .pill {
@@ -192,6 +205,7 @@
   height: var(--space-5);
   max-width: 7.5rem;
   padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2);
+  pointer-events: auto;
 }
 
 .pillLabel {
@@ -248,7 +262,7 @@
   }
 
   .trigger[data-popup-open] &,
-  .triggerActivator[data-popup-open] & {
+  .triggerOverlay[data-popup-open] & {
     transform: rotate(270deg);
   }
 }

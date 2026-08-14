@@ -36,6 +36,8 @@
 
   @media (width >= 768px) {
     font-size: var(--text-sm);
+    height: var(--input-height);
+    max-height: var(--input-height);
     min-height: var(--input-height);
     padding: var(--space-2) var(--space-3);
     padding-left: calc(var(--space-3) + var(--space-4) + var(--space-2));
