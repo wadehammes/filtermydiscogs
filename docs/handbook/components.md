@@ -79,10 +79,10 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | Layout | Horizontal flex: fixed **`7rem`** cover, **`flex: 1 1 0`** content (**`min-width: 0`**), **`4rem`** action column with full-height overlay actions. **Random view** on mobile uses desktop [`ReleaseCard`](../../src/components/ReleaseCard/ReleaseCard.component.tsx) (vertical showcase) via [`ReleasesGrid`](../../src/components/ReleasesClient/components/ReleasesGrid.component.tsx)—not this row layout |
 | Loading | [`MobileReleaseCardSkeleton`](../../src/components/ReleasesClient/components/MobileReleaseCardSkeleton.component.tsx) mirrors this row layout while collection pages stream in; desktop uses [`DesktopReleaseCardSkeleton`](../../src/components/ReleasesClient/components/DesktopReleaseCardSkeleton.component.tsx) |
 | Pills | **`HorizontalScrollRow`** — wrapper needs **`min-width: 0`** + **`overflow: hidden`** so pill rows scroll horizontally instead of wrapping (same component in [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx)) |
-| Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; notes and pills keep looser outer gaps |
+| Title block | Artist + title + meta grouped in **`.releaseInfo`** with **`titleGroupMobile`** / **`metaLineMobile`** / **`catalogRowMobile`** for tight internal spacing; pills keep looser outer gaps |
 | Highlight | **`.highlighted`** — **`2px`** primary border + **`theme-highlighted-surface`** |
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
-| Notes action | **`ReleaseNotesCardAction variant="mobile"`** — stacked column button styles; desktop overlay uses default **`variant="card"`** |
+| Notes | Action column **`ReleaseNotesCardAction variant="mobile"`** only — no inline note body on the card |
 | Open detail modal | Cover art or **Release details** overlay button call optional **`onReleaseClick`**; title links to Discogs in a new tab |
 | Overlay actions | **`ReleaseCardOverlayActions`**: release details (menu icon), View on Discogs (external link), notes, crate — desktop segmented row on cover; mobile full-height column with **`border-top`** separators (no inner frame) |
 
@@ -146,15 +146,15 @@ Crate, notes, and card filter pill clicks do **not** open the modal. Discogs lin
 
 | File | Role |
 |------|------|
-| `ReleaseNotes.component.tsx` | Mobile list display (`displayOnly`), list display (`inline`), release modal (`variant="modal"`), crates page (`variant="crate"` — inline scratchpad via [`ReleaseNotesCrateScratchpad`](../../src/components/ReleaseNotes/ReleaseNotesCrateScratchpad.component.tsx)) |
+| `ReleaseNotes.component.tsx` | List display (`inline`), release modal (`variant="modal"`), table (`variant="table"`), crates page (`variant="crate"` — inline scratchpad via [`ReleaseNotesCrateScratchpad`](../../src/components/ReleaseNotes/ReleaseNotesCrateScratchpad.component.tsx)); **`displayOnly`** remains in the component API for tests only |
 | `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); primary dot badge when notes exist |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
-| `ReleaseNotesEditorDialog.component.tsx` | Renders **`NoteEditDialog`** from provider context (grid overlay icon, mobile body, modal) |
+| `ReleaseNotesEditorDialog.component.tsx` | Renders **`NoteEditDialog`** from provider context (grid/mobile overlay icon, modal) |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
 | `NoteEditDialog.component.tsx` | Release notes editor via **`ScrollModal`** + **`ModalToolbar`** (`data-testid="fmdNoteEditDialog"`) |
 | `ReleaseNotes.po.tsx` / `ReleaseNotes.spec.tsx` | Page object + tests (`data-testid="fmdReleaseNotes"`) |
 
-Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** (grid overlay / mobile action column) reads **`useReleaseNotesEditorContext()`** to open **`NoteEditDialog`**. **`MobileReleaseCard`** still renders **`ReleaseNotes`** (`displayOnly`) in the row body; desktop grid cards do not—do not call **`useReleaseNotesEditor`** twice on the same card.
+Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** (grid overlay / mobile action column) reads **`useReleaseNotesEditorContext()`** to open **`NoteEditDialog`**. Neither card variant renders inline note body copy—do not call **`useReleaseNotesEditor`** twice on the same card.
 
 List/table rows use **`ReleaseNotes`** without the provider; only the **`inline`** subcomponent calls **`useReleaseNotesEditor`** directly.
 

@@ -1,8 +1,6 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
-import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
-import notesStyles from "src/components/ReleaseNotes/ReleaseNotes.module.css";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
@@ -149,11 +147,6 @@ const MobileReleaseCardComponent = ({
                 className={metaStyles.metaLineMobile}
               />
             </div>
-            <ReleaseNotes
-              release={release}
-              variant="displayOnly"
-              className={notesStyles.notesCardMobile}
-            />
           </div>
           <HorizontalScrollRow className={styles.genresContainer}>
             {releaseFormats &&
