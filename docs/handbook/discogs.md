@@ -149,7 +149,7 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 
 **Editing scope (v1):** text and textarea field types only (**`isEditableCollectionField`**). Dropdown/boolean fields (e.g. Media/Sleeve Condition) are hidden from release-card and table display via **`forCard: true`** / **`isCardDisplayNoteField`**; the default **`inline`** list variant may still show all fields.
 
-**Card UI:** every release card shows a **Notes** heading and a fixed-height scroll region (**`max-height: 4lh`**). Cards without notes show an **Add notes** link when editing is available. The sticky-note icon and inline link share one dialog via **`ReleaseNotesEditorProvider`** on **`ReleaseCard`** / **`MobileReleaseCard`**.
+**Card UI:** **`ReleaseCard`** and **`MobileReleaseCard`** show a sticky-note overlay action only (primary dot badge when notes exist)—no inline note preview on the card body. **`ReleaseNotesEditorProvider`** on each card mounts **`NoteEditDialog`** for that icon.
 
 **User-facing policy:** saving notes writes to the user's Discogs collection via the API; note text is not stored in Postgres. See **`/legal`** for Terms & Privacy copy.
 
