@@ -205,8 +205,8 @@
   font-size: var(--text-xxs);
   height: var(--space-5);
   max-width: 7.5rem;
-  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2);
-  pointer-events: auto;
+  padding: var(--space-1) var(--space-1) 0.15rem 0.35rem;
+  pointer-events: none;
 }
 
 .pillLabel {
@@ -231,10 +231,12 @@
   line-height: 1;
   margin-left: var(--space-1);
   padding: 0;
+  pointer-events: auto;
   text-align: center;
   transition: all var(--transition-normal);
   vertical-align: middle;
   width: var(--space-4);
+  transform: translateY(-1px);
 
   &:hover {
     background: color-mix(in srgb, var(--primary) 20%, var(--background));

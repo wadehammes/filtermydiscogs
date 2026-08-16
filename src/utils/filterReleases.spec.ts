@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { clearSearchCache, filterReleases } from "./filterReleases";
+import { filterReleases } from "./filterReleases";
+import { clearReleaseSearchIndex } from "./releaseSearchIndex";
 
 describe("filterReleases", () => {
   beforeEach(() => {
-    clearSearchCache();
+    clearReleaseSearchIndex();
   });
 
   it("returns all releases when no filters are applied", () => {
@@ -553,6 +554,42 @@ describe("filterReleases", () => {
     expect(result).toHaveLength(1);
   });
 
+  it("requires every search token to match across fields", () => {
+    const matchingRelease = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        title: "Kind of Blue",
+        artists: [{ name: "Miles Davis" }],
+      }),
+    });
+    const nonMatchingRelease = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        title: "Blue Train",
+        artists: [{ name: "John Coltrane" }],
+      }),
+    });
+    const releases = [matchingRelease, nonMatchingRelease];
+
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: [],
+        searchQuery: "miles kind",
+      }),
+    ).toEqual([matchingRelease]);
+
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: [],
+        searchQuery: "miles coltrane",
+      }),
+    ).toHaveLength(0);
+  });
+
   it("ignores whitespace in search query", () => {
     const release1 = releaseFactory.build({
       basic_information: basicInformationFactory.build({
@@ -653,7 +690,7 @@ describe("filterReleases", () => {
     expect(result[0]).toEqual(release1);
   });
 
-  it("uses search cache for repeated queries", () => {
+  it("reuses the search index for repeated queries", () => {
     const release = releaseFactory.build({
       instance_id: "test-id",
       basic_information: basicInformationFactory.build({
@@ -662,7 +699,6 @@ describe("filterReleases", () => {
     });
     const releases = [release];
 
-    // First call should build cache
     const result1 = filterReleases({
       releases,
       selectedStyles: [],
@@ -672,7 +708,6 @@ describe("filterReleases", () => {
     });
     expect(result1).toHaveLength(1);
 
-    // Second call should use cache
     const result2 = filterReleases({
       releases,
       selectedStyles: [],
@@ -737,61 +772,6 @@ describe("filterReleases", () => {
     expect(result2).toHaveLength(1);
   });
 
-  it("handles empty releases array", () => {
-    const result = filterReleases({
-      releases: [],
-      selectedStyles: ["Rock"],
-      selectedYears: [2020],
-      selectedFormats: ["LP"],
-      searchQuery: "test",
-    });
-
-    expect(result).toHaveLength(0);
-  });
-});
-
-describe("clearSearchCache", () => {
-  it("clears the search cache", () => {
-    const release = releaseFactory.build({
-      instance_id: "test-id",
-      basic_information: basicInformationFactory.build({
-        title: "Test Album",
-      }),
-    });
-    const releases = [release];
-
-    // Build cache
-    filterReleases({
-      releases,
-      selectedStyles: [],
-      selectedYears: [],
-      selectedFormats: [],
-      searchQuery: "test",
-    });
-    expect(
-      filterReleases({
-        releases,
-        selectedStyles: [],
-        selectedYears: [],
-        selectedFormats: [],
-        searchQuery: "test",
-      }),
-    ).toHaveLength(1);
-
-    // Clear cache
-    clearSearchCache();
-
-    // Cache should be cleared (functionality should still work)
-    const result = filterReleases({
-      releases,
-      selectedStyles: [],
-      selectedYears: [],
-      selectedFormats: [],
-      searchQuery: "test",
-    });
-    expect(result).toHaveLength(1);
-  });
-
   it("matches collection note text in search queries", () => {
     const release = releaseFactory.withNotes([
       { field_id: 3, value: "Signed tour edition" },
@@ -817,5 +797,57 @@ describe("clearSearchCache", () => {
         searchQuery: "bootleg",
       }),
     ).toHaveLength(0);
+  });
+
+  it("handles empty releases array", () => {
+    const result = filterReleases({
+      releases: [],
+      selectedStyles: ["Rock"],
+      selectedYears: [2020],
+      selectedFormats: ["LP"],
+      searchQuery: "test",
+    });
+
+    expect(result).toHaveLength(0);
+  });
+});
+
+describe("clearReleaseSearchIndex", () => {
+  it("allows filtering after the index is cleared", () => {
+    const release = releaseFactory.build({
+      instance_id: "test-id",
+      basic_information: basicInformationFactory.build({
+        title: "Test Album",
+      }),
+    });
+    const releases = [release];
+
+    filterReleases({
+      releases,
+      selectedStyles: [],
+      selectedYears: [],
+      selectedFormats: [],
+      searchQuery: "test",
+    });
+    expect(
+      filterReleases({
+        releases,
+        selectedStyles: [],
+        selectedYears: [],
+        selectedFormats: [],
+        searchQuery: "test",
+      }),
+    ).toHaveLength(1);
+
+    clearReleaseSearchIndex();
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: [],
+      selectedYears: [],
+      selectedFormats: [],
+      searchQuery: "test",
+    });
+    expect(result).toHaveLength(1);
   });
 });

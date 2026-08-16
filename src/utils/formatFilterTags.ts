@@ -47,6 +47,12 @@ function normalizeFormatTag(tag: string): string {
   return tag.trim().toLowerCase();
 }
 
+export function buildNormalizedFormatFilterSet(
+  selectedFormats: readonly string[],
+): ReadonlySet<string> {
+  return new Set(selectedFormats.map((format) => normalizeFormatTag(format)));
+}
+
 function isFilterableDescription(description: string): boolean {
   const trimmed = description.trim();
   if (!trimmed) {
@@ -121,16 +127,18 @@ export function sortFormatTags(tags: string[]): string[] {
 
 export function releaseMatchesFormatFilters(
   formats: DiscogsFormat[],
-  selectedFormats: string[],
+  selectedFormats: readonly string[],
+  normalizedSelectedFormats?: ReadonlySet<string>,
+  releaseFormatTags?: readonly string[],
 ): boolean {
   if (selectedFormats.length === 0) {
     return true;
   }
 
-  const selectedFormatsSet = new Set(
-    selectedFormats.map((format) => normalizeFormatTag(format)),
-  );
-  const releaseTags = getReleaseFormatTags(formats);
+  const selectedFormatsSet =
+    normalizedSelectedFormats ??
+    new Set(selectedFormats.map((format) => normalizeFormatTag(format)));
+  const releaseTags = releaseFormatTags ?? getReleaseFormatTags(formats);
 
   return releaseTags.some((tag) =>
     selectedFormatsSet.has(normalizeFormatTag(tag)),

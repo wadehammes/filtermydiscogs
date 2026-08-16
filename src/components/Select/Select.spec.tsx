@@ -91,6 +91,60 @@ describe("Select", () => {
     expect(handleChange).toHaveBeenCalledTimes(1);
   });
 
+  it("reopens on the first click after selecting a value", async () => {
+    const handleChange = jest.fn();
+    const { rerender } = po.renderSelect({ onChange: handleChange });
+
+    await openSelect();
+    await clickFilterOption("Option 1");
+
+    expect(handleChange).toHaveBeenCalledWith("option1");
+
+    rerender(
+      <Select
+        label="Test Select"
+        options={po.options}
+        value="option1"
+        onChange={handleChange}
+      />,
+    );
+
+    await openSelect();
+
+    expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
+  it("reopens on the first click after selecting a value when clearable", async () => {
+    const handleChange = jest.fn();
+    const { rerender } = po.renderSelect({
+      onChange: handleChange,
+      multiple: true,
+      clearable: true,
+      showLabel: true,
+    });
+
+    await openSelect();
+    await clickFilterOption("Option 1");
+
+    expect(handleChange).toHaveBeenCalledWith(["option1"]);
+
+    rerender(
+      <Select
+        label="Test Select"
+        options={po.options}
+        value={["option1"]}
+        onChange={handleChange}
+        multiple
+        clearable
+        showLabel
+      />,
+    );
+
+    await openSelect();
+
+    expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
   it("closes dropdown after selecting option in single select mode", async () => {
     const handleChange = jest.fn();
     po.renderSelect({ onChange: handleChange });

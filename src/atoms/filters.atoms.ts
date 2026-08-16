@@ -3,19 +3,19 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { SortValues } from "src/constants/sortValues";
 import { FILTERS_STORAGE_KEY } from "src/constants/storageKeys";
 import type { DiscogsRelease } from "src/types";
-import type { StyleOperator } from "src/types/filters.types";
+import type {
+  ReleaseFilterCriteria,
+  StyleOperator,
+} from "src/types/filters.types";
+import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
-import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
 import {
   defaultPersistedFilters,
   inactiveFilterSelectionDefaults,
   type PersistedFiltersState,
   parsePersistedFilters,
 } from "src/utils/filtersStorage";
-import { getAvailableFormats } from "src/utils/getAvailableFormats";
-import { getAvailableStyles } from "src/utils/getAvailableStyles";
-import { getAvailableYears } from "src/utils/getAvailableYears";
-import { getFacetSourceReleases } from "src/utils/getFacetSourceReleases";
+import { syncReleaseSearchIndex } from "src/utils/releaseSearchIndex";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
 
 export { SortValues } from "src/constants/sortValues";
@@ -39,9 +39,6 @@ export interface FiltersState {
 }
 
 export enum FiltersActionTypes {
-  SetAvailableStyles = "SET_AVAILABLE_STYLES",
-  SetAvailableYears = "SET_AVAILABLE_YEARS",
-  SetAvailableFormats = "SET_AVAILABLE_FORMATS",
   SetAllReleases = "SET_ALL_RELEASES",
   ToggleStyle = "TOGGLE_STYLE",
   ToggleYear = "TOGGLE_YEAR",
@@ -62,18 +59,6 @@ export enum FiltersActionTypes {
 }
 
 export type FiltersActions =
-  | {
-      type: FiltersActionTypes.SetAvailableStyles;
-      payload: string[];
-    }
-  | {
-      type: FiltersActionTypes.SetAvailableYears;
-      payload: number[];
-    }
-  | {
-      type: FiltersActionTypes.SetAvailableFormats;
-      payload: string[];
-    }
   | {
       type: FiltersActionTypes.SetAllReleases;
       payload: DiscogsRelease[];
@@ -151,34 +136,6 @@ const getRandomRelease = ({
   if (releases.length === 0) return null;
   const randomIndex = Math.floor(Math.random() * releases.length);
   return releases[randomIndex] || null;
-};
-
-const computeSortedFilteredReleases = ({
-  allReleases,
-  selectedStyles,
-  selectedYears,
-  selectedFormats,
-  searchQuery,
-  selectedSort,
-  styleOperator,
-}: {
-  allReleases: DiscogsRelease[];
-  selectedStyles: string[];
-  selectedYears: number[];
-  selectedFormats: string[];
-  searchQuery: string;
-  selectedSort: SortValues;
-  styleOperator: StyleOperator;
-}) => {
-  const filtered = filterReleasesUtil({
-    releases: allReleases,
-    selectedStyles,
-    selectedYears,
-    selectedFormats,
-    searchQuery,
-    styleOperator,
-  });
-  return sortReleasesUtil(filtered, selectedSort);
 };
 
 const pickRandomReleaseForMode = ({
@@ -283,10 +240,7 @@ export const searchQueryAtom = persistableFieldAtom("searchQuery");
 export const isRandomModeAtom = atom(false);
 export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
 export const isSearchingAtom = atom(false);
-const getFacetReleases = (
-  get: Getter,
-  excludeDimension: "styles" | "years" | "formats",
-) => {
+const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
   const {
     selectedStyles,
     selectedYears,
@@ -295,46 +249,49 @@ const getFacetReleases = (
     styleOperator,
   } = getActiveFilterInputs(get);
 
-  return getFacetSourceReleases({
-    releases: get(allReleasesAtom),
+  return {
     selectedStyles,
     selectedYears,
     selectedFormats,
     searchQuery,
     styleOperator,
-    excludeDimension,
-  });
+  };
 };
 
-export const availableStylesAtom = atom((get) =>
-  get(collectionFiltersActiveAtom)
-    ? getAvailableStyles(getFacetReleases(get, "styles"))
-    : [],
-);
+const emptyFacetOptions = {
+  availableStyles: [] as string[],
+  availableYears: [] as number[],
+  availableFormats: [] as string[],
+};
 
-export const availableYearsAtom = atom((get) =>
-  get(collectionFiltersActiveAtom)
-    ? getAvailableYears(getFacetReleases(get, "years"))
-    : [],
-);
-
-export const availableFormatsAtom = atom((get) =>
-  get(collectionFiltersActiveAtom)
-    ? getAvailableFormats(getFacetReleases(get, "formats"))
-    : [],
-);
-
-export const sortedFilteredReleasesAtom = atom((get) => {
+const filterDerivedStateAtom = atom((get) => {
   const allReleases = get(allReleasesAtom);
 
   if (!get(collectionFiltersActiveAtom)) {
-    return allReleases;
+    return {
+      filteredReleases: allReleases,
+      facetOptions: emptyFacetOptions,
+    };
   }
 
-  return computeSortedFilteredReleases({
-    allReleases,
-    ...getActiveFilterInputs(get),
+  return computeFilterDerivedState({
+    releases: allReleases,
+    ...getFacetFilterInputs(get),
   });
+});
+
+export const facetOptionsAtom = atom(
+  (get) => get(filterDerivedStateAtom).facetOptions,
+);
+
+export const sortedFilteredReleasesAtom = atom((get) => {
+  const { filteredReleases } = get(filterDerivedStateAtom);
+
+  if (!get(collectionFiltersActiveAtom)) {
+    return filteredReleases;
+  }
+
+  return sortReleasesUtil(filteredReleases, get(selectedSortAtom));
 });
 
 export const filteredReleasesAtom = atom((get) => {
@@ -352,9 +309,9 @@ export const filtersStateAtom = atom<FiltersState>((get) => ({
   selectedFormats: get(selectedFormatsAtom),
   selectedSort: get(selectedSortAtom),
   styleOperator: get(styleOperatorAtom),
-  availableStyles: get(availableStylesAtom),
-  availableYears: get(availableYearsAtom),
-  availableFormats: get(availableFormatsAtom),
+  availableStyles: get(facetOptionsAtom).availableStyles,
+  availableYears: get(facetOptionsAtom).availableYears,
+  availableFormats: get(facetOptionsAtom).availableFormats,
   filteredReleases: get(filteredReleasesAtom),
   allReleases: get(allReleasesAtom),
   isRandomMode: get(isRandomModeAtom),
@@ -398,25 +355,17 @@ const applyFilterChange = (
     set(isSearchingAtom, false);
   }
 
-  const sortedFilteredReleases = computeSortedFilteredReleases({
-    allReleases: get(allReleasesAtom),
-    selectedStyles: updates.selectedStyles ?? get(selectedStylesAtom),
-    selectedYears: updates.selectedYears ?? get(selectedYearsAtom),
-    selectedFormats: updates.selectedFormats ?? get(selectedFormatsAtom),
-    searchQuery: updates.searchQuery ?? get(searchQueryAtom),
-    selectedSort: updates.selectedSort ?? get(selectedSortAtom),
-    styleOperator: updates.styleOperator ?? get(styleOperatorAtom),
-  });
+  if (!get(isRandomModeAtom)) {
+    return;
+  }
 
   const { randomRelease } = pickRandomReleaseForMode({
-    isRandomMode: get(isRandomModeAtom),
-    sortedFilteredReleases,
+    isRandomMode: true,
+    sortedFilteredReleases: get(sortedFilteredReleasesAtom),
     currentRandomRelease: get(randomReleaseAtom),
   });
 
-  if (get(isRandomModeAtom)) {
-    set(randomReleaseAtom, randomRelease);
-  }
+  set(randomReleaseAtom, randomRelease);
 };
 
 const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
@@ -442,13 +391,10 @@ export const filtersDispatchAtom = atom(
   null,
   (get, set, action: FiltersActions) => {
     switch (action.type) {
-      case FiltersActionTypes.SetAvailableStyles:
-      case FiltersActionTypes.SetAvailableYears:
-      case FiltersActionTypes.SetAvailableFormats:
-        return;
-
       case FiltersActionTypes.SetAllReleases: {
+        const previousReleases = get(allReleasesAtom);
         set(allReleasesAtom, action.payload);
+        syncReleaseSearchIndex(previousReleases, action.payload);
 
         if (get(isRandomModeAtom)) {
           const { randomRelease } = pickRandomReleaseForMode({

@@ -157,18 +157,20 @@ const SelectComponent = ({
             {label}
           </BaseSelect.Label>
         ) : null}
-        {showClearButton ? (
+        {clearable ? (
           <div className={styles.controlRow}>
             {trigger}
-            <Button
-              variant="secondary"
-              size="md"
-              className={styles.clearButton}
-              onPress={handleClear}
-              aria-label={`Clear ${label}`}
-            >
-              Clear
-            </Button>
+            {showClearButton ? (
+              <Button
+                variant="secondary"
+                size="md"
+                className={styles.clearButton}
+                onPress={handleClear}
+                aria-label={`Clear ${label}`}
+              >
+                Clear
+              </Button>
+            ) : null}
           </div>
         ) : (
           trigger

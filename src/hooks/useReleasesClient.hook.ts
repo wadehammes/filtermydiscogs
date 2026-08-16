@@ -11,12 +11,7 @@ import {
   useFiltersDispatch,
   useIsRandomMode,
   useRandomRelease,
-  useSearchQuery,
-  useSelectedFormats,
-  useSelectedSort,
-  useSelectedStyles,
-  useSelectedYears,
-  useStyleOperator,
+  useSortedFilteredReleases,
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
@@ -26,7 +21,6 @@ import {
   useViewDispatch,
 } from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
-import { filterReleases } from "src/utils/filterReleases";
 
 const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
@@ -39,13 +33,8 @@ export const useReleasesClient = () => {
   const filteredReleases = useFilteredReleases();
   const isRandomMode = useIsRandomMode();
   const randomRelease = useRandomRelease();
+  const sortedFilteredReleases = useSortedFilteredReleases();
   const allReleases = useAllReleases();
-  const selectedStyles = useSelectedStyles();
-  const selectedYears = useSelectedYears();
-  const selectedFormats = useSelectedFormats();
-  const selectedSort = useSelectedSort();
-  const styleOperator = useStyleOperator();
-  const searchQuery = useSearchQuery();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -123,18 +112,9 @@ export const useReleasesClient = () => {
     }
   }, [inView, hasMoreVisible]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset visible batch when filter inputs or random mode change
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_RELEASES);
-  }, [
-    selectedStyles,
-    selectedYears,
-    selectedFormats,
-    searchQuery,
-    selectedSort,
-    styleOperator,
-    isRandomMode,
-  ]);
+  }, [sortedFilteredReleases, isRandomMode]);
 
   const handleReleaseClick = useCallback((instanceId: string) => {
     setSelectedReleaseId(instanceId);
@@ -188,30 +168,14 @@ export const useReleasesClient = () => {
   }, []);
 
   const handleRandomClick = useCallback(() => {
-    const currentFilteredReleases = filterReleases({
-      releases: allReleases,
-      selectedStyles,
-      selectedYears,
-      selectedFormats,
-      searchQuery,
-    });
-
-    const nextRandomRelease = getRandomRelease(currentFilteredReleases);
+    const nextRandomRelease = getRandomRelease(sortedFilteredReleases);
     if (nextRandomRelease) {
       filtersDispatch({
         type: FiltersActionTypes.SetRandomRelease,
         payload: nextRandomRelease,
       });
     }
-  }, [
-    allReleases,
-    selectedStyles,
-    selectedYears,
-    selectedFormats,
-    searchQuery,
-    filtersDispatch,
-    getRandomRelease,
-  ]);
+  }, [sortedFilteredReleases, filtersDispatch, getRandomRelease]);
 
   const handleExitRandomMode = useCallback(() => {
     filtersDispatch({
