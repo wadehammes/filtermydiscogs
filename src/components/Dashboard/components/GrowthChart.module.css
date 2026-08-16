@@ -29,46 +29,6 @@
   margin: 0;
 }
 
-.viewToggle {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.toggleButton {
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  cursor: pointer;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  padding: var(--space-2) var(--space-3);
-  transition: var(--transition-fast);
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  &:hover:not(:disabled) {
-    background: var(--accent);
-    border-color: var(--input);
-    color: var(--accent-foreground);
-  }
-
-  &.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: var(--primary-foreground);
-  }
-
-  &.active:hover:not(:disabled) {
-    background: var(--primary-hover);
-    border-color: var(--primary-hover);
-    color: var(--on-primary-hover);
-  }
-}
-
 .chartWrapper {
   height: 300px;
   width: 100%;

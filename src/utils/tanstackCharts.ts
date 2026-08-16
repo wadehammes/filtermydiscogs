@@ -148,6 +148,63 @@ const cartesianChartFrame = {
   margin: { left: 56 },
 };
 
+const HORIZONTAL_BAR_Y_AXIS_CHAR_WIDTH = 7;
+const HORIZONTAL_BAR_Y_AXIS_LABEL_PADDING = 20;
+const HORIZONTAL_BAR_Y_AXIS_MIN_LEFT = 72;
+const HORIZONTAL_BAR_Y_AXIS_MAX_LEFT = 180;
+const HORIZONTAL_BAR_Y_AXIS_MAX_WIDTH_RATIO = 0.42;
+
+const truncateAxisLabel = (label: string, maxLength: number): string => {
+  if (maxLength < 4 || label.length <= maxLength) {
+    return label;
+  }
+
+  return `${label.slice(0, maxLength - 1)}…`;
+};
+
+const HORIZONTAL_BAR_ASSUMED_WIDTH = {
+  compact: 320,
+  default: 480,
+} as const;
+
+export { HORIZONTAL_BAR_ASSUMED_WIDTH };
+
+const resolveHorizontalBarYAxisLayout = (
+  data: readonly BarDatum[],
+  assumedWidth: number = HORIZONTAL_BAR_ASSUMED_WIDTH.default,
+) => resolveHorizontalBarYAxisLayoutForWidth(data, assumedWidth);
+
+const resolveHorizontalBarYAxisLayoutForWidth = (
+  data: readonly BarDatum[],
+  width: number,
+) => {
+  const longestLabelLength = data.reduce(
+    (max, datum) => Math.max(max, datum.label.length),
+    0,
+  );
+
+  const estimatedLeft =
+    longestLabelLength * HORIZONTAL_BAR_Y_AXIS_CHAR_WIDTH +
+    HORIZONTAL_BAR_Y_AXIS_LABEL_PADDING;
+  const widthCap = Math.floor(width * HORIZONTAL_BAR_Y_AXIS_MAX_WIDTH_RATIO);
+
+  const left = Math.min(
+    widthCap,
+    HORIZONTAL_BAR_Y_AXIS_MAX_LEFT,
+    Math.max(HORIZONTAL_BAR_Y_AXIS_MIN_LEFT, estimatedLeft),
+  );
+
+  const maxLabelChars = Math.max(
+    4,
+    Math.floor(
+      (left - HORIZONTAL_BAR_Y_AXIS_LABEL_PADDING) /
+        HORIZONTAL_BAR_Y_AXIS_CHAR_WIDTH,
+    ),
+  );
+
+  return { left, maxLabelChars };
+};
+
 const compactDailyCountChartFrame = {
   clip: true,
   margin: { left: 28, right: 4, top: 4 },
@@ -584,12 +641,20 @@ export const createVerticalBarChartDefinition = ({
 
 export const createHorizontalBarChartDefinition = ({
   data,
+  assumedWidth = HORIZONTAL_BAR_ASSUMED_WIDTH.default,
 }: {
   data: BarDatum[];
-}): DomChartDefinition =>
-  defineChart({
+  assumedWidth?: number;
+}): DomChartDefinition => {
+  const { left, maxLabelChars } = resolveHorizontalBarYAxisLayout(
+    data,
+    assumedWidth,
+  );
+
+  return defineChart({
     ...chartMotion,
-    ...cartesianChartFrame,
+    clip: true,
+    margin: { left },
     marks: [
       barX(data, {
         x: "count",
@@ -609,7 +674,16 @@ export const createHorizontalBarChartDefinition = ({
     x: modernValueAxis,
     y: {
       scale: () => scaleBand<string>().padding(0.38),
-      axis: modernAxisPresentation,
+      axis: {
+        ...modernAxisPresentation,
+        ticks: {
+          ...modernAxisPresentation.ticks,
+          format: (value: string) => truncateAxisLabel(value, maxLabelChars),
+        },
+        tickLabels: {
+          anchor: "end",
+        },
+      },
     },
     tooltip: {
       ...chartTooltip,
@@ -619,6 +693,7 @@ export const createHorizontalBarChartDefinition = ({
       },
     },
   }) as DomChartDefinition;
+};
 
 const PIE_SLICE_PAD = 0.018;
 

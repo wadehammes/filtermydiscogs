@@ -7,6 +7,7 @@ import type { DistributionData } from "src/types/dashboard.types";
 import { useChartColors } from "src/utils/chartColors";
 import {
   createHorizontalBarChartDefinition,
+  HORIZONTAL_BAR_ASSUMED_WIDTH,
   withBarColors,
 } from "src/utils/tanstackCharts";
 import styles from "./ArtistLabelCharts.module.css";
@@ -32,12 +33,24 @@ export const ArtistLabelCharts = ({
     [labelDistribution, colors],
   );
   const artistDefinition = useMemo(
-    () => createHorizontalBarChartDefinition({ data: artistBarData }),
-    [artistBarData],
+    () =>
+      createHorizontalBarChartDefinition({
+        data: artistBarData,
+        assumedWidth: isMobile
+          ? HORIZONTAL_BAR_ASSUMED_WIDTH.compact
+          : HORIZONTAL_BAR_ASSUMED_WIDTH.default,
+      }),
+    [artistBarData, isMobile],
   );
   const labelDefinition = useMemo(
-    () => createHorizontalBarChartDefinition({ data: labelBarData }),
-    [labelBarData],
+    () =>
+      createHorizontalBarChartDefinition({
+        data: labelBarData,
+        assumedWidth: isMobile
+          ? HORIZONTAL_BAR_ASSUMED_WIDTH.compact
+          : HORIZONTAL_BAR_ASSUMED_WIDTH.default,
+      }),
+    [labelBarData, isMobile],
   );
 
   return (

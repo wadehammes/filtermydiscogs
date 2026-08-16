@@ -5,6 +5,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import Select from "src/components/Select/Select.component";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
 import {
   analyzeTagGrowthFromDates,
@@ -168,7 +169,7 @@ function ComparisonChartCard({
   );
 }
 
-function ViewToggle({
+function StyleGenreViewToggle({
   viewMode,
   onChange,
 }: {
@@ -176,26 +177,31 @@ function ViewToggle({
   onChange: (mode: StyleGenreViewMode) => void;
 }) {
   return (
-    <div className={styles.viewToggle}>
+    <fieldset className={segmentedStyles.container}>
+      <legend className={segmentedStyles.legend}>
+        Style in genre chart view
+      </legend>
       <button
         type="button"
-        className={classNames(styles.toggleButton, {
-          [styles.active]: viewMode === "cumulative",
+        className={classNames(segmentedStyles.segment, {
+          [segmentedStyles.active]: viewMode === "cumulative",
         })}
         onClick={() => onChange("cumulative")}
+        aria-pressed={viewMode === "cumulative"}
       >
         Total
       </button>
       <button
         type="button"
-        className={classNames(styles.toggleButton, {
-          [styles.active]: viewMode === "share",
+        className={classNames(segmentedStyles.segment, {
+          [segmentedStyles.active]: viewMode === "share",
         })}
         onClick={() => onChange("share")}
+        aria-pressed={viewMode === "share"}
       >
         Share
       </button>
-    </div>
+    </fieldset>
   );
 }
 
@@ -365,7 +371,7 @@ export function ComparativeGrowthCharts({
             chartData={styleGenreData}
             emptyMessage="No matching records yet for this style within the selected genre."
             headerExtra={
-              <ViewToggle
+              <StyleGenreViewToggle
                 onChange={setStyleGenreViewMode}
                 viewMode={styleGenreViewMode}
               />
