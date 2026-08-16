@@ -4,6 +4,7 @@ import classNames from "classnames";
 import { useMemo, useState } from "react";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
 import { THEME_PRIMARY_CHART_COLOR } from "src/utils/chartConfig";
 import { analyzeGrowthByYear } from "src/utils/growthTracker";
@@ -69,26 +70,31 @@ export const GrowthChart = ({
         ) : (
           <h2 className={styles.chartTitle}>Collection growth</h2>
         )}
-        <div className={styles.viewToggle}>
+        <fieldset className={segmentedStyles.container}>
+          <legend className={segmentedStyles.legend}>
+            Collection growth time range
+          </legend>
           <button
             type="button"
-            className={classNames(styles.toggleButton, {
-              [styles.active]: viewMode === "monthly",
+            className={classNames(segmentedStyles.segment, {
+              [segmentedStyles.active]: viewMode === "monthly",
             })}
             onClick={() => setViewMode("monthly")}
+            aria-pressed={viewMode === "monthly"}
           >
             Monthly
           </button>
           <button
             type="button"
-            className={classNames(styles.toggleButton, {
-              [styles.active]: viewMode === "yearly",
+            className={classNames(segmentedStyles.segment, {
+              [segmentedStyles.active]: viewMode === "yearly",
             })}
             onClick={() => setViewMode("yearly")}
+            aria-pressed={viewMode === "yearly"}
           >
             Yearly
           </button>
-        </div>
+        </fieldset>
       </div>
       <div className={styles.chartWrapper}>
         <TanstackChart
