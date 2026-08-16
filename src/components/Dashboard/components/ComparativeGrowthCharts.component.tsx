@@ -5,6 +5,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import Select from "src/components/Select/Select.component";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import accessibilityStyles from "src/styles/accessibility.module.css";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
 import {
@@ -178,7 +179,12 @@ function StyleGenreViewToggle({
 }) {
   return (
     <fieldset className={segmentedStyles.container}>
-      <legend className={segmentedStyles.legend}>
+      <legend
+        className={classNames(
+          segmentedStyles.legend,
+          accessibilityStyles.visuallyHidden,
+        )}
+      >
         Style in genre chart view
       </legend>
       <button
