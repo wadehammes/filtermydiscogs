@@ -18,3 +18,18 @@ export type PersistedFiltersJson = {
 };
 
 export type PersistedFiltersState = PersistedFiltersJson;
+
+export type ReleaseFilterCriteria = Pick<
+  PersistedFiltersJson,
+  | "selectedStyles"
+  | "selectedYears"
+  | "selectedFormats"
+  | "searchQuery"
+  | "styleOperator"
+>;
+
+export interface FacetOptions {
+  availableStyles: string[];
+  availableYears: number[];
+  availableFormats: string[];
+}

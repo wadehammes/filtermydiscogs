@@ -2,38 +2,43 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useSetAtom } from "jotai";
 import { collectionFiltersActiveAtom } from "src/atoms/filters.atoms";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { filterReleases as filterReleasesUtil } from "src/utils/filterReleases";
+import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
-import { getAvailableFormats } from "src/utils/getAvailableFormats";
-import { getAvailableStyles } from "src/utils/getAvailableStyles";
-import { getAvailableYears } from "src/utils/getAvailableYears";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
 import { act, renderHook, TestProviders } from "test-utils";
 import { FiltersActionTypes, SortValues, useFilters } from "./filters.context";
 
-jest.mock("src/utils/filterReleases");
+jest.mock("src/utils/computeFilterDerivedState");
 jest.mock("src/utils/sortReleases");
-jest.mock("src/utils/getAvailableStyles");
-jest.mock("src/utils/getAvailableYears");
-jest.mock("src/utils/getAvailableFormats");
+jest.mock("src/utils/releaseSearchIndex", () => ({
+  buildReleaseSearchIndex: jest.fn(),
+  syncReleaseSearchIndex: jest.fn(),
+  clearReleaseSearchIndex: jest.fn(),
+  getReleaseSearchText: jest.fn(() => ""),
+  getReleaseSearchIndexEntry: jest.fn(() => ({
+    searchText: "",
+    genreStyleTags: [],
+    formatTags: [],
+  })),
+}));
 
-const mockFilterReleases = jest.mocked(filterReleasesUtil);
+const mockComputeFilterDerivedState = jest.mocked(computeFilterDerivedState);
 const mockSortReleases = jest.mocked(sortReleasesUtil);
-const mockGetAvailableStyles = jest.mocked(getAvailableStyles);
-const mockGetAvailableYears = jest.mocked(getAvailableYears);
-const mockGetAvailableFormats = jest.mocked(getAvailableFormats);
 
 describe("FiltersProvider", () => {
   beforeEach(() => {
     localStorage.clear();
     jest.clearAllMocks();
 
-    // Setup default mocks
-    mockFilterReleases.mockImplementation(({ releases }) => releases);
+    mockComputeFilterDerivedState.mockImplementation(({ releases }) => ({
+      filteredReleases: releases,
+      facetOptions: {
+        availableStyles: [],
+        availableYears: [],
+        availableFormats: [],
+      },
+    }));
     mockSortReleases.mockImplementation((releases) => releases);
-    mockGetAvailableStyles.mockReturnValue([]);
-    mockGetAvailableYears.mockReturnValue([]);
-    mockGetAvailableFormats.mockReturnValue([]);
   });
 
   it("provides initial state", () => {
@@ -173,8 +178,15 @@ describe("FiltersProvider", () => {
     );
 
     const mockReleases = releaseFactory.buildList(3);
-    mockFilterReleases.mockImplementation(({ releases, selectedStyles }) =>
-      selectedStyles.length > 0 ? [] : releases,
+    mockComputeFilterDerivedState.mockImplementation(
+      ({ releases, selectedStyles }) => ({
+        filteredReleases: selectedStyles.length > 0 ? [] : releases,
+        facetOptions: {
+          availableStyles: [],
+          availableYears: [],
+          availableFormats: [],
+        },
+      }),
     );
 
     const { result } = renderHook(
@@ -298,7 +310,6 @@ describe("FiltersProvider", () => {
       wrapper: TestProviders,
     });
 
-    // Set styles first
     act(() => {
       result.current.dispatch({
         type: FiltersActionTypes.SetStyles,
@@ -306,7 +317,6 @@ describe("FiltersProvider", () => {
       });
     });
 
-    // Clear styles
     act(() => {
       result.current.dispatch({
         type: FiltersActionTypes.ClearStyles,
@@ -358,13 +368,19 @@ describe("FiltersProvider", () => {
 
   it("toggles random mode", () => {
     const mockReleases = releaseFactory.buildList(3);
-    mockFilterReleases.mockReturnValue(mockReleases);
+    mockComputeFilterDerivedState.mockReturnValue({
+      filteredReleases: mockReleases,
+      facetOptions: {
+        availableStyles: [],
+        availableYears: [],
+        availableFormats: [],
+      },
+    });
 
     const { result } = renderHook(() => useFilters(), {
       wrapper: TestProviders,
     });
 
-    // Set releases first
     act(() => {
       result.current.dispatch({
         type: FiltersActionTypes.SetAllReleases,
@@ -417,7 +433,6 @@ describe("FiltersProvider", () => {
       wrapper: TestProviders,
     });
 
-    // Set some filters
     act(() => {
       result.current.dispatch({
         type: FiltersActionTypes.SetStyles,
@@ -439,7 +454,6 @@ describe("FiltersProvider", () => {
       });
     });
 
-    // Clear all
     act(() => {
       result.current.dispatch({
         type: FiltersActionTypes.ClearAllFilters,
@@ -462,7 +476,14 @@ describe("FiltersProvider", () => {
   it("computes filtered releases when filters change", () => {
     const mockReleases = releaseFactory.buildList(5);
     const filteredReleases = releaseFactory.buildList(2);
-    mockFilterReleases.mockReturnValue(filteredReleases);
+    mockComputeFilterDerivedState.mockReturnValue({
+      filteredReleases,
+      facetOptions: {
+        availableStyles: [],
+        availableYears: [],
+        availableFormats: [],
+      },
+    });
 
     const { result } = renderHook(
       () => {
@@ -492,7 +513,7 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockFilterReleases).toHaveBeenCalled();
+    expect(mockComputeFilterDerivedState).toHaveBeenCalled();
     expect(result.current.filters.state.filteredReleases).toEqual(
       filteredReleases,
     );
@@ -500,21 +521,21 @@ describe("FiltersProvider", () => {
 
   it("computes availableYears from releases matching other active filters", () => {
     const allReleases = releaseFactory.buildList(5);
-    const rockReleases = releaseFactory.buildList(2);
     const allYears = [2020, 2021, 2022, 2023, 2024];
     const rockYears = [1980, 1990];
 
-    mockFilterReleases.mockImplementation(
-      ({ selectedStyles, selectedYears }) => {
-        if (selectedStyles.includes("Rock") && selectedYears.length === 0) {
-          return rockReleases;
-        }
-
-        return allReleases;
-      },
-    );
-    mockGetAvailableYears.mockImplementation((releases) =>
-      releases === rockReleases ? rockYears : allYears,
+    mockComputeFilterDerivedState.mockImplementation(
+      ({ releases, selectedStyles }) => ({
+        filteredReleases: releases,
+        facetOptions: {
+          availableStyles: [],
+          availableYears:
+            selectedStyles.includes("Rock") && selectedStyles.length > 0
+              ? rockYears
+              : allYears,
+          availableFormats: [],
+        },
+      }),
     );
 
     const { result } = renderHook(
@@ -538,10 +559,15 @@ describe("FiltersProvider", () => {
       result.current.setCollectionFiltersActive(true);
     });
 
-    expect(mockGetAvailableYears).toHaveBeenCalledWith(allReleases);
+    expect(mockComputeFilterDerivedState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releases: allReleases,
+        selectedStyles: [],
+      }),
+    );
     expect(result.current.filters.state.availableYears).toEqual(allYears);
 
-    mockGetAvailableYears.mockClear();
+    mockComputeFilterDerivedState.mockClear();
 
     act(() => {
       result.current.filters.dispatch({
@@ -550,27 +576,32 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockGetAvailableYears).toHaveBeenCalledWith(rockReleases);
+    expect(mockComputeFilterDerivedState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releases: allReleases,
+        selectedStyles: ["Rock"],
+      }),
+    );
     expect(result.current.filters.state.availableYears).toEqual(rockYears);
   });
 
   it("computes availableStyles from releases matching other active filters", () => {
     const allReleases = releaseFactory.buildList(5);
-    const vinylReleases = releaseFactory.buildList(2);
     const allStyles = ["Rock", "Pop", "Jazz", "Electronic", "Hip Hop"];
     const vinylStyles = ["Rock", "Punk"];
 
-    mockFilterReleases.mockImplementation(
-      ({ selectedFormats, selectedStyles }) => {
-        if (selectedFormats.includes("Vinyl") && selectedStyles.length === 0) {
-          return vinylReleases;
-        }
-
-        return allReleases;
-      },
-    );
-    mockGetAvailableStyles.mockImplementation((releases) =>
-      releases === vinylReleases ? vinylStyles : allStyles,
+    mockComputeFilterDerivedState.mockImplementation(
+      ({ releases, selectedFormats }) => ({
+        filteredReleases: releases,
+        facetOptions: {
+          availableStyles:
+            selectedFormats.includes("Vinyl") && selectedFormats.length > 0
+              ? vinylStyles
+              : allStyles,
+          availableYears: [],
+          availableFormats: [],
+        },
+      }),
     );
 
     const { result } = renderHook(
@@ -594,10 +625,15 @@ describe("FiltersProvider", () => {
       result.current.setCollectionFiltersActive(true);
     });
 
-    expect(mockGetAvailableStyles).toHaveBeenCalledWith(allReleases);
+    expect(mockComputeFilterDerivedState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releases: allReleases,
+        selectedFormats: [],
+      }),
+    );
     expect(result.current.filters.state.availableStyles).toEqual(allStyles);
 
-    mockGetAvailableStyles.mockClear();
+    mockComputeFilterDerivedState.mockClear();
 
     act(() => {
       result.current.filters.dispatch({
@@ -606,27 +642,32 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockGetAvailableStyles).toHaveBeenCalledWith(vinylReleases);
+    expect(mockComputeFilterDerivedState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releases: allReleases,
+        selectedFormats: ["Vinyl"],
+      }),
+    );
     expect(result.current.filters.state.availableStyles).toEqual(vinylStyles);
   });
 
   it("computes availableFormats from releases matching other active filters", () => {
     const allReleases = releaseFactory.buildList(5);
-    const rockReleases = releaseFactory.buildList(2);
     const allFormats = ['12"', '7"', "LP", "Vinyl", "Cassette"];
     const rockFormats = ["Vinyl", '12"'];
 
-    mockFilterReleases.mockImplementation(
-      ({ selectedStyles, selectedFormats }) => {
-        if (selectedStyles.includes("Rock") && selectedFormats.length === 0) {
-          return rockReleases;
-        }
-
-        return allReleases;
-      },
-    );
-    mockGetAvailableFormats.mockImplementation((releases) =>
-      releases === rockReleases ? rockFormats : allFormats,
+    mockComputeFilterDerivedState.mockImplementation(
+      ({ releases, selectedStyles }) => ({
+        filteredReleases: releases,
+        facetOptions: {
+          availableStyles: [],
+          availableYears: [],
+          availableFormats:
+            selectedStyles.includes("Rock") && selectedStyles.length > 0
+              ? rockFormats
+              : allFormats,
+        },
+      }),
     );
 
     const { result } = renderHook(
@@ -650,10 +691,15 @@ describe("FiltersProvider", () => {
       result.current.setCollectionFiltersActive(true);
     });
 
-    expect(mockGetAvailableFormats).toHaveBeenCalledWith(allReleases);
+    expect(mockComputeFilterDerivedState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releases: allReleases,
+        selectedStyles: [],
+      }),
+    );
     expect(result.current.filters.state.availableFormats).toEqual(allFormats);
 
-    mockGetAvailableFormats.mockClear();
+    mockComputeFilterDerivedState.mockClear();
 
     act(() => {
       result.current.filters.dispatch({
@@ -662,7 +708,12 @@ describe("FiltersProvider", () => {
       });
     });
 
-    expect(mockGetAvailableFormats).toHaveBeenCalledWith(rockReleases);
+    expect(mockComputeFilterDerivedState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        releases: allReleases,
+        selectedStyles: ["Rock"],
+      }),
+    );
     expect(result.current.filters.state.availableFormats).toEqual(rockFormats);
   });
 

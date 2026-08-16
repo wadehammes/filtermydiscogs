@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { AutocompleteSelectPageObject } from "src/components/AutocompleteSelect/AutocompleteSelect.po";
 import {
   clickFilterOption,
@@ -89,6 +90,62 @@ describe("AutocompleteSelect", () => {
     );
 
     expect(handleChange).toHaveBeenCalledWith([]);
+  });
+
+  it("reopens on the first click after selecting a value with clearable enabled", async () => {
+    const handleChange = jest.fn();
+    const { rerender } = po.renderAutocompleteSelect({
+      onChange: handleChange,
+      clearable: true,
+      showLabel: true,
+    });
+
+    await openFilterCombobox("Test Autocomplete");
+    await clickFilterOption("Option 1");
+
+    expect(handleChange).toHaveBeenCalledWith(["option1"]);
+
+    rerender(
+      <AutocompleteSelect
+        label={po.label}
+        options={po.options}
+        onChange={handleChange}
+        multiple
+        clearable
+        showLabel
+        value={["option1"]}
+      />,
+    );
+
+    await openFilterCombobox("Test Autocomplete");
+
+    expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
+  it("reopens on the first click after selecting a value", async () => {
+    const handleChange = jest.fn();
+    const { rerender } = po.renderAutocompleteSelect({
+      onChange: handleChange,
+    });
+
+    await openFilterCombobox("Test Autocomplete");
+    await clickFilterOption("Option 1");
+
+    expect(handleChange).toHaveBeenCalledWith(["option1"]);
+
+    rerender(
+      <AutocompleteSelect
+        label={po.label}
+        options={po.options}
+        onChange={handleChange}
+        multiple
+        value={["option1"]}
+      />,
+    );
+
+    await openFilterCombobox("Test Autocomplete");
+
+    expect(screen.getByText("Option 2")).toBeInTheDocument();
   });
 
   it("removes a selected pill without opening the popup", async () => {

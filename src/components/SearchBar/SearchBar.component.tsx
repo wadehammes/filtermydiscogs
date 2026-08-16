@@ -1,7 +1,14 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { trackCollectionSearched } from "src/analytics/productAnalyticsEvents";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
@@ -49,9 +56,11 @@ export const SearchBar = ({
         if (trimmed) {
           trackCollectionSearched(trimmed.length);
         }
-        filtersDispatch({
-          type: FiltersActionTypes.SetSearchQuery,
-          payload: query,
+        startTransition(() => {
+          filtersDispatch({
+            type: FiltersActionTypes.SetSearchQuery,
+            payload: query,
+          });
         });
       }, 300);
     },

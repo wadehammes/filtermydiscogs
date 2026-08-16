@@ -5,9 +5,7 @@ import {
   type SortValues,
 } from "src/context/filters.context";
 import {
-  useAvailableFormats,
-  useAvailableStyles,
-  useAvailableYears,
+  useFacetOptions,
   useFiltersDispatch,
   useSelectedFormats,
   useSelectedSort,
@@ -18,9 +16,8 @@ import {
 
 export const useFilterHandlers = (category: string) => {
   const filtersDispatch = useFiltersDispatch();
-  const availableStyles = useAvailableStyles();
-  const availableYears = useAvailableYears();
-  const availableFormats = useAvailableFormats();
+  const { availableStyles, availableYears, availableFormats } =
+    useFacetOptions();
   const selectedStyles = useSelectedStyles();
   const selectedYears = useSelectedYears();
   const selectedFormats = useSelectedFormats();

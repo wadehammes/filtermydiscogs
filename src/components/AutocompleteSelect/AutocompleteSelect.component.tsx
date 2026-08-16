@@ -49,7 +49,6 @@ const AutocompleteSelectComponent = ({
   clearable = false,
 }: AutocompleteSelectProps) => {
   const anchorRef = useRef<HTMLElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const { positionerStyle, handleOpenChange } =
     useFilterControlPositionerZIndex(anchorRef);
 
@@ -59,16 +58,9 @@ const AutocompleteSelectComponent = ({
   const hasSelectedValues =
     multiple && Array.isArray(value) && value.length > 0;
 
-  const assignTriggerRef = useCallback(
-    (node: HTMLButtonElement | null) => {
-      triggerRef.current = node;
-
-      if (!hasSelectedValues) {
-        anchorRef.current = node;
-      }
-    },
-    [hasSelectedValues],
-  );
+  const assignAnchorRef = useCallback((node: HTMLElement | null) => {
+    anchorRef.current = node;
+  }, []);
 
   const showClearButton = clearable && hasSelectedValues && !disabled;
 
@@ -133,45 +125,28 @@ const AutocompleteSelectComponent = ({
     </span>
   );
 
-  const multipleTrigger =
-    selectedOptions.length === 0 ? (
+  const multipleTrigger = (
+    <div
+      ref={assignAnchorRef}
+      className={classNames(
+        styles.triggerShell,
+        showClearButton && styles.triggerWithClear,
+      )}
+      data-filter-control-trigger
+    >
       <Combobox.Trigger
-        ref={assignTriggerRef}
-        className={classNames(
-          styles.trigger,
-          showClearButton && styles.triggerWithClear,
-        )}
-        data-filter-control-trigger
+        className={styles.triggerOverlay}
         disabled={disabled}
         {...definedProps({
           "aria-label": showLabel ? undefined : label,
         })}
       >
-        <span className={styles.placeholder}>{placeholder}</span>
         {triggerIcon}
       </Combobox.Trigger>
-    ) : (
-      <div
-        ref={(node) => {
-          anchorRef.current = node;
-        }}
-        className={classNames(
-          styles.triggerShell,
-          showClearButton && styles.triggerWithClear,
-        )}
-        data-filter-control-trigger
-      >
-        <Combobox.Trigger
-          ref={assignTriggerRef}
-          className={styles.triggerOverlay}
-          disabled={disabled}
-          {...definedProps({
-            "aria-label": showLabel ? undefined : label,
-          })}
-        >
-          {triggerIcon}
-        </Combobox.Trigger>
-        <div className={styles.valueContainer}>
+      <div className={styles.valueContainer}>
+        {selectedOptions.length === 0 ? (
+          <span className={styles.placeholder}>{placeholder}</span>
+        ) : (
           <div className={styles.pillsContainer}>
             {selectedOptions.map((option) => (
               <span key={option.value} className={styles.pill}>
@@ -192,13 +167,14 @@ const AutocompleteSelectComponent = ({
               </span>
             ))}
           </div>
-        </div>
+        )}
       </div>
-    );
+    </div>
+  );
 
   const singleTrigger = (
     <Combobox.Trigger
-      ref={assignTriggerRef}
+      ref={assignAnchorRef}
       className={classNames(
         styles.trigger,
         showClearButton && styles.triggerWithClear,
@@ -241,18 +217,20 @@ const AutocompleteSelectComponent = ({
             {label}
           </Combobox.Label>
         ) : null}
-        {showClearButton ? (
+        {clearable ? (
           <div className={styles.controlRow}>
             {trigger}
-            <Button
-              variant="secondary"
-              size="md"
-              className={styles.clearButton}
-              onPress={handleClearAll}
-              aria-label={`Clear ${label}`}
-            >
-              Clear
-            </Button>
+            {showClearButton ? (
+              <Button
+                variant="secondary"
+                size="md"
+                className={styles.clearButton}
+                onPress={handleClearAll}
+                aria-label={`Clear ${label}`}
+              >
+                Clear
+              </Button>
+            ) : null}
           </div>
         ) : (
           trigger

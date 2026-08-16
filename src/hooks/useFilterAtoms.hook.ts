@@ -4,10 +4,8 @@ import { useAtomValue, useSetAtom, useStore } from "jotai";
 import { useCallback, useMemo } from "react";
 import {
   allReleasesAtom,
-  availableFormatsAtom,
-  availableStylesAtom,
-  availableYearsAtom,
   type FiltersActions,
+  facetOptionsAtom,
   filteredReleasesAtom,
   filtersDispatchAtom,
   isPersistedFiltersAction,
@@ -20,6 +18,7 @@ import {
   selectedSortAtom,
   selectedStylesAtom,
   selectedYearsAtom,
+  sortedFilteredReleasesAtom,
   styleOperatorAtom,
 } from "src/atoms/filters.atoms";
 import { useFiltersScope } from "src/context/filters.context";
@@ -58,22 +57,16 @@ export const useAllReleases = () => {
   return useAtomValue(allReleasesAtom);
 };
 
-export const useAvailableStyles = () => {
+export const useFacetOptions = () => {
   useFiltersScope();
 
-  return useAtomValue(availableStylesAtom);
+  return useAtomValue(facetOptionsAtom);
 };
 
-export const useAvailableYears = () => {
+export const useSortedFilteredReleases = () => {
   useFiltersScope();
 
-  return useAtomValue(availableYearsAtom);
-};
-
-export const useAvailableFormats = () => {
-  useFiltersScope();
-
-  return useAtomValue(availableFormatsAtom);
+  return useAtomValue(sortedFilteredReleasesAtom);
 };
 
 export const useSelectedStyles = () => {

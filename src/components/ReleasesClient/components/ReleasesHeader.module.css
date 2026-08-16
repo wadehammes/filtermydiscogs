@@ -1,6 +1,5 @@
 .releasesHeader {
   align-items: center;
-  background: color-mix(in srgb, var(--background) 82%, transparent);
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
