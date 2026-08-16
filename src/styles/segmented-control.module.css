@@ -20,7 +20,9 @@
 }
 
 .legend {
-  composes: visuallyhidden from "./accessibility.module.css";
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .containerVertical {

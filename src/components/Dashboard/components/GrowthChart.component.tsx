@@ -4,6 +4,7 @@ import classNames from "classnames";
 import { useMemo, useState } from "react";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import accessibilityStyles from "src/styles/accessibility.module.css";
 import segmentedStyles from "src/styles/segmented-control.module.css";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
 import { THEME_PRIMARY_CHART_COLOR } from "src/utils/chartConfig";
@@ -71,7 +72,12 @@ export const GrowthChart = ({
           <h2 className={styles.chartTitle}>Collection growth</h2>
         )}
         <fieldset className={segmentedStyles.container}>
-          <legend className={segmentedStyles.legend}>
+          <legend
+            className={classNames(
+              segmentedStyles.legend,
+              accessibilityStyles.visuallyHidden,
+            )}
+          >
             Collection growth time range
           </legend>
           <button
