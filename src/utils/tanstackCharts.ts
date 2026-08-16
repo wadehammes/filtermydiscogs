@@ -118,6 +118,11 @@ const modernValueAxis = {
   axis: modernAxisPresentation,
 };
 
+const cartesianChartFrame = {
+  clip: true,
+  margin: { left: 56 },
+};
+
 interface GrowthAreaChartOptions {
   color: string;
   formatX: (value: string) => string;
@@ -233,6 +238,7 @@ export const createCollectionGrowthAreaChartDefinition = (
 
       return {
         ...chartMotion,
+        ...cartesianChartFrame,
         marks: [
           areaY(data, {
             x: "date",
@@ -307,6 +313,7 @@ export const createDualSeriesAreaChartDefinition = (
 
       return {
         ...chartMotion,
+        ...cartesianChartFrame,
         marks: [
           areaY(data, {
             x: "date",
@@ -382,6 +389,7 @@ export const createAdminGrowthAreaChartDefinition = (
 
       return {
         ...chartMotion,
+        ...cartesianChartFrame,
         marks: [
           areaY(data, {
             x: "month",
@@ -432,6 +440,7 @@ export const createVerticalBarChartDefinition = ({
 }): DomChartDefinition =>
   defineChart({
     ...chartMotion,
+    ...cartesianChartFrame,
     marks: [
       barY(data, {
         x: "label",
@@ -474,6 +483,7 @@ export const createHorizontalBarChartDefinition = ({
 }): DomChartDefinition =>
   defineChart({
     ...chartMotion,
+    ...cartesianChartFrame,
     marks: [
       barX(data, {
         x: "count",

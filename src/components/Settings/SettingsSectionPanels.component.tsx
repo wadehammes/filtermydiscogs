@@ -193,8 +193,10 @@ export function SettingsDataPanel({
         </label>
         <p className={styles.sectionDescription}>
           When enabled, Google Tag Manager may set analytics cookies to measure
-          page views and interactions. Essential Discogs login cookies always
-          apply. See the{" "}
+          page views and interactions. Similar events may also be stored on our
+          server (page path, event name, and label) to understand product usage,
+          linked to your account when signed in. Essential Discogs login cookies
+          always apply. See the{" "}
           <a href="/legal#cookies" className={styles.inlineLink}>
             cookie notice
           </a>{" "}
@@ -205,9 +207,10 @@ export function SettingsDataPanel({
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Clear all stored data</h3>
         <p className={styles.sectionDescription}>
-          Delete your crates, clear local preferences (including your analytics
-          cookie choice), and sign out. You will need to authorize the app again
-          to continue using Filter My Discogs.
+          Delete your crates, product analytics events linked to your account,
+          clear local preferences (including your analytics cookie choice), and
+          sign out. You will need to authorize the app again to continue using
+          Filter My Discogs.
         </p>
         <div className={styles.actions}>
           <Button

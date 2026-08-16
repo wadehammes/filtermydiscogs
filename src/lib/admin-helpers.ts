@@ -2,6 +2,7 @@
  * Admin authorization utilities
  */
 
+import type { NextRequest } from "next/server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 /**
@@ -25,6 +26,13 @@ function isAdminUser(userId: number): boolean {
 
   return userId === adminUserIdNum;
 }
+
+const readDiscogsOAuthCookies = (cookies: {
+  get: (name: string) => { value: string } | undefined;
+}) => ({
+  accessToken: cookies.get("discogs_access_token")?.value,
+  accessTokenSecret: cookies.get("discogs_access_token_secret")?.value,
+});
 
 /**
  * Securely verify that the authenticated user is an admin by verifying their identity
@@ -52,4 +60,22 @@ export async function verifyAdminUser(
     console.error("Admin verification error:", error);
     return false;
   }
+}
+
+export async function verifyAdminFromRequest(
+  request: NextRequest,
+): Promise<boolean> {
+  const { accessToken, accessTokenSecret } = readDiscogsOAuthCookies(
+    request.cookies,
+  );
+
+  return verifyAdminUser(accessToken, accessTokenSecret);
+}
+
+export async function verifyAdminFromCookies(cookies: {
+  get: (name: string) => { value: string } | undefined;
+}): Promise<boolean> {
+  const { accessToken, accessTokenSecret } = readDiscogsOAuthCookies(cookies);
+
+  return verifyAdminUser(accessToken, accessTokenSecret);
 }

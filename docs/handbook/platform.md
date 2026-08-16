@@ -49,7 +49,9 @@ Full list: [`package.json`](../../package.json).
 | `DATABASE_URL` | Postgres connection string for Prisma |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
+| `CRON_SECRET` | Bearer token for Vercel Cron routes (e.g. **`/api/cron/product-analytics`**) |
 | `IP_RATE_LIMIT_MAX` / `IP_RATE_LIMIT_WINDOW` | Default per-IP API rate limit (120 requests / 60s) |
+| `ANALYTICS_EVENTS_RATE_LIMIT_MAX` / `ANALYTICS_EVENTS_RATE_LIMIT_WINDOW` | Per-IP limit for **`POST /api/analytics/events`** (default **240** / 60s) |
 | `IMAGE_PROXY_RATE_LIMIT_MAX` / `IMAGE_PROXY_RATE_LIMIT_WINDOW` | Higher limit for [`/api/image-proxy`](../../src/app/api/image-proxy/route.ts) (default **2500** / 60s) so mosaic export can load one tile per release |
 
 [`next.config.ts`](../../next.config.ts) **`env`** block exposes only **`DISCOGS_CONSUMER_KEY`** and **`DISCOGS_CALLBACK_URL`** to the Next bundle. **`DISCOGS_CONSUMER_SECRET`** stays a runtime server env var (used by [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) only). Do not add server-only secrets to **`env`**.
@@ -96,6 +98,7 @@ Cache Components prerender static shells. Client hooks that depend on request-ti
 |-----------|---------|
 | [`ThemeProvider`](../../src/context/theme.context.tsx) | **`ThemeProviderInner`** (uses **`useMediaQuery`** + **`usePathname`**) wrapped in **`<Suspense>`**; fallback exposes a static theme context while **`/theme-init.js`** keeps the correct **`data-theme`** on **`html`** |
 | [`AuthCheckingToast`](../../src/components/AuthCheckingToast/AuthCheckingToast.component.tsx) | Inner component with **`usePathname`** wrapped in **`<Suspense fallback={null}>`** |
+| [`AnalyticsPageViewTracker`](../../src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component.tsx) | Inner component with **`usePathname`** wrapped in **`<Suspense fallback={null}>`** |
 | Dynamic **`params`** on [`/crates/[id]`](../../src/app/crates/[id]/page.tsx) and [`/crate/[id]`](../../src/app/crate/[id]/page.tsx) | **`await params`** in an inner async server component wrapped in **`<Suspense>`** with **`AppPageLoading`** / **`PageLoader`** fallback — keeps the route shell instant |
 
 Do not re-add **`export const instant = false`** on the root layout to paper over missing Suspense boundaries — fix the hook site instead.
@@ -111,6 +114,8 @@ Public legal copy lives in the server component [`LegalPageContent.server.tsx`](
 | [`/api/og/crate/[id]`](../../src/app/api/og/crate/[id]/route.tsx) | Cached OG image helper with `"use cache"` + `cacheLife({ revalidate: 300 })` |
 
 Do not call **`new Date()`** (or other non-deterministic APIs) directly in components that must prerender as static — wrap in a `"use cache"` helper or move to a dynamic boundary.
+
+**`/admin`** server gate ([`AdminDashboardGate.server.tsx`](../../src/components/AdminDashboard/AdminDashboardGate.server.tsx)) calls Discogs OAuth (signing uses unstable values). With **`cacheComponents`**, wrap it in **`<Suspense>`** on [`admin/page.tsx`](../../src/app/admin/page.tsx) and **`await io()`** from **`next/cache`** before **`verifyAdminFromCookies`** so prerender suspends instead of hitting the blocking-route error.
 
 ### Test mocks
 
@@ -159,7 +164,10 @@ Google Tag Manager (`GOOGLE_TAG_MANAGER_ID` in [`analytics.ts`](../../src/consta
 
 - **`AnalyticsConsentProvider`** ([`analyticsConsent.context.tsx`](../../src/context/analyticsConsent.context.tsx)) + **`CookieConsentBanner`** show a bottom bar while consent is pending.
 - **`GoogleTagManagerLoader`** ([`GoogleTagManagerLoader.component.tsx`](../../src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component.tsx)) imperatively injects the GTM script inside **`Providers`** once when consent is **`granted`** (never unmounts via React—avoids `removeChild` errors from conditional **`next/script`** cleanup). Root [`layout.tsx`](../../src/app/layout.tsx) does **not** load GTM unconditionally.
-- **`trackEvent`** ([`analytics.ts`](../../src/analytics/analytics.ts)) no-ops unless local consent is **`granted`** ([`analyticsConsentStorage.ts`](../../src/utils/analyticsConsentStorage.ts)).
+- **`trackEvent`** ([`analytics.ts`](../../src/analytics/analytics.ts)) no-ops unless local consent is **`granted`** ([`analyticsConsentStorage.ts`](../../src/utils/analyticsConsentStorage.ts)). When consent is granted, events also queue to **`POST /api/analytics/events`** via [`productAnalyticsClient.ts`](../../src/analytics/productAnalyticsClient.ts) (batched **`fetch`** with **`keepalive`**, retries on failure) and land in **`product_analytics_events`** (page path, event metadata, optional signed-in **`user_id`**) for admin product-usage reporting—same consent gate as GTM.
+- **Semantic product events** — prefer named helpers in [`productAnalyticsEvents.ts`](../../src/analytics/productAnalyticsEvents.ts) over ad-hoc **`trackEvent`** at UI call sites. Wire from context/hook success paths (not button **`onClick`** wrappers) so analytics stays tied to completed actions. Categories: **crate** (`crateReleaseAdded`, `crateCreated`, `crateLayoutUpdated`, …), **playback** (`playbackStarted`, `playbackQueued`, `playbackVideoOpened`), **auth** (`loginStarted`, `loginCompleted`), **consent** (`analyticsConsentGranted`), **account** (`userDataCleared`), **collection** (`viewModeChanged`, `collectionSearched`, `releaseNoteSaved`). Legacy inline events (filters, mosaic, **`crateSync`**, **`releaseClicked`**, **`pageView`**, etc.) remain where helpers do not exist yet.
+- **`AnalyticsPageViewTracker`** ([`GoogleTagManagerLoader/AnalyticsPageViewTracker.component.tsx`](../../src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component.tsx)) records **`pageView`** on App Router navigations when **`useAnalyticsConsent`** reports analytics enabled and consent is ready; it re-tracks the current page when consent is newly granted (banner accept or server prefs sync) without requiring a navigation.
+- **Product analytics retention**: raw events live **90 days** in **`product_analytics_events`**; a daily cron incrementally rolls completed UTC days into **`product_analytics_daily_rollups`** (from the last stored rollup through yesterday, re-rolling yesterday each run), then deletes expired raw rows ([`product-analytics-maintenance.server.ts`](../../src/lib/product-analytics-maintenance.server.ts), [`vercel.json`](../../vercel.json)). **`/admin`** feature-usage panels read **7d/30d** totals from rollups plus raw events since yesterday (UTC) so pre-cron days stay accurate.
 - Settings → **Data** toggle updates consent and persists when authenticated; revoking reloads the page so injected GTM scripts stop.
 - **Clear all stored data** clears analytics consent (user is re-prompted). Normal logout does **not** reset consent.
 

@@ -85,3 +85,32 @@ model CrateSetMarker {
   @@map("crate_set_markers")
 }
 
+model ProductAnalyticsEvent {
+  id         String   @id @default(uuid())
+  event      String
+  category   String
+  action     String
+  label      String
+  value      String?
+  page_path  String?
+  user_id    Int?
+  created_at DateTime @default(now())
+
+  @@index([event, created_at])
+  @@index([page_path, created_at])
+  @@index([created_at])
+  @@map("product_analytics_events")
+}
+
+model ProductAnalyticsDailyRollup {
+  date           DateTime @db.Date
+  dimension_type String
+  dimension_key  String
+  event_count    Int
+
+  @@id([date, dimension_type, dimension_key])
+  @@index([date])
+  @@index([dimension_type, date])
+  @@map("product_analytics_daily_rollups")
+}
+

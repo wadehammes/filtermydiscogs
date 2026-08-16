@@ -13,7 +13,7 @@ Implemented in [`src/services/discogs-oauth.service.ts`](../../src/services/disc
 | 3 | `GET /api/auth/callback` | Exchange for access token, fetch identity, set cookies, upsert **`User`** row |
 | 4 | `GET /api/auth/check` | Verify tokens still valid |
 | 5 | `POST /api/auth/logout` | Clear session cookies |
-| 6 | `POST /api/auth/clear-data` | Delete user's **`User`** row (cascades crates) and clear session (Settings / About / Legal) |
+| 6 | `POST /api/auth/clear-data` | Delete **`product_analytics_events`** for the user, delete **`User`** row (cascades crates), and clear session (Settings / About / Legal) |
 
 Temporary OAuth request tokens use short-lived cookies (`oauth_token`, `oauth_token_secret`) cleared after callback.
 

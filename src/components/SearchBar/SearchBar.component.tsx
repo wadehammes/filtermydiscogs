@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { trackCollectionSearched } from "src/analytics/productAnalyticsEvents";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
   useFiltersDispatch,
@@ -44,6 +45,10 @@ export const SearchBar = ({
       }
 
       debounceTimeoutRef.current = setTimeout(() => {
+        const trimmed = query.trim();
+        if (trimmed) {
+          trackCollectionSearched(trimmed.length);
+        }
         filtersDispatch({
           type: FiltersActionTypes.SetSearchQuery,
           payload: query,

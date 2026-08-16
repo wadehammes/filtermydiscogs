@@ -1,3 +1,4 @@
+import { queueProductAnalyticsEvent } from "src/analytics/productAnalyticsClient";
 import { isAnalyticsConsentGranted } from "src/utils/analyticsConsentStorage";
 import { isBrowser } from "src/utils/helpers";
 
@@ -24,4 +25,18 @@ export const trackEvent = (event: string, properties: EventProps) => {
 
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event, ...properties });
+
+  queueProductAnalyticsEvent({
+    event,
+    category: properties.category,
+    action: properties.action,
+    label: properties.label,
+    value:
+      typeof properties.value === "boolean"
+        ? properties.value
+          ? "true"
+          : "false"
+        : String(properties.value),
+    page_path: window.location.pathname,
+  });
 };

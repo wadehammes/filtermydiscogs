@@ -149,7 +149,9 @@ try {
         : (["error"] as const);
 
   const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
-    "crateSetMarker" in client;
+    "crateSetMarker" in client &&
+    "productAnalyticsEvent" in client &&
+    "productAnalyticsDailyRollup" in client;
 
   if (
     globalForPrisma.prisma &&

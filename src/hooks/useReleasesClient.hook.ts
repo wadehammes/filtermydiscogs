@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
@@ -159,6 +160,7 @@ export const useReleasesClient = () => {
 
   const handleViewChange = useCallback(
     (view: "card" | "list" | "random") => {
+      trackViewModeChanged(view);
       viewDispatch({
         type: ViewActionTypes.SetView,
         payload: view,

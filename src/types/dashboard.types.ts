@@ -1,3 +1,4 @@
+import type { AdminStatsFeatureUsage } from "src/types/productAnalytics.types";
 import type { DiscogsRelease } from "./discogs-release.types";
 
 export interface CollectionValue {
@@ -125,6 +126,26 @@ export interface AdminStatsRecentActivityPeriod {
   newPackedReleases: number;
 }
 
+export interface AdminStatsEngagement {
+  activeUsers: {
+    last7Days: number;
+    last30Days: number;
+  };
+  returningUsers: {
+    last7Days: number;
+    last30Days: number;
+  };
+  signupFunnel: {
+    usersWithNoCrates: number;
+    usersWithCrates: number;
+  };
+  averages: {
+    cratesPerUser: number;
+    releasesPerCrate: number;
+  };
+  staleAccounts: number;
+}
+
 export interface AdminStats {
   overview: {
     totalUsers: number;
@@ -132,6 +153,8 @@ export interface AdminStats {
     totalReleases: number;
     crateFeatures: AdminStatsCrateFeatures;
   };
+  engagement: AdminStatsEngagement;
+  featureUsage: AdminStatsFeatureUsage;
   recentActivity: {
     last7Days: AdminStatsRecentActivityPeriod;
     last30Days: AdminStatsRecentActivityPeriod;

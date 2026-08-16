@@ -34,7 +34,7 @@ import {
 } from "./settingsSections.constants";
 
 const CLEAR_DATA_MESSAGE =
-  "This will log you out, clear all authentication tokens, delete all your stored crates, and remove all saved preferences and cached data, including your analytics cookie choice. You will need to authorize the app again to continue using Filter My Discogs.";
+  "This will log you out, clear all authentication tokens, delete all your stored crates, remove product analytics events linked to your account, and remove all saved preferences and cached data, including your analytics cookie choice. You will need to authorize the app again to continue using Filter My Discogs.";
 
 const COMPLETE_LOGOUT_MESSAGE =
   "This signs you out and revokes stored OAuth tokens on this browser. Your crates and local preferences stay saved—you can sign in again with Discogs when you are ready.";

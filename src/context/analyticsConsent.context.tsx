@@ -9,6 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { trackAnalyticsConsentGranted } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
@@ -67,6 +68,7 @@ export const AnalyticsConsentProvider = ({
 
   const acceptAnalytics = useCallback(() => {
     applyChoice("granted");
+    trackAnalyticsConsentGranted();
   }, [applyChoice]);
 
   const rejectAnalytics = useCallback(() => {

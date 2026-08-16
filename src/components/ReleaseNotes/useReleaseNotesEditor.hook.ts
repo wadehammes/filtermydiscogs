@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { trackReleaseNoteSaved } from "src/analytics/productAnalyticsEvents";
 import { updateCollectionNote } from "src/api/helpers";
 import { FiltersActionTypes } from "src/atoms/filters.atoms";
 import { useAuth } from "src/context/auth.context";
@@ -130,6 +131,7 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
       }
 
       setIsDialogOpen(false);
+      trackReleaseNoteSaved(release.instance_id);
       queryClient.invalidateQueries({
         queryKey: DiscogsCollectionQueryKeys.byUsername(username),
       });

@@ -12,6 +12,10 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  trackLoginCompleted,
+  trackLoginStarted,
+} from "src/analytics/productAnalyticsEvents";
 import { logout as logoutApi } from "src/api/helpers";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
@@ -237,6 +241,9 @@ export const AuthProvider = ({
         .then((result) => {
           const data = result.data;
           if (data?.isAuthenticated && data.username) {
+            if (data.userId) {
+              trackLoginCompleted(data.userId);
+            }
             clearUserScopedQueries(queryClient);
           }
           clearUrlParams();
@@ -279,6 +286,7 @@ export const AuthProvider = ({
   const login = (options?: LoginOptions) => {
     dispatch({ type: AuthActionTypes.SetLoading, payload: true });
     dispatch({ type: AuthActionTypes.SetError, payload: null });
+    trackLoginStarted();
     window.location.href = options?.force
       ? "/api/auth/discogs?force=1"
       : "/api/auth/discogs";

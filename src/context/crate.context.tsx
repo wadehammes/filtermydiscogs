@@ -12,6 +12,18 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import {
+  trackCrateCleared,
+  trackCrateCreated,
+  trackCrateDeleted,
+  trackCrateNotesSaved,
+  trackCratePackedCleared,
+  trackCratePackingEnabled,
+  trackCrateReleaseAdded,
+  trackCrateReleaseRemoved,
+  trackCrateVisibilityChanged,
+  trackReleasePacked,
+} from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import {
   CrateQueryKeys,
@@ -316,6 +328,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
         },
         {
           onSuccess: () => {
+            trackCrateReleaseAdded(release.instance_id);
             if (isDesktop) {
               openDrawer();
             }
@@ -350,10 +363,17 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
       if (!crateIdToUse) return;
 
-      removeReleaseMutation.mutate({
-        crateId: crateIdToUse,
-        releaseId: String(releaseId),
-      });
+      removeReleaseMutation.mutate(
+        {
+          crateId: crateIdToUse,
+          releaseId: String(releaseId),
+        },
+        {
+          onSuccess: () => {
+            trackCrateReleaseRemoved(releaseId);
+          },
+        },
+      );
     },
     [activeCrateId, crates, findDefaultCrate, removeReleaseMutation],
   );
@@ -391,11 +411,18 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       const crateToUpdate = crates.find((crate) => crate.id === crateIdToUse);
       if (!crateToUpdate?.packed_enabled) return;
 
-      setPackedMutation.mutate({
-        crateId: crateIdToUse,
-        releaseId: String(releaseId),
-        found: packed,
-      });
+      setPackedMutation.mutate(
+        {
+          crateId: crateIdToUse,
+          releaseId: String(releaseId),
+          found: packed,
+        },
+        {
+          onSuccess: () => {
+            trackReleasePacked(releaseId, packed);
+          },
+        },
+      );
     },
     [activeCrateId, crates, findDefaultCrate, setPackedMutation],
   );
@@ -406,11 +433,25 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     const activeCrate = crates.find((crate) => crate.id === activeCrateId);
     if (!activeCrate?.packed_enabled) return;
 
-    clearAllPackedMutation.mutate({ crateId: activeCrateId });
+    clearAllPackedMutation.mutate(
+      { crateId: activeCrateId },
+      {
+        onSuccess: () => {
+          trackCratePackedCleared(activeCrateId);
+        },
+      },
+    );
   }, [activeCrateId, clearAllPackedMutation, crates]);
 
   const clearCrate = useCallback(() => {
     if (!activeCrateId) return;
+
+    const releaseCount = selectedReleases.length;
+    if (releaseCount === 0) {
+      return;
+    }
+
+    trackCrateCleared(releaseCount);
 
     selectedReleases.forEach((release) => {
       removeReleaseMutation.mutate({
@@ -424,6 +465,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     async (name: string) => {
       const result = await createCrateMutation.mutateAsync({ name });
       if (result?.crate?.id) {
+        trackCrateCreated(result.crate.id);
         setActiveCrateId(result.crate.id);
       }
     },
@@ -440,6 +482,21 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
         crateId,
         updates,
       });
+
+      if ("private" in updates && typeof updates.private === "boolean") {
+        trackCrateVisibilityChanged(crateId, !updates.private);
+      }
+
+      if (
+        "packed_enabled" in updates &&
+        typeof updates.packed_enabled === "boolean"
+      ) {
+        trackCratePackingEnabled(crateId, updates.packed_enabled);
+      }
+
+      if ("notes" in updates) {
+        trackCrateNotesSaved(crateId);
+      }
     },
     [updateCrateMutation],
   );
@@ -447,6 +504,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   const deleteCrate = useCallback(
     async (crateId: string) => {
       await deleteCrateMutation.mutateAsync(crateId);
+      trackCrateDeleted(crateId);
 
       if (crateId === activeCrateId) {
         // Switch to default crate if the deleted crate was active
