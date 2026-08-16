@@ -11,6 +11,7 @@ import {
   queueProductAnalyticsEvent,
   resetProductAnalyticsQueueForTests,
 } from "src/analytics/productAnalyticsClient";
+import { PRODUCT_ANALYTICS_INGEST_PATH } from "src/types/productAnalytics.types";
 
 describe("productAnalyticsClient", () => {
   beforeEach(() => {
@@ -46,7 +47,7 @@ describe("productAnalyticsClient", () => {
     await Promise.resolve();
 
     expect(mockFetch).toHaveBeenCalledWith(
-      "/api/analytics/events",
+      PRODUCT_ANALYTICS_INGEST_PATH,
       expect.objectContaining({
         method: "POST",
         keepalive: true,
@@ -83,5 +84,45 @@ describe("productAnalyticsClient", () => {
     await jest.advanceTimersByTimeAsync(400);
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("drops events after three failed ingest attempts", async () => {
+    const mockFetch = jest
+      .mocked(global.fetch)
+      .mockResolvedValue(
+        new Response(JSON.stringify({ error: "Failed" }), { status: 500 }),
+      );
+
+    queueProductAnalyticsEvent({
+      event: "pageView",
+      category: "navigation",
+      action: "pageView",
+      label: "Releases",
+      value: "/releases",
+      page_path: "/releases",
+    });
+
+    flushProductAnalyticsEvents();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(400);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(400);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+
+    await jest.advanceTimersByTimeAsync(400);
+    await Promise.resolve();
+
+    expect(mockFetch).toHaveBeenCalledTimes(3);
   });
 });
