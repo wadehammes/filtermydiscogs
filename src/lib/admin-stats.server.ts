@@ -1,4 +1,4 @@
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "src/lib/db";
 import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
 import type {
@@ -180,6 +180,12 @@ const buildRecentActivityPeriod = ({
   newPackedReleases: packedReleases[`packed_${window}`],
 });
 
+const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
+  totals: { last7Days: 0, last30Days: 0 },
+  pageViews: [],
+  events: [],
+});
+
 const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -289,7 +295,10 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       GROUP BY 1
       ORDER BY 1
     `,
-    fetchAdminFeatureUsageStats(),
+    fetchAdminFeatureUsageStats().catch((error) => {
+      console.error("Admin feature usage stats error:", error);
+      return emptyFeatureUsage();
+    }),
   ]);
 
   const users = usersOverview[0];
@@ -364,14 +373,13 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
   };
 };
 
-const getCachedAdminStats = unstable_cache(
-  fetchAdminStatsUncached,
-  ["admin-stats"],
-  {
-    revalidate: ADMIN_STATS_CACHE_SECONDS,
-    tags: ["admin-stats"],
-  },
-);
+async function getCachedAdminStats(): Promise<AdminStats> {
+  "use cache";
+  cacheLife({ revalidate: ADMIN_STATS_CACHE_SECONDS });
+  cacheTag("admin-stats");
+
+  return fetchAdminStatsUncached();
+}
 
 export const getAdminStats = async (): Promise<AdminStats> =>
   getCachedAdminStats();
