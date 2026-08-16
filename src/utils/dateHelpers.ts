@@ -1,8 +1,3 @@
-/**
- * Formats a date string to a readable format (e.g., "Jan 15, 2024")
- * @param dateString - The date string to format
- * @returns Formatted date string or empty string if invalid
- */
 export const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
@@ -14,4 +9,15 @@ export const formatDate = (dateString: string): string => {
   } catch {
     return "";
   }
+};
+
+export const startOfUtcDay = (date: Date): Date =>
+  new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+
+export const addUtcDays = (date: Date, days: number): Date => {
+  const next = new Date(date);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
 };

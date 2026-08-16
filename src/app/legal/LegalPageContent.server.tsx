@@ -91,6 +91,13 @@ export function LegalPageContent() {
               don&apos;t store your full collection there.
             </li>
             <li>
+              When you opt in to analytics, I may also store product usage
+              events in Postgres (for example page path, event name, and
+              interaction label). When you&apos;re signed in, those events can
+              include your account ID. I use them to understand how the app is
+              used, not to sell data.
+            </li>
+            <li>
               I don't sell your data, share it, or do anything sketchy with it.
               Period.
             </li>
@@ -140,9 +147,12 @@ export function LegalPageContent() {
               preferences are also stored on the server (see above).
             </li>
             <li>
-              <strong>Optional analytics cookies:</strong> When you opt in,
-              Google Tag Manager may set analytics cookies to measure page views
-              and basic interactions. Analytics does not run until you accept.
+              <strong>Optional analytics:</strong> When you opt in, Google Tag
+              Manager may set analytics cookies to measure page views and basic
+              interactions. The app may also store similar interaction events in
+              Postgres (for example page path, event name, and label) to
+              understand product usage, sometimes linked to your account ID when
+              you&apos;re signed in. Analytics does not run until you accept.
               You can change your choice anytime in Settings under Data, or use
               Essential only on the consent banner.
             </li>
@@ -154,8 +164,10 @@ export function LegalPageContent() {
               relationship.
             </li>
             <li>
-              Google Tag Manager handles analytics when you opt in.
-              Google&apos;s privacy policy applies there.
+              Google Tag Manager handles third-party analytics cookies when you
+              opt in. Google&apos;s privacy policy applies there. First-party
+              product analytics events are stored in my Postgres database under
+              the same consent choice.
             </li>
             <li>
               Images get proxied for speed, but I don't hoard them. They're
@@ -178,6 +190,10 @@ export function LegalPageContent() {
               (grid or table), your analytics cookie choice, and filter/sort
               selections when &quot;Remember filter selections&quot; is enabled
               in Settings
+            </li>
+            <li>
+              Product analytics events linked to your account (when you had
+              analytics enabled), such as page views and interaction labels
             </li>
             <li>
               Local preferences on this browser: theme, view mode, filters,

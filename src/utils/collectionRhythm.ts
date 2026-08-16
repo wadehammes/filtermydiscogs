@@ -6,6 +6,7 @@ import type {
   YearInReviewTimeframe,
   YearInReviewTimeframeMeta,
 } from "src/types/dashboard.types";
+import { startOfUtcDay } from "src/utils/dateHelpers";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -72,11 +73,6 @@ const parseReleaseDateAdded = (release: DiscogsRelease): Date | null => {
 
   return dateAdded;
 };
-
-const startOfUtcDay = (date: Date): Date =>
-  new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
 
 const getRollingYearBounds = (referenceDate: Date) => {
   const recentStart = new Date(referenceDate);

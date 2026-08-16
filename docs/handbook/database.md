@@ -59,6 +59,33 @@ Composite primary key: **`[user_id, crate_id, instance_id]`**. Cascades on crate
 
 Owner-only section labels within a crate layout (e.g. “Peak hour”). Composite primary key: **`[user_id, crate_id, id]`** (UUID). **`sort_order`** interleaves with releases in the unified layout. Not returned on public crate routes.
 
+### `ProductAnalyticsEvent`
+
+First-party product analytics when the visitor opts in (same consent gate as GTM). No FK to **`User`** — optional **`user_id`** for signed-in events.
+
+| Field | Notes |
+|-------|-------|
+| `event` / `category` / `action` / `label` | Event metadata (mirrors GTM-style payloads) |
+| `value` | Optional string value |
+| `page_path` | App route path when recorded |
+| `user_id` | Discogs user ID when signed in; nullable for anonymous page views |
+| `created_at` | Insert timestamp |
+
+Ingest: **`POST /api/analytics/events`** ([`product-analytics.server.ts`](../../src/lib/product-analytics.server.ts)). Batches capped at **`PRODUCT_ANALYTICS_MAX_BATCH_SIZE`** (20) in [`productAnalytics.types.ts`](../../src/types/productAnalytics.types.ts); client queue uses the same limit ([`productAnalyticsClient.ts`](../../src/analytics/productAnalyticsClient.ts)). Cleared on **`POST /api/auth/clear-data`** for the authenticated **`user_id`**. Raw rows are kept for **90 days**; older detail is rolled up then deleted (see **`ProductAnalyticsDailyRollup`**).
+
+### `ProductAnalyticsDailyRollup`
+
+Daily aggregates preserved after raw event retention. Composite primary key: **`[date, dimension_type, dimension_key]`** (UTC calendar date).
+
+| Field | Notes |
+|-------|-------|
+| `date` | UTC day bucket (`DATE`) |
+| `dimension_type` | `page_path` (page views) or `event` (non–page-view interactions) |
+| `dimension_key` | Path or event name |
+| `event_count` | Total events that day for that dimension |
+
+Populated by **`GET /api/cron/product-analytics`** ([`product-analytics-maintenance.server.ts`](../../src/lib/product-analytics-maintenance.server.ts)) — Vercel Cron daily at 04:00 UTC ([`vercel.json`](../../vercel.json)). Requires **`CRON_SECRET`**. Rollups are **incremental**: each run starts the day after the latest stored rollup (or the oldest raw event on first run), catches up through **yesterday** (UTC), and **always re-rolls yesterday** so late-arriving events update that day. Rows are written with a bulk **`INSERT … ON CONFLICT`** per dimension/day. UTC day boundaries use [`startOfUtcDay`](../../src/utils/dateHelpers.ts) / [`addUtcDays`](../../src/utils/dateHelpers.ts) (shared with [`collectionRhythm.ts`](../../src/utils/collectionRhythm.ts)).
+
 ## Migrations
 
 ```bash
@@ -103,14 +130,16 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/sync` | POST | Sync local crate state with server |
 | `/api/crates/health` | GET | Health check |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
-| `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, plus crate feature adoption: public crates, gig packing, notes, set markers, packed releases) |
-| `/api/auth/clear-data` | POST | Delete authenticated user's **`User`** row (cascades crates) and clear session cookies |
+| `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, and **feature usage** from **`product_analytics_daily_rollups`** + recent raw events) |
+| `/api/analytics/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** when signed in) |
+| `/api/cron/product-analytics` | GET | Daily rollup + 90-day raw retention (Vercel Cron; **`Authorization: Bearer CRON_SECRET`**) |
+| `/api/auth/clear-data` | POST | Delete authenticated user's **`User`** row (cascades crates), delete **`product_analytics_events`** rows for that **`user_id`**, and clear session cookies |
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 
 Authenticated crate handlers return **`privateRouteJson`** / **`createErrorResponse`** ([`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)). With **`cacheComponents`**, do **not** add **`export const dynamic = "force-dynamic"`** — cookie/session access keeps handlers dynamic automatically. See [platform.md](platform.md) (**Private session API responses**).
 
-**`/api/crates/health`** is admin-only (same OAuth verification as **`/api/admin/stats`**).
+**`/api/crates/health`** is admin-only ([`verifyAdminFromRequest`](../../src/lib/admin-helpers.ts), same OAuth verification as **`/api/admin/stats`**).
 
 ## Public community stats
 

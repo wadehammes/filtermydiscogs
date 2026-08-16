@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { trackUserDataCleared } from "src/analytics/productAnalyticsEvents";
 import { clearData } from "src/api/helpers";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
@@ -19,6 +20,7 @@ export const useClearAllUserData = () => {
     setIsClearing(true);
 
     try {
+      trackUserDataCleared();
       await clearData();
       clearClientStoredData();
       queryClient.clear();

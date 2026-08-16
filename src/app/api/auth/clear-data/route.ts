@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await prisma.productAnalyticsEvent.deleteMany({
+      where: { user_id: verified.user.userId },
+    });
+
     await prisma.user.delete({
       where: { discogs_user_id: verified.user.userId },
     });

@@ -10,6 +10,10 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  trackPlaybackQueued,
+  trackPlaybackStarted,
+} from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
@@ -419,6 +423,7 @@ export const ReleasePlaybackProvider = ({
       shouldRebuildAlbumQueueRef.current = true;
       setQueue([item]);
       setQueueIndex(0);
+      trackPlaybackStarted(nextRelease.instance_id);
       playQueueItem(item, {
         autoplay: !startPaused,
         rebuildAlbumQueue: true,
@@ -431,6 +436,7 @@ export const ReleasePlaybackProvider = ({
   const addToQueue = useCallback(
     ({ release, trackPosition, trackTitle }: AddToQueueParams) => {
       const item = createQueueItem({ release, trackPosition, trackTitle });
+      trackPlaybackQueued(release.instance_id);
       setQueue((previousQueue) => appendQueueItem(previousQueue, item));
     },
     [],

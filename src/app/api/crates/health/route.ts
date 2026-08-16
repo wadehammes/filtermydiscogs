@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { verifyAdminUser } from "src/lib/admin-helpers";
+import { verifyAdminFromRequest } from "src/lib/admin-helpers";
 import { getPoolMetrics, prisma } from "src/lib/db";
 import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
@@ -9,11 +9,7 @@ import { privateRouteJson } from "src/lib/private-route-response";
  * Admin-only health check for debugging production issues.
  */
 export async function GET(request: NextRequest) {
-  const accessToken = request.cookies.get("discogs_access_token")?.value;
-  const accessTokenSecret = request.cookies.get(
-    "discogs_access_token_secret",
-  )?.value;
-  const isAdmin = await verifyAdminUser(accessToken, accessTokenSecret);
+  const isAdmin = await verifyAdminFromRequest(request);
 
   if (!isAdmin) {
     return privateRouteJson({ error: "Forbidden" }, { status: 403 });

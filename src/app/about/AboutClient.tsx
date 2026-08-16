@@ -24,6 +24,7 @@ export function AboutClient() {
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
           "• Delete your saved account preferences (theme, default view, filter selections, and analytics cookie choice)\n" +
+          "• Delete product analytics events linked to your account (when analytics was enabled)\n" +
           "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",
       )
@@ -119,6 +120,10 @@ export function AboutClient() {
               (grid or table), your analytics cookie choice, and filter/sort
               selections when &quot;Remember filter selections&quot; is enabled
               in Settings
+            </li>
+            <li>
+              Product analytics events linked to your account (when you had
+              analytics enabled), such as page views and interaction labels
             </li>
             <li>
               Local preferences on this browser: theme, view mode, filters,

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { trackCrateLayoutUpdated } from "src/analytics/productAnalyticsEvents";
 import {
   addReleaseToCrate,
   clearAllPackedInCrate,
@@ -738,6 +739,7 @@ export const useUpdateCrateLayoutMutation = (userId: string | null) => {
       showCrateMutationError("Failed to update crate layout", error);
     },
     onSuccess: (data, { crateId }) => {
+      trackCrateLayoutUpdated(crateId);
       queryClient.setQueryData<CrateWithReleasesResponse>(
         CrateQueryKeys.byUserAndId(userId, crateId),
         (old) => {

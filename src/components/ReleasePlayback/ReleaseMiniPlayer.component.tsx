@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
 import { ListThinIcon } from "src/components/shared/icons/ListThinIcon.component";
 import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
@@ -110,6 +111,9 @@ export const ReleaseMiniPlayer = ({
 
   const handleVideoToggle = useCallback(() => {
     markPlaybackVideoIntroSeen();
+    if (!isVideoPanelExpanded) {
+      trackPlaybackVideoOpened();
+    }
     setVideoPanelOverride(isVideoPanelExpanded ? "closed" : "open");
   }, [isVideoPanelExpanded]);
 

@@ -1,0 +1,156 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.sectionHeader {
+  border-left: 3px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-4);
+}
+
+.sectionTitle {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 1.75rem;
+  max-width: 14rem;
+  width: 55%;
+}
+
+.sectionLede {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 1rem;
+  max-width: 28rem;
+  width: 80%;
+}
+
+.heroEyebrow {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 0.75rem;
+  max-width: 8rem;
+  width: 35%;
+}
+
+.heroTitle {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 2rem;
+  max-width: 16rem;
+  width: 60%;
+}
+
+.heroCount {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 3.5rem;
+  max-width: 10rem;
+  width: 45%;
+}
+
+.heroLine {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 1rem;
+  max-width: 24rem;
+  width: 75%;
+}
+
+.heroCountBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.metricLabel {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 0.75rem;
+  width: 70%;
+}
+
+.metricValue {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  height: 1.5rem;
+  width: 50%;
+}
+
+.statGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.statGridWide {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.statCard {
+  background: var(--muted);
+  border-radius: var(--radius-card);
+  height: 6.5rem;
+}
+
+.cardGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  background: var(--muted);
+  border-radius: var(--radius-card);
+  height: 14rem;
+}
+
+.chartGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (width >= 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.chartCard {
+  background: var(--muted);
+  border-radius: var(--radius-card);
+  height: 18rem;
+}

@@ -1,7 +1,10 @@
 .chartCard {
+  --surface: var(--card);
+
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -11,12 +14,15 @@
 
 .chartTitle {
   color: var(--foreground);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: var(--font-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   margin: 0;
 }
 
 .chartWrapper {
+  min-height: 0;
   width: 100%;
 }
 

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
+import { THEME_PRIMARY_CHART_COLOR } from "src/utils/chartConfig";
 import {
   type AdminGrowthPoint,
   createAdminGrowthAreaChartDefinition,
@@ -21,7 +22,7 @@ interface GrowthAreaChartProps {
 export const GrowthAreaChart = ({
   title,
   data,
-  color = "#5e5365",
+  color = THEME_PRIMARY_CHART_COLOR,
   height = 250,
   formatter,
 }: GrowthAreaChartProps) => {
@@ -39,7 +40,11 @@ export const GrowthAreaChart = ({
     <div className={styles.chartCard}>
       <h3 className={styles.chartTitle}>{title}</h3>
       <div className={styles.chartWrapper} style={{ height: `${height}px` }}>
-        <TanstackChart ariaLabel={title} definition={definition} />
+        <TanstackChart
+          ariaLabel={title}
+          definition={definition}
+          height={height}
+        />
       </div>
     </div>
   );

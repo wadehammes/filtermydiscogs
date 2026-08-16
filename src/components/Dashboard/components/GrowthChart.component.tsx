@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
+import { THEME_PRIMARY_CHART_COLOR } from "src/utils/chartConfig";
 import { analyzeGrowthByYear } from "src/utils/growthTracker";
 import { createCollectionGrowthAreaChartDefinition } from "src/utils/tanstackCharts";
 import styles from "./GrowthChart.module.css";
@@ -14,7 +15,7 @@ interface GrowthChartProps {
   hideHeading?: boolean;
 }
 
-const CHART_COLOR = "var(--primary)";
+const CHART_COLOR = THEME_PRIMARY_CHART_COLOR;
 
 export const GrowthChart = ({
   growthData,
