@@ -15,12 +15,21 @@ export async function GET(request: NextRequest) {
     return privateRouteJson({ error: "Forbidden" }, { status: 403 });
   }
 
+  const databaseUrl = process.env.DATABASE_URL;
   const diagnostics: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasDatabaseUrl: !!databaseUrl,
     prismaClientStatus: "unknown",
   };
+
+  if (databaseUrl) {
+    try {
+      diagnostics.databaseHost = new URL(databaseUrl).hostname;
+    } catch {
+      diagnostics.databaseHost = "invalid";
+    }
+  }
 
   try {
     const startTime = Date.now();
@@ -39,6 +48,16 @@ export async function GET(request: NextRequest) {
     } catch (error) {
       diagnostics.crateTableAccessible = false;
       diagnostics.crateTableError =
+        error instanceof Error ? error.message : String(error);
+    }
+
+    try {
+      const analyticsEventCount = await prisma.productAnalyticsEvent.count();
+      diagnostics.analyticsEventsTableAccessible = true;
+      diagnostics.analyticsEventCount = analyticsEventCount;
+    } catch (error) {
+      diagnostics.analyticsEventsTableAccessible = false;
+      diagnostics.analyticsEventsTableError =
         error instanceof Error ? error.message : String(error);
     }
 
