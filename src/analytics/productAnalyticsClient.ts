@@ -1,12 +1,17 @@
 import type { ProductAnalyticsEventInput } from "src/types/productAnalytics.types";
-import { PRODUCT_ANALYTICS_MAX_BATCH_SIZE } from "src/types/productAnalytics.types";
+import {
+  PRODUCT_ANALYTICS_INGEST_PATH,
+  PRODUCT_ANALYTICS_MAX_BATCH_SIZE,
+} from "src/types/productAnalytics.types";
 import { isBrowser } from "src/utils/helpers";
 
 const FLUSH_DELAY_MS = 400;
+export const PRODUCT_ANALYTICS_MAX_FLUSH_ATTEMPTS = 3;
 
 let eventQueue: ProductAnalyticsEventInput[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let lifecycleListenersRegistered = false;
+let consecutiveFlushFailures = 0;
 
 const registerLifecycleFlushListeners = () => {
   if (!isBrowser() || lifecycleListenersRegistered) {
@@ -32,7 +37,7 @@ const postProductAnalyticsEvents = async (
   const payload = JSON.stringify({ events });
 
   try {
-    const response = await fetch("/api/analytics/events", {
+    const response = await fetch(PRODUCT_ANALYTICS_INGEST_PATH, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: payload,
@@ -60,10 +65,29 @@ export const flushProductAnalyticsEvents = () => {
 
   void postProductAnalyticsEvents(events).then((ok) => {
     if (!ok) {
+      consecutiveFlushFailures += 1;
+
+      if (consecutiveFlushFailures >= PRODUCT_ANALYTICS_MAX_FLUSH_ATTEMPTS) {
+        consecutiveFlushFailures = 0;
+
+        if (flushTimer !== null) {
+          clearTimeout(flushTimer);
+          flushTimer = null;
+        }
+
+        if (eventQueue.length > 0) {
+          scheduleProductAnalyticsFlush();
+        }
+
+        return;
+      }
+
       eventQueue.unshift(...events);
       scheduleProductAnalyticsFlush();
       return;
     }
+
+    consecutiveFlushFailures = 0;
 
     if (eventQueue.length > 0) {
       scheduleProductAnalyticsFlush();
@@ -112,6 +136,7 @@ export const queueProductAnalyticsEvent = (
 
 export const resetProductAnalyticsQueueForTests = () => {
   eventQueue = [];
+  consecutiveFlushFailures = 0;
 
   if (flushTimer !== null) {
     clearTimeout(flushTimer);

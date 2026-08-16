@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { PRODUCT_ANALYTICS_INGEST_PATH } from "src/types/productAnalytics.types";
 
 jest.mock("src/lib/auth-request", () => ({
   getOptionalVerifiedUserFromRequest: jest.fn(),
@@ -22,7 +23,7 @@ jest.mock("src/lib/product-analytics.server", () => ({
   insertProductAnalyticsEvents: jest.fn(),
 }));
 
-type RouteModule = typeof import("src/app/api/analytics/events/route");
+type RouteModule = typeof import("src/app/api/usage/events/route");
 type AuthRequestModule = typeof import("src/lib/auth-request");
 type ProductAnalyticsModule = typeof import("src/lib/product-analytics.server");
 
@@ -49,7 +50,7 @@ const sampleEvents = [
 ];
 
 const createPostRequest = (body: string, contentType = "application/json") =>
-  new NextRequest("http://localhost/api/analytics/events", {
+  new NextRequest(`http://localhost${PRODUCT_ANALYTICS_INGEST_PATH}`, {
     method: "POST",
     headers: { "Content-Type": contentType },
     body,
@@ -57,7 +58,7 @@ const createPostRequest = (body: string, contentType = "application/json") =>
 
 beforeAll(async () => {
   const [routeModule, authRequest, productAnalytics] = await Promise.all([
-    import("src/app/api/analytics/events/route"),
+    import("src/app/api/usage/events/route"),
     import("src/lib/auth-request"),
     import("src/lib/product-analytics.server"),
   ]);
@@ -74,7 +75,7 @@ beforeAll(async () => {
   );
 });
 
-describe("POST /api/analytics/events", () => {
+describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {

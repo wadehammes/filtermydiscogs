@@ -9,6 +9,8 @@ export interface ProductAnalyticsEventInput {
 
 export const PRODUCT_ANALYTICS_MAX_BATCH_SIZE = 20;
 
+export const PRODUCT_ANALYTICS_INGEST_PATH = "/api/usage/events";
+
 export interface AdminStatsFeatureUsageRow {
   key: string;
   label: string;

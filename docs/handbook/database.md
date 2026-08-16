@@ -71,7 +71,7 @@ First-party product analytics when the visitor opts in (same consent gate as GTM
 | `user_id` | Discogs user ID when signed in; nullable for anonymous page views |
 | `created_at` | Insert timestamp |
 
-Ingest: **`POST /api/analytics/events`** ([`product-analytics.server.ts`](../../src/lib/product-analytics.server.ts)). Batches capped at **`PRODUCT_ANALYTICS_MAX_BATCH_SIZE`** (20) in [`productAnalytics.types.ts`](../../src/types/productAnalytics.types.ts); client queue uses the same limit ([`productAnalyticsClient.ts`](../../src/analytics/productAnalyticsClient.ts)). Cleared on **`POST /api/auth/clear-data`** for the authenticated **`user_id`**. Raw rows are kept for **90 days**; older detail is rolled up then deleted (see **`ProductAnalyticsDailyRollup`**).
+Ingest: **`POST /api/usage/events`** ([`PRODUCT_ANALYTICS_INGEST_PATH`](../../src/types/productAnalytics.types.ts), handler [`src/app/api/usage/events/route.ts`](../../src/app/api/usage/events/route.ts), logic [`product-analytics.server.ts`](../../src/lib/product-analytics.server.ts)). Batches capped at **`PRODUCT_ANALYTICS_MAX_BATCH_SIZE`** (20) in [`productAnalytics.types.ts`](../../src/types/productAnalytics.types.ts); client queue uses the same limit ([`productAnalyticsClient.ts`](../../src/analytics/productAnalyticsClient.ts)). Cleared on **`POST /api/auth/clear-data`** for the authenticated **`user_id`**. Raw rows are kept for **90 days**; older detail is rolled up then deleted (see **`ProductAnalyticsDailyRollup`**).
 
 ### `ProductAnalyticsDailyRollup`
 
@@ -133,7 +133,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, and **feature usage** from **`product_analytics_daily_rollups`** + recent raw events) |
-| `/api/analytics/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** when signed in) |
+| `/api/usage/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** when signed in) |
 | `/api/cron/product-analytics` | GET | Daily rollup + 90-day raw retention (Vercel Cron; **`Authorization: Bearer CRON_SECRET`**) |
 | `/api/auth/clear-data` | POST | Delete authenticated user's **`User`** row (cascades crates), delete **`product_analytics_events`** rows for that **`user_id`**, and clear session cookies |
 
