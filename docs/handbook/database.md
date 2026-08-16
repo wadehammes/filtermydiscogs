@@ -113,6 +113,8 @@ pnpm dev                # app uses .env.local
 
 Generated Prisma client output is **not committed** (`/prisma/node_modules` and root `node_modules/.prisma/client` are gitignored; CI and `postinstall` run `prisma generate`).
 
+**Vercel builds** run **`prisma migrate deploy`** before **`next build`** ([`package.json`](../../package.json)) so each Production / Preview deployment applies pending migrations to that target’s **`DATABASE_URL`**. For one-off fixes, still use **`pnpm db:pull:prod`** + **`pnpm db:migrate:prod`** locally. Preview and Production use **separate** Prisma Postgres instances — migrating one does not migrate the other.
+
 Migrations live under [`prisma/migrations/`](../../prisma/migrations/).
 
 CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platform.md)).
@@ -128,7 +130,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/[id]/releases/[releaseId]` | PATCH, DELETE | Mark packed / remove release from crate |
 | `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers) |
 | `/api/crates/sync` | POST | Sync local crate state with server |
-| `/api/crates/health` | GET | Health check |
+| `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, and **feature usage** from **`product_analytics_daily_rollups`** + recent raw events) |
 | `/api/analytics/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** when signed in) |
@@ -139,7 +141,7 @@ All mutating crate routes require a verified OAuth session via **`getVerifiedUse
 
 Authenticated crate handlers return **`privateRouteJson`** / **`createErrorResponse`** ([`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)). With **`cacheComponents`**, do **not** add **`export const dynamic = "force-dynamic"`** — cookie/session access keeps handlers dynamic automatically. See [platform.md](platform.md) (**Private session API responses**).
 
-**`/api/crates/health`** is admin-only ([`verifyAdminFromRequest`](../../src/lib/admin-helpers.ts), same OAuth verification as **`/api/admin/stats`**).
+**`/api/crates/health`** is admin-only ([`verifyAdminFromRequest`](../../src/lib/admin-helpers.ts), same OAuth verification as **`/api/admin/stats`**). Returns JSON diagnostics: Prisma connectivity, sanitized **`databaseHost`** (from **`DATABASE_URL`**), **`crateTableAccessible`** / **`crateCount`**, **`analyticsEventsTableAccessible`** / **`analyticsEventCount`** (confirms the analytics ingest migration is applied on the DB this deployment uses), optional pool/query/audit stats when **`DB_ENABLE_DIAGNOSTICS=true`**. Use after deploy or migration issues — Production and Preview use separate Postgres instances.
 
 ## Public community stats
 
