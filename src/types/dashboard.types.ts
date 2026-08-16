@@ -109,6 +109,17 @@ export interface AdminStatsGrowthDataPoint {
   count: number;
 }
 
+export interface AdminStatsDailyCountPoint {
+  date: string;
+  count: number;
+}
+
+export interface AdminStatsReturningUsersTimeSeries {
+  last7Days: AdminStatsDailyCountPoint[];
+  last30Days: AdminStatsDailyCountPoint[];
+  last90Days: AdminStatsDailyCountPoint[];
+}
+
 export interface AdminStatsCrateFeatures {
   publicCrates: number;
   packedEnabledCrates: number;
@@ -135,6 +146,7 @@ export interface AdminStatsEngagement {
     last7Days: number;
     last30Days: number;
   };
+  returningUsersTimeSeries: AdminStatsReturningUsersTimeSeries;
   signupFunnel: {
     usersWithNoCrates: number;
     usersWithCrates: number;

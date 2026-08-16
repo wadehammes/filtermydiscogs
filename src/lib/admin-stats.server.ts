@@ -3,11 +3,15 @@ import { prisma } from "src/lib/db";
 import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
 import type {
   AdminStats,
+  AdminStatsDailyCountPoint,
   AdminStatsGrowthDataPoint,
   AdminStatsRecentActivityPeriod,
+  AdminStatsReturningUsersTimeSeries,
 } from "src/types/dashboard.types";
+import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
 
 export const ADMIN_STATS_CACHE_SECONDS = 60;
+export const RETURNING_USERS_SERIES_DAYS = 90;
 
 type WindowCountRow = {
   last_7d: number;
@@ -64,6 +68,63 @@ const countDistinctActiveUsers = async (since: Date): Promise<number> => {
   return rows[0]?.count ?? 0;
 };
 
+const fetchReturningUsersTimeSeries =
+  async (): Promise<AdminStatsReturningUsersTimeSeries> => {
+    const end = startOfUtcDay(new Date());
+    const start = addUtcDays(end, -(RETURNING_USERS_SERIES_DAYS - 1));
+
+    const rows = await prisma.$queryRaw<
+      Array<{
+        date: string;
+        count_7d: number;
+        count_30d: number;
+        count_90d: number;
+      }>
+    >`
+      WITH days AS (
+        SELECT day::date AS day
+        FROM generate_series(
+          ${start}::date,
+          ${end}::date,
+          INTERVAL '1 day'
+        ) AS day
+      )
+      SELECT
+        to_char(days.day, 'YYYY-MM-DD') AS date,
+        COUNT(*) FILTER (
+          WHERE u.created_at < days.day - INTERVAL '7 days'
+            AND u.updated_at >= days.day - INTERVAL '7 days'
+            AND u.updated_at < days.day + INTERVAL '1 day'
+        )::int AS count_7d,
+        COUNT(*) FILTER (
+          WHERE u.created_at < days.day - INTERVAL '30 days'
+            AND u.updated_at >= days.day - INTERVAL '30 days'
+            AND u.updated_at < days.day + INTERVAL '1 day'
+        )::int AS count_30d,
+        COUNT(*) FILTER (
+          WHERE u.created_at < days.day - INTERVAL '90 days'
+            AND u.updated_at >= days.day - INTERVAL '90 days'
+            AND u.updated_at < days.day + INTERVAL '1 day'
+        )::int AS count_90d
+      FROM days
+      CROSS JOIN users u
+      GROUP BY days.day
+      ORDER BY days.day
+    `;
+
+    const last7Days: AdminStatsDailyCountPoint[] = [];
+    const last30Days: AdminStatsDailyCountPoint[] = [];
+    const last90Days: AdminStatsDailyCountPoint[] = [];
+
+    for (const row of rows) {
+      last7Days.push({ date: row.date, count: row.count_7d });
+      last30Days.push({ date: row.date, count: row.count_30d });
+      last90Days.push({ date: row.date, count: row.count_90d });
+    }
+
+    return { last7Days, last30Days, last90Days };
+  };
+
 export const fetchAdminEngagementStats = async ({
   sevenDaysAgo,
   thirtyDaysAgo,
@@ -85,6 +146,7 @@ export const fetchAdminEngagementStats = async ({
     usersWithNoCrates,
     usersWithCrates,
     staleAccounts,
+    returningUsersTimeSeries,
   ] = await Promise.all([
     countDistinctActiveUsers(sevenDaysAgo),
     countDistinctActiveUsers(thirtyDaysAgo),
@@ -123,6 +185,7 @@ export const fetchAdminEngagementStats = async ({
         },
       },
     }),
+    fetchReturningUsersTimeSeries(),
   ]);
 
   return {
@@ -134,6 +197,7 @@ export const fetchAdminEngagementStats = async ({
       last7Days: returningUsersLast7Days,
       last30Days: returningUsersLast30Days,
     },
+    returningUsersTimeSeries,
     signupFunnel: {
       usersWithNoCrates,
       usersWithCrates,

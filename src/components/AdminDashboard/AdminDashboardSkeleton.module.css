@@ -117,6 +117,13 @@
   height: 6.5rem;
 }
 
+.featureChartCard {
+  background: var(--muted);
+  border-radius: var(--radius-card);
+  height: 22rem;
+  width: 100%;
+}
+
 .cardGrid {
   display: grid;
   gap: var(--space-4);

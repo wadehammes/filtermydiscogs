@@ -2,17 +2,22 @@
 
 import { useMemo } from "react";
 import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
+import type { AdminStatsDailyCountPoint } from "src/types/dashboard.types";
 import { THEME_PRIMARY_CHART_COLOR } from "src/utils/chartConfig";
 import {
   type AdminGrowthPoint,
   createAdminGrowthAreaChartDefinition,
+  createDailyCountAreaChartDefinition,
+  formatChartDay,
   formatMonthYear,
 } from "src/utils/tanstackCharts";
 import styles from "./GrowthAreaChart.module.css";
 
 interface GrowthAreaChartProps {
   title: string;
-  data: AdminGrowthPoint[];
+  description?: string;
+  data: AdminGrowthPoint[] | AdminStatsDailyCountPoint[];
+  interval?: "month" | "day";
   color?: string;
   height?: number;
   formatter?: (value: unknown) => [string, string];
@@ -21,24 +26,42 @@ interface GrowthAreaChartProps {
 
 export const GrowthAreaChart = ({
   title,
+  description,
   data,
+  interval = "month",
   color = THEME_PRIMARY_CHART_COLOR,
   height = 250,
   formatter,
 }: GrowthAreaChartProps) => {
-  const definition = useMemo(
-    () =>
-      createAdminGrowthAreaChartDefinition(data, {
-        color,
-        formatX: formatMonthYear,
-        tooltipValueLabel: formatter?.(0)?.[1] ?? title,
-      }),
-    [color, data, formatter, title],
-  );
+  const tooltipValueLabel = formatter?.(0)?.[1] ?? title;
+
+  const definition = useMemo(() => {
+    if (interval === "day") {
+      return createDailyCountAreaChartDefinition(
+        data as AdminStatsDailyCountPoint[],
+        {
+          color,
+          formatX: formatChartDay,
+          tooltipValueLabel,
+        },
+      );
+    }
+
+    return createAdminGrowthAreaChartDefinition(data as AdminGrowthPoint[], {
+      color,
+      formatX: formatMonthYear,
+      tooltipValueLabel,
+    });
+  }, [color, data, interval, tooltipValueLabel]);
 
   return (
     <div className={styles.chartCard}>
-      <h3 className={styles.chartTitle}>{title}</h3>
+      <div className={styles.chartHeading}>
+        <h3 className={styles.chartTitle}>{title}</h3>
+        {description ? (
+          <p className={styles.chartDescription}>{description}</p>
+        ) : null}
+      </div>
       <div className={styles.chartWrapper} style={{ height: `${height}px` }}>
         <TanstackChart
           ariaLabel={title}

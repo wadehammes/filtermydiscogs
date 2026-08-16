@@ -39,6 +39,7 @@ export function AdminDashboardSkeleton() {
             <div className={styles.statCard} key={index} />
           ))}
         </div>
+        <div className={styles.featureChartCard} />
         <div className={styles.statGrid}>
           {[0, 1, 2].map((index) => (
             <div className={styles.statCard} key={`avg-${index}`} />

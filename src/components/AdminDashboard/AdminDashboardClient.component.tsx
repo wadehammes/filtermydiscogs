@@ -3,6 +3,7 @@
 import { AdminDashboardSkeleton } from "src/components/AdminDashboard/AdminDashboardSkeleton.component";
 import { AdminHero } from "src/components/AdminDashboard/AdminHero.component";
 import { AdminMetricTable } from "src/components/AdminDashboard/AdminMetricTable.component";
+import { ReturningUsersChart } from "src/components/AdminDashboard/ReturningUsersChart.component";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { DashboardSection } from "src/components/Dashboard/components/DashboardSection.component";
 import dashboardStyles from "src/components/Dashboard/DashboardClient.module.css";
@@ -185,6 +186,10 @@ export default function AdminDashboardClient() {
                     )}
                   />
                 </StatsGrid>
+
+                <ReturningUsersChart
+                  timeSeries={stats.engagement.returningUsersTimeSeries}
+                />
 
                 <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
                   <StatCard
