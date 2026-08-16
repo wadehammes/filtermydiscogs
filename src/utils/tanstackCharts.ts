@@ -118,9 +118,39 @@ const modernValueAxis = {
   axis: modernAxisPresentation,
 };
 
+const resolveCountMax = (values: readonly number[]): number =>
+  Math.max(
+    values.reduce((max, value) => Math.max(max, value), 0),
+    5,
+  );
+
+const resolveDualSeriesCountMax = (data: readonly DualSeriesPoint[]): number =>
+  resolveCountMax(
+    data.flatMap((point) => [point.primaryValue, point.secondaryValue]),
+  );
+
+const createCountValueAxis = (domainMax: number) => ({
+  scale: scaleLinear().domain([0, domainMax]),
+  nice: domainMax > 5,
+  grid: true,
+  axis: {
+    ...modernAxisPresentation,
+    ticks: {
+      ...modernAxisPresentation.ticks,
+      format: (value: number) =>
+        Number.isInteger(value) ? value.toLocaleString() : "",
+    },
+  },
+});
+
 const cartesianChartFrame = {
   clip: true,
   margin: { left: 56 },
+};
+
+const compactDailyCountChartFrame = {
+  clip: true,
+  margin: { left: 28, right: 4, top: 4 },
 };
 
 interface GrowthAreaChartOptions {
@@ -137,6 +167,7 @@ interface DualSeriesAreaChartOptions {
   secondaryLabel: string;
   formatX: (value: string) => string;
   valueFormat: "count" | "percent";
+  countValueSuffix?: string;
 }
 
 export const formatMonthYear = (date: string): string => {
@@ -153,6 +184,19 @@ export const formatMonthYear = (date: string): string => {
   return dateObj.toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
+  });
+};
+
+export const formatChartDay = (date: string): string => {
+  const dateObj = new Date(`${date}T00:00:00Z`);
+
+  if (Number.isNaN(dateObj.getTime())) {
+    return date;
+  }
+
+  return dateObj.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
   });
 };
 
@@ -346,7 +390,10 @@ export const createDualSeriesAreaChartDefinition = (
             },
           },
         },
-        y: options.valueFormat === "percent" ? shareValueAxis : modernValueAxis,
+        y:
+          options.valueFormat === "percent"
+            ? shareValueAxis
+            : createCountValueAxis(resolveDualSeriesCountMax(data)),
       };
     },
     tooltip: {
@@ -369,9 +416,68 @@ export const createDualSeriesAreaChartDefinition = (
           options.valueFormat,
         );
         const suffix =
-          options.valueFormat === "percent" ? " of adds" : " total records";
+          options.valueFormat === "percent"
+            ? " of adds"
+            : (options.countValueSuffix ?? " total records");
 
         return `${periodLabel}\n${options.primaryLabel}: ${primaryValue}${suffix}\n${options.secondaryLabel}: ${secondaryValue}${suffix}`;
+      },
+    },
+  }) as DomChartDefinition;
+
+export const createDailyCountAreaChartDefinition = (
+  data: readonly { date: string; count: number }[],
+  options: GrowthAreaChartOptions,
+): DomChartDefinition =>
+  defineChart({
+    chart: ({ width }) => {
+      const tickValues = pickEvenlySpacedTickValues(
+        data.map((point) => point.date),
+        resolveTimeSeriesTickCount(width),
+      );
+
+      return {
+        ...chartMotion,
+        ...compactDailyCountChartFrame,
+        marks: [
+          areaY(data, {
+            x: "date",
+            y: "count",
+            fill: options.color,
+            fillOpacity: 0.16,
+            stroke: options.color,
+            strokeWidth: 2.5,
+            curve: smoothAreaCurve,
+          }),
+        ],
+        x: {
+          scale: () => scalePoint<string>().padding(0.35),
+          axis: {
+            ...modernAxisPresentation,
+            ticks: {
+              ...modernAxisPresentation.ticks,
+              values: tickValues,
+              format: (value: string | number) =>
+                options.formatX(String(value)),
+            },
+          },
+        },
+        y: createCountValueAxis(
+          resolveCountMax(data.map((point) => point.count)),
+        ),
+      };
+    },
+    tooltip: {
+      ...chartTooltip,
+      format(point) {
+        const typedPoint = point as ChartPoint<{ date: string; count: number }>;
+        const xValue = String(typedPoint.xValue ?? "");
+        const yValue =
+          typeof typedPoint.yValue === "number"
+            ? typedPoint.yValue.toLocaleString()
+            : String(typedPoint.yValue ?? "");
+
+        return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel ?? "records"}`;
       },
     },
   }) as DomChartDefinition;
