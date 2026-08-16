@@ -10,11 +10,16 @@ import {
   sitePageTitle,
 } from "src/constants/siteMetadata";
 import { fetchPublicCrateMetadata } from "src/lib/api-helpers";
-import { getPublicCrateIdsForStaticGeneration } from "src/lib/public-crate.server";
+import {
+  getPublicCrateIdsForStaticGeneration,
+  PUBLIC_CRATE_BUILD_PRERENDER_LIMIT,
+} from "src/lib/public-crate.server";
 import { PublicCrateClient } from "./PublicCrateClient";
 
 export async function generateStaticParams() {
-  const ids = await getPublicCrateIdsForStaticGeneration();
+  const ids = await getPublicCrateIdsForStaticGeneration(
+    PUBLIC_CRATE_BUILD_PRERENDER_LIMIT,
+  );
   return ids.map((id) => ({ id }));
 }
 
@@ -29,7 +34,13 @@ export async function generateMetadata({
   const crateUrl = `${baseUrl}/crate/${id}`;
   const ogImageUrl = new URL(`/api/og/crate/${id}`, baseUrl).href;
 
-  const data = await fetchPublicCrateMetadata(id);
+  let data: Awaited<ReturnType<typeof fetchPublicCrateMetadata>> = null;
+
+  try {
+    data = await fetchPublicCrateMetadata(id);
+  } catch (error) {
+    console.error(`Failed to load public crate metadata for ${id}:`, error);
+  }
 
   if (data) {
     const crateName = data.crate.name;

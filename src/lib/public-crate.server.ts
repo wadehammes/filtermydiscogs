@@ -2,8 +2,9 @@ import { cacheLife } from "next/cache";
 import { prisma } from "src/lib/db";
 
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
+export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
 
-async function listRecentPublicCrateIds(): Promise<string[]> {
+async function listRecentPublicCrateIds(limit: number): Promise<string[]> {
   "use cache";
   cacheLife({ revalidate: 300 });
 
@@ -11,21 +12,21 @@ async function listRecentPublicCrateIds(): Promise<string[]> {
     where: { private: false },
     select: { id: true },
     orderBy: { updated_at: "desc" },
-    take: PUBLIC_CRATE_STATIC_PARAMS_LIMIT,
+    take: limit,
   });
 
   return crates.map((crate) => crate.id);
 }
 
-export async function getPublicCrateIdsForStaticGeneration(): Promise<
-  string[]
-> {
+export async function getPublicCrateIdsForStaticGeneration(
+  limit = PUBLIC_CRATE_STATIC_PARAMS_LIMIT,
+): Promise<string[]> {
   if (!process.env.DATABASE_URL) {
     return [];
   }
 
   try {
-    return await listRecentPublicCrateIds();
+    return await listRecentPublicCrateIds(limit);
   } catch (error) {
     console.error("Failed to list public crates for static generation:", error);
     return [];
