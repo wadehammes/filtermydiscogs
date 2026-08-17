@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@11.21.0",
+  "packageManager": "pnpm@11.22.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev -p 6767",
@@ -53,9 +53,9 @@
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@svgr/webpack": "^8.1.0",
-    "@tanstack/charts": "^0.13.0",
-    "@tanstack/charts-scales": "^0.13.0",
-    "@tanstack/react-charts": "^0.13.0",
+    "@tanstack/charts": "^0.14.0",
+    "@tanstack/charts-scales": "^0.14.0",
+    "@tanstack/react-charts": "^0.14.0",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-table": "^9.1.2",
     "classnames": "^2.5.1",
