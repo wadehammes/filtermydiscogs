@@ -34,6 +34,23 @@ export function AdminDashboardSkeleton() {
           <div className={styles.sectionTitle} />
           <div className={styles.sectionLede} />
         </div>
+        <div className={styles.statGrid}>
+          {[0, 1, 2, 3].map((index) => (
+            <div className={styles.statCard} key={index} />
+          ))}
+        </div>
+        <div className={styles.cardGrid}>
+          {[0, 1].map((index) => (
+            <div className={styles.card} key={`pref-${index}`} />
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle} />
+          <div className={styles.sectionLede} />
+        </div>
         <div className={styles.statGridWide}>
           {[0, 1, 2, 3].map((index) => (
             <div className={styles.statCard} key={index} />

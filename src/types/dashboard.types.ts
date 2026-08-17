@@ -101,6 +101,7 @@ export interface MostCratedRelease {
 
 export interface AdminStatsTopUser {
   user_id: number;
+  username: string;
   count: number;
 }
 
@@ -137,6 +138,22 @@ export interface AdminStatsRecentActivityPeriod {
   newPackedReleases: number;
 }
 
+export interface AdminStatsPreferenceBreakdownRow {
+  key: string;
+  count: number;
+}
+
+export interface AdminStatsAccountPreferences {
+  persistFiltersEnabled: number;
+  analyticsConsent: {
+    enabled: number;
+    disabled: number;
+    unset: number;
+  };
+  themes: AdminStatsPreferenceBreakdownRow[];
+  defaultViews: AdminStatsPreferenceBreakdownRow[];
+}
+
 export interface AdminStatsEngagement {
   activeUsers: {
     last7Days: number;
@@ -166,6 +183,7 @@ export interface AdminStats {
     crateFeatures: AdminStatsCrateFeatures;
   };
   engagement: AdminStatsEngagement;
+  accountPreferences: AdminStatsAccountPreferences;
   featureUsage: AdminStatsFeatureUsage;
   recentActivity: {
     last7Days: AdminStatsRecentActivityPeriod;

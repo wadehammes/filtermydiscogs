@@ -2,25 +2,35 @@
 
 import { useSetAtom } from "jotai";
 import { type ReactNode, useLayoutEffect } from "react";
-import { collectionFiltersActiveAtom } from "src/atoms/filters.atoms";
+import {
+  collectionFiltersActiveAtom,
+  filtersDispatchAtom,
+  persistedFiltersAtom,
+  sessionFiltersAtom,
+} from "src/atoms/filters.atoms";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
-import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import type { DiscogsRelease } from "src/types";
+import type { PersistedFiltersState } from "src/types/filters.types";
+import { defaultPersistedFilters } from "src/utils/filtersStorage";
 
 type SeedCollectionFiltersProps = {
   releases: DiscogsRelease[];
   children: ReactNode;
+  sessionFilters?: Partial<PersistedFiltersState>;
 };
 
 export const SeedCollectionFilters = ({
   releases,
   children,
+  sessionFilters,
 }: SeedCollectionFiltersProps) => {
   const { dispatchFetchingCollection, dispatchCollection } =
     useCollectionContext();
-  const filtersDispatch = useFiltersDispatch();
+  const dispatchFilters = useSetAtom(filtersDispatchAtom);
+  const setSessionFilters = useSetAtom(sessionFiltersAtom);
+  const setPersistedFilters = useSetAtom(persistedFiltersAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
 
   useLayoutEffect(() => {
@@ -31,17 +41,25 @@ export const SeedCollectionFilters = ({
         { page: 1, totalPages: 1, releaseCount: releases.length },
       ),
     );
-    filtersDispatch({
+    dispatchFilters({
       type: FiltersActionTypes.SetAllReleases,
       payload: releases,
     });
+    if (sessionFilters) {
+      const nextFilters = { ...defaultPersistedFilters, ...sessionFilters };
+      setSessionFilters(nextFilters);
+      setPersistedFilters(nextFilters);
+    }
     setCollectionFiltersActive(true);
   }, [
     dispatchCollection,
     dispatchFetchingCollection,
-    filtersDispatch,
+    dispatchFilters,
     releases,
+    sessionFilters,
     setCollectionFiltersActive,
+    setPersistedFilters,
+    setSessionFilters,
   ]);
 
   return children;

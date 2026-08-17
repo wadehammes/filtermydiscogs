@@ -8,6 +8,7 @@ import {
   filtersStateAtom,
   sortedFilteredReleasesAtom,
 } from "src/atoms/filters.atoms";
+import { useInitializePendingFiltersRestore } from "src/hooks/useInitializePendingFiltersRestore.hook";
 
 export {
   type FiltersActions,
@@ -26,9 +27,15 @@ export const useFiltersScope = () => {
   }
 };
 
+const FiltersProviderInner = ({ children }: PropsWithChildren) => {
+  useInitializePendingFiltersRestore();
+
+  return children;
+};
+
 export const FiltersProvider = ({ children }: PropsWithChildren) => (
   <FiltersScopeContext.Provider value={true}>
-    {children}
+    <FiltersProviderInner>{children}</FiltersProviderInner>
   </FiltersScopeContext.Provider>
 );
 

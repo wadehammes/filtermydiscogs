@@ -1,8 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { AdminDashboardSkeleton } from "src/components/AdminDashboard/AdminDashboardSkeleton.component";
 import { AdminHero } from "src/components/AdminDashboard/AdminHero.component";
 import { AdminMetricTable } from "src/components/AdminDashboard/AdminMetricTable.component";
+import { AdminPreferenceBreakdownPanel } from "src/components/AdminDashboard/AdminPreferenceBreakdownPanel.component";
 import { ReturningUsersChart } from "src/components/AdminDashboard/ReturningUsersChart.component";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { DashboardSection } from "src/components/Dashboard/components/DashboardSection.component";
@@ -18,7 +20,18 @@ import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthentic
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
 import type { AdminStatsRecentActivityPeriod } from "src/types/dashboard.types";
 import type { AdminStatsFeatureUsageRow } from "src/types/productAnalytics.types";
+import type { StoredTheme } from "src/types/userPreferences.types";
+import { THEME_LABELS } from "src/utils/themeAppearance";
 import styles from "./AdminDashboardClient.module.css";
+
+const getDiscogsUserProfileUrl = (username: string): string =>
+  `https://www.discogs.com/user/${encodeURIComponent(username)}`;
+
+const DEFAULT_VIEW_LABELS: Record<string, string> = {
+  card: "Grid",
+  list: "Table",
+  random: "Random",
+};
 
 const formatPercent = (
   value: number,
@@ -47,6 +60,20 @@ const growthChartTooltip =
 
     return [formatCommunityStatValue(value), seriesLabel];
   };
+
+const formatTopUserLabel = (row: {
+  username: string;
+  user_id: number;
+}): ReactNode => (
+  <a
+    className={styles.tableUserLink}
+    href={getDiscogsUserProfileUrl(row.username)}
+    rel="noopener noreferrer"
+    target="_blank"
+  >
+    {row.username} <span className={styles.tableUserMeta}>({row.user_id})</span>
+  </a>
+);
 
 const ACTIVITY_ROWS: Array<{
   key: keyof AdminStatsRecentActivityPeriod;
@@ -252,6 +279,77 @@ export default function AdminDashboardClient() {
               </DashboardSection>
 
               <DashboardSection
+                lede="Optional account settings stored in user preferences."
+                title="Account preferences"
+              >
+                <div className={styles.preferenceGroups}>
+                  <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 4 }}>
+                    <StatCard
+                      label="Remember filter selections"
+                      subtext={formatPercent(
+                        stats.accountPreferences.persistFiltersEnabled,
+                        stats.overview.totalUsers,
+                        "of users",
+                      )}
+                      value={formatCommunityStatValue(
+                        stats.accountPreferences.persistFiltersEnabled,
+                      )}
+                    />
+                    <StatCard
+                      label="Analytics cookies enabled"
+                      subtext={formatPercent(
+                        stats.accountPreferences.analyticsConsent.enabled,
+                        stats.overview.totalUsers,
+                        "of users",
+                      )}
+                      value={formatCommunityStatValue(
+                        stats.accountPreferences.analyticsConsent.enabled,
+                      )}
+                    />
+                    <StatCard
+                      label="Analytics cookies disabled"
+                      subtext={formatPercent(
+                        stats.accountPreferences.analyticsConsent.disabled,
+                        stats.overview.totalUsers,
+                        "of users",
+                      )}
+                      value={formatCommunityStatValue(
+                        stats.accountPreferences.analyticsConsent.disabled,
+                      )}
+                    />
+                    <StatCard
+                      label="Analytics choice unset"
+                      subtext={formatPercent(
+                        stats.accountPreferences.analyticsConsent.unset,
+                        stats.overview.totalUsers,
+                        "of users",
+                      )}
+                      value={formatCommunityStatValue(
+                        stats.accountPreferences.analyticsConsent.unset,
+                      )}
+                    />
+                  </StatsGrid>
+
+                  <div className={styles.cardGrid}>
+                    <AdminPreferenceBreakdownPanel
+                      labelForKey={(key) =>
+                        THEME_LABELS[key as StoredTheme] ?? key
+                      }
+                      rows={stats.accountPreferences.themes}
+                      title="Themes"
+                      totalUsers={stats.overview.totalUsers}
+                    />
+                    <AdminPreferenceBreakdownPanel
+                      labelForKey={(key) => DEFAULT_VIEW_LABELS[key] ?? key}
+                      rows={stats.accountPreferences.defaultViews}
+                      title="Default view"
+                      totalUsers={stats.overview.totalUsers}
+                    />
+                  </div>
+                </div>
+              </DashboardSection>
+
+              <DashboardSection
                 lede="Page views and interaction events from opted-in users (last 7 and 30 days)."
                 title="Feature usage"
               >
@@ -380,9 +478,10 @@ export default function AdminDashboardClient() {
                     <AdminMetricTable
                       columns={[
                         {
-                          key: "user_id",
-                          header: "User ID",
+                          key: "username",
+                          header: "User",
                           align: "name",
+                          render: (row) => formatTopUserLabel(row),
                         },
                         {
                           key: "count",
@@ -401,9 +500,10 @@ export default function AdminDashboardClient() {
                     <AdminMetricTable
                       columns={[
                         {
-                          key: "user_id",
-                          header: "User ID",
+                          key: "username",
+                          header: "User",
                           align: "name",
+                          render: (row) => formatTopUserLabel(row),
                         },
                         {
                           key: "count",

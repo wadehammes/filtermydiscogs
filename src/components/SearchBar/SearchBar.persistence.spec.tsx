@@ -8,7 +8,7 @@ describe("SearchBar persistence", () => {
     localStorage.clear();
   });
 
-  it("displays persisted search query on mount", () => {
+  it("starts with an empty search field when saved filters exist in localStorage", () => {
     localStorage.setItem(
       FILTERS_STORAGE_KEY,
       JSON.stringify({
@@ -25,6 +25,6 @@ describe("SearchBar persistence", () => {
 
     expect(
       screen.getByPlaceholderText("Search your collection..."),
-    ).toHaveValue("blue note");
+    ).toHaveValue("");
   });
 });

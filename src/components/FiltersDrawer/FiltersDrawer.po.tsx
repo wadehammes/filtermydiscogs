@@ -8,6 +8,7 @@ import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiM
 import { SeedCollectionFilters } from "src/tests/utils/seedCollectionFilters";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
+import type { PersistedFiltersState } from "src/types/filters.types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { FiltersDrawer } from "./FiltersDrawer.component";
@@ -23,6 +24,7 @@ export type FiltersDrawerRenderProps = {
   isOpen?: boolean;
   onClose?: () => void;
   releases?: DiscogsRelease[];
+  sessionFilters?: Partial<PersistedFiltersState>;
 };
 
 export class FiltersDrawerPageObject extends BasePageObject {
@@ -53,10 +55,14 @@ export class FiltersDrawerPageObject extends BasePageObject {
           },
         }),
       ],
+      sessionFilters,
     } = overrides;
 
     return (
-      <SeedCollectionFilters releases={releases}>
+      <SeedCollectionFilters
+        releases={releases}
+        {...(sessionFilters !== undefined ? { sessionFilters } : {})}
+      >
         <FiltersDrawer isOpen={isOpen} onClose={onClose ?? this.onClose} />
       </SeedCollectionFilters>
     );

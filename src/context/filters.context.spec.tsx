@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { useSetAtom } from "jotai";
-import { collectionFiltersActiveAtom } from "src/atoms/filters.atoms";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  applyPendingFiltersRestoreAtom,
+  collectionFiltersActiveAtom,
+  pendingFiltersRestoreAtom,
+} from "src/atoms/filters.atoms";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
-import { act, renderHook, TestProviders } from "test-utils";
+import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { FiltersActionTypes, SortValues, useFilters } from "./filters.context";
 
 jest.mock("src/utils/computeFilterDerivedState");
@@ -55,7 +59,7 @@ describe("FiltersProvider", () => {
     expect(result.current.state.isRandomMode).toBe(false);
   });
 
-  it("loads saved filter state from localStorage", () => {
+  it("keeps session filters at defaults when localStorage has saved filters", async () => {
     localStorage.setItem(
       FILTERS_STORAGE_KEY,
       JSON.stringify({
@@ -68,16 +72,36 @@ describe("FiltersProvider", () => {
       }),
     );
 
-    const { result } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+    const { result } = renderHook(
+      () => {
+        const filters = useFilters();
+        const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
+        return { filters, pendingRestore };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
-    expect(result.current.state.selectedStyles).toEqual(["Rock"]);
-    expect(result.current.state.selectedYears).toEqual([1984]);
-    expect(result.current.state.selectedFormats).toEqual(["LP"]);
-    expect(result.current.state.selectedSort).toBe(SortValues.AZTitle);
-    expect(result.current.state.styleOperator).toBe("AND");
-    expect(result.current.state.searchQuery).toBe("test query");
+    expect(result.current.filters.state.selectedStyles).toEqual([]);
+    expect(result.current.filters.state.selectedYears).toEqual([]);
+    expect(result.current.filters.state.selectedFormats).toEqual([]);
+    expect(result.current.filters.state.selectedSort).toBe(
+      SortValues.DateAddedNew,
+    );
+    expect(result.current.filters.state.styleOperator).toBe("OR");
+    expect(result.current.filters.state.searchQuery).toBe("");
+
+    await waitFor(() => {
+      expect(result.current.pendingRestore).toEqual({
+        selectedStyles: ["Rock"],
+        selectedYears: [1984],
+        selectedFormats: ["LP"],
+        selectedSort: SortValues.AZTitle,
+        styleOperator: "AND",
+        searchQuery: "test query",
+      });
+    });
   });
 
   it("saves filter state to localStorage when filters change", () => {
@@ -117,20 +141,27 @@ describe("FiltersProvider", () => {
     expect(result.current.state.searchQuery).toBe("");
   });
 
-  it("restores filter state after remount", () => {
-    const { result, unmount } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+  it("offers saved filters for restore after remount instead of auto-applying", async () => {
+    const { result, unmount } = renderHook(
+      () => {
+        const filters = useFilters();
+        const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
+        return { filters, pendingRestore };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetStyles,
         payload: ["Electronic"],
       });
     });
 
     act(() => {
-      result.current.dispatch({
+      result.current.filters.dispatch({
         type: FiltersActionTypes.SetSearchQuery,
         payload: "ambient",
       });
@@ -138,14 +169,30 @@ describe("FiltersProvider", () => {
 
     unmount();
 
-    const { result: remountedResult } = renderHook(() => useFilters(), {
-      wrapper: TestProviders,
-    });
+    const { result: remountedResult } = renderHook(
+      () => {
+        const filters = useFilters();
+        const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
+        return { filters, pendingRestore };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
 
-    expect(remountedResult.current.state.selectedStyles).toEqual([
-      "Electronic",
-    ]);
-    expect(remountedResult.current.state.searchQuery).toBe("ambient");
+    expect(remountedResult.current.filters.state.selectedStyles).toEqual([]);
+    expect(remountedResult.current.filters.state.searchQuery).toBe("");
+
+    await waitFor(() => {
+      expect(remountedResult.current.pendingRestore).toEqual({
+        selectedStyles: ["Electronic"],
+        selectedYears: [],
+        selectedFormats: [],
+        selectedSort: SortValues.DateAddedNew,
+        styleOperator: "OR",
+        searchQuery: "ambient",
+      });
+    });
   });
 
   it("sets all releases", () => {
@@ -164,7 +211,7 @@ describe("FiltersProvider", () => {
     expect(result.current.state.allReleases).toEqual(mockReleases);
   });
 
-  it("ignores persisted filters until collectionFiltersActive is true", () => {
+  it("does not auto-apply saved filters when collectionFiltersActive becomes true", async () => {
     localStorage.setItem(
       FILTERS_STORAGE_KEY,
       JSON.stringify({
@@ -195,12 +242,23 @@ describe("FiltersProvider", () => {
         const setCollectionFiltersActive = useSetAtom(
           collectionFiltersActiveAtom,
         );
-        return { filters, setCollectionFiltersActive };
+        const applyPendingRestore = useSetAtom(applyPendingFiltersRestoreAtom);
+        const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
+        return {
+          filters,
+          setCollectionFiltersActive,
+          applyPendingRestore,
+          pendingRestore,
+        };
       },
       {
         wrapper: TestProviders,
       },
     );
+
+    await waitFor(() => {
+      expect(result.current.pendingRestore?.selectedStyles).toEqual(["Rock"]);
+    });
 
     act(() => {
       result.current.filters.dispatch({
@@ -215,7 +273,14 @@ describe("FiltersProvider", () => {
       result.current.setCollectionFiltersActive(true);
     });
 
+    expect(result.current.filters.state.filteredReleases).toEqual(mockReleases);
+
+    act(() => {
+      result.current.applyPendingRestore();
+    });
+
     expect(result.current.filters.state.filteredReleases).toEqual([]);
+    expect(result.current.filters.state.selectedStyles).toEqual(["Rock"]);
   });
 
   it("toggles style filter", () => {

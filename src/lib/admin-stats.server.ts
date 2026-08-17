@@ -7,6 +7,7 @@ import type {
   AdminStatsGrowthDataPoint,
   AdminStatsRecentActivityPeriod,
   AdminStatsReturningUsersTimeSeries,
+  AdminStatsTopUser,
 } from "src/types/dashboard.types";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
 
@@ -42,10 +43,19 @@ type SetMarkerOverviewRow = WindowCountRow & {
   total: number;
 };
 
-type GrowthRow = {
-  month: string;
+type AccountPreferencesBreakdownRow = {
+  key: string;
   count: number;
 };
+
+type AccountPreferencesAnalyticsRow = {
+  status: "enabled" | "disabled" | "unset";
+  count: number;
+};
+
+type TopUserRow = AdminStatsTopUser;
+
+type GrowthRow = AdminStatsGrowthDataPoint;
 
 const roundAverage = (numerator: number, denominator: number): number => {
   if (denominator === 0) {
@@ -210,12 +220,6 @@ export const fetchAdminEngagementStats = async ({
   };
 };
 
-const mapGrowthRows = (rows: GrowthRow[]): AdminStatsGrowthDataPoint[] =>
-  rows.map((row) => ({
-    month: row.month,
-    count: row.count,
-  }));
-
 const buildRecentActivityPeriod = ({
   users,
   crates,
@@ -250,6 +254,86 @@ const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
   events: [],
 });
 
+const mapAnalyticsConsentCounts = (
+  rows: AccountPreferencesAnalyticsRow[],
+): AdminStats["accountPreferences"]["analyticsConsent"] => {
+  const counts = {
+    enabled: 0,
+    disabled: 0,
+    unset: 0,
+  };
+
+  for (const row of rows) {
+    counts[row.status] = row.count;
+  }
+
+  return counts;
+};
+
+export const fetchAdminAccountPreferencesStats = async (): Promise<
+  AdminStats["accountPreferences"]
+> => {
+  const [persistFiltersRows, analyticsRows, themeRows, viewRows] =
+    await Promise.all([
+      prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(*)::int AS count
+        FROM users
+        WHERE COALESCE((preferences->>'persistFilters')::boolean, true) = true
+      `,
+      prisma.$queryRaw<AccountPreferencesAnalyticsRow[]>`
+        SELECT
+          CASE
+            WHEN preferences->'analyticsConsent' IS NULL THEN 'unset'
+            WHEN (preferences->>'analyticsConsent')::boolean = true THEN 'enabled'
+            ELSE 'disabled'
+          END AS status,
+          COUNT(*)::int AS count
+        FROM users
+        GROUP BY 1
+      `,
+      prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+        SELECT
+          CASE
+            WHEN preferences->>'theme' IN (
+              'light',
+              'dim',
+              'dark',
+              'sepia',
+              'slate',
+              'midnight',
+              'high-contrast',
+              'futuristic',
+              'system'
+            ) THEN preferences->>'theme'
+            ELSE 'light'
+          END AS key,
+          COUNT(*)::int AS count
+        FROM users
+        GROUP BY 1
+        ORDER BY count DESC, key ASC
+      `,
+      prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+        SELECT
+          CASE
+            WHEN preferences->'view'->>'currentView' IN ('card', 'list', 'random')
+            THEN preferences->'view'->>'currentView'
+            ELSE 'card'
+          END AS key,
+          COUNT(*)::int AS count
+        FROM users
+        GROUP BY 1
+        ORDER BY count DESC, key ASC
+      `,
+    ]);
+
+  return {
+    persistFiltersEnabled: persistFiltersRows[0]?.count ?? 0,
+    analyticsConsent: mapAnalyticsConsentCounts(analyticsRows),
+    themes: themeRows,
+    defaultViews: viewRows,
+  };
+};
+
 const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -269,6 +353,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     publicCrateGrowth,
     setMarkerGrowth,
     featureUsage,
+    accountPreferences,
   ] = await Promise.all([
     prisma.$queryRaw<UserOverviewRow[]>`
       SELECT
@@ -306,18 +391,28 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         COUNT(*) FILTER (WHERE created_at >= ${thirtyDaysAgo})::int AS last_30d
       FROM crate_set_markers
     `,
-    prisma.crate.groupBy({
-      by: ["user_id"],
-      _count: { user_id: true },
-      orderBy: { _count: { user_id: "desc" } },
-      take: 10,
-    }),
-    prisma.crateRelease.groupBy({
-      by: ["user_id"],
-      _count: { user_id: true },
-      orderBy: { _count: { user_id: "desc" } },
-      take: 10,
-    }),
+    prisma.$queryRaw<TopUserRow[]>`
+      SELECT
+        c.user_id,
+        u.username,
+        COUNT(*)::int AS count
+      FROM crates c
+      INNER JOIN users u ON u.discogs_user_id = c.user_id
+      GROUP BY c.user_id, u.username
+      ORDER BY count DESC
+      LIMIT 10
+    `,
+    prisma.$queryRaw<TopUserRow[]>`
+      SELECT
+        cr.user_id,
+        u.username,
+        COUNT(*)::int AS count
+      FROM crate_releases cr
+      INNER JOIN users u ON u.discogs_user_id = cr.user_id
+      GROUP BY cr.user_id, u.username
+      ORDER BY count DESC
+      LIMIT 10
+    `,
     prisma.$queryRaw<GrowthRow[]>`
       SELECT
         to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
@@ -363,6 +458,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       console.error("Admin feature usage stats error:", error);
       return emptyFeatureUsage();
     }),
+    fetchAdminAccountPreferencesStats(),
   ]);
 
   const users = usersOverview[0];
@@ -396,6 +492,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       },
     },
     engagement,
+    accountPreferences,
     featureUsage,
     recentActivity: {
       last7Days: buildRecentActivityPeriod({
@@ -418,21 +515,15 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       }),
     },
     topUsers: {
-      byCrates: topUsersByCrates.map((entry) => ({
-        user_id: entry.user_id,
-        count: entry._count.user_id,
-      })),
-      byReleases: topUsersByReleases.map((entry) => ({
-        user_id: entry.user_id,
-        count: entry._count.user_id,
-      })),
+      byCrates: topUsersByCrates,
+      byReleases: topUsersByReleases,
     },
     growth: {
-      users: mapGrowthRows(userGrowth),
-      crates: mapGrowthRows(crateGrowth),
-      releases: mapGrowthRows(releaseGrowth),
-      publicCrates: mapGrowthRows(publicCrateGrowth),
-      setMarkers: mapGrowthRows(setMarkerGrowth),
+      users: userGrowth,
+      crates: crateGrowth,
+      releases: releaseGrowth,
+      publicCrates: publicCrateGrowth,
+      setMarkers: setMarkerGrowth,
     },
   };
 };

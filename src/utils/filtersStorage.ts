@@ -5,6 +5,7 @@ import {
   type StyleOperator,
   VALID_STYLE_OPERATORS,
 } from "src/types/filters.types";
+import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
 
 export type { PersistedFiltersState } from "src/types/filters.types";
 export { FILTERS_STORAGE_KEY };
@@ -135,3 +136,13 @@ export const persistedFiltersEqual = (
   left: PersistedFiltersState,
   right: PersistedFiltersState,
 ): boolean => JSON.stringify(left) === JSON.stringify(right);
+
+export const hasRestorableFilterSelections = (
+  filters: PersistedFiltersState,
+): boolean => {
+  if (persistedFiltersEqual(filters, defaultPersistedFilters)) {
+    return false;
+  }
+
+  return getAppliedFilterCount(filters) > 0;
+};
