@@ -71,18 +71,25 @@ export const PublicReleaseModalBody = ({
           <ReleaseTracklist
             tracks={tracks}
             releaseArtistNames={formatArtistNames(release)}
-            activeTrackPosition={activeTrackPosition}
-            showPlayingIndicatorOnActiveTrack={isPlayingThisReleaseInBar}
-            isPlaybackPaused={
-              isPlayingThisReleaseInBar ? isPlaybackPaused : false
+            activeTrackPosition={
+              hasEmbeddableVideo ? activeTrackPosition : null
             }
-            onTrackSelect={handleTrackSelect}
+            showPlayingIndicatorOnActiveTrack={
+              hasEmbeddableVideo && isPlayingThisReleaseInBar
+            }
+            isPlaybackPaused={
+              hasEmbeddableVideo && isPlayingThisReleaseInBar
+                ? isPlaybackPaused
+                : false
+            }
             {...definedProps({
+              onTrackSelect: hasEmbeddableVideo ? handleTrackSelect : undefined,
               isTrackQueued: hasEmbeddableVideo ? isTrackQueued : undefined,
               onTrackQueue: hasEmbeddableVideo ? handleTrackQueue : undefined,
-              onActiveTrackToggle: isPlayingThisReleaseInBar
-                ? handleActiveTrackToggle
-                : undefined,
+              onActiveTrackToggle:
+                hasEmbeddableVideo && isPlayingThisReleaseInBar
+                  ? handleActiveTrackToggle
+                  : undefined,
             })}
           />
         </section>

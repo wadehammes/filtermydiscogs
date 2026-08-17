@@ -21,20 +21,41 @@ jest.mock("src/analytics/analytics", () => ({
 }));
 
 export const mockFiltersDispatch = jest.fn();
+export const mockAllReleases: DiscogsRelease[] = [];
+export const mockCollectionLoadState = {
+  isLoading: false,
+  isError: false,
+  queryError: null,
+  hasNextPage: false,
+  isFetchingNextPage: false,
+};
 
 jest.mock("src/hooks/useFilterAtoms.hook", () => ({
   useFiltersDispatch: () => mockFiltersDispatch,
-  useAllReleases: () => [],
+  useAllReleases: () => mockAllReleases,
   useSelectedFormats: () => [],
   useSelectedStyles: () => [],
 }));
+
+jest.mock("src/hooks/useCollectionData.hook", () => {
+  const actual = jest.requireActual<
+    typeof import("src/hooks/useCollectionData.hook")
+  >("src/hooks/useCollectionData.hook");
+
+  return {
+    ...actual,
+    useCollectionLoadState: () => mockCollectionLoadState,
+  };
+});
 
 jest.mock("src/hooks/usePillClickHandler.hook", () => ({
   usePillClickHandler: () => jest.fn(),
 }));
 
+export const mockUseMediaQuery = jest.fn((_query: string) => false);
+
 jest.mock("src/hooks/useMediaQuery.hook", () => ({
-  useMediaQuery: () => false,
+  useMediaQuery: (query: string) => mockUseMediaQuery(query),
 }));
 
 const mockApi = jest.mocked(apiHelpers);
@@ -45,6 +66,7 @@ export type ReleaseModalRenderProps = {
   isOpen?: boolean;
   release?: DiscogsRelease | null;
   onClose?: () => void;
+  onReleaseClick?: (instanceId: string) => void;
 };
 
 export class ReleaseModalPageObject extends BasePageObject {
@@ -63,6 +85,12 @@ export class ReleaseModalPageObject extends BasePageObject {
   setupMocks() {
     jest.clearAllMocks();
     mockFiltersDispatch.mockReset();
+    mockAllReleases.length = 0;
+    mockCollectionLoadState.isLoading = false;
+    mockCollectionLoadState.hasNextPage = false;
+    mockCollectionLoadState.isFetchingNextPage = false;
+    mockUseMediaQuery.mockReset();
+    mockUseMediaQuery.mockReturnValue(false);
 
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
@@ -77,6 +105,11 @@ export class ReleaseModalPageObject extends BasePageObject {
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: RELEASE_ID }),
       apiError,
     );
+  }
+
+  mockAllReleases(releases: DiscogsRelease[]) {
+    mockAllReleases.length = 0;
+    mockAllReleases.push(...releases);
   }
 
   private releaseModalElement(overrides: ReleaseModalRenderProps = {}) {

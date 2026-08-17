@@ -47,7 +47,7 @@ Client reads username via [`getUsernameFromCookies`](../../src/services/auth.ser
 
 ## Authenticated API routes
 
-Route handlers that proxy Discogs (e.g. **`/api/collection`**, **`/api/collection/fields`**, **`/api/collection/instances/{instanceId}/fields/{fieldId}`**, **`/api/collection/value`**, **`/api/search`**) must:
+Route handlers that proxy Discogs (e.g. **`/api/collection`**, **`/api/collection/fields`**, **`/api/collection/instances/{instanceId}/fields/{fieldId}`**, **`/api/collection/releases/{releaseId}/rating`**, **`/api/collection/value`**, **`/api/search`**) must:
 
 1. Verify the session with **`requireAuthenticatedDiscogsUser`** or **`getVerifiedUserFromRequest`** ([`src/lib/auth-request.ts`](../../src/lib/auth-request.ts))—never trust **`discogs_user_id`** or **`discogs_username`** cookies for authorization.
 2. Validate the **`username`** query/body param with **`isValidDiscogsUsername`** ([`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts)).
@@ -77,7 +77,7 @@ Do **not** copy a narrower regex (e.g. omitting `.`) into individual routes.
 [`DiscogsOAuthService`](../../src/services/discogs-oauth.service.ts) centralizes:
 
 - OAuth header generation
-- **`getIdentity`**, **`getCollection`**, **`getCollectionFields`**, **`updateCollectionInstanceField`**, **`getCollectionValue`**, **`search`**, release fetches
+- **`getIdentity`**, **`getCollection`**, **`getCollectionFields`**, **`updateCollectionInstanceField`**, **`updateReleaseRating`**, **`deleteReleaseRating`**, **`getCollectionValue`**, **`search`**, release fetches
 - Error handling for HTTP failures (including mapping upstream 5xx to clearer client responses where implemented)
 - **Empty success bodies**: Discogs often returns **`204 No Content`** (or an empty body) for successful field writes. **`makeAuthenticatedRequest`** treats **`204`/`205`** and empty bodies as success—do not call **`response.json()`** on those responses.
 
@@ -113,11 +113,11 @@ Authenticated sessions use the user's OAuth tokens. Visitors without Discogs coo
 
 Client helper: **`fetchDiscogsRelease`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). React Query: **`useDiscogsReleaseQuery`** ([`src/hooks/queries/useDiscogsReleaseQuery.ts`](../../src/hooks/queries/useDiscogsReleaseQuery.ts)) with **`DiscogsReleaseQueryKeys`**.
 
-**Testing:** Assert the route contract in [`route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts) and the client helper in [`helpers.spec.ts`](../../src/api/helpers.spec.ts). UI tests mock **`fetchDiscogsRelease`** via **`src/api/helpers`** and let **`useDiscogsReleaseQuery`** run on **`TestProviders`** (see [conventions.md → Testing](conventions.md#testing)).
+**Testing:** Assert the route contract in [`route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts) and the client helper in [`helpers.spec.ts`](../../src/api/helpers.spec.ts). Rating writes: [`collection/releases/[releaseId]/rating/route.spec.ts`](../../src/app/api/collection/releases/[releaseId]/rating/route.spec.ts) and [`helpers.rating.spec.ts`](../../src/api/helpers.rating.spec.ts). UI tests mock **`fetchDiscogsRelease`** via **`src/api/helpers`** and let **`useDiscogsReleaseQuery`** run on **`TestProviders`** (see [conventions.md → Testing](conventions.md#testing)).
 
 Typed response fields live in [`src/types/discogs-release-detail.types.ts`](../../src/types/discogs-release-detail.types.ts): **`tracklist`** (position, title, duration, nested **`sub_tracks`**, per-track **`artists`** and **`extraartists`**), **`videos`** (YouTube **`uri`**, **`title`**, **`embed`**), **`community.rating`** (Discogs average **`average`** and **`count`**).
 
-**Ratings:** Collection pagination includes your personal **`rating`** (0–5) per instance. Release detail adds **`community.rating`** for the Discogs-wide average. **`ReleaseSummaryHero`** appends your rating and the community average to the label/year meta line when available (community average uses a star icon instead of the word “Community”). Format and style filter pills remain below that meta line. Sort options include **Your Rating** (collection field only)—community averages are not sortable because they require a separate Discogs request per release.
+**Ratings:** Collection pagination includes your personal **`rating`** (0–5) per instance. Release detail adds **`community.rating`** for the Discogs-wide average. **`ReleaseSummaryHero`** splits catalog metadata (label · year · catno) from ratings: **`ReleaseHeroRatingsRow`** shows your interactive stars and the community average on one line (`★ 4.8 (20)`), separated by `·` when both are present. Authenticated users edit stars via **`ReleaseRatingPicker`** (native radio inputs in a **`<fieldset>`**); hover preview highlights stars below the cursor and dims stars above. Click the active star again to clear. Writes go to Discogs via **`PUT /api/collection/releases/{releaseId}/rating`** (clear with **`DELETE`**). Optimistic updates touch every collection item with the same release ID, then invalidate **`DiscogsCollectionQueryKeys`** and **`DiscogsReleaseQueryKeys.byId`** so the open modal refetches community rating from **`useDiscogsReleaseQuery`**. Client helpers: **`updateReleaseRating`**, **`clearReleaseRating`** in [`src/api/helpers.ts`](../../src/api/helpers.ts); hook: **`useReleaseRatingEditor`** ([`useReleaseRatingEditor.hook.ts`](../../src/components/ReleaseModal/useReleaseRatingEditor.hook.ts)). **`COLLECTION_RATING_MIN`** / **`COLLECTION_RATING_MAX`** (1–5) live in [`src/constants/collection.ts`](../../src/constants/collection.ts). Sort options include **Your Rating** (collection field only)—community averages are not sortable because they require a separate Discogs request per release.
 
 **Playback (v1):** Discogs does not stream audio. When a release has embeddable YouTube links in **`videos`**, [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx) (via global [`ReleasePlaybackProvider`](../../src/context/releasePlayback.context.tsx) + [`GlobalPlaybackDock`](../../src/components/ReleasePlayback/GlobalPlaybackDock.component.tsx)) keeps playback alive across page navigations and when the modal closes. The modal and mini player share queue state — track rows call **`startPlayback`** (replacing the queue with the playable album from that track), **Add to queue** (hover list icon) calls **`addToQueue`**, and prev/next walk the full cross-release queue. Track rows call **`findVideoForTrack`** in [`src/utils/releasePlayback.ts`](../../src/utils/releasePlayback.ts) to pick the best match; otherwise the UI links out to YouTube search. Coverage depends on community-submitted videos—many releases have none.
 
@@ -132,8 +132,10 @@ Discogs collection instances can include user-defined note fields (Media, Notes,
 | List field definitions | `GET /api/collection/fields?username=` | `GET /users/{username}/collection/fields` |
 | Read note values | Included in collection pages | `GET /users/{username}/collection/folders/0/releases` |
 | Update a note value | `POST /api/collection/instances/{instanceId}/fields/{fieldId}` | `POST /users/{username}/collection/folders/{folder_id}/releases/{release_id}/instances/{instance_id}/fields/{field_id}` with body `{ "value": "..." }` |
+| Update your rating | `PUT /api/collection/releases/{releaseId}/rating` | `PUT /releases/{release_id}/rating/{username}` with body `{ "rating": 1..5 }` |
+| Clear your rating | `DELETE /api/collection/releases/{releaseId}/rating?username=` | `DELETE /releases/{release_id}/rating/{username}` |
 
-Client helpers: **`fetchCollectionFields`**, **`updateCollectionNote`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). **`updateCollectionNote`** must tolerate empty success bodies from the app route (same as the Discogs **`204`** case).
+Client helpers: **`fetchCollectionFields`**, **`updateCollectionNote`**, **`updateReleaseRating`**, **`clearReleaseRating`** in [`src/api/helpers.ts`](../../src/api/helpers.ts). **`updateCollectionNote`** must tolerate empty success bodies from the app route (same as the Discogs **`204`** case).
 
 React Query: **`useCollectionFieldsQuery`** ([`src/hooks/queries/useCollectionFieldsQuery.ts`](../../src/hooks/queries/useCollectionFieldsQuery.ts)) with **`CollectionFieldsQueryKeys`**.
 
@@ -147,7 +149,7 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 
 **Length limit:** Discogs does not document a single global max for free-text note values; the app enforces **`COLLECTION_NOTE_MAX_LENGTH` (10,000)** in [`NoteEditDialog`](../../src/components/ReleaseNotes/NoteEditDialog.component.tsx) (inline counter + React Hook Form validation) and the collection note write route. Constant lives in [`src/constants/collection.ts`](../../src/constants/collection.ts).
 
-**Editing scope (v1):** text and textarea field types only (**`isEditableCollectionField`**). Dropdown/boolean fields (e.g. Media/Sleeve Condition) are hidden from release-card and table display via **`forCard: true`** / **`isCardDisplayNoteField`**; the default **`inline`** list variant may still show all fields.
+**Editing scope:** text and textarea fields (**`isEditableCollectionField`**) plus Media/Sleeve Condition dropdowns (**`isConditionCollectionField`**, **`getEditableConditionFields`**) via shared **`ReleaseNotesFormFields`**. All note field labels compose **[`field-label.module.css`](../../src/styles/field-label.module.css)** (same uppercase muted style as filter controls and condition **`Select`** labels). Card/table editing uses **`NoteEditDialog`**; **`ReleaseModal`** uses **`ReleaseNotesModalEditor`** inline. **`releaseHasStoredConditionNotes`** keeps the modal notes section visible when only condition values are set. Condition values stay hidden from release-card/table display (**`forCard: true`** / **`isCardDisplayNoteField`**).
 
 **Card UI:** **`ReleaseCard`** and **`MobileReleaseCard`** show a sticky-note overlay action only (primary dot badge when notes exist)—no inline note preview on the card body. **`ReleaseNotesEditorProvider`** on each card mounts **`NoteEditDialog`** for that icon.
 
@@ -155,4 +157,4 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 
 **List UI:** **`ReleaseNotes`** with default **`inline`** variant shows note text plus **Add/Edit release notes** (no card provider).
 
-After a successful write, **`useReleaseNotesEditor`** optimistically updates **`allReleasesAtom`** and invalidates **`DiscogsCollectionQueryKeys`** for the active username. On failure, it rolls back the optimistic update and surfaces the upstream error message when available.
+After a successful write, **`useReleaseNotesEditor`** optimistically updates **`allReleasesAtom`** and invalidates **`DiscogsCollectionQueryKeys`** for the active username. On failure, it rolls back the optimistic update and surfaces the upstream error message when available. **`useReleaseRatingEditor`** follows the same optimistic-update + invalidation pattern for personal ratings and also invalidates **`DiscogsReleaseQueryKeys.byId`** for the rated release.

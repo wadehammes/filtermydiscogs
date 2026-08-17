@@ -51,6 +51,34 @@ describe("ReleaseTracklist", () => {
     expect(onTrackSelect).toHaveBeenCalledWith("B");
   });
 
+  it("renders static track rows when playback is unavailable", async () => {
+    const user = userEvent.setup();
+    const onTrackSelect = jest.fn();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition="A"
+      />,
+    );
+
+    expect(
+      screen.getByText("Never Gonna Give You Up (Instrumental)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: /Never Gonna Give You Up \(Instrumental\)/,
+      }),
+    ).toBeNull();
+
+    await user.click(
+      screen.getByText("Never Gonna Give You Up (Instrumental)"),
+    );
+
+    expect(onTrackSelect).not.toHaveBeenCalled();
+  });
+
   it("shows a playing indicator on the active track when playback is in progress", () => {
     render(
       <ReleaseTracklist

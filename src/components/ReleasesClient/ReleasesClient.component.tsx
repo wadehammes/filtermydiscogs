@@ -132,6 +132,7 @@ const ReleasesClientContent = () => {
               isOpen={selectedReleaseId !== null}
               release={selectedRelease}
               onClose={handleCloseModal}
+              onReleaseClick={handleReleaseClick}
             />
           </>
         }

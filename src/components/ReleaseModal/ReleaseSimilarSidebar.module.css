@@ -1,0 +1,74 @@
+.sidebarAside {
+  background: var(--background);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.sidebarInline {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarHeader {
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+}
+
+.sidebarTitle {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.sidebarSubtitle {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.releasesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.releasesListAside {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+
+  & > * {
+    flex-shrink: 0;
+  }
+}
+
+.releasesListInline {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.loadingState {
+  align-items: center;
+  display: flex;
+  flex: 1 1 0;
+  justify-content: center;
+  min-height: 12.5rem;
+  padding: var(--space-8);
+}

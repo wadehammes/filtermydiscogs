@@ -166,6 +166,16 @@ export const assignSequentialCrateLayoutSortOrders = (
     sort_order: (index + 1) * CRATE_LAYOUT_SORT_STEP,
   }));
 
+export const getPrependCrateLayoutSortOrder = (
+  existingSortOrders: number[],
+): number => {
+  if (existingSortOrders.length === 0) {
+    return CRATE_LAYOUT_SORT_STEP;
+  }
+
+  return Math.min(...existingSortOrders) - CRATE_LAYOUT_SORT_STEP;
+};
+
 export const splitCrateLayoutItemsForCache = (
   items: CrateLayoutItem[],
 ): {

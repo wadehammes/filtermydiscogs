@@ -4,7 +4,7 @@ import {
   createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
-import { getNextCrateLayoutSortOrder } from "src/lib/crate-layout.server";
+import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
 import { type Prisma, prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
@@ -174,7 +174,7 @@ export async function POST(
     };
 
     await prisma.$transaction(async (tx) => {
-      const sortOrder = await getNextCrateLayoutSortOrder({
+      const sortOrder = await getPrependCrateLayoutSortOrderForCrate({
         userId: userIdNum,
         crateId: id,
         tx,

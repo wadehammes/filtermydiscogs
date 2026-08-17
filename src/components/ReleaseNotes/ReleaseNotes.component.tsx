@@ -2,10 +2,12 @@
 
 import classNames from "classnames";
 import type { DiscogsRelease } from "src/types";
+import { releaseHasStoredConditionNotes } from "src/utils/releaseNotes";
 import { NoteEditDialog } from "./NoteEditDialog.component";
 import styles from "./ReleaseNotes.module.css";
 import { ReleaseNotesCrateScratchpad } from "./ReleaseNotesCrateScratchpad.component";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
+import { ReleaseNotesModalEditor } from "./ReleaseNotesModalEditor.component";
 import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
 interface ReleaseNotesProps {
@@ -64,12 +66,14 @@ const ReleaseNotesCardDisplay = ({
 };
 
 const ReleaseNotesModal = ({ release }: { release: DiscogsRelease }) => {
-  const { canEdit, cardDisplayedNotes, openDialog } =
+  const { canEdit, cardDisplayedNotes, displayedNotes, fields } =
     useReleaseNotesEditorContext();
 
-  const hasNotes = cardDisplayedNotes.length > 0;
+  const hasStoredConditions = releaseHasStoredConditionNotes(release, fields);
+  const hasTextNotes = cardDisplayedNotes.length > 0;
+  const showSection = canEdit || hasTextNotes || hasStoredConditions;
 
-  if (!(hasNotes || canEdit)) {
+  if (!showSection) {
     return null;
   }
 
@@ -78,41 +82,29 @@ const ReleaseNotesModal = ({ release }: { release: DiscogsRelease }) => {
       className={classNames(styles.notes, styles.notesModal)}
       data-testid="fmdReleaseNotes"
     >
-      <h3 className={styles.noteHeading} id="release-modal-notes-heading">
-        Notes
-      </h3>
-      <section
-        aria-labelledby="release-modal-notes-heading"
-        className={styles.noteScrollModal}
-      >
-        {hasNotes ? (
-          cardDisplayedNotes.map((note) => (
-            <p
-              className={styles.noteContent}
-              key={`${release.instance_id}-${note.fieldId}`}
-            >
-              {note.value}
-            </p>
-          ))
-        ) : (
-          <button
-            type="button"
-            className={styles.addNotesLink}
-            onClick={openDialog}
+      {canEdit ? (
+        <ReleaseNotesModalEditor release={release} />
+      ) : (
+        <>
+          <h3 className={styles.noteHeading} id="release-modal-notes-heading">
+            Notes
+          </h3>
+          <section
+            aria-labelledby="release-modal-notes-heading"
+            className={styles.noteScrollModal}
           >
-            Add notes
-          </button>
-        )}
-      </section>
-      {canEdit && hasNotes ? (
-        <button
-          type="button"
-          className={styles.editButton}
-          onClick={openDialog}
-        >
-          Edit notes
-        </button>
-      ) : null}
+            {displayedNotes.map((note) => (
+              <div
+                className={styles.noteRow}
+                key={`${release.instance_id}-${note.fieldId}`}
+              >
+                <span className={styles.noteLabel}>{note.label}</span>
+                <p className={styles.noteContent}>{note.value}</p>
+              </div>
+            ))}
+          </section>
+        </>
+      )}
     </div>
   );
 };
@@ -210,10 +202,8 @@ const ReleaseNotesInline = ({ release }: { release: DiscogsRelease }) => {
             className={styles.noteRow}
             key={`${release.instance_id}-${note.fieldId}`}
           >
-            <p className={styles.noteContent}>
-              <span className={styles.noteLabel}>{note.label}:</span>{" "}
-              {note.value}
-            </p>
+            <span className={styles.noteLabel}>{note.label}</span>
+            <p className={styles.noteContent}>{note.value}</p>
           </div>
         ))}
 

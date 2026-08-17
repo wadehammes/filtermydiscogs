@@ -231,6 +231,7 @@ function DashboardClientContent() {
         isOpen={selectedReleaseId !== null}
         release={selectedRelease}
         onClose={handleCloseModal}
+        onReleaseClick={handleReleaseClick}
       />
     </>
   );

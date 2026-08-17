@@ -160,6 +160,7 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
           isOpen={selectedReleaseId !== null}
           release={selectedRelease}
           onClose={handleCloseModal}
+          onReleaseClick={handleReleaseClick}
         />
       }
     >

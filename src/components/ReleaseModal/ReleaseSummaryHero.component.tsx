@@ -2,54 +2,43 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { useCallback } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
-import {
-  ModalToolbar,
-  ModalToolbarAction,
-  ModalToolbarLink,
-} from "src/components/shared/ModalToolbar/ModalToolbar.component";
-import { useCrate } from "src/context/crate.context";
+import { useAuth } from "src/context/auth.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import {
   useSelectedFormats,
   useSelectedStyles,
 } from "src/hooks/useFilterAtoms.hook";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
-import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
-import PlusIcon from "src/styles/icons/plus-thin.svg";
-import StarIcon from "src/styles/icons/star-thin.svg";
 import typographyStyles from "src/styles/typography.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
-import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
-  formatCommunityRatingAverage,
-  formatReleaseHeroMetaLine,
+  formatReleaseMetaLine,
   getCommunityRatingFromReleaseDetail,
 } from "src/utils/releaseDisplay";
 import { parseReleaseId } from "src/utils/releaseNotes";
+import { ReleaseHeroRatingsRow } from "./ReleaseHeroRatingsRow.component";
 import styles from "./ReleaseSummaryHero.module.css";
+import { ReleaseSummaryHeroToolbar } from "./ReleaseSummaryHeroToolbar.component";
 
 interface ReleaseSummaryHeroProps {
   release: DiscogsRelease;
   titleId?: string;
   onClose?: () => void;
+  showToolbar?: boolean;
 }
 
 export const ReleaseSummaryHero = ({
   release,
   titleId,
   onClose,
+  showToolbar = true,
 }: ReleaseSummaryHeroProps) => {
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
-  const inCrate = isInCrate(release.instance_id);
+  const { state: authState } = useAuth();
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
   const handlePillClick = usePillClickHandler({ category: "releaseModal" });
@@ -62,21 +51,15 @@ export const ReleaseSummaryHero = ({
       : [];
   const artistNames = formatArtistNames(release);
   const releaseId = parseReleaseId(release);
+  const showPersonalRating = authState.isAuthenticated && releaseId !== null;
   const { data: releaseDetail } = useDiscogsReleaseQuery({
     releaseId: releaseId !== null ? String(releaseId) : "",
     enabled: releaseId !== null,
   });
   const communityRating = getCommunityRatingFromReleaseDetail(releaseDetail);
-  const heroMetaLine = formatReleaseHeroMetaLine({
-    release,
-    communityRating,
-  });
-  const showHeroMetaLine =
-    heroMetaLine.text.length > 0 || heroMetaLine.communityRating !== null;
-  const releaseUrl = getResourceUrl({
-    resourceUrl: basicInfo.resource_url,
-    type: "release",
-  });
+  const catalogMetaLine = formatReleaseMetaLine({ release });
+  const showCatalogMetaLine = catalogMetaLine.length > 0;
+  const showRatingsRow = showPersonalRating || communityRating !== null;
   const thumbUrl = getReleaseImageUrl({
     thumb: basicInfo.thumb,
     cover_image: basicInfo.cover_image,
@@ -85,56 +68,19 @@ export const ReleaseSummaryHero = ({
     preferCoverImage: true,
   });
 
-  const handleCrateToggle = useCallback(() => {
-    if (inCrate) {
-      removeFromCrate(release.instance_id);
-      return;
-    }
-
-    addToCrate(release);
-    if (!isMobile) {
-      openDrawer();
-    }
-  }, [addToCrate, inCrate, isMobile, openDrawer, release, removeFromCrate]);
-
   return (
     <div className={styles.hero} data-testid="fmdReleaseSummaryHero">
-      <ModalToolbar {...definedProps({ onClose })}>
-        <ModalToolbarAction
-          className={classNames({
-            [styles.crateButtonActive]: inCrate,
-          })}
-          onClick={handleCrateToggle}
-          aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-          title={inCrate ? "Remove from Crate" : "Add to Crate"}
-        >
-          {inCrate ? (
-            <MinusIcon className={styles.actionIcon} aria-hidden />
-          ) : (
-            <PlusIcon className={styles.actionIcon} aria-hidden />
-          )}
-        </ModalToolbarAction>
-        {releaseUrl ? (
-          <ModalToolbarLink
-            href={releaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View on Discogs"
-            title="View on Discogs"
-            onClick={() => {
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: "releaseModal",
-                label: "View on Discogs",
-                value: releaseUrl,
-              });
-            }}
-          >
-            <ExternalLinkIcon className={styles.actionIcon} aria-hidden />
-          </ModalToolbarLink>
-        ) : null}
-      </ModalToolbar>
-      <div className={styles.heroMain}>
+      {showToolbar ? (
+        <ReleaseSummaryHeroToolbar
+          release={release}
+          {...definedProps({ onClose })}
+        />
+      ) : null}
+      <div
+        className={classNames(styles.heroMain, {
+          [styles.heroMainFlushTop]: !showToolbar,
+        })}
+      >
         <div className={styles.coverWrapper}>
           {thumbUrl ? (
             <Image
@@ -160,30 +106,22 @@ export const ReleaseSummaryHero = ({
             <h2 className={styles.title} {...definedProps({ id: titleId })}>
               {basicInfo.title}
             </h2>
-            {showHeroMetaLine ? (
+            {showCatalogMetaLine ? (
               <p
                 className={classNames(
                   typographyStyles.metaCaption,
                   styles.metaLine,
                 )}
               >
-                {heroMetaLine.text ? <span>{heroMetaLine.text}</span> : null}
-                {heroMetaLine.text && heroMetaLine.communityRating
-                  ? " · "
-                  : null}
-                {heroMetaLine.communityRating ? (
-                  <span className={styles.communityRating}>
-                    <StarIcon
-                      className={styles.communityStarIcon}
-                      aria-hidden
-                    />
-                    {formatCommunityRatingAverage(
-                      heroMetaLine.communityRating.average,
-                    )}{" "}
-                    ({heroMetaLine.communityRating.count})
-                  </span>
-                ) : null}
+                {catalogMetaLine}
               </p>
+            ) : null}
+            {showRatingsRow ? (
+              <ReleaseHeroRatingsRow
+                communityRating={communityRating}
+                release={release}
+                showPersonalRating={showPersonalRating}
+              />
             ) : null}
             {formatTags.length > 0 || (releaseStyles?.length ?? 0) > 0 ? (
               <HorizontalScrollRow className={styles.tagsRow}>

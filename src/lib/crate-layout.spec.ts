@@ -4,6 +4,7 @@ import {
   crateLayoutItemsToPutRequest,
   filterCrateLayoutForHiddenPacked,
   getCrateLayoutSortableId,
+  getPrependCrateLayoutSortOrder,
   mergeReorderedVisibleCrateLayout,
   reorderCrateLayoutItems,
 } from "src/lib/crate-layout";
@@ -138,5 +139,15 @@ describe("crateLayoutItemsToPutRequest", () => {
       { kind: "marker", label: "New section" },
       { kind: "release", instance_id: "1" },
     ]);
+  });
+});
+
+describe("getPrependCrateLayoutSortOrder", () => {
+  it("returns the first step for an empty crate", () => {
+    expect(getPrependCrateLayoutSortOrder([])).toBe(1000);
+  });
+
+  it("returns a sort order below the current minimum layout position", () => {
+    expect(getPrependCrateLayoutSortOrder([1000, 2000, 3500])).toBe(0);
   });
 });

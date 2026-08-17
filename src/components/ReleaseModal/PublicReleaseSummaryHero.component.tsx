@@ -10,7 +10,6 @@ import {
 } from "src/components/shared/ModalToolbar/ModalToolbar.component";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
-import StarIcon from "src/styles/icons/star-thin.svg";
 import typographyStyles from "src/styles/typography.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -18,11 +17,11 @@ import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
-  formatCommunityRatingAverage,
-  formatReleaseHeroMetaLine,
+  formatReleaseMetaLine,
   getCommunityRatingFromReleaseDetail,
 } from "src/utils/releaseDisplay";
 import { parseReleaseId } from "src/utils/releaseNotes";
+import { ReleaseHeroRatingsRow } from "./ReleaseHeroRatingsRow.component";
 import styles from "./ReleaseSummaryHero.module.css";
 
 interface PublicReleaseSummaryHeroProps {
@@ -49,12 +48,8 @@ export const PublicReleaseSummaryHero = ({
     enabled: releaseId !== null,
   });
   const communityRating = getCommunityRatingFromReleaseDetail(releaseDetail);
-  const heroMetaLine = formatReleaseHeroMetaLine({
-    release,
-    communityRating,
-  });
-  const showHeroMetaLine =
-    heroMetaLine.text.length > 0 || heroMetaLine.communityRating !== null;
+  const catalogMetaLine = formatReleaseMetaLine({ release });
+  const showCatalogMetaLine = catalogMetaLine.length > 0;
   const releaseUrl = getResourceUrl({
     resourceUrl: basicInfo.resource_url,
     type: "release",
@@ -116,30 +111,18 @@ export const PublicReleaseSummaryHero = ({
             <h2 className={styles.title} {...definedProps({ id: titleId })}>
               {basicInfo.title}
             </h2>
-            {showHeroMetaLine ? (
+            {showCatalogMetaLine ? (
               <p
                 className={classNames(
                   typographyStyles.metaCaption,
                   styles.metaLine,
                 )}
               >
-                {heroMetaLine.text ? <span>{heroMetaLine.text}</span> : null}
-                {heroMetaLine.text && heroMetaLine.communityRating
-                  ? " · "
-                  : null}
-                {heroMetaLine.communityRating ? (
-                  <span className={styles.communityRating}>
-                    <StarIcon
-                      className={styles.communityStarIcon}
-                      aria-hidden
-                    />
-                    {formatCommunityRatingAverage(
-                      heroMetaLine.communityRating.average,
-                    )}{" "}
-                    ({heroMetaLine.communityRating.count})
-                  </span>
-                ) : null}
+                {catalogMetaLine}
               </p>
+            ) : null}
+            {communityRating ? (
+              <ReleaseHeroRatingsRow communityRating={communityRating} />
             ) : null}
             {formatTags.length > 0 || (releaseStyles?.length ?? 0) > 0 ? (
               <HorizontalScrollRow className={styles.tagsRow}>

@@ -6,6 +6,7 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { render, screen, waitFor } from "test-utils";
 
 const mockAddToCrate = jest.fn();
@@ -36,6 +37,8 @@ jest.mock("src/api/helpers");
 jest.mock("src/hooks/useFilterAtoms.hook", () => ({
   useSelectedFormats: () => [],
   useSelectedStyles: () => [],
+  useFiltersDispatch: () => jest.fn(),
+  useAllReleases: () => [],
 }));
 
 jest.mock("src/hooks/usePillClickHandler.hook", () => ({
@@ -116,7 +119,7 @@ describe("ReleaseSummaryHero", () => {
     expect(mockOpenDrawer).not.toHaveBeenCalled();
   });
 
-  it("shows label, year, catalog number, and community rating in one meta line", async () => {
+  it("shows catalog metadata and community rating on separate lines", async () => {
     setupReleaseDetailMock({
       community: {
         rating: {
@@ -143,6 +146,7 @@ describe("ReleaseSummaryHero", () => {
     expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
     await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseHeroRatings")).toBeInTheDocument();
       expect(screen.getByText(/3\.4 \(45\)/)).toBeInTheDocument();
     });
 
@@ -200,5 +204,56 @@ describe("ReleaseSummaryHero", () => {
     });
 
     expect(screen.queryByText(/^Community /)).toBeNull();
+  });
+
+  it("shows an editable rating picker for authenticated users", async () => {
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      rating: 3,
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+      },
+    });
+    mockApiResponse(
+      true,
+      mockApi.updateReleaseRating,
+      {
+        username: "testuser",
+        release_id: RELEASE_ID,
+        rating: 5,
+      },
+      apiError,
+    );
+
+    render(<ReleaseSummaryHero release={release} />, {
+      includeCrate: false,
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    expect(screen.getByTestId("fmdReleaseRatingPicker")).toBeInTheDocument();
+    expect(
+      screen.getByRole("radio", { name: "Rate 3 out of 5" }),
+    ).toBeChecked();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
+
+    await waitFor(() => {
+      expect(mockApi.updateReleaseRating).toHaveBeenCalledWith({
+        username: "testuser",
+        releaseId: RELEASE_ID,
+        rating: 5,
+      });
+    });
+  });
+
+  it("does not show the rating picker when logged out", () => {
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      rating: 3,
+    });
+
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+
+    expect(screen.queryByTestId("fmdReleaseRatingPicker")).toBeNull();
   });
 });

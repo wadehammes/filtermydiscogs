@@ -6,6 +6,7 @@
 
 .heroMain {
   align-items: stretch;
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -17,15 +18,19 @@
   }
 }
 
+.heroMainFlushTop {
+  border-top: 0;
+}
+
 .coverWrapper {
   flex-shrink: 0;
-  height: 9rem;
+  height: 5rem;
   overflow: hidden;
   width: 100%;
 
   @media (width >= 768px) {
-    height: 8rem;
-    width: 8rem;
+    height: 9rem;
+    width: 9rem;
   }
 }
 
@@ -78,19 +83,43 @@
   margin: 0;
 }
 
+.ratingsRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.ratingsSeparator {
+  color: var(--muted-foreground);
+}
+
+.ratingError {
+  color: var(--destructive);
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .communityRating {
   align-items: center;
   display: inline-flex;
   flex-shrink: 0;
   gap: 0.125rem;
-  vertical-align: middle;
 }
 
 .communityStarIcon {
   display: block;
   flex-shrink: 0;
-  height: 1em;
-  width: 1em;
+  height: 0.875rem;
+  width: 0.875rem;
 }
 
 .tagsRow {

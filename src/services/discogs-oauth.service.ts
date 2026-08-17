@@ -41,6 +41,8 @@ interface DiscogsAccessTokens {
   oauth_token_secret: string;
 }
 
+type AuthenticatedRequestData = Record<string, string | number>;
+
 class DiscogsOAuthService {
   private oauth: OAuth;
   private consumerKey: string;
@@ -78,7 +80,7 @@ class DiscogsOAuthService {
     method: string,
     oauthToken: string,
     oauthTokenSecret: string,
-    _additionalData: Record<string, string> = {},
+    _additionalData: AuthenticatedRequestData = {},
   ): OAuthHeaders {
     const request_data = {
       url,
@@ -109,15 +111,14 @@ class DiscogsOAuthService {
     method: string = "GET",
     oauthToken: string,
     oauthTokenSecret: string,
-    additionalData: Record<string, string> = {},
+    additionalData: AuthenticatedRequestData = {},
   ): Promise<unknown> {
     try {
-      // For GET requests, add additional data as query parameters
       let requestUrl = url;
       if (method === "GET" && Object.keys(additionalData).length > 0) {
         const urlObj = new URL(url);
         Object.entries(additionalData).forEach(([key, value]) => {
-          urlObj.searchParams.append(key, value);
+          urlObj.searchParams.append(key, String(value));
         });
         requestUrl = urlObj.toString();
       }
@@ -143,7 +144,10 @@ class DiscogsOAuthService {
         headers,
       };
 
-      if (method === "POST" && Object.keys(additionalData).length > 0) {
+      if (
+        (method === "POST" || method === "PUT") &&
+        Object.keys(additionalData).length > 0
+      ) {
         fetchOptions.body = JSON.stringify(additionalData);
       }
 
@@ -367,7 +371,6 @@ class DiscogsOAuthService {
       per_page: perPage.toString(),
     };
 
-    // Add optional filters
     if (format) searchParams.format = format;
     if (year) searchParams.year = year;
     if (genre) searchParams.genre = genre;
@@ -389,9 +392,6 @@ class DiscogsOAuthService {
     }
   }
 
-  /**
-   * Parse currency string from Discogs API (e.g., "$1,000.00" -> 1000.00)
-   */
   private parseCurrencyValue(value: string | number | undefined): number {
     if (typeof value === "number") {
       return value;
@@ -399,7 +399,6 @@ class DiscogsOAuthService {
     if (!value || typeof value !== "string") {
       return 0;
     }
-    // Remove currency symbols, commas, and whitespace, then parse
     const cleaned = value.replace(/[$,\s]/g, "");
     const parsed = parseFloat(cleaned);
     return Number.isNaN(parsed) ? 0 : parsed;
@@ -462,6 +461,67 @@ class DiscogsOAuthService {
     }
   }
 
+  async updateReleaseRating({
+    releaseId,
+    username,
+    rating,
+    oauthToken,
+    oauthTokenSecret,
+  }: {
+    releaseId: number;
+    username: string;
+    rating: number;
+    oauthToken: string;
+    oauthTokenSecret: string;
+  }): Promise<{ username: string; release_id: number; rating: number }> {
+    const url = `https://api.discogs.com/releases/${releaseId}/rating/${username}`;
+
+    try {
+      const result = await this.makeAuthenticatedRequest(
+        url,
+        "PUT",
+        oauthToken,
+        oauthTokenSecret,
+        { rating },
+      );
+
+      return result as {
+        username: string;
+        release_id: number;
+        rating: number;
+      };
+    } catch (error) {
+      console.error("updateReleaseRating error:", error);
+      throw error;
+    }
+  }
+
+  async deleteReleaseRating({
+    releaseId,
+    username,
+    oauthToken,
+    oauthTokenSecret,
+  }: {
+    releaseId: number;
+    username: string;
+    oauthToken: string;
+    oauthTokenSecret: string;
+  }): Promise<void> {
+    const url = `https://api.discogs.com/releases/${releaseId}/rating/${username}`;
+
+    try {
+      await this.makeAuthenticatedRequest(
+        url,
+        "DELETE",
+        oauthToken,
+        oauthTokenSecret,
+      );
+    } catch (error) {
+      console.error("deleteReleaseRating error:", error);
+      throw error;
+    }
+  }
+
   async getCollectionValue(
     username: string,
     oauthToken: string,
@@ -481,18 +541,14 @@ class DiscogsOAuthService {
         maximum?: string | number;
       };
 
-      // Validate response structure
       if (!result || typeof result !== "object") {
         throw new Error("Invalid response format from Discogs API");
       }
 
-      // Discogs API returns values as formatted currency strings (e.g., "$1,000.00")
-      // Parse them to numbers
       const minimum = this.parseCurrencyValue(result.minimum);
       const median = this.parseCurrencyValue(result.median);
       const maximum = this.parseCurrencyValue(result.maximum);
 
-      // Validate parsed values
       if (
         Number.isNaN(minimum) ||
         Number.isNaN(median) ||

@@ -1,0 +1,34 @@
+.listItem {
+  gap: var(--space-2);
+}
+
+.listItemInCrate {
+  border-color: var(--primary);
+
+  &:hover {
+    border-color: var(--primary-hover);
+  }
+}
+
+.listItemMain {
+  gap: var(--space-2);
+}
+
+.itemImage {
+  height: 4.75rem;
+  width: 4.75rem;
+}
+
+.listItemActions {
+  flex: 0 0 3rem;
+  width: 3rem;
+}
+
+.itemContent {
+  gap: 0;
+  padding: var(--space-1) var(--space-1) var(--space-1) 0;
+
+  & > * {
+    line-height: 1;
+  }
+}

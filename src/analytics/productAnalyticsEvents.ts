@@ -178,6 +178,14 @@ export const trackReleaseNoteSaved = (instanceId: string | number) => {
   });
 };
 
+export const trackReleaseRatingSaved = (instanceId: string | number) => {
+  trackProductEvent("releaseRatingSaved", {
+    category: "collection",
+    label: "Save release rating",
+    value: String(instanceId),
+  });
+};
+
 export const trackViewModeChanged = (view: string) => {
   trackProductEvent("viewModeChanged", {
     category: "collection",
