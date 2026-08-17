@@ -71,11 +71,11 @@ describe("useReleaseModalPlayback", () => {
     expect(result.current.modal.activeTrackPosition).toBeNull();
 
     act(() => {
-      result.current.modal.handleTrackSelect("B");
+      result.current.modal.handleTrackSelect("A");
     });
 
     await waitFor(() => {
-      expect(result.current.playback.activeTrackPosition).toBe("B");
+      expect(result.current.playback.activeTrackPosition).toBe("A");
       expect(result.current.modal.isPlayingThisReleaseInBar).toBe(true);
     });
   });
@@ -116,5 +116,109 @@ describe("useReleaseModalPlayback", () => {
     });
 
     expect(result.current.playback.isPaused).toBe(false);
+  });
+
+  it("starts release preview playback for unmatched videos", async () => {
+    setupDiscogsReleaseQueryMock({
+      ...releaseDetail,
+      tracklist: [
+        {
+          position: "A",
+          title: "Unknown Track",
+          duration: "3:32",
+          type_: "track",
+        },
+      ],
+      videos: [
+        {
+          description: "Full album upload",
+          duration: 330,
+          embed: true,
+          title: "Full Album Upload",
+          uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.releasePreviewVideos).toHaveLength(1);
+      expect(result.current.modal.hasPlayableTracks).toBe(false);
+    });
+
+    act(() => {
+      result.current.modal.handlePreviewTrackSelect(
+        result.current.modal.releasePreviewTracks[0]?.position ?? "",
+      );
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isReleasePreview).toBe(true);
+      expect(result.current.playback.activePlaybackTitle).toBe(
+        "Full Album Upload",
+      );
+      expect(result.current.modal.activePreviewTrackPosition).toBe(
+        result.current.modal.releasePreviewTracks[0]?.position,
+      );
+    });
+  });
+
+  it("queues preview videos from the preview tracklist", async () => {
+    setupDiscogsReleaseQueryMock({
+      ...releaseDetail,
+      tracklist: [
+        {
+          position: "A",
+          title: "Unknown Track",
+          duration: "3:32",
+          type_: "track",
+        },
+      ],
+      videos: [
+        {
+          description: "Full album upload",
+          duration: 330,
+          embed: true,
+          title: "Full Album Upload",
+          uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.releasePreviewTracks).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.modal.handlePreviewTrackQueue(
+        result.current.modal.releasePreviewTracks[0]?.position ?? "",
+      );
+    });
+
+    expect(result.current.playback.queue).toHaveLength(1);
+    expect(result.current.playback.queue[0]?.previewVideoUri).toBe(
+      "https://www.youtube.com/watch?v=te2jJncBVG4",
+    );
   });
 });

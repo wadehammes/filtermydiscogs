@@ -41,6 +41,7 @@ export const ReleaseMiniPlayer = ({
   const {
     release,
     activeTrack,
+    activePlaybackTitle,
     activeVideoId,
     isPlaying,
     isPaused,
@@ -153,12 +154,12 @@ export const ReleaseMiniPlayer = ({
   ) : null;
 
   const metaLines =
-    isLoading || !activeTrack ? (
+    isLoading || !activePlaybackTitle ? (
       <p className={styles.trackTitle}>Loading playback…</p>
     ) : (
       <>
         <p className={styles.artist}>{artistNames}</p>
-        <p className={styles.trackTitle}>{activeTrack.title}</p>
+        <p className={styles.trackTitle}>{activePlaybackTitle}</p>
       </>
     );
 
@@ -188,7 +189,7 @@ export const ReleaseMiniPlayer = ({
         {...(isVideoPanelExpanded && { "data-video-expanded": true })}
         aria-label="Now playing"
       >
-        {isPlaybackReady && activeTrack && activeVideoId ? (
+        {isPlaybackReady && activeVideoId ? (
           <ReleasePlaybackVideoPanel
             panelId="release-playback-video-panel"
             isExpanded={isVideoPanelExpanded}
@@ -196,8 +197,8 @@ export const ReleaseMiniPlayer = ({
           >
             <PersistentYoutubeIframe
               videoId={activeVideoId}
-              videoTitle={activeTrack.title}
-              playbackKey={`${release.instance_id}-${activeTrack.position}-${activeVideoId}`}
+              videoTitle={activePlaybackTitle ?? "Release preview"}
+              playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${activeVideoId}`}
               autoplay={shouldAutoplayEmbed}
               variant={isVideoPanelExpanded ? "visible" : "hidden"}
             />

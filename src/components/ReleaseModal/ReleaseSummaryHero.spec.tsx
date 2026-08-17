@@ -99,6 +99,10 @@ describe("ReleaseSummaryHero", () => {
 
     render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
+    expect(
+      screen.getByRole("button", { name: "Remove from crate" }),
+    ).toHaveAttribute("aria-pressed", "true");
+
     await user.click(screen.getByRole("button", { name: "Remove from crate" }));
 
     expect(mockRemoveFromCrate).toHaveBeenCalledWith(release.instance_id);

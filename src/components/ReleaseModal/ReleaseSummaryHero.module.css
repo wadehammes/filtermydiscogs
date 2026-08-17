@@ -130,17 +130,6 @@
   pointer-events: none;
 }
 
-.crateButtonActive {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--primary-foreground);
-
-  &:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-  }
-}
-
 .actionIcon {
   height: 0.875rem;
   width: 0.875rem;

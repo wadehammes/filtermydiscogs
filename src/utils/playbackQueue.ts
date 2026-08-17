@@ -3,6 +3,8 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
   findTrackIndexByPosition,
   findVideoForTrack,
+  getPreviewTrackPosition,
+  getPreviewVideoTitle,
 } from "src/utils/releasePlayback";
 
 export const getQueueItemKey = (
@@ -26,6 +28,20 @@ export const createQueueItem = ({
   instanceId: String(release.instance_id),
   trackPosition,
   trackTitle,
+  release,
+});
+
+export const createPreviewQueueItem = ({
+  release,
+  video,
+}: {
+  release: DiscogsRelease;
+  video: DiscogsVideo;
+}): PlaybackQueueItem => ({
+  instanceId: String(release.instance_id),
+  trackPosition: getPreviewTrackPosition(video),
+  trackTitle: getPreviewVideoTitle(video),
+  previewVideoUri: video.uri,
   release,
 });
 
@@ -160,13 +176,5 @@ export const buildPlayableAlbumQueue = ({
     return items;
   }
 
-  const fallbackTrack = tracks[startIndex];
-
-  return [
-    createQueueItem({
-      release,
-      trackPosition: startPosition,
-      trackTitle: fallbackTrack?.title ?? startPosition,
-    }),
-  ];
+  return [];
 };

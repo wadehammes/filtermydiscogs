@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
-import { ListThinIcon } from "src/components/shared/icons/ListThinIcon.component";
+import { ListPlusThinIcon } from "src/components/shared/icons/ListPlusThinIcon.component";
 import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
@@ -15,7 +15,11 @@ interface ReleaseTracklistProps {
   activeTrackPosition: string | null;
   showPlayingIndicatorOnActiveTrack?: boolean;
   isPlaybackPaused?: boolean;
+  isTrackPlayable?: (position: string) => boolean;
   isTrackQueued?: (position: string) => boolean;
+  getPositionLabel?: (position: string) => string;
+  hideTrackPosition?: boolean;
+  reserveQueueColumn?: boolean;
   onTrackSelect?: (position: string) => void;
   onTrackQueue?: (position: string) => void;
   onActiveTrackToggle?: () => void;
@@ -27,12 +31,17 @@ export const ReleaseTracklist = ({
   activeTrackPosition,
   showPlayingIndicatorOnActiveTrack = false,
   isPlaybackPaused = false,
+  isTrackPlayable,
   isTrackQueued,
+  getPositionLabel,
+  hideTrackPosition = false,
+  reserveQueueColumn = false,
   onTrackSelect,
   onTrackQueue,
   onActiveTrackToggle,
 }: ReleaseTracklistProps) => {
-  const isSelectable = onTrackSelect !== undefined;
+  const hasSelectableTracks = onTrackSelect !== undefined;
+  const showQueueColumn = onTrackQueue !== undefined || reserveQueueColumn;
 
   if (tracks.length === 0) {
     return (
@@ -43,11 +52,18 @@ export const ReleaseTracklist = ({
   }
 
   return (
-    <ol className={styles.tracklist} data-testid="fmdReleaseTracklist">
+    <ol
+      className={classNames(styles.tracklist, {
+        [styles.tracklistNoPosition]: hideTrackPosition,
+      })}
+      data-testid="fmdReleaseTracklist"
+    >
       {tracks.map((track) => {
-        const isActive = isSelectable && track.position === activeTrackPosition;
+        const canPlayTrack =
+          hasSelectableTracks && (isTrackPlayable?.(track.position) ?? true);
+        const isActive = canPlayTrack && track.position === activeTrackPosition;
         const isPlaying =
-          isSelectable &&
+          canPlayTrack &&
           showPlayingIndicatorOnActiveTrack &&
           isActive &&
           onActiveTrackToggle;
@@ -56,10 +72,14 @@ export const ReleaseTracklist = ({
           track,
           releaseArtistNames,
         });
+        const positionLabel =
+          getPositionLabel?.(track.position) ?? track.position;
 
         const trackMainContent = (
           <>
-            <span className={styles.trackPosition}>{track.position}</span>
+            {hideTrackPosition ? null : (
+              <span className={styles.trackPosition}>{positionLabel}</span>
+            )}
             <span className={styles.trackTitle}>
               {isPlaying ? (
                 <PlayingIndicator isPaused={isPlaybackPaused} />
@@ -81,10 +101,10 @@ export const ReleaseTracklist = ({
             key={`${track.position}-${track.title}`}
             className={classNames(styles.trackItem, {
               [styles.trackItemActive]: isActive,
-              [styles.trackItemStatic]: !isSelectable,
+              [styles.trackItemStatic]: !canPlayTrack,
             })}
           >
-            {isSelectable ? (
+            {canPlayTrack ? (
               <button
                 type="button"
                 className={styles.trackMainButton}
@@ -109,36 +129,40 @@ export const ReleaseTracklist = ({
               {track.duration ? (
                 <span className={styles.trackDuration}>{track.duration}</span>
               ) : null}
-              {onTrackQueue ? (
-                <button
-                  type="button"
-                  className={classNames(styles.queueButton, {
-                    [styles.queueButtonQueued]: isQueued,
-                  })}
-                  onClick={() => {
-                    onTrackQueue(track.position);
-                  }}
-                  disabled={isQueued}
-                  aria-label={
-                    isQueued
-                      ? `${track.title} is already in the queue`
-                      : `Add ${track.title} to queue`
-                  }
-                  title={isQueued ? "In queue" : "Add to queue"}
-                  data-testid="fmdReleaseTrackQueueButton"
-                >
-                  {isQueued ? (
-                    <CheckThinIcon
-                      className={styles.queueButtonIcon}
-                      aria-hidden
-                    />
-                  ) : (
-                    <ListThinIcon
-                      className={styles.queueButtonIcon}
-                      aria-hidden
-                    />
-                  )}
-                </button>
+              {showQueueColumn ? (
+                canPlayTrack && onTrackQueue ? (
+                  <button
+                    type="button"
+                    className={classNames(styles.queueButton, {
+                      [styles.queueButtonQueued]: isQueued,
+                    })}
+                    onClick={() => {
+                      onTrackQueue(track.position);
+                    }}
+                    disabled={isQueued}
+                    aria-label={
+                      isQueued
+                        ? `${track.title} is already in the queue`
+                        : `Add ${track.title} to queue`
+                    }
+                    title={isQueued ? "In queue" : "Add to queue"}
+                    data-testid="fmdReleaseTrackQueueButton"
+                  >
+                    {isQueued ? (
+                      <CheckThinIcon
+                        className={styles.queueButtonIcon}
+                        aria-hidden
+                      />
+                    ) : (
+                      <ListPlusThinIcon
+                        className={styles.queueButtonIcon}
+                        aria-hidden
+                      />
+                    )}
+                  </button>
+                ) : (
+                  <span className={styles.queueButtonSpacer} aria-hidden />
+                )
               ) : null}
             </div>
           </li>

@@ -56,6 +56,22 @@ const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
       type_: "track",
     },
   ],
+  videos: [
+    {
+      description: "Rick Astley - Never Gonna Give You Up",
+      duration: 330,
+      embed: true,
+      title: "Rick Astley - Never Gonna Give You Up",
+      uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+    },
+    {
+      description: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+      duration: 330,
+      embed: true,
+      title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+      uri: "https://www.youtube.com/watch?v=abc12345678",
+    },
+  ],
 });
 
 const collectionRelease = releaseFactory.withDisplayDefaults({
@@ -341,6 +357,15 @@ describe("ReleasePlaybackProvider", () => {
                     type_: "track",
                   },
                 ],
+                videos: [
+                  {
+                    description: "Short C",
+                    duration: 180,
+                    embed: true,
+                    title: "Short C",
+                    uri: "https://www.youtube.com/watch?v=xyz98765432",
+                  },
+                ],
               })
             : longTracklistRelease;
 
@@ -370,12 +395,12 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       result.current.startPlayback({
         release: longCollectionRelease,
-        trackPosition: "10",
+        trackPosition: "1",
       });
     });
 
     await waitFor(() => {
-      expect(result.current.activeTrackPosition).toBe("10");
+      expect(result.current.activeTrackPosition).toBe("1");
     });
 
     act(() => {
@@ -662,6 +687,15 @@ describe("ReleasePlaybackProvider", () => {
                     title: "Short A",
                     duration: "2:00",
                     type_: "track",
+                  },
+                ],
+                videos: [
+                  {
+                    description: "Short A",
+                    duration: 120,
+                    embed: true,
+                    title: "Short A",
+                    uri: "https://www.youtube.com/watch?v=def98765432",
                   },
                 ],
               })

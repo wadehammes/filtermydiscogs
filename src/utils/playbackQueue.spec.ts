@@ -7,6 +7,7 @@ import {
   adjustQueueIndexAfterReorder,
   appendQueueItem,
   buildPlayableAlbumQueue,
+  createPreviewQueueItem,
   createQueueItem,
   findQueueItemIndex,
   getQueueItemKey,
@@ -54,6 +55,23 @@ describe("playbackQueue", () => {
     ).toBe(true);
   });
 
+  it("creates preview queue items with synthetic positions", () => {
+    const item = createPreviewQueueItem({
+      release,
+      video: {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Full Album Upload",
+        embed: true,
+      },
+    });
+
+    expect(item.previewVideoUri).toBe(
+      "https://www.youtube.com/watch?v=abc12345678",
+    );
+    expect(item.trackPosition.startsWith("preview:")).toBe(true);
+    expect(item.trackTitle).toBe("Full Album Upload");
+  });
+
   it("builds playable album queue from a start position", () => {
     const queue = buildPlayableAlbumQueue({
       release,
@@ -62,7 +80,18 @@ describe("playbackQueue", () => {
       startPosition: "A2",
     });
 
-    expect(queue.map((item) => item.trackPosition)).toEqual(["A2", "B1"]);
+    expect(queue.map((item) => item.trackPosition)).toEqual(["A2"]);
+  });
+
+  it("returns an empty queue when the start track has no matched video", () => {
+    const queue = buildPlayableAlbumQueue({
+      release,
+      tracks,
+      videos,
+      startPosition: "B1",
+    });
+
+    expect(queue).toEqual([]);
   });
 
   it("appends unique queue items", () => {

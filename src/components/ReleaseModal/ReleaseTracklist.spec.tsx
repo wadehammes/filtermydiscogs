@@ -209,6 +209,25 @@ describe("ReleaseTracklist", () => {
     expect(onTrackQueue).toHaveBeenCalledWith("B");
   });
 
+  it("reserves queue column space on non-playable rows when requested", () => {
+    const { container } = render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        isTrackPlayable={() => false}
+        reserveQueueColumn
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByTestId("fmdReleaseTrackQueueButton")).toBeNull();
+    expect(
+      container.querySelectorAll('[class*="queueButtonSpacer"]'),
+    ).toHaveLength(tracks.length);
+  });
+
   it("disables the add-to-queue control when the track is already queued", () => {
     render(
       <ReleaseTracklist

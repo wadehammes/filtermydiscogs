@@ -10,6 +10,7 @@ import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "./ReleasePlaybackFallback.component";
+import { ReleasePlaybackPreview } from "./ReleasePlaybackPreview.component";
 import { ReleaseSimilarSidebar } from "./ReleaseSimilarSidebar.component";
 import { ReleaseTracklist } from "./ReleaseTracklist.component";
 import { useReleaseModalPlayback } from "./useReleaseModalPlayback.hook";
@@ -33,18 +34,30 @@ export const ReleaseModalBody = ({
     tracks,
     videos,
     hasEmbeddableVideo,
+    hasPlayableTracks,
+    releasePreviewVideos,
+    releasePreviewTracks,
+    isTrackPlayable,
     activeTrackPosition,
+    activePreviewTrackPosition,
     fallbackSearchUrl,
     isLoading,
     isError,
     refetch,
     handleTrackSelect,
     handleTrackQueue,
+    handlePreviewTrackSelect,
+    handlePreviewTrackQueue,
     isTrackQueued,
+    isPreviewTrackQueued,
     handleActiveTrackToggle,
     isPlayingThisReleaseInBar,
     isPlaybackPaused,
+    isReleasePreviewPlaying,
   } = useReleaseModalPlayback({ release, isOpen });
+
+  const reserveQueueColumn =
+    hasPlayableTracks || releasePreviewVideos.length > 0;
 
   return (
     <ReleaseNotesEditorProvider release={release}>
@@ -81,29 +94,61 @@ export const ReleaseModalBody = ({
             <ReleaseTracklist
               tracks={tracks}
               releaseArtistNames={formatArtistNames(release)}
-              activeTrackPosition={
-                hasEmbeddableVideo ? activeTrackPosition : null
-              }
+              activeTrackPosition={activeTrackPosition}
+              reserveQueueColumn={reserveQueueColumn}
               showPlayingIndicatorOnActiveTrack={
-                hasEmbeddableVideo && isPlayingThisReleaseInBar
+                hasPlayableTracks &&
+                isPlayingThisReleaseInBar &&
+                !isReleasePreviewPlaying
               }
               isPlaybackPaused={
-                hasEmbeddableVideo && isPlayingThisReleaseInBar
+                hasPlayableTracks &&
+                isPlayingThisReleaseInBar &&
+                !isReleasePreviewPlaying
                   ? isPlaybackPaused
                   : false
               }
               {...definedProps({
-                onTrackSelect: hasEmbeddableVideo
+                isTrackPlayable: hasPlayableTracks
+                  ? isTrackPlayable
+                  : undefined,
+                onTrackSelect: hasPlayableTracks
                   ? handleTrackSelect
                   : undefined,
-                isTrackQueued: hasEmbeddableVideo ? isTrackQueued : undefined,
-                onTrackQueue: hasEmbeddableVideo ? handleTrackQueue : undefined,
+                isTrackQueued: hasPlayableTracks ? isTrackQueued : undefined,
+                onTrackQueue: hasPlayableTracks ? handleTrackQueue : undefined,
                 onActiveTrackToggle:
-                  hasEmbeddableVideo && isPlayingThisReleaseInBar
+                  hasPlayableTracks &&
+                  isPlayingThisReleaseInBar &&
+                  !isReleasePreviewPlaying
                     ? handleActiveTrackToggle
                     : undefined,
               })}
             />
+            {releasePreviewVideos.length > 0 ? (
+              <ReleasePlaybackPreview
+                tracks={releasePreviewTracks}
+                releaseArtistNames={formatArtistNames(release)}
+                activeTrackPosition={activePreviewTrackPosition}
+                showPlayingIndicatorOnActiveTrack={
+                  isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                }
+                isPlaybackPaused={
+                  isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                    ? isPlaybackPaused
+                    : false
+                }
+                isTrackQueued={isPreviewTrackQueued}
+                onTrackSelect={handlePreviewTrackSelect}
+                onTrackQueue={handlePreviewTrackQueue}
+                {...definedProps({
+                  onActiveTrackToggle:
+                    isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                      ? handleActiveTrackToggle
+                      : undefined,
+                })}
+              />
+            ) : null}
           </section>
         ) : null}
 

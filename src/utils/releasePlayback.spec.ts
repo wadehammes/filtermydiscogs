@@ -8,10 +8,17 @@ import {
   findPlayableTrackIndex,
   findVideoForTrack,
   flattenTracklist,
+  formatVideoDuration,
   getEmbeddableVideos,
+  getPreviewTrackPosition,
+  getReleasePreviewVideos,
+  hasPlayableTrackVideo,
+  isPreviewTrackPosition,
+  isTrackVideoPlayable,
   normalizeTrackTitle,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
+  previewVideoToTrack,
 } from "./releasePlayback";
 
 describe("parseYoutubeVideoId", () => {
@@ -91,16 +98,146 @@ describe("findVideoForTrack", () => {
     );
   });
 
-  it("falls back to first embeddable video", () => {
+  it("returns null when no title match exists", () => {
     const track: DiscogsTrack = {
       position: "B",
       title: "Unknown B-Side",
       type_: "track",
     };
 
-    expect(findVideoForTrack({ track, videos })?.title).toBe(
-      "Artist - Never Gonna Give You Up (Official Video)",
-    );
+    expect(findVideoForTrack({ track, videos })).toBeNull();
+  });
+
+  it("matches Discogs-style track and video titles with mix and venue details", () => {
+    const kerriVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title:
+          "Kerri Chandler Feat. Lady Linn - You Get Lost In It (Full Vocal Main Mix)",
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "Never Thought [Printworks] (623 Again Vocal)",
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=ghi11223344",
+        title:
+          "Kerri Chandler ft. Lady Linn - You Get Lost In It [The Warehouse Project] (Instrumental)",
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=jkl55667788",
+        title: "Never Thought (623 Again Instrumental) [Printworks]",
+        embed: true,
+      },
+    ];
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "A1",
+          title: "Never Thought (623 Again Vocal) (Printworks)",
+          type_: "track",
+        },
+        videos: kerriVideos,
+      })?.title,
+    ).toBe("Never Thought [Printworks] (623 Again Vocal)");
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "B1",
+          title:
+            "You Get Lost In It (Full Vocal Main Mix) (The Warehouse Project)",
+          type_: "track",
+        },
+        videos: kerriVideos,
+      })?.title,
+    ).toContain("Full Vocal Main Mix");
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "B2",
+          title: "You Get Lost In It (Instrumental) (The Warehouse Project)",
+          type_: "track",
+        },
+        videos: kerriVideos,
+      })?.title,
+    ).toContain("Instrumental");
+  });
+});
+
+describe("getReleasePreviewVideos", () => {
+  const videos: DiscogsVideo[] = [
+    {
+      uri: "https://www.youtube.com/watch?v=abc12345678",
+      title: "Artist - Never Gonna Give You Up (Official Video)",
+      embed: true,
+    },
+    {
+      uri: "https://www.youtube.com/watch?v=xyz98765432",
+      title: "Full Album Upload",
+      embed: true,
+    },
+  ];
+
+  it("returns videos not matched to any track", () => {
+    const tracks: DiscogsTrack[] = [
+      {
+        position: "A",
+        title: "Never Gonna Give You Up",
+        type_: "track",
+      },
+    ];
+
+    expect(
+      getReleasePreviewVideos(tracks, videos).map((video) => video.title),
+    ).toEqual(["Full Album Upload"]);
+  });
+
+  it("returns all embeddable videos when no tracks match", () => {
+    const tracks: DiscogsTrack[] = [
+      {
+        position: "A",
+        title: "Unknown Track",
+        type_: "track",
+      },
+    ];
+
+    expect(getReleasePreviewVideos(tracks, videos)).toHaveLength(2);
+  });
+});
+
+describe("hasPlayableTrackVideo", () => {
+  it("returns true when at least one track matches a video", () => {
+    const tracks: DiscogsTrack[] = [
+      { position: "A", title: "No Match", type_: "track" },
+      { position: "B", title: "Never Gonna Give You Up", type_: "track" },
+    ];
+    const videos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Artist - Never Gonna Give You Up",
+        embed: true,
+      },
+    ];
+
+    expect(hasPlayableTrackVideo(tracks, videos)).toBe(true);
+    expect(
+      isTrackVideoPlayable({
+        track: tracks[1] as DiscogsTrack,
+        videos,
+      }),
+    ).toBe(true);
+    expect(
+      isTrackVideoPlayable({
+        track: tracks[0] as DiscogsTrack,
+        videos,
+      }),
+    ).toBe(false);
   });
 });
 
@@ -198,6 +335,35 @@ describe("postYoutubePlayerCommand", () => {
   });
 });
 
+describe("formatVideoDuration", () => {
+  it("formats seconds as m:ss", () => {
+    expect(formatVideoDuration(330)).toBe("5:30");
+    expect(formatVideoDuration(65)).toBe("1:05");
+  });
+
+  it("returns undefined when duration is missing", () => {
+    expect(formatVideoDuration(undefined)).toBeUndefined();
+  });
+});
+
+describe("previewVideoToTrack", () => {
+  it("maps preview videos to track rows with synthetic positions", () => {
+    const video: DiscogsVideo = {
+      uri: "https://www.youtube.com/watch?v=abc12345678",
+      title: "Full Album Upload",
+      duration: 330,
+      embed: true,
+    };
+
+    const track = previewVideoToTrack(video);
+
+    expect(track.title).toBe("Full Album Upload");
+    expect(track.duration).toBe("5:30");
+    expect(isPreviewTrackPosition(track.position)).toBe(true);
+    expect(getPreviewTrackPosition(video)).toBe(track.position);
+  });
+});
+
 describe("findPlayableTrackIndex", () => {
   const tracks: DiscogsTrack[] = [
     { position: "A1", title: "No Video", type_: "track" },
@@ -226,7 +392,7 @@ describe("findPlayableTrackIndex", () => {
         startIndex: -1,
         direction: 1,
       }),
-    ).toBe(0);
+    ).toBe(1);
   });
 
   it("finds the next playable track", () => {
