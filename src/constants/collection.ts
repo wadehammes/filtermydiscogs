@@ -1,3 +1,6 @@
 export const COLLECTION_FIRST_PAGE_SIZE = 50;
 export const COLLECTION_PAGE_SIZE = 100;
 export const COLLECTION_NOTE_MAX_LENGTH = 10_000;
+export const COLLECTION_RATING_MIN = 1;
+export const COLLECTION_RATING_MAX = 5;
+export const SIMILAR_RELEASES_LIMIT = 8;

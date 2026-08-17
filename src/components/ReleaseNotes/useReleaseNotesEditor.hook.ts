@@ -15,6 +15,7 @@ import {
 import type { DiscogsRelease } from "src/types";
 import {
   buildCollectionFieldsMap,
+  getEditableConditionFields,
   getReleaseFolderId,
   getReleaseNotes,
   getReleaseNotesDisplay,
@@ -58,9 +59,14 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     [fieldsResponse?.fields],
   );
 
+  const editableConditionFields = useMemo(
+    () => getEditableConditionFields(fieldsResponse?.fields ?? []),
+    [fieldsResponse?.fields],
+  );
+
   const canEdit =
     authState.isAuthenticated &&
-    editableFields.length > 0 &&
+    (editableFields.length > 0 || editableConditionFields.length > 0) &&
     parseReleaseId(release) !== null;
 
   const dispatch = useFiltersDispatch();
@@ -81,7 +87,9 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
 
   const handleSave = async (
     values: Array<{ fieldId: number; value: string }>,
+    options: { closeDialog?: boolean } = {},
   ) => {
+    const { closeDialog = true } = options;
     const releaseId = parseReleaseId(release);
     if (!(releaseId && username)) {
       setErrorMessage("Unable to resolve release details for this note.");
@@ -89,7 +97,9 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     }
 
     if (values.length === 0) {
-      setIsDialogOpen(false);
+      if (closeDialog) {
+        setIsDialogOpen(false);
+      }
       return;
     }
 
@@ -130,7 +140,9 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
         });
       }
 
-      setIsDialogOpen(false);
+      if (closeDialog) {
+        setIsDialogOpen(false);
+      }
       trackReleaseNoteSaved(release.instance_id);
       queryClient.invalidateQueries({
         queryKey: DiscogsCollectionQueryKeys.byUsername(username),
@@ -153,6 +165,7 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     closeDialog,
     displayedNotes,
     editableFields,
+    editableConditionFields,
     errorMessage,
     fields: fieldsResponse?.fields ?? [],
     handleSave,

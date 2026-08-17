@@ -1,0 +1,54 @@
+.stars {
+  border: none;
+  display: inline-flex;
+  gap: 0.0625rem;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.starButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  line-height: 0;
+  padding: 0.125rem;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.starButtonFilled {
+  color: var(--foreground);
+}
+
+.starButtonIncluded {
+  background-color: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--foreground);
+}
+
+.starButtonHoverTarget {
+  background-color: color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent);
+  color: var(--foreground);
+}
+
+.starButtonDimmed {
+  opacity: 0.3;
+}
+
+.starIcon {
+  display: block;
+  height: 0.875rem;
+  width: 0.875rem;
+}

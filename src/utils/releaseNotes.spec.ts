@@ -2,10 +2,13 @@ import { describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   buildCollectionFieldsMap,
+  getEditableConditionFields,
   getReleaseNotes,
   getReleaseNotesDisplay,
   getReleaseNotesSearchText,
+  isConditionCollectionField,
   parseReleaseId,
+  releaseHasStoredConditionNotes,
   upsertReleaseNote,
 } from "src/utils/releaseNotes";
 
@@ -89,6 +92,45 @@ describe("releaseNotes", () => {
     });
 
     expect(getReleaseNotesSearchText(release)).toBe("signed copy");
+  });
+
+  it("identifies media and sleeve condition dropdown fields for editing", () => {
+    const mediaField = { id: 1, name: "Media Condition", type: "dropdown" };
+    const sleeveField = { id: 2, name: "Sleeve Condition", type: "dropdown" };
+    const notesField = { id: 3, name: "Notes", type: "textarea" };
+    const otherDropdown = { id: 4, name: "Custom", type: "dropdown" };
+
+    expect(isConditionCollectionField(mediaField)).toBe(true);
+    expect(isConditionCollectionField(sleeveField)).toBe(true);
+    expect(isConditionCollectionField(notesField)).toBe(false);
+    expect(isConditionCollectionField(otherDropdown)).toBe(false);
+  });
+
+  it("orders editable condition fields media before sleeve", () => {
+    const fields = [
+      { id: 2, name: "Sleeve Condition", type: "dropdown", position: 2 },
+      { id: 1, name: "Media Condition", type: "dropdown", position: 1 },
+    ];
+
+    expect(getEditableConditionFields(fields).map((field) => field.id)).toEqual(
+      [1, 2],
+    );
+  });
+
+  it("detects stored condition notes on a release", () => {
+    const release = releaseFactory.build({
+      notes: [{ field_id: 1, value: "Near Mint (NM or M-)" }],
+    });
+    const fields = [
+      { id: 1, name: "Media Condition", type: "dropdown" },
+      { id: 2, name: "Sleeve Condition", type: "dropdown" },
+      { id: 3, name: "Notes", type: "textarea" },
+    ];
+
+    expect(releaseHasStoredConditionNotes(release, fields)).toBe(true);
+    expect(
+      releaseHasStoredConditionNotes(releaseFactory.withEmptyNotes(), fields),
+    ).toBe(false);
   });
 
   it("upserts and removes note values by field id", () => {

@@ -12,8 +12,35 @@
 }
 
 .notesModal {
-  gap: var(--space-2);
-  padding: var(--space-4);
+  gap: 0;
+  padding: var(--space-3);
+}
+
+.notesModalEditor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.notesModalEditorFooter {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 0;
+}
+
+.notesModalEditorStatus {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.notesModalEditorError {
+  color: var(--destructive);
+  font-size: var(--text-xs);
+  margin: 0;
 }
 
 .noteScrollModal {
@@ -35,13 +62,8 @@
 }
 
 .noteHeading {
-  color: var(--foreground);
-  font-size: var(--text-xxs);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.01rem;
-  line-height: 1.4;
+  composes: label from "../../styles/field-label.module.css";
   margin: 0;
-  text-transform: uppercase;
 }
 
 .noteScroll {
@@ -61,8 +83,8 @@
 }
 
 .noteLabel {
-  color: var(--foreground);
-  font-weight: var(--font-medium);
+  composes: label from "../../styles/field-label.module.css";
+  display: block;
 }
 
 .addNotesLink,
@@ -181,16 +203,12 @@
 .notesCrateScratchpadField {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
   width: 100%;
 }
 
 .notesCrateScratchpadLabel {
-  color: var(--muted-foreground);
-  font-size: var(--text-xxs);
-  font-weight: var(--font-normal);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  composes: label from "../../styles/field-label.module.css";
 }
 
 .notesCrateScratchpadInput {

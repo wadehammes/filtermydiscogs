@@ -273,6 +273,88 @@ export const updateCollectionNote = async ({
     throw new Error("Failed to update collection note");
   }
 };
+interface UpdateReleaseRatingParams {
+  username: string;
+  releaseId: number;
+  rating: number;
+}
+
+export const updateReleaseRating = async ({
+  username,
+  releaseId,
+  rating,
+}: UpdateReleaseRatingParams): Promise<{
+  username: string;
+  release_id: number;
+  rating: number;
+}> => {
+  try {
+    const response = await fetch(
+      `/api/collection/releases/${releaseId}/rating`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username,
+          rating,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(await messageFromFailedApiResponse(response));
+    }
+
+    return parseSuccessResponse<{
+      username: string;
+      release_id: number;
+      rating: number;
+    }>(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update release rating");
+  }
+};
+
+interface ClearReleaseRatingParams {
+  username: string;
+  releaseId: number;
+}
+
+export const clearReleaseRating = async ({
+  username,
+  releaseId,
+}: ClearReleaseRatingParams): Promise<{ success: boolean }> => {
+  try {
+    const params = new URLSearchParams({ username });
+    const response = await fetch(
+      `/api/collection/releases/${releaseId}/rating?${params.toString()}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(await messageFromFailedApiResponse(response));
+    }
+
+    return parseSuccessResponse<{ success: boolean }>(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to clear release rating");
+  }
+};
 
 export const fetchDiscogsRelease = async (
   releaseId: string,

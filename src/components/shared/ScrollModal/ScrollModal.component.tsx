@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
 import { definedProps } from "src/utils/definedProps";
@@ -13,6 +14,11 @@ interface ScrollModalProps {
   ariaDescribedBy?: string;
   header: ReactNode;
   children: ReactNode;
+  panelClassName?: string;
+  contentClassName?: string;
+  aside?: ReactNode;
+  asideClassName?: string;
+  toolbar?: ReactNode;
 }
 
 export function ScrollModal({
@@ -23,12 +29,19 @@ export function ScrollModal({
   ariaDescribedBy,
   header,
   children,
+  panelClassName,
+  contentClassName,
+  aside,
+  asideClassName,
+  toolbar,
 }: ScrollModalProps) {
+  const hasAside = aside != null;
+
   return (
     <AppDialog
       open={isOpen}
       onClose={onClose}
-      panelClassName={styles.modal}
+      panelClassName={classNames(styles.modal, panelClassName)}
       backdropVariant="modal"
       {...definedProps({
         testId,
@@ -36,8 +49,37 @@ export function ScrollModal({
         ariaDescribedBy,
       })}
     >
-      <div className={styles.header}>{header}</div>
-      <div className={styles.content}>{children}</div>
+      {hasAside ? (
+        <div className={styles.splitLayout}>
+          {toolbar ? (
+            <div className={styles.splitToolbar}>{toolbar}</div>
+          ) : null}
+          <div className={styles.splitShell}>
+            <div className={styles.splitMain}>
+              <div className={styles.header}>{header}</div>
+              <div
+                className={classNames(
+                  styles.content,
+                  styles.splitContent,
+                  contentClassName,
+                )}
+              >
+                {children}
+              </div>
+            </div>
+            <div className={classNames(styles.aside, asideClassName)}>
+              {aside}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={styles.header}>{header}</div>
+          <div className={classNames(styles.content, contentClassName)}>
+            {children}
+          </div>
+        </>
+      )}
     </AppDialog>
   );
 }

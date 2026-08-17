@@ -4,6 +4,7 @@ import {
   CRATE_LAYOUT_SORT_STEP,
   CRATE_MARKER_MAX_LENGTH,
 } from "src/constants/crate";
+import { getPrependCrateLayoutSortOrder } from "src/lib/crate-layout";
 import type {
   CrateLayoutPutItem,
   CrateLayoutPutRequest,
@@ -219,7 +220,7 @@ export const applyCrateLayoutUpdate = async ({
   }
 };
 
-export const getNextCrateLayoutSortOrder = async ({
+export const getPrependCrateLayoutSortOrderForCrate = async ({
   userId,
   crateId,
   tx,
@@ -231,18 +232,18 @@ export const getNextCrateLayoutSortOrder = async ({
   const [releaseAgg, markerAgg] = await Promise.all([
     tx.crateRelease.aggregate({
       where: { user_id: userId, crate_id: crateId },
-      _max: { sort_order: true },
+      _min: { sort_order: true },
     }),
     tx.crateSetMarker.aggregate({
       where: { user_id: userId, crate_id: crateId },
-      _max: { sort_order: true },
+      _min: { sort_order: true },
     }),
   ]);
 
-  const maxSortOrder = Math.max(
-    releaseAgg._max.sort_order ?? 0,
-    markerAgg._max.sort_order ?? 0,
-  );
+  const existingSortOrders = [
+    releaseAgg._min.sort_order,
+    markerAgg._min.sort_order,
+  ].filter((sortOrder): sortOrder is number => sortOrder != null);
 
-  return maxSortOrder + CRATE_LAYOUT_SORT_STEP;
+  return getPrependCrateLayoutSortOrder(existingSortOrders);
 };

@@ -1,0 +1,93 @@
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  composes: label from "../../styles/field-label.module.css";
+}
+
+.textarea {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  font-family: inherit;
+  line-height: 1.4;
+  min-height: 5rem;
+  padding: var(--space-3);
+  resize: vertical;
+  width: 100%;
+
+  &:focus {
+    border-color: var(--ring);
+    outline: none;
+  }
+}
+
+.textareaInvalid {
+  border-color: var(--destructive);
+
+  &:focus {
+    border-color: var(--destructive);
+  }
+}
+
+.fieldFooter {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-1);
+  justify-content: space-between;
+}
+
+.fieldFooterSpacer {
+  flex: 1;
+}
+
+.fieldError {
+  color: var(--destructive);
+  flex: 1;
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.charCount {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.charCountLimit {
+  color: var(--destructive);
+}
+
+.conditionFields {
+  display: grid;
+  gap: var(--space-2);
+
+  @media (width >= 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.conditionSelect {
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.modalLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.modalLayout .textarea {
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+.conditionFieldsModal {
+  gap: var(--space-2);
+}

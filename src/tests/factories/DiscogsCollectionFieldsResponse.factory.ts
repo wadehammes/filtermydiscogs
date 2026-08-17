@@ -40,7 +40,11 @@ class DiscogsCollectionFieldsResponseFactory extends BaseFactory<
     attributes: Partial<DiscogsCollectionFieldsResponse> = {},
   ): DiscogsCollectionFieldsResponse {
     return this.build({
-      fields: [discogsCollectionFieldFactory.notesField()],
+      fields: [
+        discogsCollectionFieldFactory.mediaConditionField(),
+        discogsCollectionFieldFactory.sleeveConditionField(),
+        discogsCollectionFieldFactory.notesField(),
+      ],
       ...attributes,
     });
   }

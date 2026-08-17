@@ -22,6 +22,13 @@ export const useFilterControlPositionerZIndex = (
       return;
     }
 
+    const inModal = trigger.closest('[aria-modal="true"]') !== null;
+
+    if (inModal) {
+      setPositionerStyle({ zIndex: "calc(var(--z-5-modal) + 1)" });
+      return;
+    }
+
     if (inFiltersBar) {
       setPositionerStyle({ zIndex: "var(--z-app-header)" });
       return;

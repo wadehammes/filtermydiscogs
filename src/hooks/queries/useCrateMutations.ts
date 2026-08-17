@@ -13,7 +13,10 @@ import {
   updateCrateLayout,
 } from "src/api/helpers";
 import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
-import { splitCrateLayoutItemsForCache } from "src/lib/crate-layout";
+import {
+  getPrependCrateLayoutSortOrder,
+  splitCrateLayoutItemsForCache,
+} from "src/lib/crate-layout";
 import type { DiscogsRelease } from "src/types";
 import type {
   CrateLayoutItem,
@@ -464,16 +467,10 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
             return old;
           }
 
-          const maxSortOrder = old.releases.reduce(
-            (max, item) => Math.max(max, item.sort_order ?? 0),
-            0,
-          );
-          const markerMax = (old.markers ?? []).reduce(
-            (max, marker) => Math.max(max, marker.sort_order),
-            0,
-          );
-          const nextSortOrder =
-            Math.max(maxSortOrder, markerMax) + CRATE_LAYOUT_SORT_STEP;
+          const nextSortOrder = getPrependCrateLayoutSortOrder([
+            ...old.releases.map((item) => item.sort_order ?? 0),
+            ...(old.markers ?? []).map((marker) => marker.sort_order),
+          ]);
 
           return {
             ...old,

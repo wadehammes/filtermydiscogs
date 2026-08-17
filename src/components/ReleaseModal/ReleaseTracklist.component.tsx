@@ -16,7 +16,7 @@ interface ReleaseTracklistProps {
   showPlayingIndicatorOnActiveTrack?: boolean;
   isPlaybackPaused?: boolean;
   isTrackQueued?: (position: string) => boolean;
-  onTrackSelect: (position: string) => void;
+  onTrackSelect?: (position: string) => void;
   onTrackQueue?: (position: string) => void;
   onActiveTrackToggle?: () => void;
 }
@@ -32,6 +32,8 @@ export const ReleaseTracklist = ({
   onTrackQueue,
   onActiveTrackToggle,
 }: ReleaseTracklistProps) => {
+  const isSelectable = onTrackSelect !== undefined;
+
   if (tracks.length === 0) {
     return (
       <p className={styles.emptyMessage} data-testid="fmdReleaseTracklistEmpty">
@@ -43,52 +45,66 @@ export const ReleaseTracklist = ({
   return (
     <ol className={styles.tracklist} data-testid="fmdReleaseTracklist">
       {tracks.map((track) => {
-        const isActive = track.position === activeTrackPosition;
+        const isActive = isSelectable && track.position === activeTrackPosition;
         const isPlaying =
-          showPlayingIndicatorOnActiveTrack && isActive && onActiveTrackToggle;
+          isSelectable &&
+          showPlayingIndicatorOnActiveTrack &&
+          isActive &&
+          onActiveTrackToggle;
         const isQueued = isTrackQueued?.(track.position) ?? false;
         const trackCreditsLine = formatTrackCreditsLine({
           track,
           releaseArtistNames,
         });
 
+        const trackMainContent = (
+          <>
+            <span className={styles.trackPosition}>{track.position}</span>
+            <span className={styles.trackTitle}>
+              {isPlaying ? (
+                <PlayingIndicator isPaused={isPlaybackPaused} />
+              ) : null}
+              <span className={styles.trackTitleStack}>
+                <span className={styles.trackTitleText}>{track.title}</span>
+                {trackCreditsLine ? (
+                  <span className={styles.trackCredits}>
+                    {trackCreditsLine}
+                  </span>
+                ) : null}
+              </span>
+            </span>
+          </>
+        );
+
         return (
           <li
             key={`${track.position}-${track.title}`}
             className={classNames(styles.trackItem, {
               [styles.trackItemActive]: isActive,
+              [styles.trackItemStatic]: !isSelectable,
             })}
           >
-            <button
-              type="button"
-              className={styles.trackMainButton}
-              onClick={() => {
-                if (isPlaying && onActiveTrackToggle) {
-                  onActiveTrackToggle();
-                  return;
-                }
+            {isSelectable ? (
+              <button
+                type="button"
+                className={styles.trackMainButton}
+                onClick={() => {
+                  if (isPlaying && onActiveTrackToggle) {
+                    onActiveTrackToggle();
+                    return;
+                  }
 
-                onTrackSelect(track.position);
-              }}
-              {...definedProps({
-                "aria-current": isActive ? ("true" as const) : undefined,
-              })}
-            >
-              <span className={styles.trackPosition}>{track.position}</span>
-              <span className={styles.trackTitle}>
-                {isPlaying ? (
-                  <PlayingIndicator isPaused={isPlaybackPaused} />
-                ) : null}
-                <span className={styles.trackTitleStack}>
-                  <span className={styles.trackTitleText}>{track.title}</span>
-                  {trackCreditsLine ? (
-                    <span className={styles.trackCredits}>
-                      {trackCreditsLine}
-                    </span>
-                  ) : null}
-                </span>
-              </span>
-            </button>
+                  onTrackSelect?.(track.position);
+                }}
+                {...definedProps({
+                  "aria-current": isActive ? ("true" as const) : undefined,
+                })}
+              >
+                {trackMainContent}
+              </button>
+            ) : (
+              <div className={styles.trackMainStatic}>{trackMainContent}</div>
+            )}
             <div className={styles.trackTrailing}>
               {track.duration ? (
                 <span className={styles.trackDuration}>{track.duration}</span>

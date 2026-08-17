@@ -114,15 +114,25 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 
 | File | Role |
 |------|------|
-| `ReleaseModal.component.tsx` | Backdrop + scroll shell via **`ScrollModal`**, hero header (cover, metadata, crate/Discogs/close), scrollable body, analytics on open |
-| `ReleaseModalBody.component.tsx` | Tracklist via **`useReleaseModalPlayback`**, then notes at the bottom |
-| `ReleaseSummaryHero.component.tsx` | Shared **`ModalToolbar`** (crate, Discogs, close **X**) + stacked cover/metadata on mobile, side-by-side on desktop; clickable format/style filter pills |
+| `ReleaseModal.component.tsx` | Backdrop + scroll shell via **`ScrollModal`**, hero header (cover, metadata, crate/Discogs/close), scrollable body, analytics on open. When similar collection matches exist, uses **`useMediaQuery("(min-width: 1024px)")`**: desktop (≥1024px) widens (**`modalWide`**) and mounts **`ReleaseSimilarSidebar`** in **`ScrollModal`** **`aside`** with full-width **`ReleaseSummaryHeroToolbar`** in the **`toolbar`** slot (hero omits its toolbar); mobile keeps the standard modal shell and passes similar matches to the body |
+| `ReleaseModalBody.component.tsx` | Tracklist via **`useReleaseModalPlayback`**, notes, then on mobile (**`<1024px`**) an inline **`ReleaseSimilarSidebar`** card below notes |
+| `ReleaseSimilarSidebar.component.tsx` | **`variant="aside"`** (desktop **`ScrollModal`** column — independently scrollable list) or **`variant="inline"`** (mobile card in main scroll). Shared genres/styles via **`getSimilarReleases`** ([`similarReleases.ts`](../../src/utils/similarReleases.ts)) |
+| `ReleaseSimilarReleaseItem.component.tsx` | Crate-drawer-style row (**`CrateDrawerReleaseItem`** layout + compact overrides in **`ReleaseSimilarReleaseItem.module.css`**) with add/remove crate action; **`.listItemInCrate`** primary border when staged in the crate; row click calls **`onReleaseClick`** |
+| `ReleaseSummaryHeroToolbar.component.tsx` | Crate/Discogs/close toolbar extracted for the desktop split layout when similar matches exist |
+| `useSimilarReleasesInCollection.hook.ts` | Memoized similar-release list from **`allReleasesAtom`** (limit **`SIMILAR_RELEASES_LIMIT`**); exposes **`isSimilarLoading`** while collection pagination is in flight |
+| `ReleaseSummaryHero.component.tsx` | Shared **`ModalToolbar`** (crate, Discogs, close **X**) + stacked cover/metadata on mobile, side-by-side on desktop; catalog meta line, then **`ReleaseHeroRatingsRow`** (personal stars + community average), then clickable format/style filter pills |
+| `ReleaseHeroRatingsRow.component.tsx` | One ratings row — **`ReleasePersonalRating`** (authenticated) + community average, `·`-separated when both present |
+| `ReleasePersonalRating.component.tsx` | Auth-only wrapper mounting **`useReleaseRatingEditor`** + **`ReleaseRatingPicker`** |
+| `ReleaseRatingPicker.component.tsx` | Native **`<input type="radio">`** stars in a **`<fieldset>`**; hover preview highlights included stars and dims higher stars |
+| `useReleaseRatingEditor.hook.ts` | Rating write handler, optimistic **`allReleasesAtom`** updates, collection + release query invalidation |
 | `PublicReleaseModal.component.tsx` | Public crate variant — **`ScrollModal`** shell, **`PublicReleaseSummaryHero`** + **`PublicReleaseModalBody`** (tracklist only) |
-| `PublicReleaseSummaryHero.component.tsx` | Discogs + close toolbar; static format/style pills (no filter actions, no crate toggle) |
+| `PublicReleaseSummaryHero.component.tsx` | Discogs + close toolbar; catalog meta + **`ReleaseHeroRatingsRow`** (community average only); static format/style pills (no filter actions, no crate toggle) |
 | `PublicReleaseModalBody.component.tsx` | Tracklist/playback only — no notes section |
 | `ReleasePlaybackFallback.component.tsx` | YouTube search + external video links when no embeddable video is available |
-| `ReleaseTracklist.component.tsx` | Clickable track rows with optional per-track **`artists`** / **`extraartists`** credits (shown on Various Artists comps and when credits differ from the release artist); click starts background playback; hover **Add to queue** (list icon) appends to the global queue when embeddable videos exist, with a check when already queued; click the active dock track again to play/pause; animated bars or pause icon on the dock’s active track |
+| `ReleaseTracklist.component.tsx` | Track rows are clickable only when **`onTrackSelect`** is passed (embeddable videos exist); otherwise static text rows with no hover. Per-track **`artists`** / **`extraartists`** credits on Various Artists comps; hover **Add to queue** when playback is available; animated bars or pause icon on the dock’s active track |
 | `useReleaseModalPlayback.hook.ts` | Modal playback state; track select calls **`startPlayback`**; **`handleTrackQueue`** calls **`addToQueue`** |
+
+**Similar in your collection:** **`getSimilarReleases`** scores other collection items with weighted tag overlap — **styles** count more than **genres** — plus small boosts for shared **label** and nearby **year** (±5), and a **same-artist penalty** so gig-list discovery favors different artists with a similar vibe. Excludes the open instance and same **`master_id`**. Candidates must share at least one genre/style tag; untagged sources return no matches. Similar matches are computed only after the full collection has loaded; until then **`ReleaseSimilarSidebar`** shows **`PageLoader`** (**`Loading similar releases…`**, same pattern as crate drawer loading). Returns up to **`SIMILAR_RELEASES_LIMIT`** (8) matches sorted by score then title. Covered by [`ReleaseModal.similar.spec.tsx`](../../src/components/ReleaseModal/ReleaseModal.similar.spec.tsx) (mobile inline placement + desktop aside; **`ReleaseModal.po`** exports **`mockUseMediaQuery`** for breakpoint tests).
 
 ## Feature example: ReleasePlayback
 
@@ -146,13 +156,16 @@ Crate, notes, and card filter pill clicks do **not** open the modal. Discogs lin
 
 | File | Role |
 |------|------|
-| `ReleaseNotes.component.tsx` | List display (`inline`), release modal (`variant="modal"`), table (`variant="table"`), crates page (`variant="crate"` — inline scratchpad via [`ReleaseNotesCrateScratchpad`](../../src/components/ReleaseNotes/ReleaseNotesCrateScratchpad.component.tsx)); **`displayOnly`** remains in the component API for tests only |
+| `ReleaseNotes.component.tsx` | **`variant="modal"`** (release modal body): inline **`ReleaseNotesModalEditor`** when editable; read-only stacked **`field-label`** rows. Also **`inline`**, **`table`**, **`crate`** scratchpad, **`displayOnly`** (tests) |
 | `ReleaseNotesCardAction.component.tsx` | Sticky-note icon — **`variant="card"`** (image overlay + tooltip) or **`variant="mobile"`** (stacked action column); primary dot badge when notes exist |
 | `ReleaseNotesEditor.context.tsx` | Per-card provider so the icon and body share one editor/dialog |
-| `ReleaseNotesEditorDialog.component.tsx` | Renders **`NoteEditDialog`** from provider context (grid/mobile overlay icon, modal) |
+| `ReleaseNotesEditorDialog.component.tsx` | Renders **`NoteEditDialog`** from provider context for **card/mobile overlay** note icon only (not the release modal notes section) |
 | `useReleaseNotesEditor.hook.ts` | Dialog state, save handler, optimistic updates |
-| `NoteEditDialog.component.tsx` | Release notes editor via **`ScrollModal`** + **`ModalToolbar`** (`data-testid="fmdNoteEditDialog"`) |
-| `ReleaseNotes.po.tsx` / `ReleaseNotes.spec.tsx` | Page object + tests (`data-testid="fmdReleaseNotes"`) |
+| `NoteEditDialog.component.tsx` | Release notes editor via **`ScrollModal`** + **`ModalToolbar`** (`data-testid="fmdNoteEditDialog"`); shared **`ReleaseNotesFormFields`** (textarea note fields, then Media/Sleeve Condition **`Select`** dropdowns) |
+| `ReleaseNotesFormFields.component.tsx` | Shared note textarea + condition **`Select`** row; all labels compose **`field-label.module.css`** |
+| `ReleaseNotesModalEditor.component.tsx` | Inline release-modal notes editor (debounced textarea save, immediate condition saves) |
+| `NoteEditDialog.spec.tsx` / `ReleaseNotes.spec.tsx` | Dialog + modal inline editor tests |
+| `ReleaseNotes.po.tsx` | Page object (`data-testid="fmdReleaseNotes"`) |
 
 Wrap **`ReleaseCard`** and **`MobileReleaseCard`** with **`ReleaseNotesEditorProvider`**. **`ReleaseNotesCardAction`** (grid overlay / mobile action column) reads **`useReleaseNotesEditorContext()`** to open **`NoteEditDialog`**. Neither card variant renders inline note body copy—do not call **`useReleaseNotesEditor`** twice on the same card.
 

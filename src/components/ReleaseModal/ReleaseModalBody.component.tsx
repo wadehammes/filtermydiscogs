@@ -10,17 +10,24 @@ import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "./ReleasePlaybackFallback.component";
+import { ReleaseSimilarSidebar } from "./ReleaseSimilarSidebar.component";
 import { ReleaseTracklist } from "./ReleaseTracklist.component";
 import { useReleaseModalPlayback } from "./useReleaseModalPlayback.hook";
 
 interface ReleaseModalBodyProps {
   release: DiscogsRelease;
   isOpen: boolean;
+  similarReleases?: DiscogsRelease[];
+  isSimilarLoading?: boolean;
+  onReleaseClick?: (instanceId: string) => void;
 }
 
 export const ReleaseModalBody = ({
   release,
   isOpen,
+  similarReleases,
+  isSimilarLoading,
+  onReleaseClick,
 }: ReleaseModalBodyProps) => {
   const {
     tracks,
@@ -74,18 +81,27 @@ export const ReleaseModalBody = ({
             <ReleaseTracklist
               tracks={tracks}
               releaseArtistNames={formatArtistNames(release)}
-              activeTrackPosition={activeTrackPosition}
-              showPlayingIndicatorOnActiveTrack={isPlayingThisReleaseInBar}
-              isPlaybackPaused={
-                isPlayingThisReleaseInBar ? isPlaybackPaused : false
+              activeTrackPosition={
+                hasEmbeddableVideo ? activeTrackPosition : null
               }
-              onTrackSelect={handleTrackSelect}
+              showPlayingIndicatorOnActiveTrack={
+                hasEmbeddableVideo && isPlayingThisReleaseInBar
+              }
+              isPlaybackPaused={
+                hasEmbeddableVideo && isPlayingThisReleaseInBar
+                  ? isPlaybackPaused
+                  : false
+              }
               {...definedProps({
+                onTrackSelect: hasEmbeddableVideo
+                  ? handleTrackSelect
+                  : undefined,
                 isTrackQueued: hasEmbeddableVideo ? isTrackQueued : undefined,
                 onTrackQueue: hasEmbeddableVideo ? handleTrackQueue : undefined,
-                onActiveTrackToggle: isPlayingThisReleaseInBar
-                  ? handleActiveTrackToggle
-                  : undefined,
+                onActiveTrackToggle:
+                  hasEmbeddableVideo && isPlayingThisReleaseInBar
+                    ? handleActiveTrackToggle
+                    : undefined,
               })}
             />
           </section>
@@ -97,6 +113,15 @@ export const ReleaseModalBody = ({
         >
           <ReleaseNotes release={release} variant="modal" />
         </section>
+
+        {similarReleases !== undefined ? (
+          <ReleaseSimilarSidebar
+            variant="inline"
+            similarReleases={similarReleases}
+            isLoading={isSimilarLoading ?? false}
+            {...definedProps({ onReleaseClick })}
+          />
+        ) : null}
       </div>
     </ReleaseNotesEditorProvider>
   );

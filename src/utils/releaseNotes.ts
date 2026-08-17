@@ -82,12 +82,19 @@ const normalizeFieldName = (name: string): string => {
   return name.trim().toLowerCase();
 };
 
-const HIDDEN_CARD_NOTE_FIELD_NAMES = new Set([
+const CONDITION_NOTE_FIELD_NAMES = new Set([
   "media",
   "sleeve",
   "media condition",
   "sleeve condition",
 ]);
+
+const CONDITION_FIELD_SORT_ORDER: Record<string, number> = {
+  media: 0,
+  "media condition": 0,
+  sleeve: 1,
+  "sleeve condition": 1,
+};
 
 export const isCardDisplayNoteField = (
   field: DiscogsCollectionField | undefined,
@@ -100,7 +107,49 @@ export const isCardDisplayNoteField = (
     return false;
   }
 
-  return !HIDDEN_CARD_NOTE_FIELD_NAMES.has(normalizeFieldName(field.name));
+  return !CONDITION_NOTE_FIELD_NAMES.has(normalizeFieldName(field.name));
+};
+
+export const isConditionCollectionField = (
+  field: DiscogsCollectionField | undefined,
+): boolean => {
+  if (field?.type !== "dropdown") {
+    return false;
+  }
+
+  return CONDITION_NOTE_FIELD_NAMES.has(normalizeFieldName(field.name));
+};
+
+export const getEditableConditionFields = (
+  fields: DiscogsCollectionField[],
+): DiscogsCollectionField[] => {
+  return fields.filter(isConditionCollectionField).sort((left, right) => {
+    const leftOrder =
+      CONDITION_FIELD_SORT_ORDER[normalizeFieldName(left.name)] ?? 99;
+    const rightOrder =
+      CONDITION_FIELD_SORT_ORDER[normalizeFieldName(right.name)] ?? 99;
+
+    if (leftOrder !== rightOrder) {
+      return leftOrder - rightOrder;
+    }
+
+    return (left.position ?? 0) - (right.position ?? 0);
+  });
+};
+
+export const releaseHasStoredConditionNotes = (
+  release: DiscogsRelease,
+  fields: DiscogsCollectionField[],
+): boolean => {
+  const notes = getReleaseNotes(release);
+
+  return getEditableConditionFields(fields).some((field) => {
+    const note = notes.find(
+      (storedNote) => normalizeFieldId(storedNote.field_id) === field.id,
+    );
+
+    return (note?.value ?? "").trim().length > 0;
+  });
 };
 
 export const getReleaseNotesDisplay = ({

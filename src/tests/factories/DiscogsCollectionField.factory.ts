@@ -5,6 +5,24 @@ import type { KeysMatch } from "src/types/KeysMatch";
 
 type DiscogsCollectionFieldFactoryOptions = Record<string, never>;
 
+const DISCOGS_CONDITION_OPTIONS = [
+  "Mint (M)",
+  "Near Mint (NM or M-)",
+  "Very Good Plus (VG+)",
+  "Very Good (VG)",
+  "Good Plus (G+)",
+  "Good (G)",
+  "Fair (F)",
+  "Poor (P)",
+] as const;
+
+const DISCOGS_SLEEVE_CONDITION_OPTIONS = [
+  ...DISCOGS_CONDITION_OPTIONS,
+  "Generic",
+  "Not Graded",
+  "No Cover",
+] as const;
+
 const FIELD_TYPES = ["textarea", "text", "dropdown", "checkbox"] as const;
 type FieldType = DiscogsCollectionField["type"];
 
@@ -51,6 +69,32 @@ class DiscogsCollectionFieldFactory extends BaseFactory<
       id: 3,
       name: "Notes",
       type: "textarea",
+      ...attributes,
+    });
+  }
+
+  mediaConditionField(
+    attributes: Partial<DiscogsCollectionField> = {},
+  ): DiscogsCollectionField {
+    return this.build({
+      id: 1,
+      name: "Media Condition",
+      type: "dropdown",
+      options: [...DISCOGS_CONDITION_OPTIONS],
+      position: 1,
+      ...attributes,
+    });
+  }
+
+  sleeveConditionField(
+    attributes: Partial<DiscogsCollectionField> = {},
+  ): DiscogsCollectionField {
+    return this.build({
+      id: 2,
+      name: "Sleeve Condition",
+      type: "dropdown",
+      options: [...DISCOGS_SLEEVE_CONDITION_OPTIONS],
+      position: 2,
       ...attributes,
     });
   }
