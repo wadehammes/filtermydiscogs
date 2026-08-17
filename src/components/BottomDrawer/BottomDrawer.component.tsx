@@ -16,6 +16,7 @@ interface BottomDrawerProps {
   drawerClassName?: string;
   contentClassName?: string;
   aboveMiniPlayer?: boolean;
+  behindMiniPlayer?: boolean;
 }
 
 export const BottomDrawer = ({
@@ -31,6 +32,7 @@ export const BottomDrawer = ({
   drawerClassName,
   contentClassName,
   aboveMiniPlayer = false,
+  behindMiniPlayer = false,
 }: BottomDrawerProps) => {
   if (!isOpen) return null;
 
@@ -64,6 +66,7 @@ export const BottomDrawer = ({
         className={classNames(styles.overlay, {
           [styles.open]: isOpen,
           [styles.aboveMiniPlayer]: aboveMiniPlayer,
+          [styles.behindMiniPlayer]: behindMiniPlayer,
         })}
         onClick={onClose}
         aria-label="Close drawer overlay"
@@ -74,6 +77,7 @@ export const BottomDrawer = ({
         className={classNames(styles.drawer, drawerClassName, {
           [styles.open]: isOpen,
           [styles.aboveMiniPlayer]: aboveMiniPlayer,
+          [styles.behindMiniPlayer]: behindMiniPlayer,
         })}
         data-testid="fmdBottomDrawer"
         onClick={(e) => {

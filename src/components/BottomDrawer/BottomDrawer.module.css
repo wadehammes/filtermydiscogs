@@ -17,7 +17,15 @@
   }
 
   &.aboveMiniPlayer {
-    bottom: var(--release-mini-player-stack-offset, 0);
+    bottom: calc(
+      var(--release-mini-player-stack-offset, 0) +
+      var(--bottom-drawer-mini-player-gap, 0px)
+    );
+  }
+
+  &.behindMiniPlayer {
+    bottom: 0;
+    z-index: var(--z-2-sticky);
   }
 }
 
@@ -47,8 +55,15 @@
   }
 
   &.aboveMiniPlayer {
-    bottom: var(--release-mini-player-stack-offset, 0);
-    max-height: calc(100dvh - var(--release-mini-player-stack-offset, 0));
+    bottom: calc(
+      var(--release-mini-player-stack-offset, 0) +
+      var(--bottom-drawer-mini-player-gap, 0px)
+    );
+    max-height: calc(
+      100dvh -
+      var(--release-mini-player-stack-offset, 0) -
+      var(--bottom-drawer-mini-player-gap, 0px)
+    );
 
     @media (width < 768px) {
       :global(
@@ -60,9 +75,21 @@
         max-height: calc(
           100dvh -
           var(--sticky-header-height) -
-          var(--release-mini-player-stack-offset, 0)
+          var(--release-mini-player-stack-offset, 0) -
+          var(--bottom-drawer-mini-player-gap, 0px)
         );
       }
+    }
+  }
+
+  &.behindMiniPlayer {
+    bottom: 0;
+    max-height: 80dvh;
+    padding-bottom: var(--release-mini-player-stack-offset, 0);
+    z-index: var(--z-2-sticky);
+
+    @media (width >= 768px) {
+      max-height: min(80dvh, calc(100dvh - var(--space-4)));
     }
   }
 

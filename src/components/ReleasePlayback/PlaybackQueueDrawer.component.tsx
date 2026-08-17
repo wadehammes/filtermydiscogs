@@ -194,7 +194,7 @@ export const PlaybackQueueDrawer = ({
       closeButtonPlacement="header"
       dataAttribute="data-playback-queue-open"
       drawerClassName={styles.queueDrawer}
-      aboveMiniPlayer={isPlaying}
+      behindMiniPlayer
       footer={
         queue.length > 0 ? (
           <button
