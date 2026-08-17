@@ -1,13 +1,20 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { Toaster } from "sonner";
 import { useTheme } from "src/context/theme.context";
+import { useMounted } from "src/hooks/useMounted.hook";
 import { toSonnerTheme } from "src/utils/themeAppearance";
 
 export function AppToaster() {
   const { resolvedTheme } = useTheme();
+  const mounted = useMounted();
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <Toaster
       theme={toSonnerTheme(resolvedTheme)}
       richColors
@@ -16,6 +23,7 @@ export function AppToaster() {
       expand={false}
       visibleToasts={3}
       offset="1rem"
+      style={{ zIndex: "var(--z-8-toast)" }}
       toastOptions={{
         classNames: {
           toast: "fmd-toast",
@@ -23,6 +31,7 @@ export function AppToaster() {
           description: "fmd-toast-description",
         },
       }}
-    />
+    />,
+    document.body,
   );
 }

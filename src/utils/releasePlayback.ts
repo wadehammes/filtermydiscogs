@@ -321,7 +321,10 @@ export const buildYoutubeEmbedUrl = ({
   origin?: string;
 }): string => {
   const params = new URLSearchParams({
+    controls: "1",
+    disablekb: "0",
     enablejsapi: "1",
+    fs: "1",
     playsinline: "1",
     rel: "0",
   });

@@ -88,19 +88,19 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
   const handleSave = async (
     values: Array<{ fieldId: number; value: string }>,
     options: { closeDialog?: boolean } = {},
-  ) => {
+  ): Promise<boolean> => {
     const { closeDialog = true } = options;
     const releaseId = parseReleaseId(release);
     if (!(releaseId && username)) {
       setErrorMessage("Unable to resolve release details for this note.");
-      return;
+      return false;
     }
 
     if (values.length === 0) {
       if (closeDialog) {
         setIsDialogOpen(false);
       }
-      return;
+      return true;
     }
 
     setErrorMessage(null);
@@ -147,6 +147,8 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
       queryClient.invalidateQueries({
         queryKey: DiscogsCollectionQueryKeys.byUsername(username),
       });
+
+      return true;
     } catch (error) {
       dispatch({
         type: FiltersActionTypes.SetAllReleases,
@@ -155,6 +157,8 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
       setErrorMessage(
         error instanceof Error ? error.message : "Failed to save note",
       );
+
+      return false;
     } finally {
       setIsSaving(false);
     }

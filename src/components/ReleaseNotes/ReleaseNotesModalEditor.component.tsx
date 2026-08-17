@@ -10,10 +10,13 @@ import {
   getNoteFieldLabelId,
   ReleaseNotesFormFields,
 } from "./ReleaseNotesFormFields.component";
+import {
+  dismissReleaseNotesSaveToast,
+  showReleaseNotesSavedToast,
+  showReleaseNotesSavingToast,
+} from "./releaseNotesSaveToast";
 
 const SAVE_DEBOUNCE_MS = 700;
-
-type SaveState = "idle" | "pending" | "saved";
 
 const getFieldValues = (
   release: DiscogsRelease,
@@ -57,9 +60,7 @@ export const ReleaseNotesModalEditor = ({
   );
 
   const [draftValues, setDraftValues] = useState(savedValues);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFocusedRef = useRef(false);
   const prevInstanceIdRef = useRef(release.instance_id);
 
@@ -67,7 +68,6 @@ export const ReleaseNotesModalEditor = ({
     if (prevInstanceIdRef.current !== release.instance_id) {
       prevInstanceIdRef.current = release.instance_id;
       setDraftValues(savedValues);
-      setSaveState("idle");
       return;
     }
 
@@ -81,23 +81,7 @@ export const ReleaseNotesModalEditor = ({
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-
-      if (savedTimeoutRef.current) {
-        clearTimeout(savedTimeoutRef.current);
-      }
     };
-  }, []);
-
-  const markSaved = useCallback(() => {
-    setSaveState("saved");
-
-    if (savedTimeoutRef.current) {
-      clearTimeout(savedTimeoutRef.current);
-    }
-
-    savedTimeoutRef.current = setTimeout(() => {
-      setSaveState("idle");
-    }, 2000);
   }, []);
 
   const persistField = useCallback(
@@ -109,20 +93,22 @@ export const ReleaseNotesModalEditor = ({
       }
 
       if (value === savedValue) {
-        setSaveState("idle");
         return;
       }
 
-      setSaveState("pending");
+      showReleaseNotesSavingToast();
 
-      try {
-        await handleSave([{ fieldId, value }], { closeDialog: false });
-        markSaved();
-      } catch {
-        setSaveState("idle");
+      const saved = await handleSave([{ fieldId, value }], {
+        closeDialog: false,
+      });
+
+      if (saved) {
+        showReleaseNotesSavedToast();
+      } else {
+        dismissReleaseNotesSaveToast();
       }
     },
-    [handleSave, markSaved, savedValues],
+    [handleSave, savedValues],
   );
 
   const schedulePersist = useCallback(
@@ -184,13 +170,6 @@ export const ReleaseNotesModalEditor = ({
     [persistField],
   );
 
-  const statusLabel =
-    saveState === "pending"
-      ? "Saving…"
-      : saveState === "saved"
-        ? "Saved"
-        : null;
-
   const sectionLabelId =
     editableFields[0] !== undefined
       ? getNoteFieldLabelId(editableFields[0].id)
@@ -215,20 +194,13 @@ export const ReleaseNotesModalEditor = ({
         onConditionFieldChange={handleConditionFieldChange}
       />
 
-      <div className={styles.notesModalEditorFooter}>
-        {statusLabel ? (
-          <p className={styles.notesModalEditorStatus} aria-live="polite">
-            {statusLabel}
-          </p>
-        ) : (
-          <span aria-hidden />
-        )}
-        {errorMessage ? (
+      {errorMessage ? (
+        <div className={styles.notesModalEditorFooter}>
           <p className={styles.notesModalEditorError} role="alert">
             {errorMessage}
           </p>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </section>
   );
 };

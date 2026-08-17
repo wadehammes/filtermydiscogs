@@ -91,13 +91,24 @@ describe("getSimilarReleases", () => {
     expect(results[0]?.instance_id).toBe("style-match");
   });
 
-  it("deranks tag matches from the same artist for gig-list variety", () => {
+  it("allows multiple releases from the same primary artist when release ids differ", () => {
     const sharedArtistMatch = releaseFactory.build({
       instance_id: "shared-artist-match",
       basic_information: {
         ...releaseFactory.withStyles(["Techno"]).basic_information,
+        id: 203,
         master_id: 203,
         title: "Shared Artist Match",
+        artists: [{ name: "Source Artist" }],
+      },
+    });
+    const secondSharedArtistMatch = releaseFactory.build({
+      instance_id: "second-shared-artist-match",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno", "Ambient"]).basic_information,
+        id: 204,
+        master_id: 204,
+        title: "Second Shared Artist Match",
         artists: [{ name: "Source Artist" }],
       },
     });
@@ -105,20 +116,122 @@ describe("getSimilarReleases", () => {
       instance_id: "tag-only-match",
       basic_information: {
         ...releaseFactory.withStyles(["Techno"]).basic_information,
-        master_id: 204,
+        id: 205,
+        master_id: 205,
         title: "Tag Only Match",
         artists: [{ name: "Other Artist" }],
       },
     });
 
     const results = getSimilarReleases({
-      releases: [sourceRelease, sharedArtistMatch, tagOnlyMatch],
+      releases: [
+        sourceRelease,
+        sharedArtistMatch,
+        secondSharedArtistMatch,
+        tagOnlyMatch,
+      ],
       sourceRelease,
-      limit: 1,
+      limit: 3,
+    });
+
+    expect(results).toHaveLength(3);
+    expect(results.map((release) => release.instance_id)).toEqual([
+      "second-shared-artist-match",
+      "tag-only-match",
+      "shared-artist-match",
+    ]);
+  });
+
+  it("keeps only one match per discogs release id", () => {
+    const duplicateReleaseA = releaseFactory.build({
+      instance_id: "duplicate-release-a",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        id: 9001,
+        master_id: 301,
+        title: "Duplicate Album",
+      },
+    });
+    const duplicateReleaseB = releaseFactory.build({
+      instance_id: "duplicate-release-b",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno", "House"]).basic_information,
+        id: 9001,
+        master_id: 301,
+        title: "Duplicate Album",
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceRelease, duplicateReleaseB, duplicateReleaseA],
+      sourceRelease,
+      limit: 2,
     });
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.instance_id).toBe("tag-only-match");
+    expect(results[0]?.instance_id).toBe("duplicate-release-a");
+  });
+
+  it("excludes other collection copies of the source release id", () => {
+    const sourceCopy = releaseFactory.build({
+      instance_id: "source-copy",
+      basic_information: {
+        ...sourceRelease.basic_information,
+        id: 5001,
+      },
+    });
+    const openSource = releaseFactory.build({
+      instance_id: "open-source",
+      basic_information: {
+        ...sourceRelease.basic_information,
+        id: 5001,
+      },
+    });
+    const similarRelease = releaseFactory.build({
+      instance_id: "similar-instance",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno", "House"]).basic_information,
+        id: 5002,
+        master_id: 200,
+        title: "Similar Album",
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [openSource, sourceCopy, similarRelease],
+      sourceRelease: openSource,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("similar-instance");
+  });
+
+  it("keeps only one match per master id", () => {
+    const duplicateMasterRelease = releaseFactory.build({
+      instance_id: "duplicate-master-a",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 301,
+        title: "Duplicate Master A",
+      },
+    });
+    const duplicateMasterCopy = releaseFactory.build({
+      instance_id: "duplicate-master-b",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno", "House"]).basic_information,
+        master_id: 301,
+        title: "Duplicate Master B",
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceRelease, duplicateMasterCopy, duplicateMasterRelease],
+      sourceRelease,
+      limit: 2,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("duplicate-master-a");
   });
 
   it("returns empty when the source has no genre or style tags", () => {
@@ -149,6 +262,80 @@ describe("getSimilarReleases", () => {
     });
 
     expect(results).toEqual([]);
+  });
+
+  it("applies the same-artist penalty when artist ids match despite different names", () => {
+    const sharedArtistById = releaseFactory.build({
+      instance_id: "shared-artist-by-id",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 401,
+        title: "Alias Release",
+        artists: [{ id: 42, name: "AFX" }],
+      },
+    });
+    const otherArtistMatch = releaseFactory.build({
+      instance_id: "other-artist-match",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 402,
+        title: "Other Artist Release",
+        artists: [{ id: 99, name: "Other Artist" }],
+      },
+    });
+    const sourceWithArtistId = releaseFactory.build({
+      instance_id: "source-with-artist-id",
+      basic_information: {
+        ...sourceRelease.basic_information,
+        artists: [{ id: 42, name: "Aphex Twin" }],
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceWithArtistId, sharedArtistById, otherArtistMatch],
+      sourceRelease: sourceWithArtistId,
+      limit: 1,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("other-artist-match");
+  });
+
+  it("prefers shared label id matches when tag overlap is equal", () => {
+    const sharedLabelById = releaseFactory.build({
+      instance_id: "shared-label-by-id",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 501,
+        title: "Same Label Release",
+        labels: [{ id: 10, name: "Warp" }],
+      },
+    });
+    const otherLabelMatch = releaseFactory.build({
+      instance_id: "other-label-match",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 502,
+        title: "Other Label Release",
+        labels: [{ id: 20, name: "Other Label" }],
+      },
+    });
+    const sourceWithLabelId = releaseFactory.build({
+      instance_id: "source-with-label-id",
+      basic_information: {
+        ...sourceRelease.basic_information,
+        labels: [{ id: 10, name: "Warp Records" }],
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceWithLabelId, otherLabelMatch, sharedLabelById],
+      sourceRelease: sourceWithLabelId,
+      limit: 1,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("shared-label-by-id");
   });
 
   it("sorts by overlap score and respects the limit", () => {
