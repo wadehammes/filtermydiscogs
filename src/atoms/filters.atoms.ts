@@ -195,16 +195,46 @@ export const persistedFiltersAtom = atomWithStorage<PersistedFiltersState>(
   },
 );
 
-const persistableFieldAtom = <K extends keyof PersistedFiltersState>(key: K) =>
+export const sessionFiltersAtom = atom<PersistedFiltersState>({
+  ...defaultPersistedFilters,
+});
+
+export const pendingFiltersRestoreAtom = atom<PersistedFiltersState | null>(
+  null,
+);
+
+export const pendingFiltersRestoreDismissedAtom = atom(false);
+
+const sessionFieldAtom = <K extends keyof PersistedFiltersState>(key: K) =>
   atom(
-    (get) => get(persistedFiltersAtom)[key],
+    (get) => get(sessionFiltersAtom)[key],
     (get, set, value: PersistedFiltersState[K]) => {
-      set(persistedFiltersAtom, {
-        ...get(persistedFiltersAtom),
+      set(sessionFiltersAtom, {
+        ...get(sessionFiltersAtom),
         [key]: value,
       });
     },
   );
+
+const syncPersistedFiltersFromSession = (get: Getter, set: Setter) => {
+  set(persistedFiltersAtom, { ...get(sessionFiltersAtom) });
+};
+
+export const applyPendingFiltersRestoreAtom = atom(null, (get, set) => {
+  const pending = get(pendingFiltersRestoreAtom);
+  if (!pending) {
+    return;
+  }
+
+  set(sessionFiltersAtom, { ...pending });
+  set(persistedFiltersAtom, { ...pending });
+  set(pendingFiltersRestoreAtom, null);
+});
+
+export const dismissPendingFiltersRestoreAtom = atom(null, (_get, set) => {
+  set(pendingFiltersRestoreAtom, null);
+  set(pendingFiltersRestoreDismissedAtom, true);
+});
 
 export const allReleasesAtom = atom<DiscogsRelease[]>([]);
 export const collectionFiltersActiveAtom = atom(false);
@@ -231,12 +261,12 @@ const getActiveFilterInputs = (get: Getter) => {
   };
 };
 
-export const selectedStylesAtom = persistableFieldAtom("selectedStyles");
-export const selectedYearsAtom = persistableFieldAtom("selectedYears");
-export const selectedFormatsAtom = persistableFieldAtom("selectedFormats");
-export const selectedSortAtom = persistableFieldAtom("selectedSort");
-export const styleOperatorAtom = persistableFieldAtom("styleOperator");
-export const searchQueryAtom = persistableFieldAtom("searchQuery");
+export const selectedStylesAtom = sessionFieldAtom("selectedStyles");
+export const selectedYearsAtom = sessionFieldAtom("selectedYears");
+export const selectedFormatsAtom = sessionFieldAtom("selectedFormats");
+export const selectedSortAtom = sessionFieldAtom("selectedSort");
+export const styleOperatorAtom = sessionFieldAtom("styleOperator");
+export const searchQueryAtom = sessionFieldAtom("searchQuery");
 export const isRandomModeAtom = atom(false);
 export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
 export const isSearchingAtom = atom(false);
@@ -333,6 +363,8 @@ const applyFilterChange = (
     clearSearching?: boolean;
   },
 ) => {
+  set(pendingFiltersRestoreAtom, null);
+
   if (updates.selectedStyles !== undefined) {
     set(selectedStylesAtom, updates.selectedStyles);
   }
@@ -354,6 +386,8 @@ const applyFilterChange = (
   if (updates.clearSearching) {
     set(isSearchingAtom, false);
   }
+
+  syncPersistedFiltersFromSession(get, set);
 
   if (!get(isRandomModeAtom)) {
     return;
@@ -487,6 +521,7 @@ export const filtersDispatchAtom = atom(
         return;
 
       case FiltersActionTypes.ClearAllFilters: {
+        set(pendingFiltersRestoreAtom, null);
         set(selectedStylesAtom, []);
         set(selectedYearsAtom, []);
         set(selectedFormatsAtom, []);
@@ -494,6 +529,7 @@ export const filtersDispatchAtom = atom(
         set(isRandomModeAtom, false);
         set(randomReleaseAtom, null);
         set(isSearchingAtom, false);
+        syncPersistedFiltersFromSession(get, set);
         return;
       }
 

@@ -11,13 +11,13 @@ import {
   isPersistedFiltersAction,
   isRandomModeAtom,
   isSearchingAtom,
-  persistedFiltersAtom,
   randomReleaseAtom,
   searchQueryAtom,
   selectedFormatsAtom,
   selectedSortAtom,
   selectedStylesAtom,
   selectedYearsAtom,
+  sessionFiltersAtom,
   sortedFilteredReleasesAtom,
   styleOperatorAtom,
 } from "src/atoms/filters.atoms";
@@ -43,7 +43,7 @@ export const useFiltersDispatch = () => {
         return;
       }
 
-      const nextFilters = store.get(persistedFiltersAtom);
+      const nextFilters = store.get(sessionFiltersAtom);
       markFiltersPendingPersist(nextFilters);
       persistPreferences({ filters: nextFilters });
     },

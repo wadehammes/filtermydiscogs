@@ -12,6 +12,7 @@ import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { EmptyState } from "./components/EmptyState.component";
@@ -61,6 +62,7 @@ const ReleasesClientContent = () => {
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
   const allReleasesLoaded = !(isLoading || hasNextPage || isFetchingNextPage);
+  useOfferPendingFiltersRestore(allReleasesLoaded);
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
 
   const setMainContentNode = useCallback(

@@ -32,6 +32,20 @@
   text-transform: uppercase;
 }
 
+.preferenceGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.preferenceGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
 .activityList {
   display: flex;
   flex-direction: column;
@@ -105,6 +119,25 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   width: auto;
+}
+
+.tableUserMeta {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-medium);
+}
+
+.tableUserLink {
+  color: inherit;
+  display: block;
+  margin-block: calc(-1 * var(--space-3));
+  padding-block: var(--space-3);
+  text-decoration: none;
+}
+
+.tableUserLink:hover {
+  text-decoration: underline;
 }
 
 .tableMetricCol {

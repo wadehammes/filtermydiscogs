@@ -106,7 +106,7 @@ Factories (`src/tests/factories/`), test providers, shared mocks.
 2. **`AuthProvider`** checks `/api/auth/check` and reads `discogs_username` from cookies.
 3. **`useDiscogsCollectionQuery`** (React Query) calls **`fetchDiscogsCollection`** in [`src/api/helpers.ts`](../../src/api/helpers.ts).
 4. **`GET /api/collection`** validates the username, confirms cookie auth matches (case-insensitive), and calls **`discogsOAuthService.getCollection`** with signed OAuth headers.
-5. **`useCollectionData`** flattens pages and dispatches **`FiltersActionTypes.SetAllReleases`** after each page so the grid fills incrementally; **`collectionFiltersActiveAtom`** gates persisted filter prefs until the last page. Pagination metadata goes to **`CollectionContext`**. **Filter atoms** derive filtered/sorted lists for the releases table, cards, mosaic, dashboard, and random release.
+5. **`useCollectionData`** flattens pages and dispatches **`FiltersActionTypes.SetAllReleases`** after each page so the grid fills incrementally; **`collectionFiltersActiveAtom`** gates in-session filter inputs until the last page (saved prefs are offered via toast on **`/releases`**, not auto-applied). Pagination metadata goes to **`CollectionContext`**. **Filter atoms** derive filtered/sorted lists for the releases table, cards, mosaic, dashboard, and random release.
 
 ### Crates
 

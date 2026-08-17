@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { FiltersDrawerPageObject } from "src/components/FiltersDrawer/FiltersDrawer.po";
+import { SortValues } from "src/constants/sortValues";
 import { openFilterCombobox } from "src/tests/filterControlTestHelpers";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { screen, waitFor } from "test-utils";
@@ -9,6 +10,7 @@ let po: FiltersDrawerPageObject;
 
 describe("FiltersDrawer", () => {
   beforeEach(() => {
+    localStorage.clear();
     po = new FiltersDrawerPageObject();
   });
 
@@ -40,20 +42,17 @@ describe("FiltersDrawer", () => {
   });
 
   it("clears all filters when Clear All is pressed", async () => {
-    localStorage.setItem(
-      FILTERS_STORAGE_KEY,
-      JSON.stringify({
+    const user = userEvent.setup();
+    po.renderFiltersDrawer({
+      sessionFilters: {
         selectedStyles: ["Rock"],
         selectedYears: [1999],
         selectedFormats: ["Vinyl"],
-        selectedSort: "DateAddedNew",
+        selectedSort: SortValues.DateAddedNew,
         styleOperator: "OR",
         searchQuery: "test search",
-      }),
-    );
-
-    const user = userEvent.setup();
-    po.renderFiltersDrawer();
+      },
+    });
 
     const clearAllButton = screen.getByRole("button", {
       name: "Clear all filters",
@@ -80,19 +79,16 @@ describe("FiltersDrawer", () => {
   });
 
   it("shows applied filter count in the drawer title and footer", () => {
-    localStorage.setItem(
-      FILTERS_STORAGE_KEY,
-      JSON.stringify({
+    po.renderFiltersDrawer({
+      sessionFilters: {
         selectedStyles: ["Rock"],
         selectedYears: [1999],
         selectedFormats: [],
-        selectedSort: "DateAddedNew",
+        selectedSort: SortValues.DateAddedNew,
         styleOperator: "OR",
         searchQuery: "",
-      }),
-    );
-
-    po.renderFiltersDrawer();
+      },
+    });
 
     expect(
       screen.getByRole("heading", { name: "Filters (2)" }),
@@ -101,20 +97,17 @@ describe("FiltersDrawer", () => {
   });
 
   it("clears a multi-select filter from its Clear control", async () => {
-    localStorage.setItem(
-      FILTERS_STORAGE_KEY,
-      JSON.stringify({
+    const user = userEvent.setup();
+    po.renderFiltersDrawer({
+      sessionFilters: {
         selectedStyles: ["Rock"],
         selectedYears: [],
         selectedFormats: [],
-        selectedSort: "DateAddedNew",
+        selectedSort: SortValues.DateAddedNew,
         styleOperator: "OR",
         searchQuery: "",
-      }),
-    );
-
-    const user = userEvent.setup();
-    po.renderFiltersDrawer();
+      },
+    });
 
     await user.click(
       screen.getByRole("button", { name: "Clear Genre & Style" }),

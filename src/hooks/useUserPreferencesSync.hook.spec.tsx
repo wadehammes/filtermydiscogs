@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
 import { fetchUserPreferences, updateUserPreferences } from "src/api/helpers";
-import { persistedFiltersAtom } from "src/atoms/filters.atoms";
+import {
+  pendingFiltersRestoreAtom,
+  persistedFiltersAtom,
+  sessionFiltersAtom,
+} from "src/atoms/filters.atoms";
 import { viewStateAtom } from "src/atoms/view.atoms";
 import {
   ANALYTICS_CONSENT_STORAGE_KEY,
@@ -188,7 +192,7 @@ describe("useUserPreferencesSync", () => {
     });
   });
 
-  it("hydrates server filters when local storage is still at defaults", async () => {
+  it("hydrates server filters into storage and pending restore when session is default", async () => {
     const serverFilters = persistedFiltersFactory.build({
       selectedStyles: ["Rock"],
     });
@@ -208,7 +212,11 @@ describe("useUserPreferencesSync", () => {
       () => {
         useUserPreferencesSync();
 
-        return useAtomValue(persistedFiltersAtom);
+        return {
+          persisted: useAtomValue(persistedFiltersAtom),
+          session: useAtomValue(sessionFiltersAtom),
+          pending: useAtomValue(pendingFiltersRestoreAtom),
+        };
       },
       {
         authInitialState: testAuthenticatedAuthState,
@@ -216,9 +224,11 @@ describe("useUserPreferencesSync", () => {
     );
 
     await waitFor(() => {
-      expect(result.current.selectedStyles).toEqual(["Rock"]);
+      expect(result.current.persisted.selectedStyles).toEqual(["Rock"]);
     });
 
+    expect(result.current.session.selectedStyles).toEqual([]);
+    expect(result.current.pending?.selectedStyles).toEqual(["Rock"]);
     expect(mockUpdateUserPreferences).not.toHaveBeenCalled();
   });
 
