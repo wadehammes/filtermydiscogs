@@ -9,6 +9,7 @@ let po: CookieConsentBannerPageObject;
 describe("CookieConsentBanner", () => {
   beforeEach(() => {
     po = new CookieConsentBannerPageObject();
+    document.documentElement.removeAttribute("data-theme");
   });
 
   it("shows the banner when consent is pending", () => {
@@ -43,5 +44,13 @@ describe("CookieConsentBanner", () => {
 
     expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();
     expect(localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY)).toBe("denied");
+  });
+
+  it("renders while a palette theme is active on the document root", () => {
+    document.documentElement.setAttribute("data-theme", "midnight");
+
+    po.renderCookieConsentBanner();
+
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 });

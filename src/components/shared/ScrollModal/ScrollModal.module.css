@@ -1,11 +1,13 @@
 .modal {
+  --scroll-modal-max-width: 42rem;
+
   composes: shell from "../../../styles/modal-dialog.module.css";
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - var(--space-8));
-  max-width: 42rem;
+  max-width: min(calc(100vw - var(--space-8)), var(--scroll-modal-max-width));
   overflow: hidden;
-  width: min(calc(100vw - var(--space-8)), 42rem);
+  width: min(calc(100vw - var(--space-8)), var(--scroll-modal-max-width));
 }
 
 .header {

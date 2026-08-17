@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import DashboardClient from "src/components/Dashboard/DashboardClient.component";
 import {
   PAGE_DESCRIPTIONS,
@@ -13,5 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
-  return <DashboardClient />;
+  return (
+    <Suspense fallback={<AppPageLoading currentPage="dashboard" hideFilters />}>
+      <DashboardClient />
+    </Suspense>
+  );
 }

@@ -47,12 +47,8 @@ function DashboardClientContent() {
   });
   const allReleases = useAllReleases();
   const showLoading = isCheckingAuth || needsCollectionLoad;
-  const {
-    selectedRelease,
-    selectedReleaseId,
-    handleReleaseClick,
-    handleCloseModal,
-  } = useSelectedReleaseModal(allReleases);
+  const { selectedRelease, handleReleaseClick, handleCloseModal } =
+    useSelectedReleaseModal(allReleases);
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
@@ -228,7 +224,7 @@ function DashboardClientContent() {
         </PlaybackPageShell>
       </Page>
       <ReleaseModal
-        isOpen={selectedReleaseId !== null}
+        isOpen={selectedRelease !== null}
         release={selectedRelease}
         onClose={handleCloseModal}
         onReleaseClick={handleReleaseClick}

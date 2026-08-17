@@ -1,7 +1,9 @@
 .releaseCard {
+  --release-card-border-width: 1px;
+
   align-items: stretch;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: var(--release-card-border-width) solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -40,6 +42,8 @@
 }
 
 .highlighted {
+  --release-card-border-width: 2px;
+
   border: 2px solid var(--primary);
   composes: theme-highlighted-surface from global;
   transform: scale(1.02);
@@ -51,7 +55,6 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
   display: flex;
   flex: 0 0 7rem;
   isolation: isolate;
@@ -67,7 +70,8 @@
 
 .imageContainer > img,
 .imageContainer img {
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
+    calc(var(--radius-card) - var(--release-card-border-width));
   height: 100%;
   max-width: 100%;
   object-fit: cover;
@@ -77,7 +81,8 @@
 }
 
 .releaseImage {
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
+    calc(var(--radius-card) - var(--release-card-border-width));
   display: block;
   height: 100%;
   overflow: hidden;
@@ -86,7 +91,8 @@
 }
 
 .releaseImage :global(span) {
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
+    calc(var(--radius-card) - var(--release-card-border-width));
   display: block;
   height: 100%;
   overflow: hidden;
@@ -95,7 +101,8 @@
 }
 
 .releaseImage :global(span > img) {
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
+    calc(var(--radius-card) - var(--release-card-border-width));
   display: block;
   height: 100%;
   object-fit: cover;

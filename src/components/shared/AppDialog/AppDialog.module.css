@@ -1,7 +1,6 @@
 .popup {
   composes: backdroppanel from "../../../styles/modal-dialog.module.css";
   left: 50%;
-  max-width: 32rem;
   position: fixed;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -11,7 +10,6 @@
 .popupModal {
   composes: backdroppanel from "../../../styles/modal-dialog.module.css";
   left: 50%;
-  max-width: 32rem;
   position: fixed;
   top: 50%;
   transform: translate(-50%, -50%);

@@ -33,7 +33,7 @@
   /* Border and input */
   --border: light-dark(#cbd5e0, #333);
   --input: light-dark(#cbd5e0, #333);
-  --ring: light-dark(#06c, #4da3ff);
+  --ring: var(--primary);
 
   /* Card */
   --card: light-dark(#fff, #1a1a1a);
@@ -99,6 +99,7 @@
     color-mix(in oklch, var(--gradientPink) 42%, var(--gradientTeal))
   );
   --on-gradient-surface: contrast-color(var(--gradient-surface));
+  --pattern-microdot-mix: light-dark(14%, 6.75%);
 
   /* Elevation — shadows in light mode, subtle border glow in dark mode */
   --shadow-sm: 0 1px 2px 0
