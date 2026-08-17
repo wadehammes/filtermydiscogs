@@ -20,6 +20,7 @@ import {
   formatReleaseMetaLine,
   getCommunityRatingFromReleaseDetail,
 } from "src/utils/releaseDisplay";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import { ReleaseHeroRatingsRow } from "./ReleaseHeroRatingsRow.component";
 import styles from "./ReleaseSummaryHero.module.css";
@@ -39,16 +40,17 @@ export const ReleaseSummaryHero = ({
   showToolbar = true,
 }: ReleaseSummaryHeroProps) => {
   const { state: authState } = useAuth();
-  const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
+  const selectedStyles = useSelectedStyles();
   const handlePillClick = usePillClickHandler({ category: "releaseModal" });
 
   const { basic_information: basicInfo } = release;
-  const { formats: releaseFormats, styles: releaseStyles } = basicInfo;
+  const { formats: releaseFormats } = basicInfo;
   const formatTags =
     releaseFormats && releaseFormats.length > 0
       ? getReleaseFormatTags(releaseFormats)
       : [];
+  const genreStyleTags = getReleaseGenreStyleTags(basicInfo);
   const artistNames = formatArtistNames(release);
   const releaseId = parseReleaseId(release);
   const showPersonalRating = authState.isAuthenticated && releaseId !== null;
@@ -123,7 +125,7 @@ export const ReleaseSummaryHero = ({
                 showPersonalRating={showPersonalRating}
               />
             ) : null}
-            {formatTags.length > 0 || (releaseStyles?.length ?? 0) > 0 ? (
+            {formatTags.length > 0 || genreStyleTags.length > 0 ? (
               <HorizontalScrollRow className={styles.tagsRow}>
                 {formatTags.map((formatName) => (
                   <button
@@ -145,24 +147,24 @@ export const ReleaseSummaryHero = ({
                     {formatName}
                   </button>
                 ))}
-                {releaseStyles?.map((style) => (
+                {genreStyleTags.map((tag) => (
                   <button
-                    key={style}
+                    key={tag}
                     type="button"
                     className={classNames("pill", "pillStyle", {
-                      pillSelected: selectedStyles.includes(style),
+                      pillSelected: selectedStyles.includes(tag),
                     })}
                     onClick={(e) =>
                       handlePillClick({
                         event: e,
-                        value: style,
+                        value: tag,
                         type: "style",
-                        eventLabel: "Style Pill Clicked",
+                        eventLabel: "Genre Style Pill Clicked",
                       })
                     }
-                    aria-label={`Filter by ${style} style`}
+                    aria-label={`Filter by ${tag}`}
                   >
-                    {style}
+                    {tag}
                   </button>
                 ))}
               </HorizontalScrollRow>
