@@ -9,7 +9,7 @@
     0 -4px 24px
     light-dark(
       color-mix(in srgb, var(--foreground) 8%, transparent),
-      color-mix(in srgb, var(--foreground) 16%, transparent)
+      transparent
     ),
     inset 0 1px 0 0
     light-dark(
