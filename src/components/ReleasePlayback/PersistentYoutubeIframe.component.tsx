@@ -22,8 +22,11 @@ export const PersistentYoutubeIframe = ({
   autoplay = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
-  const { registerPlaybackIframe, resumePlaybackFromGesture } =
-    useReleasePlayback();
+  const {
+    registerPlaybackIframe,
+    notifyPlaybackIframeLoaded,
+    resumePlaybackFromGesture,
+  } = useReleasePlayback();
 
   const embedUrl = useMemo(() => {
     const origin =
@@ -48,6 +51,7 @@ export const PersistentYoutubeIframe = ({
     <iframe
       key={playbackKey}
       ref={registerPlaybackIframe}
+      onLoad={notifyPlaybackIframeLoaded}
       src={embedUrl}
       title={videoTitle}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

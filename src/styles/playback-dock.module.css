@@ -2,7 +2,8 @@
   --playback-dock-module-loaded: initial;
 }
 
-:global(html:has([data-global-playback-dock])) {
+:global(html:has([data-global-playback-dock])),
+:global([data-global-playback-dock]) {
   --release-mini-player-cover-size: 2.5rem;
   --release-mini-player-control-size: 2.5rem;
   --release-mini-player-bar-height: calc(
@@ -33,7 +34,12 @@
 
   @media (width >= 768px) {
     --release-mini-player-control-size: 2rem;
-    --release-mini-player-bar-height: calc(3.25rem + 1px);
+    --release-mini-player-bar-height: calc(
+      var(--release-mini-player-cover-size) +
+      var(--space-2) *
+      2 +
+      1px
+    );
   }
 }
 
@@ -80,7 +86,7 @@
   html:has([data-playback-queue-open="true"])
     [data-testid="fmdReleaseMiniPlayer"]
 ) {
-  z-index: calc(var(--z-5-modal) + 1);
+  z-index: var(--z-3-fixed);
 }
 
 :global([data-playback-page-shell-main]) {

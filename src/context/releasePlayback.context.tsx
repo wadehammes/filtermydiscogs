@@ -48,6 +48,12 @@ import {
   readPersistedReleasePlayback,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
+import {
+  enableYoutubeIframeListening,
+  isYoutubeEmbedOrigin,
+  parseYoutubePlayerStateFromMessage,
+  YOUTUBE_PLAYER_STATE_ENDED,
+} from "src/utils/youtubeIframeEvents";
 
 interface StartPlaybackParams {
   release: DiscogsRelease;
@@ -108,6 +114,7 @@ interface ReleasePlaybackContextValue {
   playPrevious: () => void;
   togglePlayback: () => void;
   registerPlaybackIframe: (iframe: HTMLIFrameElement | null) => void;
+  notifyPlaybackIframeLoaded: () => void;
   resumePlaybackFromGesture: () => void;
   stopPlayback: () => void;
 }
@@ -163,8 +170,11 @@ export const ReleasePlaybackProvider = ({
     (item: PlaybackQueueItem, options?: PlayQueueItemOptions) => void
   >(() => undefined);
   const stopPlaybackRef = useRef<() => void>(() => undefined);
+  const playNextRef = useRef<() => void>(() => undefined);
+  const isPlayingRef = useRef(isPlaying);
 
   isPausedRef.current = isPaused;
+  isPlayingRef.current = isPlaying;
   releaseRef.current = release;
   queueRef.current = queue;
   queueIndexRef.current = queueIndex;
@@ -276,6 +286,45 @@ export const ReleasePlaybackProvider = ({
 
     schedulePlayFromGestureAttempts();
   }, [activeVideoId, isPlaybackReady, schedulePlayFromGestureAttempts]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const iframe = playbackIframeRef.current;
+
+      if (
+        !iframe?.contentWindow ||
+        event.source !== iframe.contentWindow ||
+        !isYoutubeEmbedOrigin(event.origin)
+      ) {
+        return;
+      }
+
+      const playerState = parseYoutubePlayerStateFromMessage(event.data);
+
+      if (playerState !== YOUTUBE_PLAYER_STATE_ENDED) {
+        return;
+      }
+
+      if (!isPlayingRef.current || isPausedRef.current) {
+        return;
+      }
+
+      const currentIndex = queueIndexRef.current;
+      const currentQueue = queueRef.current;
+
+      if (currentIndex >= currentQueue.length - 1) {
+        return;
+      }
+
+      playNextRef.current();
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -636,11 +685,19 @@ export const ReleasePlaybackProvider = ({
     playQueueAtIndex(queueIndexRef.current - 1);
   }, [playQueueAtIndex]);
 
+  playNextRef.current = playNext;
+
+  const notifyPlaybackIframeLoaded = useCallback(() => {
+    enableYoutubeIframeListening(playbackIframeRef.current);
+    schedulePlayFromGestureAttempts();
+  }, [schedulePlayFromGestureAttempts]);
+
   const registerPlaybackIframe = useCallback(
     (iframe: HTMLIFrameElement | null) => {
       playbackIframeRef.current = iframe;
 
       if (iframe) {
+        enableYoutubeIframeListening(iframe);
         schedulePlayFromGestureAttempts();
         return;
       }
@@ -804,6 +861,7 @@ export const ReleasePlaybackProvider = ({
       playPrevious,
       togglePlayback,
       registerPlaybackIframe,
+      notifyPlaybackIframeLoaded,
       resumePlaybackFromGesture,
       stopPlayback,
     }),
@@ -837,6 +895,7 @@ export const ReleasePlaybackProvider = ({
       playPrevious,
       togglePlayback,
       registerPlaybackIframe,
+      notifyPlaybackIframeLoaded,
       resumePlaybackFromGesture,
       stopPlayback,
     ],

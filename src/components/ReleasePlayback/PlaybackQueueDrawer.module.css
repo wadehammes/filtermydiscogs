@@ -12,6 +12,7 @@
     max-width: 31.25rem;
     right: var(--space-4);
     width: min(100% - var(--space-8), 31.25rem);
+    border: 1px solid var(--border);
   }
 
   :global([data-bottom-drawer-footer]) {

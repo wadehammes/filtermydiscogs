@@ -185,6 +185,44 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPlaying).toBe(true);
   });
 
+  it("advances the queue when the YouTube embed reports playback ended", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue.length).toBeGreaterThan(1);
+      expect(result.current.queueIndex).toBe(0);
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 0 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(result.current.queueIndex).toBe(1);
+    });
+  });
+
   it("requests playVideo when the embed iframe registers after a user gesture", async () => {
     jest.useFakeTimers();
 
