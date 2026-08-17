@@ -16,11 +16,12 @@ describe("PublicReleaseSummaryHero", () => {
     );
   });
 
-  it("renders format and style pills as static labels", () => {
+  it("renders format and genre/style pills as static labels", () => {
     const release = releaseFactory.build({
       basic_information: {
         ...releaseFactory.build().basic_information,
         formats: [{ name: "Vinyl", qty: "1" }],
+        genres: ["Electronic"],
         styles: ["House"],
       },
     });
@@ -34,6 +35,7 @@ describe("PublicReleaseSummaryHero", () => {
     );
 
     expect(screen.getByText("Vinyl")).toBeInTheDocument();
+    expect(screen.getByText("Electronic")).toBeInTheDocument();
     expect(screen.getByText("House")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /filter by vinyl format/i }),

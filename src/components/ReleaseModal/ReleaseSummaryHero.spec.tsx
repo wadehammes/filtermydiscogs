@@ -157,13 +157,14 @@ describe("ReleaseSummaryHero", () => {
     expect(screen.queryByText(/^Community /)).toBeNull();
   });
 
-  it("shows format and style filter pills below the meta line", () => {
+  it("shows format and genre/style filter pills below the meta line", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       basic_information: {
         ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
         labels: [{ name: "Test Label", catno: "ABC-123" }],
         formats: [{ name: "Vinyl", descriptions: ["LP"] }],
+        genres: ["Electronic"],
         styles: ["Rock", "Indie Rock"],
       },
     });
@@ -174,10 +175,13 @@ describe("ReleaseSummaryHero", () => {
       screen.getByRole("button", { name: "Filter by Vinyl format" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Filter by Rock style" }),
+      screen.getByRole("button", { name: "Filter by Electronic" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Filter by Indie Rock style" }),
+      screen.getByRole("button", { name: "Filter by Rock" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Filter by Indie Rock" }),
     ).toBeInTheDocument();
   });
 

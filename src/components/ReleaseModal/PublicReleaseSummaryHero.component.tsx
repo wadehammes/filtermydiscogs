@@ -20,6 +20,7 @@ import {
   formatReleaseMetaLine,
   getCommunityRatingFromReleaseDetail,
 } from "src/utils/releaseDisplay";
+import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import { ReleaseHeroRatingsRow } from "./ReleaseHeroRatingsRow.component";
 import styles from "./ReleaseSummaryHero.module.css";
@@ -36,11 +37,12 @@ export const PublicReleaseSummaryHero = ({
   onClose,
 }: PublicReleaseSummaryHeroProps) => {
   const { basic_information: basicInfo } = release;
-  const { formats: releaseFormats, styles: releaseStyles } = basicInfo;
+  const { formats: releaseFormats } = basicInfo;
   const formatTags =
     releaseFormats && releaseFormats.length > 0
       ? getReleaseFormatTags(releaseFormats)
       : [];
+  const genreStyleTags = getReleaseGenreStyleTags(basicInfo);
   const artistNames = formatArtistNames(release);
   const releaseId = parseReleaseId(release);
   const { data: releaseDetail } = useDiscogsReleaseQuery({
@@ -124,7 +126,7 @@ export const PublicReleaseSummaryHero = ({
             {communityRating ? (
               <ReleaseHeroRatingsRow communityRating={communityRating} />
             ) : null}
-            {formatTags.length > 0 || (releaseStyles?.length ?? 0) > 0 ? (
+            {formatTags.length > 0 || genreStyleTags.length > 0 ? (
               <HorizontalScrollRow className={styles.tagsRow}>
                 {formatTags.map((formatName) => (
                   <span
@@ -138,16 +140,16 @@ export const PublicReleaseSummaryHero = ({
                     {formatName}
                   </span>
                 ))}
-                {releaseStyles?.map((style) => (
+                {genreStyleTags.map((tag) => (
                   <span
-                    key={style}
+                    key={tag}
                     className={classNames(
                       "pill",
                       "pillStyle",
                       styles.staticPill,
                     )}
                   >
-                    {style}
+                    {tag}
                   </span>
                 ))}
               </HorizontalScrollRow>
