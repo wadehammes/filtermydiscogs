@@ -1,4 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
@@ -6,13 +7,12 @@ import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import footerStyles from "src/components/CrateDrawer/CrateDrawerFooter.module.css";
 import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
+import {
+  type EditCrateNameFormValues,
+  editCrateNameFormSchema,
+} from "src/lib/validation/crate.schemas";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./EditCrateDialog.module.css";
-
-type EditCrateFormValues = {
-  name: string;
-  deleteConfirm: string;
-};
 
 export const EditCrateDialog = () => {
   const {
@@ -32,14 +32,14 @@ export const EditCrateDialog = () => {
   const titleId = useId();
   const isBusy = isUpdatingCrate || isDeletingCrate;
 
-  const { register, handleSubmit, reset, watch } = useForm<EditCrateFormValues>(
-    {
+  const { register, handleSubmit, reset, watch } =
+    useForm<EditCrateNameFormValues>({
+      resolver: zodResolver(editCrateNameFormSchema),
       defaultValues: {
         name: crateName,
         deleteConfirm: "",
       },
-    },
-  );
+    });
 
   const nameValue = watch("name");
   const deleteConfirmValue = watch("deleteConfirm");
@@ -64,17 +64,12 @@ export const EditCrateDialog = () => {
   }, [isBusy, onClose]);
 
   const handleSaveName = handleSubmit(async ({ name }) => {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      return;
-    }
-
-    if (trimmedName === crateName.trim()) {
+    if (name === crateName.trim()) {
       onClose();
       return;
     }
 
-    await handleSaveCrateName(trimmedName);
+    await handleSaveCrateName(name);
   });
 
   const trimmedNameValue = nameValue.trim();

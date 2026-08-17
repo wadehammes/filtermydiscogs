@@ -1,15 +1,21 @@
 "use client";
 
 import type { DraggableAttributes } from "@dnd-kit/core";
+import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import {
   type CSSProperties,
   type RefObject,
+  useCallback,
   useEffect,
   useRef,
-  useState,
 } from "react";
+import { useForm } from "react-hook-form";
 import { CRATE_MARKER_MAX_LENGTH } from "src/constants/crate";
+import {
+  type CrateSetMarkerLabelValues,
+  crateSetMarkerLabelSchema,
+} from "src/lib/validation/crate.schemas";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
 import type { CrateLayoutMarkerItem } from "src/types/crate.types";
@@ -46,15 +52,20 @@ export const CrateSetMarkerRow = ({
   onDelete,
   inputRef,
 }: CrateSetMarkerRowProps) => {
-  const [label, setLabel] = useState(marker.label);
   const localInputRef = useRef<HTMLInputElement>(null);
   const isFocusedRef = useRef(false);
 
+  const { register, reset } = useForm<CrateSetMarkerLabelValues>({
+    resolver: zodResolver(crateSetMarkerLabelSchema),
+    defaultValues: { label: marker.label },
+    mode: "onChange",
+  });
+
   useEffect(() => {
     if (!isFocusedRef.current) {
-      setLabel(marker.label);
+      reset({ label: marker.label });
     }
-  }, [marker.label]);
+  }, [marker.label, reset]);
 
   useEffect(() => {
     if (autoFocus) {
@@ -64,26 +75,39 @@ export const CrateSetMarkerRow = ({
     }
   }, [autoFocus, inputRef]);
 
-  const handleLabelChange = (nextLabel: string) => {
-    setLabel(nextLabel);
-  };
+  const {
+    onBlur,
+    onChange,
+    ref: registerRef,
+    ...labelFieldProps
+  } = register("label");
 
-  const handleBlur = () => {
-    isFocusedRef.current = false;
-    const trimmedLabel = label.trim();
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLInputElement>) => {
+      isFocusedRef.current = false;
+      onBlur(event);
 
-    if (trimmedLabel.length === 0) {
-      setLabel(marker.label);
-      return;
-    }
+      const trimmedLabel = event.target.value.trim();
 
-    setLabel(trimmedLabel);
-    onLabelChange?.(trimmedLabel);
-  };
+      if (trimmedLabel.length === 0) {
+        reset({ label: marker.label });
+        return;
+      }
 
-  const handleFocus = () => {
+      if (trimmedLabel.length > CRATE_MARKER_MAX_LENGTH) {
+        reset({ label: marker.label });
+        return;
+      }
+
+      reset({ label: trimmedLabel });
+      onLabelChange?.(trimmedLabel);
+    },
+    [marker.label, onBlur, onLabelChange, reset],
+  );
+
+  const handleFocus = useCallback(() => {
     isFocusedRef.current = true;
-  };
+  }, []);
 
   if (readOnly) {
     return (
@@ -124,15 +148,21 @@ export const CrateSetMarkerRow = ({
       <div className={styles.markerContent}>
         <span className={styles.rule} aria-hidden="true" />
         <input
-          ref={inputRef ?? localInputRef}
+          ref={(element) => {
+            registerRef(element);
+            localInputRef.current = element;
+            if (inputRef && "current" in inputRef) {
+              inputRef.current = element;
+            }
+          }}
           type="text"
           className={styles.labelInput}
-          value={label}
           maxLength={CRATE_MARKER_MAX_LENGTH}
           aria-label="Section label"
-          onChange={(event) => handleLabelChange(event.target.value)}
+          onChange={onChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          {...labelFieldProps}
         />
         <span className={styles.rule} aria-hidden="true" />
       </div>

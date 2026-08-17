@@ -1,15 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
-import { isValidDiscogsUsername } from "src/lib/discogs-username";
+import { updateCollectionNoteBodySchema } from "src/lib/validation/collection.schemas";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
-
-interface UpdateCollectionNoteBody {
-  username?: string;
-  releaseId?: number;
-  folderId?: number;
-  value?: string;
-}
 
 export async function POST(
   request: NextRequest,
@@ -17,25 +10,16 @@ export async function POST(
 ) {
   try {
     const { instanceId, fieldId } = await params;
-    const body = (await request.json()) as UpdateCollectionNoteBody;
-    const username = body.username;
-    const releaseId = body.releaseId;
-    const folderId = body.folderId ?? 0;
-    const value = body.value;
+    const parsedBody = await parseRequestBody(
+      request,
+      updateCollectionNoteBodySchema,
+    );
 
-    if (!username) {
-      return NextResponse.json(
-        { error: "Username is required" },
-        { status: 400 },
-      );
+    if ("error" in parsedBody) {
+      return NextResponse.json({ error: parsedBody.error }, { status: 400 });
     }
 
-    if (!isValidDiscogsUsername(username)) {
-      return NextResponse.json(
-        { error: "Invalid username format" },
-        { status: 400 },
-      );
-    }
+    const { username, releaseId, folderId, value } = parsedBody.data;
 
     if (!/^\d+$/.test(instanceId)) {
       return NextResponse.json(
@@ -47,36 +31,6 @@ export async function POST(
     if (!/^\d+$/.test(fieldId)) {
       return NextResponse.json(
         { error: "Invalid field ID format" },
-        { status: 400 },
-      );
-    }
-
-    if (typeof releaseId !== "number" || releaseId <= 0) {
-      return NextResponse.json(
-        { error: "Valid release ID is required" },
-        { status: 400 },
-      );
-    }
-
-    if (typeof value !== "string") {
-      return NextResponse.json(
-        { error: "Note value must be a string" },
-        { status: 400 },
-      );
-    }
-
-    if (value.length > COLLECTION_NOTE_MAX_LENGTH) {
-      return NextResponse.json(
-        {
-          error: `Note value must be ${COLLECTION_NOTE_MAX_LENGTH} characters or less`,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (typeof folderId !== "number" || folderId < 0) {
-      return NextResponse.json(
-        { error: "Valid folder ID is required" },
         { status: 400 },
       );
     }

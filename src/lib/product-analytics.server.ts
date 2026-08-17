@@ -1,98 +1,14 @@
 import { prisma } from "src/lib/db";
-import {
-  type AdminStatsFeatureUsage,
-  type AdminStatsFeatureUsageRow,
-  PRODUCT_ANALYTICS_MAX_BATCH_SIZE,
-  type ProductAnalyticsEventInput,
+import type {
+  AdminStatsFeatureUsage,
+  AdminStatsFeatureUsageRow,
+  ProductAnalyticsEventInput,
 } from "src/types/productAnalytics.types";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
 
-const MAX_FIELD_LENGTH = 200;
+export { validateProductAnalyticsBatch } from "src/lib/validation/productAnalytics.schemas";
+
 const TOP_ROW_LIMIT = 12;
-
-const validateRequiredStringField = (
-  value: string,
-  fieldName: string,
-): string | null => {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return `${fieldName} is required`;
-  }
-
-  if (trimmed.length > MAX_FIELD_LENGTH) {
-    return `${fieldName} is too long`;
-  }
-
-  return null;
-};
-
-export const validateProductAnalyticsBatch = (
-  events: unknown,
-): { events: ProductAnalyticsEventInput[] } | { error: string } => {
-  if (!Array.isArray(events)) {
-    return { error: "events must be an array" };
-  }
-
-  if (events.length === 0) {
-    return { error: "events must not be empty" };
-  }
-
-  if (events.length > PRODUCT_ANALYTICS_MAX_BATCH_SIZE) {
-    return {
-      error: `events must contain at most ${PRODUCT_ANALYTICS_MAX_BATCH_SIZE} items`,
-    };
-  }
-
-  const parsed: ProductAnalyticsEventInput[] = [];
-
-  for (const item of events) {
-    if (typeof item !== "object" || item === null) {
-      return { error: "each event must be an object" };
-    }
-
-    const record = item as Record<string, unknown>;
-    const event = typeof record.event === "string" ? record.event : "";
-    const category = typeof record.category === "string" ? record.category : "";
-    const action = typeof record.action === "string" ? record.action : "";
-    const label = typeof record.label === "string" ? record.label : "";
-    const value = typeof record.value === "string" ? record.value : null;
-    const page_path =
-      typeof record.page_path === "string" ? record.page_path : null;
-
-    for (const [fieldName, fieldValue] of [
-      ["event", event],
-      ["category", category],
-      ["action", action],
-      ["label", label],
-    ] as const) {
-      const fieldError = validateRequiredStringField(fieldValue, fieldName);
-
-      if (fieldError) {
-        return { error: fieldError };
-      }
-    }
-
-    if (value && value.length > MAX_FIELD_LENGTH) {
-      return { error: "value is too long" };
-    }
-
-    if (page_path && page_path.length > MAX_FIELD_LENGTH) {
-      return { error: "page_path is too long" };
-    }
-
-    parsed.push({
-      event: event.trim(),
-      category: category.trim(),
-      action: action.trim(),
-      label: label.trim(),
-      value: value?.trim() || null,
-      page_path: page_path?.trim() || null,
-    });
-  }
-
-  return { events: parsed };
-};
 
 export const insertProductAnalyticsEvents = async (
   events: ProductAnalyticsEventInput[],

@@ -7,7 +7,6 @@ import {
 import {
   applyCrateLayoutUpdate,
   buildCrateLayoutUpdate,
-  parseCrateLayoutPutRequest,
 } from "src/lib/crate-layout.server";
 import {
   findCrateReleasesForLayout,
@@ -20,6 +19,7 @@ import {
 } from "src/lib/crate-release-mapper";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { parseCrateLayoutPutRequest } from "src/lib/validation/crate.schemas";
 
 export async function PUT(
   request: NextRequest,

@@ -4,10 +4,11 @@ import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import {
   defaultUserPreferences,
-  isValidUserPreferencesPatch,
   mergeUserPreferences,
   parseUserPreferences,
 } from "src/lib/user-preferences.server";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
+import { userPreferencesPatchSchema } from "src/lib/validation/userPreferences.schemas";
 import type { UserPreferencesPatch } from "src/types/userPreferences.types";
 
 export async function GET(request: NextRequest) {
@@ -34,23 +35,13 @@ export async function PATCH(request: NextRequest) {
     return verified.error;
   }
 
-  let body: unknown;
-
-  try {
-    body = await request.json();
-  } catch {
-    return privateRouteJson({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return privateRouteJson({ error: "Invalid request body" }, { status: 400 });
-  }
-
-  const patch = body as UserPreferencesPatch;
-  const patchError = isValidUserPreferencesPatch(patch);
-
-  if (patchError) {
-    return privateRouteJson({ error: patchError }, { status: 400 });
+  const parsedBody = await parseRequestBody(
+    request,
+    userPreferencesPatchSchema,
+    { invalidJsonMessage: "Invalid JSON body" },
+  );
+  if ("error" in parsedBody) {
+    return privateRouteJson({ error: parsedBody.error }, { status: 400 });
   }
 
   const existing = await prisma.user.findUnique({
@@ -61,7 +52,10 @@ export async function PATCH(request: NextRequest) {
   const current = existing
     ? parseUserPreferences(existing.preferences)
     : defaultUserPreferences();
-  const preferences = mergeUserPreferences(current, patch);
+  const preferences = mergeUserPreferences(
+    current,
+    parsedBody.data as UserPreferencesPatch,
+  );
 
   const updated = await prisma.user.upsert({
     where: { discogs_user_id: verified.user.userId },

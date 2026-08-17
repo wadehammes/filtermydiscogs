@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -6,6 +7,7 @@ import Select from "src/components/Select/Select.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
+import { createCrateBodySchema } from "src/lib/validation/crate.schemas";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import modalInputStyles from "src/styles/modal-input.module.css";
 import styles from "./CrateSelector.module.css";
@@ -17,10 +19,6 @@ interface CrateSelectorProps {
 }
 
 type EditorMode = "idle" | "create";
-
-type CreateCrateFormValues = {
-  name: string;
-};
 
 export const CrateSelector = ({
   allowCreate = true,
@@ -41,10 +39,10 @@ export const CrateSelector = ({
   const createCrateMutation = useCreateCrateMutation(userId);
   const [editorMode, setEditorMode] = useState<EditorMode>("idle");
 
-  const { register, handleSubmit, reset, watch } =
-    useForm<CreateCrateFormValues>({
-      defaultValues: { name: "" },
-    });
+  const { register, handleSubmit, reset, watch } = useForm({
+    resolver: zodResolver(createCrateBodySchema),
+    defaultValues: { name: "" },
+  });
 
   const crateNameValue = watch("name");
 
@@ -69,13 +67,8 @@ export const CrateSelector = ({
   );
 
   const handleCreateCrate = handleSubmit(async ({ name }) => {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      return;
-    }
-
     try {
-      await createCrate(trimmedName);
+      await createCrate(name);
       reset({ name: "" });
       setEditorMode("idle");
     } catch {}

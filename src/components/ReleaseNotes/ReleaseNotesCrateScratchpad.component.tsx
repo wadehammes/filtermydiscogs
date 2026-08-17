@@ -1,8 +1,15 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
+import {
+  isReleaseNoteTextWithinLimit,
+  type ReleaseNotesCrateFieldValues,
+  releaseNotesCrateFieldSchema,
+} from "src/lib/validation/releaseNotes.schemas";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseNotes, normalizeFieldId } from "src/utils/releaseNotes";
 import styles from "./ReleaseNotes.module.css";
@@ -30,25 +37,41 @@ const ReleaseNotesCrateFieldScratchpad = ({
   onSave,
 }: ReleaseNotesCrateFieldScratchpadProps) => {
   const fieldId = field.id;
-  const [draft, setDraft] = useState(savedValue);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFocusedRef = useRef(false);
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevInstanceIdRef = useRef(release.instance_id);
 
+  const { register, reset, watch } = useForm<ReleaseNotesCrateFieldValues>({
+    resolver: zodResolver(releaseNotesCrateFieldSchema),
+    defaultValues: { value: savedValue },
+    mode: "onChange",
+  });
+
+  const draft = watch("value");
+  const notesLength = draft.length;
+  const isNotesOverLimit = !isReleaseNoteTextWithinLimit(draft);
+  const textareaId = `fmdReleaseNotesCrate-${release.instance_id}-${fieldId}`;
+  const statusLabel =
+    saveState === "pending"
+      ? "Saving…"
+      : saveState === "saved"
+        ? "Saved"
+        : null;
+
   useEffect(() => {
     if (prevInstanceIdRef.current !== release.instance_id) {
       prevInstanceIdRef.current = release.instance_id;
-      setDraft(savedValue);
+      reset({ value: savedValue });
       setSaveState("idle");
       return;
     }
 
     if (!isFocusedRef.current) {
-      setDraft(savedValue);
+      reset({ value: savedValue });
     }
-  }, [release.instance_id, savedValue]);
+  }, [release.instance_id, reset, savedValue]);
 
   useEffect(() => {
     return () => {
@@ -64,7 +87,7 @@ const ReleaseNotesCrateFieldScratchpad = ({
 
   const persist = useCallback(
     async (value: string) => {
-      if (value.length > COLLECTION_NOTE_MAX_LENGTH) {
+      if (!isReleaseNoteTextWithinLimit(value)) {
         return;
       }
 
@@ -107,39 +130,34 @@ const ReleaseNotesCrateFieldScratchpad = ({
     [persist],
   );
 
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = event.target.value;
-      setDraft(value);
-      schedulePersist(value);
+  const { onBlur, onChange, ...valueFieldProps } = register("value");
+
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLTextAreaElement>) => {
+      isFocusedRef.current = false;
+      onBlur(event);
+
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+
+      void persist(draft);
     },
-    [schedulePersist],
+    [draft, onBlur, persist],
   );
 
-  const handleBlur = useCallback(() => {
-    isFocusedRef.current = false;
-
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
-
-    void persist(draft);
-  }, [draft, persist]);
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange(event);
+      schedulePersist(event.target.value);
+    },
+    [onChange, schedulePersist],
+  );
 
   const handleFocus = useCallback(() => {
     isFocusedRef.current = true;
   }, []);
-
-  const notesLength = draft.length;
-  const isNotesOverLimit = notesLength > COLLECTION_NOTE_MAX_LENGTH;
-  const textareaId = `fmdReleaseNotesCrate-${release.instance_id}-${fieldId}`;
-  const statusLabel =
-    saveState === "pending"
-      ? "Saving…"
-      : saveState === "saved"
-        ? "Saved"
-        : null;
 
   return (
     <div className={styles.notesCrateScratchpadField}>
@@ -163,10 +181,10 @@ const ReleaseNotesCrateFieldScratchpad = ({
         onFocus={handleFocus}
         placeholder="Add notes for this release"
         rows={2}
-        value={draft}
         aria-label={field.name || "Release notes"}
         aria-describedby={`${textareaId}-length`}
         aria-invalid={isNotesOverLimit ? true : undefined}
+        {...valueFieldProps}
       />
       <div className={styles.notesCrateScratchpadFooter}>
         {statusLabel ? (

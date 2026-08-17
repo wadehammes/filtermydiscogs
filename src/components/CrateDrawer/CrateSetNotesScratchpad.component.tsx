@@ -1,8 +1,14 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { CRATE_NOTES_MAX_LENGTH } from "src/constants/crate";
+import {
+  type CrateNotesScratchpadValues,
+  crateNotesScratchpadSchema,
+} from "src/lib/validation/crate.schemas";
 import { useCrateDrawerContext } from "./CrateDrawer.context";
 import styles from "./CrateSetNotesScratchpad.module.css";
 
@@ -24,25 +30,32 @@ export const CrateSetNotesScratchpad = ({
   const { activeCrateId, crateNotes, handleSaveCrateNotes } =
     useCrateDrawerContext();
 
-  const [draft, setDraft] = useState(crateNotes);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFocusedRef = useRef(false);
   const prevCrateIdRef = useRef(activeCrateId);
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const { register, reset, watch } = useForm<CrateNotesScratchpadValues>({
+    resolver: zodResolver(crateNotesScratchpadSchema),
+    defaultValues: { notes: crateNotes },
+    mode: "onChange",
+  });
+
+  const draft = watch("notes");
+
   useEffect(() => {
     if (prevCrateIdRef.current !== activeCrateId) {
       prevCrateIdRef.current = activeCrateId;
-      setDraft(crateNotes);
+      reset({ notes: crateNotes });
       setSaveState("idle");
       return;
     }
 
     if (!isFocusedRef.current) {
-      setDraft(crateNotes);
+      reset({ notes: crateNotes });
     }
-  }, [activeCrateId, crateNotes]);
+  }, [activeCrateId, crateNotes, reset]);
 
   useEffect(() => {
     return () => {
@@ -96,25 +109,30 @@ export const CrateSetNotesScratchpad = ({
     [persist],
   );
 
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = event.target.value;
-      setDraft(value);
-      schedulePersist(value);
+  const { onBlur, onChange, ...notesFieldProps } = register("notes");
+
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLTextAreaElement>) => {
+      isFocusedRef.current = false;
+      onBlur(event);
+
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+
+      void persist(draft);
     },
-    [schedulePersist],
+    [draft, onBlur, persist],
   );
 
-  const handleBlur = useCallback(() => {
-    isFocusedRef.current = false;
-
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
-
-    void persist(draft);
-  }, [draft, persist]);
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange(event);
+      schedulePersist(event.target.value);
+    },
+    [onChange, schedulePersist],
+  );
 
   const handleFocus = useCallback(() => {
     isFocusedRef.current = true;
@@ -156,10 +174,10 @@ export const CrateSetNotesScratchpad = ({
         onFocus={handleFocus}
         placeholder="Add set notes for this gig"
         rows={textareaRows}
-        value={draft}
         aria-label="Set notes"
         aria-describedby="crate-set-notes-length"
         aria-invalid={isNotesOverLimit ? true : undefined}
+        {...notesFieldProps}
       />
       <div className={styles.footer}>
         {statusLabel ? (

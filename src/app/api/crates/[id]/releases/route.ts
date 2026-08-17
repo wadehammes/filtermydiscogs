@@ -8,6 +8,8 @@ import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.ser
 import { type Prisma, prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
+import { clearCrateFoundBodySchema } from "src/lib/validation/crate.schemas";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 
 /**
  * Clear packed status for all releases in a crate
@@ -28,30 +30,13 @@ export async function PATCH(
 
     const { id } = await params;
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch (error) {
-      console.error("Failed to parse request body:", error);
-      return privateRouteJson(
-        { error: "Invalid request body" },
-        { status: 400 },
-      );
-    }
+    const parsedBody = await parseRequestBody(
+      request,
+      clearCrateFoundBodySchema,
+    );
 
-    if (!body || typeof body !== "object") {
-      return privateRouteJson(
-        { error: "Request body must be an object" },
-        { status: 400 },
-      );
-    }
-
-    const clearFound = (body as Record<string, unknown>).clear_found;
-    if (clearFound !== true) {
-      return privateRouteJson(
-        { error: "clear_found must be true" },
-        { status: 400 },
-      );
+    if ("error" in parsedBody) {
+      return privateRouteJson({ error: parsedBody.error }, { status: 400 });
     }
 
     const crate = await prisma.crate.findUnique({
