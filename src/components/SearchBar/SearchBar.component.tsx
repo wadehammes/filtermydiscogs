@@ -1,14 +1,8 @@
 "use client";
 
 import classNames from "classnames";
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { startTransition, useCallback, useEffect, useId, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { trackCollectionSearched } from "src/analytics/productAnalyticsEvents";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
@@ -16,6 +10,7 @@ import {
   useIsSearching,
   useSearchQuery,
 } from "src/hooks/useFilterAtoms.hook";
+import type { SearchCollectionFormValues } from "src/lib/validation/searchCollection.schemas";
 import SearchIcon from "src/styles/icons/search-thin.svg";
 import styles from "./SearchBar.module.css";
 
@@ -37,12 +32,18 @@ export const SearchBar = ({
   const filtersDispatch = useFiltersDispatch();
   const searchQuery = useSearchQuery();
   const isSearching = useIsSearching();
-  const [inputValue, setInputValue] = useState(searchQuery);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousSearchQueryRef = useRef<string>(searchQuery);
+
+  const { register, reset, setValue, watch } =
+    useForm<SearchCollectionFormValues>({
+      defaultValues: { query: searchQuery },
+    });
+
+  const inputValue = watch("query");
   const pendingInputValueRef = useRef(searchQuery);
 
   const debouncedSearch = useCallback(
@@ -67,18 +68,19 @@ export const SearchBar = ({
     [filtersDispatch],
   );
 
+  const { onBlur, onChange, name, ref: registerRef } = register("query");
+
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
-      setInputValue(value);
-      pendingInputValueRef.current = value;
-      debouncedSearch(value);
+      onChange(event);
+      pendingInputValueRef.current = event.target.value;
+      debouncedSearch(event.target.value);
     },
-    [debouncedSearch],
+    [debouncedSearch, onChange],
   );
 
   const handleClear = useCallback(() => {
-    setInputValue("");
+    setValue("query", "");
     pendingInputValueRef.current = "";
     filtersDispatch({
       type: FiltersActionTypes.SetSearching,
@@ -89,7 +91,7 @@ export const SearchBar = ({
       payload: "",
     });
     inputRef.current?.focus();
-  }, [filtersDispatch]);
+  }, [filtersDispatch, setValue]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -105,7 +107,7 @@ export const SearchBar = ({
     const currentQuery = searchQuery;
 
     if (previousQuery === "" && currentQuery !== "" && inputValue === "") {
-      setInputValue(currentQuery);
+      reset({ query: currentQuery });
       pendingInputValueRef.current = currentQuery;
     }
 
@@ -114,12 +116,12 @@ export const SearchBar = ({
         clearTimeout(debounceTimeoutRef.current);
         debounceTimeoutRef.current = null;
       }
-      setInputValue("");
+      reset({ query: "" });
       pendingInputValueRef.current = "";
     }
 
     previousSearchQueryRef.current = currentQuery;
-  }, [searchQuery, inputValue]);
+  }, [inputValue, reset, searchQuery]);
 
   useEffect(() => {
     return () => {
@@ -160,10 +162,14 @@ export const SearchBar = ({
           <SearchIcon />
         </span>
         <input
-          ref={inputRef}
+          ref={(element) => {
+            registerRef(element);
+            inputRef.current = element;
+          }}
           id={inputId}
+          name={name}
           type="text"
-          value={inputValue}
+          onBlur={onBlur}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}

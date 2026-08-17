@@ -1,16 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import {
-  COLLECTION_RATING_MAX,
-  COLLECTION_RATING_MIN,
-} from "src/constants/collection";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
+import { updateReleaseRatingBodySchema } from "src/lib/validation/collection.schemas";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
-
-interface UpdateReleaseRatingBody {
-  username?: string;
-  rating?: number;
-}
 
 const mapUpstreamError = (error: unknown, fallbackMessage: string) => {
   const errorMessage = error instanceof Error ? error.message : fallbackMessage;
@@ -53,41 +46,20 @@ export async function PUT(
 ) {
   try {
     const { releaseId: releaseIdParam } = await params;
-    const body = (await request.json()) as UpdateReleaseRatingBody;
-    const username = body.username;
-    const rating = body.rating;
+    const parsedBody = await parseRequestBody(
+      request,
+      updateReleaseRatingBodySchema,
+    );
 
-    if (!username) {
-      return NextResponse.json(
-        { error: "Username is required" },
-        { status: 400 },
-      );
+    if ("error" in parsedBody) {
+      return NextResponse.json({ error: parsedBody.error }, { status: 400 });
     }
 
-    if (!isValidDiscogsUsername(username)) {
-      return NextResponse.json(
-        { error: "Invalid username format" },
-        { status: 400 },
-      );
-    }
+    const { username, rating } = parsedBody.data;
 
     if (!/^\d+$/.test(releaseIdParam)) {
       return NextResponse.json(
         { error: "Invalid release ID format" },
-        { status: 400 },
-      );
-    }
-
-    if (
-      typeof rating !== "number" ||
-      !Number.isInteger(rating) ||
-      rating < COLLECTION_RATING_MIN ||
-      rating > COLLECTION_RATING_MAX
-    ) {
-      return NextResponse.json(
-        {
-          error: `Rating must be an integer between ${COLLECTION_RATING_MIN} and ${COLLECTION_RATING_MAX}`,
-        },
         { status: 400 },
       );
     }

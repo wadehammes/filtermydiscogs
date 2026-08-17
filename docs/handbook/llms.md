@@ -13,6 +13,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
 | Release detail / tracklist / in-app playback | [discogs.md](discogs.md) (API) + [components.md](components.md) (`ReleaseModal/`, `ReleasePlayback/`) + [patterns.md](patterns.md) (`ReleasePlaybackProvider`) + [source-layout.md](source-layout.md) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
+| API route request validation (Zod) | [database.md](database.md) (Request validation) |
 | Component folders, naming, tests | [components.md](components.md) |
 | Base UI dialogs, popovers, shared UI primitives | [components.md](components.md) (`AppDialog/`, `ScrollModal/`) + [conventions.md](conventions.md) (CSS → modal / portal) |
 | Base UI Menu (`UserActions`, `CrateDetailActionsMenu`) | [conventions.md](conventions.md) (CSS → modal / portal) + [`UserActions/`](../../src/components/StickyHeaderBar/components/UserActions.tsx) |

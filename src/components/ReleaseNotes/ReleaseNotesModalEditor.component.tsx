@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useForm } from "react-hook-form";
+import {
+  buildReleaseNotesFormSchema,
+  isReleaseNoteTextWithinLimit,
+  type ReleaseNotesFormValues,
+} from "src/lib/validation/releaseNotes.schemas";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseNotes, normalizeFieldId } from "src/utils/releaseNotes";
 import styles from "./ReleaseNotes.module.css";
@@ -21,9 +27,9 @@ const SAVE_DEBOUNCE_MS = 700;
 const getFieldValues = (
   release: DiscogsRelease,
   fieldIds: number[],
-): Record<string, string> => {
+): ReleaseNotesFormValues => {
   const notes = getReleaseNotes(release);
-  const values: Record<string, string> = {};
+  const values: ReleaseNotesFormValues = {};
 
   for (const fieldId of fieldIds) {
     const existingNote = notes.find(
@@ -59,22 +65,54 @@ export const ReleaseNotesModalEditor = ({
     [formFieldIds, release],
   );
 
-  const [draftValues, setDraftValues] = useState(savedValues);
+  const noteFormSchema = useMemo(
+    () => buildReleaseNotesFormSchema(editableFields.map((field) => field.id)),
+    [editableFields],
+  );
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFocusedRef = useRef(false);
   const prevInstanceIdRef = useRef(release.instance_id);
 
+  const {
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<ReleaseNotesFormValues>({
+    resolver: zodResolver(noteFormSchema),
+    defaultValues: savedValues,
+    mode: "onChange",
+  });
+
+  const formValues = watch();
+
+  const textFieldErrors = useMemo(() => {
+    const fieldErrors: Record<string, { message?: string }> = {};
+
+    for (const field of editableFields) {
+      const fieldKey = String(field.id);
+      const message = errors[fieldKey]?.message;
+
+      if (typeof message === "string") {
+        fieldErrors[fieldKey] = { message };
+      }
+    }
+
+    return fieldErrors;
+  }, [editableFields, errors]);
+
   useEffect(() => {
     if (prevInstanceIdRef.current !== release.instance_id) {
       prevInstanceIdRef.current = release.instance_id;
-      setDraftValues(savedValues);
+      reset(savedValues);
       return;
     }
 
     if (!isFocusedRef.current) {
-      setDraftValues(savedValues);
+      reset(savedValues);
     }
-  }, [release.instance_id, savedValues]);
+  }, [release.instance_id, reset, savedValues]);
 
   useEffect(() => {
     return () => {
@@ -87,8 +125,9 @@ export const ReleaseNotesModalEditor = ({
   const persistField = useCallback(
     async (fieldId: number, value: string) => {
       const savedValue = savedValues[String(fieldId)] ?? "";
+      const isTextField = editableFields.some((field) => field.id === fieldId);
 
-      if (value.length > COLLECTION_NOTE_MAX_LENGTH) {
+      if (isTextField && !isReleaseNoteTextWithinLimit(value)) {
         return;
       }
 
@@ -108,7 +147,7 @@ export const ReleaseNotesModalEditor = ({
         dismissReleaseNotesSaveToast();
       }
     },
-    [handleSave, savedValues],
+    [editableFields, handleSave, savedValues],
   );
 
   const schedulePersist = useCallback(
@@ -130,13 +169,13 @@ export const ReleaseNotesModalEditor = ({
       const value = event.target.value;
       const fieldKey = String(fieldId);
 
-      setDraftValues((currentValues) => ({
-        ...currentValues,
-        [fieldKey]: value,
-      }));
+      setValue(fieldKey, value, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       schedulePersist(fieldId, value);
     },
-    [schedulePersist],
+    [schedulePersist, setValue],
   );
 
   const handleTextFieldFocus = useCallback(() => {
@@ -152,22 +191,22 @@ export const ReleaseNotesModalEditor = ({
         debounceRef.current = null;
       }
 
-      void persistField(fieldId, draftValues[String(fieldId)] ?? "");
+      void persistField(fieldId, formValues[String(fieldId)] ?? "");
     },
-    [draftValues, persistField],
+    [formValues, persistField],
   );
 
   const handleConditionFieldChange = useCallback(
     (fieldId: number, value: string) => {
       const fieldKey = String(fieldId);
 
-      setDraftValues((currentValues) => ({
-        ...currentValues,
-        [fieldKey]: value,
-      }));
+      setValue(fieldKey, value, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       void persistField(fieldId, value);
     },
-    [persistField],
+    [persistField, setValue],
   );
 
   const sectionLabelId =
@@ -185,9 +224,10 @@ export const ReleaseNotesModalEditor = ({
       <ReleaseNotesFormFields
         textFields={editableFields}
         conditionFields={editableConditionFields}
-        values={draftValues}
+        values={formValues}
         disabled={isSaving}
         layout="modal"
+        textFieldErrors={textFieldErrors}
         onTextFieldChange={handleTextFieldChange}
         onTextFieldFocus={handleTextFieldFocus}
         onTextFieldBlur={handleTextFieldBlur}

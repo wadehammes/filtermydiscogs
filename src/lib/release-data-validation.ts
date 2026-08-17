@@ -1,11 +1,10 @@
+import { crateReleaseStorageSchema } from "src/lib/validation/releaseStorage.schemas";
 import type { DiscogsRelease } from "src/types/discogs-release.types";
 
 const DISCOGS_IMAGE_PREFIXES = [
   "https://i.discogs.com/",
   "https://img.discogs.com/",
 ] as const;
-
-const MAX_RELEASE_DATA_BYTES = 512_000;
 
 function isDiscogsImageUrl(value: unknown): value is string {
   return (
@@ -28,9 +27,6 @@ function sanitizeBasicInformation(
   };
 }
 
-/**
- * Validate and sanitize release payloads before persisting crate snapshots.
- */
 export function validateReleaseDataForStorage(
   release: unknown,
 ):
@@ -40,24 +36,14 @@ export function validateReleaseDataForStorage(
     return { error: "Invalid release data" };
   }
 
+  const parseResult = crateReleaseStorageSchema.safeParse(release);
+
+  if (!parseResult.success) {
+    const issue = parseResult.error.issues[0];
+    return { error: issue?.message ?? "Invalid release data" };
+  }
+
   const candidate = release as DiscogsRelease;
-
-  if (!candidate.instance_id) {
-    return { error: "Invalid release data: missing instance_id" };
-  }
-
-  if (
-    !candidate.basic_information ||
-    typeof candidate.basic_information.title !== "string" ||
-    candidate.basic_information.title.trim().length === 0
-  ) {
-    return { error: "Invalid release data: missing basic_information" };
-  }
-
-  const serialized = JSON.stringify(candidate);
-  if (serialized.length > MAX_RELEASE_DATA_BYTES) {
-    return { error: "Release data is too large" };
-  }
 
   return {
     release: {
@@ -68,9 +54,6 @@ export function validateReleaseDataForStorage(
   };
 }
 
-/**
- * Strip private collection fields before exposing release snapshots on public crates.
- */
 export function toPublicReleaseSnapshot(
   release: DiscogsRelease,
 ): Pick<DiscogsRelease, "instance_id" | "basic_information"> {

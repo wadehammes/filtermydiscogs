@@ -14,7 +14,6 @@ import {
 } from "src/types/view.types";
 import {
   defaultPersistedFilters,
-  isValidStoredFiltersPatch,
   parseStoredFiltersObject,
 } from "src/utils/filtersStorage";
 import { isValidStoredTheme, parseStoredTheme } from "src/utils/storedTheme";
@@ -99,50 +98,3 @@ export const mergeUserPreferences = (
     ? parseStoredFiltersObject(patch.filters)
     : current.filters,
 });
-
-export const isValidUserPreferencesPatch = (
-  patch: UserPreferencesPatch,
-): string | null => {
-  if (
-    patch.persistFilters !== undefined &&
-    typeof patch.persistFilters !== "boolean"
-  ) {
-    return "persistFilters must be a boolean";
-  }
-
-  if (patch.theme !== undefined && !isValidStoredTheme(patch.theme)) {
-    return "theme must be a supported theme value";
-  }
-
-  if (patch.view !== undefined && !isValidStoredViewPatch(patch.view)) {
-    return "view must include valid currentView and previousView values";
-  }
-
-  if (
-    patch.filters !== undefined &&
-    !isValidStoredFiltersPatch(patch.filters)
-  ) {
-    return "filters must include valid filter fields";
-  }
-
-  if (
-    patch.analyticsConsent !== undefined &&
-    typeof patch.analyticsConsent !== "boolean"
-  ) {
-    return "analyticsConsent must be a boolean";
-  }
-
-  if (
-    patch.persistFilters === undefined &&
-    patch.theme === undefined &&
-    patch.view === undefined &&
-    patch.filters === undefined &&
-    patch.analyticsConsent === undefined
-  ) {
-    return "No supported preference fields to update";
-  }
-
-  return null;
-};
-
-export { isValidStoredFiltersPatch };

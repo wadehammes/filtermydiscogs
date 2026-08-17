@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { SortValues } from "src/constants/sortValues";
+import { getUserPreferencesPatchError } from "src/lib/validation/userPreferences.schemas";
 import {
   persistedFiltersFactory,
   userPreferencesFactory,
@@ -9,7 +10,6 @@ import {
   defaultUserPreferences,
   isValidStoredTheme,
   isValidStoredViewPatch,
-  isValidUserPreferencesPatch,
   mergeUserPreferences,
   parseUserPreferences,
 } from "./user-preferences.server";
@@ -88,9 +88,9 @@ describe("user-preferences.server", () => {
       }).analyticsConsent,
     ).toBe(false);
 
-    expect(isValidUserPreferencesPatch({ analyticsConsent: true })).toBeNull();
+    expect(getUserPreferencesPatchError({ analyticsConsent: true })).toBeNull();
     expect(
-      isValidUserPreferencesPatch({
+      getUserPreferencesPatchError({
         analyticsConsent: "yes",
       } as unknown as UserPreferencesPatch),
     ).toBe("analyticsConsent must be a boolean");
@@ -105,9 +105,9 @@ describe("user-preferences.server", () => {
         previousView: "card",
       }),
     ).toBe(true);
-    expect(isValidUserPreferencesPatch({ theme: "sepia" })).toBeNull();
+    expect(getUserPreferencesPatchError({ theme: "sepia" })).toBeNull();
     expect(
-      isValidUserPreferencesPatch({
+      getUserPreferencesPatchError({
         theme: "table",
       } as unknown as UserPreferencesPatch),
     ).toBe("theme must be a supported theme value");

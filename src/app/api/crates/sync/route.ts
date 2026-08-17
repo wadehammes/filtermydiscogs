@@ -6,6 +6,8 @@ import {
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { crateSyncBodySchema } from "src/lib/validation/crate.schemas";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 
 /**
  * Sync crates with collection - removes releases from crates that are no longer in the collection
@@ -26,15 +28,13 @@ export async function POST(request: NextRequest) {
     }
     const { userId: userIdNum } = verified.user;
 
-    const body = await request.json();
-    const { collectionInstanceIds, force = false } = body;
+    const parsedBody = await parseRequestBody(request, crateSyncBodySchema);
 
-    if (!Array.isArray(collectionInstanceIds)) {
-      return privateRouteJson(
-        { error: "collectionInstanceIds must be an array" },
-        { status: 400 },
-      );
+    if ("error" in parsedBody) {
+      return privateRouteJson({ error: parsedBody.error }, { status: 400 });
     }
+
+    const { collectionInstanceIds, force } = parsedBody.data;
 
     // SAFETY CHECK: Require minimum collection size to prevent syncing with incomplete data
     const MIN_COLLECTION_SIZE = 10;

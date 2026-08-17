@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
-import { CRATE_NAME_MAX_LENGTH } from "src/constants/crate";
 import {
   createErrorResponse,
   createPaginatedResponse,
@@ -10,6 +9,8 @@ import {
 import { fetchCratePreviewThumbs } from "src/lib/crate-preview.server";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { createCrateBodySchema } from "src/lib/validation/crate.schemas";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 
 /**
  * Get all crates for the authenticated user
@@ -155,30 +156,18 @@ export async function POST(request: NextRequest) {
     }
     const { userId: userIdNum, username } = verified.user;
 
-    const body = await request.json();
-    const { name } = body;
-
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return privateRouteJson(
-        { error: "Crate name is required" },
-        { status: 400 },
-      );
+    const parsedBody = await parseRequestBody(request, createCrateBodySchema);
+    if ("error" in parsedBody) {
+      return privateRouteJson({ error: parsedBody.error }, { status: 400 });
     }
 
-    if (name.length > CRATE_NAME_MAX_LENGTH) {
-      return privateRouteJson(
-        {
-          error: `Crate name must be ${CRATE_NAME_MAX_LENGTH} characters or less`,
-        },
-        { status: 400 },
-      );
-    }
+    const { name } = parsedBody.data;
 
     // Check if a crate with this name already exists for this user
     const existingCrate = await prisma.crate.findFirst({
       where: {
         user_id: userIdNum,
-        name: name.trim(),
+        name,
       },
       select: { id: true },
     });
@@ -195,7 +184,7 @@ export async function POST(request: NextRequest) {
       data: {
         user_id: userIdNum,
         id: crateId,
-        name: name.trim(),
+        name,
         username: username || null,
         is_default: false,
       },
@@ -204,7 +193,7 @@ export async function POST(request: NextRequest) {
     // Audit log
     const { auditDatabaseOperation } = await import("src/lib/api-helpers");
     auditDatabaseOperation(userIdNum, "Crate", "create", crateId, {
-      name: name.trim(),
+      name,
     });
 
     return privateRouteJson({ crate: newCrate }, { status: 201 });

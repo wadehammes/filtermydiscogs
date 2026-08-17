@@ -1,9 +1,5 @@
 import type { NextRequest } from "next/server";
 import {
-  CRATE_NAME_MAX_LENGTH,
-  CRATE_NOTES_MAX_LENGTH,
-} from "src/constants/crate";
-import {
   createErrorResponse,
   getPaginationParams,
   getVerifiedUserFromRequestWithRateLimit,
@@ -18,6 +14,8 @@ import {
 } from "src/lib/crate-release-mapper";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { updateCrateBodySchema } from "src/lib/validation/crate.schemas";
+import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 
 type CrateUpdateData = {
   name?: string;
@@ -27,27 +25,6 @@ type CrateUpdateData = {
   packed_enabled?: boolean;
   notes?: string | null;
 };
-
-function assignOptionalBoolean(
-  value: unknown,
-  fieldName: string,
-  updateData: CrateUpdateData,
-  key: "private" | "packed_enabled",
-): ReturnType<typeof privateRouteJson> | null {
-  if (value === undefined || value === null) {
-    return null;
-  }
-
-  if (typeof value !== "boolean") {
-    return privateRouteJson(
-      { error: `${fieldName} must be a boolean` },
-      { status: 400 },
-    );
-  }
-
-  updateData[key] = value;
-  return null;
-}
 
 /**
  * Get a single crate with its releases
@@ -152,35 +129,19 @@ export async function PUT(
 
     const { id } = await params;
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch (error) {
-      console.error("Failed to parse request body:", error);
-      return privateRouteJson(
-        { error: "Invalid request body" },
-        { status: 400 },
-      );
+    const parsedBody = await parseRequestBody(request, updateCrateBodySchema);
+    if ("error" in parsedBody) {
+      return privateRouteJson({ error: parsedBody.error }, { status: 400 });
     }
 
-    if (!body || typeof body !== "object") {
-      return privateRouteJson(
-        { error: "Request body must be an object" },
-        { status: 400 },
-      );
-    }
+    const {
+      name,
+      is_default,
+      private: privateField,
+      packed_enabled: packedEnabled,
+      notes,
+    } = parsedBody.data;
 
-    // Handle 'private' keyword by accessing it directly from body object
-    // Use type assertion to safely access properties
-    const bodyObj = body as Record<string, unknown>;
-    const name = bodyObj.name;
-    const is_default = bodyObj.is_default;
-    // Access 'private' using bracket notation to avoid reserved keyword issues
-    const privateField = bodyObj.private;
-    const packedEnabled = bodyObj.packed_enabled;
-    const notes = bodyObj.notes;
-
-    // Verify crate exists and belongs to user
     const existingCrate = await prisma.crate.findUnique({
       where: {
         user_id_id: {
@@ -203,33 +164,15 @@ export async function PUT(
 
     const updateData: CrateUpdateData = {};
 
-    // Always update username if available (to keep it current)
     if (username) {
       updateData.username = username;
     }
 
     if (name !== undefined) {
-      if (typeof name !== "string" || name.trim().length === 0) {
-        return privateRouteJson(
-          { error: "Crate name is required" },
-          { status: 400 },
-        );
-      }
-
-      if (name.length > CRATE_NAME_MAX_LENGTH) {
-        return privateRouteJson(
-          {
-            error: `Crate name must be ${CRATE_NAME_MAX_LENGTH} characters or less`,
-          },
-          { status: 400 },
-        );
-      }
-
-      // Check if another crate with this name exists
       const duplicateCrate = await prisma.crate.findFirst({
         where: {
           user_id: userIdNum,
-          name: name.trim(),
+          name,
           NOT: {
             id,
           },
@@ -244,20 +187,11 @@ export async function PUT(
         );
       }
 
-      updateData.name = name.trim();
+      updateData.name = name;
     }
 
     if (is_default !== undefined) {
-      if (typeof is_default !== "boolean") {
-        return privateRouteJson(
-          { error: "is_default must be a boolean" },
-          { status: 400 },
-        );
-      }
-
       if (is_default) {
-        // If setting this as default, unset other defaults
-        // This ensures only one default crate per user
         const updateResult = await prisma.crate.updateMany({
           where: {
             user_id: userIdNum,
@@ -271,7 +205,6 @@ export async function PUT(
           },
         });
 
-        // Audit log for bulk update
         if (updateResult.count > 0) {
           const { auditDatabaseOperation } = await import(
             "src/lib/api-helpers"
@@ -286,50 +219,20 @@ export async function PUT(
       updateData.is_default = is_default;
     }
 
-    const privateError = assignOptionalBoolean(
-      privateField,
-      "private",
-      updateData,
-      "private",
-    );
-    if (privateError) {
-      return privateError;
+    if (privateField !== undefined) {
+      updateData.private = privateField;
+
+      if (privateField === false && username) {
+        updateData.username = username;
+      }
     }
 
-    if (updateData.private === false && username) {
-      updateData.username = username;
-    }
-
-    const packedEnabledError = assignOptionalBoolean(
-      packedEnabled,
-      "packed_enabled",
-      updateData,
-      "packed_enabled",
-    );
-    if (packedEnabledError) {
-      return packedEnabledError;
+    if (packedEnabled !== undefined) {
+      updateData.packed_enabled = packedEnabled;
     }
 
     if (notes !== undefined) {
-      if (notes === null) {
-        updateData.notes = null;
-      } else if (typeof notes !== "string") {
-        return privateRouteJson(
-          { error: "notes must be a string or null" },
-          { status: 400 },
-        );
-      } else {
-        const trimmedNotes = notes.trim();
-        if (trimmedNotes.length > CRATE_NOTES_MAX_LENGTH) {
-          return privateRouteJson(
-            {
-              error: `Crate notes must be ${CRATE_NOTES_MAX_LENGTH} characters or less`,
-            },
-            { status: 400 },
-          );
-        }
-        updateData.notes = trimmedNotes.length === 0 ? null : trimmedNotes;
-      }
+      updateData.notes = notes;
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -349,7 +252,6 @@ export async function PUT(
       data: updateData,
     });
 
-    // Audit log
     const { auditDatabaseOperation } = await import("src/lib/api-helpers");
     auditDatabaseOperation(userIdNum, "Crate", "update", id, updateData);
 

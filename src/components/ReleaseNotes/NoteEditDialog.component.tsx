@@ -1,12 +1,16 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { ModalToolbar } from "src/components/shared/ModalToolbar/ModalToolbar.component";
 import { ScrollModal } from "src/components/shared/ScrollModal/ScrollModal.component";
-import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
+import {
+  buildReleaseNotesFormSchema,
+  type ReleaseNotesFormValues,
+} from "src/lib/validation/releaseNotes.schemas";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
@@ -33,8 +37,6 @@ interface NoteEditDialogProps {
   onClose: () => void;
   onSave: (values: Array<{ fieldId: number; value: string }>) => void;
 }
-
-type NoteFormValues = Record<string, string>;
 
 export const NoteEditDialog = ({
   isOpen,
@@ -75,7 +77,7 @@ export const NoteEditDialog = ({
   }, [formFields, release]);
 
   const defaultFormValues = useMemo(() => {
-    const values: NoteFormValues = {};
+    const values: ReleaseNotesFormValues = {};
 
     for (const field of formFields) {
       values[String(field.id)] = initialValues.get(field.id) ?? "";
@@ -84,16 +86,39 @@ export const NoteEditDialog = ({
     return values;
   }, [formFields, initialValues]);
 
-  const { handleSubmit, reset, setValue, watch } = useForm<NoteFormValues>({
+  const noteFormSchema = useMemo(
+    () =>
+      buildReleaseNotesFormSchema(editableTextFields.map((field) => field.id)),
+    [editableTextFields],
+  );
+
+  const {
+    formState: { errors, isValid },
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+  } = useForm<ReleaseNotesFormValues>({
+    resolver: zodResolver(noteFormSchema),
     defaultValues: defaultFormValues,
     mode: "onChange",
   });
 
   const formValues = watch();
-  const hasNoteLengthErrors = editableTextFields.some((field) => {
-    const value = formValues[String(field.id)] ?? "";
-    return value.length > COLLECTION_NOTE_MAX_LENGTH;
-  });
+  const textFieldErrors = useMemo(() => {
+    const fieldErrors: Record<string, { message?: string }> = {};
+
+    for (const field of editableTextFields) {
+      const fieldKey = String(field.id);
+      const message = errors[fieldKey]?.message;
+
+      if (typeof message === "string") {
+        fieldErrors[fieldKey] = { message };
+      }
+    }
+
+    return fieldErrors;
+  }, [editableTextFields, errors]);
 
   useEffect(() => {
     if (isOpen) {
@@ -193,6 +218,7 @@ export const NoteEditDialog = ({
             conditionFields={editableConditionFields}
             values={formValues}
             disabled={isSaving}
+            textFieldErrors={textFieldErrors}
             onTextFieldChange={(fieldId, event) => {
               setValue(String(fieldId), event.target.value, {
                 shouldDirty: true,
@@ -221,10 +247,7 @@ export const NoteEditDialog = ({
             variant="primary"
             size="md"
             disabled={
-              isSaving ||
-              formFields.length === 0 ||
-              !releaseId ||
-              hasNoteLengthErrors
+              isSaving || formFields.length === 0 || !releaseId || !isValid
             }
           >
             {isSaving ? "Saving..." : "Save"}

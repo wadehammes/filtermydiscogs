@@ -1,14 +1,8 @@
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
-import {
-  CRATE_LAYOUT_SORT_STEP,
-  CRATE_MARKER_MAX_LENGTH,
-} from "src/constants/crate";
+import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
 import { getPrependCrateLayoutSortOrder } from "src/lib/crate-layout";
-import type {
-  CrateLayoutPutItem,
-  CrateLayoutPutRequest,
-} from "src/types/crate.types";
+import type { CrateLayoutPutItem } from "src/types/crate.types";
 
 export type ParsedCrateLayoutUpdate = {
   releaseOrders: Array<{ instance_id: string; sort_order: number }>;
@@ -18,86 +12,6 @@ export type ParsedCrateLayoutUpdate = {
     sort_order: number;
   }>;
   markerIdsToKeep: string[];
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-export const parseCrateLayoutPutRequest = (
-  body: unknown,
-): { data: CrateLayoutPutRequest } | { error: string } => {
-  if (!isRecord(body)) {
-    return { error: "Request body must be an object" };
-  }
-
-  const rawItems = body.items;
-  if (!Array.isArray(rawItems)) {
-    return { error: "items must be an array" };
-  }
-
-  const items: CrateLayoutPutItem[] = [];
-
-  for (const rawItem of rawItems) {
-    if (!isRecord(rawItem)) {
-      return { error: "Each layout item must be an object" };
-    }
-
-    const kind = rawItem.kind;
-    if (kind === "release") {
-      const instanceId = rawItem.instance_id;
-      if (typeof instanceId !== "string" || instanceId.trim().length === 0) {
-        return { error: "Release layout items require instance_id" };
-      }
-
-      items.push({
-        kind: "release",
-        instance_id: instanceId.trim(),
-      });
-      continue;
-    }
-
-    if (kind === "marker") {
-      const label = rawItem.label;
-      if (typeof label !== "string") {
-        return { error: "Marker layout items require label" };
-      }
-
-      const trimmedLabel = label.trim();
-      if (trimmedLabel.length === 0) {
-        return { error: "Marker label is required" };
-      }
-
-      if (trimmedLabel.length > CRATE_MARKER_MAX_LENGTH) {
-        return {
-          error: `Marker label must be ${CRATE_MARKER_MAX_LENGTH} characters or less`,
-        };
-      }
-
-      const markerId = rawItem.id;
-      if (markerId === undefined) {
-        items.push({
-          kind: "marker",
-          label: trimmedLabel,
-        });
-        continue;
-      }
-
-      if (typeof markerId !== "string" || markerId.trim().length === 0) {
-        return { error: "Marker id must be a non-empty string when provided" };
-      }
-
-      items.push({
-        kind: "marker",
-        id: markerId.trim(),
-        label: trimmedLabel,
-      });
-      continue;
-    }
-
-    return { error: "Each layout item kind must be release or marker" };
-  }
-
-  return { data: { items } };
 };
 
 export const buildCrateLayoutUpdate = ({
