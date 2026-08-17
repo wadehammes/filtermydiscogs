@@ -63,6 +63,18 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+
+  &.actionButtonActive {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+
+    &:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: var(--on-primary-hover);
+    }
+  }
 }
 
 .closeButton {

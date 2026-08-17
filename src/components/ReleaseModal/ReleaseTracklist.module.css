@@ -73,6 +73,13 @@
   }
 }
 
+.tracklistNoPosition {
+  .trackMainButton,
+  .trackMainStatic {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .trackPosition {
   align-self: center;
   color: var(--muted-foreground);
@@ -104,6 +111,10 @@
   white-space: nowrap;
 }
 
+.trackItemStatic .trackTitleText {
+  color: var(--muted-foreground);
+}
+
 .trackCredits {
   color: var(--muted-foreground);
   font-size: var(--text-xs);
@@ -117,7 +128,7 @@
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: var(--space-1);
+  gap: var(--space-2);
   padding-inline: var(--space-2) var(--space-3);
 }
 
@@ -148,15 +159,12 @@
   flex-shrink: 0;
   height: 1.75rem;
   justify-content: center;
-  opacity: 0;
   transition:
     background-color var(--transition-normal),
-    color var(--transition-normal),
-    opacity var(--transition-normal);
+    color var(--transition-normal);
   width: 1.75rem;
 
   &:focus-visible {
-    opacity: 1;
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
@@ -165,16 +173,6 @@
     background: color-mix(in srgb, var(--foreground) 8%, transparent);
     color: var(--foreground);
   }
-
-  @media (hover: none) {
-    opacity: 1;
-  }
-}
-
-.trackItem:hover .queueButton,
-.trackItem:focus-within .queueButton,
-.queueButtonQueued {
-  opacity: 1;
 }
 
 .queueButtonQueued {
@@ -186,4 +184,10 @@
   display: block;
   height: 0.875rem;
   width: 0.875rem;
+}
+
+.queueButtonSpacer {
+  flex-shrink: 0;
+  height: 1.75rem;
+  width: 1.75rem;
 }

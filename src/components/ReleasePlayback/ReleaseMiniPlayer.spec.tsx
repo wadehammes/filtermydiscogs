@@ -38,6 +38,22 @@ const RELEASE_ID = 249504;
 
 const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: RELEASE_ID,
+  videos: [
+    {
+      description: "Rick Astley - Never Gonna Give You Up",
+      duration: 330,
+      embed: true,
+      title: "Rick Astley - Never Gonna Give You Up",
+      uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+    },
+    {
+      description: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+      duration: 330,
+      embed: true,
+      title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+      uri: "https://www.youtube.com/watch?v=abc12345678",
+    },
+  ],
 });
 
 const INSTANCE_ID = "instance-249504";
@@ -487,6 +503,15 @@ describe("ReleaseMiniPlayer", () => {
                     title: "Short A",
                     duration: "2:00",
                     type_: "track",
+                  },
+                ],
+                videos: [
+                  {
+                    description: "Short A",
+                    duration: 120,
+                    embed: true,
+                    title: "Short A",
+                    uri: "https://www.youtube.com/watch?v=def98765432",
                   },
                 ],
               })

@@ -8,6 +8,7 @@ import {
   ModalToolbarAction,
   ModalToolbarLink,
 } from "src/components/shared/ModalToolbar/ModalToolbar.component";
+import modalToolbarStyles from "src/components/shared/ModalToolbar/ModalToolbar.module.css";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
@@ -51,10 +52,11 @@ export const ReleaseSummaryHeroToolbar = ({
     <ModalToolbar {...definedProps({ onClose })}>
       <ModalToolbarAction
         className={classNames({
-          [styles.crateButtonActive]: inCrate,
+          [modalToolbarStyles.actionButtonActive]: inCrate,
         })}
         onClick={handleCrateToggle}
         aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+        aria-pressed={inCrate}
         title={inCrate ? "Remove from Crate" : "Add to Crate"}
       >
         {inCrate ? (
