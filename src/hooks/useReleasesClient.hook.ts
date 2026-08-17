@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
@@ -15,6 +15,7 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
+import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import {
   useCurrentView,
   usePreviousView,
@@ -40,9 +41,6 @@ export const useReleasesClient = () => {
 
   const [showAllLoadedMessage, setShowAllLoadedMessage] = useState(false);
 
-  const [selectedReleaseId, setSelectedReleaseId] = useState<string | null>(
-    null,
-  );
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
 
   const { isLoading, hasNextPage, isFetchingNextPage } =
@@ -116,27 +114,12 @@ export const useReleasesClient = () => {
     setVisibleCount(INITIAL_VISIBLE_RELEASES);
   }, [sortedFilteredReleases, isRandomMode]);
 
-  const handleReleaseClick = useCallback((instanceId: string) => {
-    setSelectedReleaseId(instanceId);
-  }, []);
-
-  const selectedRelease = useMemo(() => {
-    if (!selectedReleaseId) {
-      return null;
-    }
-
-    return (
-      allReleases.find((r) => String(r.instance_id) === selectedReleaseId) ??
-      filteredReleases.find(
-        (r) => String(r.instance_id) === selectedReleaseId,
-      ) ??
-      null
-    );
-  }, [selectedReleaseId, allReleases, filteredReleases]);
-
-  const handleCloseModal = useCallback(() => {
-    setSelectedReleaseId(null);
-  }, []);
+  const {
+    selectedRelease,
+    selectedReleaseId,
+    handleReleaseClick,
+    handleCloseModal,
+  } = useSelectedReleaseModal(allReleases);
 
   const handleViewChange = useCallback(
     (view: "card" | "list" | "random") => {

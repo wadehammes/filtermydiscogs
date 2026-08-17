@@ -50,8 +50,8 @@
     );
     box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
     height: calc(1.25rem + var(--video-max-height) * var(--panel-scale));
-    left: auto;
-    right: var(--space-5);
+    left: var(--space-5);
+    right: auto;
     transform: none;
     width: calc(var(--video-max-height) * var(--panel-scale) * 16 / 9);
   }

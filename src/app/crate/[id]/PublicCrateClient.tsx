@@ -75,12 +75,8 @@ function PublicCrateLoadedContent({
   >["pagination"];
 }) {
   const { login } = useAuth();
-  const {
-    selectedRelease,
-    selectedReleaseId,
-    handleReleaseClick,
-    handleCloseModal,
-  } = useSelectedReleaseModal(releases);
+  const { selectedRelease, handleReleaseClick, handleCloseModal } =
+    useSelectedReleaseModal(releases);
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
@@ -202,7 +198,7 @@ function PublicCrateLoadedContent({
         </div>
       </div>
       <PublicReleaseModal
-        isOpen={selectedReleaseId !== null}
+        isOpen={selectedRelease !== null}
         release={selectedRelease}
         onClose={handleCloseModal}
       />

@@ -51,7 +51,6 @@ const ReleasesClientContent = () => {
     mainContentRef,
     infiniteScrollRef,
     selectedRelease,
-    selectedReleaseId,
     handleReleaseClick,
     handleCloseModal,
     handleViewChange,
@@ -129,7 +128,7 @@ const ReleasesClientContent = () => {
               </button>
             ) : null}
             <ReleaseModal
-              isOpen={selectedReleaseId !== null}
+              isOpen={selectedRelease !== null}
               release={selectedRelease}
               onClose={handleCloseModal}
               onReleaseClick={handleReleaseClick}

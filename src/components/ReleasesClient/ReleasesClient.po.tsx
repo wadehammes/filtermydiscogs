@@ -16,6 +16,7 @@ import { userPreferencesFactory } from "src/tests/factories/UserPreferences.fact
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import { AppNavigationTestRoot } from "src/tests/mocks/setupMockAppNavigation.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
@@ -87,14 +88,19 @@ export class ReleasesClientPageObject extends BasePageObject {
     );
   }
 
-  renderReleasesClient(): RenderResult {
-    return render(
-      <ReleasePlaybackProvider>
-        <ReleasesClient />
-      </ReleasePlaybackProvider>,
-      {
-        authInitialState: testAuthenticatedAuthState,
-      },
+  renderReleasesClientUi(initialUrl = "/releases") {
+    return (
+      <AppNavigationTestRoot initialUrl={initialUrl}>
+        <ReleasePlaybackProvider>
+          <ReleasesClient />
+        </ReleasePlaybackProvider>
+      </AppNavigationTestRoot>
     );
+  }
+
+  renderReleasesClient(initialUrl = "/releases"): RenderResult {
+    return render(this.renderReleasesClientUi(initialUrl), {
+      authInitialState: testAuthenticatedAuthState,
+    });
   }
 }

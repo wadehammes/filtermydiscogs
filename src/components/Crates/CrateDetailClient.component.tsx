@@ -124,12 +124,8 @@ const CrateDetailWorkspace = ({
 function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { crates, isLoading, selectCrate, selectedReleases } = useCrate();
-  const {
-    selectedRelease,
-    selectedReleaseId,
-    handleReleaseClick,
-    handleCloseModal,
-  } = useSelectedReleaseModal(selectedReleases);
+  const { selectedRelease, handleReleaseClick, handleCloseModal } =
+    useSelectedReleaseModal(selectedReleases);
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
@@ -157,7 +153,7 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
       }
       overlays={
         <ReleaseModal
-          isOpen={selectedReleaseId !== null}
+          isOpen={selectedRelease !== null}
           release={selectedRelease}
           onClose={handleCloseModal}
           onReleaseClick={handleReleaseClick}

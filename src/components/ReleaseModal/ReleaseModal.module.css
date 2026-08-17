@@ -15,8 +15,7 @@
   height: auto;
 
   @media (width >= 1024px) {
-    max-width: min(calc(100vw - var(--space-8)), 68rem);
-    width: min(calc(100vw - var(--space-8)), 68rem);
+    --scroll-modal-max-width: 64rem;
   }
 }
 

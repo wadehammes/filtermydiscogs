@@ -102,7 +102,12 @@
   /* Patterns */
   --pattern-microdot: radial-gradient(
     circle,
-    color-mix(in srgb, var(--foreground) 6.75%, transparent) 0.65px,
+    color-mix(
+        in srgb,
+        var(--foreground) var(--pattern-microdot-mix),
+        transparent
+      )
+      0.65px,
     transparent 0.65px
   );
   --pattern-microdot-size: 18px 18px;
