@@ -1,3 +1,7 @@
+[data-sonner-toaster] {
+  z-index: var(--z-8-toast);
+}
+
 [data-sonner-toaster][data-sonner-theme="light"],
 [data-sonner-toaster][data-sonner-theme="dark"] {
   --normal-bg: var(--card);

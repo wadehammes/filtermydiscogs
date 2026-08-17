@@ -17,7 +17,9 @@ interface ReleaseNotesCrateFieldScratchpadProps {
   release: DiscogsRelease;
   savedValue: string;
   showFieldLabel: boolean;
-  onSave: (values: Array<{ fieldId: number; value: string }>) => Promise<void>;
+  onSave: (
+    values: Array<{ fieldId: number; value: string }>,
+  ) => Promise<boolean>;
 }
 
 const ReleaseNotesCrateFieldScratchpad = ({

@@ -31,12 +31,6 @@
   min-height: 0;
 }
 
-.notesModalEditorStatus {
-  color: var(--muted-foreground);
-  font-size: var(--text-xs);
-  margin: 0;
-}
-
 .notesModalEditorError {
   color: var(--destructive);
   font-size: var(--text-xs);

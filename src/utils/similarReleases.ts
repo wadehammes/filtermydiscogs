@@ -3,6 +3,7 @@ import type {
   DiscogsBasicInformation,
   DiscogsRelease,
 } from "src/types";
+import { parseReleaseId } from "src/utils/releaseNotes";
 
 interface GetSimilarReleasesParams {
   releases: DiscogsRelease[];
@@ -55,42 +56,80 @@ const jaccardSimilarity = (left: Set<string>, right: Set<string>): number => {
   return overlap / union;
 };
 
-const getArtistNameSet = (
-  artists: DiscogsArtist[] | undefined,
-): Set<string> => {
-  const names = new Set<string>();
+const getArtistMatchKeys = (artist: DiscogsArtist): string[] => {
+  const keys: string[] = [];
 
-  artists?.forEach((artist) => {
-    const normalized = normalizeTag(artist.anv?.trim() || artist.name);
+  if (typeof artist.id === "number" && artist.id > 0) {
+    keys.push(`id:${artist.id}`);
+  }
 
-    if (normalized) {
-      names.add(normalized);
+  const normalizedName = normalizeTag(artist.anv?.trim() || artist.name);
+
+  if (normalizedName) {
+    keys.push(`name:${normalizedName}`);
+  }
+
+  return keys;
+};
+
+const getLabelMatchKeys = (
+  label: DiscogsBasicInformation["labels"][number],
+): string[] => {
+  const keys: string[] = [];
+
+  if (typeof label.id === "number" && label.id > 0) {
+    keys.push(`id:${label.id}`);
+  }
+
+  const normalizedName = normalizeTag(label.name);
+
+  if (normalizedName) {
+    keys.push(`name:${normalizedName}`);
+  }
+
+  return keys;
+};
+
+const hasSharedArtist = (
+  sourceArtists: DiscogsArtist[] | undefined,
+  candidateArtists: DiscogsArtist[] | undefined,
+): boolean => {
+  const sourceKeys = new Set<string>();
+
+  sourceArtists?.forEach((artist) => {
+    for (const key of getArtistMatchKeys(artist)) {
+      sourceKeys.add(key);
     }
   });
 
-  return names;
+  for (const artist of candidateArtists ?? []) {
+    for (const key of getArtistMatchKeys(artist)) {
+      if (sourceKeys.has(key)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 };
 
-const getLabelNameSet = (
-  labels: DiscogsBasicInformation["labels"] | undefined,
-): Set<string> => {
-  const names = new Set<string>();
+const hasSharedLabel = (
+  sourceLabels: DiscogsBasicInformation["labels"] | undefined,
+  candidateLabels: DiscogsBasicInformation["labels"] | undefined,
+): boolean => {
+  const sourceKeys = new Set<string>();
 
-  labels?.forEach((label) => {
-    const normalized = normalizeTag(label.name);
-
-    if (normalized) {
-      names.add(normalized);
+  sourceLabels?.forEach((label) => {
+    for (const key of getLabelMatchKeys(label)) {
+      sourceKeys.add(key);
     }
   });
 
-  return names;
-};
-
-const hasSharedValue = (left: Set<string>, right: Set<string>): boolean => {
-  for (const value of left) {
-    if (right.has(value)) {
-      return true;
+  for (const label of candidateLabels ?? []) {
+    for (const key of getLabelMatchKeys(label)) {
+      if (sourceKeys.has(key)) {
+        return true;
+      }
     }
   }
 
@@ -159,11 +198,10 @@ const scoreSimilarRelease = ({
   const sourceStyles = normalizeTagSet(sourceInfo.styles);
   const candidateGenres = normalizeTagSet(candidateInfo.genres);
   const candidateStyles = normalizeTagSet(candidateInfo.styles);
-  const sourceArtists = getArtistNameSet(sourceInfo.artists);
-  const candidateArtists = getArtistNameSet(candidateInfo.artists);
-  const sourceLabels = getLabelNameSet(sourceInfo.labels);
-  const candidateLabels = getLabelNameSet(candidateInfo.labels);
-  const sharedArtist = hasSharedValue(sourceArtists, candidateArtists);
+  const sharedArtist = hasSharedArtist(
+    sourceInfo.artists,
+    candidateInfo.artists,
+  );
   const hasSourceTags = sourceGenres.size > 0 || sourceStyles.size > 0;
   const tagScore = getWeightedTagScore({
     sourceGenres,
@@ -182,13 +220,54 @@ const scoreSimilarRelease = ({
     score -= SHARED_ARTIST_PENALTY;
   }
 
-  if (hasSharedValue(sourceLabels, candidateLabels)) {
+  if (hasSharedLabel(sourceInfo.labels, candidateInfo.labels)) {
     score += SHARED_LABEL_BOOST;
   }
 
   score += getYearProximityBoost(sourceInfo.year, candidateInfo.year);
 
   return score;
+};
+
+const dedupeSimilarResults = (
+  scored: Array<{ release: DiscogsRelease; score: number }>,
+  limit: number,
+): DiscogsRelease[] => {
+  const seenInstanceIds = new Set<string>();
+  const seenReleaseIds = new Set<number>();
+  const seenMasterIds = new Set<number>();
+  const results: DiscogsRelease[] = [];
+
+  for (const { release } of scored) {
+    if (seenInstanceIds.has(release.instance_id)) {
+      continue;
+    }
+
+    const releaseId = parseReleaseId(release);
+    if (releaseId && seenReleaseIds.has(releaseId)) {
+      continue;
+    }
+
+    const masterId = release.basic_information.master_id;
+    if (masterId && seenMasterIds.has(masterId)) {
+      continue;
+    }
+
+    seenInstanceIds.add(release.instance_id);
+    if (releaseId) {
+      seenReleaseIds.add(releaseId);
+    }
+    if (masterId) {
+      seenMasterIds.add(masterId);
+    }
+    results.push(release);
+
+    if (results.length >= limit) {
+      break;
+    }
+  }
+
+  return results;
 };
 
 export const getSimilarReleases = ({
@@ -198,11 +277,17 @@ export const getSimilarReleases = ({
 }: GetSimilarReleasesParams): DiscogsRelease[] => {
   const sourceMasterId = sourceRelease.basic_information.master_id;
   const sourceInstanceId = sourceRelease.instance_id;
+  const sourceReleaseId = parseReleaseId(sourceRelease);
 
   const scored: Array<{ release: DiscogsRelease; score: number }> = [];
 
   for (const release of releases) {
     if (release.instance_id === sourceInstanceId) {
+      continue;
+    }
+
+    const candidateReleaseId = parseReleaseId(release);
+    if (sourceReleaseId && candidateReleaseId === sourceReleaseId) {
       continue;
     }
 
@@ -235,5 +320,5 @@ export const getSimilarReleases = ({
     );
   });
 
-  return scored.slice(0, limit).map(({ release }) => release);
+  return dedupeSimilarResults(scored, limit);
 };
