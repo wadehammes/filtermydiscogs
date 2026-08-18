@@ -4,7 +4,7 @@
   composes: shell from "../../../styles/modal-dialog.module.css";
   display: flex;
   flex-direction: column;
-  max-height: 80svh;
+  max-height: 90svh;
   max-width: min(calc(100vw - var(--space-8)), var(--scroll-modal-max-width));
   overflow: hidden;
   width: min(calc(100vw - var(--space-8)), var(--scroll-modal-max-width));
