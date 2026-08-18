@@ -88,6 +88,8 @@
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin: 0;
+  text-wrap: balance;
+  line-height: 1.25;
 }
 
 .searchLink {
