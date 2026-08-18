@@ -4,6 +4,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { useCallback } from "react";
+import { usePlaybackPageScrollLock } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import portalStyles from "src/styles/base-ui-portal.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./AppDialog.module.css";
@@ -37,6 +38,8 @@ export const AppDialog = ({
   panelClassName,
   backdropVariant = "default",
 }: AppDialogProps) => {
+  usePlaybackPageScrollLock(open);
+
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
       if (!nextOpen) {
@@ -47,7 +50,7 @@ export const AppDialog = ({
   );
 
   return (
-    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange} modal="trap-focus">
       <Dialog.Portal>
         <Dialog.Backdrop
           className={backdropClassByVariant[backdropVariant]}

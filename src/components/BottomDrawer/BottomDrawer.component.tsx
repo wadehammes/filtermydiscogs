@@ -1,5 +1,10 @@
+"use client";
+
 import classNames from "classnames";
 import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { usePlaybackPageScrollLock } from "src/components/ReleasePlayback/PlaybackPageShell.context";
+import { useMounted } from "src/hooks/useMounted.hook";
 import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./BottomDrawer.module.css";
 
@@ -34,7 +39,12 @@ export const BottomDrawer = ({
   aboveMiniPlayer = false,
   behindMiniPlayer = false,
 }: BottomDrawerProps) => {
-  if (!isOpen) return null;
+  usePlaybackPageScrollLock(isOpen);
+  const mounted = useMounted();
+
+  if (!(isOpen && mounted)) {
+    return null;
+  }
 
   const closeButton = (
     <button
@@ -59,7 +69,7 @@ export const BottomDrawer = ({
     </button>
   );
 
-  return (
+  return createPortal(
     <>
       <button
         type="button"
@@ -111,6 +121,7 @@ export const BottomDrawer = ({
           </div>
         )}
       </div>
-    </>
+    </>,
+    document.body,
   );
 };

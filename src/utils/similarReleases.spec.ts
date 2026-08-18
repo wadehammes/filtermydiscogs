@@ -271,6 +271,7 @@ describe("getSimilarReleases", () => {
         ...releaseFactory.withStyles(["Techno"]).basic_information,
         master_id: 401,
         title: "Alias Release",
+        year: 2018,
         artists: [{ id: 42, name: "AFX" }],
       },
     });
@@ -280,6 +281,7 @@ describe("getSimilarReleases", () => {
         ...releaseFactory.withStyles(["Techno"]).basic_information,
         master_id: 402,
         title: "Other Artist Release",
+        year: 2018,
         artists: [{ id: 99, name: "Other Artist" }],
       },
     });
@@ -308,6 +310,7 @@ describe("getSimilarReleases", () => {
         ...releaseFactory.withStyles(["Techno"]).basic_information,
         master_id: 501,
         title: "Same Label Release",
+        year: 2018,
         labels: [{ id: 10, name: "Warp" }],
       },
     });
@@ -317,6 +320,7 @@ describe("getSimilarReleases", () => {
         ...releaseFactory.withStyles(["Techno"]).basic_information,
         master_id: 502,
         title: "Other Label Release",
+        year: 2018,
         labels: [{ id: 20, name: "Other Label" }],
       },
     });

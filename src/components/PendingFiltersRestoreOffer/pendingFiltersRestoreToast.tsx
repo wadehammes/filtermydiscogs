@@ -41,6 +41,7 @@ export const showPendingFiltersRestoreToast = ({
     id: PENDING_FILTERS_RESTORE_TOAST_ID,
     description: buildRestoreToastDescription({ totalCount, filteredCount }),
     icon: pendingFiltersRestoreToastIcon,
+    position: "bottom-center",
     classNames: {
       toast: "fmd-toast fmd-pending-restore-toast",
       title: "fmd-toast-title",

@@ -39,7 +39,7 @@
   flex-direction: column;
   height: auto;
   left: 0;
-  max-height: 80dvh;
+  max-height: min(80svh, calc(100svh - var(--sticky-header-total-height)));
   min-height: 0;
   overflow: hidden;
   pointer-events: auto;
@@ -50,46 +50,27 @@
   width: 100%;
   z-index: var(--z-5-modal);
 
-  @media (width >= 768px) {
-    min-height: 50vh;
-  }
-
   &.aboveMiniPlayer {
     bottom: calc(
       var(--release-mini-player-stack-offset, 0) +
       var(--bottom-drawer-mini-player-gap, 0px)
     );
     max-height: calc(
-      100dvh -
+      100svh -
+      var(--sticky-header-total-height) -
       var(--release-mini-player-stack-offset, 0) -
       var(--bottom-drawer-mini-player-gap, 0px)
     );
-
-    @media (width < 768px) {
-      :global(
-          body:has([data-filters-drawer-open="true"]):not(
-            :has([data-video-expanded="true"])
-          )
-        )
-        & {
-        max-height: calc(
-          100dvh -
-          var(--sticky-header-height) -
-          var(--release-mini-player-stack-offset, 0) -
-          var(--bottom-drawer-mini-player-gap, 0px)
-        );
-      }
-    }
   }
 
   &.behindMiniPlayer {
     bottom: 0;
-    max-height: 80dvh;
+    max-height: 80svh;
     padding-bottom: var(--release-mini-player-stack-offset, 0);
     z-index: var(--z-2-sticky);
 
     @media (width >= 768px) {
-      max-height: min(80dvh, calc(100dvh - var(--space-4)));
+      max-height: min(80svh, calc(100svh - var(--space-4)));
     }
   }
 

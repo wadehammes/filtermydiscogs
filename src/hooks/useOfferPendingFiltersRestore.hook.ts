@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import {
   allReleasesAtom,
   applyPendingFiltersRestoreAtom,
@@ -13,6 +13,7 @@ import {
   dismissPendingFiltersRestoreToast,
   showPendingFiltersRestoreToast,
 } from "src/components/PendingFiltersRestoreOffer/pendingFiltersRestoreToast";
+import { usePlaybackPageScrollLockCountRef } from "src/components/ReleasePlayback/PlaybackPageShell.context";
 import type { PersistedFiltersState } from "src/types/filters.types";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { persistedFiltersEqual } from "src/utils/filtersStorage";
@@ -23,10 +24,16 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
   const allReleases = useAtomValue(allReleasesAtom);
   const applyPendingRestore = useSetAtom(applyPendingFiltersRestoreAtom);
   const dismissPendingRestore = useSetAtom(dismissPendingFiltersRestoreAtom);
+  const scrollLockCountRef = usePlaybackPageScrollLockCountRef();
   const offeredPendingRef = useRef<PersistedFiltersState | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!enabled) {
+      dismissPendingFiltersRestoreToast();
+      return;
+    }
+
+    if (scrollLockCountRef.current > 0) {
       dismissPendingFiltersRestoreToast();
       return;
     }
@@ -78,5 +85,6 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
     dismissPendingRestore,
     enabled,
     pendingRestore,
+    scrollLockCountRef,
   ]);
 };
