@@ -57,29 +57,37 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
   "use cache";
   cacheLife({ revalidate: 300 });
 
-  const crate = await prisma.crate.findFirst({
-    select: {
-      id: true,
-      name: true,
-      user_id: true,
-      username: true,
-    },
-    where: {
-      id: crateId,
-      private: false,
-    },
-  });
-  if (!crate) {
+  try {
+    const crate = await prisma.crate.findFirst({
+      select: {
+        id: true,
+        name: true,
+        user_id: true,
+        username: true,
+      },
+      where: {
+        id: crateId,
+        private: false,
+      },
+    });
+    if (!crate) {
+      return null;
+    }
+    const total = await prisma.crateRelease.count({
+      where: {
+        crate_id: crate.id,
+        user_id: crate.user_id,
+      },
+    });
+    return {
+      crate: { name: crate.name, username: crate.username },
+      pagination: { total },
+    };
+  } catch (error) {
+    console.error(
+      `Failed to load public crate metadata for ${crateId}:`,
+      error,
+    );
     return null;
   }
-  const total = await prisma.crateRelease.count({
-    where: {
-      crate_id: crate.id,
-      user_id: crate.user_id,
-    },
-  });
-  return {
-    crate: { name: crate.name, username: crate.username },
-    pagination: { total },
-  };
 }
