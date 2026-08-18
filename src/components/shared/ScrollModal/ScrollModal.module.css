@@ -4,10 +4,14 @@
   composes: shell from "../../../styles/modal-dialog.module.css";
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - var(--space-8));
+  max-height: 80svh;
   max-width: min(calc(100vw - var(--space-8)), var(--scroll-modal-max-width));
   overflow: hidden;
   width: min(calc(100vw - var(--space-8)), var(--scroll-modal-max-width));
+
+  @media (width >= 768px) {
+    max-height: min(90dvh, calc(100vh - var(--space-8)));
+  }
 }
 
 .header {
