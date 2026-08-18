@@ -1,0 +1,151 @@
+.panel {
+  --surface: var(--card);
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.lookupForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.lookupLabel {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lookupControls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+
+  @media (width >= 640px) {
+    flex-direction: row;
+  }
+}
+
+.lookupInput {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  flex: 1;
+  font-size: var(--text-base);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.lookupInput:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  outline-offset: 1px;
+}
+
+.lookupButton {
+  background: var(--primary);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--primary-foreground);
+  cursor: pointer;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-5);
+  white-space: nowrap;
+}
+
+.lookupButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.lookupError {
+  color: var(--destructive);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.cratesTableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.cratesTable {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.cratesTable thead {
+  border-bottom: 1px solid var(--border);
+}
+
+.cratesTable th,
+.cratesTable td {
+  box-sizing: border-box;
+  max-width: 0;
+  overflow: hidden;
+  padding-inline: var(--space-2);
+  text-align: left;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 20%;
+}
+
+.cratesTable th {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.08em;
+  padding-block: var(--space-2);
+  text-transform: uppercase;
+}
+
+.cratesTable td {
+  border-top: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  padding-block: var(--space-3);
+}
+
+.cratesTable tbody tr:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 4%, transparent);
+}
+
+.cratesMetricCol {
+  font-family: var(--font-family-meta);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.cratesEmpty {
+  color: var(--muted-foreground);
+  font-style: italic;
+  max-width: none;
+  padding-block: var(--space-4);
+  text-align: center;
+  width: auto;
+}
