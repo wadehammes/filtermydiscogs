@@ -56,16 +56,20 @@ function sanitizeConnectionStringForLogging(connectionString: string): string {
  */
 function getPoolConfig(connectionString: string): PoolConfig {
   const isProduction = process.env.NODE_ENV === "production";
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
-  // Dynamic pool sizing based on environment
-  // Development: smaller pool, Production: optimized for serverless
-  const maxConnections = isProduction
+  let maxConnections = isProduction
     ? parseInt(process.env.DB_POOL_MAX || "10", 10)
     : parseInt(process.env.DB_POOL_MAX || "5", 10);
 
-  const minConnections = isProduction
+  let minConnections = isProduction
     ? parseInt(process.env.DB_POOL_MIN || "2", 10)
     : 1;
+
+  if (isBuildPhase) {
+    maxConnections = 1;
+    minConnections = 0;
+  }
 
   return {
     connectionString,
