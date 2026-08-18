@@ -27,10 +27,15 @@
   display: -webkit-box;
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
-  line-height: 1.25;
+  line-height: 1.1;
   margin: 0;
   overflow: hidden;
   text-align: left;
+  padding-top: 0.5rem;
+
+  @media (width >= 640px) {
+    padding-top: 0;
+  }
 }
 
 .titleGroupMobile .artistLine {

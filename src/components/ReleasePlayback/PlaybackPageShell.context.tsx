@@ -1,10 +1,152 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import {
+  createContext,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
+import {
+  applyPlaybackPageScrollLock,
+  lockPlaybackPageScrollElement,
+  restorePlaybackPageScrollElement,
+} from "./playbackPageScrollLock";
 
-const PlaybackPageScrollContext = createContext<HTMLElement | null>(null);
+interface PlaybackPageShellContextValue {
+  scrollElement: HTMLElement | null;
+  scrollLockCountRef: RefObject<number>;
+  lockScroll: () => void;
+  unlockScroll: () => void;
+}
 
-export const PlaybackPageScrollProvider = PlaybackPageScrollContext.Provider;
+const noop = () => {};
+
+const defaultScrollLockCountRef: RefObject<number> = { current: 0 };
+
+const defaultContextValue: PlaybackPageShellContextValue = {
+  scrollElement: null,
+  scrollLockCountRef: defaultScrollLockCountRef,
+  lockScroll: noop,
+  unlockScroll: noop,
+};
+
+const PlaybackPageShellContext =
+  createContext<PlaybackPageShellContextValue>(defaultContextValue);
+
+interface PlaybackPageShellProviderProps {
+  scrollElement: HTMLElement | null;
+  children: ReactNode;
+}
+
+export const PlaybackPageShellProvider = ({
+  scrollElement,
+  children,
+}: PlaybackPageShellProviderProps) => {
+  const scrollElementRef = useRef(scrollElement);
+  const previousScrollElementRef = useRef<HTMLElement | null>(scrollElement);
+  scrollElementRef.current = scrollElement;
+
+  const lockCountRef = useRef(0);
+  const snapshotRef = useRef<ReturnType<
+    typeof lockPlaybackPageScrollElement
+  > | null>(null);
+
+  const applyLock = useCallback(() => {
+    const element = scrollElementRef.current;
+
+    if (!element || snapshotRef.current) {
+      return;
+    }
+
+    snapshotRef.current = lockPlaybackPageScrollElement(element);
+    applyPlaybackPageScrollLock(element);
+  }, []);
+
+  const releaseLock = useCallback(() => {
+    const element = scrollElementRef.current;
+    const snapshot = snapshotRef.current;
+
+    if (!(element && snapshot)) {
+      return;
+    }
+
+    restorePlaybackPageScrollElement(element, snapshot);
+    snapshotRef.current = null;
+  }, []);
+
+  const lockScroll = useCallback(() => {
+    lockCountRef.current += 1;
+
+    if (lockCountRef.current === 1) {
+      applyLock();
+    }
+  }, [applyLock]);
+
+  const unlockScroll = useCallback(() => {
+    if (lockCountRef.current === 0) {
+      return;
+    }
+
+    lockCountRef.current -= 1;
+
+    if (lockCountRef.current === 0) {
+      releaseLock();
+    }
+  }, [releaseLock]);
+
+  useLayoutEffect(() => {
+    const previousElement = previousScrollElementRef.current;
+    previousScrollElementRef.current = scrollElement;
+
+    if (lockCountRef.current === 0 || previousElement === scrollElement) {
+      return;
+    }
+
+    if (previousElement && snapshotRef.current) {
+      restorePlaybackPageScrollElement(previousElement, snapshotRef.current);
+      snapshotRef.current = null;
+    }
+
+    applyLock();
+  }, [scrollElement, applyLock]);
+
+  const value = useMemo(
+    () => ({
+      scrollElement,
+      scrollLockCountRef: lockCountRef,
+      lockScroll,
+      unlockScroll,
+    }),
+    [scrollElement, lockScroll, unlockScroll],
+  );
+
+  return (
+    <PlaybackPageShellContext.Provider value={value}>
+      {children}
+    </PlaybackPageShellContext.Provider>
+  );
+};
 
 export const usePlaybackPageScrollElement = (): HTMLElement | null =>
-  useContext(PlaybackPageScrollContext);
+  useContext(PlaybackPageShellContext).scrollElement;
+
+export const usePlaybackPageScrollLockCountRef = (): RefObject<number> =>
+  useContext(PlaybackPageShellContext).scrollLockCountRef;
+
+export const usePlaybackPageScrollLock = (enabled: boolean): void => {
+  const { lockScroll, unlockScroll } = useContext(PlaybackPageShellContext);
+
+  useLayoutEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+
+    lockScroll();
+
+    return unlockScroll;
+  }, [enabled, lockScroll, unlockScroll]);
+};

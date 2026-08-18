@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import { type ReactNode, useCallback, useState } from "react";
-import { PlaybackPageScrollProvider } from "./PlaybackPageShell.context";
+import { PlaybackPageShellProvider } from "./PlaybackPageShell.context";
 import styles from "./PlaybackPageShell.module.css";
 import { PlaybackScrollSpacer } from "./PlaybackScrollSpacer.component";
 
@@ -37,7 +37,7 @@ export const PlaybackPageShell = ({
   }, []);
 
   return (
-    <PlaybackPageScrollProvider value={scrollElement}>
+    <PlaybackPageShellProvider scrollElement={scrollElement}>
       <div
         className={classNames(styles.shell, className, {
           [styles.shellViewport]: fillViewport,
@@ -69,6 +69,6 @@ export const PlaybackPageShell = ({
         ) : null}
         {overlays}
       </div>
-    </PlaybackPageScrollProvider>
+    </PlaybackPageShellProvider>
   );
 };
