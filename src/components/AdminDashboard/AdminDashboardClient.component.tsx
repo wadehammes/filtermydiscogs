@@ -5,6 +5,7 @@ import { AdminDashboardSkeleton } from "src/components/AdminDashboard/AdminDashb
 import { AdminHero } from "src/components/AdminDashboard/AdminHero.component";
 import { AdminMetricTable } from "src/components/AdminDashboard/AdminMetricTable.component";
 import { AdminPreferenceBreakdownPanel } from "src/components/AdminDashboard/AdminPreferenceBreakdownPanel.component";
+import { AdminUserLookupPanel } from "src/components/AdminDashboard/AdminUserLookupPanel.component";
 import { ReturningUsersChart } from "src/components/AdminDashboard/ReturningUsersChart.component";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { DashboardSection } from "src/components/Dashboard/components/DashboardSection.component";
@@ -551,6 +552,8 @@ export default function AdminDashboardClient() {
                   />
                 </div>
               </DashboardSection>
+
+              <AdminUserLookupPanel />
             </div>
           )}
         </div>

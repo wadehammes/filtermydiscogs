@@ -28,6 +28,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Site metadata, sitemap, robots | [patterns.md](patterns.md) (Metadata and OG images) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
+| Admin dashboard / user lookup | [patterns.md](patterns.md) (Admin dashboard) + [components.md](components.md) (`AdminDashboard/`) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
 | Jest setup, PO mocks, `TestProviders`, API route tests, query-hook stubs | [conventions.md](conventions.md) (Testing) |
 | Agent / LLM workflow, keeping docs in sync | **[AGENTS.md](../../AGENTS.md)**, **[CLAUDE.md](../../CLAUDE.md)** |

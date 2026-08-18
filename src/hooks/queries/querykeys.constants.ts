@@ -49,6 +49,12 @@ export const AdminStatsQueryKeys = {
   all: () => ["adminStats"] as const,
 };
 
+export const AdminUserLookupQueryKeys = {
+  all: () => ["adminUserLookup"] as const,
+  byUsername: (username: string | null) =>
+    [...AdminUserLookupQueryKeys.all(), username] as const,
+};
+
 export const UserPreferencesQueryKeys = {
   all: () => ["userPreferences"] as const,
   byUserId: (userId: string | number | null) =>
