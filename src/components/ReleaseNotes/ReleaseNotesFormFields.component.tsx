@@ -3,7 +3,7 @@
 import classNames from "classnames";
 import Select from "src/components/Select/Select.component";
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
-import modalInputStyles from "src/styles/modal-input.module.css";
+import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import type { DiscogsCollectionField } from "src/types";
 import styles from "./ReleaseNotesFormFields.module.css";
 

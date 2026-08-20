@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { LoginFeatureVisual } from "src/components/Login/LoginFeatureVisual.component";
 import type { LoginFeature } from "src/components/Login/loginFeatures.constants";
-import typography from "src/styles/typography.module.css";
+import typography from "src/styles/modules/typography.module.css";
 import styles from "./LoginFeatureRow.module.css";
 
 type LoginFeatureRowProps = {

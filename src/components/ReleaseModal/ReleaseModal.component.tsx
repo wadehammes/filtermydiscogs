@@ -3,15 +3,15 @@
 import classNames from "classnames";
 import { useEffect } from "react";
 import { trackEvent } from "src/analytics/analytics";
-import { ScrollModal } from "src/components/shared/ScrollModal/ScrollModal.component";
+import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
+import { ReleaseModalBody } from "src/components/ReleaseModalBody/ReleaseModalBody.component";
+import { ReleaseSimilarSidebar } from "src/components/ReleaseSimilarSidebar/ReleaseSimilarSidebar.component";
+import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
+import { ReleaseSummaryHeroToolbar } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component";
+import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
-import styles from "./ReleaseModal.module.css";
-import { ReleaseModalBody } from "./ReleaseModalBody.component";
-import { ReleaseSimilarSidebar } from "./ReleaseSimilarSidebar.component";
-import { ReleaseSummaryHero } from "./ReleaseSummaryHero.component";
-import { ReleaseSummaryHeroToolbar } from "./ReleaseSummaryHeroToolbar.component";
 import { useSimilarReleasesInCollection } from "./useSimilarReleasesInCollection.hook";
 
 interface ReleaseModalProps {

@@ -3,15 +3,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
+import { AppDialog } from "src/components/AppDialog/AppDialog.component";
 import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
-import footerStyles from "src/components/CrateDrawer/CrateDrawerFooter.module.css";
-import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
+import footerStyles from "src/components/CrateDrawerFooter/CrateDrawerFooter.module.css";
 import {
   type EditCrateNameFormValues,
   editCrateNameFormSchema,
 } from "src/lib/validation/crate.schemas";
-import modalInputStyles from "src/styles/modal-input.module.css";
+import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import styles from "./EditCrateDialog.module.css";
 
 export const EditCrateDialog = () => {

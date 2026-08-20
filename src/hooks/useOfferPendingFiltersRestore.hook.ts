@@ -13,7 +13,7 @@ import {
   dismissPendingFiltersRestoreToast,
   showPendingFiltersRestoreToast,
 } from "src/components/PendingFiltersRestoreOffer/pendingFiltersRestoreToast";
-import { usePlaybackPageScrollLockCountRef } from "src/components/ReleasePlayback/PlaybackPageShell.context";
+import { usePlaybackPageScrollLockCountRef } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import type { PersistedFiltersState } from "src/types/filters.types";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { persistedFiltersEqual } from "src/utils/filtersStorage";

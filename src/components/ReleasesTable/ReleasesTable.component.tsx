@@ -9,8 +9,8 @@ import classNames from "classnames";
 import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
+import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
-import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
 import {
   useSelectedFormats,

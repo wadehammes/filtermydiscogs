@@ -11,7 +11,7 @@
 }
 
 .releaseSummary {
-  composes: microdotoverlay from "../../styles/patterns.module.css";
+  composes: microdotoverlay from "../../styles/modules/patterns.module.css";
   align-items: center;
   background: var(--card);
   border: 1px solid var(--border);

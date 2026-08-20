@@ -12,9 +12,9 @@ import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/Lo
 import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import { SITE_LEAD, SITE_NAME, SITE_TAGLINE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
-import accessibilityStyles from "src/styles/accessibility.module.css";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
-import typography from "src/styles/typography.module.css";
+import accessibilityStyles from "src/styles/modules/accessibility.module.css";
+import typography from "src/styles/modules/typography.module.css";
 import styles from "./Login.module.css";
 import { LoginPreviewDemo } from "./LoginPreviewDemo.component";
 import { LOGIN_FEATURES } from "./loginFeatures.constants";

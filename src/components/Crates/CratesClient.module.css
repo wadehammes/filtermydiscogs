@@ -5,7 +5,7 @@
 }
 
 .page {
-  composes: microdotbackground from "../../styles/patterns.module.css";
+  composes: microdotbackground from "../../styles/modules/patterns.module.css";
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;

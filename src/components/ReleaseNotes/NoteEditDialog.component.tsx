@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
-import { ModalToolbar } from "src/components/shared/ModalToolbar/ModalToolbar.component";
-import { ScrollModal } from "src/components/shared/ScrollModal/ScrollModal.component";
+import { ModalToolbar } from "src/components/ModalToolbar/ModalToolbar.component";
+import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
 import {
   buildReleaseNotesFormSchema,
   type ReleaseNotesFormValues,

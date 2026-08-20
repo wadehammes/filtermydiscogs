@@ -1,7 +1,7 @@
 import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
 import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/LoginSwitchAccountLink.component";
 import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
-import typography from "src/styles/typography.module.css";
+import typography from "src/styles/modules/typography.module.css";
 import styles from "./LoginBottomCta.module.css";
 
 type LoginBottomCtaProps = {

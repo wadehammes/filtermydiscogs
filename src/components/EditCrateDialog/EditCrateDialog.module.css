@@ -1,5 +1,5 @@
 .dialog {
-  composes: shell from "../../styles/modal-dialog.module.css";
+  composes: shell from "../../styles/modules/modal-dialog.module.css";
   display: flex;
   flex-direction: column;
   gap: var(--space-5);

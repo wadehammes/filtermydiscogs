@@ -3,8 +3,8 @@
 import classNames from "classnames";
 import cardStyles from "src/components/ReleaseCard/ReleaseCard.module.css";
 import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
-import segmentedStyles from "src/styles/segmented-control.module.css";
-import stackStyles from "src/styles/vertical-action-stack.module.css";
+import segmentedStyles from "src/styles/modules/segmented-control.module.css";
+import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import styles from "./ReleaseNotesCardAction.module.css";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 

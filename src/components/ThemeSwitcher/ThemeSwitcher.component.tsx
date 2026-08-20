@@ -2,11 +2,11 @@
 
 import { Menu } from "@base-ui/react/menu";
 import Select from "src/components/Select/Select.component";
-import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
-import { ChevronRightThinIcon } from "src/components/shared/icons/ChevronRightThinIcon.component";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
+import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
 import Moon from "src/styles/icons/moon-thin.svg";
 import Sun from "src/styles/icons/sun-thin.svg";
 import type { StoredTheme } from "src/types/userPreferences.types";

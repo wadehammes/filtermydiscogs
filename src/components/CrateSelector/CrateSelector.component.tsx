@@ -9,7 +9,7 @@ import { useCrate } from "src/context/crate.context";
 import { useCreateCrateMutation } from "src/hooks/queries/useCrateMutations";
 import { createCrateBodySchema } from "src/lib/validation/crate.schemas";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
-import modalInputStyles from "src/styles/modal-input.module.css";
+import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import styles from "./CrateSelector.module.css";
 
 interface CrateSelectorProps {

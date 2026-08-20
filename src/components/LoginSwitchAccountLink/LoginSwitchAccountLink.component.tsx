@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import typography from "src/styles/typography.module.css";
+import typography from "src/styles/modules/typography.module.css";
 import styles from "./LoginSwitchAccountLink.module.css";
 
 type LoginSwitchAccountLinkProps = {

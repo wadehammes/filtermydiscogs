@@ -5,9 +5,9 @@ import classNames from "classnames";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { memo, useCallback, useMemo, useRef } from "react";
 import Button from "src/components/Button/Button.component";
-import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
-import { ChevronRightThinIcon } from "src/components/shared/icons/ChevronRightThinIcon.component";
 import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
+import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
 import { definedProps } from "src/utils/definedProps";
 import {
   applyFilterValueChange,

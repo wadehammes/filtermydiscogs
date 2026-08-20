@@ -39,6 +39,10 @@ Run the same locally before pushing when possible.
 
 Full list: [`package.json`](../../package.json).
 
+### `pg` and `@types/pg`
+
+[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`catalog`** pins **`pg`** and **`@types/pg`** together; **`package.json`** references both via **`catalog:`**. **`@prisma/adapter-pg`** also depends on **`@types/pg`** — pnpm dedupes to one copy when ranges align; duplicate DefinitelyTyped versions break **`new PrismaPg(pool)`** under **`exactOptionalPropertyTypes`**. When bumping Postgres client deps, edit the catalog entries only, run **`pnpm install`**, then **`pnpm tsc:ci`**.
+
 ## Environment variables
 
 | Variable | Purpose |
@@ -71,7 +75,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **Cache Components** (`cacheComponents: true`): enables Partial Prerendering (PPR) and the `"use cache"` directive. Required for Instant Navigations prefetching.
 - **Partial Prefetching** (`partialPrefetching: true`): prefetches only the static shell for linked routes so navigations can feel instant before dynamic data resolves.
 - **TypeScript**: **`typescript@^7`** with Next.js 16.3+ (native TS 7 support in `next build`).
-- **React Compiler** (`reactCompiler.compilationMode: "annotation"`): opt-in per component via **`"use memo"`**. The experimental Rust Turbopack port is **off** for now — it triggered dev Instant Insights validation bugs (`moduleLoading` / work-store invariants on routes like **`/legal`**). Re-enable **`experimental.turbopackRustReactCompiler`** after a Next.js patch. Annotated components: [`ReleaseCardGrid`](../../src/components/ReleaseCardGrid/ReleaseCardGrid.component.tsx), [`CrateLayoutList`](../../src/components/Crates/CrateLayoutList.component.tsx), [`ReleaseMiniPlayer`](../../src/components/ReleasePlayback/ReleaseMiniPlayer.component.tsx).
+- **React Compiler** (`reactCompiler.compilationMode: "annotation"`): opt-in per component via **`"use memo"`**. The experimental Rust Turbopack port is **off** for now — it triggered dev Instant Insights validation bugs (`moduleLoading` / work-store invariants on routes like **`/legal`**). Re-enable **`experimental.turbopackRustReactCompiler`** after a Next.js patch. Annotated components: [`ReleaseCardGrid`](../../src/components/ReleaseCardGrid/ReleaseCardGrid.component.tsx), [`CrateLayoutList`](../../src/components/Crates/CrateLayoutList.component.tsx), [`ReleaseMiniPlayer`](../../src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component.tsx).
 - **Bundle analysis**: **`pnpm analyze`** / **`@next/bundle-analyzer`** still require **`next build --webpack`** — Turbopack production builds do not emit webpack stats yet.
 
 If you add a new third-party script domain, update **CSP** in the same change.

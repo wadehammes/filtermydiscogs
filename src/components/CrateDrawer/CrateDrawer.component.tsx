@@ -1,18 +1,18 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
+import {
+  CrateDrawerProvider,
+  useCrateDrawerContext,
+} from "src/components/CrateDrawer/CrateDrawer.context";
+import { CrateDrawerDialogs } from "src/components/CrateDrawerDialogs/CrateDrawerDialogs.component";
+import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerFooter.component";
+import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { definedProps } from "src/utils/definedProps";
-import {
-  CrateDrawerProvider,
-  useCrateDrawerContext,
-} from "./CrateDrawer.context";
 import styles from "./CrateDrawer.module.css";
-import { CrateDrawerDialogs } from "./CrateDrawerDialogs.component";
-import { CrateDrawerFooter } from "./CrateDrawerFooter.component";
-import { CrateDrawerReleases } from "./CrateDrawerReleases.component";
 
 interface CrateDrawerProps {
   isOpen: boolean;

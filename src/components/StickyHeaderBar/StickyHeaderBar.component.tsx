@@ -1,11 +1,11 @@
 import { useCollectionContext } from "src/context/collection.context";
-import { FiltersBar } from "./components/FiltersBar";
-import { FiltersBarSkeleton } from "./components/FiltersBarSkeleton.component";
-import { HeaderTitle } from "./components/HeaderTitle";
-import { MobileMenu } from "./components/MobileMenu";
-import { PageNavigation } from "./components/PageNavigation";
-import { UserActions } from "./components/UserActions";
+import { FiltersBar } from "./FiltersBar";
+import { FiltersBarSkeleton } from "./FiltersBarSkeleton.component";
+import { HeaderTitle } from "./HeaderTitle";
+import { MobileMenu } from "./MobileMenu";
+import { PageNavigation } from "./PageNavigation";
 import styles from "./StickyHeaderBar.module.css";
+import { UserActions } from "./UserActions";
 
 interface StickyHeaderBarProps {
   allReleasesLoaded?: boolean;

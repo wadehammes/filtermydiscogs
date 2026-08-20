@@ -4,7 +4,7 @@ import { Menu } from "@base-ui/react/menu";
 import classNames from "classnames";
 import { useCallback, useState } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
-import { CrateShareControls } from "src/components/CrateDrawer/CrateShareControls.component";
+import { CrateShareControls } from "src/components/CrateShareControls/CrateShareControls.component";
 import EditIcon from "src/styles/icons/edit-thin.svg";
 import MenuIcon from "src/styles/icons/menu-thin.svg";
 import StarIcon from "src/styles/icons/star-thin.svg";

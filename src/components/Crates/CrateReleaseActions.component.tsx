@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import type { MouseEvent } from "react";
-import { CheckThinIcon } from "src/components/shared/icons/CheckThinIcon.component";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import styles from "./CrateReleaseActions.module.css";
 

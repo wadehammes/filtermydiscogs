@@ -8,10 +8,10 @@ import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthChecking
 import { CollectionDataSync } from "src/components/CollectionDataSync/CollectionDataSync.component";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
+import { GlobalPlaybackDock } from "src/components/GlobalPlaybackDock/GlobalPlaybackDock.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
-import { GlobalPlaybackDock } from "src/components/ReleasePlayback/GlobalPlaybackDock.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";

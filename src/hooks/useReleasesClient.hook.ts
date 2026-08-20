@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
-import { usePlaybackPageScrollElement } from "src/components/ReleasePlayback/PlaybackPageShell.context";
+import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
