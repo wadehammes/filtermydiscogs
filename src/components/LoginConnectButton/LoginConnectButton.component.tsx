@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import Button from "src/components/Button/Button.component";
-import accessibilityStyles from "src/styles/accessibility.module.css";
 import DiscogsLogo from "src/styles/icons/discogs-logo.svg";
+import accessibilityStyles from "src/styles/modules/accessibility.module.css";
 import styles from "./LoginConnectButton.module.css";
 
 type LoginConnectButtonProps = {

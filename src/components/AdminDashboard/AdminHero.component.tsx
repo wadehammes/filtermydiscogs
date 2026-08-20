@@ -1,6 +1,6 @@
 "use client";
 
-import heroStyles from "src/components/Dashboard/components/DashboardHero.module.css";
+import heroStyles from "src/components/Dashboard/DashboardHero.module.css";
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
 import type { AdminStats } from "src/types/dashboard.types";
 

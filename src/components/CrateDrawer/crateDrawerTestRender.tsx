@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { CrateDrawerProvider } from "src/components/CrateDrawer/CrateDrawer.context";
-import { CrateDrawerDialogs } from "src/components/CrateDrawer/CrateDrawerDialogs.component";
+import { CrateDrawerDialogs } from "src/components/CrateDrawerDialogs/CrateDrawerDialogs.component";
 import {
   TestProviders,
   testAuthenticatedAuthState,

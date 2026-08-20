@@ -1,8 +1,8 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
+import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
-import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useCrate } from "src/context/crate.context";
 import {
   useSelectedFormats,

@@ -5,9 +5,9 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import dashboardStyles from "src/components/AdminDashboard/AdminDashboardClient.module.css";
-import { DashboardSection } from "src/components/Dashboard/components/DashboardSection.component";
-import { StatCard } from "src/components/shared/StatCard/StatCard.component";
-import { StatsGrid } from "src/components/shared/StatsGrid/StatsGrid.component";
+import { DashboardSection } from "src/components/Dashboard/DashboardSection.component";
+import { StatCard } from "src/components/StatCard/StatCard.component";
+import { StatsGrid } from "src/components/StatsGrid/StatsGrid.component";
 import { useAdminUserLookupQuery } from "src/hooks/queries/useAdminUserLookupQuery";
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
 import {

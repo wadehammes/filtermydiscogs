@@ -4,7 +4,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import Logo from "src/styles/icons/fmd-logo.svg";
 import InstagramIcon from "src/styles/icons/instagram.svg";
-import navStyles from "src/styles/nav-links.module.css";
+import navStyles from "src/styles/modules/nav-links.module.css";
 import styles from "./PublicPageHeader.module.css";
 
 type PublicPageHeaderProps = {

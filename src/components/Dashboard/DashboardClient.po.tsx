@@ -20,19 +20,19 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import DashboardClient from "./DashboardClient.component";
 
-jest.mock("./components/ArtistLabelCharts.component", () => ({
+jest.mock("./ArtistLabelCharts.component", () => ({
   ArtistLabelCharts: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./components/ComparativeGrowthCharts.component", () => ({
+jest.mock("./ComparativeGrowthCharts.component", () => ({
   ComparativeGrowthCharts: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./components/DistributionCharts.component", () => ({
+jest.mock("./DistributionCharts.component", () => ({
   DistributionCharts: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./components/GrowthChart.component", () => ({
+jest.mock("./GrowthChart.component", () => ({
   GrowthChart: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./components/StyleEvolution.component", () => ({
+jest.mock("./StyleEvolution.component", () => ({
   StyleEvolution: () => <div data-testid="fmdChartStub" />,
 }));
 

@@ -3,7 +3,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { usePlaybackPageScrollLock } from "src/components/ReleasePlayback/PlaybackPageShell.context";
+import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { useMounted } from "src/hooks/useMounted.hook";
 import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./BottomDrawer.module.css";

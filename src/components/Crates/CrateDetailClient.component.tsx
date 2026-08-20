@@ -6,12 +6,12 @@ import {
   CrateDrawerProvider,
   useCrateDrawerContext,
 } from "src/components/CrateDrawer/CrateDrawer.context";
-import { CrateDrawerDialogs } from "src/components/CrateDrawer/CrateDrawerDialogs.component";
-import { CrateReleaseListToolbar } from "src/components/CrateDrawer/CrateReleaseListToolbar.component";
-import { CrateSetNotesScratchpad } from "src/components/CrateDrawer/CrateSetNotesScratchpad.component";
+import { CrateDrawerDialogs } from "src/components/CrateDrawerDialogs/CrateDrawerDialogs.component";
+import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/CrateReleaseListToolbar.component";
+import { CrateSetNotesScratchpad } from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
+import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
-import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";

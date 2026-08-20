@@ -3,8 +3,8 @@
 import { useEffect, useMemo } from "react";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { Page } from "src/components/Page/Page.component";
+import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
 import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
-import { PlaybackPageShell } from "src/components/ReleasePlayback/PlaybackPageShell.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -17,20 +17,20 @@ import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthentic
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { buildDashboardStory } from "src/utils/dashboardStory";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
-import { ArtistLabelCharts } from "./components/ArtistLabelCharts.component";
-import { CollectionHealth } from "./components/CollectionHealth.component";
-import { CollectionMilestones } from "./components/CollectionMilestones.component";
-import { CollectionRhythm } from "./components/CollectionRhythm.component";
-import { ComparativeGrowthCharts } from "./components/ComparativeGrowthCharts.component";
-import { DashboardHero } from "./components/DashboardHero.component";
-import { DashboardSection } from "./components/DashboardSection.component";
-import { DashboardSkeleton } from "./components/DashboardSkeleton.component";
-import { DistributionCharts } from "./components/DistributionCharts.component";
-import { GrowthChart } from "./components/GrowthChart.component";
-import { MostCrated } from "./components/MostCrated.component";
-import { OnThisDay } from "./components/OnThisDay.component";
-import { StyleEvolution } from "./components/StyleEvolution.component";
+import { ArtistLabelCharts } from "./ArtistLabelCharts.component";
+import { CollectionHealth } from "./CollectionHealth.component";
+import { CollectionMilestones } from "./CollectionMilestones.component";
+import { CollectionRhythm } from "./CollectionRhythm.component";
+import { ComparativeGrowthCharts } from "./ComparativeGrowthCharts.component";
 import styles from "./DashboardClient.module.css";
+import { DashboardHero } from "./DashboardHero.component";
+import { DashboardSection } from "./DashboardSection.component";
+import { DashboardSkeleton } from "./DashboardSkeleton.component";
+import { DistributionCharts } from "./DistributionCharts.component";
+import { GrowthChart } from "./GrowthChart.component";
+import { MostCrated } from "./MostCrated.component";
+import { OnThisDay } from "./OnThisDay.component";
+import { StyleEvolution } from "./StyleEvolution.component";
 
 function DashboardClientContent() {
   const { state: authState } = useAuth();

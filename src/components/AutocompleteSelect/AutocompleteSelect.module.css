@@ -8,7 +8,7 @@
 }
 
 .label {
-  composes: label from "../../styles/field-label.module.css";
+  composes: label from "../../styles/modules/field-label.module.css";
 }
 
 .triggerShell {

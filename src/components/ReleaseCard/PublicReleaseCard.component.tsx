@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
-import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
+import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";

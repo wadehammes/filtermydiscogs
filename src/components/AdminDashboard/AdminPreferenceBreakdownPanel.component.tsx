@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { AdminMetricTable } from "src/components/AdminDashboard/AdminMetricTable.component";
-import { PieChartLegend } from "src/components/shared/PieChartLegend/PieChartLegend.component";
-import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
+import { PieChartLegend } from "src/components/PieChartLegend/PieChartLegend.component";
+import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
 import type { AdminStatsPreferenceBreakdownRow } from "src/types/dashboard.types";
 import { useChartColors } from "src/utils/chartColors";

@@ -1,0 +1,87 @@
+.toolbar {
+  composes: microdotoverlay from "../../styles/modules/patterns.module.css";
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+
+  @media (width >= 768px) {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+.toolbarLead {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.title {
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  line-height: 1.25;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (width >= 768px) {
+    font-size: var(--text-lg);
+  }
+}
+
+.actionButton {
+  align-items: center;
+  background: color-mix(in srgb, var(--background) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--button-height-sm);
+  justify-content: center;
+  padding: 0;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
+  width: var(--button-height-sm);
+
+  &:hover {
+    background: var(--muted);
+    border-color: var(--input);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &.actionButtonActive {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+
+    &:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: var(--on-primary-hover);
+    }
+  }
+}
+
+.closeButton {
+  padding: 0;
+}
+
+.actionIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}

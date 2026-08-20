@@ -10,7 +10,7 @@
 }
 
 .main {
-  composes: microdotbackground from "../../styles/patterns.module.css";
+  composes: microdotbackground from "../../styles/modules/patterns.module.css";
   align-items: stretch;
   display: flex;
   flex: 1;

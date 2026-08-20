@@ -56,7 +56,7 @@
 }
 
 .noteHeading {
-  composes: label from "../../styles/field-label.module.css";
+  composes: label from "../../styles/modules/field-label.module.css";
   margin: 0;
 }
 
@@ -77,7 +77,7 @@
 }
 
 .noteLabel {
-  composes: label from "../../styles/field-label.module.css";
+  composes: label from "../../styles/modules/field-label.module.css";
   display: block;
 }
 
@@ -202,32 +202,32 @@
 }
 
 .notesCrateScratchpadLabel {
-  composes: label from "../../styles/field-label.module.css";
+  composes: label from "../../styles/modules/field-label.module.css";
 }
 
 .notesCrateScratchpadInput {
-  composes: textarea from "../../styles/scratchpad-textarea.module.css";
+  composes: textarea from "../../styles/modules/scratchpad-textarea.module.css";
   min-height: 4lh;
 }
 
 .notesCrateScratchpadInputInvalid {
-  composes: textareainvalid from "../../styles/scratchpad-textarea.module.css";
+  composes: textareainvalid from "../../styles/modules/scratchpad-textarea.module.css";
 }
 
 .notesCrateScratchpadFooter {
-  composes: footer from "../../styles/scratchpad-textarea.module.css";
+  composes: footer from "../../styles/modules/scratchpad-textarea.module.css";
 }
 
 .notesCrateScratchpadStatus {
-  composes: status from "../../styles/scratchpad-textarea.module.css";
+  composes: status from "../../styles/modules/scratchpad-textarea.module.css";
 }
 
 .notesCrateScratchpadCount {
-  composes: charcount from "../../styles/scratchpad-textarea.module.css";
+  composes: charcount from "../../styles/modules/scratchpad-textarea.module.css";
 }
 
 .notesCrateScratchpadCountLimit {
-  composes: charcountlimit from "../../styles/scratchpad-textarea.module.css";
+  composes: charcountlimit from "../../styles/modules/scratchpad-textarea.module.css";
 }
 
 .notesCrateScratchpadError {

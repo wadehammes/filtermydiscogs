@@ -25,7 +25,7 @@
 }
 
 .mainContent {
-  composes: microdotbackground from "../../styles/patterns.module.css";
+  composes: microdotbackground from "../../styles/modules/patterns.module.css";
   flex: 1;
   min-height: 0;
   min-width: 0;

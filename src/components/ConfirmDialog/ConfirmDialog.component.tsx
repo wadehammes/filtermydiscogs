@@ -1,6 +1,6 @@
 import { Dialog } from "@base-ui/react/dialog";
+import { AppDialog } from "src/components/AppDialog/AppDialog.component";
 import Button from "src/components/Button/Button.component";
-import { AppDialog } from "src/components/shared/AppDialog/AppDialog.component";
 import styles from "./ConfirmDialog.module.css";
 
 interface ConfirmDialogProps {

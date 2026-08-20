@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Select from "src/components/Select/Select.component";
-import { TanstackChart } from "src/components/shared/TanstackChart/TanstackChart.component";
+import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
 import type {
   AdminStatsDailyCountPoint,
   AdminStatsReturningUsersTimeSeries,

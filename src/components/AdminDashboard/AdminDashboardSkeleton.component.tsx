@@ -1,7 +1,7 @@
 "use client";
 
-import heroStyles from "src/components/Dashboard/components/DashboardHero.module.css";
 import dashboardStyles from "src/components/Dashboard/DashboardClient.module.css";
+import heroStyles from "src/components/Dashboard/DashboardHero.module.css";
 import styles from "./AdminDashboardSkeleton.module.css";
 
 export function AdminDashboardSkeleton() {

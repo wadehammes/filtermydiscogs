@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { HorizontalScrollRow } from "src/components/shared/HorizontalScrollRow/HorizontalScrollRow.component";
+import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import {
   useSelectedFormats,
   useSelectedStyles,

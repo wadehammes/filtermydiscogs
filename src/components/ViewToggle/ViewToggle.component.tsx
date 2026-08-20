@@ -4,7 +4,7 @@ import CratesIcon from "src/styles/icons/crates-thin.svg";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import GridIcon from "src/styles/icons/grid-thin.svg";
 import TableIcon from "src/styles/icons/table-thin.svg";
-import segmentedStyles from "src/styles/segmented-control.module.css";
+import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import styles from "./ViewToggle.module.css";
 
 const scrollPageToTop = () => {
