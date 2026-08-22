@@ -101,6 +101,13 @@ describe("ReleaseModal similar sidebar", () => {
         "fmdReleaseSimilarSidebar",
       ),
     ).not.toBeInTheDocument();
+
+    const dialog = screen.getByTestId("fmdReleaseModal");
+
+    expect(dialog.className).toMatch(/modalWide/);
+    expect(
+      dialog.querySelector('[class*="splitContent"][class*="modalMain"]'),
+    ).toBeTruthy();
   });
 
   it("shows crate-style loading in the sidebar until the collection has fully loaded", async () => {

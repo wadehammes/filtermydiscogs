@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Page } from "src/components/Page/Page.component";
+import styles from "src/styles/modules/error-boundary.module.css";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
-import styles from "./error.module.css";
 
 export default function RootError({
   error,
@@ -22,9 +21,9 @@ export default function RootError({
   }, [error, showErrorDetails]);
 
   return (
-    <Page>
+    <div className={styles.shell}>
       <div className={styles.container}>
-        <h1 className={styles.title}>Something went wrong!</h1>
+        <h1 className={styles.titleRoot}>Something went wrong!</h1>
         <p className={styles.message}>
           We encountered an unexpected error. Please try again.
         </p>
@@ -42,6 +41,6 @@ export default function RootError({
           Try again
         </button>
       </div>
-    </Page>
+    </div>
   );
 }

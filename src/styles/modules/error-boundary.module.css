@@ -1,7 +1,16 @@
+.shell {
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+}
+
 .container {
   align-items: center;
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: var(--space-4);
   justify-content: center;
   min-height: 50vh;
@@ -10,9 +19,14 @@
 }
 
 .title {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   font-weight: var(--font-bold);
   margin: 0;
+}
+
+.titleRoot {
+  composes: title;
+  font-size: var(--text-2xl);
 }
 
 .message {
@@ -42,15 +56,15 @@
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   padding: var(--space-2) var(--space-4);
-}
 
-.retryButton:hover {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-  color: var(--on-primary-hover);
-}
+  &:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: var(--on-primary-hover);
+  }
 
-.retryButton:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }

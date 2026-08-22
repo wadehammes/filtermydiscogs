@@ -1,5 +1,4 @@
 .popup {
-  composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
   left: 50%;
   position: fixed;
   top: 50%;
@@ -8,7 +7,6 @@
 }
 
 .popupModal {
-  composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
   left: 50%;
   position: fixed;
   top: 50%;
