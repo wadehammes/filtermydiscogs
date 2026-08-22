@@ -6,5 +6,5 @@ export const isValidStoredTheme = (value: unknown): value is StoredTheme =>
 
 export const parseStoredTheme = (
   value: unknown,
-  fallback: StoredTheme = "light",
+  fallback: StoredTheme = "system",
 ): StoredTheme => (isValidStoredTheme(value) ? value : fallback);

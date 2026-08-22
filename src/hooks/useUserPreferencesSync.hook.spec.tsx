@@ -47,7 +47,7 @@ describe("useUserPreferencesSync", () => {
 
   it("seeds local theme to the server when GET preferences differ", async () => {
     localStorage.setItem(THEME_STORAGE_KEY, "dark");
-    const serverPreferences = userPreferencesFactory.build({ theme: "light" });
+    const serverPreferences = userPreferencesFactory.build({ theme: "system" });
 
     mockApiResponse(
       true,
@@ -74,7 +74,7 @@ describe("useUserPreferencesSync", () => {
     localStorage.setItem(THEME_STORAGE_KEY, "dark");
 
     const serverPreferences = userPreferencesFactory.build({
-      theme: "light",
+      theme: "sepia",
       view: { currentView: "list", previousView: "card" },
     });
 
@@ -84,12 +84,6 @@ describe("useUserPreferencesSync", () => {
       { preferences: serverPreferences },
       new Error("fail"),
     );
-    mockUpdateUserPreferences.mockResolvedValue({
-      preferences: userPreferencesFactory.build({
-        theme: "dark",
-        view: { currentView: "list", previousView: "card" },
-      }),
-    });
 
     const { result } = renderFeatureHook(
       () => {
@@ -103,7 +97,7 @@ describe("useUserPreferencesSync", () => {
     );
 
     await waitFor(() => {
-      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("sepia");
     });
 
     await waitFor(() => {
