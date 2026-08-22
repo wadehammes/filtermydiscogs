@@ -50,6 +50,8 @@ Full list: [`package.json`](../../package.json).
 | `DISCOGS_CONSUMER_KEY` / `DISCOGS_CONSUMER_SECRET` | OAuth app credentials |
 | `DISCOGS_CALLBACK_URL` | OAuth redirect (optional; has dev default) |
 | `DISCOGS_API_USER_AGENT` | Optional Discogs API User-Agent override |
+| `DISCOGS_MIN_REQUEST_INTERVAL_MS` | Fallback minimum spacing between outbound Discogs API calls per serverless instance when Discogs rate-limit headers are absent (default **1000** ms; set **0** to disable). When headers are present, [`discogs-rate-limit.ts`](../../src/lib/discogs-rate-limit.ts) paces from **`X-Discogs-Ratelimit-*`**. |
+| `IDENTITY_CACHE_TTL_MS` / `IDENTITY_CACHE_STALE_MS` | In-memory OAuth identity cache fresh/stale windows (defaults **5 min** / **30 min**) |
 | `DATABASE_URL` | Postgres connection string for Prisma |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |

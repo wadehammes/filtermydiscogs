@@ -9,7 +9,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 jest.mock("src/lib/auth-request", () => ({
-  getVerifiedUserFromRequest: jest.fn(),
+  getReadOnlyVerifiedUserFromRequest: jest.fn(),
 }));
 
 jest.mock("src/services/discogs-oauth.service", () => ({
@@ -23,8 +23,8 @@ type AuthRequestModule = typeof import("src/lib/auth-request");
 type DiscogsOAuthModule = typeof import("src/services/discogs-oauth.service");
 
 let GET: RouteModule["GET"];
-let mockGetVerifiedUserFromRequest: jest.MockedFunction<
-  AuthRequestModule["getVerifiedUserFromRequest"]
+let mockGetReadOnlyVerifiedUserFromRequest: jest.MockedFunction<
+  AuthRequestModule["getReadOnlyVerifiedUserFromRequest"]
 >;
 let mockSearchReleases: jest.MockedFunction<
   DiscogsOAuthModule["discogsOAuthService"]["searchReleases"]
@@ -59,8 +59,8 @@ beforeAll(async () => {
   ]);
 
   GET = routeModule.GET;
-  mockGetVerifiedUserFromRequest = jest.mocked(
-    authRequest.getVerifiedUserFromRequest,
+  mockGetReadOnlyVerifiedUserFromRequest = jest.mocked(
+    authRequest.getReadOnlyVerifiedUserFromRequest,
   );
   mockSearchReleases = jest.mocked(
     discogsOAuth.discogsOAuthService.searchReleases,
@@ -73,7 +73,7 @@ describe("GET /api/search", () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetVerifiedUserFromRequest.mockResolvedValue({
+    mockGetReadOnlyVerifiedUserFromRequest.mockResolvedValue({
       user: { userId: 42, username: "crate-digger" },
     });
     mockSearchReleases.mockResolvedValue(searchResults);

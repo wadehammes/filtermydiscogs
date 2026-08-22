@@ -70,6 +70,12 @@ export function LegalPageContent() {
             <li>
               Your collection data, including release notes, comes from the
               Discogs API and is cached in your browser to keep things snappy.
+              After a full load, a copy may be stored in IndexedDB on this
+              device (for up to 24 hours) so return visits can skip
+              re-downloading every page; we re-check collection size with
+              Discogs in the background. We may also store your collection size
+              in localStorage (not the releases themselves) to speed up
+              pagination.
             </li>
             <li>
               When you save notes in the app, that text passes through my server
@@ -143,8 +149,12 @@ export function LegalPageContent() {
               <strong>Local storage:</strong> Theme, default view, filter and
               sort selections (when &quot;Remember filter selections&quot; is
               on), your analytics cookie choice, in-progress playback position,
-              and similar UI state. When you&apos;re logged in, the same
-              preferences are also stored on the server (see above).
+              remembered collection size for faster loading, and similar UI
+              state. When you&apos;re logged in, the same preferences are also
+              stored on the server (see above). <strong>IndexedDB:</strong>{" "}
+              After your collection finishes loading, a cached copy of those
+              pages may be stored on this device for up to 24 hours to speed up
+              return visits.
             </li>
             <li>
               <strong>Optional analytics:</strong> When you opt in, Google Tag
@@ -198,9 +208,12 @@ export function LegalPageContent() {
             <li>
               Local preferences on this browser: theme, view mode, filters,
               analytics cookie choice (you will be asked about analytics cookies
-              again), in-progress playback position, and similar UI state
+              again), in-progress playback position, remembered collection size
+              (to load large collections faster), cached collection pages in
+              IndexedDB (for faster return visits on this device), and similar
+              UI state
             </li>
-            <li>Cached collection data for the current session</li>
+            <li>In-memory collection cache for the current browser session</li>
             <li>
               Your Discogs collection and any notes you saved there are not
               affected. You can still see and edit them on Discogs or after you

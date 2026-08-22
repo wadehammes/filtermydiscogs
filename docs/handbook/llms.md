@@ -7,7 +7,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Task or question | Read first |
 |------------------|------------|
 | Stack, folders, Discogs → UI data flow | [architecture.md](architecture.md) |
-| TypeScript / React / Biome / Stylelint / CSS / tests | [conventions.md](conventions.md) |
+| TypeScript / React / Biome / Stylelint / CSS / tests / TDD | [conventions.md](conventions.md) |
 | CSS Modules nesting, mobile-first breakpoints, modern CSS | [conventions.md](conventions.md) (CSS and styling) |
 | OAuth login, Discogs API, username format, cookies | [discogs.md](discogs.md) |
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
@@ -30,7 +30,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
 | Admin dashboard / user lookup | [patterns.md](patterns.md) (Admin dashboard) + [components.md](components.md) (`AdminDashboard/`) |
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
-| Jest setup, PO mocks, `TestProviders`, API route tests, query-hook stubs | [conventions.md](conventions.md) (Testing) |
+| Jest setup, PO mocks, `TestProviders`, API route tests, TDD workflow | [conventions.md](conventions.md) (Testing) |
 | Agent / LLM workflow, keeping docs in sync | **[AGENTS.md](../../AGENTS.md)**, **[CLAUDE.md](../../CLAUDE.md)** |
 | Where a file category lives under `src/` | [source-layout.md](source-layout.md) |
 

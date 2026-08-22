@@ -9,7 +9,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 jest.mock("src/lib/auth-request", () => ({
-  requireAuthenticatedDiscogsUser: jest.fn(),
+  requireReadOnlyDiscogsUser: jest.fn(),
 }));
 
 jest.mock("src/services/discogs-oauth.service", () => ({
@@ -23,8 +23,8 @@ type AuthRequestModule = typeof import("src/lib/auth-request");
 type DiscogsOAuthModule = typeof import("src/services/discogs-oauth.service");
 
 let GET: RouteModule["GET"];
-let mockRequireAuthenticatedDiscogsUser: jest.MockedFunction<
-  AuthRequestModule["requireAuthenticatedDiscogsUser"]
+let mockRequireReadOnlyDiscogsUser: jest.MockedFunction<
+  AuthRequestModule["requireReadOnlyDiscogsUser"]
 >;
 let mockGetCollectionValue: jest.MockedFunction<
   DiscogsOAuthModule["discogsOAuthService"]["getCollectionValue"]
@@ -52,8 +52,8 @@ beforeAll(async () => {
   ]);
 
   GET = routeModule.GET;
-  mockRequireAuthenticatedDiscogsUser = jest.mocked(
-    authRequest.requireAuthenticatedDiscogsUser,
+  mockRequireReadOnlyDiscogsUser = jest.mocked(
+    authRequest.requireReadOnlyDiscogsUser,
   );
   mockGetCollectionValue = jest.mocked(
     discogsOAuth.discogsOAuthService.getCollectionValue,
@@ -69,7 +69,7 @@ describe("GET /api/collection/value", () => {
   });
 
   it("returns collection value for an authenticated user", async () => {
-    mockRequireAuthenticatedDiscogsUser.mockResolvedValue(authenticatedSession);
+    mockRequireReadOnlyDiscogsUser.mockResolvedValue(authenticatedSession);
     mockGetCollectionValue.mockResolvedValue({
       minimum: 100,
       median: 500,
@@ -110,7 +110,7 @@ describe("GET /api/collection/value", () => {
   });
 
   it("returns auth error when session verification fails", async () => {
-    mockRequireAuthenticatedDiscogsUser.mockResolvedValue({
+    mockRequireReadOnlyDiscogsUser.mockResolvedValue({
       error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
     });
 
@@ -123,7 +123,7 @@ describe("GET /api/collection/value", () => {
   });
 
   it("returns 500 when Discogs returns invalid value data", async () => {
-    mockRequireAuthenticatedDiscogsUser.mockResolvedValue(authenticatedSession);
+    mockRequireReadOnlyDiscogsUser.mockResolvedValue(authenticatedSession);
     mockGetCollectionValue.mockResolvedValue({
       minimum: Number.NaN,
       median: 500,

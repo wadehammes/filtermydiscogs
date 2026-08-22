@@ -1,4 +1,5 @@
 import type { NextRequest, NextResponse } from "next/server";
+import { DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS } from "src/lib/discogs-api-error";
 import {
   type CachedDiscogsIdentity,
   clearCachedIdentity,
@@ -19,6 +20,10 @@ export interface VerifiedDiscogsUser {
 export type VerifiedUserResult =
   | { user: VerifiedDiscogsUser; error?: never }
   | { user?: never; error: NextResponse };
+
+export interface VerifiedUserOptions {
+  allowStale?: boolean;
+}
 
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
@@ -64,7 +69,7 @@ function getDiscogsRateLimitResponse(): NextResponse {
     {
       status: 503,
       headers: {
-        "Retry-After": "60",
+        "Retry-After": String(DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS),
       },
     },
   );
@@ -182,9 +187,10 @@ export function clearVerifiedIdentityCache(
 async function fetchVerifiedIdentity(
   accessToken: string,
   accessTokenSecret: string,
+  allowStale = false,
 ): Promise<VerifiedDiscogsUser> {
   const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
-  const cached = getCachedIdentity(cacheKey);
+  const cached = getCachedIdentity(cacheKey, allowStale);
   if (cached) {
     return {
       userId: cached.userId,
@@ -224,7 +230,9 @@ async function fetchVerifiedIdentity(
 
 async function getVerifiedUserFromOAuthCookies(
   request: NextRequest,
+  options: VerifiedUserOptions = {},
 ): Promise<VerifiedUserResult> {
+  const allowStale = options.allowStale === true;
   const accessToken = request.cookies.get("discogs_access_token")?.value;
   const accessTokenSecret = request.cookies.get(
     "discogs_access_token_secret",
@@ -237,9 +245,30 @@ async function getVerifiedUserFromOAuthCookies(
   }
 
   const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
+  const cached = getCachedIdentity(cacheKey, allowStale);
+  if (cached) {
+    return {
+      user: {
+        userId: cached.userId,
+        username: cached.username,
+      },
+    };
+  }
+
+  if (allowStale && hasActiveDiscogsSession(request)) {
+    const sessionIdentity = getDisplayIdentityFromCookies(request);
+    if (sessionIdentity) {
+      setCachedIdentity(cacheKey, sessionIdentity);
+      return { user: sessionIdentity };
+    }
+  }
 
   try {
-    const user = await fetchVerifiedIdentity(accessToken, accessTokenSecret);
+    const user = await fetchVerifiedIdentity(
+      accessToken,
+      accessTokenSecret,
+      allowStale,
+    );
     return { user };
   } catch (error) {
     const status = (error as Error & { status?: number }).status;
@@ -267,6 +296,7 @@ async function getVerifiedUserFromOAuthCookies(
 
 export async function getVerifiedUserFromRequest(
   request: NextRequest,
+  options: VerifiedUserOptions = {},
 ): Promise<VerifiedUserResult> {
   if (!hasActiveDiscogsSession(request)) {
     return {
@@ -274,7 +304,7 @@ export async function getVerifiedUserFromRequest(
     };
   }
 
-  return getVerifiedUserFromOAuthCookies(request);
+  return getVerifiedUserFromOAuthCookies(request, options);
 }
 
 export async function getVerifiedUserFromStoredTokens(
@@ -306,6 +336,7 @@ export type AuthenticatedDiscogsSession =
 export async function requireAuthenticatedDiscogsUser(
   request: NextRequest,
   requestedUsername: string,
+  options: VerifiedUserOptions = {},
 ): Promise<AuthenticatedDiscogsSession> {
   const accessToken = request.cookies.get("discogs_access_token")?.value;
   const accessTokenSecret = request.cookies.get(
@@ -318,7 +349,7 @@ export async function requireAuthenticatedDiscogsUser(
     };
   }
 
-  const verified = await getVerifiedUserFromRequest(request);
+  const verified = await getVerifiedUserFromRequest(request, options);
   if ("error" in verified) {
     return { error: verified.error };
   }
@@ -336,4 +367,19 @@ export async function requireAuthenticatedDiscogsUser(
     accessToken,
     accessTokenSecret,
   };
+}
+
+export async function getReadOnlyVerifiedUserFromRequest(
+  request: NextRequest,
+): Promise<VerifiedUserResult> {
+  return getVerifiedUserFromRequest(request, { allowStale: true });
+}
+
+export async function requireReadOnlyDiscogsUser(
+  request: NextRequest,
+  requestedUsername: string,
+): Promise<AuthenticatedDiscogsSession> {
+  return requireAuthenticatedDiscogsUser(request, requestedUsername, {
+    allowStale: true,
+  });
 }

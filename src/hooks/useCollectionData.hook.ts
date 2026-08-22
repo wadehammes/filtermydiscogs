@@ -1,6 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { useEffect, useMemo, useRef } from "react";
+import { toast } from "sonner";
+import { trackEvent } from "src/analytics/analytics";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -10,9 +12,19 @@ import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
+import {
+  resetCollectionCacheReady,
+  useCollectionCacheReady,
+} from "src/hooks/useCollectionCacheReady.hook";
 import type { DiscogsCollection } from "src/types";
-import { getEffectiveCollectionPages } from "src/utils/collectionPagination";
+import { persistCollectionQueryToCache } from "src/utils/collectionCacheSync";
+import {
+  type CollectionPageParam,
+  getEffectiveCollectionPages,
+} from "src/utils/collectionPagination";
+import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
 
 export interface UseCollectionDataParams {
   username: string | null;
@@ -28,8 +40,11 @@ export const useCollectionData = ({
   isCheckingAuth = false,
 }: UseCollectionDataParams) => {
   const queryClient = useQueryClient();
+  const { state: authState } = useAuth();
   const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
     useCollectionContext();
+  const syncMutation = useSyncCratesMutation(authState.userId);
+  const autoSyncRef = useRef(false);
 
   const filtersDispatch = useSetAtom(filtersDispatchAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
@@ -38,6 +53,13 @@ export const useCollectionData = ({
 
   const queryEnabled =
     isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
+
+  const cacheReady = useCollectionCacheReady({
+    username: username || "",
+    enabled: queryEnabled,
+  });
+
+  const queryFetchEnabled = queryEnabled && cacheReady.ready;
 
   const {
     data: collectionData,
@@ -49,16 +71,29 @@ export const useCollectionData = ({
     isFetchingNextPage,
   } = useDiscogsCollectionQuery({
     username: username || "",
-    enabled: queryEnabled,
+    enabled: queryFetchEnabled,
   });
 
   const prevUsernameRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isAuthenticated && username && username !== prevUsernameRef.current) {
-      prevUsernameRef.current = username;
-      lastAllReleasesCountRef.current = 0;
-      lastCollectionRef.current = null;
-      setCollectionFiltersActive(false);
+    if (!(isAuthenticated && username)) {
+      return;
+    }
+
+    const previousUsername = prevUsernameRef.current;
+    prevUsernameRef.current = username;
+
+    if (previousUsername === username) {
+      return;
+    }
+
+    lastAllReleasesCountRef.current = 0;
+    lastCollectionRef.current = null;
+    autoSyncRef.current = false;
+    setCollectionFiltersActive(false);
+
+    if (previousUsername) {
+      resetCollectionCacheReady(previousUsername);
       queryClient.invalidateQueries({
         queryKey: DiscogsCollectionQueryKeys.byUsername(username),
       });
@@ -66,10 +101,10 @@ export const useCollectionData = ({
   }, [isAuthenticated, username, queryClient, setCollectionFiltersActive]);
 
   useEffect(() => {
-    if (queryEnabled && hasNextPage && !isFetchingNextPage) {
+    if (queryFetchEnabled && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [queryEnabled, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [queryFetchEnabled, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const processedData = useMemo(() => {
     if (!collectionData?.pages) {
@@ -92,10 +127,87 @@ export const useCollectionData = ({
   }, [collectionData?.pages]);
 
   const isCollectionFullyLoaded =
-    queryEnabled &&
+    queryFetchEnabled &&
     !isLoading &&
     !(hasNextPage || isFetchingNextPage) &&
     !!processedData;
+
+  useEffect(() => {
+    if (
+      cacheReady.hydratedFromCache ||
+      !isCollectionFullyLoaded ||
+      !username ||
+      !collectionData?.pages?.length ||
+      !collectionData.pageParams?.length
+    ) {
+      return;
+    }
+
+    void persistCollectionQueryToCache(
+      username,
+      collectionData.pages,
+      collectionData.pageParams as CollectionPageParam[],
+    );
+  }, [
+    cacheReady.hydratedFromCache,
+    collectionData?.pageParams,
+    collectionData?.pages,
+    isCollectionFullyLoaded,
+    username,
+  ]);
+
+  useEffect(() => {
+    if (
+      !(cacheReady.hydratedFromCache && isCollectionFullyLoaded && username) ||
+      autoSyncRef.current ||
+      syncMutation.isPending
+    ) {
+      return;
+    }
+
+    const syncResult = prepareCollectionForSync(
+      collectionData,
+      hasNextPage,
+      isFetchingNextPage,
+    );
+
+    if (!(syncResult.isValid && syncResult.instanceIds)) {
+      return;
+    }
+
+    autoSyncRef.current = true;
+
+    syncMutation.mutate(
+      { collectionInstanceIds: syncResult.instanceIds },
+      {
+        onSuccess: (data) => {
+          trackEvent("crateSync", {
+            action: "crateSyncAuto",
+            category: "crate",
+            label: "Automatic Crate Sync",
+            value: data.removedCount.toString(),
+          });
+
+          if (data.removedCount > 0) {
+            toast.success(
+              `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,
+            );
+          }
+        },
+        onError: () => {
+          autoSyncRef.current = false;
+        },
+      },
+    );
+  }, [
+    cacheReady.hydratedFromCache,
+    collectionData,
+    hasNextPage,
+    isCollectionFullyLoaded,
+    isFetchingNextPage,
+    syncMutation,
+    username,
+  ]);
 
   useEffect(() => {
     if (!queryEnabled) {
@@ -179,11 +291,13 @@ export const useCollectionLoadState = () => {
 
   const query = useDiscogsCollectionQuery({
     username: username || "",
-    enabled: queryEnabled,
+    enabled: false,
   });
 
+  const hasLoadedPages = (query.data?.pages.length ?? 0) > 0;
+
   return {
-    isLoading: query.isLoading,
+    isLoading: queryEnabled && !hasLoadedPages && !query.isError,
     isError: query.isError,
     queryError: query.error,
     hasNextPage: query.hasNextPage,

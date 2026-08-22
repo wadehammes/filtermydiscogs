@@ -15,6 +15,7 @@ export const mockFetchResponse = <T>(
     ok,
     status,
     statusText: options.statusText ?? (ok ? "OK" : "Error"),
+    headers: new Headers(),
     json: async () => body,
     text: async () => (body === undefined ? "" : JSON.stringify(body)),
   } as Response;

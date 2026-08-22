@@ -1,4 +1,4 @@
-import { ApiFetchError } from "src/api/apiFetchError";
+import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import type {
   DiscogsCollection,
@@ -189,6 +189,7 @@ export const fetchDiscogsCollection = async ({
       throw new ApiFetchError(
         response.status,
         await messageFromFailedApiResponse(response),
+        parseRetryAfterMs(response),
       );
     }
 

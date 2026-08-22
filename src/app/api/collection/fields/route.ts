@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
+import { requireReadOnlyDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const session = await requireAuthenticatedDiscogsUser(request, username);
+    const session = await requireReadOnlyDiscogsUser(request, username);
     if ("error" in session) {
       return session.error;
     }

@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
-import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
+import { requireReadOnlyDiscogsUser } from "src/lib/auth-request";
+import {
+  discogsRateLimitResponseInit,
+  getDiscogsApiErrorStatus,
+} from "src/lib/discogs-api-error";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -90,7 +94,7 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
-    const session = await requireAuthenticatedDiscogsUser(request, username);
+    const session = await requireReadOnlyDiscogsUser(request, username);
     if ("error" in session) {
       return session.error;
     }
@@ -115,10 +119,7 @@ export async function GET(request: NextRequest) {
     console.error("getCollection error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch collection";
-    const upstreamStatus =
-      error instanceof Error
-        ? (error as Error & { status?: number }).status
-        : undefined;
+    const upstreamStatus = getDiscogsApiErrorStatus(error);
 
     let status =
       upstreamStatus ??
@@ -145,6 +146,9 @@ export async function GET(request: NextRequest) {
       body.details = errorMessage;
     }
 
-    return NextResponse.json(body, { status });
+    return NextResponse.json(body, {
+      status,
+      ...(status === 429 ? discogsRateLimitResponseInit(error) : {}),
+    });
   }
 }

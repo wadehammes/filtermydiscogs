@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getVerifiedUserFromRequest } from "src/lib/auth-request";
+import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 const AUTHENTICATED_RELEASE_CACHE =
@@ -35,7 +35,7 @@ export async function GET(
     const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
 
     if (accessToken && accessTokenSecret) {
-      const verified = await getVerifiedUserFromRequest(request);
+      const verified = await getReadOnlyVerifiedUserFromRequest(request);
       if ("error" in verified) {
         return verified.error;
       }

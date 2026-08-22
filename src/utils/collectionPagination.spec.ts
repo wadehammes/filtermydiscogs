@@ -4,10 +4,47 @@ import {
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import {
+  COLLECTION_BOOTSTRAP_PAGE_PARAM,
+  COLLECTION_FULL_PAGE_PARAM,
   getEffectiveCollectionPages,
+  getInitialCollectionPageParam,
   getNextCollectionPageParam,
+  shouldSkipCollectionBootstrap,
 } from "src/utils/collectionPagination";
+
+describe("shouldSkipCollectionBootstrap", () => {
+  it("returns true when the collection exceeds one full page", () => {
+    expect(shouldSkipCollectionBootstrap(101)).toBe(true);
+    expect(shouldSkipCollectionBootstrap(11_400)).toBe(true);
+  });
+
+  it("returns false for small collections", () => {
+    expect(shouldSkipCollectionBootstrap(100)).toBe(false);
+    expect(shouldSkipCollectionBootstrap(20)).toBe(false);
+  });
+});
+
+describe("getInitialCollectionPageParam", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("uses full page size when a large collection was stored", () => {
+    persistCollectionItemCount("crate-digger", 11_400);
+
+    expect(getInitialCollectionPageParam("crate-digger")).toEqual(
+      COLLECTION_FULL_PAGE_PARAM,
+    );
+  });
+
+  it("uses bootstrap page size when the collection size is unknown", () => {
+    expect(getInitialCollectionPageParam("crate-digger")).toEqual(
+      COLLECTION_BOOTSTRAP_PAGE_PARAM,
+    );
+  });
+});
 
 describe("getNextCollectionPageParam", () => {
   it("restarts at full page size after a bootstrap page with more results", () => {
@@ -73,10 +110,24 @@ describe("getEffectiveCollectionPages", () => {
 
   it("drops the bootstrap page once full-size pages exist", () => {
     const bootstrap = collectionFactory.build();
+    bootstrap.pagination.per_page = COLLECTION_FIRST_PAGE_SIZE;
     const full = collectionFactory.build({}, { page: 1, totalPages: 2 });
+    full.pagination.per_page = COLLECTION_PAGE_SIZE;
 
     expect(getEffectiveCollectionPages({ pages: [bootstrap, full] })).toEqual([
       full,
+    ]);
+  });
+
+  it("keeps all full-size pages when bootstrap was skipped", () => {
+    const first = collectionFactory.build({}, { page: 1, totalPages: 3 });
+    first.pagination.per_page = COLLECTION_PAGE_SIZE;
+    const second = collectionFactory.build({}, { page: 2, totalPages: 3 });
+    second.pagination.per_page = COLLECTION_PAGE_SIZE;
+
+    expect(getEffectiveCollectionPages({ pages: [first, second] })).toEqual([
+      first,
+      second,
     ]);
   });
 });

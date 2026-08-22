@@ -7,7 +7,11 @@ import {
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
 } from "./auth-request";
-import { clearCachedIdentity, getIdentityCacheKey } from "./identity-cache";
+import {
+  clearCachedIdentity,
+  getIdentityCacheKey,
+  setCachedIdentity,
+} from "./identity-cache";
 
 function createRequest(cookies: Record<string, string>): NextRequest {
   return new NextRequest("http://localhost/api/crates", {
@@ -130,6 +134,74 @@ describe("auth-request", () => {
 
       expect("error" in result).toBe(true);
       expect("user" in result).toBe(false);
+    });
+
+    it("reuses stale verified identity for read-only routes without calling Discogs", async () => {
+      const getIdentity = jest.spyOn(discogsOAuthService, "getIdentity");
+      const entry = setCachedIdentity(cacheKey, {
+        userId: 42,
+        username: "cached-user",
+      });
+      entry.verifiedAt = Date.now() - 400_000;
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await getVerifiedUserFromRequest(request, {
+        allowStale: true,
+      });
+
+      expect(result).toEqual({
+        user: { userId: 42, username: "cached-user" },
+      });
+      expect(getIdentity).not.toHaveBeenCalled();
+    });
+
+    it("uses session cookies on read-only routes when identity cache is cold", async () => {
+      const getIdentity = jest.spyOn(discogsOAuthService, "getIdentity");
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+        discogs_user_id: "42",
+        discogs_username: "crate-digger",
+      });
+
+      const result = await getVerifiedUserFromRequest(request, {
+        allowStale: true,
+      });
+
+      expect(result).toEqual({
+        user: { userId: 42, username: "crate-digger" },
+      });
+      expect(getIdentity).not.toHaveBeenCalled();
+    });
+
+    it("still calls Discogs identity for write routes when cache is cold", async () => {
+      jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
+        id: 99,
+        username: "verified-user",
+        resource_url: "https://api.discogs.com/users/verified-user",
+        consumer_name: "FilterMyDisco.gs",
+      });
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+        discogs_user_id: "42",
+        discogs_username: "crate-digger",
+      });
+
+      const result = await getVerifiedUserFromRequest(request);
+
+      expect(result).toEqual({
+        user: { userId: 99, username: "verified-user" },
+      });
     });
   });
 });

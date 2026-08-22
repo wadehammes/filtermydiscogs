@@ -11,7 +11,7 @@ import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 
 jest.mock("src/lib/auth-request", () => ({
-  requireAuthenticatedDiscogsUser: jest.fn(),
+  requireReadOnlyDiscogsUser: jest.fn(),
 }));
 
 jest.mock("src/services/discogs-oauth.service", () => ({
@@ -25,8 +25,8 @@ type AuthRequestModule = typeof import("src/lib/auth-request");
 type DiscogsOAuthModule = typeof import("src/services/discogs-oauth.service");
 
 let GET: RouteModule["GET"];
-let mockRequireAuthenticatedDiscogsUser: jest.MockedFunction<
-  AuthRequestModule["requireAuthenticatedDiscogsUser"]
+let mockRequireReadOnlyDiscogsUser: jest.MockedFunction<
+  AuthRequestModule["requireReadOnlyDiscogsUser"]
 >;
 let mockGetCollection: jest.MockedFunction<
   DiscogsOAuthModule["discogsOAuthService"]["getCollection"]
@@ -51,8 +51,8 @@ beforeAll(async () => {
   ]);
 
   GET = routeModule.GET;
-  mockRequireAuthenticatedDiscogsUser = jest.mocked(
-    authRequest.requireAuthenticatedDiscogsUser,
+  mockRequireReadOnlyDiscogsUser = jest.mocked(
+    authRequest.requireReadOnlyDiscogsUser,
   );
   mockGetCollection = jest.mocked(
     discogsOAuth.discogsOAuthService.getCollection,
@@ -65,7 +65,7 @@ describe("GET /api/collection", () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockRequireAuthenticatedDiscogsUser.mockResolvedValue(authenticatedSession);
+    mockRequireReadOnlyDiscogsUser.mockResolvedValue(authenticatedSession);
   });
 
   it("returns collection data for an authenticated user", async () => {
@@ -108,7 +108,7 @@ describe("GET /api/collection", () => {
   });
 
   it("returns auth error when session verification fails", async () => {
-    mockRequireAuthenticatedDiscogsUser.mockResolvedValue({
+    mockRequireReadOnlyDiscogsUser.mockResolvedValue({
       error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
     });
 
@@ -117,6 +117,23 @@ describe("GET /api/collection", () => {
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({
       error: "Not authenticated",
+    });
+  });
+
+  it("forwards Retry-After when Discogs returns 429", async () => {
+    mockGetCollection.mockRejectedValue(
+      Object.assign(new Error("You are making requests too quickly."), {
+        status: 429,
+        retryAfterSeconds: 45,
+      }),
+    );
+
+    const response = await GET(createRequest());
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("45");
+    await expect(response.json()).resolves.toEqual({
+      error: "Rate limit exceeded. Please try again in a moment.",
     });
   });
 });

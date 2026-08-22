@@ -1,4 +1,5 @@
 import type { DiscogsCollection } from "src/types";
+import { getEffectiveCollectionPages } from "src/utils/collectionPagination";
 
 export interface SyncCollectionResult {
   isValid: boolean;
@@ -6,20 +7,11 @@ export interface SyncCollectionResult {
   instanceIds?: string[];
 }
 
-/**
- * Validates collection data and extracts instance IDs for crate sync
- *
- * @param collectionData - The infinite query data containing collection pages
- * @param hasNextPage - Whether there are more pages to load
- * @param isFetchingNextPage - Whether currently fetching next page
- * @returns Result object with validation status and extracted instance IDs
- */
 export function prepareCollectionForSync(
   collectionData: { pages: DiscogsCollection[] } | undefined,
   hasNextPage: boolean,
   isFetchingNextPage: boolean,
 ): SyncCollectionResult {
-  // Check if collection data is available
   if (!collectionData?.pages || collectionData.pages.length === 0) {
     return {
       isValid: false,
@@ -28,7 +20,6 @@ export function prepareCollectionForSync(
     };
   }
 
-  // Check if collection is fully loaded
   if (hasNextPage || isFetchingNextPage) {
     return {
       isValid: false,
@@ -37,14 +28,14 @@ export function prepareCollectionForSync(
     };
   }
 
-  // Extract all instance IDs from all loaded pages
-  const collectionInstanceIds = collectionData.pages
+  const collectionInstanceIds = getEffectiveCollectionPages({
+    pages: collectionData.pages,
+  })
     .flatMap((page: DiscogsCollection) => page?.releases ?? [])
     .map((release) => release?.instance_id)
     .filter((id): id is string => Boolean(id))
     .map(String);
 
-  // Check if any releases were found
   if (collectionInstanceIds.length === 0) {
     return {
       isValid: false,
