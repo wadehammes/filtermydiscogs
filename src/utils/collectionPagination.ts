@@ -1,8 +1,10 @@
 import {
+  COLLECTION_BOOTSTRAP_SKIP_MIN_ITEMS,
   COLLECTION_FIRST_PAGE_SIZE,
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
 import type { DiscogsCollection } from "src/types";
+import { readStoredCollectionItemCount } from "src/utils/collectionItemCountStorage";
 
 export type CollectionPageParam = {
   page: number;
@@ -13,6 +15,26 @@ export const COLLECTION_BOOTSTRAP_PAGE_PARAM: CollectionPageParam = {
   page: 1,
   perPage: COLLECTION_FIRST_PAGE_SIZE,
 };
+
+export const COLLECTION_FULL_PAGE_PARAM: CollectionPageParam = {
+  page: 1,
+  perPage: COLLECTION_PAGE_SIZE,
+};
+
+export function shouldSkipCollectionBootstrap(totalItems: number): boolean {
+  return totalItems >= COLLECTION_BOOTSTRAP_SKIP_MIN_ITEMS;
+}
+
+export function getInitialCollectionPageParam(
+  username: string,
+): CollectionPageParam {
+  const knownItems = readStoredCollectionItemCount(username);
+  if (knownItems !== null && shouldSkipCollectionBootstrap(knownItems)) {
+    return COLLECTION_FULL_PAGE_PARAM;
+  }
+
+  return COLLECTION_BOOTSTRAP_PAGE_PARAM;
+}
 
 export interface GetNextCollectionPageParamParams {
   lastPage: DiscogsCollection;
@@ -56,5 +78,22 @@ export interface GetEffectiveCollectionPagesParams {
 
 export const getEffectiveCollectionPages = ({
   pages,
-}: GetEffectiveCollectionPagesParams): DiscogsCollection[] =>
-  pages.length > 1 ? pages.slice(1) : pages;
+}: GetEffectiveCollectionPagesParams): DiscogsCollection[] => {
+  if (pages.length <= 1) {
+    return pages;
+  }
+
+  const firstPage = pages.at(0);
+  if (!firstPage) {
+    return pages;
+  }
+
+  const isBootstrapPage =
+    firstPage.pagination?.per_page === COLLECTION_FIRST_PAGE_SIZE;
+
+  if (isBootstrapPage) {
+    return pages.slice(1);
+  }
+
+  return pages;
+};

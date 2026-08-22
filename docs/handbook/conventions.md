@@ -242,6 +242,30 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 
 **Behavior first:** Write tests for the behavior you expect—user-visible outcomes, hook side effects, API contracts—not for whatever the current implementation happens to do. If a new or updated test fails, treat that as a signal to fix the production code (or the test setup), not to weaken the assertion so it passes. Prefer correcting bugs and regressions over bending specs to match broken behavior.
 
+### Test-driven development (TDD)
+
+**Default for feature work:** use **test-driven development**—describe real behavior in tests first, then implement the smallest production change that makes them pass (red → green → refactor).
+
+1. **Red** — Add or extend a spec that fails for the missing behavior. Name the test after the user-visible or contract outcome (“persists collection to IndexedDB after full load”, “shows bottom-center toast for collections over 1000 items”), not after the helper you plan to write.
+2. **Green** — Implement just enough code to pass. Reuse documented hooks, helpers, and patterns from the handbook; do not bolt on parallel logic because the test “needs” it.
+3. **Refactor** — Clean up duplication and naming while keeping the suite green.
+
+**Where to start the failing test** (match the layer you are changing):
+
+| Layer | Spec location | Notes |
+|-------|---------------|--------|
+| Pure util / helper | `src/utils/*.spec.ts` | No mocks; run the real function. |
+| API route / server | `src/app/api/**/route.spec.ts` | Assert status, JSON shape, auth. |
+| Client helper | `src/api/helpers.spec.ts` | [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts). |
+| Feature hook | `src/hooks/*.hook.spec.ts` | [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx), mock **`src/api/helpers`**. |
+| Component / page | `src/components/**/*.spec.tsx` | PO + **`TestProviders`**; assert DOM and toasts. |
+
+Follow the recipes below (**Do not test React Query**, factories, **`includeCollectionSync: false`** when seeding collection state manually, etc.). A failing feature test is the spec of done—not an afterthought once implementation is finished.
+
+**When TDD is optional:** narrow mechanical fixes (typos, copy-only tweaks with existing spec coverage), pure styling, or spikes you throw away. Even then, add or extend tests before merge if behavior changed.
+
+**Do not:** write tests that mirror private implementation details, assert on query observer state in feature specs, or weaken assertions to greenwash a red build (see **Behavior first** above).
+
 ### Page object pattern
 
 - **Base class**: [`src/tests/BasePageObject.po.ts`](../../src/tests/BasePageObject.po.ts).

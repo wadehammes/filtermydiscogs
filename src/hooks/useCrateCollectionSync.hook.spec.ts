@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import type { InfiniteData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as apiHelpers from "src/api/helpers";
 import { COLLECTION_FIRST_PAGE_SIZE } from "src/constants/collection";
+import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { createTestQueryClient } from "src/tests/utils/testQueryClient";
+import type { DiscogsCollection } from "src/types";
+import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
 jest.mock("src/api/helpers", () => ({
@@ -28,9 +32,6 @@ jest.mock("src/analytics/analytics", () => ({
 }));
 
 const mockApi = jest.mocked(apiHelpers);
-const mockFetchDiscogsCollection = jest.mocked(
-  apiHelpers.fetchDiscogsCollection,
-);
 const mockSyncCrates = jest.mocked(apiHelpers.syncCrates);
 const mockToastSuccess = jest.mocked(toast.success);
 const mockToastError = jest.mocked(toast.error);
@@ -45,24 +46,37 @@ const buildLoadedCollection = () => {
   return page;
 };
 
+const seedLoadedCollectionQuery = (
+  queryClient: ReturnType<typeof createTestQueryClient>,
+) => {
+  const page = buildLoadedCollection();
+  const data: InfiniteData<DiscogsCollection> = {
+    pages: [page],
+    pageParams: [COLLECTION_FULL_PAGE_PARAM],
+  };
+  queryClient.setQueryData(
+    DiscogsCollectionQueryKeys.byUsername("testuser"),
+    data,
+  );
+};
+
 describe("useCrateCollectionSync", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     setupDefaultCrateApiMocks(mockApi);
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildLoadedCollection(),
-      new Error("Collection fetch failed"),
-    );
     mockSyncCrates.mockResolvedValue({ success: true, removedCount: 0 });
   });
 
-  it("opens and closes the sync dialog", async () => {
+  it("opens and closes the sync dialog", () => {
+    const queryClient = createTestQueryClient();
+    seedLoadedCollectionQuery(queryClient);
+
     const { result } = renderHookWithTestProviders(
       () => useCrateCollectionSync(),
       {
         authInitialState: testAuthenticatedAuthState,
+        queryClient,
+        includeCollectionSync: false,
       },
     );
 
@@ -79,11 +93,16 @@ describe("useCrateCollectionSync", () => {
     expect(result.current.showSyncDialog).toBe(false);
   });
 
-  it("syncs crates after the collection finishes loading", async () => {
+  it("syncs crates from the shared collection query cache", async () => {
+    const queryClient = createTestQueryClient();
+    seedLoadedCollectionQuery(queryClient);
+
     const { result } = renderHookWithTestProviders(
       () => useCrateCollectionSync(),
       {
         authInitialState: testAuthenticatedAuthState,
+        queryClient,
+        includeCollectionSync: false,
       },
     );
 
@@ -93,9 +112,6 @@ describe("useCrateCollectionSync", () => {
 
     act(() => {
       result.current.openSyncDialog();
-    });
-
-    act(() => {
       result.current.confirmSync();
     });
 
@@ -107,26 +123,22 @@ describe("useCrateCollectionSync", () => {
       "Sync complete: All releases in your crates are still in your collection.",
     );
     expect(result.current.showSyncDialog).toBe(false);
+    expect(mockApi.fetchDiscogsCollection).not.toHaveBeenCalled();
   });
 
-  it("shows an error when sync is attempted before the collection finishes loading", async () => {
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      collectionFactory.build({}, { page: 1, totalPages: 3, releaseCount: 2 }),
-      new Error("Collection fetch failed"),
-    );
+  it("shows an error when sync is attempted before the shared cache is loaded", async () => {
+    const queryClient = createTestQueryClient();
 
     const { result } = renderHookWithTestProviders(
       () => useCrateCollectionSync(),
       {
         authInitialState: testAuthenticatedAuthState,
+        queryClient,
+        includeCollectionSync: false,
       },
     );
 
-    await waitFor(() => {
-      expect(result.current.isCollectionLoading).toBe(true);
-    });
+    expect(result.current.isCollectionLoading).toBe(true);
 
     act(() => {
       result.current.openSyncDialog();

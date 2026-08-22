@@ -7,6 +7,8 @@ import {
   VIEW_STATE_STORAGE_KEY,
 } from "src/constants/storageKeys";
 import { clearAnalyticsConsentChoice } from "src/utils/analyticsConsentStorage";
+import { clearPersistedCollectionCaches } from "src/utils/collectionCacheStorage";
+import { clearStoredCollectionItemCounts } from "src/utils/collectionItemCountStorage";
 import {
   PERSIST_FILTERS_STORAGE_KEY,
   resetFilterPersistenceCache,
@@ -29,6 +31,8 @@ export const clearClientStoredData = (): void => {
   localStorage.removeItem(PERSIST_FILTERS_STORAGE_KEY);
   resetFilterPersistenceCache();
   clearPersistedFilters();
+  clearStoredCollectionItemCounts();
+  void clearPersistedCollectionCaches();
   clearPersistedReleasePlayback();
   clearPlaybackVideoIntroSeen();
   clearAnalyticsConsentChoice();

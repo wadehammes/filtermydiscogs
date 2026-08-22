@@ -45,10 +45,11 @@ describe("DashboardClient", () => {
 
     await waitFor(() => {
       expect(mockToastLoading).toHaveBeenCalledWith(
-        "Loading releases… 50 loaded",
+        "Loading 2,500 releases from Discogs…",
         expect.objectContaining({
           id: COLLECTION_LOADING_TOAST_ID,
           duration: Number.POSITIVE_INFINITY,
+          position: "bottom-center",
         }),
       );
     });

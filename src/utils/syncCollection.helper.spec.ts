@@ -96,7 +96,6 @@ describe("prepareCollectionForSync", () => {
     it("returns error when releases have no instance_id", () => {
       const release1 = releaseFactory.build();
       const release2 = releaseFactory.build();
-      // Remove instance_id property to simulate missing data
       const { instance_id: _, ...releaseWithoutId1 } = release1;
       const { instance_id: __, ...releaseWithoutId2 } = release2;
 
@@ -259,6 +258,27 @@ describe("prepareCollectionForSync", () => {
 
       expect(result.isValid).toBe(true);
       expect(result.instanceIds).toEqual(["123"]);
+    });
+
+    it("drops a trailing bootstrap page before extracting instance IDs", () => {
+      const bootstrapRelease = releaseFactory.build({ instance_id: "boot" });
+      const fullRelease = releaseFactory.build({ instance_id: "full" });
+      const bootstrapPage = collectionFactory.build({}, { page: 1 });
+      bootstrapPage.pagination.per_page = 50;
+      bootstrapPage.releases = [bootstrapRelease];
+      const fullPage = collectionFactory.build({}, { page: 1 });
+      fullPage.pagination.per_page = 100;
+      fullPage.releases = [fullRelease];
+
+      const result = prepareCollectionForSync(
+        {
+          pages: [bootstrapPage, fullPage],
+        },
+        false,
+        false,
+      ) as SyncCollectionResult;
+
+      expect(result.instanceIds).toEqual(["full"]);
     });
   });
 });

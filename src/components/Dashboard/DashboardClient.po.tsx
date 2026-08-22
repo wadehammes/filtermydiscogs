@@ -77,7 +77,7 @@ export class DashboardClientPageObject extends BasePageObject {
     const collectionPage = options.paginatedFirstPage
       ? collectionFactory.build(
           {},
-          { page: 1, totalPages: 3, releaseCount: 50 },
+          { page: 1, totalPages: 3, releaseCount: 50, totalItems: 2500 },
         )
       : collectionFactory.build({}, { page: 1, totalPages: 1, releaseCount });
 

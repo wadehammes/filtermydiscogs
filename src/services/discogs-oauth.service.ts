@@ -1,5 +1,9 @@
 import crypto from "node:crypto";
 import OAuth from "oauth-1.0a";
+import { parseRetryAfterMs } from "src/api/apiFetchError";
+import type { DiscogsApiError } from "src/lib/discogs-api-error";
+import { recordDiscogsRateLimitHeaders } from "src/lib/discogs-rate-limit";
+import { runThrottledDiscogsRequest } from "src/lib/discogs-request-throttle";
 import type {
   DiscogsCollection,
   DiscogsCollectionFieldsResponse,
@@ -151,7 +155,10 @@ class DiscogsOAuthService {
         fetchOptions.body = JSON.stringify(additionalData);
       }
 
-      const response = await fetch(requestUrl, fetchOptions);
+      const response = await runThrottledDiscogsRequest(() =>
+        fetch(requestUrl, fetchOptions),
+      );
+      recordDiscogsRateLimitHeaders(response.headers);
 
       if (!response.ok) {
         const bodyText = await response.text();
@@ -177,8 +184,12 @@ class DiscogsOAuthService {
         } catch {
           errorMessage = bodyPreview || response.statusText || errorMessage;
         }
-        const error = new Error(errorMessage);
-        (error as Error & { status?: number }).status = response.status;
+        const error = new Error(errorMessage) as DiscogsApiError;
+        error.status = response.status;
+        const retryAfterMs = parseRetryAfterMs(response);
+        if (retryAfterMs !== undefined) {
+          error.retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
+        }
         throw error;
       }
 

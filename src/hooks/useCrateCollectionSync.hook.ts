@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
 import { useAuth } from "src/context/auth.context";
@@ -18,22 +18,16 @@ export const useCrateCollectionSync = () => {
 
   const {
     data: collectionData,
-    fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
   } = useDiscogsCollectionQuery({
     username: username || "",
-    enabled: queryEnabled,
+    enabled: false,
   });
 
-  useEffect(() => {
-    if (queryEnabled && hasNextPage && !isFetchingNextPage) {
-      void fetchNextPage();
-    }
-  }, [queryEnabled, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const isCollectionLoading = isLoading || hasNextPage || isFetchingNextPage;
+  const hasLoadedPages = (collectionData?.pages.length ?? 0) > 0;
+  const isCollectionLoading =
+    queryEnabled && (!hasLoadedPages || hasNextPage || isFetchingNextPage);
   const isSyncDisabled = syncMutation.isPending || isCollectionLoading;
 
   const openSyncDialog = useCallback(() => {
