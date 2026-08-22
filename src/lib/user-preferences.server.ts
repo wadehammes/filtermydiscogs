@@ -23,7 +23,7 @@ export const defaultViewPreference: StoredViewState = defaultViewState;
 export const defaultUserPreferences = (): UserPreferences => ({
   version: USER_PREFERENCES_VERSION,
   persistFilters: true,
-  theme: "light",
+  theme: "system",
   view: defaultViewPreference,
   filters: defaultPersistedFilters,
 });

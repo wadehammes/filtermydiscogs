@@ -115,7 +115,7 @@ class UserPreferencesFactory extends BaseFactory<
     return {
       version: USER_PREFERENCES_VERSION,
       persistFilters: true,
-      theme: "light",
+      theme: "system",
       view: { currentView: "card", previousView: "card" },
       filters: persistedFiltersFactory.empty(),
     };
