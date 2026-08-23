@@ -9,7 +9,6 @@ import {
 import {
   clearPersistedCollectionCache,
   clearPersistedCollectionCaches,
-  isPersistedCollectionCacheFresh,
   type PersistedCollectionCache,
   parsePersistedCollectionCache,
   readPersistedCollectionCache,
@@ -52,24 +51,6 @@ describe("collectionCacheStorage", () => {
     });
   });
 
-  describe("isPersistedCollectionCacheFresh", () => {
-    it("treats cache entries within the TTL as fresh", () => {
-      const now = 1_000_000;
-      expect(
-        isPersistedCollectionCacheFresh(
-          now - COLLECTION_CACHE_STALE_MS + 1,
-          now,
-        ),
-      ).toBe(true);
-      expect(
-        isPersistedCollectionCacheFresh(
-          now - COLLECTION_CACHE_STALE_MS - 1,
-          now,
-        ),
-      ).toBe(false);
-    });
-  });
-
   describe("read and write", () => {
     it("writes and reads a cache entry by normalized username", async () => {
       const cache = buildPersistedCache({ totalItems: 1800 });
@@ -83,17 +64,17 @@ describe("collectionCacheStorage", () => {
       expect(readMockIndexedDbEntry("testuser")).toEqual(cache);
     });
 
-    it("returns null for stale entries and clears them from storage", async () => {
-      const staleCache = buildPersistedCache({
+    it("reads entries regardless of age until cleared or invalidated", async () => {
+      const oldCache = buildPersistedCache({
         fetchedAt: Date.now() - COLLECTION_CACHE_STALE_MS - 1,
       });
 
-      await writePersistedCollectionCache("testuser", staleCache);
+      await writePersistedCollectionCache("testuser", oldCache);
 
-      await expect(
-        readPersistedCollectionCache("testuser"),
-      ).resolves.toBeNull();
-      expect(readMockIndexedDbEntry("testuser")).toBeUndefined();
+      await expect(readPersistedCollectionCache("testuser")).resolves.toEqual(
+        oldCache,
+      );
+      expect(readMockIndexedDbEntry("testuser")).toEqual(oldCache);
     });
 
     it("clears a single user's cache entry", async () => {
