@@ -71,11 +71,11 @@ export function LegalPageContent() {
               Your collection data, including release notes, comes from the
               Discogs API and is cached in your browser to keep things snappy.
               After a full load, a copy may be stored in IndexedDB on this
-              device (for up to 24 hours) so return visits can skip
-              re-downloading every page; we re-check collection size with
-              Discogs in the background. We may also store your collection size
-              in localStorage (not the releases themselves) to speed up
-              pagination.
+              device so return visits can skip re-downloading every page; we
+              re-check collection size with Discogs when you sign in and clear
+              the cache if your collection has changed. We may also store your
+              collection size in localStorage (not the releases themselves) to
+              speed up pagination.
             </li>
             <li>
               When you save notes in the app, that text passes through my server
@@ -153,8 +153,8 @@ export function LegalPageContent() {
               state. When you&apos;re logged in, the same preferences are also
               stored on the server (see above). <strong>IndexedDB:</strong>{" "}
               After your collection finishes loading, a cached copy of those
-              pages may be stored on this device for up to 24 hours to speed up
-              return visits.
+              pages may be stored on this device to speed up return visits until
+              your Discogs collection size changes or you clear app data.
             </li>
             <li>
               <strong>Optional analytics:</strong> When you opt in, Google Tag

@@ -1,4 +1,3 @@
-import { COLLECTION_CACHE_STALE_MS } from "src/constants/collection";
 import {
   COLLECTION_CACHE_DB_NAME,
   COLLECTION_CACHE_STORE_NAME,
@@ -89,13 +88,6 @@ function runCollectionCacheTransaction<T>(
   );
 }
 
-export function isPersistedCollectionCacheFresh(
-  fetchedAt: number,
-  now = Date.now(),
-): boolean {
-  return now - fetchedAt <= COLLECTION_CACHE_STALE_MS;
-}
-
 export function parsePersistedCollectionCache(
   value: unknown,
 ): PersistedCollectionCache | null {
@@ -139,14 +131,6 @@ export async function readPersistedCollectionCache(
       store.get(cacheKey),
     );
     const parsed = parsePersistedCollectionCache(stored);
-
-    if (!(parsed && isPersistedCollectionCacheFresh(parsed.fetchedAt))) {
-      if (parsed) {
-        await clearPersistedCollectionCache(username);
-      }
-      return null;
-    }
-
     return parsed;
   } catch {
     return null;
