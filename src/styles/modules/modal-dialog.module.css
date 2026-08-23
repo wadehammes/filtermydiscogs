@@ -13,7 +13,6 @@
   max-height: min(90svh, 100%);
   overflow-y: auto;
   overscroll-behavior: contain;
-  width: 90%;
 
   @media (width >= 768px) {
     max-height: 90dvh;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
+import { applyThemeFromStorage } from "src/utils/applyThemeFromStorage";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
 import "src/styles/global.css";
 import styles from "./global-error.module.css";
@@ -14,6 +15,10 @@ export default function GlobalError({
 }) {
   const showErrorDetails = isLocalDevHost();
 
+  useLayoutEffect(() => {
+    applyThemeFromStorage();
+  }, []);
+
   useEffect(() => {
     if (showErrorDetails) {
       console.error("Global error:", error);
@@ -22,9 +27,6 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <head>
-        <script src="/theme-init.js" />
-      </head>
       <body className={styles.shell}>
         <div className={styles.container}>
           <h1 className={styles.title}>Something went wrong!</h1>

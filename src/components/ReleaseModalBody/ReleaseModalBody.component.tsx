@@ -80,84 +80,88 @@ export const ReleaseModalBody = ({
           </div>
         ) : null}
 
-        {!(isLoading || isError) ? (
-          <section
-            className={classNames(styles.modalCard, styles.playbackSection)}
-            aria-label="Tracks"
-          >
-            {!hasEmbeddableVideo ? (
-              <ReleasePlaybackFallback
-                fallbackSearchUrl={fallbackSearchUrl}
-                videos={videos}
-              />
-            ) : null}
-            <ReleaseTracklist
-              tracks={tracks}
-              releaseArtistNames={formatArtistNames(release)}
-              activeTrackPosition={activeTrackPosition}
-              reserveQueueColumn={reserveQueueColumn}
-              showPlayingIndicatorOnActiveTrack={
-                hasPlayableTracks &&
-                isPlayingThisReleaseInBar &&
-                !isReleasePreviewPlaying
-              }
-              isPlaybackPaused={
-                hasPlayableTracks &&
-                isPlayingThisReleaseInBar &&
-                !isReleasePreviewPlaying
-                  ? isPlaybackPaused
-                  : false
-              }
-              {...definedProps({
-                isTrackPlayable: hasPlayableTracks
-                  ? isTrackPlayable
-                  : undefined,
-                onTrackSelect: hasPlayableTracks
-                  ? handleTrackSelect
-                  : undefined,
-                isTrackQueued: hasPlayableTracks ? isTrackQueued : undefined,
-                onTrackQueue: hasPlayableTracks ? handleTrackQueue : undefined,
-                onActiveTrackToggle:
+        <div className={styles.modalContent}>
+          {!(isLoading || isError) ? (
+            <section
+              className={classNames(styles.modalCard, styles.playbackSection)}
+              aria-label="Tracks"
+            >
+              {!hasEmbeddableVideo ? (
+                <ReleasePlaybackFallback
+                  fallbackSearchUrl={fallbackSearchUrl}
+                  videos={videos}
+                />
+              ) : null}
+              <ReleaseTracklist
+                tracks={tracks}
+                releaseArtistNames={formatArtistNames(release)}
+                activeTrackPosition={activeTrackPosition}
+                reserveQueueColumn={reserveQueueColumn}
+                showPlayingIndicatorOnActiveTrack={
                   hasPlayableTracks &&
                   isPlayingThisReleaseInBar &&
                   !isReleasePreviewPlaying
-                    ? handleActiveTrackToggle
-                    : undefined,
-              })}
-            />
-            {releasePreviewVideos.length > 0 ? (
-              <ReleasePlaybackPreview
-                tracks={releasePreviewTracks}
-                releaseArtistNames={formatArtistNames(release)}
-                activeTrackPosition={activePreviewTrackPosition}
-                showPlayingIndicatorOnActiveTrack={
-                  isPlayingThisReleaseInBar && isReleasePreviewPlaying
                 }
                 isPlaybackPaused={
-                  isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                  hasPlayableTracks &&
+                  isPlayingThisReleaseInBar &&
+                  !isReleasePreviewPlaying
                     ? isPlaybackPaused
                     : false
                 }
-                isTrackQueued={isPreviewTrackQueued}
-                onTrackSelect={handlePreviewTrackSelect}
-                onTrackQueue={handlePreviewTrackQueue}
                 {...definedProps({
+                  isTrackPlayable: hasPlayableTracks
+                    ? isTrackPlayable
+                    : undefined,
+                  onTrackSelect: hasPlayableTracks
+                    ? handleTrackSelect
+                    : undefined,
+                  isTrackQueued: hasPlayableTracks ? isTrackQueued : undefined,
+                  onTrackQueue: hasPlayableTracks
+                    ? handleTrackQueue
+                    : undefined,
                   onActiveTrackToggle:
-                    isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                    hasPlayableTracks &&
+                    isPlayingThisReleaseInBar &&
+                    !isReleasePreviewPlaying
                       ? handleActiveTrackToggle
                       : undefined,
                 })}
               />
-            ) : null}
-          </section>
-        ) : null}
+              {releasePreviewVideos.length > 0 ? (
+                <ReleasePlaybackPreview
+                  tracks={releasePreviewTracks}
+                  releaseArtistNames={formatArtistNames(release)}
+                  activeTrackPosition={activePreviewTrackPosition}
+                  showPlayingIndicatorOnActiveTrack={
+                    isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                  }
+                  isPlaybackPaused={
+                    isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                      ? isPlaybackPaused
+                      : false
+                  }
+                  isTrackQueued={isPreviewTrackQueued}
+                  onTrackSelect={handlePreviewTrackSelect}
+                  onTrackQueue={handlePreviewTrackQueue}
+                  {...definedProps({
+                    onActiveTrackToggle:
+                      isPlayingThisReleaseInBar && isReleasePreviewPlaying
+                        ? handleActiveTrackToggle
+                        : undefined,
+                  })}
+                />
+              ) : null}
+            </section>
+          ) : null}
 
-        <section
-          className={classNames(styles.modalCard, styles.notesSection)}
-          aria-label="Release notes"
-        >
-          <ReleaseNotes release={release} variant="modal" />
-        </section>
+          <section
+            className={classNames(styles.modalCard, styles.notesSection)}
+            aria-label="Release notes"
+          >
+            <ReleaseNotes release={release} variant="modal" />
+          </section>
+        </div>
 
         {similarReleases !== undefined ? (
           <ReleaseSimilarSidebar

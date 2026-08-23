@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Page } from "src/components/Page/Page.component";
+import styles from "src/styles/modules/error-boundary.module.css";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
-import styles from "./error.module.css";
 
 export default function ReleasesError({
   error,
@@ -22,7 +21,7 @@ export default function ReleasesError({
   }, [error, showErrorDetails]);
 
   return (
-    <Page>
+    <div className={styles.shell}>
       <div className={styles.container}>
         <h2 className={styles.title}>Failed to load releases</h2>
         <p className={styles.message}>
@@ -42,6 +41,6 @@ export default function ReleasesError({
           Retry
         </button>
       </div>
-    </Page>
+    </div>
   );
 }

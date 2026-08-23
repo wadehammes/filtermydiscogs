@@ -1,10 +1,11 @@
 .dialog {
-  composes: shell from "../../styles/modules/modal-dialog.module.css";
+  composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
   max-width: 28rem;
   padding: var(--space-6);
+  width: min(calc(100vw - var(--space-8)), 28rem);
 
   & input:not(:is([type="checkbox"], [type="radio"])),
   & textarea,
