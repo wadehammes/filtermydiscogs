@@ -1,28 +1,12 @@
-import { defineConfig } from "prisma/config";
+import "dotenv/config";
+import { definePrismaConfig } from "@prisma/cli-engine";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 
-function resolveMigrateDatabaseUrl(): string {
-  const url =
-    process.env.DIRECT_URL ??
-    process.env.POSTGRES_URL ??
-    process.env.DATABASE_URL;
-  if (!url) {
-    return "";
-  }
+const databaseUrl = process.env.DATABASE_URL;
 
-  try {
-    const parsed = new URL(url);
-    if (!parsed.searchParams.has("connect_timeout")) {
-      parsed.searchParams.set("connect_timeout", "30");
-    }
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-}
-
-export default defineConfig({
-  schema: "./prisma/schema.prisma",
-  datasource: {
-    url: resolveMigrateDatabaseUrl(),
-  },
+export default definePrismaConfig({
+  orm: ormConfig({
+    contract: "./src/prisma/contract.prisma",
+    ...(databaseUrl ? { db: { connection: databaseUrl } } : {}),
+  }),
 });

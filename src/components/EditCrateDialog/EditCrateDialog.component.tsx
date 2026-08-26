@@ -1,4 +1,3 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
@@ -8,6 +7,7 @@ import {
   type EditCrateNameFormValues,
   editCrateNameFormSchema,
 } from "src/lib/validation/crate.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./EditCrateDialog.module.css";
@@ -32,7 +32,7 @@ export const EditCrateDialog = () => {
 
   const { register, handleSubmit, reset, watch } =
     useForm<EditCrateNameFormValues>({
-      resolver: zodResolver(editCrateNameFormSchema),
+      resolver: zodFormResolver(editCrateNameFormSchema),
       defaultValues: {
         name: crateName,
         deleteConfirm: "",
