@@ -4,6 +4,7 @@ import {
   syncIdentityCookies,
 } from "src/lib/auth-request";
 import { privateRouteRedirect } from "src/lib/private-route-response";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { upsertDiscogsUser } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -109,6 +110,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("OAuth callback error:", error);
     return privateRouteRedirect(
       new URL("/?error=oauth_callback_failed", request.url),

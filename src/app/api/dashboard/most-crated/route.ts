@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   getVerifiedUserFromRequestWithRateLimit,
+  rethrowNextInternalError,
   sanitizeError,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
@@ -103,6 +104,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ releases: mostCratedReleases });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Error fetching most crated releases:", error);
 
     // Log more details in development

@@ -6,6 +6,7 @@ import {
   getDiscogsApiErrorStatus,
 } from "src/lib/discogs-api-error";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 // Valid sort values from Discogs API
@@ -116,6 +117,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("getCollection error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch collection";

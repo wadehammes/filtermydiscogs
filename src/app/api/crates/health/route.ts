@@ -4,6 +4,7 @@ import { getPoolMetrics, prisma } from "src/lib/db";
 import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 /**
  * Admin-only health check for debugging production issues.
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
       diagnostics.crateTableAccessible = true;
       diagnostics.crateCount = crateCount;
     } catch (error) {
+      rethrowNextInternalError(error);
       diagnostics.crateTableAccessible = false;
       diagnostics.crateTableError =
         error instanceof Error ? error.message : String(error);
@@ -56,6 +58,7 @@ export async function GET(request: NextRequest) {
       diagnostics.analyticsEventsTableAccessible = true;
       diagnostics.analyticsEventCount = analyticsEventCount;
     } catch (error) {
+      rethrowNextInternalError(error);
       diagnostics.analyticsEventsTableAccessible = false;
       diagnostics.analyticsEventsTableError =
         error instanceof Error ? error.message : String(error);
@@ -76,6 +79,7 @@ export async function GET(request: NextRequest) {
       diagnostics.auditStats = getAuditStats();
     }
   } catch (error) {
+    rethrowNextInternalError(error);
     diagnostics.prismaClientStatus = "error";
     const errorMessage = error instanceof Error ? error.message : String(error);
     diagnostics.error = errorMessage

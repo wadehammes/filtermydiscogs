@@ -4,6 +4,7 @@ import {
   checkIpRateLimit,
   IMAGE_PROXY_RATE_LIMIT_CONFIG,
 } from "src/lib/ip-rate-limit";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 // Maximum dimensions and file size limits to prevent DoS
 const MAX_IMAGE_DIMENSION = 5000;
@@ -203,6 +204,7 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Error proxying image:", error);
     return NextResponse.json(
       { error: "Internal server error" },

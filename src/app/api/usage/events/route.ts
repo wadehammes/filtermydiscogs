@@ -8,6 +8,7 @@ import {
   insertProductAnalyticsEvents,
   validateProductAnalyticsBatch,
 } from "src/lib/product-analytics.server";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 const parseAnalyticsEventsBody = async (
   request: NextRequest,
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
   try {
     await insertProductAnalyticsEvents(validation.events, userId);
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Product analytics ingest error:", error);
     return NextResponse.json(
       { error: "Failed to store analytics events" },

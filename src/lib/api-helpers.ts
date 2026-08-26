@@ -5,12 +5,15 @@ import {
 } from "src/lib/auth-request";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { getPublicCrateMetadataForPage } from "src/lib/public-crate.server";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { auditLog } from "./db-audit";
 import { checkRateLimit } from "./rate-limit";
 
+export { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 export type { VerifiedDiscogsUser };
 
 export const createErrorResponse = (error: unknown): NextResponse => {
+  rethrowNextInternalError(error);
   const sanitized = sanitizeError(error);
 
   return privateRouteJson(

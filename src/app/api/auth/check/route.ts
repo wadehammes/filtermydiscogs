@@ -6,6 +6,7 @@ import {
   getVerifiedUserFromStoredTokens,
 } from "src/lib/auth-request";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 async function resolveReconnectUsername(
   request: NextRequest,
@@ -64,6 +65,7 @@ export async function GET(request: NextRequest) {
       reconnectUsername: null,
     });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Auth check error:", error);
     return privateRouteJson({
       isAuthenticated: false,

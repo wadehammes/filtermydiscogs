@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { updateReleaseRatingBodySchema } from "src/lib/validation/collection.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
@@ -80,6 +81,7 @@ export async function PUT(
 
     return NextResponse.json(result);
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("updateReleaseRating route error:", error);
     return mapUpstreamError(error, "Failed to update release rating");
   }
@@ -129,6 +131,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("deleteReleaseRating route error:", error);
     return mapUpstreamError(error, "Failed to clear release rating");
   }

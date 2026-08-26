@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createErrorResponse } from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -137,9 +138,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Search API error:", error);
-    return NextResponse.json(
-      { error: "Failed to search releases" },
-      { status: 500 },
-    );
+    return createErrorResponse(error);
   }
 }

@@ -45,6 +45,7 @@ import {
   parseReleaseId,
 } from "src/utils/releaseNotes";
 import {
+  buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
   findVideoForTrack,
   flattenTracklist,
@@ -416,6 +417,11 @@ export const ReleasePlaybackProvider = ({
     [releaseDetail?.videos],
   );
 
+  const playbackMatchIndex = useMemo(
+    () => buildReleasePlaybackMatchIndex(tracks, videos),
+    [tracks, videos],
+  );
+
   tracksRef.current = tracks;
   releaseDetailIdRef.current = releaseDetail?.id;
 
@@ -430,8 +436,12 @@ export const ReleasePlaybackProvider = ({
       return null;
     }
 
-    return findVideoForTrack({ track: activeTrack, videos });
-  }, [activeTrack, previewVideo, videos]);
+    return findVideoForTrack({
+      track: activeTrack,
+      videos,
+      matchIndex: playbackMatchIndex,
+    });
+  }, [activeTrack, playbackMatchIndex, previewVideo, videos]);
 
   const activeVideoId = activeVideo
     ? parseYoutubeVideoId(activeVideo.uri)
