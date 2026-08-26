@@ -1,7 +1,7 @@
 "use client";
 
 import { useSetAtom, useStore } from "jotai";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   pendingFiltersRestoreAtom,
   pendingFiltersRestoreDismissedAtom,
@@ -51,24 +51,27 @@ export const useUserPreferencesSync = () => {
   const appliedPreferencesKeyRef = useRef<string | null>(null);
   const hasSeededLocalPreferencesRef = useRef(false);
 
-  const syncPendingFiltersRestoreOffer = (filters: PersistedFiltersState) => {
-    if (store.get(pendingFiltersRestoreDismissedAtom)) {
-      return;
-    }
+  const syncPendingFiltersRestoreOffer = useCallback(
+    (filters: PersistedFiltersState) => {
+      if (store.get(pendingFiltersRestoreDismissedAtom)) {
+        return;
+      }
 
-    const session = store.get(sessionFiltersAtom);
+      const session = store.get(sessionFiltersAtom);
 
-    if (!persistedFiltersEqual(session, defaultPersistedFilters)) {
-      return;
-    }
+      if (!persistedFiltersEqual(session, defaultPersistedFilters)) {
+        return;
+      }
 
-    if (hasRestorableFilterSelections(filters)) {
-      setPendingFiltersRestore({ ...filters });
-      return;
-    }
+      if (hasRestorableFilterSelections(filters)) {
+        setPendingFiltersRestore({ ...filters });
+        return;
+      }
 
-    setPendingFiltersRestore(null);
-  };
+      setPendingFiltersRestore(null);
+    },
+    [setPendingFiltersRestore, store],
+  );
 
   const { data: preferences } = useUserPreferencesQuery({
     userId,
@@ -213,5 +216,6 @@ export const useUserPreferencesSync = () => {
     setViewState,
     store,
     syncFromServerPreference,
+    syncPendingFiltersRestoreOffer,
   ]);
 };

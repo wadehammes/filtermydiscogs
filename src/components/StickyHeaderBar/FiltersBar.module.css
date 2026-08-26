@@ -106,9 +106,10 @@
     flex-shrink: 0;
   }
 
-  .clearAllButtonActive:not(:disabled) {
-    border-color: var(--primary);
-    color: var(--primary);
+  .clearAllButtonActive:not(:disabled),
+  .clearAllButtonActive:not(:disabled):hover {
+    border-color: var(--foreground);
+    color: var(--foreground);
   }
 
   .mobileFilters {

@@ -49,12 +49,18 @@ describe("tagGrowthTracker", () => {
     }),
   ];
 
+  const [firstRelease, secondRelease, thirdRelease] = releases;
+
+  if (!(firstRelease && secondRelease && thirdRelease)) {
+    throw new Error("Expected three fixture releases");
+  }
+
   it("matches styles, genres, artists, and formats", () => {
-    expect(releaseHasStyle(releases[0]!, "techno")).toBe(true);
-    expect(releaseHasGenre(releases[0]!, "Electronic")).toBe(true);
-    expect(releaseHasArtist(releases[0]!, "Artist A")).toBe(true);
-    expect(releaseHasMediaType(releases[0]!, "Vinyl")).toBe(true);
-    expect(releaseHasGenre(releases[2]!, "Electronic")).toBe(false);
+    expect(releaseHasStyle(firstRelease, "techno")).toBe(true);
+    expect(releaseHasGenre(firstRelease, "Electronic")).toBe(true);
+    expect(releaseHasArtist(firstRelease, "Artist A")).toBe(true);
+    expect(releaseHasMediaType(firstRelease, "Vinyl")).toBe(true);
+    expect(releaseHasGenre(thirdRelease, "Electronic")).toBe(false);
   });
 
   it("collects tag options sorted by count", () => {
@@ -96,10 +102,10 @@ describe("tagGrowthTracker", () => {
   });
 
   it("relates styles to a parent genre from co-tagged releases", () => {
-    expect(releaseHasGenreAndStyle(releases[0]!, "Electronic", "techno")).toBe(
+    expect(releaseHasGenreAndStyle(firstRelease, "Electronic", "techno")).toBe(
       true,
     );
-    expect(releaseHasGenre(releases[1]!, "Rock")).toBe(true);
+    expect(releaseHasGenre(secondRelease, "Rock")).toBe(true);
     expect(
       collectStyleOptionsForGenre(releases, "Electronic").map(
         (option) => option.value,

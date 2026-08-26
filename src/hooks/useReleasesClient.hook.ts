@@ -111,8 +111,15 @@ export const useReleasesClient = () => {
   }, [inView, hasMoreVisible]);
 
   useEffect(() => {
-    setVisibleCount(INITIAL_VISIBLE_RELEASES);
-  }, [sortedFilteredReleases, isRandomMode]);
+    if (isRandomMode) {
+      setVisibleCount(INITIAL_VISIBLE_RELEASES);
+      return;
+    }
+
+    if (sortedFilteredReleases.length >= 0) {
+      setVisibleCount(INITIAL_VISIBLE_RELEASES);
+    }
+  }, [isRandomMode, sortedFilteredReleases]);
 
   const {
     selectedRelease,

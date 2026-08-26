@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createErrorResponse, rethrowNextInternalError } from "src/lib/api-helpers";
+import {
+  createErrorResponse,
+  rethrowNextInternalError,
+} from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
