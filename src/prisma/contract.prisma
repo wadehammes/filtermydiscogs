@@ -1,0 +1,115 @@
+// use prisma-next
+// Contract inferred from the live database schema. Edit as needed, then run `prisma contract emit`.
+
+model Users {
+  discogsUserId         Int                 @id(map: "users_pkey") @map("discogs_user_id")
+  username              String
+  createdAt             TimestampString(3)  @default(now()) @map("created_at")
+  updatedAt             TimestampString(3)  @map("updated_at")
+  preferences           Jsonb               @default(dbgenerated("'{}'::jsonb"))
+  loginCount            Int                 @default(0) @map("login_count")
+  supportToastDismissed Boolean             @default(false) @map("support_toast_dismissed")
+  supportToastPending   Boolean             @default(false) @map("support_toast_pending")
+  lastSeenAt            TimestampString(3)? @map("last_seen_at")
+  crates                Crates[]
+
+  @@map("users")
+}
+
+model Crates {
+  userId          Int               @map("user_id")
+  id              String
+  name            String
+  isDefault       Boolean           @default(false) @map("is_default")
+  createdAt       TimestampString(3) @default(now()) @map("created_at")
+  updatedAt       TimestampString(3) @default(now()) @map("updated_at")
+  private         Boolean           @default(true)
+  username        String?
+  packedEnabled   Boolean           @default(false) @map("packed_enabled")
+  notes           String?
+  crateReleases   CrateReleases[]
+  crateSetMarkers CrateSetMarkers[]
+  user            Users             @relation(fields: [userId], references: [discogsUserId], onDelete: Cascade, onUpdate: Cascade, map: "crates_user_id_fkey")
+
+  @@id([userId, id], map: "crates_pkey")
+  @@index([id, private], map: "crates_id_private_idx")
+  @@index([userId], map: "crates_user_id_idx")
+  @@index([userId, isDefault], map: "crates_user_id_is_default_idx")
+  @@map("crates")
+}
+
+model CrateReleases {
+  userId      Int                @map("user_id")
+  crateId     String             @map("crate_id")
+  instanceId  String             @map("instance_id")
+  releaseData Jsonb              @map("release_data")
+  addedAt     TimestampString(3) @default(now()) @map("added_at")
+  foundAt     TimestampString(3)? @map("found_at")
+  sortOrder   Int                @default(0) @map("sort_order")
+  crates      Crates             @relation(fields: [userId, crateId], references: [userId, id], onDelete: Cascade, onUpdate: Cascade, map: "crate_releases_user_id_crate_id_fkey")
+
+  @@id([userId, crateId, instanceId], map: "crate_releases_pkey")
+  @@index([addedAt], map: "crate_releases_added_at_idx")
+  @@index([userId, crateId, addedAt], map: "crate_releases_user_id_crate_id_added_at_idx")
+  @@index([userId, crateId], map: "crate_releases_user_id_crate_id_idx")
+  @@index([userId, crateId, sortOrder], map: "crate_releases_user_id_crate_id_sort_order_idx")
+  @@index([userId, instanceId], map: "crate_releases_user_id_instance_id_idx")
+  @@map("crate_releases")
+}
+
+model CrateSetMarkers {
+  userId    Int                @map("user_id")
+  crateId   String             @map("crate_id")
+  id        String
+  label     String
+  sortOrder Int                @map("sort_order")
+  createdAt TimestampString(3) @default(now()) @map("created_at")
+  updatedAt TimestampString(3) @map("updated_at")
+  crates    Crates             @relation(fields: [userId, crateId], references: [userId, id], onDelete: Cascade, onUpdate: Cascade, map: "crate_set_markers_user_id_crate_id_fkey", index: false)
+
+  @@id([userId, crateId, id], map: "crate_set_markers_pkey")
+  @@index([userId, crateId, sortOrder], map: "crate_set_markers_user_id_crate_id_sort_order_idx")
+  @@map("crate_set_markers")
+}
+
+model PrismaMigrations {
+  id                VarChar(36)         @id(map: "_prisma_migrations_pkey")
+  checksum          VarChar(64)
+  finishedAt        TimestamptzString?  @map("finished_at")
+  migrationName     VarChar(255)        @map("migration_name")
+  logs              String?
+  rolledBackAt      TimestamptzString?  @map("rolled_back_at")
+  startedAt         TimestamptzString   @default(now()) @map("started_at")
+  appliedStepsCount Int                 @default(0) @map("applied_steps_count")
+
+  @@map("_prisma_migrations")
+}
+
+model ProductAnalyticsDailyRollups {
+  date          DateString
+  dimensionType String @map("dimension_type")
+  dimensionKey  String @map("dimension_key")
+  eventCount    Int    @map("event_count")
+
+  @@id([date, dimensionType, dimensionKey], map: "product_analytics_daily_rollups_pkey")
+  @@index([date], map: "product_analytics_daily_rollups_date_idx")
+  @@index([dimensionType, date], map: "product_analytics_daily_rollups_dimension_type_date_idx")
+  @@map("product_analytics_daily_rollups")
+}
+
+model ProductAnalyticsEvents {
+  id        String              @id(map: "product_analytics_events_pkey")
+  event     String
+  category  String
+  action    String
+  label     String
+  value     String?
+  pagePath  String?             @map("page_path")
+  userId    Int?                @map("user_id")
+  createdAt TimestampString(3)  @default(now()) @map("created_at")
+
+  @@index([createdAt], map: "product_analytics_events_created_at_idx")
+  @@index([event, createdAt], map: "product_analytics_events_event_created_at_idx")
+  @@index([pagePath, createdAt], map: "product_analytics_events_page_path_created_at_idx")
+  @@map("product_analytics_events")
+}

@@ -5,7 +5,7 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
-import { type Prisma, prisma } from "src/lib/db";
+import { db, orm, toOrmJson } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { crateLegacyMigrateBodySchema } from "src/lib/validation/crate.schemas";
@@ -32,11 +32,14 @@ export async function POST(request: NextRequest) {
       return privateRouteJson({ error: parsedBody.error }, { status: 400 });
     }
 
-    const defaultCrate = await prisma.crate.findFirst({
-      where: { user_id: userIdNum },
-      orderBy: [{ is_default: "desc" }, { name: "asc" }],
-      select: { id: true },
-    });
+    const defaultCrate =
+      (await orm.Crates.where({ userId: userIdNum, isDefault: true })
+        .select("id")
+        .first()) ??
+      (await orm.Crates.where({ userId: userIdNum })
+        .orderBy((crate) => crate.name.asc())
+        .select("id")
+        .first());
 
     if (!defaultCrate) {
       return privateRouteJson({ error: "No crate found" }, { status: 404 });
@@ -65,18 +68,19 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const existingRows = await prisma.crateRelease.findMany({
-      where: {
-        user_id: userIdNum,
-        crate_id: defaultCrate.id,
-        instance_id: {
-          in: validatedReleases.map((release) => release.instance_id),
-        },
-      },
-      select: { instance_id: true },
-    });
+    const existingRows = await orm.CrateReleases.where({
+      userId: userIdNum,
+      crateId: defaultCrate.id,
+    })
+      .where((release) =>
+        release.instanceId.in(
+          validatedReleases.map((release) => release.instance_id),
+        ),
+      )
+      .select("instanceId")
+      .all();
     const existingInstanceIds = new Set(
-      existingRows.map((row) => row.instance_id),
+      existingRows.map((row) => row.instanceId),
     );
 
     const releasesToImport = validatedReleases.filter(
@@ -93,7 +97,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       for (const release of releasesToImport) {
         const normalizedRelease = {
           ...release,
@@ -105,14 +109,12 @@ export async function POST(request: NextRequest) {
           tx,
         });
 
-        await tx.crateRelease.create({
-          data: {
-            user_id: userIdNum,
-            crate_id: defaultCrate.id,
-            instance_id: release.instance_id,
-            release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
-            sort_order: sortOrder,
-          },
+        await tx.orm.public.CrateReleases.create({
+          userId: userIdNum,
+          crateId: defaultCrate.id,
+          instanceId: release.instance_id,
+          releaseData: toOrmJson(normalizedRelease),
+          sortOrder,
         });
       }
     });

@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -12,6 +11,7 @@ import {
   buildReleaseNotesFormSchema,
   type ReleaseNotesFormValues,
 } from "src/lib/validation/releaseNotes.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
@@ -103,7 +103,7 @@ export const NoteEditDialog = ({
     setValue,
     watch,
   } = useForm<ReleaseNotesFormValues>({
-    resolver: zodResolver(noteFormSchema),
+    resolver: zodFormResolver(noteFormSchema),
     defaultValues: defaultFormValues,
     mode: "onChange",
   });

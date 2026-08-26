@@ -120,7 +120,6 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`Release.factory.ts`](../../src/tests/factories/Release.factory.ts) | `releaseFactory` | `DiscogsRelease` |
 | [`Collection.factory.ts`](../../src/tests/factories/Collection.factory.ts) | `collectionFactory` | `DiscogsCollection` |
 | [`Crate.factory.ts`](../../src/tests/factories/Crate.factory.ts) | `crateFactory` | Prisma `Crate` |
-| [`CrateRelease.factory.ts`](../../src/tests/factories/CrateRelease.factory.ts) | `crateReleaseFactory` | Prisma `CrateRelease` |
 | [`CrateWithCount.factory.ts`](../../src/tests/factories/CrateWithCount.factory.ts) | `crateWithCountFactory` | `Crate` + `releaseCount` (UI list shape) |
 | [`SelectOption.factory.ts`](../../src/tests/factories/SelectOption.factory.ts) | `selectOptionFactory` | Select dropdown option |
 | [`ReleaseNote.factory.ts`](../../src/tests/factories/ReleaseNote.factory.ts) | `releaseNoteFactory` | `ReleaseNote` |

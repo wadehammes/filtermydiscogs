@@ -87,7 +87,7 @@ export function sanitizeError(error: unknown): {
   // Check for Prisma initialization errors
   if (
     sanitized.includes("Prisma Client") ||
-    sanitized.includes("Cannot find module '@prisma/client'")
+    sanitized.includes("Cannot find module '@prisma/orm-postgres'")
   ) {
     return {
       message: "Database not initialized",

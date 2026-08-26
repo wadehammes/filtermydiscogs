@@ -4,7 +4,7 @@ import {
   rethrowNextInternalError,
   sanitizeError,
 } from "src/lib/api-helpers";
-import { prisma } from "src/lib/db";
+import { orm } from "src/lib/db";
 import type { DiscogsRelease } from "src/types";
 
 interface MostCratedRelease {
@@ -32,23 +32,22 @@ export async function GET(request: NextRequest) {
     );
 
     // Get all crate releases for the user
-    const allCrateReleases = await prisma.crateRelease.findMany({
-      where: {
-        user_id: userIdNum,
-      },
-      select: {
-        instance_id: true,
-        crate_id: true,
-        release_data: true,
-      },
-    });
+    const allCrateReleases = await orm.CrateReleases.where({
+      userId: userIdNum,
+    })
+      .select("instanceId", "crateId", "releaseData")
+      .all();
 
     // Group by instance_id and count distinct crate_ids
     const crateCountMap = new Map<string, Set<string>>();
     const releaseDataMap = new Map<string, DiscogsRelease>();
 
     for (const crateRelease of allCrateReleases) {
-      const { instance_id, crate_id, release_data } = crateRelease;
+      const {
+        instanceId: instance_id,
+        crateId: crate_id,
+        releaseData: release_data,
+      } = crateRelease;
 
       // Skip if instance_id or crate_id is missing
       if (!(instance_id && crate_id)) {

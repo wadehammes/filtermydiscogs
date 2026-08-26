@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,6 +9,7 @@ import {
   type ReleaseNotesCrateFieldValues,
   releaseNotesCrateFieldSchema,
 } from "src/lib/validation/releaseNotes.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import type { DiscogsCollectionField, DiscogsRelease } from "src/types";
 import { getReleaseNotes, normalizeFieldId } from "src/utils/releaseNotes";
 import styles from "./ReleaseNotes.module.css";
@@ -44,7 +44,7 @@ const ReleaseNotesCrateFieldScratchpad = ({
   const prevInstanceIdRef = useRef(release.instance_id);
 
   const { register, reset, watch } = useForm<ReleaseNotesCrateFieldValues>({
-    resolver: zodResolver(releaseNotesCrateFieldSchema),
+    resolver: zodFormResolver(releaseNotesCrateFieldSchema),
     defaultValues: { value: savedValue },
     mode: "onChange",
   });

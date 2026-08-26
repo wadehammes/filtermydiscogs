@@ -8,23 +8,14 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    crateRelease: {
-      findMany: jest.fn(),
-      deleteMany: jest.fn(),
-      create: jest.fn(),
-    },
-    crate: {
-      findMany: jest.fn(),
-    },
-    $transaction: jest.fn(),
-  },
-}));
+const dbMock = createDbModuleMock();
+
+jest.mock("src/lib/db", () => dbMock);
 
 jest.mock("src/lib/crate-layout.server", () => ({
-  getPrependCrateLayoutSortOrderForCrate: jest.fn(),
+  getPrependCrateLayoutSortOrderForCrate: jest.fn(async () => 1000),
 }));
 
 jest.mock("src/lib/release-data-validation", () => ({
@@ -45,7 +36,6 @@ jest.mock("src/lib/api-helpers", () => ({
 type RouteModule =
   typeof import("src/app/api/crates/membership/[instanceId]/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
-type DbModule = typeof import("src/lib/db");
 type ReleaseValidationModule = typeof import("src/lib/release-data-validation");
 
 let GET: RouteModule["GET"];
@@ -53,13 +43,11 @@ let PUT: RouteModule["PUT"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockFindMany: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["findMany"]
->;
-let mockFindCrates: jest.MockedFunction<
-  DbModule["prisma"]["crate"]["findMany"]
->;
-let mockTransaction: jest.MockedFunction<DbModule["prisma"]["$transaction"]>;
+let mockCrateReleasesAll: typeof dbMock.orm.CrateReleases.all;
+let mockCratesAll: typeof dbMock.orm.Crates.all;
+let mockCrateReleasesDeleteAndCount: typeof dbMock.orm.CrateReleases.deleteAndCount;
+let mockCrateReleasesCreate: typeof dbMock.orm.CrateReleases.create;
+let mockTransaction: typeof dbMock.db.transaction;
 let mockValidateRelease: jest.MockedFunction<
   ReleaseValidationModule["validateReleaseDataForStorage"]
 >;
@@ -76,10 +64,9 @@ const releasePayload = {
 };
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db, releaseValidation] = await Promise.all([
+  const [routeModule, apiHelpers, releaseValidation] = await Promise.all([
     import("src/app/api/crates/membership/[instanceId]/route"),
     import("src/lib/api-helpers"),
-    import("src/lib/db"),
     import("src/lib/release-data-validation"),
   ]);
 
@@ -88,9 +75,11 @@ beforeAll(async () => {
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockFindMany = jest.mocked(db.prisma.crateRelease.findMany);
-  mockFindCrates = jest.mocked(db.prisma.crate.findMany);
-  mockTransaction = jest.mocked(db.prisma.$transaction);
+  mockCrateReleasesAll = dbMock.orm.CrateReleases.all;
+  mockCratesAll = dbMock.orm.Crates.all;
+  mockCrateReleasesDeleteAndCount = dbMock.orm.CrateReleases.deleteAndCount;
+  mockCrateReleasesCreate = dbMock.orm.CrateReleases.create;
+  mockTransaction = dbMock.db.transaction;
   mockValidateRelease = jest.mocked(
     releaseValidation.validateReleaseDataForStorage,
   );
@@ -121,17 +110,17 @@ describe("GET /api/crates/membership/[instanceId]", () => {
     );
 
     expect(response.status).toBe(401);
-    expect(mockFindMany).not.toHaveBeenCalled();
+    expect(mockCrateReleasesAll).not.toHaveBeenCalled();
   });
 
   it("returns crate ids containing the release", async () => {
     mockGetVerifiedUser.mockResolvedValue({
       user: verifiedDiscogsUserFactory.defaults({ userId: USER_ID }),
     });
-    mockFindMany.mockResolvedValue([
-      { crate_id: "crate-a" },
-      { crate_id: "crate-b" },
-    ] as Awaited<ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>>);
+    mockCrateReleasesAll.mockResolvedValue([
+      { crateId: "crate-a" },
+      { crateId: "crate-b" },
+    ]);
 
     const response = await GET(
       new NextRequest(`http://localhost/api/crates/membership/${INSTANCE_ID}`),
@@ -142,14 +131,9 @@ describe("GET /api/crates/membership/[instanceId]", () => {
     await expect(response.json()).resolves.toEqual({
       crateIds: ["crate-a", "crate-b"],
     });
-    expect(mockFindMany).toHaveBeenCalledWith({
-      where: {
-        user_id: USER_ID,
-        instance_id: INSTANCE_ID,
-      },
-      select: {
-        crate_id: true,
-      },
+    expect(dbMock.orm.CrateReleases.where).toHaveBeenCalledWith({
+      userId: USER_ID,
+      instanceId: INSTANCE_ID,
     });
   });
 });
@@ -173,22 +157,13 @@ describe("PUT /api/crates/membership/[instanceId]", () => {
     mockValidateRelease.mockReturnValue({
       release: releasePayload as never,
     });
-    mockFindCrates.mockResolvedValue([
-      { id: "crate-a" },
-      { id: "crate-b" },
-    ] as Awaited<ReturnType<DbModule["prisma"]["crate"]["findMany"]>>);
-    mockFindMany.mockResolvedValue([{ crate_id: "crate-a" }] as Awaited<
-      ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>
-    >);
-    mockTransaction.mockImplementation((async (
-      callback: (tx: unknown) => Promise<unknown>,
-    ) =>
-      callback({
-        crateRelease: {
-          deleteMany: jest.fn(),
-          create: jest.fn(),
-        },
-      })) as DbModule["prisma"]["$transaction"]);
+    mockCratesAll.mockResolvedValue([{ id: "crate-a" }, { id: "crate-b" }]);
+    mockCrateReleasesAll.mockResolvedValue([{ crateId: "crate-a" }]);
+    mockCrateReleasesDeleteAndCount.mockResolvedValue(0);
+    mockCrateReleasesCreate.mockResolvedValue({});
+    mockTransaction.mockImplementation(async (callback) =>
+      callback({ orm: { public: dbMock.orm } }),
+    );
   });
 
   it("returns auth error when user is not verified", async () => {
@@ -228,5 +203,12 @@ describe("PUT /api/crates/membership/[instanceId]", () => {
       crateIds: ["crate-a", "crate-b"],
     });
     expect(mockTransaction).toHaveBeenCalled();
+    expect(mockCrateReleasesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: USER_ID,
+        crateId: "crate-b",
+        instanceId: INSTANCE_ID,
+      }),
+    );
   });
 });

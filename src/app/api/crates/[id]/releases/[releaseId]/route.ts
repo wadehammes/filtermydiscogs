@@ -3,9 +3,8 @@ import {
   auditDatabaseOperation,
   createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
-  sanitizeError,
 } from "src/lib/api-helpers";
-import { prisma } from "src/lib/db";
+import { orm } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 
 /**
@@ -53,15 +52,9 @@ export async function PATCH(
       );
     }
 
-    const crate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-      select: { id: true },
-    });
+    const crate = await orm.Crates.where({ userId: userIdNum, id })
+      .select("id")
+      .first();
 
     if (!crate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
@@ -69,42 +62,30 @@ export async function PATCH(
 
     const foundAt = found ? new Date() : null;
 
-    try {
-      const updated = await prisma.crateRelease.update({
-        where: {
-          user_id_crate_id_instance_id: {
-            user_id: userIdNum,
-            crate_id: id,
-            instance_id: releaseId,
-          },
-        },
-        data: {
-          found_at: foundAt,
-        },
-        select: {
-          found_at: true,
-        },
-      });
+    const updated = await orm.CrateReleases.where({
+      userId: userIdNum,
+      crateId: id,
+      instanceId: releaseId,
+    }).update({ foundAt: foundAt as never });
 
-      auditDatabaseOperation(userIdNum, "CrateRelease", "update", releaseId, {
-        crate_id: id,
-        found,
-      });
-
-      return privateRouteJson({
-        success: true,
-        found_at: updated.found_at?.toISOString() ?? null,
-      });
-    } catch (error) {
-      const sanitized = sanitizeError(error);
-      if (sanitized.code === "NOT_FOUND") {
-        return privateRouteJson(
-          { error: "Release not found in crate" },
-          { status: 404 },
-        );
-      }
-      throw error;
+    if (!updated) {
+      return privateRouteJson(
+        { error: "Release not found in crate" },
+        { status: 404 },
+      );
     }
+
+    auditDatabaseOperation(userIdNum, "CrateRelease", "update", releaseId, {
+      crate_id: id,
+      found,
+    });
+
+    return privateRouteJson({
+      success: true,
+      found_at: updated.foundAt
+        ? new Date(updated.foundAt as unknown as string).toISOString()
+        : null,
+    });
   } catch (error) {
     console.error("Error updating crate release found status:", error);
     return createErrorResponse(error);
@@ -131,47 +112,31 @@ export async function DELETE(
     const { id, releaseId } = await params;
 
     // Verify crate exists and belongs to user
-    const crate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-      select: { id: true },
-    });
+    const crate = await orm.Crates.where({ userId: userIdNum, id })
+      .select("id")
+      .first();
 
     if (!crate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
     // Remove release from crate
-    try {
-      await prisma.crateRelease.delete({
-        where: {
-          user_id_crate_id_instance_id: {
-            user_id: userIdNum,
-            crate_id: id,
-            instance_id: releaseId,
-          },
-        },
-      });
+    const deleted = await orm.CrateReleases.where({
+      userId: userIdNum,
+      crateId: id,
+      instanceId: releaseId,
+    }).delete();
 
-      // Audit log
-      auditDatabaseOperation(userIdNum, "CrateRelease", "delete", releaseId, {
-        crate_id: id,
-      });
-    } catch (error) {
-      // Check if it was a not found error
-      const sanitized = sanitizeError(error);
-      if (sanitized.code === "NOT_FOUND") {
-        return privateRouteJson(
-          { error: "Release not found in crate" },
-          { status: 404 },
-        );
-      }
-      throw error;
+    if (!deleted) {
+      return privateRouteJson(
+        { error: "Release not found in crate" },
+        { status: 404 },
+      );
     }
+
+    auditDatabaseOperation(userIdNum, "CrateRelease", "delete", releaseId, {
+      crate_id: id,
+    });
 
     return privateRouteJson({ success: true });
   } catch (error) {

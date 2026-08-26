@@ -1,7 +1,6 @@
 "use client";
 
 import type { DraggableAttributes } from "@dnd-kit/core";
-import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import {
   type CSSProperties,
@@ -16,6 +15,7 @@ import {
   type CrateSetMarkerLabelValues,
   crateSetMarkerLabelSchema,
 } from "src/lib/validation/crate.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
 import type { CrateLayoutMarkerItem } from "src/types/crate.types";
@@ -56,7 +56,7 @@ export const CrateSetMarkerRow = ({
   const isFocusedRef = useRef(false);
 
   const { register, reset } = useForm<CrateSetMarkerLabelValues>({
-    resolver: zodResolver(crateSetMarkerLabelSchema),
+    resolver: zodFormResolver(crateSetMarkerLabelSchema),
     defaultValues: { label: marker.label },
     mode: "onChange",
   });

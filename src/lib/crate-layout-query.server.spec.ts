@@ -1,36 +1,31 @@
-import { describe, expect, it } from "@jest/globals";
+import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
 
-jest.mock("src/lib/db", () => ({
-  prisma: new Proxy({} as object, {
-    get(_target, prop) {
-      if (prop === "crateSetMarker") {
-        return { findMany: async () => [] };
-      }
+const dbMock = createDbModuleMock();
 
-      return undefined;
-    },
-  }),
-}));
+jest.mock("src/lib/db", () => dbMock);
 
-import { hasCrateSetMarkerDelegate } from "src/lib/crate-layout-query.server";
+type LayoutQueryModule = typeof import("src/lib/crate-layout-query.server");
+
+let hasCrateSetMarkerDelegate: LayoutQueryModule["hasCrateSetMarkerDelegate"];
+
+beforeAll(async () => {
+  ({ hasCrateSetMarkerDelegate } = await import(
+    "src/lib/crate-layout-query.server"
+  ));
+});
 
 describe("hasCrateSetMarkerDelegate", () => {
-  it("returns true when crateSetMarker is reachable through the prisma proxy", () => {
+  it("returns true when CrateSetMarkers is on the orm export", () => {
     expect(hasCrateSetMarkerDelegate()).toBe(true);
   });
 
-  it("documents why `in` is unreliable on the proxied prisma export", () => {
-    const proxiedPrisma = new Proxy({} as Record<string, unknown>, {
-      get(_target, prop) {
-        if (prop === "crateSetMarker") {
-          return { findMany: async () => [] };
-        }
+  it("returns false when CrateSetMarkers is missing from orm", () => {
+    const { CrateSetMarkers } = dbMock.orm;
+    Reflect.deleteProperty(dbMock.orm, "CrateSetMarkers");
 
-        return undefined;
-      },
-    }) as { crateSetMarker?: { findMany: () => Promise<unknown[]> } };
+    expect(hasCrateSetMarkerDelegate()).toBe(false);
 
-    expect("crateSetMarker" in proxiedPrisma).toBe(false);
-    expect(typeof proxiedPrisma.crateSetMarker?.findMany).toBe("function");
+    dbMock.orm.CrateSetMarkers = CrateSetMarkers;
   });
 });
