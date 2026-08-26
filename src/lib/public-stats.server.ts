@@ -1,26 +1,39 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "src/lib/db";
+import { db, queryRawRows } from "src/lib/db";
 import type { PublicCommunityStats } from "src/types/public-stats.types";
 
 type PublicCommunityStatsRow = {
-  totalCrates: bigint;
-  totalPublicCrates: bigint;
-  totalReleases: bigint;
-  totalTracksSaved: bigint;
-  totalCollectors: bigint;
-  totalTrackPlays: bigint;
+  totalCrates: number;
+  totalPublicCrates: number;
+  totalReleases: number;
+  totalTracksSaved: number;
+  totalCollectors: number;
+  totalTrackPlays: number;
 };
 
 const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
-  const [row] = await prisma.$queryRaw<PublicCommunityStatsRow[]>`
-    SELECT
-      (SELECT COUNT(*)::bigint FROM "crates") AS "totalCrates",
-      (SELECT COUNT(*)::bigint FROM "crates" WHERE private = false) AS "totalPublicCrates",
-      (SELECT COUNT(*)::bigint FROM "crate_releases") AS "totalReleases",
-      (SELECT COUNT(*)::bigint FROM "user_tracks" WHERE youtube_id IS NOT NULL) AS "totalTracksSaved",
-      (SELECT COUNT(DISTINCT user_id)::bigint FROM "crates") AS "totalCollectors",
-      (SELECT COALESCE(SUM(play_count), 0)::bigint FROM "user_tracks") AS "totalTrackPlays"
-  `;
+  const rows = await queryRawRows<PublicCommunityStatsRow>(
+    db.raw.sql`
+      SELECT
+        (SELECT COUNT(*)::int FROM "crates") AS "totalCrates",
+        (SELECT COUNT(*)::int FROM "crates" WHERE private = false) AS "totalPublicCrates",
+        (SELECT COUNT(*)::int FROM "crate_releases") AS "totalReleases",
+        (SELECT COUNT(*)::int FROM "user_tracks" WHERE youtube_id IS NOT NULL) AS "totalTracksSaved",
+        (SELECT COUNT(DISTINCT user_id)::int FROM "crates") AS "totalCollectors",
+        (SELECT COALESCE(SUM(play_count), 0)::int FROM "user_tracks") AS "totalTrackPlays"
+    `
+      .returnsRow({
+        totalCrates: "pg/int4@1",
+        totalPublicCrates: "pg/int4@1",
+        totalReleases: "pg/int4@1",
+        totalTracksSaved: "pg/int4@1",
+        totalCollectors: "pg/int4@1",
+        totalTrackPlays: "pg/int4@1",
+      })
+      .build(),
+  );
+
+  const row = rows[0];
 
   if (!row) {
     return {
@@ -34,12 +47,12 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
   }
 
   return {
-    totalCollectors: Number(row.totalCollectors),
-    totalCrates: Number(row.totalCrates),
-    totalPublicCrates: Number(row.totalPublicCrates),
-    totalReleases: Number(row.totalReleases),
-    totalTracksSaved: Number(row.totalTracksSaved),
-    totalTrackPlays: Number(row.totalTrackPlays),
+    totalCollectors: row.totalCollectors,
+    totalCrates: row.totalCrates,
+    totalPublicCrates: row.totalPublicCrates,
+    totalReleases: row.totalReleases,
+    totalTracksSaved: row.totalTracksSaved,
+    totalTrackPlays: row.totalTrackPlays,
   };
 };
 

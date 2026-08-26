@@ -8,7 +8,7 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 
 | Job | Steps |
 |-----|--------|
-| **Unit gates** | Checkout, **`pnpm install`**, **`pnpm tsc:ci`**, **`pnpm lint:ci`**, **`pnpm lint:css`**, **`bash scripts/handbook-sync-check.sh origin/staging`**, **`bash scripts/spec-pair-check.sh origin/staging`**, **`pnpm test:ci`**, **`pnpm knip:ci`** |
+| **Unit gates** | Checkout, **`pnpm install`**, **`pnpm tsc:ci`** (runs **`contract:emit`** first), **`pnpm lint:ci`**, **`pnpm lint:css`**, **`bash scripts/handbook-sync-check.sh origin/staging`**, **`bash scripts/spec-pair-check.sh origin/staging`**, **`pnpm test:ci`**, **`pnpm knip:ci`** |
 | **E2E smoke** | Checkout, **`pnpm install`**, cached Playwright Chromium, **`pnpm build:e2e`**, **`pnpm test:e2e:smoke`** — **`E2E_SMOKE=1`** runs only the specs listed in [`e2e/smokeSpecs.constants.ts`](../../e2e/smokeSpecs.constants.ts) on the **chromium** project against **`next start`** (see [Playwright](#playwright-instant-navigation-tests)) |
 
 Pushes to **`staging`** also run [`.github/workflows/e2e-full.yml`](../../.github/workflows/e2e-full.yml): **`pnpm build:e2e`**, then full **`pnpm test:e2e:run`** (every spec × **chromium**, **phone**, **tablet**).
@@ -133,8 +133,8 @@ Large or multi-theme work should land as a **stack** of dependent PRs into **`st
 | Command | Purpose |
 |---------|---------|
 | `mise install` | Install Node/pnpm from `.tool-versions`. |
-| `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm db:generate`). |
-| `mise run bootstrap` | JS deps + Prisma generate only (tools already installed). |
+| `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm contract:emit`). |
+| `mise run bootstrap` | JS deps + contract emit only (tools already installed). |
 | `mise run ci` | Same as PR Actions: unit gates + **`pnpm test:e2e:smoke:ci`**. |
 | `mise run ci-full` | Unit gates + full **`pnpm test:e2e:ci`** (matches **E2E full** on push to **`staging`**). |
 
@@ -146,12 +146,12 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 
 | Script | Purpose |
 |--------|---------|
-| `pnpm dev` | Runs **`prisma generate`** first (`predev`), then Next dev on **port 6767** (Turbopack). |
+| `pnpm dev` | Runs **`contract:emit`** first (`predev`), then Next dev on **port 6767** (Turbopack). |
 | `pnpm dev:e2e` | Next dev on **6767** without the Node inspector — used by Playwright **`webServer`** in CI ([`playwright.config.ts`](../../playwright.config.ts)). |
 | `pnpm dev:webpack` | Same as **`pnpm dev`** but **Webpack** — use when Turbopack dev hits “module factory is not available” on lazy chunks or **`next/font/google`** resolution errors (see [patterns.md → Metadata and OG images](patterns.md#metadata-and-og-images)). |
-| `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
+| `pnpm build` | `contract:emit` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
-| `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
+| `pnpm tsc:ci` | `contract:emit` + strict TypeScript (`tsc --strict`). |
 | `pnpm lint:ci` / `pnpm test:ci` / `pnpm test:ci:shard` / `pnpm knip:ci` | Quality gates. **`test:ci`** runs Jest in parallel (**`--maxWorkers=50%`**). Local **`pnpm test`** uses **`--runInBand --detectOpenHandles`**. Optional local sharding: **`JEST_SHARD=2/3 pnpm test:ci:shard`**. |
 | `pnpm generate:theme-init` | Regenerates **`public/theme-init.js`** from [`themeAppearance.ts`](../../src/utils/themeAppearance.ts) (also runs on **`postinstall`**). |
 | `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
@@ -159,7 +159,7 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm fallow` / `pnpm fallow:dead-code` / `pnpm fallow:health` / `pnpm fallow:health:full` / `pnpm fallow:dupes` | Optional **Fallow** codebase intelligence for agents and local deep dives ([`.fallowrc.jsonc`](../../.fallowrc.jsonc)) — cycles, dupes, complexity, unresolved imports; **not** a CI gate. **`pnpm fallow:health`** prints the project **health score** (`--score`, no git-churn hotspot penalty). **`pnpm fallow:health:full`** adds complexity findings, large-function lists, and hotspot deductions. **`pnpm fallow:audit`** scopes to changes since **`origin/staging`**. **Cursor:** [`.cursor/mcp.json`](../../.cursor/mcp.json) (MCP) + task map in [`AGENTS.md`](../../AGENTS.md); no committed `.agents/skills` stub (see [Fallow vs Knip](#fallow-vs-knip)). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
-| `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
+| `pnpm db:*` | Prisma contract emit, migrate, push, verify (see [database.md](database.md)). |
 | `pnpm analyze` / `pnpm lighthouse` | Bundle and performance tooling. |
 | `pnpm test:e2e` / `pnpm test:e2e:install` | Playwright regression tests ([`e2e/`](../../e2e/)); run **`test:e2e:install`** once for Chromium locally. |
 | `pnpm build:e2e` | Production build for Playwright CI (**`NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED=1`**, test Discogs OAuth env). |
@@ -178,7 +178,9 @@ Wire-up: **`pnpm exec fallow agent install --harness cursor --without hooks --wi
 
 ### `pg` and `@types/pg`
 
-[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`catalog`** pins **`pg`** and **`@types/pg`** together; **`package.json`** references both via **`catalog:`**. **`@prisma/adapter-pg`** also depends on **`@types/pg`** — pnpm dedupes to one copy when ranges align; duplicate DefinitelyTyped versions break **`new PrismaPg(pool)`** under **`exactOptionalPropertyTypes`**. When bumping Postgres client deps, edit the catalog entries only, run **`pnpm install`**, then **`pnpm tsc:ci`**.
+[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`catalog`** pins **`pg`** and **`@types/pg`** together; **`package.json`** references both via **`catalog:`**. When bumping Postgres client deps, edit the catalog entries only, run **`pnpm install`**, then **`pnpm tsc:ci`**.
+
+**Peer dependencies:** After **`pnpm install`**, run **`pnpm peers check`**. The workspace **`overrides`** keep **`@babel/*`** on the 7.29 line ( **`@svgr/webpack`** ), dedupe Prisma composer’s **`effect`** / **`@effect/*`** to one RC, and **`peerDependencyRules.allowedVersions`** documents intentional **`typescript@7`** and **`vitest@5`** vs nested Prisma/alchemy peers. Extend those blocks when a new install warning is real (not optional composer tooling you do not run).
 
 ## Environment variables
 
@@ -192,8 +194,6 @@ Wire-up: **`pnpm exec fallow agent install --harness cursor --without hooks --wi
 | `DISCOGS_THROTTLE_QUEUE_TIMEOUT_MS` | Max time a caller may wait for the in-memory Discogs throttle slot ([`discogs-request-throttle.ts`](../../src/lib/discogs-request-throttle.ts); default **30000**). |
 | `IDENTITY_CACHE_TTL_MS` / `IDENTITY_CACHE_STALE_MS` | In-memory OAuth identity cache fresh/stale windows (defaults **5 min** / **30 min**) |
 | `DATABASE_URL` | Postgres connection string for Prisma runtime (prefer **pooled** `pooled.db.prisma.io` when using Prisma Postgres) |
-| `DIRECT_URL` / `POSTGRES_URL` | Direct Postgres URL for Prisma CLI migrations ([`prisma.config.ts`](../../prisma.config.ts), [`scripts/migrate-deploy.sh`](../../scripts/migrate-deploy.sh)); Vercel Prisma integration often sets **`POSTGRES_URL`** to **`db.prisma.io`** |
-| `PRISMA_MIGRATE_DEPLOY_ATTEMPTS` / `PRISMA_MIGRATE_DEPLOY_RETRY_DELAY_SEC` | Optional overrides for build-time **`migrate deploy`** retries (defaults **5** / **5** seconds, exponential backoff) |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `NEXT_PUBLIC_APP_BUILD_VERSION` | Injected at build time from **`VERCEL_GIT_COMMIT_SHA`** or **`VERCEL_DEPLOYMENT_ID`** (falls back to **`development`** locally). Baked into the client bundle; compared against **`GET /api/build-version`** for production deploy toasts. |
 | `NEXT_PUBLIC_VERCEL_ENV` | Exposed copy of **`VERCEL_ENV`** (`production`, `preview`, or **`development`** locally). **`DeploymentUpdateToast`** polls only when this is **`production`**. |

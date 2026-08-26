@@ -5,15 +5,22 @@ jest.mock("next/cache", () => ({
 }));
 
 jest.mock("src/lib/db", () => ({
-  prisma: {
-    $queryRaw: jest.fn(),
+  db: {
+    raw: {
+      sql: () => ({
+        returnsRow: () => ({
+          build: () => ({}),
+        }),
+      }),
+    },
   },
+  queryRawRows: jest.fn(),
 }));
 
 type DbModule = typeof import("src/lib/db");
 
 let getPublicCommunityStats: typeof import("src/lib/public-stats.server")["getPublicCommunityStats"];
-let mockQueryRaw: jest.MockedFunction<DbModule["prisma"]["$queryRaw"]>;
+let mockQueryRawRows: jest.MockedFunction<DbModule["queryRawRows"]>;
 
 describe("getPublicCommunityStats", () => {
   beforeEach(async () => {
@@ -25,18 +32,18 @@ describe("getPublicCommunityStats", () => {
       import("src/lib/db"),
     ]);
     getPublicCommunityStats = serverModule.getPublicCommunityStats;
-    mockQueryRaw = jest.mocked(db.prisma.$queryRaw);
+    mockQueryRawRows = jest.mocked(db.queryRawRows);
   });
 
   it("maps aggregate counts including tracks with a saved YouTube link", async () => {
-    mockQueryRaw.mockResolvedValue([
+    mockQueryRawRows.mockResolvedValue([
       {
-        totalCrates: BigInt(10),
-        totalPublicCrates: BigInt(3),
-        totalReleases: BigInt(100),
-        totalTracksSaved: BigInt(7),
-        totalCollectors: BigInt(4),
-        totalTrackPlays: BigInt(42),
+        totalCrates: 10,
+        totalPublicCrates: 3,
+        totalReleases: 100,
+        totalTracksSaved: 7,
+        totalCollectors: 4,
+        totalTrackPlays: 42,
       },
     ]);
 

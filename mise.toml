@@ -6,10 +6,10 @@
 _.file = { path = ".env.local", redact = true }
 
 [tasks.bootstrap]
-description = "Install JS deps and generate Prisma client (also runs via `mise bootstrap`)"
+description = "Install JS deps and emit Prisma contract (also runs via `mise bootstrap`)"
 run = [
   "pnpm install",
-  "pnpm db:generate",
+  "pnpm contract:emit",
 ]
 
 [tasks.ci]

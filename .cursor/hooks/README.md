@@ -2,6 +2,8 @@
 
 Project hooks that keep agent work aligned with `docs/handbook/`.
 
+**Sister repos:** [after-avenue](https://github.com/rhythmengineering/after-avenue) and [rhythm-marketing](https://github.com/rhythmengineering/rhythm-marketing) reuse this hook *pattern* with repo-specific `_lib.sh` maps — playback/prisma/login/terms hooks here are **not** copied verbatim.
+
 Config: [`.cursor/hooks.json`](../hooks.json). Scripts: [`.cursor/hooks/`](./).
 
 Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `rules/`, `skills/`). Local/runtime Cursor state (`*.log`, `settings.local.json`, checkpoints, etc.) stays gitignored — [`.cursor/mcp.json`](../../.cursor/mcp.json) is committed. See root [`.gitignore`](../../.gitignore).
@@ -12,7 +14,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 |-------|-------------------|
 | `sessionStart` | One-line handbook pointer (`session-handbook-routing.sh`) |
 | `preToolUse` | Blocking guardrails (CSS, factories, scaffold, query-hook mocks, …) |
-| `postToolUse` | Advisory checks (e.g. CSS nesting depth) |
+| `postToolUse` | Advisory checks (e.g. CSS nesting depth). **`handbook-sync-nudge.sh`** exists but stays **unwired** here (stop + CI cover drift); wired in after-avenue / rhythm-marketing. |
 | `beforeShellExecution` | Git safety (destructive git, raw `git commit`) |
 | `stop` | Drift checks, targeted Jest, `pnpm lint:all` follow-ups |
 

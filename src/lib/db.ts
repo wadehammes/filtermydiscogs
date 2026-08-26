@@ -1,10 +1,31 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import postgres from "@prisma/orm-postgres/runtime";
+import type {
+  JsonValue,
+  TimestampString,
+} from "@prisma/orm-postgres/target/codec-types";
 import { Pool, type PoolConfig } from "pg";
+import type { CodecTypes, Contract } from "src/prisma/contract.d";
+import contractJson from "src/prisma/contract.json";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+export type { JsonValue };
+
+export type OrmTimestamp = TimestampString<3>;
+export type OrmDate = CodecTypes["pg/date-string@1"]["input"];
+
+export const ormTimestamp = (value: Date): OrmTimestamp =>
+  value.toISOString() as OrmTimestamp;
+
+export const ormDate = (value: Date): OrmDate =>
+  value.toISOString().slice(0, 10) as OrmDate;
+
+export type DbClient = ReturnType<typeof postgres<Contract>>;
+export type DbTransaction = Parameters<
+  Parameters<DbClient["transaction"]>[0]
+>[0];
+
+const globalForDb = globalThis as unknown as {
   pool: Pool | undefined;
+  db: DbClient | undefined;
 };
 
 function validateAndSanitizeConnectionString(connectionString: string): string {
@@ -26,21 +47,6 @@ function validateAndSanitizeConnectionString(connectionString: string): string {
   url.searchParams.set("pool_timeout", "10");
 
   return url.toString();
-}
-
-function sanitizeConnectionStringForLogging(connectionString: string): string {
-  try {
-    const url = new URL(connectionString);
-    if (url.password) {
-      url.password = "***";
-    }
-    if (url.username) {
-      url.username = "***";
-    }
-    return url.toString();
-  } catch {
-    return "***";
-  }
 }
 
 function getPoolConfig(connectionString: string): PoolConfig {
@@ -80,23 +86,7 @@ function getPoolConfig(connectionString: string): PoolConfig {
   };
 }
 
-const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
-  "crateSetMarker" in client &&
-  "productAnalyticsEvent" in client &&
-  "productAnalyticsDailyRollup" in client;
-
-function createPrismaInitializationError(error: unknown): Error {
-  const sanitizedError =
-    error instanceof Error
-      ? error.message.replace(/DATABASE_URL[^;]*/gi, "DATABASE_URL=***")
-      : "Unknown error";
-
-  return new Error(
-    `Prisma Client not initialized: ${sanitizedError}. Please run 'pnpm db:generate' and ensure DATABASE_URL is set.`,
-  );
-}
-
-function initializePrismaClient(): PrismaClient {
+function createDb(): DbClient {
   const rawConnectionString = process.env.DATABASE_URL;
   if (!rawConnectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
@@ -104,133 +94,61 @@ function initializePrismaClient(): PrismaClient {
 
   const connectionString =
     validateAndSanitizeConnectionString(rawConnectionString);
+  const pool = globalForDb.pool ?? new Pool(getPoolConfig(connectionString));
 
-  if (process.env.NODE_ENV === "development") {
-    console.log(
-      `[DB] Connecting with config: ${sanitizeConnectionStringForLogging(connectionString)}`,
-    );
+  if (!globalForDb.pool) {
+    globalForDb.pool = pool;
   }
 
-  const poolConfig = getPoolConfig(connectionString);
-  const pool = globalForPrisma.pool ?? new Pool(poolConfig);
-
-  if (!globalForPrisma.pool) {
-    globalForPrisma.pool = pool;
-
-    pool.on("connect", () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("[DB] New connection established");
-      }
-    });
-
-    pool.on("error", (err) => {
-      console.error("[DB] Pool error:", err);
-    });
-
-    pool.on("acquire", () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log(
-          `[DB] Connection acquired. Pool size: ${pool.totalCount}, idle: ${pool.idleCount}, waiting: ${pool.waitingCount}`,
-        );
-      }
-    });
-  }
-
-  const adapter = new PrismaPg(pool);
-
-  const prismaClientLog =
-    process.env.NODE_ENV === "development"
-      ? (["error", "warn", "query"] as const)
-      : process.env.DB_LOG_QUERIES === "true"
-        ? (["error", "warn", "query"] as const)
-        : (["error"] as const);
-
-  if (
-    globalForPrisma.prisma &&
-    !isCachedPrismaClientCurrent(globalForPrisma.prisma)
-  ) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(
-        "[DB] Cached Prisma client is missing new models; recreating client.",
-      );
-    }
-
-    void globalForPrisma.prisma.$disconnect().catch(() => {});
-    globalForPrisma.prisma = undefined;
-  }
-
-  const prismaInstance =
-    globalForPrisma.prisma ??
-    new PrismaClient({
-      adapter,
-      log: [...prismaClientLog],
-    });
-
-  let healthCheckAttempts = 0;
-  const maxHealthCheckAttempts = 3;
-
-  async function performHealthCheck(): Promise<void> {
-    try {
-      await prismaInstance.$queryRaw`SELECT 1`;
-      healthCheckAttempts = 0;
-    } catch (error) {
-      healthCheckAttempts++;
-      if (healthCheckAttempts < maxHealthCheckAttempts) {
-        const backoffDelay = 2 ** healthCheckAttempts * 1000;
-        console.warn(
-          `[DB] Health check failed (attempt ${healthCheckAttempts}/${maxHealthCheckAttempts}). Retrying in ${backoffDelay}ms...`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, backoffDelay));
-        return performHealthCheck();
-      }
-      console.error("[DB] Health check failed after max attempts");
-      throw error;
-    }
-  }
-
-  performHealthCheck().catch((error) => {
-    console.error("[DB] Initial health check failed:", error);
+  return postgres<Contract>({
+    contractJson,
+    pg: pool as never,
   });
-
-  globalForPrisma.prisma = prismaInstance;
-  return prismaInstance;
 }
 
-function getPrismaClient(): PrismaClient {
-  if (
-    globalForPrisma.prisma &&
-    isCachedPrismaClientCurrent(globalForPrisma.prisma)
-  ) {
-    return globalForPrisma.prisma;
+function getDb(): DbClient {
+  if (!globalForDb.db) {
+    globalForDb.db = createDb();
   }
 
-  try {
-    return initializePrismaClient();
-  } catch (error) {
-    console.error("Failed to initialize Prisma Client:", error);
-    throw createPrismaInitializationError(error);
-  }
+  return globalForDb.db;
 }
 
-export const prisma = new Proxy({} as PrismaClient, {
+type PublicOrm = DbClient["orm"]["public"];
+
+const bindClientValue = <TTarget extends object>(
+  target: TTarget,
+  value: unknown,
+): unknown => {
+  if (typeof value === "function") {
+    return value.bind(target);
+  }
+
+  return value;
+};
+
+export const db = new Proxy({} as DbClient, {
   get(_target, prop, receiver) {
-    const client = getPrismaClient();
-    const value = Reflect.get(client, prop, receiver);
-
-    if (typeof value === "function") {
-      return value.bind(client);
-    }
-
-    return value;
+    const client = getDb();
+    return bindClientValue(client, Reflect.get(client, prop, receiver));
   },
   has(_target, prop) {
-    const client = getPrismaClient();
-    return prop in client;
+    return prop in getDb();
+  },
+});
+
+export const orm = new Proxy({} as PublicOrm, {
+  get(_target, prop, receiver) {
+    const publicOrm = getDb().orm.public;
+    return bindClientValue(publicOrm, Reflect.get(publicOrm, prop, receiver));
+  },
+  has(_target, prop) {
+    return prop in getDb().orm.public;
   },
 });
 
 export function getPoolMetrics() {
-  const pool = globalForPrisma.pool;
+  const pool = globalForDb.pool;
   if (!pool) {
     return null;
   }
@@ -242,4 +160,32 @@ export function getPoolMetrics() {
   };
 }
 
-export type { Prisma } from "@prisma/client";
+export async function countRows(query: unknown): Promise<number> {
+  const { n } = await (
+    query as {
+      aggregate: (
+        fn: (aggregate: { count: () => unknown }) => { n: unknown },
+      ) => Promise<{ n: number }>;
+    }
+  ).aggregate((aggregate) => ({
+    n: aggregate.count(),
+  }));
+
+  return n;
+}
+
+export async function queryRawRows<TRow>(
+  plan: Parameters<ReturnType<DbClient["runtime"]>["query"]>[0],
+): Promise<TRow[]> {
+  const rows = await getDb().runtime().query(plan);
+  return rows as TRow[];
+}
+
+export const sqlTimestamp = (value: Date): string => value.toISOString();
+export const sqlDate = (value: Date): string =>
+  value.toISOString().slice(0, 10);
+
+export const toOrmDate = (value: unknown): Date =>
+  new Date(value as string | Date);
+
+export const toOrmJson = (value: unknown): JsonValue => value as JsonValue;

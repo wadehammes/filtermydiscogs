@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import {
   type AdminUserLookupFormValues,
   adminUserLookupFormSchema,
 } from "src/lib/validation/adminUserLookup.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import { THEME_LABELS } from "src/utils/themeAppearance";
 import styles from "./AdminUserLookupPanel.module.css";
 
@@ -57,7 +57,7 @@ export const AdminUserLookupPanel = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<AdminUserLookupFormValues>({
-    resolver: zodResolver(adminUserLookupFormSchema),
+    resolver: zodFormResolver(adminUserLookupFormSchema),
     defaultValues: { username: "" },
   });
 

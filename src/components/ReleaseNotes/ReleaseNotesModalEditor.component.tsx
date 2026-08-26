@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import {
@@ -8,6 +7,7 @@ import {
   isReleaseNoteTextWithinLimit,
   type ReleaseNotesFormValues,
 } from "src/lib/validation/releaseNotes.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseNotes, normalizeFieldId } from "src/utils/releaseNotes";
 import styles from "./ReleaseNotes.module.css";
@@ -80,7 +80,7 @@ export const ReleaseNotesModalEditor = ({
   );
 
   const formMethods = useForm<ReleaseNotesFormValues>({
-    resolver: zodResolver(noteFormSchema),
+    resolver: zodFormResolver(noteFormSchema),
     defaultValues: savedValues,
     mode: "onChange",
   });
