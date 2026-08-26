@@ -82,13 +82,6 @@
   width: 100%;
 }
 
-:global(
-  html:has([data-playback-queue-open="true"])
-    [data-testid="fmdReleaseMiniPlayer"]
-) {
-  z-index: var(--z-3-fixed);
-}
-
 :global([data-playback-page-shell-main]) {
   scroll-padding-bottom: var(--release-mini-player-bar-offset, 0);
 }

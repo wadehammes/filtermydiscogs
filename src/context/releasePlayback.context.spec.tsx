@@ -657,6 +657,145 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.queue[1]?.trackPosition).toBe("B1");
   });
 
+  it("appends playable tracks from similar releases when playback starts", async () => {
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: RELEASE_ID,
+        title: "Never Gonna Give You Up",
+        genres: ["Electronic"],
+        styles: ["House"],
+        resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100002,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        resource_url: "https://api.discogs.com/releases/100002",
+      }),
+    });
+
+    mockApi.fetchDiscogsRelease.mockImplementation(async (releaseId) => {
+      if (releaseId === "100002") {
+        return discogsReleaseJsonFactory.withTracklistAndVideos({
+          id: 100002,
+          tracklist: [
+            {
+              position: "A1",
+              title: "Similar Track",
+              duration: "4:00",
+              type_: "track",
+            },
+          ],
+          videos: [
+            {
+              description: "Similar Track",
+              duration: 240,
+              embed: true,
+              title: "Similar Track",
+              uri: "https://www.youtube.com/watch?v=similar12345",
+            },
+          ],
+        });
+      }
+
+      return releaseDetail;
+    });
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(3);
+    });
+
+    expect(result.current.queue[2]?.instanceId).toBe(
+      similarRelease.instance_id,
+    );
+    expect(result.current.queue[2]?.trackPosition).toBe("A1");
+  });
+
+  it("does not append similar releases when playback starts paused", async () => {
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: RELEASE_ID,
+        title: "Never Gonna Give You Up",
+        genres: ["Electronic"],
+        styles: ["House"],
+        resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100002,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        resource_url: "https://api.discogs.com/releases/100002",
+      }),
+    });
+
+    mockApi.fetchDiscogsRelease.mockImplementation(async (releaseId) => {
+      if (releaseId === "100002") {
+        return discogsReleaseJsonFactory.withTracklistAndVideos({
+          id: 100002,
+          tracklist: [
+            {
+              position: "A1",
+              title: "Similar Track",
+              duration: "4:00",
+              type_: "track",
+            },
+          ],
+          videos: [
+            {
+              description: "Similar Track",
+              duration: 240,
+              embed: true,
+              title: "Similar Track",
+              uri: "https://www.youtube.com/watch?v=similar12345",
+            },
+          ],
+        });
+      }
+
+      return releaseDetail;
+    });
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "A1",
+        startPaused: true,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+    expect(
+      result.current.queue.some(
+        (item) => item.instanceId === similarRelease.instance_id,
+      ),
+    ).toBe(false);
+  });
+
   it("appends tracks to the queue without duplicates", async () => {
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),

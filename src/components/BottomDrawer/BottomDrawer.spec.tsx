@@ -155,6 +155,30 @@ describe("BottomDrawer", () => {
     expect(overlay).toHaveAttribute("data-test-drawer", "true");
   });
 
+  it("applies data attribute to the drawer when hideOverlay is true", () => {
+    po.renderBottomDrawer({
+      dataAttribute: "data-test-drawer",
+      hideOverlay: true,
+    });
+
+    expect(
+      screen.queryByRole("button", { name: "Close drawer overlay" }),
+    ).toBeNull();
+    expect(screen.getByTestId(po.testId)).toHaveAttribute(
+      "data-test-drawer",
+      "true",
+    );
+  });
+
+  it("does not render overlay when hideOverlay is true", () => {
+    po.renderBottomDrawer({ hideOverlay: true });
+
+    expect(
+      screen.queryByRole("button", { name: "Close drawer overlay" }),
+    ).toBeNull();
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "false");
+  });
+
   it("has correct accessibility attributes", () => {
     po.renderBottomDrawer();
 

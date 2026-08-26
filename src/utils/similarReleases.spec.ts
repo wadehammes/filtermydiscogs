@@ -61,6 +61,34 @@ describe("getSimilarReleases", () => {
     expect(results).toHaveLength(0);
   });
 
+  it("excludes releases already represented in the queue", () => {
+    const queuedRelease = releaseFactory.build({
+      instance_id: "queued-instance",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 201,
+        title: "Queued Album",
+      },
+    });
+    const freshRelease = releaseFactory.build({
+      instance_id: "fresh-instance",
+      basic_information: {
+        ...releaseFactory.withStyles(["Ambient"]).basic_information,
+        master_id: 202,
+        title: "Fresh Album",
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceRelease, queuedRelease, freshRelease],
+      sourceRelease,
+      excludeInstanceIds: new Set(["queued-instance"]),
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("fresh-instance");
+  });
+
   it("prefers style overlap over genre-only overlap", () => {
     const styleMatch = releaseFactory.build({
       instance_id: "style-match",
@@ -89,6 +117,82 @@ describe("getSimilarReleases", () => {
 
     expect(results).toHaveLength(1);
     expect(results[0]?.instance_id).toBe("style-match");
+  });
+
+  it("matches compound style tags split on non-alphanumeric characters", () => {
+    const italoDiscoRelease = releaseFactory.build({
+      instance_id: "italo-source",
+      basic_information: {
+        ...releaseFactory.withStyles(["Italo-Disco"]).basic_information,
+        genres: ["Electronic"],
+        master_id: 301,
+        title: "Top Model",
+      },
+    });
+    const discoRelease = releaseFactory.build({
+      instance_id: "disco-match",
+      basic_information: {
+        ...releaseFactory.withStyles(["Disco"]).basic_information,
+        genres: ["Electronic"],
+        master_id: 302,
+        title: "Disco Match",
+      },
+    });
+    const unrelatedRelease = releaseFactory.build({
+      instance_id: "unrelated-house",
+      basic_information: {
+        ...releaseFactory.withStyles(["Deep House"]).basic_information,
+        genres: ["Electronic"],
+        master_id: 303,
+        title: "House Only",
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [italoDiscoRelease, discoRelease, unrelatedRelease],
+      sourceRelease: italoDiscoRelease,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("disco-match");
+  });
+
+  it("matches space-separated style tags to shorter style names", () => {
+    const garageHouseRelease = releaseFactory.build({
+      instance_id: "garage-house-source",
+      basic_information: {
+        ...releaseFactory.withStyles(["Garage House"]).basic_information,
+        genres: ["Electronic"],
+        master_id: 311,
+        title: "Garage Source",
+      },
+    });
+    const houseRelease = releaseFactory.build({
+      instance_id: "house-match",
+      basic_information: {
+        ...releaseFactory.withStyles(["House"]).basic_information,
+        genres: ["Electronic"],
+        master_id: 312,
+        title: "House Match",
+      },
+    });
+    const technoRelease = releaseFactory.build({
+      instance_id: "techno-only",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        genres: ["Electronic"],
+        master_id: 313,
+        title: "Techno Only",
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [garageHouseRelease, houseRelease, technoRelease],
+      sourceRelease: garageHouseRelease,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("house-match");
   });
 
   it("allows multiple releases from the same primary artist when release ids differ", () => {

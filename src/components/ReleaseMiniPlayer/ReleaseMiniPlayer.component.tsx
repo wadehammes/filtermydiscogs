@@ -182,7 +182,13 @@ export const ReleaseMiniPlayer = ({
   );
 
   return (
-    <>
+    <div className={styles.miniPlayerRoot}>
+      <PlaybackQueueDrawer
+        isOpen={isQueueOpen}
+        onClose={() => {
+          setIsQueueOpen(false);
+        }}
+      />
       <section
         className={styles.miniPlayerShell}
         data-testid="fmdReleaseMiniPlayer"
@@ -311,12 +317,6 @@ export const ReleaseMiniPlayer = ({
           </div>
         </div>
       </section>
-      <PlaybackQueueDrawer
-        isOpen={isQueueOpen}
-        onClose={() => {
-          setIsQueueOpen(false);
-        }}
-      />
-    </>
+    </div>
   );
 };

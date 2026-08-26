@@ -7,15 +7,19 @@ export interface UseDiscogsReleaseQueryParams {
   enabled?: boolean;
 }
 
+export const discogsReleaseQueryOptions = (releaseId: string) => ({
+  queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
+  queryFn: () => fetchDiscogsRelease(releaseId),
+  staleTime: 5 * 60 * 1000,
+  gcTime: 10 * 60 * 1000,
+});
+
 export const useDiscogsReleaseQuery = ({
   releaseId,
   enabled = false,
 }: UseDiscogsReleaseQueryParams) => {
   return useQuery({
-    queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
-    queryFn: () => fetchDiscogsRelease(releaseId),
+    ...discogsReleaseQueryOptions(releaseId),
     enabled: enabled && !!releaseId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   });
 };

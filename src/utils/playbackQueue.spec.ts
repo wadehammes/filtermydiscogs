@@ -6,6 +6,7 @@ import type {
 import {
   adjustQueueIndexAfterReorder,
   appendQueueItem,
+  buildFullPlayableAlbumQueue,
   buildPlayableAlbumQueue,
   createPreviewQueueItem,
   createQueueItem,
@@ -14,6 +15,7 @@ import {
   isSameQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
+  shuffleQueueItems,
 } from "./playbackQueue";
 
 describe("playbackQueue", () => {
@@ -83,6 +85,16 @@ describe("playbackQueue", () => {
     expect(queue.map((item) => item.trackPosition)).toEqual(["A2"]);
   });
 
+  it("builds a full playable album queue from the first matched track", () => {
+    const queue = buildFullPlayableAlbumQueue({
+      release,
+      tracks,
+      videos,
+    });
+
+    expect(queue.map((item) => item.trackPosition)).toEqual(["A1", "A2"]);
+  });
+
   it("returns an empty queue when the start track has no matched video", () => {
     const queue = buildPlayableAlbumQueue({
       release,
@@ -113,6 +125,32 @@ describe("playbackQueue", () => {
 
     expect(appendQueueItem([first], duplicate)).toEqual([first]);
     expect(appendQueueItem([first], second)).toEqual([first, second]);
+  });
+
+  it("shuffles queue items", () => {
+    const first = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const second = createQueueItem({
+      release,
+      trackPosition: "A2",
+      trackTitle: "Second",
+    });
+    const third = createQueueItem({
+      release: otherRelease,
+      trackPosition: "B1",
+      trackTitle: "Third",
+    });
+
+    const randomSpy = jest.spyOn(Math, "random").mockReturnValue(0);
+
+    expect(
+      shuffleQueueItems([first, second, third]).map((item) => item.trackTitle),
+    ).toEqual(["Second", "Third", "First"]);
+
+    randomSpy.mockRestore();
   });
 
   it("finds and removes queue items by index", () => {
