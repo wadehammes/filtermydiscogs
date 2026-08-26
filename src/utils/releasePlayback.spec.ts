@@ -3,6 +3,7 @@ import type {
   DiscogsVideo,
 } from "src/types/discogs-release-detail.types";
 import {
+  buildReleasePlaybackMatchIndex,
   buildYoutubeEmbedUrl,
   buildYoutubeSearchUrl,
   findPlayableTrackIndex,
@@ -167,6 +168,218 @@ describe("findVideoForTrack", () => {
         videos: kerriVideos,
       })?.title,
     ).toContain("Instrumental");
+  });
+
+  it("matches Unicode track titles when video uses a prefixed title and side suffix", () => {
+    const sideVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "YYY黒803 - A",
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "YYY黒803 - B",
+        embed: true,
+      },
+    ];
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "A",
+          title: "黒803A",
+          type_: "track",
+        },
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY黒803 - A");
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "B",
+          title: "黒803B",
+          type_: "track",
+        },
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY黒803 - B");
+  });
+
+  it("matches when video titles insert extra characters between shared segments", () => {
+    const sideVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "YYY – 金606 A",
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "YYY – 金606 B",
+        embed: true,
+      },
+    ];
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "A",
+          title: "YYY606 A",
+          type_: "track",
+        },
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY – 金606 A");
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "B",
+          title: "YYY606 B",
+          type_: "track",
+        },
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY – 金606 B");
+  });
+
+  it("matches duplicate track titles using position when only the video includes the side", () => {
+    const sideVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "YYY - 金344 B",
+        embed: true,
+      },
+    ];
+    const tracks: DiscogsTrack[] = [
+      {
+        position: "A",
+        title: "金344",
+        type_: "track",
+      },
+      {
+        position: "B",
+        title: "金344",
+        type_: "track",
+      },
+    ];
+
+    expect(
+      findVideoForTrack({
+        track: tracks[0] as DiscogsTrack,
+        videos: sideVideos,
+      }),
+    ).toBeNull();
+
+    expect(
+      findVideoForTrack({
+        track: tracks[1] as DiscogsTrack,
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY - 金344 B");
+
+    expect(getReleasePreviewVideos(tracks, sideVideos)).toHaveLength(0);
+    expect(
+      isTrackVideoPlayable({
+        track: tracks[0] as DiscogsTrack,
+        videos: sideVideos,
+      }),
+    ).toBe(false);
+    expect(
+      isTrackVideoPlayable({
+        track: tracks[1] as DiscogsTrack,
+        videos: sideVideos,
+      }),
+    ).toBe(true);
+  });
+
+  it("matches when numerals and text are reordered in the video title", () => {
+    const sideVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "YYY - 白161A [YYY161]",
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "YYY - 白161B [YYY161]",
+        embed: true,
+      },
+    ];
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "A",
+          title: "161白A",
+          type_: "track",
+        },
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY - 白161A [YYY161]");
+
+    expect(
+      findVideoForTrack({
+        track: {
+          position: "B",
+          title: "161白B",
+          type_: "track",
+        },
+        videos: sideVideos,
+      })?.title,
+    ).toBe("YYY - 白161B [YYY161]");
+  });
+});
+
+describe("buildReleasePlaybackMatchIndex", () => {
+  const videos: DiscogsVideo[] = [
+    {
+      uri: "https://www.youtube.com/watch?v=abc12345678",
+      title: "Artist - Never Gonna Give You Up (Official Video)",
+      embed: true,
+    },
+    {
+      uri: "https://www.youtube.com/watch?v=xyz98765432",
+      title: "Full Album Upload",
+      embed: true,
+    },
+  ];
+
+  const tracks: DiscogsTrack[] = [
+    {
+      position: "A",
+      title: "Never Gonna Give You Up",
+      type_: "track",
+    },
+  ];
+
+  it("indexes track matches and preview videos in one pass", () => {
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.hasPlayableTracks).toBe(true);
+    expect(matchIndex.embeddableVideos).toHaveLength(2);
+    expect(matchIndex.trackVideoByPosition.get("A")?.title).toContain(
+      "Never Gonna Give You Up",
+    );
+    expect(
+      findVideoForTrack({
+        track: tracks[0] as DiscogsTrack,
+        videos,
+        matchIndex,
+      })?.title,
+    ).toContain("Never Gonna Give You Up");
+    expect(getReleasePreviewVideos(tracks, videos, matchIndex)).toEqual([
+      videos[1],
+    ]);
+    expect(hasPlayableTrackVideo(tracks, videos, matchIndex)).toBe(true);
+    expect(
+      isTrackVideoPlayable({
+        track: tracks[0] as DiscogsTrack,
+        videos,
+        matchIndex,
+      }),
+    ).toBe(true);
   });
 });
 

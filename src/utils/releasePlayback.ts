@@ -42,72 +42,395 @@ const getMatchTokens = (normalizedTitle: string): string[] => {
     .filter((token) => token.length >= 2 && !MATCH_STOP_WORDS.has(token));
 };
 
-const trackVideoTitlesMatch = (
-  trackTitle: string,
-  videoTitle: string,
-): boolean => {
-  const normalizedTrack = normalizeTrackTitle(trackTitle);
+const MIN_FUZZY_MATCH_LENGTH = 3;
+const SIDE_LETTER_CLASS = "[a-d]";
 
-  if (normalizedTrack.length === 0) {
+const stringsOverlap = (
+  left: string,
+  right: string,
+  minLength = MIN_FUZZY_MATCH_LENGTH,
+): boolean => {
+  if (left.length < minLength || right.length === 0) {
     return false;
   }
 
-  const normalizedVideoSong = normalizeTrackTitle(
-    extractVideoSongTitle(videoTitle),
-  );
-  const normalizedFullVideo = normalizeTrackTitle(videoTitle);
+  return right.includes(left) || left.includes(right);
+};
 
+const normalizedTitlesOverlap = (
+  normalizedTrack: string,
+  normalizedVideo: string,
+): boolean => {
+  if (normalizedTrack.length === 0 || normalizedVideo.length === 0) {
+    return false;
+  }
+
+  if (stringsOverlap(normalizedTrack, normalizedVideo, 1)) {
+    return true;
+  }
+
+  return stringsOverlap(
+    normalizedTrack.replace(/\s+/g, ""),
+    normalizedVideo.replace(/\s+/g, ""),
+  );
+};
+
+const stripToAlnum = (title: string): string => {
+  return normalizeTrackTitle(title).replace(/[^\p{L}\p{N}]/gu, "");
+};
+
+const stripToAlnumForSideExtraction = (title: string): string => {
+  return normalizeTrackTitle(title.replace(/\[[^\]]+\]/g, " ")).replace(
+    /[^\p{L}\p{N}]/gu,
+    "",
+  );
+};
+
+const alnumIsSubsequence = (needle: string, haystack: string): boolean => {
+  if (needle.length === 0) {
+    return false;
+  }
+
+  let haystackIndex = 0;
+
+  for (const character of needle) {
+    haystackIndex = haystack.indexOf(character, haystackIndex);
+
+    if (haystackIndex === -1) {
+      return false;
+    }
+
+    haystackIndex += 1;
+  }
+
+  return true;
+};
+
+const alnumMultisetIsContained = (
+  trackAlnum: string,
+  videoAlnum: string,
+): boolean => {
+  const remainingCounts = new Map<string, number>();
+
+  for (const character of videoAlnum) {
+    remainingCounts.set(character, (remainingCounts.get(character) ?? 0) + 1);
+  }
+
+  for (const character of trackAlnum) {
+    const remaining = remainingCounts.get(character) ?? 0;
+
+    if (remaining === 0) {
+      return false;
+    }
+
+    remainingCounts.set(character, remaining - 1);
+  }
+
+  return true;
+};
+
+const alnumTitlesOverlap = (
+  trackAlnum: string,
+  videoAlnum: string,
+): boolean => {
+  if (trackAlnum.length < MIN_FUZZY_MATCH_LENGTH) {
+    return false;
+  }
+
+  if (stringsOverlap(trackAlnum, videoAlnum)) {
+    return true;
+  }
+
+  if (alnumIsSubsequence(trackAlnum, videoAlnum)) {
+    return true;
+  }
+
+  return alnumMultisetIsContained(trackAlnum, videoAlnum);
+};
+
+const extractAttachedSideSuffix = (title: string): string | null => {
+  const attachedSideMatch = stripToAlnumForSideExtraction(title).match(
+    new RegExp(`(?:[\\d\\p{Script=Han}])(${SIDE_LETTER_CLASS})$`, "u"),
+  );
+
+  return attachedSideMatch?.[1] ?? null;
+};
+
+const extractSideSuffixFromNormalized = (normalized: string): string | null => {
+  const dashSideMatch = normalized.match(
+    new RegExp(`\\s[-–—]\\s*(${SIDE_LETTER_CLASS}\\d*)\\s*$`),
+  );
+
+  if (dashSideMatch?.[1]) {
+    return dashSideMatch[1].charAt(0);
+  }
+
+  const spaceSideMatch = normalized.match(
+    new RegExp(`\\s(${SIDE_LETTER_CLASS})\\s*$`),
+  );
+
+  return spaceSideMatch?.[1] ?? null;
+};
+
+const extractTitleSideSuffix = (title: string): string | null => {
+  return (
+    extractSideSuffixFromNormalized(normalizeTrackTitle(title)) ??
+    extractAttachedSideSuffix(title)
+  );
+};
+
+const extractVideoSideSuffix = (title: string): string | null => {
+  for (const candidate of [title, extractVideoSongTitle(title)]) {
+    const side =
+      extractSideSuffixFromNormalized(normalizeTrackTitle(candidate)) ??
+      extractAttachedSideSuffix(candidate);
+
+    if (side) {
+      return side;
+    }
+  }
+
+  return null;
+};
+
+const getTrackSideIdentifier = (track: DiscogsTrack): string | null => {
+  return (
+    extractTitleSideSuffix(track.title) ??
+    track.position
+      .trim()
+      .toLowerCase()
+      .match(/^([a-d])\d*/)?.[1] ??
+    null
+  );
+};
+
+interface TrackVideoMatchContext {
+  normalizedTrack: string;
+  normalizedVideoSong: string;
+  normalizedFullVideo: string;
+  trackAlnum: string;
+  videoAlnum: string;
+  videoSongAlnum: string;
+  trackTokens: string[];
+  videoTokenSet: Set<string>;
+  trackSide: string | null;
+  videoSide: string | null;
+}
+
+interface PreparedTrackMatchData {
+  normalizedTrack: string;
+  trackAlnum: string;
+  trackTokens: string[];
+  trackSide: string | null;
+}
+
+interface PreparedVideoMatchData {
+  video: DiscogsVideo;
+  normalizedVideoSong: string;
+  normalizedFullVideo: string;
+  videoAlnum: string;
+  videoSongAlnum: string;
+  videoTokenSet: Set<string>;
+  videoSide: string | null;
+}
+
+const prepareTrackMatchData = (track: DiscogsTrack): PreparedTrackMatchData => {
+  const normalizedTrack = normalizeTrackTitle(track.title);
+
+  return {
+    normalizedTrack,
+    trackAlnum: stripToAlnum(track.title),
+    trackTokens: getMatchTokens(normalizedTrack),
+    trackSide: getTrackSideIdentifier(track),
+  };
+};
+
+const prepareVideoMatchData = (video: DiscogsVideo): PreparedVideoMatchData => {
+  const label = getVideoMatchLabel(video);
+  const videoSongTitle = extractVideoSongTitle(label);
+  const normalizedVideoSong = normalizeTrackTitle(videoSongTitle);
+  const normalizedFullVideo = normalizeTrackTitle(label);
+
+  return {
+    video,
+    normalizedVideoSong,
+    normalizedFullVideo,
+    videoAlnum: stripToAlnum(label),
+    videoSongAlnum: stripToAlnum(videoSongTitle),
+    videoTokenSet: new Set([
+      ...getMatchTokens(normalizedVideoSong),
+      ...getMatchTokens(normalizedFullVideo),
+    ]),
+    videoSide: extractVideoSideSuffix(label),
+  };
+};
+
+const toMatchContext = (
+  track: PreparedTrackMatchData,
+  video: PreparedVideoMatchData,
+): TrackVideoMatchContext => ({
+  normalizedTrack: track.normalizedTrack,
+  normalizedVideoSong: video.normalizedVideoSong,
+  normalizedFullVideo: video.normalizedFullVideo,
+  trackAlnum: track.trackAlnum,
+  videoAlnum: video.videoAlnum,
+  videoSongAlnum: video.videoSongAlnum,
+  trackTokens: track.trackTokens,
+  videoTokenSet: video.videoTokenSet,
+  trackSide: track.trackSide,
+  videoSide: video.videoSide,
+});
+
+const trackVideoSidesAreCompatible = (
+  context: TrackVideoMatchContext,
+): boolean => {
+  if (!context.videoSide) {
+    return true;
+  }
+
+  if (!context.trackSide) {
+    return false;
+  }
+
+  return context.trackSide.charAt(0) === context.videoSide.charAt(0);
+};
+
+const titlesOverlapFromContext = (context: TrackVideoMatchContext): boolean => {
   if (
-    normalizedVideoSong.includes(normalizedTrack) ||
-    normalizedTrack.includes(normalizedVideoSong) ||
-    normalizedFullVideo.includes(normalizedTrack) ||
-    normalizedTrack.includes(normalizedFullVideo)
+    normalizedTitlesOverlap(
+      context.normalizedTrack,
+      context.normalizedVideoSong,
+    ) ||
+    normalizedTitlesOverlap(
+      context.normalizedTrack,
+      context.normalizedFullVideo,
+    )
   ) {
     return true;
   }
 
-  const trackTokens = getMatchTokens(normalizedTrack);
-
-  if (trackTokens.length === 0) {
-    return false;
-  }
-
-  const videoTokenSet = new Set([
-    ...getMatchTokens(normalizedVideoSong),
-    ...getMatchTokens(normalizedFullVideo),
-  ]);
-
-  return trackTokens.every((token) => videoTokenSet.has(token));
+  return (
+    alnumTitlesOverlap(context.trackAlnum, context.videoAlnum) ||
+    alnumTitlesOverlap(context.trackAlnum, context.videoSongAlnum)
+  );
 };
 
-const scoreTrackVideoMatch = (
-  trackTitle: string,
-  videoTitle: string,
+const scorePreparedTrackVideoMatch = (
+  track: PreparedTrackMatchData,
+  video: PreparedVideoMatchData,
 ): number => {
-  if (!trackVideoTitlesMatch(trackTitle, videoTitle)) {
+  if (track.normalizedTrack.length === 0) {
     return 0;
   }
 
-  const normalizedTrack = normalizeTrackTitle(trackTitle);
-  const normalizedVideoSong = normalizeTrackTitle(
-    extractVideoSongTitle(videoTitle),
-  );
-  const trackTokens = getMatchTokens(normalizedTrack);
-  const videoTokenSet = new Set(getMatchTokens(normalizedVideoSong));
-  const matchedTokenCount = trackTokens.filter((token) =>
-    videoTokenSet.has(token),
+  const context = toMatchContext(track, video);
+
+  if (!trackVideoSidesAreCompatible(context)) {
+    return 0;
+  }
+
+  const overlaps = titlesOverlapFromContext(context);
+  const tokensMatch =
+    context.trackTokens.length > 0 &&
+    context.trackTokens.every((token) => context.videoTokenSet.has(token));
+
+  if (!(overlaps || tokensMatch)) {
+    return 0;
+  }
+
+  const matchedTokenCount = context.trackTokens.filter((token) =>
+    context.videoTokenSet.has(token),
   ).length;
 
-  let score = matchedTokenCount / Math.max(trackTokens.length, 1);
+  let score = matchedTokenCount / Math.max(context.trackTokens.length, 1);
 
   if (
-    normalizedVideoSong.includes(normalizedTrack) ||
-    normalizedTrack.includes(normalizedVideoSong)
+    normalizedTitlesOverlap(
+      context.normalizedTrack,
+      context.normalizedVideoSong,
+    )
   ) {
     score += 1;
   }
 
+  if (
+    alnumTitlesOverlap(context.trackAlnum, context.videoAlnum) ||
+    alnumTitlesOverlap(context.trackAlnum, context.videoSongAlnum)
+  ) {
+    score += 1;
+  }
+
+  if (
+    context.videoSide &&
+    context.trackSide &&
+    context.trackSide.charAt(0) === context.videoSide.charAt(0)
+  ) {
+    score += 2;
+  }
+
   return score;
+};
+
+const findBestVideoForPreparedTrack = (
+  preparedTrack: PreparedTrackMatchData,
+  preparedVideos: PreparedVideoMatchData[],
+): DiscogsVideo | null => {
+  if (preparedTrack.normalizedTrack.length === 0) {
+    return null;
+  }
+
+  let bestVideo: DiscogsVideo | null = null;
+  let bestScore = 0;
+
+  for (const preparedVideo of preparedVideos) {
+    const score = scorePreparedTrackVideoMatch(preparedTrack, preparedVideo);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestVideo = preparedVideo.video;
+    }
+  }
+
+  return bestVideo;
+};
+
+export interface ReleasePlaybackMatchIndex {
+  embeddableVideos: DiscogsVideo[];
+  trackVideoByPosition: ReadonlyMap<string, DiscogsVideo>;
+  previewVideos: DiscogsVideo[];
+  hasPlayableTracks: boolean;
+}
+
+export const buildReleasePlaybackMatchIndex = (
+  tracks: DiscogsTrack[],
+  videos: DiscogsVideo[],
+): ReleasePlaybackMatchIndex => {
+  const embeddableVideos = getEmbeddableVideos(videos);
+  const preparedVideos = embeddableVideos.map(prepareVideoMatchData);
+  const trackVideoByPosition = new Map<string, DiscogsVideo>();
+  const matchedVideoUris = new Set<string>();
+
+  for (const track of tracks) {
+    const preparedTrack = prepareTrackMatchData(track);
+    const bestVideo = findBestVideoForPreparedTrack(
+      preparedTrack,
+      preparedVideos,
+    );
+
+    if (bestVideo) {
+      trackVideoByPosition.set(track.position, bestVideo);
+      matchedVideoUris.add(bestVideo.uri);
+    }
+  }
+
+  return {
+    embeddableVideos,
+    trackVideoByPosition,
+    previewVideos: embeddableVideos.filter(
+      (video) => !matchedVideoUris.has(video.uri),
+    ),
+    hasPlayableTracks: trackVideoByPosition.size > 0,
+  };
 };
 
 export const dedupeVideosByYoutubeId = (
@@ -130,8 +453,11 @@ export const dedupeVideosByYoutubeId = (
   return deduped;
 };
 
+const getVideoDisplayLabel = (video: DiscogsVideo, fallback = ""): string =>
+  video.title.trim() || video.description?.trim() || fallback;
+
 const getVideoMatchLabel = (video: DiscogsVideo): string =>
-  video.title.trim() || video.description?.trim() || "";
+  getVideoDisplayLabel(video);
 
 export const parseYoutubeVideoId = (uri: string): string | null => {
   const match = YOUTUBE_ID_PATTERN.exec(uri);
@@ -142,7 +468,8 @@ export const parseYoutubeVideoId = (uri: string): string | null => {
 export const normalizeTrackTitle = (title: string): string => {
   return title
     .toLowerCase()
-    .replace(/[^\w\s]/g, " ")
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 };
@@ -161,43 +488,38 @@ export const getEmbeddableVideos = (videos: DiscogsVideo[]): DiscogsVideo[] => {
 export const findVideoForTrack = ({
   track,
   videos,
+  matchIndex,
 }: {
   track: DiscogsTrack;
   videos: DiscogsVideo[];
+  matchIndex?: ReleasePlaybackMatchIndex;
 }): DiscogsVideo | null => {
+  if (matchIndex) {
+    return matchIndex.trackVideoByPosition.get(track.position) ?? null;
+  }
+
   const embeddableVideos = getEmbeddableVideos(videos);
 
   if (embeddableVideos.length === 0) {
     return null;
   }
 
-  const normalizedTrackTitle = normalizeTrackTitle(track.title);
-
-  if (normalizedTrackTitle.length === 0) {
-    return null;
-  }
-
-  let bestVideo: DiscogsVideo | null = null;
-  let bestScore = 0;
-
-  for (const video of embeddableVideos) {
-    const label = getVideoMatchLabel(video);
-    const score = scoreTrackVideoMatch(track.title, label);
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestVideo = video;
-    }
-  }
-
-  return bestVideo;
+  return findBestVideoForPreparedTrack(
+    prepareTrackMatchData(track),
+    embeddableVideos.map(prepareVideoMatchData),
+  );
 };
 
 export const hasPlayableTrackVideo = (
   tracks: DiscogsTrack[],
   videos: DiscogsVideo[],
+  matchIndex?: ReleasePlaybackMatchIndex,
 ): boolean => {
-  return tracks.some((track) => findVideoForTrack({ track, videos }) !== null);
+  if (matchIndex) {
+    return matchIndex.hasPlayableTracks;
+  }
+
+  return buildReleasePlaybackMatchIndex(tracks, videos).hasPlayableTracks;
 };
 
 export const PREVIEW_TRACK_POSITION_PREFIX = "preview:";
@@ -233,7 +555,7 @@ export const formatVideoDuration = (
 };
 
 export const getPreviewVideoTitle = (video: DiscogsVideo): string =>
-  video.title.trim() || video.description?.trim() || "Untitled video";
+  getVideoDisplayLabel(video, "Untitled video");
 
 export const previewVideoToTrack = (video: DiscogsVideo): DiscogsTrack => ({
   position: getPreviewTrackPosition(video),
@@ -250,28 +572,30 @@ export const previewVideosToTracks = (videos: DiscogsVideo[]): DiscogsTrack[] =>
 export const getReleasePreviewVideos = (
   tracks: DiscogsTrack[],
   videos: DiscogsVideo[],
+  matchIndex?: ReleasePlaybackMatchIndex,
 ): DiscogsVideo[] => {
-  const embeddableVideos = getEmbeddableVideos(videos);
-  const matchedVideoUris = new Set<string>();
-
-  for (const track of tracks) {
-    const matchedVideo = findVideoForTrack({ track, videos });
-
-    if (matchedVideo) {
-      matchedVideoUris.add(matchedVideo.uri);
-    }
+  if (matchIndex) {
+    return matchIndex.previewVideos;
   }
 
-  return embeddableVideos.filter((video) => !matchedVideoUris.has(video.uri));
+  return buildReleasePlaybackMatchIndex(tracks, videos).previewVideos;
 };
 
 export const isTrackVideoPlayable = ({
   track,
   videos,
+  matchIndex,
 }: {
   track: DiscogsTrack;
   videos: DiscogsVideo[];
-}): boolean => findVideoForTrack({ track, videos }) !== null;
+  matchIndex?: ReleasePlaybackMatchIndex;
+}): boolean => {
+  if (matchIndex) {
+    return matchIndex.trackVideoByPosition.has(track.position);
+  }
+
+  return findVideoForTrack({ track, videos }) !== null;
+};
 
 export const findTrackIndexByPosition = (
   tracks: DiscogsTrack[],
@@ -357,12 +681,13 @@ export const findPlayableTrackIndex = ({
   startIndex: number;
   direction: 1 | -1;
 }): number | null => {
+  const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
   let index = startIndex + direction;
 
   while (index >= 0 && index < tracks.length) {
     const track = tracks[index];
 
-    if (track && findVideoForTrack({ track, videos })) {
+    if (track && matchIndex.trackVideoByPosition.has(track.position)) {
       return index;
     }
 

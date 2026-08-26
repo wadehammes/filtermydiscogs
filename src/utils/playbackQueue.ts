@@ -1,8 +1,8 @@
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
+  buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
-  findVideoForTrack,
   getPreviewTrackPosition,
   getPreviewVideoTitle,
 } from "src/utils/releasePlayback";
@@ -154,12 +154,13 @@ export const buildPlayableAlbumQueue = ({
     ];
   }
 
+  const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
   const items: PlaybackQueueItem[] = [];
 
   for (let index = startIndex; index < tracks.length; index += 1) {
     const track = tracks[index];
 
-    if (!(track && findVideoForTrack({ track, videos }))) {
+    if (!(track && matchIndex.trackVideoByPosition.has(track.position))) {
       continue;
     }
 
