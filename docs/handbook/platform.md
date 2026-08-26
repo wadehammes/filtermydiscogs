@@ -9,7 +9,7 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 1. Checkout (full history).
 2. **pnpm** via **pnpm/action-setup**; **Node** version from [`.tool-versions`](../../.tool-versions).
 3. **`pnpm install`**
-4. **`pnpm tsc:ci`** (runs `db:generate` first)
+4. **`pnpm tsc:ci`** (runs `contract:emit` first)
 5. **`pnpm lint:ci`**
 6. **`pnpm lint:css`**
 7. **`pnpm test:ci`**
@@ -27,8 +27,8 @@ Run the same locally before pushing when possible — with [mise](https://mise.j
 | Command | Purpose |
 |---------|---------|
 | `mise install` | Install Node/pnpm from `.tool-versions`. |
-| `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm db:generate`). |
-| `mise run bootstrap` | JS deps + Prisma generate only (tools already installed). |
+| `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm contract:emit`). |
+| `mise run bootstrap` | JS deps + contract emit only (tools already installed). |
 | `mise run ci` | Same gates as Actions: `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, `test:e2e:ci`, `knip:ci`. |
 
 `[env]` loads **`.env.local`** (redacted in mise output) for shells and tasks in this repo. Create that file from the root README before DB/OAuth work; a missing file is harmless.
@@ -39,27 +39,27 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 
 | Script | Purpose |
 |--------|---------|
-| `pnpm dev` | Runs **`prisma generate`** first (`predev`), then Next dev on **port 6767** (Turbopack). |
+| `pnpm dev` | Runs **`contract:emit`** first (`predev`), then Next dev on **port 6767** (Turbopack). |
 | `pnpm dev:webpack` | Same as **`pnpm dev`** but **Webpack** — use when Turbopack dev hits “module factory is not available” on lazy chunks. |
-| `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
+| `pnpm build` | `contract:emit` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
-| `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
+| `pnpm tsc:ci` | `contract:emit` + strict TypeScript (`tsc --strict`). |
 | `pnpm lint:ci` / `pnpm test:ci` / `pnpm test:ci:shard` / `pnpm knip:ci` | Quality gates. **`test:ci`** runs Jest **`--runInBand`** (matches local **`pnpm test`**). Optional local sharding: **`JEST_SHARD=2/3 pnpm test:ci:shard`**. |
 | `pnpm generate:theme-init` | Regenerates **`public/theme-init.js`** from [`themeAppearance.ts`](../../src/utils/themeAppearance.ts) (also runs on **`postinstall`**). |
 | `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
 | `pnpm knip` | Find unused exports/files locally ([`knip.json`](../../knip.json)). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
-| `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
+| `pnpm db:*` | Prisma contract emit, migrate, push, verify (see [database.md](database.md)). |
 | `pnpm analyze` / `pnpm lighthouse` | Bundle and performance tooling. |
 | `pnpm test:e2e` / `pnpm test:e2e:install` | Playwright regression tests ([`e2e/`](../../e2e/)); run **`test:e2e:install`** once for Chromium locally. |
 | `pnpm test:e2e:ci` | CI/local gate: **`playwright install chromium --with-deps`** then **`playwright test`**. |
 
 Full list: [`package.json`](../../package.json).
 
-### `pg` and `@types/pg`
+### `pg`
 
-[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`catalog`** pins **`pg`** and **`@types/pg`** together; **`package.json`** references both via **`catalog:`**. **`@prisma/adapter-pg`** also depends on **`@types/pg`** — pnpm dedupes to one copy when ranges align; duplicate DefinitelyTyped versions break **`new PrismaPg(pool)`** under **`exactOptionalPropertyTypes`**. When bumping Postgres client deps, edit the catalog entries only, run **`pnpm install`**, then **`pnpm tsc:ci`**.
+[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`catalog`** pins **`pg`** and **`@types/pg`** together; **`package.json`** references both via **`catalog:`**. When bumping Postgres client deps, edit the catalog entries only, run **`pnpm install`**, then **`pnpm tsc:ci`**.
 
 ## Environment variables
 
@@ -73,8 +73,6 @@ Full list: [`package.json`](../../package.json).
 | `DISCOGS_THROTTLE_QUEUE_TIMEOUT_MS` | Max time a caller may wait for the in-memory Discogs throttle slot ([`discogs-request-throttle.ts`](../../src/lib/discogs-request-throttle.ts); default **30000**). |
 | `IDENTITY_CACHE_TTL_MS` / `IDENTITY_CACHE_STALE_MS` | In-memory OAuth identity cache fresh/stale windows (defaults **5 min** / **30 min**) |
 | `DATABASE_URL` | Postgres connection string for Prisma runtime (prefer **pooled** `pooled.db.prisma.io` when using Prisma Postgres) |
-| `DIRECT_URL` / `POSTGRES_URL` | Direct Postgres URL for Prisma CLI migrations ([`prisma.config.ts`](../../prisma.config.ts), [`scripts/migrate-deploy.sh`](../../scripts/migrate-deploy.sh)); Vercel Prisma integration often sets **`POSTGRES_URL`** to **`db.prisma.io`** |
-| `PRISMA_MIGRATE_DEPLOY_ATTEMPTS` / `PRISMA_MIGRATE_DEPLOY_RETRY_DELAY_SEC` | Optional overrides for build-time **`migrate deploy`** retries (defaults **5** / **5** seconds, exponential backoff) |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `NEXT_PUBLIC_APP_BUILD_VERSION` | Injected at build time from **`VERCEL_GIT_COMMIT_SHA`** or **`VERCEL_DEPLOYMENT_ID`** (falls back to **`development`** locally). Baked into the client bundle; compared against **`GET /api/build-version`** for production deploy toasts. |
 | `NEXT_PUBLIC_VERCEL_ENV` | Exposed copy of **`VERCEL_ENV`** (`production`, `preview`, or **`development`** locally). **`DeploymentUpdateToast`** polls only when this is **`production`**. |

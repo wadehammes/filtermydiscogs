@@ -9,15 +9,11 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    user: {
-      findUnique: jest.fn(),
-      upsert: jest.fn(),
-    },
-  },
-}));
+const dbMock = createDbModuleMock();
+
+jest.mock("src/lib/db", () => dbMock);
 
 jest.mock("src/lib/api-helpers", () => ({
   getVerifiedUserFromRequestWithRateLimit: jest.fn(),
@@ -25,17 +21,14 @@ jest.mock("src/lib/api-helpers", () => ({
 
 type RouteModule = typeof import("src/app/api/user/preferences/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
-type DbModule = typeof import("src/lib/db");
 
 let GET: RouteModule["GET"];
 let PATCH: RouteModule["PATCH"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["user"]["findUnique"]
->;
-let mockUpsert: jest.MockedFunction<DbModule["prisma"]["user"]["upsert"]>;
+let mockUsersFirst: typeof dbMock.orm.Users.first;
+let mockUsersUpsert: typeof dbMock.orm.Users.upsert;
 
 const USER_ID = 42;
 const USERNAME = "crate-digger";
@@ -48,10 +41,9 @@ const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
 const defaultPreferences = userPreferencesFactory.defaults();
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db] = await Promise.all([
+  const [routeModule, apiHelpers] = await Promise.all([
     import("src/app/api/user/preferences/route"),
     import("src/lib/api-helpers"),
-    import("src/lib/db"),
   ]);
 
   GET = routeModule.GET;
@@ -59,8 +51,8 @@ beforeAll(async () => {
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockFindUnique = jest.mocked(db.prisma.user.findUnique);
-  mockUpsert = jest.mocked(db.prisma.user.upsert);
+  mockUsersFirst = dbMock.orm.Users.first;
+  mockUsersUpsert = dbMock.orm.Users.upsert;
 });
 
 describe("/api/user/preferences", () => {
@@ -70,15 +62,15 @@ describe("/api/user/preferences", () => {
       return new NextResponse(JSON.stringify(body), init);
     });
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockFindUnique.mockResolvedValue({
+    mockUsersFirst.mockResolvedValue({
       preferences: defaultPreferences,
-    } as Awaited<ReturnType<DbModule["prisma"]["user"]["findUnique"]>>);
-    mockUpsert.mockResolvedValue({
+    });
+    mockUsersUpsert.mockResolvedValue({
       preferences: {
         ...defaultPreferences,
         theme: "dark",
       },
-    } as Awaited<ReturnType<DbModule["prisma"]["user"]["upsert"]>>);
+    });
   });
 
   it("GET returns stored preferences without writing", async () => {
@@ -87,18 +79,15 @@ describe("/api/user/preferences", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(mockFindUnique).toHaveBeenCalledWith({
-      where: { discogs_user_id: USER_ID },
-      select: { preferences: true },
-    });
-    expect(mockUpsert).not.toHaveBeenCalled();
+    expect(mockUsersFirst).toHaveBeenCalled();
+    expect(mockUsersUpsert).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({
       preferences: defaultPreferences,
     });
   });
 
   it("GET returns defaults when the user row is missing", async () => {
-    mockFindUnique.mockResolvedValue(null);
+    mockUsersFirst.mockResolvedValue(null);
 
     const response = await GET(
       new NextRequest("http://localhost/api/user/preferences"),
@@ -122,18 +111,19 @@ describe("/api/user/preferences", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(mockUpsert).toHaveBeenCalledWith({
-      where: { discogs_user_id: USER_ID },
+    expect(mockUsersUpsert).toHaveBeenCalledWith({
       create: {
-        discogs_user_id: USER_ID,
+        discogsUserId: USER_ID,
         username: USERNAME,
         preferences: expect.objectContaining({ theme: "dark" }),
+        updatedAt: expect.any(String),
       },
       update: {
         username: USERNAME,
         preferences: expect.objectContaining({ theme: "dark" }),
+        updatedAt: expect.any(String),
       },
-      select: { preferences: true },
+      conflictOn: { discogsUserId: USER_ID },
     });
     await expect(response.json()).resolves.toEqual({
       preferences: {
@@ -159,6 +149,6 @@ describe("/api/user/preferences", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(mockUpsert).not.toHaveBeenCalled();
+    expect(mockUsersUpsert).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,9 @@
       "!**/*.svg",
       "!!**/node_modules",
       "!!src/styles/global/prose-scope.css",
-      "!!src/styles/global/theming.css"
+      "!!src/styles/global/theming.css",
+      "!src/prisma/contract.d.ts",
+      "!src/prisma/contract.json"
     ]
   },
   "formatter": {
@@ -123,7 +125,11 @@
       "linter": {
         "rules": {
           "style": {
-            "noRestrictedImports": "off"
+            "noRestrictedImports": "off",
+            "noNonNullAssertion": "off"
+          },
+          "suspicious": {
+            "noDocumentCookie": "off"
           }
         }
       }
