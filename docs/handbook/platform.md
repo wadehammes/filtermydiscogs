@@ -52,7 +52,9 @@ Full list: [`package.json`](../../package.json).
 | `DISCOGS_API_USER_AGENT` | Optional Discogs API User-Agent override |
 | `DISCOGS_MIN_REQUEST_INTERVAL_MS` | Fallback minimum spacing between outbound Discogs API calls per serverless instance when Discogs rate-limit headers are absent (default **1000** ms; set **0** to disable). When headers are present, [`discogs-rate-limit.ts`](../../src/lib/discogs-rate-limit.ts) paces from **`X-Discogs-Ratelimit-*`**. |
 | `IDENTITY_CACHE_TTL_MS` / `IDENTITY_CACHE_STALE_MS` | In-memory OAuth identity cache fresh/stale windows (defaults **5 min** / **30 min**) |
-| `DATABASE_URL` | Postgres connection string for Prisma |
+| `DATABASE_URL` | Postgres connection string for Prisma runtime (prefer **pooled** `pooled.db.prisma.io` when using Prisma Postgres) |
+| `DIRECT_URL` / `POSTGRES_URL` | Direct Postgres URL for Prisma CLI migrations ([`prisma.config.ts`](../../prisma.config.ts), [`scripts/migrate-deploy.sh`](../../scripts/migrate-deploy.sh)); Vercel Prisma integration often sets **`POSTGRES_URL`** to **`db.prisma.io`** |
+| `PRISMA_MIGRATE_DEPLOY_ATTEMPTS` / `PRISMA_MIGRATE_DEPLOY_RETRY_DELAY_SEC` | Optional overrides for build-time **`migrate deploy`** retries (defaults **5** / **5** seconds, exponential backoff) |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
 | `CRON_SECRET` | Bearer token for Vercel Cron routes (e.g. **`/api/cron/product-analytics`**) |

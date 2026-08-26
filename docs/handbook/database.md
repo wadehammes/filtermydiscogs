@@ -113,7 +113,7 @@ pnpm dev                # app uses .env.local
 
 Generated Prisma client output is **not committed** (`/prisma/node_modules` and root `node_modules/.prisma/client` are gitignored; CI and `postinstall` run `prisma generate`).
 
-**Vercel builds** run **`prisma migrate deploy`** before **`next build`** ([`package.json`](../../package.json)) so each Production / Preview deployment applies pending migrations to that target’s **`DATABASE_URL`**. For one-off fixes, still use **`pnpm db:pull:prod`** + **`pnpm db:migrate:prod`** locally. Preview and Production use **separate** Prisma Postgres instances — migrating one does not migrate the other.
+**Vercel builds** run **`scripts/migrate-deploy.sh`** before **`next build`** ([`package.json`](../../package.json)) so each Production / Preview deployment applies pending migrations. The script uses **`DIRECT_URL` → `POSTGRES_URL` → `DATABASE_URL`** (Prisma Postgres: direct host **`db.prisma.io`** for migrations; pooled **`pooled.db.prisma.io`** for runtime when configured), appends **`connect_timeout=30`** for serverless cold starts, and **retries** transient **`P1001`** connection errors (default 5 attempts, exponential backoff). Override with **`PRISMA_MIGRATE_DEPLOY_ATTEMPTS`** / **`PRISMA_MIGRATE_DEPLOY_RETRY_DELAY_SEC`**. Skips migrate when no database URL is set (local builds without **`.env.local`**). For one-off fixes, still use **`pnpm db:pull:prod`** + **`pnpm db:migrate:prod`** locally. Preview and Production use **separate** Prisma Postgres instances — migrating one does not migrate the other.
 
 Migrations live under [`prisma/migrations/`](../../prisma/migrations/).
 
