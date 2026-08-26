@@ -22,6 +22,8 @@ interface BottomDrawerProps {
   contentClassName?: string;
   aboveMiniPlayer?: boolean;
   behindMiniPlayer?: boolean;
+  hideOverlay?: boolean;
+  inline?: boolean;
 }
 
 export const BottomDrawer = ({
@@ -38,8 +40,10 @@ export const BottomDrawer = ({
   contentClassName,
   aboveMiniPlayer = false,
   behindMiniPlayer = false,
+  hideOverlay = false,
+  inline = false,
 }: BottomDrawerProps) => {
-  usePlaybackPageScrollLock(isOpen);
+  usePlaybackPageScrollLock(isOpen && !hideOverlay && !inline);
   const mounted = useMounted();
 
   if (!(isOpen && mounted)) {
@@ -69,27 +73,33 @@ export const BottomDrawer = ({
     </button>
   );
 
-  return createPortal(
+  const drawer = (
     <>
-      <button
-        type="button"
-        className={classNames(styles.overlay, {
-          [styles.open]: isOpen,
-          [styles.aboveMiniPlayer]: aboveMiniPlayer,
-          [styles.behindMiniPlayer]: behindMiniPlayer,
-        })}
-        onClick={onClose}
-        aria-label="Close drawer overlay"
-        {...(dataAttribute ? { [dataAttribute]: "true" } : {})}
-      />
+      {hideOverlay || inline ? null : (
+        <button
+          type="button"
+          className={classNames(styles.overlay, {
+            [styles.open]: isOpen,
+            [styles.aboveMiniPlayer]: aboveMiniPlayer,
+            [styles.behindMiniPlayer]: behindMiniPlayer,
+          })}
+          onClick={onClose}
+          aria-label="Close drawer overlay"
+          {...(dataAttribute ? { [dataAttribute]: "true" } : {})}
+        />
+      )}
       {closeButtonPlacement === "floating" ? closeButton : null}
       <div
         className={classNames(styles.drawer, drawerClassName, {
           [styles.open]: isOpen,
           [styles.aboveMiniPlayer]: aboveMiniPlayer,
           [styles.behindMiniPlayer]: behindMiniPlayer,
+          [styles.inline]: inline,
         })}
         data-testid="fmdBottomDrawer"
+        {...((hideOverlay || inline) && dataAttribute
+          ? { [dataAttribute]: "true" }
+          : {})}
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -100,7 +110,7 @@ export const BottomDrawer = ({
           }
         }}
         role="dialog"
-        aria-modal="true"
+        aria-modal={hideOverlay || inline ? "false" : "true"}
         tabIndex={-1}
       >
         {(title || headerContent) && (
@@ -121,7 +131,12 @@ export const BottomDrawer = ({
           </div>
         )}
       </div>
-    </>,
-    document.body,
+    </>
   );
+
+  if (inline) {
+    return drawer;
+  }
+
+  return createPortal(drawer, document.body);
 };

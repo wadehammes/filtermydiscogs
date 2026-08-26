@@ -16,6 +16,8 @@ export type BottomDrawerRenderProps = {
   closeButtonAriaLabel?: string;
   closeButtonPlacement?: "floating" | "header";
   dataAttribute?: string;
+  hideOverlay?: boolean;
+  inline?: boolean;
   children?: ReactNode;
 };
 

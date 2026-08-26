@@ -179,3 +179,69 @@ export const buildPlayableAlbumQueue = ({
 
   return [];
 };
+
+export const buildFullPlayableAlbumQueue = ({
+  release,
+  tracks,
+  videos,
+}: {
+  release: DiscogsRelease;
+  tracks: DiscogsTrack[];
+  videos: DiscogsVideo[];
+}): PlaybackQueueItem[] => {
+  const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+  const firstPlayableTrack = tracks.find((track) =>
+    matchIndex.trackVideoByPosition.has(track.position),
+  );
+
+  if (!firstPlayableTrack) {
+    return [];
+  }
+
+  return buildPlayableAlbumQueue({
+    release,
+    tracks,
+    videos,
+    startPosition: firstPlayableTrack.position,
+  });
+};
+
+export const appendUniqueQueueItems = (
+  queue: PlaybackQueueItem[],
+  items: PlaybackQueueItem[],
+): PlaybackQueueItem[] => {
+  const existingKeys = collectQueueItemKeys(queue);
+  const uniqueItems = items.filter((item) => {
+    const itemKey = getQueueItemKey(item);
+
+    if (existingKeys.has(itemKey)) {
+      return false;
+    }
+
+    existingKeys.add(itemKey);
+    return true;
+  });
+
+  return uniqueItems.length === 0 ? queue : [...queue, ...uniqueItems];
+};
+
+export const collectQueueItemKeys = (
+  queue: readonly PlaybackQueueItem[],
+): Set<string> => new Set(queue.map((item) => getQueueItemKey(item)));
+
+export const shuffleQueueItems = <T>(items: readonly T[]): T[] => {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const current = shuffled[index];
+    const swap = shuffled[swapIndex];
+
+    if (current !== undefined && swap !== undefined) {
+      shuffled[index] = swap;
+      shuffled[swapIndex] = current;
+    }
+  }
+
+  return shuffled;
+};

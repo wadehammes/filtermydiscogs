@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   type ReactNode,
@@ -14,8 +15,11 @@ import {
   trackPlaybackQueued,
   trackPlaybackStarted,
 } from "src/analytics/productAnalyticsEvents";
+import { fetchDiscogsRelease } from "src/api/helpers";
+import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
+import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
@@ -23,12 +27,17 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
   adjustQueueIndexAfterReorder,
   appendQueueItem,
+  appendUniqueQueueItems,
+  buildFullPlayableAlbumQueue,
   buildPlayableAlbumQueue,
+  collectQueueItemKeys,
   createPreviewQueueItem,
   createQueueItem,
   findQueueItemIndex,
+  getQueueItemKey,
   removeQueueItemAtIndex,
   reorderQueueItems,
+  shuffleQueueItems,
 } from "src/utils/playbackQueue";
 import {
   isSameReleaseInstance,
@@ -48,6 +57,7 @@ import {
   readPersistedReleasePlayback,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
+import { getSimilarReleases } from "src/utils/similarReleases";
 import {
   enableYoutubeIframeListening,
   isYoutubeEmbedOrigin,
@@ -127,6 +137,18 @@ interface ReleasePlaybackProviderProps {
   children: ReactNode;
 }
 
+const QUEUE_TAIL_EXTEND_THRESHOLD = 2;
+
+interface SimilarQueueMode {
+  enabled: boolean;
+  initialAppendPending: boolean;
+}
+
+const createSimilarQueueMode = (enabled: boolean): SimilarQueueMode => ({
+  enabled,
+  initialAppendPending: enabled,
+});
+
 export const ReleasePlaybackProvider = ({
   children,
 }: ReleasePlaybackProviderProps) => {
@@ -137,6 +159,7 @@ export const ReleasePlaybackProvider = ({
   } = useCollectionContext();
   const hasMoreCollectionPages = Boolean(collection?.pagination?.urls?.next);
   const allReleases = useAllReleases();
+  const queryClient = useQueryClient();
   const [release, setRelease] = useState<DiscogsRelease | null>(null);
   const [queue, setQueue] = useState<PlaybackQueueItem[]>([]);
   const [queueIndex, setQueueIndex] = useState(0);
@@ -155,6 +178,11 @@ export const ReleasePlaybackProvider = ({
   const awaitingResumeGestureRef = useRef(false);
   const pendingPlayFromGestureRef = useRef(false);
   const shouldRebuildAlbumQueueRef = useRef(false);
+  const similarQueueModeRef = useRef<SimilarQueueMode>(
+    createSimilarQueueMode(false),
+  );
+  const similarQueueGenerationRef = useRef(0);
+  const similarQueueFetchInFlightRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
   const isPausedRef = useRef(isPaused);
@@ -171,10 +199,13 @@ export const ReleasePlaybackProvider = ({
   >(() => undefined);
   const stopPlaybackRef = useRef<() => void>(() => undefined);
   const playNextRef = useRef<() => void>(() => undefined);
+  const extendQueueTailRef = useRef<() => Promise<boolean>>(async () => false);
   const isPlayingRef = useRef(isPlaying);
+  const previewVideoRef = useRef<DiscogsVideo | null>(null);
 
   isPausedRef.current = isPaused;
   isPlayingRef.current = isPlaying;
+  previewVideoRef.current = previewVideo;
   releaseRef.current = release;
   queueRef.current = queue;
   queueIndexRef.current = queueIndex;
@@ -213,6 +244,156 @@ export const ReleasePlaybackProvider = ({
       );
     }
   }, [attemptPlayFromGesture, clearPlayFromGestureRetries]);
+
+  const fetchSimilarQueueItems = useCallback(
+    async ({
+      sourceRelease,
+      existingQueue,
+    }: {
+      sourceRelease: DiscogsRelease;
+      existingQueue: PlaybackQueueItem[];
+    }): Promise<PlaybackQueueItem[]> => {
+      const existingKeys = collectQueueItemKeys(existingQueue);
+      const excludeInstanceIds = new Set(
+        existingQueue.map((item) => item.instanceId),
+      );
+      let similarReleases = getSimilarReleases({
+        releases: allReleases,
+        sourceRelease,
+        limit: SIMILAR_RELEASES_LIMIT,
+        excludeInstanceIds,
+      });
+
+      if (similarReleases.length === 0) {
+        similarReleases = getSimilarReleases({
+          releases: allReleases,
+          sourceRelease,
+          limit: SIMILAR_RELEASES_LIMIT,
+        });
+      }
+
+      const releaseQueues = await Promise.all(
+        similarReleases.map(async (similarRelease) => {
+          const similarReleaseId = parseReleaseId(similarRelease);
+
+          if (!similarReleaseId) {
+            return [];
+          }
+
+          try {
+            const detail = await queryClient.fetchQuery({
+              queryKey: DiscogsReleaseQueryKeys.byId(String(similarReleaseId)),
+              queryFn: () => fetchDiscogsRelease(String(similarReleaseId)),
+              staleTime: 5 * 60 * 1000,
+            });
+
+            return buildFullPlayableAlbumQueue({
+              release: similarRelease,
+              tracks: flattenTracklist(detail.tracklist ?? []),
+              videos: detail.videos ?? [],
+            });
+          } catch {
+            return [];
+          }
+        }),
+      );
+
+      const similarItems: PlaybackQueueItem[] = [];
+
+      for (const releaseQueue of releaseQueues) {
+        for (const item of releaseQueue) {
+          const itemKey = getQueueItemKey(item);
+
+          if (!existingKeys.has(itemKey)) {
+            similarItems.push(item);
+            existingKeys.add(itemKey);
+          }
+        }
+      }
+
+      return shuffleQueueItems(similarItems);
+    },
+    [allReleases, queryClient],
+  );
+
+  const appendSimilarReleasesToQueue = useCallback(
+    async ({
+      sourceRelease,
+      generation,
+      existingQueue = queueRef.current,
+    }: {
+      sourceRelease: DiscogsRelease;
+      generation: number;
+      existingQueue?: PlaybackQueueItem[];
+    }): Promise<boolean> => {
+      const similarItems = await fetchSimilarQueueItems({
+        sourceRelease,
+        existingQueue,
+      });
+
+      if (
+        generation !== similarQueueGenerationRef.current ||
+        similarItems.length === 0
+      ) {
+        return false;
+      }
+
+      setQueue((previousQueue) =>
+        appendUniqueQueueItems(previousQueue, similarItems),
+      );
+      return true;
+    },
+    [fetchSimilarQueueItems],
+  );
+
+  const extendQueueTail = useCallback(async (): Promise<boolean> => {
+    if (
+      !similarQueueModeRef.current.enabled ||
+      previewVideoRef.current !== null ||
+      similarQueueFetchInFlightRef.current
+    ) {
+      return false;
+    }
+
+    const currentQueue = queueRef.current;
+    const lastItem = currentQueue[currentQueue.length - 1];
+
+    if (!lastItem) {
+      return false;
+    }
+
+    similarQueueFetchInFlightRef.current = true;
+
+    try {
+      return await appendSimilarReleasesToQueue({
+        sourceRelease: lastItem.release,
+        generation: similarQueueGenerationRef.current,
+        existingQueue: currentQueue,
+      });
+    } finally {
+      similarQueueFetchInFlightRef.current = false;
+    }
+  }, [appendSimilarReleasesToQueue]);
+
+  const maybeExtendQueueTail = useCallback(() => {
+    if (
+      !similarQueueModeRef.current.enabled ||
+      previewVideoRef.current !== null ||
+      similarQueueModeRef.current.initialAppendPending ||
+      similarQueueFetchInFlightRef.current
+    ) {
+      return;
+    }
+
+    const currentIndex = queueIndexRef.current;
+    const remainingTracks = queueRef.current.length - currentIndex - 1;
+
+    if (remainingTracks > QUEUE_TAIL_EXTEND_THRESHOLD) {
+      return;
+    }
+
+    void extendQueueTail();
+  }, [extendQueueTail]);
 
   const resumePlaybackFromGesture = useCallback(() => {
     schedulePlayFromGestureAttempts();
@@ -313,6 +494,16 @@ export const ReleasePlaybackProvider = ({
       const currentQueue = queueRef.current;
 
       if (currentIndex >= currentQueue.length - 1) {
+        void extendQueueTailRef.current().then((extended) => {
+          if (
+            extended &&
+            isPlayingRef.current &&
+            !isPausedRef.current &&
+            queueIndexRef.current < queueRef.current.length - 1
+          ) {
+            playNextRef.current();
+          }
+        });
         return;
       }
 
@@ -325,6 +516,14 @@ export const ReleasePlaybackProvider = ({
       window.removeEventListener("message", handleMessage);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isPlaying || previewVideo !== null) {
+      return;
+    }
+
+    maybeExtendQueueTail();
+  }, [isPlaying, previewVideo, queueIndex, queue.length, maybeExtendQueueTail]);
 
   useEffect(() => {
     if (
@@ -375,10 +574,20 @@ export const ReleasePlaybackProvider = ({
       setQueue(albumQueue);
       setQueueIndex(nextIndex >= 0 ? nextIndex : 0);
       shouldRebuildAlbumQueueRef.current = false;
+
+      if (similarQueueModeRef.current.initialAppendPending) {
+        similarQueueModeRef.current.initialAppendPending = false;
+        void appendSimilarReleasesToQueue({
+          sourceRelease: release,
+          generation: similarQueueGenerationRef.current,
+          existingQueue: albumQueue,
+        });
+      }
     }
 
     setPendingTrackPosition(null);
   }, [
+    appendSimilarReleasesToQueue,
     pendingTrackPosition,
     release,
     tracks,
@@ -559,6 +768,8 @@ export const ReleasePlaybackProvider = ({
       });
 
       shouldRebuildAlbumQueueRef.current = true;
+      similarQueueModeRef.current = createSimilarQueueMode(!startPaused);
+      similarQueueGenerationRef.current += 1;
       setQueue([item]);
       setQueueIndex(0);
       trackPlaybackStarted(nextRelease.instance_id);
@@ -576,6 +787,8 @@ export const ReleasePlaybackProvider = ({
       setPreviewVideo(video);
       setPendingPreviewVideoUri(null);
       shouldRebuildAlbumQueueRef.current = false;
+      similarQueueModeRef.current = createSimilarQueueMode(false);
+      similarQueueGenerationRef.current += 1;
       setRelease(nextRelease);
       setQueue([]);
       setQueueIndex(0);
@@ -686,6 +899,7 @@ export const ReleasePlaybackProvider = ({
   }, [playQueueAtIndex]);
 
   playNextRef.current = playNext;
+  extendQueueTailRef.current = extendQueueTail;
 
   const notifyPlaybackIframeLoaded = useCallback(() => {
     enableYoutubeIframeListening(playbackIframeRef.current);
@@ -733,6 +947,8 @@ export const ReleasePlaybackProvider = ({
     pendingPlayFromGestureRef.current = false;
     clearPlayFromGestureRetries();
     shouldRebuildAlbumQueueRef.current = false;
+    similarQueueModeRef.current = createSimilarQueueMode(false);
+    similarQueueGenerationRef.current += 1;
     setPreviewVideo(null);
     setPendingPreviewVideoUri(null);
     setIsPlaying(false);

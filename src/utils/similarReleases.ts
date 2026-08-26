@@ -9,6 +9,7 @@ interface GetSimilarReleasesParams {
   releases: DiscogsRelease[];
   sourceRelease: DiscogsRelease;
   limit?: number;
+  excludeInstanceIds?: ReadonlySet<string>;
 }
 
 const STYLE_WEIGHT = 0.65;
@@ -20,14 +21,35 @@ const YEAR_PROXIMITY_WINDOW = 5;
 
 const normalizeTag = (value: string): string => value.trim().toLowerCase();
 
+const MIN_COMPOUND_TAG_TOKEN_LENGTH = 3;
+const COMPOUND_TAG_TOKEN_SPLIT = /[^a-z0-9]+/;
+
+const expandTagTokens = (value: string): string[] => {
+  const normalized = normalizeTag(value);
+
+  if (!normalized) {
+    return [];
+  }
+
+  const tokens = new Set<string>([normalized]);
+
+  for (const segment of normalized.split(COMPOUND_TAG_TOKEN_SPLIT)) {
+    const token = segment.trim();
+
+    if (token.length >= MIN_COMPOUND_TAG_TOKEN_LENGTH) {
+      tokens.add(token);
+    }
+  }
+
+  return [...tokens];
+};
+
 const normalizeTagSet = (values: string[] | undefined): Set<string> => {
   const tags = new Set<string>();
 
   values?.forEach((value) => {
-    const normalized = normalizeTag(value);
-
-    if (normalized) {
-      tags.add(normalized);
+    for (const token of expandTagTokens(value)) {
+      tags.add(token);
     }
   });
 
@@ -203,6 +225,12 @@ const scoreSimilarRelease = ({
     candidateInfo.artists,
   );
   const hasSourceTags = sourceGenres.size > 0 || sourceStyles.size > 0;
+  const styleScore = jaccardSimilarity(sourceStyles, candidateStyles);
+
+  if (sourceStyles.size > 0 && styleScore === 0) {
+    return null;
+  }
+
   const tagScore = getWeightedTagScore({
     sourceGenres,
     sourceStyles,
@@ -274,6 +302,7 @@ export const getSimilarReleases = ({
   releases,
   sourceRelease,
   limit = 8,
+  excludeInstanceIds,
 }: GetSimilarReleasesParams): DiscogsRelease[] => {
   const sourceMasterId = sourceRelease.basic_information.master_id;
   const sourceInstanceId = sourceRelease.instance_id;
@@ -283,6 +312,10 @@ export const getSimilarReleases = ({
 
   for (const release of releases) {
     if (release.instance_id === sourceInstanceId) {
+      continue;
+    }
+
+    if (excludeInstanceIds?.has(release.instance_id)) {
       continue;
     }
 

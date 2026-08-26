@@ -195,6 +195,8 @@ export const PlaybackQueueDrawer = ({
       dataAttribute="data-playback-queue-open"
       drawerClassName={styles.queueDrawer}
       behindMiniPlayer
+      hideOverlay
+      inline
       footer={
         queue.length > 0 ? (
           <button
