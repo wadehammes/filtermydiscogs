@@ -75,9 +75,10 @@
   }
 
   &.inline {
-    left: 0;
+    left: unset;
     position: absolute;
-    right: 0;
+    right: unset;
+    width: 100%;
     z-index: 0;
 
     &.behindMiniPlayer {

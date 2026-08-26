@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getPaginationParams, sanitizeError } from "src/lib/api-helpers";
+import {
+  getPaginationParams,
+  rethrowNextInternalError,
+  sanitizeError,
+} from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
 import { findCrateReleasesForLayout } from "src/lib/crate-layout-query.server";
 import { prisma } from "src/lib/db";
@@ -112,6 +116,7 @@ export async function GET(
       },
     );
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Error fetching public crate:", error);
     const sanitized = sanitizeError(error);
     return NextResponse.json(

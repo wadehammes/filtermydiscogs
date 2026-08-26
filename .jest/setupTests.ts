@@ -56,6 +56,7 @@ jest.mock("next/navigation", () => ({
   })),
   usePathname: jest.fn(() => "/"),
   useSearchParams: jest.fn(() => new URLSearchParams()),
+  unstable_rethrow: jest.fn(),
 }));
 
 jest.mock("usehooks-ts", () => ({

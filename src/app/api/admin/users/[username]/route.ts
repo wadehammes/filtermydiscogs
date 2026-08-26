@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { verifyAdminFromRequest } from "src/lib/admin-helpers";
 import { getAdminUserLookup } from "src/lib/admin-user-lookup.server";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 export async function GET(
   request: NextRequest,
@@ -43,6 +44,7 @@ export async function GET(
       },
     });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Admin user lookup error:", error);
     return NextResponse.json(
       { error: "Failed to look up user" },

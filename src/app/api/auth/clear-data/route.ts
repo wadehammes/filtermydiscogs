@@ -6,6 +6,7 @@ import {
 } from "src/lib/auth-request";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 export async function POST(request: NextRequest) {
   const secureFlag = process.env.NODE_ENV === "production";
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
       where: { discogs_user_id: verified.user.userId },
     });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Error clearing crate data for user:", error);
     return privateRouteJson(
       { error: "Failed to clear stored data" },

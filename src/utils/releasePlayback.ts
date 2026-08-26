@@ -44,6 +44,17 @@ const getMatchTokens = (normalizedTitle: string): string[] => {
 
 const MIN_FUZZY_MATCH_LENGTH = 3;
 const SIDE_LETTER_CLASS = "[a-d]";
+const MAX_DURATION_MATCH_DELTA_SECONDS = 30;
+
+const GENERIC_TRACK_TITLES = new Set([
+  "na",
+  "n a",
+  "tba",
+  "track",
+  "unknown",
+  "unknown track",
+  "untitled",
+]);
 
 const stringsOverlap = (
   left: string,
@@ -394,6 +405,183 @@ const findBestVideoForPreparedTrack = (
   return bestVideo;
 };
 
+export const parseTrackDurationToSeconds = (
+  duration?: string,
+): number | null => {
+  if (!duration?.trim()) {
+    return null;
+  }
+
+  const parts = duration
+    .trim()
+    .split(":")
+    .map((part) => Number.parseInt(part, 10));
+
+  if (parts.some((part) => Number.isNaN(part))) {
+    return null;
+  }
+
+  if (parts.length === 2) {
+    const [minutes, seconds] = parts;
+
+    if (minutes === undefined || seconds === undefined) {
+      return null;
+    }
+
+    return minutes * 60 + seconds;
+  }
+
+  if (parts.length === 3) {
+    const [hours, minutes, seconds] = parts;
+
+    if (hours === undefined || minutes === undefined || seconds === undefined) {
+      return null;
+    }
+
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+
+  return null;
+};
+
+const isGenericTrackTitle = (title: string): boolean => {
+  const normalized = normalizeTrackTitle(title);
+
+  if (normalized.length === 0) {
+    return true;
+  }
+
+  if (GENERIC_TRACK_TITLES.has(normalized)) {
+    return true;
+  }
+
+  return (
+    /^untitled(\s*\d+|\d+)?$/.test(normalized) ||
+    /^unknown(\s*\d+|\d+)?$/.test(normalized) ||
+    /^track\s+\d+$/.test(normalized) ||
+    /^edit\s+\d+$/.test(normalized)
+  );
+};
+
+const extractVideoTrackNumber = (title: string): number | null => {
+  const match = normalizeTrackTitle(title).match(/\btrack\s+(\d+)\b/);
+
+  if (!match?.[1]) {
+    return null;
+  }
+
+  const trackNumber = Number.parseInt(match[1], 10);
+
+  return Number.isNaN(trackNumber) ? null : trackNumber;
+};
+
+const compareTrackPositions = (left: string, right: string): number => {
+  const toSortKey = (position: string): [number, number, string] => {
+    const normalized = position.trim().toLowerCase();
+    const sideMatch = normalized.match(/^([a-d])(\d*)/);
+
+    if (sideMatch?.[1]) {
+      return [
+        sideMatch[1].charCodeAt(0),
+        Number.parseInt(sideMatch[2] || "0", 10),
+        normalized,
+      ];
+    }
+
+    const numericMatch = normalized.match(/^(\d+)/);
+
+    if (numericMatch?.[1]) {
+      return [100, Number.parseInt(numericMatch[1], 10), normalized];
+    }
+
+    return [200, 0, normalized];
+  };
+
+  const leftKey = toSortKey(left);
+  const rightKey = toSortKey(right);
+
+  for (let index = 0; index < leftKey.length; index += 1) {
+    const leftValue = leftKey[index];
+    const rightValue = rightKey[index];
+
+    if (leftValue === rightValue) {
+      continue;
+    }
+
+    if (typeof leftValue === "string" && typeof rightValue === "string") {
+      return leftValue.localeCompare(rightValue);
+    }
+
+    return (leftValue as number) - (rightValue as number);
+  }
+
+  return 0;
+};
+
+const sortVideosForGenericTrackMatching = (
+  videos: DiscogsVideo[],
+): DiscogsVideo[] => {
+  const trackNumbers = videos.map((video) =>
+    extractVideoTrackNumber(getVideoMatchLabel(video)),
+  );
+
+  if (trackNumbers.every((trackNumber) => trackNumber !== null)) {
+    return [...videos].sort(
+      (left, right) =>
+        (extractVideoTrackNumber(getVideoMatchLabel(left)) ?? 0) -
+        (extractVideoTrackNumber(getVideoMatchLabel(right)) ?? 0),
+    );
+  }
+
+  return videos;
+};
+
+const matchGenericTracksToVideosByDuration = ({
+  tracks,
+  videos,
+}: {
+  tracks: DiscogsTrack[];
+  videos: DiscogsVideo[];
+}): Array<[DiscogsTrack, DiscogsVideo]> => {
+  if (
+    tracks.length === 0 ||
+    tracks.length !== videos.length ||
+    !tracks.every((track) => isGenericTrackTitle(track.title))
+  ) {
+    return [];
+  }
+
+  const sortedTracks = [...tracks].sort((left, right) =>
+    compareTrackPositions(left.position, right.position),
+  );
+  const sortedVideos = sortVideosForGenericTrackMatching(videos);
+  const pairs: Array<[DiscogsTrack, DiscogsVideo]> = [];
+
+  for (let index = 0; index < sortedTracks.length; index += 1) {
+    const track = sortedTracks[index];
+    const video = sortedVideos[index];
+
+    if (!(track && video)) {
+      return [];
+    }
+
+    const trackDuration = parseTrackDurationToSeconds(track.duration);
+    const videoDuration = video.duration;
+
+    if (
+      trackDuration === null ||
+      videoDuration === undefined ||
+      Math.abs(trackDuration - videoDuration) > MAX_DURATION_MATCH_DELTA_SECONDS
+    ) {
+      return [];
+    }
+
+    pairs.push([track, video]);
+  }
+
+  return pairs;
+};
+
 export interface ReleasePlaybackMatchIndex {
   embeddableVideos: DiscogsVideo[];
   trackVideoByPosition: ReadonlyMap<string, DiscogsVideo>;
@@ -421,6 +609,21 @@ export const buildReleasePlaybackMatchIndex = (
       trackVideoByPosition.set(track.position, bestVideo);
       matchedVideoUris.add(bestVideo.uri);
     }
+  }
+
+  const unmatchedTracks = tracks.filter(
+    (track) => !trackVideoByPosition.has(track.position),
+  );
+  const unmatchedVideos = embeddableVideos.filter(
+    (video) => !matchedVideoUris.has(video.uri),
+  );
+
+  for (const [track, video] of matchGenericTracksToVideosByDuration({
+    tracks: unmatchedTracks,
+    videos: unmatchedVideos,
+  })) {
+    trackVideoByPosition.set(track.position, video);
+    matchedVideoUris.add(video.uri);
   }
 
   return {
@@ -487,27 +690,19 @@ export const getEmbeddableVideos = (videos: DiscogsVideo[]): DiscogsVideo[] => {
 
 export const findVideoForTrack = ({
   track,
+  tracks,
   videos,
   matchIndex,
 }: {
   track: DiscogsTrack;
+  tracks?: DiscogsTrack[];
   videos: DiscogsVideo[];
   matchIndex?: ReleasePlaybackMatchIndex;
 }): DiscogsVideo | null => {
-  if (matchIndex) {
-    return matchIndex.trackVideoByPosition.get(track.position) ?? null;
-  }
+  const resolvedMatchIndex =
+    matchIndex ?? buildReleasePlaybackMatchIndex(tracks ?? [track], videos);
 
-  const embeddableVideos = getEmbeddableVideos(videos);
-
-  if (embeddableVideos.length === 0) {
-    return null;
-  }
-
-  return findBestVideoForPreparedTrack(
-    prepareTrackMatchData(track),
-    embeddableVideos.map(prepareVideoMatchData),
-  );
+  return resolvedMatchIndex.trackVideoByPosition.get(track.position) ?? null;
 };
 
 export const hasPlayableTrackVideo = (

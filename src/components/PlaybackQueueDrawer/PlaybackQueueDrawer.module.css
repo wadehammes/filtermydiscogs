@@ -7,18 +7,23 @@
 
 .queueDrawer {
   @media (width >= 768px) {
-    border-radius: var(--radius-card);
-    left: auto;
-    max-width: 31.25rem;
-    right: var(--space-4);
-    width: min(100% - var(--space-8), 31.25rem);
     border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    max-width: 31.25rem;
+    width: min(calc(100% - var(--space-8)), 31.25rem);
   }
 
   :global([data-bottom-drawer-footer]) {
     display: flex;
     justify-content: flex-end;
     padding: var(--space-3) var(--space-4);
+  }
+}
+
+.queueDrawerAlignEnd.queueDrawerAlignEnd {
+  @media (width >= 768px) {
+    left: auto;
+    right: var(--space-4);
   }
 }
 

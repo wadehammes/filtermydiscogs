@@ -6,6 +6,7 @@ import {
   syncIdentityCookies,
 } from "src/lib/auth-request";
 import { privateRouteRedirect } from "src/lib/private-route-response";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { upsertDiscogsUser } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest) {
             username: identity.username,
           });
         } catch (error) {
+          rethrowNextInternalError(error);
           console.error("Failed to upsert user on token reuse login:", error);
         }
 
@@ -117,6 +119,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("OAuth initiation error:", error);
     return privateRouteRedirect(
       new URL("/?error=oauth_init_failed", request.url),

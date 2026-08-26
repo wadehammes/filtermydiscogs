@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 const AUTHENTICATED_RELEASE_CACHE =
@@ -65,6 +66,7 @@ export async function GET(
       },
     });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Release API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch release" },

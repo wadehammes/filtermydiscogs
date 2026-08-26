@@ -17,6 +17,7 @@ import {
   isPreviewTrackPosition,
   isTrackVideoPlayable,
   normalizeTrackTitle,
+  parseTrackDurationToSeconds,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
   previewVideoToTrack,
@@ -107,6 +108,168 @@ describe("findVideoForTrack", () => {
     };
 
     expect(findVideoForTrack({ track, videos })).toBeNull();
+  });
+
+  it("matches untitled tracks to numbered videos by order and duration", () => {
+    const untitledTracks: DiscogsTrack[] = [
+      {
+        position: "A1",
+        title: "Untitled",
+        duration: "5:50",
+        type_: "track",
+      },
+      {
+        position: "A2",
+        title: "Untitled",
+        duration: "4:54",
+        type_: "track",
+      },
+      {
+        position: "B",
+        title: "Untitled",
+        duration: "4:38",
+        type_: "track",
+      },
+    ];
+    const veditVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Vedit - Track 1 (Vedit 01)",
+        duration: 347,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "Vedit - Track 2 (Vedit 01)",
+        duration: 277,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=ghi11223344",
+        title: "Vedit - Track 3 (Vedit 01)",
+        duration: 274,
+        embed: true,
+      },
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(
+      untitledTracks,
+      veditVideos,
+    );
+
+    expect(matchIndex.hasPlayableTracks).toBe(true);
+    expect(matchIndex.previewVideos).toHaveLength(0);
+    expect(matchIndex.trackVideoByPosition.get("A1")?.title).toContain(
+      "Track 1",
+    );
+    expect(matchIndex.trackVideoByPosition.get("A2")?.title).toContain(
+      "Track 2",
+    );
+    expect(matchIndex.trackVideoByPosition.get("B")?.title).toContain(
+      "Track 3",
+    );
+  });
+
+  it("findVideoForTrack uses duration fallback when given the full tracklist", () => {
+    const untitledTracks: DiscogsTrack[] = [
+      {
+        position: "A1",
+        title: "Untitled",
+        duration: "5:50",
+        type_: "track",
+      },
+      {
+        position: "A2",
+        title: "Untitled",
+        duration: "4:54",
+        type_: "track",
+      },
+      {
+        position: "B",
+        title: "Untitled",
+        duration: "4:38",
+        type_: "track",
+      },
+    ];
+    const veditVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Vedit - Track 1 (Vedit 01)",
+        duration: 347,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "Vedit - Track 2 (Vedit 01)",
+        duration: 277,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=ghi11223344",
+        title: "Vedit - Track 3 (Vedit 01)",
+        duration: 274,
+        embed: true,
+      },
+    ];
+
+    expect(
+      findVideoForTrack({
+        track: untitledTracks[0] as DiscogsTrack,
+        tracks: untitledTracks,
+        videos: veditVideos,
+      })?.title,
+    ).toContain("Track 1");
+  });
+
+  it("matches untitled variants with attached numbers", () => {
+    const untitledTracks: DiscogsTrack[] = [
+      {
+        position: "A1",
+        title: "Untitled01",
+        duration: "5:50",
+        type_: "track",
+      },
+      {
+        position: "A2",
+        title: "Untitled02",
+        duration: "4:54",
+        type_: "track",
+      },
+      {
+        position: "B1",
+        title: "Untitled03",
+        duration: "4:38",
+        type_: "track",
+      },
+    ];
+    const veditVideos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Vedit - Track 1 (Vedit 01)",
+        duration: 347,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "Vedit - Track 2 (Vedit 01)",
+        duration: 277,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=ghi11223344",
+        title: "Vedit - Track 3 (Vedit 01)",
+        duration: 274,
+        embed: true,
+      },
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(
+      untitledTracks,
+      veditVideos,
+    );
+
+    expect(matchIndex.hasPlayableTracks).toBe(true);
+    expect(matchIndex.previewVideos).toHaveLength(0);
   });
 
   it("matches Discogs-style track and video titles with mix and venue details", () => {
@@ -545,6 +708,18 @@ describe("postYoutubePlayerCommand", () => {
     expect(() => {
       postYoutubePlayerCommand({ iframe: null, command: "pauseVideo" });
     }).not.toThrow();
+  });
+});
+
+describe("parseTrackDurationToSeconds", () => {
+  it("parses m:ss track durations", () => {
+    expect(parseTrackDurationToSeconds("5:50")).toBe(350);
+    expect(parseTrackDurationToSeconds("4:54")).toBe(294);
+  });
+
+  it("returns null for invalid durations", () => {
+    expect(parseTrackDurationToSeconds(undefined)).toBeNull();
+    expect(parseTrackDurationToSeconds("n/a")).toBeNull();
   });
 });
 

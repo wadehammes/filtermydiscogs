@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { runProductAnalyticsMaintenance } from "src/lib/product-analytics-maintenance.server";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 const isAuthorizedCronRequest = (request: NextRequest): boolean => {
   const cronSecret = process.env.CRON_SECRET;
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     const result = await runProductAnalyticsMaintenance();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("Product analytics maintenance error:", error);
     return NextResponse.json(
       { error: "Product analytics maintenance failed" },

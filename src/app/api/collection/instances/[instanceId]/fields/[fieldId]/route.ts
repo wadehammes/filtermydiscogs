@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { updateCollectionNoteBodySchema } from "src/lib/validation/collection.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
@@ -53,6 +54,7 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    rethrowNextInternalError(error);
     console.error("updateCollectionNote error:", error);
     const errorMessage =
       error instanceof Error
