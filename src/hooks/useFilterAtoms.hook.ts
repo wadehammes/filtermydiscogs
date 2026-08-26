@@ -8,6 +8,7 @@ import {
   facetOptionsAtom,
   filteredReleasesAtom,
   filtersDispatchAtom,
+  formatOperatorAtom,
   isPersistedFiltersAction,
   isRandomModeAtom,
   isSearchingAtom,
@@ -20,6 +21,7 @@ import {
   sessionFiltersAtom,
   sortedFilteredReleasesAtom,
   styleOperatorAtom,
+  yearOperatorAtom,
 } from "src/atoms/filters.atoms";
 import { useFiltersScope } from "src/context/filters.context";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
@@ -97,6 +99,18 @@ export const useStyleOperator = () => {
   useFiltersScope();
 
   return useAtomValue(styleOperatorAtom);
+};
+
+export const useFormatOperator = () => {
+  useFiltersScope();
+
+  return useAtomValue(formatOperatorAtom);
+};
+
+export const useYearOperator = () => {
+  useFiltersScope();
+
+  return useAtomValue(yearOperatorAtom);
 };
 
 export const useSearchQuery = () => {

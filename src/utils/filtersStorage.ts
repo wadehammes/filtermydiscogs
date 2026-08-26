@@ -4,6 +4,8 @@ import type { PersistedFiltersState } from "src/types/filters.types";
 import {
   type StyleOperator,
   VALID_STYLE_OPERATORS,
+  VALID_YEAR_OPERATORS,
+  type YearOperator,
 } from "src/types/filters.types";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
 
@@ -16,6 +18,8 @@ export const defaultPersistedFilters: PersistedFiltersState = {
   selectedFormats: [],
   selectedSort: SortValues.DateAddedNew,
   styleOperator: "OR",
+  formatOperator: "OR",
+  yearOperator: "OR",
   searchQuery: "",
 };
 
@@ -26,6 +30,8 @@ export const inactiveFilterSelectionDefaults = {
   searchQuery: defaultPersistedFilters.searchQuery,
   selectedSort: defaultPersistedFilters.selectedSort,
   styleOperator: defaultPersistedFilters.styleOperator,
+  formatOperator: defaultPersistedFilters.formatOperator,
+  yearOperator: defaultPersistedFilters.yearOperator,
 } as const;
 
 const isStringArray = (value: unknown): value is string[] =>
@@ -63,6 +69,10 @@ const isValidPersistedFilters = (
     VALID_SORT_VALUES.has(state.selectedSort) &&
     typeof state.styleOperator === "string" &&
     VALID_STYLE_OPERATORS.has(state.styleOperator as StyleOperator) &&
+    typeof state.formatOperator === "string" &&
+    VALID_STYLE_OPERATORS.has(state.formatOperator as StyleOperator) &&
+    typeof state.yearOperator === "string" &&
+    VALID_YEAR_OPERATORS.has(state.yearOperator as YearOperator) &&
     typeof state.searchQuery === "string"
   );
 };
@@ -74,7 +84,10 @@ const parsePersistedFiltersValue = (
     return null;
   }
 
-  const candidate = { ...(parsed as PersistedFiltersState) };
+  const candidate = {
+    ...defaultPersistedFilters,
+    ...(parsed as PersistedFiltersState),
+  };
 
   if ("selectedSort" in candidate) {
     candidate.selectedSort = migratePersistedSort(candidate.selectedSort);

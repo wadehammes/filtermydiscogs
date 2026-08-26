@@ -1,14 +1,20 @@
+import classNames from "classnames";
 import { useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
+import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
+import { FILTER_YEAR_MATCH_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
-import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
+import {
+  useAppliedFilterCount,
+  useFiltersDispatch,
+} from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
 
@@ -29,15 +35,18 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     handleFormatChange,
     handleSortChange,
     handleStyleOperatorChange,
+    handleFormatOperatorChange,
+    handleYearOperatorChange,
     styleOptions,
     yearOptions,
     formatOptions,
-    styleOperatorOptions,
     selectedStyles,
     selectedYears,
     selectedFormats,
     selectedSort,
     styleOperator,
+    formatOperator,
+    yearOperator,
   } = useFilterHandlers(category);
 
   const handleFiltersClick = () => {
@@ -55,6 +64,8 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
   };
 
   const filtersDispatch = useFiltersDispatch();
+  const appliedFilterCount = useAppliedFilterCount();
+  const hasActiveFilters = appliedFilterCount > 0;
 
   const handleClearAllFilters = () => {
     filtersDispatch({
@@ -64,7 +75,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     trackEvent("filtersCleared", {
       action: "clearAllFilters",
       category: "filters",
-      label: "Clear All Filters",
+      label: "Reset Filters",
       value: "desktop",
     });
   };
@@ -97,38 +108,51 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
               onChange={handleStyleChange}
               disabled={!collection}
               multiple={true}
-              placeholder="Select genres & styles..."
+              placeholder="All genres & styles"
             />
 
-            {selectedStyles.length > 1 && (
-              <Select
-                label="Match"
-                options={styleOperatorOptions}
-                value={styleOperator}
-                onChange={handleStyleOperatorChange}
-                disabled={!collection}
-                placeholder="Select operator..."
-              />
-            )}
+            <FilterMatchOperatorSelect
+              selectedCount={selectedStyles.length}
+              value={styleOperator}
+              onChange={handleStyleOperatorChange}
+              disabled={!collection}
+            />
           </div>
-          <AutocompleteSelect
-            label="Release Year"
-            options={yearOptions}
-            value={selectedYearValues}
-            onChange={handleYearChange}
-            disabled={!collection}
-            multiple={true}
-            placeholder="All release years"
-          />
-          <AutocompleteSelect
-            label="Format Type"
-            options={formatOptions}
-            value={selectedFormats}
-            onChange={handleFormatChange}
-            disabled={!collection}
-            multiple={true}
-            placeholder="All format types"
-          />
+          <div className={styles.styleFilterGroup}>
+            <AutocompleteSelect
+              label="Format Type"
+              options={formatOptions}
+              value={selectedFormats}
+              onChange={handleFormatChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="All format types"
+            />
+            <FilterMatchOperatorSelect
+              selectedCount={selectedFormats.length}
+              value={formatOperator}
+              onChange={handleFormatOperatorChange}
+              disabled={!collection}
+            />
+          </div>
+          <div className={styles.styleFilterGroup}>
+            <AutocompleteSelect
+              label="Release Year"
+              options={yearOptions}
+              value={selectedYearValues}
+              onChange={handleYearChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="All release years"
+            />
+            <FilterMatchOperatorSelect
+              selectedCount={selectedYears.length}
+              value={yearOperator}
+              onChange={handleYearOperatorChange}
+              disabled={!collection}
+              options={FILTER_YEAR_MATCH_OPERATOR_OPTIONS}
+            />
+          </div>
           <Select
             label="Sort by"
             options={SORTING_OPTIONS.map((option) => ({
@@ -144,10 +168,13 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
             variant="secondary"
             size="md"
             onPress={handleClearAllFilters}
-            disabled={!collection}
-            aria-label="Clear all filters"
+            disabled={!(collection && hasActiveFilters)}
+            aria-label="Reset filters"
+            className={classNames(styles.clearAllButton, {
+              [styles.clearAllButtonActive]: hasActiveFilters,
+            })}
           >
-            Clear All
+            Reset
           </Button>
         </div>
 

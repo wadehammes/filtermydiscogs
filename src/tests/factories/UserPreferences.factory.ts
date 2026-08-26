@@ -42,6 +42,12 @@ class PersistedFiltersFactory extends BaseFactory<
         "OR",
         "NONE",
       ] as StyleOperator[]),
+      formatOperator: faker.helpers.arrayElement([
+        "AND",
+        "OR",
+        "NONE",
+      ] as StyleOperator[]),
+      yearOperator: faker.helpers.arrayElement(["OR", "NONE"] as const),
       searchQuery: faker.lorem.words({ min: 0, max: 3 }),
     } satisfies PersistedFiltersJson;
 

@@ -1,10 +1,13 @@
+import classNames from "classnames";
 import { useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
+import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
+import { FILTER_YEAR_MATCH_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -33,15 +36,18 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     handleFormatChange,
     handleSortChange,
     handleStyleOperatorChange,
+    handleFormatOperatorChange,
+    handleYearOperatorChange,
     styleOptions,
     yearOptions,
     formatOptions,
-    styleOperatorOptions,
     selectedStyles,
     selectedYears,
     selectedFormats,
     selectedSort,
     styleOperator,
+    formatOperator,
+    yearOperator,
   } = useFilterHandlers("mobile_filters");
 
   const { fetchingCollection, collection, error } = collectionState;
@@ -64,7 +70,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     trackEvent("filtersCleared", {
       action: "clearAllFilters",
       category: "mobile_filters",
-      label: "Clear All Filters",
+      label: "Reset Filters",
       value: "mobile",
     });
   };
@@ -118,10 +124,12 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
             size="md"
             onPress={handleClearAllFilters}
             disabled={!(collection && hasActiveFilters)}
-            aria-label="Clear all filters"
-            className={styles.clearAllButton}
+            aria-label="Reset filters"
+            className={classNames(styles.clearAllButton, {
+              [styles.clearAllButtonActive]: hasActiveFilters,
+            })}
           >
-            Clear All
+            Reset
           </Button>
         </div>
       }
@@ -147,34 +155,14 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
               onChange={handleStyleChange}
               disabled={!collection}
               multiple={true}
-              placeholder="Select genres & styles..."
+              placeholder="All genres & styles"
             />
-            {selectedStyles.length > 1 ? (
-              <Select
-                showLabel
-                label="Match"
-                options={styleOperatorOptions}
-                value={styleOperator}
-                onChange={handleStyleOperatorChange}
-                disabled={!collection}
-                placeholder="Select operator..."
-              />
-            ) : null}
-          </div>
-        )}
-
-        {yearOptions.length > 0 && !fetchingCollection && !error && (
-          <div className={styles.filterSection}>
-            <AutocompleteSelect
+            <FilterMatchOperatorSelect
               showLabel
-              clearable
-              label="Release Year"
-              options={yearOptions}
-              value={selectedYearValues}
-              onChange={handleYearChange}
+              selectedCount={selectedStyles.length}
+              value={styleOperator}
+              onChange={handleStyleOperatorChange}
               disabled={!collection}
-              multiple={true}
-              placeholder="All release years"
             />
           </div>
         )}
@@ -191,6 +179,37 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
               disabled={!collection}
               multiple={true}
               placeholder="All format types"
+            />
+            <FilterMatchOperatorSelect
+              showLabel
+              selectedCount={selectedFormats.length}
+              value={formatOperator}
+              onChange={handleFormatOperatorChange}
+              disabled={!collection}
+            />
+          </div>
+        )}
+
+        {yearOptions.length > 0 && !fetchingCollection && !error && (
+          <div className={styles.filterSection}>
+            <AutocompleteSelect
+              showLabel
+              clearable
+              label="Release Year"
+              options={yearOptions}
+              value={selectedYearValues}
+              onChange={handleYearChange}
+              disabled={!collection}
+              multiple={true}
+              placeholder="All release years"
+            />
+            <FilterMatchOperatorSelect
+              showLabel
+              selectedCount={selectedYears.length}
+              value={yearOperator}
+              onChange={handleYearOperatorChange}
+              disabled={!collection}
+              options={FILTER_YEAR_MATCH_OPERATOR_OPTIONS}
             />
           </div>
         )}

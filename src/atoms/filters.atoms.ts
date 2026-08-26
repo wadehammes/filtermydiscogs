@@ -6,6 +6,7 @@ import type { DiscogsRelease } from "src/types";
 import type {
   ReleaseFilterCriteria,
   StyleOperator,
+  YearOperator,
 } from "src/types/filters.types";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
@@ -27,6 +28,8 @@ export interface FiltersState {
   selectedFormats: string[];
   selectedSort: SortValues;
   styleOperator: StyleOperator;
+  formatOperator: StyleOperator;
+  yearOperator: YearOperator;
   availableStyles: string[];
   availableYears: number[];
   availableFormats: string[];
@@ -47,6 +50,8 @@ export enum FiltersActionTypes {
   ClearStyles = "CLEAR_STYLES",
   SetStyles = "SET_STYLES",
   SetStyleOperator = "SET_STYLE_OPERATOR",
+  SetFormatOperator = "SET_FORMAT_OPERATOR",
+  SetYearOperator = "SET_YEAR_OPERATOR",
   ClearYears = "CLEAR_YEARS",
   SetYears = "SET_YEARS",
   ClearFormats = "CLEAR_FORMATS",
@@ -90,6 +95,14 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.SetStyleOperator;
       payload: StyleOperator;
+    }
+  | {
+      type: FiltersActionTypes.SetFormatOperator;
+      payload: StyleOperator;
+    }
+  | {
+      type: FiltersActionTypes.SetYearOperator;
+      payload: YearOperator;
     }
   | {
       type: FiltersActionTypes.ClearYears;
@@ -248,6 +261,8 @@ const getActiveFilterInputs = (get: Getter) => {
       searchQuery: inactiveFilterSelectionDefaults.searchQuery,
       selectedSort: SortValues.DateAddedNew,
       styleOperator: inactiveFilterSelectionDefaults.styleOperator,
+      formatOperator: inactiveFilterSelectionDefaults.formatOperator,
+      yearOperator: inactiveFilterSelectionDefaults.yearOperator,
     };
   }
 
@@ -258,6 +273,8 @@ const getActiveFilterInputs = (get: Getter) => {
     searchQuery: get(searchQueryAtom),
     selectedSort: get(selectedSortAtom),
     styleOperator: get(styleOperatorAtom),
+    formatOperator: get(formatOperatorAtom),
+    yearOperator: get(yearOperatorAtom),
   };
 };
 
@@ -266,6 +283,8 @@ export const selectedYearsAtom = sessionFieldAtom("selectedYears");
 export const selectedFormatsAtom = sessionFieldAtom("selectedFormats");
 export const selectedSortAtom = sessionFieldAtom("selectedSort");
 export const styleOperatorAtom = sessionFieldAtom("styleOperator");
+export const formatOperatorAtom = sessionFieldAtom("formatOperator");
+export const yearOperatorAtom = sessionFieldAtom("yearOperator");
 export const searchQueryAtom = sessionFieldAtom("searchQuery");
 export const isRandomModeAtom = atom(false);
 export const randomReleaseAtom = atom<DiscogsRelease | null>(null);
@@ -277,6 +296,8 @@ const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
     selectedFormats,
     searchQuery,
     styleOperator,
+    formatOperator,
+    yearOperator,
   } = getActiveFilterInputs(get);
 
   return {
@@ -285,6 +306,8 @@ const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
     selectedFormats,
     searchQuery,
     styleOperator,
+    formatOperator,
+    yearOperator,
   };
 };
 
@@ -339,6 +362,8 @@ export const filtersStateAtom = atom<FiltersState>((get) => ({
   selectedFormats: get(selectedFormatsAtom),
   selectedSort: get(selectedSortAtom),
   styleOperator: get(styleOperatorAtom),
+  formatOperator: get(formatOperatorAtom),
+  yearOperator: get(yearOperatorAtom),
   availableStyles: get(facetOptionsAtom).availableStyles,
   availableYears: get(facetOptionsAtom).availableYears,
   availableFormats: get(facetOptionsAtom).availableFormats,
@@ -359,6 +384,8 @@ const applyFilterChange = (
     selectedFormats?: string[];
     selectedSort?: SortValues;
     styleOperator?: StyleOperator;
+    formatOperator?: StyleOperator;
+    yearOperator?: YearOperator;
     searchQuery?: string;
     clearSearching?: boolean;
   },
@@ -379,6 +406,12 @@ const applyFilterChange = (
   }
   if (updates.styleOperator !== undefined) {
     set(styleOperatorAtom, updates.styleOperator);
+  }
+  if (updates.formatOperator !== undefined) {
+    set(formatOperatorAtom, updates.formatOperator);
+  }
+  if (updates.yearOperator !== undefined) {
+    set(yearOperatorAtom, updates.yearOperator);
   }
   if (updates.searchQuery !== undefined) {
     set(searchQueryAtom, updates.searchQuery);
@@ -410,6 +443,8 @@ const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
   FiltersActionTypes.ClearStyles,
   FiltersActionTypes.SetStyles,
   FiltersActionTypes.SetStyleOperator,
+  FiltersActionTypes.SetFormatOperator,
+  FiltersActionTypes.SetYearOperator,
   FiltersActionTypes.ClearYears,
   FiltersActionTypes.SetYears,
   FiltersActionTypes.ClearFormats,
@@ -482,6 +517,14 @@ export const filtersDispatchAtom = atom(
 
       case FiltersActionTypes.SetStyleOperator:
         applyFilterChange(get, set, { styleOperator: action.payload });
+        return;
+
+      case FiltersActionTypes.SetFormatOperator:
+        applyFilterChange(get, set, { formatOperator: action.payload });
+        return;
+
+      case FiltersActionTypes.SetYearOperator:
+        applyFilterChange(get, set, { yearOperator: action.payload });
         return;
 
       case FiltersActionTypes.ClearYears:

@@ -2,13 +2,16 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
 import { trackEvent } from "src/analytics/analytics";
 import {
+  formatOperatorAtom,
   selectedFormatsAtom,
   selectedSortAtom,
   selectedStylesAtom,
   selectedYearsAtom,
   styleOperatorAtom,
+  yearOperatorAtom,
 } from "src/atoms/filters.atoms";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
+import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { SeedCollectionFilters } from "src/tests/utils/seedCollectionFilters";
 import { act, renderFeatureHook } from "test-utils";
@@ -161,5 +164,103 @@ describe("useFilterHandlers", () => {
         value: "AND",
       }),
     );
+  });
+
+  it("updates the format operator when a valid value is selected", () => {
+    const releases = [releaseFactory.withNamedFormats(["Vinyl", "CD"])];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers("test_filters");
+        const formatOperator = useAtomValue(formatOperatorAtom);
+
+        return { handlers, formatOperator };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters releases={releases}>
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleFormatOperatorChange("NONE");
+    });
+
+    expect(result.current.formatOperator).toBe("NONE");
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      "formatOperator",
+      expect.objectContaining({
+        value: "NONE",
+      }),
+    );
+  });
+
+  it("updates the year operator when a valid value is selected", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({ year: 2020 }),
+      }),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers("test_filters");
+        const yearOperator = useAtomValue(yearOperatorAtom);
+
+        return { handlers, yearOperator };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters releases={releases}>
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleYearOperatorChange("NONE");
+    });
+
+    expect(result.current.yearOperator).toBe("NONE");
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      "yearOperator",
+      expect.objectContaining({
+        value: "NONE",
+      }),
+    );
+  });
+
+  it("ignores invalid year operator values", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({ year: 2020 }),
+      }),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers("test_filters");
+        const yearOperator = useAtomValue(yearOperatorAtom);
+
+        return { handlers, yearOperator };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters releases={releases}>
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleYearOperatorChange("AND");
+    });
+
+    expect(result.current.yearOperator).toBe("OR");
   });
 });

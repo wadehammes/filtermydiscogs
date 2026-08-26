@@ -32,6 +32,11 @@
   width: 100%;
 }
 
+.clearAllButtonActive:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .sortFilterGroup {
   display: flex;
   flex-direction: row;

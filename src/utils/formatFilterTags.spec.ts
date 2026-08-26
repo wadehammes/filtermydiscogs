@@ -4,7 +4,6 @@ import {
   getFormatSubtypeTags,
   getFormatTagsFromFormat,
   getReleaseFormatTags,
-  releaseMatchesFormatFilters,
   sortFormatTags,
 } from "./formatFilterTags";
 
@@ -12,10 +11,58 @@ describe("formatFilterTags", () => {
   it("returns only filterable subtype descriptions", () => {
     const format = {
       name: "Vinyl",
-      descriptions: ["LP", '12"', "Album", "Stereo"],
+      descriptions: ["LP", '12"', "Album", "Stereo", "Remastered"],
     };
 
-    expect(getFormatSubtypeTags(format)).toEqual(['12"', "LP"]);
+    expect(getFormatSubtypeTags(format).sort()).toEqual(['12"', "LP"].sort());
+  });
+
+  it("includes any non-denylisted description without an allowlist entry", () => {
+    const format = {
+      name: "Vinyl",
+      descriptions: ['12"', "Regional Pressing", "Album"],
+    };
+
+    expect(getFormatSubtypeTags(format).sort()).toEqual(
+      ['12"', "Regional Pressing"].sort(),
+    );
+  });
+
+  it("includes collector format descriptions such as test pressings and white labels", () => {
+    const format = {
+      name: "Vinyl",
+      descriptions: ['12"', "Test Pressing", "White Label", "Album"],
+    };
+
+    expect(getFormatSubtypeTags(format).sort()).toEqual(
+      ['12"', "Test Pressing", "White Label"].sort(),
+    );
+  });
+
+  it("includes hand-stamped format descriptions", () => {
+    const format = {
+      name: "Vinyl",
+      descriptions: ['12"', "Hand-stamped", "Album"],
+    };
+
+    expect(getFormatSubtypeTags(format).sort()).toEqual(
+      ['12"', "Hand-stamped"].sort(),
+    );
+  });
+
+  it("canonicalizes format description casing to a single tag", () => {
+    const tags = getReleaseFormatTags([
+      {
+        name: "Vinyl",
+        descriptions: ["test pressing", "LP"],
+      },
+      {
+        name: "vinyl",
+        descriptions: ["Test Pressing"],
+      },
+    ]);
+
+    expect(tags).toEqual(["LP", "Test Pressing", "Vinyl"]);
   });
 
   it("includes format name and physical size descriptions", () => {
@@ -24,7 +71,9 @@ describe("formatFilterTags", () => {
       descriptions: ["LP", '12"', "Album", "Stereo"],
     };
 
-    expect(getFormatTagsFromFormat(format)).toEqual(["Vinyl", '12"', "LP"]);
+    expect(getFormatTagsFromFormat(format).sort()).toEqual(
+      ['12"', "LP", "Vinyl"].sort(),
+    );
   });
 
   it("includes cassette and cd names", () => {
@@ -51,25 +100,12 @@ describe("formatFilterTags", () => {
     expect(tags).toEqual(['12"', "LP", "Vinyl"]);
   });
 
-  it("matches selected physical format tags", () => {
-    const formats = [
-      formatFactory.build({
-        name: "Vinyl",
-        descriptions: ['7"', "Single"],
-      }),
-    ];
-
-    expect(releaseMatchesFormatFilters(formats, ['7"'])).toBe(true);
-    expect(releaseMatchesFormatFilters(formats, ['12"'])).toBe(false);
-    expect(releaseMatchesFormatFilters(formats, ["Cassette"])).toBe(false);
-  });
-
-  it("sorts common format tags in a predictable order", () => {
+  it("sorts format tags alphabetically", () => {
     expect(sortFormatTags(["CD", '7"', "Vinyl", '12"'])).toEqual([
       '12"',
       '7"',
-      "Vinyl",
       "CD",
+      "Vinyl",
     ]);
   });
 });

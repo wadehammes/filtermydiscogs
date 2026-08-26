@@ -1,18 +1,66 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import {
+  type FiltersActions,
   FiltersActionTypes,
   type SortValues,
 } from "src/context/filters.context";
 import {
   useFacetOptions,
   useFiltersDispatch,
+  useFormatOperator,
   useSelectedFormats,
   useSelectedSort,
   useSelectedStyles,
   useSelectedYears,
   useStyleOperator,
+  useYearOperator,
 } from "src/hooks/useFilterAtoms.hook";
+import {
+  isFilterMatchOperator,
+  isYearMatchOperator,
+} from "src/types/filters.types";
+
+const createMatchOperatorHandler =
+  <T extends "AND" | "OR" | "NONE">({
+    category,
+    filtersDispatch,
+    analyticsEvent,
+    analyticsAction,
+    analyticsLabel,
+    actionType,
+    isValidOperator,
+  }: {
+    category: string;
+    filtersDispatch: ReturnType<typeof useFiltersDispatch>;
+    analyticsEvent: string;
+    analyticsAction: string;
+    analyticsLabel: string;
+    actionType:
+      | FiltersActionTypes.SetStyleOperator
+      | FiltersActionTypes.SetFormatOperator
+      | FiltersActionTypes.SetYearOperator;
+    isValidOperator: (value: string | undefined) => value is T;
+  }) =>
+  (value: string | string[]) => {
+    const operatorValue = Array.isArray(value) ? value[0] : value;
+
+    if (!isValidOperator(operatorValue)) {
+      return;
+    }
+
+    trackEvent(analyticsEvent, {
+      action: analyticsAction,
+      category,
+      label: analyticsLabel,
+      value: operatorValue,
+    });
+
+    filtersDispatch({
+      type: actionType,
+      payload: operatorValue,
+    } as Extract<FiltersActions, { type: typeof actionType }>);
+  };
 
 export const useFilterHandlers = (category: string) => {
   const filtersDispatch = useFiltersDispatch();
@@ -23,6 +71,8 @@ export const useFilterHandlers = (category: string) => {
   const selectedFormats = useSelectedFormats();
   const selectedSort = useSelectedSort();
   const styleOperator = useStyleOperator();
+  const formatOperator = useFormatOperator();
+  const yearOperator = useYearOperator();
 
   const handleStyleChange = useCallback(
     (value: string | string[]) => {
@@ -104,63 +154,41 @@ export const useFilterHandlers = (category: string) => {
   );
 
   const handleStyleOperatorChange = useCallback(
-    (value: string | string[]) => {
-      const operatorValue = Array.isArray(value) ? value[0] : value;
-
-      if (
-        operatorValue === "AND" ||
-        operatorValue === "OR" ||
-        operatorValue === "NONE"
-      ) {
-        trackEvent("styleOperator", {
-          action: "styleOperatorChanged",
-          category,
-          label: "Style Operator Changed",
-          value: operatorValue,
-        });
-
-        filtersDispatch({
-          type: FiltersActionTypes.SetStyleOperator,
-          payload: operatorValue,
-        });
-      }
-    },
-    [category, filtersDispatch],
+    createMatchOperatorHandler({
+      category,
+      filtersDispatch,
+      analyticsEvent: "styleOperator",
+      analyticsAction: "styleOperatorChanged",
+      analyticsLabel: "Style Operator Changed",
+      actionType: FiltersActionTypes.SetStyleOperator,
+      isValidOperator: isFilterMatchOperator,
+    }),
+    [],
   );
 
-  const styleOptions = useMemo(
-    () =>
-      availableStyles.map((style) => ({
-        value: style,
-        label: style,
-      })),
-    [availableStyles],
+  const handleFormatOperatorChange = useCallback(
+    createMatchOperatorHandler({
+      category,
+      filtersDispatch,
+      analyticsEvent: "formatOperator",
+      analyticsAction: "formatOperatorChanged",
+      analyticsLabel: "Format Operator Changed",
+      actionType: FiltersActionTypes.SetFormatOperator,
+      isValidOperator: isFilterMatchOperator,
+    }),
+    [],
   );
 
-  const yearOptions = useMemo(
-    () =>
-      availableYears.map((year) => ({
-        value: year.toString(),
-        label: year.toString(),
-      })),
-    [availableYears],
-  );
-
-  const formatOptions = useMemo(
-    () =>
-      availableFormats.map((format) => ({
-        value: format,
-        label: format,
-      })),
-    [availableFormats],
-  );
-
-  const styleOperatorOptions = useMemo(
-    () => [
-      { value: "OR", label: "ANY" },
-      { value: "AND", label: "ALL" },
-      { value: "NONE", label: "NONE" },
-    ],
+  const handleYearOperatorChange = useCallback(
+    createMatchOperatorHandler({
+      category,
+      filtersDispatch,
+      analyticsEvent: "yearOperator",
+      analyticsAction: "yearOperatorChanged",
+      analyticsLabel: "Year Operator Changed",
+      actionType: FiltersActionTypes.SetYearOperator,
+      isValidOperator: isYearMatchOperator,
+    }),
     [],
   );
 
@@ -170,14 +198,26 @@ export const useFilterHandlers = (category: string) => {
     handleFormatChange,
     handleSortChange,
     handleStyleOperatorChange,
-    styleOptions,
-    yearOptions,
-    formatOptions,
-    styleOperatorOptions,
+    handleFormatOperatorChange,
+    handleYearOperatorChange,
+    styleOptions: availableStyles.map((style) => ({
+      value: style,
+      label: style,
+    })),
+    yearOptions: availableYears.map((year) => ({
+      value: year.toString(),
+      label: year.toString(),
+    })),
+    formatOptions: availableFormats.map((format) => ({
+      value: format,
+      label: format,
+    })),
     selectedStyles,
     selectedYears,
     selectedFormats,
     selectedSort,
     styleOperator,
+    formatOperator,
+    yearOperator,
   };
 };

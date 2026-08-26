@@ -35,6 +35,8 @@ describe("computeFilterDerivedState", () => {
       selectedFormats: [],
       searchQuery: "miles kind",
       styleOperator: "OR",
+      formatOperator: "OR",
+      yearOperator: "OR",
     });
 
     expect(result.filteredReleases).toEqual([matchingRelease]);

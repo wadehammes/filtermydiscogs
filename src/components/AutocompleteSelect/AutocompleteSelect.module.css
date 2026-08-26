@@ -160,6 +160,17 @@
   z-index: 1;
 }
 
+.valueContainerWithPills {
+  overflow: hidden;
+  padding-right: calc(var(--space-4) + var(--space-2));
+
+  & > * {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .value {
   color: var(--foreground);
   flex: 1;
@@ -181,16 +192,12 @@
 }
 
 .pillsContainer {
-  align-items: center;
-  display: flex;
-  flex: 1;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  max-height: 1.5rem;
-  overflow: hidden;
+  max-width: 100%;
+  pointer-events: auto;
+  width: 100%;
 
   .triggerShell & {
-    padding-right: calc(var(--space-4) + var(--space-2));
+    padding-right: 0;
   }
 }
 
@@ -200,19 +207,18 @@
   border: 1px solid var(--primary);
   border-radius: var(--radius-ui);
   color: var(--primary);
+  cursor: default;
   display: inline-flex;
+  flex-shrink: 0;
   font-family: var(--font-family-meta);
   font-size: var(--text-xxs);
   height: var(--space-5);
-  max-width: 7.5rem;
   padding: var(--space-1) var(--space-1) 0.15rem 0.35rem;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .pillLabel {
   margin-right: var(--space-1);
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

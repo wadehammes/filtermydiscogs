@@ -34,6 +34,8 @@ export const computeFilterDerivedState = ({
   selectedFormats,
   searchQuery,
   styleOperator,
+  formatOperator,
+  yearOperator,
 }: {
   releases: DiscogsRelease[];
 } & ReleaseFilterCriteria): FilterDerivedState => {
@@ -51,8 +53,6 @@ export const computeFilterDerivedState = ({
     };
   }
 
-  const selectedYearsSet =
-    selectedYears.length > 0 ? new Set(selectedYears) : null;
   const normalizedSelectedFormats =
     selectedFormats.length > 0
       ? buildNormalizedFormatFilterSet(selectedFormats)
@@ -66,7 +66,11 @@ export const computeFilterDerivedState = ({
   for (const release of releases) {
     const { genreStyleTags, formatTags } = getReleaseSearchIndexEntry(release);
     const matchesSearch = releaseMatchesSearch(release, searchTokens);
-    const matchesYear = releaseMatchesYear(release, selectedYearsSet);
+    const matchesYear = releaseMatchesYear(
+      release,
+      selectedYears,
+      yearOperator,
+    );
     const matchesStyles = releaseMatchesStyles(
       release,
       selectedStyles,
@@ -76,6 +80,7 @@ export const computeFilterDerivedState = ({
     const matchesFormats = releaseMatchesFormats(
       release,
       selectedFormats,
+      formatOperator,
       normalizedSelectedFormats,
       formatTags,
     );

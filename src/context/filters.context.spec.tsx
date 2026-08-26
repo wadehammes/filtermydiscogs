@@ -99,6 +99,8 @@ describe("FiltersProvider", () => {
         selectedFormats: ["LP"],
         selectedSort: SortValues.AZTitle,
         styleOperator: "AND",
+        formatOperator: "OR",
+        yearOperator: "OR",
         searchQuery: "test query",
       });
     });
@@ -190,6 +192,8 @@ describe("FiltersProvider", () => {
         selectedFormats: [],
         selectedSort: SortValues.DateAddedNew,
         styleOperator: "OR",
+        formatOperator: "OR",
+        yearOperator: "OR",
         searchQuery: "ambient",
       });
     });
@@ -429,6 +433,54 @@ describe("FiltersProvider", () => {
     });
 
     expect(result.current.state.styleOperator).toBe("NONE");
+  });
+
+  it("sets format operator", () => {
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetFormatOperator,
+        payload: "AND",
+      });
+    });
+
+    expect(result.current.state.formatOperator).toBe("AND");
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetFormatOperator,
+        payload: "NONE",
+      });
+    });
+
+    expect(result.current.state.formatOperator).toBe("NONE");
+  });
+
+  it("sets year operator", () => {
+    const { result } = renderHook(() => useFilters(), {
+      wrapper: TestProviders,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetYearOperator,
+        payload: "NONE",
+      });
+    });
+
+    expect(result.current.state.yearOperator).toBe("NONE");
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetYearOperator,
+        payload: "OR",
+      });
+    });
+
+    expect(result.current.state.yearOperator).toBe("OR");
   });
 
   it("toggles random mode", () => {
