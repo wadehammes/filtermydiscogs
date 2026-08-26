@@ -533,7 +533,7 @@ export const ReleasePlaybackProvider = ({
     }
 
     maybeExtendQueueTail();
-  }, [isPlaying, previewVideo, queueIndex, queue.length, maybeExtendQueueTail]);
+  }, [isPlaying, previewVideo, maybeExtendQueueTail]);
 
   useEffect(() => {
     if (

@@ -1,16 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
+import { setDocumentCookieForTests } from "src/tests/utils/documentCookie";
 import { applyThemeFromStorage } from "src/utils/applyThemeFromStorage";
 
 describe("applyThemeFromStorage", () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.removeAttribute("data-theme");
-    document.cookie = "";
+    setDocumentCookieForTests("");
   });
 
   afterEach(() => {
-    document.cookie = "";
+    setDocumentCookieForTests("");
   });
 
   it("uses OS preference when logged out", () => {
@@ -28,7 +29,7 @@ describe("applyThemeFromStorage", () => {
   });
 
   it("uses stored palette theme when logged in", () => {
-    document.cookie = "discogs_session=1";
+    setDocumentCookieForTests("discogs_session=1");
     localStorage.setItem(THEME_STORAGE_KEY, "sepia");
 
     applyThemeFromStorage();
@@ -37,7 +38,7 @@ describe("applyThemeFromStorage", () => {
   });
 
   it("resolves system preference when logged in", () => {
-    document.cookie = "discogs_session=1";
+    setDocumentCookieForTests("discogs_session=1");
     localStorage.setItem(THEME_STORAGE_KEY, "system");
     window.matchMedia = jest.fn().mockImplementation((query: string) => ({
       matches: query === "(prefers-color-scheme: dark)",

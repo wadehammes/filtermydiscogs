@@ -1,7 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { verifyAdminFromRequest } from "src/lib/admin-helpers";
 import { getAdminStats } from "src/lib/admin-stats.server";
-import { createErrorResponse, rethrowNextInternalError } from "src/lib/api-helpers";
+import {
+  createErrorResponse,
+  rethrowNextInternalError,
+} from "src/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
   try {

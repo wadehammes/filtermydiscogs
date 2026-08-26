@@ -37,7 +37,7 @@ export const useReleaseRatingEditor = (release: DiscogsRelease) => {
 
   useEffect(() => {
     setRating(getReleaseRating(release));
-  }, [release.rating, release.instance_id]);
+  }, [release]);
 
   const applyOptimisticRating = (nextRating: number) => {
     const previousReleases = allReleases;
