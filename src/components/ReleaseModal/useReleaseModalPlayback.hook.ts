@@ -5,14 +5,11 @@ import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
+  buildReleasePlaybackMatchIndex,
   buildYoutubeSearchUrl,
   flattenTracklist,
-  getEmbeddableVideos,
   getPreviewTrackPosition,
   getPreviewVideoUriFromPosition,
-  getReleasePreviewVideos,
-  hasPlayableTrackVideo,
-  isTrackVideoPlayable,
   parseYoutubeVideoId,
   previewVideosToTracks,
 } from "src/utils/releasePlayback";
@@ -57,20 +54,16 @@ export const useReleaseModalPlayback = ({
     ? playback.videos
     : (releaseDetail?.videos ?? []);
 
-  const hasEmbeddableVideo = useMemo(
-    () => getEmbeddableVideos(videos).length > 0,
-    [videos],
-  );
-
-  const hasPlayableTracks = useMemo(
-    () => hasPlayableTrackVideo(tracks, videos),
+  const playbackMatchIndex = useMemo(
+    () => buildReleasePlaybackMatchIndex(tracks, videos),
     [tracks, videos],
   );
 
-  const releasePreviewVideos = useMemo(
-    () => getReleasePreviewVideos(tracks, videos),
-    [tracks, videos],
-  );
+  const hasEmbeddableVideo = playbackMatchIndex.embeddableVideos.length > 0;
+
+  const hasPlayableTracks = playbackMatchIndex.hasPlayableTracks;
+
+  const releasePreviewVideos = playbackMatchIndex.previewVideos;
 
   const releasePreviewTracks = useMemo(
     () => previewVideosToTracks(releasePreviewVideos),
@@ -78,16 +71,9 @@ export const useReleaseModalPlayback = ({
   );
 
   const isTrackPlayable = useCallback(
-    (trackPosition: string) => {
-      const track = tracks.find((entry) => entry.position === trackPosition);
-
-      if (!track) {
-        return false;
-      }
-
-      return isTrackVideoPlayable({ track, videos });
-    },
-    [tracks, videos],
+    (trackPosition: string) =>
+      playbackMatchIndex.trackVideoByPosition.has(trackPosition),
+    [playbackMatchIndex],
   );
 
   const activePreviewTrackPosition = useMemo(() => {
@@ -136,9 +122,13 @@ export const useReleaseModalPlayback = ({
 
   const handleTrackSelect = useCallback(
     (trackPosition: string) => {
+      if (!playbackMatchIndex.trackVideoByPosition.has(trackPosition)) {
+        return;
+      }
+
       const track = tracks.find((entry) => entry.position === trackPosition);
 
-      if (!(track && isTrackVideoPlayable({ track, videos }))) {
+      if (!track) {
         return;
       }
 
@@ -149,14 +139,18 @@ export const useReleaseModalPlayback = ({
         trackTitle: track.title,
       });
     },
-    [playback.startPlayback, release, tracks, videos],
+    [playback.startPlayback, playbackMatchIndex, release, tracks],
   );
 
   const handleTrackQueue = useCallback(
     (trackPosition: string) => {
+      if (!playbackMatchIndex.trackVideoByPosition.has(trackPosition)) {
+        return;
+      }
+
       const track = tracks.find((entry) => entry.position === trackPosition);
 
-      if (!(track && isTrackVideoPlayable({ track, videos }))) {
+      if (!track) {
         return;
       }
 
@@ -166,7 +160,7 @@ export const useReleaseModalPlayback = ({
         trackTitle: track.title,
       });
     },
-    [playback.addToQueue, release, tracks, videos],
+    [playback.addToQueue, playbackMatchIndex, release, tracks],
   );
 
   const handleReleasePreview = useCallback(
