@@ -1,4 +1,10 @@
-import { useCallback, useDeferredValue, useEffect, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
@@ -73,6 +79,12 @@ export const useReleasesClient = () => {
   const hasMoreVisible =
     !isRandomMode && gridSourceReleases.length > visibleReleases.length;
 
+  const visibleCountResetKey = useMemo(
+    () =>
+      `${isRandomMode}:${sortedFilteredReleases.map((release) => release.instance_id).join("\0")}`,
+    [isRandomMode, sortedFilteredReleases],
+  );
+
   useEffect(() => {
     if (isMobile && currentView === "list") {
       viewDispatch({
@@ -120,15 +132,10 @@ export const useReleasesClient = () => {
   }, [inView, hasMoreVisible]);
 
   useEffect(() => {
-    if (isRandomMode) {
-      setVisibleCount(INITIAL_VISIBLE_RELEASES);
-      return;
-    }
-
-    if (sortedFilteredReleases.length >= 0) {
+    if (visibleCountResetKey !== undefined) {
       setVisibleCount(INITIAL_VISIBLE_RELEASES);
     }
-  }, [isRandomMode, sortedFilteredReleases]);
+  }, [visibleCountResetKey]);
 
   const {
     selectedRelease,

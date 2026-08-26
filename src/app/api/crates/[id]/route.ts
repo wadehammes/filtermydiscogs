@@ -12,7 +12,8 @@ import {
   mapCrateReleaseRow,
   mapCrateSetMarkerRow,
 } from "src/lib/crate-release-mapper";
-import { prisma } from "src/lib/db";
+import { countRows, orm } from "src/lib/db";
+import { mapCrateRow } from "src/lib/db-mappers";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { updateCrateBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -44,40 +45,19 @@ export async function GET(
     const { skip, take, page, pageSize } = getPaginationParams(request);
 
     // Get the crate first (without releases to reduce memory usage)
-    const crate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id: id,
-        },
-      },
-      select: {
-        user_id: true,
-        id: true,
-        name: true,
-        username: true,
-        is_default: true,
-        private: true,
-        packed_enabled: true,
-        notes: true,
-        created_at: true,
-        updated_at: true,
-      },
-    });
+    const crate = await orm.Crates.where({ userId: userIdNum, id }).first();
 
     if (!crate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
     const releaseWhere = {
-      user_id: userIdNum,
-      crate_id: id,
+      userId: userIdNum,
+      crateId: id,
     };
 
     const [total, releases, markers] = await Promise.all([
-      prisma.crateRelease.count({
-        where: releaseWhere,
-      }),
+      countRows(orm.CrateReleases.where(releaseWhere)),
       findCrateReleasesForLayout({
         where: releaseWhere,
         skip,
@@ -92,7 +72,7 @@ export async function GET(
     const mappedMarkers = markers.map(mapCrateSetMarkerRow);
 
     return privateRouteJson({
-      crate,
+      crate: mapCrateRow(crate),
       releases: mappedReleases,
       markers: mappedMarkers,
       pagination: {
@@ -142,21 +122,9 @@ export async function PUT(
       notes,
     } = parsedBody.data;
 
-    const existingCrate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        is_default: true,
-        private: true,
-        packed_enabled: true,
-      },
-    });
+    const existingCrate = await orm.Crates.where({ userId: userIdNum, id })
+      .select("id", "name", "isDefault", "private", "packedEnabled")
+      .first();
 
     if (!existingCrate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
@@ -169,16 +137,10 @@ export async function PUT(
     }
 
     if (name !== undefined) {
-      const duplicateCrate = await prisma.crate.findFirst({
-        where: {
-          user_id: userIdNum,
-          name,
-          NOT: {
-            id,
-          },
-        },
-        select: { id: true },
-      });
+      const duplicateCrate = await orm.Crates.where({ userId: userIdNum, name })
+        .where((c) => c.id.neq(id))
+        .select("id")
+        .first();
 
       if (duplicateCrate) {
         return privateRouteJson(
@@ -192,26 +154,20 @@ export async function PUT(
 
     if (is_default !== undefined) {
       if (is_default) {
-        const updateResult = await prisma.crate.updateMany({
-          where: {
-            user_id: userIdNum,
-            is_default: true,
-            NOT: {
-              id,
-            },
-          },
-          data: {
-            is_default: false,
-          },
-        });
+        const unsetCount = await orm.Crates.where({
+          userId: userIdNum,
+          isDefault: true,
+        })
+          .where((c) => c.id.neq(id))
+          .updateAndCount({ isDefault: false });
 
-        if (updateResult.count > 0) {
+        if (unsetCount > 0) {
           const { auditDatabaseOperation } = await import(
             "src/lib/api-helpers"
           );
           auditDatabaseOperation(userIdNum, "Crate", "update", undefined, {
             action: "unset_default",
-            affectedCount: updateResult.count,
+            affectedCount: unsetCount,
           });
         }
       }
@@ -242,20 +198,34 @@ export async function PUT(
       );
     }
 
-    const updatedCrate = await prisma.crate.update({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-      data: updateData,
+    const updatedCrate = await orm.Crates.where({
+      userId: userIdNum,
+      id,
+    }).update({
+      ...(updateData.name !== undefined ? { name: updateData.name } : {}),
+      ...(updateData.username !== undefined
+        ? { username: updateData.username }
+        : {}),
+      ...(updateData.is_default !== undefined
+        ? { isDefault: updateData.is_default }
+        : {}),
+      ...(updateData.private !== undefined
+        ? { private: updateData.private }
+        : {}),
+      ...(updateData.packed_enabled !== undefined
+        ? { packedEnabled: updateData.packed_enabled }
+        : {}),
+      ...(updateData.notes !== undefined ? { notes: updateData.notes } : {}),
     });
 
     const { auditDatabaseOperation } = await import("src/lib/api-helpers");
     auditDatabaseOperation(userIdNum, "Crate", "update", id, updateData);
 
-    return privateRouteJson({ crate: updatedCrate });
+    if (!updatedCrate) {
+      return privateRouteJson({ error: "Crate not found" }, { status: 404 });
+    }
+
+    return privateRouteJson({ crate: mapCrateRow(updatedCrate) });
   } catch (error) {
     console.error("Error updating crate:", error);
     return createErrorResponse(error);
@@ -282,9 +252,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Check if this is the only crate
-    const crateCount = await prisma.crate.count({
-      where: { user_id: userIdNum },
-    });
+    const crateCount = await countRows(orm.Crates.where({ userId: userIdNum }));
 
     if (crateCount <= 1) {
       return privateRouteJson(
@@ -294,22 +262,12 @@ export async function DELETE(
     }
 
     // Get release count before deletion for audit
-    const releaseCount = await prisma.crateRelease.count({
-      where: {
-        user_id: userIdNum,
-        crate_id: id,
-      },
-    });
+    const releaseCount = await countRows(
+      orm.CrateReleases.where({ userId: userIdNum, crateId: id }),
+    );
 
     // Verify crate exists and belongs to user, then delete (cascade will delete releases)
-    await prisma.crate.delete({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-    });
+    await orm.Crates.where({ userId: userIdNum, id }).delete();
 
     // Audit log (sensitive operation)
     const { auditDatabaseOperation } = await import("src/lib/api-helpers");

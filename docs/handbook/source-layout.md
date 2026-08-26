@@ -12,14 +12,15 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/services/`](../../src/services/) | Discogs OAuth service, client auth/cookie helpers. |
 | [`src/api/`](../../src/api/) | Browser-side fetch layer — **`api`** in [`urls.ts`](../../src/api/urls.ts), implementations in [`endpoints/`](../../src/api/endpoints/), utilities in [`helpers.ts`](../../src/api/helpers.ts). |
 | [`src/hooks/`](../../src/hooks/) | Custom hooks; React Query reads under `hooks/queries/`, writes under `hooks/mutations/`. |
-| [`src/lib/`](../../src/lib/) | Server utilities: Prisma client, username validation, public crate loader, private session response helpers, rate limit, admin helpers. |
+| [`src/lib/`](../../src/lib/) | Server utilities: Prisma 8 client ([`db.ts`](../../src/lib/db.ts)), row mappers ([`db-mappers.ts`](../../src/lib/db-mappers.ts)), username validation, public crate loader, private session response helpers, rate limit, admin helpers. |
+| [`src/prisma/`](../../src/prisma/) | Contract source ([`contract.prisma`](../../src/prisma/contract.prisma)), emitted JSON/types. |
 | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 proxy: private cache headers on auth and authenticated crate API routes. |
 | [`src/utils/`](../../src/utils/) | Pure helpers: filter, sort, format tags, sync collection, image loader, `definedProps` (optional prop spreads). |
 | [`src/types/`](../../src/types/) | Shared TypeScript types (Discogs shapes, crate, dashboard, public stats). |
 | [`src/styles/`](../../src/styles/) | [`global.css`](../../src/styles/global.css) entry, [`global/`](../../src/styles/global/) side-effect sheets, [`themes/`](../../src/styles/themes/) tokens, shared [`modules/`](../../src/styles/modules/), [`icons/`](../../src/styles/icons/) |
-| [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, shared test helpers ([`filterControlTestHelpers.ts`](../../src/tests/filterControlTestHelpers.ts)), mocks ([`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts)). |
+| [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, shared test helpers ([`filterControlTestHelpers.ts`](../../src/tests/filterControlTestHelpers.ts)), mocks ([`mockDb.ts`](../../src/tests/mocks/mockDb.ts), [`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts)). |
 | [`public/images/`](../../public/images/) | Static marketing/login preview images. |
-| [`prisma/`](../../prisma/) | Schema and migrations; datasource in [`prisma.config.ts`](../../prisma.config.ts). |
+| [`prisma/`](../../prisma/) | Legacy timestamp migrations (historical). Contract + CLI config: [`prisma.config.ts`](../../prisma.config.ts), [`src/prisma/contract.prisma`](../../src/prisma/contract.prisma). |
 | [`scripts/`](../../scripts/) | Scaffold, env loading, DB pull helpers. |
 | [`.jest/`](../../.jest/) | Jest setup, env vars, SVG mock. |
 | [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx) | Custom Testing Library render helpers (`test-utils` import alias). |
@@ -46,7 +47,7 @@ Quick map of **`src/`** and related top-level folders.
 | Add a React Query mutation hook | [`src/hooks/mutations/`](../../src/hooks/mutations/) |
 | Test a feature hook (mock API, assert outcomes) | **`jest.mock("src/api/urls")`** + stub **`api.*`** methods + [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx); see [conventions.md → Do not test React Query](conventions.md#do-not-test-react-query-in-feature-tests) |
 | Change filter logic | [`computeFilterDerivedState.ts`](../../src/utils/computeFilterDerivedState.ts), [`releaseSearchIndex.ts`](../../src/utils/releaseSearchIndex.ts), [`releaseFilterMatchers.ts`](../../src/utils/releaseFilterMatchers.ts), [`matchFilterOperator.ts`](../../src/utils/matchFilterOperator.ts), [`filterReleases.ts`](../../src/utils/filterReleases.ts), [`computeFacetOptions.ts`](../../src/utils/computeFacetOptions.ts), [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts), [`filters.types.ts`](../../src/types/filters.types.ts) |
-| Crate DB changes | [`prisma/schema.prisma`](../../prisma/schema.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
+| Crate DB changes | [`src/prisma/contract.prisma`](../../src/prisma/contract.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
 | Crate drawer open/closed state | [`useCrateDrawer.hook.ts`](../../src/hooks/useCrateDrawer.hook.ts) + [`crate.context.tsx`](../../src/context/crate.context.tsx); layout in [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) |
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
 | Private session API cache headers | [`src/lib/private-route-cache.ts`](../../src/lib/private-route-cache.ts), [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |

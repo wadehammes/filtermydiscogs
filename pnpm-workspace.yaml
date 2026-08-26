@@ -2,9 +2,11 @@ allowBuilds:
   '@parcel/watcher': false
   '@prisma/engines': false
   esbuild: false
+  msgpackr-extract: false
   prisma: false
   sharp: false
   unrs-resolver: false
+  workerd: false
 minimumReleaseAgeExclude:
   - '@next/bundle-analyzer@16.3.0'
   - '@next/env@16.3.0'
@@ -18,6 +20,18 @@ minimumReleaseAgeExclude:
   - '@next/swc-win32-x64-msvc@16.3.0'
   - next@16.3.0
   - '@next/playwright@16.3.0'
+  - '@prisma/cli-engine@0.2.3'
+  - '@prisma/config@7.10.0'
+  - '@prisma/debug@7.10.0'
+  - '@prisma/engines@7.10.0'
+  - '@prisma/fetch-engine@7.10.0'
+  - '@prisma/get-platform@7.10.0'
+  - '@prisma/prisma7@7.10.0'
+  - prisma@7.10.0
+  - '@prisma/adapter-pg@7.10.0'
+  - '@prisma/client-runtime-utils@7.10.0'
+  - '@prisma/client@7.10.0'
+  - '@prisma/driver-adapter-utils@7.10.0'
 catalog:
   pg: ^8.23.0
   '@types/pg': 8.23.1

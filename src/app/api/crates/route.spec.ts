@@ -10,17 +10,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
+import type { Crate } from "src/types/crate.types";
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    crate: {
-      count: jest.fn(),
-      findMany: jest.fn(),
-      findFirst: jest.fn(),
-      create: jest.fn(),
-    },
-  },
-}));
+const dbMock = createDbModuleMock();
+
+jest.mock("src/lib/db", () => dbMock);
 
 jest.mock("src/lib/crate-preview.server", () => ({
   fetchCratePreviewThumbs: jest.fn(async () => new Map()),
@@ -74,19 +69,16 @@ jest.mock("src/lib/api-helpers", () => ({
 
 type RouteModule = typeof import("src/app/api/crates/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
-type DbModule = typeof import("src/lib/db");
 
 let GET: RouteModule["GET"];
 let POST: RouteModule["POST"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockCount: jest.MockedFunction<DbModule["prisma"]["crate"]["count"]>;
-let mockFindMany: jest.MockedFunction<DbModule["prisma"]["crate"]["findMany"]>;
-let mockFindFirst: jest.MockedFunction<
-  DbModule["prisma"]["crate"]["findFirst"]
->;
-let mockCreate: jest.MockedFunction<DbModule["prisma"]["crate"]["create"]>;
+let mockCountRows: typeof dbMock.countRows;
+let mockCratesAll: typeof dbMock.orm.Crates.all;
+let mockCratesFirst: typeof dbMock.orm.Crates.first;
+let mockCratesCreate: typeof dbMock.orm.Crates.create;
 let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 
 const USER_ID = 42;
@@ -100,20 +92,25 @@ const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
 const createUnauthorizedError = () =>
   NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-const buildCrateWithCountRow = (
-  crate: ReturnType<typeof crateFactory.build>,
-) => ({
-  user_id: crate.user_id,
+const toOrmCrate = (crate: Crate) => ({
+  userId: crate.user_id,
   id: crate.id,
   name: crate.name,
   username: crate.username,
-  is_default: crate.is_default,
+  isDefault: crate.is_default,
   private: crate.private,
-  packed_enabled: crate.packed_enabled,
+  packedEnabled: crate.packed_enabled,
   notes: crate.notes,
-  created_at: crate.created_at,
-  updated_at: crate.updated_at,
-  _count: { releases: 0 },
+  createdAt: crate.created_at,
+  updatedAt: crate.updated_at,
+});
+
+const buildCrateWithCountRow = (
+  crate: ReturnType<typeof crateFactory.build>,
+  releaseCount = 0,
+) => ({
+  ...toOrmCrate(crate),
+  crateReleases: releaseCount,
 });
 
 const createGetRequest = (search = "") =>
@@ -127,10 +124,9 @@ const createPostRequest = (body: unknown) =>
   });
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db] = await Promise.all([
+  const [routeModule, apiHelpers] = await Promise.all([
     import("src/app/api/crates/route"),
     import("src/lib/api-helpers"),
-    import("src/lib/db"),
   ]);
 
   GET = routeModule.GET;
@@ -138,10 +134,10 @@ beforeAll(async () => {
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockCount = jest.mocked(db.prisma.crate.count);
-  mockFindMany = jest.mocked(db.prisma.crate.findMany);
-  mockFindFirst = jest.mocked(db.prisma.crate.findFirst);
-  mockCreate = jest.mocked(db.prisma.crate.create);
+  mockCountRows = dbMock.countRows;
+  mockCratesAll = dbMock.orm.Crates.all;
+  mockCratesFirst = dbMock.orm.Crates.first;
+  mockCratesCreate = dbMock.orm.Crates.create;
   mockAudit = jest.mocked(apiHelpers.auditDatabaseOperation);
 });
 
@@ -156,8 +152,8 @@ describe("GET /api/crates", () => {
 
   it("returns paginated crates with release counts", async () => {
     const crate = crateFactory.defaultTestCrate({ user_id: USER_ID });
-    mockCount.mockResolvedValue(1);
-    mockFindMany.mockResolvedValue([buildCrateWithCountRow(crate)]);
+    mockCountRows.mockResolvedValue(1);
+    mockCratesAll.mockResolvedValue([buildCrateWithCountRow(crate)]);
 
     const response = await GET(createGetRequest());
 
@@ -197,20 +193,18 @@ describe("GET /api/crates", () => {
       is_default: true,
     });
 
-    mockCount.mockResolvedValue(0);
-    mockFindMany.mockResolvedValue([]);
-    mockCreate.mockResolvedValue(buildCrateWithCountRow(defaultCrate));
+    mockCountRows.mockResolvedValue(0);
+    mockCratesAll.mockResolvedValue([]);
+    mockCratesCreate.mockResolvedValue(toOrmCrate(defaultCrate));
 
     const response = await GET(createGetRequest());
 
-    expect(mockCreate).toHaveBeenCalledWith(
+    expect(mockCratesCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          name: "My Crate",
-          is_default: true,
-          user_id: USER_ID,
-          username: USERNAME,
-        }),
+        userId: USER_ID,
+        name: "My Crate",
+        isDefault: true,
+        username: USERNAME,
       }),
     );
     await expect(response.json()).resolves.toEqual({
@@ -249,14 +243,14 @@ describe("POST /api/crates", () => {
       return new NextResponse(JSON.stringify(body), init);
     });
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockFindFirst.mockResolvedValue(null);
+    mockCratesFirst.mockResolvedValue(null);
   });
 
   it("creates a crate and returns 201", async () => {
     const created = createCrateResponseFactory.named("New Shelf", {
       user_id: USER_ID,
     }).crate;
-    mockCreate.mockResolvedValue(created);
+    mockCratesCreate.mockResolvedValue(toOrmCrate(created));
 
     const response = await POST(createPostRequest({ name: "New Shelf" }));
 
@@ -284,12 +278,14 @@ describe("POST /api/crates", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Crate name is required",
     });
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCratesCreate).not.toHaveBeenCalled();
   });
 
   it("returns 409 when a crate with the same name already exists", async () => {
-    mockFindFirst.mockResolvedValue(
-      crateFactory.build({ id: "existing-crate", user_id: USER_ID }),
+    mockCratesFirst.mockResolvedValue(
+      toOrmCrate(
+        crateFactory.build({ id: "existing-crate", user_id: USER_ID }),
+      ),
     );
 
     const response = await POST(createPostRequest({ name: "Duplicates" }));
@@ -298,7 +294,7 @@ describe("POST /api/crates", () => {
     await expect(response.json()).resolves.toEqual({
       error: "A crate with this name already exists",
     });
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCratesCreate).not.toHaveBeenCalled();
   });
 
   it("returns auth error when user is not verified", async () => {

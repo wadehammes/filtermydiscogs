@@ -1,5 +1,5 @@
 import { groupPreviewThumbsByCrateId } from "src/lib/crate-preview";
-import { prisma } from "src/lib/db";
+import { orm } from "src/lib/db";
 
 export const fetchCratePreviewThumbs = async ({
   userId,
@@ -12,17 +12,18 @@ export const fetchCratePreviewThumbs = async ({
     return new Map();
   }
 
-  const rows = await prisma.crateRelease.findMany({
-    where: {
-      user_id: userId,
-      crate_id: { in: crateIds },
-    },
-    orderBy: [{ crate_id: "asc" }, { sort_order: "asc" }, { added_at: "asc" }],
-    select: {
-      crate_id: true,
-      release_data: true,
-    },
-  });
+  const rows = await orm.CrateReleases.where({ userId })
+    .where((release) => release.crateId.in(crateIds))
+    .orderBy((release) => release.crateId.asc())
+    .orderBy((release) => release.sortOrder.asc())
+    .orderBy((release) => release.addedAt.asc())
+    .select("crateId", "releaseData")
+    .all();
 
-  return groupPreviewThumbsByCrateId(rows);
+  return groupPreviewThumbsByCrateId(
+    rows.map((row) => ({
+      crate_id: row.crateId,
+      release_data: row.releaseData,
+    })),
+  );
 };

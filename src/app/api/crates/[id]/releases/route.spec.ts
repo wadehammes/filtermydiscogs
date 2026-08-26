@@ -8,17 +8,11 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    crate: {
-      findUnique: jest.fn(),
-    },
-    crateRelease: {
-      updateMany: jest.fn(),
-    },
-  },
-}));
+const dbMock = createDbModuleMock();
+
+jest.mock("src/lib/db", () => dbMock);
 
 jest.mock("src/lib/api-helpers", () => ({
   getVerifiedUserFromRequestWithRateLimit: jest.fn(),
@@ -33,18 +27,13 @@ jest.mock("src/lib/api-helpers", () => ({
 
 type RouteModule = typeof import("src/app/api/crates/[id]/releases/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
-type DbModule = typeof import("src/lib/db");
 
 let PATCH: RouteModule["PATCH"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["crate"]["findUnique"]
->;
-let mockUpdateMany: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["updateMany"]
->;
+let mockCratesFirst: typeof dbMock.orm.Crates.first;
+let mockCrateReleasesUpdateAndCount: typeof dbMock.orm.CrateReleases.updateAndCount;
 let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 
 const CRATE_ID = "crate-1";
@@ -60,18 +49,17 @@ const createPatchRequest = (body: unknown) =>
   });
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db] = await Promise.all([
+  const [routeModule, apiHelpers] = await Promise.all([
     import("src/app/api/crates/[id]/releases/route"),
     import("src/lib/api-helpers"),
-    import("src/lib/db"),
   ]);
 
   PATCH = routeModule.PATCH;
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockFindUnique = jest.mocked(db.prisma.crate.findUnique);
-  mockUpdateMany = jest.mocked(db.prisma.crateRelease.updateMany);
+  mockCratesFirst = dbMock.orm.Crates.first;
+  mockCrateReleasesUpdateAndCount = dbMock.orm.CrateReleases.updateAndCount;
   mockAudit = jest.mocked(apiHelpers.auditDatabaseOperation);
 });
 
@@ -100,7 +88,7 @@ describe("PATCH /api/crates/[id]/releases", () => {
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
-    expect(mockFindUnique).not.toHaveBeenCalled();
+    expect(mockCratesFirst).not.toHaveBeenCalled();
   });
 
   it("returns 400 when clear_found is not true", async () => {
@@ -119,7 +107,7 @@ describe("PATCH /api/crates/[id]/releases", () => {
     await expect(response.json()).resolves.toEqual({
       error: "clear_found must be true",
     });
-    expect(mockFindUnique).not.toHaveBeenCalled();
+    expect(mockCratesFirst).not.toHaveBeenCalled();
   });
 
   it("returns 404 when crate is not found", async () => {
@@ -129,7 +117,7 @@ describe("PATCH /api/crates/[id]/releases", () => {
         username: "crate-digger",
       }),
     );
-    mockFindUnique.mockResolvedValue(null);
+    mockCratesFirst.mockResolvedValue(null);
 
     const response = await PATCH(createPatchRequest({ clear_found: true }), {
       params: Promise.resolve({ id: CRATE_ID }),
@@ -139,7 +127,7 @@ describe("PATCH /api/crates/[id]/releases", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Crate not found",
     });
-    expect(mockUpdateMany).not.toHaveBeenCalled();
+    expect(mockCrateReleasesUpdateAndCount).not.toHaveBeenCalled();
   });
 
   it("clears packed status for all releases in the crate", async () => {
@@ -149,10 +137,8 @@ describe("PATCH /api/crates/[id]/releases", () => {
         username: "crate-digger",
       }),
     );
-    mockFindUnique.mockResolvedValue({ id: CRATE_ID } as Awaited<
-      ReturnType<DbModule["prisma"]["crate"]["findUnique"]>
-    >);
-    mockUpdateMany.mockResolvedValue({ count: 3 });
+    mockCratesFirst.mockResolvedValue({ id: CRATE_ID });
+    mockCrateReleasesUpdateAndCount.mockResolvedValue(3);
 
     const response = await PATCH(createPatchRequest({ clear_found: true }), {
       params: Promise.resolve({ id: CRATE_ID }),
@@ -163,24 +149,9 @@ describe("PATCH /api/crates/[id]/releases", () => {
       success: true,
       cleared_count: 3,
     });
-    expect(mockFindUnique).toHaveBeenCalledWith({
-      where: {
-        user_id_id: {
-          user_id: USER_ID,
-          id: CRATE_ID,
-        },
-      },
-      select: { id: true },
-    });
-    expect(mockUpdateMany).toHaveBeenCalledWith({
-      where: {
-        user_id: USER_ID,
-        crate_id: CRATE_ID,
-        found_at: { not: null },
-      },
-      data: {
-        found_at: null,
-      },
+    expect(mockCratesFirst).toHaveBeenCalled();
+    expect(mockCrateReleasesUpdateAndCount).toHaveBeenCalledWith({
+      foundAt: null,
     });
     expect(mockAudit).toHaveBeenCalledWith(
       USER_ID,

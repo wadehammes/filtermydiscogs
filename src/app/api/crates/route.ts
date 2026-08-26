@@ -7,7 +7,8 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { fetchCratePreviewThumbs } from "src/lib/crate-preview.server";
-import { prisma } from "src/lib/db";
+import { countRows, orm } from "src/lib/db";
+import { mapCrateRow } from "src/lib/db-mappers";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { createCrateBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -27,77 +28,29 @@ export async function GET(request: NextRequest) {
     const { skip, take, page, pageSize } = getPaginationParams(request);
 
     // Get total count for pagination
-    const total = await prisma.crate.count({
-      where: { user_id: userIdNum },
-    });
+    const total = await countRows(orm.Crates.where({ userId: userIdNum }));
 
     // Get crates for the user with release counts (paginated)
-    const crates = await prisma.crate.findMany({
-      where: { user_id: userIdNum },
-      orderBy: [{ is_default: "desc" }, { created_at: "asc" }],
-      skip,
-      take,
-      select: {
-        user_id: true,
-        id: true,
-        name: true,
-        username: true,
-        is_default: true,
-        private: true,
-        packed_enabled: true,
-        notes: true,
-        created_at: true,
-        updated_at: true,
-        _count: {
-          select: {
-            releases: true,
-          },
-        },
-      },
-    });
+    const crates = await orm.Crates.where({ userId: userIdNum })
+      .orderBy((c) => c.createdAt.asc())
+      .offset(skip)
+      .limit(take)
+      .include("crateReleases", (r) => r.count())
+      .all();
 
     // If no crates exist and we're on the first page, create a default crate
     if (crates.length === 0 && page === 1 && total === 0) {
-      const defaultCrate = await prisma.crate.create({
-        data: {
-          user_id: userIdNum,
-          id: randomUUID(),
-          name: "My Crate",
-          username: username || null,
-          is_default: true,
-        },
-        select: {
-          user_id: true,
-          id: true,
-          name: true,
-          username: true,
-          is_default: true,
-          private: true,
-          packed_enabled: true,
-          notes: true,
-          created_at: true,
-          updated_at: true,
-          _count: {
-            select: {
-              releases: true,
-            },
-          },
-        },
+      const defaultCrate = await orm.Crates.create({
+        userId: userIdNum,
+        id: randomUUID(),
+        name: "My Crate",
+        username: username || null,
+        isDefault: true,
       });
 
-      // Map default crate to include release count
       const defaultCrateWithCount = {
-        user_id: defaultCrate.user_id,
-        id: defaultCrate.id,
-        name: defaultCrate.name,
-        username: defaultCrate.username,
-        is_default: defaultCrate.is_default,
-        private: defaultCrate.private,
-        packed_enabled: defaultCrate.packed_enabled,
-        notes: defaultCrate.notes,
-        created_at: defaultCrate.created_at,
-        updated_at: defaultCrate.updated_at,
-        releaseCount: defaultCrate._count.releases,
+        ...mapCrateRow(defaultCrate),
+        releaseCount: 0,
         previewThumbs: [],
       };
 
@@ -121,17 +74,8 @@ export async function GET(request: NextRequest) {
     });
 
     const cratesWithCounts = crates.map((crate) => ({
-      user_id: crate.user_id,
-      id: crate.id,
-      name: crate.name,
-      username: crate.username,
-      is_default: crate.is_default,
-      private: crate.private,
-      packed_enabled: crate.packed_enabled,
-      notes: crate.notes,
-      created_at: crate.created_at,
-      updated_at: crate.updated_at,
-      releaseCount: crate._count.releases,
+      ...mapCrateRow(crate),
+      releaseCount: crate.crateReleases as number,
       previewThumbs: previewThumbsByCrateId.get(crate.id) ?? [],
     }));
 
@@ -164,13 +108,12 @@ export async function POST(request: NextRequest) {
     const { name } = parsedBody.data;
 
     // Check if a crate with this name already exists for this user
-    const existingCrate = await prisma.crate.findFirst({
-      where: {
-        user_id: userIdNum,
-        name,
-      },
-      select: { id: true },
-    });
+    const existingCrate = await orm.Crates.where({
+      userId: userIdNum,
+      name,
+    })
+      .select("id")
+      .first();
 
     if (existingCrate) {
       return privateRouteJson(
@@ -180,14 +123,12 @@ export async function POST(request: NextRequest) {
     }
 
     const crateId = randomUUID();
-    const newCrate = await prisma.crate.create({
-      data: {
-        user_id: userIdNum,
-        id: crateId,
-        name,
-        username: username || null,
-        is_default: false,
-      },
+    const newCrate = await orm.Crates.create({
+      userId: userIdNum,
+      id: crateId,
+      name,
+      username: username || null,
+      isDefault: false,
     });
 
     // Audit log
@@ -196,7 +137,7 @@ export async function POST(request: NextRequest) {
       name,
     });
 
-    return privateRouteJson({ crate: newCrate }, { status: 201 });
+    return privateRouteJson({ crate: mapCrateRow(newCrate) }, { status: 201 });
   } catch (error) {
     console.error("Error creating crate:", error);
     return createErrorResponse(error);

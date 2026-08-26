@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
-import { prisma } from "src/lib/db";
+import { and } from "@prisma/orm-postgres/orm-client";
+import { orm, ormDate, ormTimestamp, toOrmDate } from "src/lib/db";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
 
 export const PRODUCT_ANALYTICS_RETENTION_DAYS = 90;
@@ -32,17 +32,26 @@ const bulkUpsertRollupRows = async ({
     return 0;
   }
 
-  const values = rows.map(
-    (row) =>
-      Prisma.sql`(${dayStart}::date, ${dimensionType}, ${row.key}, ${row.count})`,
+  await Promise.all(
+    rows.map((row) =>
+      orm.ProductAnalyticsDailyRollups.upsert({
+        create: {
+          date: ormDate(dayStart),
+          dimensionType,
+          dimensionKey: row.key,
+          eventCount: row.count,
+        },
+        update: {
+          eventCount: row.count,
+        },
+        conflictOn: {
+          date: ormDate(dayStart),
+          dimensionType,
+          dimensionKey: row.key,
+        },
+      }),
+    ),
   );
-
-  await prisma.$executeRaw`
-    INSERT INTO product_analytics_daily_rollups (date, dimension_type, dimension_key, event_count)
-    VALUES ${Prisma.join(values)}
-    ON CONFLICT (date, dimension_type, dimension_key)
-    DO UPDATE SET event_count = EXCLUDED.event_count
-  `;
 
   return rows.length;
 };
@@ -53,30 +62,36 @@ export const rollupProductAnalyticsForDay = async (
   const dayEnd = addUtcDays(dayStart, 1);
 
   const [pageViews, interactions] = await Promise.all([
-    prisma.productAnalyticsEvent.groupBy({
-      by: ["page_path"],
-      where: {
-        event: "pageView",
-        page_path: { not: null },
-        created_at: { gte: dayStart, lt: dayEnd },
-      },
-      _count: { _all: true },
-    }),
-    prisma.productAnalyticsEvent.groupBy({
-      by: ["event"],
-      where: {
-        event: { not: "pageView" },
-        created_at: { gte: dayStart, lt: dayEnd },
-      },
-      _count: { _all: true },
-    }),
+    orm.ProductAnalyticsEvents.where((event) =>
+      and(
+        event.event.eq("pageView"),
+        event.pagePath.isNotNull(),
+        event.createdAt.gte(ormTimestamp(dayStart)),
+        event.createdAt.lt(ormTimestamp(dayEnd)),
+      ),
+    )
+      .groupBy("pagePath")
+      .aggregate((aggregate) => ({
+        count: aggregate.count(),
+      })),
+    orm.ProductAnalyticsEvents.where((event) =>
+      and(
+        event.event.neq("pageView"),
+        event.createdAt.gte(ormTimestamp(dayStart)),
+        event.createdAt.lt(ormTimestamp(dayEnd)),
+      ),
+    )
+      .groupBy("event")
+      .aggregate((aggregate) => ({
+        count: aggregate.count(),
+      })),
   ]);
 
   const pagePathRows = await bulkUpsertRollupRows({
     dayStart,
     dimensionType: "page_path",
     rows: pageViews.flatMap((row) =>
-      row.page_path ? [{ key: row.page_path, count: row._count._all }] : [],
+      row.pagePath ? [{ key: row.pagePath, count: row.count }] : [],
     ),
   });
 
@@ -84,7 +99,7 @@ export const rollupProductAnalyticsForDay = async (
     dayStart,
     dimensionType: "event",
     rows: interactions.flatMap((row) =>
-      row.event ? [{ key: row.event, count: row._count._all }] : [],
+      row.event ? [{ key: row.event, count: row.count }] : [],
     ),
   });
 
@@ -92,27 +107,29 @@ export const rollupProductAnalyticsForDay = async (
 };
 
 const resolveRollupStartDay = async (): Promise<Date | null> => {
-  const lastRollup = await prisma.productAnalyticsDailyRollup.findFirst({
-    orderBy: { date: "desc" },
-    select: { date: true },
-  });
+  const lastRollup = await orm.ProductAnalyticsDailyRollups.orderBy((rollup) =>
+    rollup.date.desc(),
+  )
+    .select("date")
+    .first();
 
   if (lastRollup) {
-    return addUtcDays(startOfUtcDay(lastRollup.date), 1);
+    return addUtcDays(startOfUtcDay(toOrmDate(lastRollup.date)), 1);
   }
 
   const startOfToday = startOfUtcDay(new Date());
-  const oldestEvent = await prisma.productAnalyticsEvent.findFirst({
-    where: { created_at: { lt: startOfToday } },
-    orderBy: { created_at: "asc" },
-    select: { created_at: true },
-  });
+  const oldestEvent = await orm.ProductAnalyticsEvents.where((event) =>
+    event.createdAt.lt(ormTimestamp(startOfToday)),
+  )
+    .orderBy((event) => event.createdAt.asc())
+    .select("createdAt")
+    .first();
 
   if (!oldestEvent) {
     return null;
   }
 
-  return startOfUtcDay(oldestEvent.created_at);
+  return startOfUtcDay(toOrmDate(oldestEvent.createdAt));
 };
 
 export const rollupCompletedProductAnalyticsDays = async ({
@@ -176,11 +193,11 @@ export const deleteExpiredProductAnalyticsEvents = async ({
   retentionDays?: number;
 } = {}): Promise<{ deleted: number; cutoff: Date }> => {
   const cutoff = addUtcDays(startOfUtcDay(new Date()), -retentionDays);
-  const result = await prisma.productAnalyticsEvent.deleteMany({
-    where: { created_at: { lt: cutoff } },
-  });
+  const deleted = await orm.ProductAnalyticsEvents.where((event) =>
+    event.createdAt.lt(ormTimestamp(cutoff)),
+  ).deleteAndCount();
 
-  return { deleted: result.count, cutoff };
+  return { deleted, cutoff };
 };
 
 export const runProductAnalyticsMaintenance =

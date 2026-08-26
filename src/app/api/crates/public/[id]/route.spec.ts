@@ -7,7 +7,9 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
-import { crateFactory } from "src/tests/factories/Crate.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
+
+const dbMock = createDbModuleMock();
 
 jest.mock("src/lib/public-crate-query.server", () => ({
   findPublicCrateById: jest.fn(),
@@ -26,21 +28,26 @@ jest.mock("src/lib/crate-layout-query.server", () => ({
   findCrateReleasesForLayout: jest.fn(),
 }));
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    crate: { update: jest.fn() },
-    crateRelease: { count: jest.fn() },
-  },
-}));
+jest.mock("src/lib/db", () => dbMock);
 
 type RouteModule = typeof import("src/app/api/crates/public/[id]/route");
 type PublicCrateQueryModule =
   typeof import("src/lib/public-crate-query.server");
 type AuthRequestModule = typeof import("src/lib/auth-request");
 type LayoutQueryModule = typeof import("src/lib/crate-layout-query.server");
-type DbModule = typeof import("src/lib/db");
 
 const PUBLIC_CRATE_ID = "11111111-2222-3333-4444-555555555555";
+
+const publicCrateRow = {
+  userId: 123,
+  id: PUBLIC_CRATE_ID,
+  name: "Public Crate",
+  username: "public-user",
+  isDefault: true,
+  private: false,
+  createdAt: "2026-01-01T00:00:00.000Z",
+  updatedAt: "2026-01-02T00:00:00.000Z",
+};
 
 let GET: RouteModule["GET"];
 let mockFindPublicCrateById: jest.MockedFunction<
@@ -52,18 +59,14 @@ let mockGetOptionalVerifiedUser: jest.MockedFunction<
 let mockFindCrateReleasesForLayout: jest.MockedFunction<
   LayoutQueryModule["findCrateReleasesForLayout"]
 >;
-let mockReleaseCount: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["count"]
->;
 
 beforeAll(async () => {
-  const [routeModule, publicCrateQuery, authRequest, layoutQuery, db] =
+  const [routeModule, publicCrateQuery, authRequest, layoutQuery] =
     await Promise.all([
       import("src/app/api/crates/public/[id]/route"),
       import("src/lib/public-crate-query.server"),
       import("src/lib/auth-request"),
       import("src/lib/crate-layout-query.server"),
-      import("src/lib/db"),
     ]);
 
   GET = routeModule.GET;
@@ -74,7 +77,6 @@ beforeAll(async () => {
   mockFindCrateReleasesForLayout = jest.mocked(
     layoutQuery.findCrateReleasesForLayout,
   );
-  mockReleaseCount = jest.mocked(db.prisma.crateRelease.count);
 });
 
 describe("GET /api/crates/public/[id]", () => {
@@ -84,7 +86,7 @@ describe("GET /api/crates/public/[id]", () => {
       return new NextResponse(JSON.stringify(body), init);
     });
     mockGetOptionalVerifiedUser.mockResolvedValue(null);
-    mockReleaseCount.mockResolvedValue(0);
+    dbMock.countRows.mockResolvedValue(0);
     mockFindCrateReleasesForLayout.mockResolvedValue([]);
   });
 
@@ -115,13 +117,7 @@ describe("GET /api/crates/public/[id]", () => {
   });
 
   it("returns public crate payload when the crate is public", async () => {
-    mockFindPublicCrateById.mockResolvedValue(
-      crateFactory.defaultTestCrate({
-        id: PUBLIC_CRATE_ID,
-        private: false,
-        username: "public-user",
-      }),
-    );
+    mockFindPublicCrateById.mockResolvedValue(publicCrateRow);
 
     const response = await GET(
       new NextRequest(`http://localhost/api/crates/public/${PUBLIC_CRATE_ID}`),

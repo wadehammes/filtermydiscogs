@@ -1,16 +1,16 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "src/lib/db";
+import { countRows, orm } from "src/lib/db";
 import type { PublicCommunityStats } from "src/types/public-stats.types";
 
 const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
   const [totalCrates, totalPublicCrates, totalReleases, collectors] =
     await Promise.all([
-      prisma.crate.count(),
-      prisma.crate.count({ where: { private: false } }),
-      prisma.crateRelease.count(),
-      prisma.crate.groupBy({
-        by: ["user_id"],
-      }),
+      countRows(orm.Crates),
+      countRows(orm.Crates.where({ private: false })),
+      countRows(orm.CrateReleases),
+      orm.Crates.groupBy("userId").aggregate((aggregate) => ({
+        n: aggregate.count(),
+      })),
     ]);
 
   return {
