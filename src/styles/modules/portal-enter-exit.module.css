@@ -1,0 +1,60 @@
+.enterExitFade {
+  opacity: 1;
+  transition: opacity var(--transition-normal);
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    @starting-style {
+      opacity: 1;
+    }
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 1;
+    }
+  }
+}
+
+.enterExitScale {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity var(--transition-normal),
+    scale var(--transition-normal);
+
+  @starting-style {
+    opacity: 0;
+    scale: 0.96;
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+    scale: 0.96;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    @starting-style {
+      opacity: 1;
+      scale: 1;
+    }
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+}

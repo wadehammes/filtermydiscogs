@@ -208,6 +208,7 @@ Each **`.module.css`** file is organized around **block classes** (the `styles.*
 - **Layout**: Prefer **flex/grid** with **`gap`** over margin stacking.
 - **Color**: Use **`color-mix(in srgb, …)`** for tinted surfaces (see [`BackToTop.module.css`](../../src/components/BackToTop/BackToTop.module.css)).
 - **Fluid sizing**: Use **`clamp()`** for type and spacing that scales across viewports (see [`MosaicClient.module.css`](../../src/components/MosaicClient/MosaicClient.module.css)).
+- **Portal enter/exit**: Modal and backdrop motion lives in [`portal-enter-exit.module.css`](../../src/styles/modules/portal-enter-exit.module.css) — compose **`enterexitfade`** (backdrop) or **`enterexitscale`** (opacity + **`scale`**; keep **`transform: translate(-50%, -50%)`** on centered popups separately). Entry uses nested **`@starting-style`** plus Base UI **`[data-starting-style]`**; exit uses **`[data-ending-style]`** (see [Base UI animation handbook](https://base-ui.com/react/handbook/animation)). **`prefers-reduced-motion: reduce`** disables the transition.
 
 ### Style rules
 

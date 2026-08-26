@@ -1,4 +1,5 @@
 .popup {
+  composes: enterexitscale from "../../styles/modules/portal-enter-exit.module.css";
   left: 50%;
   position: fixed;
   top: 50%;
@@ -7,6 +8,7 @@
 }
 
 .popupModal {
+  composes: enterexitscale from "../../styles/modules/portal-enter-exit.module.css";
   left: 50%;
   position: fixed;
   top: 50%;
