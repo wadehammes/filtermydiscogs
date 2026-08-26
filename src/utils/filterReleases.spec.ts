@@ -115,6 +115,30 @@ describe("filterReleases", () => {
     expect(result).toContainEqual(release3);
   });
 
+  it("excludes releases from selected years with NONE operator", () => {
+    const release2020 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        year: 2020,
+      }),
+    });
+    const release2021 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        year: 2021,
+      }),
+    });
+    const releases = [release2020, release2021];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: [],
+      selectedYears: [2020, 2021],
+      selectedFormats: [],
+      yearOperator: "NONE",
+    });
+
+    expect(result).toHaveLength(0);
+  });
+
   it("returns empty array when no releases match style filter", () => {
     const releases = releaseFactory.buildList(3, {
       basic_information: basicInformationFactory.build({
@@ -334,6 +358,61 @@ describe("filterReleases", () => {
     expect(result).toHaveLength(2);
     expect(result).toContainEqual(release1);
     expect(result).toContainEqual(release3);
+  });
+
+  it("filters formats with AND operator - requires all selected format tags", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [
+          {
+            name: "Vinyl",
+            descriptions: ['12"', "Test Pressing", "White Label"],
+          },
+        ],
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [{ name: "Vinyl", descriptions: ['12"', "Test Pressing"] }],
+      }),
+    });
+    const releases = [release1, release2];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: [],
+      selectedYears: [],
+      selectedFormats: ["Test Pressing", "White Label"],
+      formatOperator: "AND",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(release1);
+  });
+
+  it("filters formats with NONE operator - excludes releases with any selected format tag", () => {
+    const release1 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [{ name: "Vinyl", descriptions: ["Test Pressing"] }],
+      }),
+    });
+    const release2 = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        formats: [{ name: "CD" }],
+      }),
+    });
+    const releases = [release1, release2];
+
+    const result = filterReleases({
+      releases,
+      selectedStyles: [],
+      selectedYears: [],
+      selectedFormats: ["Test Pressing"],
+      formatOperator: "NONE",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(release2);
   });
 
   it("filters by physical format tags from descriptions", () => {

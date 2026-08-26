@@ -1,6 +1,11 @@
 import type { DiscogsRelease } from "src/types";
-import type { StyleOperator } from "src/types/filters.types";
-import { releaseMatchesFormatFilters } from "src/utils/formatFilterTags";
+import type { StyleOperator, YearOperator } from "src/types/filters.types";
+import {
+  buildNormalizedFormatFilterSet,
+  getReleaseFormatTags,
+  normalizeFormatTag,
+} from "src/utils/formatFilterTags";
+import { matchSelectedTagsWithOperator } from "src/utils/matchFilterOperator";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import { getReleaseSearchText } from "src/utils/releaseSearchIndex";
 
@@ -29,13 +34,17 @@ export const releaseMatchesSearch = (
 
 export const releaseMatchesYear = (
   release: DiscogsRelease,
-  selectedYearsSet: ReadonlySet<number> | null,
+  selectedYears: readonly number[],
+  yearOperator: YearOperator = "OR",
 ): boolean => {
-  if (!selectedYearsSet) {
+  if (selectedYears.length === 0) {
     return true;
   }
 
-  return selectedYearsSet.has(release.basic_information.year);
+  const releaseYear = release.basic_information.year;
+  const matchesAny = selectedYears.includes(releaseYear);
+
+  return yearOperator === "NONE" ? !matchesAny : matchesAny;
 };
 
 export const releaseMatchesStyles = (
@@ -45,27 +54,15 @@ export const releaseMatchesStyles = (
   releaseGenreStyleTags: readonly string[] = getReleaseGenreStyleTags(
     release.basic_information,
   ),
-): boolean => {
-  if (selectedStyles.length === 0) {
-    return true;
-  }
-
-  if (styleOperator === "AND") {
-    return selectedStyles.every((tag) => releaseGenreStyleTags.includes(tag));
-  }
-
-  const selectedStylesSet = new Set(selectedStyles);
-
-  if (styleOperator === "NONE") {
-    return !releaseGenreStyleTags.some((tag) => selectedStylesSet.has(tag));
-  }
-
-  return releaseGenreStyleTags.some((tag) => selectedStylesSet.has(tag));
-};
+): boolean =>
+  matchSelectedTagsWithOperator(selectedStyles, styleOperator, (tag) =>
+    releaseGenreStyleTags.includes(tag),
+  );
 
 export const releaseMatchesFormats = (
   release: DiscogsRelease,
   selectedFormats: readonly string[],
+  formatOperator: StyleOperator,
   normalizedSelectedFormats?: ReadonlySet<string>,
   releaseFormatTags?: readonly string[],
 ): boolean => {
@@ -73,10 +70,24 @@ export const releaseMatchesFormats = (
     return true;
   }
 
-  return releaseMatchesFormatFilters(
-    release.basic_information.formats,
-    selectedFormats,
-    normalizedSelectedFormats,
-    releaseFormatTags,
+  const selectedFormatsSet =
+    normalizedSelectedFormats ??
+    buildNormalizedFormatFilterSet(selectedFormats);
+  const releaseTags =
+    releaseFormatTags ??
+    getReleaseFormatTags(release.basic_information.formats);
+
+  if (formatOperator === "AND") {
+    return matchSelectedTagsWithOperator(selectedFormats, "AND", (format) =>
+      releaseTags.some(
+        (tag) => normalizeFormatTag(tag) === normalizeFormatTag(format),
+      ),
+    );
+  }
+
+  const matchesAnySelected = releaseTags.some((tag) =>
+    selectedFormatsSet.has(normalizeFormatTag(tag)),
   );
+
+  return formatOperator === "NONE" ? !matchesAnySelected : matchesAnySelected;
 };

@@ -8,7 +8,7 @@ describe("FiltersBarSkeleton", () => {
     const { container } = render(<FiltersBarSkeleton />);
 
     expect(screen.getByTestId("fmdFiltersBarSkeleton")).toBeInTheDocument();
-    expect(container.querySelectorAll("svg")).toHaveLength(6);
+    expect(container.querySelectorAll("svg")).toHaveLength(8);
   });
 
   it("renders the genre combobox skeleton with filter trigger chrome", () => {

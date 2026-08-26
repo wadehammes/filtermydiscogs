@@ -33,11 +33,13 @@ describe("computeFacetOptions", () => {
       selectedFormats: [],
       searchQuery: "",
       styleOperator: "OR",
+      formatOperator: "OR",
+      yearOperator: "OR",
     });
 
     expect(options.availableStyles).toEqual(["Jazz", "Rock"]);
     expect(options.availableYears).toEqual([2020, 1990]);
-    expect(options.availableFormats).toEqual(["Vinyl", "CD"]);
+    expect(options.availableFormats).toEqual(["CD", "Vinyl"]);
   });
 
   const rockRelease = releaseFactory.build({
@@ -68,6 +70,8 @@ describe("computeFacetOptions", () => {
       selectedFormats: [],
       searchQuery: "",
       styleOperator: "OR",
+      formatOperator: "OR",
+      yearOperator: "OR",
     });
 
     expect(options.availableYears).toEqual([1980]);
@@ -84,6 +88,8 @@ describe("computeFacetOptions", () => {
       selectedFormats: [],
       searchQuery: "",
       styleOperator: "OR",
+      formatOperator: "OR",
+      yearOperator: "OR",
     });
 
     expect(options.availableStyles).toEqual(["Pop"]);
@@ -99,6 +105,8 @@ describe("computeFacetOptions", () => {
       selectedFormats: ["Vinyl"],
       searchQuery: "",
       styleOperator: "OR",
+      formatOperator: "OR",
+      yearOperator: "OR",
     });
 
     expect(options.availableYears).toEqual([1980]);

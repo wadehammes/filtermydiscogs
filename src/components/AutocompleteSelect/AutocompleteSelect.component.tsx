@@ -5,6 +5,7 @@ import classNames from "classnames";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { memo, useCallback, useMemo, useRef } from "react";
 import Button from "src/components/Button/Button.component";
+import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
@@ -143,11 +144,16 @@ const AutocompleteSelectComponent = ({
       >
         {triggerIcon}
       </Combobox.Trigger>
-      <div className={styles.valueContainer}>
+      <div
+        className={classNames(
+          styles.valueContainer,
+          selectedOptions.length > 0 && styles.valueContainerWithPills,
+        )}
+      >
         {selectedOptions.length === 0 ? (
           <span className={styles.placeholder}>{placeholder}</span>
         ) : (
-          <div className={styles.pillsContainer}>
+          <HorizontalScrollRow className={styles.pillsContainer}>
             {selectedOptions.map((option) => (
               <span key={option.value} className={styles.pill}>
                 <span className={styles.pillLabel}>{option.label}</span>
@@ -166,7 +172,7 @@ const AutocompleteSelectComponent = ({
                 </button>
               </span>
             ))}
-          </div>
+          </HorizontalScrollRow>
         )}
       </div>
     </div>

@@ -42,14 +42,64 @@ export function FiltersBarSkeleton() {
             </div>
           </div>
         </div>
-        {Array.from({ length: 3 }, (_, index) => (
-          <div key={index} className={styles.selectShell} aria-hidden>
-            <div className={styles.placeholderLine} />
-            <span className={styles.chevron}>
-              <ChevronIcon />
-            </span>
+        <div className={filtersBarStyles.styleFilterGroup}>
+          <div data-testid="fmdAutocompleteSelect" aria-hidden>
+            <div
+              className={styles.styleFilterPrimaryShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div className={styles.placeholderLineWide} />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
           </div>
-        ))}
+          <div data-testid="fmdSelect" aria-hidden>
+            <div
+              className={styles.operatorShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div className={styles.placeholderLine} />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className={filtersBarStyles.styleFilterGroup}>
+          <div data-testid="fmdAutocompleteSelect" aria-hidden>
+            <div
+              className={styles.styleFilterPrimaryShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div className={styles.placeholderLineWide} />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
+          </div>
+          <div data-testid="fmdSelect" aria-hidden>
+            <div
+              className={styles.operatorShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div className={styles.placeholderLine} />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className={styles.selectShell} aria-hidden>
+          <div className={styles.placeholderLine} />
+          <span className={styles.chevron}>
+            <ChevronIcon />
+          </span>
+        </div>
         <div className={styles.buttonShell} aria-hidden>
           <div className={styles.buttonLine} />
         </div>

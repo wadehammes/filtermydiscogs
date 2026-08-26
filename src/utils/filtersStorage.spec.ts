@@ -22,6 +22,8 @@ describe("filtersStorage", () => {
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
       styleOperator: "AND",
+      formatOperator: "NONE",
+      yearOperator: "OR",
       searchQuery: "blue note",
     };
 
@@ -30,6 +32,61 @@ describe("filtersStorage", () => {
     expect(
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
     ).toEqual(saved);
+  });
+
+  it("defaults formatOperator and yearOperator when missing from stored filters", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Jazz"],
+        selectedYears: [1970],
+        selectedFormats: ["LP"],
+        selectedSort: "AZTitle",
+        styleOperator: "AND",
+        searchQuery: "blue note",
+      }),
+    );
+
+    expect(
+      parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
+    ).toEqual({
+      selectedStyles: ["Jazz"],
+      selectedYears: [1970],
+      selectedFormats: ["LP"],
+      selectedSort: "AZTitle",
+      styleOperator: "AND",
+      formatOperator: "OR",
+      yearOperator: "OR",
+      searchQuery: "blue note",
+    });
+  });
+
+  it("defaults yearOperator when missing from stored filters", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Jazz"],
+        selectedYears: [1970],
+        selectedFormats: ["LP"],
+        selectedSort: "AZTitle",
+        styleOperator: "AND",
+        formatOperator: "OR",
+        searchQuery: "blue note",
+      }),
+    );
+
+    expect(
+      parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
+    ).toEqual({
+      selectedStyles: ["Jazz"],
+      selectedYears: [1970],
+      selectedFormats: ["LP"],
+      selectedSort: "AZTitle",
+      styleOperator: "AND",
+      formatOperator: "OR",
+      yearOperator: "OR",
+      searchQuery: "blue note",
+    });
   });
 
   it("returns defaults for invalid JSON and clears corrupt storage", () => {
@@ -81,6 +138,7 @@ describe("filtersStorage", () => {
         ...defaultPersistedFilters,
         selectedSort: "InvalidSort",
         styleOperator: "XOR",
+        formatOperator: "XOR",
       }),
     );
 

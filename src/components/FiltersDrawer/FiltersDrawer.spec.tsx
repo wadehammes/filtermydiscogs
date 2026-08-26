@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { FiltersDrawerPageObject } from "src/components/FiltersDrawer/FiltersDrawer.po";
 import { SortValues } from "src/constants/sortValues";
-import { openFilterCombobox } from "src/tests/filterControlTestHelpers";
+import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  clickFilterOption,
+  openFilterCombobox,
+} from "src/tests/filterControlTestHelpers";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { screen, waitFor } from "test-utils";
 
@@ -41,7 +45,7 @@ describe("FiltersDrawer", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("clears all filters when Clear All is pressed", async () => {
+  it("resets all filters when Reset is pressed", async () => {
     const user = userEvent.setup();
     po.renderFiltersDrawer({
       sessionFilters: {
@@ -54,12 +58,12 @@ describe("FiltersDrawer", () => {
       },
     });
 
-    const clearAllButton = screen.getByRole("button", {
-      name: "Clear all filters",
+    const resetButton = screen.getByRole("button", {
+      name: "Reset filters",
     });
-    expect(clearAllButton).toBeEnabled();
+    expect(resetButton).toBeEnabled();
 
-    await user.click(clearAllButton);
+    await user.click(resetButton);
 
     expect(screen.getByRole("textbox", { name: "Search" })).toHaveValue("");
 
@@ -70,11 +74,11 @@ describe("FiltersDrawer", () => {
     expect(saved.searchQuery).toBe("");
   });
 
-  it("disables Clear All when no filters are active", () => {
+  it("disables Reset when no filters are active", () => {
     po.renderFiltersDrawer();
 
     expect(
-      screen.getByRole("button", { name: "Clear all filters" }),
+      screen.getByRole("button", { name: "Reset filters" }),
     ).toBeDisabled();
   });
 
@@ -131,5 +135,44 @@ describe("FiltersDrawer", () => {
     expect(
       screen.getByPlaceholderText("Search genre & style..."),
     ).toBeInTheDocument();
+  });
+
+  it("supports selecting multiple format types", async () => {
+    po.renderFiltersDrawer({
+      releases: [
+        releaseFactory.withStyles(["Techno"], {
+          basic_information: {
+            ...releaseFactory.withDisplayDefaults().basic_information,
+            formats: [
+              { name: "Vinyl", descriptions: ['12"', "Test Pressing"] },
+            ],
+          },
+        }),
+        releaseFactory.withStyles(["House"], {
+          basic_information: {
+            ...releaseFactory.withDisplayDefaults().basic_information,
+            formats: [{ name: "Vinyl", descriptions: ['12"', "White Label"] }],
+          },
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: "Format Type" }),
+      ).toBeEnabled();
+    });
+
+    await openFilterCombobox("Format Type");
+    await clickFilterOption("Test Pressing");
+
+    await openFilterCombobox("Format Type");
+    await clickFilterOption("White Label");
+
+    expect(screen.getByText("Test Pressing")).toBeInTheDocument();
+    expect(screen.getByText("White Label")).toBeInTheDocument();
+
+    const saved = JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? "{}");
+    expect(saved.selectedFormats).toEqual(["Test Pressing", "White Label"]);
   });
 });

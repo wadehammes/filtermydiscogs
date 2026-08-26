@@ -62,6 +62,8 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
       selectedFormats: pendingRestore.selectedFormats,
       searchQuery: pendingRestore.searchQuery,
       styleOperator: pendingRestore.styleOperator,
+      formatOperator: pendingRestore.formatOperator,
+      yearOperator: pendingRestore.yearOperator,
     });
 
     showPendingFiltersRestoreToast({

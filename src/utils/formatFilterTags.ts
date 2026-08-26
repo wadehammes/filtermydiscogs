@@ -1,27 +1,8 @@
 import type { DiscogsFormat } from "src/types";
 
-const FORMAT_DESCRIPTION_ALLOWLIST = new Set([
-  "lp",
-  "ep",
-  "single",
-  "maxi-single",
-  "mini-album",
-  "mixtape",
-  "shellac",
-  "flexi-disc",
-  "shaped disc",
-  "picture disc",
-  "lathe cut",
-  "minidisc",
-  "reel-to-reel",
-  "8-track cartridge",
-  "dat",
-  "box set",
-]);
+const FORMAT_DESCRIPTION_DENYLIST = new Set(["album", "stereo", "remastered"]);
 
-const FORMAT_SIZE_PATTERN = /^\d+\s*"$/;
-
-const FORMAT_SORT_ORDER = [
+const FORMAT_CANONICAL_TAGS = [
   '12"',
   '10"',
   '7"',
@@ -32,6 +13,7 @@ const FORMAT_SORT_ORDER = [
   "Single",
   "Maxi-Single",
   "Mini-Album",
+  "Mixtape",
   "Vinyl",
   "Cassette",
   "CD",
@@ -41,10 +23,58 @@ const FORMAT_SORT_ORDER = [
   "File",
   "Digital",
   "Box Set",
+  "All Media",
+  "Test Pressing",
+  "White Label",
+  "Hand-stamped",
+  "Promo",
+  "Acetate",
+  "Advance",
+  "Sampler",
+  "Limited Edition",
+  "Numbered",
+  "Reissue",
+  "Repress",
+  "Compilation",
+  "Mixed",
+  "Partially Mixed",
+  "Mispress",
+  "Mono",
+  "Club Edition",
+  "Transcription",
+  "Tour Recording",
+  "Unofficial Release",
+  "Partially Unofficial",
+  "Picture Disc",
+  "Shaped Disc",
+  "Lathe Cut",
+  "Flexi-disc",
+  "Shellac",
+  "Minidisc",
+  "Reel-to-Reel",
+  "8-Track Cartridge",
+  "DAT",
+  "Enhanced",
+  "HDCD",
+  "SACD",
+  "DVD-Video",
 ];
 
-function normalizeFormatTag(tag: string): string {
+export function normalizeFormatTag(tag: string): string {
   return tag.trim().toLowerCase();
+}
+
+function getCanonicalFormatTag(tag: string): string {
+  const trimmed = tag.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  const canonical = FORMAT_CANONICAL_TAGS.find(
+    (value) => normalizeFormatTag(value) === normalizeFormatTag(trimmed),
+  );
+
+  return canonical ?? trimmed;
 }
 
 export function buildNormalizedFormatFilterSet(
@@ -59,12 +89,7 @@ function isFilterableDescription(description: string): boolean {
     return false;
   }
 
-  const normalized = normalizeFormatTag(trimmed);
-  if (FORMAT_DESCRIPTION_ALLOWLIST.has(normalized)) {
-    return true;
-  }
-
-  return FORMAT_SIZE_PATTERN.test(trimmed);
+  return !FORMAT_DESCRIPTION_DENYLIST.has(normalizeFormatTag(trimmed));
 }
 
 export function getFormatSubtypeTags(format: DiscogsFormat): string[] {
@@ -73,18 +98,18 @@ export function getFormatSubtypeTags(format: DiscogsFormat): string[] {
   format.descriptions?.forEach((description) => {
     const trimmed = description.trim();
     if (trimmed && isFilterableDescription(trimmed)) {
-      tags.add(trimmed);
+      tags.add(getCanonicalFormatTag(trimmed));
     }
   });
 
-  return sortFormatTags(Array.from(tags));
+  return Array.from(tags);
 }
 
 export function getFormatTagsFromFormat(format: DiscogsFormat): string[] {
   const tags = new Set<string>();
 
   if (format.name?.trim()) {
-    tags.add(format.name.trim());
+    tags.add(getCanonicalFormatTag(format.name.trim()));
   }
 
   getFormatSubtypeTags(format).forEach((tag) => {
@@ -107,40 +132,7 @@ export function getReleaseFormatTags(formats: DiscogsFormat[]): string[] {
 }
 
 export function sortFormatTags(tags: string[]): string[] {
-  return [...tags].sort((left, right) => {
-    const leftIndex = FORMAT_SORT_ORDER.findIndex(
-      (value) => normalizeFormatTag(value) === normalizeFormatTag(left),
-    );
-    const rightIndex = FORMAT_SORT_ORDER.findIndex(
-      (value) => normalizeFormatTag(value) === normalizeFormatTag(right),
-    );
-    const leftOrder = leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex;
-    const rightOrder = rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex;
-
-    if (leftOrder !== rightOrder) {
-      return leftOrder - rightOrder;
-    }
-
-    return left.localeCompare(right, undefined, { sensitivity: "base" });
-  });
-}
-
-export function releaseMatchesFormatFilters(
-  formats: DiscogsFormat[],
-  selectedFormats: readonly string[],
-  normalizedSelectedFormats?: ReadonlySet<string>,
-  releaseFormatTags?: readonly string[],
-): boolean {
-  if (selectedFormats.length === 0) {
-    return true;
-  }
-
-  const selectedFormatsSet =
-    normalizedSelectedFormats ??
-    new Set(selectedFormats.map((format) => normalizeFormatTag(format)));
-  const releaseTags = releaseFormatTags ?? getReleaseFormatTags(formats);
-
-  return releaseTags.some((tag) =>
-    selectedFormatsSet.has(normalizeFormatTag(tag)),
+  return [...tags].sort((left, right) =>
+    left.localeCompare(right, undefined, { sensitivity: "base" }),
   );
 }

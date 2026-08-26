@@ -46,8 +46,29 @@ export function HorizontalScrollRow({
     const resizeObserver = new ResizeObserver(updateEndShadow);
     resizeObserver.observe(element);
 
+    const handleWheel = (event: WheelEvent) => {
+      if (element.scrollWidth <= element.clientWidth + 1) {
+        return;
+      }
+
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+
+      if (delta === 0) {
+        return;
+      }
+
+      element.scrollLeft += delta;
+      event.preventDefault();
+    };
+
+    element.addEventListener("wheel", handleWheel, { passive: false });
+
     return () => {
       resizeObserver.disconnect();
+      element.removeEventListener("wheel", handleWheel);
     };
   }, [updateEndShadow]);
 
