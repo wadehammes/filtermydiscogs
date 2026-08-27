@@ -82,6 +82,8 @@ import {
   isYoutubeEmbedOrigin,
   parseYoutubePlayerStateFromMessage,
   YOUTUBE_PLAYER_STATE_ENDED,
+  YOUTUBE_PLAYER_STATE_PAUSED,
+  YOUTUBE_PLAYER_STATE_PLAYING,
 } from "src/utils/youtubeIframeEvents";
 
 interface PlayQueueItemOptions {
@@ -668,6 +670,30 @@ export const ReleasePlaybackProvider = ({
 
       const playerState = parseYoutubePlayerStateFromMessage(event.data);
 
+      if (playerState === null) {
+        return;
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_PAUSED &&
+        isPlayingRef.current &&
+        !isPausedRef.current
+      ) {
+        pendingPlayFromGestureRef.current = false;
+        clearPlayFromGestureRetries();
+        setIsPaused(true);
+        return;
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
+        isPlayingRef.current &&
+        isPausedRef.current
+      ) {
+        setIsPaused(false);
+        return;
+      }
+
       if (playerState !== YOUTUBE_PLAYER_STATE_ENDED) {
         return;
       }
@@ -698,7 +724,7 @@ export const ReleasePlaybackProvider = ({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [clearPlayFromGestureRetries]);
 
   useEffect(() => {
     if (!isPlaying || previewVideo !== null) {
