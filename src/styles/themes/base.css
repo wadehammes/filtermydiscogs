@@ -122,6 +122,7 @@
   --z-6-popover: 998;
   --z-7-tooltip: 1080;
   --z-8-toast: 1090;
+  --z-9-playback-dock: 1070;
 }
 
 /* Disable transitions during theme switching to prevent scroll jank */
