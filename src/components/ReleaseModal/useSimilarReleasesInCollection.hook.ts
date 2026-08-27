@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
+import { RELEASE_MODAL_SIMILAR_LIMIT } from "src/constants/collection";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
@@ -37,7 +37,7 @@ export const useSimilarReleasesInCollection = (
     return getSimilarReleases({
       releases: allReleases,
       sourceRelease: release,
-      limit: SIMILAR_RELEASES_LIMIT,
+      limit: RELEASE_MODAL_SIMILAR_LIMIT,
     });
   }, [allReleases, enabled, isCollectionLoading, release]);
 
