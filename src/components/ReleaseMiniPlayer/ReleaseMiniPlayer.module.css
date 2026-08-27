@@ -4,7 +4,7 @@
   pointer-events: none;
   position: fixed;
   right: 0;
-  z-index: var(--z-3-fixed);
+  z-index: var(--z-9-playback-dock);
 
   & > * {
     pointer-events: auto;
