@@ -246,7 +246,7 @@ describe("ReleaseCard", () => {
     ).toHaveAttribute("href", "https://www.discogs.com/release/456");
   });
 
-  it("adds the first playable track to the queue from the overlay button", async () => {
+  it("adds all playable tracks to the queue from the overlay button", async () => {
     const release = releaseFactory.withTitle("Test Album", 249504);
     const user = userEvent.setup();
 
@@ -264,11 +264,13 @@ describe("ReleaseCard", () => {
       );
     });
 
-    expect(
-      screen.getByRole("button", {
-        name: "Add Test Album to queue",
-      }),
-    ).toBeEnabled();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: "Test Album is already in the queue",
+        }),
+      ).toBeDisabled();
+    });
   });
 
   it("opens Discogs when title is clicked even if onReleaseClick is provided", async () => {
