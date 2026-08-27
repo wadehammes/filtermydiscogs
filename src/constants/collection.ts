@@ -7,6 +7,7 @@ export const COLLECTION_NOTE_MAX_LENGTH = 10_000;
 export const COLLECTION_RATING_MIN = 1;
 export const COLLECTION_RATING_MAX = 5;
 export const SIMILAR_RELEASES_LIMIT = 8;
+export const RELEASE_MODAL_SIMILAR_LIMIT = 16;
 
 export function isLargeCollection(totalItems: number): boolean {
   return totalItems > COLLECTION_LARGE_MIN_ITEMS;
