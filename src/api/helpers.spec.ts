@@ -15,6 +15,7 @@ import {
   clearData,
   createCrate,
   deleteCrate,
+  fetchBuildVersion,
   fetchCrate,
   fetchCrates,
   fetchDiscogsCollection,
@@ -735,5 +736,33 @@ describe("logout", () => {
     mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
     await expect(logout()).rejects.toThrow("HTTP error! status: 500");
+  });
+});
+
+describe("fetchBuildVersion", () => {
+  it("returns the current build version", async () => {
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ version: "abc123" }));
+
+    await expect(fetchBuildVersion()).resolves.toEqual({ version: "abc123" });
+
+    expect(mockFetch).toHaveBeenCalledWith("/api/build-version", {
+      cache: "no-store",
+    });
+  });
+
+  it("throws when the response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+
+    await expect(fetchBuildVersion()).rejects.toThrow(
+      "HTTP error! status: 500",
+    );
+  });
+
+  it("throws when the version field is missing", async () => {
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({}));
+
+    await expect(fetchBuildVersion()).rejects.toThrow(
+      "Invalid build version response",
+    );
   });
 });

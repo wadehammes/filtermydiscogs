@@ -2,6 +2,10 @@ export const AuthQueryKeys = {
   all: () => ["auth"] as const,
 };
 
+export const BuildVersionQueryKeys = {
+  all: () => ["buildVersion"] as const,
+};
+
 export const DiscogsCollectionQueryKeys = {
   all: () => ["discogsCollection"] as const,
   byUsername: (username: string) =>

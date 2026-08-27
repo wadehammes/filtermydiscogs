@@ -15,7 +15,7 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 7. **CrateProvider** — active crate and crate list.
 8. **ViewProvider** — scope marker for view hooks (state in [`src/atoms/view.atoms.ts`](../../src/atoms/view.atoms.ts)).
 
-Inside **ViewProvider**: **`LogoutOverlayWrapper`**, **`AuthCheckingToast`**, and **`CollectionLoadingToast`**. **`CollectionDataSync`** (global [`useCollectionData`](../../src/hooks/useCollectionData.hook.ts) pagination) mounts beside page content under **`FiltersProvider`** so collection pages keep loading after navigation. **`AppToaster`** (Sonner) is a sibling under **ThemeProvider**, outside the auth subtree. Toast styling follows the active palette via CSS variables in [`global/sonner.css`](../../src/styles/global/sonner.css); call **`toast.success`**, **`toast.error`**, **`toast.loading`**, etc. from **`sonner`** instead of **`alert()`** for operational feedback (crate sync, logout/clear-data failures, clipboard copy, large-collection pagination progress, and mutation errors in **`useCrateMutations`**).
+Inside **ViewProvider**: **`LogoutOverlayWrapper`**, **`AuthCheckingToast`**, **`CollectionLoadingToast`**, and **`DeploymentUpdateToast`**. **`CollectionDataSync`** (global [`useCollectionData`](../../src/hooks/useCollectionData.hook.ts) pagination) mounts beside page content under **`FiltersProvider`** so collection pages keep loading after navigation. **`AppToaster`** (Sonner) is a sibling under **ThemeProvider**, outside the auth subtree. Toast styling follows the active palette via CSS variables in [`global/sonner.css`](../../src/styles/global/sonner.css); call **`toast.success`**, **`toast.error`**, **`toast.loading`**, etc. from **`sonner`** instead of **`alert()`** for operational feedback (crate sync, logout/clear-data failures, clipboard copy, large-collection pagination progress, mutation errors in **`useCrateMutations`**, and production deploy nudges from **`DeploymentUpdateToast`**).
 
 **Jotai** backs **filters** and **view** preference state. Atoms and derived selectors live under [`src/atoms/`](../../src/atoms/); [`src/context/filters.context.tsx`](../../src/context/filters.context.tsx) and [`view.context.tsx`](../../src/context/view.context.tsx) expose scope markers and legacy `useFilters()` / `useView()` for full state. Prefer granular hooks from [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts) so components subscribe only to the slice they need (for example `useSelectedStyles()`, `useFacetOptions()`, `useFilteredReleases()`, `useSortedFilteredReleases()`, `useCurrentView()`).
 
@@ -70,6 +70,7 @@ Route outbound browser HTTP through **[`src/api/helpers.ts`](../../src/api/helpe
 | Hook | Key factory | Purpose |
 |------|-------------|---------|
 | `useAuthQuery` | `AuthQueryKeys.all` | Session check (`/api/auth/check`) |
+| `useBuildVersionQuery` | `BuildVersionQueryKeys.all` | Production deploy version poll (`/api/build-version`) |
 | `useDiscogsCollectionQuery` | `DiscogsCollectionQueryKeys.byUsername` | Infinite collection pages |
 | `useCollectionFieldsQuery` | `CollectionFieldsQueryKeys.byUsername` | Discogs collection custom-field definitions (notes editor) |
 | `useCollectionValueQuery` | `CollectionValueQueryKeys.byUsername` | Collection dollar value |
