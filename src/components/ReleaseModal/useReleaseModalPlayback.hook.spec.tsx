@@ -10,14 +10,13 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { setupDiscogsReleaseQueryMock } from "src/tests/mocks/setupDiscogsReleaseQueryMock";
+import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import { act, renderHook, waitFor } from "test-utils";
 
-jest.mock("src/hooks/queries/useDiscogsReleaseQuery");
 jest.mock("src/api/helpers");
 
 const mockApi = jest.mocked(apiHelpers);
@@ -49,7 +48,7 @@ describe("useReleaseModalPlayback", () => {
     jest.resetAllMocks();
     localStorage.clear();
     setupDefaultCrateApiMocks(mockApi);
-    setupDiscogsReleaseQueryMock(releaseDetail);
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
   });
 
   it("starts background playback when a track row is selected", async () => {
@@ -119,7 +118,7 @@ describe("useReleaseModalPlayback", () => {
   });
 
   it("starts release preview playback for unmatched videos", async () => {
-    setupDiscogsReleaseQueryMock({
+    setupFetchDiscogsReleaseMock(mockApi, {
       ...releaseDetail,
       tracklist: [
         {
@@ -174,7 +173,7 @@ describe("useReleaseModalPlayback", () => {
   });
 
   it("queues preview videos from the preview tracklist", async () => {
-    setupDiscogsReleaseQueryMock({
+    setupFetchDiscogsReleaseMock(mockApi, {
       ...releaseDetail,
       tracklist: [
         {
@@ -223,7 +222,7 @@ describe("useReleaseModalPlayback", () => {
   });
 
   it("queues every playable album track from add-all", async () => {
-    setupDiscogsReleaseQueryMock({
+    setupFetchDiscogsReleaseMock(mockApi, {
       ...releaseDetail,
       videos: [
         {

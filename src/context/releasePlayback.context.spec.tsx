@@ -8,14 +8,13 @@ import {
   ReleasePlaybackProvider,
   useReleasePlayback,
 } from "src/context/releasePlayback.context";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { setupDiscogsReleaseQueryMock } from "src/tests/mocks/setupDiscogsReleaseQueryMock";
+import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
   TestProviders,
   testAuthenticatedAuthState,
@@ -28,7 +27,6 @@ import {
 } from "src/utils/releasePlaybackStorage";
 import { act, renderHook, waitFor } from "test-utils";
 
-jest.mock("src/hooks/queries/useDiscogsReleaseQuery");
 jest.mock("src/api/helpers");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
@@ -81,6 +79,43 @@ const collectionRelease = releaseFactory.withDisplayDefaults({
     resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
   }),
 });
+
+const SHORT_RELEASE_ID = 100002;
+
+const shortReleaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
+  id: SHORT_RELEASE_ID,
+  tracklist: [
+    {
+      position: "1",
+      title: "Short A",
+      duration: "2:00",
+      type_: "track",
+    },
+  ],
+  videos: [
+    {
+      description: "Short A",
+      duration: 120,
+      embed: true,
+      title: "Short A",
+      uri: "https://www.youtube.com/watch?v=def98765432",
+    },
+  ],
+});
+
+const shortCollectionRelease = releaseFactory.withDisplayDefaults({
+  basic_information: basicInformationFactory.build({
+    id: SHORT_RELEASE_ID,
+    title: "Short EP",
+    resource_url: `https://api.discogs.com/releases/${SHORT_RELEASE_ID}`,
+  }),
+});
+
+const setupCollectionAndShortReleaseApiMock = () => {
+  setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+    [String(SHORT_RELEASE_ID)]: shortReleaseDetail,
+  });
+};
 
 const SeedCollectionReleases = ({
   releases,
@@ -161,7 +196,7 @@ describe("ReleasePlaybackProvider", () => {
     localStorage.clear();
     mockPostYoutubePlayerCommand.mockClear();
     setupDefaultCrateApiMocks(mockApi);
-    setupDiscogsReleaseQueryMock(releaseDetail);
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
   });
 
   it("starts playback and resolves the selected track", async () => {
@@ -359,64 +394,40 @@ describe("ReleasePlaybackProvider", () => {
       }),
     });
 
-    jest
-      .mocked(useDiscogsReleaseQuery)
-      .mockImplementation(({ enabled, releaseId }) => {
-        if (!enabled) {
-          return {
-            data: undefined,
-            isLoading: false,
-            isError: false,
-            refetch: jest.fn(),
-          } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
-        }
-
-        const detail =
-          releaseId === "100002"
-            ? discogsReleaseJsonFactory.withTracklistAndVideos({
-                id: 100002,
-                tracklist: [
-                  {
-                    position: "1",
-                    title: "Short A",
-                    duration: "2:00",
-                    type_: "track",
-                  },
-                  {
-                    position: "2",
-                    title: "Short B",
-                    duration: "2:30",
-                    type_: "track",
-                  },
-                  {
-                    position: "3",
-                    title: "Short C",
-                    duration: "3:00",
-                    type_: "track",
-                  },
-                ],
-                videos: [
-                  {
-                    description: "Short C",
-                    duration: 180,
-                    embed: true,
-                    title: "Short C",
-                    uri: "https://www.youtube.com/watch?v=xyz98765432",
-                  },
-                ],
-              })
-            : longTracklistRelease;
-
-        return {
-          data: {
-            ...detail,
-            id: Number(releaseId) || detail.id,
+    setupFetchDiscogsReleaseMock(mockApi, longTracklistRelease, {
+      "100002": discogsReleaseJsonFactory.withTracklistAndVideos({
+        id: 100002,
+        tracklist: [
+          {
+            position: "1",
+            title: "Short A",
+            duration: "2:00",
+            type_: "track",
           },
-          isLoading: false,
-          isError: false,
-          refetch: jest.fn(),
-        } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
-      });
+          {
+            position: "2",
+            title: "Short B",
+            duration: "2:30",
+            type_: "track",
+          },
+          {
+            position: "3",
+            title: "Short C",
+            duration: "3:00",
+            type_: "track",
+          },
+        ],
+        videos: [
+          {
+            description: "Short C",
+            duration: 180,
+            embed: true,
+            title: "Short C",
+            uri: "https://www.youtube.com/watch?v=xyz98765432",
+          },
+        ],
+      }),
+    });
 
     const longCollectionRelease = releaseFactory.withDisplayDefaults({
       basic_information: basicInformationFactory.build({
@@ -834,63 +845,10 @@ describe("ReleasePlaybackProvider", () => {
   });
 
   it("advances through a cross-release queue with playNext", async () => {
-    const shortRelease = releaseFactory.withDisplayDefaults({
-      basic_information: basicInformationFactory.build({
-        id: 100002,
-        title: "Short EP",
-        resource_url: "https://api.discogs.com/releases/100002",
-      }),
-    });
-
-    jest
-      .mocked(useDiscogsReleaseQuery)
-      .mockImplementation(({ enabled, releaseId }) => {
-        if (!enabled) {
-          return {
-            data: undefined,
-            isLoading: false,
-            isError: false,
-            refetch: jest.fn(),
-          } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
-        }
-
-        const detail =
-          releaseId === "100002"
-            ? discogsReleaseJsonFactory.withTracklistAndVideos({
-                id: 100002,
-                tracklist: [
-                  {
-                    position: "1",
-                    title: "Short A",
-                    duration: "2:00",
-                    type_: "track",
-                  },
-                ],
-                videos: [
-                  {
-                    description: "Short A",
-                    duration: 120,
-                    embed: true,
-                    title: "Short A",
-                    uri: "https://www.youtube.com/watch?v=def98765432",
-                  },
-                ],
-              })
-            : releaseDetail;
-
-        return {
-          data: {
-            ...detail,
-            id: Number(releaseId) || detail.id,
-          },
-          isLoading: false,
-          isError: false,
-          refetch: jest.fn(),
-        } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
-      });
+    setupCollectionAndShortReleaseApiMock();
 
     const { result } = renderHook(() => useReleasePlayback(), {
-      wrapper: createWrapper([collectionRelease, shortRelease]),
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
     });
 
     act(() => {
@@ -906,7 +864,7 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.addToQueue({
-        release: shortRelease,
+        release: shortCollectionRelease,
         trackPosition: "1",
         trackTitle: "Short A",
       });
@@ -993,5 +951,79 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.queueIndex).toBe(1);
     expect(result.current.activeTrackPosition).toBe("A1");
     expect(result.current.isPlaying).toBe(true);
+  });
+
+  it("preserves a manually built queue when play is clicked in another release modal", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("A1");
+    });
+
+    expect(result.current.queue).toHaveLength(3);
+    expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+      "A1",
+      "B1",
+      "1",
+    ]);
+  });
+
+  it("replaces the album queue when play is clicked without manual queue additions", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+    });
+
+    expect(result.current.queue).toHaveLength(1);
+    expect(result.current.queue[0]?.trackPosition).toBe("1");
   });
 });

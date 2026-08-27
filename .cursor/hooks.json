@@ -52,6 +52,11 @@
         "command": ".cursor/hooks/block-login-page-copy-violations.sh",
         "matcher": "Write|StrReplace",
         "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/block-query-hook-mocks.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
       }
     ],
     "postToolUse": [
@@ -79,6 +84,11 @@
       },
       {
         "command": ".cursor/hooks/login-page-copy-drift-check.sh",
+        "timeout": 30,
+        "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/query-hook-mock-drift-check.sh",
         "timeout": 30,
         "loop_limit": 1
       }

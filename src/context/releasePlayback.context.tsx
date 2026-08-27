@@ -35,6 +35,7 @@ import {
   createQueueItem,
   findQueueItemIndex,
   getQueueItemKey,
+  insertQueueItemForPlayNow,
   removeQueueItemAtIndex,
   reorderQueueItems,
   shuffleQueueItems,
@@ -184,6 +185,7 @@ export const ReleasePlaybackProvider = ({
   );
   const similarQueueGenerationRef = useRef(0);
   const similarQueueFetchInFlightRef = useRef(false);
+  const queueManuallyExtendedRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
   const isPausedRef = useRef(isPaused);
@@ -762,6 +764,12 @@ export const ReleasePlaybackProvider = ({
     [clearPlayFromGestureRetries, resolveQueueItemPlayback],
   );
 
+  const appendManualQueueItem = useCallback((item: PlaybackQueueItem) => {
+    queueManuallyExtendedRef.current = true;
+    trackPlaybackQueued(item.release.instance_id);
+    setQueue((previousQueue) => appendQueueItem(previousQueue, item));
+  }, []);
+
   const startPlayback = useCallback(
     ({
       release: nextRelease,
@@ -777,15 +785,40 @@ export const ReleasePlaybackProvider = ({
         trackTitle,
       });
 
-      shouldRebuildAlbumQueueRef.current = true;
-      similarQueueModeRef.current = createSimilarQueueMode(!startPaused);
+      const preserveQueue =
+        queueManuallyExtendedRef.current && queueRef.current.length > 0;
+      let nextQueue: PlaybackQueueItem[];
+      let playIndex: number;
+      let rebuildAlbumQueue: boolean;
+
+      if (preserveQueue) {
+        const inserted = insertQueueItemForPlayNow(
+          queueRef.current,
+          item,
+          queueIndexRef.current,
+          isPlayingRef.current,
+        );
+        nextQueue = inserted.queue;
+        playIndex = inserted.playIndex;
+        rebuildAlbumQueue = false;
+      } else {
+        queueManuallyExtendedRef.current = false;
+        nextQueue = [item];
+        playIndex = 0;
+        rebuildAlbumQueue = true;
+      }
+
+      shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
+      similarQueueModeRef.current = createSimilarQueueMode(
+        rebuildAlbumQueue && !startPaused,
+      );
       similarQueueGenerationRef.current += 1;
-      setQueue([item]);
-      setQueueIndex(0);
+      setQueue(nextQueue);
+      setQueueIndex(playIndex);
       trackPlaybackStarted(nextRelease.instance_id);
       playQueueItem(item, {
         autoplay: !startPaused,
-        rebuildAlbumQueue: true,
+        rebuildAlbumQueue,
         startPaused,
       });
     },
@@ -816,20 +849,18 @@ export const ReleasePlaybackProvider = ({
 
   const addToQueue = useCallback(
     ({ release, trackPosition, trackTitle }: AddToQueueParams) => {
-      const item = createQueueItem({ release, trackPosition, trackTitle });
-      trackPlaybackQueued(release.instance_id);
-      setQueue((previousQueue) => appendQueueItem(previousQueue, item));
+      appendManualQueueItem(
+        createQueueItem({ release, trackPosition, trackTitle }),
+      );
     },
-    [],
+    [appendManualQueueItem],
   );
 
   const addPreviewToQueue = useCallback(
     ({ release, video }: AddPreviewToQueueParams) => {
-      const item = createPreviewQueueItem({ release, video });
-      trackPlaybackQueued(release.instance_id);
-      setQueue((previousQueue) => appendQueueItem(previousQueue, item));
+      appendManualQueueItem(createPreviewQueueItem({ release, video }));
     },
-    [],
+    [appendManualQueueItem],
   );
 
   const playQueueAtIndex = useCallback(
@@ -959,6 +990,7 @@ export const ReleasePlaybackProvider = ({
     shouldRebuildAlbumQueueRef.current = false;
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
+    queueManuallyExtendedRef.current = false;
     setPreviewVideo(null);
     setPendingPreviewVideoUri(null);
     setIsPlaying(false);

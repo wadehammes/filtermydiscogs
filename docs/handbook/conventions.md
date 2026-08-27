@@ -308,7 +308,7 @@ React Query is an implementation detail between **`src/api/helpers`** and UI/fea
 
 **Do not:**
 
-- Mock or spy on hooks under [`src/hooks/queries/`](../../src/hooks/queries/) (e.g. **`jest.mock("…/useUserPreferencesQuery")`**, [`setupDiscogsReleaseQueryMock`](../../src/tests/mocks/setupDiscogsReleaseQueryMock.ts))—that bypasses the real query → helper → outcome path.
+- Mock or spy on hooks under [`src/hooks/queries/`](../../src/hooks/queries/) (e.g. **`jest.mock("…/useUserPreferencesQuery")`**)—that bypasses the real query → helper → outcome path. For release detail, stub **`fetchDiscogsRelease`** via [`setupFetchDiscogsReleaseMock`](../../src/tests/mocks/setupFetchDiscogsReleaseMock.ts) and let **`useDiscogsReleaseQuery`** run in **`TestProviders`**.
 - Import **`useQuery`**, **`useMutation`**, **`useQueryClient`**, or query hook return shapes (**`isLoading`**, **`data`**, **`isSuccess`**, **`fetchStatus`**) in feature specs.
 - Seed or manipulate the cache in tests: **`queryClient.setQueryData`**, **`invalidateQueries`**, **`prefetchQuery`**, **`resetQueries`**, or passing a custom **`queryClient`** solely to control query results (exceptions below).
 - Add new tests whose primary subject is a thin **`useQuery`** wrapper—cover HTTP in **route tests** and outcomes in feature tests instead.
@@ -338,6 +338,8 @@ Multiple helpers: add each name to the factory object (e.g. **`fetchUserPreferen
 - [`useCrateMutations.spec.tsx`](../../src/hooks/queries/useCrateMutations.spec.tsx)—mutation **cache updates** are the subject.
 - [`useDiscogsCollectionQuery.spec.tsx`](../../src/hooks/queries/useDiscogsCollectionQuery.spec.tsx)—401 → auth recheck behavior on the collection query itself.
 - Hook tests that use a minimal **`QueryClientProvider`** wrapper only for **auth context** lifecycle (e.g. [`auth.context.spec.tsx`](../../src/context/auth.context.spec.tsx)), not to stub server data.
+
+**Enforcement:** Cursor [`block-query-hook-mocks.sh`](../../.cursor/hooks/block-query-hook-mocks.sh) denies new query-hook mocks in feature tests; [`queryHookMockRules.spec.ts`](../../src/tests/utils/queryHookMockRules.spec.ts) scans the repo in CI/Jest and on session **`stop`** when test files changed.
 
 **Feature-hook test recipe:** canonical **`jest.mock("src/api/helpers")`** → [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx) → **`mockApiResponse`** → **`waitFor`** on outcomes. Examples: [`useUserPreferencesSync.hook.spec.tsx`](../../src/hooks/useUserPreferencesSync.hook.spec.tsx), [`useCollectionData.hook.spec.ts`](../../src/hooks/useCollectionData.hook.spec.ts).
 
