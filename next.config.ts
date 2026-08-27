@@ -122,6 +122,11 @@ const nextConfig: NextConfig = {
     DISCOGS_CALLBACK_URL:
       process.env.DISCOGS_CALLBACK_URL ||
       "http://localhost:6767/api/auth/callback",
+    NEXT_PUBLIC_APP_BUILD_VERSION:
+      process.env.VERCEL_GIT_COMMIT_SHA ??
+      process.env.VERCEL_DEPLOYMENT_ID ??
+      "development",
+    NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? "development",
   },
   images: {
     remotePatterns: [

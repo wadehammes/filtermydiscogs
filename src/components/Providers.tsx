@@ -8,6 +8,7 @@ import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthChecking
 import { CollectionDataSync } from "src/components/CollectionDataSync/CollectionDataSync.component";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
+import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/DeploymentUpdateToast.component";
 import { GlobalPlaybackDock } from "src/components/GlobalPlaybackDock/GlobalPlaybackDock.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
@@ -83,6 +84,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                           <LogoutOverlayWrapper />
                           <AuthCheckingToast />
                           <CollectionLoadingToast />
+                          <DeploymentUpdateToast />
                         </AnalyticsShell>
                       </ViewProvider>
                     </CrateProvider>

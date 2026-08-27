@@ -56,6 +56,9 @@ Full list: [`package.json`](../../package.json).
 | `DIRECT_URL` / `POSTGRES_URL` | Direct Postgres URL for Prisma CLI migrations ([`prisma.config.ts`](../../prisma.config.ts), [`scripts/migrate-deploy.sh`](../../scripts/migrate-deploy.sh)); Vercel Prisma integration often sets **`POSTGRES_URL`** to **`db.prisma.io`** |
 | `PRISMA_MIGRATE_DEPLOY_ATTEMPTS` / `PRISMA_MIGRATE_DEPLOY_RETRY_DELAY_SEC` | Optional overrides for build-time **`migrate deploy`** retries (defaults **5** / **5** seconds, exponential backoff) |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata/OG (optional; defaults to `https://www.filtermydisco.gs`). Vercel domain settings redirect apex → `www`. |
+| `NEXT_PUBLIC_APP_BUILD_VERSION` | Injected at build time from **`VERCEL_GIT_COMMIT_SHA`** or **`VERCEL_DEPLOYMENT_ID`** (falls back to **`development`** locally). Baked into the client bundle; compared against **`GET /api/build-version`** for production deploy toasts. |
+| `NEXT_PUBLIC_VERCEL_ENV` | Exposed copy of **`VERCEL_ENV`** (`production`, `preview`, or **`development`** locally). **`DeploymentUpdateToast`** polls only when this is **`production`**. |
+| `VERCEL_GIT_COMMIT_SHA` / `VERCEL_DEPLOYMENT_ID` | Vercel system env vars (enable **Automatically expose System Environment Variables** in project settings). Server-side fallback for [`getAppBuildVersion`](../../src/utils/appBuildVersion.ts). |
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
 | `CRON_SECRET` | Bearer token for Vercel Cron routes (e.g. **`/api/cron/product-analytics`**) |
 | `IP_RATE_LIMIT_MAX` / `IP_RATE_LIMIT_WINDOW` | Default per-IP API rate limit (120 requests / 60s) |
@@ -152,6 +155,10 @@ Cookie-authenticated **`/api/auth/*`** and authenticated **`/api/crates/*`** rou
 Do **not** use bare **`NextResponse.json`** on private session routes—use **`privateRouteJson`** (or **`createErrorResponse`** in `catch` blocks). Public crate reads keep their own cache policy in [`/api/crates/public/[id]`](../../src/app/api/crates/public/[id]/route.ts).
 
 Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`, `/api/collection/value`) return success responses with **`Cache-Control: private, max-age=…`** plus **`Vary: Cookie`** (browser-private cache keyed by session). Auth failures still return **`privateRouteJson`** via **`requireAuthenticatedDiscogsUser`**. Client helpers for these routes send **`credentials: "include"`**.
+
+## Production deploy notifications
+
+[`DeploymentUpdateToast`](../../src/components/DeploymentUpdateToast/DeploymentUpdateToast.component.tsx) mounts in global **`Providers`**, uses **[`useBuildVersionQuery`](../../src/hooks/queries/useBuildVersionQuery.ts)** with **`refetchInterval`** (five minutes) and **`refetchOnWindowFocus`**, and shows a Sonner toast when the live version differs from **`NEXT_PUBLIC_APP_BUILD_VERSION`**. Polling disables after the toast fires once. Production only; local dev and Preview skip the query via **`enabled`**. Version strings come from **`VERCEL_GIT_COMMIT_SHA`** (preferred) or **`VERCEL_DEPLOYMENT_ID`**, exposed in [`next.config.ts`](../../next.config.ts).
 
 ## Jest
 
