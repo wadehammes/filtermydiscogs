@@ -1,13 +1,10 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
 import { definedProps } from "src/utils/definedProps";
-import {
-  buildYoutubeEmbedUrl,
-  transitionYoutubeIframeToVideo,
-} from "src/utils/releasePlayback";
+import { buildYoutubeEmbedUrl } from "src/utils/releasePlayback";
 import styles from "./PersistentYoutubeIframe.module.css";
 
 interface PersistentYoutubeIframeProps {
@@ -31,8 +28,6 @@ export const PersistentYoutubeIframe = ({
     resumePlaybackFromGesture,
   } = useReleasePlaybackIframeActions();
 
-  const [initialVideoId] = useState(videoId);
-  const loadedVideoIdRef = useRef(initialVideoId);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const embedUrl = useMemo(() => {
@@ -40,11 +35,11 @@ export const PersistentYoutubeIframe = ({
       typeof window !== "undefined" ? window.location.origin : undefined;
 
     return buildYoutubeEmbedUrl({
-      videoId: initialVideoId,
+      videoId,
       autoplay,
       ...definedProps({ origin }),
     });
-  }, [autoplay, initialVideoId]);
+  }, [autoplay, videoId]);
 
   const setIframeRef = useCallback(
     (node: HTMLIFrameElement | null) => {
@@ -53,27 +48,6 @@ export const PersistentYoutubeIframe = ({
     },
     [registerPlaybackIframe],
   );
-
-  useEffect(() => {
-    if (videoId === loadedVideoIdRef.current) {
-      return;
-    }
-
-    loadedVideoIdRef.current = videoId;
-
-    if (!iframeRef.current) {
-      return;
-    }
-
-    transitionYoutubeIframeToVideo({
-      iframe: iframeRef.current,
-      videoId,
-    });
-
-    if (autoplay) {
-      resumePlaybackFromGesture();
-    }
-  }, [autoplay, resumePlaybackFromGesture, videoId]);
 
   useEffect(() => {
     if (variant !== "visible" || !playbackKey) {

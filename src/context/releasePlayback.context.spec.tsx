@@ -23,10 +23,7 @@ import {
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
 import { createQueueItem } from "src/utils/playbackQueue";
-import {
-  postYoutubePlayerCommand,
-  transitionYoutubeIframeToVideo,
-} from "src/utils/releasePlayback";
+import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
   readPersistedReleasePlayback,
   toPersistedQueueItem,
@@ -38,13 +35,9 @@ jest.mock("src/api/helpers");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
-  transitionYoutubeIframeToVideo: jest.fn(),
 }));
 
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
-const mockTransitionYoutubeIframeToVideo = jest.mocked(
-  transitionYoutubeIframeToVideo,
-);
 
 const mockApi = jest.mocked(apiHelpers);
 const preferencesApiError = new Error("Preferences API request failed");
@@ -284,12 +277,8 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.queue).toHaveLength(0);
     });
 
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
-      expect.objectContaining({
-        iframe,
-        videoId: expect.any(String),
-      }),
-    );
+    expect(result.current.embedVideoId).toBe("abc12345678");
+    expect(result.current.activeVideoId).toBe("abc12345678");
   });
 
   it("requests playVideo when the embed iframe registers after a user gesture", async () => {
