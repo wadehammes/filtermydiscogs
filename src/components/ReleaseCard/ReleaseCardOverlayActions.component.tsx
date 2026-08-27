@@ -5,6 +5,7 @@ import type { MouseEvent } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { useReleaseNotesEditorContext } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
@@ -50,7 +51,7 @@ export const ReleaseCardOverlayActions = ({
       })
     : styles.segmentSlot;
   const inCrate = isInCrate(release.instance_id);
-  const { handleAddToQueue, isReleaseInQueue, isAdding } =
+  const { handleAddToQueue, isReleaseInQueue, isAdding, isFetchingRelease } =
     useReleaseCardQueueAction(release);
 
   const actionClass = (active = false, queued = false) =>
@@ -153,6 +154,12 @@ export const ReleaseCardOverlayActions = ({
       >
         {isReleaseInQueue ? (
           <CheckThinIcon className={stackStyles.actionIcon} aria-hidden />
+        ) : isFetchingRelease ? (
+          <Spinner
+            size="xs"
+            className={stackStyles.actionIcon}
+            aria-label="Loading release"
+          />
         ) : (
           <ListPlusThinIcon className={stackStyles.actionIcon} aria-hidden />
         )}

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { screen, waitFor } from "test-utils";
 
@@ -244,6 +245,45 @@ describe("ReleaseCard", () => {
     expect(
       screen.getByRole("link", { name: "View on Discogs" }),
     ).toHaveAttribute("href", "https://www.discogs.com/release/456");
+  });
+
+  it("shows a spinner on the add to queue button while fetching release details", async () => {
+    const release = releaseFactory.withTitle("Test Album", 249504);
+    const user = userEvent.setup();
+    let resolveFetch!: (
+      value: ReturnType<
+        typeof discogsReleaseJsonFactory.withTracklistAndVideos
+      >,
+    ) => void;
+    const fetchPromise = new Promise<
+      ReturnType<typeof discogsReleaseJsonFactory.withTracklistAndVideos>
+    >((resolve) => {
+      resolveFetch = resolve;
+    });
+
+    po.mockApiHelpers.fetchDiscogsRelease.mockReturnValue(fetchPromise);
+
+    po.renderReleaseCard({ release, onReleaseClick: jest.fn() });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Add Test Album to queue",
+      }),
+    );
+
+    expect(
+      screen.getByRole("progressbar", { name: "Loading release" }),
+    ).toBeInTheDocument();
+
+    resolveFetch(discogsReleaseJsonFactory.withTracklistAndVideos());
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: "Test Album is already in the queue",
+        }),
+      ).toBeDisabled();
+    });
   });
 
   it("adds all playable tracks to the queue from the overlay button", async () => {

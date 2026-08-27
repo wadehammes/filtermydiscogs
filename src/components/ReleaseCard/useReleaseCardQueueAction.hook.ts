@@ -30,6 +30,7 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
   const releaseId = parseReleaseId(release);
   const instanceId = String(release.instance_id);
   const [isAdding, setIsAdding] = useState(false);
+  const [isFetchingRelease, setIsFetchingRelease] = useState(false);
   const cachedReleaseDetail =
     releaseId !== null
       ? queryClient.getQueryData<DiscogsReleaseDetail>(
@@ -102,11 +103,19 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
       setIsAdding(true);
 
       try {
-        const releaseDetail =
-          cachedReleaseDetail ??
-          (await queryClient.fetchQuery(
-            discogsReleaseQueryOptions(String(releaseId)),
-          ));
+        let releaseDetail = cachedReleaseDetail;
+
+        if (!releaseDetail) {
+          setIsFetchingRelease(true);
+
+          try {
+            releaseDetail = await queryClient.fetchQuery(
+              discogsReleaseQueryOptions(String(releaseId)),
+            );
+          } finally {
+            setIsFetchingRelease(false);
+          }
+        }
         const tracks = flattenTracklist(releaseDetail?.tracklist ?? []);
         const matchIndex = buildReleasePlaybackMatchIndex(
           tracks,
@@ -178,5 +187,6 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
     handleAddToQueue,
     isReleaseInQueue,
     isAdding,
+    isFetchingRelease,
   };
 };
