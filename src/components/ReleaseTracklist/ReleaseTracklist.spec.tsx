@@ -246,4 +246,47 @@ describe("ReleaseTracklist", () => {
       }),
     ).toBeDisabled();
   });
+
+  it("renders an add-all toolbar and calls onAddAllToQueue", async () => {
+    const user = userEvent.setup();
+    const onAddAllToQueue = jest.fn();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onAddAllToQueue={onAddAllToQueue}
+      />,
+    );
+
+    const addAllButton = screen.getByTestId("fmdReleaseTracklistAddAllButton");
+
+    expect(addAllButton).toHaveTextContent("Add all to queue");
+    expect(addAllButton).toBeEnabled();
+
+    await user.click(addAllButton);
+
+    expect(onAddAllToQueue).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables add-all when every playable track is already queued", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onAddAllToQueue={() => undefined}
+        addAllToQueueDisabled
+      />,
+    );
+
+    expect(
+      screen.getByTestId("fmdReleaseTracklistAddAllButton"),
+    ).toBeDisabled();
+  });
 });

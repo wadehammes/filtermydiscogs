@@ -1,3 +1,59 @@
+.tracklistPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tracklistToolbar {
+  align-items: center;
+  background: var(--muted);
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: var(--space-2) var(--space-3);
+}
+
+.addAllButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  gap: var(--space-1);
+  line-height: 1.25;
+  padding: var(--space-1) var(--space-2);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--foreground) 8%, transparent);
+    color: var(--foreground);
+  }
+}
+
+.addAllButtonIcon {
+  display: block;
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
 .tracklist {
   display: flex;
   flex-direction: column;
