@@ -149,13 +149,14 @@ export function LegalPageContent() {
             <li>
               <strong>Local storage:</strong> Theme, default view, filter and
               sort selections (when &quot;Remember filter selections&quot; is
-              on), your analytics cookie choice, in-progress playback position,
-              remembered collection size for faster loading, and similar UI
-              state. When you&apos;re logged in, the same preferences are also
-              stored on the server (see above). <strong>IndexedDB:</strong>{" "}
-              After your collection finishes loading, a cached copy of those
-              pages may be stored on this device to speed up return visits until
-              your Discogs collection size changes or you clear app data.
+              on), your analytics cookie choice, in-progress playback (current
+              track and upcoming queue), remembered collection size for faster
+              loading, and similar UI state. When you&apos;re logged in, the
+              same preferences are also stored on the server (see above).{" "}
+              <strong>IndexedDB:</strong> After your collection finishes
+              loading, a cached copy of those pages may be stored on this device
+              to speed up return visits until your Discogs collection size
+              changes or you clear app data.
             </li>
             <li>
               <strong>Optional analytics:</strong> When you opt in, Google Tag
@@ -209,10 +210,10 @@ export function LegalPageContent() {
             <li>
               Local preferences on this browser: theme, view mode, filters,
               analytics cookie choice (you will be asked about analytics cookies
-              again), in-progress playback position, remembered collection size
-              (to load large collections faster), cached collection pages in
-              IndexedDB (for faster return visits on this device), and similar
-              UI state
+              again), in-progress playback (current track and upcoming queue),
+              remembered collection size (to load large collections faster),
+              cached collection pages in IndexedDB (for faster return visits on
+              this device), and similar UI state
             </li>
             <li>In-memory collection cache for the current browser session</li>
             <li>

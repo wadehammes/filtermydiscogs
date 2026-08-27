@@ -128,10 +128,10 @@ export function AboutClient() {
             <li>
               Local preferences on this browser: theme, view mode, filters,
               analytics cookie choice (you will be asked about analytics cookies
-              again), in-progress playback position, remembered collection size
-              (to load large collections faster), a cached copy of your loaded
-              collection in IndexedDB (for faster return visits on this device),
-              and similar UI state
+              again), in-progress playback (current track and upcoming queue),
+              remembered collection size (to load large collections faster), a
+              cached copy of your loaded collection in IndexedDB (for faster
+              return visits on this device), and similar UI state
             </li>
             <li>In-memory collection cache for the current browser session</li>
             <li>

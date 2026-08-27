@@ -48,6 +48,7 @@ import {
   prependQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
+  resolvePersistedQueueItems,
   resolveQueueItemYoutubeVideoId,
   shuffleQueueItems,
   upcomingFromAlbumQueue,
@@ -62,6 +63,7 @@ import {
   findTrackIndexByPosition,
   findVideoForTrack,
   flattenTracklist,
+  getPreviewTrackPosition,
   PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
@@ -70,6 +72,7 @@ import {
 import {
   clearPersistedReleasePlayback,
   readPersistedReleasePlayback,
+  toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
@@ -341,6 +344,30 @@ export const ReleasePlaybackProvider = ({
     },
     [schedulePlayFromGestureAttempts],
   );
+
+  const persistPlaybackSession = useCallback(() => {
+    const currentRelease = releaseRef.current;
+
+    if (!(isPlayingRef.current && currentRelease)) {
+      return;
+    }
+
+    const previewVideo = previewVideoRef.current;
+    const activeTrack = tracksRef.current[activeTrackIndexRef.current] ?? null;
+    const trackPosition = previewVideo
+      ? getPreviewTrackPosition(previewVideo)
+      : activeTrack?.position;
+
+    if (!trackPosition) {
+      return;
+    }
+
+    writePersistedReleasePlayback({
+      instanceId: String(currentRelease.instance_id),
+      trackPosition,
+      queue: queueRef.current.map(toPersistedQueueItem),
+    });
+  }, []);
 
   const tryTransitionToQueueItem = useCallback(
     (item: PlaybackQueueItem) => {
@@ -883,11 +910,6 @@ export const ReleasePlaybackProvider = ({
         clearPlayFromGestureRetries();
       }
 
-      writePersistedReleasePlayback({
-        instanceId: item.instanceId,
-        trackPosition: item.trackPosition,
-      });
-
       if (!rebuildAlbumQueue && resolveQueueItemPlayback(item)) {
         return;
       }
@@ -965,7 +987,10 @@ export const ReleasePlaybackProvider = ({
       } else {
         const seedManualQueue = rebuildAlbumQueueOption === false;
         queueManuallyExtendedRef.current = seedManualQueue;
-        nextQueue = [];
+        nextQueue =
+          seedManualQueue && queueRef.current.length > 0
+            ? queueRef.current
+            : [];
         rebuildAlbumQueue = rebuildAlbumQueueOption ?? true;
       }
 
@@ -975,6 +1000,11 @@ export const ReleasePlaybackProvider = ({
       );
       similarQueueGenerationRef.current += 1;
       setUpcomingQueue(nextQueue);
+      writePersistedReleasePlayback({
+        instanceId: String(nextRelease.instance_id),
+        trackPosition,
+        queue: nextQueue.map(toPersistedQueueItem),
+      });
       trackPlaybackStarted(nextRelease.instance_id);
       playQueueItem(item, {
         autoplay: !startPaused,
@@ -1208,22 +1238,22 @@ export const ReleasePlaybackProvider = ({
   startPlaybackRef.current = startPlayback;
 
   useEffect(() => {
-    if (
-      !(isPlaying && release && activeTrackPosition && !isReleasePreview) ||
-      pendingTrackPosition
-    ) {
+    if (!(isPlaying && release) || pendingTrackPosition) {
       return;
     }
 
-    writePersistedReleasePlayback({
-      instanceId: String(release.instance_id),
-      trackPosition: activeTrackPosition,
-    });
+    if (!(activeTrackPosition || isReleasePreview)) {
+      return;
+    }
+
+    persistPlaybackSession();
   }, [
     activeTrackPosition,
     isPlaying,
     isReleasePreview,
     pendingTrackPosition,
+    persistPlaybackSession,
+    queue,
     release,
   ]);
 
@@ -1263,10 +1293,20 @@ export const ReleasePlaybackProvider = ({
 
     if (matchingRelease) {
       hasAttemptedRestoreRef.current = true;
+
+      const restoredQueue = resolvePersistedQueueItems({
+        items: persisted.queue ?? [],
+        releases: allReleases,
+      });
+
+      setUpcomingQueue(restoredQueue);
+      queueManuallyExtendedRef.current = restoredQueue.length > 0;
+
       startPlaybackRef.current({
         release: matchingRelease,
         trackPosition: persisted.trackPosition,
         startPaused: true,
+        rebuildAlbumQueue: false,
       });
       return;
     }
