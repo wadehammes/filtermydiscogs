@@ -92,6 +92,31 @@ describe("AutocompleteSelect", () => {
     expect(handleChange).toHaveBeenCalledWith([]);
   });
 
+  it("reopens when clicking a selected pill after the menu closes", async () => {
+    const handleChange = jest.fn();
+    const { rerender } = po.renderAutocompleteSelect({
+      onChange: handleChange,
+    });
+
+    await openFilterCombobox("Test Autocomplete");
+    await clickFilterOption("Option 1");
+
+    rerender(
+      <AutocompleteSelect
+        label={po.label}
+        options={po.options}
+        onChange={handleChange}
+        multiple
+        value={["option1"]}
+      />,
+    );
+
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    await user.click(screen.getByText("Option 1"));
+
+    expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
   it("reopens on the first click after selecting a value with clearable enabled", async () => {
     const handleChange = jest.fn();
     const { rerender } = po.renderAutocompleteSelect({
