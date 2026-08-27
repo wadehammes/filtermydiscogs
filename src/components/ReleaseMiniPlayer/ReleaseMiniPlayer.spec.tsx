@@ -13,6 +13,7 @@ import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSu
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
@@ -82,7 +83,10 @@ const PlaybackStarter = () => {
 
 const createWrapper = (onReleaseClick?: (instanceId: string) => void) => {
   return ({ children }: { children: ReactNode }) => (
-    <TestProviders authInitialState={testAuthenticatedAuthState}>
+    <TestProviders
+      authInitialState={testAuthenticatedAuthState}
+      includeCollectionSync={false}
+    >
       <ReleasePlaybackProvider>
         {children}
         <ReleaseMiniPlayer {...definedProps({ onReleaseClick })} />
@@ -110,6 +114,12 @@ describe("ReleaseMiniPlayer", () => {
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: true });
     setupDefaultCrateApiMocks(mockApi);
+    mockApiResponse(
+      true,
+      mockApi.fetchUserPreferences,
+      { preferences: userPreferencesFactory.defaults() },
+      new Error("Preferences API request failed"),
+    );
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
     mockApiResponse(
       true,
@@ -125,10 +135,12 @@ describe("ReleaseMiniPlayer", () => {
     );
   });
 
-  it("is hidden until playback starts", () => {
+  it("is hidden until playback starts", async () => {
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
-    expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
+    });
   });
 
   it("renders the dock and visible iframe when autoplay playback is active", async () => {
@@ -503,7 +515,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     const QueueAndPlaybackControls = () => {
-      const { startPlayback, addToQueue, queueIndex } = useReleasePlayback();
+      const { startPlayback, addToQueue, queue } = useReleasePlayback();
 
       return (
         <>
@@ -527,7 +539,7 @@ describe("ReleaseMiniPlayer", () => {
           >
             Queue second release
           </button>
-          <span data-testid="fmdQueueIndex">{queueIndex}</span>
+          <span data-testid="fmdQueueLength">{queue.length}</span>
         </>
       );
     };
@@ -560,7 +572,7 @@ describe("ReleaseMiniPlayer", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Short A")).toBeInTheDocument();
-      expect(screen.getByTestId("fmdQueueIndex")).toHaveTextContent("2");
+      expect(screen.getByTestId("fmdQueueLength")).toHaveTextContent("0");
     });
   });
 

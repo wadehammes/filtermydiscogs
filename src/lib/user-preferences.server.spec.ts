@@ -44,6 +44,7 @@ describe("user-preferences.server", () => {
     ).toEqual({
       version: 1,
       persistFilters: false,
+      autoPlayOnQueueAdd: true,
       theme: "dark",
       view: { currentView: "list", previousView: "card" },
       filters,
@@ -69,6 +70,7 @@ describe("user-preferences.server", () => {
     ).toEqual({
       version: 1,
       persistFilters: false,
+      autoPlayOnQueueAdd: true,
       theme: "dark",
       view: { currentView: "card", previousView: "card" },
       filters,

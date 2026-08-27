@@ -1,6 +1,7 @@
 export type SettingsSectionId =
   | "account"
   | "appearance"
+  | "playback"
   | "filters"
   | "collection"
   | "data";
@@ -21,6 +22,11 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     id: "appearance",
     label: "Appearance",
     description: "Theme and default view",
+  },
+  {
+    id: "playback",
+    label: "Playback",
+    description: "Queue and player behavior",
   },
   {
     id: "filters",

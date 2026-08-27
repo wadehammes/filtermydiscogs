@@ -246,6 +246,31 @@ describe("ReleaseCard", () => {
     ).toHaveAttribute("href", "https://www.discogs.com/release/456");
   });
 
+  it("adds the first playable track to the queue from the overlay button", async () => {
+    const release = releaseFactory.withTitle("Test Album", 249504);
+    const user = userEvent.setup();
+
+    po.renderReleaseCard({ release, onReleaseClick: jest.fn() });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Add Test Album to queue",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.fetchDiscogsRelease).toHaveBeenCalledWith(
+        "249504",
+      );
+    });
+
+    expect(
+      screen.getByRole("button", {
+        name: "Add Test Album to queue",
+      }),
+    ).toBeEnabled();
+  });
+
   it("opens Discogs when title is clicked even if onReleaseClick is provided", async () => {
     const release = releaseFactory.withTitle("Test Release", 456);
     const onReleaseClick = jest.fn();

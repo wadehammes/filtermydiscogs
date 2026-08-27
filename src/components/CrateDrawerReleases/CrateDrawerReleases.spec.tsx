@@ -10,6 +10,7 @@ import {
   setupCrateDrawerTests,
 } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
+import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { screen, waitFor } from "test-utils";
@@ -34,7 +35,12 @@ describe("CrateDrawerReleases", () => {
             sort_order: 1000,
           },
           {
-            release: releaseFactory.build({ instance_id: "333" }),
+            release: releaseFactory.build({
+              instance_id: "333",
+              basic_information: basicInformationFactory.build({
+                title: "Found Staging Release",
+              }),
+            }),
             found_at: "2026-07-27T00:00:00.000Z",
             sort_order: 2000,
           },

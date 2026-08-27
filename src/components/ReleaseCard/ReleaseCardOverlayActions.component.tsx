@@ -7,15 +7,18 @@ import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotes
 import { useReleaseNotesEditorContext } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
-import MenuIcon from "src/styles/icons/menu-thin.svg";
+import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
+import { VinylThinIcon } from "src/styles/icons/VinylThinIcon.component";
 import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseCard.module.css";
+import { useReleaseCardQueueAction } from "./useReleaseCardQueueAction.hook";
 
 interface ReleaseCardOverlayActionsProps {
   release: DiscogsRelease;
@@ -40,18 +43,26 @@ export const ReleaseCardOverlayActions = ({
   const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const isVertical = layout === "vertical";
+  const useMobileTapPadding = isVertical && notesVariant === "mobile";
   const slotClass = isVertical
-    ? stackStyles.overlayActionSlot
+    ? classNames(stackStyles.overlayActionSlot, {
+        [stackStyles.overlayActionSlotMobile]: useMobileTapPadding,
+      })
     : styles.segmentSlot;
   const inCrate = isInCrate(release.instance_id);
+  const { handleAddToQueue, isReleaseInQueue, isAdding } =
+    useReleaseCardQueueAction(release);
 
-  const actionClass = (active = false) =>
+  const actionClass = (active = false, queued = false) =>
     isVertical
       ? classNames(stackStyles.overlayAction, {
+          [stackStyles.overlayActionMobile]: useMobileTapPadding,
           [stackStyles.overlayActionActive]: active,
+          [stackStyles.overlayActionQueued]: queued,
         })
       : classNames(segmentedStyles.segment, styles.actionSegment, {
           [segmentedStyles.active]: active,
+          [styles.actionSegmentQueued]: queued,
         });
 
   const handleCrateToggle = (event: MouseEvent) => {
@@ -75,84 +86,140 @@ export const ReleaseCardOverlayActions = ({
     onReleaseOpen?.();
   };
 
+  const crateTooltipLabel = inCrate ? "Remove from Crate" : "Add to Crate";
+
+  const crateAction = (
+    <div className={isVertical ? slotClass : styles.segmentSlot}>
+      <button
+        type="button"
+        className={
+          isVertical
+            ? actionClass(inCrate)
+            : classNames(styles.crateActionButton, {
+                [styles.crateActionButtonActive]: inCrate,
+              })
+        }
+        onClick={handleCrateToggle}
+        aria-label={inCrate ? "Remove from crate" : "Add to crate"}
+        title={crateTooltipLabel}
+      >
+        {inCrate ? (
+          <MinusIcon className={stackStyles.actionIcon} />
+        ) : (
+          <PlusIcon className={stackStyles.actionIcon} />
+        )}
+      </button>
+      {!isVertical ? (
+        <span className={styles.tooltip}>{crateTooltipLabel}</span>
+      ) : null}
+    </div>
+  );
+
   if (isDialogOpen) {
     return null;
   }
 
-  return (
-    <div
-      className={classNames(
-        isVertical ? stackStyles.overlayActions : segmentedStyles.container,
-        {
-          [segmentedStyles.containerAllowOverflow]: !isVertical,
-        },
-        !isVertical && styles.actionSegmented,
-        className,
-      )}
-    >
-      {onReleaseOpen ? (
-        <div className={slotClass}>
-          <button
-            type="button"
-            className={actionClass()}
-            onClick={handleReleaseOpen}
-            aria-label="Open release details"
-            title="Release details"
-          >
-            <MenuIcon className={stackStyles.actionIcon} />
-          </button>
-          {!isVertical ? (
-            <span className={styles.tooltip}>Release details</span>
-          ) : null}
-        </div>
+  const releaseDetailsAction = onReleaseOpen ? (
+    <div className={slotClass}>
+      <button
+        type="button"
+        className={actionClass()}
+        onClick={handleReleaseOpen}
+        aria-label="Open release details"
+        title="Release details"
+      >
+        <VinylThinIcon className={stackStyles.actionIcon} aria-hidden />
+      </button>
+      {!isVertical ? (
+        <span className={styles.tooltip}>Release details</span>
       ) : null}
-      {releaseUrl ? (
-        <div className={slotClass}>
-          <a
-            href={releaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={actionClass()}
-            onClick={(event) => {
-              event.stopPropagation();
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: "releaseCard",
-                label: "View on Discogs",
-                value: resourceUrl ?? releaseUrl,
-              });
-            }}
-            aria-label="View on Discogs"
-            title="View on Discogs"
-          >
-            <ExternalLinkIcon className={stackStyles.actionIcon} />
-          </a>
-          {!isVertical ? (
-            <span className={styles.tooltip}>View on Discogs</span>
-          ) : null}
-        </div>
+    </div>
+  ) : null;
+
+  const queueAction = (
+    <div className={slotClass}>
+      <button
+        type="button"
+        className={actionClass(false, isReleaseInQueue)}
+        onClick={handleAddToQueue}
+        disabled={isReleaseInQueue || isAdding}
+        aria-label={
+          isReleaseInQueue
+            ? `${release.basic_information.title} is already in the queue`
+            : `Add ${release.basic_information.title} to queue`
+        }
+        title={isReleaseInQueue ? "In queue" : "Add to queue"}
+        data-testid="fmdReleaseCardAddToQueueButton"
+      >
+        {isReleaseInQueue ? (
+          <CheckThinIcon className={stackStyles.actionIcon} aria-hidden />
+        ) : (
+          <ListPlusThinIcon className={stackStyles.actionIcon} aria-hidden />
+        )}
+      </button>
+      {!isVertical ? (
+        <span className={styles.tooltip}>
+          {isReleaseInQueue ? "In queue" : "Add to queue"}
+        </span>
       ) : null}
-      <ReleaseNotesCardAction {...definedProps({ variant: notesVariant })} />
-      <div className={slotClass}>
-        <button
-          type="button"
-          className={actionClass(inCrate)}
-          onClick={handleCrateToggle}
-          aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-          title={inCrate ? "Remove from Crate" : "Add to Crate"}
-        >
-          {inCrate ? (
-            <MinusIcon className={stackStyles.actionIcon} />
-          ) : (
-            <PlusIcon className={stackStyles.actionIcon} />
-          )}
-        </button>
-        {!isVertical ? (
-          <span className={styles.tooltip}>
-            {inCrate ? "Remove from Crate" : "Add to Crate"}
-          </span>
-        ) : null}
+    </div>
+  );
+
+  const discogsAction = releaseUrl ? (
+    <div className={slotClass}>
+      <a
+        href={releaseUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={actionClass()}
+        onClick={(event) => {
+          event.stopPropagation();
+          trackEvent("releaseClicked", {
+            action: "releaseClicked",
+            category: "releaseCard",
+            label: "View on Discogs",
+            value: resourceUrl ?? releaseUrl,
+          });
+        }}
+        aria-label="View on Discogs"
+        title="View on Discogs"
+      >
+        <ExternalLinkIcon className={stackStyles.actionIcon} />
+      </a>
+      {!isVertical ? (
+        <span className={styles.tooltip}>View on Discogs</span>
+      ) : null}
+    </div>
+  ) : null;
+
+  if (isVertical) {
+    return (
+      <div className={stackStyles.overlayActions}>
+        {releaseDetailsAction}
+        {queueAction}
+        <ReleaseNotesCardAction {...definedProps({ variant: notesVariant })} />
+        {discogsAction}
+        {crateAction}
       </div>
+    );
+  }
+
+  return (
+    <div className={styles.desktopOverlayActions}>
+      <div
+        className={classNames(
+          segmentedStyles.container,
+          segmentedStyles.containerAllowOverflow,
+          styles.actionSegmented,
+          className,
+        )}
+      >
+        {releaseDetailsAction}
+        {queueAction}
+        <ReleaseNotesCardAction {...definedProps({ variant: notesVariant })} />
+        {discogsAction}
+      </div>
+      {crateAction}
     </div>
   );
 };

@@ -8,6 +8,9 @@ export const userPreferencesPatchSchema = z
     persistFilters: z
       .boolean({ error: "persistFilters must be a boolean" })
       .optional(),
+    autoPlayOnQueueAdd: z
+      .boolean({ error: "autoPlayOnQueueAdd must be a boolean" })
+      .optional(),
     theme: z
       .string()
       .optional()
@@ -37,6 +40,7 @@ export const userPreferencesPatchSchema = z
   .refine(
     (patch) =>
       patch.persistFilters !== undefined ||
+      patch.autoPlayOnQueueAdd !== undefined ||
       patch.theme !== undefined ||
       patch.view !== undefined ||
       patch.filters !== undefined ||

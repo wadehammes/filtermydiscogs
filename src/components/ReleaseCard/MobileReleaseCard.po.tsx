@@ -1,6 +1,7 @@
 import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po";
 import type { BasePageObjectProps } from "src/tests/BasePageObject.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
 import type { RenderResult } from "test-utils";
@@ -26,10 +27,12 @@ export class MobileReleaseCardPageObject extends ReleaseCardPageObject {
     const { release, ...rest } = overrides;
 
     return (
-      <MobileReleaseCard
-        release={release ?? releaseFactory.withDisplayDefaults()}
-        {...rest}
-      />
+      <ReleasePlaybackTestTree>
+        <MobileReleaseCard
+          release={release ?? releaseFactory.withDisplayDefaults()}
+          {...rest}
+        />
+      </ReleasePlaybackTestTree>
     );
   }
 
@@ -38,6 +41,7 @@ export class MobileReleaseCardPageObject extends ReleaseCardPageObject {
   ): RenderResult {
     return render(this.mobileReleaseCardElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

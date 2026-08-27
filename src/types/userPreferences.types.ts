@@ -3,6 +3,8 @@ import type { ViewMode } from "src/types/view.types";
 
 export const USER_PREFERENCES_VERSION = 1;
 
+export const DEFAULT_AUTO_PLAY_ON_QUEUE_ADD = true;
+
 export type PaletteTheme =
   | "light"
   | "dim"
@@ -23,6 +25,7 @@ export type StoredViewState = {
 export type UserPreferencesJson = {
   version: typeof USER_PREFERENCES_VERSION;
   persistFilters: boolean;
+  autoPlayOnQueueAdd: boolean;
   theme: StoredTheme;
   view: StoredViewState;
   filters: PersistedFiltersJson;
@@ -34,6 +37,11 @@ export type UserPreferences = UserPreferencesJson;
 export type UserPreferencesPatch = Partial<
   Pick<
     UserPreferences,
-    "persistFilters" | "theme" | "view" | "filters" | "analyticsConsent"
+    | "persistFilters"
+    | "autoPlayOnQueueAdd"
+    | "theme"
+    | "view"
+    | "filters"
+    | "analyticsConsent"
   >
 >;

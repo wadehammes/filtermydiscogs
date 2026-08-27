@@ -73,6 +73,7 @@ export class ReleaseNotesPageObject extends BasePageObject {
       authInitialState: authenticated
         ? testAuthenticatedAuthState
         : testUnauthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

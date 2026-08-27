@@ -16,7 +16,10 @@ import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useCurrentView } from "src/hooks/useViewAtoms.hook";
-import type { StoredViewState } from "src/types/userPreferences.types";
+import {
+  DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  type StoredViewState,
+} from "src/types/userPreferences.types";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import styles from "./SettingsClient.module.css";
@@ -26,6 +29,7 @@ import {
   SettingsCollectionPanel,
   SettingsDataPanel,
   SettingsFiltersPanel,
+  SettingsPlaybackPanel,
 } from "./SettingsSectionPanels.component";
 import {
   DEFAULT_SETTINGS_SECTION,
@@ -117,6 +121,20 @@ export default function SettingsClient() {
     );
   };
 
+  const handleAutoPlayOnQueueAddChange = (enabled: boolean) => {
+    persistPreferences(
+      { autoPlayOnQueueAdd: enabled },
+      {
+        onSuccess: () => {
+          showPreferencesSavedToast();
+        },
+        onError: () => {
+          showPreferencesSaveErrorToast();
+        },
+      },
+    );
+  };
+
   const handleViewChange = (view: "card" | "list") => {
     dispatchView({
       type: ViewActionTypes.SetView,
@@ -157,6 +175,17 @@ export default function SettingsClient() {
             onViewChange={handleViewChange}
             onThemePersisted={showPreferencesSavedToast}
             onThemePersistError={showPreferencesSaveErrorToast}
+          />
+        );
+      case "playback":
+        return (
+          <SettingsPlaybackPanel
+            autoPlayOnQueueAdd={
+              preferences?.autoPlayOnQueueAdd ?? DEFAULT_AUTO_PLAY_ON_QUEUE_ADD
+            }
+            isPreferencesLoading={isPreferencesLoading}
+            isPreferencesSaving={isPreferencesSaving}
+            onAutoPlayOnQueueAddChange={handleAutoPlayOnQueueAddChange}
           />
         );
       case "filters":

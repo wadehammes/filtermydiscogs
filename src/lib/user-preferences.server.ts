@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import {
+  DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   type StoredTheme,
   type StoredViewState,
   USER_PREFERENCES_VERSION,
@@ -23,6 +24,7 @@ export const defaultViewPreference: StoredViewState = defaultViewState;
 export const defaultUserPreferences = (): UserPreferences => ({
   version: USER_PREFERENCES_VERSION,
   persistFilters: true,
+  autoPlayOnQueueAdd: DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   theme: "system",
   view: defaultViewPreference,
   filters: defaultPersistedFilters,
@@ -46,7 +48,7 @@ const parseViewPreference = (value: Prisma.JsonValue): StoredViewState => {
   return value;
 };
 
-const parsePersistFiltersField = (
+const parseBooleanField = (
   value: Prisma.JsonValue | undefined,
   fallback: boolean,
 ): boolean => (typeof value === "boolean" ? value : fallback);
@@ -73,9 +75,13 @@ export const parseUserPreferences = (
 
   return {
     version: USER_PREFERENCES_VERSION,
-    persistFilters: parsePersistFiltersField(
+    persistFilters: parseBooleanField(
       storedPreferences.persistFilters,
       defaults.persistFilters,
+    ),
+    autoPlayOnQueueAdd: parseBooleanField(
+      storedPreferences.autoPlayOnQueueAdd,
+      defaults.autoPlayOnQueueAdd,
     ),
     theme: parseThemeField(storedPreferences.theme, defaults.theme),
     view: parseViewPreference(storedPreferences.view ?? null),

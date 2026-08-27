@@ -7,6 +7,7 @@ import {
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
@@ -105,6 +106,12 @@ export class ReleaseModalPageObject extends BasePageObject {
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: RELEASE_ID }),
       apiError,
     );
+    mockApiResponse(
+      true,
+      mockApi.fetchUserPreferences,
+      { preferences: userPreferencesFactory.defaults() },
+      apiError,
+    );
   }
 
   mockAllReleases(releases: DiscogsRelease[]) {
@@ -135,6 +142,7 @@ export class ReleaseModalPageObject extends BasePageObject {
   renderReleaseModal(overrides: ReleaseModalRenderProps = {}): RenderResult {
     return render(this.releaseModalElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

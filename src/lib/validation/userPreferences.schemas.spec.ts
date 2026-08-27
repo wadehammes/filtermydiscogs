@@ -21,6 +21,7 @@ describe("userPreferencesPatchSchema", () => {
     expect(
       userPreferencesPatchSchema.parse({
         persistFilters: false,
+        autoPlayOnQueueAdd: true,
         theme: "dark",
         view: { currentView: "list", previousView: "card" },
         filters,
@@ -28,6 +29,7 @@ describe("userPreferencesPatchSchema", () => {
       }),
     ).toEqual({
       persistFilters: false,
+      autoPlayOnQueueAdd: true,
       theme: "dark",
       view: { currentView: "list", previousView: "card" },
       filters,

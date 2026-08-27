@@ -4,6 +4,7 @@ import * as apiHelpers from "src/api/helpers";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { render, screen, waitFor } from "test-utils";
 import { ReleaseNotesCardAction } from "./ReleaseNotesCardAction.component";
@@ -16,6 +17,7 @@ const mockApi = jest.mocked(apiHelpers);
 describe("ReleaseNotesCardAction", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    setupDefaultCrateApiMocks(mockApi);
 
     mockApiResponse(
       true,
@@ -30,7 +32,10 @@ describe("ReleaseNotesCardAction", () => {
       <ReleaseNotesEditorProvider release={release}>
         <ReleaseNotesCardAction />
       </ReleaseNotesEditorProvider>,
-      { authInitialState: testAuthenticatedAuthState },
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
     );
 
   it("does not show a notes indicator when the release has no notes", async () => {
@@ -76,6 +81,8 @@ describe("ReleaseNotesCardAction", () => {
 
     await user.click(screen.getByRole("button", { name: "Add release notes" }));
 
-    expect(await screen.findByTestId("fmdNoteEditDialog")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdNoteEditDialog")).toBeInTheDocument();
+    });
   });
 });

@@ -3,12 +3,12 @@
 import classNames from "classnames";
 import { ReleaseMiniPlayer } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component";
 import { usePlaybackReleaseClickHandler } from "src/context/playbackReleaseClick.context";
-import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import playbackDockStyles from "src/styles/modules/playback-dock.module.css";
 import styles from "./GlobalPlaybackDock.module.css";
 
 export const GlobalPlaybackDock = () => {
-  const { isMiniPlayerVisible } = useReleasePlayback();
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const onReleaseClick = usePlaybackReleaseClickHandler();
 
   return (

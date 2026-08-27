@@ -1,9 +1,9 @@
 "use client";
 
-import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 
 export const PlaybackScrollSpacer = () => {
-  const { isMiniPlayerVisible } = useReleasePlayback();
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
 
   if (!isMiniPlayerVisible) {
     return null;

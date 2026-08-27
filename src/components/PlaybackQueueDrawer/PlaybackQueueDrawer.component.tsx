@@ -18,9 +18,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import classNames from "classnames";
 import Image from "next/image";
-import { useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
-import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useReleasePlaybackQueue } from "src/context/releasePlayback.context";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -36,19 +36,17 @@ interface PlaybackQueueDrawerProps {
 
 interface SortableQueueItemProps {
   index: number;
-  isActive: boolean;
   item: PlaybackQueueItem;
   onPlay: (index: number) => void;
   onRemove: (index: number) => void;
 }
 
-const SortableQueueItem = ({
+const SortableQueueItem = memo(function SortableQueueItem({
   index,
-  isActive,
   item,
   onPlay,
   onRemove,
-}: SortableQueueItemProps) => {
+}: SortableQueueItemProps) {
   const sortableId = getQueueItemKey(item);
   const {
     attributes,
@@ -78,11 +76,7 @@ const SortableQueueItem = ({
         [styles.queueItemDragging]: isDragging,
       })}
     >
-      <div
-        className={classNames(styles.queueItem, {
-          [styles.queueItemActive]: isActive,
-        })}
-      >
+      <div className={styles.queueItem}>
         <button
           type="button"
           className={styles.dragHandle}
@@ -98,7 +92,6 @@ const SortableQueueItem = ({
           onClick={() => {
             onPlay(index);
           }}
-          aria-current={isActive ? "true" : undefined}
         >
           <Image
             src={coverUrl}
@@ -131,21 +124,14 @@ const SortableQueueItem = ({
       </div>
     </li>
   );
-};
+});
 
 export const PlaybackQueueDrawer = ({
   isOpen,
   onClose,
 }: PlaybackQueueDrawerProps) => {
-  const {
-    queue,
-    queueIndex,
-    isPlaying,
-    playQueueAtIndex,
-    removeFromQueue,
-    reorderQueue,
-    clearQueue,
-  } = useReleasePlayback();
+  const { queue, playQueueAtIndex, removeFromQueue, reorderQueue, clearQueue } =
+    useReleasePlaybackQueue();
 
   const sortableIds = useMemo(
     () => queue.map((item) => getQueueItemKey(item)),
@@ -196,7 +182,6 @@ export const PlaybackQueueDrawer = ({
       drawerClassName={classNames(
         styles.queueDrawer,
         styles.queueDrawerAlignEnd,
-        styles.queueDrawerAlignEnd,
       )}
       behindMiniPlayer
       hideOverlay
@@ -236,7 +221,6 @@ export const PlaybackQueueDrawer = ({
                   key={getQueueItemKey(item)}
                   index={index}
                   item={item}
-                  isActive={isPlaying && index === queueIndex}
                   onPlay={playQueueAtIndex}
                   onRemove={removeFromQueue}
                 />

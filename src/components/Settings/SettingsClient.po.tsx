@@ -93,6 +93,7 @@ export class SettingsClientPageObject extends BasePageObject {
   renderSettingsClient(): RenderResult {
     return render(<SettingsClient />, {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

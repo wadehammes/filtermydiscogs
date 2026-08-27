@@ -30,6 +30,7 @@ export const ReleaseNotesCardAction = ({
       type="button"
       className={classNames(
         isMobile ? stackStyles.overlayAction : segmentedStyles.segment,
+        isMobile && stackStyles.overlayActionMobile,
         !isMobile && cardStyles.actionSegment,
       )}
       onClick={(event) => {
@@ -54,7 +55,16 @@ export const ReleaseNotesCardAction = ({
   );
 
   if (isMobile) {
-    return <div className={stackStyles.overlayActionSlot}>{notesButton}</div>;
+    return (
+      <div
+        className={classNames(
+          stackStyles.overlayActionSlot,
+          stackStyles.overlayActionSlotMobile,
+        )}
+      >
+        {notesButton}
+      </div>
+    );
   }
 
   return (

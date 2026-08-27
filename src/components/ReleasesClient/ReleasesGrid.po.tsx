@@ -3,6 +3,7 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
 import type { RenderResult } from "test-utils";
@@ -52,22 +53,25 @@ export class ReleasesGridPageObject extends BasePageObject {
     } = overrides;
 
     return (
-      <ReleasesGrid
-        releases={releases}
-        view={view}
-        isMobile={isMobile}
-        isRandomMode={isRandomMode}
-        onExitRandomMode={onExitRandomMode ?? this.onExitRandomMode}
-        onRandomClick={onRandomClick ?? this.onRandomClick}
-        onReleaseClick={onReleaseClick ?? this.onReleaseClick}
-        randomRelease={randomRelease}
-      />
+      <ReleasePlaybackTestTree>
+        <ReleasesGrid
+          releases={releases}
+          view={view}
+          isMobile={isMobile}
+          isRandomMode={isRandomMode}
+          onExitRandomMode={onExitRandomMode ?? this.onExitRandomMode}
+          onRandomClick={onRandomClick ?? this.onRandomClick}
+          onReleaseClick={onReleaseClick ?? this.onReleaseClick}
+          randomRelease={randomRelease}
+        />
+      </ReleasePlaybackTestTree>
     );
   }
 
   renderReleasesGrid(overrides: ReleasesGridRenderProps = {}): RenderResult {
     return render(this.releasesGridElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

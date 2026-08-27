@@ -102,6 +102,7 @@ export class ReleasesTablePageObject extends BasePageObject {
     return render(this.releasesTableElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
       includeCrate: false,
+      includeCollectionSync: false,
     });
   }
 }

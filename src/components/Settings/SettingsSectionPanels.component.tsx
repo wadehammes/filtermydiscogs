@@ -2,6 +2,7 @@
 
 import Button from "src/components/Button/Button.component";
 import Select from "src/components/Select/Select.component";
+import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
@@ -92,6 +93,36 @@ export function SettingsAppearancePanel({
   );
 }
 
+type SettingsPlaybackPanelProps = {
+  autoPlayOnQueueAdd: boolean;
+  isPreferencesLoading: boolean;
+  isPreferencesSaving: boolean;
+  onAutoPlayOnQueueAddChange: (enabled: boolean) => void;
+};
+
+export function SettingsPlaybackPanel({
+  autoPlayOnQueueAdd,
+  isPreferencesLoading,
+  isPreferencesSaving,
+  onAutoPlayOnQueueAddChange,
+}: SettingsPlaybackPanelProps) {
+  return (
+    <SettingsBooleanPreferenceToggle
+      checked={autoPlayOnQueueAdd}
+      label="Play immediately when adding to an empty queue"
+      description={
+        <>
+          When enabled, the first track you add to an empty queue starts playing
+          right away and opens the video player. When disabled, tracks are
+          queued without starting playback until you press play.
+        </>
+      }
+      disabled={isPreferencesLoading || isPreferencesSaving}
+      onChange={onAutoPlayOnQueueAddChange}
+    />
+  );
+}
+
 type SettingsFiltersPanelProps = {
   persistFilters: boolean;
   isPreferencesLoading: boolean;
@@ -106,22 +137,19 @@ export function SettingsFiltersPanel({
   onPersistFiltersChange,
 }: SettingsFiltersPanelProps) {
   return (
-    <div className={styles.panelBlock}>
-      <label className={styles.settingToggle}>
-        <input
-          type="checkbox"
-          checked={persistFilters}
-          onChange={(event) => onPersistFiltersChange(event.target.checked)}
-          disabled={isPreferencesLoading || isPreferencesSaving}
-          className={styles.settingCheckbox}
-        />
-        <span>Remember filter selections</span>
-      </label>
-      <p className={styles.sectionDescription}>
-        When enabled, your filter and sort selections are restored the next time
-        you open the app. When disabled, each visit starts with default filters.
-      </p>
-    </div>
+    <SettingsBooleanPreferenceToggle
+      checked={persistFilters}
+      label="Remember filter selections"
+      description={
+        <>
+          When enabled, your filter and sort selections are restored the next
+          time you open the app. When disabled, each visit starts with default
+          filters.
+        </>
+      }
+      disabled={isPreferencesLoading || isPreferencesSaving}
+      onChange={onPersistFiltersChange}
+    />
   );
 }
 
@@ -180,30 +208,26 @@ export function SettingsDataPanel({
 
   return (
     <>
-      <div className={styles.panelBlock}>
-        <label className={styles.settingToggle}>
-          <input
-            type="checkbox"
-            checked={isAnalyticsEnabled}
-            onChange={(event) => setAnalyticsEnabled(event.target.checked)}
-            disabled={!isAnalyticsConsentReady}
-            className={styles.settingCheckbox}
-          />
-          <span>Allow analytics cookies</span>
-        </label>
-        <p className={styles.sectionDescription}>
-          When enabled, Google Tag Manager may set analytics cookies to measure
-          page views and interactions. Similar events may also be stored on our
-          server (page path, event name, and label) to understand product usage,
-          linked to your account when signed in. Essential Discogs login cookies
-          always apply. See the{" "}
-          <a href="/legal#cookies" className={styles.inlineLink}>
-            cookie notice
-          </a>{" "}
-          for details. Disabling analytics reloads the page so tracking scripts
-          stop running.
-        </p>
-      </div>
+      <SettingsBooleanPreferenceToggle
+        checked={isAnalyticsEnabled}
+        label="Allow analytics cookies"
+        description={
+          <>
+            When enabled, Google Tag Manager may set analytics cookies to
+            measure page views and interactions. Similar events may also be
+            stored on our server (page path, event name, and label) to
+            understand product usage, linked to your account when signed in.
+            Essential Discogs login cookies always apply. See the{" "}
+            <a href="/legal#cookies" className={styles.inlineLink}>
+              cookie notice
+            </a>{" "}
+            for details. Disabling analytics reloads the page so tracking
+            scripts stop running.
+          </>
+        }
+        disabled={!isAnalyticsConsentReady}
+        onChange={setAnalyticsEnabled}
+      />
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Clear all stored data</h3>
         <p className={styles.sectionDescription}>
