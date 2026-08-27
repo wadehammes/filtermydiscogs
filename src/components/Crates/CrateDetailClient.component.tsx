@@ -125,7 +125,7 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { crates, isLoading, selectCrate, selectedReleases } = useCrate();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
-    useSelectedReleaseModal(selectedReleases);
+    useSelectedReleaseModal({ fallbackReleases: selectedReleases });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 

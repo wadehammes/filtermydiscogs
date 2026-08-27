@@ -48,7 +48,6 @@ export const useCollectionData = ({
 
   const filtersDispatch = useSetAtom(filtersDispatchAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
-  const lastAllReleasesCountRef = useRef(0);
   const lastCollectionRef = useRef<DiscogsCollection | null>(null);
 
   const queryEnabled =
@@ -87,7 +86,6 @@ export const useCollectionData = ({
       return;
     }
 
-    lastAllReleasesCountRef.current = 0;
     lastCollectionRef.current = null;
     autoSyncRef.current = false;
     setCollectionFiltersActive(false);
@@ -134,11 +132,12 @@ export const useCollectionData = ({
 
   useEffect(() => {
     if (
-      cacheReady.hydratedFromCache ||
-      !isCollectionFullyLoaded ||
-      !username ||
-      !collectionData?.pages?.length ||
-      !collectionData.pageParams?.length
+      !(
+        isCollectionFullyLoaded &&
+        username &&
+        collectionData?.pages?.length &&
+        collectionData.pageParams?.length
+      )
     ) {
       return;
     }
@@ -149,7 +148,6 @@ export const useCollectionData = ({
       collectionData.pageParams as CollectionPageParam[],
     );
   }, [
-    cacheReady.hydratedFromCache,
     collectionData?.pageParams,
     collectionData?.pages,
     isCollectionFullyLoaded,
@@ -213,7 +211,6 @@ export const useCollectionData = ({
     if (!queryEnabled) {
       dispatchFetchingCollection(false);
       setCollectionFiltersActive(false);
-      lastAllReleasesCountRef.current = 0;
       lastCollectionRef.current = null;
       filtersDispatch({
         type: FiltersActionTypes.SetAllReleases,
@@ -236,13 +233,10 @@ export const useCollectionData = ({
         lastCollectionRef.current = collection;
       }
 
-      if (allReleases.length !== lastAllReleasesCountRef.current) {
-        filtersDispatch({
-          type: FiltersActionTypes.SetAllReleases,
-          payload: allReleases,
-        });
-        lastAllReleasesCountRef.current = allReleases.length;
-      }
+      filtersDispatch({
+        type: FiltersActionTypes.SetAllReleases,
+        payload: allReleases,
+      });
 
       if (isCollectionFullyLoaded) {
         dispatchFetchingCollection(false);

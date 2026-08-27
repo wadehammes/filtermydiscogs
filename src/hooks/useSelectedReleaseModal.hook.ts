@@ -2,13 +2,22 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCollectionReleaseByInstanceId } from "src/hooks/queries/useCollectionReleaseByInstanceId.hook";
 import type { DiscogsRelease } from "src/types";
 import {
   buildPathWithReleaseInstance,
   parseReleaseInstanceFromSearchParams,
 } from "src/utils/releaseModalUrl";
 
-export const useSelectedReleaseModal = (releases: DiscogsRelease[]) => {
+export interface UseSelectedReleaseModalParams {
+  collectionUsername?: string | null;
+  fallbackReleases?: DiscogsRelease[];
+}
+
+export const useSelectedReleaseModal = ({
+  collectionUsername = null,
+  fallbackReleases = [],
+}: UseSelectedReleaseModalParams = {}) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -21,6 +30,12 @@ export const useSelectedReleaseModal = (releases: DiscogsRelease[]) => {
       preModalUrlRef.current = null;
     }
   }, [selectedReleaseId]);
+
+  const collectionRelease = useCollectionReleaseByInstanceId({
+    username: collectionUsername,
+    instanceId: selectedReleaseId,
+    enabled: !!collectionUsername,
+  });
 
   const buildUrl = useCallback(
     (instanceId: string | null) =>
@@ -63,12 +78,16 @@ export const useSelectedReleaseModal = (releases: DiscogsRelease[]) => {
       return null;
     }
 
+    if (collectionRelease) {
+      return collectionRelease;
+    }
+
     return (
-      releases.find(
+      fallbackReleases.find(
         (release) => String(release.instance_id) === selectedReleaseId,
       ) ?? null
     );
-  }, [releases, selectedReleaseId]);
+  }, [collectionRelease, fallbackReleases, selectedReleaseId]);
 
   return {
     selectedRelease,

@@ -3,7 +3,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
-import { act, renderHook } from "test-utils";
+import { act, renderHookWithTestProviders } from "test-utils";
 
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
@@ -35,8 +35,8 @@ describe("useSelectedReleaseModal", () => {
 
     mockUseRouter.mockReturnValue(mockRouter);
 
-    const { result, rerender } = renderHook(() =>
-      useSelectedReleaseModal(releases),
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
     act(() => {
@@ -67,8 +67,8 @@ describe("useSelectedReleaseModal", () => {
 
     mockUseRouter.mockReturnValue(mockRouter);
 
-    const { result, rerender } = renderHook(() =>
-      useSelectedReleaseModal(releases),
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
     act(() => {
@@ -103,8 +103,8 @@ describe("useSelectedReleaseModal", () => {
 
     mockUseRouter.mockReturnValue(mockRouter);
 
-    const { result, rerender } = renderHook(() =>
-      useSelectedReleaseModal(releases),
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
     act(() => {
@@ -145,8 +145,8 @@ describe("useSelectedReleaseModal", () => {
 
     mockUseRouter.mockReturnValue(mockRouter);
 
-    const { result, rerender } = renderHook(() =>
-      useSelectedReleaseModal(releases),
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
     act(() => {
@@ -175,8 +175,8 @@ describe("useSelectedReleaseModal", () => {
     mockUseRouter.mockReturnValue(mockRouter);
     applyUrl(`/releases?instance=${releases[0]?.instance_id}`);
 
-    const { result, rerender } = renderHook(() =>
-      useSelectedReleaseModal(releases),
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
     act(() => {
@@ -194,7 +194,9 @@ describe("useSelectedReleaseModal", () => {
 
     applyUrl("/releases?instance=unknown");
 
-    const { result } = renderHook(() => useSelectedReleaseModal(releases));
+    const { result } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
 
     expect(result.current.selectedReleaseId).toBe("unknown");
     expect(result.current.selectedRelease).toBeNull();

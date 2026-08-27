@@ -48,7 +48,9 @@ function DashboardClientContent() {
   const allReleases = useAllReleases();
   const showLoading = isCheckingAuth || needsCollectionLoad;
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
-    useSelectedReleaseModal(allReleases);
+    useSelectedReleaseModal({
+      collectionUsername: authState.username,
+    });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 

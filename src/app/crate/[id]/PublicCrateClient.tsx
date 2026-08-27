@@ -76,7 +76,7 @@ function PublicCrateLoadedContent({
 }) {
   const { login } = useAuth();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
-    useSelectedReleaseModal(releases);
+    useSelectedReleaseModal({ fallbackReleases: releases });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 

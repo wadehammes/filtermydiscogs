@@ -2,7 +2,7 @@ import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { fetchDiscogsCollection } from "src/api/helpers";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
-import type { DiscogsCollection } from "src/types";
+import type { DiscogsCollection, DiscogsRelease } from "src/types";
 import {
   clearPersistedCollectionCache,
   type PersistedCollectionCache,
@@ -11,6 +11,8 @@ import {
 } from "src/utils/collectionCacheStorage";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import type { CollectionPageParam } from "src/utils/collectionPagination";
+import { patchCollectionPagesReleaseByInstanceId } from "src/utils/collectionReleaseLookup";
+import { parseReleaseId } from "src/utils/releaseNotes";
 
 const cacheLoadPromises = new Map<
   string,
@@ -185,6 +187,87 @@ export async function persistCollectionQueryToCache(
     pages,
     pageParams,
     totalItems,
+    fetchedAt: Date.now(),
+  });
+}
+
+export function patchCollectionPagesReleaseRating(
+  pages: DiscogsCollection[],
+  releaseId: number,
+  rating: number,
+): DiscogsCollection[] {
+  return pages.map((page) => ({
+    ...page,
+    releases: page.releases.map((release) =>
+      parseReleaseId(release) === releaseId ? { ...release, rating } : release,
+    ),
+  }));
+}
+
+export function patchCollectionQueryReleaseRating(
+  data: InfiniteData<DiscogsCollection, CollectionPageParam> | undefined,
+  releaseId: number,
+  rating: number,
+): InfiniteData<DiscogsCollection, CollectionPageParam> | undefined {
+  if (!data) {
+    return data;
+  }
+
+  return {
+    ...data,
+    pages: patchCollectionPagesReleaseRating(data.pages, releaseId, rating),
+  };
+}
+
+export async function patchPersistedCollectionReleaseRating(
+  username: string,
+  releaseId: number,
+  rating: number,
+): Promise<void> {
+  const cached = await readPersistedCollectionCache(username);
+  if (!cached) {
+    return;
+  }
+
+  await writePersistedCollectionCache(username, {
+    ...cached,
+    pages: patchCollectionPagesReleaseRating(cached.pages, releaseId, rating),
+    fetchedAt: Date.now(),
+  });
+}
+
+export function patchCollectionQueryReleaseNotes(
+  data: InfiniteData<DiscogsCollection, CollectionPageParam> | undefined,
+  instanceId: string,
+  notes: DiscogsRelease["notes"],
+): InfiniteData<DiscogsCollection, CollectionPageParam> | undefined {
+  if (!data) {
+    return data;
+  }
+
+  return {
+    ...data,
+    pages: patchCollectionPagesReleaseByInstanceId(data.pages, instanceId, {
+      notes: notes ?? [],
+    }),
+  };
+}
+
+export async function patchPersistedCollectionReleaseNotes(
+  username: string,
+  instanceId: string,
+  notes: DiscogsRelease["notes"],
+): Promise<void> {
+  const cached = await readPersistedCollectionCache(username);
+  if (!cached) {
+    return;
+  }
+
+  await writePersistedCollectionCache(username, {
+    ...cached,
+    pages: patchCollectionPagesReleaseByInstanceId(cached.pages, instanceId, {
+      notes: notes ?? [],
+    }),
     fetchedAt: Date.now(),
   });
 }
