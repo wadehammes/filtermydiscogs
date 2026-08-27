@@ -65,6 +65,26 @@ export const appendQueueItem = (
   return [...queue, item];
 };
 
+export const insertQueueItemForPlayNow = (
+  queue: PlaybackQueueItem[],
+  item: PlaybackQueueItem,
+  queueIndex: number,
+  isPlaying: boolean,
+): { queue: PlaybackQueueItem[]; playIndex: number } => {
+  const existingIndex = findQueueItemIndex(queue, item);
+
+  if (existingIndex >= 0) {
+    return { queue, playIndex: existingIndex };
+  }
+
+  const insertAt = isPlaying ? Math.min(queueIndex + 1, queue.length) : 0;
+
+  return {
+    queue: [...queue.slice(0, insertAt), item, ...queue.slice(insertAt)],
+    playIndex: insertAt,
+  };
+};
+
 export const removeQueueItemAtIndex = (
   queue: PlaybackQueueItem[],
   index: number,

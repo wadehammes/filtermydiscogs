@@ -7,7 +7,6 @@ import {
   ReleasePlaybackProvider,
   useReleasePlayback,
 } from "src/context/releasePlayback.context";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
@@ -17,7 +16,7 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { setupDiscogsReleaseQueryMock } from "src/tests/mocks/setupDiscogsReleaseQueryMock";
+import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
   TestProviders,
   testAuthenticatedAuthState,
@@ -29,7 +28,6 @@ import {
 } from "src/utils/playbackVideoIntroStorage";
 import { render, screen, waitFor } from "test-utils";
 
-jest.mock("src/hooks/queries/useDiscogsReleaseQuery");
 jest.mock("src/api/helpers");
 
 const mockApi = jest.mocked(apiHelpers);
@@ -112,7 +110,7 @@ describe("ReleaseMiniPlayer", () => {
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: true });
     setupDefaultCrateApiMocks(mockApi);
-    setupDiscogsReleaseQueryMock(releaseDetail);
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
     mockApiResponse(
       true,
       mockApi.addReleaseToCrate,
@@ -481,52 +479,28 @@ describe("ReleaseMiniPlayer", () => {
       }),
     });
 
-    jest
-      .mocked(useDiscogsReleaseQuery)
-      .mockImplementation(({ enabled, releaseId }) => {
-        if (!enabled) {
-          return {
-            data: undefined,
-            isLoading: false,
-            isError: false,
-            refetch: jest.fn(),
-          } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
-        }
-
-        const detail =
-          releaseId === "100002"
-            ? discogsReleaseJsonFactory.withTracklistAndVideos({
-                id: 100002,
-                tracklist: [
-                  {
-                    position: "1",
-                    title: "Short A",
-                    duration: "2:00",
-                    type_: "track",
-                  },
-                ],
-                videos: [
-                  {
-                    description: "Short A",
-                    duration: 120,
-                    embed: true,
-                    title: "Short A",
-                    uri: "https://www.youtube.com/watch?v=def98765432",
-                  },
-                ],
-              })
-            : releaseDetail;
-
-        return {
-          data: {
-            ...detail,
-            id: Number(releaseId) || detail.id,
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      "100002": discogsReleaseJsonFactory.withTracklistAndVideos({
+        id: 100002,
+        tracklist: [
+          {
+            position: "1",
+            title: "Short A",
+            duration: "2:00",
+            type_: "track",
           },
-          isLoading: false,
-          isError: false,
-          refetch: jest.fn(),
-        } as unknown as ReturnType<typeof useDiscogsReleaseQuery>;
-      });
+        ],
+        videos: [
+          {
+            description: "Short A",
+            duration: 120,
+            embed: true,
+            title: "Short A",
+            uri: "https://www.youtube.com/watch?v=def98765432",
+          },
+        ],
+      }),
+    });
 
     const QueueAndPlaybackControls = () => {
       const { startPlayback, addToQueue, queueIndex } = useReleasePlayback();

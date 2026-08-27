@@ -12,6 +12,7 @@ import {
   createQueueItem,
   findQueueItemIndex,
   getQueueItemKey,
+  insertQueueItemForPlayNow,
   isSameQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
@@ -125,6 +126,48 @@ describe("playbackQueue", () => {
 
     expect(appendQueueItem([first], duplicate)).toEqual([first]);
     expect(appendQueueItem([first], second)).toEqual([first, second]);
+  });
+
+  it("inserts a play-now item after the active row when playback is running", () => {
+    const first = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const second = createQueueItem({
+      release,
+      trackPosition: "A2",
+      trackTitle: "Second",
+    });
+    const third = createQueueItem({
+      release: otherRelease,
+      trackPosition: "B1",
+      trackTitle: "Other",
+    });
+    const queue = [first, second];
+
+    expect(insertQueueItemForPlayNow(queue, third, 0, true)).toEqual({
+      queue: [first, third, second],
+      playIndex: 1,
+    });
+  });
+
+  it("inserts a play-now item at the front when the queue is idle", () => {
+    const queued = createQueueItem({
+      release,
+      trackPosition: "A2",
+      trackTitle: "Second",
+    });
+    const playNow = createQueueItem({
+      release: otherRelease,
+      trackPosition: "B1",
+      trackTitle: "Other",
+    });
+
+    expect(insertQueueItemForPlayNow([queued], playNow, 0, false)).toEqual({
+      queue: [playNow, queued],
+      playIndex: 0,
+    });
   });
 
   it("shuffles queue items", () => {
