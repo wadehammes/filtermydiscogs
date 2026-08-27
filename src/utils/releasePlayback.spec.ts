@@ -1,3 +1,4 @@
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import type {
   DiscogsTrack,
   DiscogsVideo,
@@ -457,6 +458,30 @@ describe("findVideoForTrack", () => {
     ).toBe(true);
   });
 
+  it("matches when video titles use a common name spelling variant", () => {
+    const track: DiscogsTrack = {
+      position: "B2.a",
+      title: "Zack's Fanfare",
+      duration: "0:50",
+      type_: "track",
+    };
+    const videos: DiscogsVideo[] = [
+      {
+        uri: "https://www.youtube.com/watch?v=bbbbbbbbbbb",
+        title: "MFSB - Zach's Fanfare (I Hear Music)",
+        duration: 51,
+        embed: true,
+      },
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex([track], videos);
+
+    expect(matchIndex.trackVideoByPosition.get("B2.a")?.title).toContain(
+      "Fanfare",
+    );
+    expect(matchIndex.previewVideos).toHaveLength(0);
+  });
+
   it("matches when numerals and text are reordered in the video title", () => {
     const sideVideos: DiscogsVideo[] = [
       {
@@ -749,6 +774,135 @@ describe("previewVideoToTrack", () => {
     expect(track.duration).toBe("5:30");
     expect(isPreviewTrackPosition(track.position)).toBe(true);
     expect(getPreviewTrackPosition(video)).toBe(track.position);
+  });
+});
+
+describe("MFSB Love Is The Message duplicate fanfare regression", () => {
+  const release = discogsReleaseJsonFactory.withTracklistAndVideos({
+    id: 365838,
+    title: "Love Is The Message",
+    tracklist: [
+      {
+        position: "A1.a",
+        title: "Zack's Fanfare",
+        duration: "0:23",
+        type_: "track",
+      },
+      {
+        position: "A1.b",
+        title: "Love Is The Message",
+        duration: "6:35",
+        type_: "track",
+      },
+      {
+        position: "A2",
+        title: "Cheaper To Keep Her",
+        duration: "6:52",
+        type_: "track",
+      },
+      {
+        position: "A3",
+        title: "My One And Only Love",
+        duration: "4:34",
+        type_: "track",
+      },
+      {
+        position: "B1",
+        title:
+          'TSOP (The Sound Of Philadelphia) (Theme From The Television Show "Soul Train")',
+        duration: "3:43",
+        type_: "track",
+      },
+      {
+        position: "B2.a",
+        title: "Zack's Fanfare",
+        duration: "0:50",
+        type_: "track",
+      },
+      {
+        position: "B2.b",
+        title: "Touch Me In The Morning",
+        duration: "6:21",
+        type_: "track",
+      },
+      {
+        position: "B3",
+        title: "Bitter Sweet",
+        duration: "5:26",
+        type_: "track",
+      },
+    ],
+    videos: [
+      {
+        uri: "https://www.youtube.com/watch?v=whSKnSfkhFQ",
+        title: "Zack's Fanfare",
+        duration: 25,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=M3wpG6Rw-tE",
+        title:
+          "MFSB - Love Is the Message (Official Audio) ft. The Three Degrees",
+        duration: 398,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=J38ylUZESuc",
+        title: "Cheaper to Keep Her",
+        duration: 415,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=LS2PQs_IRNk",
+        title:
+          "MFSB - T.S.O.P. (The Sound of Philadelphia) (Official Audio) ft. The Three Degrees",
+        duration: 225,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=M5v24kPWeuA",
+        title: "Zack's Fanfare (I Hear Music)",
+        duration: 51,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=BDgvtCsYN1A",
+        title: "Touch Me In The Morning",
+        duration: 381,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=LE9ag97xcxw",
+        title: "Bitter Sweet",
+        duration: 326,
+        embed: true,
+      },
+      {
+        uri: "https://www.youtube.com/watch?v=z0VxVJIsxfA",
+        title:
+          "MFSB ft. The Three Degrees - T.S.O.P. (The Sound of Philadelphia)",
+        duration: 349,
+        embed: true,
+      },
+    ],
+  });
+  const tracks = flattenTracklist(release.tracklist ?? []);
+  const videos = release.videos ?? [];
+
+  it("pairs each identically titled fanfare with the right community video", () => {
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.trackVideoByPosition.get("A1.a")).toMatchObject({
+      title: "Zack's Fanfare",
+      duration: 25,
+    });
+    expect(matchIndex.trackVideoByPosition.get("B2.a")).toMatchObject({
+      title: "Zack's Fanfare (I Hear Music)",
+      duration: 51,
+    });
+    expect(
+      matchIndex.previewVideos.some((video) => video.title.includes("Fanfare")),
+    ).toBe(false);
   });
 });
 
