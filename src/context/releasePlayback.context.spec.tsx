@@ -348,6 +348,53 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPaused).toBe(false);
   });
 
+  it("syncs paused state when the YouTube embed reports pause from the video UI", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.isPaused).toBe(false);
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 2 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    expect(result.current.isPaused).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 1 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    expect(result.current.isPaused).toBe(false);
+  });
+
   it("posts YouTube commands on each play/pause toggle after iframe registration", async () => {
     const iframe = document.createElement("iframe");
 
