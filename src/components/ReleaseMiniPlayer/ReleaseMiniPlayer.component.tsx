@@ -21,7 +21,6 @@ import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import VideoIcon from "src/styles/icons/video-thin.svg";
-import XIcon from "src/styles/icons/x-thin.svg";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   hasSeenPlaybackVideoIntro,
@@ -43,17 +42,16 @@ export const ReleaseMiniPlayer = ({
     activeTrack,
     activePlaybackTitle,
     activeVideoId,
-    isPlaying,
     isPaused,
     isPlaybackReady,
     shouldAutoplayEmbed,
     canPlayPrevious,
     canPlayNext,
     isLoading,
+    isMiniPlayerVisible,
     playNext,
     playPrevious,
     togglePlayback,
-    stopPlayback,
     queue,
   } = useReleasePlayback();
   const { addToCrate, removeFromCrate, isInCrate } = useCrate();
@@ -68,12 +66,14 @@ export const ReleaseMiniPlayer = ({
   const inCrate = isInCrate(release?.instance_id ?? "");
 
   useEffect(() => {
-    if (!isPlaying) {
-      setVideoPanelOverride(null);
-      setLatchedIntroExpand(false);
-      setIsQueueOpen(false);
+    if (isMiniPlayerVisible) {
+      return;
     }
-  }, [isPlaying]);
+
+    setVideoPanelOverride(null);
+    setLatchedIntroExpand(false);
+    setIsQueueOpen(false);
+  }, [isMiniPlayerVisible]);
 
   useEffect(() => {
     if (filtersDrawerOpen) {
@@ -118,7 +118,7 @@ export const ReleaseMiniPlayer = ({
     setVideoPanelOverride(isVideoPanelExpanded ? "closed" : "open");
   }, [isVideoPanelExpanded]);
 
-  if (!(isPlaying && release)) {
+  if (!(isMiniPlayerVisible && release)) {
     return null;
   }
 
@@ -304,15 +304,6 @@ export const ReleaseMiniPlayer = ({
               title="Next track"
             >
               <TransportSkipNextIcon className={styles.controlIcon} />
-            </button>
-            <button
-              type="button"
-              className={styles.controlButton}
-              onClick={stopPlayback}
-              aria-label="Stop playback"
-              title="Stop playback"
-            >
-              <XIcon className={styles.controlIcon} aria-hidden />
             </button>
           </div>
         </div>

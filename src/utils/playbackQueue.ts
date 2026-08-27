@@ -96,6 +96,19 @@ export const removeQueueItemAtIndex = (
   return queue.filter((_, queueIndex) => queueIndex !== index);
 };
 
+export const clearQueueKeepingActiveItem = (
+  queue: PlaybackQueueItem[],
+  queueIndex: number,
+): { queue: PlaybackQueueItem[]; queueIndex: number } => {
+  const activeItem = queue[queueIndex];
+
+  if (!activeItem) {
+    return { queue: [], queueIndex: 0 };
+  }
+
+  return { queue: [activeItem], queueIndex: 0 };
+};
+
 export const reorderQueueItems = (
   queue: PlaybackQueueItem[],
   fromIndex: number,

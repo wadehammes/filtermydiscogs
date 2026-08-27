@@ -8,13 +8,13 @@ import playbackDockStyles from "src/styles/modules/playback-dock.module.css";
 import styles from "./GlobalPlaybackDock.module.css";
 
 export const GlobalPlaybackDock = () => {
-  const { isPlaying } = useReleasePlayback();
+  const { isMiniPlayerVisible } = useReleasePlayback();
   const onReleaseClick = usePlaybackReleaseClickHandler();
 
   return (
     <div
       className={classNames(styles.dock, playbackDockStyles.dockGlobals)}
-      {...(isPlaying ? { "data-global-playback-dock": true } : {})}
+      {...(isMiniPlayerVisible ? { "data-global-playback-dock": true } : {})}
     >
       <ReleaseMiniPlayer onReleaseClick={onReleaseClick} />
     </div>

@@ -144,7 +144,7 @@ export const PlaybackQueueDrawer = ({
     playQueueAtIndex,
     removeFromQueue,
     reorderQueue,
-    stopPlayback,
+    clearQueue,
   } = useReleasePlayback();
 
   const sortableIds = useMemo(
@@ -207,7 +207,7 @@ export const PlaybackQueueDrawer = ({
             type="button"
             className={styles.clearButton}
             onClick={() => {
-              stopPlayback();
+              clearQueue();
               onClose();
             }}
           >

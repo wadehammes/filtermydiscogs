@@ -3,9 +3,9 @@
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 
 export const PlaybackScrollSpacer = () => {
-  const { isPlaying } = useReleasePlayback();
+  const { isMiniPlayerVisible } = useReleasePlayback();
 
-  if (!isPlaying) {
+  if (!isMiniPlayerVisible) {
     return null;
   }
 

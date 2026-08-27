@@ -564,14 +564,51 @@ describe("ReleaseMiniPlayer", () => {
     });
   });
 
-  it("stops playback and hides the dock", async () => {
+  it("keeps the dock visible when playback is paused", async () => {
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "Stop playback" }));
+    await user.click(screen.getByRole("button", { name: "Pause" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Stop playback" })).toBeNull();
+  });
+
+  it("hides the dock when the playback session ends", async () => {
+    const SessionEnder = () => {
+      const { startPlayback, stopPlayback } = useReleasePlayback();
+
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              startPlayback({
+                release: collectionRelease,
+                trackPosition: "A",
+              });
+            }}
+          >
+            Start playback
+          </button>
+          <button type="button" onClick={stopPlayback}>
+            End session
+          </button>
+        </>
+      );
+    };
+
+    const user = userEvent.setup();
+
+    render(<SessionEnder />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await user.click(screen.getByRole("button", { name: "End session" }));
 
     expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
     expect(screen.queryByTestId("fmdPersistentYoutubeIframe")).toBeNull();
