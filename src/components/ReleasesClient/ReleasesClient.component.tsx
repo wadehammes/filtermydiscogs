@@ -31,7 +31,7 @@ const ReleasesClientContent = () => {
     crates,
     activeCrateId,
   } = useCrate();
-  const { isPlaying } = useReleasePlayback();
+  const { isMiniPlayerVisible } = useReleasePlayback();
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
   const {
@@ -106,7 +106,7 @@ const ReleasesClientContent = () => {
               <button
                 type="button"
                 className={classNames(styles.crateFab, {
-                  [styles.crateFabAboveDock]: isPlaying,
+                  [styles.crateFabAboveDock]: isMiniPlayerVisible,
                 })}
                 onClick={toggleDrawer}
                 aria-label={`${isDrawerOpen ? "Close" : "Open"} crate with ${selectedReleases.length} items`}
@@ -183,7 +183,7 @@ const ReleasesClientContent = () => {
                 isFetchingNextPage={isFetchingNextPage}
                 infiniteScrollRef={infiniteScrollRef}
               />
-              <BackToTop aboveDock={isPlaying} />
+              <BackToTop aboveDock={isMiniPlayerVisible} />
               <PlaybackScrollSpacer />
             </div>
 
@@ -191,7 +191,7 @@ const ReleasesClientContent = () => {
               <CrateDrawer
                 isOpen={isDrawerOpen}
                 onReleaseClick={handleReleaseClick}
-                aboveMiniPlayer={isPlaying}
+                aboveMiniPlayer={isMiniPlayerVisible}
               />
             </div>
           </div>

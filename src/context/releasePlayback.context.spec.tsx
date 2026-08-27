@@ -890,6 +890,44 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
+  it("keeps the active track playing when the queue is cleared", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue.length).toBeGreaterThan(1);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+
+    act(() => {
+      result.current.clearQueue();
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.activeTrackPosition).toBe("A1");
+    expect(result.current.queue).toHaveLength(1);
+    expect(result.current.queue[0]?.trackPosition).toBe("A1");
+    expect(result.current.queueIndex).toBe(0);
+    expect(result.current.canPlayNext).toBe(false);
+  });
+
   it("clears the queue when playback stops", async () => {
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),
@@ -1005,25 +1043,33 @@ describe("ReleasePlaybackProvider", () => {
       result.current.startPlayback({
         release: collectionRelease,
         trackPosition: "A1",
+        startPaused: true,
       });
     });
 
     await waitFor(() => {
-      expect(result.current.queue).toHaveLength(2);
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+        "A1",
+        "B1",
+      ]);
     });
 
     act(() => {
       result.current.startPlayback({
         release: shortCollectionRelease,
         trackPosition: "1",
+        startPaused: true,
       });
     });
 
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.queue).toHaveLength(1);
+      expect(result.current.queue[0]?.trackPosition).toBe("1");
+      expect(result.current.release?.basic_information.id).toBe(
+        SHORT_RELEASE_ID,
+      );
     });
-
-    expect(result.current.queue).toHaveLength(1);
-    expect(result.current.queue[0]?.trackPosition).toBe("1");
   });
 });

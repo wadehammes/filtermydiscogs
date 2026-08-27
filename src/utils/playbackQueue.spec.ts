@@ -8,6 +8,7 @@ import {
   appendQueueItem,
   buildFullPlayableAlbumQueue,
   buildPlayableAlbumQueue,
+  clearQueueKeepingActiveItem,
   createPreviewQueueItem,
   createQueueItem,
   findQueueItemIndex,
@@ -258,5 +259,28 @@ describe("playbackQueue", () => {
         toIndex: 3,
       }),
     ).toBe(3);
+  });
+
+  it("clears upcoming queue rows while keeping the active item at index zero", () => {
+    const first = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const second = createQueueItem({
+      release: otherRelease,
+      trackPosition: "A2",
+      trackTitle: "Second",
+    });
+    const third = createQueueItem({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Third",
+    });
+
+    expect(clearQueueKeepingActiveItem([first, second, third], 1)).toEqual({
+      queue: [second],
+      queueIndex: 0,
+    });
   });
 });

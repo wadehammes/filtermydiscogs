@@ -30,6 +30,7 @@ import {
   appendUniqueQueueItems,
   buildFullPlayableAlbumQueue,
   buildPlayableAlbumQueue,
+  clearQueueKeepingActiveItem,
   collectQueueItemKeys,
   createPreviewQueueItem,
   createQueueItem,
@@ -110,6 +111,7 @@ interface ReleasePlaybackContextValue {
   isReleasePreview: boolean;
   isPlaying: boolean;
   isPaused: boolean;
+  isMiniPlayerVisible: boolean;
   shouldAutoplayEmbed: boolean;
   isPlaybackReady: boolean;
   canPlayPrevious: boolean;
@@ -128,6 +130,7 @@ interface ReleasePlaybackContextValue {
   registerPlaybackIframe: (iframe: HTMLIFrameElement | null) => void;
   notifyPlaybackIframeLoaded: () => void;
   resumePlaybackFromGesture: () => void;
+  clearQueue: () => void;
   stopPlayback: () => void;
 }
 
@@ -460,6 +463,7 @@ export const ReleasePlaybackProvider = ({
     : (activeTrack?.position ?? null);
 
   const isPlaybackReady = isPlaying && activeVideoId !== null;
+  const isMiniPlayerVisible = release !== null;
 
   const canPlayPrevious = isPlaybackReady && queueIndex > 0;
   const canPlayNext = isPlaybackReady && queueIndex < queue.length - 1;
@@ -1004,6 +1008,30 @@ export const ReleasePlaybackProvider = ({
     clearPersistedReleasePlayback();
   }, [clearPlayFromGestureRetries]);
 
+  const clearQueue = useCallback(() => {
+    similarQueueModeRef.current = createSimilarQueueMode(false);
+    similarQueueGenerationRef.current += 1;
+    shouldRebuildAlbumQueueRef.current = false;
+
+    if (!isPlayingRef.current) {
+      queueManuallyExtendedRef.current = false;
+      setQueue([]);
+      setQueueIndex(0);
+      return;
+    }
+
+    const { queue: nextQueue, queueIndex: nextIndex } =
+      clearQueueKeepingActiveItem(queueRef.current, queueIndexRef.current);
+
+    if (nextQueue.length === 0) {
+      return;
+    }
+
+    queueManuallyExtendedRef.current = false;
+    setQueue(nextQueue);
+    setQueueIndex(nextIndex);
+  }, []);
+
   startPlaybackRef.current = startPlayback;
   playQueueItemRef.current = playQueueItem;
   stopPlaybackRef.current = stopPlayback;
@@ -1103,6 +1131,7 @@ export const ReleasePlaybackProvider = ({
       isReleasePreview,
       isPlaying,
       isPaused,
+      isMiniPlayerVisible,
       shouldAutoplayEmbed,
       isPlaybackReady,
       canPlayPrevious,
@@ -1121,6 +1150,7 @@ export const ReleasePlaybackProvider = ({
       registerPlaybackIframe,
       notifyPlaybackIframeLoaded,
       resumePlaybackFromGesture,
+      clearQueue,
       stopPlayback,
     }),
     [
@@ -1137,6 +1167,7 @@ export const ReleasePlaybackProvider = ({
       isReleasePreview,
       isPlaying,
       isPaused,
+      isMiniPlayerVisible,
       shouldAutoplayEmbed,
       isPlaybackReady,
       canPlayPrevious,
@@ -1155,6 +1186,7 @@ export const ReleasePlaybackProvider = ({
       registerPlaybackIframe,
       notifyPlaybackIframeLoaded,
       resumePlaybackFromGesture,
+      clearQueue,
       stopPlayback,
     ],
   );
