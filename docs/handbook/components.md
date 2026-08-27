@@ -87,7 +87,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | In crate | **`.inCrate::after`** draws a full-card primary ring on top of artwork (do not use inset **`box-shadow`**—cover art hides the left edge) |
 | Notes | Action column **`ReleaseNotesCardAction variant="mobile"`** only — no inline note body on the card |
 | Open detail modal | Cover art or **Release details** overlay button call optional **`onReleaseClick`**; title links to Discogs in a new tab |
-| Overlay actions | **`ReleaseCardOverlayActions`**: desktop cover overlay uses a segmented group (release details **`VinylThinIcon`**, **Add to queue** **`ListPlusThinIcon`** / **`CheckThinIcon`** when the release has upcoming queue items — via **`useReleaseCardQueueAction`**, notes, View on Discogs) plus a **standalone crate** button to its right; mobile keeps a single full-height column (details → queue → notes → Discogs → crate last) with **`border-top`** separators |
+| Overlay actions | **`ReleaseCardOverlayActions`**: desktop cover overlay uses a segmented group (release details **`VinylThinIcon`**, **Add to queue** **`ListPlusThinIcon`** / **`CheckThinIcon`** when every playable track is already queued — via **`useReleaseCardQueueAction`** (adds all embeddable album tracks not already queued, same rules as the modal **Add all to queue** toolbar), notes, View on Discogs) plus a **standalone crate** button to its right; mobile keeps a single full-height column (details → queue → notes → Discogs → crate last) with **`border-top`** separators |
 
 ## Feature example: CrateDrawerReleaseItem
 

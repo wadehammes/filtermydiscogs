@@ -19,12 +19,13 @@ import {
 
 export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
   const queryClient = useQueryClient();
-  const { addToQueue } = useReleasePlaybackActions();
+  const { addToQueue, startPlayback } = useReleasePlaybackActions();
   const {
     queue,
     release: activeRelease,
     isMiniPlayerVisible,
     activeTrackPosition,
+    autoPlayOnQueueAdd,
   } = useReleasePlaybackState();
   const releaseId = parseReleaseId(release);
   const instanceId = String(release.instance_id);
@@ -63,10 +64,31 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
     ],
   );
 
-  const isReleaseInQueue = useMemo(
-    () => queue.some((item) => item.instanceId === instanceId),
-    [instanceId, queue],
-  );
+  const playableTracks = useMemo(() => {
+    if (!cachedReleaseDetail) {
+      return [];
+    }
+
+    const tracks = flattenTracklist(cachedReleaseDetail.tracklist ?? []);
+    const matchIndex = buildReleasePlaybackMatchIndex(
+      tracks,
+      cachedReleaseDetail.videos ?? [],
+    );
+
+    return tracks.filter((track) =>
+      matchIndex.trackVideoByPosition.has(track.position),
+    );
+  }, [cachedReleaseDetail]);
+
+  const isReleaseInQueue = useMemo(() => {
+    if (playableTracks.length === 0) {
+      return false;
+    }
+
+    return playableTracks.every((track) =>
+      isTrackQueuedOrPlaying(track.position),
+    );
+  }, [isTrackQueuedOrPlaying, playableTracks]);
 
   const handleAddToQueue = useCallback(
     async (event: MouseEvent) => {
@@ -90,34 +112,65 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
           tracks,
           releaseDetail?.videos ?? [],
         );
-        const nextPlayableTrack = tracks.find(
+        const tracksToQueue = tracks.filter(
           (track) =>
             matchIndex.trackVideoByPosition.has(track.position) &&
             !isTrackQueuedOrPlaying(track.position),
         );
 
-        if (!nextPlayableTrack) {
+        if (tracksToQueue.length === 0) {
           return;
         }
 
-        addToQueue({
-          release,
-          trackPosition: nextPlayableTrack.position,
-          trackTitle: nextPlayableTrack.title,
-        });
+        if (!isMiniPlayerVisible) {
+          const firstTrack = tracksToQueue[0];
+
+          if (!firstTrack) {
+            return;
+          }
+
+          startPlayback({
+            release,
+            trackPosition: firstTrack.position,
+            trackTitle: firstTrack.title,
+            ...(autoPlayOnQueueAdd ? {} : { startPaused: true }),
+            rebuildAlbumQueue: false,
+          });
+
+          for (const track of tracksToQueue.slice(1)) {
+            addToQueue({
+              release,
+              trackPosition: track.position,
+              trackTitle: track.title,
+            });
+          }
+
+          return;
+        }
+
+        for (const track of tracksToQueue) {
+          addToQueue({
+            release,
+            trackPosition: track.position,
+            trackTitle: track.title,
+          });
+        }
       } finally {
         setIsAdding(false);
       }
     },
     [
       addToQueue,
+      autoPlayOnQueueAdd,
       cachedReleaseDetail,
       isAdding,
+      isMiniPlayerVisible,
       isReleaseInQueue,
       isTrackQueuedOrPlaying,
       queryClient,
       release,
       releaseId,
+      startPlayback,
     ],
   );
 
