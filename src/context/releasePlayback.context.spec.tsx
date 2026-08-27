@@ -22,12 +22,14 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
+import { createQueueItem } from "src/utils/playbackQueue";
 import {
   postYoutubePlayerCommand,
   transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import {
   readPersistedReleasePlayback,
+  toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
 import { act, renderHook, waitFor } from "test-utils";
@@ -584,6 +586,7 @@ describe("ReleasePlaybackProvider", () => {
     expect(readPersistedReleasePlayback()).toEqual({
       instanceId: String(collectionRelease.instance_id),
       trackPosition: "A1",
+      queue: [],
     });
   });
 
@@ -606,6 +609,13 @@ describe("ReleasePlaybackProvider", () => {
     expect(readPersistedReleasePlayback()).toEqual({
       instanceId: String(collectionRelease.instance_id),
       trackPosition: "A1",
+      queue: [
+        {
+          instanceId: String(collectionRelease.instance_id),
+          trackPosition: "B1",
+          trackTitle: "Never Gonna Give You Up (Instrumental)",
+        },
+      ],
     });
   });
 
@@ -623,6 +633,74 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.isPlaying).toBe(true);
       expect(result.current.activeTrackPosition).toBe("A1");
       expect(result.current.isPaused).toBe(true);
+    });
+  });
+
+  it("restores a persisted upcoming queue after refresh", async () => {
+    const queuedItem = createQueueItem({
+      release: shortCollectionRelease,
+      trackPosition: "1",
+      trackTitle: "Short A",
+    });
+
+    writePersistedReleasePlayback({
+      instanceId: String(collectionRelease.instance_id),
+      trackPosition: "A1",
+      queue: [toPersistedQueueItem(queuedItem)],
+    });
+
+    setupCollectionAndShortReleaseApiMock();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaying).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.queue).toHaveLength(1);
+      expect(result.current.queue[0]?.trackPosition).toBe("1");
+      expect(result.current.queue[0]?.release.instance_id).toBe(
+        shortCollectionRelease.instance_id,
+      );
+    });
+  });
+
+  it("persists manual queue additions", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+        rebuildAlbumQueue: false,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    await waitFor(() => {
+      expect(readPersistedReleasePlayback()?.queue).toEqual([
+        {
+          instanceId: String(shortCollectionRelease.instance_id),
+          trackPosition: "1",
+          trackTitle: "Short A",
+        },
+      ]);
     });
   });
 

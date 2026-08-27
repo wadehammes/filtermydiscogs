@@ -1,5 +1,6 @@
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import { matchesInstanceId } from "src/utils/releaseNotes";
 import {
   buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
@@ -8,6 +9,7 @@ import {
   getPreviewVideoTitle,
   parseYoutubeVideoId,
 } from "src/utils/releasePlayback";
+import type { PersistedQueueItem } from "src/utils/releasePlaybackStorage";
 
 export const getQueueItemKey = (
   item: Pick<PlaybackQueueItem, "instanceId" | "trackPosition">,
@@ -294,4 +296,36 @@ export const resolveQueueItemYoutubeVideoId = ({
   });
 
   return video ? parseYoutubeVideoId(video.uri) : null;
+};
+
+export const resolvePersistedQueueItems = ({
+  items,
+  releases,
+}: {
+  items: PersistedQueueItem[];
+  releases: DiscogsRelease[];
+}): PlaybackQueueItem[] => {
+  const resolved: PlaybackQueueItem[] = [];
+
+  for (const item of items) {
+    const release = releases.find((collectionRelease) =>
+      matchesInstanceId(collectionRelease, item.instanceId),
+    );
+
+    if (!release) {
+      continue;
+    }
+
+    resolved.push({
+      instanceId: item.instanceId,
+      trackPosition: item.trackPosition,
+      trackTitle: item.trackTitle,
+      release,
+      ...(item.previewVideoUri
+        ? { previewVideoUri: item.previewVideoUri }
+        : {}),
+    });
+  }
+
+  return resolved;
 };
