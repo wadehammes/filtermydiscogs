@@ -1,18 +1,18 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { trackReleaseNoteSaved } from "src/analytics/productAnalyticsEvents";
 import { updateCollectionNote } from "src/api/helpers";
-import { FiltersActionTypes } from "src/atoms/filters.atoms";
 import { useAuth } from "src/context/auth.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCollectionFieldsQuery } from "src/hooks/queries/useCollectionFieldsQuery";
+import type { DiscogsCollection, DiscogsRelease } from "src/types";
 import {
-  useAllReleases,
-  useFiltersDispatch,
-} from "src/hooks/useFilterAtoms.hook";
-import type { DiscogsRelease } from "src/types";
+  patchCollectionQueryReleaseNotes,
+  patchPersistedCollectionReleaseNotes,
+} from "src/utils/collectionCacheSync";
+import type { CollectionPageParam } from "src/utils/collectionPagination";
 import {
   buildCollectionFieldsMap,
   getEditableConditionFields,
@@ -69,8 +69,6 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     (editableFields.length > 0 || editableConditionFields.length > 0) &&
     parseReleaseId(release) !== null;
 
-  const dispatch = useFiltersDispatch();
-  const allReleases = useAllReleases();
   const queryClient = useQueryClient();
 
   const openDialog = () => {
@@ -106,8 +104,14 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     setErrorMessage(null);
     setIsSaving(true);
 
-    const previousReleases = allReleases;
-    let nextNotes = getReleaseNotes(release);
+    const previousNotes = getReleaseNotes(release);
+    let nextNotes = previousNotes;
+    const collectionQueryKey = DiscogsCollectionQueryKeys.byUsername(username);
+    const previousQueryData =
+      queryClient.getQueryData<
+        InfiniteData<DiscogsCollection, CollectionPageParam>
+      >(collectionQueryKey);
+    const instanceId = String(release.instance_id);
 
     for (const { fieldId, value } of values) {
       nextNotes = upsertReleaseNote({
@@ -117,22 +121,17 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
       });
     }
 
-    const optimisticReleases = previousReleases.map((item) =>
-      String(item.instance_id) === String(release.instance_id)
-        ? { ...item, notes: nextNotes }
-        : item,
+    queryClient.setQueryData<
+      InfiniteData<DiscogsCollection, CollectionPageParam>
+    >(collectionQueryKey, (current) =>
+      patchCollectionQueryReleaseNotes(current, instanceId, nextNotes),
     );
-
-    dispatch({
-      type: FiltersActionTypes.SetAllReleases,
-      payload: optimisticReleases,
-    });
 
     try {
       for (const { fieldId, value } of values) {
         await updateCollectionNote({
           username,
-          instanceId: String(release.instance_id),
+          instanceId,
           fieldId,
           releaseId,
           folderId: getReleaseFolderId(release),
@@ -144,16 +143,23 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
         setIsDialogOpen(false);
       }
       trackReleaseNoteSaved(release.instance_id);
+      await patchPersistedCollectionReleaseNotes(
+        username,
+        instanceId,
+        nextNotes,
+      );
       queryClient.invalidateQueries({
-        queryKey: DiscogsCollectionQueryKeys.byUsername(username),
+        queryKey: collectionQueryKey,
       });
 
       return true;
     } catch (error) {
-      dispatch({
-        type: FiltersActionTypes.SetAllReleases,
-        payload: previousReleases,
-      });
+      queryClient.setQueryData(collectionQueryKey, previousQueryData);
+      await patchPersistedCollectionReleaseNotes(
+        username,
+        instanceId,
+        previousNotes,
+      );
       setErrorMessage(
         error instanceof Error ? error.message : "Failed to save note",
       );

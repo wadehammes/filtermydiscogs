@@ -3,6 +3,7 @@ import { fetchDiscogsCollection } from "src/api/helpers";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   installMockIndexedDb,
   resetMockIndexedDb,
@@ -16,6 +17,7 @@ import {
   ensureCollectionCacheHydrated,
   ensureCollectionCacheValidated,
   hydrateCollectionQueryFromCache,
+  patchPersistedCollectionReleaseRating,
   persistCollectionQueryToCache,
   prepareCollectionQueryFromCache,
   resetCollectionCacheReady,
@@ -227,5 +229,29 @@ describe("collectionCacheSync", () => {
     );
 
     expect(stored).toBeNull();
+  });
+
+  it("patches a personal rating in the persisted collection cache", async () => {
+    const release = releaseFactory.withResourceUrl(249504, { rating: 0 });
+    const page = collectionFactory.build(
+      {},
+      { releaseCount: 1, totalPages: 1 },
+    );
+    page.releases = [release];
+
+    await writePersistedCollectionCache("testuser", {
+      pages: [page],
+      pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      totalItems: 1,
+      fetchedAt: Date.now(),
+    });
+
+    await patchPersistedCollectionReleaseRating("testuser", 249504, 5);
+
+    const stored = await import("src/utils/collectionCacheStorage").then(
+      (module) => module.readPersistedCollectionCache("testuser"),
+    );
+
+    expect(stored?.pages[0]?.releases[0]?.rating).toBe(5);
   });
 });

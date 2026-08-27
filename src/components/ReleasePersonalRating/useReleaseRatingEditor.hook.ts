@@ -1,20 +1,20 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { trackReleaseRatingSaved } from "src/analytics/productAnalyticsEvents";
 import { clearReleaseRating, updateReleaseRating } from "src/api/helpers";
-import { FiltersActionTypes } from "src/atoms/filters.atoms";
 import { useAuth } from "src/context/auth.context";
 import {
   DiscogsCollectionQueryKeys,
   DiscogsReleaseQueryKeys,
 } from "src/hooks/queries/querykeys.constants";
+import type { DiscogsCollection, DiscogsRelease } from "src/types";
 import {
-  useAllReleases,
-  useFiltersDispatch,
-} from "src/hooks/useFilterAtoms.hook";
-import type { DiscogsRelease } from "src/types";
+  patchCollectionQueryReleaseRating,
+  patchPersistedCollectionReleaseRating,
+} from "src/utils/collectionCacheSync";
+import type { CollectionPageParam } from "src/utils/collectionPagination";
 import { parseReleaseId } from "src/utils/releaseNotes";
 
 const getReleaseRating = (release: DiscogsRelease): number =>
@@ -30,30 +30,11 @@ export const useReleaseRatingEditor = (release: DiscogsRelease) => {
   const [rating, setRating] = useState(() => getReleaseRating(release));
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  const dispatch = useFiltersDispatch();
-  const allReleases = useAllReleases();
   const queryClient = useQueryClient();
 
   useEffect(() => {
     setRating(getReleaseRating(release));
   }, [release]);
-
-  const applyOptimisticRating = (nextRating: number) => {
-    const previousReleases = allReleases;
-    const optimisticReleases = previousReleases.map((item) =>
-      parseReleaseId(item) === releaseId
-        ? { ...item, rating: nextRating }
-        : item,
-    );
-
-    dispatch({
-      type: FiltersActionTypes.SetAllReleases,
-      payload: optimisticReleases,
-    });
-
-    return previousReleases;
-  };
 
   const handleRate = async (nextRating: number) => {
     if (!canEdit || releaseId === null || isSaving) {
@@ -63,12 +44,21 @@ export const useReleaseRatingEditor = (release: DiscogsRelease) => {
     const shouldClear = nextRating === rating && rating > 0;
     const previousRating = rating;
     const optimisticRating = shouldClear ? 0 : nextRating;
+    const collectionQueryKey = DiscogsCollectionQueryKeys.byUsername(username);
+    const previousQueryData =
+      queryClient.getQueryData<
+        InfiniteData<DiscogsCollection, CollectionPageParam>
+      >(collectionQueryKey);
 
     setErrorMessage(null);
     setRating(optimisticRating);
     setIsSaving(true);
 
-    const previousReleases = applyOptimisticRating(optimisticRating);
+    queryClient.setQueryData<
+      InfiniteData<DiscogsCollection, CollectionPageParam>
+    >(collectionQueryKey, (current) =>
+      patchCollectionQueryReleaseRating(current, releaseId, optimisticRating),
+    );
 
     try {
       if (shouldClear) {
@@ -85,18 +75,25 @@ export const useReleaseRatingEditor = (release: DiscogsRelease) => {
       }
 
       trackReleaseRatingSaved(release.instance_id);
+      await patchPersistedCollectionReleaseRating(
+        username,
+        releaseId,
+        optimisticRating,
+      );
       queryClient.invalidateQueries({
-        queryKey: DiscogsCollectionQueryKeys.byUsername(username),
+        queryKey: collectionQueryKey,
       });
       queryClient.invalidateQueries({
         queryKey: DiscogsReleaseQueryKeys.byId(String(releaseId)),
       });
     } catch (error) {
       setRating(previousRating);
-      dispatch({
-        type: FiltersActionTypes.SetAllReleases,
-        payload: previousReleases,
-      });
+      queryClient.setQueryData(collectionQueryKey, previousQueryData);
+      await patchPersistedCollectionReleaseRating(
+        username,
+        releaseId,
+        previousRating,
+      );
       setErrorMessage(
         error instanceof Error ? error.message : "Failed to save rating",
       );

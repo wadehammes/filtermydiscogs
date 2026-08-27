@@ -19,7 +19,6 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
   installMockIndexedDb,
-  readMockIndexedDbEntry,
   resetMockIndexedDb,
 } from "src/tests/mocks/mockIndexedDb";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
@@ -201,13 +200,14 @@ describe("useCollectionData", () => {
     });
   });
 
-  it("does not persist again when the collection was hydrated from cache", async () => {
+  it("persists collection data after a validated cache hit", async () => {
     const cachedPage = buildCachedCollection(2);
+    const initialFetchedAt = Date.now() - 60_000;
     await writePersistedCollectionCache("testuser", {
       pages: [cachedPage],
       pageParams: [COLLECTION_FULL_PAGE_PARAM],
       totalItems: cachedPage.pagination.items,
-      fetchedAt: Date.now(),
+      fetchedAt: initialFetchedAt,
     });
 
     mockFetchDiscogsCollection.mockResolvedValue(
@@ -225,15 +225,9 @@ describe("useCollectionData", () => {
     );
 
     await waitFor(async () => {
-      expect(await readPersistedCollectionCache("testuser")).not.toBeNull();
+      const stored = await readPersistedCollectionCache("testuser");
+      expect(stored?.fetchedAt).toBeGreaterThan(initialFetchedAt);
     });
-
-    const entryBefore = readMockIndexedDbEntry("testuser");
-    await waitFor(() => {
-      expect(mockFetchDiscogsCollection).toHaveBeenCalled();
-    });
-
-    expect(readMockIndexedDbEntry("testuser")).toEqual(entryBefore);
   });
 
   it("refetches on the same visit when Discogs collection size changed", async () => {

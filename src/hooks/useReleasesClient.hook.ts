@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
+import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import {
-  useAllReleases,
   useFilteredReleases,
   useFiltersDispatch,
   useIsRandomMode,
@@ -27,6 +27,7 @@ const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
 
 export const useReleasesClient = () => {
+  const { state: authState } = useAuth();
   const currentView = useCurrentView();
   const previousView = usePreviousView();
   const viewDispatch = useViewDispatch();
@@ -35,7 +36,6 @@ export const useReleasesClient = () => {
   const isRandomMode = useIsRandomMode();
   const randomRelease = useRandomRelease();
   const sortedFilteredReleases = useSortedFilteredReleases();
-  const allReleases = useAllReleases();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const mainContentRef = useRef<HTMLDivElement>(null);
 
@@ -126,7 +126,9 @@ export const useReleasesClient = () => {
     selectedReleaseId,
     handleReleaseClick,
     handleCloseModal,
-  } = useSelectedReleaseModal(allReleases);
+  } = useSelectedReleaseModal({
+    collectionUsername: authState.username,
+  });
 
   const handleViewChange = useCallback(
     (view: "card" | "list" | "random") => {
