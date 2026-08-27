@@ -50,6 +50,7 @@ const AutocompleteSelectComponent = ({
   clearable = false,
 }: AutocompleteSelectProps) => {
   const anchorRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const { positionerStyle, handleOpenChange } =
     useFilterControlPositionerZIndex(anchorRef);
 
@@ -108,6 +109,33 @@ const AutocompleteSelectComponent = ({
     [multiple, onChange, value],
   );
 
+  const handlePillsContainerClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if ((event.target as HTMLElement).closest(`.${styles.pillClear}`)) {
+        return;
+      }
+
+      triggerRef.current?.click();
+    },
+    [],
+  );
+
+  const handlePillsContainerKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      if ((event.target as HTMLElement).closest(`.${styles.pillClear}`)) {
+        return;
+      }
+
+      event.preventDefault();
+      triggerRef.current?.click();
+    },
+    [],
+  );
+
   const renderSingleValue = useCallback(
     (selected: string | null) => {
       if (typeof selected !== "string") {
@@ -136,6 +164,7 @@ const AutocompleteSelectComponent = ({
       data-filter-control-trigger
     >
       <Combobox.Trigger
+        ref={triggerRef}
         className={styles.triggerOverlay}
         disabled={disabled}
         {...definedProps({
@@ -149,6 +178,15 @@ const AutocompleteSelectComponent = ({
           styles.valueContainer,
           selectedOptions.length > 0 && styles.valueContainerWithPills,
         )}
+        {...(selectedOptions.length > 0
+          ? {
+              role: "button" as const,
+              tabIndex: disabled ? -1 : 0,
+              "aria-label": label,
+              onClick: handlePillsContainerClick,
+              onKeyDown: handlePillsContainerKeyDown,
+            }
+          : {})}
       >
         {selectedOptions.length === 0 ? (
           <span className={styles.placeholder}>{placeholder}</span>
