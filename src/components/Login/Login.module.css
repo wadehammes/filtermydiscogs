@@ -87,3 +87,13 @@
     gap: var(--space-20);
   }
 }
+
+.featuresIntro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-inline: auto;
+  max-width: 42rem;
+  text-align: center;
+  width: 100%;
+}

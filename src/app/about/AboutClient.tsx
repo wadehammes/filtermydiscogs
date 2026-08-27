@@ -5,10 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
+import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 import pageStyles from "src/components/Page/Page.module.css";
-import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
+import typography from "src/styles/modules/typography.module.css";
 import styles from "./page.module.css";
 
 export function AboutClient() {
@@ -44,38 +45,48 @@ export function AboutClient() {
     <div className={pageStyles.container}>
       <div className={styles.content}>
         <section className={styles.section}>
-          <h2>About This Project</h2>
-          <p>
-            FilterMyDisco.gs is a tool to help you browse, filter, and organize
-            your Discogs collection. Made by{" "}
-            <a
-              href="https://wadehammes.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.inlineLink}
-            >
-              Wade Hammes
-            </a>
-            . A passion project to help you discover, organize, and explore your
-            music collection, including {COLLECTION_FORMATS_PHRASE}. Create
-            crates for DJ sets, organize by theme, or just rediscover what you
-            already own.
-          </p>
-          <p>
-            For legal information, see our{" "}
-            <Link href="/legal" className={styles.inlineLink}>
-              Terms of Service and Privacy Policy
-            </Link>
-            .
-          </p>
+          <h2>About FilterMyDiscogs</h2>
+          <div className={styles.sectionBody}>
+            <p>
+              Discogs is where your collection lives. FilterMyDiscogs is the
+              free app I built to help you dig through it. Search, filter, queue
+              tracks and preview them, pack crates, spot trends in your buying
+              habits, and more.
+            </p>
+            <p className={styles.sectionMeta}>
+              <Link href="/legal" className={styles.inlineLink}>
+                Terms & Privacy
+              </Link>
+            </p>
+          </div>
+        </section>
+
+        <section className={classNames(styles.section, styles.featuresSection)}>
+          <h2>What You Can Do</h2>
+          <div className={styles.featureList}>
+            {LOGIN_FEATURES.map((feature) => (
+              <article key={feature.title} className={styles.feature}>
+                <p className={typography.sectionEyebrow}>{feature.eyebrow}</p>
+                <h3 className={styles.featureTitle}>{feature.title}</h3>
+                <p
+                  className={classNames(
+                    typography.bodyText,
+                    styles.featureDescription,
+                  )}
+                >
+                  {feature.description}
+                </p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className={classNames(styles.section, styles.donationSection)}>
           <h2>Support This Project</h2>
           <p>
-            If you find this app useful and want to support its development,
-            consider tossing me some coin. Every contribution helps keep this
-            project running and improving!
+            If FilterMyDiscogs has made your collection easier to actually use,
+            not just admire, consider chipping in. Every contribution helps keep
+            the app free and the roadmap moving.
           </p>
           <div className={styles.donationContent}>
             <div className={styles.donationQR}>
@@ -108,96 +119,106 @@ export function AboutClient() {
 
         <section className={styles.section}>
           <h2>Data Management</h2>
-          <p>Want to start fresh? Clear everything out. This button wipes:</p>
-          <ul>
-            <li>All your auth tokens and session cookies</li>
-            <li>
-              Every crate you&apos;ve created, including which releases are in
-              each crate (deleted from Postgres, gone forever. No takebacks)
-            </li>
-            <li>
-              Your saved account preferences on our server: theme, default view
-              (grid or table), your analytics cookie choice, and filter/sort
-              selections when &quot;Remember filter selections&quot; is enabled
-              in Settings
-            </li>
-            <li>
-              Product analytics events linked to your account (when you had
-              analytics enabled), such as page views and interaction labels
-            </li>
-            <li>
-              Local preferences on this browser: theme, view mode, filters,
-              analytics cookie choice (you will be asked about analytics cookies
-              again), in-progress playback (current track and upcoming queue),
-              remembered collection size (to load large collections faster), a
-              cached copy of your loaded collection in IndexedDB (for faster
-              return visits on this device), and similar UI state
-            </li>
-            <li>In-memory collection cache for the current browser session</li>
-            <li>
-              Your Discogs collection and saved notes are not deleted. Only
-              app-side data here
-            </li>
-          </ul>
-          <p>
-            <strong>Heads up:</strong> This logs you out and you&apos;ll need to
-            reconnect with Discogs. Crates and saved preferences are permanently
-            deleted from our database. Logging out without clearing data keeps
-            your crates and preferences—you can sign in again later. Useful on a
-            shared computer or when you want a clean slate on this app. It is
-            not a way to undo note edits on Discogs.
-          </p>
-          <div className={styles.clearDataButton}>
-            <Button
-              variant="danger"
-              size="md"
-              onPress={handleClearAllData}
-              disabled={isClearing || !isAuthenticated}
-              aria-label="Clear all data"
-            >
-              {isClearing ? "Clearing..." : "Clear All Data"}
-            </Button>
-          </div>
-          {!isAuthenticated && (
-            <p className={styles.clearDataNote}>
-              You must be logged in to clear data.
+          <div className={styles.sectionBody}>
+            <p>Want to start fresh? Clear everything out. This button wipes:</p>
+            <ul>
+              <li>All your auth tokens and session cookies</li>
+              <li>
+                Every crate you&apos;ve created, including which releases are in
+                each crate (deleted from Postgres, gone forever. No takebacks)
+              </li>
+              <li>
+                Your saved account preferences on our server: theme, default
+                view (grid or table), your analytics cookie choice, and
+                filter/sort selections when &quot;Remember filter
+                selections&quot; is enabled in Settings
+              </li>
+              <li>
+                Product analytics events linked to your account (when you had
+                analytics enabled), such as page views and interaction labels
+              </li>
+              <li>
+                Local preferences on this browser: theme, view mode, filters,
+                analytics cookie choice (you will be asked about analytics
+                cookies again), in-progress playback (current track and upcoming
+                queue), remembered collection size (to load large collections
+                faster), a cached copy of your loaded collection in IndexedDB
+                (for faster return visits on this device), and similar UI state
+              </li>
+              <li>
+                In-memory collection cache for the current browser session
+              </li>
+              <li>
+                Your Discogs collection and saved notes are not deleted. Only
+                app-side data here
+              </li>
+            </ul>
+            <p>
+              <strong>Heads up:</strong> This logs you out and you&apos;ll need
+              to reconnect with Discogs. Crates and saved preferences are
+              permanently deleted from our database. Logging out without
+              clearing data keeps your crates and preferences—you can sign in
+              again later. Useful on a shared computer or when you want a clean
+              slate on this app. It is not a way to undo note edits on Discogs.
             </p>
-          )}
-          <p className={styles.clearDataNote}>
-            For more information about how we handle your data, see our{" "}
-            <Link href="/legal" className={styles.inlineLink}>
-              Privacy Policy
-            </Link>
-            .
-          </p>
+          </div>
+          <div className={styles.clearDataFooter}>
+            <div className={styles.clearDataButton}>
+              <Button
+                variant="danger"
+                size="md"
+                onPress={handleClearAllData}
+                disabled={isClearing || !isAuthenticated}
+                aria-label="Clear all data"
+              >
+                {isClearing ? "Clearing..." : "Clear All Data"}
+              </Button>
+            </div>
+            {!isAuthenticated && (
+              <p className={styles.clearDataNote}>
+                You must be logged in to clear data.
+              </p>
+            )}
+            <p className={styles.clearDataNote}>
+              For more information about how we handle your data, see our{" "}
+              <Link href="/legal" className={styles.inlineLink}>
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
         </section>
 
         <section className={styles.section}>
           <h2>Repository</h2>
-          <p>
-            This is open source. Check out the code, submit a PR, or just snoop
-            around:
-          </p>
-          <div className={styles.repoLink}>
-            <a
-              href="https://github.com/wadehammes/filtermydiscogs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.repoButton}
-            >
-              View on GitHub
-            </a>
+          <div className={styles.repoSectionBody}>
+            <p>
+              This is open source. Check out the code, submit a PR, or just
+              snoop around:
+            </p>
+            <div className={styles.repoLink}>
+              <a
+                href="https://github.com/wadehammes/filtermydiscogs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.repoButton}
+              >
+                View on GitHub
+              </a>
+            </div>
+            <p className={styles.license}>
+              MIT License. Use it, fork it, make it better.
+            </p>
           </div>
-          <p className={styles.license}>
-            MIT License. Use it, fork it, make it better.
-          </p>
         </section>
 
         <section className={styles.section}>
           <h2>Contact</h2>
-          <p>
-            Got questions? Found a bug? Want to suggest something? Hit me up:
-          </p>
+          <div className={styles.sectionBody}>
+            <p>
+              Got questions? Found a bug? Want to suggest something? Hit me up:
+            </p>
+          </div>
           <div className={styles.contactInfo}>
             <p>
               <strong>Email:</strong>{" "}

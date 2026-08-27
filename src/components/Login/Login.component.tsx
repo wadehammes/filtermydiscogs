@@ -86,6 +86,14 @@ export const Login = () => {
       </div>
 
       <div className={styles.features}>
+        <div className={styles.featuresIntro}>
+          <h2 className={typography.subsectionHeading}>
+            {LOGIN_PAGE_UI_COPY.featuresSectionHeading}
+          </h2>
+          <p className={typography.bodyText}>
+            {LOGIN_PAGE_UI_COPY.featuresSectionLede}
+          </p>
+        </div>
         {LOGIN_FEATURES.map((feature, index) => (
           <LoginFeatureRow
             key={feature.title}
