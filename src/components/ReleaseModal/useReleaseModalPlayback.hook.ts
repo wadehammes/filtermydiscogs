@@ -233,6 +233,44 @@ export const useReleaseModalPlayback = ({
     [playback.queue, release.instance_id],
   );
 
+  const playableTracks = useMemo(
+    () =>
+      tracks.filter((track) =>
+        playbackMatchIndex.trackVideoByPosition.has(track.position),
+      ),
+    [playbackMatchIndex, tracks],
+  );
+
+  const allPlayableTracksQueued = useMemo(() => {
+    if (playableTracks.length === 0) {
+      return true;
+    }
+
+    const instanceId = String(release.instance_id);
+
+    return playableTracks.every((track) =>
+      playback.queue.some(
+        (item) =>
+          item.instanceId === instanceId &&
+          item.trackPosition === track.position,
+      ),
+    );
+  }, [playableTracks, playback.queue, release.instance_id]);
+
+  const handleAddAllToQueue = useCallback(() => {
+    for (const track of playableTracks) {
+      if (isTrackQueued(track.position)) {
+        continue;
+      }
+
+      playback.addToQueue({
+        release,
+        trackPosition: track.position,
+        trackTitle: track.title,
+      });
+    }
+  }, [isTrackQueued, playback.addToQueue, playableTracks, release]);
+
   const handleActiveTrackToggle = useCallback(() => {
     playback.togglePlayback();
   }, [playback.togglePlayback]);
@@ -253,6 +291,8 @@ export const useReleaseModalPlayback = ({
     refetch,
     handleTrackSelect,
     handleTrackQueue,
+    handleAddAllToQueue,
+    allPlayableTracksQueued,
     handleReleasePreview,
     handlePreviewTrackSelect,
     handlePreviewTrackQueue,

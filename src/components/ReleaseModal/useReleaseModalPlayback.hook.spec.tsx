@@ -221,4 +221,51 @@ describe("useReleaseModalPlayback", () => {
       "https://www.youtube.com/watch?v=te2jJncBVG4",
     );
   });
+
+  it("queues every playable album track from add-all", async () => {
+    setupDiscogsReleaseQueryMock({
+      ...releaseDetail,
+      videos: [
+        {
+          description: "Side A",
+          duration: 212,
+          embed: true,
+          title: "Rick Astley - Never Gonna Give You Up",
+          uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+        },
+        {
+          description: "Side B",
+          duration: 210,
+          embed: true,
+          title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+          uri: "https://www.youtube.com/watch?v=abc12345678",
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleAddAllToQueue();
+    });
+
+    expect(result.current.playback.queue).toHaveLength(2);
+    expect(
+      result.current.playback.queue.map((item) => item.trackPosition),
+    ).toEqual(["A", "B"]);
+    expect(result.current.modal.allPlayableTracksQueued).toBe(true);
+  });
 });

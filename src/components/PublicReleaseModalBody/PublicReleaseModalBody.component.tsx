@@ -37,6 +37,8 @@ export const PublicReleaseModalBody = ({
     refetch,
     handleTrackSelect,
     handleTrackQueue,
+    handleAddAllToQueue,
+    allPlayableTracksQueued,
     handlePreviewTrackSelect,
     handlePreviewTrackQueue,
     isTrackQueued,
@@ -103,6 +105,12 @@ export const PublicReleaseModalBody = ({
               onTrackSelect: hasPlayableTracks ? handleTrackSelect : undefined,
               isTrackQueued: hasPlayableTracks ? isTrackQueued : undefined,
               onTrackQueue: hasPlayableTracks ? handleTrackQueue : undefined,
+              onAddAllToQueue: hasPlayableTracks
+                ? handleAddAllToQueue
+                : undefined,
+              addAllToQueueDisabled: hasPlayableTracks
+                ? allPlayableTracksQueued
+                : undefined,
               onActiveTrackToggle:
                 hasPlayableTracks &&
                 isPlayingThisReleaseInBar &&
