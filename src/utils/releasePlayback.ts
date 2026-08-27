@@ -42,6 +42,87 @@ const getMatchTokens = (normalizedTitle: string): string[] => {
     .filter((token) => token.length >= 2 && !MATCH_STOP_WORDS.has(token));
 };
 
+const MIN_FUZZY_TOKEN_LENGTH = 4;
+
+const tokensAreWithinEditDistanceOne = (
+  left: string,
+  right: string,
+): boolean => {
+  if (left === right) {
+    return true;
+  }
+
+  if (
+    left.length < MIN_FUZZY_TOKEN_LENGTH ||
+    right.length < MIN_FUZZY_TOKEN_LENGTH
+  ) {
+    return false;
+  }
+
+  const lengthDelta = Math.abs(left.length - right.length);
+
+  if (lengthDelta > 1) {
+    return false;
+  }
+
+  if (lengthDelta === 0) {
+    let mismatches = 0;
+
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) {
+        mismatches += 1;
+
+        if (mismatches > 1) {
+          return false;
+        }
+      }
+    }
+
+    return mismatches === 1;
+  }
+
+  const [shorter, longer] =
+    left.length < right.length ? [left, right] : [right, left];
+  let shorterIndex = 0;
+  let longerIndex = 0;
+  let edits = 0;
+
+  while (shorterIndex < shorter.length && longerIndex < longer.length) {
+    if (shorter[shorterIndex] === longer[longerIndex]) {
+      shorterIndex += 1;
+      longerIndex += 1;
+      continue;
+    }
+
+    edits += 1;
+
+    if (edits > 1) {
+      return false;
+    }
+
+    longerIndex += 1;
+  }
+
+  return true;
+};
+
+const trackTokenMatchesVideoTokens = (
+  token: string,
+  videoTokenSet: Set<string>,
+): boolean => {
+  if (videoTokenSet.has(token)) {
+    return true;
+  }
+
+  for (const videoToken of videoTokenSet) {
+    if (tokensAreWithinEditDistanceOne(token, videoToken)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const MIN_FUZZY_MATCH_LENGTH = 3;
 const SIDE_LETTER_CLASS = "[a-d]";
 const MAX_DURATION_MATCH_DELTA_SECONDS = 30;
@@ -229,10 +310,12 @@ interface TrackVideoMatchContext {
 }
 
 interface PreparedTrackMatchData {
+  track: DiscogsTrack;
   normalizedTrack: string;
   trackAlnum: string;
   trackTokens: string[];
   trackSide: string | null;
+  trackDurationSeconds: number | null;
 }
 
 interface PreparedVideoMatchData {
@@ -249,10 +332,12 @@ const prepareTrackMatchData = (track: DiscogsTrack): PreparedTrackMatchData => {
   const normalizedTrack = normalizeTrackTitle(track.title);
 
   return {
+    track,
     normalizedTrack,
     trackAlnum: stripToAlnum(track.title),
     trackTokens: getMatchTokens(normalizedTrack),
     trackSide: getTrackSideIdentifier(track),
+    trackDurationSeconds: parseTrackDurationToSeconds(track.duration),
   };
 };
 
@@ -341,21 +426,27 @@ const scorePreparedTrackVideoMatch = (
   }
 
   const overlaps = titlesOverlapFromContext(context);
+  let matchedTokenCount = 0;
+
+  for (const token of context.trackTokens) {
+    if (trackTokenMatchesVideoTokens(token, context.videoTokenSet)) {
+      matchedTokenCount += 1;
+    }
+  }
+
   const tokensMatch =
     context.trackTokens.length > 0 &&
-    context.trackTokens.every((token) => context.videoTokenSet.has(token));
+    matchedTokenCount === context.trackTokens.length;
 
   if (!(overlaps || tokensMatch)) {
     return 0;
   }
 
-  const matchedTokenCount = context.trackTokens.filter((token) =>
-    context.videoTokenSet.has(token),
-  ).length;
-
   let score = matchedTokenCount / Math.max(context.trackTokens.length, 1);
 
-  if (
+  if (context.normalizedTrack === context.normalizedVideoSong) {
+    score += 3;
+  } else if (
     normalizedTitlesOverlap(
       context.normalizedTrack,
       context.normalizedVideoSong,
@@ -379,30 +470,70 @@ const scorePreparedTrackVideoMatch = (
     score += 2;
   }
 
-  return score;
-};
+  if (
+    track.trackDurationSeconds !== null &&
+    video.video.duration !== undefined
+  ) {
+    const durationDelta = Math.abs(
+      track.trackDurationSeconds - video.video.duration,
+    );
 
-const findBestVideoForPreparedTrack = (
-  preparedTrack: PreparedTrackMatchData,
-  preparedVideos: PreparedVideoMatchData[],
-): DiscogsVideo | null => {
-  if (preparedTrack.normalizedTrack.length === 0) {
-    return null;
-  }
-
-  let bestVideo: DiscogsVideo | null = null;
-  let bestScore = 0;
-
-  for (const preparedVideo of preparedVideos) {
-    const score = scorePreparedTrackVideoMatch(preparedTrack, preparedVideo);
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestVideo = preparedVideo.video;
+    if (durationDelta <= MAX_DURATION_MATCH_DELTA_SECONDS) {
+      score += 2 * (1 - durationDelta / MAX_DURATION_MATCH_DELTA_SECONDS);
     }
   }
 
-  return bestVideo;
+  return score;
+};
+
+interface TrackVideoMatchCandidate {
+  track: DiscogsTrack;
+  video: DiscogsVideo;
+  score: number;
+}
+
+const collectTrackVideoMatchCandidates = (
+  preparedTracks: PreparedTrackMatchData[],
+  preparedVideos: PreparedVideoMatchData[],
+): TrackVideoMatchCandidate[] => {
+  const candidates: TrackVideoMatchCandidate[] = [];
+
+  for (const preparedTrack of preparedTracks) {
+    for (const preparedVideo of preparedVideos) {
+      const score = scorePreparedTrackVideoMatch(preparedTrack, preparedVideo);
+
+      if (score > 0) {
+        candidates.push({
+          track: preparedTrack.track,
+          video: preparedVideo.video,
+          score,
+        });
+      }
+    }
+  }
+
+  return candidates.sort((left, right) => right.score - left.score);
+};
+
+const assignTrackVideoMatches = (
+  candidates: TrackVideoMatchCandidate[],
+): Map<string, DiscogsVideo> => {
+  const trackVideoByPosition = new Map<string, DiscogsVideo>();
+  const assignedVideoUris = new Set<string>();
+
+  for (const candidate of candidates) {
+    if (
+      trackVideoByPosition.has(candidate.track.position) ||
+      assignedVideoUris.has(candidate.video.uri)
+    ) {
+      continue;
+    }
+
+    trackVideoByPosition.set(candidate.track.position, candidate.video);
+    assignedVideoUris.add(candidate.video.uri);
+  }
+
+  return trackVideoByPosition;
 };
 
 export const parseTrackDurationToSeconds = (
@@ -594,22 +725,14 @@ export const buildReleasePlaybackMatchIndex = (
   videos: DiscogsVideo[],
 ): ReleasePlaybackMatchIndex => {
   const embeddableVideos = getEmbeddableVideos(videos);
+  const preparedTracks = tracks.map(prepareTrackMatchData);
   const preparedVideos = embeddableVideos.map(prepareVideoMatchData);
-  const trackVideoByPosition = new Map<string, DiscogsVideo>();
-  const matchedVideoUris = new Set<string>();
-
-  for (const track of tracks) {
-    const preparedTrack = prepareTrackMatchData(track);
-    const bestVideo = findBestVideoForPreparedTrack(
-      preparedTrack,
-      preparedVideos,
-    );
-
-    if (bestVideo) {
-      trackVideoByPosition.set(track.position, bestVideo);
-      matchedVideoUris.add(bestVideo.uri);
-    }
-  }
+  const trackVideoByPosition = assignTrackVideoMatches(
+    collectTrackVideoMatchCandidates(preparedTracks, preparedVideos),
+  );
+  const matchedVideoUris = new Set(
+    [...trackVideoByPosition.values()].map((video) => video.uri),
+  );
 
   const unmatchedTracks = tracks.filter(
     (track) => !trackVideoByPosition.has(track.position),
