@@ -258,18 +258,55 @@ export const useReleaseModalPlayback = ({
   }, [playableTracks, playback.queue, release.instance_id]);
 
   const handleAddAllToQueue = useCallback(() => {
-    for (const track of playableTracks) {
-      if (isTrackQueued(track.position)) {
-        continue;
+    const tracksToQueue = playableTracks.filter(
+      (track) => !isTrackQueued(track.position),
+    );
+
+    if (tracksToQueue.length === 0) {
+      return;
+    }
+
+    if (!playback.isMiniPlayerVisible) {
+      const firstTrack = tracksToQueue[0];
+
+      if (!firstTrack) {
+        return;
       }
 
+      playback.startPlayback({
+        release,
+        trackPosition: firstTrack.position,
+        trackTitle: firstTrack.title,
+        startPaused: true,
+        rebuildAlbumQueue: false,
+      });
+
+      for (const track of tracksToQueue.slice(1)) {
+        playback.addToQueue({
+          release,
+          trackPosition: track.position,
+          trackTitle: track.title,
+        });
+      }
+
+      return;
+    }
+
+    for (const track of tracksToQueue) {
       playback.addToQueue({
         release,
         trackPosition: track.position,
         trackTitle: track.title,
       });
     }
-  }, [isTrackQueued, playback.addToQueue, playableTracks, release]);
+  }, [
+    isTrackQueued,
+    playback.addToQueue,
+    playback.isMiniPlayerVisible,
+    playback.startPlayback,
+    playableTracks,
+    release,
+  ]);
 
   const handleActiveTrackToggle = useCallback(() => {
     playback.togglePlayback();

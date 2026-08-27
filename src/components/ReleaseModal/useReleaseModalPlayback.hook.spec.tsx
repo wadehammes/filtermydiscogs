@@ -261,6 +261,13 @@ describe("useReleaseModalPlayback", () => {
       result.current.modal.handleAddAllToQueue();
     });
 
+    await waitFor(() => {
+      expect(result.current.playback.isMiniPlayerVisible).toBe(true);
+    });
+
+    expect(result.current.playback.isPlaying).toBe(true);
+    expect(result.current.playback.isPaused).toBe(true);
+    expect(result.current.playback.activeTrackPosition).toBe("A");
     expect(result.current.playback.queue).toHaveLength(2);
     expect(
       result.current.playback.queue.map((item) => item.trackPosition),

@@ -73,6 +73,7 @@ interface StartPlaybackParams {
   trackPosition: string;
   trackTitle?: string;
   startPaused?: boolean;
+  rebuildAlbumQueue?: boolean;
 }
 
 interface StartReleasePreviewParams {
@@ -780,6 +781,7 @@ export const ReleasePlaybackProvider = ({
       trackPosition,
       trackTitle = trackPosition,
       startPaused = false,
+      rebuildAlbumQueue: rebuildAlbumQueueOption,
     }: StartPlaybackParams) => {
       setPreviewVideo(null);
       setPendingPreviewVideoUri(null);
@@ -806,10 +808,11 @@ export const ReleasePlaybackProvider = ({
         playIndex = inserted.playIndex;
         rebuildAlbumQueue = false;
       } else {
-        queueManuallyExtendedRef.current = false;
+        const seedManualQueue = rebuildAlbumQueueOption === false;
+        queueManuallyExtendedRef.current = seedManualQueue;
         nextQueue = [item];
         playIndex = 0;
-        rebuildAlbumQueue = true;
+        rebuildAlbumQueue = rebuildAlbumQueueOption ?? true;
       }
 
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
