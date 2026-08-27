@@ -12,13 +12,15 @@ export const showDeploymentUpdateToast = ({
   onRefresh: () => void;
   onDismiss: () => void;
 }) => {
-  toast("A new version is available", {
+  toast("Update available", {
     id: DEPLOYMENT_UPDATE_TOAST_ID,
-    description: "Refresh when you are ready to load the latest updates.",
+    description: "Refresh to load the latest version.",
+    position: "bottom-center",
     classNames: {
-      toast: "fmd-toast fmd-deployment-update-toast",
+      toast: "fmd-toast fmd-action-toast fmd-deployment-update-toast",
       title: "fmd-toast-title",
       description: "fmd-toast-description",
+      content: "fmd-action-toast-content",
     },
     cancel: (
       <Button variant="secondary" size="sm" onPress={onDismiss}>
