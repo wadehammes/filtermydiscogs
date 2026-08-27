@@ -391,6 +391,34 @@ describe("ReleaseMiniPlayer", () => {
     document.querySelector("[data-filters-drawer-open]")?.remove();
   });
 
+  it("updates the embed src when advancing to the next track", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+
+    expect(iframe.getAttribute("src")).toContain("te2jJncBVG4");
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    expect(iframe.getAttribute("src")).toContain("abc12345678");
+  });
+
   it("keeps the video panel open when advancing tracks", async () => {
     const user = userEvent.setup();
 

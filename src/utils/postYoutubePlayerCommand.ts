@@ -43,14 +43,3 @@ export const loadYoutubeVideoById = ({
     "*",
   );
 };
-
-export const transitionYoutubeIframeToVideo = ({
-  iframe,
-  videoId,
-}: {
-  iframe: HTMLIFrameElement | null;
-  videoId: string;
-}): void => {
-  loadYoutubeVideoById({ iframe, videoId });
-  postYoutubePlayerCommand({ iframe, command: "playVideo" });
-};
