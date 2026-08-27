@@ -23,7 +23,7 @@ export function AboutClient() {
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
-          "• Delete your saved account preferences (theme, default view, filter selections, and analytics cookie choice)\n" +
+          "• Delete your saved account preferences (theme, default view, filter selections, playback settings, and analytics cookie choice)\n" +
           "• Delete product analytics events linked to your account (when analytics was enabled)\n" +
           "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",

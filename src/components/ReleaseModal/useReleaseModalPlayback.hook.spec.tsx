@@ -215,10 +215,8 @@ describe("useReleaseModalPlayback", () => {
       );
     });
 
-    expect(result.current.playback.queue).toHaveLength(1);
-    expect(result.current.playback.queue[0]?.previewVideoUri).toBe(
-      "https://www.youtube.com/watch?v=te2jJncBVG4",
-    );
+    expect(result.current.playback.isReleasePreview).toBe(true);
+    expect(result.current.playback.queue).toHaveLength(0);
   });
 
   it("queues every playable album track from add-all", async () => {
@@ -266,12 +264,12 @@ describe("useReleaseModalPlayback", () => {
     });
 
     expect(result.current.playback.isPlaying).toBe(true);
-    expect(result.current.playback.isPaused).toBe(true);
+    expect(result.current.playback.isPaused).toBe(false);
     expect(result.current.playback.activeTrackPosition).toBe("A");
-    expect(result.current.playback.queue).toHaveLength(2);
+    expect(result.current.playback.queue).toHaveLength(1);
     expect(
       result.current.playback.queue.map((item) => item.trackPosition),
-    ).toEqual(["A", "B"]);
+    ).toEqual(["B"]);
     expect(result.current.modal.allPlayableTracksQueued).toBe(true);
   });
 });

@@ -57,4 +57,11 @@ export const setupCrateDrawerTests = (
     cratesResponseFactory.withCrates([crateDrawerDefaultCrate]),
     new Error("Crate API request failed"),
   );
+
+  mockApiResponse(
+    true,
+    mockApi.fetchCrate,
+    crateWithReleasesResponseFactory.withReleases(crateDrawerDefaultDetail, []),
+    new Error("Crate API request failed"),
+  );
 };

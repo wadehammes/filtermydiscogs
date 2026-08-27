@@ -15,7 +15,10 @@ export const renderCrateDrawerTree = (ui: ReactElement) =>
     </CrateDrawerProvider>,
     {
       wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
+        <TestProviders
+          authInitialState={testAuthenticatedAuthState}
+          includeCollectionSync={false}
+        >
           {children}
         </TestProviders>
       ),

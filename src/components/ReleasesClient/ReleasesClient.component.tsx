@@ -11,7 +11,7 @@ import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
-import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
@@ -31,7 +31,7 @@ const ReleasesClientContent = () => {
     crates,
     activeCrateId,
   } = useCrate();
-  const { isMiniPlayerVisible } = useReleasePlayback();
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
   const {

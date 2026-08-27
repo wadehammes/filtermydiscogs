@@ -16,7 +16,9 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
 import type { RenderResult } from "test-utils";
@@ -69,6 +71,13 @@ export class ReleaseCardPageObject extends BasePageObject {
       authStatus: null,
       errorStatus: null,
     });
+
+    mockApiResponse(
+      true,
+      mockApi.fetchUserPreferences,
+      { preferences: userPreferencesFactory.defaults() },
+      apiError,
+    );
 
     mockApiResponse(
       true,
@@ -127,16 +136,19 @@ export class ReleaseCardPageObject extends BasePageObject {
     const { release, ...rest } = overrides;
 
     return (
-      <ReleaseCard
-        release={release ?? releaseFactory.withDisplayDefaults()}
-        {...rest}
-      />
+      <ReleasePlaybackTestTree>
+        <ReleaseCard
+          release={release ?? releaseFactory.withDisplayDefaults()}
+          {...rest}
+        />
+      </ReleasePlaybackTestTree>
     );
   }
 
   renderReleaseCard(overrides: ReleaseCardRenderProps = {}): RenderResult {
     return render(this.releaseCardElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

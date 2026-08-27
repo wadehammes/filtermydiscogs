@@ -98,6 +98,7 @@ class UserPreferencesFactory extends BaseFactory<
     const instance = {
       version: USER_PREFERENCES_VERSION,
       persistFilters: faker.helpers.arrayElement([true, false]),
+      autoPlayOnQueueAdd: faker.helpers.arrayElement([true, false]),
       theme,
       view,
       filters: persistedFiltersFactory.build(),
@@ -121,6 +122,7 @@ class UserPreferencesFactory extends BaseFactory<
     return {
       version: USER_PREFERENCES_VERSION,
       persistFilters: true,
+      autoPlayOnQueueAdd: true,
       theme: "system",
       view: { currentView: "card", previousView: "card" },
       filters: persistedFiltersFactory.empty(),

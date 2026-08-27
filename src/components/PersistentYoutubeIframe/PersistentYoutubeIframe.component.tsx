@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import { useEffect, useMemo } from "react";
-import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
 import { definedProps } from "src/utils/definedProps";
 import { buildYoutubeEmbedUrl } from "src/utils/releasePlayback";
 import styles from "./PersistentYoutubeIframe.module.css";
@@ -26,7 +26,7 @@ export const PersistentYoutubeIframe = ({
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
     resumePlaybackFromGesture,
-  } = useReleasePlayback();
+  } = useReleasePlaybackIframeActions();
 
   const embedUrl = useMemo(() => {
     const origin =

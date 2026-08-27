@@ -12,6 +12,7 @@ describe("ReleasesGrid", () => {
   beforeEach(() => {
     po = new ReleasesGridPageObject();
     releaseCardPo = new ReleaseCardPageObject();
+    releaseCardPo.setupMocks();
   });
 
   it("renders desktop release cards in card view", () => {
@@ -22,7 +23,6 @@ describe("ReleasesGrid", () => {
   });
 
   it("renders mobile release cards on small viewports", () => {
-    releaseCardPo.setupMocks();
     po.renderReleasesGrid({ isMobile: true, view: "card" });
 
     expect(screen.getAllByTestId(po.mobileCardTestId)).toHaveLength(2);
@@ -38,7 +38,6 @@ describe("ReleasesGrid", () => {
   });
 
   it("shows the random release with a desktop card even on mobile", () => {
-    releaseCardPo.setupMocks();
     const randomRelease = releaseFactory.withDisplayDefaults();
 
     po.renderReleasesGrid({
@@ -54,7 +53,6 @@ describe("ReleasesGrid", () => {
   });
 
   it("calls onReleaseClick when a card is activated", async () => {
-    releaseCardPo.setupMocks();
     const release = releaseFactory.withEmptyNotes();
     const onReleaseClick = jest.fn();
     const user = userEvent.setup();

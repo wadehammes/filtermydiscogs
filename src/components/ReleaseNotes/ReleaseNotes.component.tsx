@@ -160,15 +160,17 @@ const ReleaseNotesTable = ({ release }: { release: DiscogsRelease }) => {
         ) : null}
       </div>
 
-      <NoteEditDialog
-        isOpen={isDialogOpen}
-        release={release}
-        fields={fields}
-        isSaving={isSaving}
-        errorMessage={errorMessage}
-        onClose={closeDialog}
-        onSave={handleSave}
-      />
+      {isDialogOpen ? (
+        <NoteEditDialog
+          isOpen={isDialogOpen}
+          release={release}
+          fields={fields}
+          isSaving={isSaving}
+          errorMessage={errorMessage}
+          onClose={closeDialog}
+          onSave={handleSave}
+        />
+      ) : null}
     </>
   );
 };
@@ -220,15 +222,17 @@ const ReleaseNotesInline = ({ release }: { release: DiscogsRelease }) => {
         ) : null}
       </div>
 
-      <NoteEditDialog
-        isOpen={isDialogOpen}
-        release={release}
-        fields={fields}
-        isSaving={isSaving}
-        errorMessage={errorMessage}
-        onClose={closeDialog}
-        onSave={handleSave}
-      />
+      {isDialogOpen ? (
+        <NoteEditDialog
+          isOpen={isDialogOpen}
+          release={release}
+          fields={fields}
+          isSaving={isSaving}
+          errorMessage={errorMessage}
+          onClose={closeDialog}
+          onSave={handleSave}
+        />
+      ) : null}
     </>
   );
 };

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
+import { isSameQueueItem } from "src/utils/playbackQueue";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
@@ -213,24 +214,57 @@ export const useReleaseModalPlayback = ({
     [playback.addPreviewToQueue, release, releasePreviewVideos],
   );
 
-  const isPreviewTrackQueued = useCallback(
+  const isQueuePositionActive = useCallback(
+    (trackPosition: string, mode: "track" | "preview") => {
+      if (!isSameReleaseInstance(release, playback.release)) {
+        return false;
+      }
+
+      if (mode === "preview") {
+        return (
+          playback.isReleasePreview &&
+          playback.activeTrackPosition === trackPosition
+        );
+      }
+
+      return (
+        !playback.isReleasePreview &&
+        playback.isMiniPlayerVisible &&
+        playback.activeTrackPosition === trackPosition
+      );
+    },
+    [
+      playback.activeTrackPosition,
+      playback.isMiniPlayerVisible,
+      playback.isReleasePreview,
+      playback.release,
+      release,
+    ],
+  );
+
+  const isQueuedForRelease = useCallback(
     (trackPosition: string) =>
-      playback.queue.some(
-        (item) =>
-          item.instanceId === String(release.instance_id) &&
-          item.trackPosition === trackPosition,
+      playback.queue.some((item) =>
+        isSameQueueItem(item, {
+          instanceId: String(release.instance_id),
+          trackPosition,
+        }),
       ),
     [playback.queue, release.instance_id],
   );
 
+  const isPreviewTrackQueued = useCallback(
+    (trackPosition: string) =>
+      isQueuePositionActive(trackPosition, "preview") ||
+      isQueuedForRelease(trackPosition),
+    [isQueuePositionActive, isQueuedForRelease],
+  );
+
   const isTrackQueued = useCallback(
     (trackPosition: string) =>
-      playback.queue.some(
-        (item) =>
-          item.instanceId === String(release.instance_id) &&
-          item.trackPosition === trackPosition,
-      ),
-    [playback.queue, release.instance_id],
+      isQueuePositionActive(trackPosition, "track") ||
+      isQueuedForRelease(trackPosition),
+    [isQueuePositionActive, isQueuedForRelease],
   );
 
   const playableTracks = useMemo(
@@ -241,21 +275,12 @@ export const useReleaseModalPlayback = ({
     [playbackMatchIndex, tracks],
   );
 
-  const allPlayableTracksQueued = useMemo(() => {
-    if (playableTracks.length === 0) {
-      return true;
-    }
-
-    const instanceId = String(release.instance_id);
-
-    return playableTracks.every((track) =>
-      playback.queue.some(
-        (item) =>
-          item.instanceId === instanceId &&
-          item.trackPosition === track.position,
-      ),
-    );
-  }, [playableTracks, playback.queue, release.instance_id]);
+  const allPlayableTracksQueued = useMemo(
+    () =>
+      playableTracks.length === 0 ||
+      playableTracks.every((track) => isTrackQueued(track.position)),
+    [isTrackQueued, playableTracks],
+  );
 
   const handleAddAllToQueue = useCallback(() => {
     const tracksToQueue = playableTracks.filter(
@@ -277,7 +302,7 @@ export const useReleaseModalPlayback = ({
         release,
         trackPosition: firstTrack.position,
         trackTitle: firstTrack.title,
-        startPaused: true,
+        ...(playback.autoPlayOnQueueAdd ? {} : { startPaused: true }),
         rebuildAlbumQueue: false,
       });
 
@@ -300,6 +325,7 @@ export const useReleaseModalPlayback = ({
       });
     }
   }, [
+    playback.autoPlayOnQueueAdd,
     isTrackQueued,
     playback.addToQueue,
     playback.isMiniPlayerVisible,

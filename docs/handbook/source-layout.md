@@ -23,6 +23,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`scripts/`](../../scripts/) | Scaffold, env loading, DB pull helpers. |
 | [`.jest/`](../../.jest/) | Jest setup, env vars, SVG mock. |
 | [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx) | Custom Testing Library render helpers (`test-utils` import alias). |
+| [`src/tests/utils/releasePlaybackTestTree.tsx`](../../src/tests/utils/releasePlaybackTestTree.tsx) | Shared **`ReleasePlaybackProvider`** wrapper for release-card and grid PO renders. |
 
 ## Common lookups
 

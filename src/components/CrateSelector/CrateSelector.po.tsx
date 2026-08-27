@@ -147,6 +147,7 @@ export class CrateSelectorPageObject extends BasePageObject {
   renderCrateSelector(overrides: CrateSelectorRenderProps = {}): RenderResult {
     return render(<CrateSelector {...overrides} />, {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

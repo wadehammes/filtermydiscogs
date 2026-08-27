@@ -21,6 +21,10 @@ export const ReleaseNotesEditorDialog = ({
     isSaving,
   } = useReleaseNotesEditorContext();
 
+  if (!isDialogOpen) {
+    return null;
+  }
+
   return (
     <NoteEditDialog
       isOpen={isDialogOpen}

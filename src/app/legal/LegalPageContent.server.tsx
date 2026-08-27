@@ -90,12 +90,12 @@ export function LegalPageContent() {
               When you&apos;re logged in, account preferences also live in
               Postgres: theme (light, dim, sepia, slate, dark, midnight, high
               contrast, or system), default view (grid or table), whether to
-              remember filter selections, your analytics cookie choice (when
-              set), and—when that option is on—your saved filter and sort
-              choices (styles, years, formats, sort order, genre/style, format,
-              and release year match mode, and search text). That lets settings
-              follow you across browsers. I don&apos;t store your full
-              collection there.
+              remember filter selections, whether to auto-play when adding to an
+              empty queue, your analytics cookie choice (when set), and—when
+              that option is on—your saved filter and sort choices (styles,
+              years, formats, sort order, genre/style, format, and release year
+              match mode, and search text). That lets settings follow you across
+              browsers. I don&apos;t store your full collection there.
             </li>
             <li>
               When you opt in to analytics, I may also store product usage

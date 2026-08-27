@@ -4,20 +4,20 @@ import type {
   DiscogsVideo,
 } from "src/types/discogs-release-detail.types";
 import {
-  adjustQueueIndexAfterReorder,
   appendQueueItem,
+  buildCurrentQueueItem,
   buildFullPlayableAlbumQueue,
   buildPlayableAlbumQueue,
-  clearQueueKeepingActiveItem,
   createPreviewQueueItem,
   createQueueItem,
   findQueueItemIndex,
   getQueueItemKey,
-  insertQueueItemForPlayNow,
   isSameQueueItem,
+  prependQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
   shuffleQueueItems,
+  upcomingFromAlbumQueue,
 } from "./playbackQueue";
 
 describe("playbackQueue", () => {
@@ -108,6 +108,19 @@ describe("playbackQueue", () => {
     expect(queue).toEqual([]);
   });
 
+  it("derives upcoming tracks from an album queue without the current row", () => {
+    const albumQueue = buildPlayableAlbumQueue({
+      release,
+      tracks,
+      videos,
+      startPosition: "A1",
+    });
+
+    expect(
+      upcomingFromAlbumQueue(albumQueue).map((item) => item.trackPosition),
+    ).toEqual(["A2"]);
+  });
+
   it("appends unique queue items", () => {
     const first = createQueueItem({
       release,
@@ -129,7 +142,7 @@ describe("playbackQueue", () => {
     expect(appendQueueItem([first], second)).toEqual([first, second]);
   });
 
-  it("inserts a play-now item after the active row when playback is running", () => {
+  it("prepends queue items for history rewind", () => {
     const first = createQueueItem({
       release,
       trackPosition: "A1",
@@ -140,35 +153,32 @@ describe("playbackQueue", () => {
       trackPosition: "A2",
       trackTitle: "Second",
     });
-    const third = createQueueItem({
-      release: otherRelease,
-      trackPosition: "B1",
-      trackTitle: "Other",
-    });
-    const queue = [first, second];
 
-    expect(insertQueueItemForPlayNow(queue, third, 0, true)).toEqual({
-      queue: [first, third, second],
-      playIndex: 1,
-    });
+    expect(prependQueueItem([second], first)).toEqual([first, second]);
   });
 
-  it("inserts a play-now item at the front when the queue is idle", () => {
-    const queued = createQueueItem({
-      release,
-      trackPosition: "A2",
-      trackTitle: "Second",
-    });
-    const playNow = createQueueItem({
-      release: otherRelease,
-      trackPosition: "B1",
-      trackTitle: "Other",
-    });
+  it("builds the current queue item from release playback state", () => {
+    const track = tracks[0];
 
-    expect(insertQueueItemForPlayNow([queued], playNow, 0, false)).toEqual({
-      queue: [playNow, queued],
-      playIndex: 0,
-    });
+    if (!track) {
+      throw new Error("Expected fixture track");
+    }
+
+    expect(
+      buildCurrentQueueItem({
+        release,
+        previewVideo: null,
+        activeTrack: track,
+      })?.trackPosition,
+    ).toBe("A1");
+
+    expect(
+      buildCurrentQueueItem({
+        release,
+        previewVideo: videos[0] ?? null,
+        activeTrack: null,
+      })?.previewVideoUri,
+    ).toBe("https://www.youtube.com/watch?v=abc12345678");
   });
 
   it("shuffles queue items", () => {
@@ -214,7 +224,7 @@ describe("playbackQueue", () => {
     expect(removeQueueItemAtIndex(queue, 0)).toEqual([second]);
   });
 
-  it("reorders queue items and adjusts the active index", () => {
+  it("reorders upcoming queue items", () => {
     const first = createQueueItem({
       release,
       trackPosition: "A1",
@@ -235,52 +245,5 @@ describe("playbackQueue", () => {
     expect(
       reorderQueueItems(queue, 0, 2).map((item) => item.trackTitle),
     ).toEqual(["Second", "Third", "First"]);
-
-    expect(
-      adjustQueueIndexAfterReorder({
-        queueIndex: 1,
-        fromIndex: 0,
-        toIndex: 2,
-      }),
-    ).toBe(0);
-
-    expect(
-      adjustQueueIndexAfterReorder({
-        queueIndex: 1,
-        fromIndex: 2,
-        toIndex: 0,
-      }),
-    ).toBe(2);
-
-    expect(
-      adjustQueueIndexAfterReorder({
-        queueIndex: 1,
-        fromIndex: 1,
-        toIndex: 3,
-      }),
-    ).toBe(3);
-  });
-
-  it("clears upcoming queue rows while keeping the active item at index zero", () => {
-    const first = createQueueItem({
-      release,
-      trackPosition: "A1",
-      trackTitle: "First",
-    });
-    const second = createQueueItem({
-      release: otherRelease,
-      trackPosition: "A2",
-      trackTitle: "Second",
-    });
-    const third = createQueueItem({
-      release,
-      trackPosition: "B1",
-      trackTitle: "Third",
-    });
-
-    expect(clearQueueKeepingActiveItem([first, second, third], 1)).toEqual({
-      queue: [second],
-      queueIndex: 0,
-    });
   });
 });

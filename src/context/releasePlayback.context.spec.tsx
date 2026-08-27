@@ -13,6 +13,8 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
@@ -35,6 +37,18 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
 
 const mockApi = jest.mocked(apiHelpers);
+const preferencesApiError = new Error("Preferences API request failed");
+
+const mockUserPreferencesResponse = (
+  preferences = userPreferencesFactory.defaults(),
+) => {
+  mockApiResponse(
+    true,
+    mockApi.fetchUserPreferences,
+    { preferences },
+    preferencesApiError,
+  );
+};
 
 const RELEASE_ID = 249504;
 
@@ -182,6 +196,7 @@ const createAuthCheckingWrapper = () => {
         ...testAuthenticatedAuthState,
         isCheckingAuth: true,
       }}
+      includeCollectionSync={false}
     >
       <SeedCollectionReleases releases={[collectionRelease]}>
         <ReleasePlaybackProvider>{children}</ReleasePlaybackProvider>
@@ -195,6 +210,7 @@ describe("ReleasePlaybackProvider", () => {
     jest.resetAllMocks();
     localStorage.clear();
     mockPostYoutubePlayerCommand.mockClear();
+    mockUserPreferencesResponse();
     setupDefaultCrateApiMocks(mockApi);
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
   });
@@ -239,8 +255,8 @@ describe("ReleasePlaybackProvider", () => {
 
     await waitFor(() => {
       expect(result.current.isPlaybackReady).toBe(true);
-      expect(result.current.queue.length).toBeGreaterThan(1);
-      expect(result.current.queueIndex).toBe(0);
+      expect(result.current.queue).toHaveLength(1);
+      expect(result.current.queue[0]?.trackPosition).toBe("B1");
     });
 
     act(() => {
@@ -254,7 +270,8 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.queueIndex).toBe(1);
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
     });
   });
 
@@ -659,13 +676,12 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.queue).toHaveLength(2);
+      expect(result.current.queue).toHaveLength(1);
     });
 
-    expect(result.current.queueIndex).toBe(0);
     expect(result.current.canPlayNext).toBe(true);
-    expect(result.current.queue[0]?.trackPosition).toBe("A1");
-    expect(result.current.queue[1]?.trackPosition).toBe("B1");
+    expect(result.current.activeTrackPosition).toBe("A1");
+    expect(result.current.queue[0]?.trackPosition).toBe("B1");
   });
 
   it("appends playable tracks from similar releases when playback starts", async () => {
@@ -727,13 +743,13 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.queue).toHaveLength(3);
+      expect(result.current.queue).toHaveLength(2);
     });
 
-    expect(result.current.queue[2]?.instanceId).toBe(
+    expect(result.current.queue[1]?.instanceId).toBe(
       similarRelease.instance_id,
     );
-    expect(result.current.queue[2]?.trackPosition).toBe("A1");
+    expect(result.current.queue[1]?.trackPosition).toBe("A1");
   });
 
   it("does not append similar releases when playback starts paused", async () => {
@@ -799,12 +815,8 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.isPlaybackReady).toBe(true);
     });
 
-    expect(result.current.queue).toHaveLength(2);
-    expect(
-      result.current.queue.some(
-        (item) => item.instanceId === similarRelease.instance_id,
-      ),
-    ).toBe(false);
+    expect(result.current.queue).toHaveLength(1);
+    expect(result.current.queue[0]?.trackPosition).toBe("B1");
   });
 
   it("appends tracks to the queue without duplicates", async () => {
@@ -831,7 +843,8 @@ describe("ReleasePlaybackProvider", () => {
       });
     });
 
-    expect(result.current.queue).toHaveLength(2);
+    expect(result.current.queue).toHaveLength(1);
+    expect(result.current.queue[0]?.trackPosition).toBe("B1");
 
     act(() => {
       result.current.addToQueue({
@@ -841,7 +854,63 @@ describe("ReleasePlaybackProvider", () => {
       });
     });
 
-    expect(result.current.queue).toHaveLength(2);
+    expect(result.current.queue).toHaveLength(1);
+  });
+
+  it("starts playback when adding to an empty queue with autoPlayOnQueueAdd enabled", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ autoPlayOnQueueAdd: true }),
+    );
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.autoPlayOnQueueAdd).toBe(true);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "A1",
+        trackTitle: "Never Gonna Give You Up",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isMiniPlayerVisible).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("A1");
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.shouldAutoplayEmbed).toBe(true);
+    expect(result.current.queue).toHaveLength(0);
+  });
+
+  it("queues without starting playback when autoPlayOnQueueAdd is disabled", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ autoPlayOnQueueAdd: false }),
+    );
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.autoPlayOnQueueAdd).toBe(false);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "A1",
+        trackTitle: "Never Gonna Give You Up",
+      });
+    });
+
+    expect(result.current.isMiniPlayerVisible).toBe(false);
+    expect(result.current.queue).toHaveLength(1);
   });
 
   it("advances through a cross-release queue with playNext", async () => {
@@ -870,7 +939,7 @@ describe("ReleasePlaybackProvider", () => {
       });
     });
 
-    expect(result.current.queue).toHaveLength(3);
+    expect(result.current.queue).toHaveLength(2);
 
     act(() => {
       result.current.playNext();
@@ -878,6 +947,7 @@ describe("ReleasePlaybackProvider", () => {
 
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(1);
     });
 
     act(() => {
@@ -887,6 +957,7 @@ describe("ReleasePlaybackProvider", () => {
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("1");
       expect(result.current.release?.basic_information.id).toBe(100002);
+      expect(result.current.queue).toHaveLength(0);
     });
   });
 
@@ -903,7 +974,7 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.queue.length).toBeGreaterThan(1);
+      expect(result.current.queue).toHaveLength(1);
     });
 
     act(() => {
@@ -914,7 +985,7 @@ describe("ReleasePlaybackProvider", () => {
       });
     });
 
-    expect(result.current.queue).toHaveLength(2);
+    expect(result.current.queue).toHaveLength(1);
 
     act(() => {
       result.current.clearQueue();
@@ -922,9 +993,7 @@ describe("ReleasePlaybackProvider", () => {
 
     expect(result.current.isPlaying).toBe(true);
     expect(result.current.activeTrackPosition).toBe("A1");
-    expect(result.current.queue).toHaveLength(1);
-    expect(result.current.queue[0]?.trackPosition).toBe("A1");
-    expect(result.current.queueIndex).toBe(0);
+    expect(result.current.queue).toHaveLength(0);
     expect(result.current.canPlayNext).toBe(false);
   });
 
@@ -949,7 +1018,6 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(result.current.queue).toHaveLength(0);
-    expect(result.current.queueIndex).toBe(0);
   });
 
   it("reorders the queue without restarting the active track", async () => {
@@ -965,7 +1033,7 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.queue).toHaveLength(2);
+      expect(result.current.queue).toHaveLength(1);
     });
 
     act(() => {
@@ -976,6 +1044,16 @@ describe("ReleasePlaybackProvider", () => {
       });
     });
 
+    setupCollectionAndShortReleaseApiMock();
+
+    act(() => {
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
     expect(result.current.queue).toHaveLength(2);
 
     act(() => {
@@ -983,19 +1061,26 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+      "1",
       "B1",
-      "A1",
     ]);
-    expect(result.current.queueIndex).toBe(1);
     expect(result.current.activeTrackPosition).toBe("A1");
     expect(result.current.isPlaying).toBe(true);
   });
 
   it("preserves a manually built queue when play is clicked in another release modal", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ autoPlayOnQueueAdd: false }),
+    );
+
     setupCollectionAndShortReleaseApiMock();
 
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.autoPlayOnQueueAdd).toBe(false);
     });
 
     act(() => {
@@ -1024,12 +1109,47 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.activeTrackPosition).toBe("A1");
     });
 
-    expect(result.current.queue).toHaveLength(3);
+    expect(result.current.queue).toHaveLength(2);
     expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
-      "A1",
       "B1",
       "1",
     ]);
+  });
+
+  it("walks back through playback history with playPrevious", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.canPlayPrevious).toBe(true);
+    });
+
+    act(() => {
+      result.current.playPrevious();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.queue[0]?.trackPosition).toBe("B1");
+      expect(result.current.canPlayNext).toBe(true);
+    });
   });
 
   it("replaces the album queue when play is clicked without manual queue additions", async () => {
@@ -1050,7 +1170,6 @@ describe("ReleasePlaybackProvider", () => {
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("A1");
       expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
-        "A1",
         "B1",
       ]);
     });
@@ -1065,8 +1184,7 @@ describe("ReleasePlaybackProvider", () => {
 
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("1");
-      expect(result.current.queue).toHaveLength(1);
-      expect(result.current.queue[0]?.trackPosition).toBe("1");
+      expect(result.current.queue).toHaveLength(0);
       expect(result.current.release?.basic_information.id).toBe(
         SHORT_RELEASE_ID,
       );

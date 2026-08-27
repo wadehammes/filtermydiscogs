@@ -26,7 +26,10 @@ describe("CrateDrawerFooter", () => {
       </CrateDrawerProvider>,
       {
         wrapper: ({ children }) => (
-          <TestProviders authInitialState={testAuthenticatedAuthState}>
+          <TestProviders
+            authInitialState={testAuthenticatedAuthState}
+            includeCollectionSync={false}
+          >
             {children}
           </TestProviders>
         ),
@@ -68,7 +71,10 @@ describe("CrateDrawerFooter", () => {
       </CrateDrawerProvider>,
       {
         wrapper: ({ children }) => (
-          <TestProviders authInitialState={testAuthenticatedAuthState}>
+          <TestProviders
+            authInitialState={testAuthenticatedAuthState}
+            includeCollectionSync={false}
+          >
             {children}
           </TestProviders>
         ),

@@ -138,6 +138,7 @@ export class ReleaseListItemPageObject extends BasePageObject {
   ): RenderResult {
     return render(this.releaseListItemElement(overrides), {
       authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
     });
   }
 }

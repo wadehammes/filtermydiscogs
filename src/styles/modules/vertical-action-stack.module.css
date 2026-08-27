@@ -19,6 +19,11 @@
   }
 }
 
+.overlayActionSlotMobile {
+  flex: 1 1 auto;
+  min-height: 2.5rem;
+}
+
 .overlayAction {
   align-items: center;
   background: transparent;
@@ -46,12 +51,31 @@
   }
 }
 
+.overlayActionMobile {
+  padding-block: var(--space-2);
+}
+
 .overlayActionActive {
   background: var(--primary);
   color: var(--primary-foreground);
 
   &:focus-visible {
     outline-color: var(--primary-foreground);
+  }
+}
+
+.overlayActionQueued {
+  color: var(--primary);
+  cursor: default;
+
+  &:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  &:hover:not(.overlayActionActive) {
+    background: transparent;
+    color: var(--primary);
   }
 }
 

@@ -45,6 +45,30 @@ export const createPreviewQueueItem = ({
   release,
 });
 
+export const buildCurrentQueueItem = ({
+  release,
+  previewVideo,
+  activeTrack,
+}: {
+  release: DiscogsRelease;
+  previewVideo: DiscogsVideo | null;
+  activeTrack: DiscogsTrack | null;
+}): PlaybackQueueItem | null => {
+  if (previewVideo) {
+    return createPreviewQueueItem({ release, video: previewVideo });
+  }
+
+  if (!activeTrack) {
+    return null;
+  }
+
+  return createQueueItem({
+    release,
+    trackPosition: activeTrack.position,
+    trackTitle: activeTrack.title,
+  });
+};
+
 export const findQueueItemIndex = (
   queue: PlaybackQueueItem[],
   item: Pick<PlaybackQueueItem, "instanceId" | "trackPosition">,
@@ -65,25 +89,14 @@ export const appendQueueItem = (
   return [...queue, item];
 };
 
-export const insertQueueItemForPlayNow = (
+export const prependQueueItem = (
   queue: PlaybackQueueItem[],
   item: PlaybackQueueItem,
-  queueIndex: number,
-  isPlaying: boolean,
-): { queue: PlaybackQueueItem[]; playIndex: number } => {
-  const existingIndex = findQueueItemIndex(queue, item);
+): PlaybackQueueItem[] => [item, ...queue];
 
-  if (existingIndex >= 0) {
-    return { queue, playIndex: existingIndex };
-  }
-
-  const insertAt = isPlaying ? Math.min(queueIndex + 1, queue.length) : 0;
-
-  return {
-    queue: [...queue.slice(0, insertAt), item, ...queue.slice(insertAt)],
-    playIndex: insertAt,
-  };
-};
+export const upcomingFromAlbumQueue = (
+  albumQueue: PlaybackQueueItem[],
+): PlaybackQueueItem[] => albumQueue.slice(1);
 
 export const removeQueueItemAtIndex = (
   queue: PlaybackQueueItem[],
@@ -94,19 +107,6 @@ export const removeQueueItemAtIndex = (
   }
 
   return queue.filter((_, queueIndex) => queueIndex !== index);
-};
-
-export const clearQueueKeepingActiveItem = (
-  queue: PlaybackQueueItem[],
-  queueIndex: number,
-): { queue: PlaybackQueueItem[]; queueIndex: number } => {
-  const activeItem = queue[queueIndex];
-
-  if (!activeItem) {
-    return { queue: [], queueIndex: 0 };
-  }
-
-  return { queue: [activeItem], queueIndex: 0 };
 };
 
 export const reorderQueueItems = (
@@ -136,44 +136,18 @@ export const reorderQueueItems = (
   return nextQueue;
 };
 
-export const adjustQueueIndexAfterReorder = ({
-  queueIndex,
-  fromIndex,
-  toIndex,
-}: {
-  queueIndex: number;
-  fromIndex: number;
-  toIndex: number;
-}): number => {
-  if (fromIndex === toIndex) {
-    return queueIndex;
-  }
-
-  if (queueIndex === fromIndex) {
-    return toIndex;
-  }
-
-  if (fromIndex < queueIndex && toIndex >= queueIndex) {
-    return queueIndex - 1;
-  }
-
-  if (fromIndex > queueIndex && toIndex <= queueIndex) {
-    return queueIndex + 1;
-  }
-
-  return queueIndex;
-};
-
 export const buildPlayableAlbumQueue = ({
   release,
   tracks,
   videos,
   startPosition,
+  matchIndex: providedMatchIndex,
 }: {
   release: DiscogsRelease;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
   startPosition: string;
+  matchIndex?: ReturnType<typeof buildReleasePlaybackMatchIndex>;
 }): PlaybackQueueItem[] => {
   const startIndex = findTrackIndexByPosition(tracks, startPosition);
 
@@ -187,7 +161,8 @@ export const buildPlayableAlbumQueue = ({
     ];
   }
 
-  const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+  const matchIndex =
+    providedMatchIndex ?? buildReleasePlaybackMatchIndex(tracks, videos);
   const items: PlaybackQueueItem[] = [];
 
   for (let index = startIndex; index < tracks.length; index += 1) {
@@ -236,6 +211,7 @@ export const buildFullPlayableAlbumQueue = ({
     tracks,
     videos,
     startPosition: firstPlayableTrack.position,
+    matchIndex,
   });
 };
 
