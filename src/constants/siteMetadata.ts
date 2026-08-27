@@ -50,7 +50,7 @@ export const PAGE_DESCRIPTIONS = {
     "Open a crate to review releases, edit collection notes, and pack for your gig.",
   settings:
     "Manage theme, sync preferences, and stored data for your FilterMyDiscogs account.",
-  about: `FilterMyDiscogs helps you browse, filter, and organize your Discogs collection, including ${COLLECTION_FORMATS_PHRASE}. Contact, support, and open-source details.`,
+  about: `About FilterMyDiscogs: collection insights, search and filters, crates with set notes and gig packing, in-app playback, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
   legal: "Terms of Service and Privacy Policy for FilterMyDiscogs.",
   admin: "Admin statistics and analytics dashboard.",
   crateFallback: "A shared crate on FilterMyDiscogs.",

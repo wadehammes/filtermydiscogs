@@ -31,7 +31,7 @@ describe("Login", () => {
     po.renderLogin();
     expect(
       screen.getByRole("heading", {
-        name: "Ready to explore your collection?",
+        name: "Ready to connect your collection?",
       }),
     ).toBeInTheDocument();
   });
@@ -46,7 +46,7 @@ describe("Login", () => {
     );
     expect(
       screen.getByText(
-        "Browse and filter your collection, organize crates with set notes and gig packing, explore insights, and share cover-art mosaics.",
+        "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights, and share cover-art mosaics.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -60,7 +60,7 @@ describe("Login", () => {
     po.renderLogin();
 
     expect(
-      screen.getByRole("heading", { name: "Collections Insights Dashboard" }),
+      screen.getByRole("heading", { name: "Collection insights dashboard" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Insights")).toBeInTheDocument();
     expect(screen.getByText("Mosaics")).toBeInTheDocument();
@@ -84,12 +84,8 @@ describe("Login", () => {
         name: "Cover-art mosaic grid generated from a collection of release artwork",
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Browse, search, and filter your collection"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Organize and share your crates"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Browse, search, and filter")).toBeInTheDocument();
+    expect(screen.getByText("Organize and share crates")).toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: "About" }).length,
     ).toBeGreaterThanOrEqual(1);

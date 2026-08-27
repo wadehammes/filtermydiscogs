@@ -2,15 +2,18 @@ import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 
 export const LOGIN_PAGE_SITE_COPY = {
   tagline: "Digging made easier.",
-  lead: "Browse and filter your collection, organize crates with set notes and gig packing, explore insights, and share cover-art mosaics.",
+  lead: "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights, and share cover-art mosaics.",
   description:
-    "Browse and filter your Discogs collection, organize crates with set notes and gig packing, explore insights, and share cover-art mosaics.",
+    "A free Discogs companion. Search and filter your collection, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights, and share cover-art mosaics.",
   previewAltSuffix:
-    "app preview showing release cards, filters, crate organization, and collection insights",
+    "app preview with release cards, filters, in-app playback, crate tools, and collection insights",
 } as const;
 
 export const LOGIN_PAGE_UI_COPY = {
-  bottomCtaHeading: "Ready to explore your collection?",
+  bottomCtaHeading: "Ready to connect your collection?",
+  featuresSectionHeading: "What you can do",
+  featuresSectionLede:
+    "Four ways to get more from the records you already own.",
   termsPrivacyLink: "Terms & Privacy",
   finePrintFreePrefix: "Free to use (",
   finePrintSupportLink: "support is greatly appreciated",
@@ -53,6 +56,16 @@ export const getLoginPageCopyEntries = (
     {
       id: "ui.bottomCtaHeading",
       text: LOGIN_PAGE_UI_COPY.bottomCtaHeading,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.featuresSectionHeading",
+      text: LOGIN_PAGE_UI_COPY.featuresSectionHeading,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.featuresSectionLede",
+      text: LOGIN_PAGE_UI_COPY.featuresSectionLede,
       source: "loginPageCopy.registry",
     },
     {

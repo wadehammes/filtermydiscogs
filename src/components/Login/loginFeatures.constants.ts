@@ -10,36 +10,36 @@ export type LoginFeature = {
 export const LOGIN_FEATURES: LoginFeature[] = [
   {
     eyebrow: "Insights",
-    title: "Collections Insights Dashboard",
+    title: "Collection insights dashboard",
     description:
-      "Discover collection milestones, style evolution over time, and growth trends with clear charts and stats. See how your taste has changed, spot patterns in your buying habits, and follow the story your records tell.",
+      "See milestones, style evolution, and growth trends with charts and stats. Spot patterns in your buying habits and follow the story your records tell over time.",
     imageBase: "dashboard",
     imageAlt:
       "Collections insights dashboard with stats, charts, and collection milestones",
   },
   {
     eyebrow: "Browse",
-    title: "Browse, search, and filter your collection",
+    title: "Browse, search, and filter",
     description:
-      "Rediscover albums and artists across your entire library. Search by title, artist, or label, apply filters as you go, and switch between grid and table views. Open any release to browse its tracklist and preview tracks with the in-app player, then add or edit notes from the card or list, kept in sync with your Discogs collection.",
+      "Rediscover albums across your library. Search by title, artist, or label, switch between grid and table views, and open any release for its tracklist. Preview tracks with the in-app player and add or edit collection notes that stay synced with Discogs.",
     imageBase: "releases",
     imageAlt:
       "Releases page with search, filters, tracklist, in-app player, and release cards",
   },
   {
     eyebrow: "Crates",
-    title: "Organize and share your crates",
+    title: "Organize and share crates",
     description:
-      "Build crates for DJ gigs, themed lists, or long-term favorites. Add releases while you browse, then open a crate page to reorder your set, add section markers, write set notes, and track gig-packing progress. Make a crate public when you want someone else to explore your picks.",
+      "Build crates for DJ gigs, themed lists, or long-term favorites. Reorder your set, add section markers, write set notes, and track gig-packing progress on the crate page. Make a crate public when you want someone else to explore your picks.",
     imageBase: "crates",
     imageAlt:
       "Crate detail page with section markers, set notes, gig-packing checklist, and an organized release list",
   },
   {
     eyebrow: "Mosaics",
-    title: "Generate mosaic grids",
+    title: "Generate cover-art mosaics",
     description:
-      "Turn your collection or a crate into a cover-art mosaic for social sharing. Choose formats and sizes that fit Instagram, headers, or print. A quick visual snapshot of what you are listening to.",
+      "Turn your collection or a crate into a cover-art grid for social sharing. Pick formats and sizes for Instagram, headers, or print. A quick visual snapshot of what you are spinning.",
     imageBase: "mosaic",
     imageAlt:
       "Cover-art mosaic grid generated from a collection of release artwork",
