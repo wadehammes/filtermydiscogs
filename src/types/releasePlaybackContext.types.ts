@@ -35,6 +35,7 @@ export interface ReleasePlaybackState {
   activeTrackPosition: string | null;
   activeTrack: DiscogsTrack | null;
   activeVideoId: string | null;
+  embedVideoId: string | null;
   activePlaybackTitle: string | null;
   isReleasePreview: boolean;
   isPlaying: boolean;

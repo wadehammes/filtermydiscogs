@@ -3,8 +3,10 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
   buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
+  findVideoForTrack,
   getPreviewTrackPosition,
   getPreviewVideoTitle,
+  parseYoutubeVideoId,
 } from "src/utils/releasePlayback";
 
 export const getQueueItemKey = (
@@ -253,4 +255,43 @@ export const shuffleQueueItems = <T>(items: readonly T[]): T[] => {
   }
 
   return shuffled;
+};
+
+export const resolveQueueItemYoutubeVideoId = ({
+  item,
+  tracks,
+  videos,
+}: {
+  item: PlaybackQueueItem;
+  tracks: DiscogsTrack[];
+  videos: DiscogsVideo[];
+}): string | null => {
+  if (item.previewVideoUri) {
+    return parseYoutubeVideoId(item.previewVideoUri);
+  }
+
+  if (tracks.length === 0) {
+    return null;
+  }
+
+  const index = findTrackIndexByPosition(tracks, item.trackPosition);
+
+  if (index < 0) {
+    return null;
+  }
+
+  const track = tracks[index];
+
+  if (!track) {
+    return null;
+  }
+
+  const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+  const video = findVideoForTrack({
+    track,
+    videos,
+    matchIndex,
+  });
+
+  return video ? parseYoutubeVideoId(video.uri) : null;
 };

@@ -986,7 +986,11 @@ export const PLAY_FROM_GESTURE_RETRY_DELAYS_MS = [
   0, 150, 400, 800, 1500, 3000,
 ] as const;
 
-export { postYoutubePlayerCommand } from "./postYoutubePlayerCommand";
+export {
+  loadYoutubeVideoById,
+  postYoutubePlayerCommand,
+  transitionYoutubeIframeToVideo,
+} from "./postYoutubePlayerCommand";
 
 export const findPlayableTrackIndex = ({
   tracks,
