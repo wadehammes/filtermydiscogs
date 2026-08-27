@@ -67,6 +67,7 @@ import {
   PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
+  transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import {
   clearPersistedReleasePlayback,
@@ -329,6 +330,12 @@ export const ReleasePlaybackProvider = ({
     (videoId: string) => {
       embedVideoIdRef.current = videoId;
       setEmbedVideoId(videoId);
+
+      const iframe = playbackIframeRef.current;
+
+      if (iframe) {
+        transitionYoutubeIframeToVideo({ iframe, videoId });
+      }
 
       if (!isPausedRef.current) {
         pendingPlayFromGestureRef.current = true;
@@ -1159,6 +1166,14 @@ export const ReleasePlaybackProvider = ({
 
       if (iframe) {
         enableYoutubeIframeListening(iframe);
+
+        if (embedVideoIdRef.current) {
+          transitionYoutubeIframeToVideo({
+            iframe,
+            videoId: embedVideoIdRef.current,
+          });
+        }
+
         schedulePlayFromGestureAttempts();
         return;
       }
