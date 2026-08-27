@@ -27,9 +27,19 @@ import {
   markPlaybackVideoIntroSeen,
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
 } from "src/utils/playbackVideoIntroStorage";
+import { transitionYoutubeIframeToVideo } from "src/utils/releasePlayback";
 import { render, screen, waitFor } from "test-utils";
 
 jest.mock("src/api/helpers");
+jest.mock("src/utils/postYoutubePlayerCommand", () => ({
+  postYoutubePlayerCommand: jest.fn(),
+  loadYoutubeVideoById: jest.fn(),
+  transitionYoutubeIframeToVideo: jest.fn(),
+}));
+
+const mockTransitionYoutubeIframeToVideo = jest.mocked(
+  transitionYoutubeIframeToVideo,
+);
 
 const mockApi = jest.mocked(apiHelpers);
 
@@ -391,7 +401,7 @@ describe("ReleaseMiniPlayer", () => {
     document.querySelector("[data-filters-drawer-open]")?.remove();
   });
 
-  it("updates the embed src when advancing to the next track", async () => {
+  it("loads the next video in the existing iframe when advancing tracks", async () => {
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
@@ -399,8 +409,9 @@ describe("ReleaseMiniPlayer", () => {
     await startPlaybackAndWaitForPlayer(user);
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    const initialSrc = iframe.getAttribute("src");
 
-    expect(iframe.getAttribute("src")).toContain("te2jJncBVG4");
+    expect(initialSrc).toContain("te2jJncBVG4");
 
     await waitFor(() => {
       expect(
@@ -416,7 +427,13 @@ describe("ReleaseMiniPlayer", () => {
       ).toBeInTheDocument();
     });
 
-    expect(iframe.getAttribute("src")).toContain("abc12345678");
+    expect(iframe.getAttribute("src")).toBe(initialSrc);
+    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iframe,
+        videoId: "abc12345678",
+      }),
+    );
   });
 
   it("keeps the video panel open when advancing tracks", async () => {

@@ -35,6 +35,7 @@ jest.mock("src/api/helpers");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
+  transitionYoutubeIframeToVideo: jest.fn(),
 }));
 
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
