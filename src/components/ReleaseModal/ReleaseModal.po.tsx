@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   BasePageObject,
@@ -16,7 +16,7 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { ReleaseModal } from "./ReleaseModal.component";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
@@ -59,7 +59,7 @@ jest.mock("src/hooks/useMediaQuery.hook", () => ({
   useMediaQuery: (query: string) => mockUseMediaQuery(query),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const apiError = new Error("API request failed");
 const RELEASE_ID = 249504;
 
@@ -96,19 +96,19 @@ export class ReleaseModalPageObject extends BasePageObject {
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
-      mockApi.fetchCollectionFields,
+      mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchDiscogsRelease,
+      mockApi.discogsRelease,
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: RELEASE_ID }),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchUserPreferences,
+      mockApi.userPreferences,
       { preferences: userPreferencesFactory.defaults() },
       apiError,
     );

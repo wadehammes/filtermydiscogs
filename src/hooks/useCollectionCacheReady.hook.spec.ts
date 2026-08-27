@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { fetchDiscogsCollection } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import {
   installMockIndexedDb,
@@ -15,11 +15,13 @@ import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { renderFeatureHook, waitFor } from "test-utils";
 import { useCollectionCacheReady } from "./useCollectionCacheReady.hook";
 
-jest.mock("src/api/helpers", () => ({
-  fetchDiscogsCollection: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+  },
 }));
 
-const mockFetchDiscogsCollection = jest.mocked(fetchDiscogsCollection);
+const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 
 describe("useCollectionCacheReady", () => {
   beforeEach(() => {

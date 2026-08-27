@@ -1,4 +1,5 @@
-import type * as apiHelpers from "src/api/helpers";
+import type { Api } from "src/api/urls";
+import { api } from "src/api/urls";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
@@ -45,7 +46,7 @@ export const crateDrawerPartiallyPackedResponse =
   ]);
 
 export const setupCrateDrawerTests = (
-  mockApi: jest.Mocked<typeof apiHelpers>,
+  mockApi: jest.Mocked<Api> = jest.mocked(api),
 ) => {
   jest.clearAllMocks();
   localStorage.clear();
@@ -53,14 +54,14 @@ export const setupCrateDrawerTests = (
 
   mockApiResponse(
     true,
-    mockApi.fetchCrates,
+    mockApi.crates,
     cratesResponseFactory.withCrates([crateDrawerDefaultCrate]),
     new Error("Crate API request failed"),
   );
 
   mockApiResponse(
     true,
-    mockApi.fetchCrate,
+    mockApi.crate,
     crateWithReleasesResponseFactory.withReleases(crateDrawerDefaultDetail, []),
     new Error("Crate API request failed"),
   );

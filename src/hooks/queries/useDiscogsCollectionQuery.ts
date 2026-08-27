@@ -8,7 +8,7 @@ import {
   getRateLimitedRetryDelayMs,
   isTransientRateLimitError,
 } from "src/api/apiFetchError";
-import { checkAuth, fetchDiscogsCollection } from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   COLLECTION_CACHE_STALE_MS,
   COLLECTION_FIRST_PAGE_SIZE,
@@ -36,7 +36,7 @@ export interface UseDiscogsCollectionQueryParams {
 const COLLECTION_RATE_LIMIT_MAX_RETRIES = 3;
 
 async function syncAuthQueryCache(queryClient: QueryClient) {
-  const authStatus = normalizeAuthStatus(await checkAuth());
+  const authStatus = normalizeAuthStatus(await api.checkAuth());
   queryClient.setQueryData(AuthQueryKeys.all(), authStatus);
   return authStatus;
 }
@@ -53,7 +53,7 @@ async function fetchCollectionPage({
   const { page, perPage } = pageParam;
 
   try {
-    return await fetchDiscogsCollection({ username, page, perPage });
+    return await api.discogsCollection({ username, page, perPage });
   } catch (error) {
     if (!(error instanceof ApiFetchError) || error.status !== 401) {
       throw error;
@@ -65,7 +65,7 @@ async function fetchCollectionPage({
       throw error;
     }
 
-    return fetchDiscogsCollection({ username, page, perPage });
+    return api.discogsCollection({ username, page, perPage });
   }
 }
 

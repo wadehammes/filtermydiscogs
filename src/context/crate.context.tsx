@@ -26,10 +26,6 @@ import {
 } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import {
-  CrateQueryKeys,
-  CratesQueryKeys,
-} from "src/hooks/queries/querykeys.constants";
-import {
   useAddReleaseToCrateMutation,
   useClearAllPackedInCrateMutation,
   useCreateCrateMutation,
@@ -37,7 +33,11 @@ import {
   useRemoveReleaseFromCrateMutation,
   useSetReleasePackedInCrateMutation,
   useUpdateCrateMutation,
-} from "src/hooks/queries/useCrateMutations";
+} from "src/hooks/mutations/useCrateMutations";
+import {
+  CrateQueryKeys,
+  CratesQueryKeys,
+} from "src/hooks/queries/querykeys.constants";
 import {
   useCrateQuery,
   useCratesQuery,

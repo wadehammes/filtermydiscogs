@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { ReleaseNotesPageObject } from "src/components/ReleaseNotes/ReleaseNotes.po";
 import {
   RELEASE_NOTES_SAVE_TOAST_ID,
@@ -10,7 +10,7 @@ import {
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("sonner", () => ({
   toast: {
     dismiss: jest.fn(),
@@ -20,7 +20,7 @@ jest.mock("sonner", () => ({
   },
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const mockToastDismiss = jest.mocked(toast.dismiss);
 const mockToastLoading = jest.mocked(toast.loading);
 const mockToastSuccess = jest.mocked(toast.success);

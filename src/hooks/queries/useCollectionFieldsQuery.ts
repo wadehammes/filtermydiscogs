@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchCollectionFields } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { CollectionFieldsQueryKeys } from "./querykeys.constants";
 
 export interface UseCollectionFieldsQueryParams {
@@ -13,7 +13,7 @@ export const useCollectionFieldsQuery = ({
 }: UseCollectionFieldsQueryParams) => {
   return useQuery({
     queryKey: CollectionFieldsQueryKeys.byUsername(username),
-    queryFn: () => fetchCollectionFields(username),
+    queryFn: () => api.collectionFields(username),
     enabled: enabled && !!username,
     staleTime: 60 * 60 * 1000,
     gcTime: 2 * 60 * 60 * 1000,

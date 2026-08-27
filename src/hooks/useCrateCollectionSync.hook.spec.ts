@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { InfiniteData } from "@tanstack/react-query";
 import { toast } from "sonner";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { COLLECTION_FIRST_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
@@ -13,11 +13,13 @@ import type { DiscogsCollection } from "src/types";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers", () => ({
-  fetchDiscogsCollection: jest.fn(),
-  syncCrates: jest.fn(),
-  fetchCrates: jest.fn(),
-  fetchCrate: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+    syncCrates: jest.fn(),
+    crates: jest.fn(),
+    crate: jest.fn(),
+  },
 }));
 
 jest.mock("sonner", () => ({
@@ -31,8 +33,8 @@ jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
-const mockSyncCrates = jest.mocked(apiHelpers.syncCrates);
+const mockApi = jest.mocked(api);
+const mockSyncCrates = jest.mocked(api.syncCrates);
 const mockToastSuccess = jest.mocked(toast.success);
 const mockToastError = jest.mocked(toast.error);
 
@@ -123,7 +125,7 @@ describe("useCrateCollectionSync", () => {
       "Sync complete: All releases in your crates are still in your collection.",
     );
     expect(result.current.showSyncDialog).toBe(false);
-    expect(mockApi.fetchDiscogsCollection).not.toHaveBeenCalled();
+    expect(mockApi.discogsCollection).not.toHaveBeenCalled();
   });
 
   it("shows an error when sync is attempted before the shared cache is loaded", async () => {

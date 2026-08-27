@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -13,7 +13,7 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { ReleasesTable } from "./ReleasesTable.component";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
@@ -46,7 +46,7 @@ jest.mock("src/context/crate.context", () => ({
   }),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const apiError = new Error("API request failed");
 
 export type ReleasesTableRenderProps = {
@@ -72,7 +72,7 @@ export class ReleasesTablePageObject extends BasePageObject {
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
-      mockApi.fetchCollectionFields,
+      mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );

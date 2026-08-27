@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { CrateDrawerProvider } from "src/components/CrateDrawer/CrateDrawer.context";
 import { setupCrateDrawerTests } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerFooter.component";
@@ -10,9 +10,9 @@ import {
 } from "src/tests/utils/testProviders";
 import { render, screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 describe("CrateDrawerFooter", () => {
   beforeEach(() => {

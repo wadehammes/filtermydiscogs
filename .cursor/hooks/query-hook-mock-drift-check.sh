@@ -30,7 +30,7 @@ jest_status=0
 jest_output="$(pnpm jest src/tests/utils/queryHookMockRules.spec.ts --runInBand --no-cache 2>&1)" || jest_status=$?
 
 if [ "$jest_status" -ne 0 ]; then
-  reason="$(printf 'Query-hook mock drift check failed. Feature tests must mock src/api/helpers, not hooks under src/hooks/queries/. Rules: src/tests/utils/queryHookMockRules.ts. Handbook: docs/handbook/conventions.md (Do not test React Query).\n\nChanged test files:\n%s\n\nTest output:\n%s' "$feature_tests_changed" "$jest_output")"
+  reason="$(printf 'Query-hook mock drift check failed. Feature tests must mock src/api/urls, not hooks under src/hooks/queries/. Rules: src/tests/utils/queryHookMockRules.ts. Handbook: docs/handbook/conventions.md (Do not test React Query).\n\nChanged test files:\n%s\n\nTest output:\n%s' "$feature_tests_changed" "$jest_output")"
   jq -n --arg r "$reason" '{ followup_message: $r }'
   exit 0
 fi

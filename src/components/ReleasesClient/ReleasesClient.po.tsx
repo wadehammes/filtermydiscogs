@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
@@ -22,13 +22,13 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import ReleasesClient from "./ReleasesClient.component";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -64,25 +64,25 @@ export class ReleasesClientPageObject extends BasePageObject {
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
-      mockApi.fetchUserPreferences,
+      mockApi.userPreferences,
       { preferences: userPreferencesFactory.defaults() },
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchDiscogsCollection,
+      mockApi.discogsCollection,
       collectionFactory.build({}, { page: 1, totalPages: 1, releaseCount: 2 }),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchCollectionFields,
+      mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchDiscogsRelease,
+      mockApi.discogsRelease,
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: RELEASE_ID }),
       apiError,
     );

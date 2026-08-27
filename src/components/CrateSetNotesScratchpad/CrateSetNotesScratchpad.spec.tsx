@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { CrateDrawerProvider } from "src/components/CrateDrawer/CrateDrawer.context";
 import {
   crateDrawerDefaultCrate,
@@ -20,9 +20,9 @@ import {
 } from "src/tests/utils/testProviders";
 import { render, screen, waitFor, within } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 const renderScratchpad = (ui: ReactElement = <CrateSetNotesScratchpad />) =>
   render(<CrateDrawerProvider>{ui}</CrateDrawerProvider>, {
@@ -37,12 +37,12 @@ describe("CrateSetNotesScratchpad", () => {
   beforeEach(() => {
     setupCrateDrawerTests(mockApi);
 
-    mockApi.fetchCrates.mockResolvedValue(
+    mockApi.crates.mockResolvedValue(
       cratesResponseFactory.withCrates([
         { ...crateDrawerDefaultCrate, notes: null },
       ]),
     );
-    mockApi.fetchCrate.mockResolvedValue(
+    mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleases(
         { ...crateDrawerDefaultDetail, notes: null },
         [crateDrawerReleaseUnpacked],

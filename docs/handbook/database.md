@@ -159,7 +159,7 @@ If **`username`** is missing on an older public crate, the public API may backfi
 
 ## Client integration
 
-- **`CrateProvider`** + **`useCrateMutations`** ([`src/hooks/queries/useCrateMutations.ts`](../../src/hooks/queries/useCrateMutations.ts)) call the crate API via [`src/api/helpers.ts`](../../src/api/helpers.ts).
+- **`CrateProvider`** + **`useCrateMutations`** ([`src/hooks/mutations/useCrateMutations.ts`](../../src/hooks/mutations/useCrateMutations.ts)) call the crate API via **`api.*`** in [`src/api/urls.ts`](../../src/api/urls.ts).
 - **`useCrateMigration`** handles legacy localStorage → server migration on login.
 
 ## Auditing

@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -13,12 +13,12 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { FiltersDrawer } from "./FiltersDrawer.component";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 export type FiltersDrawerRenderProps = {
   isOpen?: boolean;

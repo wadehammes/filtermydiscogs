@@ -4,7 +4,7 @@ import {
   mockFetchSuccess,
   resetFetchMock,
 } from "src/tests/mocks/mockFetchResponse";
-import { clearReleaseRating, updateReleaseRating } from "./helpers";
+import { clearReleaseRating, updateReleaseRating } from "./collection";
 
 global.fetch = jest.fn();
 const mockFetch = jest.mocked(fetch);

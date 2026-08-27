@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
 import { setupCrateDrawerTests } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDetailActionsMenu } from "src/components/Crates/CrateDetailActionsMenu.component";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 const openCrateActionsMenu = async () => {
   const user = userEvent.setup({ pointerEventsCheck: 0 });

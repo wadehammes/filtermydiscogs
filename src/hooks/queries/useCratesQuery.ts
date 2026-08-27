@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchCrate, fetchCrates } from "src/api/helpers";
+import { api } from "src/api/urls";
 import type {
   CratesResponse,
   CrateWithReleasesResponse,
@@ -22,7 +22,7 @@ export const useCratesQuery = ({
         throw new Error("User not authenticated");
       }
 
-      return fetchCrates();
+      return api.crates();
     },
     enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000,
@@ -57,7 +57,7 @@ export const useCrateQuery = ({
         throw new Error("Crate ID missing");
       }
 
-      return fetchCrate(crateId);
+      return api.crate(crateId);
     },
     enabled: isEnabled,
     staleTime: 2 * 60 * 1000,

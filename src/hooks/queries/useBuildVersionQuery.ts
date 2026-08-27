@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchBuildVersion } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { BuildVersionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { DEPLOYMENT_UPDATE_POLL_INTERVAL_MS } from "src/utils/appBuildVersion";
 
@@ -12,7 +12,7 @@ export const useBuildVersionQuery = ({
 }: UseBuildVersionQueryParams = {}) =>
   useQuery({
     queryKey: BuildVersionQueryKeys.all(),
-    queryFn: fetchBuildVersion,
+    queryFn: api.buildVersion,
     enabled,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,

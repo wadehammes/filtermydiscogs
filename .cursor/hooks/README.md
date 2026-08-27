@@ -33,7 +33,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update. |
 | `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
 | `block-login-page-copy-violations.sh` | `preToolUse` | Denies login landing copy edits that add em dashes, embellishment, or banned inaccurate phrases. |
-| `block-query-hook-mocks.sh` | `preToolUse` | Denies feature-test edits that mock `src/hooks/queries/*` instead of `src/api/helpers`. |
+| `block-query-hook-mocks.sh` | `preToolUse` | Denies feature-test edits that mock `src/hooks/queries/*` instead of `src/api/urls`. |
 | `login-page-copy-drift-check.sh` | `stop` | Runs login page literary-rule Jest tests when landing copy source files changed. |
 | `query-hook-mock-drift-check.sh` | `stop` | Runs query-hook mock rule Jest tests when feature test files changed. |
 

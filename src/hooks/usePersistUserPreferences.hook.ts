@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { useAuth } from "src/context/auth.context";
-import { useUpdateUserPreferencesMutation } from "src/hooks/queries/useUserPreferencesQuery";
+import { useUpdateUserPreferencesMutation } from "src/hooks/mutations/useUserPreferencesMutations";
 import type { UserPreferencesPatch } from "src/types/userPreferences.types";
 import {
   flushUserPreferencesPersist,

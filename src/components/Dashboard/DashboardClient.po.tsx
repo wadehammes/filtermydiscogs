@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
@@ -36,13 +36,15 @@ jest.mock("./StyleEvolution.component", () => ({
   StyleEvolution: () => <div data-testid="fmdChartStub" />,
 }));
 
-jest.mock("src/api/helpers", () => ({
-  fetchCrates: jest.fn(),
-  fetchCrate: jest.fn(),
-  fetchDiscogsCollection: jest.fn(),
-  fetchUserPreferences: jest.fn(),
-  fetchCollectionValue: jest.fn(),
-  fetchMostCratedReleases: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    crates: jest.fn(),
+    crate: jest.fn(),
+    discogsCollection: jest.fn(),
+    userPreferences: jest.fn(),
+    collectionValue: jest.fn(),
+    mostCratedReleases: jest.fn(),
+  },
 }));
 
 jest.mock("src/services/auth.service");
@@ -50,7 +52,7 @@ jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -103,23 +105,18 @@ export class DashboardClientPageObject extends BasePageObject {
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
-      mockApi.fetchUserPreferences,
+      mockApi.userPreferences,
       { preferences: userPreferencesFactory.defaults() },
       apiError,
     );
+    mockApiResponse(true, mockApi.discogsCollection, collectionPage, apiError);
     mockApiResponse(
       true,
-      mockApi.fetchDiscogsCollection,
-      collectionPage,
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.fetchCollectionValue,
+      mockApi.collectionValue,
       { minimum: 100, median: 500, maximum: 1000 },
       apiError,
     );
-    mockApiResponse(true, mockApi.fetchMostCratedReleases, [], apiError);
+    mockApiResponse(true, mockApi.mostCratedReleases, [], apiError);
   }
 
   renderDashboardClient(

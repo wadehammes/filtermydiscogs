@@ -117,7 +117,7 @@ describe("CrateSelector", () => {
     await clickUser.click(option2 as Element);
 
     await waitFor(() => {
-      expect(po.mockApiHelpers.fetchCrate).toHaveBeenCalledWith("2");
+      expect(po.mockApiHelpers.crate).toHaveBeenCalledWith("2");
     });
   });
 

@@ -61,7 +61,7 @@ describe("MobileReleaseCard", () => {
     po.renderMobileReleaseCard({ release });
 
     await waitFor(() => {
-      expect(po.mockApiHelpers.fetchCrates).toHaveBeenCalled();
+      expect(po.mockApiHelpers.crates).toHaveBeenCalled();
     });
 
     await user.click(screen.getByRole("button", { name: "Add to crate" }));

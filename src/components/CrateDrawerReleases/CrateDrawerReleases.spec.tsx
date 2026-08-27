@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
 import {
   crateDrawerDefaultDetail,
@@ -15,9 +15,9 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 describe("CrateDrawerReleases", () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("lists staged releases in layout order without section markers", async () => {
-    mockApi.fetchCrate.mockResolvedValue(
+    mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleaseItems(
         crateDrawerDefaultDetail,
         [
@@ -63,7 +63,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("does not show the hide filter when no items are packed", async () => {
-    mockApi.fetchCrate.mockResolvedValue(
+    mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleases(crateDrawerDefaultDetail, [
         crateDrawerReleasePacked,
         crateDrawerReleaseUnpacked,
@@ -87,7 +87,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows the hide filter when at least one item is packed", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
 
     renderCrateDrawerTree(<CrateDrawerReleases />);
 
@@ -104,7 +104,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows Clear packed in the packing toolbar when items are packed", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
 
     renderCrateDrawerTree(<CrateDrawerReleases />);
 
@@ -116,7 +116,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("clears all packed items when Clear packed is confirmed", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
     mockApi.clearAllPackedInCrate.mockResolvedValue({
       success: true,
       cleared_count: 1,
@@ -143,7 +143,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows staging guidance when the crate is empty", async () => {
-    mockApi.fetchCrate.mockResolvedValue(
+    mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleases(
         crateDrawerDefaultDetail,
         [],

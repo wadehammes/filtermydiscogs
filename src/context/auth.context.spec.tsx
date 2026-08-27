@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { checkAuth, logout as logoutApi } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
   clearSessionAuthCookies,
@@ -17,7 +17,7 @@ import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
 import { act, renderHook, waitFor } from "test-utils";
 import { AuthProvider, useAuth } from "./auth.context";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/services/auth.service", () => {
   const actual = jest.requireActual<typeof import("src/services/auth.service")>(
     "src/services/auth.service",
@@ -39,8 +39,8 @@ jest.mock("src/services/auth.service", () => {
 });
 
 const mockUseRouter = jest.mocked(useRouter);
-const mockCheckAuth = jest.mocked(checkAuth);
-const mockLogoutApi = jest.mocked(logoutApi);
+const mockCheckAuth = jest.mocked(api.checkAuth);
+const mockLogoutApi = jest.mocked(api.logout);
 const mockClearSessionAuthCookies = jest.mocked(clearSessionAuthCookies);
 const mockClearUrlParams = jest.mocked(clearUrlParams);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { ReactNode } from "react";
 import { useLayoutEffect } from "react";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
@@ -31,7 +31,7 @@ import {
 } from "src/utils/releasePlaybackStorage";
 import { act, renderHook, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
@@ -40,7 +40,7 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
 
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const preferencesApiError = new Error("Preferences API request failed");
 
 const mockUserPreferencesResponse = (
@@ -48,7 +48,7 @@ const mockUserPreferencesResponse = (
 ) => {
   mockApiResponse(
     true,
-    mockApi.fetchUserPreferences,
+    mockApi.userPreferences,
     { preferences },
     preferencesApiError,
   );
@@ -834,7 +834,7 @@ describe("ReleasePlaybackProvider", () => {
       }),
     });
 
-    mockApi.fetchDiscogsRelease.mockImplementation(async (releaseId) => {
+    mockApi.discogsRelease.mockImplementation(async (releaseId) => {
       if (releaseId === "100002") {
         return discogsReleaseJsonFactory.withTracklistAndVideos({
           id: 100002,
@@ -902,7 +902,7 @@ describe("ReleasePlaybackProvider", () => {
       }),
     });
 
-    mockApi.fetchDiscogsRelease.mockImplementation(async (releaseId) => {
+    mockApi.discogsRelease.mockImplementation(async (releaseId) => {
       if (releaseId === "100002") {
         return discogsReleaseJsonFactory.withTracklistAndVideos({
           id: 100002,

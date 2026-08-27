@@ -11,8 +11,8 @@ import { ERROR_FETCHING } from "src/constants";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
+import { useSyncCratesMutation } from "src/hooks/mutations/useCrateMutations";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
-import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import {
   resetCollectionCacheReady,

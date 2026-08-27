@@ -16,7 +16,7 @@ import {
   trackLoginCompleted,
   trackLoginStarted,
 } from "src/analytics/productAnalyticsEvents";
-import { logout as logoutApi } from "src/api/helpers";
+import { useLogoutMutation } from "src/hooks/mutations/useAuthMutations";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
 import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
@@ -157,6 +157,7 @@ export const AuthProvider = ({
   } = useAuthQuery({
     enabled: !skipInitialAuthCheck,
   });
+  const logoutMutation = useLogoutMutation();
 
   useEffect(() => {
     if (skipInitialAuthCheck || isPending || isFetching) {
@@ -299,7 +300,7 @@ export const AuthProvider = ({
     try {
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: true });
 
-      await logoutApi({
+      await logoutMutation.mutateAsync({
         preserveTokens,
       });
       clearSessionAuthCookies();

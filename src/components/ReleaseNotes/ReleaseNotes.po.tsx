@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -17,9 +17,9 @@ import { render } from "test-utils";
 import { ReleaseNotes } from "./ReleaseNotes.component";
 import { ReleaseNotesEditorProvider } from "./ReleaseNotesEditor.context";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 export type ReleaseNotesRenderProps = {
   release?: DiscogsRelease;
@@ -40,7 +40,7 @@ export class ReleaseNotesPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.fetchCollectionFields,
+      mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       new Error("Failed to fetch collection fields"),
     );

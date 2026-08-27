@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchCollectionValue } from "src/api/helpers";
+import { api } from "src/api/urls";
 import type { CollectionValue } from "src/types/dashboard.types";
 import { CollectionValueQueryKeys } from "./querykeys.constants";
 
@@ -17,7 +17,7 @@ export const useCollectionValueQuery = ({
         throw new Error("Username is required");
       }
 
-      const data = await fetchCollectionValue(username);
+      const data = await api.collectionValue(username);
 
       if (
         !data ||

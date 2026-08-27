@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
 import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
-import { fetchDiscogsCollection, syncCrates } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { allReleasesAtom } from "src/atoms/filters.atoms";
 import {
   COLLECTION_FIRST_PAGE_SIZE,
@@ -32,9 +32,11 @@ import { resetCollectionCacheReady } from "src/utils/collectionCacheSync";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers", () => ({
-  fetchDiscogsCollection: jest.fn(),
-  syncCrates: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+    syncCrates: jest.fn(),
+  },
 }));
 
 jest.mock("sonner", () => ({
@@ -48,8 +50,8 @@ jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockFetchDiscogsCollection = jest.mocked(fetchDiscogsCollection);
-const mockSyncCrates = jest.mocked(syncCrates);
+const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
+const mockSyncCrates = jest.mocked(api.syncCrates);
 const mockToastSuccess = jest.mocked(toast.success);
 const mockTrackEvent = jest.mocked(trackEvent);
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { ReactNode } from "react";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { useReleaseModalPlayback } from "src/components/ReleaseModal/useReleaseModalPlayback.hook";
 import {
   ReleasePlaybackProvider,
@@ -17,9 +17,9 @@ import {
 } from "src/tests/utils/testProviders";
 import { act, renderHook, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 const RELEASE_ID = 249504;
 

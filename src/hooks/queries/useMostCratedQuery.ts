@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchMostCratedReleases } from "src/api/helpers";
+import { api } from "src/api/urls";
 import type { MostCratedRelease } from "src/types/dashboard.types";
 import { MostCratedQueryKeys } from "./querykeys.constants";
 
@@ -12,7 +12,7 @@ export const useMostCratedQuery = ({
 }: UseMostCratedQueryParams = {}) => {
   return useQuery<MostCratedRelease[]>({
     queryKey: MostCratedQueryKeys.list(limit),
-    queryFn: () => fetchMostCratedReleases(limit),
+    queryFn: () => api.mostCratedReleases(limit),
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });

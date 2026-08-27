@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { checkAuth as checkAuthApi } from "src/api/helpers";
+import { api } from "src/api/urls";
 
 export interface AuthStatus {
   isAuthenticated: boolean;
@@ -69,7 +69,7 @@ export const hasAuthSuccessUrlParam = (): boolean =>
 
 export const checkAuthStatus = async (): Promise<AuthStatus> => {
   try {
-    return normalizeAuthStatus(await checkAuthApi());
+    return normalizeAuthStatus(await api.checkAuth());
   } catch (_error) {
     return {
       isAuthenticated: false,

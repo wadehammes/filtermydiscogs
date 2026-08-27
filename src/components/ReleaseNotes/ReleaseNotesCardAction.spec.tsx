@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
@@ -10,9 +10,9 @@ import { render, screen, waitFor } from "test-utils";
 import { ReleaseNotesCardAction } from "./ReleaseNotesCardAction.component";
 import { ReleaseNotesEditorProvider } from "./ReleaseNotesEditor.context";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 describe("ReleaseNotesCardAction", () => {
   beforeEach(() => {
@@ -21,7 +21,7 @@ describe("ReleaseNotesCardAction", () => {
 
     mockApiResponse(
       true,
-      mockApi.fetchCollectionFields,
+      mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       new Error("Failed to fetch collection fields"),
     );

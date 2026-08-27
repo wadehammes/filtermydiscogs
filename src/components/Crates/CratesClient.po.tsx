@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
@@ -22,13 +22,13 @@ import { render } from "test-utils";
 import CrateDetailClient from "./CrateDetailClient.component";
 import CratesClient from "./CratesClient.component";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -85,12 +85,12 @@ export class CratesClientPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrates(crates),
       apiError,
     );
 
-    mockApi.fetchCrate.mockImplementation(async (crateId: string) => {
+    mockApi.crate.mockImplementation(async (crateId: string) => {
       const crateSummary = crates.find((crate) => crate.id === crateId);
       if (!crateSummary) {
         throw new Error(`Crate not found: ${crateId}`);
@@ -104,7 +104,7 @@ export class CratesClientPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.fetchDiscogsCollection,
+      mockApi.discogsCollection,
       collectionFactory.empty(),
       apiError,
     );
