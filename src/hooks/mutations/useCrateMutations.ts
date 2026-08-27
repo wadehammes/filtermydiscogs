@@ -1,18 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { trackCrateLayoutUpdated } from "src/analytics/productAnalyticsEvents";
-import {
-  addReleaseToCrate,
-  clearAllPackedInCrate,
-  createCrate,
-  deleteCrate,
-  removeReleaseFromCrate,
-  setReleasePackedInCrate,
-  syncCrates,
-  updateCrate,
-  updateCrateLayout,
-} from "src/api/helpers";
+import { api } from "src/api/urls";
 import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
+import {
+  CrateQueryKeys,
+  CratesQueryKeys,
+} from "src/hooks/queries/querykeys.constants";
 import {
   getPrependCrateLayoutSortOrder,
   splitCrateLayoutItemsForCache,
@@ -27,7 +21,6 @@ import type {
   CrateWithReleasesResponse,
   OptimisticUpdateContext,
 } from "src/types/crate.types";
-import { CrateQueryKeys, CratesQueryKeys } from "./querykeys.constants";
 
 interface CreateCrateRequest {
   name: string;
@@ -259,7 +252,7 @@ export const useCreateCrateMutation = (userId: string | null) => {
 
   return useMutation<CrateMutationResponse, Error, CreateCrateRequest>({
     mutationFn: async (data) => {
-      return createCrate(data.name);
+      return api.createCrate(data.name);
     },
     onSuccess: (data) => {
       queryClient.setQueryData<CratesResponse>(
@@ -300,7 +293,7 @@ export const useUpdateCrateMutation = (userId: string | null) => {
     OptimisticUpdateContext
   >({
     mutationFn: async ({ crateId, updates }) => {
-      return updateCrate(crateId, updates);
+      return api.updateCrate(crateId, updates);
     },
     onMutate: async ({ crateId, updates }) => {
       await queryClient.cancelQueries({
@@ -369,7 +362,7 @@ export const useDeleteCrateMutation = (userId: string | null) => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (crateId) => {
-      return deleteCrate(crateId);
+      return api.deleteCrate(crateId);
     },
     onMutate: async (crateId) => {
       // Optimistically remove the crate from the cache
@@ -416,7 +409,7 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
   >({
     mutationKey: ["addReleaseToCrate"],
     mutationFn: async ({ crateId, release }) => {
-      return addReleaseToCrate(crateId, release);
+      return api.addReleaseToCrate(crateId, release);
     },
     onMutate: async ({ crateId, release }) => {
       const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
@@ -529,7 +522,7 @@ export const useRemoveReleaseFromCrateMutation = (userId: string | null) => {
   >({
     mutationKey: ["removeReleaseFromCrate"],
     mutationFn: async ({ crateId, releaseId }) => {
-      return removeReleaseFromCrate(crateId, releaseId);
+      return api.removeReleaseFromCrate(crateId, releaseId);
     },
     onMutate: async ({ crateId, releaseId }) => {
       const { previousCrateData, previousCratesData } = getCrateQuerySnapshots(
@@ -588,7 +581,7 @@ export const useSyncCratesMutation = (userId: string | null) => {
 
   return useMutation<SyncCratesResponse, Error, SyncCratesRequest>({
     mutationFn: async (data) => {
-      return syncCrates(data.collectionInstanceIds);
+      return api.syncCrates(data.collectionInstanceIds);
     },
     onSuccess: () => {
       invalidateCrateQueries(queryClient, userId);
@@ -607,7 +600,7 @@ export const useSetReleasePackedInCrateMutation = (userId: string | null) => {
   >({
     mutationKey: ["setReleasePackedInCrate"],
     mutationFn: async ({ crateId, releaseId, found }) => {
-      return setReleasePackedInCrate(crateId, releaseId, found);
+      return api.setReleasePackedInCrate(crateId, releaseId, found);
     },
     onMutate: async ({ crateId, releaseId, found }) => {
       await cancelCrateDetailQuery(queryClient, userId, crateId);
@@ -655,7 +648,7 @@ export const useClearAllPackedInCrateMutation = (userId: string | null) => {
   >({
     mutationKey: ["clearAllPackedInCrate"],
     mutationFn: async ({ crateId }) => {
-      return clearAllPackedInCrate(crateId);
+      return api.clearAllPackedInCrate(crateId);
     },
     onMutate: async ({ crateId }) => {
       await cancelCrateDetailQuery(queryClient, userId, crateId);
@@ -701,7 +694,7 @@ export const useUpdateCrateLayoutMutation = (userId: string | null) => {
   >({
     mutationKey: ["updateCrateLayout"],
     mutationFn: async ({ crateId, layout }) => {
-      return updateCrateLayout(crateId, layout);
+      return api.updateCrateLayout(crateId, layout);
     },
     onMutate: async ({ crateId, optimisticLayoutItems }) => {
       await cancelCrateDetailQuery(queryClient, userId, crateId);

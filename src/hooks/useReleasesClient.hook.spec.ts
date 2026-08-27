@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { fetchDiscogsCollection, updateUserPreferences } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { VIEW_STATE_STORAGE_KEY } from "src/constants/storageKeys";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
@@ -12,13 +12,15 @@ import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers", () => ({
-  fetchDiscogsCollection: jest.fn(),
-  updateUserPreferences: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+    updateUserPreferences: jest.fn(),
+  },
 }));
 
-const mockFetchDiscogsCollection = jest.mocked(fetchDiscogsCollection);
-const mockUpdateUserPreferences = jest.mocked(updateUserPreferences);
+const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
+const mockUpdateUserPreferences = jest.mocked(api.updateUserPreferences);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
 const mockUseSearchParams = jest.mocked(useSearchParams);

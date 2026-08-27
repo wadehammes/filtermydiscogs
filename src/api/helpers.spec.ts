@@ -8,25 +8,22 @@ import {
   mockFetchSuccess,
   resetFetchMock,
 } from "src/tests/mocks/mockFetchResponse";
+import { checkAuth, clearData, logout } from "./endpoints/auth";
+import { fetchBuildVersion } from "./endpoints/buildVersion";
+import { fetchDiscogsCollection } from "./endpoints/collection";
 import {
   addReleaseToCrate,
-  checkAuth,
   clearAllPackedInCrate,
-  clearData,
   createCrate,
   deleteCrate,
-  fetchBuildVersion,
   fetchCrate,
   fetchCrates,
-  fetchDiscogsCollection,
-  fetchDiscogsRelease,
-  fetchDiscogsSearch,
-  logout,
   removeReleaseFromCrate,
   setReleasePackedInCrate,
   syncCrates,
   updateCrate,
-} from "./helpers";
+} from "./endpoints/crates";
+import { fetchDiscogsRelease, fetchDiscogsSearch } from "./endpoints/release";
 
 global.fetch = jest.fn();
 const mockFetch = jest.mocked(fetch);
@@ -651,8 +648,12 @@ describe("checkAuth", () => {
 
     expect(result).toEqual(mockAuth);
     expect(mockFetch).toHaveBeenCalledWith("/api/auth/check", {
-      method: "GET",
       credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "GET",
     });
   });
 
@@ -673,7 +674,7 @@ describe("checkAuth", () => {
   it("throws error when response is not ok", async () => {
     mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
-    await expect(checkAuth()).rejects.toThrow("HTTP error! status: 500");
+    await expect(checkAuth()).rejects.toThrow("Fetch failed: 500 Error");
   });
 });
 
@@ -689,15 +690,19 @@ describe("clearData", () => {
 
     expect(result).toEqual({ success: true });
     expect(mockFetch).toHaveBeenCalledWith("/api/auth/clear-data", {
-      method: "POST",
       credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
   });
 
   it("throws error when response is not ok", async () => {
     mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
-    await expect(clearData()).rejects.toThrow("HTTP error! status: 500");
+    await expect(clearData()).rejects.toThrow("Fetch failed: 500 Error");
   });
 });
 
@@ -713,8 +718,12 @@ describe("logout", () => {
 
     expect(result).toEqual({ success: true });
     expect(mockFetch).toHaveBeenCalledWith("/api/auth/logout", {
-      method: "POST",
       credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
   });
 
@@ -726,8 +735,12 @@ describe("logout", () => {
     expect(mockFetch).toHaveBeenCalledWith(
       "/api/auth/logout?preserve_tokens=false",
       {
-        method: "POST",
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        method: "POST",
       },
     );
   });
@@ -735,7 +748,7 @@ describe("logout", () => {
   it("throws error when response is not ok", async () => {
     mockFetch.mockResolvedValueOnce(mockFetchError(500));
 
-    await expect(logout()).rejects.toThrow("HTTP error! status: 500");
+    await expect(logout()).rejects.toThrow("Fetch failed: 500 Error");
   });
 });
 

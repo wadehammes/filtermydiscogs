@@ -73,7 +73,7 @@ describe("ReleaseCard", () => {
     po.renderReleaseCard({ release });
 
     await waitFor(() => {
-      expect(po.mockApiHelpers.fetchCrates).toHaveBeenCalled();
+      expect(po.mockApiHelpers.crates).toHaveBeenCalled();
     });
 
     await user.click(screen.getByRole("button", { name: "Add to crate" }));
@@ -261,7 +261,7 @@ describe("ReleaseCard", () => {
       resolveFetch = resolve;
     });
 
-    po.mockApiHelpers.fetchDiscogsRelease.mockReturnValue(fetchPromise);
+    po.mockApiHelpers.discogsRelease.mockReturnValue(fetchPromise);
 
     po.renderReleaseCard({ release, onReleaseClick: jest.fn() });
 
@@ -299,9 +299,7 @@ describe("ReleaseCard", () => {
     );
 
     await waitFor(() => {
-      expect(po.mockApiHelpers.fetchDiscogsRelease).toHaveBeenCalledWith(
-        "249504",
-      );
+      expect(po.mockApiHelpers.discogsRelease).toHaveBeenCalledWith("249504");
     });
 
     await waitFor(() => {

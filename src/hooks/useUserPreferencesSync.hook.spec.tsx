@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
-import { fetchUserPreferences, updateUserPreferences } from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   pendingFiltersRestoreAtom,
   persistedFiltersAtom,
@@ -24,13 +24,15 @@ import { resetUserPreferencesPersistQueue } from "src/utils/userPreferencesPersi
 import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers", () => ({
-  fetchUserPreferences: jest.fn(),
-  updateUserPreferences: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    userPreferences: jest.fn(),
+    updateUserPreferences: jest.fn(),
+  },
 }));
 
-const mockFetchUserPreferences = jest.mocked(fetchUserPreferences);
-const mockUpdateUserPreferences = jest.mocked(updateUserPreferences);
+const mockFetchUserPreferences = jest.mocked(api.userPreferences);
+const mockUpdateUserPreferences = jest.mocked(api.updateUserPreferences);
 
 describe("useUserPreferencesSync", () => {
   beforeEach(() => {

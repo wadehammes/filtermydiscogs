@@ -1,19 +1,21 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useRouter } from "next/navigation";
-import { clearData, logout } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers", () => ({
-  clearData: jest.fn(),
-  logout: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    clearData: jest.fn(),
+    logout: jest.fn(),
+  },
 }));
 
-const mockClearData = jest.mocked(clearData);
-const mockLogout = jest.mocked(logout);
+const mockClearData = jest.mocked(api.clearData);
+const mockLogout = jest.mocked(api.logout);
 const mockUseRouter = jest.mocked(useRouter);
 
 describe("useClearAllUserData", () => {

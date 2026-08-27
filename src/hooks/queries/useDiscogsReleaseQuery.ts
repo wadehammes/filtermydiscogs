@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDiscogsRelease } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { DiscogsReleaseQueryKeys } from "./querykeys.constants";
 
 export interface UseDiscogsReleaseQueryParams {
@@ -9,7 +9,7 @@ export interface UseDiscogsReleaseQueryParams {
 
 export const discogsReleaseQueryOptions = (releaseId: string) => ({
   queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
-  queryFn: () => fetchDiscogsRelease(releaseId),
+  queryFn: () => api.discogsRelease(releaseId),
   staleTime: 5 * 60 * 1000,
   gcTime: 10 * 60 * 1000,
 });

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { ReleaseMiniPlayer } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component";
 import {
   ReleasePlaybackProvider,
@@ -30,7 +30,7 @@ import {
 import { transitionYoutubeIframeToVideo } from "src/utils/releasePlayback";
 import { render, screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
@@ -41,7 +41,7 @@ const mockTransitionYoutubeIframeToVideo = jest.mocked(
   transitionYoutubeIframeToVideo,
 );
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 const RELEASE_ID = 249504;
 
@@ -126,7 +126,7 @@ describe("ReleaseMiniPlayer", () => {
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
-      mockApi.fetchUserPreferences,
+      mockApi.userPreferences,
       { preferences: userPreferencesFactory.defaults() },
       new Error("Preferences API request failed"),
     );
@@ -721,7 +721,7 @@ describe("ReleaseMiniPlayer", () => {
   it("removes the playing release from the active crate", async () => {
     mockApiResponse(
       true,
-      mockApi.fetchCrate,
+      mockApi.crate,
       crateWithReleasesResponseFactory.withReleases(defaultCrate, [
         collectionRelease,
       ]),

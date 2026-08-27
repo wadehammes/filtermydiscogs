@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { PublicReleaseSummaryHero } from "src/components/PublicReleaseSummaryHero/PublicReleaseSummaryHero.component";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { render, screen } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 describe("PublicReleaseSummaryHero", () => {
   beforeEach(() => {
-    mockApi.fetchDiscogsRelease.mockResolvedValue(
+    mockApi.discogsRelease.mockResolvedValue(
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: 249504 }),
     );
   });

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import releasesClientStyles from "src/components/ReleasesClient/ReleasesClient.module.css";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
@@ -14,9 +14,9 @@ import {
 } from "src/tests/utils/testProviders";
 import { render, screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 const defaultCrates = crateWithCountFactory.defaultCrateSelectorCrates();
 
@@ -28,12 +28,12 @@ describe("CrateDrawer", () => {
 
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrates(defaultCrates),
       new Error("Crate API request failed"),
     );
 
-    mockApi.fetchCrate.mockImplementation(async (crateId: string) => {
+    mockApi.crate.mockImplementation(async (crateId: string) => {
       const crate = defaultCrates.find((entry) => entry.id === crateId);
       if (!crate) {
         throw new Error(`Crate not found: ${crateId}`);

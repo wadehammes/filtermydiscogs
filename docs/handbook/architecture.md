@@ -79,12 +79,15 @@ Details: [discogs.md](discogs.md).
 
 ### [`src/api/`](../../src/api/) and [`src/app/api/`](../../src/app/api/)
 
-- [`src/api/helpers.ts`](../../src/api/helpers.ts) — client-side `fetch` wrappers for `/api/...` route handlers.
+- **[`src/api/urls.ts`](../../src/api/urls.ts)** — **`api`** object: single front door for client `/api/...` calls.
+- **[`src/api/endpoints/`](../../src/api/endpoints/)** — per-domain fetch implementations (`collection.ts`, `crates.ts`, …).
+- **[`src/api/helpers.ts`](../../src/api/helpers.ts)** — `fetchOptions`, `fetchResponse` for consistent headers and JSON responses.
+- **[`src/api/types.ts`](../../src/api/types.ts)** — re-exports cross-module API types (endpoint-specific shapes stay in `endpoints/*.ts`).
 - Route handlers under `src/app/api/` implement authenticated Discogs proxying and crate persistence.
 
 ### [`src/hooks/`](../../src/hooks/)
 
-Custom hooks and React Query hooks under [`hooks/queries/`](../../src/hooks/queries/). Notable feature hooks: [`useCollectionData`](../../src/hooks/useCollectionData.hook.ts), [`useCollectionAnalytics`](../../src/hooks/useCollectionAnalytics.hook.ts), [`useCollectionReset`](../../src/hooks/useCollectionReset.hook.ts), [`useMosaicGenerator`](../../src/hooks/useMosaicGenerator.hook.ts).
+Custom hooks and React Query hooks under [`hooks/queries/`](../../src/hooks/queries/) (reads) and [`hooks/mutations/`](../../src/hooks/mutations/) (writes). Notable feature hooks: [`useCollectionData`](../../src/hooks/useCollectionData.hook.ts), [`useCollectionAnalytics`](../../src/hooks/useCollectionAnalytics.hook.ts), [`useCollectionReset`](../../src/hooks/useCollectionReset.hook.ts), [`useMosaicGenerator`](../../src/hooks/useMosaicGenerator.hook.ts).
 
 ### [`src/lib/`](../../src/lib/)
 
@@ -104,7 +107,7 @@ Factories (`src/tests/factories/`), test providers, shared mocks.
 
 1. User completes **Discogs OAuth**; access tokens and username land in **httpOnly / client-readable cookies** (see [discogs.md](discogs.md)).
 2. **`AuthProvider`** checks `/api/auth/check` and reads `discogs_username` from cookies.
-3. **`useDiscogsCollectionQuery`** (React Query) calls **`fetchDiscogsCollection`** in [`src/api/helpers.ts`](../../src/api/helpers.ts).
+3. **`useDiscogsCollectionQuery`** (React Query) calls **`api.discogsCollection`** in [`src/api/urls.ts`](../../src/api/urls.ts).
 4. **`GET /api/collection`** validates the username, confirms cookie auth matches (case-insensitive), and calls **`discogsOAuthService.getCollection`** with signed OAuth headers.
 5. **`useCollectionData`** flattens pages and dispatches **`FiltersActionTypes.SetAllReleases`** after each page so the grid fills incrementally; **`collectionFiltersActiveAtom`** gates in-session filter inputs until the last page (saved prefs are offered via toast on **`/releases`**, not auto-applied). Pagination metadata goes to **`CollectionContext`**. **Filter atoms** derive filtered/sorted lists for the releases table, cards, mosaic, dashboard, and random release.
 

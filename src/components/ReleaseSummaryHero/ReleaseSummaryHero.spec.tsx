@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
@@ -15,7 +15,7 @@ const mockIsInCrate = jest.fn(() => false);
 const mockOpenDrawer = jest.fn();
 const mockUseMediaQuery = jest.fn(() => false);
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const apiError = new Error("API request failed");
 const RELEASE_ID = 249504;
 
@@ -32,7 +32,7 @@ jest.mock("src/hooks/useMediaQuery.hook", () => ({
   useMediaQuery: () => mockUseMediaQuery(),
 }));
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
 jest.mock("src/hooks/useFilterAtoms.hook", () => ({
   useSelectedFormats: () => [],
@@ -52,7 +52,7 @@ const setupReleaseDetailMock = (
 ) => {
   mockApiResponse(
     true,
-    mockApi.fetchDiscogsRelease,
+    mockApi.discogsRelease,
     discogsReleaseJsonFactory.withTracklistAndVideos({
       id: RELEASE_ID,
       ...attributes,

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchPublicCrate } from "src/api/helpers";
+import { api } from "src/api/urls";
 import type { CrateWithReleasesResponse } from "src/types/crate.types";
 import { PublicCrateQueryKeys } from "./querykeys.constants";
 
@@ -17,7 +17,7 @@ export const usePublicCrateQuery = ({ crateId }: UsePublicCrateQueryParams) => {
         throw new Error("Crate ID missing");
       }
 
-      return fetchPublicCrate(crateId);
+      return api.publicCrate(crateId);
     },
     enabled: isEnabled,
     staleTime: 5 * 60 * 1000,

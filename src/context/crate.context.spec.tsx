@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { ReactNode } from "react";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   checkAuthStatus,
   clearAuthCookies,
@@ -25,10 +25,10 @@ import {
 import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { useCrate } from "./crate.context";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -74,19 +74,19 @@ describe("CrateProvider", () => {
 
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.empty(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchCrate,
+      mockApi.crate,
       crateWithReleasesResponseFactory.empty({ user_id: 123 }),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.fetchDiscogsCollection,
+      mockApi.discogsCollection,
       collectionFactory.empty(),
       apiError,
     );
@@ -145,11 +145,11 @@ describe("CrateProvider", () => {
     expect(result.current.isDrawerOpen).toBe(false);
   });
 
-  it("provides crates from fetchCrates", async () => {
+  it("provides crates from api.crates", async () => {
     const mockCrates = crateWithCountFactory.buildList(3);
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrates(mockCrates),
       apiError,
     );
@@ -176,7 +176,7 @@ describe("CrateProvider", () => {
     ];
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrates(mockCrates),
       apiError,
     );
@@ -230,10 +230,10 @@ describe("CrateProvider", () => {
       }),
     ];
 
-    mockApi.fetchCrates.mockResolvedValue(
+    mockApi.crates.mockResolvedValue(
       cratesResponseFactory.withCrates(mockCrates),
     );
-    mockApi.fetchCrate.mockResolvedValue(
+    mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleases(mockCrate, mockReleases),
     );
 
@@ -255,8 +255,8 @@ describe("CrateProvider", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockApi.fetchCrates).not.toHaveBeenCalled();
-    expect(mockApi.fetchCrate).not.toHaveBeenCalled();
+    expect(mockApi.crates).not.toHaveBeenCalled();
+    expect(mockApi.crate).not.toHaveBeenCalled();
 
     authStateRef.current = {
       ...testAuthenticatedAuthState,
@@ -281,10 +281,10 @@ describe("CrateProvider", () => {
       }),
     ];
 
-    mockApi.fetchCrates.mockResolvedValue(
+    mockApi.crates.mockResolvedValue(
       cratesResponseFactory.withCrates(mockCrates),
     );
-    mockApi.fetchCrate.mockResolvedValue(
+    mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleases(mockCrate, mockReleases),
     );
 
@@ -422,7 +422,7 @@ describe("CrateProvider", () => {
 
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrate(
         crateWithCountFactory.build({ id: "crate-1" }),
       ),
@@ -430,7 +430,7 @@ describe("CrateProvider", () => {
     );
     mockApiResponse(
       true,
-      mockApi.fetchCrate,
+      mockApi.crate,
       crateWithReleasesResponseFactory.withReleases(mockCrate, mockReleases),
       apiError,
     );
@@ -463,7 +463,7 @@ describe("CrateProvider", () => {
 
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrate(
         crateWithCountFactory.build({ id: "crate-1" }),
       ),
@@ -471,7 +471,7 @@ describe("CrateProvider", () => {
     );
     mockApiResponse(
       true,
-      mockApi.fetchCrate,
+      mockApi.crate,
       crateWithReleasesResponseFactory.withReleases(mockCrate, [mockRelease]),
       apiError,
     );
@@ -509,7 +509,7 @@ describe("CrateProvider", () => {
     );
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrate(
         crateWithCountFactory.fromCrate(mockCreatedCrate),
       ),

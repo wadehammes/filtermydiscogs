@@ -1,5 +1,5 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
-import { fetchDiscogsCollection } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import type { DiscogsCollection, DiscogsRelease } from "src/types";
@@ -75,7 +75,7 @@ export async function validatePersistedCollectionCache(
   cached: PersistedCollectionCache,
 ): Promise<boolean> {
   try {
-    const page = await fetchDiscogsCollection({
+    const page = await api.discogsCollection({
       username,
       page: 1,
       perPage: COLLECTION_PAGE_SIZE,

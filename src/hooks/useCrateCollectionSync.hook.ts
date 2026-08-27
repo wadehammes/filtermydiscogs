@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
 import { useAuth } from "src/context/auth.context";
-import { useSyncCratesMutation } from "src/hooks/queries/useCrateMutations";
+import { useSyncCratesMutation } from "src/hooks/mutations/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
 

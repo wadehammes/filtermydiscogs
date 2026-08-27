@@ -32,7 +32,7 @@ import { createPortal } from "react-dom";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useAuth } from "src/context/auth.context";
-import { useUpdateCrateLayoutMutation } from "src/hooks/queries/useCrateMutations";
+import { useUpdateCrateLayoutMutation } from "src/hooks/mutations/useCrateMutations";
 import {
   assignSequentialCrateLayoutSortOrders,
   crateLayoutItemsToPutRequest,

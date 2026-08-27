@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { fetchDiscogsRelease } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -12,7 +12,7 @@ const RELEASE_DETAIL_STALE_MS = 5 * 60 * 1000;
 const fetchReleaseDetail = (queryClient: QueryClient, releaseId: string) =>
   queryClient.fetchQuery({
     queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
-    queryFn: () => fetchDiscogsRelease(releaseId),
+    queryFn: () => api.discogsRelease(releaseId),
     staleTime: RELEASE_DETAIL_STALE_MS,
   });
 

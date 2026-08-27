@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ApiFetchError } from "src/api/apiFetchError";
-import { checkAuth, fetchDiscogsCollection } from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   COLLECTION_FIRST_PAGE_SIZE,
   COLLECTION_PAGE_SIZE,
@@ -13,13 +13,15 @@ import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import { renderHook, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers", () => ({
-  checkAuth: jest.fn(),
-  fetchDiscogsCollection: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    checkAuth: jest.fn(),
+    discogsCollection: jest.fn(),
+  },
 }));
 
-const mockCheckAuth = jest.mocked(checkAuth);
-const mockFetchDiscogsCollection = jest.mocked(fetchDiscogsCollection);
+const mockCheckAuth = jest.mocked(api.checkAuth);
+const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 
 describe("useDiscogsCollectionQuery", () => {
   let queryClient: QueryClient;

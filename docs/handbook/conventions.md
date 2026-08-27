@@ -258,7 +258,7 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 | Pure util / helper | `src/utils/*.spec.ts` | No mocks; run the real function. |
 | API route / server | `src/app/api/**/route.spec.ts` | Assert status, JSON shape, auth. |
 | Client helper | `src/api/helpers.spec.ts` | [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts). |
-| Feature hook | `src/hooks/*.hook.spec.ts` | [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx), mock **`src/api/helpers`**. |
+| Feature hook | `src/hooks/*.hook.spec.ts` | [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx), mock **`src/api/urls`**. |
 | Component / page | `src/components/**/*.spec.tsx` | PO + **`TestProviders`**; assert DOM and toasts. |
 
 Follow the recipes below (**Do not test React Query**, factories, **`includeCollectionSync: false`** when seeding collection state manually, etc.). A failing feature test is the spec of done—not an afterthought once implementation is finished.
@@ -304,7 +304,7 @@ See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`
 
 #### Do not test React Query in feature tests
 
-React Query is an implementation detail between **`src/api/helpers`** and UI/feature hooks. **Feature tests** (components, contexts, hooks under **`src/hooks/*.hook.ts`**) must **not** drive or assert on React Query itself.
+React Query is an implementation detail between **`src/api/urls`** and UI/feature hooks. **Feature tests** (components, contexts, hooks under **`src/hooks/*.hook.ts`**) must **not** drive or assert on React Query itself.
 
 **Do not:**
 
@@ -315,21 +315,35 @@ React Query is an implementation detail between **`src/api/helpers`** and UI/fea
 
 **Do:**
 
-- Mock **`src/api/helpers`** at the network boundary using the **canonical mock pattern** below + [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts). Let real query hooks run inside **`TestProviders`**.
-- Assert **outcomes**: DOM, **`localStorage`**, Jotai atoms, context state, and helper calls (**`fetchUserPreferences`**, **`updateUserPreferences`**, etc.)—not query observer state.
-- Cover HTTP contracts in **`src/app/api/**/route.spec.ts`** and fetch wiring in **`src/api/helpers.spec.ts`** ([`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts)).
+- Mock **`src/api/urls`** at the network boundary using the **canonical mock pattern** below + [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts). Let real query hooks run inside **`TestProviders`**.
+- Assert **outcomes**: DOM, **`localStorage`**, Jotai atoms, context state, and **`api.*`** calls—not query observer state.
+- Cover HTTP contracts in **`src/app/api/**/route.spec.ts`** and fetch wiring in **`src/api/helpers.spec.ts`** / **`src/api/endpoints/`** ([`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts)).
 
-**Mock `src/api/helpers` (always this pattern):** List only the helpers the test needs as **`jest.fn()`** in the mock factory—do **not** spread **`jest.requireActual`**, and do **not** use a shared mock-module helper. Import the named helper, then **`jest.mocked`**:
+**Mock `src/api/urls` (always this pattern):** List only the **`api`** methods the test needs as **`jest.fn()`** in the mock factory—do **not** spread **`jest.requireActual`**. Import **`api`**, then **`jest.mocked`**:
 
 ```ts
-jest.mock("src/api/helpers", () => ({
-  fetchDiscogsCollection: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+  },
 }));
 
-const mockFetchDiscogsCollection = jest.mocked(fetchDiscogsCollection);
+import { api } from "src/api/urls";
+
+const mockDiscogsCollection = jest.mocked(api.discogsCollection);
 ```
 
-Multiple helpers: add each name to the factory object (e.g. **`fetchUserPreferences: jest.fn()`**, **`updateUserPreferences: jest.fn()`**) and **`jest.mocked`** each import. Configure return values with [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts) or **`.mockResolvedValue`**. Use the global **`jest`** object in the factory—not **`import { jest } from "@jest/globals"`** (breaks hoisting).
+Prefer **`jest.mock("src/api/urls")`** without a factory (rhythm-marketing pattern)—Jest auto-mocks the module; configure responses with **`jest.mocked(api.discogsCollection)`** in PO **`setupMocks()`** (see [`SettingsClient.po.tsx`](../../src/components/Settings/SettingsClient.po.tsx)). List only the methods you need when using an inline factory:
+
+```ts
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+  },
+}));
+```
+
+Use a factory when the test must stub a subset without pulling in the full mocked **`api`**. Configure return values with [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts) or **`.mockResolvedValue`**. Use the global **`jest`** object in the factory—not **`import { jest } from "@jest/globals"`** (breaks hoisting). **`export type Api = typeof api`** in [`urls.ts`](../../src/api/urls.ts) keeps **`jest.mocked(api.*)`** typed when methods are added.
 
 **No `jest.requireActual` in test mocks:** Do not spread **`jest.requireActual(...)`** to pull real implementations into a **`jest.mock`** factory. List each mocked export explicitly (**`jest.fn()`** or a small inline helper). When a component only needs **`useCrate`** stubs, mock **`useCrate`** alone and render with **`includeCrate: false`** (see [`ReleasesTable.po.tsx`](../../src/components/ReleasesTable/ReleasesTable.po.tsx)). When a route test needs pure helpers from a module that also imports DB code (e.g. **`getPaginationParams`** in [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)), copy the small helper body into the mock factory instead of importing the real module at the top level. When only one side-effect export needs stubbing (e.g. **`postYoutubePlayerCommand`**), keep it in a dedicated module ([`postYoutubePlayerCommand.ts`](../../src/utils/postYoutubePlayerCommand.ts)) and **`jest.mock`** that file only—leave pure helpers on the parent module running for real.
 
@@ -340,14 +354,14 @@ Multiple helpers: add each name to the factory object (e.g. **`fetchUserPreferen
 
 **Enforcement:** Cursor [`block-query-hook-mocks.sh`](../../.cursor/hooks/block-query-hook-mocks.sh) denies new query-hook mocks in feature tests; [`queryHookMockRules.spec.ts`](../../src/tests/utils/queryHookMockRules.spec.ts) scans the repo in CI/Jest and on session **`stop`** when test files changed.
 
-**Feature-hook test recipe:** canonical **`jest.mock("src/api/helpers")`** → [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx) → **`mockApiResponse`** → **`waitFor`** on outcomes. Examples: [`useUserPreferencesSync.hook.spec.tsx`](../../src/hooks/useUserPreferencesSync.hook.spec.tsx), [`useCollectionData.hook.spec.ts`](../../src/hooks/useCollectionData.hook.spec.ts).
+**Feature-hook test recipe:** canonical **`jest.mock("src/api/urls")`** → [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx) → **`mockApiResponse`** → **`waitFor`** on outcomes. Examples: [`useUserPreferencesSync.hook.spec.tsx`](../../src/hooks/useUserPreferencesSync.hook.spec.tsx), [`useCollectionData.hook.spec.ts`](../../src/hooks/useCollectionData.hook.spec.ts).
 
 - **Don't mock**: Pure helpers under [`src/utils/`](../../src/utils/)—filter, sort, format, URL helpers. Let them run in component tests.
-- **Test the API directly — not query hooks**: Cover HTTP contracts in **route handler tests** ([`src/app/api/**/route.spec.ts`](../../src/app/api/)) and **client helpers** ([`src/api/helpers.spec.ts`](../../src/api/helpers.ts) with [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts)). Route tests run in the default **jsdom** Jest environment—stub **`NextResponse.json`** in **`beforeEach`** when assertions call **`response.json()`** (see [`release/[id]/route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts)).
-- **UI / context / feature-hook tests**: Mock **`src/api/helpers`** (see **Do not test React Query** above) and render with **`TestProviders`** / **`renderFeatureHook`**. When **`CrateProvider`** mounts, stub crate endpoints with [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts). Crate drawer component specs use [`setupCrateDrawerTests`](../../src/components/CrateDrawer/crateDrawerTestSetup.ts), which stubs both **`fetchCrates`** and **`fetchCrate`** for the default **`crate-1`** fixture—override **`fetchCrate`** in individual tests when release data matters. Use **`waitFor`** when asserting async outcomes after helpers resolve.
-- **Real `QueryClient`**: **`TestProviders`** / [`createTestQueryClient`](../../src/tests/utils/testQueryClient.tsx) supply a real client so query hooks run; **do not** use the client as a test control surface—mock **helpers** instead.
-- **Do mock**: External dependencies—**`src/api/helpers`** via the **canonical mock pattern** above; configure responses with [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts). Use [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts) for fetch-level tests of [`src/api/helpers.ts`](../../src/api/helpers.ts). Also mock auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
-- **Authenticated tests + `CrateProvider`**: Default **`TestProviders`** includes **`CrateProvider`**, which runs **`useCratesQuery`** / **`useCrateQuery`** when **`authInitialState`** is authenticated and **`isCheckingAuth`** is false. If the test mocks **`src/api/helpers`** but only stubs unrelated endpoints (e.g. collection fields), React Query will still call **`fetchCrates`** / **`fetchCrate`**—undefined mocks log **`Query data cannot be undefined`**. Call [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) in the PO **`setupMocks()`** or hook test **`beforeEach`** when default empty crate data is enough; override **`fetchCrate`** (see [`CrateSelector.po.tsx`](../../src/components/CrateSelector/CrateSelector.po.tsx)) when the test needs specific crate IDs or release counts—not by seeding **`QueryClient`** cache.
+- **Test the API directly — not query hooks**: Cover HTTP contracts in **route handler tests** ([`src/app/api/**/route.spec.ts`](../../src/app/api/)) and **endpoint modules** ([`src/api/helpers.spec.ts`](../../src/api/helpers.spec.ts), [`src/api/endpoints/`](../../src/api/endpoints/) with [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts)). Route tests run in the default **jsdom** Jest environment—stub **`NextResponse.json`** in **`beforeEach`** when assertions call **`response.json()`** (see [`release/[id]/route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts)).
+- **UI / context / feature-hook tests**: Mock **`src/api/urls`** (see **Do not test React Query** above) and render with **`TestProviders`** / **`renderFeatureHook`**. When **`CrateProvider`** mounts, stub crate endpoints with [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts). Crate drawer component specs use [`setupCrateDrawerTests`](../../src/components/CrateDrawer/crateDrawerTestSetup.ts), which stubs both **`api.crates`** and **`api.crate`** for the default **`crate-1`** fixture—override **`api.crate`** in individual tests when release data matters. Use **`waitFor`** when asserting async outcomes after **`api.*`** resolves.
+- **Real `QueryClient`**: **`TestProviders`** / [`createTestQueryClient`](../../src/tests/utils/testQueryClient.tsx) supply a real client so query hooks run; **do not** use the client as a test control surface—mock **`api.*`** instead.
+- **Do mock**: External dependencies—**`src/api/urls`** via the **canonical mock pattern** above; configure responses with [`mockApiResponse`](../../src/tests/mocks/mockApiResponse.ts). Use [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts) for fetch-level tests of [`src/api/endpoints/`](../../src/api/endpoints/). Also mock auth cookies/services, `next/navigation`, `IntersectionObserver`, and similar.
+- **Authenticated tests + `CrateProvider`**: Default **`TestProviders`** includes **`CrateProvider`**, which runs **`useCratesQuery`** / **`useCrateQuery`** when **`authInitialState`** is authenticated and **`isCheckingAuth`** is false. If the test mocks **`src/api/urls`** but only stubs unrelated endpoints (e.g. collection fields), React Query will still call **`api.crates`** / **`api.crate`**—undefined mocks log **`Query data cannot be undefined`**. Call [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) in the PO **`setupMocks()`** or hook test **`beforeEach`** when default empty crate data is enough; override **`api.crate`** (see [`CrateSelector.po.tsx`](../../src/components/CrateSelector/CrateSelector.po.tsx)) when the test needs specific crate IDs or release counts—not by seeding **`QueryClient`** cache.
 - **Viewport / `matchMedia`**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) calls [`setupMockMatchMedia`](../../src/tests/mocks/mockMatchMedia.mock.ts) each test (defaults to mobile). Pass **`{ desktop: true }`** when a test needs desktop **`(min-width: 1024px)`** / **`(max-width: 1023px)`** behavior (e.g. **`useCrateDrawer`**, **`CrateProvider`** login drawer tests). App code: [`useMediaQuery`](../../src/hooks/useMediaQuery.hook.ts) subscribes via **`useSyncExternalStore`** (same pattern as **`useCrateDrawer`**) so client **`matchMedia`** reads stay correct after SSR—do not reimplement with **`useState`** + **`useEffect`**.
 - **Assertions**: Prefer asserting final DOM/output; avoid `expect(mockFn).toHaveBeenCalledWith(...)` when un-mocking—the output already proves wiring.
 
@@ -392,11 +406,11 @@ Use **2 spaces**, **UTF-8**, and **final newlines** so diffs stay clean.
 
 ## React Query
 
-Keep **`useQuery` / `useMutation`** out of fat components—use dedicated hooks under **`src/hooks/queries/`**.
+Keep **`useQuery` / `useMutation`** out of fat components—use dedicated hooks under **`src/hooks/queries/`** (reads) and **`src/hooks/mutations/`** (writes).
 
-- **Dedicated hook file** per query or mutation (e.g. [`useDiscogsCollectionQuery.ts`](../../src/hooks/queries/useDiscogsCollectionQuery.ts)).
+- **Dedicated hook file** per query ([`useDiscogsCollectionQuery.ts`](../../src/hooks/queries/useDiscogsCollectionQuery.ts)) or mutation bundle ([`useCrateMutations.ts`](../../src/hooks/mutations/useCrateMutations.ts)).
 - **Query keys**: Centralized in [`querykeys.constants.ts`](../../src/hooks/queries/querykeys.constants.ts). Use key factories in hooks and in any **`invalidateQueries`** / **`setQueryData`** call sites.
 - **Hook params: single object** (e.g. `useDiscogsCollectionQuery({ username, enabled })`) with a params interface in the same file.
 - **Keep query hooks dumb**: `queryKey`, `queryFn`, `enabled`, `select`, etc. only—no `useEffect`, `onSuccess`, or `onError` inside query hook files. No `console.error` in `queryFn`.
 - **Side effects at the call site**: Read `isError` / `error` in the component and react there (logging, toasts, etc.).
-- **API layer**: Hooks call helpers in [`src/api/helpers.ts`](../../src/api/helpers.ts)—not raw `fetch` in hook files, not Discogs directly from the browser (see [patterns.md](patterns.md)).
+- **API layer**: Hooks call **`api.*`** from [`src/api/urls.ts`](../../src/api/urls.ts)—not raw `fetch` in hook files, not Discogs directly from the browser (see [patterns.md](patterns.md)).

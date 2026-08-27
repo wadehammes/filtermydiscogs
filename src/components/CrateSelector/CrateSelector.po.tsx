@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -19,10 +19,10 @@ import type { RenderResult } from "test-utils";
 import { render, screen, waitFor } from "test-utils";
 import { CrateSelector } from "./CrateSelector.component";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -64,12 +64,12 @@ export class CrateSelectorPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.fetchCrates,
+      mockApi.crates,
       cratesResponseFactory.withCrates(this.crates),
       apiError,
     );
 
-    mockApi.fetchCrate.mockImplementation(async (crateId: string) => {
+    mockApi.crate.mockImplementation(async (crateId: string) => {
       const crate = this.crates.find((entry) => entry.id === crateId);
       if (!crate) {
         throw new Error(`Crate not found: ${crateId}`);
@@ -102,7 +102,7 @@ export class CrateSelectorPageObject extends BasePageObject {
   }
 
   mockLoading() {
-    mockApi.fetchCrates.mockImplementation(() => new Promise(() => {}));
+    mockApi.crates.mockImplementation(() => new Promise(() => {}));
   }
 
   mockSlowCreateCrate() {

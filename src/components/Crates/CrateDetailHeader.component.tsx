@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { fetchCrate } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { useAuth } from "src/context/auth.context";
@@ -25,7 +25,7 @@ export const CrateDetailHeader = () => {
       if (userId) {
         await queryClient.prefetchQuery({
           queryKey: CrateQueryKeys.byUserAndId(userId, nextCrateId),
-          queryFn: () => fetchCrate(nextCrateId),
+          queryFn: () => api.crate(nextCrateId),
         });
       }
 

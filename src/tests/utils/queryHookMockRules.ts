@@ -28,13 +28,13 @@ const QUERY_HOOK_MOCK_LINE_RULES = [
     rule: "jest-mock-query-hook",
     pattern: /jest\.mock\s*\(\s*["']src\/hooks\/queries\//,
     message:
-      "Do not jest.mock query hooks under src/hooks/queries/. Mock src/api/helpers and let the real query hook run in TestProviders. See docs/handbook/conventions.md (Do not test React Query).",
+      "Do not jest.mock query hooks under src/hooks/queries/. Mock src/api/urls and let the real query hook run in TestProviders. See docs/handbook/conventions.md (Do not test React Query).",
   },
   {
     rule: "setup-discogs-release-query-mock",
     pattern: /setupDiscogsReleaseQueryMock/,
     message:
-      "Use setupFetchDiscogsReleaseMock to stub fetchDiscogsRelease instead of mocking useDiscogsReleaseQuery.",
+      "Use setupFetchDiscogsReleaseMock to stub discogsRelease instead of mocking useDiscogsReleaseQuery.",
   },
 ] as const;
 
@@ -102,7 +102,7 @@ export const validateFeatureTestSource = (
         line: index + 1,
         rule: "jest-mocked-query-hook",
         message:
-          "Do not jest.mocked() query hooks from src/hooks/queries/. Mock src/api/helpers instead. See docs/handbook/conventions.md (Do not test React Query).",
+          "Do not jest.mocked() query hooks from src/hooks/queries/. Mock src/api/urls instead. See docs/handbook/conventions.md (Do not test React Query).",
         excerpt: line.trim(),
       });
     }

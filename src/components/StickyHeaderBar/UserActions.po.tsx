@@ -1,4 +1,4 @@
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { UserActions } from "src/components/StickyHeaderBar/UserActions";
 import {
   BasePageObject,
@@ -10,9 +10,9 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";

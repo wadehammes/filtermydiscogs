@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { fetchDiscogsCollection } from "src/api/helpers";
+import { api } from "src/api/urls";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
@@ -25,11 +25,13 @@ import {
 } from "src/utils/collectionCacheSync";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 
-jest.mock("src/api/helpers", () => ({
-  fetchDiscogsCollection: jest.fn(),
+jest.mock("src/api/urls", () => ({
+  api: {
+    discogsCollection: jest.fn(),
+  },
 }));
 
-const mockFetchDiscogsCollection = jest.mocked(fetchDiscogsCollection);
+const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 
 const buildPersistedCache = (totalItems: number) => {
   const page = collectionFactory.build({}, { totalItems, totalPages: 2 });

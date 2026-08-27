@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import * as apiHelpers from "src/api/helpers";
+import { api } from "src/api/urls";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
 import {
   crateDrawerPartiallyPackedResponse,
@@ -10,9 +10,9 @@ import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerF
 import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/helpers");
+jest.mock("src/api/urls");
 
-const mockApi = jest.mocked(apiHelpers);
+const mockApi = jest.mocked(api);
 
 describe("CrateDrawerDialogs", () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe("CrateDrawerDialogs", () => {
   });
 
   it("opens the empty crate confirm dialog from the footer", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
 
     const user = userEvent.setup();
 
@@ -40,7 +40,7 @@ describe("CrateDrawerDialogs", () => {
   });
 
   it("opens the clear packed marks dialog from the packing toolbar", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
 
     const user = userEvent.setup();
 
@@ -63,7 +63,7 @@ describe("CrateDrawerDialogs", () => {
   });
 
   it("clears packed marks when confirmed", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
     mockApi.clearAllPackedInCrate.mockResolvedValue({
       success: true,
       cleared_count: 1,
@@ -90,7 +90,7 @@ describe("CrateDrawerDialogs", () => {
   });
 
   it("closes the clear packed marks dialog without clearing when canceled", async () => {
-    mockApi.fetchCrate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
 
     const user = userEvent.setup();
 
