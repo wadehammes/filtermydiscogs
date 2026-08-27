@@ -18,10 +18,12 @@ import {
 import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
+import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
+import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
   AddPreviewToQueueParams,
@@ -46,6 +48,7 @@ import {
   prependQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
+  resolveQueueItemYoutubeVideoId,
   shuffleQueueItems,
   upcomingFromAlbumQueue,
 } from "src/utils/playbackQueue";
@@ -62,6 +65,7 @@ import {
   PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
+  transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import {
   clearPersistedReleasePlayback,
@@ -139,6 +143,7 @@ export const ReleasePlaybackProvider = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [shouldAutoplayEmbed, setShouldAutoplayEmbed] = useState(false);
+  const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
   const [pendingTrackPosition, setPendingTrackPosition] = useState<
     string | null
   >(null);
@@ -158,12 +163,15 @@ export const ReleasePlaybackProvider = ({
   const queueManuallyExtendedRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const embedVideoIdRef = useRef<string | null>(null);
+  const lastSyncedActiveVideoIdRef = useRef<string | null>(null);
   const isPausedRef = useRef(isPaused);
   const releaseRef = useRef<DiscogsRelease | null>(null);
   const queueRef = useRef(queue);
   const playbackHistoryRef = useRef(playbackHistory);
   const autoPlayOnQueueAddRef = useRef(autoPlayOnQueueAdd);
   const tracksRef = useRef<DiscogsTrack[]>([]);
+  const videosRef = useRef<DiscogsVideo[]>([]);
   const activeTrackIndexRef = useRef(activeTrackIndex);
   const releaseDetailIdRef = useRef<number | undefined>(undefined);
   const startPlaybackRef = useRef<(params: StartPlaybackParams) => void>(
@@ -224,6 +232,9 @@ export const ReleasePlaybackProvider = ({
     setIsPlaying(false);
     setIsPaused(false);
     setShouldAutoplayEmbed(false);
+    setEmbedVideoId(null);
+    embedVideoIdRef.current = null;
+    lastSyncedActiveVideoIdRef.current = null;
     setPreviewVideo(null);
     setRelease(null);
     setActiveTrackIndex(0);
@@ -311,6 +322,65 @@ export const ReleasePlaybackProvider = ({
       );
     }
   }, [attemptPlayFromGesture, clearPlayFromGestureRetries]);
+
+  const syncEmbedToVideoId = useCallback(
+    (videoId: string) => {
+      embedVideoIdRef.current = videoId;
+      setEmbedVideoId(videoId);
+
+      const iframe = playbackIframeRef.current;
+
+      if (iframe) {
+        transitionYoutubeIframeToVideo({ iframe, videoId });
+      }
+
+      if (!isPausedRef.current) {
+        pendingPlayFromGestureRef.current = true;
+        schedulePlayFromGestureAttempts();
+      }
+    },
+    [schedulePlayFromGestureAttempts],
+  );
+
+  const tryTransitionToQueueItem = useCallback(
+    (item: PlaybackQueueItem) => {
+      let tracks = tracksRef.current;
+      let videos = videosRef.current;
+
+      if (!isSameReleaseInstance(releaseRef.current, item.release)) {
+        const itemReleaseId = parseReleaseId(item.release);
+
+        if (itemReleaseId === null) {
+          return;
+        }
+
+        const cached = queryClient.getQueryData<DiscogsReleaseDetail>(
+          DiscogsReleaseQueryKeys.byId(String(itemReleaseId)),
+        );
+
+        if (!cached) {
+          return;
+        }
+
+        tracks = flattenTracklist(cached.tracklist ?? []);
+        videos = cached.videos ?? [];
+      }
+
+      const videoId = resolveQueueItemYoutubeVideoId({
+        item,
+        tracks,
+        videos,
+      });
+
+      if (!videoId) {
+        return;
+      }
+
+      lastSyncedActiveVideoIdRef.current = videoId;
+      syncEmbedToVideoId(videoId);
+    },
+    [queryClient, syncEmbedToVideoId],
+  );
 
   const fetchSimilarQueueItems = useCallback(
     async ({
@@ -467,6 +537,7 @@ export const ReleasePlaybackProvider = ({
   );
 
   tracksRef.current = tracks;
+  videosRef.current = videos;
   releaseDetailIdRef.current = releaseDetail?.id;
 
   const activeTrack = tracks[activeTrackIndex] ?? null;
@@ -512,6 +583,39 @@ export const ReleasePlaybackProvider = ({
       clearPlayFromGestureRetries();
     };
   }, [clearPlayFromGestureRetries]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState !== "visible" ||
+        !isPlayingRef.current ||
+        isPausedRef.current
+      ) {
+        return;
+      }
+
+      schedulePlayFromGestureAttempts();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [schedulePlayFromGestureAttempts]);
+
+  useEffect(() => {
+    if (!(activeVideoId && isPlaying)) {
+      return;
+    }
+
+    if (lastSyncedActiveVideoIdRef.current === activeVideoId) {
+      return;
+    }
+
+    lastSyncedActiveVideoIdRef.current = activeVideoId;
+    syncEmbedToVideoId(activeVideoId);
+  }, [activeVideoId, isPlaying, syncEmbedToVideoId]);
 
   useEffect(() => {
     if (
@@ -804,9 +908,15 @@ export const ReleasePlaybackProvider = ({
 
       maybePushCurrentToHistory();
       setUpcomingQueue(removeQueueItemAtIndex(upcoming, index));
+      tryTransitionToQueueItem(item);
       playQueueItem(item, { autoplay: true });
     },
-    [maybePushCurrentToHistory, playQueueItem, setUpcomingQueue],
+    [
+      maybePushCurrentToHistory,
+      playQueueItem,
+      setUpcomingQueue,
+      tryTransitionToQueueItem,
+    ],
   );
 
   const appendManualQueueItem = useCallback(
@@ -983,12 +1093,14 @@ export const ReleasePlaybackProvider = ({
 
     maybePushCurrentToHistory();
     setUpcomingQueue(queueRef.current.slice(1));
+    tryTransitionToQueueItem(item);
     playQueueItem(item, { autoplay: true });
   }, [
     extendQueueTail,
     maybePushCurrentToHistory,
     playQueueItem,
     setUpcomingQueue,
+    tryTransitionToQueueItem,
   ]);
 
   const playPrevious = useCallback(() => {
@@ -1005,8 +1117,9 @@ export const ReleasePlaybackProvider = ({
     const nextHistory = playbackHistoryRef.current.slice(0, -1);
     setPlaybackHistory(nextHistory);
     playbackHistoryRef.current = nextHistory;
+    tryTransitionToQueueItem(previousItem);
     playQueueItem(previousItem, { autoplay: true, rebuildAlbumQueue: false });
-  }, [playQueueItem, prependCurrentToUpcoming]);
+  }, [playQueueItem, prependCurrentToUpcoming, tryTransitionToQueueItem]);
 
   playNextRef.current = playNext;
   extendQueueTailRef.current = extendQueueTail;
@@ -1022,6 +1135,14 @@ export const ReleasePlaybackProvider = ({
 
       if (iframe) {
         enableYoutubeIframeListening(iframe);
+
+        if (embedVideoIdRef.current) {
+          transitionYoutubeIframeToVideo({
+            iframe,
+            videoId: embedVideoIdRef.current,
+          });
+        }
+
         schedulePlayFromGestureAttempts();
         return;
       }
@@ -1065,6 +1186,9 @@ export const ReleasePlaybackProvider = ({
     setIsPlaying(false);
     setIsPaused(false);
     setShouldAutoplayEmbed(false);
+    setEmbedVideoId(null);
+    embedVideoIdRef.current = null;
+    lastSyncedActiveVideoIdRef.current = null;
     setRelease(null);
     setActiveTrackIndex(0);
     setPendingTrackPosition(null);
@@ -1174,6 +1298,7 @@ export const ReleasePlaybackProvider = ({
       activeTrackPosition,
       activeTrack,
       activeVideoId,
+      embedVideoId,
       activePlaybackTitle,
       isReleasePreview,
       isPlaying,
@@ -1195,6 +1320,7 @@ export const ReleasePlaybackProvider = ({
       activeTrackPosition,
       activeTrack,
       activeVideoId,
+      embedVideoId,
       activePlaybackTitle,
       isReleasePreview,
       isPlaying,

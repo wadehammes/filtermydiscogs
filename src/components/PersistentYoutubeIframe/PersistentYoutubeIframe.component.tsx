@@ -1,10 +1,13 @@
 "use client";
 
 import classNames from "classnames";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
 import { definedProps } from "src/utils/definedProps";
-import { buildYoutubeEmbedUrl } from "src/utils/releasePlayback";
+import {
+  buildYoutubeEmbedUrl,
+  transitionYoutubeIframeToVideo,
+} from "src/utils/releasePlayback";
 import styles from "./PersistentYoutubeIframe.module.css";
 
 interface PersistentYoutubeIframeProps {
@@ -28,16 +31,49 @@ export const PersistentYoutubeIframe = ({
     resumePlaybackFromGesture,
   } = useReleasePlaybackIframeActions();
 
+  const [initialVideoId] = useState(videoId);
+  const loadedVideoIdRef = useRef(initialVideoId);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
   const embedUrl = useMemo(() => {
     const origin =
       typeof window !== "undefined" ? window.location.origin : undefined;
 
     return buildYoutubeEmbedUrl({
-      videoId,
+      videoId: initialVideoId,
       autoplay,
       ...definedProps({ origin }),
     });
-  }, [autoplay, videoId]);
+  }, [autoplay, initialVideoId]);
+
+  const setIframeRef = useCallback(
+    (node: HTMLIFrameElement | null) => {
+      iframeRef.current = node;
+      registerPlaybackIframe(node);
+    },
+    [registerPlaybackIframe],
+  );
+
+  useEffect(() => {
+    if (videoId === loadedVideoIdRef.current) {
+      return;
+    }
+
+    loadedVideoIdRef.current = videoId;
+
+    if (!iframeRef.current) {
+      return;
+    }
+
+    transitionYoutubeIframeToVideo({
+      iframe: iframeRef.current,
+      videoId,
+    });
+
+    if (autoplay) {
+      resumePlaybackFromGesture();
+    }
+  }, [autoplay, resumePlaybackFromGesture, videoId]);
 
   useEffect(() => {
     if (variant !== "visible" || !playbackKey) {
@@ -49,8 +85,7 @@ export const PersistentYoutubeIframe = ({
 
   return (
     <iframe
-      key={playbackKey}
-      ref={registerPlaybackIframe}
+      ref={setIframeRef}
       onLoad={notifyPlaybackIframeLoaded}
       src={embedUrl}
       title={videoTitle}

@@ -17,6 +17,7 @@ import {
   hasPlayableTrackVideo,
   isPreviewTrackPosition,
   isTrackVideoPlayable,
+  loadYoutubeVideoById,
   normalizeTrackTitle,
   parseTrackDurationToSeconds,
   parseYoutubeVideoId,
@@ -724,6 +725,24 @@ describe("postYoutubePlayerCommand", () => {
         event: "command",
         func: "playVideo",
         args: "",
+      }),
+      "*",
+    );
+  });
+
+  it("loads a new video in an existing iframe", () => {
+    const postMessage = jest.fn();
+    const iframe = {
+      contentWindow: { postMessage },
+    } as unknown as HTMLIFrameElement;
+
+    loadYoutubeVideoById({ iframe, videoId: "dQw4w9WgXcQ", startSeconds: 0 });
+
+    expect(postMessage).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "command",
+        func: "loadVideoById",
+        args: ["dQw4w9WgXcQ", 0],
       }),
       "*",
     );

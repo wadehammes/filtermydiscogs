@@ -42,7 +42,9 @@ export const ReleaseMiniPlayer = ({
     activeTrack,
     activePlaybackTitle,
     activeVideoId,
+    embedVideoId,
     isPaused,
+    isPlaying,
     isPlaybackReady,
     shouldAutoplayEmbed,
     canPlayPrevious,
@@ -62,6 +64,8 @@ export const ReleaseMiniPlayer = ({
   >(null);
   const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
+
+  const iframeVideoId = activeVideoId ?? embedVideoId;
 
   const inCrate = isInCrate(release?.instance_id ?? "");
 
@@ -195,16 +199,16 @@ export const ReleaseMiniPlayer = ({
         {...(isVideoPanelExpanded && { "data-video-expanded": true })}
         aria-label="Now playing"
       >
-        {isPlaybackReady && activeVideoId ? (
+        {isPlaying && iframeVideoId ? (
           <ReleasePlaybackVideoPanel
             panelId="release-playback-video-panel"
             isExpanded={isVideoPanelExpanded}
             onClose={handleVideoToggle}
           >
             <PersistentYoutubeIframe
-              videoId={activeVideoId}
+              videoId={iframeVideoId}
               videoTitle={activePlaybackTitle ?? "Release preview"}
-              playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${activeVideoId}`}
+              playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${iframeVideoId}`}
               autoplay={shouldAutoplayEmbed}
               variant={isVideoPanelExpanded ? "visible" : "hidden"}
             />
