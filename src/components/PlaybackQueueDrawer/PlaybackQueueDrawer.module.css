@@ -16,14 +16,19 @@
   text-transform: uppercase;
 }
 
+.queueDrawerHeader {
+  composes: microdotoverlay from "../../styles/modules/patterns.module.css";
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  padding: var(--space-3) var(--space-4);
+}
+
 .queueDrawer {
   border: 1px solid var(--border);
   border-bottom: none;
   box-shadow: none;
-
-  & > div:first-child {
-    padding: var(--space-3) var(--space-4);
-  }
 
   @media (width >= 768px) {
     border-bottom: 1px solid var(--border);

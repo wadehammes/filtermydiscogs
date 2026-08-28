@@ -19,6 +19,7 @@ interface BottomDrawerProps {
   closeButtonPlacement?: "floating" | "header";
   dataAttribute?: string;
   drawerClassName?: string;
+  headerClassName?: string;
   contentClassName?: string;
   aboveMiniPlayer?: boolean;
   behindMiniPlayer?: boolean;
@@ -37,6 +38,7 @@ export const BottomDrawer = ({
   closeButtonPlacement = "floating",
   dataAttribute,
   drawerClassName,
+  headerClassName,
   contentClassName,
   aboveMiniPlayer = false,
   behindMiniPlayer = false,
@@ -114,7 +116,7 @@ export const BottomDrawer = ({
         tabIndex={-1}
       >
         {(title || headerContent) && (
-          <div className={styles.header}>
+          <div className={classNames(styles.header, headerClassName)}>
             <div className={styles.headerContent}>
               {title && <h2 className={styles.title}>{title}</h2>}
               {headerContent}
