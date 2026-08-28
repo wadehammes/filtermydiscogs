@@ -1,15 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
+  applyPrivateRouteCacheHeaders,
   isPrivateSessionApiRoute,
-  withPrivateRouteHeaders,
-} from "src/lib/private-route-response";
+} from "src/lib/private-route-cache";
 
 export function proxy(request: NextRequest) {
   if (!isPrivateSessionApiRoute(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
-  return withPrivateRouteHeaders(NextResponse.next());
+  const response = NextResponse.next();
+  applyPrivateRouteCacheHeaders(response.headers);
+  return response;
 }
 
 export const config = {
