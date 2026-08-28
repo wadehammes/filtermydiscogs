@@ -8,16 +8,19 @@ import {
   useRef,
   useState,
 } from "react";
+import { resolveHorizontalScrollWheel } from "src/utils/horizontalScrollRowWheel";
 import styles from "./HorizontalScrollRow.module.css";
 
 interface HorizontalScrollRowProps {
   children: ReactNode;
   className?: string | undefined;
+  "data-testid"?: string;
 }
 
 export function HorizontalScrollRow({
   children,
   className,
+  "data-testid": dataTestId,
 }: HorizontalScrollRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showEndShadow, setShowEndShadow] = useState(false);
@@ -47,20 +50,20 @@ export function HorizontalScrollRow({
     resizeObserver.observe(element);
 
     const handleWheel = (event: WheelEvent) => {
-      if (element.scrollWidth <= element.clientWidth + 1) {
+      const wheelAction = resolveHorizontalScrollWheel({
+        clientWidth: element.clientWidth,
+        deltaX: event.deltaX,
+        deltaY: event.deltaY,
+        scrollLeft: element.scrollLeft,
+        scrollWidth: element.scrollWidth,
+        shiftKey: event.shiftKey,
+      });
+
+      if (!wheelAction) {
         return;
       }
 
-      const delta =
-        Math.abs(event.deltaX) > Math.abs(event.deltaY)
-          ? event.deltaX
-          : event.deltaY;
-
-      if (delta === 0) {
-        return;
-      }
-
-      element.scrollLeft += delta;
+      element.scrollLeft = wheelAction.nextScrollLeft;
       event.preventDefault();
     };
 
@@ -73,7 +76,7 @@ export function HorizontalScrollRow({
   }, [updateEndShadow]);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-testid={dataTestId}>
       <div
         ref={scrollRef}
         className={classNames(styles.scroll, className, {
