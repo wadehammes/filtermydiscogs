@@ -1,7 +1,14 @@
 "use client";
 
+import classNames from "classnames";
 import { useMemo } from "react";
+import {
+  ScrollRevealBar,
+  TickerNumber,
+} from "src/components/ScrollReveal/ScrollReveal.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useScrollRevealInView } from "src/hooks/useScrollRevealInView.hook";
+import scrollRevealStyles from "src/styles/modules/scroll-reveal.module.css";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
 import type { DashboardSectionCopy } from "src/utils/dashboardStory";
 import { calculateStyleEvolution } from "src/utils/styleEvolution";
@@ -18,6 +25,7 @@ export const StyleEvolution = ({
 }: StyleEvolutionProps) => {
   const releases = useAllReleases();
   const colors = useChartColors();
+  const { ref, inView } = useScrollRevealInView();
 
   const styleEvolution = useMemo(() => {
     return calculateStyleEvolution(releases || []);
@@ -75,7 +83,14 @@ export const StyleEvolution = ({
         )}
         <p className={styles.subtitle}>{sectionLede}</p>
       </header>
-      <div className={styles.periodGrid}>
+      <div
+        ref={ref}
+        className={classNames(
+          scrollRevealStyles.root,
+          styles.periodGrid,
+          inView && scrollRevealStyles.revealed,
+        )}
+      >
         {styleEvolution.map((period, periodIndex) => (
           <article
             key={period.period}
@@ -90,13 +105,13 @@ export const StyleEvolution = ({
                 {period.dateRange}
               </h3>
               <p className={styles.periodMeta}>
-                {period.releaseCount}{" "}
+                <TickerNumber active={inView} value={period.releaseCount} />{" "}
                 {period.releaseCount === 1 ? "release" : "releases"}
               </p>
             </header>
             {period.styles.length > 0 ? (
               <ul className={styles.styleList}>
-                {period.styles.map((style) => {
+                {period.styles.map((style, styleIndex) => {
                   const fillColor =
                     styleColorMap.get(style.name) ?? getChartColor(colors, 0);
 
@@ -105,21 +120,27 @@ export const StyleEvolution = ({
                       <div className={styles.styleRowHeader}>
                         <span className={styles.styleName}>{style.name}</span>
                         <span className={styles.stylePercent}>
-                          {style.percentage}%
+                          <TickerNumber
+                            active={inView}
+                            format={(value) => `${value}%`}
+                            value={style.percentage}
+                          />
+                          <span aria-hidden="true">%</span>
                         </span>
                       </div>
-                      <div className={styles.styleBarTrack}>
-                        <div
-                          aria-label={`${style.name}: ${style.percentage}% of styles in this period`}
-                          aria-valuemax={100}
-                          aria-valuemin={0}
-                          aria-valuenow={style.percentage}
+                      <div
+                        aria-label={`${style.name}: ${style.percentage}% of styles in this period`}
+                        aria-valuemax={100}
+                        aria-valuemin={0}
+                        aria-valuenow={style.percentage}
+                        className={styles.styleBarTrack}
+                        role="progressbar"
+                      >
+                        <ScrollRevealBar
                           className={styles.styleBarFill}
-                          role="progressbar"
-                          style={{
-                            width: `${style.percentage}%`,
-                            backgroundColor: fillColor,
-                          }}
+                          delayMs={(periodIndex * 5 + styleIndex + 2) * 90}
+                          style={{ backgroundColor: fillColor }}
+                          width={`${style.percentage}%`}
                         />
                       </div>
                     </li>
