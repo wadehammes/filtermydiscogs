@@ -5,9 +5,28 @@
   padding: var(--space-4);
 }
 
+.drawerTitle {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-normal);
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .queueDrawer {
+  border: 1px solid var(--border);
+  border-bottom: none;
+  box-shadow: none;
+
+  & > div:first-child {
+    padding: var(--space-3) var(--space-4);
+  }
+
   @media (width >= 768px) {
-    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
     border-radius: var(--radius-card);
     max-width: 31.25rem;
     width: min(calc(100% - var(--space-8)), 31.25rem);
@@ -18,6 +37,10 @@
     justify-content: flex-end;
     padding: var(--space-3) var(--space-4);
   }
+}
+
+.queueDrawerContent {
+  padding: 0;
 }
 
 .queueDrawerAlignEnd.queueDrawerAlignEnd {
