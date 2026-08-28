@@ -113,6 +113,7 @@ Cache Components prerender static shells. Client hooks that depend on request-ti
 | [`ThemeProvider`](../../src/context/theme.context.tsx) | **`ThemeProviderInner`** (uses **`useMediaQuery`** + **`usePathname`**) wrapped in **`<Suspense>`**; fallback exposes a static theme context while **`/theme-init.js`** keeps the correct **`data-theme`** on **`html`** |
 | [`AuthCheckingToast`](../../src/components/AuthCheckingToast/AuthCheckingToast.component.tsx) | Inner component with **`usePathname`** wrapped in **`<Suspense fallback={null}>`** |
 | [`AnalyticsPageViewTracker`](../../src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component.tsx) | Inner component with **`usePathname`** wrapped in **`<Suspense fallback={null}>`** |
+| Authenticated clients ([`ReleasesClient`](../../src/components/ReleasesClient/ReleasesClient.component.tsx), [`DashboardClient`](../../src/components/Dashboard/DashboardClient.component.tsx), [`MosaicClient`](../../src/components/MosaicClient/MosaicClient.component.tsx)) | While **`isCheckingAuth`**, render **`AppPageLoading`** (or dashboard skeleton) — not **`null`** — so Instant Navigations can validate the route shell; only **`shouldRedirectHome`** returns **`null`** before redirect |
 | Dynamic **`params`** on [`/crates/[id]`](../../src/app/crates/[id]/page.tsx) and [`/crate/[id]`](../../src/app/crate/[id]/page.tsx) | **`await params`** in an inner async server component wrapped in **`<Suspense>`** with **`AppPageLoading`** / **`PageLoader`** fallback — keeps the route shell instant |
 
 Do not re-add **`export const instant = false`** on the root layout to paper over missing Suspense boundaries — fix the hook site instead.
@@ -147,10 +148,10 @@ Cookie-authenticated **`/api/auth/*`** and authenticated **`/api/crates/*`** rou
 
 | Mechanism | Location | Role |
 |-----------|----------|------|
-| Route handlers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts) | Return JSON via **`privateRouteJson`**, redirects via **`privateRouteRedirect`** (`Cache-Control: private, no-store`, **`Vary: Cookie`**) |
+| Route handlers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts) (uses shared headers in [`private-route-cache.ts`](../../src/lib/private-route-cache.ts)) | Return JSON via **`privateRouteJson`**, redirects via **`privateRouteRedirect`** (`Cache-Control: private, no-store`, **`Vary: Cookie`**) |
 | Error bodies | [`createErrorResponse`](../../src/lib/api-helpers.ts) in [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts) | Sanitized errors wrapped in **`privateRouteJson`** |
 | Dynamic rendering | Cookie / `searchParams` access in handlers | With **`cacheComponents`**, routes that read **`request.cookies`** or **`nextUrl.searchParams`** bail out of prerender automatically — do **not** add **`export const dynamic = "force-dynamic"`** (incompatible with Cache Components). Route **`catch`** blocks must call **`rethrowNextInternalError`** at the top (or use **`createErrorResponse`**, which rethrows first) so Next.js prerender bailouts are not logged as application errors |
-| Edge pass-through | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 network proxy; applies private cache headers on auth and authenticated crate API routes when a handler omits them |
+| Edge pass-through | [`src/proxy.ts`](../../src/proxy.ts) | Next.js 16 network proxy; imports header helpers from [`private-route-cache.ts`](../../src/lib/private-route-cache.ts) only (not **`private-route-response.ts`**, which pulls **`next/server`**) and applies private cache headers on auth and authenticated crate API routes when a handler omits them |
 
 Do **not** use bare **`NextResponse.json`** on private session routes—use **`privateRouteJson`** (or **`createErrorResponse`** in `catch` blocks). Public crate reads keep their own cache policy in [`/api/crates/public/[id]`](../../src/app/api/crates/public/[id]/route.ts).
 

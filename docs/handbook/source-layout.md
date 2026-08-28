@@ -49,7 +49,7 @@ Quick map of **`src/`** and related top-level folders.
 | Crate DB changes | [`prisma/schema.prisma`](../../prisma/schema.prisma) + [`src/app/api/crates/`](../../src/app/api/crates/) |
 | Crate drawer open/closed state | [`useCrateDrawer.hook.ts`](../../src/hooks/useCrateDrawer.hook.ts) + [`crate.context.tsx`](../../src/context/crate.context.tsx); layout in [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) |
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
-| Private session API cache headers | [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |
+| Private session API cache headers | [`src/lib/private-route-cache.ts`](../../src/lib/private-route-cache.ts), [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |
 | Site metadata / sitemap / robots | [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts), [`src/app/sitemap.ts`](../../src/app/sitemap.ts), [`src/app/robots.ts`](../../src/app/robots.ts) — see [patterns.md → Metadata and OG images](patterns.md#metadata-and-og-images) |
 | Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home content in [`Login/`](../../src/components/Login/) |
 | Unused code / dead exports | [`knip.json`](../../knip.json), `pnpm knip` |

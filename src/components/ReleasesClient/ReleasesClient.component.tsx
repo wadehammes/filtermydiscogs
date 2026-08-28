@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useCallback, useState } from "react";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { Page } from "src/components/Page/Page.component";
@@ -72,8 +73,12 @@ const ReleasesClientContent = () => {
     [mainContentRef],
   );
 
-  if (shouldRedirectHome || isCheckingAuth) {
+  if (shouldRedirectHome) {
     return null;
+  }
+
+  if (isCheckingAuth) {
+    return <AppPageLoading currentPage="releases" />;
   }
 
   if (hasError) {

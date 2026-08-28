@@ -763,6 +763,10 @@ const createPiePolarMark = (
         key: (slice) => slice.data.label,
       }),
     ],
+    scales: {
+      angle: null,
+      radius: null,
+    },
   });
 
 const createPieChartDefinition = ({
