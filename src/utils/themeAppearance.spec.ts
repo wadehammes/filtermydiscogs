@@ -1,10 +1,31 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "@jest/globals";
 import {
   cycleTheme,
+  DARK_ASSET_THEMES,
   isStoredTheme,
+  PALETTE_THEMES,
   resolvePaletteTheme,
+  STORED_THEMES,
   themeUsesDarkAssets,
 } from "./themeAppearance";
+
+const readThemeInitPaletteThemes = (): string[] => {
+  const themeInit = readFileSync(
+    join(process.cwd(), "public/theme-init.js"),
+    "utf8",
+  );
+  const match = themeInit.match(/paletteThemes = new Set\(\[([\s\S]*?)\]\)/);
+
+  if (!match?.[1]) {
+    throw new Error("Could not parse paletteThemes from public/theme-init.js");
+  }
+
+  return [...match[1].matchAll(/"([^"]+)"/g)].flatMap(([, theme]) =>
+    theme ? [theme] : [],
+  );
+};
 
 describe("themeAppearance", () => {
   it("cycles through every stored theme", () => {
@@ -16,31 +37,34 @@ describe("themeAppearance", () => {
       current = cycleTheme(current);
     } while (current !== "light");
 
-    expect(visited.size).toBe(9);
+    expect(visited.size).toBe(STORED_THEMES.length);
+  });
+
+  it("keeps theme-init.js palette list in sync with PALETTE_THEMES", () => {
+    expect(new Set(readThemeInitPaletteThemes())).toEqual(
+      new Set(PALETTE_THEMES),
+    );
   });
 
   it("resolves system from OS preference", () => {
     expect(resolvePaletteTheme("system", false)).toBe("light");
     expect(resolvePaletteTheme("system", true)).toBe("dark");
     expect(resolvePaletteTheme("sepia", true)).toBe("sepia");
+    expect(resolvePaletteTheme("forest", false)).toBe("forest");
+    expect(resolvePaletteTheme("wine", false)).toBe("wine");
+    expect(resolvePaletteTheme("codex", false)).toBe("codex");
   });
 
-  it("uses dark marketing assets for dark palettes only", () => {
-    expect(themeUsesDarkAssets("light")).toBe(false);
-    expect(themeUsesDarkAssets("dim")).toBe(false);
-    expect(themeUsesDarkAssets("sepia")).toBe(false);
-    expect(themeUsesDarkAssets("slate")).toBe(false);
-    expect(themeUsesDarkAssets("dark")).toBe(true);
-    expect(themeUsesDarkAssets("midnight")).toBe(true);
-    expect(themeUsesDarkAssets("futuristic")).toBe(true);
-    expect(themeUsesDarkAssets("high-contrast")).toBe(true);
+  it.each(
+    PALETTE_THEMES.map((theme) => ({
+      theme,
+      usesDarkAssets: DARK_ASSET_THEMES.has(theme),
+    })),
+  )("uses dark marketing assets for $theme", ({ theme, usesDarkAssets }) => {
+    expect(themeUsesDarkAssets(theme)).toBe(usesDarkAssets);
   });
 
-  it("validates stored themes", () => {
-    expect(isStoredTheme("dim")).toBe(true);
-    expect(isStoredTheme("high-contrast")).toBe(true);
-    expect(isStoredTheme("system")).toBe(true);
-    expect(isStoredTheme("sepia")).toBe(true);
-    expect(isStoredTheme("futuristic")).toBe(true);
+  it.each(STORED_THEMES)("validates stored theme %s", (theme) => {
+    expect(isStoredTheme(theme)).toBe(true);
   });
 });

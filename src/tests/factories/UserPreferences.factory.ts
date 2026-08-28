@@ -13,6 +13,7 @@ import {
   type UserPreferences,
 } from "src/types/userPreferences.types";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import { STORED_THEMES } from "src/utils/themeAppearance";
 
 type PersistedFiltersFactoryOptions = Record<string, never>;
 
@@ -83,17 +84,7 @@ class UserPreferencesFactory extends BaseFactory<
       currentView: faker.helpers.arrayElement(["card", "list", "random"]),
       previousView: faker.helpers.arrayElement(["card", "list", "random"]),
     };
-    const theme: StoredTheme = faker.helpers.arrayElement([
-      "light",
-      "dim",
-      "dark",
-      "sepia",
-      "slate",
-      "midnight",
-      "futuristic",
-      "high-contrast",
-      "system",
-    ]);
+    const theme: StoredTheme = faker.helpers.arrayElement([...STORED_THEMES]);
 
     const instance = {
       version: USER_PREFERENCES_VERSION,

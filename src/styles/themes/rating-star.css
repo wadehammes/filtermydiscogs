@@ -1,0 +1,7 @@
+:root {
+  --rating-star: light-dark(#f5a623, #ffc107);
+  --rating-star-muted: light-dark(
+    color-mix(in srgb, #f5a623 38%, #94a3b8 62%),
+    color-mix(in srgb, #ffc107 45%, #737373 55%)
+  );
+}

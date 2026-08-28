@@ -29,7 +29,7 @@ One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user
 |-------|---------|---------|
 | `persistFilters` | `true` | When `false`, filter/sort selections are not restored on the next visit |
 | `autoPlayOnQueueAdd` | `true` | When `true`, the first track added to an empty queue starts playback immediately and opens the video panel |
-| `theme` | `"system"` | App color theme (`light`, `dim`, `sepia`, `slate`, `dark`, `midnight`, `futuristic`, `high-contrast`, or `system`) |
+| `theme` | `"system"` | App color theme (`light`, `dim`, `sepia`, `forest`, `amber`, `slate`, `dark`, `midnight`, `codex`, `discogs`, `wine`, `futuristic`, `high-contrast`, or `system`) |
 | `view` | `{ currentView: "card", previousView: "card" }` | Default releases view (`card`, `list`, or `random`) |
 | `filters` | Default empty filter state | Saved filter selections when `persistFilters` is `true` (styles, years, formats, sort, style/format/year match mode, search query) |
 

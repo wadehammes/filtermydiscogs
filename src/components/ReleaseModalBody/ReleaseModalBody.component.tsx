@@ -10,7 +10,7 @@ import { ReleasePlaybackFallback } from "src/components/ReleasePlaybackFallback/
 import { ReleasePlaybackPreview } from "src/components/ReleasePlaybackPreview/ReleasePlaybackPreview.component";
 import { ReleaseSimilarSidebar } from "src/components/ReleaseSimilarSidebar/ReleaseSimilarSidebar.component";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
-import { Spinner } from "src/components/Spinner/Spinner.component";
+import { ReleaseTracklistSkeleton } from "src/components/ReleaseTracklist/ReleaseTracklistSkeleton.component";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
@@ -64,13 +64,6 @@ export const ReleaseModalBody = ({
   return (
     <ReleaseNotesEditorProvider release={release}>
       <div className={styles.body} data-testid="fmdReleaseModalBody">
-        {isLoading ? (
-          <div className={styles.loadingState}>
-            <Spinner size="md" aria-label="Loading release details" />
-            <p className={styles.loadingMessage}>Loading tracklist…</p>
-          </div>
-        ) : null}
-
         {isError ? (
           <div className={styles.errorState}>
             <p className={styles.errorMessage}>
@@ -83,6 +76,15 @@ export const ReleaseModalBody = ({
         ) : null}
 
         <div className={styles.modalContent}>
+          {isLoading ? (
+            <section
+              className={classNames(styles.modalCard, styles.playbackSection)}
+              aria-label="Tracks"
+            >
+              <ReleaseTracklistSkeleton />
+            </section>
+          ) : null}
+
           {!(isLoading || isError) ? (
             <section
               className={classNames(styles.modalCard, styles.playbackSection)}

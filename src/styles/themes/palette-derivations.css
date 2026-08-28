@@ -1,5 +1,8 @@
 [data-theme="sepia"],
-[data-theme="slate"] {
+[data-theme="forest"],
+[data-theme="amber"],
+[data-theme="slate"],
+[data-theme="discogs"] {
   --foreground: contrast-color(var(--background));
   --card: color-mix(in srgb, var(--background) 75%, white 25%);
   --card-foreground: contrast-color(var(--card));
@@ -89,6 +92,15 @@
   --success-hover: color-mix(in srgb, var(--success) 88%, black 12%);
   --success-active: color-mix(in srgb, var(--success) 76%, black 24%);
   --warning: #78350f;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, black 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);
+}
+
+[data-theme="discogs"] {
+  --muted: #f7f7f7;
+  --rating-star: #f5a623;
+  --rating-star-muted: color-mix(in srgb, var(--rating-star) 38%, #999 62%);
+  --warning: #f5a623;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, black 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);
 }
@@ -187,7 +199,7 @@
 }
 
 [data-theme="midnight"],
-[data-theme="futuristic"] {
+[data-theme="wine"] {
   --foreground: contrast-color(var(--background));
   --card: color-mix(in srgb, var(--background) 80%, white 20%);
   --card-foreground: contrast-color(var(--card));
@@ -250,6 +262,121 @@
   --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
   --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
   --warning: #fbbf24;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
+}
+
+[data-theme="codex"] {
+  --foreground: #e6edf3;
+  --card: #161b22;
+  --card-foreground: #e6edf3;
+  --muted: #21262d;
+  --muted-foreground: #8b949e;
+  --accent: #21262d;
+  --accent-foreground: #e6edf3;
+  --border: #30363d;
+  --input: #30363d;
+  --popover: #161b22;
+  --popover-foreground: #e6edf3;
+  --sticky-header-background: #0d1117;
+  --secondary: #21262d;
+  --secondary-foreground: #e6edf3;
+  --secondary-hover: #30363d;
+  --secondary-active: #484f58;
+  --shadow-sm: 0 1px 2px 0 transparent;
+  --shadow-md:
+    0 4px 6px -1px transparent, 0 2px 4px -2px transparent,
+    inset 0 0 0 1px #30363d;
+  --shadow-lg:
+    0 10px 15px -3px transparent, 0 4px 6px -4px transparent,
+    inset 0 0 0 1px #30363d;
+  --shadow-modal: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
+  --shadow-xl:
+    0 20px 25px -5px transparent, 0 8px 10px -6px transparent,
+    inset 0 0 0 1px #484f58;
+  --white: #e6edf3;
+  --black: #0d1117;
+  --gray-50: #0d1117;
+  --gray-100: #161b22;
+  --gray-200: #21262d;
+  --gray-300: #30363d;
+  --gray-400: #484f58;
+  --gray-500: #6e7681;
+  --gray-600: #8b949e;
+  --gray-700: #8b949e;
+  --gray-800: #c9d1d9;
+  --gray-900: #e6edf3;
+  --destructive: #f85149;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, white 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, white 24%);
+  --on-destructive: #0d1117;
+  --on-destructive-hover: #0d1117;
+  --on-destructive-active: #0d1117;
+  --destructive-foreground: var(--on-destructive);
+  --success: #3fb950;
+  --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
+  --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
+  --warning: #d29922;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
+}
+
+[data-theme="futuristic"] {
+  --foreground: #e8f7ff;
+  --card: color-mix(in srgb, var(--background) 68%, #120a24 32%);
+  --card-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--background) 78%, #0d1828 22%);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--primary) 28%,
+    var(--foreground) 72%
+  );
+  --accent: color-mix(in srgb, var(--background) 70%, var(--primary) 30%);
+  --accent-foreground: var(--foreground);
+  --border: color-mix(in srgb, var(--primary) 34%, var(--background) 66%);
+  --input: color-mix(in srgb, var(--primary) 42%, var(--background) 58%);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --sticky-header-background: color-mix(
+    in srgb,
+    var(--background) 88%,
+    #ff4dcc 12%
+  );
+  --secondary: color-mix(in srgb, var(--background) 72%, var(--primary) 28%);
+  --secondary-foreground: var(--foreground);
+  --secondary-hover: color-mix(
+    in srgb,
+    var(--secondary) 78%,
+    var(--primary) 22%
+  );
+  --secondary-active: color-mix(
+    in srgb,
+    var(--secondary) 62%,
+    var(--primary) 38%
+  );
+  --white: var(--foreground);
+  --black: var(--background);
+  --gray-50: var(--background);
+  --gray-100: var(--card);
+  --gray-200: var(--muted);
+  --gray-300: var(--accent);
+  --gray-400: var(--secondary-active);
+  --gray-500: var(--border);
+  --gray-600: color-mix(in srgb, var(--foreground) 55%, var(--background) 45%);
+  --gray-700: var(--muted-foreground);
+  --gray-800: color-mix(in srgb, var(--foreground) 82%, var(--background) 18%);
+  --gray-900: var(--foreground);
+  --destructive: #f47;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, white 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, white 24%);
+  --on-destructive: #000;
+  --on-destructive-hover: #000;
+  --on-destructive-active: #000;
+  --destructive-foreground: var(--on-destructive);
+  --success: #00ff9c;
+  --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
+  --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
+  --warning: #ffe066;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
 }

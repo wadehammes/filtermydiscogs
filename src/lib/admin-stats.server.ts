@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "src/lib/db";
 import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
@@ -10,6 +11,7 @@ import type {
   AdminStatsTopUser,
 } from "src/types/dashboard.types";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
+import { STORED_THEMES } from "src/utils/themeAppearance";
 
 export const ADMIN_STATS_CACHE_SECONDS = 60;
 export const RETURNING_USERS_SERIES_DAYS = 90;
@@ -273,6 +275,10 @@ const mapAnalyticsConsentCounts = (
 export const fetchAdminAccountPreferencesStats = async (): Promise<
   AdminStats["accountPreferences"]
 > => {
+  const storedThemeSqlList = Prisma.join(
+    STORED_THEMES.map((theme) => Prisma.sql`${theme}`),
+  );
+
   const [persistFiltersRows, analyticsRows, themeRows, viewRows] =
     await Promise.all([
       prisma.$queryRaw<Array<{ count: number }>>`
@@ -294,17 +300,7 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
       prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
         SELECT
           CASE
-            WHEN preferences->>'theme' IN (
-              'light',
-              'dim',
-              'dark',
-              'sepia',
-              'slate',
-              'midnight',
-              'high-contrast',
-              'futuristic',
-              'system'
-            ) THEN preferences->>'theme'
+            WHEN preferences->>'theme' IN (${storedThemeSqlList}) THEN preferences->>'theme'
             ELSE 'light'
           END AS key,
           COUNT(*)::int AS count

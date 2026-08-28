@@ -1,0 +1,17 @@
+[data-theme="wine"] {
+  color-scheme: dark;
+
+  --background: #1a1018;
+  --gradientPink: #2a1422;
+  --gradientTeal: #1f1220;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 48%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #c9e4a5;
+  --pill-style-border: #b8d894;
+  --pill-style-selected-foreground: #1a2e10;
+  --pill-format-foreground: #e8c4a0;
+  --pill-format-border: #d4ae88;
+}

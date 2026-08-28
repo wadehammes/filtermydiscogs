@@ -1,0 +1,17 @@
+[data-theme="forest"] {
+  color-scheme: light;
+
+  --background: #a8b6a4;
+  --gradientPink: #98aa94;
+  --gradientTeal: #7d927c;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 52%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #3a5640;
+  --pill-style-border: #486650;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #5c6340;
+  --pill-format-border: #6e764c;
+}

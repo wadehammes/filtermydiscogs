@@ -9,24 +9,43 @@ export const THEME_LABELS: Record<StoredTheme, string> = {
   light: "Light",
   dim: "Dim",
   sepia: "Sepia",
+  forest: "Forest",
+  amber: "Amber",
   slate: "Slate",
   dark: "Dark",
   midnight: "Midnight",
+  codex: "Codex",
+  discogs: "Discogs",
+  wine: "Wine",
   futuristic: "Futuristic",
   "high-contrast": "High contrast",
   system: "System",
 };
 
-export const PALETTE_THEMES: PaletteTheme[] = [
+export const PALETTE_THEMES = [
   "light",
   "dim",
   "sepia",
+  "forest",
+  "amber",
   "slate",
   "dark",
   "midnight",
+  "codex",
+  "discogs",
+  "wine",
   "futuristic",
   "high-contrast",
-];
+] as const satisfies readonly PaletteTheme[];
+
+export const DARK_ASSET_THEMES = new Set<PaletteTheme>([
+  "dark",
+  "midnight",
+  "codex",
+  "wine",
+  "futuristic",
+  "high-contrast",
+]);
 
 export const STORED_THEMES: StoredTheme[] = [...PALETTE_THEMES, "system"];
 
@@ -48,10 +67,7 @@ export const resolvePaletteTheme = (
 };
 
 export const themeUsesDarkAssets = (theme: PaletteTheme): boolean =>
-  theme === "dark" ||
-  theme === "midnight" ||
-  theme === "futuristic" ||
-  theme === "high-contrast";
+  DARK_ASSET_THEMES.has(theme);
 
 export const toSonnerTheme = (theme: PaletteTheme): "dark" | "light" =>
   themeUsesDarkAssets(theme) ? "dark" : "light";

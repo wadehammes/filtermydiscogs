@@ -9,7 +9,7 @@ export const FILTER_MATCH_OPERATOR_OPTIONS: ReadonlyArray<{
   { value: "NONE", label: "NONE" },
 ];
 
-export const FILTER_YEAR_MATCH_OPERATOR_OPTIONS: ReadonlyArray<{
+export const FILTER_ANY_NONE_OPERATOR_OPTIONS: ReadonlyArray<{
   value: YearOperator;
   label: string;
 }> = [

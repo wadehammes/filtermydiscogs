@@ -2,6 +2,7 @@
 
 import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
+import { showPersistentActionToast } from "src/utils/actionToast";
 
 const DEPLOYMENT_UPDATE_TOAST_ID = "deployment-update";
 
@@ -12,16 +13,10 @@ export const showDeploymentUpdateToast = ({
   onRefresh: () => void;
   onDismiss: () => void;
 }) => {
-  toast("Update available", {
+  showPersistentActionToast({
     id: DEPLOYMENT_UPDATE_TOAST_ID,
+    title: "Update available",
     description: "Refresh to load the latest version.",
-    position: "bottom-center",
-    classNames: {
-      toast: "fmd-toast fmd-action-toast fmd-deployment-update-toast",
-      title: "fmd-toast-title",
-      description: "fmd-toast-description",
-      content: "fmd-action-toast-content",
-    },
     cancel: (
       <Button variant="secondary" size="sm" onPress={onDismiss}>
         Not now
@@ -32,7 +27,6 @@ export const showDeploymentUpdateToast = ({
         Refresh
       </Button>
     ),
-    duration: Number.POSITIVE_INFINITY,
   });
 };
 

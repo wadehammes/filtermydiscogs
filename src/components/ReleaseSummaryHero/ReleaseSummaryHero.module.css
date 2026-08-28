@@ -116,6 +116,7 @@
 }
 
 .communityStarIcon {
+  color: var(--rating-star);
   display: block;
   flex-shrink: 0;
   height: 0.875rem;

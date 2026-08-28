@@ -10,8 +10,13 @@ export type PaletteTheme =
   | "dim"
   | "dark"
   | "sepia"
+  | "forest"
+  | "amber"
   | "slate"
   | "midnight"
+  | "codex"
+  | "discogs"
+  | "wine"
   | "high-contrast"
   | "futuristic";
 

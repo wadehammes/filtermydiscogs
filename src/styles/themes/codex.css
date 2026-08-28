@@ -1,0 +1,17 @@
+[data-theme="codex"] {
+  color-scheme: dark;
+
+  --background: #0d1117;
+  --gradientPink: #161b22;
+  --gradientTeal: #21262d;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 48%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #56d364;
+  --pill-style-border: #3fb950;
+  --pill-style-selected-foreground: #0d1117;
+  --pill-format-foreground: #ffa657;
+  --pill-format-border: #d29922;
+}
