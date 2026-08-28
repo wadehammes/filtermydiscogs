@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-charts/tooltip";
 import classNames from "classnames";
 import { useCallback, useMemo } from "react";
+import { useScrollRevealInView } from "src/hooks/useScrollRevealInView.hook";
+import scrollRevealStyles from "src/styles/modules/scroll-reveal.module.css";
 import { isGrowthTooltipContent } from "src/utils/tanstackCharts";
 import styles from "./TanstackChart.module.css";
 
@@ -18,11 +20,13 @@ interface TanstackChartProps {
   ariaDescription?: string;
   height?: number;
   className?: string;
+  animateOnView?: boolean;
 }
 
 const chartRenderer = motion({
-  initial: true,
-  transition: { type: "tween", duration: 500, easing: "ease-out" },
+  initial: "always",
+  respectReducedMotion: true,
+  transition: { type: "tween", duration: 750, easing: "ease-out" },
 });
 
 export const TanstackChart = ({
@@ -31,7 +35,12 @@ export const TanstackChart = ({
   ariaDescription,
   height,
   className,
+  animateOnView = true,
 }: TanstackChartProps) => {
+  const { ref, inView } = useScrollRevealInView({ skip: !animateOnView });
+
+  const shouldRenderChart = !animateOnView || inView;
+
   const renderTooltipBody = useCallback(
     ({ content, defaultBody }: ChartTooltipBodyRenderContext) => {
       if (isGrowthTooltipContent(content)) {
@@ -70,5 +79,25 @@ export const TanstackChart = ({
     ],
   );
 
-  return <RendererChart {...chartProps} />;
+  return (
+    <div
+      ref={ref}
+      className={classNames(
+        scrollRevealStyles.root,
+        inView && scrollRevealStyles.revealed,
+        styles.viewport,
+        height === undefined && styles.viewportFluid,
+      )}
+      style={height !== undefined ? { height } : undefined}
+      aria-busy={animateOnView && !shouldRenderChart ? true : undefined}
+    >
+      {shouldRenderChart ? (
+        <div className={scrollRevealStyles.enter}>
+          <RendererChart {...chartProps} />
+        </div>
+      ) : animateOnView ? (
+        <div className={scrollRevealStyles.placeholder} aria-hidden="true" />
+      ) : null}
+    </div>
+  );
 };

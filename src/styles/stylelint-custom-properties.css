@@ -4,6 +4,9 @@
 :root {
   --anchor-width: 0px;
   --available-height: 100dvh;
+  --bar-delay: 0ms;
+  --bar-width: 0%;
+  --reveal-index: 0;
   --font-assistant: system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
   --transform-origin: center;

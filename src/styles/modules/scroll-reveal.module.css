@@ -1,0 +1,155 @@
+.root {
+  width: 100%;
+}
+
+.item {
+  --reveal-stagger: 90ms;
+  --reveal-duration: 650ms;
+  --reveal-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger));
+
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--reveal-duration) ease-out var(--reveal-delay),
+    transform var(--reveal-duration) ease-out var(--reveal-delay);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    @starting-style {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.revealed .item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.root:not(.revealed) .item {
+  opacity: 0;
+  transform: translateY(0.75rem);
+}
+
+.once {
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition:
+    opacity var(--reveal-duration, 650ms) ease-out,
+    transform var(--reveal-duration, 650ms) ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: translateY(0);
+    transition: none;
+  }
+}
+
+.onceRevealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.barFill {
+  height: 100%;
+  min-width: 2px;
+  transition: width 750ms ease-out;
+  transition-delay: var(--bar-delay, 0ms);
+  width: 0;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.revealed .barFill {
+  width: var(--bar-width);
+}
+
+.enter {
+  height: 100%;
+  opacity: 1;
+  transition: opacity 750ms ease-out;
+  width: 100%;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    @starting-style {
+      opacity: 1;
+    }
+  }
+}
+
+@keyframes scrollRevealPlaceholderPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.placeholder {
+  animation: scrollRevealPlaceholderPulse 1.4s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+  height: 100%;
+  min-height: 12rem;
+  width: 100%;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+.ticker {
+  display: inline-flex;
+  align-items: flex-end;
+  line-height: inherit;
+}
+
+.tickerStatic {
+  display: inline-block;
+}
+
+.digitSlot {
+  display: inline-block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.digitStrip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(0);
+  transition: transform var(--ticker-duration, 2.4s)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.digitCell {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  text-align: center;
+}

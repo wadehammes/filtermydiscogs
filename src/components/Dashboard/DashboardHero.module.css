@@ -56,10 +56,31 @@
 
 .count {
   color: var(--foreground);
+  display: inline-block;
   font-size: clamp(2.75rem, 9vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
   font-weight: var(--font-bold);
   letter-spacing: -0.04em;
   line-height: 1;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 1400ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(0.35em) scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    @starting-style {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 .countLabel {

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
 import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
+import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { ViewActionTypes } from "src/context/view.context";
@@ -279,7 +280,12 @@ export default function SettingsClient() {
                     </p>
                   ) : null}
                 </header>
-                <div className={styles.panelBody}>{renderActivePanel()}</div>
+                <ScrollRevealOnce
+                  key={activeSection}
+                  className={styles.panelBody}
+                >
+                  {renderActivePanel()}
+                </ScrollRevealOnce>
               </section>
             </div>
           </div>

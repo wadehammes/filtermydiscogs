@@ -2,8 +2,14 @@
 
 import classNames from "classnames";
 import { useMemo, useState } from "react";
+import {
+  ScrollRevealBar,
+  TickerNumber,
+} from "src/components/ScrollReveal/ScrollReveal.component";
 import Select from "src/components/Select/Select.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useScrollRevealInView } from "src/hooks/useScrollRevealInView.hook";
+import scrollRevealStyles from "src/styles/modules/scroll-reveal.module.css";
 import type {
   AcquisitionStreaksSummary,
   YearInReviewTimeframe,
@@ -43,21 +49,31 @@ function RhythmStat({
   count,
   suffix,
   description,
+  animate,
 }: {
   label: string;
   period?: string;
   count: number | string;
   suffix?: string;
   description?: string;
+  animate: boolean;
 }) {
-  const formattedCount = typeof count === "number" ? formatCount(count) : count;
+  const isNumeric = typeof count === "number";
 
   return (
     <div className={styles.statTile}>
       <p className={styles.statLabel}>{label}</p>
       {period ? <p className={styles.statPeriod}>{period}</p> : null}
       <p className={styles.statNumberRow}>
-        <span className={styles.statNumber}>{formattedCount}</span>
+        {isNumeric ? (
+          <TickerNumber
+            active={animate}
+            className={styles.statNumber}
+            value={count}
+          />
+        ) : (
+          <span className={styles.statNumber}>{count}</span>
+        )}
         {suffix ? (
           <span className={styles.statNumberSuffix}>{suffix}</span>
         ) : null}
@@ -75,6 +91,7 @@ export function CollectionRhythm({
   const releases = useAllReleases();
   const colors = useChartColors();
   const [timeframe, setTimeframe] = useState<YearInReviewTimeframe>("year");
+  const { ref, inView } = useScrollRevealInView();
 
   const timeframeMeta = YEAR_IN_REVIEW_TIMEFRAME_META[timeframe];
 
@@ -95,6 +112,8 @@ export function CollectionRhythm({
     );
   }, [yearInReview]);
 
+  const heroAdds = yearInReview?.recentPeriodAdds ?? 0;
+
   if (!(yearInReview || acquisitionStreaks)) {
     return null;
   }
@@ -108,7 +127,14 @@ export function CollectionRhythm({
       : "Adds have stayed steady so far.";
 
   return (
-    <div className={styles.rhythmGrid}>
+    <div
+      ref={ref}
+      className={classNames(
+        scrollRevealStyles.root,
+        styles.rhythmGrid,
+        inView && scrollRevealStyles.revealed,
+      )}
+    >
       {yearInReview && (
         <article className={styles.card} data-testid="fmdCollectionRecapCard">
           <header className={styles.cardHeader}>
@@ -132,9 +158,11 @@ export function CollectionRhythm({
           </header>
 
           <div className={styles.heroStat}>
-            <span className={styles.heroValue}>
-              {formatCount(yearInReview.recentPeriodAdds)}
-            </span>
+            <TickerNumber
+              active={inView}
+              className={styles.heroValue}
+              value={heroAdds}
+            />
             <span className={styles.heroLabel}>records added</span>
             {yearInReview.addsChangePercent !== null &&
               yearInReview.priorPeriodAdds > 0 && (
@@ -158,20 +186,20 @@ export function CollectionRhythm({
                 <span className={styles.compareLabel}>
                   {timeframeMeta.recentLabel}
                 </span>
-                <span className={styles.compareCount}>
-                  {formatCount(yearInReview.recentPeriodAdds)}
-                </span>
+                <TickerNumber
+                  active={inView}
+                  className={styles.compareCount}
+                  value={yearInReview.recentPeriodAdds}
+                />
               </div>
               <div className={styles.compareTrack}>
-                <div
-                  aria-hidden="true"
+                <ScrollRevealBar
                   className={classNames(
                     styles.compareFill,
                     styles.compareFillRecent,
                   )}
-                  style={{
-                    width: `${(yearInReview.recentPeriodAdds / compareMaxAdds) * 100}%`,
-                  }}
+                  delayMs={0}
+                  width={`${(yearInReview.recentPeriodAdds / compareMaxAdds) * 100}%`}
                 />
               </div>
             </div>
@@ -180,20 +208,20 @@ export function CollectionRhythm({
                 <span className={styles.compareLabel}>
                   {timeframeMeta.priorLabel}
                 </span>
-                <span className={styles.compareCount}>
-                  {formatCount(yearInReview.priorPeriodAdds)}
-                </span>
+                <TickerNumber
+                  active={inView}
+                  className={styles.compareCount}
+                  value={yearInReview.priorPeriodAdds}
+                />
               </div>
               <div className={styles.compareTrack}>
-                <div
-                  aria-hidden="true"
+                <ScrollRevealBar
                   className={classNames(
                     styles.compareFill,
                     styles.compareFillPrior,
                   )}
-                  style={{
-                    width: `${(yearInReview.priorPeriodAdds / compareMaxAdds) * 100}%`,
-                  }}
+                  delayMs={90}
+                  width={`${(yearInReview.priorPeriodAdds / compareMaxAdds) * 100}%`}
                 />
               </div>
             </div>
@@ -249,13 +277,11 @@ export function CollectionRhythm({
                             </span>
                           </div>
                           <div className={styles.driftTrack}>
-                            <div
-                              aria-hidden="true"
+                            <ScrollRevealBar
                               className={styles.driftFill}
-                              style={{
-                                width: `${barWidth}%`,
-                                backgroundColor: fillColor,
-                              }}
+                              delayMs={(index + 2) * 90}
+                              style={{ backgroundColor: fillColor }}
+                              width={`${barWidth}%`}
                             />
                           </div>
                         </li>
@@ -283,6 +309,7 @@ export function CollectionRhythm({
 
           <div className={styles.statsGrid}>
             <RhythmStat
+              animate={inView}
               label="Longest dry spell"
               count={
                 acquisitionStreaks.longestGapDays > 0
@@ -297,6 +324,7 @@ export function CollectionRhythm({
 
             {acquisitionStreaks.busiestDay && (
               <RhythmStat
+                animate={inView}
                 label="Busiest day"
                 period={acquisitionStreaks.busiestDay.label}
                 count={acquisitionStreaks.busiestDay.count}
@@ -306,6 +334,7 @@ export function CollectionRhythm({
 
             {acquisitionStreaks.busiestMonth && (
               <RhythmStat
+                animate={inView}
                 label="Busiest month"
                 period={acquisitionStreaks.busiestMonth.label}
                 count={acquisitionStreaks.busiestMonth.count}
@@ -315,6 +344,7 @@ export function CollectionRhythm({
 
             {acquisitionStreaks.busiestQuarter && (
               <RhythmStat
+                animate={inView}
                 label="Busiest quarter"
                 period={acquisitionStreaks.busiestQuarter.label}
                 count={acquisitionStreaks.busiestQuarter.count}
@@ -323,6 +353,7 @@ export function CollectionRhythm({
 
             {acquisitionStreaks.leastBusyQuarter && (
               <RhythmStat
+                animate={inView}
                 label="Quietest quarter"
                 period={acquisitionStreaks.leastBusyQuarter.label}
                 count={acquisitionStreaks.leastBusyQuarter.count}

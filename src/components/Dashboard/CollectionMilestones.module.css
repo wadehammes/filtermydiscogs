@@ -32,6 +32,25 @@
   width: 100%;
 }
 
+@keyframes timelinePlaceholderPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.timelinePlaceholder {
+  animation: timelinePlaceholderPulse 1.4s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+  min-height: 17rem;
+  width: 100%;
+}
+
 .zigzagScroller {
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -80,22 +99,59 @@
     content: "";
     height: 2px;
     left: var(--space-4);
+    opacity: 1;
     position: absolute;
     right: var(--space-4);
     top: 50%;
     transform: translateY(-50%);
+    transition: opacity 700ms ease-out;
     z-index: 0;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      transition: none;
+
+      @starting-style {
+        opacity: 1;
+      }
+    }
   }
 }
 
 .zigzagItem {
+  --reveal-delay: calc(var(--reveal-index, 0) * 90ms);
+
   display: grid;
   flex: 1 0 10.5rem;
   grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
   max-width: 13rem;
   min-width: 9.5rem;
+  opacity: 1;
   position: relative;
+  transform: translateY(0);
+  transition:
+    opacity 650ms ease-out var(--reveal-delay),
+    transform 650ms ease-out var(--reveal-delay);
   z-index: 1;
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    @starting-style {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 .zigzagSpacer {
