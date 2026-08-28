@@ -2,6 +2,7 @@
 
 import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
+import { showPersistentActionToast } from "src/utils/actionToast";
 
 const PENDING_FILTERS_RESTORE_TOAST_ID = "pending-filters-restore";
 
@@ -32,16 +33,11 @@ export const showPendingFiltersRestoreToast = ({
   onApply: () => void;
   onDismiss: () => void;
 }) => {
-  toast(PENDING_FILTERS_RESTORE_TOAST_MESSAGE, {
+  showPersistentActionToast({
     id: PENDING_FILTERS_RESTORE_TOAST_ID,
+    title: PENDING_FILTERS_RESTORE_TOAST_MESSAGE,
     description: buildRestoreToastDescription({ totalCount, filteredCount }),
-    position: "bottom-center",
-    classNames: {
-      toast: "fmd-toast fmd-action-toast fmd-pending-restore-toast",
-      title: "fmd-toast-title",
-      description: "fmd-toast-description",
-      content: "fmd-action-toast-content",
-    },
+    toastClassName: "fmd-pending-restore-toast",
     cancel: (
       <Button variant="secondary" size="sm" onPress={onDismiss}>
         Not now
@@ -52,7 +48,6 @@ export const showPendingFiltersRestoreToast = ({
         Resume
       </Button>
     ),
-    duration: Number.POSITIVE_INFINITY,
   });
 };
 

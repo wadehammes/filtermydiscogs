@@ -7,8 +7,13 @@
       "dim",
       "dark",
       "sepia",
+      "forest",
+      "amber",
       "slate",
       "midnight",
+      "codex",
+      "discogs",
+      "wine",
       "futuristic",
       "high-contrast",
     ]);

@@ -1,7 +1,7 @@
 import Select from "src/components/Select/Select.component";
 import {
+  FILTER_ANY_NONE_OPERATOR_OPTIONS,
   FILTER_MATCH_OPERATOR_OPTIONS,
-  FILTER_YEAR_MATCH_OPERATOR_OPTIONS,
 } from "src/constants/filterMatchOperators";
 import type { StyleOperator, YearOperator } from "src/types/filters.types";
 
@@ -30,7 +30,7 @@ export const FilterMatchOperatorSelect = ({
   }
 
   const effectiveOptions =
-    selectedCount === 1 ? FILTER_YEAR_MATCH_OPERATOR_OPTIONS : options;
+    selectedCount === 1 ? FILTER_ANY_NONE_OPERATOR_OPTIONS : options;
   const displayValue = selectedCount === 1 && value === "AND" ? "OR" : value;
 
   return (

@@ -7,7 +7,7 @@ import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSel
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
-import { FILTER_YEAR_MATCH_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
+import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -150,7 +150,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
               value={yearOperator}
               onChange={handleYearOperatorChange}
               disabled={!collection}
-              options={FILTER_YEAR_MATCH_OPERATOR_OPTIONS}
+              options={FILTER_ANY_NONE_OPERATOR_OPTIONS}
             />
           </div>
           <Select

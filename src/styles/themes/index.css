@@ -1,11 +1,17 @@
 @import url("./base.css");
 @import url("./colors.css");
+@import url("./rating-star.css");
 @import url("./primary.css");
 @import url("./dim.css");
 @import url("./high-contrast.css");
 @import url("./midnight.css");
 @import url("./slate.css");
 @import url("./sepia.css");
+@import url("./forest.css");
+@import url("./amber.css");
+@import url("./wine.css");
+@import url("./codex.css");
+@import url("./discogs.css");
 @import url("./palette-derivations.css");
 @import url("./futuristic.css");
 @import url("../global/theming.css");

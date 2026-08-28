@@ -20,10 +20,11 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const saveNotesMutation = useSaveReleaseNotesMutation({ username });
 
-  const { data: fieldsResponse } = useCollectionFieldsQuery({
-    username,
-    enabled: authState.isAuthenticated && !!username,
-  });
+  const { data: fieldsResponse, isPending: isFieldsLoading } =
+    useCollectionFieldsQuery({
+      username,
+      enabled: authState.isAuthenticated && !!username,
+    });
 
   const fieldsById = useMemo(
     () => buildCollectionFieldsMap(fieldsResponse?.fields ?? []),
@@ -119,6 +120,7 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     cardDisplayedNotes,
     hasNotes: cardDisplayedNotes.length > 0,
     isDialogOpen,
+    isFieldsLoading: authState.isAuthenticated && !!username && isFieldsLoading,
     isSaving: saveNotesMutation.isPending,
     openDialog,
   };

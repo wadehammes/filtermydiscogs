@@ -1,0 +1,17 @@
+[data-theme="amber"] {
+  color-scheme: light;
+
+  --background: #e6c878;
+  --gradientPink: #e0bc68;
+  --gradientTeal: #c89840;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 52%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #4a4020;
+  --pill-style-border: #5c5028;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #8b4a08;
+  --pill-format-border: #a85810;
+}

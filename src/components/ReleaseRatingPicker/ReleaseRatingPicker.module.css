@@ -16,7 +16,7 @@
   background: transparent;
   border: none;
   border-radius: var(--radius-ui);
-  color: var(--muted-foreground);
+  color: var(--rating-star-muted);
   cursor: pointer;
   display: inline-flex;
   justify-content: center;
@@ -29,18 +29,18 @@
 }
 
 .starButtonFilled {
-  color: var(--foreground);
+  color: var(--rating-star);
 }
 
 .starButtonIncluded {
-  background-color: color-mix(in srgb, var(--primary) 14%, transparent);
-  color: var(--foreground);
+  background-color: color-mix(in srgb, var(--rating-star) 14%, transparent);
+  color: var(--rating-star);
 }
 
 .starButtonHoverTarget {
-  background-color: color-mix(in srgb, var(--primary) 22%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent);
-  color: var(--foreground);
+  background-color: color-mix(in srgb, var(--rating-star) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rating-star) 30%, transparent);
+  color: var(--rating-star);
 }
 
 .starButtonDimmed {

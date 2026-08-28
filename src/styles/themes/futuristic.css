@@ -1,28 +1,36 @@
 [data-theme="futuristic"] {
   color-scheme: dark;
 
-  --background: #0b1118;
-  --gradientPink: #121c2a;
-  --gradientTeal: #1a3340;
+  --background: #04060f;
+  --gradientPink: #2a0845;
+  --gradientTeal: #061f33;
   --gradient-surface: color-mix(
     in oklch,
-    var(--gradientTeal) 36%,
-    var(--background)
+    var(--gradientPink) 42%,
+    var(--gradientTeal)
   );
-  --pill-style-foreground: #5eead4;
-  --pill-style-border: #4dd9c3;
-  --pill-style-selected-foreground: #052e16;
-  --pill-format-foreground: #e8c468;
-  --pill-format-border: #d4b055;
-  --shadow-sm: 0 0 6px 0 color-mix(in srgb, var(--primary) 6%, transparent);
+  --pattern-microdot-mix: 5.5%;
+  --pill-style-foreground: #00ffe5;
+  --pill-style-border: #00d9c9;
+  --pill-style-selected-foreground: #001a18;
+  --pill-format-foreground: #ff6bd6;
+  --pill-format-border: #ff4dcc;
+  --shadow-sm:
+    0 0 8px 0 color-mix(in srgb, var(--primary) 14%, transparent),
+    0 0 14px -2px color-mix(in srgb, #ff4dcc 8%, transparent);
   --shadow-md:
-    0 0 10px 0 color-mix(in srgb, var(--primary) 8%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    0 0 14px 0 color-mix(in srgb, var(--primary) 18%, transparent),
+    0 0 22px -4px color-mix(in srgb, #ff4dcc 10%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary) 28%, transparent);
   --shadow-lg:
-    0 0 16px 0 color-mix(in srgb, var(--primary) 10%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
-  --shadow-modal: 0 0 16px 0 color-mix(in srgb, var(--primary) 10%, transparent);
+    0 0 22px 0 color-mix(in srgb, var(--primary) 22%, transparent),
+    0 0 34px -6px color-mix(in srgb, #ff4dcc 14%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary) 24%, transparent);
+  --shadow-modal:
+    0 0 22px 0 color-mix(in srgb, var(--primary) 22%, transparent),
+    0 0 34px -6px color-mix(in srgb, #ff4dcc 14%, transparent);
   --shadow-xl:
-    0 0 22px 0 color-mix(in srgb, var(--primary) 12%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+    0 0 30px 0 color-mix(in srgb, var(--primary) 26%, transparent),
+    0 0 48px -8px color-mix(in srgb, #ff4dcc 18%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--primary) 20%, transparent);
 }

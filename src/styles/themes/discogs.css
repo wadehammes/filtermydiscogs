@@ -1,0 +1,17 @@
+[data-theme="discogs"] {
+  color-scheme: light;
+
+  --background: #fff;
+  --gradientPink: #f0f0f0;
+  --gradientTeal: #e5e5e5;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 52%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #00e;
+  --pill-style-border: #99c;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #a66b00;
+  --pill-format-border: #f5a623;
+}

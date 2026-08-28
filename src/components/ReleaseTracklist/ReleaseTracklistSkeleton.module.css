@@ -1,0 +1,100 @@
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.skeletonRow {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.skeletonRow:not(:last-child) {
+  border-bottom: 1px dashed var(--border);
+}
+
+.skeletonMain {
+  align-items: center;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: var(--space-2) var(--space-3);
+}
+
+.skeletonTrailing {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+}
+
+.skeletonToolbar {
+  background: var(--muted);
+  border-top: 1px dashed var(--border);
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-2) var(--space-3);
+}
+
+.skeletonPosition,
+.skeletonTitle,
+.skeletonDuration,
+.skeletonQueue,
+.skeletonToolbarButton {
+  animation: pulse 1.4s ease-in-out infinite;
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+}
+
+.skeletonPosition {
+  height: 0.875rem;
+  width: 1.5rem;
+}
+
+.skeletonTitle {
+  height: 1.125rem;
+  width: 100%;
+}
+
+.skeletonTitleWide {
+  width: 88%;
+}
+
+.skeletonTitleMedium {
+  width: 72%;
+}
+
+.skeletonTitleNarrow {
+  width: 56%;
+}
+
+.skeletonDuration {
+  height: 0.75rem;
+  width: 2.25rem;
+}
+
+.skeletonQueueWrap {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 1.75rem;
+  justify-content: center;
+  width: 1.75rem;
+}
+
+.skeletonQueue {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.skeletonToolbarButton {
+  height: 1.25rem;
+  width: 7.5rem;
+}

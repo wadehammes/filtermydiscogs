@@ -8,6 +8,7 @@ import styles from "./ReleaseNotes.module.css";
 import { ReleaseNotesCrateScratchpad } from "./ReleaseNotesCrateScratchpad.component";
 import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
 import { ReleaseNotesModalEditor } from "./ReleaseNotesModalEditor.component";
+import { ReleaseNotesModalSkeleton } from "./ReleaseNotesModalSkeleton.component";
 import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
 interface ReleaseNotesProps {
@@ -66,8 +67,17 @@ const ReleaseNotesCardDisplay = ({
 };
 
 const ReleaseNotesModal = ({ release }: { release: DiscogsRelease }) => {
-  const { canEdit, cardDisplayedNotes, displayedNotes, fields } =
-    useReleaseNotesEditorContext();
+  const {
+    canEdit,
+    cardDisplayedNotes,
+    displayedNotes,
+    fields,
+    isFieldsLoading,
+  } = useReleaseNotesEditorContext();
+
+  if (isFieldsLoading) {
+    return <ReleaseNotesModalSkeleton />;
+  }
 
   const hasStoredConditions = releaseHasStoredConditionNotes(release, fields);
   const hasTextNotes = cardDisplayedNotes.length > 0;

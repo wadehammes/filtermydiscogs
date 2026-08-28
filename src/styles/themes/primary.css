@@ -1,16 +1,31 @@
 [data-theme="dim"] {
   --primary: #3a5a75;
-  --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
-  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
-  --ring: var(--primary);
-  --on-primary: #fff;
-  --on-primary-hover: #fff;
-  --on-primary-active: #fff;
-  --primary-foreground: var(--on-primary);
 }
 
 [data-theme="sepia"] {
   --primary: #7a5534;
+}
+
+[data-theme="forest"] {
+  --primary: #3a5640;
+}
+
+[data-theme="amber"] {
+  --primary: #b87a08;
+}
+
+[data-theme="slate"] {
+  --primary: #456b8a;
+}
+
+:is(
+  [data-theme="dim"],
+  [data-theme="sepia"],
+  [data-theme="forest"],
+  [data-theme="amber"],
+  [data-theme="slate"],
+  [data-theme="discogs"]
+) {
   --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
   --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
   --ring: var(--primary);
@@ -20,37 +35,49 @@
   --primary-foreground: var(--on-primary);
 }
 
-[data-theme="slate"] {
-  --primary: #456b8a;
-  --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
-  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
-  --ring: var(--primary);
-}
-
 [data-theme="midnight"] {
   --primary: #6ba3e8;
+}
+
+[data-theme="codex"] {
+  --primary: #58a6ff;
+}
+
+[data-theme="discogs"] {
+  --primary: #00e;
+}
+
+[data-theme="wine"] {
+  --primary: #c45a7a;
+}
+
+[data-theme="high-contrast"] {
+  --primary: #6eb5ff;
+}
+
+:is(
+  [data-theme="midnight"],
+  [data-theme="codex"],
+  [data-theme="wine"],
+  [data-theme="high-contrast"]
+) {
   --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
   --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
   --ring: var(--primary);
 }
 
 [data-theme="futuristic"] {
-  --primary: #3db8c4;
-  --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
-  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
-  --ring: var(--primary);
-}
-
-[data-theme="high-contrast"] {
-  --primary: #6eb5ff;
-  --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
-  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --primary: #00e8ff;
+  --primary-hover: color-mix(in srgb, var(--primary) 78%, #ff4dcc 22%);
+  --primary-active: color-mix(in srgb, var(--primary) 68%, black 32%);
   --ring: var(--primary);
 }
 
 :is(
   [data-theme="slate"],
   [data-theme="midnight"],
+  [data-theme="codex"],
+  [data-theme="wine"],
   [data-theme="futuristic"],
   [data-theme="high-contrast"]
 ) {
