@@ -3,7 +3,7 @@
 import classNames from "classnames";
 import { ReleasePersonalRating } from "src/components/ReleasePersonalRating/ReleasePersonalRating.component";
 import styles from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.module.css";
-import StarIcon from "src/styles/icons/star-thin.svg";
+import StarSolidIcon from "src/styles/icons/star-solid.svg";
 import typographyStyles from "src/styles/modules/typography.module.css";
 import type { DiscogsRelease } from "src/types";
 import { formatCommunityRatingAverage } from "src/utils/releaseDisplay";
@@ -41,7 +41,7 @@ export const ReleaseHeroRatingsRow = ({
           className={styles.communityRating}
           title="Discogs community average"
         >
-          <StarIcon className={styles.communityStarIcon} aria-hidden />
+          <StarSolidIcon className={styles.communityStarIcon} aria-hidden />
           {formatCommunityRatingAverage(communityRating.average)} (
           {communityRating.count})
         </span>
