@@ -7,6 +7,7 @@ import {
   type DomChartDefinition,
   d3Curve,
   defineChart,
+  lineY,
 } from "@tanstack/charts";
 import { polar, radialArc } from "@tanstack/charts/polar";
 import { tooltip } from "@tanstack/charts/tooltip";
@@ -65,6 +66,10 @@ const barEnterMotion = {
 };
 
 const smoothAreaCurve = d3Curve(curveMonotoneX);
+
+const AREA_LINE_STROKE_WIDTH = 2.5;
+const AREA_FILL_OPACITY = 0.16;
+const DUAL_AREA_FILL_OPACITY = 0.12;
 
 const TIME_SERIES_TICK_SPACING_PX = 80;
 const TIME_SERIES_TICK_MIN = 3;
@@ -345,9 +350,14 @@ export const createCollectionGrowthAreaChartDefinition = (
             x: "date",
             y: "cumulative",
             fill: options.color,
-            fillOpacity: 0.16,
+            fillOpacity: AREA_FILL_OPACITY,
+            curve: smoothAreaCurve,
+          }),
+          lineY(data, {
+            x: "date",
+            y: "cumulative",
             stroke: options.color,
-            strokeWidth: 2.5,
+            strokeWidth: AREA_LINE_STROKE_WIDTH,
             curve: smoothAreaCurve,
           }),
         ],
@@ -420,18 +430,28 @@ export const createDualSeriesAreaChartDefinition = (
             x: "date",
             y: "primaryValue",
             fill: options.primaryColor,
-            fillOpacity: 0.12,
+            fillOpacity: DUAL_AREA_FILL_OPACITY,
+            curve: smoothAreaCurve,
+          }),
+          lineY(data, {
+            x: "date",
+            y: "primaryValue",
             stroke: options.primaryColor,
-            strokeWidth: 2.5,
+            strokeWidth: AREA_LINE_STROKE_WIDTH,
             curve: smoothAreaCurve,
           }),
           areaY(data, {
             x: "date",
             y: "secondaryValue",
             fill: options.secondaryColor,
-            fillOpacity: 0.12,
+            fillOpacity: DUAL_AREA_FILL_OPACITY,
+            curve: smoothAreaCurve,
+          }),
+          lineY(data, {
+            x: "date",
+            y: "secondaryValue",
             stroke: options.secondaryColor,
-            strokeWidth: 2.5,
+            strokeWidth: AREA_LINE_STROKE_WIDTH,
             curve: smoothAreaCurve,
           }),
         ],
@@ -501,9 +521,14 @@ export const createDailyCountAreaChartDefinition = (
             x: "date",
             y: "count",
             fill: options.color,
-            fillOpacity: 0.16,
+            fillOpacity: AREA_FILL_OPACITY,
+            curve: smoothAreaCurve,
+          }),
+          lineY(data, {
+            x: "date",
+            y: "count",
             stroke: options.color,
-            strokeWidth: 2.5,
+            strokeWidth: AREA_LINE_STROKE_WIDTH,
             curve: smoothAreaCurve,
           }),
         ],
@@ -558,9 +583,14 @@ export const createAdminGrowthAreaChartDefinition = (
             x: "month",
             y: "count",
             fill: options.color,
-            fillOpacity: 0.16,
+            fillOpacity: AREA_FILL_OPACITY,
+            curve: smoothAreaCurve,
+          }),
+          lineY(data, {
+            x: "month",
+            y: "count",
             stroke: options.color,
-            strokeWidth: 2.5,
+            strokeWidth: AREA_LINE_STROKE_WIDTH,
             curve: smoothAreaCurve,
           }),
         ],
