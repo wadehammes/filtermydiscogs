@@ -125,6 +125,27 @@ describe("/api/collection/releases/[releaseId]/rating", () => {
     expect(mockRequireAuthenticatedDiscogsUser).not.toHaveBeenCalled();
   });
 
+  it("returns 403 when the requested username does not match the session", async () => {
+    mockRequireAuthenticatedDiscogsUser.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 403 }),
+    });
+
+    const request = new NextRequest(
+      `http://localhost/api/collection/releases/${RELEASE_ID}/rating`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ username: "someone-else", rating: 4 }),
+      },
+    );
+
+    const response = await PUT(request, {
+      params: Promise.resolve({ releaseId: RELEASE_ID }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(mockUpdateReleaseRating).not.toHaveBeenCalled();
+  });
+
   it("clears a release rating for an authenticated user", async () => {
     mockRequireAuthenticatedDiscogsUser.mockResolvedValue(authenticatedSession);
     mockDeleteReleaseRating.mockResolvedValue(undefined);

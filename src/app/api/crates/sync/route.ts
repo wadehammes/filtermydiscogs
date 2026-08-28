@@ -9,14 +9,6 @@ import { privateRouteJson } from "src/lib/private-route-response";
 import { crateSyncBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 
-/**
- * Sync crates with collection - removes releases from crates that are no longer in the collection
- *
- * SAFETY: This endpoint can delete user data. It should only be called:
- * 1. When collection is fully loaded (validated client-side)
- * 2. With explicit user confirmation (handled client-side)
- * 3. With proper safeguards in place (minimum collection size, deletion percentage limits)
- */
 export async function POST(request: NextRequest) {
   try {
     const verified = await getVerifiedUserFromRequestWithRateLimit(
@@ -36,7 +28,6 @@ export async function POST(request: NextRequest) {
 
     const { collectionInstanceIds, force } = parsedBody.data;
 
-    // SAFETY CHECK: Require minimum collection size to prevent syncing with incomplete data
     const MIN_COLLECTION_SIZE = 10;
     if (collectionInstanceIds.length < MIN_COLLECTION_SIZE) {
       console.warn(
@@ -52,7 +43,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get all releases in all crates for this user (limit to prevent memory issues)
     const MAX_RELEASES_TO_CHECK = 10000;
     const allCrateReleases = await prisma.crateRelease.findMany({
       where: { user_id: userIdNum },
@@ -60,14 +50,11 @@ export async function POST(request: NextRequest) {
       take: MAX_RELEASES_TO_CHECK,
     });
 
-    // Normalize collection instance IDs to strings for comparison
     const normalizedCollectionIds = collectionInstanceIds.map((id) =>
       String(id),
     );
     const collectionInstanceIdSet = new Set(normalizedCollectionIds);
 
-    // Find releases that are in crates but not in collection
-    // Normalize crate instance_ids to strings for comparison
     const orphanedReleases = allCrateReleases.filter(
       (r: { instance_id: string }) => {
         const normalizedCrateId = String(r.instance_id);
@@ -82,11 +69,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // SAFETY CHECK: Log warning if deleting a large percentage of releases
     const totalCrateReleases = allCrateReleases.length;
     const deletionPercentage =
       (orphanedReleases.length / totalCrateReleases) * 100;
-    const MAX_DELETION_PERCENTAGE = 50; // Warn if deleting more than 50% of releases
+    const MAX_DELETION_PERCENTAGE = 50;
 
     if (deletionPercentage > MAX_DELETION_PERCENTAGE && !force) {
       console.error(
@@ -104,17 +90,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log the sync operation for monitoring
+    const usedForceOverride =
+      force && deletionPercentage > MAX_DELETION_PERCENTAGE;
+
+    if (usedForceOverride) {
+      console.warn(
+        JSON.stringify({
+          event: "crate_sync_force_override",
+          userId: userIdNum,
+          orphanedCount: orphanedReleases.length,
+          totalCount: totalCrateReleases,
+          deletionPercentage: Number(deletionPercentage.toFixed(1)),
+        }),
+      );
+    }
+
     console.log(
       `[CRATE_SYNC] User ${userIdNum}: Removing ${orphanedReleases.length} orphaned releases (${deletionPercentage.toFixed(1)}% of ${totalCrateReleases} total)`,
     );
 
-    // Remove orphaned releases from all crates (batch delete for performance)
     const instanceIds = orphanedReleases.map(
       (r: { instance_id: string }) => r.instance_id,
     );
 
-    // Process in batches to avoid query size limits
     const BATCH_SIZE = 1000;
     let totalDeleted = 0;
 
@@ -131,7 +129,6 @@ export async function POST(request: NextRequest) {
       totalDeleted += result.count;
     }
 
-    // Audit log (sensitive bulk operation)
     auditDatabaseOperation(
       userIdNum,
       "CrateRelease",
@@ -139,7 +136,8 @@ export async function POST(request: NextRequest) {
       undefined,
       {
         removedCount: totalDeleted,
-        operation: "sync",
+        operation: usedForceOverride ? "sync_force_override" : "sync",
+        deletionPercentage: Number(deletionPercentage.toFixed(1)),
       },
     );
 

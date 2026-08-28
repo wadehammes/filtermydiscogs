@@ -258,7 +258,6 @@ async function getVerifiedUserFromOAuthCookies(
   if (allowStale && hasActiveDiscogsSession(request)) {
     const sessionIdentity = getDisplayIdentityFromCookies(request);
     if (sessionIdentity) {
-      setCachedIdentity(cacheKey, sessionIdentity);
       return { user: sessionIdentity };
     }
   }

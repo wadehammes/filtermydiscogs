@@ -189,6 +189,31 @@ describe("GET /api/crates/[id]", () => {
       error: "Crate not found",
     });
   });
+
+  it("returns 404 when requesting another user's crate id", async () => {
+    const otherUserCrateId = "22222222-3333-4444-5555-666666666666";
+    mockGetVerifiedUser.mockResolvedValue({
+      user: { userId: 999, username: "other-user" },
+    });
+    mockFindUnique.mockResolvedValue(null);
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/crates/${otherUserCrateId}`),
+      { params: Promise.resolve({ id: otherUserCrateId }) },
+    );
+
+    expect(response.status).toBe(404);
+    expect(mockFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          user_id_id: {
+            user_id: 999,
+            id: otherUserCrateId,
+          },
+        },
+      }),
+    );
+  });
 });
 
 describe("PUT /api/crates/[id]", () => {

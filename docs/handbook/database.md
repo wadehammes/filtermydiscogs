@@ -4,7 +4,7 @@ Prisma schema, crate persistence, and related API routes.
 
 ## Stack
 
-- **ORM**: Prisma 7 with **`prisma-client-js`**
+- **ORM**: Prisma 7 with **`prisma-client-js`** (production). **Prisma 8** (`prisma@8` RC) is for staging/preview validation only until **`8.0.0` GA** — do not deploy RC builds to production.
 - **Database**: PostgreSQL (Vercel Postgres in production)
 - **Client**: [`src/lib/db.ts`](../../src/lib/db.ts) — singleton Prisma client for route handlers. Normalizes **`sslmode=require`** / **`prefer`** / **`verify-ca`** to **`verify-full`** (current `node-pg` semantics; silences the upcoming pg v9 alias warning) and enforces **`verify-full`** in production when SSL mode is omitted.
 
@@ -130,7 +130,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/[id]/releases` | GET, POST, PATCH | List/add releases; bulk clear packed (`clear_found`); new releases prepend at min **`sort_order` − 1000** |
 | `/api/crates/[id]/releases/[releaseId]` | PATCH, DELETE | Mark packed / remove release from crate |
 | `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers) |
-| `/api/crates/sync` | POST | Sync local crate state with server |
+| `/api/crates/sync` | POST | Sync local crate state with server; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata) |
 | `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, **account preferences** (filter persistence, analytics consent, themes, default view), and **feature usage** from **`product_analytics_daily_rollups`** + recent raw events) |
@@ -153,7 +153,7 @@ Aggregate crate totals for the public footer (crates, public crates, saved relea
 
 ## Public crates
 
-When **`private: false`**, [`src/lib/public-crate.server.ts`](../../src/lib/public-crate.server.ts) loads crate metadata and releases for SSR/SEO on **`/crate/[id]`**. **`getPublicCrateMetadataForPage`** returns **`null`** on Postgres errors so **`generateMetadata`** and build prerender fall back instead of failing the deploy. **`getPublicCrateIdsForStaticGeneration()`** (cached, default **`PUBLIC_CRATE_STATIC_PARAMS_LIMIT`** = 100 recent public crates) feeds public crate URLs in [`sitemap.ts`](../../src/app/sitemap.ts). **`generateStaticParams`** on [`/crate/[id]/page.tsx`](../../src/app/crate/[id]/page.tsx) passes **`PUBLIC_CRATE_BUILD_PRERENDER_LIMIT`** (25) so production builds do not open too many Postgres connections while pre-rendering metadata. Remaining public crate URLs still render on demand. Returns **`[]`** when **`DATABASE_URL`** is missing (local builds without a DB). During **`next build`**, [`db.ts`](../../src/lib/db.ts) caps the pg pool at **1** connection per worker when **`NEXT_PHASE=phase-production-build`**. Public API responses strip private collection fields (`notes`, `rating`, `date_added`) via [`toPublicReleaseSnapshot`](../../src/lib/release-data-validation.ts) before returning `release_data`. OG images: [`src/app/api/og/crate/[id]/route.tsx`](../../src/app/api/og/crate/[id]/route.tsx).
+When **`private: false`**, [`src/lib/public-crate.server.ts`](../../src/lib/public-crate.server.ts) and [`src/lib/public-crate-query.server.ts`](../../src/lib/public-crate-query.server.ts) load crate metadata and releases for SSR/SEO on **`/crate/[id]`**. Public routes validate crate IDs with [`isValidCrateId`](../../src/lib/crate-id.ts) (UUID) before querying; [`findPublicCrateById`](../../src/lib/public-crate-query.server.ts) resolves **`private: false`** rows by **`id`** (logs **`public_crate_ambiguous_id`** if more than one match). **`getPublicCrateMetadataForPage`** returns **`null`** on Postgres errors so **`generateMetadata`** and build prerender fall back instead of failing the deploy. **`getPublicCrateIdsForStaticGeneration()`** (cached, default **`PUBLIC_CRATE_STATIC_PARAMS_LIMIT`** = 100 recent public crates) feeds public crate URLs in [`sitemap.ts`](../../src/app/sitemap.ts). **`generateStaticParams`** on [`/crate/[id]/page.tsx`](../../src/app/crate/[id]/page.tsx) passes **`PUBLIC_CRATE_BUILD_PRERENDER_LIMIT`** (25) so production builds do not open too many Postgres connections while pre-rendering metadata. Remaining public crate URLs still render on demand. Returns **`[]`** when **`DATABASE_URL`** is missing (local builds without a DB). During **`next build`**, [`db.ts`](../../src/lib/db.ts) caps the pg pool at **1** connection per worker when **`NEXT_PHASE=phase-production-build`**. Public API responses strip private collection fields (`notes`, `rating`, `date_added`) via [`toPublicReleaseSnapshot`](../../src/lib/release-data-validation.ts) before returning `release_data`. OG images: [`src/app/api/og/crate/[id]/route.tsx`](../../src/app/api/og/crate/[id]/route.tsx).
 
 If **`username`** is missing on an older public crate, the public API may backfill from the viewer's cookie when they own the crate.
 

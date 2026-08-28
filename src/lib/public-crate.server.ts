@@ -1,5 +1,10 @@
 import { cacheLife } from "next/cache";
+import { isValidCrateId } from "src/lib/crate-id";
 import { prisma } from "src/lib/db";
+import {
+  findPublicCrateById,
+  findPublicCrateSummaryById,
+} from "src/lib/public-crate-query.server";
 
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
 export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
@@ -37,17 +42,11 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
   name: string;
   username: string | null;
 } | null> {
-  const crate = await prisma.crate.findFirst({
-    select: {
-      name: true,
-      username: true,
-    },
-    where: {
-      id: crateId,
-      private: false,
-    },
-  });
-  return crate;
+  if (!isValidCrateId(crateId)) {
+    return null;
+  }
+
+  return findPublicCrateSummaryById(crateId);
 }
 
 export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
@@ -58,21 +57,15 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
   cacheLife({ revalidate: 300 });
 
   try {
-    const crate = await prisma.crate.findFirst({
-      select: {
-        id: true,
-        name: true,
-        user_id: true,
-        username: true,
-      },
-      where: {
-        id: crateId,
-        private: false,
-      },
-    });
+    if (!isValidCrateId(crateId)) {
+      return null;
+    }
+
+    const crate = await findPublicCrateById(crateId);
     if (!crate) {
       return null;
     }
+
     const total = await prisma.crateRelease.count({
       where: {
         crate_id: crate.id,
