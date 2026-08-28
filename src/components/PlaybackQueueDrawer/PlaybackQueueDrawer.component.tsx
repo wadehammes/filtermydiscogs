@@ -187,6 +187,7 @@ export const PlaybackQueueDrawer = ({
         styles.queueDrawer,
         styles.queueDrawerAlignEnd,
       )}
+      headerClassName={styles.queueDrawerHeader}
       contentClassName={styles.queueDrawerContent}
       behindMiniPlayer
       hideOverlay
