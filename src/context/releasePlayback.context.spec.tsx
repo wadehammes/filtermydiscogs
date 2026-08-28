@@ -1282,6 +1282,72 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
+  it("uses an explicit youtubeVideoId when switching releases while playback is active", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.playbackVideoId).toBe("te2jJncBVG4");
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+    });
+
+    expect(result.current.playbackVideoId).toBe("def98765432");
+    expect(result.current.embedVideoId).toBe("def98765432");
+  });
+
+  it("loads the new release video when play is clicked in another release modal while playback is active", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.playbackVideoId).toBe("te2jJncBVG4");
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.playbackVideoId).toBe("def98765432");
+      expect(result.current.embedVideoId).toBe("def98765432");
+      expect(result.current.activeVideoId).toBe("def98765432");
+      expect(result.current.release?.basic_information.id).toBe(
+        SHORT_RELEASE_ID,
+      );
+    });
+  });
+
   it("replaces the album queue when play is clicked without manual queue additions", async () => {
     setupCollectionAndShortReleaseApiMock();
 

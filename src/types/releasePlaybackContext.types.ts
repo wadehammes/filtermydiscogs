@@ -7,6 +7,7 @@ export interface StartPlaybackParams {
   trackTitle?: string;
   startPaused?: boolean;
   rebuildAlbumQueue?: boolean;
+  youtubeVideoId?: string;
 }
 
 export interface StartReleasePreviewParams {
@@ -36,6 +37,7 @@ export interface ReleasePlaybackState {
   activeTrack: DiscogsTrack | null;
   activeVideoId: string | null;
   embedVideoId: string | null;
+  playbackVideoId: string | null;
   activePlaybackTitle: string | null;
   isReleasePreview: boolean;
   isPlaying: boolean;

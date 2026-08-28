@@ -41,8 +41,7 @@ export const ReleaseMiniPlayer = ({
     release,
     activeTrack,
     activePlaybackTitle,
-    activeVideoId,
-    embedVideoId,
+    playbackVideoId,
     isPaused,
     isPlaying,
     isPlaybackReady,
@@ -65,7 +64,7 @@ export const ReleaseMiniPlayer = ({
   const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
 
-  const iframeVideoId = embedVideoId ?? activeVideoId;
+  const iframeVideoId = playbackVideoId;
 
   const inCrate = isInCrate(release?.instance_id ?? "");
 
@@ -206,6 +205,7 @@ export const ReleaseMiniPlayer = ({
             onClose={handleVideoToggle}
           >
             <PersistentYoutubeIframe
+              key={String(release.instance_id)}
               videoId={iframeVideoId}
               videoTitle={activePlaybackTitle ?? "Release preview"}
               playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${iframeVideoId}`}
