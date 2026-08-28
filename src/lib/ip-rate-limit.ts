@@ -40,6 +40,39 @@ export const ANALYTICS_EVENTS_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   ),
 };
 
+export const AUTH_ROUTE_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
+  maxRequests: parseInt(process.env.AUTH_ROUTE_RATE_LIMIT_MAX || "60", 10),
+  windowMs: parseInt(
+    process.env.AUTH_ROUTE_RATE_LIMIT_WINDOW ||
+      process.env.IP_RATE_LIMIT_WINDOW ||
+      "60000",
+    10,
+  ),
+};
+
+export const PUBLIC_CRATE_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
+  maxRequests: parseInt(process.env.PUBLIC_CRATE_RATE_LIMIT_MAX || "120", 10),
+  windowMs: parseInt(
+    process.env.PUBLIC_CRATE_RATE_LIMIT_WINDOW ||
+      process.env.IP_RATE_LIMIT_WINDOW ||
+      "60000",
+    10,
+  ),
+};
+
+export const getIpRateLimitResponse = (
+  request: NextRequest,
+  config: IpRateLimitConfig,
+): NextResponse | null => {
+  const result = checkIpRateLimit(request, config);
+
+  if (result.allowed) {
+    return null;
+  }
+
+  return result.response;
+};
+
 export function getClientIp(request: NextRequest): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {

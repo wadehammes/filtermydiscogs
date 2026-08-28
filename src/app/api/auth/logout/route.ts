@@ -5,9 +5,15 @@ import {
   clearVerifiedIdentityCache,
   setReconnectUsernameCookie,
 } from "src/lib/auth-request";
+import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteJson } from "src/lib/private-route-response";
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceAuthRouteIpRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const accessToken = request.cookies.get("discogs_access_token")?.value;
   const accessTokenSecret = request.cookies.get(
     "discogs_access_token_secret",

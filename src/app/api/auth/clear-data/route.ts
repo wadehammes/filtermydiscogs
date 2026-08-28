@@ -4,11 +4,17 @@ import {
   clearReconnectUsernameCookie,
   getVerifiedUserFromRequest,
 } from "src/lib/auth-request";
+import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceAuthRouteIpRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const secureFlag = process.env.NODE_ENV === "production";
 
   const clearCookieOptions = {

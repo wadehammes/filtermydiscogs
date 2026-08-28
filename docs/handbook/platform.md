@@ -62,6 +62,8 @@ Full list: [`package.json`](../../package.json).
 | `ADMIN_USER_ID` | Discogs user ID allowed to access `/admin` |
 | `CRON_SECRET` | Bearer token for Vercel Cron routes (e.g. **`/api/cron/product-analytics`**) |
 | `IP_RATE_LIMIT_MAX` / `IP_RATE_LIMIT_WINDOW` | Default per-IP API rate limit (120 requests / 60s) |
+| `AUTH_ROUTE_RATE_LIMIT_MAX` / `AUTH_ROUTE_RATE_LIMIT_WINDOW` | Per-IP limit for **`/api/auth/*`** (default **60** / 60s) |
+| `PUBLIC_CRATE_RATE_LIMIT_MAX` / `PUBLIC_CRATE_RATE_LIMIT_WINDOW` | Per-IP limit for **`GET /api/crates/public/[id]`** (default **120** / 60s) |
 | `ANALYTICS_EVENTS_RATE_LIMIT_MAX` / `ANALYTICS_EVENTS_RATE_LIMIT_WINDOW` | Per-IP limit for **`POST /api/usage/events`** (default **240** / 60s) |
 | `IMAGE_PROXY_RATE_LIMIT_MAX` / `IMAGE_PROXY_RATE_LIMIT_WINDOW` | Higher limit for [`/api/image-proxy`](../../src/app/api/image-proxy/route.ts) (default **2500** / 60s) so mosaic export can load one tile per release |
 

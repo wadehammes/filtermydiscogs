@@ -5,8 +5,14 @@ import {
   sanitizeError,
 } from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
+import { isValidCrateId } from "src/lib/crate-id";
 import { findCrateReleasesForLayout } from "src/lib/crate-layout-query.server";
 import { prisma } from "src/lib/db";
+import {
+  getIpRateLimitResponse,
+  PUBLIC_CRATE_RATE_LIMIT_CONFIG,
+} from "src/lib/ip-rate-limit";
+import { findPublicCrateById } from "src/lib/public-crate-query.server";
 import { toPublicReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
 
@@ -14,26 +20,25 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const rateLimitResponse = getIpRateLimitResponse(
+    request,
+    PUBLIC_CRATE_RATE_LIMIT_CONFIG,
+  );
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const { id } = await params;
+
+    if (!isValidCrateId(id)) {
+      return NextResponse.json({ error: "Invalid crate id" }, { status: 400 });
+    }
+
     const { skip, take, page, pageSize } = getPaginationParams(request);
 
-    const crate = await prisma.crate.findFirst({
-      where: {
-        id,
-        private: false,
-      },
-      select: {
-        user_id: true,
-        id: true,
-        name: true,
-        username: true,
-        is_default: true,
-        private: true,
-        created_at: true,
-        updated_at: true,
-      },
-    });
+    const crate = await findPublicCrateById(id);
 
     if (!crate) {
       return NextResponse.json(

@@ -3,12 +3,18 @@ import {
   primeVerifiedIdentityCache,
   syncIdentityCookies,
 } from "src/lib/auth-request";
+import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { upsertDiscogsUser } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = enforceAuthRouteIpRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const oauthToken = searchParams.get("oauth_token");

@@ -6,9 +6,11 @@ import {
   getDisplayIdentityFromCookies,
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
+  requireAuthenticatedDiscogsUser,
 } from "./auth-request";
 import {
   clearCachedIdentity,
+  getCachedIdentity,
   getIdentityCacheKey,
   setCachedIdentity,
 } from "./identity-cache";
@@ -181,6 +183,22 @@ describe("auth-request", () => {
       expect(getIdentity).not.toHaveBeenCalled();
     });
 
+    it("does not cache cookie fallback identity under the OAuth token key", async () => {
+      jest.spyOn(discogsOAuthService, "getIdentity");
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+        discogs_user_id: "42",
+        discogs_username: "crate-digger",
+      });
+
+      await getVerifiedUserFromRequest(request, { allowStale: true });
+
+      expect(getCachedIdentity(cacheKey, true)).toBeNull();
+    });
+
     it("still calls Discogs identity for write routes when cache is cold", async () => {
       jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
         id: 99,
@@ -202,6 +220,30 @@ describe("auth-request", () => {
       expect(result).toEqual({
         user: { userId: 99, username: "verified-user" },
       });
+    });
+  });
+
+  describe("requireAuthenticatedDiscogsUser", () => {
+    it("returns 403 when the requested username does not match verified identity", async () => {
+      jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
+        id: 99,
+        username: "alice",
+        resource_url: "https://api.discogs.com/users/alice",
+        consumer_name: "FilterMyDisco.gs",
+      });
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await requireAuthenticatedDiscogsUser(request, "bob");
+
+      expect("error" in result).toBe(true);
+      if ("error" in result) {
+        expect(result.error.status).toBe(403);
+      }
     });
   });
 });
