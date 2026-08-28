@@ -18,12 +18,10 @@ interface PersistentYoutubeIframeProps {
   variant?: "hidden" | "visible";
 }
 
-const VISIBLE_TAB_SRC_FALLBACK_MS = 1000;
-
 export const PersistentYoutubeIframe = ({
   videoId,
   videoTitle,
-  playbackKey,
+  playbackKey: _playbackKey,
   autoplay = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
@@ -32,6 +30,9 @@ export const PersistentYoutubeIframe = ({
     notifyPlaybackIframeLoaded,
     resumePlaybackFromGesture,
   } = useReleasePlaybackIframeActions();
+
+  const registerPlaybackIframeRef = useRef(registerPlaybackIframe);
+  registerPlaybackIframeRef.current = registerPlaybackIframe;
 
   const [bootstrapVideoId] = useState(videoId);
   const loadedVideoIdRef = useRef(bootstrapVideoId);
@@ -48,13 +49,10 @@ export const PersistentYoutubeIframe = ({
     });
   }, [autoplay, bootstrapVideoId]);
 
-  const setIframeRef = useCallback(
-    (node: HTMLIFrameElement | null) => {
-      iframeRef.current = node;
-      registerPlaybackIframe(node);
-    },
-    [registerPlaybackIframe],
-  );
+  const setIframeRef = useCallback((node: HTMLIFrameElement | null) => {
+    iframeRef.current = node;
+    registerPlaybackIframeRef.current(node);
+  }, []);
 
   useEffect(() => {
     if (videoId === loadedVideoIdRef.current) {
@@ -73,44 +71,15 @@ export const PersistentYoutubeIframe = ({
     if (autoplay) {
       resumePlaybackFromGesture();
     }
-
-    if (document.visibilityState !== "visible") {
-      return;
-    }
-
-    const fallbackTimeoutId = window.setTimeout(() => {
-      const currentIframe = iframeRef.current;
-
-      if (
-        loadedVideoIdRef.current !== videoId ||
-        !currentIframe ||
-        currentIframe.src.includes(`/embed/${videoId}`)
-      ) {
-        return;
-      }
-
-      const origin =
-        typeof window !== "undefined" ? window.location.origin : undefined;
-
-      currentIframe.src = buildYoutubeEmbedUrl({
-        videoId,
-        autoplay,
-        ...definedProps({ origin }),
-      });
-    }, VISIBLE_TAB_SRC_FALLBACK_MS);
-
-    return () => {
-      window.clearTimeout(fallbackTimeoutId);
-    };
   }, [autoplay, resumePlaybackFromGesture, videoId]);
 
   useEffect(() => {
-    if (variant !== "visible" || !playbackKey) {
+    if (variant !== "visible") {
       return;
     }
 
     resumePlaybackFromGesture();
-  }, [playbackKey, resumePlaybackFromGesture, variant]);
+  }, [resumePlaybackFromGesture, variant]);
 
   return (
     <iframe
