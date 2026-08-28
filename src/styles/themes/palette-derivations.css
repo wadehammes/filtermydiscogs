@@ -98,8 +98,6 @@
 
 [data-theme="discogs"] {
   --muted: #f7f7f7;
-  --rating-star: #f5a623;
-  --rating-star-muted: color-mix(in srgb, var(--rating-star) 38%, #999 62%);
   --warning: #f5a623;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, black 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);

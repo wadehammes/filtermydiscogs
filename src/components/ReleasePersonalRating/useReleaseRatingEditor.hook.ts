@@ -20,9 +20,11 @@ export const useReleaseRatingEditor = (release: DiscogsRelease) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const saveRatingMutation = useSaveReleaseRatingMutation({ username });
 
+  const releaseRating = getReleaseRating(release);
+
   useEffect(() => {
-    setRating(getReleaseRating(release));
-  }, [release]);
+    setRating(releaseRating);
+  }, [release.instance_id, releaseRating]);
 
   const handleRate = async (nextRating: number) => {
     if (!canEdit || releaseId === null || saveRatingMutation.isPending) {

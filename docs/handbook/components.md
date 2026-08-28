@@ -131,7 +131,7 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | `ReleaseHeroRatingsRow.component.tsx` | One ratings row — **`ReleasePersonalRating`** (authenticated) + community average, `·`-separated when both present |
 | `ReleasePersonalRating.component.tsx` | Auth-only wrapper mounting **`useReleaseRatingEditor`** + **`ReleaseRatingPicker`** |
 | `ReleaseRatingPicker.component.tsx` | Native **`<input type="radio">`** stars in a **`<fieldset>`**; hover preview highlights included stars and dims higher stars |
-| `useReleaseRatingEditor.hook.ts` | Rating write handler; patches **`DiscogsCollectionQueryKeys`** + IndexedDB (modal reads collection cache via **`useCollectionReleaseByInstanceId`**) and invalidates release detail |
+| `useReleaseRatingEditor.hook.ts` | Rating write handler; patches **`DiscogsCollectionQueryKeys`** + IndexedDB (modal reads collection cache via **`useCollectionReleaseByInstanceId`**) without refetching the collection |
 | `PublicReleaseModal.component.tsx` | Public crate variant — **`ScrollModal`** shell, **`PublicReleaseSummaryHero`** + **`PublicReleaseModalBody`** (tracklist only) |
 | `PublicReleaseSummaryHero.component.tsx` | Discogs + close toolbar; catalog meta + **`ReleaseHeroRatingsRow`** (community average only); static format pills plus genre/style tags from **`getReleaseGenreStyleTags`** (no filter actions, no crate toggle) |
 | `PublicReleaseModalBody.component.tsx` | Tracklist/playback only — no notes section |

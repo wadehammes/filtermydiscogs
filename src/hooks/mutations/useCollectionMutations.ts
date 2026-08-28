@@ -8,10 +8,7 @@ import {
   trackReleaseRatingSaved,
 } from "src/analytics/productAnalyticsEvents";
 import { api } from "src/api/urls";
-import {
-  DiscogsCollectionQueryKeys,
-  DiscogsReleaseQueryKeys,
-} from "src/hooks/queries/querykeys.constants";
+import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import type { DiscogsCollection, DiscogsRelease } from "src/types";
 import {
   patchCollectionQueryReleaseNotes,
@@ -116,10 +113,6 @@ export const useSaveReleaseRatingMutation = ({
         variables.releaseId,
         variables.nextRating,
       );
-      await queryClient.invalidateQueries({ queryKey: collectionQueryKey });
-      await queryClient.invalidateQueries({
-        queryKey: DiscogsReleaseQueryKeys.byId(String(variables.releaseId)),
-      });
     },
   });
 };
