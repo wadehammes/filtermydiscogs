@@ -134,10 +134,18 @@ export const useReleaseModalPlayback = ({
       }
 
       setSelectedTrackPosition(trackPosition);
+
+      const matchedVideo =
+        playbackMatchIndex.trackVideoByPosition.get(trackPosition);
+      const youtubeVideoId = matchedVideo
+        ? parseYoutubeVideoId(matchedVideo.uri)
+        : null;
+
       playback.startPlayback({
         release,
         trackPosition,
         trackTitle: track.title,
+        ...(youtubeVideoId ? { youtubeVideoId } : {}),
       });
     },
     [playback.startPlayback, playbackMatchIndex, release, tracks],

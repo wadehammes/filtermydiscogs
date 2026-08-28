@@ -19,7 +19,10 @@ import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
+import {
+  discogsReleaseQueryOptions,
+  useDiscogsReleaseQuery,
+} from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
@@ -89,6 +92,7 @@ interface PlayQueueItemOptions {
   autoplay?: boolean;
   rebuildAlbumQueue?: boolean;
   startPaused?: boolean;
+  youtubeVideoId?: string;
 }
 
 const ReleasePlaybackStateContext = createContext<
@@ -412,6 +416,42 @@ export const ReleasePlaybackProvider = ({
     [resolveQueueItemEmbedVideoId, syncEmbedToVideoId],
   );
 
+  const prefetchQueueItemEmbed = useCallback(
+    (item: PlaybackQueueItem) => {
+      const itemReleaseId = parseReleaseId(item.release);
+
+      if (itemReleaseId === null) {
+        return;
+      }
+
+      void queryClient
+        .fetchQuery(discogsReleaseQueryOptions(String(itemReleaseId)))
+        .then((detail) => {
+          if (!isSameReleaseInstance(releaseRef.current, item.release)) {
+            return;
+          }
+
+          const videoId = resolveQueueItemYoutubeVideoId({
+            item,
+            tracks: flattenTracklist(detail.tracklist ?? []),
+            videos: detail.videos ?? [],
+          });
+
+          if (
+            !videoId ||
+            lastSyncedActiveVideoIdRef.current === videoId ||
+            embedVideoIdRef.current === videoId
+          ) {
+            return;
+          }
+
+          lastSyncedActiveVideoIdRef.current = videoId;
+          syncEmbedToVideoId(videoId);
+        });
+    },
+    [queryClient, syncEmbedToVideoId],
+  );
+
   const fetchSimilarQueueItems = useCallback(
     async ({
       sourceRelease,
@@ -605,6 +645,19 @@ export const ReleasePlaybackProvider = ({
   const isPlaybackReady = isPlaying && activeVideoId !== null;
   const isMiniPlayerVisible = release !== null;
 
+  const playbackVideoId = useMemo(() => {
+    if (pendingTrackPosition || pendingPreviewVideoUri) {
+      return embedVideoId ?? activeVideoId;
+    }
+
+    return activeVideoId ?? embedVideoId;
+  }, [
+    activeVideoId,
+    embedVideoId,
+    pendingPreviewVideoUri,
+    pendingTrackPosition,
+  ]);
+
   const canPlayPrevious = isPlaybackReady && playbackHistory.length > 0;
   const canPlayNext = isPlaybackReady && queue.length > 0;
 
@@ -638,7 +691,9 @@ export const ReleasePlaybackProvider = ({
     if (
       !(activeVideoId && isPlaying) ||
       pendingTrackPosition ||
-      pendingPreviewVideoUri
+      pendingPreviewVideoUri ||
+      releaseId === null ||
+      Number(releaseDetail?.id) !== Number(releaseId)
     ) {
       return;
     }
@@ -654,6 +709,8 @@ export const ReleasePlaybackProvider = ({
     isPlaying,
     pendingPreviewVideoUri,
     pendingTrackPosition,
+    releaseDetail?.id,
+    releaseId,
     syncEmbedToVideoId,
   ]);
 
@@ -896,6 +953,15 @@ export const ReleasePlaybackProvider = ({
     [],
   );
 
+  const applyTargetEmbedVideoId = useCallback(
+    (videoId: string) => {
+      lastSyncedActiveVideoIdRef.current = videoId;
+      syncEmbedToVideoId(videoId);
+      return videoId;
+    },
+    [syncEmbedToVideoId],
+  );
+
   const playQueueItem = useCallback(
     (
       item: PlaybackQueueItem,
@@ -903,6 +969,7 @@ export const ReleasePlaybackProvider = ({
         startPaused = false,
         autoplay = true,
         rebuildAlbumQueue = false,
+        youtubeVideoId,
       }: PlayQueueItemOptions = {},
     ) => {
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
@@ -910,7 +977,13 @@ export const ReleasePlaybackProvider = ({
         releaseRef.current,
         item.release,
       );
-      const preparedEmbedVideoId = syncEmbedForQueueItem(item);
+      const preparedEmbedVideoId = youtubeVideoId
+        ? applyTargetEmbedVideoId(youtubeVideoId)
+        : syncEmbedForQueueItem(item);
+
+      if (!preparedEmbedVideoId) {
+        prefetchQueueItemEmbed(item);
+      }
 
       setRelease(item.release);
       releaseRef.current = item.release;
@@ -959,7 +1032,9 @@ export const ReleasePlaybackProvider = ({
       setPendingTrackPosition(item.trackPosition);
     },
     [
+      applyTargetEmbedVideoId,
       clearPlayFromGestureRetries,
+      prefetchQueueItemEmbed,
       resolveQueueItemPlayback,
       syncEmbedForQueueItem,
     ],
@@ -999,6 +1074,7 @@ export const ReleasePlaybackProvider = ({
       trackTitle = trackPosition,
       startPaused = false,
       rebuildAlbumQueue: rebuildAlbumQueueOption,
+      youtubeVideoId,
     }: StartPlaybackParams) => {
       setPreviewVideo(null);
       setPendingPreviewVideoUri(null);
@@ -1050,6 +1126,7 @@ export const ReleasePlaybackProvider = ({
         autoplay: !startPaused,
         rebuildAlbumQueue,
         startPaused,
+        ...(youtubeVideoId ? { youtubeVideoId } : {}),
       });
     },
     [
@@ -1062,6 +1139,8 @@ export const ReleasePlaybackProvider = ({
 
   const startReleasePreview = useCallback(
     ({ release: nextRelease, video }: StartReleasePreviewParams) => {
+      const previewVideoId = parseYoutubeVideoId(video.uri);
+
       setPreviewVideo(video);
       setPendingPreviewVideoUri(null);
       shouldRebuildAlbumQueueRef.current = false;
@@ -1073,6 +1152,11 @@ export const ReleasePlaybackProvider = ({
       clearPlaybackHistory();
       setActiveTrackIndex(0);
       setPendingTrackPosition(null);
+
+      if (previewVideoId) {
+        applyTargetEmbedVideoId(previewVideoId);
+      }
+
       setIsPlaying(true);
       setIsPaused(false);
       setShouldAutoplayEmbed(true);
@@ -1080,7 +1164,7 @@ export const ReleasePlaybackProvider = ({
       pendingPlayFromGestureRef.current = true;
       trackPlaybackStarted(nextRelease.instance_id);
     },
-    [clearPlaybackHistory, setUpcomingQueue],
+    [applyTargetEmbedVideoId, clearPlaybackHistory, setUpcomingQueue],
   );
 
   const addToQueue = useCallback(
@@ -1368,6 +1452,7 @@ export const ReleasePlaybackProvider = ({
       activeTrack,
       activeVideoId,
       embedVideoId,
+      playbackVideoId,
       activePlaybackTitle,
       isReleasePreview,
       isPlaying,
@@ -1390,6 +1475,7 @@ export const ReleasePlaybackProvider = ({
       activeTrack,
       activeVideoId,
       embedVideoId,
+      playbackVideoId,
       activePlaybackTitle,
       isReleasePreview,
       isPlaying,

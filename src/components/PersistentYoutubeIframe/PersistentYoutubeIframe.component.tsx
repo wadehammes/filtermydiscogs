@@ -18,6 +18,17 @@ interface PersistentYoutubeIframeProps {
   variant?: "hidden" | "visible";
 }
 
+const buildEmbedUrlForVideo = (videoId: string, autoplay: boolean): string => {
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : undefined;
+
+  return buildYoutubeEmbedUrl({
+    videoId,
+    autoplay,
+    ...definedProps({ origin }),
+  });
+};
+
 export const PersistentYoutubeIframe = ({
   videoId,
   videoTitle,
@@ -37,49 +48,73 @@ export const PersistentYoutubeIframe = ({
   const [bootstrapVideoId] = useState(videoId);
   const loadedVideoIdRef = useRef(bootstrapVideoId);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const previousVariantRef = useRef(variant);
 
-  const embedUrl = useMemo(() => {
-    const origin =
-      typeof window !== "undefined" ? window.location.origin : undefined;
-
-    return buildYoutubeEmbedUrl({
-      videoId: bootstrapVideoId,
-      autoplay,
-      ...definedProps({ origin }),
-    });
-  }, [autoplay, bootstrapVideoId]);
+  const embedUrl = useMemo(
+    () => buildEmbedUrlForVideo(bootstrapVideoId, autoplay),
+    [autoplay, bootstrapVideoId],
+  );
 
   const setIframeRef = useCallback((node: HTMLIFrameElement | null) => {
     iframeRef.current = node;
     registerPlaybackIframeRef.current(node);
   }, []);
 
+  const alignIframeSrc = useCallback(
+    (targetVideoId: string) => {
+      const iframe = iframeRef.current;
+
+      if (!iframe) {
+        return;
+      }
+
+      const nextSrc = buildEmbedUrlForVideo(targetVideoId, autoplay);
+
+      if (iframe.src === nextSrc) {
+        loadedVideoIdRef.current = targetVideoId;
+        return;
+      }
+
+      loadedVideoIdRef.current = targetVideoId;
+      iframe.src = nextSrc;
+    },
+    [autoplay],
+  );
+
   useEffect(() => {
     if (videoId === loadedVideoIdRef.current) {
       return;
     }
 
-    loadedVideoIdRef.current = videoId;
     const iframe = iframeRef.current;
 
     if (!iframe) {
       return;
     }
 
-    transitionYoutubeIframeToVideo({ iframe, videoId });
+    if (variant === "visible") {
+      alignIframeSrc(videoId);
+    } else {
+      loadedVideoIdRef.current = videoId;
+      transitionYoutubeIframeToVideo({ iframe, videoId });
+    }
 
     if (autoplay) {
       resumePlaybackFromGesture();
     }
-  }, [autoplay, resumePlaybackFromGesture, videoId]);
+  }, [alignIframeSrc, autoplay, resumePlaybackFromGesture, variant, videoId]);
 
   useEffect(() => {
-    if (variant !== "visible") {
+    const previousVariant = previousVariantRef.current;
+    previousVariantRef.current = variant;
+
+    if (previousVariant !== "hidden" || variant !== "visible") {
       return;
     }
 
+    alignIframeSrc(videoId);
     resumePlaybackFromGesture();
-  }, [resumePlaybackFromGesture, variant]);
+  }, [alignIframeSrc, resumePlaybackFromGesture, variant, videoId]);
 
   return (
     <iframe

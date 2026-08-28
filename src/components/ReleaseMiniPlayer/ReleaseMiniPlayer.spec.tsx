@@ -401,7 +401,7 @@ describe("ReleaseMiniPlayer", () => {
     document.querySelector("[data-filters-drawer-open]")?.remove();
   });
 
-  it("loads the next video in the existing iframe when advancing tracks", async () => {
+  it("loads the next video via embed src when advancing tracks with the panel visible", async () => {
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
@@ -412,6 +412,42 @@ describe("ReleaseMiniPlayer", () => {
     const initialSrc = iframe.getAttribute("src");
 
     expect(initialSrc).toContain("te2jJncBVG4");
+    expect(iframe).toHaveAttribute("data-variant", "visible");
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    expect(iframe.getAttribute("src")).toContain("abc12345678");
+    expect(iframe.getAttribute("src")).not.toBe(initialSrc);
+    expect(mockTransitionYoutubeIframeToVideo).not.toHaveBeenCalled();
+  });
+
+  it("loads the next video via postMessage when advancing tracks with the panel hidden", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    const initialSrc = iframe.getAttribute("src");
+
+    expect(initialSrc).toContain("te2jJncBVG4");
+
+    await user.click(screen.getByRole("button", { name: "Hide video" }));
+
+    expect(iframe).toHaveAttribute("data-variant", "hidden");
 
     await waitFor(() => {
       expect(
