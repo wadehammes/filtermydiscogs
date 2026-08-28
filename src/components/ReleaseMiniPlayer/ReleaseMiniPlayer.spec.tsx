@@ -428,6 +428,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
+    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
     expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
       expect.objectContaining({
         iframe,

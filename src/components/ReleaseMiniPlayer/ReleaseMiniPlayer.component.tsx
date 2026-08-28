@@ -65,7 +65,7 @@ export const ReleaseMiniPlayer = ({
   const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
 
-  const iframeVideoId = activeVideoId ?? embedVideoId;
+  const iframeVideoId = embedVideoId ?? activeVideoId;
 
   const inCrate = isInCrate(release?.instance_id ?? "");
 

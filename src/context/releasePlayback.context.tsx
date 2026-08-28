@@ -67,7 +67,6 @@ import {
   PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
-  transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import {
   clearPersistedReleasePlayback,
@@ -333,12 +332,6 @@ export const ReleasePlaybackProvider = ({
       embedVideoIdRef.current = videoId;
       setEmbedVideoId(videoId);
 
-      const iframe = playbackIframeRef.current;
-
-      if (iframe) {
-        transitionYoutubeIframeToVideo({ iframe, videoId });
-      }
-
       if (!isPausedRef.current) {
         pendingPlayFromGestureRef.current = true;
         schedulePlayFromGestureAttempts();
@@ -371,8 +364,8 @@ export const ReleasePlaybackProvider = ({
     });
   }, []);
 
-  const tryTransitionToQueueItem = useCallback(
-    (item: PlaybackQueueItem) => {
+  const resolveQueueItemEmbedVideoId = useCallback(
+    (item: PlaybackQueueItem): string | null => {
       let tracks = tracksRef.current;
       let videos = videosRef.current;
 
@@ -380,7 +373,7 @@ export const ReleasePlaybackProvider = ({
         const itemReleaseId = parseReleaseId(item.release);
 
         if (itemReleaseId === null) {
-          return;
+          return null;
         }
 
         const cached = queryClient.getQueryData<DiscogsReleaseDetail>(
@@ -388,27 +381,35 @@ export const ReleasePlaybackProvider = ({
         );
 
         if (!cached) {
-          return;
+          return null;
         }
 
         tracks = flattenTracklist(cached.tracklist ?? []);
         videos = cached.videos ?? [];
       }
 
-      const videoId = resolveQueueItemYoutubeVideoId({
+      return resolveQueueItemYoutubeVideoId({
         item,
         tracks,
         videos,
       });
+    },
+    [queryClient],
+  );
+
+  const syncEmbedForQueueItem = useCallback(
+    (item: PlaybackQueueItem) => {
+      const videoId = resolveQueueItemEmbedVideoId(item);
 
       if (!videoId) {
-        return;
+        return null;
       }
 
       lastSyncedActiveVideoIdRef.current = videoId;
       syncEmbedToVideoId(videoId);
+      return videoId;
     },
-    [queryClient, syncEmbedToVideoId],
+    [resolveQueueItemEmbedVideoId, syncEmbedToVideoId],
   );
 
   const fetchSimilarQueueItems = useCallback(
@@ -634,7 +635,11 @@ export const ReleasePlaybackProvider = ({
   }, [schedulePlayFromGestureAttempts]);
 
   useEffect(() => {
-    if (!(activeVideoId && isPlaying)) {
+    if (
+      !(activeVideoId && isPlaying) ||
+      pendingTrackPosition ||
+      pendingPreviewVideoUri
+    ) {
       return;
     }
 
@@ -644,7 +649,13 @@ export const ReleasePlaybackProvider = ({
 
     lastSyncedActiveVideoIdRef.current = activeVideoId;
     syncEmbedToVideoId(activeVideoId);
-  }, [activeVideoId, isPlaying, syncEmbedToVideoId]);
+  }, [
+    activeVideoId,
+    isPlaying,
+    pendingPreviewVideoUri,
+    pendingTrackPosition,
+    syncEmbedToVideoId,
+  ]);
 
   useEffect(() => {
     if (
@@ -899,6 +910,7 @@ export const ReleasePlaybackProvider = ({
         releaseRef.current,
         item.release,
       );
+      const preparedEmbedVideoId = syncEmbedForQueueItem(item);
 
       setRelease(item.release);
       releaseRef.current = item.release;
@@ -924,7 +936,10 @@ export const ReleasePlaybackProvider = ({
 
       if (!isSameRelease) {
         setActiveTrackIndex(0);
-        lastSyncedActiveVideoIdRef.current = null;
+
+        if (!preparedEmbedVideoId) {
+          lastSyncedActiveVideoIdRef.current = null;
+        }
       }
 
       setIsPlaying(true);
@@ -943,7 +958,11 @@ export const ReleasePlaybackProvider = ({
 
       setPendingTrackPosition(item.trackPosition);
     },
-    [clearPlayFromGestureRetries, resolveQueueItemPlayback],
+    [
+      clearPlayFromGestureRetries,
+      resolveQueueItemPlayback,
+      syncEmbedForQueueItem,
+    ],
   );
 
   const playUpcomingAtIndex = useCallback(
@@ -957,15 +976,9 @@ export const ReleasePlaybackProvider = ({
 
       maybePushCurrentToHistory();
       setUpcomingQueue(removeQueueItemAtIndex(upcoming, index));
-      tryTransitionToQueueItem(item);
       playQueueItem(item, { autoplay: true });
     },
-    [
-      maybePushCurrentToHistory,
-      playQueueItem,
-      setUpcomingQueue,
-      tryTransitionToQueueItem,
-    ],
+    [maybePushCurrentToHistory, playQueueItem, setUpcomingQueue],
   );
 
   const appendManualQueueItem = useCallback(
@@ -1150,14 +1163,12 @@ export const ReleasePlaybackProvider = ({
 
     maybePushCurrentToHistory();
     setUpcomingQueue(queueRef.current.slice(1));
-    tryTransitionToQueueItem(item);
     playQueueItem(item, { autoplay: true });
   }, [
     extendQueueTail,
     maybePushCurrentToHistory,
     playQueueItem,
     setUpcomingQueue,
-    tryTransitionToQueueItem,
   ]);
 
   const playPrevious = useCallback(() => {
@@ -1174,9 +1185,8 @@ export const ReleasePlaybackProvider = ({
     const nextHistory = playbackHistoryRef.current.slice(0, -1);
     setPlaybackHistory(nextHistory);
     playbackHistoryRef.current = nextHistory;
-    tryTransitionToQueueItem(previousItem);
     playQueueItem(previousItem, { autoplay: true, rebuildAlbumQueue: false });
-  }, [playQueueItem, prependCurrentToUpcoming, tryTransitionToQueueItem]);
+  }, [playQueueItem, prependCurrentToUpcoming]);
 
   playNextRef.current = playNext;
   extendQueueTailRef.current = extendQueueTail;
@@ -1192,14 +1202,6 @@ export const ReleasePlaybackProvider = ({
 
       if (iframe) {
         enableYoutubeIframeListening(iframe);
-
-        if (embedVideoIdRef.current) {
-          transitionYoutubeIframeToVideo({
-            iframe,
-            videoId: embedVideoIdRef.current,
-          });
-        }
-
         schedulePlayFromGestureAttempts();
         return;
       }
