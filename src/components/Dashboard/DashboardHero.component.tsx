@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useMemo } from "react";
+import { TickerNumber } from "src/components/ScrollReveal/ScrollReveal.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type {
   CollectionStats,
@@ -84,9 +85,12 @@ export function DashboardHero({
 
         <div className={styles.countBlock}>
           <div className={styles.countRow}>
-            <span className={styles.count} data-testid="fmdDashboardHeroCount">
-              {story.heroCount}
-            </span>
+            <TickerNumber
+              active
+              className={styles.count}
+              data-testid="fmdDashboardHeroCount"
+              value={stats.totalReleases}
+            />
             <span className={styles.countLabel}>records</span>
             {yearOverYearChange && (
               <span

@@ -361,22 +361,24 @@ export const createCollectionGrowthAreaChartDefinition = (
             curve: smoothAreaCurve,
           }),
         ],
-        x: {
-          scale: () => scalePoint<string>().padding(0.35),
-          axis: {
-            ...modernAxisPresentation,
-            ...(options.xTickStrategy === "all" && tickValues.length > 10
-              ? { tickLabels: { thin: true } }
-              : {}),
-            ticks: {
-              ...modernAxisPresentation.ticks,
-              values: tickValues,
-              format: (value: string | number) =>
-                options.formatX(String(value)),
+        scales: {
+          x: {
+            scale: () => scalePoint<string>().padding(0.35),
+            axis: {
+              ...modernAxisPresentation,
+              ...(options.xTickStrategy === "all" && tickValues.length > 10
+                ? { tickLabels: { thin: true } }
+                : {}),
+              ticks: {
+                ...modernAxisPresentation.ticks,
+                values: tickValues,
+                format: (value: string | number) =>
+                  options.formatX(String(value)),
+              },
             },
           },
+          y: modernValueAxis,
         },
-        y: modernValueAxis,
       };
     },
     tooltip: {
@@ -455,22 +457,24 @@ export const createDualSeriesAreaChartDefinition = (
             curve: smoothAreaCurve,
           }),
         ],
-        x: {
-          scale: () => scalePoint<string>().padding(0.35),
-          axis: {
-            ...modernAxisPresentation,
-            ticks: {
-              ...modernAxisPresentation.ticks,
-              values: tickValues,
-              format: (value: string | number) =>
-                options.formatX(String(value)),
+        scales: {
+          x: {
+            scale: () => scalePoint<string>().padding(0.35),
+            axis: {
+              ...modernAxisPresentation,
+              ticks: {
+                ...modernAxisPresentation.ticks,
+                values: tickValues,
+                format: (value: string | number) =>
+                  options.formatX(String(value)),
+              },
             },
           },
+          y:
+            options.valueFormat === "percent"
+              ? shareValueAxis
+              : createCountValueAxis(resolveDualSeriesCountMax(data)),
         },
-        y:
-          options.valueFormat === "percent"
-            ? shareValueAxis
-            : createCountValueAxis(resolveDualSeriesCountMax(data)),
       };
     },
     tooltip: {
@@ -532,21 +536,23 @@ export const createDailyCountAreaChartDefinition = (
             curve: smoothAreaCurve,
           }),
         ],
-        x: {
-          scale: () => scalePoint<string>().padding(0.35),
-          axis: {
-            ...modernAxisPresentation,
-            ticks: {
-              ...modernAxisPresentation.ticks,
-              values: tickValues,
-              format: (value: string | number) =>
-                options.formatX(String(value)),
+        scales: {
+          x: {
+            scale: () => scalePoint<string>().padding(0.35),
+            axis: {
+              ...modernAxisPresentation,
+              ticks: {
+                ...modernAxisPresentation.ticks,
+                values: tickValues,
+                format: (value: string | number) =>
+                  options.formatX(String(value)),
+              },
             },
           },
+          y: createCountValueAxis(
+            resolveCountMax(data.map((point) => point.count)),
+          ),
         },
-        y: createCountValueAxis(
-          resolveCountMax(data.map((point) => point.count)),
-        ),
       };
     },
     tooltip: {
@@ -594,19 +600,21 @@ export const createAdminGrowthAreaChartDefinition = (
             curve: smoothAreaCurve,
           }),
         ],
-        x: {
-          scale: () => scalePoint<string>().padding(0.35),
-          axis: {
-            ...modernAxisPresentation,
-            ticks: {
-              ...modernAxisPresentation.ticks,
-              values: tickValues,
-              format: (value: string | number) =>
-                options.formatX(String(value)),
+        scales: {
+          x: {
+            scale: () => scalePoint<string>().padding(0.35),
+            axis: {
+              ...modernAxisPresentation,
+              ticks: {
+                ...modernAxisPresentation.ticks,
+                values: tickValues,
+                format: (value: string | number) =>
+                  options.formatX(String(value)),
+              },
             },
           },
+          y: modernValueAxis,
         },
-        y: modernValueAxis,
       };
     },
     tooltip: {
@@ -650,16 +658,18 @@ export const createVerticalBarChartDefinition = ({
         ],
       }),
     ],
-    x: {
-      scale: () => scaleBand<string>().padding(0.38),
-      axis: rotateXLabels
-        ? {
-            ...modernAxisPresentation,
-            tickLabels: { rotate: -40, thin: false },
-          }
-        : modernAxisPresentation,
+    scales: {
+      x: {
+        scale: () => scaleBand<string>().padding(0.38),
+        axis: rotateXLabels
+          ? {
+              ...modernAxisPresentation,
+              tickLabels: { rotate: -40, thin: false },
+            }
+          : modernAxisPresentation,
+      },
+      y: modernValueAxis,
     },
-    y: modernValueAxis,
     tooltip: {
       ...chartTooltip,
       format(point: ChartPoint<BarDatum>) {
@@ -701,17 +711,19 @@ export const createHorizontalBarChartDefinition = ({
         ],
       }),
     ],
-    x: modernValueAxis,
-    y: {
-      scale: () => scaleBand<string>().padding(0.38),
-      axis: {
-        ...modernAxisPresentation,
-        ticks: {
-          ...modernAxisPresentation.ticks,
-          format: (value: string) => truncateAxisLabel(value, maxLabelChars),
-        },
-        tickLabels: {
-          anchor: "end",
+    scales: {
+      x: modernValueAxis,
+      y: {
+        scale: () => scaleBand<string>().padding(0.38),
+        axis: {
+          ...modernAxisPresentation,
+          ticks: {
+            ...modernAxisPresentation.ticks,
+            format: (value: string) => truncateAxisLabel(value, maxLabelChars),
+          },
+          tickLabels: {
+            anchor: "end",
+          },
         },
       },
     },
@@ -777,6 +789,10 @@ const createPieChartDefinition = ({
   return defineChart({
     ...chartMotion,
     marks: [createPiePolarMark(slices, resolveFill)],
+    scales: {
+      x: null,
+      y: null,
+    },
     tooltip: {
       ...chartTooltip,
       format(point: ChartPoint<PieArcDatum<PieDatum>>) {

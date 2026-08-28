@@ -1,6 +1,9 @@
+"use client";
+
 import classNames from "classnames";
 import { LoginFeatureVisual } from "src/components/Login/LoginFeatureVisual.component";
 import type { LoginFeature } from "src/components/Login/loginFeatures.constants";
+import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
 import typography from "src/styles/modules/typography.module.css";
 import styles from "./LoginFeatureRow.module.css";
 
@@ -10,7 +13,8 @@ type LoginFeatureRowProps = {
 };
 
 export const LoginFeatureRow = ({ feature, index }: LoginFeatureRowProps) => (
-  <section
+  <ScrollRevealOnce
+    as="section"
     className={classNames(styles.featureRow, {
       [styles.featureRowReverse]: index % 2 === 1,
     })}
@@ -29,5 +33,5 @@ export const LoginFeatureRow = ({ feature, index }: LoginFeatureRowProps) => (
       alt={feature.imageAlt}
       themeIndependent={feature.themeIndependent}
     />
-  </section>
+  </ScrollRevealOnce>
 );

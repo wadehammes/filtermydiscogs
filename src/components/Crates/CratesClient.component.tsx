@@ -2,6 +2,10 @@
 
 import { useMemo } from "react";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
+import {
+  ScrollReveal,
+  ScrollRevealItem,
+} from "src/components/ScrollReveal/ScrollReveal.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
@@ -56,11 +60,13 @@ export default function CratesClient() {
               <p>No crates yet. Create one to start curating a set.</p>
             </div>
           ) : (
-            <div className={styles.crateGrid}>
-              {sortedCrates.map((crate) => (
-                <CrateHubCard key={crate.id} crate={crate} />
+            <ScrollReveal className={styles.crateGrid}>
+              {sortedCrates.map((crate, index) => (
+                <ScrollRevealItem index={index} key={crate.id}>
+                  <CrateHubCard crate={crate} />
+                </ScrollRevealItem>
               ))}
-            </div>
+            </ScrollReveal>
           )}
         </div>
       </main>

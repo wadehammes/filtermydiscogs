@@ -149,6 +149,12 @@
   min-width: 0.35rem;
 }
 
+.driftFill {
+  border-radius: var(--radius-sm);
+  height: 100%;
+  min-width: 2px;
+}
+
 .compareFillRecent {
   background: linear-gradient(
     90deg,
@@ -271,12 +277,6 @@
   height: 0.375rem;
   overflow: hidden;
   width: 100%;
-}
-
-.driftFill {
-  border-radius: var(--radius-sm);
-  height: 100%;
-  min-width: 2px;
 }
 
 .statsGrid {

@@ -1,3 +1,12 @@
+.viewport {
+  width: 100%;
+}
+
+.viewportFluid {
+  height: 100%;
+  min-height: 0;
+}
+
 .chart {
   color: var(--muted-foreground);
   font-family: var(--font-family-meta);

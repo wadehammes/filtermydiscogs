@@ -33,7 +33,10 @@ describe("DashboardClient", () => {
         name: "testuser's collection",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("fmdDashboardHeroCount")).toHaveTextContent("3");
+    expect(screen.getByTestId("fmdDashboardHeroCount")).toHaveAttribute(
+      "aria-label",
+      "3",
+    );
     expect(screen.getByText("Estimated value")).toBeInTheDocument();
     expect(screen.getByText("$500")).toBeInTheDocument();
     expect(screen.getByText("Exact Duplicates")).toBeInTheDocument();
