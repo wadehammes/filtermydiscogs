@@ -17,6 +17,7 @@ import {
   defaultPersistedFilters,
   parseStoredFiltersObject,
 } from "src/utils/filtersStorage";
+import { parseFilterViews } from "src/utils/filterViews";
 import { isValidStoredTheme, parseStoredTheme } from "src/utils/storedTheme";
 
 export const defaultViewPreference: StoredViewState = defaultViewState;
@@ -28,6 +29,7 @@ export const defaultUserPreferences = (): UserPreferences => ({
   theme: "system",
   view: defaultViewPreference,
   filters: defaultPersistedFilters,
+  filterViews: [],
 });
 
 const isJsonObject = (value: Prisma.JsonValue): value is Prisma.JsonObject =>
@@ -86,6 +88,7 @@ export const parseUserPreferences = (
     theme: parseThemeField(storedPreferences.theme, defaults.theme),
     view: parseViewPreference(storedPreferences.view ?? null),
     filters: parseStoredFiltersObject(storedPreferences.filters),
+    filterViews: parseFilterViews(storedPreferences.filterViews),
     ...(typeof storedPreferences.analyticsConsent === "boolean"
       ? { analyticsConsent: storedPreferences.analyticsConsent }
       : {}),
@@ -103,4 +106,7 @@ export const mergeUserPreferences = (
   filters: patch.filters
     ? parseStoredFiltersObject(patch.filters)
     : current.filters,
+  filterViews: patch.filterViews
+    ? parseFilterViews(patch.filterViews)
+    : current.filterViews,
 });

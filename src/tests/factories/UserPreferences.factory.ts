@@ -93,6 +93,7 @@ class UserPreferencesFactory extends BaseFactory<
       theme,
       view,
       filters: persistedFiltersFactory.build(),
+      filterViews: [],
       analyticsConsent: faker.datatype.boolean(),
     } satisfies UserPreferences;
 
@@ -117,6 +118,7 @@ class UserPreferencesFactory extends BaseFactory<
       theme: "system",
       view: { currentView: "card", previousView: "card" },
       filters: persistedFiltersFactory.empty(),
+      filterViews: [],
     };
   }
 }

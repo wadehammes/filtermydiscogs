@@ -5,8 +5,6 @@ import { type ReactNode, useLayoutEffect } from "react";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
-  persistedFiltersAtom,
-  sessionFiltersAtom,
 } from "src/atoms/filters.atoms";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -29,8 +27,6 @@ export const SeedCollectionFilters = ({
   const { dispatchFetchingCollection, dispatchCollection } =
     useCollectionContext();
   const dispatchFilters = useSetAtom(filtersDispatchAtom);
-  const setSessionFilters = useSetAtom(sessionFiltersAtom);
-  const setPersistedFilters = useSetAtom(persistedFiltersAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
 
   useLayoutEffect(() => {
@@ -46,9 +42,10 @@ export const SeedCollectionFilters = ({
       payload: releases,
     });
     if (sessionFilters) {
-      const nextFilters = { ...defaultPersistedFilters, ...sessionFilters };
-      setSessionFilters(nextFilters);
-      setPersistedFilters(nextFilters);
+      dispatchFilters({
+        type: FiltersActionTypes.ApplySessionFilters,
+        payload: { ...defaultPersistedFilters, ...sessionFilters },
+      });
     }
     setCollectionFiltersActive(true);
   }, [
@@ -58,8 +55,6 @@ export const SeedCollectionFilters = ({
     releases,
     sessionFilters,
     setCollectionFiltersActive,
-    setPersistedFilters,
-    setSessionFilters,
   ]);
 
   return children;

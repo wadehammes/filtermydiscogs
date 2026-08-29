@@ -3,7 +3,7 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { getReleaseGenreStyleTags } from "./releaseGenreStyleTags";
 
 describe("getReleaseGenreStyleTags", () => {
-  it("returns genres before styles and dedupes overlapping values", () => {
+  it("returns deduped genre and style tags sorted A-Z", () => {
     const tags = getReleaseGenreStyleTags(
       basicInformationFactory.build({
         genres: ["Rock", "Electronic"],
@@ -11,7 +11,7 @@ describe("getReleaseGenreStyleTags", () => {
       }),
     );
 
-    expect(tags).toEqual(["Rock", "Electronic", "Shoegaze"]);
+    expect(tags).toEqual(["Electronic", "Rock", "Shoegaze"]);
   });
 
   it("ignores empty genre and style strings", () => {
@@ -22,6 +22,6 @@ describe("getReleaseGenreStyleTags", () => {
       }),
     );
 
-    expect(tags).toEqual(["Jazz", "Blues"]);
+    expect(tags).toEqual(["Blues", "Jazz"]);
   });
 });

@@ -59,6 +59,7 @@ export enum FiltersActionTypes {
   ToggleRandomMode = "TOGGLE_RANDOM_MODE",
   SetRandomRelease = "SET_RANDOM_RELEASE",
   ClearAllFilters = "CLEAR_ALL_FILTERS",
+  ApplySessionFilters = "APPLY_SESSION_FILTERS",
   SetSearchQuery = "SET_SEARCH_QUERY",
   SetSearching = "SET_SEARCHING",
 }
@@ -131,6 +132,10 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.ClearAllFilters;
       payload: undefined;
+    }
+  | {
+      type: FiltersActionTypes.ApplySessionFilters;
+      payload: PersistedFiltersState;
     }
   | {
       type: FiltersActionTypes.SetSearchQuery;
@@ -450,6 +455,7 @@ const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
   FiltersActionTypes.ClearFormats,
   FiltersActionTypes.SetFormats,
   FiltersActionTypes.ClearAllFilters,
+  FiltersActionTypes.ApplySessionFilters,
   FiltersActionTypes.SetSearchQuery,
 ]);
 
@@ -573,6 +579,21 @@ export const filtersDispatchAtom = atom(
         set(randomReleaseAtom, null);
         set(isSearchingAtom, false);
         syncPersistedFiltersFromSession(get, set);
+        return;
+      }
+
+      case FiltersActionTypes.ApplySessionFilters: {
+        applyFilterChange(get, set, {
+          selectedStyles: [...action.payload.selectedStyles],
+          selectedYears: [...action.payload.selectedYears],
+          selectedFormats: [...action.payload.selectedFormats],
+          selectedSort: action.payload.selectedSort,
+          styleOperator: action.payload.styleOperator,
+          formatOperator: action.payload.formatOperator,
+          yearOperator: action.payload.yearOperator,
+          searchQuery: action.payload.searchQuery,
+          clearSearching: true,
+        });
         return;
       }
 

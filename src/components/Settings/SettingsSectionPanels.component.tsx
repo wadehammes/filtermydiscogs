@@ -1,11 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Button from "src/components/Button/Button.component";
+import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFilterViewDialog.component";
 import Select from "src/components/Select/Select.component";
 import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
+import { useFilterViews } from "src/hooks/useFilterViews.hook";
+import {
+  type FilterView,
+  formatFilterViewSummary,
+} from "src/utils/filterViews";
 import styles from "./SettingsClient.module.css";
 
 type SettingsAccountPanelProps = {
@@ -136,20 +143,91 @@ export function SettingsFiltersPanel({
   isPreferencesSaving,
   onPersistFiltersChange,
 }: SettingsFiltersPanelProps) {
+  const { filterViews, deleteView, renameView, isSavingPreferences } =
+    useFilterViews();
+  const [renamingView, setRenamingView] = useState<FilterView | null>(null);
+
   return (
-    <SettingsBooleanPreferenceToggle
-      checked={persistFilters}
-      label="Remember filter selections"
-      description={
-        <>
-          When enabled, your filter and sort selections are restored the next
-          time you open the app. When disabled, each visit starts with default
-          filters.
-        </>
-      }
-      disabled={isPreferencesLoading || isPreferencesSaving}
-      onChange={onPersistFiltersChange}
-    />
+    <>
+      <SettingsBooleanPreferenceToggle
+        checked={persistFilters}
+        label="Remember filter selections"
+        description={
+          <>
+            When enabled, your filter and sort selections are restored the next
+            time you open the app. When disabled, each visit starts with default
+            filters.
+          </>
+        }
+        disabled={isPreferencesLoading || isPreferencesSaving}
+        onChange={onPersistFiltersChange}
+      />
+
+      <div className={styles.panelBlock}>
+        <h3 className={styles.panelBlockTitle}>Saved views</h3>
+        <p className={styles.sectionDescription}>
+          Named filter snapshots you can apply from the Views menu on Releases.
+          Save new views from that menu while browsing your collection.
+        </p>
+        {filterViews.length === 0 ? (
+          <p className={styles.sectionDescription}>No saved views yet.</p>
+        ) : (
+          <ul className={styles.savedViewsList}>
+            {filterViews.map((view) => (
+              <li key={view.id} className={styles.savedViewsItem}>
+                <div className={styles.savedViewsDetails}>
+                  <span className={styles.savedViewsName}>{view.name}</span>
+                  <p className={styles.savedViewsSummary}>
+                    {formatFilterViewSummary(view.filters)}
+                  </p>
+                </div>
+                <div className={styles.savedViewsActions}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onPress={() => {
+                      setRenamingView(view);
+                    }}
+                    disabled={isSavingPreferences}
+                    aria-label={`Rename ${view.name}`}
+                  >
+                    Rename
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onPress={() => {
+                      deleteView(view.id);
+                    }}
+                    disabled={isSavingPreferences}
+                    aria-label={`Delete ${view.name}`}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <SaveFilterViewDialog
+        isOpen={renamingView !== null}
+        mode="rename"
+        initialName={renamingView?.name ?? ""}
+        isSaving={isSavingPreferences}
+        onClose={() => {
+          setRenamingView(null);
+        }}
+        onSave={(name) => {
+          if (!renamingView) {
+            return false;
+          }
+
+          return renameView(renamingView.id, name);
+        }}
+      />
+    </>
   );
 }
 

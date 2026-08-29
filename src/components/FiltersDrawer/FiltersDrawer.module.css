@@ -10,6 +10,63 @@
   gap: var(--space-4);
 }
 
+.facetFilterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.facetLabel {
+  composes: label from "../../styles/modules/field-label.module.css";
+}
+
+.facetFilterControls {
+  align-items: stretch;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-2);
+  width: 100%;
+
+  & > [data-testid="fmdAutocompleteSelect"] {
+    flex: 1 1 0;
+    min-width: 0;
+
+    & [data-filter-control-trigger] {
+      height: var(--touch-target-min);
+      max-height: var(--touch-target-min);
+      min-height: var(--touch-target-min);
+      overflow: hidden;
+      padding-block: var(--space-2);
+      padding-inline: var(--space-3);
+    }
+  }
+
+  & > [data-testid="fmdSelect"] {
+    flex: 0 0 5.5rem;
+    min-width: 5.5rem;
+
+    & [data-filter-control-trigger] {
+      height: var(--touch-target-min);
+      max-height: var(--touch-target-min);
+      min-height: var(--touch-target-min);
+      padding-block: var(--space-2);
+      padding-inline: var(--space-3);
+    }
+  }
+
+  & .facetClearButton {
+    flex-shrink: 0;
+    height: var(--touch-target-min);
+    max-height: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
+
+.viewsSection {
+  margin-bottom: var(--space-1);
+}
+
 .searchBar {
   width: 100%;
 }
@@ -26,16 +83,6 @@
   font-size: var(--text-sm);
   margin: 0;
   text-align: center;
-}
-
-.clearAllButton {
-  width: 100%;
-}
-
-.clearAllButtonActive:not(:disabled),
-.clearAllButtonActive:not(:disabled):hover {
-  border-color: var(--foreground);
-  color: var(--foreground);
 }
 
 .sortFilterGroup {

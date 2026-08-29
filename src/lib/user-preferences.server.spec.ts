@@ -48,6 +48,7 @@ describe("user-preferences.server", () => {
       theme: "dark",
       view: { currentView: "list", previousView: "card" },
       filters,
+      filterViews: [],
     });
   });
 
@@ -74,6 +75,7 @@ describe("user-preferences.server", () => {
       theme: "dark",
       view: { currentView: "card", previousView: "card" },
       filters,
+      filterViews: [],
     });
   });
 

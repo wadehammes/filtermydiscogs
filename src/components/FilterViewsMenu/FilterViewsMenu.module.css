@@ -1,0 +1,280 @@
+.menuRoot {
+  flex-shrink: 1;
+  isolation: isolate;
+  max-width: 13rem;
+  min-width: 0;
+  position: relative;
+  z-index: var(--z-6-popover);
+
+  &.drawerVariant {
+    flex-shrink: 0;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+.menuTrigger {
+  align-items: center;
+  background: color-mix(in srgb, var(--primary) 6%, var(--background));
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--input));
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  gap: var(--space-2);
+  height: var(--input-height);
+  max-width: 100%;
+  padding: 0 var(--space-3) 0 calc(var(--space-3) - 2px);
+  width: 100%;
+
+  &.menuTriggerActive {
+    background: color-mix(in srgb, var(--primary) 12%, var(--background));
+    border-color: color-mix(in srgb, var(--primary) 45%, var(--input));
+    border-left-color: var(--primary);
+  }
+
+  &:focus-visible {
+    border-color: var(--primary);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--foreground) 4%, var(--background));
+  }
+}
+
+.menuRoot.drawerVariant .menuTrigger {
+  display: flex;
+  font-size: var(--text-base);
+  height: auto;
+  justify-content: space-between;
+  max-height: none;
+  max-width: none;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--transition-normal);
+
+  &[data-popup-open] {
+    border-color: var(--primary);
+  }
+
+  &:disabled {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    opacity: 1;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--primary) 8%, var(--background));
+    border-color: var(--border);
+  }
+}
+
+.menuTriggerIcon {
+  align-items: center;
+  color: var(--primary);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  & svg {
+    block-size: 1rem;
+    inline-size: 1rem;
+  }
+}
+
+.menuTriggerLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevronIcon {
+  align-items: center;
+  color: currentcolor;
+  display: flex;
+  flex-shrink: 0;
+  transform: rotate(90deg);
+  transition: transform var(--transition-fast);
+
+  & svg {
+    block-size: var(--space-4);
+    inline-size: var(--space-4);
+  }
+
+  .menuTrigger[data-popup-open] & {
+    transform: rotate(270deg);
+  }
+}
+
+.positioner {
+  z-index: var(--z-6-popover);
+}
+
+.drawerPositioner {
+  width: var(--anchor-width);
+}
+
+.menu {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: min(24rem, 70vh);
+  max-width: min(18rem, calc(100vw - var(--space-6)));
+  min-width: 14rem;
+  overflow: hidden auto;
+  padding: var(--space-1);
+}
+
+.drawerMenu {
+  min-width: 0;
+  width: var(--anchor-width);
+}
+
+.emptyState {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+.menuItem {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  gap: var(--space-2);
+  line-height: 1.25;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  &:disabled,
+  &[data-disabled],
+  &[aria-disabled="true"] {
+    color: var(--muted-foreground);
+    cursor: default;
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  &:hover:not(:disabled, [data-disabled], [aria-disabled="true"]),
+  &[data-highlighted]:not([data-disabled], [aria-disabled="true"]) {
+    background: var(--muted);
+    color: var(--primary);
+  }
+}
+
+.menuItemView {
+  &[data-checked] {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    font-weight: var(--font-semibold);
+
+    &:hover:not(:disabled, [data-disabled], [aria-disabled="true"]),
+    &[data-highlighted]:not([data-disabled], [aria-disabled="true"]) {
+      background: color-mix(in srgb, var(--primary) 14%, var(--muted));
+      color: var(--primary);
+    }
+  }
+
+  &[data-disabled],
+  &[aria-disabled="true"] {
+    background: none;
+    color: var(--muted-foreground);
+    font-weight: var(--font-medium);
+  }
+}
+
+.checkIcon {
+  align-items: center;
+  color: currentcolor;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--space-4);
+  justify-content: center;
+  width: var(--space-4);
+
+  & svg {
+    block-size: 1rem;
+    inline-size: 1rem;
+  }
+}
+
+.menuRoot.drawerVariant .menuTriggerIcon {
+  height: 1.5rem;
+  width: 1.5rem;
+
+  & svg {
+    block-size: 1rem;
+    inline-size: 1rem;
+  }
+}
+
+.menuItemText {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuLink {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+  width: 100%;
+}
+
+.menuItemReset {
+  color: var(--foreground);
+
+  &:hover:not(:disabled, [data-disabled], [aria-disabled="true"]),
+  &[data-highlighted]:not([data-disabled], [aria-disabled="true"]) {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+
+  &[data-disabled],
+  &[aria-disabled="true"] {
+    color: var(--muted-foreground);
+  }
+}
+
+.menuSeparator {
+  background: var(--border);
+  border: 0;
+  height: 1px;
+  margin: 0;
+  width: 100%;
+}

@@ -31,7 +31,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     id: "filters",
     label: "Filters",
-    description: "Saved filter preferences",
+    description: "Saved views and filter preferences",
   },
   {
     id: "collection",

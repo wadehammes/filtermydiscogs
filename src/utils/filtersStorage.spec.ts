@@ -4,6 +4,7 @@ import {
   defaultPersistedFilters,
   FILTERS_STORAGE_KEY,
   parsePersistedFilters,
+  persistedFiltersEqual,
 } from "./filtersStorage";
 
 describe("filtersStorage", () => {
@@ -156,5 +157,41 @@ describe("filtersStorage", () => {
     clearPersistedFilters();
 
     expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
+  });
+
+  it("compares persisted filters independent of multi-select order", () => {
+    const left = {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Acid", "Deep House"],
+      selectedYears: [1999, 1988],
+      selectedFormats: ["Vinyl", "CD"],
+    };
+    const right = {
+      ...left,
+      selectedStyles: ["Deep House", "Acid"],
+      selectedYears: [1988, 1999],
+      selectedFormats: ["CD", "Vinyl"],
+    };
+
+    expect(persistedFiltersEqual(left, right)).toBe(true);
+  });
+
+  it("compares persisted filters independent of object key order", () => {
+    const left = {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Acid"],
+    };
+    const right = {
+      searchQuery: "",
+      yearOperator: "OR" as const,
+      formatOperator: "OR" as const,
+      styleOperator: "OR" as const,
+      selectedSort: defaultPersistedFilters.selectedSort,
+      selectedFormats: [],
+      selectedYears: [],
+      selectedStyles: ["Acid"],
+    };
+
+    expect(persistedFiltersEqual(left, right)).toBe(true);
   });
 });

@@ -1,20 +1,15 @@
-import classNames from "classnames";
 import { Activity, useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
+import { FilterViewsMenu } from "src/components/FilterViewsMenu/FilterViewsMenu.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
-import { FiltersActionTypes } from "src/context/filters.context";
-import {
-  useAppliedFilterCount,
-  useFiltersDispatch,
-} from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
 
@@ -64,23 +59,6 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     setIsFiltersDrawerOpen(false);
   };
 
-  const filtersDispatch = useFiltersDispatch();
-  const appliedFilterCount = useAppliedFilterCount();
-  const hasActiveFilters = appliedFilterCount > 0;
-
-  const handleClearAllFilters = () => {
-    filtersDispatch({
-      type: FiltersActionTypes.ClearAllFilters,
-      payload: undefined,
-    });
-    trackEvent("filtersCleared", {
-      action: "clearAllFilters",
-      category: "filters",
-      label: "Reset Filters",
-      value: "desktop",
-    });
-  };
-
   const isDisabled = disabled || fetchingCollection || !collection || error;
 
   const selectedYearValues = useMemo(
@@ -96,6 +74,7 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     <>
       <div className={styles.filtersBar} data-filters-bar>
         <div className={styles.desktopFilters}>
+          <FilterViewsMenu disabled={!collection} />
           <SearchBar
             placeholder="Search your collection..."
             disabled={!collection}
@@ -165,18 +144,6 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
             disabled={fetchingCollection}
             placeholder="Select sort option..."
           />
-          <Button
-            variant="secondary"
-            size="md"
-            onPress={handleClearAllFilters}
-            disabled={!(collection && hasActiveFilters)}
-            aria-label="Reset filters"
-            className={classNames(styles.clearAllButton, {
-              [styles.clearAllButtonActive]: hasActiveFilters,
-            })}
-          >
-            Reset
-          </Button>
         </div>
 
         <div className={styles.mobileFilters}>

@@ -192,6 +192,55 @@
   margin: 0;
 }
 
+.savedViewsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.savedViewsItem {
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-3);
+}
+
+.savedViewsDetails {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.savedViewsName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.savedViewsSummary {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.savedViewsActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
 .field {
   display: flex;
   flex-direction: column;

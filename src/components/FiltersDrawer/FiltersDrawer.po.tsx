@@ -4,11 +4,14 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { SeedCollectionFilters } from "src/tests/utils/seedCollectionFilters";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
 import type { PersistedFiltersState } from "src/types/filters.types";
+import { definedProps } from "src/utils/definedProps";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { FiltersDrawer } from "./FiltersDrawer.component";
@@ -40,6 +43,12 @@ export class FiltersDrawerPageObject extends BasePageObject {
   setupMocks() {
     jest.clearAllMocks();
     setupDefaultCrateApiMocks(mockApi);
+    mockApiResponse(
+      true,
+      mockApi.userPreferences,
+      { preferences: userPreferencesFactory.defaults() },
+      new Error("Preferences request failed"),
+    );
   }
 
   private filtersDrawerElement(overrides: FiltersDrawerRenderProps = {}) {
@@ -61,7 +70,7 @@ export class FiltersDrawerPageObject extends BasePageObject {
     return (
       <SeedCollectionFilters
         releases={releases}
-        {...(sessionFilters !== undefined ? { sessionFilters } : {})}
+        {...definedProps({ sessionFilters })}
       >
         <FiltersDrawer isOpen={isOpen} onClose={onClose ?? this.onClose} />
       </SeedCollectionFilters>
