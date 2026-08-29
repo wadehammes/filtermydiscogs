@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { Activity, useCallback, useEffect, useState } from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawer } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawer.component";
@@ -186,12 +186,14 @@ export const ReleaseMiniPlayer = ({
 
   return (
     <div className={styles.miniPlayerRoot}>
-      <PlaybackQueueDrawer
-        isOpen={isQueueOpen}
-        onClose={() => {
-          setIsQueueOpen(false);
-        }}
-      />
+      <Activity mode={isQueueOpen ? "visible" : "hidden"}>
+        <PlaybackQueueDrawerLazy
+          isOpen={isQueueOpen}
+          onClose={() => {
+            setIsQueueOpen(false);
+          }}
+        />
+      </Activity>
       <section
         className={styles.miniPlayerShell}
         data-testid="fmdReleaseMiniPlayer"
