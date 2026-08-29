@@ -17,6 +17,7 @@ const ReleaseCardComponent = ({
   onExitRandomMode,
   onReleaseClick,
 }: ReleaseCardProps) => {
+  "use memo";
   const { isInCrate } = useCrate();
   const { openRelease, canOpen } = useReleaseOpenHandler({
     release,
