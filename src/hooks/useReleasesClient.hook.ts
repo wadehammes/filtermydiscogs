@@ -16,6 +16,7 @@ import {
   useFilteredReleases,
   useFiltersDispatch,
   useIsRandomMode,
+  useIsSearching,
   useRandomRelease,
   useSortedFilteredReleases,
 } from "src/hooks/useFilterAtoms.hook";
@@ -39,9 +40,13 @@ export const useReleasesClient = () => {
   const viewDispatch = useViewDispatch();
   const filtersDispatch = useFiltersDispatch();
   const filteredReleases = useFilteredReleases();
-  const deferredFilteredReleases = useDeferredValue(filteredReleases);
-  const isFilterPending = filteredReleases !== deferredFilteredReleases;
   const isRandomMode = useIsRandomMode();
+  const isSearching = useIsSearching();
+  const deferredFilteredReleases = useDeferredValue(filteredReleases);
+  const isFilterPending =
+    !isRandomMode &&
+    isSearching &&
+    filteredReleases !== deferredFilteredReleases;
   const randomRelease = useRandomRelease();
   const sortedFilteredReleases = useSortedFilteredReleases();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -64,9 +69,8 @@ export const useReleasesClient = () => {
 
   const releaseCount = filteredReleases.length;
 
-  const gridSourceReleases = isRandomMode
-    ? filteredReleases
-    : deferredFilteredReleases;
+  const gridSourceReleases =
+    isRandomMode || !isSearching ? filteredReleases : deferredFilteredReleases;
 
   const visibleReleases =
     !isRandomMode && gridSourceReleases.length > visibleCount
