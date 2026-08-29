@@ -5,11 +5,11 @@ import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
 import { AppToaster } from "src/components/AppToaster/AppToaster.component";
 import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthCheckingToast.component";
-import { CollectionDataSync } from "src/components/CollectionDataSync/CollectionDataSync.component";
+import { AuthenticatedCollectionSyncGate } from "src/components/AuthenticatedCollectionSyncGate.component";
+import { AuthenticatedProvidersGate } from "src/components/AuthenticatedProvidersGate.component";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
 import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/DeploymentUpdateToast.component";
-import { GlobalPlaybackDock } from "src/components/GlobalPlaybackDock/GlobalPlaybackDock.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
@@ -19,7 +19,6 @@ import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
 import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
-import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
@@ -73,23 +72,22 @@ export const Providers = ({ children }: ProvidersProps) => {
           <AuthProvider>
             <CollectionContextProvider>
               <FiltersProvider>
-                <ReleasePlaybackProvider>
+                <ViewProvider>
                   <PlaybackReleaseClickProvider>
                     <CrateProvider>
-                      <ViewProvider>
+                      <AuthenticatedCollectionSyncGate />
+                      <AuthenticatedProvidersGate>
                         <AnalyticsShell>
-                          <CollectionDataSync />
                           {children}
-                          <GlobalPlaybackDock />
                           <LogoutOverlayWrapper />
                           <AuthCheckingToast />
                           <CollectionLoadingToast />
                           <DeploymentUpdateToast />
                         </AnalyticsShell>
-                      </ViewProvider>
+                      </AuthenticatedProvidersGate>
                     </CrateProvider>
                   </PlaybackReleaseClickProvider>
-                </ReleasePlaybackProvider>
+                </ViewProvider>
               </FiltersProvider>
             </CollectionContextProvider>
           </AuthProvider>
