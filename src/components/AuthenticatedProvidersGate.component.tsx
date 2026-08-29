@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 
@@ -17,7 +18,7 @@ interface AuthenticatedProvidersGateProps {
   children: React.ReactNode;
 }
 
-export const AuthenticatedProvidersGate = ({
+const AuthenticatedProvidersGateInner = ({
   children,
 }: AuthenticatedProvidersGateProps) => {
   const pathname = usePathname();
@@ -32,3 +33,11 @@ export const AuthenticatedProvidersGate = ({
 
   return <AuthenticatedProviders>{children}</AuthenticatedProviders>;
 };
+
+export const AuthenticatedProvidersGate = ({
+  children,
+}: AuthenticatedProvidersGateProps) => (
+  <Suspense fallback={children}>
+    <AuthenticatedProvidersGateInner>{children}</AuthenticatedProvidersGateInner>
+  </Suspense>
+);
