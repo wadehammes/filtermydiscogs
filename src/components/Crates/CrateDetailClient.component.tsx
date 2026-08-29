@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Activity, useEffect, useMemo, useState } from "react";
 import {
   CrateDrawerProvider,
   useCrateDrawerContext,
@@ -152,12 +152,14 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
         />
       }
       overlays={
-        <ReleaseModal
-          isOpen={selectedRelease !== null}
-          release={selectedRelease}
-          onClose={handleCloseModal}
-          onReleaseClick={handleReleaseClick}
-        />
+        <Activity mode={selectedRelease !== null ? "visible" : "hidden"}>
+          <ReleaseModal
+            isOpen={selectedRelease !== null}
+            release={selectedRelease}
+            onClose={handleCloseModal}
+            onReleaseClick={handleReleaseClick}
+          />
+        </Activity>
       }
     >
       <main className={styles.page} data-testid="fmdCrateDetailClient">

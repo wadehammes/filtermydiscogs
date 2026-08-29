@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { useMemo, useState } from "react";
+import { Activity, useMemo, useState } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
@@ -24,6 +24,7 @@ interface FiltersBarProps {
 }
 
 export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
+  "use memo";
   const { state: collectionState } = useCollectionContext();
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
 
@@ -191,10 +192,12 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
         </div>
       </div>
 
-      <FiltersDrawer
-        isOpen={isFiltersDrawerOpen}
-        onClose={closeFiltersDrawer}
-      />
+      <Activity mode={isFiltersDrawerOpen ? "visible" : "hidden"}>
+        <FiltersDrawer
+          isOpen={isFiltersDrawerOpen}
+          onClose={closeFiltersDrawer}
+        />
+      </Activity>
     </>
   );
 };
