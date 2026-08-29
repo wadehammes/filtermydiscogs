@@ -5,11 +5,13 @@ import {
   flexRender,
   useTable,
 } from "@tanstack/react-table";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
 import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
+import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrate } from "src/context/crate.context";
 import {
@@ -33,6 +35,9 @@ const releasesTableMountKey = [
   styles.dataRow,
   styles.dataCell,
 ].join("-");
+
+const TABLE_ROW_ESTIMATE_PX = 80;
+const TABLE_ROW_OVERSCAN = 10;
 
 interface ReleasesTableProps {
   releases: DiscogsRelease[];
@@ -405,6 +410,32 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       enableColumnResizing: true,
     });
 
+    const scrollElement = usePlaybackPageScrollElement();
+    const tableRows = table.getRowModel().rows;
+    const columnCount = table.getAllLeafColumns().length;
+
+    const rowVirtualizer = useVirtualizer({
+      count: scrollElement ? tableRows.length : 0,
+      getScrollElement: () => scrollElement,
+      estimateSize: () => TABLE_ROW_ESTIMATE_PX,
+      overscan: TABLE_ROW_OVERSCAN,
+    });
+
+    const virtualRows = rowVirtualizer.getVirtualItems();
+    const useVirtualRows = scrollElement !== null && tableRows.length > 0;
+    const paddingTop = useVirtualRows ? (virtualRows[0]?.start ?? 0) : 0;
+    const paddingBottom = useVirtualRows
+      ? rowVirtualizer.getTotalSize() -
+        (virtualRows[virtualRows.length - 1]?.end ?? 0)
+      : 0;
+
+    const rowsToRender = useVirtualRows
+      ? virtualRows.flatMap((virtualRow) => {
+          const row = tableRows[virtualRow.index];
+          return row ? [{ row, key: virtualRow.key }] : [];
+        })
+      : tableRows.map((row) => ({ row, key: row.id }));
+
     return (
       <div className={styles.tableWrapper} data-testid="fmdReleasesTable">
         <div className={styles.tableContainer}>
@@ -457,9 +488,17 @@ export const ReleasesTable = memo<ReleasesTableProps>(
               ))}
             </thead>
             <tbody className={styles.tbody}>
-              {table.getRowModel().rows.map((row) => (
+              {paddingTop > 0 ? (
+                <tr>
+                  <td
+                    colSpan={columnCount}
+                    style={{ height: paddingTop, padding: 0, border: "none" }}
+                  />
+                </tr>
+              ) : null}
+              {rowsToRender.map(({ row, key }) => (
                 <tr
-                  key={row.id}
+                  key={key}
                   className={classNames(styles.dataRow, {
                     [styles.inCrate]: isInCrate(row.original.instance_id),
                   })}
@@ -481,6 +520,18 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   ))}
                 </tr>
               ))}
+              {paddingBottom > 0 ? (
+                <tr>
+                  <td
+                    colSpan={columnCount}
+                    style={{
+                      height: paddingBottom,
+                      padding: 0,
+                      border: "none",
+                    }}
+                  />
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
