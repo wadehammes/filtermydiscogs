@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 
@@ -27,6 +27,12 @@ const AuthenticatedProvidersGateInner = ({
   const needsAuthenticatedShell =
     authState.isAuthenticated || (authState.isCheckingAuth && onProtectedRoute);
 
+  useEffect(() => {
+    if (needsAuthenticatedShell) {
+      void import("src/components/AuthenticatedProviders");
+    }
+  }, [needsAuthenticatedShell]);
+
   if (!needsAuthenticatedShell) {
     return children;
   }
@@ -38,6 +44,8 @@ export const AuthenticatedProvidersGate = ({
   children,
 }: AuthenticatedProvidersGateProps) => (
   <Suspense fallback={children}>
-    <AuthenticatedProvidersGateInner>{children}</AuthenticatedProvidersGateInner>
+    <AuthenticatedProvidersGateInner>
+      {children}
+    </AuthenticatedProvidersGateInner>
   </Suspense>
 );
