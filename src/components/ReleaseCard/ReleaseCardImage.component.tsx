@@ -31,8 +31,6 @@ export const ReleaseCardImage = ({
     <div className={styles.imageShell}>
       <div
         className={styles.imageContainer}
-        data-bg-image={thumbUrl || undefined}
-        style={thumbUrl ? { backgroundImage: `url(${thumbUrl})` } : undefined}
         {...definedProps(activateProps ?? {})}
       >
         {thumbUrl ? (
