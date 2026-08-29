@@ -415,7 +415,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     const columnCount = table.getAllLeafColumns().length;
 
     const rowVirtualizer = useVirtualizer({
-      count: tableRows.length,
+      count: scrollElement ? tableRows.length : 0,
       getScrollElement: () => scrollElement,
       estimateSize: () => TABLE_ROW_ESTIMATE_PX,
       overscan: TABLE_ROW_OVERSCAN,
@@ -432,12 +432,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     const rowsToRender = useVirtualRows
       ? virtualRows.flatMap((virtualRow) => {
           const row = tableRows[virtualRow.index];
-
-          if (!row) {
-            return [];
-          }
-
-          return [{ row, key: virtualRow.key }];
+          return row ? [{ row, key: virtualRow.key }] : [];
         })
       : tableRows.map((row) => ({ row, key: row.id }));
 
