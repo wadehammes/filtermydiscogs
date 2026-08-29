@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { CollectionAnalytics } from "src/types/dashboard.types";
 import {
@@ -20,15 +20,16 @@ import { calculateStyleEvolution } from "src/utils/styleEvolution";
 
 export const useCollectionAnalytics = (): CollectionAnalytics | null => {
   const releases = useAllReleases();
+  const deferredReleases = useDeferredValue(releases);
 
   return useMemo(() => {
-    if (!releases || releases.length === 0) {
+    if (!deferredReleases || deferredReleases.length === 0) {
       return null;
     }
 
-    const stats = calculateCollectionStats(releases);
-    const duplicateGroups = detectDuplicates(releases);
-    const releasesWithoutRating = releases.filter(
+    const stats = calculateCollectionStats(deferredReleases);
+    const duplicateGroups = detectDuplicates(deferredReleases);
+    const releasesWithoutRating = deferredReleases.filter(
       (r) => !r.rating || r.rating === 0,
     ).length;
 
@@ -42,18 +43,20 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       duplicateGroups,
     };
 
-    const growth = analyzeGrowthFromDates(releases);
-    const acquisitionStreaks = calculateAcquisitionStreaks(releases);
-    const styleDistribution = calculateStyleDistribution(releases);
-    const genreDistribution = calculateGenreDistribution(releases);
-    const decadeDistribution = calculateDecadeDistribution(releases);
-    const mediaTypeDistribution = calculateMediaTypeDistribution(releases);
-    const formatTagDistribution = calculateFormatTagDistribution(releases);
-    const formatMix = calculateFormatMixSummary(releases);
-    const artistDistribution = calculateArtistDistribution(releases);
-    const labelDistribution = calculateLabelDistribution(releases);
-    const milestones = calculateMilestones(releases);
-    const styleEvolution = calculateStyleEvolution(releases);
+    const growth = analyzeGrowthFromDates(deferredReleases);
+    const acquisitionStreaks = calculateAcquisitionStreaks(deferredReleases);
+    const styleDistribution = calculateStyleDistribution(deferredReleases);
+    const genreDistribution = calculateGenreDistribution(deferredReleases);
+    const decadeDistribution = calculateDecadeDistribution(deferredReleases);
+    const mediaTypeDistribution =
+      calculateMediaTypeDistribution(deferredReleases);
+    const formatTagDistribution =
+      calculateFormatTagDistribution(deferredReleases);
+    const formatMix = calculateFormatMixSummary(deferredReleases);
+    const artistDistribution = calculateArtistDistribution(deferredReleases);
+    const labelDistribution = calculateLabelDistribution(deferredReleases);
+    const milestones = calculateMilestones(deferredReleases);
+    const styleEvolution = calculateStyleEvolution(deferredReleases);
 
     return {
       stats,
@@ -71,5 +74,5 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       milestones,
       styleEvolution,
     };
-  }, [releases]);
+  }, [deferredReleases]);
 };

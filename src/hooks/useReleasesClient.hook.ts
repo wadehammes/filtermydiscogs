@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
@@ -33,6 +39,8 @@ export const useReleasesClient = () => {
   const viewDispatch = useViewDispatch();
   const filtersDispatch = useFiltersDispatch();
   const filteredReleases = useFilteredReleases();
+  const deferredFilteredReleases = useDeferredValue(filteredReleases);
+  const isFilterPending = filteredReleases !== deferredFilteredReleases;
   const isRandomMode = useIsRandomMode();
   const randomRelease = useRandomRelease();
   const sortedFilteredReleases = useSortedFilteredReleases();
@@ -56,13 +64,17 @@ export const useReleasesClient = () => {
 
   const releaseCount = filteredReleases.length;
 
+  const gridSourceReleases = isRandomMode
+    ? filteredReleases
+    : deferredFilteredReleases;
+
   const visibleReleases =
-    !isRandomMode && filteredReleases.length > visibleCount
-      ? filteredReleases.slice(0, visibleCount)
-      : filteredReleases;
+    !isRandomMode && gridSourceReleases.length > visibleCount
+      ? gridSourceReleases.slice(0, visibleCount)
+      : gridSourceReleases;
 
   const hasMoreVisible =
-    !isRandomMode && filteredReleases.length > visibleReleases.length;
+    !isRandomMode && gridSourceReleases.length > visibleReleases.length;
 
   useEffect(() => {
     if (isMobile && currentView === "list") {
@@ -188,6 +200,7 @@ export const useReleasesClient = () => {
     filteredReleases,
     visibleReleases,
     releaseCount,
+    isFilterPending,
     isRandomMode,
     randomRelease,
 
