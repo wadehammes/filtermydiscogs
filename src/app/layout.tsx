@@ -26,7 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["300", "400", "600", "700"],
   display: "swap",
   variable: "--font-mono",
-  preload: true,
+  preload: false,
 });
 
 export const metadata: Metadata = {

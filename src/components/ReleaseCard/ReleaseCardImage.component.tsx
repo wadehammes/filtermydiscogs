@@ -4,6 +4,7 @@ import { definedProps } from "src/utils/definedProps";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./ReleaseCard.module.css";
 import { ReleaseCardOverlayActions } from "./ReleaseCardOverlayActions.component";
+import { releaseCardImageContainerStyle } from "./releaseCardImageContainerStyle";
 
 interface ReleaseCardImageProps {
   release: DiscogsRelease;
@@ -31,8 +32,7 @@ export const ReleaseCardImage = ({
     <div className={styles.imageShell}>
       <div
         className={styles.imageContainer}
-        data-bg-image={thumbUrl || undefined}
-        style={thumbUrl ? { backgroundImage: `url(${thumbUrl})` } : undefined}
+        style={releaseCardImageContainerStyle(thumbUrl)}
         {...definedProps(activateProps ?? {})}
       >
         {thumbUrl ? (

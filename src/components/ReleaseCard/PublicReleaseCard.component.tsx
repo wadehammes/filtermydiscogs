@@ -15,6 +15,7 @@ import {
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
+import { releaseCardImageContainerStyle } from "./releaseCardImageContainerStyle";
 
 const PublicReleaseCardComponent = ({
   release,
@@ -74,14 +75,7 @@ const PublicReleaseCardComponent = ({
       <div className={styles.imageShell}>
         <div
           className={styles.imageContainer}
-          data-bg-image={thumbUrl || undefined}
-          style={
-            thumbUrl
-              ? {
-                  backgroundImage: `url(${thumbUrl})`,
-                }
-              : undefined
-          }
+          style={releaseCardImageContainerStyle(thumbUrl)}
           {...definedProps(activateProps ?? {})}
         >
           {thumbUrl && (
