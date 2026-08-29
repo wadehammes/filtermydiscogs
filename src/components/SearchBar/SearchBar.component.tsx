@@ -29,6 +29,7 @@ export const SearchBar = ({
   label = "Search",
   showLabel = false,
 }: SearchBarProps) => {
+  "use memo";
   const filtersDispatch = useFiltersDispatch();
   const searchQuery = useSearchQuery();
   const isSearching = useIsSearching();

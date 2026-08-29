@@ -28,6 +28,7 @@ const ReleasesGridComponent = ({
   onReleaseClick,
   randomRelease,
 }: ReleasesGridProps) => {
+  "use memo";
   const isActuallyRandomMode = isRandomMode && view === "random";
   const isCardView = view === "card" || isActuallyRandomMode;
   const isListView = view === "list" && !isActuallyRandomMode;
