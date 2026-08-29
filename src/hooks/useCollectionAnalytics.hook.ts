@@ -21,15 +21,21 @@ import { calculateStyleEvolution } from "src/utils/styleEvolution";
 export const useCollectionAnalytics = (): CollectionAnalytics | null => {
   const releases = useAllReleases();
   const deferredReleases = useDeferredValue(releases);
+  const analyticsReleases =
+    releases.length === 0
+      ? releases
+      : deferredReleases.length > 0
+        ? deferredReleases
+        : releases;
 
   return useMemo(() => {
-    if (!deferredReleases || deferredReleases.length === 0) {
+    if (!analyticsReleases || analyticsReleases.length === 0) {
       return null;
     }
 
-    const stats = calculateCollectionStats(deferredReleases);
-    const duplicateGroups = detectDuplicates(deferredReleases);
-    const releasesWithoutRating = deferredReleases.filter(
+    const stats = calculateCollectionStats(analyticsReleases);
+    const duplicateGroups = detectDuplicates(analyticsReleases);
+    const releasesWithoutRating = analyticsReleases.filter(
       (r) => !r.rating || r.rating === 0,
     ).length;
 
@@ -43,20 +49,20 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       duplicateGroups,
     };
 
-    const growth = analyzeGrowthFromDates(deferredReleases);
-    const acquisitionStreaks = calculateAcquisitionStreaks(deferredReleases);
-    const styleDistribution = calculateStyleDistribution(deferredReleases);
-    const genreDistribution = calculateGenreDistribution(deferredReleases);
-    const decadeDistribution = calculateDecadeDistribution(deferredReleases);
+    const growth = analyzeGrowthFromDates(analyticsReleases);
+    const acquisitionStreaks = calculateAcquisitionStreaks(analyticsReleases);
+    const styleDistribution = calculateStyleDistribution(analyticsReleases);
+    const genreDistribution = calculateGenreDistribution(analyticsReleases);
+    const decadeDistribution = calculateDecadeDistribution(analyticsReleases);
     const mediaTypeDistribution =
-      calculateMediaTypeDistribution(deferredReleases);
+      calculateMediaTypeDistribution(analyticsReleases);
     const formatTagDistribution =
-      calculateFormatTagDistribution(deferredReleases);
-    const formatMix = calculateFormatMixSummary(deferredReleases);
-    const artistDistribution = calculateArtistDistribution(deferredReleases);
-    const labelDistribution = calculateLabelDistribution(deferredReleases);
-    const milestones = calculateMilestones(deferredReleases);
-    const styleEvolution = calculateStyleEvolution(deferredReleases);
+      calculateFormatTagDistribution(analyticsReleases);
+    const formatMix = calculateFormatMixSummary(analyticsReleases);
+    const artistDistribution = calculateArtistDistribution(analyticsReleases);
+    const labelDistribution = calculateLabelDistribution(analyticsReleases);
+    const milestones = calculateMilestones(analyticsReleases);
+    const styleEvolution = calculateStyleEvolution(analyticsReleases);
 
     return {
       stats,
@@ -74,5 +80,5 @@ export const useCollectionAnalytics = (): CollectionAnalytics | null => {
       milestones,
       styleEvolution,
     };
-  }, [deferredReleases]);
+  }, [analyticsReleases]);
 };
