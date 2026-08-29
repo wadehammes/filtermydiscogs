@@ -91,11 +91,13 @@ export function LegalPageContent() {
               Postgres: theme (light, dim, sepia, slate, dark, midnight, high
               contrast, or system), default view (grid or table), whether to
               remember filter selections, whether to auto-play when adding to an
-              empty queue, your analytics cookie choice (when set), and—when
-              that option is on—your saved filter and sort choices (styles,
-              years, formats, sort order, genre/style, format, and release year
-              match mode, and search text). That lets settings follow you across
-              browsers. I don&apos;t store your full collection there.
+              empty queue, your analytics cookie choice (when set), named saved
+              views you create from the Views menu on Releases (search, filters,
+              and sort snapshots), and—when that option is on—your saved filter
+              and sort choices (styles, years, formats, sort order, genre/style,
+              format, and release year match mode, and search text). That lets
+              settings follow you across browsers. I don&apos;t store your full
+              collection there.
             </li>
             <li>
               When you opt in to analytics, I may also store product usage
@@ -199,9 +201,10 @@ export function LegalPageContent() {
             </li>
             <li>
               Your saved account preferences on our server: theme, default view
-              (grid or table), your analytics cookie choice, and filter/sort
-              selections when &quot;Remember filter selections&quot; is enabled
-              in Settings
+              (grid or table), your analytics cookie choice, named saved views
+              from the Views menu on Releases, filter/sort selections when
+              &quot;Remember filter selections&quot; is enabled in Settings, and
+              playback settings
             </li>
             <li>
               Product analytics events linked to your account (when you had

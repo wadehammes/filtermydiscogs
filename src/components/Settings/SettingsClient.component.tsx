@@ -2,7 +2,8 @@
 
 import classNames from "classnames";
 import { useSetAtom, useStore } from "jotai";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { trackEvent } from "src/analytics/analytics";
 import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
@@ -38,6 +39,9 @@ import {
   type SettingsSectionId,
 } from "./settingsSections.constants";
 
+const isSettingsSectionId = (value: string): value is SettingsSectionId =>
+  SETTINGS_SECTIONS.some((section) => section.id === value);
+
 const CLEAR_DATA_MESSAGE =
   "This will log you out, clear all authentication tokens, delete all your stored crates, remove product analytics events linked to your account, and remove all saved preferences and cached data, including your analytics cookie choice. You will need to authorize the app again to continue using Filter My Discogs.";
 
@@ -62,6 +66,15 @@ export default function SettingsClient() {
   const [activeSection, setActiveSection] = useState<SettingsSectionId>(
     DEFAULT_SETTINGS_SECTION,
   );
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const section = searchParams.get("section");
+
+    if (section && isSettingsSectionId(section)) {
+      setActiveSection(section);
+    }
+  }, [searchParams]);
   const [showClearDataDialog, setShowClearDataDialog] = useState(false);
   const [showCompleteLogoutDialog, setShowCompleteLogoutDialog] =
     useState(false);

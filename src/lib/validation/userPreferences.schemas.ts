@@ -1,5 +1,6 @@
 import { isValidViewState } from "src/types/view.types";
 import { isValidStoredFiltersPatch } from "src/utils/filtersStorage";
+import { isValidFilterViewsPatch } from "src/utils/filterViews";
 import { isValidStoredTheme } from "src/utils/storedTheme";
 import { z } from "zod";
 
@@ -33,6 +34,13 @@ export const userPreferencesPatchSchema = z
         (value) => value === undefined || isValidStoredFiltersPatch(value),
         { message: "filters must include valid filter fields" },
       ),
+    filterViews: z
+      .unknown()
+      .optional()
+      .refine(
+        (value) => value === undefined || isValidFilterViewsPatch(value),
+        { message: "filterViews must include valid saved view entries" },
+      ),
     analyticsConsent: z
       .boolean({ error: "analyticsConsent must be a boolean" })
       .optional(),
@@ -44,6 +52,7 @@ export const userPreferencesPatchSchema = z
       patch.theme !== undefined ||
       patch.view !== undefined ||
       patch.filters !== undefined ||
+      patch.filterViews !== undefined ||
       patch.analyticsConsent !== undefined,
     { message: "No supported preference fields to update" },
   );

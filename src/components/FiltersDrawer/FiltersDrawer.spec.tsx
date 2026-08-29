@@ -1,14 +1,25 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import { api } from "src/api/urls";
 import { FiltersDrawerPageObject } from "src/components/FiltersDrawer/FiltersDrawer.po";
 import { SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import {
   clickFilterOption,
   openFilterCombobox,
 } from "src/tests/filterControlTestHelpers";
-import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  defaultPersistedFilters,
+  FILTERS_STORAGE_KEY,
+} from "src/utils/filtersStorage";
+import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
+
+jest.mock("src/api/urls");
+
+const mockApi = jest.mocked(api);
 
 let po: FiltersDrawerPageObject;
 
@@ -32,6 +43,21 @@ describe("FiltersDrawer", () => {
     expect(screen.getByText("Format Type")).toBeInTheDocument();
     expect(screen.getByText("Sort by")).toBeInTheDocument();
     expect(screen.getByText("Order")).toBeInTheDocument();
+    expect(screen.getByTestId("fmdFilterViewsMenu")).toBeInTheDocument();
+  });
+
+  it("opens the Views menu from the filters drawer", async () => {
+    const user = userEvent.setup();
+
+    po.renderFiltersDrawer();
+
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Save current view…" }),
+    ).toBeInTheDocument();
   });
 
   it("calls onClose when the close button is pressed", async () => {
@@ -45,7 +71,7 @@ describe("FiltersDrawer", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("resets all filters when Reset is pressed", async () => {
+  it("resets all filters from the Views menu", async () => {
     const user = userEvent.setup();
     po.renderFiltersDrawer({
       sessionFilters: {
@@ -58,12 +84,15 @@ describe("FiltersDrawer", () => {
       },
     });
 
-    const resetButton = screen.getByRole("button", {
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+
+    const resetItem = await screen.findByRole("menuitem", {
       name: "Reset filters",
     });
-    expect(resetButton).toBeEnabled();
 
-    await user.click(resetButton);
+    await user.click(resetItem);
 
     expect(screen.getByRole("textbox", { name: "Search" })).toHaveValue("");
 
@@ -74,12 +103,20 @@ describe("FiltersDrawer", () => {
     expect(saved.searchQuery).toBe("");
   });
 
-  it("disables Reset when no filters are active", () => {
+  it("disables Reset in the Views menu when no filters are active", async () => {
+    const user = userEvent.setup();
     po.renderFiltersDrawer();
 
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+
     expect(
-      screen.getByRole("button", { name: "Reset filters" }),
-    ).toBeDisabled();
+      await screen.findByRole("menuitem", { name: "Reset filters" }),
+    ).toHaveAttribute("data-disabled", "");
+    expect(
+      screen.getByRole("menuitem", { name: "Save current view…" }),
+    ).toHaveAttribute("data-disabled", "");
   });
 
   it("shows applied filter count in the drawer title and footer", () => {
@@ -98,6 +135,171 @@ describe("FiltersDrawer", () => {
       screen.getByRole("heading", { name: "Filters (2)" }),
     ).toBeInTheDocument();
     expect(screen.getByText("2 filters applied")).toBeInTheDocument();
+  });
+
+  it("applies a saved view from the Views menu", async () => {
+    const technoFilters = {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Techno"],
+      selectedSort: SortValues.AZArtist,
+    };
+    const savedView = createFilterView("Techno", technoFilters);
+
+    mockApiResponse(
+      true,
+      mockApi.userPreferences,
+      {
+        preferences: userPreferencesFactory.build({
+          filterViews: [savedView],
+        }),
+      },
+      new Error("Preferences request failed"),
+    );
+
+    const user = userEvent.setup();
+    po.renderFiltersDrawer();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Views and filter actions" }),
+      ).toBeEnabled();
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+    await user.click(
+      await screen.findByRole("menuitemradio", { name: "Techno" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Views, Techno selected" }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("disables Save current view when filters match an existing saved view", async () => {
+    const technoFilters = {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Techno"],
+      selectedSort: SortValues.AZArtist,
+    };
+    const savedView = createFilterView("Techno", technoFilters);
+
+    mockApiResponse(
+      true,
+      mockApi.userPreferences,
+      {
+        preferences: userPreferencesFactory.build({
+          filterViews: [savedView],
+        }),
+      },
+      new Error("Preferences request failed"),
+    );
+
+    const user = userEvent.setup();
+    po.renderFiltersDrawer({
+      sessionFilters: technoFilters,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Views, Techno selected" }),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Views, Techno selected" }),
+    );
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Save current view…" }),
+    ).toHaveAttribute("data-disabled", "");
+    expect(
+      screen.getByRole("menuitem", { name: "Reset filters" }),
+    ).not.toHaveAttribute("data-disabled", "");
+  });
+
+  it("clears filters when clicking the active saved view again", async () => {
+    const technoFilters = {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Techno"],
+    };
+    const savedView = createFilterView("Techno", technoFilters);
+
+    mockApiResponse(
+      true,
+      mockApi.userPreferences,
+      {
+        preferences: userPreferencesFactory.build({
+          filterViews: [savedView],
+        }),
+      },
+      new Error("Preferences request failed"),
+    );
+
+    const user = userEvent.setup();
+    po.renderFiltersDrawer({
+      sessionFilters: technoFilters,
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Views, Techno selected" }),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Views, Techno selected" }),
+    );
+    await user.click(
+      await screen.findByRole("menuitemradio", { name: "Techno" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Views and filter actions" }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("enables Save current view when filters differ from saved views", async () => {
+    const savedView = createFilterView("Techno", {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Techno"],
+    });
+
+    mockApiResponse(
+      true,
+      mockApi.userPreferences,
+      {
+        preferences: userPreferencesFactory.build({
+          filterViews: [savedView],
+        }),
+      },
+      new Error("Preferences request failed"),
+    );
+
+    const user = userEvent.setup();
+    po.renderFiltersDrawer({
+      sessionFilters: {
+        selectedStyles: ["Rock"],
+        selectedYears: [],
+        selectedFormats: [],
+        selectedSort: SortValues.DateAddedNew,
+        styleOperator: "OR",
+        searchQuery: "",
+      },
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Save current view…" }),
+    ).not.toHaveAttribute("data-disabled", "");
   });
 
   it("clears a multi-select filter from its Clear control", async () => {

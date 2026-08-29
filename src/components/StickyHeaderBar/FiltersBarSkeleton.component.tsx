@@ -1,3 +1,4 @@
+import BookmarkIcon from "src/styles/icons/bookmark-thin.svg";
 import ChevronIcon from "src/styles/icons/chevron-right-thin.svg";
 import SearchIcon from "src/styles/icons/search-thin.svg";
 import filtersBarStyles from "./FiltersBar.module.css";
@@ -10,6 +11,19 @@ export function FiltersBarSkeleton() {
       data-testid="fmdFiltersBarSkeleton"
     >
       <div className={filtersBarStyles.desktopFilters}>
+        <div
+          className={styles.viewsShell}
+          data-testid="fmdFilterViewsMenu"
+          aria-hidden
+        >
+          <span className={styles.viewsIcon}>
+            <BookmarkIcon />
+          </span>
+          <div className={styles.viewsLine} />
+          <span className={styles.chevron}>
+            <ChevronIcon />
+          </span>
+        </div>
         <div className={styles.searchShell} aria-hidden>
           <span className={styles.searchIcon}>
             <SearchIcon />
@@ -99,9 +113,6 @@ export function FiltersBarSkeleton() {
           <span className={styles.chevron}>
             <ChevronIcon />
           </span>
-        </div>
-        <div className={styles.buttonShell} aria-hidden>
-          <div className={styles.buttonLine} />
         </div>
       </div>
     </div>

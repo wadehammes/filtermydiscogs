@@ -1,8 +1,17 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import { api } from "src/api/urls";
 import { SettingsClientPageObject } from "src/components/Settings/SettingsClient.po";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
+import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor, within } from "test-utils";
+
+jest.mock("src/api/urls");
+
+const mockApi = jest.mocked(api);
 
 let po: SettingsClientPageObject;
 
@@ -116,5 +125,70 @@ describe("SettingsClient", () => {
         /including your analytics cookie choice/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("renames a saved view from the filters panel", async () => {
+    const technoView = createFilterView("Techno", {
+      ...defaultPersistedFilters,
+      selectedStyles: ["Techno"],
+    });
+
+    mockApiResponse(
+      true,
+      mockApi.userPreferences,
+      {
+        preferences: userPreferencesFactory.build({
+          filterViews: [technoView],
+        }),
+      },
+      new Error("Preferences request failed"),
+    );
+    mockApiResponse(
+      true,
+      mockApi.updateUserPreferences,
+      {
+        preferences: userPreferencesFactory.build({
+          filterViews: [
+            {
+              ...technoView,
+              name: "Peak time",
+            },
+          ],
+        }),
+      },
+      new Error("Preferences update failed"),
+    );
+
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Filters Saved views and filter preferences",
+      }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Rename Techno" }));
+
+    const dialog = screen.getByRole("dialog");
+    const nameInput = within(dialog).getByLabelText("View name");
+
+    await user.clear(nameInput);
+    await user.type(nameInput, "Peak time");
+    await user.click(within(dialog).getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockApi.updateUserPreferences).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filterViews: [
+            expect.objectContaining({
+              id: technoView.id,
+              name: "Peak time",
+            }),
+          ],
+        }),
+      );
+    });
   });
 });

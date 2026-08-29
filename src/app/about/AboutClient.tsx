@@ -24,7 +24,7 @@ export function AboutClient() {
           "• Log you out\n" +
           "• Clear all authentication tokens\n" +
           "• Delete all your stored crates\n" +
-          "• Delete your saved account preferences (theme, default view, filter selections, playback settings, and analytics cookie choice)\n" +
+          "• Delete your saved account preferences (theme, default view, saved views, filter selections, playback settings, and analytics cookie choice)\n" +
           "• Delete product analytics events linked to your account (when analytics was enabled)\n" +
           "• Clear local preferences and cached data on this browser\n\n" +
           "You will need to authorize the app again to use it.",
@@ -129,9 +129,10 @@ export function AboutClient() {
               </li>
               <li>
                 Your saved account preferences on our server: theme, default
-                view (grid or table), your analytics cookie choice, and
-                filter/sort selections when &quot;Remember filter
-                selections&quot; is enabled in Settings
+                view (grid or table), your analytics cookie choice, named saved
+                views from the Views menu on Releases, filter/sort selections
+                when &quot;Remember filter selections&quot; is enabled in
+                Settings, and playback settings
               </li>
               <li>
                 Product analytics events linked to your account (when you had

@@ -145,10 +145,31 @@ export const isValidStoredFiltersPatch = (
   value: unknown,
 ): value is PersistedFiltersState => parsePersistedFiltersValue(value) !== null;
 
+const canonicalizePersistedFiltersForCompare = (
+  filters: PersistedFiltersState,
+): PersistedFiltersState => {
+  const normalized = parseStoredFiltersObject(filters);
+
+  return {
+    selectedStyles: [...normalized.selectedStyles].sort(),
+    selectedYears: [...normalized.selectedYears].sort(
+      (left, right) => left - right,
+    ),
+    selectedFormats: [...normalized.selectedFormats].sort(),
+    selectedSort: normalized.selectedSort,
+    styleOperator: normalized.styleOperator,
+    formatOperator: normalized.formatOperator,
+    yearOperator: normalized.yearOperator,
+    searchQuery: normalized.searchQuery,
+  };
+};
+
 export const persistedFiltersEqual = (
   left: PersistedFiltersState,
   right: PersistedFiltersState,
-): boolean => JSON.stringify(left) === JSON.stringify(right);
+): boolean =>
+  JSON.stringify(canonicalizePersistedFiltersForCompare(left)) ===
+  JSON.stringify(canonicalizePersistedFiltersForCompare(right));
 
 export const hasRestorableFilterSelections = (
   filters: PersistedFiltersState,

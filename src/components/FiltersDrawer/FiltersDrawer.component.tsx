@@ -1,21 +1,22 @@
 import classNames from "classnames";
 import { useMemo, useState } from "react";
-import { trackEvent } from "src/analytics/analytics";
-import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
+import {
+  type AutocompleteOption,
+  AutocompleteSelect,
+} from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
+import { FilterViewsMenu } from "src/components/FilterViewsMenu/FilterViewsMenu.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import Select from "src/components/Select/Select.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
-import { FiltersActionTypes } from "src/context/filters.context";
-import {
-  useAppliedFilterCount,
-  useFiltersDispatch,
-} from "src/hooks/useFilterAtoms.hook";
+import { useAppliedFilterCount } from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
+import type { StyleOperator, YearOperator } from "src/types/filters.types";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./FiltersDrawer.module.css";
 
 interface FiltersDrawerProps {
@@ -23,9 +24,75 @@ interface FiltersDrawerProps {
   onClose: () => void;
 }
 
+type DrawerFacetFilterProps = {
+  label: string;
+  options: AutocompleteOption[];
+  selectedValues: string[];
+  onValuesChange: (value: string | string[]) => void;
+  placeholder: string;
+  disabled: boolean;
+  operatorValue: StyleOperator | YearOperator;
+  onOperatorChange: (value: string | string[]) => void;
+  operatorOptions?: ReadonlyArray<{
+    value: StyleOperator | YearOperator;
+    label: string;
+  }>;
+};
+
+const DrawerFacetFilter = ({
+  label,
+  options,
+  selectedValues,
+  onValuesChange,
+  placeholder,
+  disabled,
+  operatorValue,
+  onOperatorChange,
+  operatorOptions,
+}: DrawerFacetFilterProps) => {
+  const hasSelections = selectedValues.length > 0;
+
+  return (
+    <div className={styles.facetFilterGroup}>
+      <span className={styles.facetLabel}>{label}</span>
+      <div className={styles.facetFilterControls}>
+        <AutocompleteSelect
+          label={label}
+          options={options}
+          value={selectedValues}
+          onChange={onValuesChange}
+          disabled={disabled}
+          multiple={true}
+          placeholder={placeholder}
+        />
+        <FilterMatchOperatorSelect
+          selectedCount={selectedValues.length}
+          value={operatorValue}
+          onChange={onOperatorChange}
+          disabled={disabled}
+          {...definedProps({ options: operatorOptions })}
+        />
+        {hasSelections ? (
+          <Button
+            variant="secondary"
+            size="md"
+            className={styles.facetClearButton}
+            onPress={() => {
+              onValuesChange([]);
+            }}
+            disabled={disabled}
+            aria-label={`Clear ${label}`}
+          >
+            Clear
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
 export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   const { state: collectionState } = useCollectionContext();
-  const filtersDispatch = useFiltersDispatch();
   const appliedFilterCount = useAppliedFilterCount();
   const [sortCategory, setSortCategory] =
     useState<keyof typeof SORTING_CATEGORIES>("alphabetical");
@@ -61,19 +128,6 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
     return `Filters (${appliedFilterCount})`;
   }, [appliedFilterCount]);
-
-  const handleClearAllFilters = () => {
-    filtersDispatch({
-      type: FiltersActionTypes.ClearAllFilters,
-      payload: undefined,
-    });
-    trackEvent("filtersCleared", {
-      action: "clearAllFilters",
-      category: "mobile_filters",
-      label: "Reset Filters",
-      value: "mobile",
-    });
-  };
 
   const categoryOptions = [
     { value: "alphabetical", label: "Alphabetical" },
@@ -111,30 +165,22 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
       closeButtonAriaLabel="Close filters"
       dataAttribute="data-filters-drawer-open"
       footer={
-        <div className={styles.footer}>
-          {hasActiveFilters ? (
+        hasActiveFilters ? (
+          <div className={styles.footer}>
             <p className={styles.activeFiltersHint}>
               {appliedFilterCount === 1
                 ? "1 filter applied"
                 : `${appliedFilterCount} filters applied`}
             </p>
-          ) : null}
-          <Button
-            variant="secondary"
-            size="md"
-            onPress={handleClearAllFilters}
-            disabled={!(collection && hasActiveFilters)}
-            aria-label="Reset filters"
-            className={classNames(styles.clearAllButton, {
-              [styles.clearAllButtonActive]: hasActiveFilters,
-            })}
-          >
-            Reset
-          </Button>
-        </div>
+          </div>
+        ) : undefined
       }
     >
       <div className={styles.content}>
+        <div className={classNames(styles.filterSection, styles.viewsSection)}>
+          <FilterViewsMenu disabled={!collection} variant="drawer" />
+        </div>
+
         <div className={styles.filterSection}>
           <SearchBar
             showLabel
@@ -146,70 +192,46 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
         {styleOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <AutocompleteSelect
-              showLabel
-              clearable
+            <DrawerFacetFilter
               label="Genre & Style"
               options={styleOptions}
-              value={selectedStyles}
-              onChange={handleStyleChange}
-              disabled={!collection}
-              multiple={true}
+              selectedValues={selectedStyles}
+              onValuesChange={handleStyleChange}
               placeholder="All genres & styles"
-            />
-            <FilterMatchOperatorSelect
-              showLabel
-              selectedCount={selectedStyles.length}
-              value={styleOperator}
-              onChange={handleStyleOperatorChange}
               disabled={!collection}
+              operatorValue={styleOperator}
+              onOperatorChange={handleStyleOperatorChange}
             />
           </div>
         )}
 
         {formatOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <AutocompleteSelect
-              showLabel
-              clearable
+            <DrawerFacetFilter
               label="Format Type"
               options={formatOptions}
-              value={selectedFormats}
-              onChange={handleFormatChange}
-              disabled={!collection}
-              multiple={true}
+              selectedValues={selectedFormats}
+              onValuesChange={handleFormatChange}
               placeholder="All format types"
-            />
-            <FilterMatchOperatorSelect
-              showLabel
-              selectedCount={selectedFormats.length}
-              value={formatOperator}
-              onChange={handleFormatOperatorChange}
               disabled={!collection}
+              operatorValue={formatOperator}
+              onOperatorChange={handleFormatOperatorChange}
             />
           </div>
         )}
 
         {yearOptions.length > 0 && !fetchingCollection && !error && (
           <div className={styles.filterSection}>
-            <AutocompleteSelect
-              showLabel
-              clearable
+            <DrawerFacetFilter
               label="Release Year"
               options={yearOptions}
-              value={selectedYearValues}
-              onChange={handleYearChange}
-              disabled={!collection}
-              multiple={true}
+              selectedValues={selectedYearValues}
+              onValuesChange={handleYearChange}
               placeholder="All release years"
-            />
-            <FilterMatchOperatorSelect
-              showLabel
-              selectedCount={selectedYears.length}
-              value={yearOperator}
-              onChange={handleYearOperatorChange}
               disabled={!collection}
-              options={FILTER_ANY_NONE_OPERATOR_OPTIONS}
+              operatorValue={yearOperator}
+              onOperatorChange={handleYearOperatorChange}
+              operatorOptions={FILTER_ANY_NONE_OPERATOR_OPTIONS}
             />
           </div>
         )}

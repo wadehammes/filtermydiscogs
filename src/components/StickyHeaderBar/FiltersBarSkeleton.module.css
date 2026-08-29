@@ -10,15 +10,45 @@
 }
 
 .searchShell,
-.selectShell,
-.buttonShell {
+.viewsShell,
+.selectShell {
   align-items: center;
   background: var(--background);
   border: 1px solid var(--input);
   border-radius: var(--radius-ui);
   display: flex;
-  flex: 1;
   min-height: var(--input-height);
+}
+
+.viewsShell {
+  background: color-mix(in srgb, var(--primary) 6%, var(--background));
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--input));
+  border-left: 3px solid var(--primary);
+  flex: 0 0 auto;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) 0 calc(var(--space-3) - 2px);
+  width: max-content;
+}
+
+.viewsIcon {
+  align-items: center;
+  animation: pulse 1.5s ease-in-out infinite;
+  color: var(--primary);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  & svg {
+    block-size: 1rem;
+    inline-size: 1rem;
+  }
+}
+
+.searchShell,
+.selectShell {
+  flex: 1;
   min-width: 5rem;
 }
 
@@ -75,22 +105,17 @@
   border-radius: 0;
 }
 
-.buttonShell {
-  background: var(--card);
-  border-color: var(--border);
-  flex: 0 0 auto;
-  justify-content: center;
-  padding: var(--space-2) var(--space-3);
-  width: 5.5rem;
-}
-
+.viewsLine,
 .placeholderLine,
-.placeholderLineWide,
-.buttonLine {
+.placeholderLineWide {
   animation: pulse 1.4s ease-in-out infinite;
   background: var(--muted);
   border-radius: var(--radius-ui);
   height: 0.75rem;
+}
+
+.viewsLine {
+  width: 2.5rem;
 }
 
 .placeholderLine {
@@ -104,10 +129,6 @@
   flex: 1;
   max-width: 9rem;
   min-width: 0;
-}
-
-.buttonLine {
-  width: 3.25rem;
 }
 
 .chevron {

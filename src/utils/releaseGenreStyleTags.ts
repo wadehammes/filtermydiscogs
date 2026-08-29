@@ -1,4 +1,5 @@
 import type { DiscogsBasicInformation } from "src/types";
+import { sortFormatTags } from "src/utils/formatFilterTags";
 
 const addTrimmedTags = (tags: Set<string>, values: string[] | undefined) => {
   values?.forEach((value) => {
@@ -17,5 +18,5 @@ export function getReleaseGenreStyleTags(
   addTrimmedTags(tags, basicInformation.genres);
   addTrimmedTags(tags, basicInformation.styles);
 
-  return Array.from(tags);
+  return sortFormatTags(Array.from(tags));
 }

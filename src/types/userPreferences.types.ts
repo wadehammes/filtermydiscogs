@@ -1,5 +1,6 @@
 import type { PersistedFiltersJson } from "src/types/filters.types";
 import type { ViewMode } from "src/types/view.types";
+import type { FilterView } from "src/utils/filterViews";
 
 export const USER_PREFERENCES_VERSION = 1;
 
@@ -34,6 +35,7 @@ export type UserPreferencesJson = {
   theme: StoredTheme;
   view: StoredViewState;
   filters: PersistedFiltersJson;
+  filterViews: FilterView[];
   analyticsConsent?: boolean;
 };
 
@@ -47,6 +49,7 @@ export type UserPreferencesPatch = Partial<
     | "theme"
     | "view"
     | "filters"
+    | "filterViews"
     | "analyticsConsent"
   >
 >;
