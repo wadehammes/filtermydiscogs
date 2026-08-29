@@ -2,10 +2,10 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { Activity, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
-import { PlaybackQueueDrawer } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawer.component";
+import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import {
   TransportSkipNextIcon,
@@ -186,14 +186,14 @@ export const ReleaseMiniPlayer = ({
 
   return (
     <div className={styles.miniPlayerRoot}>
-      <Activity mode={isQueueOpen ? "visible" : "hidden"}>
+      {isQueueOpen ? (
         <PlaybackQueueDrawerLazy
           isOpen={isQueueOpen}
           onClose={() => {
             setIsQueueOpen(false);
           }}
         />
-      </Activity>
+      ) : null}
       <section
         className={styles.miniPlayerShell}
         data-testid="fmdReleaseMiniPlayer"

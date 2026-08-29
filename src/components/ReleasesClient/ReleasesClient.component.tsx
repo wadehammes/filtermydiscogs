@@ -4,11 +4,11 @@ import classNames from "classnames";
 import { useCallback, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
-import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
+import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
 import { Page } from "src/components/Page/Page.component";
 import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
-import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
+import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -16,6 +16,7 @@ import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
+import { definedProps } from "src/utils/definedProps";
 import { EmptyState } from "./EmptyState.component";
 import { LoadingTrigger } from "./LoadingTrigger.component";
 import styles from "./ReleasesClient.module.css";
@@ -51,6 +52,7 @@ const ReleasesClientContent = () => {
     currentView,
     mainContentRef,
     infiniteScrollRef,
+    isFilterPending,
     selectedRelease,
     handleReleaseClick,
     handleCloseModal,
@@ -132,8 +134,7 @@ const ReleasesClientContent = () => {
                 </div>
               </button>
             ) : null}
-            <ReleaseModal
-              isOpen={selectedRelease !== null}
+            <ReleaseModalLazyOverlay
               release={selectedRelease}
               onClose={handleCloseModal}
               onReleaseClick={handleReleaseClick}
@@ -168,16 +169,23 @@ const ReleasesClientContent = () => {
               ) : null}
 
               {hasReleases ? (
-                <ReleasesGrid
-                  releases={visibleReleases}
-                  view={currentView}
-                  isMobile={isMobile}
-                  isRandomMode={isRandomMode}
-                  onExitRandomMode={handleExitRandomMode}
-                  onRandomClick={handleRandomClick}
-                  onReleaseClick={handleReleaseClick}
-                  randomRelease={randomRelease}
-                />
+                <div
+                  {...definedProps({
+                    "aria-busy": isFilterPending ? true : undefined,
+                  })}
+                  aria-live="polite"
+                >
+                  <ReleasesGrid
+                    releases={visibleReleases}
+                    view={currentView}
+                    isMobile={isMobile}
+                    isRandomMode={isRandomMode}
+                    onExitRandomMode={handleExitRandomMode}
+                    onRandomClick={handleRandomClick}
+                    onReleaseClick={handleReleaseClick}
+                    randomRelease={randomRelease}
+                  />
+                </div>
               ) : !allReleasesLoaded ? (
                 <ReleasesSkeleton isMobile={isMobile} />
               ) : (
@@ -193,11 +201,13 @@ const ReleasesClientContent = () => {
             </div>
 
             <div className={styles.sidebar}>
-              <CrateDrawer
-                isOpen={isDrawerOpen}
-                onReleaseClick={handleReleaseClick}
-                aboveMiniPlayer={isMiniPlayerVisible}
-              />
+              {isDrawerOpen ? (
+                <CrateDrawerLazy
+                  isOpen={isDrawerOpen}
+                  onReleaseClick={handleReleaseClick}
+                  aboveMiniPlayer={isMiniPlayerVisible}
+                />
+              ) : null}
             </div>
           </div>
         </div>

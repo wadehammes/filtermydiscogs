@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { Page } from "src/components/Page/Page.component";
 import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
-import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
+import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -17,16 +17,16 @@ import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthentic
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { buildDashboardStory } from "src/utils/dashboardStory";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
-import { ArtistLabelCharts } from "./ArtistLabelCharts.component";
 import { CollectionHealth } from "./CollectionHealth.component";
 import { CollectionMilestones } from "./CollectionMilestones.component";
 import { CollectionRhythm } from "./CollectionRhythm.component";
-import { ComparativeGrowthCharts } from "./ComparativeGrowthCharts.component";
+import { DashboardArtistLabelChartsLazy } from "./DashboardArtistLabelChartsLazy.component";
 import styles from "./DashboardClient.module.css";
+import { DashboardComparativeGrowthChartsLazy } from "./DashboardComparativeGrowthChartsLazy.component";
+import { DashboardDistributionChartsLazy } from "./DashboardDistributionChartsLazy.component";
 import { DashboardHero } from "./DashboardHero.component";
 import { DashboardSection } from "./DashboardSection.component";
 import { DashboardSkeleton } from "./DashboardSkeleton.component";
-import { DistributionCharts } from "./DistributionCharts.component";
 import { GrowthChart } from "./GrowthChart.component";
 import { MostCrated } from "./MostCrated.component";
 import { OnThisDay } from "./OnThisDay.component";
@@ -164,14 +164,14 @@ function DashboardClientContent() {
                   lede={story.sections.sound.lede}
                   title={story.sections.sound.title}
                 >
-                  <DistributionCharts
+                  <DashboardDistributionChartsLazy
                     styleDistribution={analytics.styleDistribution}
                     genreDistribution={analytics.genreDistribution}
                     decadeDistribution={analytics.decadeDistribution}
                     mediaTypeDistribution={analytics.mediaTypeDistribution}
                     formatTagDistribution={analytics.formatTagDistribution}
                   />
-                  <ComparativeGrowthCharts hideHeading={true} />
+                  <DashboardComparativeGrowthChartsLazy hideHeading={true} />
                   <StyleEvolution
                     hideHeading={true}
                     sectionCopy={story.sections.styleEvolution}
@@ -182,7 +182,7 @@ function DashboardClientContent() {
                   lede={story.sections.names.lede}
                   title={story.sections.names.title}
                 >
-                  <ArtistLabelCharts
+                  <DashboardArtistLabelChartsLazy
                     artistDistribution={analytics.artistDistribution}
                     labelDistribution={analytics.labelDistribution}
                   />
@@ -225,8 +225,7 @@ function DashboardClientContent() {
           </div>
         </PlaybackPageShell>
       </Page>
-      <ReleaseModal
-        isOpen={selectedRelease !== null}
+      <ReleaseModalLazyOverlay
         release={selectedRelease}
         onClose={handleCloseModal}
         onReleaseClick={handleReleaseClick}

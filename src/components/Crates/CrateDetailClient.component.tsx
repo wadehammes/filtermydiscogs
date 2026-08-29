@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CrateDrawerProvider,
   useCrateDrawerContext,
@@ -11,7 +11,7 @@ import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/
 import { CrateSetNotesScratchpad } from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
-import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
+import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -152,14 +152,11 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
         />
       }
       overlays={
-        <Activity mode={selectedRelease !== null ? "visible" : "hidden"}>
-          <ReleaseModal
-            isOpen={selectedRelease !== null}
-            release={selectedRelease}
-            onClose={handleCloseModal}
-            onReleaseClick={handleReleaseClick}
-          />
-        </Activity>
+        <ReleaseModalLazyOverlay
+          release={selectedRelease}
+          onClose={handleCloseModal}
+          onReleaseClick={handleReleaseClick}
+        />
       }
     >
       <main className={styles.page} data-testid="fmdCrateDetailClient">
