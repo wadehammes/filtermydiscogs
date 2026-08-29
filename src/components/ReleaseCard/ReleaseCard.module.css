@@ -83,7 +83,7 @@
 
   &::before {
     background-color: transparent;
-    background-image: inherit;
+    background-image: var(--release-cover-image, none);
     background-position: inherit;
     background-repeat: inherit;
     background-size: inherit;
