@@ -1,14 +1,14 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useState } from "react";
+import { Activity, useCallback, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
-import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
+import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
 import { Page } from "src/components/Page/Page.component";
 import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
-import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
+import { ReleaseModalLazy } from "src/components/ReleaseModal/ReleaseModalLazy.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -51,6 +51,7 @@ const ReleasesClientContent = () => {
     currentView,
     mainContentRef,
     infiniteScrollRef,
+    isFilterPending,
     selectedRelease,
     handleReleaseClick,
     handleCloseModal,
@@ -132,12 +133,14 @@ const ReleasesClientContent = () => {
                 </div>
               </button>
             ) : null}
-            <ReleaseModal
-              isOpen={selectedRelease !== null}
-              release={selectedRelease}
-              onClose={handleCloseModal}
-              onReleaseClick={handleReleaseClick}
-            />
+            <Activity mode={selectedRelease !== null ? "visible" : "hidden"}>
+              <ReleaseModalLazy
+                isOpen={selectedRelease !== null}
+                release={selectedRelease}
+                onClose={handleCloseModal}
+                onReleaseClick={handleReleaseClick}
+              />
+            </Activity>
           </>
         }
       >
@@ -168,16 +171,21 @@ const ReleasesClientContent = () => {
               ) : null}
 
               {hasReleases ? (
-                <ReleasesGrid
-                  releases={visibleReleases}
-                  view={currentView}
-                  isMobile={isMobile}
-                  isRandomMode={isRandomMode}
-                  onExitRandomMode={handleExitRandomMode}
-                  onRandomClick={handleRandomClick}
-                  onReleaseClick={handleReleaseClick}
-                  randomRelease={randomRelease}
-                />
+                <div
+                  aria-busy={isFilterPending ? true : undefined}
+                  aria-live="polite"
+                >
+                  <ReleasesGrid
+                    releases={visibleReleases}
+                    view={currentView}
+                    isMobile={isMobile}
+                    isRandomMode={isRandomMode}
+                    onExitRandomMode={handleExitRandomMode}
+                    onRandomClick={handleRandomClick}
+                    onReleaseClick={handleReleaseClick}
+                    randomRelease={randomRelease}
+                  />
+                </div>
               ) : !allReleasesLoaded ? (
                 <ReleasesSkeleton isMobile={isMobile} />
               ) : (
@@ -193,11 +201,13 @@ const ReleasesClientContent = () => {
             </div>
 
             <div className={styles.sidebar}>
-              <CrateDrawer
-                isOpen={isDrawerOpen}
-                onReleaseClick={handleReleaseClick}
-                aboveMiniPlayer={isMiniPlayerVisible}
-              />
+              <Activity mode={isDrawerOpen ? "visible" : "hidden"}>
+                <CrateDrawerLazy
+                  isOpen={isDrawerOpen}
+                  onReleaseClick={handleReleaseClick}
+                  aboveMiniPlayer={isMiniPlayerVisible}
+                />
+              </Activity>
             </div>
           </div>
         </div>
