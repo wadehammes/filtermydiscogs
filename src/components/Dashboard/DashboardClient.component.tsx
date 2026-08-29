@@ -1,10 +1,10 @@
 "use client";
 
-import { Activity, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import { Page } from "src/components/Page/Page.component";
 import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
-import { ReleaseModalLazy } from "src/components/ReleaseModal/ReleaseModalLazy.component";
+import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -225,14 +225,11 @@ function DashboardClientContent() {
           </div>
         </PlaybackPageShell>
       </Page>
-      <Activity mode={selectedRelease !== null ? "visible" : "hidden"}>
-        <ReleaseModalLazy
-          isOpen={selectedRelease !== null}
-          release={selectedRelease}
-          onClose={handleCloseModal}
-          onReleaseClick={handleReleaseClick}
-        />
-      </Activity>
+      <ReleaseModalLazyOverlay
+        release={selectedRelease}
+        onClose={handleCloseModal}
+        onReleaseClick={handleReleaseClick}
+      />
     </>
   );
 }

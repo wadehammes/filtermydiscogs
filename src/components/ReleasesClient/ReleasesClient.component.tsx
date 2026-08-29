@@ -1,14 +1,14 @@
 "use client";
 
 import classNames from "classnames";
-import { Activity, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
 import { Page } from "src/components/Page/Page.component";
 import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
-import { ReleaseModalLazy } from "src/components/ReleaseModal/ReleaseModalLazy.component";
+import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -16,6 +16,7 @@ import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
+import { definedProps } from "src/utils/definedProps";
 import { EmptyState } from "./EmptyState.component";
 import { LoadingTrigger } from "./LoadingTrigger.component";
 import styles from "./ReleasesClient.module.css";
@@ -133,14 +134,11 @@ const ReleasesClientContent = () => {
                 </div>
               </button>
             ) : null}
-            <Activity mode={selectedRelease !== null ? "visible" : "hidden"}>
-              <ReleaseModalLazy
-                isOpen={selectedRelease !== null}
-                release={selectedRelease}
-                onClose={handleCloseModal}
-                onReleaseClick={handleReleaseClick}
-              />
-            </Activity>
+            <ReleaseModalLazyOverlay
+              release={selectedRelease}
+              onClose={handleCloseModal}
+              onReleaseClick={handleReleaseClick}
+            />
           </>
         }
       >
@@ -172,7 +170,9 @@ const ReleasesClientContent = () => {
 
               {hasReleases ? (
                 <div
-                  aria-busy={isFilterPending ? true : undefined}
+                  {...definedProps({
+                    "aria-busy": isFilterPending ? true : undefined,
+                  })}
                   aria-live="polite"
                 >
                   <ReleasesGrid
@@ -201,13 +201,13 @@ const ReleasesClientContent = () => {
             </div>
 
             <div className={styles.sidebar}>
-              <Activity mode={isDrawerOpen ? "visible" : "hidden"}>
+              {isDrawerOpen ? (
                 <CrateDrawerLazy
                   isOpen={isDrawerOpen}
                   onReleaseClick={handleReleaseClick}
                   aboveMiniPlayer={isMiniPlayerVisible}
                 />
-              </Activity>
+              ) : null}
             </div>
           </div>
         </div>

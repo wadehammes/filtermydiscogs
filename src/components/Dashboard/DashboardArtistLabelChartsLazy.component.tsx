@@ -1,20 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import type { ComponentProps } from "react";
+import { createClientLazyComponent } from "src/utils/createClientLazyComponent";
 
-const ArtistLabelCharts = dynamic(
-  () =>
-    import("src/components/Dashboard/ArtistLabelCharts.component").then(
-      (mod) => mod.ArtistLabelCharts,
-    ),
-  { ssr: false },
+export const DashboardArtistLabelChartsLazy = createClientLazyComponent(() =>
+  import("src/components/Dashboard/ArtistLabelCharts.component").then(
+    (mod) => mod.ArtistLabelCharts,
+  ),
 );
-
-type DashboardArtistLabelChartsLazyProps = ComponentProps<
-  typeof ArtistLabelCharts
->;
-
-export const DashboardArtistLabelChartsLazy = (
-  props: DashboardArtistLabelChartsLazyProps,
-) => <ArtistLabelCharts {...props} />;
