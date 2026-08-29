@@ -16,6 +16,7 @@ import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.compon
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
+import { CrateProvider } from "src/context/crate.context";
 import { FiltersProvider } from "src/context/filters.context";
 import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ThemeProvider } from "src/context/theme.context";
@@ -73,16 +74,18 @@ export const Providers = ({ children }: ProvidersProps) => {
               <FiltersProvider>
                 <ViewProvider>
                   <PlaybackReleaseClickProvider>
-                    <AuthenticatedCollectionSyncGate />
-                    <AuthenticatedProvidersGate>
-                      <AnalyticsShell>
-                        {children}
-                        <LogoutOverlayWrapper />
-                        <AuthCheckingToast />
-                        <CollectionLoadingToast />
-                        <DeploymentUpdateToast />
-                      </AnalyticsShell>
-                    </AuthenticatedProvidersGate>
+                    <CrateProvider>
+                      <AuthenticatedCollectionSyncGate />
+                      <AuthenticatedProvidersGate>
+                        <AnalyticsShell>
+                          {children}
+                          <LogoutOverlayWrapper />
+                          <AuthCheckingToast />
+                          <CollectionLoadingToast />
+                          <DeploymentUpdateToast />
+                        </AnalyticsShell>
+                      </AuthenticatedProvidersGate>
+                    </CrateProvider>
                   </PlaybackReleaseClickProvider>
                 </ViewProvider>
               </FiltersProvider>
