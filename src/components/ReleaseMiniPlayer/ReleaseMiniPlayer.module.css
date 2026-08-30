@@ -76,7 +76,7 @@
 .releaseInfo {
   align-items: center;
   display: flex;
-  flex: 0 1 auto;
+  flex: 1;
   gap: var(--space-2);
   justify-content: center;
   max-width: 100%;
@@ -84,8 +84,7 @@
   overflow: hidden;
 
   @media (width >= 768px) {
-    flex: 1;
-    gap: var(--space-4);
+    gap: var(--space-3);
     justify-content: flex-start;
   }
 }
@@ -97,7 +96,7 @@
   color: inherit;
   cursor: pointer;
   display: flex;
-  flex: 0 1 auto;
+  flex: 1;
   font: inherit;
   gap: var(--space-2);
   justify-content: center;
@@ -108,8 +107,7 @@
   text-align: left;
 
   @media (width >= 768px) {
-    flex: 1;
-    gap: var(--space-4);
+    gap: var(--space-3);
     justify-content: flex-start;
     width: auto;
   }
@@ -126,18 +124,50 @@
 }
 
 .metaLines {
-  align-items: flex-start;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  justify-content: center;
+  flex: 0 1 auto;
+  max-width: calc(
+    100% -
+    var(--release-mini-player-cover-size, 1.75rem) -
+    var(--space-2)
+  );
   min-width: 0;
-  overflow: hidden;
   text-align: left;
 
   @media (width >= 768px) {
-    align-items: stretch;
+    flex: 1;
+    max-width: none;
   }
+}
+
+.metaMarquee {
+  font-size: var(--text-sm);
+  line-height: 1.25;
+}
+
+.loadingLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.25;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.marqueeArtist {
+  color: var(--muted-foreground);
+  font-weight: var(--font-normal);
+}
+
+.marqueeSeparator {
+  color: var(--muted-foreground);
+  font-weight: var(--font-normal);
+}
+
+.marqueeTitle {
+  color: var(--foreground);
+  font-weight: var(--font-medium);
 }
 
 .controlIcon {
@@ -231,29 +261,9 @@
 .cover {
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  height: var(--release-mini-player-cover-size, 2.5rem);
+  height: var(--release-mini-player-cover-size, 1.75rem);
   object-fit: cover;
-  width: var(--release-mini-player-cover-size, 2.5rem);
-}
-
-.artist {
-  color: var(--muted-foreground);
-  font-size: var(--text-xs);
-  line-height: 1.2;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trackTitle {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  line-height: 1.2;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: var(--release-mini-player-cover-size, 1.75rem);
 }
 
 .controls {

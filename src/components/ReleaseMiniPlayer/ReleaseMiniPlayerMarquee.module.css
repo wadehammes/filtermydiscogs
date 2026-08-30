@@ -1,0 +1,53 @@
+.marquee {
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.track {
+  display: inline-flex;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.segment {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0;
+  padding-right: var(--space-8);
+}
+
+.trackIdle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+
+  & .segment {
+    display: block;
+    overflow: hidden;
+    padding-right: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+}
+
+.trackAnimate {
+  animation: releaseMiniPlayerMarquee 16s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes releaseMiniPlayerMarquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}

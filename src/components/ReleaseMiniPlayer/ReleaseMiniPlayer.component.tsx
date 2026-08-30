@@ -28,6 +28,7 @@ import {
 } from "src/utils/playbackVideoIntroStorage";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./ReleaseMiniPlayer.module.css";
+import { ReleaseMiniPlayerMarquee } from "./ReleaseMiniPlayerMarquee.component";
 
 interface ReleaseMiniPlayerProps {
   onReleaseClick?: (instanceId: string) => void;
@@ -129,8 +130,8 @@ export const ReleaseMiniPlayer = ({
   const thumbUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
     cover_image: release.basic_information.cover_image,
-    width: 120,
-    height: 120,
+    width: 64,
+    height: 64,
     preferCoverImage: true,
   });
 
@@ -149,21 +150,24 @@ export const ReleaseMiniPlayer = ({
     <Image
       src={thumbUrl}
       alt=""
-      width={40}
-      height={40}
+      width={28}
+      height={28}
       className={styles.cover}
-      sizes="40px"
+      sizes="28px"
     />
   ) : null;
 
   const metaLines =
     isLoading || !activePlaybackTitle ? (
-      <p className={styles.trackTitle}>Loading playback…</p>
+      <p className={styles.loadingLabel}>Loading playback…</p>
     ) : (
-      <>
-        <p className={styles.artist}>{artistNames}</p>
-        <p className={styles.trackTitle}>{activePlaybackTitle}</p>
-      </>
+      <ReleaseMiniPlayerMarquee className={styles.metaMarquee}>
+        <span className={styles.marqueeArtist}>{artistNames}</span>
+        <span className={styles.marqueeSeparator} aria-hidden>
+          {" · "}
+        </span>
+        <span className={styles.marqueeTitle}>{activePlaybackTitle}</span>
+      </ReleaseMiniPlayerMarquee>
     );
 
   const crateToggleButton = (

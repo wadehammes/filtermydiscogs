@@ -4,7 +4,7 @@
 
 :global(html:has([data-global-playback-dock])),
 :global([data-global-playback-dock]) {
-  --release-mini-player-cover-size: 2.5rem;
+  --release-mini-player-cover-size: 1.75rem;
   --release-mini-player-control-size: 2.5rem;
   --release-mini-player-bar-height: calc(
     var(--release-mini-player-cover-size) +
@@ -58,7 +58,7 @@
   );
   flex-shrink: 0;
   min-block-size: calc(
-    2.5rem +
+    1.75rem +
     2.5rem +
     var(--space-2) *
     2 +
