@@ -8,7 +8,10 @@
 
   @media (width < 768px) {
     :global(html:has([data-global-playback-dock])) & {
-      top: calc((100svh - var(--release-mini-player-stack-offset, 0)) / 2);
+      bottom: var(--release-modal-viewport-inset-bottom);
+      max-height: var(--release-modal-available-height);
+      top: var(--release-modal-viewport-inset-top);
+      transform: translate(-50%, 0);
     }
   }
 }
@@ -23,15 +26,10 @@
 
   @media (width < 768px) {
     :global(html:has([data-global-playback-dock])) & {
-      max-height: min(
-        90svh,
-        calc(
-          100svh -
-          var(--release-mini-player-stack-offset, 0) -
-          var(--space-8)
-        )
-      );
-      top: calc((100svh - var(--release-mini-player-stack-offset, 0)) / 2);
+      bottom: var(--release-modal-viewport-inset-bottom);
+      max-height: var(--release-modal-available-height);
+      top: var(--release-modal-viewport-inset-top);
+      transform: translate(-50%, 0);
     }
   }
 }

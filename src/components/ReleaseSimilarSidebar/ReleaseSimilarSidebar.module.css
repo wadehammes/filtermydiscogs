@@ -16,6 +16,13 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (width < 1024px) {
+    border-left: 0;
+    border-radius: 0;
+    border-right: 0;
+    border-top: 1px solid var(--border);
+  }
 }
 
 .sidebarHeader {
@@ -25,6 +32,10 @@
   flex-shrink: 0;
   gap: var(--space-1);
   padding: var(--space-4) var(--space-4) var(--space-3);
+
+  @media (width < 1024px) {
+    padding: var(--space-3);
+  }
 }
 
 .sidebarTitle {
@@ -61,7 +72,11 @@
 }
 
 .releasesListInline {
-  padding: var(--space-3) var(--space-4) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+
+  @media (width < 1024px) {
+    padding: var(--space-3);
+  }
 }
 
 .loadingState {
