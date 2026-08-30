@@ -6,6 +6,13 @@
   right: 0;
   z-index: var(--z-9-playback-dock);
 
+  :global([data-playback-dock-in-flow]) & {
+    bottom: auto;
+    left: auto;
+    position: static;
+    right: auto;
+  }
+
   & > * {
     pointer-events: auto;
   }
@@ -30,7 +37,9 @@
   min-height: var(--release-mini-player-bar-height, 3.25rem);
   padding: var(--space-2) var(--space-4);
   padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  position: relative;
   width: 100%;
+  z-index: 1;
 
   @media (width >= 768px) {
     align-items: center;

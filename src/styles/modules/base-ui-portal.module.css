@@ -21,3 +21,21 @@
   background: color-mix(in srgb, var(--background) 80%, transparent);
   z-index: var(--z-5-modal);
 }
+
+.backdropshell {
+  composes: enterexitfade from "./portal-enter-exit.module.css";
+  background: color-mix(in srgb, var(--background) 50%, transparent);
+  inset: 0;
+  pointer-events: auto;
+  position: absolute;
+  z-index: var(--z-5-modal);
+}
+
+.backdropshellmodal {
+  composes: backdropshell;
+}
+
+.backdropshellstrong {
+  composes: backdropshell;
+  background: color-mix(in srgb, var(--background) 80%, transparent);
+}

@@ -12,10 +12,9 @@ import dashboardStyles from "src/components/Dashboard/DashboardClient.module.css
 import { DashboardSection } from "src/components/Dashboard/DashboardSection.component";
 import { GrowthAreaChart } from "src/components/GrowthAreaChart/GrowthAreaChart.component";
 import { Page } from "src/components/Page/Page.component";
-import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
+import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { StatCard } from "src/components/StatCard/StatCard.component";
 import { StatsGrid } from "src/components/StatsGrid/StatsGrid.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAdminStatsQuery } from "src/hooks/queries/useAdminStatsQuery";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
@@ -148,16 +147,7 @@ export default function AdminDashboardClient() {
 
   return (
     <Page>
-      <PlaybackPageShell
-        fillViewport
-        header={
-          <StickyHeaderBar
-            allReleasesLoaded={true}
-            currentPage="admin"
-            hideFilters={true}
-          />
-        }
-      >
+      <CollectionPlaybackPageShell currentPage="admin" hideFilters>
         <div
           className={dashboardStyles.container}
           data-testid="fmdAdminDashboardClient"
@@ -608,7 +598,7 @@ export default function AdminDashboardClient() {
             </div>
           )}
         </div>
-      </PlaybackPageShell>
+      </CollectionPlaybackPageShell>
     </Page>
   );
 }

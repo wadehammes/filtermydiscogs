@@ -1,5 +1,4 @@
 import { api } from "src/api/urls";
-import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -15,6 +14,7 @@ import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factor
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
+import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { CrateWithCount } from "src/types/crate.types";
 import type { RenderResult } from "test-utils";
@@ -113,9 +113,14 @@ export class CratesClientPageObject extends BasePageObject {
   renderCratesHub(crates = defaultHubCrates()): RenderResult {
     this.setupMocks(crates);
 
-    return render(<CratesClient />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    return render(
+      <ReleasePlaybackTestTree>
+        <CratesClient />
+      </ReleasePlaybackTestTree>,
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
   }
 
   renderCrateDetail(
@@ -132,9 +137,9 @@ export class CratesClientPageObject extends BasePageObject {
     this.setupMocks([crate]);
 
     return render(
-      <ReleasePlaybackProvider>
+      <ReleasePlaybackTestTree>
         <CrateDetailClient crateId={crateId} />
-      </ReleasePlaybackProvider>,
+      </ReleasePlaybackTestTree>,
       {
         authInitialState: testAuthenticatedAuthState,
       },

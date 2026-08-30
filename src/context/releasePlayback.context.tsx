@@ -1632,3 +1632,6 @@ export const useReleasePlayback = (): ReleasePlaybackContextValue => {
 
   return useMemo(() => ({ ...state, ...actions }), [state, actions]);
 };
+
+export const useHasReleasePlaybackProvider = (): boolean =>
+  useContext(ReleasePlaybackStateContext) !== undefined;

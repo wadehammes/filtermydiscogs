@@ -7,8 +7,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
+import { Page } from "src/components/Page/Page.component";
+import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { ViewActionTypes } from "src/context/view.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
@@ -227,76 +228,72 @@ export default function SettingsClient() {
 
   return (
     <>
-      <div className={styles.pageShell}>
-        <StickyHeaderBar
-          allReleasesLoaded={true}
-          currentPage="settings"
-          hideFilters={true}
-        />
+      <Page>
+        <CollectionPlaybackPageShell currentPage="settings" hideFilters>
+          <div className={styles.page}>
+            <div className={styles.container}>
+              <header className={styles.pageHeader}>
+                <h1 className={styles.title}>Settings</h1>
+                <p className={styles.subtitle}>
+                  Manage your account preferences and stored app data.
+                </p>
+              </header>
 
-        <div className={styles.page}>
-          <div className={styles.container}>
-            <header className={styles.pageHeader}>
-              <h1 className={styles.title}>Settings</h1>
-              <p className={styles.subtitle}>
-                Manage your account preferences and stored app data.
-              </p>
-            </header>
+              <div className={styles.layout}>
+                <nav className={styles.sidebar} aria-label="Settings sections">
+                  <ul className={styles.sidebarList}>
+                    {SETTINGS_SECTIONS.map((section) => {
+                      const isActive = section.id === activeSection;
 
-            <div className={styles.layout}>
-              <nav className={styles.sidebar} aria-label="Settings sections">
-                <ul className={styles.sidebarList}>
-                  {SETTINGS_SECTIONS.map((section) => {
-                    const isActive = section.id === activeSection;
+                      return (
+                        <li key={section.id}>
+                          <button
+                            type="button"
+                            className={classNames(styles.sidebarButton, {
+                              [styles.sidebarButtonActive]: isActive,
+                            })}
+                            aria-current={isActive ? "page" : undefined}
+                            onClick={() => setActiveSection(section.id)}
+                          >
+                            <span className={styles.sidebarButtonLabel}>
+                              {section.label}
+                            </span>
+                            <span className={styles.sidebarButtonDescription}>
+                              {section.description}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </nav>
 
-                    return (
-                      <li key={section.id}>
-                        <button
-                          type="button"
-                          className={classNames(styles.sidebarButton, {
-                            [styles.sidebarButtonActive]: isActive,
-                          })}
-                          aria-current={isActive ? "page" : undefined}
-                          onClick={() => setActiveSection(section.id)}
-                        >
-                          <span className={styles.sidebarButtonLabel}>
-                            {section.label}
-                          </span>
-                          <span className={styles.sidebarButtonDescription}>
-                            {section.description}
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </nav>
-
-              <section
-                className={styles.panel}
-                aria-labelledby="settings-panel-title"
-              >
-                <header className={styles.panelHeader}>
-                  <h2 id="settings-panel-title" className={styles.panelTitle}>
-                    {activeSectionMeta?.label}
-                  </h2>
-                  {activeSectionMeta ? (
-                    <p className={styles.panelLead}>
-                      {activeSectionMeta.description}
-                    </p>
-                  ) : null}
-                </header>
-                <ScrollRevealOnce
-                  key={activeSection}
-                  className={styles.panelBody}
+                <section
+                  className={styles.panel}
+                  aria-labelledby="settings-panel-title"
                 >
-                  {renderActivePanel()}
-                </ScrollRevealOnce>
-              </section>
+                  <header className={styles.panelHeader}>
+                    <h2 id="settings-panel-title" className={styles.panelTitle}>
+                      {activeSectionMeta?.label}
+                    </h2>
+                    {activeSectionMeta ? (
+                      <p className={styles.panelLead}>
+                        {activeSectionMeta.description}
+                      </p>
+                    ) : null}
+                  </header>
+                  <ScrollRevealOnce
+                    key={activeSection}
+                    className={styles.panelBody}
+                  >
+                    {renderActivePanel()}
+                  </ScrollRevealOnce>
+                </section>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CollectionPlaybackPageShell>
+      </Page>
 
       <ConfirmDialog
         isOpen={showCompleteLogoutDialog}

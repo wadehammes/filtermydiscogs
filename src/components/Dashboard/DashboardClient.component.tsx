@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
+import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { Page } from "src/components/Page/Page.component";
-import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
+import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
@@ -86,22 +85,11 @@ function DashboardClientContent() {
   if (showLoading) {
     return (
       <Page>
-        <PlaybackPageShell
-          fillViewport
-          header={
-            <StickyHeaderBar
-              allReleasesLoaded={false}
-              currentPage="dashboard"
-              hideFilters={true}
-            />
-          }
-        >
-          <div className={appLoadingStyles.contentWithSkeleton}>
-            <div className={styles.container}>
-              <DashboardSkeleton />
-            </div>
+        <AppPageLoading currentPage="dashboard" hideFilters>
+          <div className={styles.container}>
+            <DashboardSkeleton />
           </div>
-        </PlaybackPageShell>
+        </AppPageLoading>
       </Page>
     );
   }
@@ -109,13 +97,15 @@ function DashboardClientContent() {
   return (
     <>
       <Page>
-        <PlaybackPageShell
-          fillViewport
-          header={
-            <StickyHeaderBar
-              allReleasesLoaded={true}
-              currentPage="dashboard"
-              hideFilters={true}
+        <CollectionPlaybackPageShell
+          allReleasesLoaded={true}
+          currentPage="dashboard"
+          hideFilters
+          overlays={
+            <ReleaseModalLazyOverlay
+              release={selectedRelease}
+              onClose={handleCloseModal}
+              onReleaseClick={handleReleaseClick}
             />
           }
         >
@@ -223,13 +213,8 @@ function DashboardClientContent() {
               </div>
             )}
           </div>
-        </PlaybackPageShell>
+        </CollectionPlaybackPageShell>
       </Page>
-      <ReleaseModalLazyOverlay
-        release={selectedRelease}
-        onClose={handleCloseModal}
-        onReleaseClick={handleReleaseClick}
-      />
     </>
   );
 }

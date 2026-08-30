@@ -2,9 +2,16 @@ import { describe, expect, it } from "@jest/globals";
 import { render, screen } from "test-utils";
 import { AppPageLoading } from "./AppPageLoading.component";
 
-jest.mock("src/components/StickyHeaderBar/StickyHeaderBar.component", () => ({
-  StickyHeaderBar: () => <div data-testid="sticky-header-bar" />,
-}));
+jest.mock(
+  "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component",
+  () => ({
+    CollectionPlaybackPageShell: ({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) => <div data-testid="collection-playback-page-shell">{children}</div>,
+  }),
+);
 
 describe("AppPageLoading", () => {
   it("renders skeleton children without an inline status bar", () => {
