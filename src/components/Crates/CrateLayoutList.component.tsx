@@ -30,9 +30,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
+import { TrackDjMetadataDisplay } from "src/components/TrackDjMetadata/TrackDjMetadataDisplay.component";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useAuth } from "src/context/auth.context";
 import { useUpdateCrateLayoutMutation } from "src/hooks/mutations/useCrateMutations";
+import { useCrateReleaseDjMetadata } from "src/hooks/useReleaseTrackDjMetadata.hook";
 import {
   assignSequentialCrateLayoutSortOrders,
   crateLayoutItemsToPutRequest,
@@ -50,6 +52,7 @@ import type {
   CrateLayoutMarkerItem,
   CrateLayoutReleaseItem,
 } from "src/types/crate.types";
+import type { TrackDjMetadata } from "src/types/trackMetadata.types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
@@ -92,6 +95,9 @@ interface SortableReleaseRowProps {
   setPacked: (instanceId: string, packed: boolean) => void;
   removeFromCrate: (instanceId: string) => void;
   onReleaseClick: (instanceId: string) => void;
+  showDjMetadata: boolean;
+  djMetadata?: TrackDjMetadata | null;
+  isDjMetadataLoading: boolean;
 }
 
 const SortableReleaseRow = ({
@@ -101,6 +107,9 @@ const SortableReleaseRow = ({
   setPacked,
   removeFromCrate,
   onReleaseClick,
+  showDjMetadata,
+  djMetadata,
+  isDjMetadataLoading,
 }: SortableReleaseRowProps) => {
   const release = item.release;
   const { basic_information } = release;
@@ -177,6 +186,15 @@ const SortableReleaseRow = ({
           ) : null}
         </span>
       </button>
+      {showDjMetadata ? (
+        <div className={listStyles.djMetadataSlot}>
+          <TrackDjMetadataDisplay
+            metadata={djMetadata}
+            isLoading={isDjMetadataLoading}
+            variant="crate"
+          />
+        </div>
+      ) : null}
       <div className={listStyles.actions}>
         <CrateReleaseActions
           packedEnabled={packedEnabled}
@@ -343,6 +361,18 @@ const CrateLayoutListComponent = ({
     () => getCrateLayoutReleaseItems(localLayoutItems).length,
     [localLayoutItems],
   );
+
+  const crateReleases = useMemo(
+    () =>
+      getCrateLayoutReleaseItems(localLayoutItems).map((item) => item.release),
+    [localLayoutItems],
+  );
+
+  const { showDjMetadata, metadataById, isDjMetadataLoading } =
+    useCrateReleaseDjMetadata({
+      releases: crateReleases,
+      enabled: packedEnabled,
+    });
 
   const persistLayout = useCallback(
     (nextLayoutItems: CrateLayoutItem[]) => {
@@ -529,7 +559,9 @@ const CrateLayoutListComponent = ({
           strategy={verticalListSortingStrategy}
         >
           <ul
-            className={classNames(listStyles.list, styles.layoutList)}
+            className={classNames(listStyles.list, styles.layoutList, {
+              [listStyles.listWithDjMetadata]: showDjMetadata && packedEnabled,
+            })}
             data-testid="fmdCrateReleasesTable"
           >
             {useEdgeInsertMounts ? null : topInsertZone}
@@ -552,6 +584,9 @@ const CrateLayoutListComponent = ({
                     setPacked={setPacked}
                     removeFromCrate={removeFromCrate}
                     onReleaseClick={onReleaseClick}
+                    showDjMetadata={showDjMetadata && packedEnabled}
+                    djMetadata={metadataById[item.instance_id] ?? null}
+                    isDjMetadataLoading={isDjMetadataLoading}
                   />
                 );
 

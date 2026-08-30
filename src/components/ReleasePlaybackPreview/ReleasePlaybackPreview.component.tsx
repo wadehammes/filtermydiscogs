@@ -15,6 +15,7 @@ interface ReleasePlaybackPreviewProps {
   onTrackSelect: (position: string) => void;
   onTrackQueue: (position: string) => void;
   onActiveTrackToggle?: () => void;
+  showDjMetadata?: boolean;
 }
 
 export const ReleasePlaybackPreview = ({
@@ -27,6 +28,7 @@ export const ReleasePlaybackPreview = ({
   onTrackSelect,
   onTrackQueue,
   onActiveTrackToggle,
+  showDjMetadata = false,
 }: ReleasePlaybackPreviewProps) => {
   if (tracks.length === 0) {
     return null;
@@ -47,6 +49,8 @@ export const ReleasePlaybackPreview = ({
         releaseArtistNames={releaseArtistNames}
         activeTrackPosition={activeTrackPosition}
         hideTrackPosition
+        showDjMetadata={showDjMetadata}
+        hideTracklistHeader
         showPlayingIndicatorOnActiveTrack={showPlayingIndicatorOnActiveTrack}
         isPlaybackPaused={isPlaybackPaused}
         isTrackPlayable={() => true}

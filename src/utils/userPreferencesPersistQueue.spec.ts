@@ -97,6 +97,28 @@ describe("userPreferencesPersistQueue", () => {
     );
   });
 
+  it("flushes showDjMetadataOnTracks immediately without debouncing", () => {
+    const mutate = jest.fn();
+
+    scheduleUserPreferencesPersist({ showDjMetadataOnTracks: true }, mutate);
+
+    expect(mutate).toHaveBeenCalledWith(
+      { showDjMetadataOnTracks: true },
+      expect.objectContaining({}),
+    );
+  });
+
+  it("flushes autoPlayOnQueueAdd immediately without debouncing", () => {
+    const mutate = jest.fn();
+
+    scheduleUserPreferencesPersist({ autoPlayOnQueueAdd: false }, mutate);
+
+    expect(mutate).toHaveBeenCalledWith(
+      { autoPlayOnQueueAdd: false },
+      expect.objectContaining({}),
+    );
+  });
+
   it("flushUserPreferencesPersist sends pending filters", () => {
     const mutate = jest.fn();
     const filters = persistedFiltersFactory.build({

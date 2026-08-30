@@ -3,6 +3,7 @@ import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.co
 import { CrateDrawerReleaseItem } from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.component";
 import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/CrateReleaseListToolbar.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
+import { useCrateReleaseDjMetadata } from "src/hooks/useReleaseTrackDjMetadata.hook";
 import {
   countVisibleCrateReleases,
   getCrateLayoutReleaseItems,
@@ -41,6 +42,12 @@ export const CrateDrawerReleases = () => {
       }),
     );
   }, [hidePackedItems, isPacked, layoutItems, packedEnabled]);
+
+  const { showDjMetadata, metadataById, isDjMetadataLoading } =
+    useCrateReleaseDjMetadata({
+      releases: visibleReleases.map((item) => item.release),
+      enabled: packedEnabled,
+    });
 
   if (isLoadingReleases) {
     return (
@@ -94,6 +101,9 @@ export const CrateDrawerReleases = () => {
               key={item.instance_id}
               release={item.release}
               packed={packedEnabled ? isPacked(item.instance_id) : false}
+              showDjMetadata={showDjMetadata && packedEnabled}
+              djMetadata={metadataById[item.instance_id] ?? null}
+              isDjMetadataLoading={isDjMetadataLoading}
               onPackedChange={(packed) => setPacked(item.instance_id, packed)}
               onRemove={removeFromCrate}
               {...definedProps({ onReleaseClick })}

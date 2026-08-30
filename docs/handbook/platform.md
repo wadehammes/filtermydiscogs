@@ -66,6 +66,7 @@ Full list: [`package.json`](../../package.json).
 | `PUBLIC_CRATE_RATE_LIMIT_MAX` / `PUBLIC_CRATE_RATE_LIMIT_WINDOW` | Per-IP limit for **`GET /api/crates/public/[id]`** (default **120** / 60s) |
 | `ANALYTICS_EVENTS_RATE_LIMIT_MAX` / `ANALYTICS_EVENTS_RATE_LIMIT_WINDOW` | Per-IP limit for **`POST /api/usage/events`** (default **240** / 60s) |
 | `IMAGE_PROXY_RATE_LIMIT_MAX` / `IMAGE_PROXY_RATE_LIMIT_WINDOW` | Higher limit for [`/api/image-proxy`](../../src/app/api/image-proxy/route.ts) (default **2500** / 60s) so mosaic export can load one tile per release |
+| `GETSONGBPM_API_KEY` | Server-only API key for [`POST /api/track-metadata`](../../src/app/api/track-metadata/route.ts) (GetSongBPM BPM/key lookups). When unset, the route returns **503**. Requires a backlink to [GetSongBPM](https://getsongbpm.com) in the app when enabled (Settings playback toggle copy). |
 
 [`next.config.ts`](../../next.config.ts) **`env`** block exposes only **`DISCOGS_CONSUMER_KEY`** and **`DISCOGS_CALLBACK_URL`** to the Next bundle. **`DISCOGS_CONSUMER_SECRET`** stays a runtime server env var (used by [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) only). Do not add server-only secrets to **`env`**.
 
@@ -121,7 +122,7 @@ Cache Components prerender static shells. Client hooks that depend on request-ti
 
 Do not re-add **`export const instant = false`** on the root layout to paper over missing Suspense boundaries — fix the hook site instead.
 
-Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/app/legal/LegalPageContent.server.tsx); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/app/legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
+Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/app/legal/LegalPageContent.server.tsx) (Terms, Privacy, GetSongBPM third-party disclosure when DJ metadata is enabled, and data-management lists); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/app/legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
 
 ### Cached helpers (prerender-safe)
 

@@ -12,6 +12,9 @@ export const userPreferencesPatchSchema = z
     autoPlayOnQueueAdd: z
       .boolean({ error: "autoPlayOnQueueAdd must be a boolean" })
       .optional(),
+    showDjMetadataOnTracks: z
+      .boolean({ error: "showDjMetadataOnTracks must be a boolean" })
+      .optional(),
     theme: z
       .string()
       .optional()
@@ -49,6 +52,7 @@ export const userPreferencesPatchSchema = z
     (patch) =>
       patch.persistFilters !== undefined ||
       patch.autoPlayOnQueueAdd !== undefined ||
+      patch.showDjMetadataOnTracks !== undefined ||
       patch.theme !== undefined ||
       patch.view !== undefined ||
       patch.filters !== undefined ||

@@ -6,6 +6,10 @@ import type {
   GrowthDataPoint,
 } from "src/types/dashboard.types";
 import { getOnThisDayReleases } from "src/utils/onThisDay";
+import {
+  buildWeeklyRecapLede,
+  calculateWeeklyRecapSummary,
+} from "src/utils/weeklyRecap";
 
 export interface DashboardSectionCopy {
   title: string;
@@ -14,6 +18,7 @@ export interface DashboardSectionCopy {
 
 export interface DashboardStorySections {
   today: DashboardSectionCopy;
+  weeklyRecap: DashboardSectionCopy;
   growth: DashboardSectionCopy;
   sound: DashboardSectionCopy;
   styleEvolution: DashboardSectionCopy;
@@ -213,6 +218,8 @@ export const buildDashboardStory = ({
     onThisDayCount > 0
       ? `${formatCount(onThisDayCount)} ${onThisDayCount === 1 ? "record" : "records"} added on ${dateString} in earlier years.`
       : `No records added on ${dateString} in earlier years yet.`;
+  const weeklyRecapSummary = calculateWeeklyRecapSummary(releases, today);
+  const weeklyRecapLede = buildWeeklyRecapLede(weeklyRecapSummary);
 
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -254,6 +261,10 @@ export const buildDashboardStory = ({
       today: {
         title: "On this day",
         lede: todayLede,
+      },
+      weeklyRecap: {
+        title: "This week",
+        lede: weeklyRecapLede,
       },
       growth: {
         title: "How it grew",
