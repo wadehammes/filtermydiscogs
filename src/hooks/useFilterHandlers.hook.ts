@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import {
   type FiltersActions,
   FiltersActionTypes,
@@ -23,19 +22,11 @@ import {
 
 const createMatchOperatorHandler =
   <T extends "AND" | "OR" | "NONE">({
-    category,
     filtersDispatch,
-    analyticsEvent,
-    analyticsAction,
-    analyticsLabel,
     actionType,
     isValidOperator,
   }: {
-    category: string;
     filtersDispatch: ReturnType<typeof useFiltersDispatch>;
-    analyticsEvent: string;
-    analyticsAction: string;
-    analyticsLabel: string;
     actionType:
       | FiltersActionTypes.SetStyleOperator
       | FiltersActionTypes.SetFormatOperator
@@ -49,20 +40,13 @@ const createMatchOperatorHandler =
       return;
     }
 
-    trackEvent(analyticsEvent, {
-      action: analyticsAction,
-      category,
-      label: analyticsLabel,
-      value: operatorValue,
-    });
-
     filtersDispatch({
       type: actionType,
       payload: operatorValue,
     } as Extract<FiltersActions, { type: typeof actionType }>);
   };
 
-export const useFilterHandlers = (category: string) => {
+export const useFilterHandlers = () => {
   const filtersDispatch = useFiltersDispatch();
   const { availableStyles, availableYears, availableFormats } =
     useFacetOptions();
@@ -78,19 +62,12 @@ export const useFilterHandlers = (category: string) => {
     (value: string | string[]) => {
       const selectedOptions = Array.isArray(value) ? value : [value];
 
-      trackEvent("releaseStyle", {
-        action: "releaseStyleChanged",
-        category,
-        label: "Release Style Changed",
-        value: selectedOptions.join(","),
-      });
-
       filtersDispatch({
         type: FiltersActionTypes.SetStyles,
         payload: selectedOptions,
       });
     },
-    [category, filtersDispatch],
+    [filtersDispatch],
   );
 
   const handleYearChange = useCallback(
@@ -98,38 +75,24 @@ export const useFilterHandlers = (category: string) => {
       const selectedOptions = Array.isArray(value) ? value : [value];
       const selectedYears = selectedOptions.map((year) => parseInt(year, 10));
 
-      trackEvent("releaseYear", {
-        action: "releaseYearChanged",
-        category,
-        label: "Release Year Changed",
-        value: selectedYears.join(","),
-      });
-
       filtersDispatch({
         type: FiltersActionTypes.SetYears,
         payload: selectedYears,
       });
     },
-    [category, filtersDispatch],
+    [filtersDispatch],
   );
 
   const handleFormatChange = useCallback(
     (value: string | string[]) => {
       const selectedOptions = Array.isArray(value) ? value : [value];
 
-      trackEvent("releaseFormat", {
-        action: "releaseFormatChanged",
-        category,
-        label: "Release Format Changed",
-        value: selectedOptions.join(","),
-      });
-
       filtersDispatch({
         type: FiltersActionTypes.SetFormats,
         payload: selectedOptions,
       });
     },
-    [category, filtersDispatch],
+    [filtersDispatch],
   );
 
   const handleSortChange = useCallback(
@@ -137,29 +100,18 @@ export const useFilterHandlers = (category: string) => {
       const sortValue = Array.isArray(value) ? value[0] : value;
 
       if (sortValue) {
-        trackEvent("releaseSort", {
-          action: "releaseSortChanged",
-          category,
-          label: "Release Sort Changed",
-          value: sortValue,
-        });
-
         filtersDispatch({
           type: FiltersActionTypes.SetSort,
           payload: sortValue as SortValues,
         });
       }
     },
-    [category, filtersDispatch],
+    [filtersDispatch],
   );
 
   const handleStyleOperatorChange = useCallback(
     createMatchOperatorHandler({
-      category,
       filtersDispatch,
-      analyticsEvent: "styleOperator",
-      analyticsAction: "styleOperatorChanged",
-      analyticsLabel: "Style Operator Changed",
       actionType: FiltersActionTypes.SetStyleOperator,
       isValidOperator: isFilterMatchOperator,
     }),
@@ -168,11 +120,7 @@ export const useFilterHandlers = (category: string) => {
 
   const handleFormatOperatorChange = useCallback(
     createMatchOperatorHandler({
-      category,
       filtersDispatch,
-      analyticsEvent: "formatOperator",
-      analyticsAction: "formatOperatorChanged",
-      analyticsLabel: "Format Operator Changed",
       actionType: FiltersActionTypes.SetFormatOperator,
       isValidOperator: isFilterMatchOperator,
     }),
@@ -181,11 +129,7 @@ export const useFilterHandlers = (category: string) => {
 
   const handleYearOperatorChange = useCallback(
     createMatchOperatorHandler({
-      category,
       filtersDispatch,
-      analyticsEvent: "yearOperator",
-      analyticsAction: "yearOperatorChanged",
-      analyticsLabel: "Year Operator Changed",
       actionType: FiltersActionTypes.SetYearOperator,
       isValidOperator: isYearMatchOperator,
     }),

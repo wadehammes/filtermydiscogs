@@ -2,7 +2,6 @@ import classNames from "classnames";
 import Image from "next/image";
 import type React from "react";
 import { memo, useCallback } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrate } from "src/context/crate.context";
 import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
@@ -58,7 +57,6 @@ const ReleaseListItemComponent = ({
   }, []);
 
   const handlePillClick = usePillClickHandler({
-    category: "releaseListItem",
     onExitRandomMode,
   });
 
@@ -68,7 +66,6 @@ const ReleaseListItemComponent = ({
         event: e,
         value: style,
         type: "style",
-        eventLabel: "Style Pill Clicked",
       });
     },
     [handlePillClick],
@@ -139,12 +136,6 @@ const ReleaseListItemComponent = ({
                         rel="noopener noreferrer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          trackEvent("artistClicked", {
-                            action: "artistClicked",
-                            category: "releaseListItem",
-                            label: "Artist Clicked",
-                            value: artistUrl,
-                          });
                         }}
                         className={styles.artistLink}
                       >
@@ -165,12 +156,6 @@ const ReleaseListItemComponent = ({
                   rel="noopener noreferrer"
                   onClick={(event) => {
                     event.stopPropagation();
-                    trackEvent("releaseClicked", {
-                      action: "releaseClicked",
-                      category: "home",
-                      label: "Release Clicked (List View)",
-                      value: resource_url,
-                    });
                   }}
                   className={styles.titleLink}
                   title="View release on Discogs"
@@ -189,12 +174,6 @@ const ReleaseListItemComponent = ({
                   rel="noopener noreferrer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    trackEvent("labelClicked", {
-                      action: "labelClicked",
-                      category: "releaseListItem",
-                      label: "Label Clicked",
-                      value: labelUrl,
-                    });
                   }}
                   className={styles.labelLink}
                 >
@@ -253,12 +232,6 @@ const ReleaseListItemComponent = ({
               className={styles.discogsButton}
               onClick={(e) => {
                 e.stopPropagation();
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category: "home",
-                  label: "Release Clicked (List View)",
-                  value: resource_url,
-                });
               }}
             >
               View on Discogs

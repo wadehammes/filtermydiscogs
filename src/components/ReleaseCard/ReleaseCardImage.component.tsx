@@ -10,7 +10,6 @@ interface ReleaseCardImageProps {
   release: DiscogsRelease;
   thumbUrl: string | null;
   releaseUrl: string | null;
-  resourceUrl: string | null;
   onReleaseOpen?: () => void;
 }
 
@@ -18,7 +17,6 @@ export const ReleaseCardImage = ({
   release,
   thumbUrl,
   releaseUrl,
-  resourceUrl,
   onReleaseOpen,
 }: ReleaseCardImageProps) => {
   const activateProps = onReleaseOpen
@@ -56,7 +54,6 @@ export const ReleaseCardImage = ({
         <ReleaseCardOverlayActions
           release={release}
           releaseUrl={releaseUrl}
-          resourceUrl={resourceUrl}
           {...definedProps({ onReleaseOpen })}
         />
       </div>

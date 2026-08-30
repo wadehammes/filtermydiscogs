@@ -5,7 +5,6 @@ import { useSetAtom, useStore } from "jotai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { trackEvent } from "src/analytics/analytics";
 import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
@@ -108,12 +107,6 @@ export default function SettingsClient() {
 
   const handleCompleteLogout = async () => {
     await logout({ preserveTokens: false });
-    trackEvent("logout", {
-      action: "userLoggedOutComplete",
-      category: "auth",
-      label: "Complete Logout",
-      value: authState.username || "unknown",
-    });
     setShowCompleteLogoutDialog(false);
   };
 

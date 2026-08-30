@@ -69,7 +69,6 @@ const MobileReleaseCardComponent = ({
   const genreStyleTags = getReleaseGenreStyleTags(release.basic_information);
 
   const handlePillClick = usePillClickHandler({
-    category: "releaseCard",
     onExitRandomMode,
   });
 
@@ -129,7 +128,6 @@ const MobileReleaseCardComponent = ({
                 artists={artists}
                 title={title}
                 releaseUrl={releaseUrl}
-                resourceUrl={resource_url}
                 className={titleStyles.titleGroupMobile}
               />
               <ReleaseCardMeta
@@ -160,7 +158,6 @@ const MobileReleaseCardComponent = ({
                       event: e,
                       value: formatName,
                       type: "format",
-                      eventLabel: "Format Pill Clicked",
                     })
                   }
                   aria-label={`Filter by ${formatName} format`}
@@ -181,7 +178,6 @@ const MobileReleaseCardComponent = ({
                     event: e,
                     value: tag,
                     type: "style",
-                    eventLabel: "Genre Style Pill Clicked",
                   })
                 }
                 aria-label={`Filter by ${tag}`}
@@ -195,7 +191,6 @@ const MobileReleaseCardComponent = ({
           <ReleaseCardOverlayActions
             release={release}
             releaseUrl={releaseUrl}
-            resourceUrl={resource_url}
             layout="vertical"
             notesVariant="mobile"
             {...definedProps({

@@ -193,7 +193,7 @@ Dashboard sections that list releases (On this day, most crated, milestones, dup
 | Card shell | [`dashboard-card.module.css`](../../src/styles/modules/dashboard-card.module.css) — **`.releaseRow`** for bordered list rows (composes **`.card`**) |
 | Row content | [`DashboardReleaseItem.component.tsx`](../../src/components/Dashboard/DashboardReleaseItem.component.tsx) + [`DashboardReleaseItem.module.css`](../../src/components/Dashboard/DashboardReleaseItem.module.css) |
 
-Section modules may add layout wrappers (grids, year headings, badges) around **`.releaseRow`**, but the inner release presentation stays in **`DashboardReleaseItem`**. See [patterns.md → Dashboard analytics → Card chrome](patterns.md#dashboard-analytics).
+Section modules may add layout wrappers around **`.releaseRow`**, but the inner release presentation stays in **`DashboardReleaseItem`**. Optional trailing slots (e.g. **[`OnThisDay`](../../src/components/Dashboard/OnThisDay.component.tsx)** year added, **[`MostCrated`](../../src/components/Dashboard/MostCrated.component.tsx)** crate count) use **`children`**. Default title/meta lines single-line ellipsis; pass **`wrapText`** on **`DashboardReleaseItem`** when a section needs wrapped copy (On this day). **[`OnThisDay.module.css`](../../src/components/Dashboard/OnThisDay.module.css)** caps list width (~**`36rem`**) so rows do not span the full dashboard. See [patterns.md → Dashboard analytics → Card chrome](patterns.md#dashboard-analytics).
 
 ## Client page shells
 

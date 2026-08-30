@@ -34,6 +34,13 @@ const DEFAULT_VIEW_LABELS: Record<string, string> = {
   random: "Random",
 };
 
+const SAVED_VIEW_COUNT_LABELS: Record<string, string> = {
+  "0": "None",
+  "1": "1 view",
+  "2-5": "2–5 views",
+  "6+": "6+ views",
+};
+
 const formatPercent = (
   value: number,
   total: number,
@@ -330,6 +337,50 @@ export default function AdminDashboardClient() {
                       )}
                     />
                   </StatsGrid>
+
+                  <div className={styles.preferenceGroup}>
+                    <p className={styles.panelEyebrow}>Saved filter views</p>
+                    <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 2 }}>
+                      <StatCard
+                        label="Users with saved views"
+                        subtext={formatPercent(
+                          stats.accountPreferences.savedViews
+                            .usersWithSavedViews,
+                          stats.overview.totalUsers,
+                          "of users",
+                        )}
+                        value={formatCommunityStatValue(
+                          stats.accountPreferences.savedViews
+                            .usersWithSavedViews,
+                        )}
+                      />
+                      <StatCard
+                        label="Total saved views"
+                        subtext={
+                          stats.accountPreferences.savedViews
+                            .usersWithSavedViews > 0
+                            ? `${formatCommunityStatValue(
+                                Math.round(
+                                  stats.accountPreferences.savedViews
+                                    .totalSavedViews /
+                                    stats.accountPreferences.savedViews
+                                      .usersWithSavedViews,
+                                ),
+                              )} avg per saving user`
+                            : "Across all users"
+                        }
+                        value={formatCommunityStatValue(
+                          stats.accountPreferences.savedViews.totalSavedViews,
+                        )}
+                      />
+                    </StatsGrid>
+                    <AdminPreferenceBreakdownPanel
+                      labelForKey={(key) => SAVED_VIEW_COUNT_LABELS[key] ?? key}
+                      rows={stats.accountPreferences.savedViews.countBreakdown}
+                      title="Saved views per user"
+                      totalUsers={stats.overview.totalUsers}
+                    />
+                  </div>
 
                   <div className={styles.cardGrid}>
                     <AdminPreferenceBreakdownPanel

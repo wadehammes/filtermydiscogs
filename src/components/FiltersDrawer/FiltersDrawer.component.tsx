@@ -115,7 +115,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     styleOperator,
     formatOperator,
     yearOperator,
-  } = useFilterHandlers("mobile_filters");
+  } = useFilterHandlers();
 
   const { fetchingCollection, collection, error } = collectionState;
 

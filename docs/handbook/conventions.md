@@ -352,8 +352,9 @@ Use a factory when the test must stub a subset without pulling in the full mocke
 
 **Exceptions (narrow):**
 
-- [`useDiscogsCollectionQuery.spec.tsx`](../../src/hooks/queries/useDiscogsCollectionQuery.spec.tsx)—401 → auth recheck behavior on the collection query itself.
 - Hook tests that use a minimal **`QueryClientProvider`** wrapper only for **auth context** lifecycle (e.g. [`auth.context.spec.tsx`](../../src/context/auth.context.spec.tsx)), not to stub server data.
+
+**Do not add specs under `src/hooks/queries/` or `src/hooks/mutations/`** — cover read/write behavior at the call site (feature hooks, contexts, components) with mocked **`api.*`**, or in route/endpoint tests for HTTP contracts. Collection query edge cases (401 recheck, bootstrap page size, rate-limit retry) live in [`useCollectionData.hook.spec.ts`](../../src/hooks/useCollectionData.hook.spec.ts).
 
 **Enforcement:** Cursor [`block-query-hook-mocks.sh`](../../.cursor/hooks/block-query-hook-mocks.sh) denies new query-hook mocks in feature tests; [`queryHookMockRules.spec.ts`](../../src/tests/utils/queryHookMockRules.spec.ts) scans the repo in CI/Jest and on session **`stop`** when test files changed.
 

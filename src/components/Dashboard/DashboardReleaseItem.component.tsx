@@ -1,7 +1,7 @@
 "use client";
 
+import classNames from "classnames";
 import Image from "next/image";
-import { trackEvent } from "src/analytics/analytics";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -11,14 +11,14 @@ import styles from "./DashboardReleaseItem.module.css";
 
 interface DashboardReleaseItemProps {
   release: DiscogsRelease;
-  category: string;
+  wrapText?: boolean;
   children?: React.ReactNode;
   onReleaseClick?: (instanceId: string) => void;
 }
 
 export function DashboardReleaseItem({
   release,
-  category,
+  wrapText = false,
   children,
   onReleaseClick,
 }: DashboardReleaseItemProps) {
@@ -38,12 +38,6 @@ export function DashboardReleaseItem({
   const imageActivateProps = canOpen
     ? getReleaseActivateProps({
         onActivate: () => {
-          trackEvent("releaseClicked", {
-            action: "releaseClicked",
-            category,
-            label: `Release Clicked (${category})`,
-            value: resource_url,
-          });
           openRelease();
         },
         ariaLabel: `Open release details for ${title}`,
@@ -51,17 +45,15 @@ export function DashboardReleaseItem({
     : undefined;
 
   const handleTitleOpen = () => {
-    trackEvent("releaseClicked", {
-      action: "releaseClicked",
-      category,
-      label: `Release Clicked (${category})`,
-      value: resource_url,
-    });
     openRelease();
   };
 
   return (
-    <div className={styles.releaseItemContainer}>
+    <div
+      className={classNames(styles.releaseItemContainer, {
+        [styles.releaseItemWrap]: wrapText,
+      })}
+    >
       {thumb && (
         <div
           className={styles.imageWrapper}
@@ -93,14 +85,7 @@ export function DashboardReleaseItem({
                     href={artistUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => {
-                      trackEvent("artistClicked", {
-                        action: "artistClicked",
-                        category,
-                        label: `Artist Clicked (${category})`,
-                        value: artist.resource_url || "",
-                      });
-                    }}
+                    onClick={() => {}}
                   >
                     {artist.name}
                   </a>
@@ -125,14 +110,7 @@ export function DashboardReleaseItem({
               href={releaseUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => {
-                trackEvent("releaseClicked", {
-                  action: "releaseClicked",
-                  category,
-                  label: `Release Clicked (${category})`,
-                  value: resource_url,
-                });
-              }}
+              onClick={() => {}}
             >
               {title}
             </a>
@@ -157,14 +135,7 @@ export function DashboardReleaseItem({
                       href={labelUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => {
-                        trackEvent("labelClicked", {
-                          action: "labelClicked",
-                          category,
-                          label: `Label Clicked (${category})`,
-                          value: primaryLabel.resource_url || "",
-                        });
-                      }}
+                      onClick={() => {}}
                     >
                       {primaryLabel.name}
                     </a>

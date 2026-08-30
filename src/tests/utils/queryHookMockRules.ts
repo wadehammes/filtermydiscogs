@@ -16,7 +16,6 @@ export const FEATURE_TEST_SUFFIXES = [
 ] as const;
 
 export const QUERY_HOOK_MOCK_ALLOWLIST = [
-  /^src\/hooks\/queries\/.*\.spec\.tsx?$/,
   /^src\/tests\/utils\/queryHookMockRules\.spec\.ts$/,
 ] as const;
 

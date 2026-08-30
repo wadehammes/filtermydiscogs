@@ -1359,7 +1359,9 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
-    persistPlaybackSession();
+    if (queue.length >= 0) {
+      persistPlaybackSession();
+    }
   }, [
     activeTrackPosition,
     isPlaying,
@@ -1438,6 +1440,7 @@ export const ReleasePlaybackProvider = ({
     isAuthenticated,
     isCheckingAuth,
     isPlaying,
+    setUpcomingQueue,
   ]);
 
   const stateValue = useMemo(

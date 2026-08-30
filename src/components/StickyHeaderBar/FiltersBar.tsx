@@ -1,5 +1,4 @@
 import { Activity, useMemo, useState } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
@@ -14,11 +13,10 @@ import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
 
 interface FiltersBarProps {
-  category: string;
   disabled?: boolean;
 }
 
-export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
+export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
   "use memo";
   const { state: collectionState } = useCollectionContext();
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
@@ -43,16 +41,10 @@ export const FiltersBar = ({ category, disabled = false }: FiltersBarProps) => {
     styleOperator,
     formatOperator,
     yearOperator,
-  } = useFilterHandlers(category);
+  } = useFilterHandlers();
 
   const handleFiltersClick = () => {
     setIsFiltersDrawerOpen(true);
-    trackEvent("filtersOpened", {
-      action: "filtersOpenedFromHeader",
-      category: "mobile_filters",
-      label: "Filters Opened from Header",
-      value: "mobile",
-    });
   };
 
   const closeFiltersDrawer = () => {

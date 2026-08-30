@@ -39,7 +39,6 @@ export function DuplicatesList({
               <div key={release.instance_id} className={styles.releaseItem}>
                 <DashboardReleaseItem
                   release={release}
-                  category="duplicates"
                   {...definedProps({ onReleaseClick })}
                 />
               </div>

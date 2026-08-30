@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { useAuth } from "src/context/auth.context";
@@ -38,7 +37,6 @@ export const MobileMenu = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
   const { logout, state: authState } = useAuth();
-  const { username } = authState;
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
   const filtersDispatch = useFiltersDispatch();
@@ -46,42 +44,22 @@ export const MobileMenu = ({
   const isRandomMode = useIsRandomMode();
   const appliedFilterCount = useAppliedFilterCount();
 
-  const handleNavigation = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    label: string,
-  ) => {
+  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isDisabled) {
       e.preventDefault();
       return;
     }
-    trackEvent("pageNavigation", {
-      action: "pageNavigation",
-      category: "navigation",
-      label: `Navigate to ${label}`,
-      value: label.toLowerCase(),
-    });
+
     setIsOpen(false);
   };
 
   const handleLogout = async () => {
     await logout();
-    trackEvent("logout", {
-      action: "userLoggedOut",
-      category: "auth",
-      label: "User Logged Out",
-      value: username || "unknown",
-    });
     setIsOpen(false);
   };
 
   const handleFiltersClick = () => {
     setIsFiltersDrawerOpen(true);
-    trackEvent("filtersOpened", {
-      action: "filtersOpenedFromHeader",
-      category: "mobile_filters",
-      label: "Filters Opened from Header",
-      value: "mobile",
-    });
   };
 
   const handleRandomModeToggle = () => {
@@ -98,32 +76,14 @@ export const MobileMenu = ({
       type: FiltersActionTypes.ToggleRandomMode,
       payload: undefined,
     });
-    trackEvent("randomModeToggled", {
-      action: "toggleRandomMode",
-      category: "mobile_filters",
-      label: "Random Mode Toggled from Mobile Header",
-      value: newIsRandomMode ? "enabled" : "disabled",
-    });
   };
 
   const handleAboutClick = () => {
     setIsOpen(false);
-    trackEvent("pageNavigation", {
-      action: "pageNavigation",
-      category: "navigation",
-      label: "Navigate to About",
-      value: "about",
-    });
   };
 
   const handleSettingsClick = () => {
     setIsOpen(false);
-    trackEvent("pageNavigation", {
-      action: "pageNavigation",
-      category: "navigation",
-      label: "Navigate to Settings",
-      value: "settings",
-    });
   };
 
   const hasValidCollection =
@@ -150,7 +110,7 @@ export const MobileMenu = ({
         dataAttribute="data-mobile-menu-open"
         footer={
           <MobileMenuDrawerFooter
-            username={username || null}
+            username={authState.username || null}
             onLogout={handleLogout}
             onAboutClick={handleAboutClick}
             onSettingsClick={handleSettingsClick}

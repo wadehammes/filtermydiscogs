@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
@@ -36,19 +35,12 @@ export default function MosaicItem({
 
       setIsClicked(true);
 
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "mosaic",
-        label: "Release Clicked (Mosaic)",
-        value: resource_url,
-      });
-
       if (releaseData?.uri) {
         window.open(releaseData.uri, "_blank", "noopener,noreferrer");
         return;
       }
     },
-    [releaseData?.uri, resource_url],
+    [releaseData?.uri],
   );
 
   const handleUrlOpen = useCallback(() => {

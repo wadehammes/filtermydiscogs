@@ -80,7 +80,6 @@ export function CollectionMilestones({
                       <div className={styles.zigzagRelease}>
                         <DashboardReleaseItem
                           release={milestone.release}
-                          category="milestones"
                           {...definedProps({ onReleaseClick })}
                         />
                       </div>

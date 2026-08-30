@@ -31,7 +31,6 @@ export function ReleaseCardContent({
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
   const handlePillClick = usePillClickHandler({
-    category: "releaseCard",
     onExitRandomMode,
   });
 
@@ -40,7 +39,6 @@ export function ReleaseCardContent({
     year,
     artists,
     title,
-    resource_url,
     formats: releaseFormats,
   } = release.basic_information;
 
@@ -55,8 +53,6 @@ export function ReleaseCardContent({
           artists={artists}
           title={title}
           releaseUrl={releaseUrl}
-          resourceUrl={resource_url}
-          analyticsCategory="home"
         />
         <ReleaseCardMeta
           labelName={labels[0]?.name}
@@ -79,7 +75,6 @@ export function ReleaseCardContent({
                   event: e,
                   value: formatName,
                   type: "format",
-                  eventLabel: "Format Pill Clicked",
                 })
               }
               aria-label={`Filter by ${formatName} format`}
@@ -99,7 +94,6 @@ export function ReleaseCardContent({
                 event: e,
                 value: tag,
                 type: "style",
-                eventLabel: "Genre Style Pill Clicked",
               })
             }
             aria-label={`Filter by ${tag}`}

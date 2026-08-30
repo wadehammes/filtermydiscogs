@@ -141,6 +141,7 @@ export const getAdminUserLookup = async (
       defaultView: preferences.view.currentView,
       persistFilters: preferences.persistFilters,
       analyticsConsent: formatAnalyticsConsent(preferences.analyticsConsent),
+      savedViewsCount: preferences.filterViews.length,
     },
     totals: {
       crates: totalCrates,

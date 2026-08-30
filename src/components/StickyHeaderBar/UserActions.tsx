@@ -1,7 +1,6 @@
 import { Menu } from "@base-ui/react/menu";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
@@ -25,31 +24,10 @@ export const UserActions = ({
   const handleLogout = useCallback(async () => {
     setIsDropdownOpen(false);
     await logout();
-    trackEvent("logout", {
-      action: "userLoggedOut",
-      category: "auth",
-      label: "User Logged Out",
-      value: username || "unknown",
-    });
-  }, [logout, username]);
+  }, [logout]);
 
-  const handleMosaicClick = () => {
-    trackEvent("mosaicNavigation", {
-      action: "mosaicNavigation",
-      category: "navigation",
-      label: "Navigate to Mosaic",
-      value: "header",
-    });
-  };
-
-  const handleNavigationClick = useCallback((label: string, value: string) => {
+  const handleMenuNavigation = useCallback(() => {
     setIsDropdownOpen(false);
-    trackEvent("pageNavigation", {
-      action: "pageNavigation",
-      category: "navigation",
-      label: `Navigate to ${label}`,
-      value,
-    });
   }, []);
 
   const containerClass =
@@ -61,7 +39,6 @@ export const UserActions = ({
         <Link
           href="/mosaic"
           className={styles.mosaicLink}
-          onClick={handleMosaicClick}
           aria-label="View mosaic"
         >
           <span>🖼️</span>
@@ -93,9 +70,7 @@ export const UserActions = ({
                   render={
                     <Link href="/settings" className={styles.dropdownLink} />
                   }
-                  onClick={() => {
-                    handleNavigationClick("Settings", "settings");
-                  }}
+                  onClick={handleMenuNavigation}
                 >
                   Settings
                 </Menu.LinkItem>
@@ -104,9 +79,7 @@ export const UserActions = ({
                   render={
                     <Link href="/about" className={styles.dropdownLink} />
                   }
-                  onClick={() => {
-                    handleNavigationClick("About", "about");
-                  }}
+                  onClick={handleMenuNavigation}
                 >
                   About
                 </Menu.LinkItem>

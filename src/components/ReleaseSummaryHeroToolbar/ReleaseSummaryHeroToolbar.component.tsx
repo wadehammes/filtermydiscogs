@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import { useCallback } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import {
   ModalToolbar,
   ModalToolbarAction,
@@ -72,14 +71,7 @@ export const ReleaseSummaryHeroToolbar = ({
           rel="noopener noreferrer"
           aria-label="View on Discogs"
           title="View on Discogs"
-          onClick={() => {
-            trackEvent("releaseClicked", {
-              action: "releaseClicked",
-              category: "releaseModal",
-              label: "View on Discogs",
-              value: releaseUrl,
-            });
-          }}
+          onClick={() => {}}
         >
           <ExternalLinkIcon className={styles.actionIcon} aria-hidden />
         </ModalToolbarLink>

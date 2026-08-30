@@ -1,8 +1,6 @@
 "use client";
 
 import classNames from "classnames";
-import { useEffect } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
 import { ReleaseModalBody } from "src/components/ReleaseModalBody/ReleaseModalBody.component";
 import { ReleaseSimilarSidebar } from "src/components/ReleaseSimilarSidebar/ReleaseSimilarSidebar.component";
@@ -34,17 +32,6 @@ export const ReleaseModal = ({
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const showAsideSimilar = showSimilarSection && isDesktop;
   const showInlineSimilar = showSimilarSection && !isDesktop;
-
-  useEffect(() => {
-    if (isOpen && release) {
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "releaseModal",
-        label: "Release Detail Opened",
-        value: release.basic_information.resource_url,
-      });
-    }
-  }, [isOpen, release]);
 
   if (!(isOpen && release)) {
     return null;

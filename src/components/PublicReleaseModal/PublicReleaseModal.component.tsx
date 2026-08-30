@@ -1,8 +1,6 @@
 "use client";
 
 import classNames from "classnames";
-import { useEffect } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { PublicReleaseModalBody } from "src/components/PublicReleaseModalBody/PublicReleaseModalBody.component";
 import { PublicReleaseSummaryHero } from "src/components/PublicReleaseSummaryHero/PublicReleaseSummaryHero.component";
 import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
@@ -20,17 +18,6 @@ export const PublicReleaseModal = ({
   release,
   onClose,
 }: PublicReleaseModalProps) => {
-  useEffect(() => {
-    if (isOpen && release) {
-      trackEvent("releaseClicked", {
-        action: "releaseClicked",
-        category: "publicReleaseModal",
-        label: "Release Detail Opened",
-        value: release.basic_information.resource_url,
-      });
-    }
-  }, [isOpen, release]);
-
   if (!(isOpen && release)) {
     return null;
   }

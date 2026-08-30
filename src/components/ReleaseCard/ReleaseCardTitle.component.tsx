@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { trackEvent } from "src/analytics/analytics";
 import type { DiscogsArtist } from "src/types";
 import { getResourceUrl } from "src/utils/helpers";
 import { normalizeDiscogsJoin } from "src/utils/releaseDisplay";
@@ -9,21 +8,15 @@ interface ReleaseCardTitleProps {
   artists: DiscogsArtist[];
   title: string;
   releaseUrl: string | null;
-  resourceUrl: string | null;
-  analyticsCategory?: "releaseCard" | "publicCrate" | "home";
   className?: string | undefined;
 }
 
 const renderReleaseTitle = ({
   title,
   releaseUrl,
-  resourceUrl,
-  analyticsCategory,
 }: {
   title: string;
   releaseUrl: string | null;
-  resourceUrl: string | null;
-  analyticsCategory: "releaseCard" | "publicCrate" | "home";
 }) => {
   if (releaseUrl) {
     return (
@@ -33,12 +26,6 @@ const renderReleaseTitle = ({
         rel="noopener noreferrer"
         onClick={(event) => {
           event.stopPropagation();
-          trackEvent("releaseClicked", {
-            action: "releaseClicked",
-            category: analyticsCategory,
-            label: "Release Clicked",
-            value: resourceUrl ?? releaseUrl ?? "",
-          });
         }}
         className={styles.titleLink}
         title="View release on Discogs"
@@ -55,8 +42,6 @@ export const ReleaseCardTitle = ({
   artists,
   title,
   releaseUrl,
-  resourceUrl,
-  analyticsCategory = "releaseCard",
   className,
 }: ReleaseCardTitleProps) => {
   return (
@@ -78,12 +63,6 @@ export const ReleaseCardTitle = ({
                   title={`View ${artist.name} on Discogs`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    trackEvent("artistClicked", {
-                      action: "artistClicked",
-                      category: analyticsCategory,
-                      label: "Artist Clicked",
-                      value: artistUrl,
-                    });
                   }}
                   className={styles.artistLink}
                 >
@@ -103,8 +82,6 @@ export const ReleaseCardTitle = ({
         {renderReleaseTitle({
           title,
           releaseUrl,
-          resourceUrl,
-          analyticsCategory,
         })}
       </h3>
     </div>

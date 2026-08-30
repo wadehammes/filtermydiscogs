@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import {
   ModalToolbar,
@@ -74,14 +73,7 @@ export const PublicReleaseSummaryHero = ({
             rel="noopener noreferrer"
             aria-label="View on Discogs"
             title="View on Discogs"
-            onClick={() => {
-              trackEvent("releaseClicked", {
-                action: "releaseClicked",
-                category: "publicReleaseModal",
-                label: "View on Discogs",
-                value: releaseUrl,
-              });
-            }}
+            onClick={() => {}}
           >
             <ExternalLinkIcon className={styles.actionIcon} aria-hidden />
           </ModalToolbarLink>

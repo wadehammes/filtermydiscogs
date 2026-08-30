@@ -24,7 +24,7 @@ export const useReleaseRatingEditor = (release: DiscogsRelease) => {
 
   useEffect(() => {
     setRating(releaseRating);
-  }, [release.instance_id, releaseRating]);
+  }, [releaseRating]);
 
   const handleRate = async (nextRating: number) => {
     if (!canEdit || releaseId === null || saveRatingMutation.isPending) {

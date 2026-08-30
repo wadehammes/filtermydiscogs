@@ -15,17 +15,12 @@ describe("queryHookMockRules", () => {
     expect(
       isFeatureTestFile("src/components/ReleaseModal/ReleaseModal.po.tsx"),
     ).toBe(true);
-    expect(
-      isFeatureTestFile("src/hooks/queries/useDiscogsCollectionQuery.spec.tsx"),
-    ).toBe(true);
     expect(isFeatureTestFile("src/tests/utils/queryHookMockRules.ts")).toBe(
       false,
     );
 
     expect(
-      isQueryHookMockAllowlisted(
-        "src/hooks/queries/useDiscogsCollectionQuery.spec.tsx",
-      ),
+      isQueryHookMockAllowlisted("src/tests/utils/queryHookMockRules.spec.ts"),
     ).toBe(true);
     expect(
       isQueryHookMockAllowlisted(
@@ -60,15 +55,6 @@ describe("queryHookMockRules", () => {
         line: 2,
       }),
     ]);
-  });
-
-  it("allows query-hook unit tests under src/hooks/queries", () => {
-    const violations = validateFeatureTestSource(
-      "src/hooks/queries/useDiscogsCollectionQuery.spec.tsx",
-      `jest.mock("src/hooks/queries/useDiscogsCollectionQuery");\n`,
-    );
-
-    expect(violations).toEqual([]);
   });
 
   it("keeps feature tests free of query-hook mocks", () => {

@@ -3,7 +3,6 @@
 import classNames from "classnames";
 import { startTransition, useCallback, useEffect, useId, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { trackCollectionSearched } from "src/analytics/productAnalyticsEvents";
 import { FiltersActionTypes } from "src/context/filters.context";
 import {
   useFiltersDispatch,
@@ -54,10 +53,6 @@ export const SearchBar = ({
       }
 
       debounceTimeoutRef.current = setTimeout(() => {
-        const trimmed = query.trim();
-        if (trimmed) {
-          trackCollectionSearched(trimmed.length);
-        }
         startTransition(() => {
           filtersDispatch({
             type: FiltersActionTypes.SetSearchQuery,

@@ -1,5 +1,8 @@
 import { useCallback, useRef, useState } from "react";
-import { trackEvent } from "src/analytics/analytics";
+import {
+  trackMosaicDownload,
+  trackMosaicError,
+} from "src/analytics/productAnalyticsEvents";
 import { calculateOptimalGrid, MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -116,7 +119,6 @@ export function useMosaicGenerator({
     };
 
     // Performance monitoring and warnings
-    const startTime = performance.now();
     const isLargeCollection =
       releases.length > MOSAIC_CONSTANTS.LARGE_COLLECTION_THRESHOLD;
     const isVeryLargeCollection =
@@ -133,12 +135,7 @@ export function useMosaicGenerator({
     }
 
     try {
-      trackEvent("mosaicDownload", {
-        action: "mosaicDownload",
-        category: "mosaic",
-        label: "Download Mosaic",
-        value: releases.length.toString(),
-      });
+      trackMosaicDownload(releases.length);
 
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
@@ -349,26 +346,6 @@ export function useMosaicGenerator({
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            // Performance tracking
-            const endTime = performance.now();
-            const generationTime = endTime - startTime;
-            const performanceMetrics = {
-              totalTime: generationTime,
-              imagesPerSecond: releases.length / (generationTime / 1000),
-              averageTimePerImage: generationTime / releases.length,
-              successRate:
-                (statsRef.current.successfulImages / releases.length) * 100,
-              memoryUsage: getCacheMemoryUsage(),
-            };
-
-            // Track performance analytics
-            trackEvent("mosaicPerformance", {
-              action: "mosaicPerformance",
-              category: "mosaic",
-              label: "Generation Complete",
-              value: Math.round(performanceMetrics.totalTime).toString(),
-            });
-
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -397,12 +374,7 @@ export function useMosaicGenerator({
       }));
 
       // Track error analytics
-      trackEvent("mosaicError", {
-        action: "mosaicError",
-        category: "mosaic",
-        label: "Generation Failed",
-        value: errorMessage,
-      });
+      trackMosaicError(errorMessage);
     } finally {
       setState((prev) => ({
         ...prev,

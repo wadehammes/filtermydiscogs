@@ -42,6 +42,7 @@ const lookupResult = {
     defaultView: "card",
     persistFilters: true,
     analyticsConsent: "unset" as const,
+    savedViewsCount: 0,
   },
   totals: {
     crates: 2,

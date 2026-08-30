@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
-import { trackEvent } from "src/analytics/analytics";
+import { trackPageView } from "src/analytics/productAnalyticsEvents";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 
 const PAGE_LABELS: Record<string, string> = {
@@ -59,12 +59,7 @@ const AnalyticsPageViewTrackerInner = () => {
 
     previousPathRef.current = pathname;
 
-    trackEvent("pageView", {
-      category: "navigation",
-      action: "pageView",
-      label: resolvePageLabel(pathname),
-      value: pathname,
-    });
+    trackPageView(pathname, resolvePageLabel(pathname));
   }, [isAnalyticsEnabled, isReady, pathname]);
 
   return null;

@@ -196,6 +196,10 @@ export const AdminUserLookupPanel = () => {
                     data.preferences.persistFilters ? "On" : "Off",
                   )}
                   {renderPreferenceRow(
+                    "Saved views",
+                    formatCommunityStatValue(data.preferences.savedViewsCount),
+                  )}
+                  {renderPreferenceRow(
                     "Analytics cookies",
                     ANALYTICS_CONSENT_LABELS[data.preferences.analyticsConsent],
                   )}
