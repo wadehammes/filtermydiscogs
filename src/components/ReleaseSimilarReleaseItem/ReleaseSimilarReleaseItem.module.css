@@ -1,4 +1,4 @@
-.listItem {
+.listItem.listItem {
   gap: var(--space-2);
 }
 
@@ -10,18 +10,28 @@
   }
 }
 
-.listItemMain {
+.listItemMain.listItemMain {
   gap: var(--space-2);
 }
 
-.itemImage {
+.itemImage.itemImage {
   height: 5rem;
   width: 5rem;
+
+  @media (width < 1024px) {
+    height: 3.75rem;
+    width: 3.75rem;
+  }
 }
 
-.listItemActions {
+.listItemActions.listItemActions {
   flex: 0 0 3rem;
   width: 3rem;
+
+  @media (width < 1024px) {
+    flex: 0 0 2.75rem;
+    width: 2.75rem;
+  }
 }
 
 .itemContent {

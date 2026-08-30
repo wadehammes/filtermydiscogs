@@ -10,4 +10,8 @@
   --font-assistant: system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
   --transform-origin: center;
+  --release-mini-player-stack-offset: 0px;
+  --release-modal-available-height: 100dvh;
+  --release-modal-viewport-inset-bottom: 0px;
+  --release-modal-viewport-inset-top: 0px;
 }

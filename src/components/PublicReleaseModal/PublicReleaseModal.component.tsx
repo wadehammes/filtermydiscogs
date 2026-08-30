@@ -28,6 +28,7 @@ export const PublicReleaseModal = ({
       isOpen={isOpen}
       onClose={onClose}
       testId="fmdPublicReleaseModal"
+      panelClassName={styles.releaseModalPanel}
       header={
         <div className={classNames(styles.heroSection)}>
           <PublicReleaseSummaryHero

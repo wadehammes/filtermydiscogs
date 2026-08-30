@@ -23,6 +23,19 @@
     var(--release-mini-player-bar-offset) +
     var(--release-mini-player-video-panel-offset)
   );
+  --release-modal-viewport-inset-top: calc(
+    var(--space-4) +
+    env(safe-area-inset-top, 0px)
+  );
+  --release-modal-viewport-inset-bottom: calc(
+    var(--release-mini-player-stack-offset, 0) +
+    var(--space-4)
+  );
+  --release-modal-available-height: calc(
+    100dvh -
+    var(--release-modal-viewport-inset-top) -
+    var(--release-modal-viewport-inset-bottom)
+  );
 
   &:has([data-video-expanded="true"]) {
     --release-mini-player-video-panel-offset: calc(2rem + 100vw * 9 / 16);
