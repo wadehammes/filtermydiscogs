@@ -30,6 +30,7 @@ import { GrowthChart } from "./GrowthChart.component";
 import { MostCrated } from "./MostCrated.component";
 import { OnThisDay } from "./OnThisDay.component";
 import { StyleEvolution } from "./StyleEvolution.component";
+import { WeeklyRecap } from "./WeeklyRecap.component";
 
 function DashboardClientContent() {
   const { state: authState } = useAuth();
@@ -127,15 +128,27 @@ function DashboardClientContent() {
                   valueError={valueError}
                 />
 
-                <DashboardSection
-                  lede={story.sections.today.lede}
-                  title={story.sections.today.title}
-                >
-                  <OnThisDay
-                    hideHeading={true}
-                    onReleaseClick={handleReleaseClick}
-                  />
-                </DashboardSection>
+                <div className={styles.storyPair}>
+                  <DashboardSection
+                    lede={story.sections.today.lede}
+                    title={story.sections.today.title}
+                  >
+                    <OnThisDay
+                      hideHeading={true}
+                      onReleaseClick={handleReleaseClick}
+                    />
+                  </DashboardSection>
+
+                  <DashboardSection
+                    lede={story.sections.weeklyRecap.lede}
+                    title={story.sections.weeklyRecap.title}
+                  >
+                    <WeeklyRecap
+                      hideHeading={true}
+                      onReleaseClick={handleReleaseClick}
+                    />
+                  </DashboardSection>
+                </div>
 
                 <DashboardSection
                   lede={story.sections.growth.lede}

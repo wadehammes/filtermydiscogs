@@ -34,20 +34,10 @@ const mergePatches = (
 });
 
 const isFiltersOnlyPatch = (patch: UserPreferencesPatch): boolean =>
-  patch.filters !== undefined &&
-  patch.theme === undefined &&
-  patch.view === undefined &&
-  patch.persistFilters === undefined &&
-  patch.filterViews === undefined &&
-  patch.analyticsConsent === undefined;
+  patch.filters !== undefined && Object.keys(patch).length === 1;
 
 const hasPendingFields = (patch: UserPreferencesPatch): boolean =>
-  patch.persistFilters !== undefined ||
-  patch.theme !== undefined ||
-  patch.view !== undefined ||
-  patch.filters !== undefined ||
-  patch.filterViews !== undefined ||
-  patch.analyticsConsent !== undefined;
+  Object.keys(patch).length > 0;
 
 const flushPendingPatch = (mutate: PersistMutate) => {
   if (debounceTimer) {
@@ -111,13 +101,7 @@ export const scheduleUserPreferencesPersist = (
     pendingOptions = options;
   }
 
-  const filtersOnlyPending =
-    pendingPatch.filters !== undefined &&
-    pendingPatch.theme === undefined &&
-    pendingPatch.view === undefined &&
-    pendingPatch.persistFilters === undefined &&
-    pendingPatch.filterViews === undefined &&
-    pendingPatch.analyticsConsent === undefined;
+  const filtersOnlyPending = isFiltersOnlyPatch(pendingPatch);
 
   if (filtersOnlyPending) {
     if (debounceTimer) {

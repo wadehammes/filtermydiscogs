@@ -91,13 +91,21 @@ export function LegalPageContent() {
               Postgres: theme (light, dim, sepia, slate, dark, midnight, high
               contrast, or system), default view (grid or table), whether to
               remember filter selections, whether to auto-play when adding to an
-              empty queue, your analytics cookie choice (when set), named saved
-              views you create from the Views menu on Releases (search, filters,
-              and sort snapshots), and—when that option is on—your saved filter
-              and sort choices (styles, years, formats, sort order, genre/style,
-              format, and release year match mode, and search text). That lets
-              settings follow you across browsers. I don&apos;t store your full
+              empty queue, whether to show DJ metadata (BPM and key) on tracks,
+              your analytics cookie choice (when set), named saved views you
+              create from the Views menu on Releases (search, filters, and sort
+              snapshots), and—when that option is on—your saved filter and sort
+              choices (styles, years, formats, sort order, genre/style, format,
+              and release year match mode, and search text). That lets settings
+              follow you across browsers. I don&apos;t store your full
               collection there.
+            </li>
+            <li>
+              When you turn on &quot;Show DJ metadata on tracks&quot; in
+              Settings, the app sends artist and track title from your
+              collection metadata to GetSongBPM so we can show BPM and musical
+              key. Those lookup results are not saved in Postgres; they may be
+              cached in your browser for the current session only.
             </li>
             <li>
               When you opt in to analytics, I may also store product usage
@@ -107,8 +115,7 @@ export function LegalPageContent() {
               used, not to sell data.
             </li>
             <li>
-              I don't sell your data, share it, or do anything sketchy with it.
-              Period.
+              I don&apos;t sell your data or use it for advertising. Period.
             </li>
           </ul>
           <h3>What I Do With It</h3>
@@ -128,9 +135,15 @@ export function LegalPageContent() {
               to Postgres so they don&apos;t disappear when you close the tab.
             </li>
             <li>
-              Theme, view, filter, and analytics cookie preferences are also
-              kept in your browser for fast loads and continuity on this device.
-              When you&apos;re signed in, changes sync to your account.
+              Theme, view, filter, playback, and analytics cookie preferences
+              are also kept in your browser for fast loads and continuity on
+              this device. When you&apos;re signed in, changes sync to your
+              account.
+            </li>
+            <li>
+              When DJ metadata is enabled, BPM and key lookups run through my
+              server to GetSongBPM using artist and title from the release you
+              are viewing. I don&apos;t store those results in my database.
             </li>
             <li>
               Want to nuke everything on my side? Hit &quot;Clear All Data&quot;
@@ -174,8 +187,14 @@ export function LegalPageContent() {
           <h3>Third-Party Stuff</h3>
           <ul>
             <li>
-              The app talks to Discogs API. That's it. Their rules apply to that
-              relationship.
+              The app talks to the Discogs API for your collection and notes.
+              Their rules apply to that relationship.
+            </li>
+            <li>
+              When you enable DJ metadata in Settings, lookups go to{" "}
+              <a href="https://getsongbpm.com">GetSongBPM</a>. Their terms and
+              privacy policy apply to that data. A link back to GetSongBPM is
+              shown in Settings where the feature is described.
             </li>
             <li>
               Google Tag Manager handles third-party analytics cookies when you
@@ -204,7 +223,8 @@ export function LegalPageContent() {
               (grid or table), your analytics cookie choice, named saved views
               from the Views menu on Releases, filter/sort selections when
               &quot;Remember filter selections&quot; is enabled in Settings, and
-              playback settings
+              playback settings (auto-play on queue add and show DJ metadata on
+              tracks)
             </li>
             <li>
               Product analytics events linked to your account (when you had
@@ -218,7 +238,10 @@ export function LegalPageContent() {
               cached collection pages in IndexedDB (for faster return visits on
               this device), and similar UI state
             </li>
-            <li>In-memory collection cache for the current browser session</li>
+            <li>
+              In-memory caches for the current browser session, including your
+              loaded collection and any cached DJ metadata lookups
+            </li>
             <li>
               Your Discogs collection and any notes you saved there are not
               affected. You can still see and edit them on Discogs or after you

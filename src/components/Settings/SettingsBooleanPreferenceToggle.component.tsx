@@ -7,6 +7,7 @@ type SettingsBooleanPreferenceToggleProps = {
   checked: boolean;
   label: string;
   description: ReactNode;
+  descriptionFooter?: ReactNode;
   disabled: boolean;
   onChange: (enabled: boolean) => void;
 };
@@ -15,6 +16,7 @@ export function SettingsBooleanPreferenceToggle({
   checked,
   label,
   description,
+  descriptionFooter,
   disabled,
   onChange,
 }: SettingsBooleanPreferenceToggleProps) {
@@ -31,6 +33,9 @@ export function SettingsBooleanPreferenceToggle({
         <span>{label}</span>
       </label>
       <p className={styles.sectionDescription}>{description}</p>
+      {descriptionFooter ? (
+        <p className={styles.sectionDescription}>{descriptionFooter}</p>
+      ) : null}
     </div>
   );
 }

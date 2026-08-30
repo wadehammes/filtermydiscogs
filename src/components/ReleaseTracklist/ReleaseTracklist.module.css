@@ -4,6 +4,41 @@
   min-height: 0;
 }
 
+.tracklistHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  display: grid;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  gap: var(--space-2);
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  letter-spacing: 0.04em;
+  padding: var(--space-2) var(--space-3);
+  text-transform: uppercase;
+}
+
+.tracklistHeaderNoPosition {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.headerPosition {
+  min-width: 2rem;
+}
+
+.headerTrack {
+  min-width: 0;
+}
+
+.headerDj {
+  min-width: 3rem;
+  text-align: right;
+}
+
+.headerTrailing {
+  min-width: 4.5rem;
+}
+
 .tracklistToolbar {
   align-items: center;
   background: var(--muted);
@@ -250,4 +285,55 @@
   flex-shrink: 0;
   height: 1.75rem;
   width: 1.75rem;
+}
+
+.tracklistPanelWithDjMetadata {
+  --tracklist-dj-grid: auto minmax(0, 1fr) auto auto;
+  --tracklist-dj-grid-no-position: 2rem minmax(0, 1fr) auto auto;
+}
+
+.tracklistPanelWithDjMetadata .tracklistHeader {
+  column-gap: var(--space-2);
+  grid-template-columns: var(--tracklist-dj-grid);
+}
+
+.tracklistPanelWithDjMetadata .tracklistHeaderNoPosition {
+  grid-template-columns: var(--tracklist-dj-grid-no-position);
+}
+
+.trackPositionSpacer {
+  min-width: 2rem;
+  width: 2rem;
+}
+
+.trackDjSpacer {
+  min-width: 3rem;
+}
+
+.trackItemWithDjMetadata {
+  column-gap: var(--space-2);
+  grid-template-columns: var(--tracklist-dj-grid);
+  padding: var(--space-1) var(--space-3);
+}
+
+.tracklistPanelWithDjMetadata .tracklistNoPosition .trackItemWithDjMetadata {
+  grid-template-columns: var(--tracklist-dj-grid-no-position);
+}
+
+.trackItemWithDjMetadata .trackPosition {
+  align-self: center;
+  padding: 0;
+}
+
+.trackItemWithDjMetadata .trackMainButton,
+.trackItemWithDjMetadata .trackMainStatic {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
+}
+
+.trackItemWithDjMetadata .trackTrailing {
+  align-self: center;
+  justify-content: flex-end;
+  min-width: 4.5rem;
+  padding: 0;
 }

@@ -2,9 +2,11 @@
 
 import classNames from "classnames";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
+import { TrackDjMetadataDisplay } from "src/components/TrackDjMetadata/TrackDjMetadataDisplay.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import type { DiscogsTrack } from "src/types";
+import type { TrackDjMetadata } from "src/types/trackMetadata.types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
 import styles from "./ReleaseTracklist.module.css";
@@ -25,6 +27,10 @@ interface ReleaseTracklistProps {
   onAddAllToQueue?: () => void;
   addAllToQueueDisabled?: boolean;
   onActiveTrackToggle?: () => void;
+  showDjMetadata?: boolean;
+  hideTracklistHeader?: boolean;
+  getTrackDjMetadata?: (position: string) => TrackDjMetadata | null | undefined;
+  isDjMetadataLoading?: boolean;
 }
 
 export const ReleaseTracklist = ({
@@ -43,6 +49,10 @@ export const ReleaseTracklist = ({
   onAddAllToQueue,
   addAllToQueueDisabled = false,
   onActiveTrackToggle,
+  showDjMetadata = false,
+  hideTracklistHeader = false,
+  getTrackDjMetadata,
+  isDjMetadataLoading = false,
 }: ReleaseTracklistProps) => {
   const hasSelectableTracks = onTrackSelect !== undefined;
   const showQueueColumn = onTrackQueue !== undefined || reserveQueueColumn;
@@ -56,10 +66,30 @@ export const ReleaseTracklist = ({
   }
 
   return (
-    <div className={styles.tracklistPanel}>
+    <div
+      className={classNames(styles.tracklistPanel, {
+        [styles.tracklistPanelWithDjMetadata]: showDjMetadata,
+      })}
+    >
+      {showDjMetadata && !hideTracklistHeader ? (
+        <div
+          className={classNames(styles.tracklistHeader, {
+            [styles.tracklistHeaderNoPosition]: hideTrackPosition,
+          })}
+          aria-hidden
+        >
+          {hideTrackPosition ? null : (
+            <span className={styles.headerPosition}>#</span>
+          )}
+          <span className={styles.headerTrack}>Track</span>
+          <span className={styles.headerDj}>BPM</span>
+          <span className={styles.headerTrailing}> </span>
+        </div>
+      ) : null}
       <ol
         className={classNames(styles.tracklist, {
           [styles.tracklistNoPosition]: hideTrackPosition,
+          [styles.tracklistWithDjMetadata]: showDjMetadata,
         })}
         data-testid="fmdReleaseTracklist"
       >
@@ -81,24 +111,30 @@ export const ReleaseTracklist = ({
           const positionLabel =
             getPositionLabel?.(track.position) ?? track.position;
 
-          const trackMainContent = (
+          const trackTitleContent = (
+            <span className={styles.trackTitle}>
+              {isPlaying ? (
+                <PlayingIndicator isPaused={isPlaybackPaused} />
+              ) : null}
+              <span className={styles.trackTitleStack}>
+                <span className={styles.trackTitleText}>{track.title}</span>
+                {trackCreditsLine ? (
+                  <span className={styles.trackCredits}>
+                    {trackCreditsLine}
+                  </span>
+                ) : null}
+              </span>
+            </span>
+          );
+
+          const trackMainContent = showDjMetadata ? (
+            trackTitleContent
+          ) : (
             <>
               {hideTrackPosition ? null : (
                 <span className={styles.trackPosition}>{positionLabel}</span>
               )}
-              <span className={styles.trackTitle}>
-                {isPlaying ? (
-                  <PlayingIndicator isPaused={isPlaybackPaused} />
-                ) : null}
-                <span className={styles.trackTitleStack}>
-                  <span className={styles.trackTitleText}>{track.title}</span>
-                  {trackCreditsLine ? (
-                    <span className={styles.trackCredits}>
-                      {trackCreditsLine}
-                    </span>
-                  ) : null}
-                </span>
-              </span>
+              {trackTitleContent}
             </>
           );
 
@@ -108,8 +144,15 @@ export const ReleaseTracklist = ({
               className={classNames(styles.trackItem, {
                 [styles.trackItemActive]: isActive,
                 [styles.trackItemStatic]: !canPlayTrack,
+                [styles.trackItemWithDjMetadata]: showDjMetadata,
               })}
             >
+              {showDjMetadata && !hideTrackPosition ? (
+                <span className={styles.trackPosition}>{positionLabel}</span>
+              ) : null}
+              {showDjMetadata && hideTrackPosition ? (
+                <span className={styles.trackPositionSpacer} aria-hidden />
+              ) : null}
               {canPlayTrack ? (
                 <button
                   type="button"
@@ -131,6 +174,17 @@ export const ReleaseTracklist = ({
               ) : (
                 <div className={styles.trackMainStatic}>{trackMainContent}</div>
               )}
+              {showDjMetadata ? (
+                hideTrackPosition ? (
+                  <span className={styles.trackDjSpacer} aria-hidden />
+                ) : (
+                  <TrackDjMetadataDisplay
+                    metadata={getTrackDjMetadata?.(track.position)}
+                    isLoading={isDjMetadataLoading}
+                    variant="tracklist"
+                  />
+                )
+              ) : null}
               <div className={styles.trackTrailing}>
                 {track.duration ? (
                   <span className={styles.trackDuration}>{track.duration}</span>

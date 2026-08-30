@@ -25,6 +25,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Mosaic generator / image proxy | [patterns.md](patterns.md) (Mosaic generator) |
 | Clear user data (Settings / About / Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
 | Settings page (theme, sync, clear data) | [patterns.md](patterns.md) + [components.md](components.md) (`Settings/`) |
+| DJ metadata / GetSongBPM BPM-key lookups | [patterns.md](patterns.md) (DJ metadata) + [components.md](components.md) (`TrackDjMetadata/`, `ReleaseTracklist/`) + [platform.md](platform.md) (`GETSONGBPM_API_KEY`) |
 | CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
 | Site metadata, sitemap, robots | [patterns.md](patterns.md) (Metadata and OG images) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |

@@ -40,6 +40,7 @@
 
 .once {
   opacity: 0;
+  pointer-events: none;
   transform: translateY(0.5rem);
   transition:
     opacity var(--reveal-duration, 650ms) ease-out,
@@ -47,6 +48,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     opacity: 1;
+    pointer-events: auto;
     transform: translateY(0);
     transition: none;
   }
@@ -54,6 +56,7 @@
 
 .onceRevealed {
   opacity: 1;
+  pointer-events: auto;
   transform: translateY(0);
 }
 

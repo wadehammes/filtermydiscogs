@@ -20,6 +20,7 @@ import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthentic
 import { useCurrentView } from "src/hooks/useViewAtoms.hook";
 import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  DEFAULT_SHOW_DJ_METADATA_ON_TRACKS,
   type StoredViewState,
 } from "src/types/userPreferences.types";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
@@ -143,6 +144,20 @@ export default function SettingsClient() {
     );
   };
 
+  const handleShowDjMetadataOnTracksChange = (enabled: boolean) => {
+    persistPreferences(
+      { showDjMetadataOnTracks: enabled },
+      {
+        onSuccess: () => {
+          showPreferencesSavedToast();
+        },
+        onError: () => {
+          showPreferencesSaveErrorToast();
+        },
+      },
+    );
+  };
+
   const handleViewChange = (view: "card" | "list") => {
     dispatchView({
       type: ViewActionTypes.SetView,
@@ -191,9 +206,14 @@ export default function SettingsClient() {
             autoPlayOnQueueAdd={
               preferences?.autoPlayOnQueueAdd ?? DEFAULT_AUTO_PLAY_ON_QUEUE_ADD
             }
+            showDjMetadataOnTracks={
+              preferences?.showDjMetadataOnTracks ??
+              DEFAULT_SHOW_DJ_METADATA_ON_TRACKS
+            }
             isPreferencesLoading={isPreferencesLoading}
             isPreferencesSaving={isPreferencesSaving}
             onAutoPlayOnQueueAddChange={handleAutoPlayOnQueueAddChange}
+            onShowDjMetadataOnTracksChange={handleShowDjMetadataOnTracksChange}
           />
         );
       case "filters":

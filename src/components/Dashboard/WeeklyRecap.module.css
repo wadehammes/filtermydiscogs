@@ -1,0 +1,103 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.summaryCard {
+  --surface: var(--card);
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  composes: theme-surface-elevated from global;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.heroRow {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.heroValue {
+  color: var(--foreground);
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-bold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.heroLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+}
+
+.changePill {
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
+  font-weight: var(--font-semibold);
+  padding: 0.25rem 0.65rem;
+}
+
+.changePillPositive {
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+}
+
+.changePillNegative {
+  background: color-mix(in srgb, var(--destructive) 14%, transparent);
+  color: var(--destructive);
+}
+
+.priorWeek {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.highlight {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  margin: 0;
+}
+
+.releasesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.dateAdded {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  gap: var(--space-1);
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.moreText {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}

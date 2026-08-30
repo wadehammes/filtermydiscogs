@@ -288,8 +288,11 @@
 
 .inlineLink {
   color: var(--primary);
+  cursor: pointer;
+  position: relative;
   text-decoration: none;
   transition: color var(--transition-normal);
+  z-index: 1;
 
   &:hover {
     color: var(--primary-hover);

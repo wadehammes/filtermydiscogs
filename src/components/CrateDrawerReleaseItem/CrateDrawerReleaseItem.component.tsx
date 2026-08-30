@@ -3,7 +3,9 @@ import Image from "next/image";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateDrawerReleaseActions } from "src/components/CrateDrawerReleaseActions/CrateDrawerReleaseActions.component";
 import styles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
+import { TrackDjMetadataDisplay } from "src/components/TrackDjMetadata/TrackDjMetadataDisplay.component";
 import type { DiscogsRelease } from "src/types";
+import type { TrackDjMetadata } from "src/types/trackMetadata.types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
@@ -13,6 +15,9 @@ import {
 interface CrateDrawerReleaseItemProps {
   release: DiscogsRelease;
   packed: boolean;
+  showDjMetadata?: boolean;
+  djMetadata?: TrackDjMetadata | null;
+  isDjMetadataLoading?: boolean;
   onReleaseClick?: (instanceId: string) => void;
   onPackedChange: (packed: boolean) => void;
   onRemove: (releaseId: string) => void;
@@ -21,6 +26,9 @@ interface CrateDrawerReleaseItemProps {
 export const CrateDrawerReleaseItem = ({
   release,
   packed,
+  showDjMetadata = false,
+  djMetadata,
+  isDjMetadataLoading = false,
   onReleaseClick,
   onPackedChange,
   onRemove,
@@ -46,6 +54,7 @@ export const CrateDrawerReleaseItem = ({
     <div
       className={classNames(styles.listItem, {
         [styles.listItemFound]: packedEnabled && packed,
+        [styles.listItemWithDjMetadata]: showDjMetadata,
       })}
     >
       <button
@@ -78,6 +87,14 @@ export const CrateDrawerReleaseItem = ({
           ) : null}
         </div>
       </button>
+      {showDjMetadata ? (
+        <TrackDjMetadataDisplay
+          metadata={djMetadata}
+          isLoading={isDjMetadataLoading}
+          variant="crate"
+          className={styles.djMetadata}
+        />
+      ) : null}
       <CrateDrawerReleaseActions
         packed={packed}
         releaseTitle={basic_information.title}

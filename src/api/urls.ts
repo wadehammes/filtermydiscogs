@@ -31,6 +31,7 @@ import {
   fetchDiscogsRelease,
   fetchDiscogsSearch,
 } from "src/api/endpoints/release";
+import { fetchTrackMetadataBatch } from "src/api/endpoints/trackMetadata";
 import {
   fetchUserPreferences,
   updateUserPreferences,
@@ -60,6 +61,7 @@ export const api = {
   removeReleaseFromCrate,
   setReleasePackedInCrate,
   syncCrates,
+  trackMetadataBatch: fetchTrackMetadataBatch,
   updateCollectionNote,
   updateCrate,
   updateCrateLayout,

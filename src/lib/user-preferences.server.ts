@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  DEFAULT_SHOW_DJ_METADATA_ON_TRACKS,
   type StoredTheme,
   type StoredViewState,
   USER_PREFERENCES_VERSION,
@@ -26,6 +27,7 @@ export const defaultUserPreferences = (): UserPreferences => ({
   version: USER_PREFERENCES_VERSION,
   persistFilters: true,
   autoPlayOnQueueAdd: DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  showDjMetadataOnTracks: DEFAULT_SHOW_DJ_METADATA_ON_TRACKS,
   theme: "system",
   view: defaultViewPreference,
   filters: defaultPersistedFilters,
@@ -84,6 +86,10 @@ export const parseUserPreferences = (
     autoPlayOnQueueAdd: parseBooleanField(
       storedPreferences.autoPlayOnQueueAdd,
       defaults.autoPlayOnQueueAdd,
+    ),
+    showDjMetadataOnTracks: parseBooleanField(
+      storedPreferences.showDjMetadataOnTracks,
+      defaults.showDjMetadataOnTracks,
     ),
     theme: parseThemeField(storedPreferences.theme, defaults.theme),
     view: parseViewPreference(storedPreferences.view ?? null),
