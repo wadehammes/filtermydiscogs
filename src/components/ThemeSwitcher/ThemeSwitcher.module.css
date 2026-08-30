@@ -79,6 +79,7 @@
 }
 
 .submenuTrigger {
+  composes: menuitemhover from "../../styles/modules/menu-item-interaction.module.css";
   align-items: center;
   background: none;
   border: none;
@@ -94,12 +95,6 @@
   text-align: left;
   transition: var(--transition-fast);
   width: 100%;
-
-  &:hover,
-  &[data-highlighted] {
-    background: var(--muted);
-    color: var(--primary);
-  }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
@@ -142,6 +137,7 @@
 }
 
 .radioItem {
+  composes: menuitemhover from "../../styles/modules/menu-item-interaction.module.css";
   align-items: center;
   background: none;
   border: none;
@@ -156,12 +152,6 @@
   padding: var(--space-2) var(--space-3);
   text-align: left;
   width: 100%;
-
-  &:hover,
-  &[data-highlighted] {
-    background: var(--muted);
-    color: var(--primary);
-  }
 
   &:focus-visible {
     outline: 2px solid var(--ring);

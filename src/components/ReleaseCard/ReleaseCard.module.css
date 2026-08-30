@@ -6,6 +6,8 @@
     var(--shadow-sm),
     inset 0 0 0 1px var(--border);
   color: inherit;
+  container-name: release-card;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -136,6 +138,21 @@
   text-align: left;
 }
 
+@container release-card (max-width: 11rem) {
+  .mainContent {
+    padding: var(--space-2) var(--space-2) var(--space-1);
+  }
+
+  .genresContainer {
+    padding: 0 var(--space-2) var(--space-2);
+  }
+
+  .actionButtonsContainer {
+    right: 0;
+    top: 0;
+  }
+}
+
 .subtitle {
   color: var(--foreground);
   font-size: var(--text-sm);
@@ -191,13 +208,13 @@
     outline-offset: 2px;
   }
 
-  &:hover:not(.crateActionButtonActive) {
+  &:hover:not([aria-pressed="true"]) {
     background: var(--muted);
     color: var(--foreground);
   }
 }
 
-.crateActionButtonActive {
+.crateActionButton[aria-pressed="true"] {
   background: var(--primary);
   color: var(--primary-foreground);
 
@@ -285,7 +302,7 @@
 }
 
 .actionSegmented .segmentSlot + .segmentSlot .actionSegment {
-  border-left: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
 }
 
 .actionSegmented .segmentSlot:first-child .actionSegment {

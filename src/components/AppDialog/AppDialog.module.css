@@ -36,27 +36,27 @@
   inset: auto;
   left: 50%;
   max-height: min(90svh, calc(100% - var(--space-8)));
-  max-width: min(
-    calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
-    var(--scroll-modal-max-width, 42rem)
-  );
+  max-width: 100%;
   overflow: hidden;
   pointer-events: none;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(
-    calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
-    var(--scroll-modal-max-width, 42rem)
-  );
+  width: 100%;
   z-index: calc(var(--z-5-modal) + 1);
 
   & > * {
     pointer-events: auto;
   }
 
-  @media (width < 1024px) {
-    max-width: 100%;
-    width: 100%;
+  @media (width >= 1024px) {
+    max-width: min(
+      calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
+      var(--scroll-modal-max-width, 42rem)
+    );
+    width: min(
+      calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
+      var(--scroll-modal-max-width, 42rem)
+    );
   }
 }

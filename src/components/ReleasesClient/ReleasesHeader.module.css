@@ -50,7 +50,9 @@
 }
 
 .viewToggleMobile {
-  @media (width < 1024px) {
-    display: none;
+  display: none;
+
+  @media (width >= 1024px) {
+    display: flex;
   }
 }

@@ -1,9 +1,9 @@
 .drawer {
   background: var(--background);
-  border-left: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
   display: none;
   flex-direction: column;
-  height: calc(100vh - var(--sticky-header-total-height));
+  height: calc(100dvh - var(--sticky-header-total-height));
   overflow: hidden;
   position: sticky;
   top: var(--sticky-header-total-height);

@@ -2,7 +2,7 @@
   background: var(--background);
   margin: 0 auto;
   max-width: 90rem;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: clamp(var(--space-4), 2vw + 1rem, var(--space-8));
   width: 100%;
 }
@@ -305,7 +305,7 @@
   flex-direction: column;
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-sm);
-  height: 100vh;
+  height: 100dvh;
   justify-content: center;
   text-align: center;
 }
@@ -318,7 +318,7 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   justify-content: center;
   text-align: center;
 

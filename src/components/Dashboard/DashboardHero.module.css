@@ -141,9 +141,26 @@
 }
 
 .metricsList {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
+}
+
+@container (max-width: 16rem) {
+  .metricsList {
+    grid-template-columns: 1fr;
+  }
+
+  .metricItem {
+    padding-inline: 0;
+
+    & + .metricItem {
+      border-block-start: 1px dashed var(--border);
+      border-inline-start: none;
+      padding-block-start: var(--space-3);
+    }
+  }
 }
 
 .metricItem {

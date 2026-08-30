@@ -26,6 +26,22 @@
   }
 }
 
+@keyframes scrollFadeEnd {
+  0%,
+  85% {
+    mask-image: linear-gradient(
+      to right,
+      #000 0%,
+      #000 calc(100% - var(--horizontal-scroll-fade-width, 2rem)),
+      transparent 100%
+    );
+  }
+
+  100% {
+    mask-image: linear-gradient(to right, #000 0%, #000 100%);
+  }
+}
+
 .scrollFadeEnd {
   mask-image: linear-gradient(
     to right,
@@ -33,4 +49,15 @@
     #000 calc(100% - var(--horizontal-scroll-fade-width, 2rem)),
     transparent 100%
   );
+}
+
+@supports (animation-timeline: scroll()) {
+  .scrollFadeEnd {
+    mask-image: none;
+  }
+
+  .scrollOverflow {
+    animation: scrollFadeEnd linear both;
+    animation-timeline: scroll(self inline);
+  }
 }

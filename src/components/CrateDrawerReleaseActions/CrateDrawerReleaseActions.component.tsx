@@ -40,9 +40,7 @@ export const CrateDrawerReleaseActions = ({
           <div className={stackStyles.overlayActionSlot}>
             <button
               type="button"
-              className={classNames(stackStyles.overlayAction, {
-                [stackStyles.overlayActionActive]: packed,
-              })}
+              className={stackStyles.overlayAction}
               onClick={handlePackedToggle}
               aria-pressed={packed}
               aria-label={

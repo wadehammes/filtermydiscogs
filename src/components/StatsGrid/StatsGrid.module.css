@@ -1,14 +1,20 @@
 .statsGrid {
+  container-name: stats-grid;
+  container-type: inline-size;
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(var(--mobile-columns, 1), 1fr);
   width: 100%;
+}
 
-  @media (width >= 640px) {
+@container stats-grid (min-width: 640px) {
+  .statsGrid {
     grid-template-columns: repeat(var(--tablet-columns, 2), 1fr);
   }
+}
 
-  @media (width >= 1024px) {
+@container stats-grid (min-width: 1024px) {
+  .statsGrid {
     grid-template-columns: repeat(var(--desktop-columns, 4), 1fr);
   }
 }

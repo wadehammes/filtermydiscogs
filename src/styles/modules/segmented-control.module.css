@@ -76,25 +76,30 @@
 }
 
 .container > :first-child .segment,
-.container > .segment:first-child {
-  border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+.container > .segment:first-child,
+.containerVertical > :first-child .segment,
+.containerVertical > .segment:first-child {
   box-shadow: none;
 }
 
-.container > :last-child .segment,
-.container > .segment:last-child {
+.containerAllowOverflow > :first-child .segment,
+.containerAllowOverflow > .segment:first-child {
+  border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+}
+
+.containerAllowOverflow > :last-child .segment,
+.containerAllowOverflow > .segment:last-child {
   border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
 }
 
-.containerVertical > :first-child .segment,
-.containerVertical > .segment:first-child {
+.containerAllowOverflow.containerVertical > :first-child .segment,
+.containerAllowOverflow.containerVertical > .segment:first-child {
   border-radius: var(--radius-ui) var(--radius-ui) 0 0;
-  box-shadow: none;
 }
 
-.containerVertical > :last-child .segment,
-.containerVertical > .segment:last-child {
-  border-radius: 0 0 var(--radius-ui) var(--radius-ui);
+.containerAllowOverflow.containerVertical > :last-child .segment,
+.containerAllowOverflow.containerVertical > .segment:last-child {
+  border-radius: 0 0 var(--radius-ui) var(--radius-ui) 0;
 }
 
 .segmentCompact {

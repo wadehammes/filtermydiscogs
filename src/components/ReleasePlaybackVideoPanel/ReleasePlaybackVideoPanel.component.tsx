@@ -54,10 +54,10 @@ export const ReleasePlaybackVideoPanel = ({
       ref={panelRef}
       id={panelId}
       className={classNames(styles.videoPanel, {
-        [styles.videoPanelExpanded]: isExpanded,
         [styles.videoPanelPositioned]: useFloatingLayout && position !== null,
         [styles.videoPanelDragging]: isInteracting,
       })}
+      {...(isExpanded ? { "data-video-expanded": "true" as const } : {})}
       style={{
         ...(useFloatingLayout && position
           ? {

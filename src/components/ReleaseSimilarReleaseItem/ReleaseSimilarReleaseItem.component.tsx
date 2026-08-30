@@ -126,9 +126,7 @@ export const ReleaseSimilarReleaseItem = ({
           <div className={stackStyles.overlayActionSlot}>
             <button
               type="button"
-              className={classNames(stackStyles.overlayAction, {
-                [stackStyles.overlayActionActive]: inCrate,
-              })}
+              className={stackStyles.overlayAction}
               onClick={handleCrateToggle}
               aria-pressed={inCrate}
               aria-label={

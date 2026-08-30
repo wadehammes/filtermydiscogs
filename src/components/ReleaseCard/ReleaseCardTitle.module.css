@@ -38,6 +38,18 @@
   }
 }
 
+@container release-card (max-width: 11rem) {
+  .releaseTitle {
+    -webkit-line-clamp: 3;
+    font-size: var(--text-lg);
+    line-height: 1.2;
+  }
+
+  .artistLine {
+    font-size: var(--text-xs);
+  }
+}
+
 .titleGroupMobile .artistLine {
   line-height: 1.35;
 }

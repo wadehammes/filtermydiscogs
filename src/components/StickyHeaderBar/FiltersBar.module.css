@@ -40,6 +40,7 @@
     background: var(--background);
     border: 1px solid var(--input);
     border-radius: var(--radius-ui);
+    container-type: inline-size;
     display: flex;
     flex: 2;
     gap: 0;
@@ -61,8 +62,14 @@
     }
 
     & > :last-child:not(:only-child) {
-      border-left: 1px solid var(--input);
+      border-inline-start: 1px solid var(--input);
       flex: 0 0 5.5rem;
+    }
+
+    @container (max-width: 18rem) {
+      & > :last-child:not(:only-child) {
+        flex: 0 0 4.5rem;
+      }
     }
 
     & > * > [data-filter-control-trigger] {
@@ -100,16 +107,6 @@
 
   .desktopFilters [data-filter-control-trigger]:hover:not(:disabled) {
     background: color-mix(in srgb, var(--foreground) 4%, var(--background));
-  }
-
-  .clearAllButton {
-    flex-shrink: 0;
-  }
-
-  .clearAllButtonActive:not(:disabled),
-  .clearAllButtonActive:not(:disabled):hover {
-    border-color: var(--foreground);
-    color: var(--foreground);
   }
 
   .mobileFilters {

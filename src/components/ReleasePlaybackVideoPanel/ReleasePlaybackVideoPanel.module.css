@@ -15,7 +15,7 @@
   width: 100%;
 }
 
-.videoPanelExpanded {
+.videoPanel[data-video-expanded="true"] {
   --panel-scale: 1;
   --video-max-height: 16.1rem;
 
@@ -58,7 +58,7 @@
   }
 }
 
-.videoPanelExpanded .videoContent {
+.videoPanel[data-video-expanded="true"] .videoContent {
   aspect-ratio: 16 / 9;
   flex: none;
   height: auto;
@@ -149,7 +149,7 @@
   pointer-events: auto;
 }
 
-.videoPanel:not(.videoPanelExpanded) .videoContent {
+.videoPanel:not([data-video-expanded="true"]) .videoContent {
   height: 100%;
 }
 

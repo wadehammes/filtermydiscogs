@@ -33,13 +33,13 @@
     outline-offset: 2px;
   }
 
-  &:hover:not(.actionActive) {
+  &:hover:not([aria-pressed="true"]) {
     background: var(--muted);
     color: var(--foreground);
   }
 }
 
-.actionActive {
+.action[aria-pressed="true"] {
   background: var(--primary);
   border-color: var(--primary);
   color: var(--primary-foreground);
