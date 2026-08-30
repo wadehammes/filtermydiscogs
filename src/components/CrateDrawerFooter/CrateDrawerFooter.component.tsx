@@ -73,7 +73,6 @@ export const CrateDrawerFooter = () => {
               className={classNames(
                 segmentedStyles.segment,
                 styles.footerSegment,
-                styles.footerSegmentDisabled,
               )}
               aria-disabled="true"
             >

@@ -174,10 +174,7 @@ const AutocompleteSelectComponent = ({
         {triggerIcon}
       </Combobox.Trigger>
       <div
-        className={classNames(
-          styles.valueContainer,
-          selectedOptions.length > 0 && styles.valueContainerWithPills,
-        )}
+        className={styles.valueContainer}
         {...(selectedOptions.length > 0
           ? {
               role: "button" as const,

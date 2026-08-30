@@ -17,7 +17,7 @@
   align-items: center;
   background: color-mix(in srgb, var(--primary) 6%, var(--background));
   border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--input));
-  border-left: 3px solid var(--primary);
+  border-inline-start: 3px solid var(--primary);
   border-radius: var(--radius-ui);
   color: var(--foreground);
   cursor: pointer;
@@ -34,7 +34,7 @@
   &.menuTriggerActive {
     background: color-mix(in srgb, var(--primary) 12%, var(--background));
     border-color: color-mix(in srgb, var(--primary) 45%, var(--input));
-    border-left-color: var(--primary);
+    border-inline-start-color: var(--primary);
   }
 
   &:focus-visible {
@@ -157,6 +157,7 @@
 }
 
 .menuItem {
+  composes: menuitemdisabled menuitemhover from "../../styles/modules/menu-item-interaction.module.css";
   align-items: center;
   background: none;
   border: none;
@@ -178,21 +179,6 @@
     outline: 2px solid var(--ring);
     outline-offset: -2px;
   }
-
-  &:disabled,
-  &[data-disabled],
-  &[aria-disabled="true"] {
-    color: var(--muted-foreground);
-    cursor: default;
-    opacity: 1;
-    pointer-events: none;
-  }
-
-  &:hover:not(:disabled, [data-disabled], [aria-disabled="true"]),
-  &[data-highlighted]:not([data-disabled], [aria-disabled="true"]) {
-    background: var(--muted);
-    color: var(--primary);
-  }
 }
 
 .menuItemView {
@@ -201,8 +187,8 @@
     color: var(--primary);
     font-weight: var(--font-semibold);
 
-    &:hover:not(:disabled, [data-disabled], [aria-disabled="true"]),
-    &[data-highlighted]:not([data-disabled], [aria-disabled="true"]) {
+    &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
+    &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
       background: color-mix(in srgb, var(--primary) 14%, var(--muted));
       color: var(--primary);
     }
@@ -257,13 +243,8 @@
 }
 
 .menuItemReset {
+  composes: menuitemhoverneutral from "../../styles/modules/menu-item-interaction.module.css";
   color: var(--foreground);
-
-  &:hover:not(:disabled, [data-disabled], [aria-disabled="true"]),
-  &[data-highlighted]:not([data-disabled], [aria-disabled="true"]) {
-    background: var(--muted);
-    color: var(--foreground);
-  }
 
   &[data-disabled],
   &[aria-disabled="true"] {

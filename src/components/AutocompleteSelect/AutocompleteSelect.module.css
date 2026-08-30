@@ -158,18 +158,18 @@
   pointer-events: none;
   position: relative;
   z-index: 1;
-}
 
-.valueContainerWithPills {
-  cursor: pointer;
-  overflow: hidden;
-  padding-right: calc(var(--space-4) + var(--space-2));
-  pointer-events: auto;
+  &:has(.pillsContainer) {
+    cursor: pointer;
+    overflow: hidden;
+    padding-inline-end: calc(var(--space-4) + var(--space-2));
+    pointer-events: auto;
 
-  & > * {
-    flex: 1 1 0;
-    min-width: 0;
-    width: 100%;
+    & > * {
+      flex: 1 1 0;
+      min-width: 0;
+      width: 100%;
+    }
   }
 }
 

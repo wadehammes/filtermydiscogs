@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100dvh - 60px);
   padding: var(--space-4);
   position: relative;
   width: 100%;

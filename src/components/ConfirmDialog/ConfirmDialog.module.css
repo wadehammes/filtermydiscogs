@@ -12,6 +12,7 @@
     font-size: var(--text-lg);
     font-weight: var(--font-semibold);
     margin: 0;
+    text-wrap: balance;
   }
 
   .message {

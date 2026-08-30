@@ -7,12 +7,17 @@
   font-size: 16px;
   font-weight: var(--font-normal);
   line-height: 1.4;
+  min-height: 3.5rem;
   padding: var(--space-2);
   resize: vertical;
   transition: border-color var(--transition-normal);
   width: 100%;
   outline: 1px dashed var(--border);
   outline-offset: 2px;
+
+  @supports (field-sizing: content) {
+    field-sizing: content;
+  }
 
   @media (width >= 768px) {
     font-size: var(--text-xs);
@@ -41,9 +46,14 @@
   font-size: 16px;
   font-weight: var(--font-normal);
   line-height: 1.4;
+  min-height: 3.5rem;
   padding: 0;
   resize: vertical;
   width: 100%;
+
+  @supports (field-sizing: content) {
+    field-sizing: content;
+  }
 
   @media (width >= 768px) {
     font-size: var(--text-xs);
@@ -99,7 +109,7 @@
   font-family: var(--font-family-meta);
   font-size: 0.5rem;
   margin: 0;
-  margin-left: auto;
+  margin-inline-start: auto;
   white-space: nowrap;
 }
 

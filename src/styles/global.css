@@ -98,6 +98,10 @@ video {
   vertical-align: baseline;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 html,
 body {
   color: var(--foreground);
@@ -121,7 +125,7 @@ body {
 body {
   line-height: 1;
   background-color: var(--background);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 h1,

@@ -71,6 +71,15 @@ Import from the **concrete module path** (e.g. `src/components/ReleaseCard/Relea
 | In crate | **`.inCrate`** — primary **`outline`** on the card shell |
 | Notes | Cover overlay **`ReleaseNotesCardAction`** only — no inline note body on the card |
 
+## Releases grid ([`ReleasesGrid`](../../src/components/ReleasesClient/ReleasesGrid.component.tsx))
+
+Card view renders via [`ReleasesGrid.module.css`](../../src/components/ReleasesClient/ReleasesGrid.module.css) (not the duplicate **`.releasesGrid`** block in [`ReleasesClient.module.css`](../../src/components/ReleasesClient/ReleasesClient.module.css) — keep both in sync if either changes).
+
+| Concern | Pattern |
+|---------|---------|
+| Columns | From **`768px+`**: **`repeat(auto-fit, minmax(280px, 1fr))`** — use **`auto-fit`**, not **`auto-fill`**, so visible cards stretch across the full main column when there are fewer items than would fit (e.g. filtered list or crate drawer closed on desktop). **`auto-fill`** reserves empty tracks and leaves a dead gap on the right |
+| Workspace | [`ReleasesClient`](../../src/components/ReleasesClient/ReleasesClient.component.tsx): **`data-releases-workspace`**, **`.withSidebar`** when the crate drawer is open; desktop **`.sidebar`** (**`440px`**) only mounts when open — **`mainContent`** **`min-width: 0`** so the grid can shrink beside the drawer |
+
 ## Feature example: MobileReleaseCard
 
 [`src/components/ReleaseCard/MobileReleaseCard.component.tsx`](../../src/components/ReleaseCard/MobileReleaseCard.component.tsx) is the **mobile** release row (image | content | action column). **`PublicMobileReleaseCard`** shares **`MobileReleaseCard.module.css`**.

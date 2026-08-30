@@ -70,7 +70,7 @@
   @media (width >= 620px) {
     gap: var(--space-4);
     grid-template-columns: repeat(
-        auto-fill,
+        auto-fit,
         minmax(clamp(18.75rem, 20vw, 20rem), 1fr)
       );
   }
@@ -190,8 +190,10 @@
 
 :global(html:has([data-global-playback-dock]):has([data-video-expanded="true"]))
   .crateFabAboveDock {
-  @media (width < 768px) {
-    z-index: calc(var(--z-3-fixed) - 1);
+  z-index: calc(var(--z-3-fixed) - 1);
+
+  @media (width >= 768px) {
+    z-index: revert;
   }
 }
 

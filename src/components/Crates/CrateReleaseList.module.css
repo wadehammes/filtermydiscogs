@@ -9,16 +9,12 @@
 
 .row {
   display: grid;
-  gap: var(--space-3) var(--space-4);
+  gap: var(--space-3);
   grid-template-areas:
     "identity identity actions"
     "notes notes notes";
   grid-template-columns: 1fr auto;
-
-  @media (width < 1024px) {
-    gap: var(--space-3);
-    padding: var(--space-4);
-  }
+  padding: var(--space-4);
 
   @media (width >= 1024px) {
     align-items: center;
@@ -34,20 +30,10 @@
 }
 
 .rowDivided {
-  @media (width < 1024px) {
-    border-bottom: 1px dotted var(--border);
+  border-bottom: 1px dotted var(--border);
 
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  @media (width >= 1024px) {
-    border-bottom: 1px dotted var(--border);
-
-    &:last-child {
-      border-bottom: none;
-    }
+  &:last-child {
+    border-bottom: none;
   }
 }
 

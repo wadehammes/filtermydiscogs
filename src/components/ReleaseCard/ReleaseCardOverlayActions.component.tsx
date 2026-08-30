@@ -55,7 +55,6 @@ export const ReleaseCardOverlayActions = ({
     isVertical
       ? classNames(stackStyles.overlayAction, {
           [stackStyles.overlayActionMobile]: useMobileTapPadding,
-          [stackStyles.overlayActionActive]: active,
           [stackStyles.overlayActionQueued]: queued,
         })
       : classNames(segmentedStyles.segment, styles.actionSegment, {
@@ -90,14 +89,9 @@ export const ReleaseCardOverlayActions = ({
     <div className={isVertical ? slotClass : styles.segmentSlot}>
       <button
         type="button"
-        className={
-          isVertical
-            ? actionClass(inCrate)
-            : classNames(styles.crateActionButton, {
-                [styles.crateActionButtonActive]: inCrate,
-              })
-        }
+        className={isVertical ? actionClass(inCrate) : styles.crateActionButton}
         onClick={handleCrateToggle}
+        aria-pressed={inCrate}
         aria-label={inCrate ? "Remove from crate" : "Add to crate"}
         title={crateTooltipLabel}
       >

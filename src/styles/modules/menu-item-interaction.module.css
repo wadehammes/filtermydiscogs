@@ -1,0 +1,34 @@
+.menuitemdisabled {
+  &:disabled,
+  &[data-disabled],
+  &[aria-disabled="true"] {
+    color: var(--muted-foreground);
+    cursor: default;
+    opacity: 1;
+    pointer-events: none;
+  }
+}
+
+.menuitemhover {
+  &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
+  &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+    background: var(--muted);
+    color: var(--primary);
+  }
+}
+
+.menuitemhoverneutral {
+  &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
+  &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+}
+
+.menuitemhoverdanger {
+  &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
+  &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+    background: color-mix(in srgb, var(--destructive) 8%, transparent);
+    color: var(--destructive);
+  }
+}

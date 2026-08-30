@@ -11,6 +11,11 @@ import {
 import { resolveHorizontalScrollWheel } from "src/utils/horizontalScrollRowWheel";
 import styles from "./HorizontalScrollRow.module.css";
 
+const supportsScrollTimeline =
+  typeof CSS !== "undefined" &&
+  typeof CSS.supports === "function" &&
+  CSS.supports("animation-timeline", "scroll()");
+
 interface HorizontalScrollRowProps {
   children: ReactNode;
   className?: string | undefined;
@@ -23,7 +28,8 @@ export function HorizontalScrollRow({
   "data-testid": dataTestId,
 }: HorizontalScrollRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [showEndShadow, setShowEndShadow] = useState(false);
+  const [canScroll, setCanScroll] = useState(false);
+  const [atEnd, setAtEnd] = useState(true);
 
   const updateEndShadow = useCallback(() => {
     const element = scrollRef.current;
@@ -31,11 +37,12 @@ export function HorizontalScrollRow({
       return;
     }
 
-    const canScroll = element.scrollWidth > element.clientWidth + 1;
-    const atEnd =
+    const overflow = element.scrollWidth > element.clientWidth + 1;
+    const end =
       element.scrollLeft + element.clientWidth >= element.scrollWidth - 1;
 
-    setShowEndShadow(canScroll && !atEnd);
+    setCanScroll(overflow);
+    setAtEnd(end);
   }, []);
 
   useLayoutEffect(() => {
@@ -80,7 +87,9 @@ export function HorizontalScrollRow({
       <div
         ref={scrollRef}
         className={classNames(styles.scroll, className, {
-          [styles.scrollFadeEnd]: showEndShadow,
+          [styles.scrollOverflow]: canScroll && supportsScrollTimeline,
+          [styles.scrollFadeEnd]:
+            canScroll && !supportsScrollTimeline && !atEnd,
         })}
         onScroll={updateEndShadow}
       >

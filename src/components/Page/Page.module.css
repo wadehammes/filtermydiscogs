@@ -18,12 +18,12 @@
 
 .container {
   background: var(--background);
-  min-height: calc(100vh - 250px);
+  min-height: calc(100dvh - 250px);
   padding: var(--space-8) var(--space-4);
   width: 100%;
 
   @media (width >= 768px) {
-    min-height: calc(100vh - 220px);
+    min-height: calc(100dvh - 220px);
   }
 }
 

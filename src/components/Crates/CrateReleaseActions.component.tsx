@@ -38,10 +38,9 @@ export const CrateReleaseActions = ({
       {packedEnabled ? (
         <button
           type="button"
-          className={classNames(styles.action, {
-            [styles.actionActive]: packed,
-          })}
+          className={styles.action}
           onClick={handlePackedToggle}
+          aria-pressed={packed}
           aria-label={
             packed
               ? `Unmark ${releaseTitle} as packed for gig`

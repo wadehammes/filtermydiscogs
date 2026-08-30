@@ -45,23 +45,23 @@
     outline-offset: -2px;
   }
 
-  &:hover:not(.overlayActionActive) {
+  &:hover:not([aria-pressed="true"]) {
     background: var(--muted);
     color: var(--foreground);
   }
 }
 
-.overlayActionMobile {
-  padding-block: var(--space-2);
-}
-
-.overlayActionActive {
+.overlayAction[aria-pressed="true"] {
   background: var(--primary);
   color: var(--primary-foreground);
 
   &:focus-visible {
     outline-color: var(--primary-foreground);
   }
+}
+
+.overlayActionMobile {
+  padding-block: var(--space-2);
 }
 
 .overlayActionQueued {
@@ -73,7 +73,7 @@
     opacity: 1;
   }
 
-  &:hover:not(.overlayActionActive) {
+  &:hover:not([aria-pressed="true"]) {
     background: transparent;
     color: var(--primary);
   }

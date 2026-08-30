@@ -15,22 +15,22 @@
 }
 
 .itemImage.itemImage {
-  height: 5rem;
-  width: 5rem;
+  height: 3.75rem;
+  width: 3.75rem;
 
-  @media (width < 1024px) {
-    height: 3.75rem;
-    width: 3.75rem;
+  @media (width >= 1024px) {
+    height: 5rem;
+    width: 5rem;
   }
 }
 
 .listItemActions.listItemActions {
-  flex: 0 0 3rem;
-  width: 3rem;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
 
-  @media (width < 1024px) {
-    flex: 0 0 2.75rem;
-    width: 2.75rem;
+  @media (width >= 1024px) {
+    flex: 0 0 3rem;
+    width: 3rem;
   }
 }
 

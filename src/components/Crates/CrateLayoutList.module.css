@@ -20,12 +20,10 @@
   }
 
   &.releaseRowWithHandle {
-    @media (width < 1024px) {
-      grid-template-areas:
-        "handle identity actions"
-        "notes notes notes";
-      grid-template-columns: auto 1fr auto;
-    }
+    grid-template-areas:
+      "handle identity actions"
+      "notes notes notes";
+    grid-template-columns: auto 1fr auto;
 
     @media (width >= 1024px) {
       grid-template-areas: "handle notes identity actions";
