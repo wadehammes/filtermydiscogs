@@ -3,7 +3,7 @@
 import { useAtomValue } from "jotai";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { trackEvent } from "src/analytics/analytics";
+import { trackFilterViewSaved } from "src/analytics/productAnalyticsEvents";
 import {
   FiltersActionTypes,
   sessionFiltersAtom,
@@ -86,12 +86,6 @@ export const useFilterViews = () => {
         type: FiltersActionTypes.ApplySessionFilters,
         payload: { ...view.filters },
       });
-      trackEvent("filterViewApplied", {
-        action: "applyFilterView",
-        category: "filters",
-        label: view.name,
-        value: view.id,
-      });
     },
     [filtersDispatch],
   );
@@ -100,12 +94,6 @@ export const useFilterViews = () => {
     filtersDispatch({
       type: FiltersActionTypes.ClearAllFilters,
       payload: undefined,
-    });
-    trackEvent("filtersCleared", {
-      action: "clearAllFilters",
-      category: "filters",
-      label: "Reset Filters",
-      value: "filterViewsMenu",
     });
   }, [filtersDispatch]);
 
@@ -140,12 +128,7 @@ export const useFilterViews = () => {
       persistFilterViews(nextViews, {
         onSuccess: () => {
           toast.success(FILTER_VIEW_SAVED_MESSAGE);
-          trackEvent("filterViewSaved", {
-            action: "saveFilterView",
-            category: "filters",
-            label: normalizedName,
-            value: String(nextViews.length),
-          });
+          trackFilterViewSaved(normalizedName, nextViews.length);
         },
         errorMessage: FILTER_VIEW_SAVE_ERROR_MESSAGE,
       });
@@ -204,12 +187,6 @@ export const useFilterViews = () => {
       persistFilterViews(nextViews, {
         onSuccess: () => {
           toast.success(FILTER_VIEW_RENAMED_MESSAGE);
-          trackEvent("filterViewRenamed", {
-            action: "renameFilterView",
-            category: "filters",
-            label: normalizedName,
-            value: viewId,
-          });
         },
         errorMessage: FILTER_VIEW_RENAME_ERROR_MESSAGE,
       });

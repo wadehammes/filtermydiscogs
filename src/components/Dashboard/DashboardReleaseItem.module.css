@@ -94,3 +94,10 @@
     }
   }
 }
+
+.releaseItemWrap .releaseTitle,
+.releaseItemWrap .releaseMeta {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+}

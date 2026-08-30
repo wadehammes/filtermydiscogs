@@ -10,14 +10,12 @@ import { UserActions } from "./UserActions";
 interface StickyHeaderBarProps {
   allReleasesLoaded?: boolean;
   hideFilters?: boolean;
-  filterCategory?: string;
   currentPage?: string;
 }
 
 export const StickyHeaderBar = ({
   allReleasesLoaded = true,
   hideFilters = false,
-  filterCategory = "home",
   currentPage,
 }: StickyHeaderBarProps) => {
   const { state: collectionState } = useCollectionContext();
@@ -65,9 +63,7 @@ export const StickyHeaderBar = ({
         </div>
       </div>
 
-      {shouldShowFilters ? (
-        <FiltersBar category={filterCategory} disabled={!collection} />
-      ) : null}
+      {shouldShowFilters ? <FiltersBar disabled={!collection} /> : null}
       {shouldShowFiltersSkeleton ? <FiltersBarSkeleton /> : null}
     </>
   );

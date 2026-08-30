@@ -1,6 +1,5 @@
 import classNames from "classnames";
 import Link from "next/link";
-import { trackEvent } from "src/analytics/analytics";
 import Crates from "src/styles/icons/crates-thin.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
@@ -24,20 +23,10 @@ export const PageNavigation = ({
   showCrates = true,
   isDisabled = false,
 }: PageNavigationProps) => {
-  const handleNavigation = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    label: string,
-  ) => {
+  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isDisabled) {
       e.preventDefault();
-      return;
     }
-    trackEvent("pageNavigation", {
-      action: "pageNavigation",
-      category: "navigation",
-      label: `Navigate to ${label}`,
-      value: label.toLowerCase(),
-    });
   };
 
   return (
@@ -53,7 +42,7 @@ export const PageNavigation = ({
             [styles.active]: currentPage === "dashboard",
             [styles.disabled]: isDisabled,
           })}
-          onClick={(e) => handleNavigation(e, "Dashboard")}
+          onClick={handleNavigation}
           aria-label="View dashboard"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
@@ -72,7 +61,7 @@ export const PageNavigation = ({
             [styles.active]: currentPage === "releases",
             [styles.disabled]: isDisabled,
           })}
-          onClick={(e) => handleNavigation(e, "Releases")}
+          onClick={handleNavigation}
           aria-label="View releases"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
@@ -91,7 +80,7 @@ export const PageNavigation = ({
             [styles.active]: currentPage === "crates",
             [styles.disabled]: isDisabled,
           })}
-          onClick={(e) => handleNavigation(e, "Crates")}
+          onClick={handleNavigation}
           aria-label="View crates"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
@@ -110,7 +99,7 @@ export const PageNavigation = ({
             [styles.active]: currentPage === "mosaic",
             [styles.disabled]: isDisabled,
           })}
-          onClick={(e) => handleNavigation(e, "Mosaic")}
+          onClick={handleNavigation}
           aria-label="View mosaic"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}

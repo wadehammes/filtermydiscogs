@@ -251,7 +251,7 @@ export function TickerNumber({
     return () => {
       cancelAnimationFrame(raf);
     };
-  }, [isActive, startValue, value]);
+  }, [isActive]);
 
   return (
     <span aria-label={format(value)} className={className} role="img" {...rest}>

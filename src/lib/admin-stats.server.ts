@@ -55,6 +55,32 @@ type AccountPreferencesAnalyticsRow = {
   count: number;
 };
 
+type AccountPreferencesSavedViewsOverviewRow = {
+  users_with_saved_views: number;
+  total_saved_views: number;
+};
+
+const SAVED_VIEW_COUNT_BUCKETS = ["0", "1", "2-5", "6+"] as const;
+
+const savedViewCountSql = Prisma.sql`
+  CASE
+    WHEN jsonb_typeof(preferences->'filterViews') = 'array'
+    THEN jsonb_array_length(preferences->'filterViews')
+    ELSE 0
+  END
+`;
+
+const normalizeSavedViewsBreakdown = (
+  rows: AccountPreferencesBreakdownRow[],
+): AccountPreferencesBreakdownRow[] => {
+  const counts = new Map(rows.map((row) => [row.key, row.count]));
+
+  return SAVED_VIEW_COUNT_BUCKETS.map((key) => ({
+    key,
+    count: counts.get(key) ?? 0,
+  }));
+};
+
 type TopUserRow = AdminStatsTopUser;
 
 type GrowthRow = AdminStatsGrowthDataPoint;
@@ -279,14 +305,20 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
     STORED_THEMES.map((theme) => Prisma.sql`${theme}`),
   );
 
-  const [persistFiltersRows, analyticsRows, themeRows, viewRows] =
-    await Promise.all([
-      prisma.$queryRaw<Array<{ count: number }>>`
+  const [
+    persistFiltersRows,
+    analyticsRows,
+    themeRows,
+    viewRows,
+    savedViewsOverviewRows,
+    savedViewsBreakdownRows,
+  ] = await Promise.all([
+    prisma.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(*)::int AS count
         FROM users
         WHERE COALESCE((preferences->>'persistFilters')::boolean, true) = true
       `,
-      prisma.$queryRaw<AccountPreferencesAnalyticsRow[]>`
+    prisma.$queryRaw<AccountPreferencesAnalyticsRow[]>`
         SELECT
           CASE
             WHEN preferences->'analyticsConsent' IS NULL THEN 'unset'
@@ -297,7 +329,7 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
         FROM users
         GROUP BY 1
       `,
-      prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
         SELECT
           CASE
             WHEN preferences->>'theme' IN (${storedThemeSqlList}) THEN preferences->>'theme'
@@ -308,7 +340,7 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
         GROUP BY 1
         ORDER BY count DESC, key ASC
       `,
-      prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
         SELECT
           CASE
             WHEN preferences->'view'->>'currentView' IN ('card', 'list', 'random')
@@ -320,13 +352,43 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
         GROUP BY 1
         ORDER BY count DESC, key ASC
       `,
-    ]);
+    prisma.$queryRaw<AccountPreferencesSavedViewsOverviewRow[]>`
+        SELECT
+          COUNT(*) FILTER (WHERE ${savedViewCountSql} > 0)::int AS users_with_saved_views,
+          COALESCE(SUM(${savedViewCountSql}), 0)::int AS total_saved_views
+        FROM users
+      `,
+    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+        WITH view_counts AS (
+          SELECT ${savedViewCountSql} AS view_count
+          FROM users
+        )
+        SELECT
+          CASE
+            WHEN view_count = 0 THEN '0'
+            WHEN view_count = 1 THEN '1'
+            WHEN view_count BETWEEN 2 AND 5 THEN '2-5'
+            ELSE '6+'
+          END AS key,
+          COUNT(*)::int AS count
+        FROM view_counts
+        GROUP BY 1
+        ORDER BY MIN(view_count)
+      `,
+  ]);
+
+  const savedViewsOverview = savedViewsOverviewRows[0];
 
   return {
     persistFiltersEnabled: persistFiltersRows[0]?.count ?? 0,
     analyticsConsent: mapAnalyticsConsentCounts(analyticsRows),
     themes: themeRows,
     defaultViews: viewRows,
+    savedViews: {
+      usersWithSavedViews: savedViewsOverview?.users_with_saved_views ?? 0,
+      totalSavedViews: savedViewsOverview?.total_saved_views ?? 0,
+      countBreakdown: normalizeSavedViewsBreakdown(savedViewsBreakdownRows),
+    },
   };
 };
 

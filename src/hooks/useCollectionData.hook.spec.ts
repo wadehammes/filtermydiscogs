@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
 import { toast } from "sonner";
-import { trackEvent } from "src/analytics/analytics";
+import { ApiFetchError } from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { allReleasesAtom } from "src/atoms/filters.atoms";
 import {
@@ -9,11 +9,7 @@ import {
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
 import { useCollectionContext } from "src/context/collection.context";
-import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
-import {
-  useCollectionData,
-  useCollectionLoadState,
-} from "src/hooks/useCollectionData.hook";
+import { useCollectionData } from "src/hooks/useCollectionData.hook";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
@@ -29,11 +25,13 @@ import {
   writePersistedCollectionCache,
 } from "src/utils/collectionCacheStorage";
 import { resetCollectionCacheReady } from "src/utils/collectionCacheSync";
+import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls", () => ({
   api: {
+    checkAuth: jest.fn(),
     discogsCollection: jest.fn(),
     syncCrates: jest.fn(),
   },
@@ -46,19 +44,15 @@ jest.mock("sonner", () => ({
   },
 }));
 
-jest.mock("src/analytics/analytics", () => ({
-  trackEvent: jest.fn(),
-}));
-
+const mockCheckAuth = jest.mocked(api.checkAuth);
 const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 const mockSyncCrates = jest.mocked(api.syncCrates);
 const mockToastSuccess = jest.mocked(toast.success);
-const mockTrackEvent = jest.mocked(trackEvent);
 
 const buildSinglePageCollection = (releaseCount: number) => {
   const page = collectionFactory.build(
     {},
-    { page: 1, totalPages: 1, releaseCount },
+    { page: 1, totalPages: 1, releaseCount, totalItems: releaseCount },
   );
   page.pagination.per_page = COLLECTION_FIRST_PAGE_SIZE;
   page.pagination.urls.next = "";
@@ -304,10 +298,6 @@ describe("useCollectionData", () => {
         cachedPage.releases[1]?.instance_id,
       ].map(String),
     );
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      "crateSync",
-      expect.objectContaining({ action: "crateSyncAuto" }),
-    );
     expect(mockToastSuccess).toHaveBeenCalledWith(
       "Sync complete: Removed 2 releases from your crates.",
     );
@@ -338,44 +328,143 @@ describe("useCollectionData", () => {
 
     expect(invalidateSpy).not.toHaveBeenCalled();
   });
-});
 
-describe("useCollectionLoadState", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it("reads loading state from the shared query cache without fetching", async () => {
-    const queryClient = createTestQueryClient();
+  it("rechecks auth and retries the collection fetch after a 401", async () => {
     const page = buildSinglePageCollection(3);
-    queryClient.setQueryData(
-      DiscogsCollectionQueryKeys.byUsername("testuser"),
-      {
-        pages: [page],
-        pageParams: [COLLECTION_FULL_PAGE_PARAM],
+    mockFetchDiscogsCollection
+      .mockRejectedValueOnce(new ApiFetchError(401, "Not authenticated"))
+      .mockResolvedValueOnce(page);
+    mockCheckAuth.mockResolvedValueOnce({
+      isAuthenticated: true,
+      username: "testuser",
+      userId: "123",
+      reconnectUsername: null,
+      rateLimited: false,
+    });
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useAtomValue(allReleasesAtom);
       },
+      { includeCollectionSync: false },
     );
 
-    const { result } = renderFeatureHook(() => useCollectionLoadState(), {
-      queryClient,
-      authInitialState: testAuthenticatedAuthState,
-      includeCollectionSync: false,
-    });
-
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current).toHaveLength(3);
     });
 
-    expect(mockFetchDiscogsCollection).not.toHaveBeenCalled();
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(2);
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledWith({
+      username: "testuser",
+      page: 1,
+      perPage: COLLECTION_FIRST_PAGE_SIZE,
+    });
+    expect(mockCheckAuth).toHaveBeenCalledTimes(1);
   });
 
-  it("reports loading while authenticated and the shared cache is still empty", () => {
-    const { result } = renderFeatureHook(() => useCollectionLoadState(), {
-      authInitialState: testAuthenticatedAuthState,
-      includeCollectionSync: false,
+  it("starts at full page size when a large collection size is stored", async () => {
+    persistCollectionItemCount("testuser", 11_400);
+    const page = collectionFactory.build(
+      {},
+      { page: 1, totalPages: 114, totalItems: 11_400, releaseCount: 4 },
+    );
+    page.pagination.per_page = COLLECTION_PAGE_SIZE;
+    page.pagination.urls.next = "";
+    mockFetchDiscogsCollection.mockResolvedValueOnce(page);
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useAtomValue(allReleasesAtom);
+      },
+      { includeCollectionSync: false },
+    );
+
+    await waitFor(() => {
+      expect(result.current).toHaveLength(4);
     });
 
-    expect(result.current.isLoading).toBe(true);
-    expect(mockFetchDiscogsCollection).not.toHaveBeenCalled();
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(1);
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledWith({
+      username: "testuser",
+      page: 1,
+      perPage: COLLECTION_PAGE_SIZE,
+    });
+  });
+
+  it("dispatches an error when a 401 session is gone", async () => {
+    mockFetchDiscogsCollection.mockRejectedValueOnce(
+      new ApiFetchError(401, "Not authenticated"),
+    );
+    mockCheckAuth.mockResolvedValueOnce({
+      isAuthenticated: false,
+      username: null,
+      userId: null,
+      reconnectUsername: null,
+      rateLimited: false,
+    });
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useCollectionContext().state;
+      },
+      { includeCollectionSync: false },
+    );
+
+    await waitFor(() => {
+      expect(result.current.error).toBeTruthy();
+    });
+
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(1);
+    expect(mockCheckAuth).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries after a 503 without rechecking auth", async () => {
+    const page = buildSinglePageCollection(3);
+    mockFetchDiscogsCollection
+      .mockRejectedValueOnce(
+        new ApiFetchError(
+          503,
+          "Discogs rate limit exceeded. Please try again shortly.",
+          10,
+        ),
+      )
+      .mockResolvedValueOnce(page);
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useAtomValue(allReleasesAtom);
+      },
+      { includeCollectionSync: false },
+    );
+
+    await waitFor(
+      () => {
+        expect(result.current).toHaveLength(3);
+      },
+      { timeout: 3000 },
+    );
+
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(2);
+    expect(mockCheckAuth).not.toHaveBeenCalled();
   });
 });

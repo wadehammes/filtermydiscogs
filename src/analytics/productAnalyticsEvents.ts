@@ -194,10 +194,42 @@ export const trackViewModeChanged = (view: string) => {
   });
 };
 
-export const trackCollectionSearched = (queryLength: number) => {
-  trackProductEvent("collectionSearched", {
-    category: "collection",
-    label: "Search collection",
-    value: String(queryLength),
+export const trackFilterViewSaved = (viewName: string, totalViews: number) => {
+  trackProductEvent("filterViewSaved", {
+    category: "filters",
+    label: viewName,
+    value: String(totalViews),
+  });
+};
+
+export const trackCrateSyncManual = (removedCount: number) => {
+  trackProductEvent("crateSync", {
+    category: "crate",
+    label: "Manual crate sync",
+    value: String(removedCount),
+  });
+};
+
+export const trackMosaicDownload = (releaseCount: number) => {
+  trackProductEvent("mosaicDownload", {
+    category: "mosaic",
+    label: "Download mosaic",
+    value: String(releaseCount),
+  });
+};
+
+export const trackMosaicError = (errorMessage: string) => {
+  trackProductEvent("mosaicError", {
+    category: "mosaic",
+    label: "Generation failed",
+    value: errorMessage,
+  });
+};
+
+export const trackPageView = (pathname: string, label: string) => {
+  trackProductEvent("pageView", {
+    category: "navigation",
+    label,
+    value: pathname,
   });
 };

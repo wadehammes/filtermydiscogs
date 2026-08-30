@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { trackEvent } from "src/analytics/analytics";
+import { trackCrateSyncManual } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import { useSyncCratesMutation } from "src/hooks/mutations/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
@@ -62,12 +62,7 @@ export const useCrateCollectionSync = () => {
       {
         onSuccess: (data) => {
           setShowSyncDialog(false);
-          trackEvent("crateSync", {
-            action: "crateSyncManual",
-            category: "crate",
-            label: "Manual Crate Sync",
-            value: data.removedCount.toString(),
-          });
+          trackCrateSyncManual(data.removedCount);
           if (data.removedCount > 0) {
             toast.success(
               `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,

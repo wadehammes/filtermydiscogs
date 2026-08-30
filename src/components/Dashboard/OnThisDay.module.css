@@ -18,85 +18,57 @@
   margin: 0;
 }
 
-.yearStack {
+.releasesList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  max-width: 42rem;
+  padding: 0;
   width: 100%;
 }
 
-.yearGroup {
+.yearAdded {
+  align-items: center;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  min-width: 0;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  text-align: center;
 }
 
-.yearHeading {
+.yearAddedValue {
   color: var(--foreground);
-  font-family: var(--font-family-meta);
-  font-size: var(--text-meta-sm);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.04em;
-  margin: 0;
-  text-transform: uppercase;
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-bold);
+  line-height: 1;
 }
 
-.cardList {
-  display: grid;
-  gap: var(--space-2);
-  grid-template-columns: minmax(0, 1fr);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  @media (width >= 768px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.cardListSingle {
-  @media (width >= 768px) {
-    grid-template-columns: minmax(0, 1fr);
-    max-width: 36rem;
-  }
-}
-
-.cardItem {
-  min-width: 0;
-}
-
-.releaseItemWrap {
-  flex: 1;
-  min-width: 0;
-}
-
-.cardWithBadge .releaseItemWrap {
-  padding-inline-end: 5.5rem;
-}
-
-.yearBadge {
-  background: color-mix(in srgb, var(--primary) 12%, var(--card));
-  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
-  border-radius: var(--radius-full);
-  color: var(--primary);
-  display: inline-flex;
-  align-items: center;
+.yearAddedLabel {
+  color: var(--muted-foreground);
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-xs);
-  font-weight: var(--font-medium);
-  line-height: 1;
-  padding-block: 0.1875rem;
-  padding-inline: var(--space-2);
-  position: absolute;
-  right: var(--space-3);
-  top: var(--space-3);
+  line-height: 1.2;
   white-space: nowrap;
-  z-index: 1;
 }
 
-.emptyInline {
+.emptyState {
+  --surface: var(--card);
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
   color: var(--muted-foreground);
+  composes: theme-surface-elevated from global;
+  max-width: 36rem;
+  padding: var(--space-6);
+  text-align: center;
+  width: 100%;
+}
+
+.emptyState p {
   font-size: var(--text-sm);
   line-height: 1.5;
   margin: 0;
@@ -106,4 +78,5 @@
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin: 0;
+  max-width: 36rem;
 }

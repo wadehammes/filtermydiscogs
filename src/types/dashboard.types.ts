@@ -143,6 +143,12 @@ export interface AdminStatsPreferenceBreakdownRow {
   count: number;
 }
 
+export interface AdminStatsSavedViews {
+  usersWithSavedViews: number;
+  totalSavedViews: number;
+  countBreakdown: AdminStatsPreferenceBreakdownRow[];
+}
+
 export interface AdminStatsAccountPreferences {
   persistFiltersEnabled: number;
   analyticsConsent: {
@@ -152,6 +158,7 @@ export interface AdminStatsAccountPreferences {
   };
   themes: AdminStatsPreferenceBreakdownRow[];
   defaultViews: AdminStatsPreferenceBreakdownRow[];
+  savedViews: AdminStatsSavedViews;
 }
 
 export interface AdminStatsEngagement {

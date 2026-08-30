@@ -2,7 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { trackEvent } from "src/analytics/analytics";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -179,13 +178,6 @@ export const useCollectionData = ({
       { collectionInstanceIds: syncResult.instanceIds },
       {
         onSuccess: (data) => {
-          trackEvent("crateSync", {
-            action: "crateSyncAuto",
-            category: "crate",
-            label: "Automatic Crate Sync",
-            value: data.removedCount.toString(),
-          });
-
           if (data.removedCount > 0) {
             toast.success(
               `Sync complete: Removed ${data.removedCount} release${data.removedCount !== 1 ? "s" : ""} from your crates.`,

@@ -22,6 +22,7 @@ export interface AdminUserLookupPreferences {
   defaultView: string;
   persistFilters: boolean;
   analyticsConsent: "enabled" | "disabled" | "unset";
+  savedViewsCount: number;
 }
 
 export interface AdminUserLookupAnalytics {

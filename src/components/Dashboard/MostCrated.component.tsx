@@ -75,7 +75,6 @@ export function MostCrated({
           >
             <DashboardReleaseItem
               release={item.release}
-              category="mostCrated"
               {...definedProps({ onReleaseClick })}
             >
               <div className={styles.crateCount}>

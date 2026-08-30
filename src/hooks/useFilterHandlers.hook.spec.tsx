@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
-import { trackEvent } from "src/analytics/analytics";
 import {
   formatOperatorAtom,
   selectedFormatsAtom,
@@ -16,18 +15,12 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { SeedCollectionFilters } from "src/tests/utils/seedCollectionFilters";
 import { act, renderFeatureHook } from "test-utils";
 
-jest.mock("src/analytics/analytics", () => ({
-  trackEvent: jest.fn(),
-}));
-
-const mockTrackEvent = jest.mocked(trackEvent);
-
 describe("useFilterHandlers", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("updates selected styles and tracks analytics", () => {
+  it("updates selected styles", () => {
     const releases = [
       releaseFactory.withStyles(["Rock"]),
       releaseFactory.withStyles(["Jazz"]),
@@ -35,7 +28,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const selectedStyles = useAtomValue(selectedStylesAtom);
 
         return { handlers, selectedStyles };
@@ -54,13 +47,6 @@ describe("useFilterHandlers", () => {
     });
 
     expect(result.current.selectedStyles).toEqual(["Rock"]);
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      "releaseStyle",
-      expect.objectContaining({
-        category: "test_filters",
-        value: "Rock",
-      }),
-    );
   });
 
   it("updates selected years from string values", () => {
@@ -81,7 +67,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const selectedYears = useAtomValue(selectedYearsAtom);
 
         return { handlers, selectedYears };
@@ -107,7 +93,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const selectedFormats = useAtomValue(selectedFormatsAtom);
         const selectedSort = useAtomValue(selectedSortAtom);
 
@@ -139,7 +125,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const styleOperator = useAtomValue(styleOperatorAtom);
 
         return { handlers, styleOperator };
@@ -158,12 +144,6 @@ describe("useFilterHandlers", () => {
     });
 
     expect(result.current.styleOperator).toBe("AND");
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      "styleOperator",
-      expect.objectContaining({
-        value: "AND",
-      }),
-    );
   });
 
   it("updates the format operator when a valid value is selected", () => {
@@ -171,7 +151,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const formatOperator = useAtomValue(formatOperatorAtom);
 
         return { handlers, formatOperator };
@@ -190,12 +170,6 @@ describe("useFilterHandlers", () => {
     });
 
     expect(result.current.formatOperator).toBe("NONE");
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      "formatOperator",
-      expect.objectContaining({
-        value: "NONE",
-      }),
-    );
   });
 
   it("updates the year operator when a valid value is selected", () => {
@@ -207,7 +181,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const yearOperator = useAtomValue(yearOperatorAtom);
 
         return { handlers, yearOperator };
@@ -226,12 +200,6 @@ describe("useFilterHandlers", () => {
     });
 
     expect(result.current.yearOperator).toBe("NONE");
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      "yearOperator",
-      expect.objectContaining({
-        value: "NONE",
-      }),
-    );
   });
 
   it("ignores invalid year operator values", () => {
@@ -243,7 +211,7 @@ describe("useFilterHandlers", () => {
 
     const { result } = renderFeatureHook(
       () => {
-        const handlers = useFilterHandlers("test_filters");
+        const handlers = useFilterHandlers();
         const yearOperator = useAtomValue(yearOperatorAtom);
 
         return { handlers, yearOperator };

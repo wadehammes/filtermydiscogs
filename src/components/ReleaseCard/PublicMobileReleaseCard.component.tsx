@@ -106,15 +106,12 @@ const PublicMobileReleaseCardComponent = ({
               artists={artists}
               title={title}
               releaseUrl={releaseUrl}
-              resourceUrl={resource_url}
-              analyticsCategory="publicCrate"
               className={titleStyles.titleGroupMobile}
             />
             <ReleaseCardMeta
               labelName={labels[0]?.name}
               labelUrl={labelUrl}
               year={year}
-              analyticsCategory="publicCrate"
               className={metaStyles.metaLineMobile}
             />
           </div>

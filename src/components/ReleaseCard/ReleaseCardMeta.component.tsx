@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { trackEvent } from "src/analytics/analytics";
 import { formatDate } from "src/utils/dateHelpers";
 import styles from "./ReleaseCardMeta.module.css";
 
@@ -30,7 +29,6 @@ interface ReleaseCardMetaProps {
   labelUrl?: string | null | undefined;
   year?: number | undefined;
   dateAdded?: string | null | undefined;
-  analyticsCategory?: "releaseCard" | "publicCrate" | "home" | undefined;
   className?: string | undefined;
 }
 
@@ -47,7 +45,6 @@ export function ReleaseCardMeta({
   labelUrl,
   year,
   dateAdded,
-  analyticsCategory = "releaseCard",
   className,
 }: ReleaseCardMetaProps) {
   const showYear = year !== undefined && year !== 0;
@@ -70,12 +67,6 @@ export function ReleaseCardMeta({
             title={`View ${labelName} on Discogs`}
             onClick={(e) => {
               e.stopPropagation();
-              trackEvent("labelClicked", {
-                action: "labelClicked",
-                category: analyticsCategory,
-                label: "Label Clicked",
-                value: labelUrl,
-              });
             }}
             className={styles.labelLink}
           >

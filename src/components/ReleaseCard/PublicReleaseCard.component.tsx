@@ -103,14 +103,11 @@ const PublicReleaseCardComponent = ({
             artists={artists}
             title={title}
             releaseUrl={releaseUrl}
-            resourceUrl={resource_url}
-            analyticsCategory="publicCrate"
           />
           <ReleaseCardMeta
             labelName={labels[0]?.name}
             labelUrl={labelUrl}
             year={year}
-            analyticsCategory="publicCrate"
           />
         </div>
         <HorizontalScrollRow className={styles.genresContainer}>

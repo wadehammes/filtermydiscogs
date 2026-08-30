@@ -9,7 +9,6 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
 import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
@@ -58,7 +57,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     const { columnSizing, onColumnSizingChange } = useReleasesTableLayout();
 
     const handlePillClick = usePillClickHandler({
-      category: "releasesTable",
       onExitRandomMode,
     });
 
@@ -76,12 +74,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
 
     const handleImageClick = useCallback(
       (release: DiscogsRelease) => {
-        trackEvent("releaseClicked", {
-          action: "releaseClicked",
-          category: "releasesTable",
-          label: "Release Image Clicked (Table View)",
-          value: release.basic_information.resource_url,
-        });
         onReleaseClick(String(release.instance_id));
       },
       [onReleaseClick],
@@ -192,12 +184,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                               title={`View ${artist.name} on Discogs`}
                               onClick={(event) => {
                                 event.stopPropagation();
-                                trackEvent("artistClicked", {
-                                  action: "artistClicked",
-                                  category: "releasesTable",
-                                  label: "Artist Clicked",
-                                  value: artistUrl,
-                                });
                               }}
                               className={styles.artistLink}
                             >
@@ -220,12 +206,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       title="View release on Discogs"
                       onClick={(event) => {
                         event.stopPropagation();
-                        trackEvent("releaseClicked", {
-                          action: "releaseClicked",
-                          category: "releasesTable",
-                          label: "Release Clicked",
-                          value: resourceUrl ?? releaseUrl,
-                        });
                       }}
                     >
                       {title}
@@ -269,12 +249,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       title={`View ${label.name} on Discogs`}
                       onClick={(event) => {
                         event.stopPropagation();
-                        trackEvent("labelClicked", {
-                          action: "labelClicked",
-                          category: "releasesTable",
-                          label: "Label Clicked",
-                          value: labelUrl,
-                        });
                       }}
                       className={styles.labelLink}
                     >
@@ -336,7 +310,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                             event,
                             value: formatName,
                             type: "format",
-                            eventLabel: "Format Pill Clicked",
                           })
                         }
                         aria-label={`Filter by ${formatName} format`}
@@ -356,7 +329,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                             event,
                             value: tag,
                             type: "style",
-                            eventLabel: "Genre Style Pill Clicked",
                           })
                         }
                         aria-label={`Filter by ${tag}`}

@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import type { MouseEvent } from "react";
-import { trackEvent } from "src/analytics/analytics";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { useReleaseNotesEditorContext } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { Spinner } from "src/components/Spinner/Spinner.component";
@@ -24,7 +23,6 @@ import { useReleaseCardQueueAction } from "./useReleaseCardQueueAction.hook";
 interface ReleaseCardOverlayActionsProps {
   release: DiscogsRelease;
   releaseUrl: string | null;
-  resourceUrl: string | null;
   onReleaseOpen?: () => void;
   notesVariant?: "card" | "mobile";
   layout?: "horizontal" | "vertical";
@@ -34,7 +32,6 @@ interface ReleaseCardOverlayActionsProps {
 export const ReleaseCardOverlayActions = ({
   release,
   releaseUrl,
-  resourceUrl,
   onReleaseOpen,
   notesVariant = "card",
   layout = "horizontal",
@@ -181,12 +178,6 @@ export const ReleaseCardOverlayActions = ({
         className={actionClass()}
         onClick={(event) => {
           event.stopPropagation();
-          trackEvent("releaseClicked", {
-            action: "releaseClicked",
-            category: "releaseCard",
-            label: "View on Discogs",
-            value: resourceUrl ?? releaseUrl,
-          });
         }}
         aria-label="View on Discogs"
         title="View on Discogs"

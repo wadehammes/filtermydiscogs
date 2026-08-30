@@ -42,7 +42,7 @@ export const ReleaseSummaryHero = ({
   const { state: authState } = useAuth();
   const selectedFormats = useSelectedFormats();
   const selectedStyles = useSelectedStyles();
-  const handlePillClick = usePillClickHandler({ category: "releaseModal" });
+  const handlePillClick = usePillClickHandler();
 
   const { basic_information: basicInfo } = release;
   const { formats: releaseFormats } = basicInfo;
@@ -139,7 +139,6 @@ export const ReleaseSummaryHero = ({
                         event: e,
                         value: formatName,
                         type: "format",
-                        eventLabel: "Format Pill Clicked",
                       })
                     }
                     aria-label={`Filter by ${formatName} format`}
@@ -159,7 +158,6 @@ export const ReleaseSummaryHero = ({
                         event: e,
                         value: tag,
                         type: "style",
-                        eventLabel: "Genre Style Pill Clicked",
                       })
                     }
                     aria-label={`Filter by ${tag}`}
