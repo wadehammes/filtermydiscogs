@@ -33,4 +33,18 @@ describe("StickyHeaderBar", () => {
       screen.queryByTestId(po.filtersSkeletonTestId),
     ).not.toBeInTheDocument();
   });
+
+  it("renders nav only when part is nav", () => {
+    po.renderStickyHeaderBar({ part: "nav" });
+
+    expect(screen.getByRole("navigation")).toBeInTheDocument();
+    expect(screen.queryByTestId(po.searchBarTestId)).not.toBeInTheDocument();
+  });
+
+  it("renders filters only when part is filters", () => {
+    po.renderStickyHeaderBar({ part: "filters" });
+
+    expect(screen.getByTestId(po.searchBarTestId)).toBeInTheDocument();
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+  });
 });

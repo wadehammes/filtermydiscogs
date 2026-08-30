@@ -1,15 +1,9 @@
-.pageShell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100dvh;
-}
-
 .page {
   composes: microdotbackground from "../../styles/modules/patterns.module.css";
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  min-height: calc(100dvh - var(--sticky-header-height));
+  min-height: 0;
   width: 100%;
 }
 

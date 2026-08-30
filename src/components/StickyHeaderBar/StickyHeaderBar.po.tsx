@@ -23,6 +23,7 @@ export type StickyHeaderBarRenderProps = {
   allReleasesLoaded?: boolean;
   hideFilters?: boolean;
   currentPage?: string;
+  part?: "all" | "nav" | "filters";
   releases?: DiscogsRelease[];
 };
 
@@ -45,6 +46,7 @@ export class StickyHeaderBarPageObject extends BasePageObject {
       allReleasesLoaded = true,
       hideFilters = false,
       currentPage = "releases",
+      part = "all",
       releases = [releaseFactory.withDisplayDefaults()],
     } = overrides;
 
@@ -54,6 +56,7 @@ export class StickyHeaderBarPageObject extends BasePageObject {
           allReleasesLoaded={allReleasesLoaded}
           hideFilters={hideFilters}
           currentPage={currentPage}
+          part={part}
         />
       </SeedCollectionFilters>
     );

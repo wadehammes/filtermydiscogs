@@ -8,11 +8,10 @@ import styles from "./BackToTop.module.css";
 const SCROLL_THRESHOLD = 400; // Show button after scrolling 400px
 
 interface BackToTopProps {
-  aboveDock?: boolean;
   className?: string;
 }
 
-export const BackToTop = ({ aboveDock = false, className }: BackToTopProps) => {
+export const BackToTop = ({ className }: BackToTopProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const scrollElement = usePlaybackPageScrollElement();
 
@@ -53,7 +52,6 @@ export const BackToTop = ({ aboveDock = false, className }: BackToTopProps) => {
       type="button"
       onClick={scrollToTop}
       className={classNames(styles.backToTop, className, {
-        [styles.aboveDock]: aboveDock,
         [styles.visible]: isVisible,
       })}
       data-testid="fmdBackToTop"

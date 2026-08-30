@@ -4,7 +4,10 @@ import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { useCallback } from "react";
-import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
+import {
+  usePlaybackPageOverlayPortal,
+  usePlaybackPageScrollLock,
+} from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import portalStyles from "src/styles/modules/base-ui-portal.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./AppDialog.module.css";
@@ -22,10 +25,23 @@ interface AppDialogProps {
   backdropVariant?: AppDialogBackdropVariant;
 }
 
-const backdropClassByVariant: Record<AppDialogBackdropVariant, string> = {
-  default: portalStyles.backdrop,
-  modal: portalStyles.backdropModal,
-  strong: portalStyles.backdropStrong,
+const backdropClassByVariant = (
+  variant: AppDialogBackdropVariant,
+  usesShellPortal: boolean,
+): string => {
+  if (usesShellPortal) {
+    return variant === "strong"
+      ? portalStyles.backdropshellstrong
+      : variant === "modal"
+        ? portalStyles.backdropshellmodal
+        : portalStyles.backdropshell;
+  }
+
+  return variant === "strong"
+    ? portalStyles.backdropStrong
+    : variant === "modal"
+      ? portalStyles.backdropModal
+      : portalStyles.backdrop;
 };
 
 export const AppDialog = ({
@@ -39,6 +55,8 @@ export const AppDialog = ({
   backdropVariant = "default",
 }: AppDialogProps) => {
   usePlaybackPageScrollLock(open);
+  const overlayPortal = usePlaybackPageOverlayPortal();
+  const usesShellPortal = overlayPortal !== null;
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -51,9 +69,13 @@ export const AppDialog = ({
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange} modal="trap-focus">
-      <Dialog.Portal>
+      <Dialog.Portal
+        {...definedProps({
+          container: overlayPortal ?? undefined,
+        })}
+      >
         <Dialog.Backdrop
-          className={backdropClassByVariant[backdropVariant]}
+          className={backdropClassByVariant(backdropVariant, usesShellPortal)}
           {...definedProps({
             "data-testid": testId ? `${testId}-backdrop` : undefined,
           })}
@@ -61,7 +83,13 @@ export const AppDialog = ({
         <Dialog.Popup
           aria-modal={true}
           className={classNames(
-            backdropVariant === "default" ? styles.popup : styles.popupModal,
+            usesShellPortal
+              ? backdropVariant === "default"
+                ? styles.popupShell
+                : styles.popupModalShell
+              : backdropVariant === "default"
+                ? styles.popup
+                : styles.popupModal,
             panelClassName,
           )}
           {...definedProps({

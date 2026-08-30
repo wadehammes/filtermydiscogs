@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import {
   applyPlaybackPageScrollLock,
@@ -21,6 +22,8 @@ interface PlaybackPageShellContextValue {
   scrollLockCountRef: RefObject<number>;
   lockScroll: () => void;
   unlockScroll: () => void;
+  overlayPortalElement: HTMLElement | null;
+  setOverlayPortalElement: (element: HTMLElement | null) => void;
 }
 
 const noop = () => {};
@@ -32,6 +35,8 @@ const defaultContextValue: PlaybackPageShellContextValue = {
   scrollLockCountRef: defaultScrollLockCountRef,
   lockScroll: noop,
   unlockScroll: noop,
+  overlayPortalElement: null,
+  setOverlayPortalElement: noop,
 };
 
 const PlaybackPageShellContext =
@@ -54,6 +59,12 @@ export const PlaybackPageShellProvider = ({
   const snapshotRef = useRef<ReturnType<
     typeof lockPlaybackPageScrollElement
   > | null>(null);
+  const [overlayPortalElement, setOverlayPortalElementState] =
+    useState<HTMLElement | null>(null);
+
+  const setOverlayPortalElement = useCallback((element: HTMLElement | null) => {
+    setOverlayPortalElementState(element);
+  }, []);
 
   const applyLock = useCallback(() => {
     const element = scrollElementRef.current;
@@ -120,8 +131,16 @@ export const PlaybackPageShellProvider = ({
       scrollLockCountRef: lockCountRef,
       lockScroll,
       unlockScroll,
+      overlayPortalElement,
+      setOverlayPortalElement,
     }),
-    [scrollElement, lockScroll, unlockScroll],
+    [
+      scrollElement,
+      lockScroll,
+      unlockScroll,
+      overlayPortalElement,
+      setOverlayPortalElement,
+    ],
   );
 
   return (
@@ -136,6 +155,15 @@ export const usePlaybackPageScrollElement = (): HTMLElement | null =>
 
 export const usePlaybackPageScrollLockCountRef = (): RefObject<number> =>
   useContext(PlaybackPageShellContext).scrollLockCountRef;
+
+export const usePlaybackPageOverlayPortal = (): HTMLElement | null =>
+  useContext(PlaybackPageShellContext).overlayPortalElement;
+
+export const usePlaybackPageShellMountSetters = () => {
+  const { setOverlayPortalElement } = useContext(PlaybackPageShellContext);
+
+  return { setOverlayPortalElement };
+};
 
 export const usePlaybackPageScrollLock = (enabled: boolean): void => {
   const { lockScroll, unlockScroll } = useContext(PlaybackPageShellContext);

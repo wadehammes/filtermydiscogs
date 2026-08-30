@@ -5,15 +5,6 @@
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: calc(var(--z-6-popover) + 1);
-
-  @media (width < 768px) {
-    :global(html:has([data-global-playback-dock])) & {
-      bottom: var(--release-modal-viewport-inset-bottom);
-      max-height: var(--release-modal-available-height);
-      top: var(--release-modal-viewport-inset-top);
-      transform: translate(-50%, 0);
-    }
-  }
 }
 
 .popupModal {
@@ -23,13 +14,49 @@
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: calc(var(--z-5-modal) + 1);
+}
 
-  @media (width < 768px) {
-    :global(html:has([data-global-playback-dock])) & {
-      bottom: var(--release-modal-viewport-inset-bottom);
-      max-height: var(--release-modal-available-height);
-      top: var(--release-modal-viewport-inset-top);
-      transform: translate(-50%, 0);
-    }
+.popupShell {
+  composes: enterexitscale from "../../styles/modules/portal-enter-exit.module.css";
+  left: 50%;
+  max-height: calc(100% - var(--space-8));
+  pointer-events: auto;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: calc(var(--z-5-modal) + 1);
+}
+
+.popupModalShell {
+  composes: enterexitscale from "../../styles/modules/portal-enter-exit.module.css";
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  inset: auto;
+  left: 50%;
+  max-height: min(90svh, calc(100% - var(--space-8)));
+  max-width: min(
+    calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
+    var(--scroll-modal-max-width, 42rem)
+  );
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(
+    calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
+    var(--scroll-modal-max-width, 42rem)
+  );
+  z-index: calc(var(--z-5-modal) + 1);
+
+  & > * {
+    pointer-events: auto;
+  }
+
+  @media (width < 1024px) {
+    max-width: 100%;
+    width: 100%;
   }
 }

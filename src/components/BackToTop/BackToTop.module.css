@@ -46,7 +46,7 @@
   min-width: 3rem;
   opacity: 0;
   padding: 0;
-  position: fixed;
+  position: absolute;
   transform: translateY(20px);
   transition:
     background-color var(--transition-normal),
@@ -92,10 +92,6 @@
   &.visible {
     opacity: 1;
     transform: translateY(0);
-  }
-
-  &.aboveDock {
-    bottom: calc(var(--release-mini-player-stack-offset, 0) + var(--space-4));
   }
 
   @media (width >= 768px) {

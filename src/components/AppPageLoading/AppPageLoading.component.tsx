@@ -3,7 +3,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
+import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import styles from "./AppPageLoading.module.css";
 import type { AppPage } from "./appPageLoadingMessages";
 import { formatLoadingMessage } from "./appPageLoadingMessages";
@@ -27,12 +27,11 @@ export const AppPageLoading = ({
   const hasSkeleton = children != null;
 
   return (
-    <>
-      <StickyHeaderBar
-        allReleasesLoaded={allReleasesLoaded}
-        currentPage={currentPage}
-        hideFilters={hideFilters}
-      />
+    <CollectionPlaybackPageShell
+      allReleasesLoaded={allReleasesLoaded}
+      currentPage={currentPage}
+      hideFilters={hideFilters}
+    >
       <div
         className={classNames(styles.content, {
           [styles.contentWithSkeleton]: hasSkeleton,
@@ -46,6 +45,6 @@ export const AppPageLoading = ({
           </div>
         )}
       </div>
-    </>
+    </CollectionPlaybackPageShell>
   );
 };

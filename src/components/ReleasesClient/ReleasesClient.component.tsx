@@ -6,10 +6,8 @@ import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.com
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
 import { Page } from "src/components/Page/Page.component";
-import { PlaybackPageShell } from "src/components/PlaybackPageShell/PlaybackPageShell.component";
-import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
+import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
@@ -50,7 +48,6 @@ const ReleasesClientContent = () => {
     randomRelease,
     isMobile,
     currentView,
-    mainContentRef,
     infiniteScrollRef,
     isFilterPending,
     selectedRelease,
@@ -67,13 +64,9 @@ const ReleasesClientContent = () => {
   useOfferPendingFiltersRestore(allReleasesLoaded);
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
 
-  const setMainContentNode = useCallback(
-    (node: HTMLDivElement | null) => {
-      mainContentRef.current = node;
-      setScrollRoot(node);
-    },
-    [mainContentRef],
-  );
+  const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
+    setScrollRoot(node);
+  }, []);
 
   if (shouldRedirectHome) {
     return null;
@@ -86,27 +79,26 @@ const ReleasesClientContent = () => {
   if (hasError) {
     return (
       <Page>
-        <StickyHeaderBar allReleasesLoaded={false} />
-        <div className={styles.errorContainer}>
-          <h2>Error loading collection</h2>
-          <p>{error}</p>
-        </div>
+        <CollectionPlaybackPageShell
+          allReleasesLoaded={false}
+          currentPage="releases"
+        >
+          <div className={styles.errorContainer}>
+            <h2>Error loading collection</h2>
+            <p>{error}</p>
+          </div>
+        </CollectionPlaybackPageShell>
       </Page>
     );
   }
 
   return (
     <Page>
-      <PlaybackPageShell
-        fillViewport
+      <CollectionPlaybackPageShell
+        allReleasesLoaded={allReleasesLoaded}
+        currentPage="releases"
         mainClassName={styles.shellMain}
         scrollElement={scrollRoot}
-        header={
-          <StickyHeaderBar
-            allReleasesLoaded={allReleasesLoaded}
-            currentPage="releases"
-          />
-        }
         overlays={
           <>
             {isMobile && activeCrateId ? (
@@ -134,6 +126,7 @@ const ReleasesClientContent = () => {
                 </div>
               </button>
             ) : null}
+            <BackToTop />
             <ReleaseModalLazyOverlay
               release={selectedRelease}
               onClose={handleCloseModal}
@@ -196,8 +189,6 @@ const ReleasesClientContent = () => {
                 isFetchingNextPage={isFetchingNextPage}
                 infiniteScrollRef={infiniteScrollRef}
               />
-              <BackToTop aboveDock={isMiniPlayerVisible} />
-              <PlaybackScrollSpacer />
             </div>
 
             <div className={styles.sidebar}>
@@ -211,7 +202,7 @@ const ReleasesClientContent = () => {
             </div>
           </div>
         </div>
-      </PlaybackPageShell>
+      </CollectionPlaybackPageShell>
     </Page>
   );
 };

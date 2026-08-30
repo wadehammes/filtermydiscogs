@@ -22,17 +22,31 @@
   }
 }
 
+.workspace {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  isolation: isolate;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  z-index: 0;
+}
+
+.subheaderSlot {
+  flex-shrink: 0;
+  width: 100%;
+}
+
 .main {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  position: relative;
   width: 100%;
-}
-
-.mainPassthrough {
-  min-height: 0;
 }
 
 .mainScroll {
@@ -41,4 +55,41 @@
   overflow: hidden auto;
   overscroll-behavior: contain;
   width: 100%;
+}
+
+.overlayPortal {
+  inset: 0;
+  position: absolute;
+  z-index: var(--z-5-modal);
+
+  &:empty {
+    display: none;
+    pointer-events: none;
+  }
+
+  &:not(:empty) {
+    pointer-events: auto;
+  }
+}
+
+.workspaceOverlays {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: var(--z-3-fixed);
+
+  & > * {
+    pointer-events: auto;
+  }
+}
+
+.dockSlot {
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  z-index: var(--z-9-playback-dock);
+}
+
+.dockSlot:empty {
+  display: none;
 }

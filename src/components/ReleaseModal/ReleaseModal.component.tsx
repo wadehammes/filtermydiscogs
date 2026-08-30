@@ -49,10 +49,7 @@ export const ReleaseModal = ({
       isOpen={isOpen}
       onClose={onClose}
       testId="fmdReleaseModal"
-      panelClassName={classNames(
-        styles.releaseModalPanel,
-        showSimilarSection && styles.modalWide,
-      )}
+      panelClassName={showSimilarSection ? styles.modalWide : undefined}
       contentClassName={showAsideSimilar ? styles.modalMain : undefined}
       aside={
         showAsideSimilar ? (

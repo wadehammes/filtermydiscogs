@@ -7,16 +7,20 @@ import { PageNavigation } from "./PageNavigation";
 import styles from "./StickyHeaderBar.module.css";
 import { UserActions } from "./UserActions";
 
+type StickyHeaderBarPart = "all" | "nav" | "filters";
+
 interface StickyHeaderBarProps {
   allReleasesLoaded?: boolean;
   hideFilters?: boolean;
   currentPage?: string;
+  part?: StickyHeaderBarPart;
 }
 
 export const StickyHeaderBar = ({
   allReleasesLoaded = true,
   hideFilters = false,
   currentPage,
+  part = "all",
 }: StickyHeaderBarProps) => {
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
@@ -28,41 +32,53 @@ export const StickyHeaderBar = ({
     !hideFilters && hasValidCollection && allReleasesLoaded;
   const shouldShowFiltersSkeleton = !(hideFilters || allReleasesLoaded);
 
-  return (
-    <>
-      <div className="layout-sticky-header">
-        <div className={styles.headerContent}>
-          <HeaderTitle />
+  if (part === "filters") {
+    return (
+      <>
+        {shouldShowFilters ? <FiltersBar disabled={!collection} /> : null}
+        {shouldShowFiltersSkeleton ? <FiltersBarSkeleton /> : null}
+      </>
+    );
+  }
 
-          <div className={styles.desktopNav}>
-            <PageNavigation
-              currentPage={currentPage}
-              showMosaic={true}
-              showReleases={true}
-              showDashboard={true}
-              showCrates={true}
-            />
-          </div>
+  const nav = (
+    <div className="layout-sticky-header">
+      <div className={styles.headerContent}>
+        <HeaderTitle />
 
-          <div className={styles.mobileMenu}>
-            <MobileMenu
-              currentPage={currentPage}
-              showMosaic={true}
-              showReleases={true}
-              showDashboard={true}
-              showCrates={true}
-              showFilters={!hideFilters}
-            />
-          </div>
-
-          <UserActions
-            variant="desktop"
-            showMosaic={false}
-            showUsername={true}
+        <div className={styles.desktopNav}>
+          <PageNavigation
+            currentPage={currentPage}
+            showMosaic={true}
+            showReleases={true}
+            showDashboard={true}
+            showCrates={true}
           />
         </div>
-      </div>
 
+        <div className={styles.mobileMenu}>
+          <MobileMenu
+            currentPage={currentPage}
+            showMosaic={true}
+            showReleases={true}
+            showDashboard={true}
+            showCrates={true}
+            showFilters={!hideFilters}
+          />
+        </div>
+
+        <UserActions variant="desktop" showMosaic={false} showUsername={true} />
+      </div>
+    </div>
+  );
+
+  if (part === "nav") {
+    return nav;
+  }
+
+  return (
+    <>
+      {nav}
       {shouldShowFilters ? <FiltersBar disabled={!collection} /> : null}
       {shouldShowFiltersSkeleton ? <FiltersBarSkeleton /> : null}
     </>

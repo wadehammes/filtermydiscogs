@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useDeferredValue, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
@@ -50,7 +44,6 @@ export const useReleasesClient = () => {
   const randomRelease = useRandomRelease();
   const sortedFilteredReleases = useSortedFilteredReleases();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const mainContentRef = useRef<HTMLDivElement>(null);
 
   const [showAllLoadedMessage, setShowAllLoadedMessage] = useState(false);
 
@@ -211,7 +204,6 @@ export const useReleasesClient = () => {
     isMobile,
     currentView,
 
-    mainContentRef,
     infiniteScrollRef: ref,
 
     selectedReleaseId,

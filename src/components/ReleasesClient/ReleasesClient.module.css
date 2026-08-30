@@ -143,7 +143,7 @@
   justify-content: center;
   min-height: 3rem;
   padding: var(--space-1) var(--space-4);
-  position: fixed;
+  position: absolute;
   right: var(--space-4);
   transition:
     background-color var(--transition-normal),
@@ -182,8 +182,10 @@
 }
 
 .crateFabAboveDock {
-  bottom: calc(var(--release-mini-player-stack-offset, 0) + var(--space-4));
-  z-index: calc(var(--z-3-fixed) + 1);
+  :global(html:not(:has([data-playback-dock-in-flow]))) & {
+    bottom: calc(var(--release-mini-player-stack-offset, 0) + var(--space-4));
+    z-index: calc(var(--z-3-fixed) + 1);
+  }
 }
 
 :global(html:has([data-global-playback-dock]):has([data-video-expanded="true"]))

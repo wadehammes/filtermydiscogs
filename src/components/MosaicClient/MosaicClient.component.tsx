@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import MosaicControls from "src/components/MosaicClient/MosaicControls.component";
 import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
-import { StickyHeaderBar } from "src/components/StickyHeaderBar/StickyHeaderBar.component";
+import { Page } from "src/components/Page/Page.component";
+import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import {
   FiltersActionTypes,
@@ -91,69 +92,70 @@ export default function MosaicClient() {
 
   if (releasesToDisplay.length === 0) {
     return (
-      <>
-        <StickyHeaderBar allReleasesLoaded={true} currentPage="mosaic" />
-        <div className={styles.emptyState}>
-          <h1>No releases to display</h1>
-          <p>
-            {allReleases.length === 0
-              ? "Your collection appears to be empty"
-              : "No releases match your current filters. Try adjusting your filter settings."}
-          </p>
-        </div>
-      </>
+      <Page>
+        <CollectionPlaybackPageShell allReleasesLoaded currentPage="mosaic">
+          <div className={styles.emptyState}>
+            <h1>No releases to display</h1>
+            <p>
+              {allReleases.length === 0
+                ? "Your collection appears to be empty"
+                : "No releases match your current filters. Try adjusting your filter settings."}
+            </p>
+          </div>
+        </CollectionPlaybackPageShell>
+      </Page>
     );
   }
 
   return (
-    <>
-      <StickyHeaderBar allReleasesLoaded={true} currentPage="mosaic" />
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1>Album Mosaic</h1>
-          <p>
-            {releasesToDisplay.length === allReleases.length
-              ? `Showing all ${releasesToDisplay.length} releases from your collection`
-              : `Showing ${releasesToDisplay.length} filtered releases from your collection`}
-          </p>
+    <Page>
+      <CollectionPlaybackPageShell allReleasesLoaded currentPage="mosaic">
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <h1>Album Mosaic</h1>
+            <p>
+              {releasesToDisplay.length === allReleases.length
+                ? `Showing all ${releasesToDisplay.length} releases from your collection`
+                : `Showing ${releasesToDisplay.length} filtered releases from your collection`}
+            </p>
 
-          <MosaicControls
-            imageFormat={imageFormat}
-            aspectRatio={aspectRatio}
-            isGenerating={isGenerating}
-            generationProgress={generationProgress}
-            onFormatChange={setImageFormat}
-            onAspectRatioChange={setAspectRatio}
-            onDownload={downloadMosaic}
-          />
+            <MosaicControls
+              imageFormat={imageFormat}
+              aspectRatio={aspectRatio}
+              isGenerating={isGenerating}
+              generationProgress={generationProgress}
+              onFormatChange={setImageFormat}
+              onAspectRatioChange={setAspectRatio}
+              onDownload={downloadMosaic}
+            />
 
-          <div className={styles.mosaicContainer}>
-            {gridDimensions.cols > 0 &&
-              gridDimensions.cellSize &&
-              gridDimensions.cellSize > 0 && (
-                <div
-                  className={styles.mosaicGrid}
-                  style={{
-                    gridTemplateColumns: `repeat(${gridDimensions.cols}, ${gridDimensions.cellSize}px)`,
-                    gridTemplateRows: `repeat(${gridDimensions.rows}, ${gridDimensions.cellSize}px)`,
-                    maxWidth: "100%",
-                  }}
-                >
-                  {releasesToDisplay.map((release) => (
-                    <MosaicItem
-                      key={release.instance_id}
-                      release={release}
-                      totalReleases={releasesToDisplay.length}
-                    />
-                  ))}
-                </div>
-              )}
+            <div className={styles.mosaicContainer}>
+              {gridDimensions.cols > 0 &&
+                gridDimensions.cellSize &&
+                gridDimensions.cellSize > 0 && (
+                  <div
+                    className={styles.mosaicGrid}
+                    style={{
+                      gridTemplateColumns: `repeat(${gridDimensions.cols}, ${gridDimensions.cellSize}px)`,
+                      gridTemplateRows: `repeat(${gridDimensions.rows}, ${gridDimensions.cellSize}px)`,
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {releasesToDisplay.map((release) => (
+                      <MosaicItem
+                        key={release.instance_id}
+                        release={release}
+                        totalReleases={releasesToDisplay.length}
+                      />
+                    ))}
+                  </div>
+                )}
+            </div>
+
+            <canvas ref={canvasRef} style={{ display: "none" }} />
           </div>
-
-          {/* Hidden canvas for image generation */}
-          <canvas ref={canvasRef} style={{ display: "none" }} />
         </div>
-      </div>
-    </>
+      </CollectionPlaybackPageShell>
+    </Page>
   );
 }
