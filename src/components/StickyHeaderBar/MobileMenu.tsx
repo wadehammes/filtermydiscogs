@@ -82,6 +82,10 @@ export const MobileMenu = ({
     setIsOpen(false);
   };
 
+  const handleDonateClick = () => {
+    setIsOpen(false);
+  };
+
   const handleSettingsClick = () => {
     setIsOpen(false);
   };
@@ -113,6 +117,7 @@ export const MobileMenu = ({
             username={authState.username || null}
             onLogout={handleLogout}
             onAboutClick={handleAboutClick}
+            onDonateClick={handleDonateClick}
             onSettingsClick={handleSettingsClick}
           />
         }

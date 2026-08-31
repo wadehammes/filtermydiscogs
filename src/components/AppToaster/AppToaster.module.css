@@ -294,15 +294,15 @@
   }
 }
 
-@property --support-toast-border-angle {
+@property --animated-primary-border-angle {
   syntax: "<angle>";
   inherits: false;
   initial-value: 0deg;
 }
 
-@keyframes supportToastBorderRotate {
+@keyframes animatedPrimaryBorderRotate {
   to {
-    --support-toast-border-angle: 360deg;
+    --animated-primary-border-angle: 360deg;
   }
 }
 
@@ -353,18 +353,19 @@
 }
 
 .root:global(.fmd-support-project-toast) {
-  --support-toast-border-angle: 0deg;
+  --animated-primary-border-angle: 0deg;
 
   overflow: visible;
+  border: 2px solid transparent;
+  animation: animatedPrimaryBorderRotate 6s linear infinite;
   width: min(calc(100vw - 2rem), 32rem);
   max-width: min(calc(100vw - 2rem), 32rem);
   flex-wrap: nowrap;
   align-items: center;
-  border: 2px solid transparent;
   background:
     linear-gradient(var(--normal-bg), var(--normal-bg)) padding-box,
     conic-gradient(
-      from var(--support-toast-border-angle),
+      from var(--animated-primary-border-angle),
       var(--primary),
       color-mix(in srgb, var(--warning) 75%, var(--primary)),
       var(--primary)
@@ -373,7 +374,6 @@
   box-shadow:
     var(--shadow-lg),
     0 0 20px color-mix(in srgb, var(--primary) 18%, transparent);
-  animation: supportToastBorderRotate 6s linear infinite;
   gap: 0.875rem 0.75rem;
 
   & .icon {

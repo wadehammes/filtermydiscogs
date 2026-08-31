@@ -66,6 +66,7 @@ Full list: [`package.json`](../../package.json).
 | `PUBLIC_CRATE_RATE_LIMIT_MAX` / `PUBLIC_CRATE_RATE_LIMIT_WINDOW` | Per-IP limit for **`GET /api/crates/public/[id]`** (default **120** / 60s) |
 | `ANALYTICS_EVENTS_RATE_LIMIT_MAX` / `ANALYTICS_EVENTS_RATE_LIMIT_WINDOW` | Per-IP limit for **`POST /api/usage/events`** (default **240** / 60s) |
 | `IMAGE_PROXY_RATE_LIMIT_MAX` / `IMAGE_PROXY_RATE_LIMIT_WINDOW` | Higher limit for [`/api/image-proxy`](../../src/app/api/image-proxy/route.ts) (default **2500** / 60s) so mosaic export can load one tile per release |
+| `STRIPE_API_KEY` | Stripe secret key for **`POST /api/donate/checkout`** (About page donations). When unset, the donate buttons return **503**. Use test keys locally; set the live secret in production. |
 
 [`next.config.ts`](../../next.config.ts) **`env`** block exposes only **`DISCOGS_CONSUMER_KEY`** and **`DISCOGS_CALLBACK_URL`** to the Next bundle. **`DISCOGS_CONSUMER_SECRET`** stays a runtime server env var (used by [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) only). Do not add server-only secrets to **`env`**.
 
