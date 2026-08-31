@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/api-helpers", () => ({
   getVerifiedUserFromRequestWithRateLimit: jest.fn(),
@@ -84,9 +85,12 @@ describe("POST /api/crates/sync", () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetVerifiedUser.mockResolvedValue({
-      user: { userId: USER_ID, username: "crate-digger" },
-    });
+    mockGetVerifiedUser.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: USER_ID,
+        username: "crate-digger",
+      }),
+    );
     mockDeleteMany.mockResolvedValue({ count: 1 });
   });
 

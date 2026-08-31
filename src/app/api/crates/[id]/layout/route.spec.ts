@@ -9,6 +9,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 const mockTransaction = jest.fn();
 
@@ -72,12 +73,10 @@ let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 const CRATE_ID = "crate-1";
 const USER_ID = 42;
 
-const verifiedUser = {
-  user: {
-    userId: USER_ID,
-    username: "crate-digger",
-  },
-};
+const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
+  userId: USER_ID,
+  username: "crate-digger",
+});
 
 const createPutRequest = (body: unknown) =>
   new NextRequest(`http://localhost/api/crates/${CRATE_ID}/layout`, {

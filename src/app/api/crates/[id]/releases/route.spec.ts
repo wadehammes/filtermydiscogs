@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -103,9 +104,12 @@ describe("PATCH /api/crates/[id]/releases", () => {
   });
 
   it("returns 400 when clear_found is not true", async () => {
-    mockGetVerifiedUser.mockResolvedValue({
-      user: { userId: USER_ID, username: "crate-digger" },
-    });
+    mockGetVerifiedUser.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: USER_ID,
+        username: "crate-digger",
+      }),
+    );
 
     const response = await PATCH(createPatchRequest({ clear_found: false }), {
       params: Promise.resolve({ id: CRATE_ID }),
@@ -119,9 +123,12 @@ describe("PATCH /api/crates/[id]/releases", () => {
   });
 
   it("returns 404 when crate is not found", async () => {
-    mockGetVerifiedUser.mockResolvedValue({
-      user: { userId: USER_ID, username: "crate-digger" },
-    });
+    mockGetVerifiedUser.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: USER_ID,
+        username: "crate-digger",
+      }),
+    );
     mockFindUnique.mockResolvedValue(null);
 
     const response = await PATCH(createPatchRequest({ clear_found: true }), {
@@ -136,9 +143,12 @@ describe("PATCH /api/crates/[id]/releases", () => {
   });
 
   it("clears packed status for all releases in the crate", async () => {
-    mockGetVerifiedUser.mockResolvedValue({
-      user: { userId: USER_ID, username: "crate-digger" },
-    });
+    mockGetVerifiedUser.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: USER_ID,
+        username: "crate-digger",
+      }),
+    );
     mockFindUnique.mockResolvedValue({ id: CRATE_ID } as Awaited<
       ReturnType<DbModule["prisma"]["crate"]["findUnique"]>
     >);

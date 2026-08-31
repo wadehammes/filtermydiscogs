@@ -8,6 +8,7 @@ import {
 } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerFooter.component";
 import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -64,10 +65,9 @@ describe("CrateDrawerDialogs", () => {
 
   it("clears packed marks when confirmed", async () => {
     mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
-    mockApi.clearAllPackedInCrate.mockResolvedValue({
-      success: true,
-      cleared_count: 1,
-    });
+    mockApi.clearAllPackedInCrate.mockResolvedValue(
+      crateMutationSuccessFactory.clearPacked(1),
+    );
 
     const user = userEvent.setup();
 

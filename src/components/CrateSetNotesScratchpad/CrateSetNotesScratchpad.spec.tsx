@@ -14,6 +14,7 @@ import { CRATE_NOTES_MAX_LENGTH } from "src/constants/crate";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import {
   TestProviders,
   testAuthenticatedAuthState,
@@ -69,12 +70,14 @@ describe("CrateSetNotesScratchpad", () => {
   });
 
   it("autosaves notes on blur", async () => {
-    mockApi.updateCrate.mockResolvedValue({
-      crate: crateFactory.defaultTestCrate({
-        id: crateDrawerDefaultDetail.id,
-        notes: "Headline set",
-      }),
-    });
+    mockApi.updateCrate.mockResolvedValue(
+      createCrateResponseFactory.forCrate(
+        crateFactory.defaultTestCrate({
+          id: crateDrawerDefaultDetail.id,
+          notes: "Headline set",
+        }),
+      ),
+    );
 
     const user = userEvent.setup();
 

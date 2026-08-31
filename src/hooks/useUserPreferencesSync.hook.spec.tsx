@@ -57,9 +57,9 @@ describe("useUserPreferencesSync", () => {
       { preferences: serverPreferences },
       new Error("fail"),
     );
-    mockUpdateUserPreferences.mockResolvedValue({
-      preferences: userPreferencesFactory.build({ theme: "dark" }),
-    });
+    mockUpdateUserPreferences.mockResolvedValue(
+      userPreferencesFactory.asApiResponse({ theme: "dark" }),
+    );
 
     renderFeatureHook(() => useUserPreferencesSync(), {
       authInitialState: testAuthenticatedAuthState,
@@ -156,9 +156,9 @@ describe("useUserPreferencesSync", () => {
       { preferences: serverPreferences },
       new Error("fail"),
     );
-    mockUpdateUserPreferences.mockResolvedValue({
-      preferences: userPreferencesFactory.build({ filters: localFilters }),
-    });
+    mockUpdateUserPreferences.mockResolvedValue(
+      userPreferencesFactory.asApiResponse({ filters: localFilters }),
+    );
 
     const { result } = renderFeatureHook(
       () => {
@@ -238,9 +238,9 @@ describe("useUserPreferencesSync", () => {
       { preferences: serverPreferences },
       new Error("fail"),
     );
-    mockUpdateUserPreferences.mockResolvedValue({
-      preferences: userPreferencesFactory.build({ analyticsConsent: true }),
-    });
+    mockUpdateUserPreferences.mockResolvedValue(
+      userPreferencesFactory.asApiResponse({ analyticsConsent: true }),
+    );
 
     renderFeatureHook(() => useUserPreferencesSync(), {
       authInitialState: testAuthenticatedAuthState,

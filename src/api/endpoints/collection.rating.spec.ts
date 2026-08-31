@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import {
   mockFetchError,
   mockFetchSuccess,
@@ -69,7 +70,9 @@ describe("clearReleaseRating", () => {
   });
 
   it("clears a release rating", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    );
 
     const result = await clearReleaseRating({
       username: "testuser",

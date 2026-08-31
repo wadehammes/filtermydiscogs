@@ -46,7 +46,7 @@ export class FiltersDrawerPageObject extends BasePageObject {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       new Error("Preferences request failed"),
     );
   }

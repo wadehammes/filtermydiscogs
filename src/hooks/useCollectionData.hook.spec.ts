@@ -9,7 +9,9 @@ import {
 } from "src/constants/collection";
 import { useCollectionContext } from "src/context/collection.context";
 import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
@@ -97,7 +99,7 @@ describe("useCollectionData", () => {
     void clearPersistedCollectionCaches();
     localStorage.clear();
     jest.clearAllMocks();
-    mockSyncCrates.mockResolvedValue({ success: true, removedCount: 0 });
+    mockSyncCrates.mockResolvedValue(crateMutationSuccessFactory.sync(0));
   });
 
   it("loads releases from the collection API into filter state", async () => {
@@ -273,7 +275,7 @@ describe("useCollectionData", () => {
     mockFetchDiscogsCollection.mockResolvedValue(
       collectionFactory.build({}, { totalItems: cachedPage.pagination.items }),
     );
-    mockSyncCrates.mockResolvedValue({ success: true, removedCount: 2 });
+    mockSyncCrates.mockResolvedValue(crateMutationSuccessFactory.sync(2));
 
     renderFeatureHook(
       () => {
@@ -334,13 +336,7 @@ describe("useCollectionData", () => {
     mockFetchDiscogsCollection
       .mockRejectedValueOnce(new ApiFetchError(401, "Not authenticated"))
       .mockResolvedValueOnce(page);
-    mockCheckAuth.mockResolvedValueOnce({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValueOnce(authStatusFactory.authenticated());
 
     const { result } = renderFeatureHook(
       () => {
@@ -405,13 +401,7 @@ describe("useCollectionData", () => {
     mockFetchDiscogsCollection.mockRejectedValueOnce(
       new ApiFetchError(401, "Not authenticated"),
     );
-    mockCheckAuth.mockResolvedValueOnce({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValueOnce(authStatusFactory.unauthenticated());
 
     const { result } = renderFeatureHook(
       () => {

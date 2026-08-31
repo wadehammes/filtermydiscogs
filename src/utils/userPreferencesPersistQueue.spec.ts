@@ -67,11 +67,11 @@ describe("userPreferencesPersistQueue", () => {
     });
     const mutate = jest.fn(
       (patch: UserPreferencesPatch, options?: PersistPreferencesOptions) => {
-        options?.onSuccess?.({
-          preferences: userPreferencesFactory.build({
+        options?.onSuccess?.(
+          userPreferencesFactory.asApiResponse({
             filters: patch.filters ?? filters,
           }),
-        });
+        );
         options?.onSettled?.();
       },
     );

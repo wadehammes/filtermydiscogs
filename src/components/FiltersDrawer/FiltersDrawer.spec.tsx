@@ -148,11 +148,9 @@ describe("FiltersDrawer", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [savedView],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [savedView],
+      }),
       new Error("Preferences request failed"),
     );
 
@@ -190,11 +188,9 @@ describe("FiltersDrawer", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [savedView],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [savedView],
+      }),
       new Error("Preferences request failed"),
     );
 
@@ -231,11 +227,9 @@ describe("FiltersDrawer", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [savedView],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [savedView],
+      }),
       new Error("Preferences request failed"),
     );
 
@@ -273,11 +267,9 @@ describe("FiltersDrawer", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [savedView],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [savedView],
+      }),
       new Error("Preferences request failed"),
     );
 

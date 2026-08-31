@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+import { discogsIdentityFactory } from "src/tests/factories/DiscogsIdentity.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 import {
   DISCOGS_SESSION_COOKIE,
   getDisplayIdentityFromCookies,
@@ -49,10 +51,12 @@ describe("auth-request", () => {
         discogs_username: "crate-digger",
       });
 
-      expect(getDisplayIdentityFromCookies(request)).toEqual({
-        userId: 42,
-        username: "crate-digger",
-      });
+      expect(getDisplayIdentityFromCookies(request)).toEqual(
+        verifiedDiscogsUserFactory.build({
+          userId: 42,
+          username: "crate-digger",
+        }),
+      );
     });
 
     it("returns null when cookies are missing", () => {
@@ -85,12 +89,11 @@ describe("auth-request", () => {
 
   describe("getVerifiedUserFromRequest", () => {
     it("returns verified identity from Discogs", async () => {
-      jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
-        id: 99,
-        username: "verified-user",
-        resource_url: "https://api.discogs.com/users/verified-user",
-        consumer_name: "FilterMyDisco.gs",
-      });
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockResolvedValue(
+          discogsIdentityFactory.forUser({ id: 99, username: "verified-user" }),
+        );
 
       const request = createRequest({
         [DISCOGS_SESSION_COOKIE]: "1",
@@ -100,9 +103,12 @@ describe("auth-request", () => {
 
       const result = await getVerifiedUserFromRequest(request);
 
-      expect(result).toEqual({
-        user: { userId: 99, username: "verified-user" },
-      });
+      expect(result).toEqual(
+        verifiedDiscogsUserFactory.asVerifiedResult({
+          userId: 99,
+          username: "verified-user",
+        }),
+      );
     });
 
     it("returns unauthorized when the app session cookie is missing", async () => {
@@ -156,9 +162,12 @@ describe("auth-request", () => {
         allowStale: true,
       });
 
-      expect(result).toEqual({
-        user: { userId: 42, username: "cached-user" },
-      });
+      expect(result).toEqual(
+        verifiedDiscogsUserFactory.asVerifiedResult({
+          userId: 42,
+          username: "cached-user",
+        }),
+      );
       expect(getIdentity).not.toHaveBeenCalled();
     });
 
@@ -177,9 +186,12 @@ describe("auth-request", () => {
         allowStale: true,
       });
 
-      expect(result).toEqual({
-        user: { userId: 42, username: "crate-digger" },
-      });
+      expect(result).toEqual(
+        verifiedDiscogsUserFactory.asVerifiedResult({
+          userId: 42,
+          username: "crate-digger",
+        }),
+      );
       expect(getIdentity).not.toHaveBeenCalled();
     });
 
@@ -200,12 +212,11 @@ describe("auth-request", () => {
     });
 
     it("still calls Discogs identity for write routes when cache is cold", async () => {
-      jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
-        id: 99,
-        username: "verified-user",
-        resource_url: "https://api.discogs.com/users/verified-user",
-        consumer_name: "FilterMyDisco.gs",
-      });
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockResolvedValue(
+          discogsIdentityFactory.forUser({ id: 99, username: "verified-user" }),
+        );
 
       const request = createRequest({
         [DISCOGS_SESSION_COOKIE]: "1",
@@ -217,20 +228,22 @@ describe("auth-request", () => {
 
       const result = await getVerifiedUserFromRequest(request);
 
-      expect(result).toEqual({
-        user: { userId: 99, username: "verified-user" },
-      });
+      expect(result).toEqual(
+        verifiedDiscogsUserFactory.asVerifiedResult({
+          userId: 99,
+          username: "verified-user",
+        }),
+      );
     });
   });
 
   describe("requireAuthenticatedDiscogsUser", () => {
     it("returns 403 when the requested username does not match verified identity", async () => {
-      jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
-        id: 99,
-        username: "alice",
-        resource_url: "https://api.discogs.com/users/alice",
-        consumer_name: "FilterMyDisco.gs",
-      });
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockResolvedValue(
+          discogsIdentityFactory.forUser({ id: 99, username: "alice" }),
+        );
 
       const request = createRequest({
         [DISCOGS_SESSION_COOKIE]: "1",

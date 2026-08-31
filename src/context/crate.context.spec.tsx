@@ -9,6 +9,7 @@ import {
   parseAuthUrlParams,
 } from "src/services/auth.service";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
@@ -60,10 +61,7 @@ describe("CrateProvider", () => {
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
     mockClearAuthCookies.mockImplementation(() => {});
     mockClearUrlParams.mockImplementation(() => {});
 

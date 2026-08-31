@@ -8,6 +8,7 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
+import { authenticatedDiscogsSessionFactory } from "src/tests/factories/AuthenticatedDiscogsSession.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 
 jest.mock("src/lib/auth-request", () => ({
@@ -37,11 +38,10 @@ const USERNAME = "crate-digger";
 const createRequest = (params = `username=${USERNAME}`) =>
   new NextRequest(`http://localhost/api/collection?${params}`);
 
-const authenticatedSession = {
-  user: { userId: 42, username: USERNAME },
-  accessToken: "access-token",
-  accessTokenSecret: "access-token-secret",
-};
+const authenticatedSession = authenticatedDiscogsSessionFactory.forUser({
+  userId: 42,
+  username: USERNAME,
+});
 
 beforeAll(async () => {
   const [routeModule, authRequest, discogsOAuth] = await Promise.all([

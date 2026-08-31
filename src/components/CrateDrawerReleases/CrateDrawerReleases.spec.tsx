@@ -11,6 +11,7 @@ import {
 } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { screen, waitFor } from "test-utils";
@@ -117,10 +118,9 @@ describe("CrateDrawerReleases", () => {
 
   it("clears all packed items when Clear packed is confirmed", async () => {
     mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
-    mockApi.clearAllPackedInCrate.mockResolvedValue({
-      success: true,
-      cleared_count: 1,
-    });
+    mockApi.clearAllPackedInCrate.mockResolvedValue(
+      crateMutationSuccessFactory.clearPacked(1),
+    );
 
     const user = userEvent.setup();
 

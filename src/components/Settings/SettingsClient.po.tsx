@@ -9,7 +9,9 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
@@ -51,22 +53,19 @@ export class SettingsClientPageObject extends BasePageObject {
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
     mockApiResponse(
       true,
       mockApi.updateUserPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
     mockApiResponse(
@@ -81,8 +80,8 @@ export class SettingsClientPageObject extends BasePageObject {
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );
-    mockApi.clearData.mockResolvedValue({ success: true });
-    mockApi.logout.mockResolvedValue({ success: true });
+    mockApi.clearData.mockResolvedValue(crateMutationSuccessFactory.build());
+    mockApi.logout.mockResolvedValue(crateMutationSuccessFactory.build());
   }
 
   renderSettingsClient(): RenderResult {

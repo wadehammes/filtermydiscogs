@@ -9,6 +9,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -91,12 +92,10 @@ let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 const USER_ID = 42;
 const USERNAME = "crate-digger";
 
-const verifiedUser = {
-  user: {
-    userId: USER_ID,
-    username: USERNAME,
-  },
-};
+const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
+  userId: USER_ID,
+  username: USERNAME,
+});
 
 const createUnauthorizedError = () =>
   NextResponse.json({ error: "Unauthorized" }, { status: 401 });

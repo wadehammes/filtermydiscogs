@@ -127,7 +127,7 @@ describe("ReleaseMiniPlayer", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       new Error("Preferences API request failed"),
     );
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);

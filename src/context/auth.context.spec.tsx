@@ -9,6 +9,9 @@ import {
   getUsernameFromCookies,
   parseAuthUrlParams,
 } from "src/services/auth.service";
+import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
@@ -76,17 +79,8 @@ describe("AuthProvider", () => {
 
     jest.clearAllMocks();
     mockUseRouter.mockReturnValue(mockRouter);
-    mockCheckAuth.mockResolvedValue({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      reconnectUsername: null,
-      rateLimited: false,
-    });
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockCheckAuth.mockResolvedValue(authStatusFactory.unauthenticated());
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
     mockGetUsernameFromCookies.mockReturnValue(null);
   });
 
@@ -104,10 +98,7 @@ describe("AuthProvider", () => {
   });
 
   it("keeps isCheckingAuth true when auth=success is in the URL on mount", () => {
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: "success",
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.authSuccess());
 
     mockCheckAuth.mockReturnValueOnce(new Promise(() => {}));
 
@@ -117,13 +108,7 @@ describe("AuthProvider", () => {
   });
 
   it("checks auth status on mount", async () => {
-    mockCheckAuth.mockResolvedValueOnce({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValueOnce(authStatusFactory.authenticated());
 
     const { result } = renderAuthHook();
 
@@ -137,13 +122,7 @@ describe("AuthProvider", () => {
   });
 
   it("clears user-scoped query cache when not authenticated", async () => {
-    mockCheckAuth.mockResolvedValueOnce({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValueOnce(authStatusFactory.unauthenticated());
 
     renderAuthHook();
 
@@ -155,13 +134,7 @@ describe("AuthProvider", () => {
   });
 
   it("does not refetch auth in a loop when unauthenticated", async () => {
-    mockCheckAuth.mockResolvedValue({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValue(authStatusFactory.unauthenticated());
 
     const { result } = renderAuthHook();
 
@@ -194,17 +167,8 @@ describe("AuthProvider", () => {
   });
 
   it("handles successful auth from URL params", async () => {
-    mockCheckAuth.mockResolvedValue({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: "success",
-      errorStatus: null,
-    });
+    mockCheckAuth.mockResolvedValue(authStatusFactory.authenticated());
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.authSuccess());
 
     const { result } = renderAuthHook();
 
@@ -221,17 +185,10 @@ describe("AuthProvider", () => {
   });
 
   it("handles auth error from URL params", async () => {
-    mockCheckAuth.mockResolvedValue({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      reconnectUsername: null,
-      rateLimited: false,
-    });
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: "access_denied",
-    });
+    mockCheckAuth.mockResolvedValue(authStatusFactory.unauthenticated());
+    mockParseAuthUrlParams.mockReturnValue(
+      authUrlParamsFactory.authError("access_denied"),
+    );
 
     const { result } = renderAuthHook();
 
@@ -358,13 +315,12 @@ describe("AuthProvider", () => {
     expect(result.current.state.username).toBe("cacheduser");
 
     await act(async () => {
-      resolveCheck({
-        isAuthenticated: true,
-        username: "cacheduser",
-        userId: "999",
-        reconnectUsername: null,
-        rateLimited: false,
-      });
+      resolveCheck(
+        authStatusFactory.authenticated({
+          username: "cacheduser",
+          userId: "999",
+        }),
+      );
     });
 
     await waitFor(() => {
@@ -373,17 +329,11 @@ describe("AuthProvider", () => {
   });
 
   it("calls logout function", async () => {
-    mockCheckAuth.mockResolvedValue({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValue(authStatusFactory.authenticated());
     mockApiResponse(
       true,
       mockLogoutApi,
-      { success: true },
+      crateMutationSuccessFactory.build(),
       new Error("Logout failed"),
     );
 
@@ -427,17 +377,11 @@ describe("AuthProvider", () => {
       }),
     );
 
-    mockCheckAuth.mockResolvedValue({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuth.mockResolvedValue(authStatusFactory.authenticated());
     mockApiResponse(
       true,
       mockLogoutApi,
-      { success: true },
+      crateMutationSuccessFactory.build(),
       new Error("Logout failed"),
     );
 
@@ -461,7 +405,7 @@ describe("AuthProvider", () => {
     mockApiResponse(
       false,
       mockLogoutApi,
-      { success: true },
+      crateMutationSuccessFactory.build(),
       new Error("Logout failed"),
     );
 

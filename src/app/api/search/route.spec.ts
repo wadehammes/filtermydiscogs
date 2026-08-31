@@ -7,6 +7,8 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { discogsSearchResponseFactory } from "src/tests/factories/DiscogsSearchResponse.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/auth-request", () => ({
   getReadOnlyVerifiedUserFromRequest: jest.fn(),
@@ -40,16 +42,7 @@ let mockSearchReleases: jest.MockedFunction<
   DiscogsOAuthModule["discogsOAuthService"]["searchReleases"]
 >;
 
-const searchResults = {
-  pagination: {
-    page: 1,
-    pages: 1,
-    per_page: 100,
-    items: 0,
-    urls: { next: "", prev: "" },
-  },
-  results: [],
-};
+const searchResults = discogsSearchResponseFactory.empty();
 
 const createRequest = (params: string) =>
   new NextRequest(`http://localhost/api/search?${params}`);
@@ -83,9 +76,12 @@ describe("GET /api/search", () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetReadOnlyVerifiedUserFromRequest.mockResolvedValue({
-      user: { userId: 42, username: "crate-digger" },
-    });
+    mockGetReadOnlyVerifiedUserFromRequest.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: 42,
+        username: "crate-digger",
+      }),
+    );
     mockSearchReleases.mockResolvedValue(searchResults);
   });
 

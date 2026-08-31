@@ -10,6 +10,7 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
@@ -51,16 +52,13 @@ export class ReleasesClientPageObject extends BasePageObject {
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
     mockApiResponse(

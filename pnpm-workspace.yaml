@@ -1,4 +1,5 @@
 allowBuilds:
+  '@parcel/watcher': false
   '@prisma/engines': false
   esbuild: false
   prisma: false

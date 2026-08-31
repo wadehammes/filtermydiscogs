@@ -11,7 +11,9 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { collectionValueFactory } from "src/tests/factories/CollectionValue.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
@@ -92,23 +94,20 @@ export class DashboardClientPageObject extends BasePageObject {
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
     mockApiResponse(true, mockApi.discogsCollection, collectionPage, apiError);
     mockApiResponse(
       true,
       mockApi.collectionValue,
-      { minimum: 100, median: 500, maximum: 1000 },
+      collectionValueFactory.dashboardDefaults(),
       apiError,
     );
     mockApiResponse(true, mockApi.mostCratedReleases, [], apiError);

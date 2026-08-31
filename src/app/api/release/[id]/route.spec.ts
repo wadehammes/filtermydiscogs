@@ -7,6 +7,7 @@ import {
   getIdentityCacheKey,
 } from "src/lib/identity-cache";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+import { discogsIdentityFactory } from "src/tests/factories/DiscogsIdentity.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 
 const RELEASE_ID = "249504";
@@ -74,12 +75,11 @@ describe("GET /api/release/[id]", () => {
   });
 
   it("returns release detail from Discogs for signed-in users", async () => {
-    jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
-      id: 42,
-      username: "crate-digger",
-      resource_url: "https://api.discogs.com/users/crate-digger",
-      consumer_name: "FilterMyDisco.gs",
-    });
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
     jest
       .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
       .mockResolvedValue(releaseDetail);
@@ -129,12 +129,11 @@ describe("GET /api/release/[id]", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
 
-    jest.spyOn(discogsOAuthService, "getIdentity").mockResolvedValue({
-      id: 42,
-      username: "crate-digger",
-      resource_url: "https://api.discogs.com/users/crate-digger",
-      consumer_name: "FilterMyDisco.gs",
-    });
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
     jest
       .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
       .mockRejectedValue(new Error("Discogs unavailable"));

@@ -10,6 +10,10 @@ export type SyncCratesSuccess = CrateMutationSuccess & {
   removedCount: number;
 };
 
+export type ClearPackedSuccess = CrateMutationSuccess & {
+  cleared_count: number;
+};
+
 type CrateMutationSuccessFactoryOptions = Record<string, never>;
 
 class CrateMutationSuccessFactory extends BaseFactory<
@@ -41,6 +45,13 @@ class CrateMutationSuccessFactory extends BaseFactory<
     return {
       ...this.build(),
       removedCount,
+    };
+  }
+
+  clearPacked(clearedCount = 1): ClearPackedSuccess {
+    return {
+      ...this.build(),
+      cleared_count: clearedCount,
     };
   }
 }

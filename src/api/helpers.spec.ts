@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   mockFetchError,
@@ -477,7 +479,9 @@ describe("addReleaseToCrate", () => {
   it("adds release to crate successfully", async () => {
     const crateId = "crate-123";
     const release = releaseFactory.build();
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    );
 
     const result = await addReleaseToCrate(crateId, release);
 
@@ -509,7 +513,9 @@ describe("removeReleaseFromCrate", () => {
   it("removes release from crate successfully", async () => {
     const crateId = "crate-123";
     const releaseId = "release-456";
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    );
 
     const result = await removeReleaseFromCrate(crateId, releaseId);
 
@@ -636,12 +642,10 @@ describe("checkAuth", () => {
   });
 
   it("returns auth status when authenticated", async () => {
-    const mockAuth = {
-      isAuthenticated: true,
-      username: "testuser",
+    const mockAuth = authStatusFactory.authenticated({
       userId: "123456",
-      reconnectUsername: null,
-    };
+      username: "testuser",
+    });
     mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
 
     const result = await checkAuth();
@@ -658,12 +662,7 @@ describe("checkAuth", () => {
   });
 
   it("returns auth status when not authenticated", async () => {
-    const mockAuth = {
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      reconnectUsername: null,
-    };
+    const mockAuth = authStatusFactory.unauthenticated();
     mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
 
     const result = await checkAuth();
@@ -684,7 +683,9 @@ describe("clearData", () => {
   });
 
   it("clears data successfully", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    );
 
     const result = await clearData();
 
@@ -712,7 +713,9 @@ describe("logout", () => {
   });
 
   it("logs out successfully", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    );
 
     const result = await logout();
 
@@ -728,7 +731,9 @@ describe("logout", () => {
   });
 
   it("revokes tokens when preserveTokens is false", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ success: true }));
+    mockFetch.mockResolvedValueOnce(
+      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    );
 
     await logout({ preserveTokens: false });
 
