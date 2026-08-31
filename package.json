@@ -100,7 +100,7 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "jest-fetch-mock": "^4.2.0",
-    "knip": "^6.32.3",
+    "knip": "^6.33.0",
     "lighthouse": "^13.4.1",
     "prisma": "^7.9.1",
     "prisma-json-types-generator": "^5.1.1",
