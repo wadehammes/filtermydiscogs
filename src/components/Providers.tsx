@@ -13,6 +13,7 @@ import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/Depl
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
+import { SupportProjectToast } from "src/components/SupportProjectToast/SupportProjectToast.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
@@ -83,6 +84,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                           <AuthCheckingToast />
                           <CollectionLoadingToast />
                           <DeploymentUpdateToast />
+                          <SupportProjectToast />
                         </AnalyticsShell>
                       </AuthenticatedProvidersGate>
                     </CrateProvider>

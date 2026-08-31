@@ -35,6 +35,7 @@ import {
   fetchUserPreferences,
   updateUserPreferences,
 } from "src/api/endpoints/userPreferences";
+import { dismissSupportProjectToast } from "src/api/endpoints/userSupportToast";
 
 export const api = {
   addReleaseToCrate,
@@ -54,6 +55,7 @@ export const api = {
   discogsCollection: fetchDiscogsCollection,
   discogsRelease: fetchDiscogsRelease,
   discogsSearch: fetchDiscogsSearch,
+  dismissSupportProjectToast,
   logout,
   mostCratedReleases: fetchMostCratedReleases,
   publicCrate: fetchPublicCrate,

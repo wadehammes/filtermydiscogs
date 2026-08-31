@@ -15,6 +15,8 @@ export interface ToastOptions {
   action?: ReactNode;
   cancel?: ReactNode;
   icon?: ReactNode;
+  showClose?: boolean;
+  onClose?: () => void;
   classNames?: FmdToastClassNames;
 }
 
@@ -46,10 +48,14 @@ const addToast = (
     description: options.description,
     type,
     timeout: toTimeout(options.duration),
+    ...(options.onClose !== undefined ? { onClose: options.onClose } : {}),
     data: {
       ...(options.icon !== undefined ? { icon: options.icon } : {}),
       ...(options.action !== undefined ? { action: options.action } : {}),
       ...(options.cancel !== undefined ? { cancel: options.cancel } : {}),
+      ...(options.showClose !== undefined
+        ? { showClose: options.showClose }
+        : {}),
       ...(options.classNames !== undefined
         ? { classNames: options.classNames }
         : {}),

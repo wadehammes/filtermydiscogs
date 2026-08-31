@@ -13,21 +13,31 @@ export const showPersistentActionToast = ({
   title,
   description,
   toastClassName,
+  icon,
   action,
   cancel,
+  showClose,
+  onClose,
 }: {
   id: string;
   title: string;
   description: string;
   toastClassName?: string;
+  icon?: ReactNode;
   action: ReactNode;
-  cancel: ReactNode;
+  cancel?: ReactNode;
+  showClose?: boolean;
+  onClose?: () => void;
 }) => {
   toast(title, {
     id,
     description,
     position: "bottom-center",
     duration: Number.POSITIVE_INFINITY,
+    ...(icon !== undefined ? { icon } : {}),
+    ...(cancel !== undefined ? { cancel } : {}),
+    ...(showClose !== undefined ? { showClose } : {}),
+    ...(onClose !== undefined ? { onClose } : {}),
     classNames: {
       ...ACTION_TOAST_CLASS_NAMES,
       toast: toastClassName
@@ -35,6 +45,5 @@ export const showPersistentActionToast = ({
         : ACTION_TOAST_CLASS_NAMES.toast,
     },
     action,
-    cancel,
   });
 };

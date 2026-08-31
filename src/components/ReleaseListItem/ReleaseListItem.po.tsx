@@ -8,6 +8,7 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
+import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
@@ -57,13 +58,7 @@ export class ReleaseListItemPageObject extends BasePageObject {
     jest.clearAllMocks();
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: null,
       errorStatus: null,

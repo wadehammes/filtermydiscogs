@@ -14,12 +14,16 @@ datasource db {
 }
 
 model User {
-  discogs_user_id Int      @id
-  username        String
+  discogs_user_id         Int      @id
+  username                String
   /// [UserPreferences]
-  preferences     Json     @default("{}")
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  preferences             Json     @default("{}")
+  login_count             Int       @default(0)
+  support_toast_dismissed Boolean   @default(false)
+  support_toast_pending   Boolean   @default(false)
+  last_seen_at            DateTime?
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
 
   crates Crate[]
 

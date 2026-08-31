@@ -6,6 +6,7 @@ import { useMounted } from "src/hooks/useMounted.hook";
 import type { FmdToastData } from "src/lib/toastManagers";
 import { centerToastManager, toastManager } from "src/lib/toastManagers";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
+import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./AppToaster.module.css";
 
 type ToastViewportPosition = "bottom-right" | "bottom-center";
@@ -89,6 +90,17 @@ function ToastViewportList({ position }: { position: ToastViewportPosition }) {
                     </div>
                   ) : null}
                 </div>
+              ) : null}
+              {toastItem.data?.showClose ? (
+                <Toast.Close
+                  className={classNames(
+                    styles.toastClose,
+                    classNamesConfig?.close,
+                  )}
+                  aria-label="Dismiss notification"
+                >
+                  <XIcon className={styles.toastCloseIcon} aria-hidden />
+                </Toast.Close>
               ) : null}
               {toastItem.actionProps ? (
                 <Toast.Action {...toastItem.actionProps} />

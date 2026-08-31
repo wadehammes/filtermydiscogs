@@ -27,6 +27,7 @@ import {
   parseAuthUrlParams,
 } from "src/services/auth.service";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
+import { toast } from "src/utils/toast";
 
 export type LoginOptions = {
   force?: boolean;
@@ -299,6 +300,7 @@ export const AuthProvider = ({
 
     try {
       dispatch({ type: AuthActionTypes.SetLoggingOut, payload: true });
+      toast.dismiss();
 
       await logoutMutation.mutateAsync({
         preserveTokens,
@@ -312,6 +314,7 @@ export const AuthProvider = ({
         userId: null,
         rateLimited: false,
         reconnectUsername,
+        showSupportProjectToast: false,
       });
       void refetch();
       router.replace("/");

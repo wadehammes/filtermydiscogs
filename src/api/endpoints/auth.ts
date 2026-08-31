@@ -6,6 +6,7 @@ export const checkAuth = async (): Promise<{
   userId: string | null;
   reconnectUsername: string | null;
   rateLimited?: boolean;
+  showSupportProjectToast?: boolean;
 }> => {
   try {
     return fetchResponse(
