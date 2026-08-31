@@ -64,20 +64,3 @@ export const UserPreferencesQueryKeys = {
   byUserId: (userId: string | number | null) =>
     [...UserPreferencesQueryKeys.all(), userId] as const,
 };
-
-const normalizeLookupPart = (value: string): string =>
-  value.trim().toLowerCase();
-
-export const TrackMetadataQueryKeys = {
-  all: () => ["trackMetadata"] as const,
-  byLookups: (lookups: Array<{ id: string; artist: string; title: string }>) =>
-    [
-      ...TrackMetadataQueryKeys.all(),
-      ...lookups
-        .map(
-          (lookup) =>
-            `${lookup.id}:${normalizeLookupPart(lookup.artist)}:${normalizeLookupPart(lookup.title)}`,
-        )
-        .sort(),
-    ] as const,
-};

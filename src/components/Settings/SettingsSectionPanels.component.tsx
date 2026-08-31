@@ -102,58 +102,31 @@ export function SettingsAppearancePanel({
 
 type SettingsPlaybackPanelProps = {
   autoPlayOnQueueAdd: boolean;
-  showDjMetadataOnTracks: boolean;
   isPreferencesLoading: boolean;
   isPreferencesSaving: boolean;
   onAutoPlayOnQueueAddChange: (enabled: boolean) => void;
-  onShowDjMetadataOnTracksChange: (enabled: boolean) => void;
 };
 
 export function SettingsPlaybackPanel({
   autoPlayOnQueueAdd,
-  showDjMetadataOnTracks,
   isPreferencesLoading,
   isPreferencesSaving,
   onAutoPlayOnQueueAddChange,
-  onShowDjMetadataOnTracksChange,
 }: SettingsPlaybackPanelProps) {
   return (
-    <>
-      <SettingsBooleanPreferenceToggle
-        checked={autoPlayOnQueueAdd}
-        label="Play immediately when adding to an empty queue"
-        description={
-          <>
-            When enabled, the first track you add to an empty queue starts
-            playing right away and opens the video player. When disabled, tracks
-            are queued without starting playback until you press play.
-          </>
-        }
-        disabled={isPreferencesLoading || isPreferencesSaving}
-        onChange={onAutoPlayOnQueueAddChange}
-      />
-      <SettingsBooleanPreferenceToggle
-        checked={showDjMetadataOnTracks}
-        label="Show DJ metadata on tracks"
-        description="When enabled, release tracklists and gig-packing crate lists show BPM and musical key. Lookups use artist and title from your collection metadata."
-        descriptionFooter={
-          <>
-            Data provided by{" "}
-            <a
-              href="https://getsongbpm.com"
-              className={styles.inlineLink}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GetSongBPM
-            </a>
-            .
-          </>
-        }
-        disabled={isPreferencesLoading || isPreferencesSaving}
-        onChange={onShowDjMetadataOnTracksChange}
-      />
-    </>
+    <SettingsBooleanPreferenceToggle
+      checked={autoPlayOnQueueAdd}
+      label="Play immediately when adding to an empty queue"
+      description={
+        <>
+          When enabled, the first track you add to an empty queue starts playing
+          right away and opens the video player. When disabled, tracks are
+          queued without starting playback until you press play.
+        </>
+      }
+      disabled={isPreferencesLoading || isPreferencesSaving}
+      onChange={onAutoPlayOnQueueAddChange}
+    />
   );
 }
 

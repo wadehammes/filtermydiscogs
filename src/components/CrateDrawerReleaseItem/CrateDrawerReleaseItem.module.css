@@ -144,15 +144,3 @@
     opacity: 0.75;
   }
 }
-
-.djMetadata {
-  align-self: center;
-  flex-shrink: 0;
-  padding-inline: var(--space-2);
-}
-
-.listItemWithDjMetadata {
-  .listItemMain {
-    flex: 1;
-  }
-}
