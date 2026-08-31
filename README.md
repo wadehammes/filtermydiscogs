@@ -58,6 +58,9 @@ DATABASE_URL=your_database_url_here
 # You can find your user ID after logging in - it's stored in the discogs_user_id cookie
 ADMIN_USER_ID=your_discogs_user_id_here
 CRON_SECRET=generate_a_long_random_secret_for_vercel_cron
+
+# Stripe (optional, for About page donations)
+STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 ```
 
 ### Database Setup

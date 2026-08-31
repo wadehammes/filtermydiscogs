@@ -2,6 +2,7 @@
    Used by Stylelint only — do not import this file in the app. */
 
 :root {
+  --animated-primary-border-angle: 0deg;
   --anchor-width: 0px;
   --available-height: 100dvh;
   --bar-delay: 0ms;

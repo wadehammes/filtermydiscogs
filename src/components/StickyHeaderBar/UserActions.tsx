@@ -2,6 +2,7 @@ import { Menu } from "@base-ui/react/menu";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
+import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import styles from "./UserActions.module.css";
@@ -82,6 +83,18 @@ export const UserActions = ({
                   onClick={handleMenuNavigation}
                 >
                   About
+                </Menu.LinkItem>
+                <Menu.LinkItem
+                  closeOnClick
+                  render={
+                    <Link
+                      href={SUPPORT_PROJECT_ABOUT_PATH}
+                      className={styles.dropdownLink}
+                    />
+                  }
+                  onClick={handleMenuNavigation}
+                >
+                  Donate
                 </Menu.LinkItem>
                 <Menu.Separator className={styles.menuSeparator} />
                 <ThemeSwitcher variant="menu" />

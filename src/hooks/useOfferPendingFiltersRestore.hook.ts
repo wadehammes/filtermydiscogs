@@ -27,6 +27,13 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
   const scrollLockCountRef = usePlaybackPageScrollLockCountRef();
   const offeredPendingRef = useRef<PersistedFiltersState | null>(null);
 
+  useLayoutEffect(
+    () => () => {
+      dismissPendingFiltersRestoreToast();
+    },
+    [],
+  );
+
   useLayoutEffect(() => {
     if (!enabled) {
       dismissPendingFiltersRestoreToast();

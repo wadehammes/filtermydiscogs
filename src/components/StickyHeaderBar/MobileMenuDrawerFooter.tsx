@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuDrawerFooterProps {
   username: string | null;
   onLogout: () => void;
   onAboutClick: () => void;
+  onDonateClick: () => void;
   onSettingsClick: () => void;
 }
 
@@ -12,6 +14,7 @@ export function MobileMenuDrawerFooter({
   username,
   onLogout,
   onAboutClick,
+  onDonateClick,
   onSettingsClick,
 }: MobileMenuDrawerFooterProps) {
   return (
@@ -31,6 +34,13 @@ export function MobileMenuDrawerFooter({
         </Link>
         <Link href="/about" className={styles.aboutLink} onClick={onAboutClick}>
           About
+        </Link>
+        <Link
+          href={SUPPORT_PROJECT_ABOUT_PATH}
+          className={styles.aboutLink}
+          onClick={onDonateClick}
+        >
+          Donate
         </Link>
         <button
           type="button"

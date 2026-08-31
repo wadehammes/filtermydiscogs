@@ -42,6 +42,10 @@ describe("UserActions", () => {
       "href",
       "/about",
     );
+    expect(screen.getByRole("menuitem", { name: "Donate" })).toHaveAttribute(
+      "href",
+      "/about#support",
+    );
     expect(
       screen.getByRole("menuitem", { name: "Logout" }),
     ).toBeInTheDocument();
