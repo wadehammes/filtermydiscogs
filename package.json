@@ -76,7 +76,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.10",
+    "@biomejs/biome": "^2.5.11",
     "@faker-js/faker": "10.6.0",
     "@jest/globals": "^30.4.1",
     "@jest/types": "^30.4.1",
