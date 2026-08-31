@@ -1,9 +1,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import { useCrate } from "src/context/crate.context";
 import { copyToClipboard } from "src/utils/copyToClipboard";
 import { getSiteUrl } from "src/utils/helpers";
+import { toast } from "src/utils/toast";
 
 export const useCrateDrawerState = () => {
   const {

@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "src/utils/toast";
 
 export const RELEASE_NOTES_SAVE_TOAST_ID = "release-notes-save";
 

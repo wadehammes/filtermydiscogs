@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { toast } from "sonner";
 import { api } from "src/api/urls";
 import { ReleaseNotesPageObject } from "src/components/ReleaseNotes/ReleaseNotes.po";
 import {
@@ -8,10 +7,11 @@ import {
   RELEASE_NOTES_SAVED_TOAST_DURATION_MS,
 } from "src/components/ReleaseNotes/releaseNotesSaveToast";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     dismiss: jest.fn(),
     loading: jest.fn(),

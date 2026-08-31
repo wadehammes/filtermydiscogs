@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue } from "jotai";
-import { toast } from "sonner";
 import { ApiFetchError } from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { allReleasesAtom } from "src/atoms/filters.atoms";
@@ -27,6 +26,7 @@ import {
 import { resetCollectionCacheReady } from "src/utils/collectionCacheSync";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
+import { toast } from "src/utils/toast";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls", () => ({
@@ -37,7 +37,7 @@ jest.mock("src/api/urls", () => ({
   },
 }));
 
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     success: jest.fn(),
     dismiss: jest.fn(),

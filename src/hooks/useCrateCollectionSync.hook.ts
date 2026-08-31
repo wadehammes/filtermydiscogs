@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
 import { trackCrateSyncManual } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import { useSyncCratesMutation } from "src/hooks/mutations/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
+import { toast } from "src/utils/toast";
 
 export const useCrateCollectionSync = () => {
   const { state: authState } = useAuth();

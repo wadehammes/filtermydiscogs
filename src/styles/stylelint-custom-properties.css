@@ -14,4 +14,10 @@
   --release-modal-available-height: 100dvh;
   --release-modal-viewport-inset-bottom: 0px;
   --release-modal-viewport-inset-top: 0px;
+  --toast-index: 0;
+  --toast-offset-y: 0;
+  --toast-frontmost-height: auto;
+  --toast-height: auto;
+  --toast-swipe-movement-x: 0;
+  --toast-swipe-movement-y: 0;
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import { useAuth } from "src/context/auth.context";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
+import { toast } from "src/utils/toast";
 import styles from "./page.module.css";
 
 export function LegalDataManagementActions() {

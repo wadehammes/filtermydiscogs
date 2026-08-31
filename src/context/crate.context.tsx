@@ -11,7 +11,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
 import {
   trackCrateCleared,
   trackCrateCreated,
@@ -51,6 +50,7 @@ import type {
   CrateUpdatePayload,
   CrateWithCount,
 } from "src/types/crate.types";
+import { toast } from "src/utils/toast";
 
 interface CrateContextType {
   crates: CrateWithCount[];

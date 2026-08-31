@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "src/utils/toast";
 
 export const ACTION_TOAST_CLASS_NAMES = {
   toast: "fmd-toast fmd-action-toast",

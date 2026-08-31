@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useSetAtom } from "jotai";
 import { useEffect } from "react";
-import { toast } from "sonner";
 import { filtersDispatchAtom } from "src/atoms/filters.atoms";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { COLLECTION_LOADING_TOAST_ID } from "src/components/CollectionLoadingToast/collectionLoadingToast";
@@ -11,9 +10,10 @@ import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsCollection } from "src/types";
+import { toast } from "src/utils/toast";
 import { render, waitFor } from "test-utils";
 
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     loading: jest.fn(),
     dismiss: jest.fn(),

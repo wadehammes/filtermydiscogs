@@ -2,7 +2,6 @@
 
 import { useAtomValue } from "jotai";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
 import { trackFilterViewSaved } from "src/analytics/productAnalyticsEvents";
 import {
   FiltersActionTypes,
@@ -24,6 +23,7 @@ import {
   renameFilterView,
 } from "src/utils/filterViews";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
+import { toast } from "src/utils/toast";
 
 const FILTER_VIEW_SAVED_MESSAGE = "View saved";
 const FILTER_VIEW_SAVE_ERROR_MESSAGE = "Failed to save view";

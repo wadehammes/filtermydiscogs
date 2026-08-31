@@ -153,7 +153,6 @@ const nextConfig: NextConfig = {
       "@dnd-kit/core",
       "@dnd-kit/sortable",
       "@dnd-kit/utilities",
-      "sonner",
     ],
   },
   trailingSlash: false,

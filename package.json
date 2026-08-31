@@ -72,7 +72,6 @@
     "react-hook-form": "^7.86.0",
     "react-intersection-observer": "^11.0.1",
     "sharp": "^0.35.4",
-    "sonner": "^2.0.8",
     "usehooks-ts": "^3.1.1",
     "zod": "^4.4.3"
   },

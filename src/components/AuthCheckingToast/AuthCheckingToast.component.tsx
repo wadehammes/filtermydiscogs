@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { toast } from "sonner";
 import { useAuth } from "src/context/auth.context";
+import { toast } from "src/utils/toast";
 
 const AUTH_CHECK_TOAST_ID = "auth-check";
 

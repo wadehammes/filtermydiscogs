@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { InfiniteData } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { api } from "src/api/urls";
 import { COLLECTION_FIRST_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
@@ -11,6 +10,7 @@ import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import type { DiscogsCollection } from "src/types";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
+import { toast } from "src/utils/toast";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
 jest.mock("src/api/urls", () => ({
@@ -22,7 +22,7 @@ jest.mock("src/api/urls", () => ({
   },
 }));
 
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     success: jest.fn(),
     error: jest.fn(),
