@@ -11,7 +11,6 @@ import { ReleasePlaybackPreview } from "src/components/ReleasePlaybackPreview/Re
 import { ReleaseSimilarSidebar } from "src/components/ReleaseSimilarSidebar/ReleaseSimilarSidebar.component";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
 import { ReleaseTracklistSkeleton } from "src/components/ReleaseTracklist/ReleaseTracklistSkeleton.component";
-import { useReleaseTrackDjMetadata } from "src/hooks/useReleaseTrackDjMetadata.hook";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
@@ -59,13 +58,6 @@ export const ReleaseModalBody = ({
     isReleasePreviewPlaying,
   } = useReleaseModalPlayback({ release, isOpen });
 
-  const { showDjMetadata, getTrackDjMetadata, isDjMetadataLoading } =
-    useReleaseTrackDjMetadata({
-      release,
-      tracks,
-      enabled: isOpen && !isLoading && !isError,
-    });
-
   const reserveQueueColumn =
     hasPlayableTracks || releasePreviewVideos.length > 0;
 
@@ -109,9 +101,6 @@ export const ReleaseModalBody = ({
                 releaseArtistNames={formatArtistNames(release)}
                 activeTrackPosition={activeTrackPosition}
                 reserveQueueColumn={reserveQueueColumn}
-                showDjMetadata={showDjMetadata}
-                getTrackDjMetadata={getTrackDjMetadata}
-                isDjMetadataLoading={isDjMetadataLoading}
                 showPlayingIndicatorOnActiveTrack={
                   hasPlayableTracks &&
                   isPlayingThisReleaseInBar &&
@@ -154,7 +143,6 @@ export const ReleaseModalBody = ({
                   tracks={releasePreviewTracks}
                   releaseArtistNames={formatArtistNames(release)}
                   activeTrackPosition={activePreviewTrackPosition}
-                  showDjMetadata={showDjMetadata}
                   showPlayingIndicatorOnActiveTrack={
                     isPlayingThisReleaseInBar && isReleasePreviewPlaying
                   }

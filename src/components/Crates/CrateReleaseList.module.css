@@ -132,22 +132,6 @@
   grid-area: actions;
 }
 
-.djMetadataSlot {
-  align-items: center;
-  display: flex;
-  grid-area: dj;
-  justify-content: flex-end;
-}
-
-.listWithDjMetadata {
-  .row {
-    @media (width >= 1024px) {
-      grid-template-areas: "notes identity dj actions";
-      grid-template-columns: minmax(0, 1.75fr) minmax(13rem, 1fr) auto auto;
-    }
-  }
-}
-
 .emptyState {
   color: var(--muted-foreground);
   display: flex;

@@ -5,7 +5,6 @@ import type { FilterView } from "src/utils/filterViews";
 export const USER_PREFERENCES_VERSION = 1;
 
 export const DEFAULT_AUTO_PLAY_ON_QUEUE_ADD = true;
-export const DEFAULT_SHOW_DJ_METADATA_ON_TRACKS = false;
 
 export type PaletteTheme =
   | "light"
@@ -33,7 +32,6 @@ export type UserPreferencesJson = {
   version: typeof USER_PREFERENCES_VERSION;
   persistFilters: boolean;
   autoPlayOnQueueAdd: boolean;
-  showDjMetadataOnTracks: boolean;
   theme: StoredTheme;
   view: StoredViewState;
   filters: PersistedFiltersJson;
@@ -48,7 +46,6 @@ export type UserPreferencesPatch = Partial<
     UserPreferences,
     | "persistFilters"
     | "autoPlayOnQueueAdd"
-    | "showDjMetadataOnTracks"
     | "theme"
     | "view"
     | "filters"

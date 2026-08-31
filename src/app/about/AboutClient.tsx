@@ -132,8 +132,7 @@ export function AboutClient() {
                 view (grid or table), your analytics cookie choice, named saved
                 views from the Views menu on Releases, filter/sort selections
                 when &quot;Remember filter selections&quot; is enabled in
-                Settings, and playback settings (auto-play on queue add and show
-                DJ metadata on tracks)
+                Settings, and playback settings (auto-play on queue add)
               </li>
               <li>
                 Product analytics events linked to your account (when you had
@@ -149,7 +148,7 @@ export function AboutClient() {
               </li>
               <li>
                 In-memory caches for the current browser session, including your
-                loaded collection and any cached DJ metadata lookups
+                loaded collection
               </li>
               <li>
                 Your Discogs collection and saved notes are not deleted. Only
