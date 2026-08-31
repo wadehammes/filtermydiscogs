@@ -8,6 +8,7 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
+import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
@@ -49,13 +50,7 @@ export class SettingsClientPageObject extends BasePageObject {
     setupMockMatchMedia({ desktop: true });
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue({
-      isAuthenticated: true,
-      username: "testuser",
-      userId: "123",
-      reconnectUsername: null,
-      rateLimited: false,
-    });
+    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
     mockParseAuthUrlParams.mockReturnValue({
       authStatus: null,
       errorStatus: null,

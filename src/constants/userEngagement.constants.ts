@@ -1,0 +1,1 @@
+export const USER_LAST_SEEN_TOUCH_INTERVAL_MS = 15 * 60 * 1000;

@@ -7,12 +7,14 @@ export type FmdToastClassNames = {
   description?: string;
   icon?: string;
   content?: string;
+  close?: string;
 };
 
 export type FmdToastData = {
   icon?: ReactNode;
   action?: ReactNode;
   cancel?: ReactNode;
+  showClose?: boolean;
   classNames?: FmdToastClassNames;
 };
 

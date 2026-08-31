@@ -81,7 +81,10 @@ export function AboutClient() {
           </div>
         </section>
 
-        <section className={classNames(styles.section, styles.donationSection)}>
+        <section
+          id="support"
+          className={classNames(styles.section, styles.donationSection)}
+        >
           <h2>Support This Project</h2>
           <p>
             If FilterMyDiscogs has made your collection easier to actually use,

@@ -8,6 +8,10 @@ import {
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
+import {
+  consumeSupportProjectToastPending,
+  touchUserLastSeen,
+} from "src/lib/user.server";
 
 async function resolveReconnectUsername(
   request: NextRequest,
@@ -45,6 +49,7 @@ export async function GET(request: NextRequest) {
             userId: displayIdentity ? String(displayIdentity.userId) : null,
             rateLimited: true,
             reconnectUsername: null,
+            showSupportProjectToast: false,
           },
           {
             headers: { "Retry-After": "60" },
@@ -60,8 +65,14 @@ export async function GET(request: NextRequest) {
         userId: null,
         rateLimited: false,
         reconnectUsername,
+        showSupportProjectToast: false,
       });
     }
+
+    const [showSupportProjectToast] = await Promise.all([
+      consumeSupportProjectToastPending(verified.user.userId),
+      touchUserLastSeen(verified.user.userId),
+    ]);
 
     return privateRouteJson({
       isAuthenticated: true,
@@ -69,6 +80,7 @@ export async function GET(request: NextRequest) {
       userId: String(verified.user.userId),
       rateLimited: false,
       reconnectUsername: null,
+      showSupportProjectToast,
     });
   } catch (error) {
     rethrowNextInternalError(error);
@@ -79,6 +91,7 @@ export async function GET(request: NextRequest) {
       userId: null,
       rateLimited: false,
       reconnectUsername: null,
+      showSupportProjectToast: false,
     });
   }
 }

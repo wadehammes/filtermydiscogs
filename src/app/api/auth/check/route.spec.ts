@@ -15,8 +15,14 @@ jest.mock("src/lib/auth-request", () => ({
   getVerifiedUserFromStoredTokens: jest.fn(),
 }));
 
+jest.mock("src/lib/user.server", () => ({
+  consumeSupportProjectToastPending: jest.fn(),
+  touchUserLastSeen: jest.fn(),
+}));
+
 type RouteModule = typeof import("src/app/api/auth/check/route");
 type AuthRequestModule = typeof import("src/lib/auth-request");
+type UserServerModule = typeof import("src/lib/user.server");
 
 let GET: RouteModule["GET"];
 let mockGetVerifiedUserFromRequest: jest.MockedFunction<
@@ -31,6 +37,12 @@ let mockGetStoredReconnectUsername: jest.MockedFunction<
 let mockGetVerifiedUserFromStoredTokens: jest.MockedFunction<
   AuthRequestModule["getVerifiedUserFromStoredTokens"]
 >;
+let mockConsumeSupportProjectToastPending: jest.MockedFunction<
+  UserServerModule["consumeSupportProjectToastPending"]
+>;
+let mockTouchUserLastSeen: jest.MockedFunction<
+  UserServerModule["touchUserLastSeen"]
+>;
 
 const createRequest = () => new NextRequest("http://localhost/api/auth/check");
 
@@ -41,9 +53,10 @@ const createRateLimitError = () =>
   );
 
 beforeAll(async () => {
-  const [routeModule, authRequest] = await Promise.all([
+  const [routeModule, authRequest, userServer] = await Promise.all([
     import("src/app/api/auth/check/route"),
     import("src/lib/auth-request"),
+    import("src/lib/user.server"),
   ]);
 
   GET = routeModule.GET;
@@ -59,11 +72,17 @@ beforeAll(async () => {
   mockGetVerifiedUserFromStoredTokens = jest.mocked(
     authRequest.getVerifiedUserFromStoredTokens,
   );
+  mockConsumeSupportProjectToastPending = jest.mocked(
+    userServer.consumeSupportProjectToastPending,
+  );
+  mockTouchUserLastSeen = jest.mocked(userServer.touchUserLastSeen);
 });
 
 describe("GET /api/auth/check", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockConsumeSupportProjectToastPending.mockResolvedValue(false);
+    mockTouchUserLastSeen.mockResolvedValue(undefined);
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
@@ -73,16 +92,20 @@ describe("GET /api/auth/check", () => {
     mockGetVerifiedUserFromRequest.mockResolvedValue({
       user: { userId: 42, username: "crate-digger" },
     });
+    mockConsumeSupportProjectToastPending.mockResolvedValue(true);
 
     const response = await GET(createRequest());
 
     expect(response.status).toBe(200);
+    expect(mockConsumeSupportProjectToastPending).toHaveBeenCalledWith(42);
+    expect(mockTouchUserLastSeen).toHaveBeenCalledWith(42);
     await expect(response.json()).resolves.toEqual({
       isAuthenticated: true,
       username: "crate-digger",
       userId: "42",
       rateLimited: false,
       reconnectUsername: null,
+      showSupportProjectToast: true,
     });
   });
 
@@ -105,6 +128,7 @@ describe("GET /api/auth/check", () => {
       userId: "42",
       rateLimited: true,
       reconnectUsername: null,
+      showSupportProjectToast: false,
     });
   });
 
@@ -126,6 +150,7 @@ describe("GET /api/auth/check", () => {
       userId: null,
       rateLimited: false,
       reconnectUsername: null,
+      showSupportProjectToast: false,
     });
   });
 
@@ -147,6 +172,7 @@ describe("GET /api/auth/check", () => {
       userId: null,
       rateLimited: false,
       reconnectUsername: "crate-digger",
+      showSupportProjectToast: false,
     });
   });
 
@@ -165,6 +191,7 @@ describe("GET /api/auth/check", () => {
       userId: null,
       rateLimited: false,
       reconnectUsername: "saved-account",
+      showSupportProjectToast: false,
     });
   });
 });

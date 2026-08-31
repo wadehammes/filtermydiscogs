@@ -8,7 +8,7 @@ import {
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
-import { upsertDiscogsUser } from "src/lib/user.server";
+import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 function clearSessionCookies(response: NextResponse): void {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         syncIdentityCookies(response, identity);
 
         try {
-          await upsertDiscogsUser({
+          await recordDiscogsLogin({
             discogsUserId: identity.userId,
             username: identity.username,
           });

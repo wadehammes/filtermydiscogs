@@ -6,7 +6,7 @@ import {
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
-import { upsertDiscogsUser } from "src/lib/user.server";
+import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export async function GET(request: NextRequest) {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    await upsertDiscogsUser({
+    await recordDiscogsLogin({
       discogsUserId: verifiedIdentity.id,
       username: verifiedIdentity.username,
     });

@@ -19,9 +19,13 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 | `discogs_user_id` | Primary key — Discogs user ID from **verified OAuth identity** |
 | `username` | Discogs username (updated on login) |
 | `preferences` | JSON blob for account settings (see below) |
+| `login_count` | Completed OAuth logins (incremented in [`recordDiscogsLogin`](../../src/lib/user.server.ts)) |
+| `support_toast_dismissed` | When `true`, the support-project action toast is never shown again |
+| `support_toast_pending` | One-shot flag set on login when `login_count` reaches the threshold and the toast was not dismissed; consumed by **`GET /api/auth/check`** |
+| `last_seen_at` | Last authenticated activity timestamp; set on every login and throttled updates from **`GET /api/auth/check`** ([`touchUserLastSeen`](../../src/lib/user.server.ts), 15-minute interval) |
 | `created_at` / `updated_at` | Row timestamps |
 
-One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user_id`** with **`ON DELETE CASCADE`**. Rows are upserted on OAuth login via [`upsertDiscogsUser`](../../src/lib/user.server.ts) in the auth callback and token-reuse paths.
+One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user_id`** with **`ON DELETE CASCADE`**. Rows are created/updated on OAuth login via [`recordDiscogsLogin`](../../src/lib/user.server.ts) in the auth callback and token-reuse paths.
 
 **`preferences`** (versioned JSON, typed as [`UserPreferencesJson`](../../src/types/userPreferences.types.ts), parsed by [`user-preferences.server.ts`](../../src/lib/user-preferences.server.ts); Prisma field typing via [`prisma-json-types-generator`](https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields) + [`src/types/prisma-json.d.ts`](../../src/types/prisma-json.d.ts)):
 

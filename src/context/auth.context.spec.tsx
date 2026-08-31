@@ -14,10 +14,16 @@ import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
+import { toast } from "src/utils/toast";
 import { act, renderHook, waitFor } from "test-utils";
 import { AuthProvider, useAuth } from "./auth.context";
 
 jest.mock("src/api/urls");
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    dismiss: jest.fn(),
+  },
+}));
 jest.mock("src/services/auth.service", () => {
   const actual = jest.requireActual<typeof import("src/services/auth.service")>(
     "src/services/auth.service",
@@ -45,6 +51,7 @@ const mockClearSessionAuthCookies = jest.mocked(clearSessionAuthCookies);
 const mockClearUrlParams = jest.mocked(clearUrlParams);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
+const mockToastDismiss = jest.mocked(toast.dismiss);
 
 describe("AuthProvider", () => {
   let queryClient: QueryClient;
@@ -391,6 +398,7 @@ describe("AuthProvider", () => {
     });
 
     expect(mockLogoutApi).toHaveBeenCalled();
+    expect(mockToastDismiss).toHaveBeenCalledWith();
     expect(mockClearSessionAuthCookies).toHaveBeenCalled();
     expect(removeQueriesSpy).toHaveBeenCalled();
     expect(clearSpy).not.toHaveBeenCalled();
