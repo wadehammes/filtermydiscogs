@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect } from "react";
 import { applyThemeFromStorage } from "src/utils/applyThemeFromStorage";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
 import "src/styles/global.css";
-import styles from "./global-error.module.css";
+import styles from "src/styles/modules/global-error.module.css";
 
 export default function GlobalError({
   error,

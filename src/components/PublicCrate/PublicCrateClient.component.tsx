@@ -15,7 +15,7 @@ import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import type { DiscogsRelease } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
-import styles from "./page.module.css";
+import styles from "./PublicCrate.module.css";
 
 interface PublicCrateClientProps {
   crateId: string;

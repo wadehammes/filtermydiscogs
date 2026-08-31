@@ -6,7 +6,7 @@ import Button from "src/components/Button/Button.component";
 import { ABOUT_DATA_DELETION_ITEMS } from "src/constants/about.constants";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import typography from "src/styles/modules/typography.module.css";
-import styles from "./page.module.css";
+import styles from "./About.module.css";
 
 export const AboutClearDataSection = () => {
   const { confirmClearAllUserData, isAuthenticated, isClearing } =

@@ -4,7 +4,7 @@ Quick map of **`src/`** and related top-level folders.
 
 | Path | Role |
 |------|------|
-| [`src/app/`](../../src/app/) | App Router layouts, pages, route handlers (`app/api/...`). |
+| [`src/app/`](../../src/app/) | App Router **routing only**: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route handlers (`app/api/...`), `sitemap.ts`, `robots.ts`. Page UI lives in [`src/components/`](../../src/components/); hooks in [`src/hooks/`](../../src/hooks/). |
 | [`src/components/`](../../src/components/) | Feature UI (Dashboard, ReleaseCard, StickyHeaderBar, …). |
 | [`src/atoms/`](../../src/atoms/) | Jotai atoms: filters, view mode, shared `JotaiProvider`. |
 | [`src/context/`](../../src/context/) | Auth, collection, crate, theme providers; filters/view scope markers (state in Jotai). |
@@ -51,7 +51,7 @@ Quick map of **`src/`** and related top-level folders.
 | Auth cookies / login | [`src/app/api/auth/`](../../src/app/api/auth/) + [`auth.service.ts`](../../src/services/auth.service.ts) |
 | Private session API cache headers | [`src/lib/private-route-cache.ts`](../../src/lib/private-route-cache.ts), [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |
 | Site metadata / sitemap / robots | [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts), [`src/app/sitemap.ts`](../../src/app/sitemap.ts), [`src/app/robots.ts`](../../src/app/robots.ts) — see [patterns.md → Metadata and OG images](patterns.md#metadata-and-og-images) |
-| Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home content in [`Login/`](../../src/components/Login/) |
+| Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home in [`Login/`](../../src/components/Login/), about in [`About/`](../../src/components/About/), legal in [`Legal/`](../../src/components/Legal/), public crate in [`PublicCrate/`](../../src/components/PublicCrate/) |
 | Unused code / dead exports | [`knip.json`](../../knip.json), `pnpm knip` |
 
 **Tests** for a module usually sit **next to** that module as **`*.spec.ts(x)`** (optional **`*.po.tsx`** for page objects). Shared test infra lives under **`src/tests/`** (`BasePageObject.po.ts`, factories, mocks).

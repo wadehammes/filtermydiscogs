@@ -2,7 +2,7 @@
 
 import Button from "src/components/Button/Button.component";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
-import styles from "./page.module.css";
+import styles from "./Legal.module.css";
 
 export function LegalDataManagementActions() {
   const { confirmClearAllUserData, isAuthenticated, isClearing } =
