@@ -1,5 +1,4 @@
 import { describe, expect, it } from "@jest/globals";
-import { toast } from "sonner";
 import {
   COLLECTION_LOADING_TOAST_ID,
   formatLargeCollectionLoadingProgress,
@@ -10,8 +9,9 @@ import {
 import { isLargeCollection } from "src/constants/collection";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
+import { toast } from "src/utils/toast";
 
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     loading: jest.fn(),
     dismiss: jest.fn(),

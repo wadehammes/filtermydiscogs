@@ -1,37 +1,125 @@
 "use client";
 
-import { createPortal } from "react-dom";
-import { Toaster } from "sonner";
-import { useTheme } from "src/context/theme.context";
+import { Toast } from "@base-ui/react/toast";
+import classNames from "classnames";
 import { useMounted } from "src/hooks/useMounted.hook";
-import { toSonnerTheme } from "src/utils/themeAppearance";
+import type { FmdToastData } from "src/lib/toastManagers";
+import { centerToastManager, toastManager } from "src/lib/toastManagers";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
+import styles from "./AppToaster.module.css";
+
+type ToastViewportPosition = "bottom-right" | "bottom-center";
+
+const viewportClassByPosition: Record<ToastViewportPosition, string> = {
+  "bottom-right": styles.viewportBottomRight,
+  "bottom-center": styles.viewportBottomCenter,
+};
+
+function ToastViewportList({ position }: { position: ToastViewportPosition }) {
+  const { toasts } = Toast.useToastManager<FmdToastData>();
+
+  return (
+    <Toast.Portal>
+      <Toast.Viewport className={viewportClassByPosition[position]}>
+        {toasts.map((toastItem) => {
+          const classNamesConfig = toastItem.data?.classNames;
+          const toastIcon =
+            toastItem.data?.icon ??
+            (toastItem.type === "success" ? (
+              <CheckThinIcon className={styles.successIcon} aria-hidden />
+            ) : null);
+
+          return (
+            <Toast.Root
+              key={toastItem.id}
+              toast={toastItem}
+              className={classNames(
+                styles.root,
+                "fmd-toast",
+                classNamesConfig?.toast,
+              )}
+            >
+              {toastIcon ? (
+                <div
+                  className={classNames(styles.icon, classNamesConfig?.icon)}
+                  data-icon=""
+                >
+                  {toastIcon}
+                </div>
+              ) : null}
+              <Toast.Content
+                className={classNames(
+                  styles.content,
+                  classNamesConfig?.content,
+                )}
+              >
+                {toastItem.title ? (
+                  <Toast.Title
+                    className={classNames(
+                      styles.title,
+                      "fmd-toast-title",
+                      classNamesConfig?.title,
+                    )}
+                  >
+                    {toastItem.title}
+                  </Toast.Title>
+                ) : null}
+                {toastItem.description ? (
+                  <Toast.Description
+                    className={classNames(
+                      styles.description,
+                      "fmd-toast-description",
+                      classNamesConfig?.description,
+                    )}
+                  >
+                    {toastItem.description}
+                  </Toast.Description>
+                ) : null}
+              </Toast.Content>
+              {toastItem.data?.cancel || toastItem.data?.action ? (
+                <div className={styles.actions}>
+                  {toastItem.data.cancel ? (
+                    <div className={styles.cancelSlot} data-cancel="">
+                      {toastItem.data.cancel}
+                    </div>
+                  ) : null}
+                  {toastItem.data.action ? (
+                    <div className={styles.actionSlot} data-button="">
+                      {toastItem.data.action}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {toastItem.actionProps ? (
+                <Toast.Action {...toastItem.actionProps} />
+              ) : null}
+            </Toast.Root>
+          );
+        })}
+      </Toast.Viewport>
+    </Toast.Portal>
+  );
+}
 
 export function AppToaster() {
-  const { resolvedTheme } = useTheme();
   const mounted = useMounted();
 
   if (!mounted) {
     return null;
   }
 
-  return createPortal(
-    <Toaster
-      theme={toSonnerTheme(resolvedTheme)}
-      richColors
-      position="bottom-right"
-      closeButton={false}
-      expand={false}
-      visibleToasts={3}
-      offset="1rem"
-      style={{ zIndex: "var(--z-8-toast)" }}
-      toastOptions={{
-        classNames: {
-          toast: "fmd-toast",
-          title: "fmd-toast-title",
-          description: "fmd-toast-description",
-        },
-      }}
-    />,
-    document.body,
+  return (
+    <>
+      <Toast.Provider toastManager={toastManager} limit={3} timeout={5000}>
+        <ToastViewportList position="bottom-right" />
+      </Toast.Provider>
+      <Toast.Provider
+        toastManager={centerToastManager}
+        limit={3}
+        timeout={5000}
+      >
+        <ToastViewportList position="bottom-center" />
+      </Toast.Provider>
+    </>
   );
 }

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { toast } from "sonner";
 import { COLLECTION_LOADING_TOAST_ID } from "src/components/CollectionLoadingToast/collectionLoadingToast";
 import { DashboardClientPageObject } from "src/components/Dashboard/DashboardClient.po";
+import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     loading: jest.fn(),
     dismiss: jest.fn(),

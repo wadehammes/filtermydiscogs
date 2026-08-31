@@ -1,8 +1,8 @@
-import { toast } from "sonner";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { isLargeCollection } from "src/constants/collection";
 import type { DiscogsCollection } from "src/types";
 import { readStoredCollectionItemCount } from "src/utils/collectionItemCountStorage";
+import { toast } from "src/utils/toast";
 
 export const COLLECTION_LOADING_TOAST_ID = "collection-loading";
 

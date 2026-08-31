@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { trackCrateLayoutUpdated } from "src/analytics/productAnalyticsEvents";
 import { api } from "src/api/urls";
 import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
@@ -21,6 +20,7 @@ import type {
   CrateWithReleasesResponse,
   OptimisticUpdateContext,
 } from "src/types/crate.types";
+import { toast } from "src/utils/toast";
 
 interface CreateCrateRequest {
   name: string;

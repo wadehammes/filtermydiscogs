@@ -1,7 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { useEffect, useMemo, useRef } from "react";
-import { toast } from "sonner";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -24,6 +23,7 @@ import {
   getEffectiveCollectionPages,
 } from "src/utils/collectionPagination";
 import { prepareCollectionForSync } from "src/utils/syncCollection.helper";
+import { toast } from "src/utils/toast";
 
 export interface UseCollectionDataParams {
   username: string | null;

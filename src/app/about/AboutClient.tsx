@@ -3,13 +3,13 @@
 import classNames from "classnames";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 import pageStyles from "src/components/Page/Page.module.css";
 import { useAuth } from "src/context/auth.context";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import typography from "src/styles/modules/typography.module.css";
+import { toast } from "src/utils/toast";
 import styles from "./page.module.css";
 
 export function AboutClient() {

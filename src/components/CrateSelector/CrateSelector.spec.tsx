@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { toast } from "sonner";
 import { CrateSelectorPageObject } from "src/components/CrateSelector/CrateSelector.po";
+import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
 
 let po: CrateSelectorPageObject;

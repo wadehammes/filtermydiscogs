@@ -25,7 +25,7 @@ jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
-jest.mock("sonner", () => ({
+jest.mock("src/utils/toast", () => ({
   toast: {
     success: jest.fn(),
     error: jest.fn(),

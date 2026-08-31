@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import { showPersistentActionToast } from "src/utils/actionToast";
+import { toast } from "src/utils/toast";
 
 const PENDING_FILTERS_RESTORE_TOAST_ID = "pending-filters-restore";
 

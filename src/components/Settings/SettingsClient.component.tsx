@@ -4,7 +4,6 @@ import classNames from "classnames";
 import { useSetAtom, useStore } from "jotai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { Page } from "src/components/Page/Page.component";
@@ -24,6 +23,7 @@ import {
 } from "src/types/userPreferences.types";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
+import { toast } from "src/utils/toast";
 import styles from "./SettingsClient.module.css";
 import {
   SettingsAccountPanel,

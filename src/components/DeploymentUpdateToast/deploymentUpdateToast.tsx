@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "sonner";
 import Button from "src/components/Button/Button.component";
 import { showPersistentActionToast } from "src/utils/actionToast";
+import { toast } from "src/utils/toast";
 
 const DEPLOYMENT_UPDATE_TOAST_ID = "deployment-update";
 

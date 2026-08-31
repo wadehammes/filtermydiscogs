@@ -69,9 +69,6 @@ export const resolvePaletteTheme = (
 export const themeUsesDarkAssets = (theme: PaletteTheme): boolean =>
   DARK_ASSET_THEMES.has(theme);
 
-export const toSonnerTheme = (theme: PaletteTheme): "dark" | "light" =>
-  themeUsesDarkAssets(theme) ? "dark" : "light";
-
 export const cycleTheme = (current: StoredTheme): StoredTheme => {
   const index = STORED_THEMES.indexOf(current);
   const nextIndex = index === -1 ? 0 : (index + 1) % STORED_THEMES.length;
