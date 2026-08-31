@@ -1,6 +1,18 @@
-import type { Prisma } from "@prisma/client";
 import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
-import { prisma } from "src/lib/db";
+import { orm } from "src/lib/db";
+import {
+  mapCrateReleaseLayoutRow,
+  mapCrateSetMarkerLayoutRow,
+} from "src/lib/db-mappers";
+import type {
+  CrateReleaseLayoutRow,
+  CrateSetMarkerLayoutRow,
+} from "src/types/db.types";
+
+type CrateReleaseLayoutWhere = {
+  userId: number;
+  crateId: string;
+};
 
 const isMissingLayoutSchemaError = (error: unknown): boolean => {
   if (!(error instanceof Error)) {
@@ -17,96 +29,78 @@ const isMissingLayoutSchemaError = (error: unknown): boolean => {
 };
 
 export const hasCrateSetMarkerDelegate = (): boolean =>
-  "crateSetMarker" in prisma &&
-  prisma.crateSetMarker != null &&
-  typeof prisma.crateSetMarker.findMany === "function";
+  "CrateSetMarkers" in orm;
 
-const crateReleaseLayoutSelect = {
-  release_data: true,
-  found_at: true,
-  sort_order: true,
-} satisfies Prisma.CrateReleaseSelect;
-
-const crateReleaseLegacySelect = {
-  release_data: true,
-  found_at: true,
-} satisfies Prisma.CrateReleaseSelect;
-
-export type CrateReleaseLayoutRow = Prisma.CrateReleaseGetPayload<{
-  select: typeof crateReleaseLayoutSelect;
-}>;
+export type { CrateReleaseLayoutRow, CrateSetMarkerLayoutRow };
 
 export async function findCrateReleasesForLayout({
   where,
   skip,
   take,
 }: {
-  where: Prisma.CrateReleaseWhereInput;
+  where: CrateReleaseLayoutWhere;
   skip?: number | undefined;
   take?: number | undefined;
 }): Promise<CrateReleaseLayoutRow[]> {
-  const pagination = {
-    ...(skip !== undefined ? { skip } : {}),
-    ...(take !== undefined ? { take } : {}),
-  };
+  let query = orm.CrateReleases.where(where).orderBy((release) =>
+    release.sortOrder.asc(),
+  );
+
+  if (skip !== undefined) {
+    query = query.offset(skip);
+  }
+  if (take !== undefined) {
+    query = query.limit(take);
+  }
 
   try {
-    return await prisma.crateRelease.findMany({
-      where,
-      ...pagination,
-      select: crateReleaseLayoutSelect,
-      orderBy: {
-        sort_order: "asc",
-      },
-    });
+    const rows = await query
+      .select("releaseData", "foundAt", "sortOrder")
+      .all();
+
+    return rows.map(mapCrateReleaseLayoutRow);
   } catch (error) {
     if (!isMissingLayoutSchemaError(error)) {
       throw error;
     }
 
-    const legacyRows = await prisma.crateRelease.findMany({
-      where,
-      ...pagination,
-      select: crateReleaseLegacySelect,
-      orderBy: {
-        added_at: "desc",
-      },
-    });
+    let legacyQuery = orm.CrateReleases.where(where).orderBy((release) =>
+      release.addedAt.desc(),
+    );
+    if (skip !== undefined) {
+      legacyQuery = legacyQuery.offset(skip);
+    }
+    if (take !== undefined) {
+      legacyQuery = legacyQuery.limit(take);
+    }
 
-    return legacyRows.map((row, index) => ({
-      ...row,
-      sort_order: (index + 1) * CRATE_LAYOUT_SORT_STEP,
-    }));
+    const legacyRows = await legacyQuery.select("releaseData", "foundAt").all();
+    return legacyRows.map((row, index) =>
+      mapCrateReleaseLayoutRow({
+        releaseData: row.releaseData,
+        foundAt: row.foundAt,
+        sortOrder: (index + 1) * CRATE_LAYOUT_SORT_STEP,
+      }),
+    );
   }
 }
-
-const crateMarkerSelect = {
-  id: true,
-  label: true,
-  sort_order: true,
-} satisfies Prisma.CrateSetMarkerSelect;
-
-export type CrateSetMarkerLayoutRow = Prisma.CrateSetMarkerGetPayload<{
-  select: typeof crateMarkerSelect;
-}>;
 
 export async function findCrateSetMarkersForLayout({
   where,
 }: {
-  where: Prisma.CrateSetMarkerWhereInput;
+  where: CrateReleaseLayoutWhere;
 }): Promise<CrateSetMarkerLayoutRow[]> {
   if (!hasCrateSetMarkerDelegate()) {
     return [];
   }
 
   try {
-    return await prisma.crateSetMarker.findMany({
-      where,
-      select: crateMarkerSelect,
-      orderBy: {
-        sort_order: "asc",
-      },
-    });
+    const rows = await orm.CrateSetMarkers.where(where)
+      .select("id", "label", "sortOrder")
+      .orderBy((marker) => marker.sortOrder.asc())
+      .all();
+
+    return rows.map(mapCrateSetMarkerLayoutRow);
   } catch (error) {
     if (isMissingLayoutSchemaError(error)) {
       return [];

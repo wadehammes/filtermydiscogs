@@ -7,7 +7,7 @@ Map of FilterMyDisco.gs: technologies, top-level folders, and how Discogs collec
 - **Framework**: **Next.js 16** with the **App Router**. Routes and layouts live under [`src/app/`](../../src/app/).
 - **UI**: React 19, TypeScript.
 - **Auth & data source**: **Discogs OAuth 1.0a** and the Discogs REST API via [`src/services/discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts).
-- **Persistence**: **Prisma 7** + **Vercel Postgres** for user crates and saved releases ([`prisma/schema.prisma`](../../prisma/schema.prisma), datasource URL in [`prisma.config.ts`](../../prisma.config.ts)).
+- **Persistence**: **Prisma 8 RC** + **Vercel Postgres** for user crates and saved releases ([`src/prisma/contract.prisma`](../../src/prisma/contract.prisma), [`prisma.config.ts`](../../prisma.config.ts), client [`src/lib/db.ts`](../../src/lib/db.ts)).
 - **Client state**:
   - **Jotai** — filters, view mode, and derived release lists ([`src/atoms/`](../../src/atoms/)); components subscribe via [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts).
   - **React Context** — auth and collection pagination (**useReducer**); crate drawer/selection (**React Query** + local state); theme (**useState**). [`FiltersProvider`](../../src/context/filters.context.tsx) and [`ViewProvider`](../../src/context/view.context.tsx) are scope markers over Jotai, not duplicate state.
@@ -122,6 +122,6 @@ Factories (`src/tests/factories/`), test providers, shared mocks.
 - **[`next.config.ts`](../../next.config.ts)** — env exposure, Discogs image hosts, CSP/security headers, SVGR, `transpilePackages` for Jest/Faker.
 - **[`biome.json`](../../biome.json)** — lint and format rules.
 - **[`knip.json`](../../knip.json)** — unused export detection.
-- **[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)** — PR checks into `staging`: `tsc:ci` (includes `db:generate`), `lint:ci`, `lint:css`, `test:ci`, **`knip:ci`**.
+- **[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)** — PR checks into `staging`: `tsc:ci` (includes `contract:emit`), `lint:ci`, `lint:css`, `test:ci`, **`knip:ci`**.
 
 Branching and releases are described in the root [README.md](../../README.md).

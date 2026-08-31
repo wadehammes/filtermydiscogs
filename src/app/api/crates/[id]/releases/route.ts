@@ -5,7 +5,7 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
-import { type Prisma, prisma } from "src/lib/db";
+import { db, orm, toOrmJson } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { clearCrateFoundBodySchema } from "src/lib/validation/crate.schemas";
@@ -39,40 +39,30 @@ export async function PATCH(
       return privateRouteJson({ error: parsedBody.error }, { status: 400 });
     }
 
-    const crate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-      select: { id: true },
-    });
+    const crate = await orm.Crates.where({ userId: userIdNum, id })
+      .select("id")
+      .first();
 
     if (!crate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
-    const result = await prisma.crateRelease.updateMany({
-      where: {
-        user_id: userIdNum,
-        crate_id: id,
-        found_at: { not: null },
-      },
-      data: {
-        found_at: null,
-      },
-    });
+    const resultCount = await orm.CrateReleases.where({
+      userId: userIdNum,
+      crateId: id,
+    })
+      .where((r) => r.foundAt.isNotNull())
+      .updateAndCount({ foundAt: null });
 
     auditDatabaseOperation(userIdNum, "CrateRelease", "update", id, {
       crate_id: id,
       clear_found: true,
-      cleared_count: result.count,
+      cleared_count: resultCount,
     });
 
     return privateRouteJson({
       success: true,
-      cleared_count: result.count,
+      cleared_count: resultCount,
     });
   } catch (error) {
     console.error("Error clearing crate release packed status:", error);
@@ -100,15 +90,9 @@ export async function POST(
     const { id } = await params;
 
     // Verify crate exists and belongs to user
-    const crate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id,
-        },
-      },
-      select: { id: true },
-    });
+    const crate = await orm.Crates.where({ userId: userIdNum, id })
+      .select("id")
+      .first();
 
     if (!crate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
@@ -134,16 +118,13 @@ export async function POST(
     const instanceId = release.instance_id;
 
     // Check if release is already in crate
-    const existingRelease = await prisma.crateRelease.findUnique({
-      where: {
-        user_id_crate_id_instance_id: {
-          user_id: userIdNum,
-          crate_id: id,
-          instance_id: instanceId,
-        },
-      },
-      select: { instance_id: true },
-    });
+    const existingRelease = await orm.CrateReleases.where({
+      userId: userIdNum,
+      crateId: id,
+      instanceId,
+    })
+      .select("instanceId")
+      .first();
 
     if (existingRelease) {
       return privateRouteJson(
@@ -158,21 +139,19 @@ export async function POST(
       instance_id: instanceId,
     };
 
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const sortOrder = await getPrependCrateLayoutSortOrderForCrate({
         userId: userIdNum,
         crateId: id,
         tx,
       });
 
-      await tx.crateRelease.create({
-        data: {
-          user_id: userIdNum,
-          crate_id: id,
-          instance_id: instanceId,
-          release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
-          sort_order: sortOrder,
-        },
+      await tx.orm.public.CrateReleases.create({
+        userId: userIdNum,
+        crateId: id,
+        instanceId,
+        releaseData: toOrmJson(normalizedRelease),
+        sortOrder,
       });
     });
 

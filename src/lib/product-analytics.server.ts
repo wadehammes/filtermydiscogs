@@ -1,4 +1,6 @@
-import { prisma } from "src/lib/db";
+import { randomUUID } from "node:crypto";
+import { and } from "@prisma/orm-postgres/orm-client";
+import { countRows, orm, ormDate, ormTimestamp } from "src/lib/db";
 import type {
   AdminStatsFeatureUsage,
   AdminStatsFeatureUsageRow,
@@ -18,17 +20,18 @@ export const insertProductAnalyticsEvents = async (
     return;
   }
 
-  await prisma.productAnalyticsEvent.createMany({
-    data: events.map((event) => ({
+  await orm.ProductAnalyticsEvents.createAll(
+    events.map((event) => ({
+      id: randomUUID(),
       event: event.event,
       category: event.category,
       action: event.action,
       label: event.label,
       value: event.value ?? null,
-      page_path: event.page_path ?? null,
-      user_id: userId,
+      pagePath: event.page_path ?? null,
+      userId,
     })),
-  });
+  );
 };
 
 const buildUsageRows = ({
@@ -58,14 +61,14 @@ const buildUsageRows = ({
 
 const groupRollupCounts = (
   rows: Array<{
-    dimension_key: string;
-    _sum: { event_count: number | null };
+    dimensionKey: string;
+    count: number | null;
   }>,
 ): Map<string, number> => {
   const counts = new Map<string, number>();
 
   for (const row of rows) {
-    counts.set(row.dimension_key, row._sum.event_count ?? 0);
+    counts.set(row.dimensionKey, row.count ?? 0);
   }
 
   return counts;
@@ -87,21 +90,21 @@ const mergeCountMaps = (
 const groupCounts = (
   rows: Array<{
     event?: string;
-    page_path?: string | null;
-    _count: { _all: number };
+    pagePath?: string | null;
+    count: number;
   }>,
-  key: "event" | "page_path",
+  key: "event" | "pagePath",
 ): Map<string, number> => {
   const counts = new Map<string, number>();
 
   for (const row of rows) {
-    const value = key === "event" ? row.event : row.page_path;
+    const value = key === "event" ? row.event : row.pagePath;
 
     if (!value) {
       continue;
     }
 
-    counts.set(value, row._count._all);
+    counts.set(value, row.count);
   }
 
   return counts;
@@ -118,7 +121,6 @@ export const fetchAdminFeatureUsageStats =
     const rawSupplementStart = addUtcDays(startOfToday, -1);
     const sevenDayRollupStart = addUtcDays(startOfToday, -6);
     const thirtyDayRollupStart = addUtcDays(startOfToday, -29);
-    const rolledUpThrough = { lt: rawSupplementStart };
 
     const [
       totalRollup7d,
@@ -131,80 +133,104 @@ export const fetchAdminFeatureUsageStats =
       rawPageViewsSinceYesterday,
       rawEventsSinceYesterday,
     ] = await Promise.all([
-      prisma.productAnalyticsDailyRollup.aggregate({
-        where: { date: { gte: sevenDayRollupStart, ...rolledUpThrough } },
-        _sum: { event_count: true },
-      }),
-      prisma.productAnalyticsDailyRollup.aggregate({
-        where: { date: { gte: thirtyDayRollupStart, ...rolledUpThrough } },
-        _sum: { event_count: true },
-      }),
-      prisma.productAnalyticsDailyRollup.groupBy({
-        by: ["dimension_key"],
-        where: {
-          dimension_type: "page_path",
-          date: { gte: sevenDayRollupStart, ...rolledUpThrough },
-        },
-        _sum: { event_count: true },
-      }),
-      prisma.productAnalyticsDailyRollup.groupBy({
-        by: ["dimension_key"],
-        where: {
-          dimension_type: "page_path",
-          date: { gte: thirtyDayRollupStart, ...rolledUpThrough },
-        },
-        _sum: { event_count: true },
-      }),
-      prisma.productAnalyticsDailyRollup.groupBy({
-        by: ["dimension_key"],
-        where: {
-          dimension_type: "event",
-          date: { gte: sevenDayRollupStart, ...rolledUpThrough },
-        },
-        _sum: { event_count: true },
-      }),
-      prisma.productAnalyticsDailyRollup.groupBy({
-        by: ["dimension_key"],
-        where: {
-          dimension_type: "event",
-          date: { gte: thirtyDayRollupStart, ...rolledUpThrough },
-        },
-        _sum: { event_count: true },
-      }),
-      prisma.productAnalyticsEvent.count({
-        where: { created_at: { gte: rawSupplementStart } },
-      }),
-      prisma.productAnalyticsEvent.groupBy({
-        by: ["page_path"],
-        where: {
-          event: "pageView",
-          page_path: { not: null },
-          created_at: { gte: rawSupplementStart },
-        },
-        _count: { _all: true },
-      }),
-      prisma.productAnalyticsEvent.groupBy({
-        by: ["event"],
-        where: {
-          event: { not: "pageView" },
-          created_at: { gte: rawSupplementStart },
-        },
-        _count: { _all: true },
-      }),
+      orm.ProductAnalyticsDailyRollups.where((rollup) =>
+        and(
+          rollup.date.gte(ormDate(sevenDayRollupStart)),
+          rollup.date.lt(ormDate(rawSupplementStart)),
+        ),
+      ).aggregate((aggregate) => ({
+        total: aggregate.sum("eventCount"),
+      })),
+      orm.ProductAnalyticsDailyRollups.where((rollup) =>
+        and(
+          rollup.date.gte(ormDate(thirtyDayRollupStart)),
+          rollup.date.lt(ormDate(rawSupplementStart)),
+        ),
+      ).aggregate((aggregate) => ({
+        total: aggregate.sum("eventCount"),
+      })),
+      orm.ProductAnalyticsDailyRollups.where((rollup) =>
+        and(
+          rollup.dimensionType.eq("page_path"),
+          rollup.date.gte(ormDate(sevenDayRollupStart)),
+          rollup.date.lt(ormDate(rawSupplementStart)),
+        ),
+      )
+        .groupBy("dimensionKey")
+        .aggregate((aggregate) => ({
+          count: aggregate.sum("eventCount"),
+        })),
+      orm.ProductAnalyticsDailyRollups.where((rollup) =>
+        and(
+          rollup.dimensionType.eq("page_path"),
+          rollup.date.gte(ormDate(thirtyDayRollupStart)),
+          rollup.date.lt(ormDate(rawSupplementStart)),
+        ),
+      )
+        .groupBy("dimensionKey")
+        .aggregate((aggregate) => ({
+          count: aggregate.sum("eventCount"),
+        })),
+      orm.ProductAnalyticsDailyRollups.where((rollup) =>
+        and(
+          rollup.dimensionType.eq("event"),
+          rollup.date.gte(ormDate(sevenDayRollupStart)),
+          rollup.date.lt(ormDate(rawSupplementStart)),
+        ),
+      )
+        .groupBy("dimensionKey")
+        .aggregate((aggregate) => ({
+          count: aggregate.sum("eventCount"),
+        })),
+      orm.ProductAnalyticsDailyRollups.where((rollup) =>
+        and(
+          rollup.dimensionType.eq("event"),
+          rollup.date.gte(ormDate(thirtyDayRollupStart)),
+          rollup.date.lt(ormDate(rawSupplementStart)),
+        ),
+      )
+        .groupBy("dimensionKey")
+        .aggregate((aggregate) => ({
+          count: aggregate.sum("eventCount"),
+        })),
+      countRows(
+        orm.ProductAnalyticsEvents.where((event) =>
+          event.createdAt.gte(ormTimestamp(rawSupplementStart)),
+        ),
+      ),
+      orm.ProductAnalyticsEvents.where((event) =>
+        and(
+          event.event.eq("pageView"),
+          event.pagePath.isNotNull(),
+          event.createdAt.gte(ormTimestamp(rawSupplementStart)),
+        ),
+      )
+        .groupBy("pagePath")
+        .aggregate((aggregate) => ({
+          count: aggregate.count(),
+        })),
+      orm.ProductAnalyticsEvents.where((event) =>
+        and(
+          event.event.neq("pageView"),
+          event.createdAt.gte(ormTimestamp(rawSupplementStart)),
+        ),
+      )
+        .groupBy("event")
+        .aggregate((aggregate) => ({
+          count: aggregate.count(),
+        })),
     ]);
 
     const rawPageViewCounts = groupCounts(
       rawPageViewsSinceYesterday,
-      "page_path",
+      "pagePath",
     );
     const rawEventCounts = groupCounts(rawEventsSinceYesterday, "event");
 
     return {
       totals: {
-        last7Days:
-          (totalRollup7d._sum.event_count ?? 0) + rawTotalSinceYesterday,
-        last30Days:
-          (totalRollup30d._sum.event_count ?? 0) + rawTotalSinceYesterday,
+        last7Days: (totalRollup7d.total ?? 0) + rawTotalSinceYesterday,
+        last30Days: (totalRollup30d.total ?? 0) + rawTotalSinceYesterday,
       },
       pageViews: buildUsageRows({
         sevenDayCounts: mergeCountMaps(

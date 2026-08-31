@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/knip/schema.json",
-  "ignoreFiles": ["public/theme-init.js"],
+  "ignoreFiles": ["public/theme-init.js", "src/prisma/contract.prisma"],
   "ignoreDependencies": ["@svgr/webpack"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {

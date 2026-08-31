@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { getVerifiedUserFromRequestWithRateLimit } from "src/lib/api-helpers";
-import { prisma } from "src/lib/db";
+import { orm, ormTimestamp, toOrmJson } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import {
   defaultUserPreferences,
@@ -17,10 +17,11 @@ export async function GET(request: NextRequest) {
     return verified.error;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { discogs_user_id: verified.user.userId },
-    select: { preferences: true },
-  });
+  const user = await orm.Users.where({
+    discogsUserId: verified.user.userId,
+  })
+    .select("preferences")
+    .first();
 
   const preferences = user
     ? parseUserPreferences(user.preferences)
@@ -44,10 +45,11 @@ export async function PATCH(request: NextRequest) {
     return privateRouteJson({ error: parsedBody.error }, { status: 400 });
   }
 
-  const existing = await prisma.user.findUnique({
-    where: { discogs_user_id: verified.user.userId },
-    select: { preferences: true },
-  });
+  const existing = await orm.Users.where({
+    discogsUserId: verified.user.userId,
+  })
+    .select("preferences")
+    .first();
 
   const current = existing
     ? parseUserPreferences(existing.preferences)
@@ -57,18 +59,21 @@ export async function PATCH(request: NextRequest) {
     parsedBody.data as UserPreferencesPatch,
   );
 
-  const updated = await prisma.user.upsert({
-    where: { discogs_user_id: verified.user.userId },
+  const now = ormTimestamp(new Date());
+
+  const updated = await orm.Users.upsert({
     create: {
-      discogs_user_id: verified.user.userId,
+      discogsUserId: verified.user.userId,
       username: verified.user.username,
-      preferences,
+      preferences: toOrmJson(preferences),
+      updatedAt: now,
     },
     update: {
       username: verified.user.username,
-      preferences,
+      preferences: toOrmJson(preferences),
+      updatedAt: now,
     },
-    select: { preferences: true },
+    conflictOn: { discogsUserId: verified.user.userId },
   });
 
   return privateRouteJson({

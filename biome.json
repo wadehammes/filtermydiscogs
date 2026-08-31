@@ -2,7 +2,13 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/*.svg", "!!**/node_modules"]
+    "includes": [
+      "**",
+      "!**/*.svg",
+      "!!**/node_modules",
+      "!src/prisma/contract.d.ts",
+      "!src/prisma/contract.json"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -117,7 +123,11 @@
       "linter": {
         "rules": {
           "style": {
-            "noRestrictedImports": "off"
+            "noRestrictedImports": "off",
+            "noNonNullAssertion": "off"
+          },
+          "suspicious": {
+            "noDocumentCookie": "off"
           }
         }
       }

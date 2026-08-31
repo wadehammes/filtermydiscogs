@@ -4,11 +4,35 @@ Prisma schema, crate persistence, and related API routes.
 
 ## Stack
 
-- **ORM**: Prisma 7 with **`prisma-client-js`** (production). **Prisma 8** (`prisma@8` RC) is for staging/preview validation only until **`8.0.0` GA** — do not deploy RC builds to production.
+- **ORM**: **Prisma 8 RC** (`prisma@8`, `@prisma/orm-postgres`, `@prisma/cli-engine`) — validate on staging/preview only until **`8.0.0` GA**; do not deploy RC builds to production.
 - **Database**: PostgreSQL (Vercel Postgres in production)
-- **Client**: [`src/lib/db.ts`](../../src/lib/db.ts) — singleton Prisma client for route handlers. Normalizes **`sslmode=require`** / **`prefer`** / **`verify-ca`** to **`verify-full`** (current `node-pg` semantics; silences the upcoming pg v9 alias warning) and enforces **`verify-full`** in production when SSL mode is omitted.
+- **Client**: [`src/lib/db.ts`](../../src/lib/db.ts) — contract runtime (`db`, `orm`, `countRows`, `queryRawRows`, `ormTimestamp`, `ormDate`, `sqlDate`, `sqlTimestamp`, `toOrmDate`, `toOrmJson`) backed by a shared `pg` pool
 
-Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`prisma.config.ts`](../../prisma.config.ts) (Prisma 7).
+**Contract** (source of truth): [`src/prisma/contract.prisma`](../../src/prisma/contract.prisma). Emitted artifacts: [`src/prisma/contract.json`](../../src/prisma/contract.json), [`src/prisma/contract.d.ts`](../../src/prisma/contract.d.ts). CLI config: [`prisma.config.ts`](../../prisma.config.ts).
+
+Domain models use **PascalCase** plural names (`Users`, `Crates`, `CrateReleases`, …) with **camelCase** fields in queries (`userId`, `discogsUserId`, `releaseData`). API responses still expose **snake_case** via [`src/lib/db-mappers.ts`](../../src/lib/db-mappers.ts) (crate + layout slices) and [`src/lib/crate-release-mapper.ts`](../../src/lib/crate-release-mapper.ts) (full release/marker rows).
+
+## Prisma 8 workflow
+
+| Step | Command |
+|------|---------|
+| Emit contract types | `pnpm contract:emit` |
+| Re-infer contract from live DB | `pnpm contract:infer` |
+| Apply contract to DB | `pnpm db:push` (`prisma db update`) |
+| Deploy pending graph migrations | `pnpm db:migrate:deploy` |
+| Sign DB after contract changes | `pnpm db:sign` |
+| Verify marker + schema | `pnpm db:verify` |
+| Plan next migration | `pnpm migration:plan` |
+
+`postinstall` and **`pnpm build`** run **`contract:emit`** only (no **`DATABASE_URL`** required — [`prisma.config.ts`](../../prisma.config.ts) omits `db.connection` when unset). DB sign/verify and other `db:*` scripts load **`.env.local`** via `dotenv-cli`.
+
+Legacy timestamp SQL under [`prisma/migrations/`](../../prisma/migrations/) remains applied on existing databases; new schema changes use the P8 graph migration CLI.
+
+Query pattern (fluent chaining): `orm.Crates.where((crate) => crate.userId.eq(userId)).include("crateReleases", (r) => r.count()).all()`. Pagination: **`.offset(n).limit(m)`** (not `.skip`/`.take`). Counts: `countRows(orm.Users.where(...))`. Transactions: `db.transaction(async (tx) => tx.orm.public.…)`.
+
+The contract uses **string temporal types** — **`TimestampString(3)`**, **`DateString`**, **`TimestamptzString`** in [`contract.prisma`](../../src/prisma/contract.prisma) — so ORM reads/writes ISO strings without a Temporal polyfill. Timestamp filters and writes: **`ormTimestamp(date)`** → `TimestampString<3>`. Date filters and writes: **`ormDate(date)`** → `YYYY-MM-DD`. Raw SQL: **`queryRawRows(db.raw.sql\`…\`.returnsRow({…}).build())`** with **`sqlDate()`** / **`sqlTimestamp()`** for parameter interpolation; **`returnsRow`** codec ids use the current registry (e.g. **`pg/timestamp-string@1`**, **`pg/date-string@1`** — not retired `pg/timestamp@1`). When reading ORM date/timestamp strings into JS date math, use **`toOrmDate()`**. For **jsonb** writes, domain types (e.g. `UserPreferences`, `DiscogsRelease`) are not assignable to ORM **`JsonValue`** — use **`toOrmJson(value)`** at the write boundary instead of casting the whole `create`/`upsert` argument.
+
+See [`prisma-next.md`](../../prisma-next.md) for more examples.
 
 ## Models
 
@@ -27,7 +51,7 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 
 One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user_id`** with **`ON DELETE CASCADE`**. Rows are created/updated on OAuth login via [`recordDiscogsLogin`](../../src/lib/user.server.ts) in the auth callback and token-reuse paths.
 
-**`preferences`** (versioned JSON, typed as [`UserPreferencesJson`](../../src/types/userPreferences.types.ts), parsed by [`user-preferences.server.ts`](../../src/lib/user-preferences.server.ts); Prisma field typing via [`prisma-json-types-generator`](https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields) + [`src/types/prisma-json.d.ts`](../../src/types/prisma-json.d.ts)):
+**`preferences`** (versioned JSON, typed as [`UserPreferencesJson`](../../src/types/userPreferences.types.ts), parsed by [`user-preferences.server.ts`](../../src/lib/user-preferences.server.ts)):
 
 | Field | Default | Purpose |
 |-------|---------|---------|
@@ -39,7 +63,7 @@ One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user
 | `filterViews` | `[]` | Named saved filter snapshots (search, facets, sort) synced across browsers; up to 20 entries |
 | `analyticsConsent` | unset | Optional boolean mirror of the analytics cookie choice when set from Settings |
 
-Client reads/writes via **`GET`** / **`PATCH`** [`/api/user/preferences`](../../src/app/api/user/preferences/route.ts). **`GET`** is read-only: it **`findUnique`**s the authenticated **`User`** row and returns defaults when missing (user rows are created on OAuth login or the first **`PATCH`**). [`useUserPreferencesSync`](../../src/hooks/useUserPreferencesSync.hook.ts) (mounted from [`Providers.tsx`](../../src/components/Providers.tsx)) resets **`theme`** to **`system`** while logged out (guest default). On first login it **seeds local → server only when the server field is still at its default** (e.g. filters saved on preview/staging hydrate into a fresh local browser instead of being overwritten by empty **`localStorage`**); local **`system`** theme is **not** seeded (guest placeholder only). Otherwise it applies server prefs via **`setTheme`**, **`viewStateAtom`**, and **`persistedFiltersAtom`**. Authenticated **`PATCH`** calls go through [`usePersistUserPreferences`](../../src/hooks/usePersistUserPreferences.hook.ts) and [`userPreferencesPersistQueue.ts`](../../src/utils/userPreferencesPersistQueue.ts) (debounced filter writes, merged patches)—from [`ThemeSwitcher`](../../src/components/ThemeSwitcher/ThemeSwitcher.component.tsx), [`useViewDispatch`](../../src/hooks/useViewAtoms.hook.ts), [`useFiltersDispatch`](../../src/hooks/useFilterAtoms.hook.ts), [`SettingsClient`](../../src/components/Settings/SettingsClient.component.tsx), and the sync hook’s first-login seed. **`PATCH`** upserts preferences in one Prisma round trip.
+Client reads/writes via **`GET`** / **`PATCH`** [`/api/user/preferences`](../../src/app/api/user/preferences/route.ts). **`GET`** is read-only: it loads the authenticated **`User`** row with **`.first()`** and returns defaults when missing (user rows are created on OAuth login or the first **`PATCH`**). [`useUserPreferencesSync`](../../src/hooks/useUserPreferencesSync.hook.ts) (mounted from [`Providers.tsx`](../../src/components/Providers.tsx)) resets **`theme`** to **`system`** while logged out (guest default). On first login it **seeds local → server only when the server field is still at its default** (e.g. filters saved on preview/staging hydrate into a fresh local browser instead of being overwritten by empty **`localStorage`**); local **`system`** theme is **not** seeded (guest placeholder only). Otherwise it applies server prefs via **`setTheme`**, **`viewStateAtom`**, and **`persistedFiltersAtom`**. Authenticated **`PATCH`** calls go through [`usePersistUserPreferences`](../../src/hooks/usePersistUserPreferences.hook.ts) and [`userPreferencesPersistQueue.ts`](../../src/utils/userPreferencesPersistQueue.ts) (debounced filter writes, merged patches)—from [`ThemeSwitcher`](../../src/components/ThemeSwitcher/ThemeSwitcher.component.tsx), [`useViewDispatch`](../../src/hooks/useViewAtoms.hook.ts), [`useFiltersDispatch`](../../src/hooks/useFilterAtoms.hook.ts), [`SettingsClient`](../../src/components/Settings/SettingsClient.component.tsx), and the sync hook’s first-login seed. **`PATCH`** upserts preferences in one Prisma round trip.
 
 ### `Crate`
 
@@ -86,25 +110,14 @@ Daily aggregates preserved after raw event retention. Composite primary key: **`
 
 | Field | Notes |
 |-------|-------|
-| `date` | UTC day bucket (`DATE`) |
-| `dimension_type` | `page_path` (page views) or `event` (non–page-view interactions) |
+| `date` | UTC calendar date |
+| `dimension_type` | `page_path` or `event` |
 | `dimension_key` | Path or event name |
-| `event_count` | Total events that day for that dimension |
+| `event_count` | Count for that day/dimension |
 
-Populated by **`GET /api/cron/product-analytics`** ([`product-analytics-maintenance.server.ts`](../../src/lib/product-analytics-maintenance.server.ts)) — Vercel Cron daily at 04:00 UTC ([`vercel.json`](../../vercel.json)). Requires **`CRON_SECRET`**. Rollups are **incremental**: each run starts the day after the latest stored rollup (or the oldest raw event on first run), catches up through **yesterday** (UTC), and **always re-rolls yesterday** so late-arriving events update that day. Rows are written with a bulk **`INSERT … ON CONFLICT`** per dimension/day. UTC day boundaries use [`startOfUtcDay`](../../src/utils/dateHelpers.ts) / [`addUtcDays`](../../src/utils/dateHelpers.ts) (shared with [`collectionRhythm.ts`](../../src/utils/collectionRhythm.ts)).
+Maintained by [`product-analytics-maintenance.server.ts`](../../src/lib/product-analytics-maintenance.server.ts) (daily rollup via ORM **`.upsert()`** per dimension row; raw-event retention via **`.deleteAndCount()`**) via Vercel Cron ([`/api/cron/product-analytics`](../../src/app/api/cron/product-analytics/route.ts)).
 
-## Migrations
-
-```bash
-pnpm db:migrate        # dev: create/apply migrations (.env.local)
-pnpm db:pull:staging   # pull staging/preview DATABASE_URL into .env.local (Vercel CLI)
-pnpm db:migrate:staging # apply pending migrations to staging (.env.local)
-pnpm db:pull:prod      # pull production DATABASE_URL into .env.local
-pnpm db:migrate:prod   # apply pending migrations to production (.env.local)
-pnpm db:push           # prototype schema push (script loads env)
-pnpm db:studio         # Prisma Studio
-pnpm db:generate       # regenerate client (also runs on build/postinstall)
-```
+## Local database
 
 Vercel exposes **`DATABASE_URL`** per deployment target: **Preview/Development** share the non-prod Postgres (use this for local work against staging); **Production** is separate. There is no fourth “staging” env in Vercel—the **`staging`** git branch deploys to **Preview**.
 
@@ -112,19 +125,17 @@ For local dev against the staging database:
 
 ```bash
 pnpm db:pull:staging    # writes preview DATABASE_URL to .env.local
-pnpm db:migrate:staging # apply migrations (e.g. found_at) to that DB
+pnpm db:verify          # confirm contract matches DB
 pnpm dev                # app uses .env.local
 ```
 
 **`db:pull:dev`** pulls the **Development** target (same **`DATABASE_URL`** as Preview on this project). Use **`db:pull:prod`** / **`db:migrate:prod`** only when intentionally touching production.
 
-Generated Prisma client output is **not committed** (`/prisma/node_modules` and root `node_modules/.prisma/client` are gitignored; CI and `postinstall` run `prisma generate`).
+**Commit** [`src/prisma/contract.json`](../../src/prisma/contract.json) and [`src/prisma/contract.d.ts`](../../src/prisma/contract.d.ts) (regenerated by **`pnpm contract:emit`**).
 
-**Vercel builds** run **`scripts/migrate-deploy.sh`** before **`next build`** ([`package.json`](../../package.json)) so each Production / Preview deployment applies pending migrations. The script uses **`DIRECT_URL` → `POSTGRES_URL` → `DATABASE_URL`** (Prisma Postgres: direct host **`db.prisma.io`** for migrations; pooled **`pooled.db.prisma.io`** for runtime when configured), appends **`connect_timeout=30`** for serverless cold starts, and **retries** transient **`P1001`** connection errors (default 5 attempts, exponential backoff). Override with **`PRISMA_MIGRATE_DEPLOY_ATTEMPTS`** / **`PRISMA_MIGRATE_DEPLOY_RETRY_DELAY_SEC`**. Skips migrate when no database URL is set (local builds without **`.env.local`**). For one-off fixes, still use **`pnpm db:pull:prod`** + **`pnpm db:migrate:prod`** locally. Preview and Production use **separate** Prisma Postgres instances — migrating one does not migrate the other.
+**Vercel builds** run **`pnpm contract:emit`** then **`next build`** ([`package.json`](../../package.json)). Run **`pnpm db:migrate:deploy`** against each environment when graph migrations are pending. Preview and Production use **separate** Prisma Postgres instances.
 
-Migrations live under [`prisma/migrations/`](../../prisma/migrations/).
-
-CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platform.md)).
+CI runs **`pnpm tsc:ci`** ( **`contract:emit`** + strict **`tsc`**) before tests ([`platform.md`](platform.md)).
 
 ## API routes
 
@@ -144,6 +155,7 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/usage/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** when signed in) |
 | `/api/cron/product-analytics` | GET | Daily rollup + 90-day raw retention (Vercel Cron; **`Authorization: Bearer CRON_SECRET`**) |
 | `/api/auth/clear-data` | POST | Delete authenticated user's **`User`** row (cascades crates), delete **`product_analytics_events`** rows for that **`user_id`**, and clear session cookies |
+| `/api/user/preferences` | GET, PATCH | Read/update authenticated user's preferences JSON |
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 

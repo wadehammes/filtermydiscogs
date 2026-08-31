@@ -1,6 +1,7 @@
+import { and, or } from "@prisma/orm-postgres/orm-client";
 import { SUPPORT_PROJECT_TOAST_LOGIN_THRESHOLD } from "src/constants/supportProjectToast.constants";
 import { USER_LAST_SEEN_TOUCH_INTERVAL_MS } from "src/constants/userEngagement.constants";
-import { prisma } from "src/lib/db";
+import { orm, ormTimestamp } from "src/lib/db";
 
 type UpsertDiscogsUserInput = {
   discogsUserId: number;
@@ -11,82 +12,76 @@ export async function recordDiscogsLogin({
   discogsUserId,
   username,
 }: UpsertDiscogsUserInput) {
-  const now = new Date();
-  const existingUser = await prisma.user.findUnique({
-    where: { discogs_user_id: discogsUserId },
-    select: {
-      login_count: true,
-      support_toast_dismissed: true,
-    },
-  });
+  const now = ormTimestamp(new Date());
+  const existingUser = await orm.Users.where({ discogsUserId })
+    .select("loginCount", "supportToastDismissed")
+    .first();
 
   if (!existingUser) {
-    return prisma.user.create({
-      data: {
-        discogs_user_id: discogsUserId,
-        username,
-        login_count: 1,
-        support_toast_pending: false,
-        last_seen_at: now,
-      },
+    return orm.Users.create({
+      discogsUserId,
+      username,
+      preferences: {},
+      loginCount: 1,
+      supportToastPending: false,
+      lastSeenAt: now,
+      updatedAt: now,
     });
   }
 
-  const nextLoginCount = existingUser.login_count + 1;
+  const nextLoginCount = existingUser.loginCount + 1;
   const shouldPromptForSupport =
     nextLoginCount >= SUPPORT_PROJECT_TOAST_LOGIN_THRESHOLD &&
-    !existingUser.support_toast_dismissed;
+    !existingUser.supportToastDismissed;
 
-  return prisma.user.update({
-    where: { discogs_user_id: discogsUserId },
-    data: {
-      username,
-      login_count: nextLoginCount,
-      last_seen_at: now,
-      ...(shouldPromptForSupport ? { support_toast_pending: true } : {}),
-    },
+  return orm.Users.where({ discogsUserId }).update({
+    username,
+    loginCount: nextLoginCount,
+    lastSeenAt: now,
+    updatedAt: now,
+    ...(shouldPromptForSupport ? { supportToastPending: true } : {}),
   });
 }
 
 export async function touchUserLastSeen(discogsUserId: number): Promise<void> {
-  const touchBefore = new Date(Date.now() - USER_LAST_SEEN_TOUCH_INTERVAL_MS);
+  const touchBefore = ormTimestamp(
+    new Date(Date.now() - USER_LAST_SEEN_TOUCH_INTERVAL_MS),
+  );
 
-  await prisma.user.updateMany({
-    where: {
-      discogs_user_id: discogsUserId,
-      OR: [{ last_seen_at: null }, { last_seen_at: { lt: touchBefore } }],
-    },
-    data: {
-      last_seen_at: new Date(),
-    },
+  await orm.Users.where((user) =>
+    and(
+      user.discogsUserId.eq(discogsUserId),
+      or(user.lastSeenAt.isNull(), user.lastSeenAt.lt(touchBefore)),
+    ),
+  ).updateAndCount({
+    lastSeenAt: ormTimestamp(new Date()),
+    updatedAt: ormTimestamp(new Date()),
   });
 }
 
 export async function consumeSupportProjectToastPending(
   discogsUserId: number,
 ): Promise<boolean> {
-  const result = await prisma.user.updateMany({
-    where: {
-      discogs_user_id: discogsUserId,
-      support_toast_pending: true,
-      support_toast_dismissed: false,
-    },
-    data: {
-      support_toast_pending: false,
-    },
+  const updatedCount = await orm.Users.where((user) =>
+    and(
+      user.discogsUserId.eq(discogsUserId),
+      user.supportToastPending.eq(true),
+      user.supportToastDismissed.eq(false),
+    ),
+  ).updateAndCount({
+    supportToastPending: false,
+    updatedAt: ormTimestamp(new Date()),
   });
 
-  return result.count > 0;
+  return updatedCount > 0;
 }
 
 export async function dismissSupportProjectToastForUser(
   discogsUserId: number,
 ): Promise<void> {
-  await prisma.user.update({
-    where: { discogs_user_id: discogsUserId },
-    data: {
-      support_toast_dismissed: true,
-      support_toast_pending: false,
-    },
+  await orm.Users.where({ discogsUserId }).update({
+    supportToastDismissed: true,
+    supportToastPending: false,
+    updatedAt: ormTimestamp(new Date()),
   });
 }

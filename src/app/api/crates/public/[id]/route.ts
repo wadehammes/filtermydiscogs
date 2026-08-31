@@ -7,7 +7,7 @@ import {
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
 import { isValidCrateId } from "src/lib/crate-id";
 import { findCrateReleasesForLayout } from "src/lib/crate-layout-query.server";
-import { prisma } from "src/lib/db";
+import { countRows, orm } from "src/lib/db";
 import {
   getIpRateLimitResponse,
   PUBLIC_CRATE_RATE_LIMIT_CONFIG,
@@ -48,21 +48,13 @@ export async function GET(
     }
 
     const viewer = await getOptionalVerifiedUserFromRequest(request);
-    const isOwner = viewer?.userId === crate.user_id;
+    const isOwner = viewer?.userId === crate.userId;
 
     let finalUsername = crate.username;
 
     if (!finalUsername && isOwner && viewer?.username) {
-      await prisma.crate.update({
-        where: {
-          user_id_id: {
-            user_id: crate.user_id,
-            id: crate.id,
-          },
-        },
-        data: {
-          username: viewer.username,
-        },
+      await orm.Crates.where({ userId: crate.userId, id: crate.id }).update({
+        username: viewer.username,
       });
       finalUsername = viewer.username;
     }
@@ -71,23 +63,20 @@ export async function GET(
       id: crate.id,
       name: crate.name,
       username: finalUsername,
-      is_default: crate.is_default,
+      is_default: crate.isDefault,
       private: crate.private,
-      created_at: crate.created_at,
-      updated_at: crate.updated_at,
+      created_at: crate.createdAt,
+      updated_at: crate.updatedAt,
     };
 
-    const total = await prisma.crateRelease.count({
-      where: {
-        user_id: crate.user_id,
-        crate_id: id,
-      },
-    });
+    const total = await countRows(
+      orm.CrateReleases.where({ userId: crate.userId, crateId: id }),
+    );
 
     const releases = await findCrateReleasesForLayout({
       where: {
-        user_id: crate.user_id,
-        crate_id: id,
+        userId: crate.userId,
+        crateId: id,
       },
       skip,
       take,

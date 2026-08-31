@@ -10,26 +10,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
+import type { Crate } from "src/types/crate.types";
 
-const mockTransaction = jest.fn();
+const dbMock = createDbModuleMock();
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    crate: {
-      findUnique: jest.fn(),
-    },
-    crateRelease: {
-      findMany: jest.fn(),
-      update: jest.fn(),
-    },
-    crateSetMarker: {
-      findMany: jest.fn(),
-      deleteMany: jest.fn(),
-      upsert: jest.fn(),
-    },
-    $transaction: (...args: unknown[]) => mockTransaction(...args),
-  },
-}));
+jest.mock("src/lib/db", () => dbMock);
 
 jest.mock("src/lib/api-helpers", () => ({
   getVerifiedUserFromRequestWithRateLimit: jest.fn(),
@@ -44,30 +30,18 @@ jest.mock("src/lib/api-helpers", () => ({
 
 type RouteModule = typeof import("src/app/api/crates/[id]/layout/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
-type DbModule = typeof import("src/lib/db");
 
 let PUT: RouteModule["PUT"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["crate"]["findUnique"]
->;
-let mockReleaseFindMany: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["findMany"]
->;
-let mockMarkerFindMany: jest.MockedFunction<
-  DbModule["prisma"]["crateSetMarker"]["findMany"]
->;
-let mockReleaseUpdate: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["update"]
->;
-let mockMarkerDeleteMany: jest.MockedFunction<
-  DbModule["prisma"]["crateSetMarker"]["deleteMany"]
->;
-let mockMarkerUpsert: jest.MockedFunction<
-  DbModule["prisma"]["crateSetMarker"]["upsert"]
->;
+let mockCratesFirst: typeof dbMock.orm.Crates.first;
+let mockCrateReleasesAll: typeof dbMock.orm.CrateReleases.all;
+let mockCrateSetMarkersAll: typeof dbMock.orm.CrateSetMarkers.all;
+let mockCrateReleasesUpdate: typeof dbMock.orm.CrateReleases.update;
+let mockCrateSetMarkersDeleteAndCount: typeof dbMock.orm.CrateSetMarkers.deleteAndCount;
+let mockCrateSetMarkersUpsert: typeof dbMock.orm.CrateSetMarkers.upsert;
+let mockTransaction: typeof dbMock.db.transaction;
 let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 
 const CRATE_ID = "crate-1";
@@ -78,6 +52,19 @@ const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
   username: "crate-digger",
 });
 
+const toOrmCrate = (crate: Crate) => ({
+  userId: crate.user_id,
+  id: crate.id,
+  name: crate.name,
+  username: crate.username,
+  isDefault: crate.is_default,
+  private: crate.private,
+  packedEnabled: crate.packed_enabled,
+  notes: crate.notes,
+  createdAt: crate.created_at,
+  updatedAt: crate.updated_at,
+});
+
 const createPutRequest = (body: unknown) =>
   new NextRequest(`http://localhost/api/crates/${CRATE_ID}/layout`, {
     method: "PUT",
@@ -86,104 +73,84 @@ const createPutRequest = (body: unknown) =>
   });
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db] = await Promise.all([
+  const [routeModule, apiHelpers] = await Promise.all([
     import("src/app/api/crates/[id]/layout/route"),
     import("src/lib/api-helpers"),
-    import("src/lib/db"),
   ]);
 
   PUT = routeModule.PUT;
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockFindUnique = jest.mocked(db.prisma.crate.findUnique);
-  mockReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
-  mockMarkerFindMany = jest.mocked(db.prisma.crateSetMarker.findMany);
-  mockReleaseUpdate = jest.mocked(db.prisma.crateRelease.update);
-  mockMarkerDeleteMany = jest.mocked(db.prisma.crateSetMarker.deleteMany);
-  mockMarkerUpsert = jest.mocked(db.prisma.crateSetMarker.upsert);
+  mockCratesFirst = dbMock.orm.Crates.first;
+  mockCrateReleasesAll = dbMock.orm.CrateReleases.all;
+  mockCrateSetMarkersAll = dbMock.orm.CrateSetMarkers.all;
+  mockCrateReleasesUpdate = dbMock.orm.CrateReleases.update;
+  mockCrateSetMarkersDeleteAndCount = dbMock.orm.CrateSetMarkers.deleteAndCount;
+  mockCrateSetMarkersUpsert = dbMock.orm.CrateSetMarkers.upsert;
+  mockTransaction = dbMock.db.transaction;
   mockAudit = jest.mocked(apiHelpers.auditDatabaseOperation);
 });
 
 describe("PUT /api/crates/[id]/layout", () => {
-  let markerFindManyCallCount = 0;
+  let crateReleasesAllCallCount = 0;
+  let crateSetMarkersAllCallCount = 0;
 
   beforeEach(() => {
-    markerFindManyCallCount = 0;
+    crateReleasesAllCallCount = 0;
+    crateSetMarkersAllCallCount = 0;
     jest.clearAllMocks();
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockFindUnique.mockResolvedValue(
-      crateFactory.defaultTestCrate({ id: CRATE_ID, user_id: USER_ID }),
+    mockCratesFirst.mockResolvedValue(
+      toOrmCrate(
+        crateFactory.defaultTestCrate({ id: CRATE_ID, user_id: USER_ID }),
+      ),
     );
-    (mockReleaseFindMany as jest.Mock).mockImplementation((args) => {
-      if (
-        args &&
-        typeof args === "object" &&
-        "select" in args &&
-        args.select &&
-        typeof args.select === "object" &&
-        "instance_id" in args.select
-      ) {
-        return Promise.resolve([
-          { instance_id: "111" },
-          { instance_id: "222" },
-        ] as Awaited<
-          ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>
-        >);
+    mockCrateReleasesAll.mockImplementation(async () => {
+      crateReleasesAllCallCount += 1;
+
+      if (crateReleasesAllCallCount === 1) {
+        return [{ instanceId: "111" }, { instanceId: "222" }];
       }
 
-      return Promise.resolve([
+      return [
         {
-          release_data: releaseFactory.withDisplayDefaults({
+          releaseData: releaseFactory.withDisplayDefaults({
             instance_id: "222",
           }),
-          found_at: null,
-          sort_order: 1000,
+          foundAt: null,
+          sortOrder: 1000,
         },
         {
-          release_data: releaseFactory.withDisplayDefaults({
+          releaseData: releaseFactory.withDisplayDefaults({
             instance_id: "111",
           }),
-          found_at: null,
-          sort_order: 2000,
+          foundAt: null,
+          sortOrder: 2000,
         },
-      ] as Awaited<ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>>);
+      ];
     });
-    (mockMarkerFindMany as jest.Mock).mockImplementation(() => {
-      markerFindManyCallCount += 1;
+    mockCrateSetMarkersAll.mockImplementation(async () => {
+      crateSetMarkersAllCallCount += 1;
 
-      if (markerFindManyCallCount === 1) {
-        return Promise.resolve([]);
+      if (crateSetMarkersAllCallCount === 1) {
+        return [];
       }
 
-      return Promise.resolve([
+      return [
         {
           id: "marker-1",
           label: "Peak hour",
-          sort_order: 500,
+          sortOrder: 500,
         },
-      ]);
+      ];
     });
-    mockTransaction.mockImplementation((async (
-      callback: (tx: unknown) => Promise<unknown>,
-    ) => {
-      const tx = {
-        crateRelease: {
-          update: mockReleaseUpdate,
-        },
-        crateSetMarker: {
-          deleteMany: mockMarkerDeleteMany,
-          upsert: mockMarkerUpsert,
-        },
-      };
-      return callback(tx);
-    }) as (...args: unknown[]) => unknown);
-    mockReleaseUpdate.mockResolvedValue({} as never);
-    mockMarkerDeleteMany.mockResolvedValue({ count: 0 });
-    mockMarkerUpsert.mockResolvedValue({} as never);
+    mockCrateReleasesUpdate.mockResolvedValue(null);
+    mockCrateSetMarkersDeleteAndCount.mockResolvedValue(0);
+    mockCrateSetMarkersUpsert.mockResolvedValue({});
   });
 
   it("reorders releases and adds a marker", async () => {
@@ -203,8 +170,8 @@ describe("PUT /api/crates/[id]/layout", () => {
     expect(body.success).toBe(true);
     expect(body.releases).toHaveLength(2);
     expect(body.markers).toHaveLength(1);
-    expect(mockReleaseUpdate).toHaveBeenCalledTimes(2);
-    expect(mockMarkerUpsert).toHaveBeenCalledTimes(1);
+    expect(mockCrateReleasesUpdate).toHaveBeenCalledTimes(2);
+    expect(mockCrateSetMarkersUpsert).toHaveBeenCalledTimes(1);
     expect(mockAudit).toHaveBeenCalled();
   });
 
