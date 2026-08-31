@@ -6,6 +6,7 @@ import {
   RELEASE_NOTES_SAVE_TOAST_ID,
   RELEASE_NOTES_SAVED_TOAST_DURATION_MS,
 } from "src/components/ReleaseNotes/releaseNotesSaveToast";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
@@ -107,7 +108,9 @@ describe("ReleaseNotes", () => {
   it("shows loading and success toasts when modal notes or condition fields are saved", async () => {
     const user = userEvent.setup();
 
-    mockApi.updateCollectionNote.mockResolvedValue({ success: true });
+    mockApi.updateCollectionNote.mockResolvedValue(
+      crateMutationSuccessFactory.build(),
+    );
 
     po.renderReleaseNotes({
       release: releaseFactory.forNotesEditor(12345, { notes: [] }),

@@ -63,9 +63,9 @@ describe("useReleasesClient", () => {
         }),
       }),
     );
-    mockUpdateUserPreferences.mockResolvedValue({
-      preferences: userPreferencesFactory.defaults(),
-    });
+    mockUpdateUserPreferences.mockResolvedValue(
+      userPreferencesFactory.defaultsApiResponse(),
+    );
   });
 
   it("loads releases and tracks selected release modal state", async () => {

@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { authenticatedDiscogsSessionFactory } from "src/tests/factories/AuthenticatedDiscogsSession.factory";
 
 jest.mock("src/lib/auth-request", () => ({
   requireAuthenticatedDiscogsUser: jest.fn(),
@@ -39,11 +40,10 @@ let mockDeleteReleaseRating: jest.MockedFunction<
 const USERNAME = "crate-digger";
 const RELEASE_ID = "249504";
 
-const authenticatedSession = {
-  user: { userId: 42, username: USERNAME },
-  accessToken: "access-token",
-  accessTokenSecret: "access-token-secret",
-};
+const authenticatedSession = authenticatedDiscogsSessionFactory.forUser({
+  userId: 42,
+  username: USERNAME,
+});
 
 beforeAll(async () => {
   const [routeModule, authRequest, discogsOAuth] = await Promise.all([

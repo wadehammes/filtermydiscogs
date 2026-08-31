@@ -9,6 +9,7 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
@@ -52,10 +53,7 @@ export class CrateSelectorPageObject extends BasePageObject {
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
     mockApiResponse(
       true,

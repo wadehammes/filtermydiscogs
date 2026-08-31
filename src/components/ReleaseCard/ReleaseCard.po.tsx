@@ -9,6 +9,7 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
+import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
@@ -62,15 +63,12 @@ export class ReleaseCardPageObject extends BasePageObject {
 
     mockGetUsernameFromCookies.mockReturnValue("testuser");
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue({
-      authStatus: null,
-      errorStatus: null,
-    });
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
 

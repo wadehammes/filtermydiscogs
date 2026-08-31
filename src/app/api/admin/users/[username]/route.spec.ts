@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { adminUserLookupStatsFactory } from "src/tests/factories/AdminUserLookupStats.factory";
 
 jest.mock("src/lib/admin-helpers", () => ({
   verifyAdminFromRequest: jest.fn(),
@@ -30,42 +31,7 @@ let mockGetAdminUserLookup: jest.MockedFunction<
 
 const USERNAME = "sloanre";
 
-const lookupResult = {
-  user: {
-    discogsUserId: 123,
-    username: USERNAME,
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-02T00:00:00.000Z",
-  },
-  preferences: {
-    theme: "dark",
-    defaultView: "card",
-    persistFilters: true,
-    analyticsConsent: "unset" as const,
-    savedViewsCount: 0,
-  },
-  totals: {
-    crates: 2,
-    releases: 10,
-    publicCrates: 1,
-    packedEnabledCrates: 0,
-    cratesWithNotes: 0,
-    setMarkers: 0,
-    packedReleases: 0,
-  },
-  activity: {
-    lastCrateUpdateAt: null,
-    lastReleaseAddedAt: null,
-    releasesAddedLast7Days: 0,
-    releasesAddedLast30Days: 0,
-  },
-  analytics: {
-    last7Days: 0,
-    last30Days: 0,
-    total: 0,
-  },
-  crates: [],
-};
+const lookupResult = adminUserLookupStatsFactory.forUsername(USERNAME);
 
 beforeAll(async () => {
   const [routeModule, adminHelpers, adminUserLookup] = await Promise.all([

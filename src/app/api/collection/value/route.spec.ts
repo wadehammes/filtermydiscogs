@@ -7,6 +7,8 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { authenticatedDiscogsSessionFactory } from "src/tests/factories/AuthenticatedDiscogsSession.factory";
+import { collectionValueFactory } from "src/tests/factories/CollectionValue.factory";
 
 jest.mock("src/lib/auth-request", () => ({
   requireReadOnlyDiscogsUser: jest.fn(),
@@ -38,11 +40,10 @@ const createRequest = (username?: string) => {
   return new NextRequest(`http://localhost/api/collection/value${params}`);
 };
 
-const authenticatedSession = {
-  user: { userId: 42, username: USERNAME },
-  accessToken: "access-token",
-  accessTokenSecret: "access-token-secret",
-};
+const authenticatedSession = authenticatedDiscogsSessionFactory.forUser({
+  userId: 42,
+  username: USERNAME,
+});
 
 beforeAll(async () => {
   const [routeModule, authRequest, discogsOAuth] = await Promise.all([
@@ -70,11 +71,9 @@ describe("GET /api/collection/value", () => {
 
   it("returns collection value for an authenticated user", async () => {
     mockRequireReadOnlyDiscogsUser.mockResolvedValue(authenticatedSession);
-    mockGetCollectionValue.mockResolvedValue({
-      minimum: 100,
-      median: 500,
-      maximum: 1000,
-    });
+    mockGetCollectionValue.mockResolvedValue(
+      collectionValueFactory.dashboardDefaults(),
+    );
 
     const response = await GET(createRequest(USERNAME));
 

@@ -136,26 +136,22 @@ describe("SettingsClient", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [technoView],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [technoView],
+      }),
       new Error("Preferences request failed"),
     );
     mockApiResponse(
       true,
       mockApi.updateUserPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [
-            {
-              ...technoView,
-              name: "Peak time",
-            },
-          ],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [
+          {
+            ...technoView,
+            name: "Peak time",
+          },
+        ],
+      }),
       new Error("Preferences update failed"),
     );
 

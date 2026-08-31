@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/auth-request", () => ({
   getVerifiedUserFromRequest: jest.fn(),
@@ -89,9 +90,12 @@ describe("GET /api/auth/check", () => {
   });
 
   it("returns authenticated session when OAuth verification succeeds", async () => {
-    mockGetVerifiedUserFromRequest.mockResolvedValue({
-      user: { userId: 42, username: "crate-digger" },
-    });
+    mockGetVerifiedUserFromRequest.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: 42,
+        username: "crate-digger",
+      }),
+    );
     mockConsumeSupportProjectToastPending.mockResolvedValue(true);
 
     const response = await GET(createRequest());
@@ -113,10 +117,12 @@ describe("GET /api/auth/check", () => {
     mockGetVerifiedUserFromRequest.mockResolvedValue({
       error: createRateLimitError(),
     });
-    mockGetDisplayIdentityFromCookies.mockReturnValue({
-      userId: 42,
-      username: "crate-digger",
-    });
+    mockGetDisplayIdentityFromCookies.mockReturnValue(
+      verifiedDiscogsUserFactory.build({
+        userId: 42,
+        username: "crate-digger",
+      }),
+    );
 
     const response = await GET(createRequest());
 
@@ -159,9 +165,12 @@ describe("GET /api/auth/check", () => {
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     });
     mockGetStoredReconnectUsername.mockReturnValue(null);
-    mockGetVerifiedUserFromStoredTokens.mockResolvedValue({
-      user: { userId: 42, username: "crate-digger" },
-    });
+    mockGetVerifiedUserFromStoredTokens.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: 42,
+        username: "crate-digger",
+      }),
+    );
 
     const response = await GET(createRequest());
 

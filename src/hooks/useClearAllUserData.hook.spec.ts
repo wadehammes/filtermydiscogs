@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { api } from "src/api/urls";
 import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
@@ -22,8 +23,8 @@ describe("useClearAllUserData", () => {
   beforeEach(() => {
     localStorage.clear();
     jest.clearAllMocks();
-    mockClearData.mockResolvedValue({ success: true });
-    mockLogout.mockResolvedValue({ success: true });
+    mockClearData.mockResolvedValue(crateMutationSuccessFactory.build());
+    mockLogout.mockResolvedValue(crateMutationSuccessFactory.build());
   });
 
   it("clears server data, local storage, and redirects home", async () => {

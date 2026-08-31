@@ -121,6 +121,16 @@ class UserPreferencesFactory extends BaseFactory<
       filterViews: [],
     };
   }
+
+  asApiResponse(attributes?: Partial<UserPreferences>): {
+    preferences: UserPreferences;
+  } {
+    return { preferences: this.build(attributes) };
+  }
+
+  defaultsApiResponse(): { preferences: UserPreferences } {
+    return { preferences: this.defaults() };
+  }
 }
 
 export const persistedFiltersFactory = new PersistedFiltersFactory();

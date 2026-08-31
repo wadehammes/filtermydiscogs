@@ -5,6 +5,7 @@ import { COLLECTION_FIRST_PAGE_SIZE } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
@@ -66,7 +67,7 @@ describe("useCrateCollectionSync", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     setupDefaultCrateApiMocks(mockApi);
-    mockSyncCrates.mockResolvedValue({ success: true, removedCount: 0 });
+    mockSyncCrates.mockResolvedValue(crateMutationSuccessFactory.sync(0));
   });
 
   it("opens and closes the sync dialog", () => {

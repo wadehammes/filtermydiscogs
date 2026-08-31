@@ -8,6 +8,7 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 import type { DiscogsRelease } from "src/types";
 
 jest.mock("src/lib/db", () => ({
@@ -75,9 +76,12 @@ describe("GET /api/dashboard/most-crated", () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetVerifiedUser.mockResolvedValue({
-      user: { userId: USER_ID, username: "crate-digger" },
-    });
+    mockGetVerifiedUser.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: USER_ID,
+        username: "crate-digger",
+      }),
+    );
   });
 
   it("returns releases that appear in multiple crates sorted by count", async () => {

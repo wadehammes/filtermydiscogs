@@ -9,6 +9,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -91,12 +92,10 @@ const CRATE_ID = "crate-1";
 const USER_ID = 42;
 const USERNAME = "crate-digger";
 
-const verifiedUser = {
-  user: {
-    userId: USER_ID,
-    username: USERNAME,
-  },
-};
+const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
+  userId: USER_ID,
+  username: USERNAME,
+});
 
 const createUnauthorizedError = () =>
   NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -192,9 +191,12 @@ describe("GET /api/crates/[id]", () => {
 
   it("returns 404 when requesting another user's crate id", async () => {
     const otherUserCrateId = "22222222-3333-4444-5555-666666666666";
-    mockGetVerifiedUser.mockResolvedValue({
-      user: { userId: 999, username: "other-user" },
-    });
+    mockGetVerifiedUser.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: 999,
+        username: "other-user",
+      }),
+    );
     mockFindUnique.mockResolvedValue(null);
 
     const response = await GET(

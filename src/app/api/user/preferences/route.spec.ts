@@ -8,6 +8,7 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -39,12 +40,10 @@ let mockUpsert: jest.MockedFunction<DbModule["prisma"]["user"]["upsert"]>;
 const USER_ID = 42;
 const USERNAME = "crate-digger";
 
-const verifiedUser = {
-  user: {
-    userId: USER_ID,
-    username: USERNAME,
-  },
-};
+const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
+  userId: USER_ID,
+  username: USERNAME,
+});
 
 const defaultPreferences = userPreferencesFactory.defaults();
 

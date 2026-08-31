@@ -27,13 +27,13 @@ describe("FilterViewsMenu", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       new Error("Preferences request failed"),
     );
     mockApiResponse(
       true,
       mockApi.updateUserPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       new Error("Preferences update failed"),
     );
   });
@@ -56,11 +56,9 @@ describe("FilterViewsMenu", () => {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      {
-        preferences: userPreferencesFactory.build({
-          filterViews: [savedView],
-        }),
-      },
+      userPreferencesFactory.asApiResponse({
+        filterViews: [savedView],
+      }),
       new Error("Preferences request failed"),
     );
 

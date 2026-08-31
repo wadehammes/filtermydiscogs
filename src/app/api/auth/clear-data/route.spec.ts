@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/auth-request", () => ({
   getVerifiedUserFromRequest: jest.fn(),
@@ -69,9 +70,12 @@ describe("POST /api/auth/clear-data", () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetVerifiedUserFromRequest.mockResolvedValue({
-      user: { userId: 42, username: "crate-digger" },
-    });
+    mockGetVerifiedUserFromRequest.mockResolvedValue(
+      verifiedDiscogsUserFactory.asVerifiedResult({
+        userId: 42,
+        username: "crate-digger",
+      }),
+    );
     mockDeleteAnalyticsEvents.mockResolvedValue({ count: 0 });
     mockDeleteUser.mockResolvedValue(
       {} as Awaited<ReturnType<DbModule["prisma"]["user"]["delete"]>>,

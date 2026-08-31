@@ -109,7 +109,7 @@ export class ReleaseModalPageObject extends BasePageObject {
     mockApiResponse(
       true,
       mockApi.userPreferences,
-      { preferences: userPreferencesFactory.defaults() },
+      userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
   }
