@@ -47,6 +47,7 @@ export const ReleaseMiniPlayer = ({
     isPlaying,
     isPlaybackReady,
     shouldAutoplayEmbed,
+    isPlaybackEmbedMounted,
     canPlayPrevious,
     canPlayNext,
     isLoading,
@@ -137,6 +138,7 @@ export const ReleaseMiniPlayer = ({
 
   const hasPrevious = canPlayPrevious;
   const hasNext = canPlayNext;
+  const shouldAutoplayIframe = shouldAutoplayEmbed && !isPlaybackEmbedMounted;
 
   const handleOpenRelease = () => {
     if (!onReleaseClick) {
@@ -215,7 +217,7 @@ export const ReleaseMiniPlayer = ({
               videoId={iframeVideoId}
               videoTitle={activePlaybackTitle ?? "Release preview"}
               playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${iframeVideoId}`}
-              autoplay={shouldAutoplayEmbed}
+              autoplay={shouldAutoplayIframe}
               variant={isVideoPanelExpanded ? "visible" : "hidden"}
             />
           </ReleasePlaybackVideoPanel>

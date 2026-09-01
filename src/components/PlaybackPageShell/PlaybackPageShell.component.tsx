@@ -1,14 +1,13 @@
 "use client";
 
 import classNames from "classnames";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { PlaybackDockBar } from "src/components/PlaybackDockBar/PlaybackDockBar.component";
+import { type ReactNode, useCallback, useState } from "react";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import {
   PlaybackPageShellProvider,
   usePlaybackPageShellMountSetters,
 } from "./PlaybackPageShell.context";
 import styles from "./PlaybackPageShell.module.css";
-import { usePlaybackShellRegistration } from "./PlaybackShellRegistry.context";
 
 interface PlaybackPageShellProps {
   children: ReactNode;
@@ -84,12 +83,7 @@ const PlaybackPageShellFrame = ({
   setMainScrollRef,
 }: PlaybackPageShellFrameProps) => {
   const { setOverlayPortalElement } = usePlaybackPageShellMountSetters();
-  const { registerShell, unregisterShell } = usePlaybackShellRegistration();
-
-  useEffect(() => {
-    registerShell();
-    return unregisterShell;
-  }, [registerShell, unregisterShell]);
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
 
   const setOverlayPortalRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -133,12 +127,10 @@ const PlaybackPageShellFrame = ({
           data-playback-overlay-portal
         />
       </div>
-      <div
-        className={styles.dockSlot}
-        data-playback-dock-mount
-        data-playback-dock-in-flow
-      >
-        <PlaybackDockBar inFlow />
+      <div className={styles.dockSlot}>
+        {isMiniPlayerVisible ? (
+          <div data-playback-dock-spacer aria-hidden />
+        ) : null}
       </div>
     </div>
   );
