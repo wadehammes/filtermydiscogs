@@ -1,4 +1,4 @@
-import { io } from "next/cache";
+import { io } from "next/dist/server/request/io";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminDashboardClient from "src/components/AdminDashboard/AdminDashboardClient.component";

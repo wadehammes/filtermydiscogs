@@ -151,7 +151,7 @@ describe("ReleaseSummaryHero", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseHeroRatings")).toBeInTheDocument();
-      expect(screen.getByText(/3\.4 \(45\)/)).toBeInTheDocument();
+      expect(screen.getByText(/3\.42 \(45\)/)).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/^Community /)).toBeNull();
@@ -208,7 +208,7 @@ describe("ReleaseSummaryHero", () => {
     expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
     await waitFor(() => {
-      expect(screen.getByText(/4\.2 \(47\)/)).toBeInTheDocument();
+      expect(screen.getByText(/4\.19 \(47\)/)).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/^Community /)).toBeNull();
