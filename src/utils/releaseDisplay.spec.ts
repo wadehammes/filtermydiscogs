@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsTrack } from "src/types";
 import {
+  formatCommunityRatingAverage,
   formatDiscogsCreditNames,
   formatReleaseHeroMetaLine,
   formatTrackCreditsLine,
@@ -142,6 +143,14 @@ describe("formatReleaseHeroMetaLine", () => {
         count: 14,
       },
     });
+  });
+});
+
+describe("formatCommunityRatingAverage", () => {
+  it("formats the average with two decimal places to match Discogs", () => {
+    expect(formatCommunityRatingAverage(3.42)).toBe("3.42");
+    expect(formatCommunityRatingAverage(4.6)).toBe("4.60");
+    expect(formatCommunityRatingAverage(4.19)).toBe("4.19");
   });
 });
 

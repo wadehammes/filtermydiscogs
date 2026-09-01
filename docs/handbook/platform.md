@@ -135,7 +135,7 @@ Public legal copy lives in the server component [`LegalPageContent.server.tsx`](
 
 Do not call **`new Date()`** (or other non-deterministic APIs) directly in components that must prerender as static — wrap in a `"use cache"` helper or move to a dynamic boundary.
 
-**`/admin`** server gate ([`AdminDashboardGate.server.tsx`](../../src/components/AdminDashboard/AdminDashboardGate.server.tsx)) calls Discogs OAuth (signing uses unstable values). With **`cacheComponents`**, wrap it in **`<Suspense>`** on [`admin/page.tsx`](../../src/app/admin/page.tsx) and **`await io()`** from **`next/cache`** before **`verifyAdminFromCookies`** so prerender suspends instead of hitting the blocking-route error.
+**`/admin`** server gate ([`AdminDashboardGate.server.tsx`](../../src/components/AdminDashboard/AdminDashboardGate.server.tsx)) calls Discogs OAuth (signing uses unstable values). With **`cacheComponents`**, wrap it in **`<Suspense>`** on [`admin/page.tsx`](../../src/app/admin/page.tsx) and **`await io()`** from **`next/dist/server/request/io`** (same runtime export as **`next/cache`**, but the Next.js TypeScript plugin omits **`io`** on the public entry) before **`verifyAdminFromCookies`** so prerender suspends instead of hitting the blocking-route error.
 
 ### Test mocks
 

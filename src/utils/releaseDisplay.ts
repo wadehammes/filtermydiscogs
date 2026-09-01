@@ -151,7 +151,7 @@ export const getCommunityRatingFromReleaseDetail = (
 };
 
 export const formatCommunityRatingAverage = (average: number): string => {
-  return average.toFixed(1);
+  return average.toFixed(2);
 };
 
 interface FormatReleaseMetaLineParams {
