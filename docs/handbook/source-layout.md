@@ -17,7 +17,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/utils/`](../../src/utils/) | Pure helpers: filter, sort, format tags, sync collection, image loader, `definedProps` (optional prop spreads). |
 | [`src/types/`](../../src/types/) | Shared TypeScript types (Discogs shapes, crate, dashboard, public stats). |
 | [`src/styles/`](../../src/styles/) | [`global.css`](../../src/styles/global.css) entry, [`global/`](../../src/styles/global/) side-effect sheets, [`themes/`](../../src/styles/themes/) tokens, shared [`modules/`](../../src/styles/modules/), [`icons/`](../../src/styles/icons/) |
-| [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, shared test helpers ([`filterControlTestHelpers.ts`](../../src/tests/filterControlTestHelpers.ts)), mocks ([`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts)). |
+| [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, shared test helpers ([`filterControlTestHelpers.ts`](../../src/tests/filterControlTestHelpers.ts)), mocks ([`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockWindowLocation.ts`](../../src/tests/mocks/mockWindowLocation.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts)). |
 | [`public/images/`](../../public/images/) | Static marketing/login preview images. |
 | [`prisma/`](../../prisma/) | Schema and migrations; datasource in [`prisma.config.ts`](../../prisma.config.ts). |
 | [`scripts/`](../../scripts/) | Scaffold, env loading, DB pull helpers. |

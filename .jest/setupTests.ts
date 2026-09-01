@@ -2,6 +2,11 @@ import { afterAll, beforeAll, beforeEach } from "@jest/globals";
 import "@testing-library/jest-dom/jest-globals";
 import { TextEncoder } from "node:util";
 import fetchMock from "jest-fetch-mock";
+import {
+  replaceHistory,
+  replaceLocation,
+  reset as resetWindowLocation,
+} from "jest-location-mock/hooks/jest";
 import "src/tests/mocks/mockCanvas.mock";
 import React from "react";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
@@ -97,6 +102,8 @@ console.warn = (...args: unknown[]) => {
 };
 
 beforeAll(() => {
+  replaceLocation();
+  replaceHistory();
   setupIntersectionObserverMock();
   setupMockMatchMedia();
 
@@ -113,6 +120,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  resetWindowLocation();
   jest.clearAllTimers();
 
   jest.clearAllMocks();

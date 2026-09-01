@@ -10,6 +10,7 @@ import { AuthenticatedProvidersGate } from "src/components/AuthenticatedProvider
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
 import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/DeploymentUpdateToast.component";
+import { DonationSuccessToast } from "src/components/DonationSuccessToast/DonationSuccessToast.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
@@ -94,6 +95,7 @@ export const Providers = ({ children }: ProvidersProps) => {
             </CollectionContextProvider>
           </AuthProvider>
           <AppToaster />
+          <DonationSuccessToast />
         </ThemeProvider>
       </JotaiProvider>
     </QueryClientProvider>

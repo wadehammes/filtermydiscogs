@@ -6,8 +6,6 @@ import { useForm, useWatch } from "react-hook-form";
 import { createDonateCheckoutSession } from "src/api/endpoints/donate";
 import {
   DONATION_PRESET_AMOUNTS_CENTS,
-  DONATION_SUCCESS_QUERY_PARAM,
-  DONATION_SUCCESS_QUERY_VALUE,
   isDonationPresetAmount,
 } from "src/constants/donate.constants";
 import {
@@ -54,23 +52,6 @@ export const useAboutDonationForm = () => {
       window.removeEventListener("pageshow", handlePageShow);
     };
   }, [reset]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    if (
-      params.get(DONATION_SUCCESS_QUERY_PARAM) !== DONATION_SUCCESS_QUERY_VALUE
-    ) {
-      return;
-    }
-
-    toast.success("Thank you for your support!");
-
-    params.delete(DONATION_SUCCESS_QUERY_PARAM);
-    const query = params.toString();
-    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
-    window.history.replaceState({}, "", nextUrl);
-  }, []);
 
   const onDonateSubmit = handleSubmit(async ({ amountCents }) => {
     try {
