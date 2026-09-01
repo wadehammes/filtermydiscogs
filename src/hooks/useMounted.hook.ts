@@ -31,3 +31,7 @@ export function useMounted() {
   }, []);
   return mounted;
 }
+
+export const resetMountedStoreForTests = () => {
+  mountedStore._value = false;
+};
