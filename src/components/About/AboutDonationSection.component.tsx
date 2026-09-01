@@ -7,9 +7,9 @@ import {
   DONATION_MIN_DOLLARS,
   DONATION_PRESET_AMOUNTS_CENTS,
 } from "src/constants/donate.constants";
+import { useAboutDonationForm } from "src/hooks/useAboutDonationForm.hook";
 import typography from "src/styles/modules/typography.module.css";
-import styles from "./page.module.css";
-import { useAboutDonationForm } from "./useAboutDonationForm.hook";
+import styles from "./About.module.css";
 
 export const AboutDonationSection = () => {
   const {

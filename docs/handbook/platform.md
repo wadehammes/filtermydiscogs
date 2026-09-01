@@ -122,7 +122,7 @@ Cache Components prerender static shells. Client hooks that depend on request-ti
 
 Do not re-add **`export const instant = false`** on the root layout to paper over missing Suspense boundaries — fix the hook site instead.
 
-Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/app/legal/LegalPageContent.server.tsx) (Terms, Privacy, and data-management lists); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/app/legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
+Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/components/Legal/LegalPageContent.server.tsx) (Terms, Privacy, and data-management lists); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/components/Legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
 
 ### Cached helpers (prerender-safe)
 

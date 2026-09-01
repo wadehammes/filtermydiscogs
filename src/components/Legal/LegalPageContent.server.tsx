@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import pageStyles from "src/components/Page/Page.module.css";
+import styles from "./Legal.module.css";
 import { LegalDataManagementActions } from "./LegalDataManagementActions.client";
-import styles from "./page.module.css";
 
 export function LegalPageContent() {
   return (

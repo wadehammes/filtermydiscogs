@@ -11,9 +11,9 @@ import {
 import { SITE_NAME } from "src/constants/siteMetadata";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
 import typography from "src/styles/modules/typography.module.css";
+import styles from "./About.module.css";
 import { AboutClearDataSection } from "./AboutClearDataSection.component";
 import { AboutDonationSection } from "./AboutDonationSection.component";
-import styles from "./page.module.css";
 
 export function AboutClient() {
   return (

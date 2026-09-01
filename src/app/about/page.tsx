@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AboutClient } from "src/components/About/AboutClient.component";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
@@ -8,7 +9,6 @@ import {
   SITE_NAME,
   sitePageTitle,
 } from "src/constants/siteMetadata";
-import { AboutClient } from "./AboutClient";
 
 const baseUrl = getMetadataSiteUrl();
 const title = sitePageTitle("About");
