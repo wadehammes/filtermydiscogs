@@ -185,6 +185,9 @@ importers:
       jest-fetch-mock:
         specifier: ^4.2.0
         version: 4.2.0
+      jest-location-mock:
+        specifier: ^4.0.1
+        version: 4.0.1(@jest/globals@30.4.1(supports-color@10.2.2))(vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(jsdom@26.1.0(supports-color@10.2.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       knip:
         specifier: ^6.33.0
         version: 6.33.0
@@ -1598,6 +1601,9 @@ packages:
   '@istanbuljs/schema@0.1.6':
     resolution: {integrity: sha512-+Sg6GCR/wy1oSmQDFq4LQDAhm3ETKnorxN+y5nbLULOR3P0c14f2Wurzj3/xqPXtasLFfHd5iRFQ7AJt4KH2cw==}
     engines: {node: '>=8'}
+
+  '@jedmao/location@3.0.0':
+    resolution: {integrity: sha512-p7mzNlgJbCioUYLUEKds3cQG4CHONVFJNYqMe6ocEtENCL/jYmMo1Q3ApwsMmU+L0ZkaDJEyv4HokaByLoPwlQ==}
 
   '@jest/console@30.4.1':
     resolution: {integrity: sha512-v3bhyxUh9Hgmo5p6hAOXe14/R3ZxZDOsvHleh4B07z3m/x4/ngPUXEm9XwK4sF4u+f+P2ORb0Ge+MgpaqRMVDA==}
@@ -4208,6 +4214,18 @@ packages:
   jest-leak-detector@30.4.1:
     resolution: {integrity: sha512-IpmyiioeHxiWDhesHnUFmOxcTzwCwKpgACgWajtAP+nYQXiY7DakTxB6Bx9JFiRMljr0AX1PvnQdaU1KFoz6NQ==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+
+  jest-location-mock@4.0.1:
+    resolution: {integrity: sha512-8nYPNUw4laD4S1t77JFUtNit5lyjpCzG1sZzPS4wsz7mw/8JxX4XBtKR35SY8hdVIeJuSUBrDMKPvtmSuErcLw==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      '@jest/globals': ^30.0.0
+      vitest: ^4.0.0
+    peerDependenciesMeta:
+      '@jest/globals':
+        optional: true
+      vitest:
+        optional: true
 
   jest-matcher-utils@30.4.1:
     resolution: {integrity: sha512-zvYfX5CaeEkFrrLS9suWe9rvJrm9J1Iv3ua8kIBv9GEPzcnsfBf0bob37la7s67fs0nlBC3EuvkOLnXQKxtx4A==}
@@ -7096,6 +7114,8 @@ snapshots:
 
   '@istanbuljs/schema@0.1.6': {}
 
+  '@jedmao/location@3.0.0': {}
+
   '@jest/console@30.4.1':
     dependencies:
       '@jest/types': 30.4.1
@@ -9676,6 +9696,13 @@ snapshots:
     dependencies:
       '@jest/get-type': 30.1.0
       pretty-format: 30.4.1
+
+  jest-location-mock@4.0.1(@jest/globals@30.4.1(supports-color@10.2.2))(vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(jsdom@26.1.0(supports-color@10.2.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))):
+    dependencies:
+      '@jedmao/location': 3.0.0
+    optionalDependencies:
+      '@jest/globals': 30.4.1(supports-color@10.2.2)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(jsdom@26.1.0(supports-color@10.2.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
 
   jest-matcher-utils@30.4.1:
     dependencies:
