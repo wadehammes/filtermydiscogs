@@ -4,6 +4,7 @@ import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.compon
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { ViewActionTypes } from "src/context/view.context";
 import {
   useAppliedFilterCount,
@@ -11,6 +12,7 @@ import {
   useIsRandomMode,
 } from "src/hooks/useFilterAtoms.hook";
 import { useViewDispatch } from "src/hooks/useViewAtoms.hook";
+import styles from "./MobileMenu.module.css";
 import { MobileMenuDrawerFooter } from "./MobileMenuDrawerFooter";
 import { MobileMenuHeader } from "./MobileMenuHeader";
 import { MobileMenuNav } from "./MobileMenuNav";
@@ -36,6 +38,7 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const { logout, state: authState } = useAuth();
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
@@ -109,10 +112,25 @@ export const MobileMenu = ({
       <BottomDrawer
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+        chrome
+        contentFlush
         title="Menu"
+        titleId="mobile-menu-title"
         closeButtonAriaLabel="Close menu"
+        headerClassName={styles.menuDrawerHeader}
         dataAttribute="data-mobile-menu-open"
-        footer={
+        aboveMiniPlayer={isMiniPlayerVisible}
+      >
+        <div className={styles.menuBody}>
+          <MobileMenuNav
+            currentPage={currentPage}
+            showMosaic={showMosaic}
+            showReleases={showReleases}
+            showDashboard={showDashboard}
+            showCrates={showCrates}
+            isDisabled={isDisabled}
+            onNavigation={handleNavigation}
+          />
           <MobileMenuDrawerFooter
             username={authState.username || null}
             onLogout={handleLogout}
@@ -120,17 +138,7 @@ export const MobileMenu = ({
             onSupportClick={handleSupportClick}
             onSettingsClick={handleSettingsClick}
           />
-        }
-      >
-        <MobileMenuNav
-          currentPage={currentPage}
-          showMosaic={showMosaic}
-          showReleases={showReleases}
-          showDashboard={showDashboard}
-          showCrates={showCrates}
-          isDisabled={isDisabled}
-          onNavigation={handleNavigation}
-        />
+        </div>
       </BottomDrawer>
 
       <FiltersDrawer

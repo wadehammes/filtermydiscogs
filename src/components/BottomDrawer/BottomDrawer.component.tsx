@@ -6,17 +6,21 @@ import { createPortal } from "react-dom";
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { useMounted } from "src/hooks/useMounted.hook";
 import XIcon from "src/styles/icons/x-thin.svg";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./BottomDrawer.module.css";
 
 interface BottomDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  titleId?: string;
   headerContent?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   closeButtonAriaLabel?: string;
   closeButtonPlacement?: "floating" | "header";
+  chrome?: boolean;
+  contentFlush?: boolean;
   dataAttribute?: string;
   drawerClassName?: string;
   headerClassName?: string;
@@ -31,11 +35,14 @@ export const BottomDrawer = ({
   isOpen,
   onClose,
   title,
+  titleId,
   headerContent,
   children,
   footer,
   closeButtonAriaLabel = "Close drawer",
-  closeButtonPlacement = "floating",
+  closeButtonPlacement,
+  chrome = false,
+  contentFlush = false,
   dataAttribute,
   drawerClassName,
   headerClassName,
@@ -47,6 +54,8 @@ export const BottomDrawer = ({
 }: BottomDrawerProps) => {
   usePlaybackPageScrollLock(isOpen && !hideOverlay && !inline);
   const mounted = useMounted();
+  const resolvedClosePlacement =
+    closeButtonPlacement ?? (chrome ? "header" : "floating");
 
   if (!(isOpen && mounted)) {
     return null;
@@ -56,7 +65,7 @@ export const BottomDrawer = ({
     <button
       type="button"
       className={
-        closeButtonPlacement === "header"
+        resolvedClosePlacement === "header"
           ? styles.headerCloseButton
           : styles.closeButton
       }
@@ -66,7 +75,7 @@ export const BottomDrawer = ({
     >
       <XIcon
         className={
-          closeButtonPlacement === "header"
+          resolvedClosePlacement === "header"
             ? styles.headerCloseIcon
             : styles.closeIcon
         }
@@ -90,15 +99,18 @@ export const BottomDrawer = ({
           {...(dataAttribute ? { [dataAttribute]: "true" } : {})}
         />
       )}
-      {closeButtonPlacement === "floating" ? closeButton : null}
       <div
         className={classNames(styles.drawer, drawerClassName, {
+          [styles.drawerChrome]: chrome,
           [styles.open]: isOpen,
           [styles.aboveMiniPlayer]: aboveMiniPlayer,
           [styles.behindMiniPlayer]: behindMiniPlayer,
           [styles.inline]: inline,
         })}
         data-testid="fmdBottomDrawer"
+        {...definedProps({
+          "aria-labelledby": title && titleId ? titleId : undefined,
+        })}
         {...((hideOverlay || inline) && dataAttribute
           ? { [dataAttribute]: "true" }
           : {})}
@@ -116,15 +128,31 @@ export const BottomDrawer = ({
         tabIndex={-1}
       >
         {(title || headerContent) && (
-          <div className={classNames(styles.header, headerClassName)}>
+          <div
+            className={classNames(
+              chrome ? styles.headerChrome : styles.header,
+              headerClassName,
+            )}
+          >
             <div className={styles.headerContent}>
-              {title && <h2 className={styles.title}>{title}</h2>}
+              {title ? (
+                <h2
+                  className={chrome ? styles.titleChrome : styles.title}
+                  {...definedProps({ id: titleId })}
+                >
+                  {title}
+                </h2>
+              ) : null}
               {headerContent}
             </div>
-            {closeButtonPlacement === "header" ? closeButton : null}
+            {resolvedClosePlacement === "header" ? closeButton : null}
           </div>
         )}
-        <div className={classNames(styles.content, contentClassName)}>
+        <div
+          className={classNames(styles.content, contentClassName, {
+            [styles.contentFlush]: chrome && contentFlush,
+          })}
+        >
           {children}
         </div>
         {footer && (
@@ -133,6 +161,7 @@ export const BottomDrawer = ({
           </div>
         )}
       </div>
+      {resolvedClosePlacement === "floating" ? closeButton : null}
     </>
   );
 

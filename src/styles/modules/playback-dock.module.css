@@ -4,6 +4,7 @@
 
 :global(html:has([data-global-playback-dock])),
 :global([data-global-playback-dock]) {
+  --workspace-fab-bottom: var(--space-3);
   --release-mini-player-cover-size: 1.75rem;
   --release-mini-player-control-size: 2.5rem;
   --release-mini-player-bar-height: calc(

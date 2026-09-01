@@ -4,10 +4,6 @@ import { useMemo } from "react";
 import { Page } from "src/components/Page/Page.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
-import {
-  ScrollReveal,
-  ScrollRevealItem,
-} from "src/components/ScrollReveal/ScrollReveal.component";
 import { useCrate } from "src/context/crate.context";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { CrateHubCard } from "./CrateHubCard.component";
@@ -46,6 +42,12 @@ export default function CratesClient() {
                   pack for your gig.
                 </p>
               </div>
+              {!isLoading && sortedCrates.length > 0 ? (
+                <p className={styles.headerMeta}>
+                  {sortedCrates.length} crate
+                  {sortedCrates.length === 1 ? "" : "s"}
+                </p>
+              ) : null}
             </header>
 
             {isLoading ? (
@@ -54,16 +56,17 @@ export default function CratesClient() {
               </div>
             ) : sortedCrates.length === 0 ? (
               <div className={styles.emptyState}>
-                <p>No crates yet. Create one to start curating a set.</p>
+                <p className={styles.emptyTitle}>No crates yet</p>
+                <p className={styles.emptyCopy}>
+                  Create a crate from the releases page to start curating a set.
+                </p>
               </div>
             ) : (
-              <ScrollReveal className={styles.crateGrid}>
-                {sortedCrates.map((crate, index) => (
-                  <ScrollRevealItem index={index} key={crate.id}>
-                    <CrateHubCard crate={crate} />
-                  </ScrollRevealItem>
+              <div className={styles.crateGrid}>
+                {sortedCrates.map((crate) => (
+                  <CrateHubCard crate={crate} key={crate.id} />
                 ))}
-              </ScrollReveal>
+              </div>
             )}
           </div>
         </main>

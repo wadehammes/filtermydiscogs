@@ -30,7 +30,7 @@
   align-items: stretch;
   backdrop-filter: blur(8px);
   background: color-mix(in srgb, var(--card) 92%, transparent);
-  border-top: 1px solid var(--border);
+  border-top: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -42,6 +42,7 @@
   z-index: 1;
 
   @media (width >= 768px) {
+    border-top: 1px solid var(--border);
     align-items: center;
     flex-direction: row;
     gap: var(--space-3);

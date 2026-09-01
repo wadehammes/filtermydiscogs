@@ -100,7 +100,12 @@ export const CrateHubCard = ({ crate }: CrateHubCardProps) => {
 
       <div className={styles.body}>
         <div className={styles.titleRow}>
-          <h2 className={styles.name}>{crate.name}</h2>
+          <div className={styles.nameRow}>
+            <h2 className={styles.name}>{crate.name}</h2>
+            {crate.is_default ? (
+              <span className={styles.defaultBadge}>Default</span>
+            ) : null}
+          </div>
           <p className={styles.meta}>
             {releaseCount} release{releaseCount === 1 ? "" : "s"}
           </p>

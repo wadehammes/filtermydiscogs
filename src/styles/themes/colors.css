@@ -117,9 +117,7 @@
     light-dark(
       color-mix(in srgb, var(--foreground) 10%, transparent),
       transparent
-    ),
-    inset 0 0 0 1px
-    light-dark(transparent, color-mix(in srgb, var(--border) 80%, transparent));
+    );
   --shadow-lg:
     0 10px 15px -3px
     light-dark(
@@ -130,9 +128,7 @@
     light-dark(
       color-mix(in srgb, var(--foreground) 10%, transparent),
       transparent
-    ),
-    inset 0 0 0 1px
-    light-dark(transparent, color-mix(in srgb, var(--border) 60%, transparent));
+    );
   --shadow-modal:
     0 10px 15px -3px
     light-dark(
@@ -154,9 +150,7 @@
     light-dark(
       color-mix(in srgb, var(--foreground) 10%, transparent),
       transparent
-    ),
-    inset 0 0 0 1px
-    light-dark(transparent, color-mix(in srgb, var(--border) 50%, transparent));
+    );
 
   /* Legacy color mappings for backward compatibility during migration */
   --white: light-dark(#fff, #fafafa);

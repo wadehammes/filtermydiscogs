@@ -14,14 +14,14 @@
 }
 
 .actions {
-  align-items: stretch;
+  align-items: center;
   display: flex;
   flex-shrink: 0;
 }
 
 .newCrateButton {
   align-items: center;
-  align-self: stretch;
+  aspect-ratio: 1;
   background: color-mix(in srgb, var(--success) 15%, var(--background));
   border: 1px solid var(--pill-style-border);
   border-radius: var(--radius-ui);
@@ -29,17 +29,14 @@
   cursor: pointer;
   display: inline-flex;
   flex-shrink: 0;
-  height: auto;
+  height: var(--touch-target-min);
   justify-content: center;
-  min-height: var(--touch-target-min);
-  min-width: var(--touch-target-min);
   padding: 0;
   transition: var(--transition-fast);
   width: var(--touch-target-min);
 
   @media (width >= 768px) {
-    min-height: var(--input-height);
-    min-width: var(--input-height);
+    height: var(--input-height);
     width: var(--input-height);
   }
 

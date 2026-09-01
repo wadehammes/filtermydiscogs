@@ -175,20 +175,16 @@ export const PlaybackQueueDrawer = ({
     <BottomDrawer
       isOpen={isOpen}
       onClose={onClose}
-      headerContent={
-        <h2 className={styles.drawerTitle} id="playback-queue-title">
-          Queue
-        </h2>
-      }
+      chrome
+      contentFlush
+      title="Queue"
+      titleId="playback-queue-title"
       closeButtonAriaLabel="Close playback queue"
-      closeButtonPlacement="header"
       dataAttribute="data-playback-queue-open"
       drawerClassName={classNames(
         styles.queueDrawer,
         styles.queueDrawerAlignEnd,
       )}
-      headerClassName={styles.queueDrawerHeader}
-      contentClassName={styles.queueDrawerContent}
       behindMiniPlayer
       hideOverlay
       inline

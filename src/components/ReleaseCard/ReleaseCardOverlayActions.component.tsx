@@ -7,7 +7,6 @@ import { useReleaseNotesEditorContext } from "src/components/ReleaseNotes/Releas
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
@@ -51,15 +50,13 @@ export const ReleaseCardOverlayActions = ({
   const { handleAddToQueue, isReleaseInQueue, isAdding, isFetchingRelease } =
     useReleaseCardQueueAction(release);
 
-  const actionClass = (active = false, queued = false) =>
+  const actionClass = (active = false) =>
     isVertical
       ? classNames(stackStyles.overlayAction, {
           [stackStyles.overlayActionMobile]: useMobileTapPadding,
-          [stackStyles.overlayActionQueued]: queued,
         })
       : classNames(segmentedStyles.segment, styles.actionSegment, {
           [segmentedStyles.active]: active,
-          [styles.actionSegmentQueued]: queued,
         });
 
   const handleCrateToggle = (event: MouseEvent) => {
@@ -132,7 +129,7 @@ export const ReleaseCardOverlayActions = ({
     <div className={slotClass}>
       <button
         type="button"
-        className={actionClass(false, isReleaseInQueue)}
+        className={actionClass()}
         onClick={handleAddToQueue}
         disabled={isReleaseInQueue || isAdding}
         aria-label={
@@ -143,17 +140,24 @@ export const ReleaseCardOverlayActions = ({
         title={isReleaseInQueue ? "In queue" : "Add to queue"}
         data-testid="fmdReleaseCardAddToQueueButton"
       >
-        {isReleaseInQueue ? (
-          <CheckThinIcon className={stackStyles.actionIcon} aria-hidden />
-        ) : isFetchingRelease ? (
-          <Spinner
-            size="xs"
-            className={stackStyles.actionIcon}
-            aria-label="Loading release"
-          />
-        ) : (
-          <ListPlusThinIcon className={stackStyles.actionIcon} aria-hidden />
-        )}
+        <span className={styles.queueIconWrap}>
+          {isFetchingRelease ? (
+            <Spinner
+              size="xs"
+              className={stackStyles.actionIcon}
+              aria-label="Loading release"
+            />
+          ) : (
+            <ListPlusThinIcon className={stackStyles.actionIcon} aria-hidden />
+          )}
+          {isReleaseInQueue ? (
+            <span
+              className={styles.queueIndicatorDot}
+              data-testid="fmdReleaseQueueIndicator"
+              aria-hidden="true"
+            />
+          ) : null}
+        </span>
       </button>
       {!isVertical ? (
         <span className={styles.tooltip}>
@@ -189,7 +193,11 @@ export const ReleaseCardOverlayActions = ({
       <div className={stackStyles.overlayActions}>
         {releaseDetailsAction}
         {queueAction}
-        <ReleaseNotesCardAction {...definedProps({ variant: notesVariant })} />
+        {notesVariant !== "mobile" ? (
+          <ReleaseNotesCardAction
+            {...definedProps({ variant: notesVariant })}
+          />
+        ) : null}
         {discogsAction}
         {crateAction}
       </div>

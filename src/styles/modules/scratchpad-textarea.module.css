@@ -82,12 +82,10 @@
 }
 
 .textareaembedded.textareainvalid {
-  border: none;
-  box-shadow: inset 0 0 0 1px var(--destructive);
+  border: 1px solid var(--destructive);
 
   &:focus {
-    border: none;
-    box-shadow: inset 0 0 0 1px var(--destructive);
+    border-color: var(--destructive);
   }
 }
 

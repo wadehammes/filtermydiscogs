@@ -1,0 +1,16 @@
+.fabchrome {
+  --surface: var(--primary);
+
+  border: 1px solid var(--primary);
+  box-shadow:
+    0 4px 6px -1px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    0 2px 4px -2px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    );
+}

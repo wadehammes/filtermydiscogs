@@ -146,6 +146,17 @@ describe("BottomDrawer", () => {
     expect(po.onClose).not.toHaveBeenCalled();
   });
 
+  it("uses header close button when chrome is enabled", () => {
+    po.renderBottomDrawer({ chrome: true, title: "Filters" });
+
+    expect(
+      screen.getByRole("button", { name: "Close drawer" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdBottomDrawerCloseButton"),
+    ).toBeInTheDocument();
+  });
+
   it("applies data attribute when provided", () => {
     po.renderBottomDrawer({ dataAttribute: "data-test-drawer" });
 
