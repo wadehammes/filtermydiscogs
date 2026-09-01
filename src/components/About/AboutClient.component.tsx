@@ -9,6 +9,8 @@ import {
   ABOUT_SUPPORT_EMAIL,
 } from "src/constants/about.constants";
 import { SITE_NAME } from "src/constants/siteMetadata";
+import { SUPPORT_SECTION_ID } from "src/constants/supportProjectToast.constants";
+import { useHashScrollOnMount } from "src/hooks/useHashScrollOnMount.hook";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
 import typography from "src/styles/modules/typography.module.css";
 import styles from "./About.module.css";
@@ -16,6 +18,8 @@ import { AboutClearDataSection } from "./AboutClearDataSection.component";
 import { AboutDonationSection } from "./AboutDonationSection.component";
 
 export function AboutClient() {
+  useHashScrollOnMount(SUPPORT_SECTION_ID);
+
   return (
     <div className={styles.page} data-testid="fmdAbout">
       <div className={styles.bento}>

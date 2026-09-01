@@ -3,6 +3,7 @@ import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
 import { PageFooterStats } from "src/components/Page/PageFooterStats.server";
+import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import Heart from "src/styles/icons/heart-thin.svg";
 import styles from "./Page.module.css";
 
@@ -61,13 +62,9 @@ export async function PageFooter({ variant = "default" }: PageFooterProps) {
               [styles.onGradientMuted]: variant === "gradient",
             })}
           >
-            <a
-              href="https://github.com/wadehammes/filtermydiscogs"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <SupportProjectNavLink>
               Contribute to the project
-            </a>
+            </SupportProjectNavLink>
           </span>
           <span
             className={classNames({

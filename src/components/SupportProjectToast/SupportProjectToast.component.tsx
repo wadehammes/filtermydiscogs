@@ -9,6 +9,7 @@ import {
 import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
 import { useDismissSupportProjectToastMutation } from "src/hooks/mutations/useAuthMutations";
 import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
+import { navigateToPathHash } from "src/utils/hashNavigation";
 
 export const SupportProjectToast = () => {
   const router = useRouter();
@@ -35,7 +36,11 @@ export const SupportProjectToast = () => {
       onLearnMore: () => {
         dismissSupportProjectToast();
         persistDismissal();
-        router.push(SUPPORT_PROJECT_ABOUT_PATH);
+        navigateToPathHash({
+          href: SUPPORT_PROJECT_ABOUT_PATH,
+          currentPathname: window.location.pathname,
+          router,
+        });
       },
       onDismiss: persistDismissal,
     });

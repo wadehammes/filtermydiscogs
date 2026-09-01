@@ -2,6 +2,7 @@ import {
   DONATION_SUCCESS_QUERY_PARAM,
   DONATION_SUCCESS_QUERY_VALUE,
 } from "src/constants/donate.constants";
+import { replacePathHash } from "src/utils/hashNavigation";
 import { toast } from "src/utils/toast";
 
 export const handleDonationSuccessReturn = (handledRef: {
@@ -25,6 +26,10 @@ export const handleDonationSuccessReturn = (handledRef: {
 
   params.delete(DONATION_SUCCESS_QUERY_PARAM);
   const query = params.toString();
-  const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
-  window.history.replaceState({}, "", nextUrl);
+
+  replacePathHash({
+    pathname: window.location.pathname,
+    hash: window.location.hash,
+    search: query ? `?${query}` : "",
+  });
 };

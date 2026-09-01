@@ -133,6 +133,12 @@
   transition: var(--transition-fast);
   width: 100%;
 
+  &.dropdownLinkWithIcon {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+  }
+
   &:hover,
   &[data-highlighted] {
     background: var(--muted);
@@ -143,6 +149,12 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+}
+
+.supportNavIcon {
+  block-size: 0.875rem;
+  flex-shrink: 0;
+  inline-size: 0.875rem;
 }
 
 .mosaicLink {
