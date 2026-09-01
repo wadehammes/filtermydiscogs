@@ -163,7 +163,7 @@ Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/R
 
 **Editing scope:** text and textarea fields (**`isEditableCollectionField`**) plus Media/Sleeve Condition dropdowns (**`isConditionCollectionField`**, **`getEditableConditionFields`**) via shared **`ReleaseNotesFormFields`**. All note field labels compose **[`field-label.module.css`](../../src/styles/modules/field-label.module.css)** (same uppercase muted style as filter controls and condition **`Select`** labels). Card/table editing uses **`NoteEditDialog`**; **`ReleaseModal`** uses **`ReleaseNotesModalEditor`** inline. **`releaseHasStoredConditionNotes`** keeps the modal notes section visible when only condition values are set. Condition values stay hidden from release-card/table display (**`forCard: true`** / **`isCardDisplayNoteField`**).
 
-**Card UI:** **`ReleaseCard`** and **`MobileReleaseCard`** show a sticky-note overlay action only (primary dot badge when notes exist)—no inline note preview on the card body. **`ReleaseNotesEditorProvider`** on each card mounts **`NoteEditDialog`** for that icon.
+**Card UI:** **`ReleaseCard`** shows a sticky-note overlay action only (primary dot badge when notes exist)—no inline note preview on the card body. **`MobileReleaseCard`** has no notes action on the row; use **`ReleaseModal`** to edit. **`ReleaseNotesEditorProvider`** on each authenticated card still mounts **`NoteEditDialog`** for the desktop overlay icon.
 
 **User-facing policy:** saving notes writes to the user's Discogs collection via the API; note text is not stored in Postgres. See **`/legal`** for Terms & Privacy copy.
 

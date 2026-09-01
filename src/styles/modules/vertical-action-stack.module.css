@@ -64,21 +64,6 @@
   padding-block: var(--space-2);
 }
 
-.overlayActionQueued {
-  color: var(--primary);
-  cursor: default;
-
-  &:disabled {
-    cursor: default;
-    opacity: 1;
-  }
-
-  &:hover:not([aria-pressed="true"]) {
-    background: transparent;
-    color: var(--primary);
-  }
-}
-
 .actionIcon {
   display: flex;
   flex-shrink: 0;

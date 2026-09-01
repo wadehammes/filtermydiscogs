@@ -5,13 +5,17 @@
   gap: var(--space-3);
   justify-content: space-between;
   margin-bottom: var(--space-1);
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   position: sticky;
   top: 0;
   transition:
     background-color var(--transition-normal),
     backdrop-filter var(--transition-normal);
   z-index: calc(var(--z-2-sticky) - 10);
+
+  @media (width > 768px) {
+    padding: var(--space-4);
+  }
 
   &.stuck {
     backdrop-filter: blur(10px);

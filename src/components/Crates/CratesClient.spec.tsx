@@ -31,6 +31,8 @@ describe("CratesClient", () => {
       "/crates/crate-b",
     );
     expect(screen.getByText("4 releases")).toBeInTheDocument();
+    expect(screen.getByText("Default")).toBeInTheDocument();
+    expect(screen.getByText(/2 crates/i)).toBeInTheDocument();
   });
 });
 

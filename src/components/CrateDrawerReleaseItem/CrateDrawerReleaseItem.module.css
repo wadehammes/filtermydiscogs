@@ -19,9 +19,13 @@
     z-index: 1;
   }
 
-  &:hover {
-    border-color: var(--input);
-    box-shadow: var(--shadow-md);
+  @media (hover: hover) {
+    &:hover {
+      border-color: color-mix(in srgb, var(--foreground) 30%, var(--border));
+      box-shadow:
+        0 8px 20px -8px color-mix(in srgb, var(--foreground) 12%, transparent),
+        0 2px 6px -2px color-mix(in srgb, var(--foreground) 5%, transparent);
+    }
   }
 }
 

@@ -1,17 +1,7 @@
 .iconWrap {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  position: relative;
+  composes: iconwrap from "../../styles/modules/action-indicator-dot.module.css";
 }
 
 .notesDot {
-  background: var(--primary);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-full);
-  height: 0.475rem;
-  position: absolute;
-  right: -0.15rem;
-  top: -0.15rem;
-  width: 0.475rem;
+  composes: dot from "../../styles/modules/action-indicator-dot.module.css";
 }

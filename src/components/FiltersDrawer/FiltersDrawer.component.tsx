@@ -13,6 +13,7 @@ import Select from "src/components/Select/Select.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useAppliedFilterCount } from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import type { StyleOperator, YearOperator } from "src/types/filters.types";
@@ -93,6 +94,7 @@ const DrawerFacetFilter = ({
 
 export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   const { state: collectionState } = useCollectionContext();
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const appliedFilterCount = useAppliedFilterCount();
   const [sortCategory, setSortCategory] =
     useState<keyof typeof SORTING_CATEGORIES>("alphabetical");
@@ -161,9 +163,12 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     <BottomDrawer
       isOpen={isOpen}
       onClose={onClose}
+      chrome
       title={drawerTitle}
+      titleId="filters-drawer-title"
       closeButtonAriaLabel="Close filters"
       dataAttribute="data-filters-drawer-open"
+      aboveMiniPlayer={isMiniPlayerVisible}
       footer={
         hasActiveFilters ? (
           <div className={styles.footer}>

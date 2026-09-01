@@ -5,16 +5,10 @@
   background: color-mix(in srgb, var(--card) 92%, transparent);
   border-top: 1px solid var(--border);
   bottom: 0;
-  box-shadow:
-    0 -4px 24px
+  box-shadow: 0 -4px 24px
     light-dark(
       color-mix(in srgb, var(--foreground) 8%, transparent),
       transparent
-    ),
-    inset 0 1px 0 0
-    light-dark(
-      transparent,
-      color-mix(in srgb, var(--surface) 50%, var(--foreground) 12%)
     );
   left: 0;
   padding: var(--space-4);

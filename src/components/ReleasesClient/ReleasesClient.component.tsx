@@ -104,9 +104,7 @@ const ReleasesClientContent = () => {
             {isMobile && activeCrateId ? (
               <button
                 type="button"
-                className={classNames(styles.crateFab, {
-                  [styles.crateFabAboveDock]: isMiniPlayerVisible,
-                })}
+                className={styles.crateFab}
                 onClick={toggleDrawer}
                 aria-label={`${isDrawerOpen ? "Close" : "Open"} crate with ${selectedReleases.length} items`}
               >

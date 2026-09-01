@@ -38,7 +38,7 @@ export function MobileMenuNav({
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.menuIcon}>
+          <span className={styles.menuItemIcon}>
             <Dashboard />
           </span>
           <span>Dashboard</span>
@@ -56,7 +56,7 @@ export function MobileMenuNav({
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.menuIcon}>
+          <span className={styles.menuItemIcon}>
             <VinylRecord />
           </span>
           <span>Releases</span>
@@ -74,7 +74,7 @@ export function MobileMenuNav({
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.menuIcon}>
+          <span className={styles.menuItemIcon}>
             <Crates />
           </span>
           <span>Crates</span>
@@ -92,7 +92,7 @@ export function MobileMenuNav({
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.menuIcon}>
+          <span className={styles.menuItemIcon}>
             <Mosaic />
           </span>
           <span>Mosaic</span>

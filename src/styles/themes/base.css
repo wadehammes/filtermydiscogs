@@ -26,6 +26,7 @@
   --input-padding-full: var(--space-2) var(--space-3);
   --touch-target-min: 2.75rem;
   --transition-button: all var(--transition-normal);
+  --workspace-fab-bottom: var(--space-4);
 
   /* Sticky header heights - fixed for consistent positioning */
   --sticky-header-height: 4rem;
@@ -123,6 +124,7 @@
   --z-7-tooltip: 1080;
   --z-8-toast: 1090;
   --z-9-playback-dock: 1070;
+  --z-10-bottom-drawer: 1080;
 }
 
 /* Disable transitions during theme switching to prevent scroll jank */

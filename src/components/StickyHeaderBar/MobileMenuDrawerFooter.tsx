@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import Link from "next/link";
 import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
@@ -20,38 +21,36 @@ export function MobileMenuDrawerFooter({
   onSettingsClick,
 }: MobileMenuDrawerFooterProps) {
   return (
-    <div className={styles.menuFooter}>
-      {username && (
-        <div className={styles.userInfo}>
-          <span>{username}</span>
-        </div>
-      )}
-      <div className={styles.buttonGroup}>
+    <section className={styles.menuAccountSection} aria-label="Account">
+      {username ? <p className={styles.menuAccountLabel}>{username}</p> : null}
+      <nav className={styles.menuSecondaryNav} aria-label="Account links">
         <Link
           href="/settings"
-          className={styles.aboutLink}
+          className={styles.menuItem}
           onClick={onSettingsClick}
         >
           Settings
         </Link>
-        <Link href="/about" className={styles.aboutLink} onClick={onAboutClick}>
+        <Link href="/about" className={styles.menuItem} onClick={onAboutClick}>
           About
         </Link>
         <SupportProjectNavLink
-          className={styles.aboutLink}
+          className={styles.menuItem}
           onClick={onSupportClick}
         >
-          <HeartThinIcon className={styles.supportNavIcon} />
+          <span className={styles.menuItemIcon} aria-hidden>
+            <HeartThinIcon className={styles.supportNavIcon} />
+          </span>
           {SUPPORT_PROJECT_NAV_LABEL}
         </SupportProjectNavLink>
         <button
           type="button"
-          className={styles.logoutButton}
+          className={classNames(styles.menuItem, styles.menuItemLogout)}
           onClick={onLogout}
         >
           Logout
         </button>
-      </div>
-    </div>
+      </nav>
+    </section>
   );
 }

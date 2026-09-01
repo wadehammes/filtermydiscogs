@@ -22,7 +22,8 @@
   text-decoration: none;
   transition:
     border-color var(--transition-bounce),
-    box-shadow var(--transition-bounce);
+    box-shadow var(--transition-bounce),
+    transform var(--transition-bounce);
   width: 100%;
 
   &.inCrate {
@@ -30,12 +31,17 @@
     outline-offset: 2px;
   }
 
-  &:hover {
-    box-shadow:
-      var(--shadow-lg),
-      inset 0 0 0 1px var(--input);
-    color: inherit;
-    text-decoration: none;
+  @media (hover: hover) {
+    &:hover {
+      box-shadow:
+        0 12px 28px -10px color-mix(in srgb, var(--background) 14%, transparent),
+        0 4px 10px -4px color-mix(in srgb, var(--background) 6%, transparent),
+        var(--shadow-lg),
+        inset 0 0 0 1px var(--input);
+      color: inherit;
+      text-decoration: none;
+      transform: translateY(-2px);
+    }
   }
 }
 
@@ -191,9 +197,8 @@
 .crateActionButton {
   align-items: center;
   background: var(--card);
-  border: none;
+  border: 1px solid var(--border);
   border-radius: calc(var(--radius-ui) + 1px);
-  box-shadow: inset 0 0 0 1px var(--border);
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
@@ -291,14 +296,12 @@
   }
 }
 
-.actionSegmentQueued {
-  color: var(--primary);
-  cursor: default;
+.queueIconWrap {
+  composes: iconwrap from "../../styles/modules/action-indicator-dot.module.css";
+}
 
-  &:hover:not(.active) {
-    background: transparent;
-    color: var(--primary);
-  }
+.queueIndicatorDot {
+  composes: dot from "../../styles/modules/action-indicator-dot.module.css";
 }
 
 .actionSegmented .segmentSlot + .segmentSlot .actionSegment {

@@ -47,15 +47,6 @@
     light-dark(
       color-mix(in srgb, var(--foreground) 10%, transparent),
       transparent
-    ),
-    inset 0 0 0 1px
-    light-dark(
-      transparent,
-      color-mix(
-        in srgb,
-        var(--surface, var(--card)) 50%,
-        var(--contrast-color, var(--foreground)) 12%
-      )
     );
 }
 
@@ -73,11 +64,6 @@
     light-dark(
       color-mix(in srgb, var(--foreground) 10%, transparent),
       transparent
-    ),
-    inset 0 0 0 1px
-    light-dark(
-      transparent,
-      color-mix(in srgb, var(--surface) 50%, var(--foreground) 12%)
     );
 }
 
