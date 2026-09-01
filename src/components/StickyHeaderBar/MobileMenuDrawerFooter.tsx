@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
+import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
+import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
+import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuDrawerFooterProps {
   username: string | null;
   onLogout: () => void;
   onAboutClick: () => void;
-  onDonateClick: () => void;
+  onSupportClick: () => void;
   onSettingsClick: () => void;
 }
 
@@ -14,7 +16,7 @@ export function MobileMenuDrawerFooter({
   username,
   onLogout,
   onAboutClick,
-  onDonateClick,
+  onSupportClick,
   onSettingsClick,
 }: MobileMenuDrawerFooterProps) {
   return (
@@ -35,13 +37,13 @@ export function MobileMenuDrawerFooter({
         <Link href="/about" className={styles.aboutLink} onClick={onAboutClick}>
           About
         </Link>
-        <Link
-          href={SUPPORT_PROJECT_ABOUT_PATH}
+        <SupportProjectNavLink
           className={styles.aboutLink}
-          onClick={onDonateClick}
+          onClick={onSupportClick}
         >
-          Donate
-        </Link>
+          <HeartThinIcon className={styles.supportNavIcon} />
+          {SUPPORT_PROJECT_NAV_LABEL}
+        </SupportProjectNavLink>
         <button
           type="button"
           className={styles.logoutButton}

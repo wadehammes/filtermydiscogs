@@ -1,10 +1,13 @@
 import { Menu } from "@base-ui/react/menu";
+import classNames from "classnames";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
-import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
+import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
+import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
 import styles from "./UserActions.module.css";
 
 interface UserActionsProps {
@@ -87,14 +90,17 @@ export const UserActions = ({
                 <Menu.LinkItem
                   closeOnClick
                   render={
-                    <Link
-                      href={SUPPORT_PROJECT_ABOUT_PATH}
-                      className={styles.dropdownLink}
+                    <SupportProjectNavLink
+                      className={classNames(
+                        styles.dropdownLink,
+                        styles.dropdownLinkWithIcon,
+                      )}
+                      onClick={handleMenuNavigation}
                     />
                   }
-                  onClick={handleMenuNavigation}
                 >
-                  Donate
+                  <HeartThinIcon className={styles.supportNavIcon} />
+                  {SUPPORT_PROJECT_NAV_LABEL}
                 </Menu.LinkItem>
                 <Menu.Separator className={styles.menuSeparator} />
                 <ThemeSwitcher variant="menu" />

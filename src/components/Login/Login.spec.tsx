@@ -91,7 +91,7 @@ describe("Login", () => {
     ).toBeGreaterThanOrEqual(1);
     expect(
       screen.getByRole("link", { name: "Contribute to the project" }),
-    ).toBeInTheDocument();
+    ).toHaveAttribute("href", "/about#support");
     expect(screen.getByTestId("fmdPageFooterFun")).toBeInTheDocument();
     expect(
       screen.getByText("Live totals from collectors using FilterMyDiscogs."),

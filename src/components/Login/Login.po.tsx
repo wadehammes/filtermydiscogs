@@ -9,9 +9,7 @@ jest.mock("src/components/Page/PageFooter.server", () => ({
       </div>
       <footer>
         <a href="/about">About</a>
-        <a href="https://github.com/wadehammes/filtermydiscogs">
-          Contribute to the project
-        </a>
+        <a href="/about#support">Contribute to the project</a>
       </footer>
     </>
   ),
