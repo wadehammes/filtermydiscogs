@@ -151,6 +151,7 @@ export const ReleasePlaybackProvider = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [shouldAutoplayEmbed, setShouldAutoplayEmbed] = useState(false);
+  const [isPlaybackEmbedMounted, setIsPlaybackEmbedMounted] = useState(false);
   const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
   const [pendingTrackPosition, setPendingTrackPosition] = useState<
     string | null
@@ -1282,17 +1283,43 @@ export const ReleasePlaybackProvider = ({
 
   const registerPlaybackIframe = useCallback(
     (iframe: HTMLIFrameElement | null) => {
-      playbackIframeRef.current = iframe;
+      const previousIframe = playbackIframeRef.current;
 
-      if (iframe) {
-        enableYoutubeIframeListening(iframe);
-        schedulePlayFromGestureAttempts();
+      if (!iframe) {
+        if (previousIframe) {
+          postYoutubePlayerCommand({
+            iframe: previousIframe,
+            command: "pauseVideo",
+          });
+        }
+
+        playbackIframeRef.current = null;
+        clearPlayFromGestureRetries();
         return;
       }
 
-      clearPlayFromGestureRetries();
+      if (previousIframe && previousIframe !== iframe) {
+        postYoutubePlayerCommand({
+          iframe: previousIframe,
+          command: "pauseVideo",
+        });
+      }
+
+      playbackIframeRef.current = iframe;
+      enableYoutubeIframeListening(iframe);
+
+      if (isPlaybackEmbedMounted) {
+        setShouldAutoplayEmbed(false);
+      }
+
+      setIsPlaybackEmbedMounted(true);
+      schedulePlayFromGestureAttempts();
     },
-    [clearPlayFromGestureRetries, schedulePlayFromGestureAttempts],
+    [
+      clearPlayFromGestureRetries,
+      isPlaybackEmbedMounted,
+      schedulePlayFromGestureAttempts,
+    ],
   );
 
   const togglePlayback = useCallback(() => {
@@ -1329,6 +1356,7 @@ export const ReleasePlaybackProvider = ({
     setIsPlaying(false);
     setIsPaused(false);
     setShouldAutoplayEmbed(false);
+    setIsPlaybackEmbedMounted(false);
     setEmbedVideoId(null);
     embedVideoIdRef.current = null;
     lastSyncedActiveVideoIdRef.current = null;
@@ -1462,6 +1490,7 @@ export const ReleasePlaybackProvider = ({
       isPaused,
       isMiniPlayerVisible,
       shouldAutoplayEmbed,
+      isPlaybackEmbedMounted,
       isPlaybackReady,
       canPlayPrevious,
       canPlayNext,
@@ -1485,6 +1514,7 @@ export const ReleasePlaybackProvider = ({
       isPaused,
       isMiniPlayerVisible,
       shouldAutoplayEmbed,
+      isPlaybackEmbedMounted,
       isPlaybackReady,
       canPlayPrevious,
       canPlayNext,
