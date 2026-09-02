@@ -10,6 +10,7 @@ import { useCreateCrateMutation } from "src/hooks/mutations/useCrateMutations";
 import { createCrateBodySchema } from "src/lib/validation/crate.schemas";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
+import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./CrateSelector.module.css";
 
 interface CrateSelectorProps {
@@ -152,7 +153,10 @@ export const CrateSelector = ({
           <input
             type="text"
             placeholder="Crate name"
-            className={classNames(styles.input, modalInputStyles.field)}
+            className={validatedFieldClass(
+              styles.input,
+              modalInputStyles.field,
+            )}
             aria-label="Crate name"
             {...register("name")}
           />

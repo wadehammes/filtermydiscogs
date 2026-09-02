@@ -25,13 +25,13 @@
   -webkit-line-clamp: 2;
   color: var(--foreground);
   display: -webkit-box;
-  font-size: var(--text-xl);
+  font-size: clamp(var(--text-lg), 4.5cqi, var(--text-xl));
   font-weight: var(--font-bold);
   line-height: 1.1;
   margin: 0;
   overflow: hidden;
-  text-align: left;
   padding-top: 0.5rem;
+  text-align: left;
 
   @media (width >= 640px) {
     padding-top: 0;
@@ -41,12 +41,12 @@
 @container release-card (max-width: 11rem) {
   .releaseTitle {
     -webkit-line-clamp: 3;
-    font-size: var(--text-lg);
+    font-size: clamp(var(--text-base), 4cqi, var(--text-lg));
     line-height: 1.2;
   }
 
   .artistLine {
-    font-size: var(--text-xs);
+    font-size: clamp(var(--text-xxs), 3.5cqi, var(--text-xs));
   }
 }
 

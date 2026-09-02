@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  buildReleaseIndexFromList,
   findCollectionReleaseByInstanceId,
   patchCollectionPagesReleaseByInstanceId,
 } from "src/utils/collectionReleaseLookup";
@@ -24,6 +25,13 @@ describe("collectionReleaseLookup", () => {
       ...target,
       notes: target.notes ?? [],
     });
+  });
+
+  it("builds a release index from a flat list", () => {
+    const releases = releaseFactory.buildList(2);
+    const index = buildReleaseIndexFromList(releases);
+
+    expect(index.get(String(releases[1]?.instance_id))).toEqual(releases[1]);
   });
 
   it("patches a release by instance id", () => {

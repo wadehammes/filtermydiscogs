@@ -43,6 +43,7 @@ export const useCollectionData = ({
   const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
     useCollectionContext();
   const syncMutation = useSyncCratesMutation(authState.userId);
+  const { mutate: syncCrates, isPending: isSyncPending } = syncMutation;
   const autoSyncRef = useRef(false);
 
   const filtersDispatch = useSetAtom(filtersDispatchAtom);
@@ -155,9 +156,14 @@ export const useCollectionData = ({
 
   useEffect(() => {
     if (
-      !(cacheReady.hydratedFromCache && isCollectionFullyLoaded && username) ||
+      !(
+        cacheReady.hydratedFromCache &&
+        isCollectionFullyLoaded &&
+        username &&
+        !rateLimited
+      ) ||
       autoSyncRef.current ||
-      syncMutation.isPending
+      isSyncPending
     ) {
       return;
     }
@@ -174,7 +180,7 @@ export const useCollectionData = ({
 
     autoSyncRef.current = true;
 
-    syncMutation.mutate(
+    syncCrates(
       { collectionInstanceIds: syncResult.instanceIds },
       {
         onSuccess: (data) => {
@@ -184,9 +190,6 @@ export const useCollectionData = ({
             );
           }
         },
-        onError: () => {
-          autoSyncRef.current = false;
-        },
       },
     );
   }, [
@@ -195,7 +198,9 @@ export const useCollectionData = ({
     hasNextPage,
     isCollectionFullyLoaded,
     isFetchingNextPage,
-    syncMutation,
+    isSyncPending,
+    rateLimited,
+    syncCrates,
     username,
   ]);
 

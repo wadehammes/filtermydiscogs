@@ -305,6 +305,44 @@ describe("useCollectionData", () => {
     );
   });
 
+  it("does not retry automatic crate sync after a failed sync", async () => {
+    const cachedPage = buildCachedCollection(2);
+    await writePersistedCollectionCache("testuser", {
+      pages: [cachedPage],
+      pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      totalItems: cachedPage.pagination.items,
+      fetchedAt: Date.now(),
+    });
+
+    mockFetchDiscogsCollection.mockResolvedValue(
+      collectionFactory.build({}, { totalItems: cachedPage.pagination.items }),
+    );
+    mockSyncCrates.mockRejectedValue(new Error("HTTP error! status: 429"));
+
+    renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(mockSyncCrates).toHaveBeenCalledTimes(1);
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+
+    expect(mockSyncCrates).toHaveBeenCalledTimes(1);
+  });
+
   it("does not invalidate the collection query on first mount", async () => {
     const queryClient = createTestQueryClient();
     const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");

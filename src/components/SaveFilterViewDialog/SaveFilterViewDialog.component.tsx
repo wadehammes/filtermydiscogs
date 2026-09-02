@@ -6,6 +6,7 @@ import {
   MAX_FILTER_VIEW_NAME_LENGTH,
   normalizeFilterViewName,
 } from "src/utils/filterViews";
+import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./SaveFilterViewDialog.module.css";
 
 export type FilterViewNameDialogMode = "save" | "rename";
@@ -98,7 +99,7 @@ export const SaveFilterViewDialog = ({
       </label>
       <input
         id={`${inputId}-name`}
-        className={styles.input}
+        className={validatedFieldClass(styles.input)}
         type="text"
         value={name}
         maxLength={MAX_FILTER_VIEW_NAME_LENGTH}

@@ -1,6 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
-import classNames from "classnames";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import { AppDialog } from "src/components/AppDialog/AppDialog.component";
@@ -12,6 +11,7 @@ import {
   editCrateNameFormSchema,
 } from "src/lib/validation/crate.schemas";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
+import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./EditCrateDialog.module.css";
 
 export const EditCrateDialog = () => {
@@ -108,7 +108,7 @@ export const EditCrateDialog = () => {
         <input
           id={`${titleId}-name-input`}
           type="text"
-          className={classNames(styles.input, modalInputStyles.field)}
+          className={validatedFieldClass(styles.input, modalInputStyles.field)}
           disabled={isBusy}
           {...register("name")}
         />
@@ -167,7 +167,10 @@ export const EditCrateDialog = () => {
           <input
             id={`${titleId}-delete-input`}
             type="text"
-            className={classNames(styles.input, modalInputStyles.field)}
+            className={validatedFieldClass(
+              styles.input,
+              modalInputStyles.field,
+            )}
             autoComplete="off"
             disabled={isBusy}
             {...register("deleteConfirm")}

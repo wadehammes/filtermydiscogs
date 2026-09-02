@@ -96,7 +96,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 | Path | Role |
 |------|------|
 | [`global.css`](../../src/styles/global.css) | App entry: `@import`s + CSS reset + legacy global classes (`.typography-span`, `.layout-sticky-header`, …) |
-| [`global/`](../../src/styles/global/) | Side-effect globals loaded via **`global.css`**: **`pills.css`**, **`base-ui-setup.css`**, **`theming.css`** (utility classes composed from modules) |
+| [`global/`](../../src/styles/global/) | Side-effect globals loaded via **`global.css`**: **`reset.css`** (`@layer reset`), **`pills.css`**, **`base-ui-setup.css`**, **`theming.css`**, **`cascade-layers.css`**, **`prose-scope.css`**, **`form-validation.css`** |
 | [`themes/`](../../src/styles/themes/) | Design tokens: **`base.css`**, **`colors.css`**, palette files, **`palette-derivations.css`**, **`primary.css`** — imported from **`global.css`** via **`themes/index.css`** |
 | [`modules/`](../../src/styles/modules/) | Shared **CSS Modules** imported by multiple components (**`typography.module.css`**, **`modal-dialog.module.css`**, **`dashboard-card.module.css`**, …) |
 | [`icons/`](../../src/styles/icons/) | SVG assets + Turbopack TSX fallbacks (see [SVG icons](#jest-notes)) |
@@ -219,6 +219,13 @@ Each **`.module.css`** file is organized around **block classes** (the `styles.*
 - **Color**: Use **`color-mix(in srgb, …)`** for tinted surfaces (see [`workspace-fab-chrome.module.css`](../../src/styles/modules/workspace-fab-chrome.module.css) **`.fabchrome`** — shared by mobile **`BackToTop`** and crate FAB).
 - **Fluid sizing**: Use **`clamp()`** for type and spacing that scales across viewports (see [`MosaicClient.module.css`](../../src/components/MosaicClient/MosaicClient.module.css)).
 - **Portal enter/exit**: Modal and backdrop motion lives in [`portal-enter-exit.module.css`](../../src/styles/modules/portal-enter-exit.module.css) — compose **`enterexitfade`** (backdrop) or **`enterexitscale`** (opacity + **`scale`**; keep **`transform: translate(-50%, -50%)`** on centered popups separately). Entry uses nested **`@starting-style`** plus Base UI **`[data-starting-style]`**; exit uses **`[data-ending-style]`** (see [Base UI animation handbook](https://base-ui.com/react/handbook/animation)). **`prefers-reduced-motion: reduce`** disables the transition.
+- **`@layer` cascade**: [`cascade-layers.css`](../../src/styles/global/cascade-layers.css) declares layer order (**`reset`**, **`tokens`**, **`utilities`**, **`components`**). The CSS reset lives in [`reset.css`](../../src/styles/global/reset.css) inside **`@layer reset`**; legacy layout/typography classes in [`global.css`](../../src/styles/global.css) stay unlayered so they win over utilities when needed.
+- **`@scope` prose**: Legal uses **`data-prose`** / **`data-prose-section`**; About bento tiles use **`data-prose-flow`** for paragraph copy without section card chrome — all styled in [`prose-scope.css`](../../src/styles/global/prose-scope.css) (donut scope excludes **`data-prose-actions`**).
+- **`BackToTop` reveal**: Scroll listener + **`.visible`** class ([`BackToTop.module.css`](../../src/components/BackToTop/BackToTop.module.css)); not scroll-driven animation.
+- **Subgrid stat alignment**: [`StatsGrid`](../../src/components/StatsGrid/StatsGrid.module.css) + [`StatCard`](../../src/components/StatCard/StatCard.module.css) and [`DashboardHero`](../../src/components/Dashboard/DashboardHero.module.css) **`.metricsList`** use **`grid-template-rows: subgrid`** behind **`@supports`**; **`StatCard`** always renders a third **`.statSubtext`** row (**`:empty`** hides it).
+- **Form validation styling**: Use **`validatedFieldClass(...)`** from [`validatedFieldClass.ts`](../../src/utils/validatedFieldClass.ts) (wraps global **`validated-field`** from [`form-validation.css`](../../src/styles/global/form-validation.css)) on native inputs/textareas — **`:user-valid`** / **`:user-invalid:not(:placeholder-shown)`** border colors. Modal inputs also pass **`modalInputStyles.field`**. Do not **`composes`** validation from another module (Turbopack rejects nested **`composes`**).
+- **Container query units**: Release card title/meta use **`cqi`** inside **`clamp()`** ([`ReleaseCardTitle.module.css`](../../src/components/ReleaseCard/ReleaseCardTitle.module.css)).
+- **`accent-color`**: Settings **`.panel`** sets **`accent-color: var(--primary)`** for native checkboxes/radios (see also **`.settingCheckbox`**).
 
 ### Style rules
 

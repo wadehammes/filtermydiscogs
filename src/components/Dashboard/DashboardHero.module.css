@@ -144,7 +144,16 @@
   container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto auto;
   margin: 0;
+
+  @supports (grid-template-rows: subgrid) {
+    & > .metricItem {
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+    }
+  }
 }
 
 @container (max-width: 16rem) {

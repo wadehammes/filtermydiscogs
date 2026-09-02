@@ -12,7 +12,7 @@ import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { useSimilarReleasesInCollection } from "./useSimilarReleasesInCollection.hook";
 
-interface ReleaseModalProps {
+export interface ReleaseModalProps {
   isOpen: boolean;
   release: DiscogsRelease | null;
   onClose: () => void;

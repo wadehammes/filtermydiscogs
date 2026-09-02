@@ -1,6 +1,6 @@
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
-import { matchesInstanceId } from "src/utils/releaseNotes";
+import { findReleaseByInstanceId } from "src/utils/releaseNotes";
 import {
   buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
@@ -308,9 +308,7 @@ export const resolvePersistedQueueItems = ({
   const resolved: PlaybackQueueItem[] = [];
 
   for (const item of items) {
-    const release = releases.find((collectionRelease) =>
-      matchesInstanceId(collectionRelease, item.instanceId),
-    );
+    const release = findReleaseByInstanceId(releases, item.instanceId);
 
     if (!release) {
       continue;

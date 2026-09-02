@@ -27,14 +27,14 @@ export function AboutClient() {
           <div className={styles.introBrand}>
             <FMDIcon aria-label={SITE_NAME} className={styles.introIcon} />
           </div>
-          <div className={styles.introCopy}>
+          <div className={styles.introCopy} data-prose-flow>
             <div className={styles.introTitle}>
               <p className={typography.brandEyebrow}>About</p>
               <h1 className={styles.tileHeading}>
                 Your Discogs collection, unlocked
               </h1>
             </div>
-            <p className={styles.tileBody}>
+            <p>
               Discogs is where your collection lives. FilterMyDiscogs is the
               free app I built to help you dig through it: search, filter, queue
               tracks, pack crates, spot trends, and more.

@@ -9,6 +9,7 @@ import {
 } from "src/constants/donate.constants";
 import { useAboutDonationForm } from "src/hooks/useAboutDonationForm.hook";
 import typography from "src/styles/modules/typography.module.css";
+import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./About.module.css";
 
 export const AboutDonationSection = () => {
@@ -95,7 +96,7 @@ export const AboutDonationSection = () => {
                 </span>
                 <input
                   {...register("customAmountDollars")}
-                  className={styles.donationCustomInput}
+                  className={validatedFieldClass(styles.donationCustomInput)}
                   disabled={isSubmitting}
                   id="donation-custom-amount"
                   inputMode="decimal"

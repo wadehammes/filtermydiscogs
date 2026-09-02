@@ -16,7 +16,7 @@ export function StatCard({ label, value, subtext, className }: StatCardProps) {
     <div className={classNames(styles.statCard, className)}>
       <div className={styles.statLabel}>{label}</div>
       <div className={styles.statValue}>{value}</div>
-      {subtext && <div className={styles.statSubtext}>{subtext}</div>}
+      <div className={styles.statSubtext}>{subtext ?? null}</div>
     </div>
   );
 }

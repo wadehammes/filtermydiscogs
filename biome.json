@@ -2,7 +2,13 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/*.svg", "!!**/node_modules"]
+    "includes": [
+      "**",
+      "!**/*.svg",
+      "!!**/node_modules",
+      "!!src/styles/global/prose-scope.css",
+      "!!src/styles/global/theming.css"
+    ]
   },
   "formatter": {
     "enabled": true,

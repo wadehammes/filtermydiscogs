@@ -9,6 +9,12 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-4);
+
+  @supports (grid-template-rows: subgrid) {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-rows: subgrid;
+  }
 }
 
 .statLabel {
@@ -34,4 +40,9 @@
 .statSubtext {
   color: var(--muted-foreground);
   font-size: var(--text-xs);
+  min-height: 0;
+
+  &:empty {
+    display: none;
+  }
 }

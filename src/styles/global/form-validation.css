@@ -1,0 +1,12 @@
+.validated-field:user-valid:not(:placeholder-shown) {
+  border-color: var(--success);
+}
+
+.validated-field:user-invalid:not(:placeholder-shown) {
+  border-color: var(--destructive);
+}
+
+.validated-field:user-invalid:not(:placeholder-shown):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--destructive) 35%, transparent);
+  outline-offset: 1px;
+}
