@@ -21,26 +21,33 @@
 }
 
 .releaseTitle {
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   color: var(--foreground);
-  display: -webkit-box;
   font-size: clamp(var(--text-lg), 4.5cqi, var(--text-xl));
   font-weight: var(--font-bold);
   line-height: 1.1;
   margin: 0;
+  min-width: 0;
   overflow: hidden;
   padding-top: 0.5rem;
   text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   @media (width >= 640px) {
     padding-top: 0;
+  }
+
+  & > * {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 @container release-card (max-width: 11rem) {
   .releaseTitle {
-    -webkit-line-clamp: 3;
     font-size: clamp(var(--text-base), 4cqi, var(--text-lg));
     line-height: 1.2;
   }

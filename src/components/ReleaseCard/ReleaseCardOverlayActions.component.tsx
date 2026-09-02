@@ -83,7 +83,13 @@ export const ReleaseCardOverlayActions = ({
   const crateTooltipLabel = inCrate ? "Remove from Crate" : "Add to Crate";
 
   const crateAction = (
-    <div className={isVertical ? slotClass : styles.segmentSlot}>
+    <div
+      className={
+        isVertical
+          ? slotClass
+          : classNames(styles.segmentSlot, styles.crateActionSlot)
+      }
+    >
       <button
         type="button"
         className={isVertical ? actionClass(inCrate) : styles.crateActionButton}

@@ -91,7 +91,7 @@ const PublicReleaseCardComponent = ({
                 zIndex: 2,
                 filter: "none",
               }}
-              sizes="(max-width: 1200px) 50vw, 33vw"
+              sizes="200px"
             />
           )}
         </div>

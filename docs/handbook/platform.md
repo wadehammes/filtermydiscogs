@@ -214,7 +214,7 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 
 ## Cursor hooks
 
-Project agent hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json) and [`.cursor/hooks/`](../../.cursor/hooks/README.md). They enforce handbook conventions (CSS rules, scaffold/factory placement, no comments/barrels) and nudge **handbook** + root **README** updates after edits (README when routes, login features, mise/tool versions, `package.json`, or platform setup change). Requires `jq` and executable hook scripts.
+Project agent hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json) and [`.cursor/hooks/`](../../.cursor/hooks/README.md). They enforce handbook conventions (CSS rules, scaffold/factory placement, no comments/barrels) and nudge **handbook** + root **README** updates after edits (README when routes, login features, mise/tool versions, `package.json`, or platform setup change). Stop hooks that run Jest resolve **`pnpm`** through **mise** ([`run_pnpm`](../../.cursor/hooks/_lib.sh)) so Cursor’s shell does not hit stale **asdf** shims. Requires `jq`, **mise** (or a working `pnpm` on `PATH`), and executable hook scripts.
 
 ## Releases
 
