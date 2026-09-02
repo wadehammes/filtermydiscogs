@@ -1,26 +1,57 @@
-/**
- * Utility function that mocks the `IntersectionObserver` API. Necessary for components that rely
- * on it, otherwise the tests will crash. Recommended to execute inside `beforeEach`.
- * @param intersectionObserverMock - Parameter that is sent to the `Object.defineProperty`
- * overwrite method. `jest.fn()` mock functions can be passed here if the goal is to not only
- * mock the intersection observer, but its methods.
- */
+export type IntersectionObserverMockControls = {
+  triggerIntersection: (target: Element, isIntersecting?: boolean) => void;
+  getObservedElements: () => Element[];
+  getLastObserverRoot: () => Element | Document | null;
+  reset: () => void;
+};
+
+type SetupIntersectionObserverMockOptions = {
+  root?: Element | null;
+  rootMargin?: string;
+  thresholds?: number[];
+  disconnect?: () => void;
+  observe?: (target: Element) => void;
+  takeRecords?: () => IntersectionObserverEntry[];
+  unobserve?: (target: Element) => void;
+};
+
 export function setupIntersectionObserverMock({
   root = null,
   rootMargin = "",
   thresholds = [],
   disconnect = () => null,
-  observe = () => null,
+  observe,
   takeRecords = () => [],
   unobserve = () => null,
-} = {}): void {
+}: SetupIntersectionObserverMockOptions = {}): IntersectionObserverMockControls {
+  const observedElements: Element[] = [];
+  let callback: IntersectionObserverCallback | null = null;
+  let lastRoot: Element | Document | null = root;
+  let observerInstance: IntersectionObserver | null = null;
+
   class MockIntersectionObserver implements IntersectionObserver {
     readonly root: Element | null = root;
     readonly rootMargin: string = rootMargin;
     readonly scrollMargin: string = "";
-    readonly thresholds: ReadonlyArray<number> = thresholds;
+    readonly thresholds: ReadonlyArray<number> =
+      thresholds.length > 0 ? thresholds : [0];
+
+    constructor(
+      intersectionCallback: IntersectionObserverCallback,
+      options?: IntersectionObserverInit,
+    ) {
+      callback = intersectionCallback;
+      lastRoot = options?.root ?? root;
+      observerInstance = this;
+    }
+
     disconnect: () => void = disconnect;
-    observe: (target: Element) => void = observe;
+
+    observe: (target: Element) => void = (target: Element) => {
+      observedElements.push(target);
+      observe?.(target);
+    };
+
     takeRecords: () => IntersectionObserverEntry[] = takeRecords;
     unobserve: (target: Element) => void = unobserve;
   }
@@ -36,4 +67,31 @@ export function setupIntersectionObserverMock({
     configurable: true,
     value: MockIntersectionObserver,
   });
+
+  return {
+    triggerIntersection: (target: Element, isIntersecting = true) => {
+      callback?.(
+        [
+          {
+            isIntersecting,
+            target,
+            intersectionRatio: isIntersecting ? 1 : 0,
+            boundingClientRect: target.getBoundingClientRect(),
+            intersectionRect: target.getBoundingClientRect(),
+            rootBounds: null,
+            time: Date.now(),
+          } as IntersectionObserverEntry,
+        ],
+        observerInstance as IntersectionObserver,
+      );
+    },
+    getObservedElements: () => [...observedElements],
+    getLastObserverRoot: () => lastRoot,
+    reset: () => {
+      observedElements.length = 0;
+      callback = null;
+      lastRoot = root;
+      observerInstance = null;
+    },
+  };
 }

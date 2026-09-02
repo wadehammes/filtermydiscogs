@@ -131,7 +131,7 @@ export const ReleaseCardOverlayActions = ({
         type="button"
         className={actionClass()}
         onClick={handleAddToQueue}
-        disabled={isReleaseInQueue || isAdding}
+        disabled={isReleaseInQueue || isAdding || isFetchingRelease}
         aria-label={
           isReleaseInQueue
             ? `${release.basic_information.title} is already in the queue`

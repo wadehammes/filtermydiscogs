@@ -13,6 +13,7 @@ export const LoadingTrigger = ({
 }: LoadingTriggerProps) => {
   return (
     <div
+      data-testid="fmdReleasesLoadingTrigger"
       ref={infiniteScrollRef}
       className={classNames(styles.loadingTrigger, {
         [styles.loadingTriggerFetching]: isFetchingNextPage,

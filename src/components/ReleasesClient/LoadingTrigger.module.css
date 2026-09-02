@@ -1,5 +1,5 @@
 .loadingTrigger {
-  min-height: 0;
+  min-height: 1px;
   position: relative;
 }
 
