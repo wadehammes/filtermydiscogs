@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { api } from "src/api/urls";
-import { SortValues } from "src/constants/sortValues";
 import { VIEW_STATE_STORAGE_KEY } from "src/constants/storageKeys";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
@@ -11,10 +10,6 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
-import {
-  type IntersectionObserverMockControls,
-  setupIntersectionObserverMock,
-} from "src/tests/mocks/mockIntersectionObserver.mock";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderFeatureHook, waitFor } from "test-utils";
@@ -31,11 +26,6 @@ const mockUpdateUserPreferences = jest.mocked(api.updateUserPreferences);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
 const mockUseSearchParams = jest.mocked(useSearchParams);
-
-const INITIAL_VISIBLE_RELEASES = 100;
-const VISIBLE_BATCH_SIZE = 100;
-
-let intersectionObserver: IntersectionObserverMockControls;
 
 const applyUrl = (url: string) => {
   const queryIndex = url.indexOf("?");
@@ -58,28 +48,6 @@ const buildSinglePageCollection = (
   return page;
 };
 
-const useReleasesClientHarness = (scrollElement: HTMLElement | null = null) => {
-  const client = useReleasesClient({ scrollElement });
-  const filtersDispatch = useFiltersDispatch();
-
-  return {
-    ...client,
-    filtersDispatch,
-  };
-};
-
-const triggerSentinelIntersection = (
-  infiniteScrollRef: (node?: Element | null) => void,
-) => {
-  const sentinel = document.createElement("div");
-  act(() => {
-    infiniteScrollRef(sentinel);
-  });
-  act(() => {
-    intersectionObserver.triggerIntersection(sentinel, true);
-  });
-};
-
 describe("useReleasesClient", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -87,7 +55,6 @@ describe("useReleasesClient", () => {
     mockUpdateUserPreferences.mockResolvedValue(
       userPreferencesFactory.defaultsApiResponse(),
     );
-    intersectionObserver = setupIntersectionObserverMock();
     setupMockMatchMedia({ desktop: true });
     mockUsePathname.mockReturnValue("/releases");
     applyUrl("/releases");
@@ -147,6 +114,26 @@ describe("useReleasesClient", () => {
     expect(result.current.selectedRelease).toBeNull();
   });
 
+  it("exposes the full filtered release list for grid virtualization", async () => {
+    const releases = releaseFactory.buildList(150);
+    mockApiResponse(
+      true,
+      mockFetchDiscogsCollection,
+      buildSinglePageCollection(releases),
+      new Error("fail"),
+    );
+
+    const { result } = renderFeatureHook(() => useReleasesClient(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(result.current.releaseCount).toBe(150);
+    });
+
+    expect(result.current.visibleReleases).toHaveLength(150);
+  });
+
   it("switches from list to card view on mobile", async () => {
     localStorage.setItem(
       VIEW_STATE_STORAGE_KEY,
@@ -168,28 +155,6 @@ describe("useReleasesClient", () => {
     await waitFor(() => {
       expect(result.current.currentView).toBe("card");
     });
-  });
-
-  it("caps visible releases until the scroll sentinel expands the window", async () => {
-    const releases = releaseFactory.buildList(150);
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildSinglePageCollection(releases),
-      new Error("fail"),
-    );
-
-    const { result } = renderFeatureHook(() => useReleasesClient(), {
-      authInitialState: testAuthenticatedAuthState,
-    });
-
-    await waitFor(() => {
-      expect(result.current.releaseCount).toBe(150);
-    });
-
-    expect(result.current.visibleReleases).toHaveLength(
-      INITIAL_VISIBLE_RELEASES,
-    );
   });
 
   it("exits random mode when switching to card view", async () => {
@@ -226,83 +191,8 @@ describe("useReleasesClient", () => {
       expect(result.current.currentView).toBe("card");
     });
   });
-});
 
-describe("useReleasesClient infinite scroll", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    jest.clearAllMocks();
-    mockUpdateUserPreferences.mockResolvedValue(
-      userPreferencesFactory.defaultsApiResponse(),
-    );
-    intersectionObserver = setupIntersectionObserverMock();
-    setupMockMatchMedia({ desktop: true });
-    mockUsePathname.mockReturnValue("/releases");
-    applyUrl("/releases");
-    mockUseRouter.mockReturnValue(
-      createMockAppRouter({
-        push: jest.fn((url: string) => {
-          applyUrl(url);
-        }),
-        replace: jest.fn((url: string) => {
-          applyUrl(url);
-        }),
-      }),
-    );
-  });
-
-  it("observes the provided scroll container instead of playback context", async () => {
-    const scrollElement = document.createElement("div");
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildSinglePageCollection(releaseFactory.buildList(1)),
-      new Error("fail"),
-    );
-
-    const { result } = renderFeatureHook(
-      () => useReleasesClient({ scrollElement }),
-      {
-        authInitialState: testAuthenticatedAuthState,
-      },
-    );
-
-    act(() => {
-      result.current.infiniteScrollRef(document.createElement("div"));
-    });
-
-    await waitFor(() => {
-      expect(intersectionObserver.getLastObserverRoot()).toBe(scrollElement);
-    });
-  });
-
-  it("does not observe the viewport when ReleasesClient passes the scroll container", async () => {
-    const scrollElement = document.createElement("div");
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildSinglePageCollection(releaseFactory.buildList(120)),
-      new Error("fail"),
-    );
-
-    const { result } = renderFeatureHook(
-      () => useReleasesClient({ scrollElement }),
-      {
-        authInitialState: testAuthenticatedAuthState,
-      },
-    );
-
-    act(() => {
-      result.current.infiniteScrollRef(document.createElement("div"));
-    });
-
-    await waitFor(() => {
-      expect(intersectionObserver.getLastObserverRoot()).toBe(scrollElement);
-    });
-    expect(intersectionObserver.getLastObserverRoot()).not.toBeNull();
-  });
-
-  it("expands the visible release window when the sentinel enters view", async () => {
+  it("keeps the full release list when the collection grows", async () => {
     mockApiResponse(
       true,
       mockFetchDiscogsCollection,
@@ -311,7 +201,15 @@ describe("useReleasesClient infinite scroll", () => {
     );
 
     const { result, rerender } = renderFeatureHook(
-      () => useReleasesClientHarness(document.createElement("div")),
+      () => {
+        const client = useReleasesClient();
+        const filtersDispatch = useFiltersDispatch();
+
+        return {
+          ...client,
+          filtersDispatch,
+        };
+      },
       {
         authInitialState: testAuthenticatedAuthState,
       },
@@ -320,47 +218,7 @@ describe("useReleasesClient infinite scroll", () => {
     await waitFor(() => {
       expect(result.current.releaseCount).toBe(250);
     });
-    expect(result.current.visibleReleases).toHaveLength(
-      INITIAL_VISIBLE_RELEASES,
-    );
-
-    triggerSentinelIntersection(result.current.infiniteScrollRef);
-    rerender();
-
-    await waitFor(() => {
-      expect(result.current.visibleReleases).toHaveLength(
-        INITIAL_VISIBLE_RELEASES + VISIBLE_BATCH_SIZE,
-      );
-    });
-  });
-
-  it("keeps the expanded visible window when the collection grows", async () => {
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildSinglePageCollection(releaseFactory.buildList(250)),
-      new Error("fail"),
-    );
-
-    const { result, rerender } = renderFeatureHook(
-      () => useReleasesClientHarness(document.createElement("div")),
-      {
-        authInitialState: testAuthenticatedAuthState,
-      },
-    );
-
-    await waitFor(() => {
-      expect(result.current.releaseCount).toBe(250);
-    });
-
-    triggerSentinelIntersection(result.current.infiniteScrollRef);
-    rerender();
-
-    await waitFor(() => {
-      expect(result.current.visibleReleases).toHaveLength(
-        INITIAL_VISIBLE_RELEASES + VISIBLE_BATCH_SIZE,
-      );
-    });
+    expect(result.current.visibleReleases).toHaveLength(250);
 
     act(() => {
       result.current.filtersDispatch({
@@ -374,52 +232,6 @@ describe("useReleasesClient infinite scroll", () => {
     await waitFor(() => {
       expect(result.current.releaseCount).toBe(300);
     });
-    expect(result.current.visibleReleases).toHaveLength(
-      INITIAL_VISIBLE_RELEASES + VISIBLE_BATCH_SIZE,
-    );
-  });
-
-  it("resets the visible window when filters change", async () => {
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildSinglePageCollection(releaseFactory.buildList(250)),
-      new Error("fail"),
-    );
-
-    const { result, rerender } = renderFeatureHook(
-      () => useReleasesClientHarness(document.createElement("div")),
-      {
-        authInitialState: testAuthenticatedAuthState,
-      },
-    );
-
-    await waitFor(() => {
-      expect(result.current.releaseCount).toBe(250);
-    });
-
-    triggerSentinelIntersection(result.current.infiniteScrollRef);
-    rerender();
-
-    await waitFor(() => {
-      expect(result.current.visibleReleases).toHaveLength(
-        INITIAL_VISIBLE_RELEASES + VISIBLE_BATCH_SIZE,
-      );
-    });
-
-    act(() => {
-      result.current.filtersDispatch({
-        type: FiltersActionTypes.SetSort,
-        payload: SortValues.AZArtist,
-      });
-    });
-
-    rerender();
-
-    await waitFor(() => {
-      expect(result.current.visibleReleases).toHaveLength(
-        INITIAL_VISIBLE_RELEASES,
-      );
-    });
+    expect(result.current.visibleReleases).toHaveLength(300);
   });
 });

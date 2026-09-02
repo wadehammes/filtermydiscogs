@@ -18,6 +18,7 @@ import {
   useSelectedStyles,
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
+import { useRegisterPlaybackPageScrollToTop } from "src/hooks/useRegisterPlaybackPageScrollToTop.hook";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -395,6 +396,9 @@ export const ReleasesTable = memo<ReleasesTableProps>(
 
     const virtualRows = rowVirtualizer.getVirtualItems();
     const useVirtualRows = scrollElement !== null && tableRows.length > 0;
+
+    useRegisterPlaybackPageScrollToTop(rowVirtualizer, useVirtualRows);
+
     const paddingTop = useVirtualRows ? (virtualRows[0]?.start ?? 0) : 0;
     const paddingBottom = useVirtualRows
       ? rowVirtualizer.getTotalSize() -

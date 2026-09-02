@@ -14,20 +14,28 @@
   }
 }
 
-.loadingContainer {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  justify-content: center;
-  min-height: 12.5rem;
-  padding: var(--space-8);
-  text-align: center;
+.virtualGridContainer {
+  padding-bottom: var(--space-4);
+  width: 100%;
 }
 
-.loadingText {
-  color: var(--muted-foreground);
-  font-size: var(--text-base);
+.virtualGridInner {
+  position: relative;
+  width: 100%;
+}
+
+.virtualRow {
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.virtualRowGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(var(--virtual-grid-columns, 1), minmax(0, 1fr));
+  padding-inline: var(--space-4);
 }
 
 .releasesGridRandom {

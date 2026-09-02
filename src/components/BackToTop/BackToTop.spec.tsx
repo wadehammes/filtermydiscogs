@@ -43,13 +43,12 @@ describe("BackToTop", () => {
   });
 
   it("becomes visible when scroll position exceeds threshold", async () => {
-    po.resetScroll(500);
+    po.resetScroll(500, 500);
 
     const { container } = po.renderBackToTop();
 
     await act(async () => {
-      const scrollEvent = new Event("scroll");
-      window.dispatchEvent(scrollEvent);
+      po.scrollElement.dispatchEvent(new Event("scroll"));
     });
 
     await waitFor(() => {
@@ -79,8 +78,7 @@ describe("BackToTop", () => {
     po.setScrollY(500);
 
     await act(async () => {
-      const scrollEvent = new Event("scroll");
-      window.dispatchEvent(scrollEvent);
+      po.scrollElement.dispatchEvent(new Event("scroll"));
     });
 
     await waitFor(() => {
@@ -90,7 +88,10 @@ describe("BackToTop", () => {
   });
 
   it("cleans up scroll listener on unmount", async () => {
-    const removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
+    const removeEventListenerSpy = jest.spyOn(
+      po.scrollElement,
+      "removeEventListener",
+    );
 
     const { unmount } = po.renderBackToTop();
 

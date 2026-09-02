@@ -24,6 +24,8 @@ interface PlaybackPageShellContextValue {
   unlockScroll: () => void;
   overlayPortalElement: HTMLElement | null;
   setOverlayPortalElement: (element: HTMLElement | null) => void;
+  registerScrollToTop: (handler: (() => void) | null) => void;
+  scrollToTop: () => void;
 }
 
 const noop = () => {};
@@ -37,6 +39,8 @@ const defaultContextValue: PlaybackPageShellContextValue = {
   unlockScroll: noop,
   overlayPortalElement: null,
   setOverlayPortalElement: noop,
+  registerScrollToTop: noop,
+  scrollToTop: noop,
 };
 
 const PlaybackPageShellContext =
@@ -61,9 +65,38 @@ export const PlaybackPageShellProvider = ({
   > | null>(null);
   const [overlayPortalElement, setOverlayPortalElementState] =
     useState<HTMLElement | null>(null);
+  const scrollToTopHandlerRef = useRef<(() => void) | null>(null);
 
   const setOverlayPortalElement = useCallback((element: HTMLElement | null) => {
     setOverlayPortalElementState(element);
+  }, []);
+
+  const registerScrollToTop = useCallback((handler: (() => void) | null) => {
+    scrollToTopHandlerRef.current = handler;
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    const handler = scrollToTopHandlerRef.current;
+
+    if (handler) {
+      handler();
+      return;
+    }
+
+    const element = scrollElementRef.current;
+
+    if (element) {
+      element.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      return;
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }, []);
 
   const applyLock = useCallback(() => {
@@ -133,6 +166,8 @@ export const PlaybackPageShellProvider = ({
       unlockScroll,
       overlayPortalElement,
       setOverlayPortalElement,
+      registerScrollToTop,
+      scrollToTop,
     }),
     [
       scrollElement,
@@ -140,6 +175,8 @@ export const PlaybackPageShellProvider = ({
       unlockScroll,
       overlayPortalElement,
       setOverlayPortalElement,
+      registerScrollToTop,
+      scrollToTop,
     ],
   );
 
@@ -164,6 +201,13 @@ export const usePlaybackPageShellMountSetters = () => {
 
   return { setOverlayPortalElement };
 };
+
+export const usePlaybackPageScrollToTop = (): (() => void) =>
+  useContext(PlaybackPageShellContext).scrollToTop;
+
+export const usePlaybackPageScrollToTopRegistration = (): ((
+  handler: (() => void) | null,
+) => void) => useContext(PlaybackPageShellContext).registerScrollToTop;
 
 export const usePlaybackPageScrollLock = (enabled: boolean): void => {
   const { lockScroll, unlockScroll } = useContext(PlaybackPageShellContext);

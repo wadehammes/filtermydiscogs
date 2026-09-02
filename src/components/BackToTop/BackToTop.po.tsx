@@ -1,3 +1,4 @@
+import { PlaybackPageShellProvider } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -8,6 +9,7 @@ import { BackToTop } from "./BackToTop.component";
 
 export class BackToTopPageObject extends BasePageObject {
   public testId = "fmdBackToTop";
+  public scrollElement = document.createElement("div");
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
@@ -26,6 +28,11 @@ export class BackToTopPageObject extends BasePageObject {
       configurable: true,
       value: scrollTop,
     });
+    Object.defineProperty(this.scrollElement, "scrollTop", {
+      writable: true,
+      configurable: true,
+      value: scrollTop,
+    });
   }
 
   setScrollY(scrollY: number) {
@@ -34,15 +41,25 @@ export class BackToTopPageObject extends BasePageObject {
       configurable: true,
       value: scrollY,
     });
+    Object.defineProperty(this.scrollElement, "scrollTop", {
+      writable: true,
+      configurable: true,
+      value: scrollY,
+    });
   }
 
   mockScrollTo() {
     const scrollToSpy = jest.fn();
+    this.scrollElement.scrollTo = scrollToSpy;
     window.scrollTo = scrollToSpy;
     return scrollToSpy;
   }
 
   renderBackToTop(): RenderResult {
-    return render(<BackToTop />);
+    return render(
+      <PlaybackPageShellProvider scrollElement={this.scrollElement}>
+        <BackToTop />
+      </PlaybackPageShellProvider>,
+    );
   }
 }
