@@ -34,7 +34,7 @@ import type { DiscogsRelease } from "src/types";
 
 const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
-const INFINITE_SCROLL_ROOT_MARGIN = "0px 0px 50% 0px";
+const INFINITE_SCROLL_ROOT_MARGIN = "0px 0px 750px 0px";
 
 interface UseReleasesClientOptions {
   scrollElement?: HTMLElement | null;
