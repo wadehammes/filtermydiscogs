@@ -4,17 +4,12 @@ import styles from "./LoadingTrigger.module.css";
 
 interface LoadingTriggerProps {
   isFetchingNextPage: boolean;
-  infiniteScrollRef: (node?: Element | null) => void;
 }
 
-export const LoadingTrigger = ({
-  isFetchingNextPage,
-  infiniteScrollRef,
-}: LoadingTriggerProps) => {
+export const LoadingTrigger = ({ isFetchingNextPage }: LoadingTriggerProps) => {
   return (
     <div
       data-testid="fmdReleasesLoadingTrigger"
-      ref={infiniteScrollRef}
       className={classNames(styles.loadingTrigger, {
         [styles.loadingTriggerFetching]: isFetchingNextPage,
       })}

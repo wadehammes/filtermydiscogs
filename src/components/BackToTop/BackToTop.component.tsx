@@ -2,7 +2,10 @@
 
 import classNames from "classnames";
 import { useEffect, useState } from "react";
-import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
+import {
+  usePlaybackPageScrollElement,
+  usePlaybackPageScrollToTop,
+} from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import styles from "./BackToTop.module.css";
 
 const SCROLL_THRESHOLD = 400;
@@ -14,6 +17,7 @@ interface BackToTopProps {
 export const BackToTop = ({ className }: BackToTopProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const scrollElement = usePlaybackPageScrollElement();
+  const handleScrollToTop = usePlaybackPageScrollToTop();
 
   useEffect(() => {
     const getScrollY = () =>
@@ -32,25 +36,10 @@ export const BackToTop = ({ className }: BackToTopProps) => {
     return () => scrollTarget.removeEventListener("scroll", handleScroll);
   }, [scrollElement]);
 
-  const scrollToTop = () => {
-    if (scrollElement) {
-      scrollElement.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-      return;
-    }
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
   return (
     <button
       type="button"
-      onClick={scrollToTop}
+      onClick={handleScrollToTop}
       className={classNames(styles.backToTop, className, {
         [styles.visible]: isVisible,
       })}
