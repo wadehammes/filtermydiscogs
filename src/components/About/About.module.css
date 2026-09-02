@@ -485,6 +485,7 @@
   background: transparent;
   border: 0;
   color: var(--foreground);
+  font-family: inherit;
   font-size: var(--text-lg);
   font-weight: var(--font-medium);
   min-width: 0;

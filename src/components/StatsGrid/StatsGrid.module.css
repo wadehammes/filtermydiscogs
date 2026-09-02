@@ -8,7 +8,16 @@
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(var(--mobile-columns, 1), 1fr);
+  grid-template-rows: auto auto auto;
   width: 100%;
+
+  @supports (grid-template-rows: subgrid) {
+    & > * {
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+    }
+  }
 }
 
 @container stats-grid (min-width: 640px) {

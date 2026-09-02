@@ -50,6 +50,7 @@ function DashboardClientContent() {
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     useSelectedReleaseModal({
       collectionUsername: authState.username,
+      fallbackReleases: allReleases,
     });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);

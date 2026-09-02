@@ -60,6 +60,15 @@ export const matchesInstanceId = (
   return String(release.instance_id) === String(instanceId);
 };
 
+export const findReleaseByInstanceId = (
+  releases: DiscogsRelease[],
+  instanceId: string | number,
+): DiscogsRelease | null => {
+  return (
+    releases.find((release) => matchesInstanceId(release, instanceId)) ?? null
+  );
+};
+
 export const buildCollectionFieldsMap = (
   fields: DiscogsCollectionField[],
 ): Map<number, DiscogsCollectionField> => {

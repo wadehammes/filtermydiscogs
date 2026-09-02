@@ -26,6 +26,63 @@ describe("useSelectedReleaseModal", () => {
     applyUrl("/releases");
   });
 
+  it("opens optimistically before the router updates search params", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockPush = jest.fn();
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    expect(mockPush).toHaveBeenCalledWith(
+      `/releases?instance=${releases[0]?.instance_id}`,
+      { scroll: false },
+    );
+    expect(result.current.selectedReleaseId).toBe(
+      String(releases[0]?.instance_id),
+    );
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[0]?.instance_id,
+    );
+  });
+
+  it("closes optimistically before the router clears search params", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockReplace = jest.fn();
+    const mockPush = jest.fn((url: string) => {
+      applyUrl(url);
+    });
+    const mockRouter = createMockAppRouter({
+      push: mockPush,
+      replace: mockReplace,
+    });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    act(() => {
+      result.current.handleCloseModal();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/releases", { scroll: false });
+    expect(result.current.selectedReleaseId).toBeNull();
+    expect(result.current.selectedRelease).toBeNull();
+  });
+
   it("opens the modal with router.push and resolves the release from the URL", () => {
     const releases = releaseFactory.buildList(2);
     const mockPush = jest.fn((url: string) => {

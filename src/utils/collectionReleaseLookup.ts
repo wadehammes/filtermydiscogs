@@ -1,6 +1,33 @@
 import type { DiscogsCollection, DiscogsRelease } from "src/types";
 import { getEffectiveCollectionPages } from "src/utils/collectionPagination";
 
+export const buildReleaseIndexFromList = (
+  releases: DiscogsRelease[],
+): Map<string, DiscogsRelease> => {
+  const index = new Map<string, DiscogsRelease>();
+
+  for (const release of releases) {
+    index.set(String(release.instance_id), release);
+  }
+
+  return index;
+};
+
+export const buildCollectionReleaseIndex = (
+  pages: DiscogsCollection[],
+): Map<string, DiscogsRelease> => {
+  const releases = getEffectiveCollectionPages({ pages }).flatMap(
+    (page) => page.releases,
+  );
+
+  return buildReleaseIndexFromList(
+    releases.map((release) => ({
+      ...release,
+      notes: release.notes ?? [],
+    })),
+  );
+};
+
 export const findCollectionReleaseByInstanceId = (
   pages: DiscogsCollection[],
   instanceId: string,

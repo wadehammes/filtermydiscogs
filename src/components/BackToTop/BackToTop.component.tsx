@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import styles from "./BackToTop.module.css";
 
-const SCROLL_THRESHOLD = 400; // Show button after scrolling 400px
+const SCROLL_THRESHOLD = 400;
 
 interface BackToTopProps {
   className?: string;

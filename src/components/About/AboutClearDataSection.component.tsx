@@ -17,12 +17,12 @@ export const AboutClearDataSection = () => {
       className={classNames(styles.tile, styles.tileClearData)}
       aria-labelledby="about-data"
     >
-      <div className={styles.clearDataIntro}>
+      <div className={styles.clearDataIntro} data-prose-flow>
         <p className={typography.sectionEyebrow}>Data</p>
         <h2 id="about-data" className={styles.tileTitle}>
           Clear stored data
         </h2>
-        <p className={styles.tileBody}>
+        <p>
           Wipe auth, crates, preferences, and local caches on this app. Your
           Discogs collection and notes stay on Discogs.
         </p>

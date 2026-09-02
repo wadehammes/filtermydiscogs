@@ -6,8 +6,8 @@ import { LegalDataManagementActions } from "./LegalDataManagementActions.client"
 export function LegalPageContent() {
   return (
     <div className={pageStyles.container}>
-      <div className={styles.content}>
-        <section className={styles.section}>
+      <div className={styles.content} data-prose>
+        <section data-prose-section>
           <h2>Terms of Service</h2>
           <p>
             Here's the deal: use this app at your own risk. I'm not a lawyer,
@@ -50,7 +50,7 @@ export function LegalPageContent() {
           </ul>
         </section>
 
-        <section className={styles.section}>
+        <section data-prose-section>
           <h2>Privacy Policy</h2>
           <p>
             I'm not in the data-selling business. Here's what I actually do with
@@ -190,7 +190,7 @@ export function LegalPageContent() {
           </ul>
         </section>
 
-        <section className={styles.section}>
+        <section data-prose-section>
           <h2>Data Management</h2>
           <p>Want to start fresh? Clear everything out. This button wipes:</p>
           <ul>
@@ -237,7 +237,9 @@ export function LegalPageContent() {
             not a way to undo note edits on Discogs.
           </p>
           <Suspense fallback={null}>
-            <LegalDataManagementActions />
+            <div data-prose-actions>
+              <LegalDataManagementActions />
+            </div>
           </Suspense>
         </section>
       </div>

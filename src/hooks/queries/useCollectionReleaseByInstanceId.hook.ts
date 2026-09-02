@@ -1,8 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease } from "src/types";
-import { findCollectionReleaseByInstanceId } from "src/utils/collectionReleaseLookup";
+import {
+  buildCollectionReleaseIndex,
+  buildReleaseIndexFromList,
+} from "src/utils/collectionReleaseLookup";
 import { useDiscogsCollectionQuery } from "./useDiscogsCollectionQuery";
 
 export interface UseCollectionReleaseByInstanceIdParams {
@@ -16,16 +20,29 @@ export const useCollectionReleaseByInstanceId = ({
   instanceId,
   enabled = true,
 }: UseCollectionReleaseByInstanceIdParams): DiscogsRelease | null => {
+  const allReleases = useAllReleases();
   const { data } = useDiscogsCollectionQuery({
     username: username ?? "",
     enabled: enabled && !!username && !!instanceId,
   });
 
-  return useMemo(() => {
-    if (!(instanceId && data?.pages?.length)) {
+  const releaseIndex = useMemo(() => {
+    if (allReleases.length > 0) {
+      return buildReleaseIndexFromList(allReleases);
+    }
+
+    if (!data?.pages?.length) {
       return null;
     }
 
-    return findCollectionReleaseByInstanceId(data.pages, instanceId);
-  }, [data?.pages, instanceId]);
+    return buildCollectionReleaseIndex(data.pages);
+  }, [allReleases, data?.pages]);
+
+  return useMemo(() => {
+    if (!(instanceId && releaseIndex)) {
+      return null;
+    }
+
+    return releaseIndex.get(String(instanceId)) ?? null;
+  }, [instanceId, releaseIndex]);
 };

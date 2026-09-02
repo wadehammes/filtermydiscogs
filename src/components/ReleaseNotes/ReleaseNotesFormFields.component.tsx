@@ -5,6 +5,7 @@ import Select from "src/components/Select/Select.component";
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import type { DiscogsCollectionField } from "src/types";
+import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./ReleaseNotesFormFields.module.css";
 
 export const getNoteFieldLabelId = (fieldId: number) =>
@@ -72,7 +73,7 @@ export const ReleaseNotesFormFields = ({
             </label>
             <textarea
               id={`note-field-${field.id}`}
-              className={classNames(
+              className={validatedFieldClass(
                 styles.textarea,
                 modalInputStyles.field,
                 (fieldError || isFieldOverLimit) && styles.textareaInvalid,
