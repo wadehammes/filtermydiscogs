@@ -1,6 +1,10 @@
-.statsGrid {
+.container {
   container-name: stats-grid;
   container-type: inline-size;
+  width: 100%;
+}
+
+.statsGrid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(var(--mobile-columns, 1), 1fr);

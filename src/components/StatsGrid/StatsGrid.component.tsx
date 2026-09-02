@@ -25,7 +25,7 @@ export function StatsGrid({
 
   return (
     <div
-      className={classNames(styles.statsGrid, className)}
+      className={styles.container}
       style={
         {
           "--mobile-columns": mobileCols,
@@ -34,7 +34,7 @@ export function StatsGrid({
         } as React.CSSProperties
       }
     >
-      {children}
+      <div className={classNames(styles.statsGrid, className)}>{children}</div>
     </div>
   );
 }
