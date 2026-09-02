@@ -1,0 +1,23 @@
+# Tool versions live in `.tool-versions` (mise + GitHub Actions both read it).
+
+[env]
+# Loads Discogs/Postgres/etc. for mise tasks and shells in this directory.
+# Missing file is fine (new clones before `.env.local` exists).
+_.file = { path = ".env.local", redact = true }
+
+[tasks.bootstrap]
+description = "Install JS deps and generate Prisma client (also runs via `mise bootstrap`)"
+run = [
+  "pnpm install",
+  "pnpm db:generate",
+]
+
+[tasks.ci]
+description = "Run the same quality gates as GitHub Actions CI"
+run = [
+  "pnpm tsc:ci",
+  "pnpm lint:ci",
+  "pnpm lint:css",
+  "pnpm test:ci",
+  "pnpm knip:ci",
+]

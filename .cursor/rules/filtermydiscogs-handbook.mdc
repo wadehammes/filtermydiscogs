@@ -27,6 +27,7 @@ On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Rou
 ## Before finishing
 
 - If behavior, files, or conventions changed → **update the matching `docs/handbook/*.md` chapter** in the same PR (or immediate follow-up). Do not leave the handbook stale.
+- If **user-facing features, routes, setup, or tech stack** listed in the root **README** changed → update **`README.md`** in the same change (hooks nudge this for pages, login features, mise/tool-versions, `package.json`, platform setup).
 - Run relevant checks from the chapter (e.g. `pnpm lint:css`, targeted tests).
 
 ## If unsure

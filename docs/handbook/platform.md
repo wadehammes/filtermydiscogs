@@ -17,7 +17,22 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 
 GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file).
 
-Run the same locally before pushing when possible.
+Run the same locally before pushing when possible — with [mise](https://mise.jdx.dev/), prefer **`mise run ci`**.
+
+## mise
+
+[mise.toml](../../mise.toml) adds project tasks and env on top of [`.tool-versions`](../../.tool-versions) (Node + pnpm).
+
+| Command | Purpose |
+|---------|---------|
+| `mise install` | Install Node/pnpm from `.tool-versions`. |
+| `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm db:generate`). |
+| `mise run bootstrap` | JS deps + Prisma generate only (tools already installed). |
+| `mise run ci` | Same gates as Actions: `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, `knip:ci`. |
+
+`[env]` loads **`.env.local`** (redacted in mise output) for shells and tasks in this repo. Create that file from the root README before DB/OAuth work; a missing file is harmless.
+
+First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 
 ## Package scripts
 
@@ -199,7 +214,7 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 
 ## Cursor hooks
 
-Project agent hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json) and [`.cursor/hooks/`](../../.cursor/hooks/README.md). They enforce handbook conventions (CSS rules, scaffold/factory placement, no comments/barrels) and nudge handbook updates after edits. Requires `jq` and executable hook scripts.
+Project agent hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json) and [`.cursor/hooks/`](../../.cursor/hooks/README.md). They enforce handbook conventions (CSS rules, scaffold/factory placement, no comments/barrels) and nudge **handbook** + root **README** updates after edits (README when routes, login features, mise/tool versions, `package.json`, or platform setup change). Requires `jq` and executable hook scripts.
 
 ## Releases
 

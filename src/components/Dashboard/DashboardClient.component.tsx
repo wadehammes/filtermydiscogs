@@ -97,139 +97,134 @@ function DashboardClientContent() {
   }
 
   return (
-    <>
-      <Page>
-        <CollectionPlaybackPageShell
-          allReleasesLoaded={true}
-          currentPage="dashboard"
-          hideFilters
-          overlays={
-            <ReleaseModalLazyOverlay
-              release={selectedRelease}
-              onClose={handleCloseModal}
-              onReleaseClick={handleReleaseClick}
-            />
-          }
-        >
-          <div className={styles.container} data-testid="fmdDashboardClient">
-            {!(collectionLoading || analytics) && (
-              <div className={styles.emptyState}>
-                <h1>Nothing on the shelf yet</h1>
-                <p>Add records to your Discogs collection to see them here.</p>
-              </div>
-            )}
+    <Page>
+      <CollectionPlaybackPageShell
+        allReleasesLoaded={true}
+        currentPage="dashboard"
+        hideFilters
+        overlays={
+          <ReleaseModalLazyOverlay
+            release={selectedRelease}
+            onClose={handleCloseModal}
+            onReleaseClick={handleReleaseClick}
+          />
+        }
+      >
+        <div className={styles.container} data-testid="fmdDashboardClient">
+          {!(collectionLoading || analytics) && (
+            <div className={styles.emptyState}>
+              <h1>Nothing on the shelf yet</h1>
+              <p>Add records to your Discogs collection to see them here.</p>
+            </div>
+          )}
 
-            {!collectionLoading && analytics && story && (
-              <div className={styles.content}>
-                <DashboardHero
-                  story={story}
-                  stats={analytics.stats}
-                  collectionValue={collectionValue}
-                  isLoadingValue={valueLoading}
-                  valueError={valueError}
-                />
+          {!collectionLoading && analytics && story && (
+            <div className={styles.content}>
+              <DashboardHero
+                story={story}
+                stats={analytics.stats}
+                collectionValue={collectionValue}
+                isLoadingValue={valueLoading}
+                valueError={valueError}
+              />
 
-                <div className={styles.storyPair}>
-                  <DashboardSection
-                    lede={story.sections.today.lede}
-                    title={story.sections.today.title}
-                  >
-                    <OnThisDay
-                      hideHeading={true}
-                      onReleaseClick={handleReleaseClick}
-                    />
-                  </DashboardSection>
-
-                  <DashboardSection
-                    lede={story.sections.weeklyRecap.lede}
-                    title={story.sections.weeklyRecap.title}
-                  >
-                    <WeeklyRecap
-                      hideHeading={true}
-                      onReleaseClick={handleReleaseClick}
-                    />
-                  </DashboardSection>
-                </div>
-
+              <div className={styles.storyPair}>
                 <DashboardSection
-                  lede={story.sections.growth.lede}
-                  title={story.sections.growth.title}
+                  lede={story.sections.today.lede}
+                  title={story.sections.today.title}
                 >
-                  <CollectionRhythm
-                    acquisitionStreaks={analytics.acquisitionStreaks}
-                  />
-                  <GrowthChart
-                    growthData={analytics.growth}
-                    hideHeading={true}
-                  />
-                </DashboardSection>
-
-                <DashboardSection
-                  lede={story.sections.sound.lede}
-                  title={story.sections.sound.title}
-                >
-                  <DashboardDistributionChartsLazy
-                    styleDistribution={analytics.styleDistribution}
-                    genreDistribution={analytics.genreDistribution}
-                    decadeDistribution={analytics.decadeDistribution}
-                    mediaTypeDistribution={analytics.mediaTypeDistribution}
-                    formatTagDistribution={analytics.formatTagDistribution}
-                  />
-                  <DashboardComparativeGrowthChartsLazy hideHeading={true} />
-                  <StyleEvolution
-                    hideHeading={true}
-                    sectionCopy={story.sections.styleEvolution}
-                  />
-                </DashboardSection>
-
-                <DashboardSection
-                  lede={story.sections.names.lede}
-                  title={story.sections.names.title}
-                >
-                  <DashboardArtistLabelChartsLazy
-                    artistDistribution={analytics.artistDistribution}
-                    labelDistribution={analytics.labelDistribution}
-                  />
-                </DashboardSection>
-
-                <DashboardSection
-                  lede={story.sections.markers.lede}
-                  title={story.sections.markers.title}
-                >
-                  <CollectionMilestones
+                  <OnThisDay
                     hideHeading={true}
                     onReleaseClick={handleReleaseClick}
                   />
                 </DashboardSection>
 
-                <div className={styles.storyPair}>
-                  <DashboardSection
-                    lede={story.sections.share.lede}
-                    title={story.sections.share.title}
-                  >
-                    <MostCrated
-                      hideHeading={true}
-                      onReleaseClick={handleReleaseClick}
-                    />
-                  </DashboardSection>
-
-                  <DashboardSection
-                    lede={story.sections.upkeep.lede}
-                    title={story.sections.upkeep.title}
-                  >
-                    <CollectionHealth
-                      health={analytics.health}
-                      hideHeading={true}
-                      onReleaseClick={handleReleaseClick}
-                    />
-                  </DashboardSection>
-                </div>
+                <DashboardSection
+                  lede={story.sections.weeklyRecap.lede}
+                  title={story.sections.weeklyRecap.title}
+                >
+                  <WeeklyRecap
+                    hideHeading={true}
+                    onReleaseClick={handleReleaseClick}
+                  />
+                </DashboardSection>
               </div>
-            )}
-          </div>
-        </CollectionPlaybackPageShell>
-      </Page>
-    </>
+
+              <DashboardSection
+                lede={story.sections.growth.lede}
+                title={story.sections.growth.title}
+              >
+                <CollectionRhythm
+                  acquisitionStreaks={analytics.acquisitionStreaks}
+                />
+                <GrowthChart growthData={analytics.growth} hideHeading={true} />
+              </DashboardSection>
+
+              <DashboardSection
+                lede={story.sections.sound.lede}
+                title={story.sections.sound.title}
+              >
+                <DashboardDistributionChartsLazy
+                  styleDistribution={analytics.styleDistribution}
+                  genreDistribution={analytics.genreDistribution}
+                  decadeDistribution={analytics.decadeDistribution}
+                  mediaTypeDistribution={analytics.mediaTypeDistribution}
+                  formatTagDistribution={analytics.formatTagDistribution}
+                />
+                <DashboardComparativeGrowthChartsLazy hideHeading={true} />
+                <StyleEvolution
+                  hideHeading={true}
+                  sectionCopy={story.sections.styleEvolution}
+                />
+              </DashboardSection>
+
+              <DashboardSection
+                lede={story.sections.names.lede}
+                title={story.sections.names.title}
+              >
+                <DashboardArtistLabelChartsLazy
+                  artistDistribution={analytics.artistDistribution}
+                  labelDistribution={analytics.labelDistribution}
+                />
+              </DashboardSection>
+
+              <DashboardSection
+                lede={story.sections.markers.lede}
+                title={story.sections.markers.title}
+              >
+                <CollectionMilestones
+                  hideHeading={true}
+                  onReleaseClick={handleReleaseClick}
+                />
+              </DashboardSection>
+
+              <div className={styles.storyPair}>
+                <DashboardSection
+                  lede={story.sections.share.lede}
+                  title={story.sections.share.title}
+                >
+                  <MostCrated
+                    hideHeading={true}
+                    onReleaseClick={handleReleaseClick}
+                  />
+                </DashboardSection>
+
+                <DashboardSection
+                  lede={story.sections.upkeep.lede}
+                  title={story.sections.upkeep.title}
+                >
+                  <CollectionHealth
+                    health={analytics.health}
+                    hideHeading={true}
+                    onReleaseClick={handleReleaseClick}
+                  />
+                </DashboardSection>
+              </div>
+            </div>
+          )}
+        </div>
+      </CollectionPlaybackPageShell>
+    </Page>
   );
 }
 
