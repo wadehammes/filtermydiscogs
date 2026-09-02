@@ -55,3 +55,18 @@ advise_context() {
   local ctx="$1"
   jq -n --arg c "$ctx" '{ additional_context: $c }'
 }
+
+# Cursor hook shells often still have asdf shims on PATH. Prefer mise so
+# project .tool-versions / mise.toml resolve (same as interactive zsh).
+run_pnpm() {
+  if [ -x "${HOME}/.local/bin/mise" ]; then
+    "${HOME}/.local/bin/mise" exec -- pnpm "$@"
+  elif command -v mise >/dev/null 2>&1; then
+    mise exec -- pnpm "$@"
+  elif command -v pnpm >/dev/null 2>&1; then
+    command pnpm "$@"
+  else
+    return 127
+  fi
+}
+

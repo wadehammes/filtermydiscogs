@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
@@ -36,6 +36,10 @@ const ReleasesClientContent = () => {
   const crateName = activeCrate?.name;
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
 
+  const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
+    setScrollRoot(node);
+  }, []);
+
   const {
     isLoading,
     hasNextPage,
@@ -50,6 +54,7 @@ const ReleasesClientContent = () => {
     randomRelease,
     isMobile,
     currentView,
+    infiniteScrollRef,
     isFilterPending,
     selectedRelease,
     handleReleaseClick,
@@ -57,7 +62,7 @@ const ReleasesClientContent = () => {
     handleViewChange,
     handleRandomClick,
     handleExitRandomMode,
-  } = useReleasesClient();
+  } = useReleasesClient({ scrollElement: scrollRoot });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
@@ -137,7 +142,7 @@ const ReleasesClientContent = () => {
         >
           <div className={styles.workspaceRow}>
             <div
-              ref={setScrollRoot}
+              ref={setMainContentNode}
               className={styles.mainContent}
               data-releases-scroll-root
             >
@@ -179,7 +184,10 @@ const ReleasesClientContent = () => {
                 <EmptyState />
               )}
 
-              <LoadingTrigger isFetchingNextPage={isFetchingNextPage} />
+              <LoadingTrigger
+                isFetchingNextPage={isFetchingNextPage}
+                infiniteScrollRef={infiniteScrollRef}
+              />
             </div>
 
             <div className={styles.sidebar}>
