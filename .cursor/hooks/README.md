@@ -28,9 +28,9 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `enforce-scaffold.sh` | `preToolUse` (`Write`) | Steers new components through `pnpm scaffold <Name>`. |
 | `block-barrel-files.sh` | `preToolUse` (`Write`) | Denies new `index.ts`/`index.tsx` barrels under `src/`. |
 | `enforce-factory-location.sh` | `preToolUse` (`Write`) | Denies `*.factory.ts` outside `src/tests/factories/`. |
-| `handbook-sync-nudge.sh` | `postToolUse` | Advisory reminder to update the matching handbook chapter. |
+| `handbook-sync-nudge.sh` | `postToolUse` | Advisory reminder to update the matching handbook chapter and/or root **README** (routes, login features, mise/tool-versions, package.json, platform setup). |
 | `check-css-nesting.sh` | `postToolUse` | Advisory when CSS nests selectors 4+ levels deep. |
-| `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update. |
+| `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update, and/or product/setup surfaces changed without **README.md**. |
 | `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
 | `block-login-page-copy-violations.sh` | `preToolUse` | Denies login landing copy edits that add em dashes, embellishment, or banned inaccurate phrases. |
 | `block-query-hook-mocks.sh` | `preToolUse` | Denies feature-test edits that mock `src/hooks/queries/*` instead of `src/api/urls`. |

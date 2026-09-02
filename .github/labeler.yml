@@ -25,6 +25,7 @@ configuration:
           - jest.config.ts
           - tsconfig.json
           - vercel.json
+          - mise.toml
           - .browserslistrc
           - stylelint.config.mjs
           - knip.json
@@ -33,6 +34,7 @@ dependencies:
   - changed-files:
       - any-glob-to-any-file:
           - .tool-versions
+          - mise.toml
           - package.json
           - pnpm-lock.yaml
           - pnpm-workspace.yaml

@@ -758,7 +758,7 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPlaying).toBe(false);
   });
 
-  it("waits for the collection to load before giving up restore", () => {
+  it("waits for the collection to load before giving up restore", async () => {
     writePersistedReleasePlayback({
       instanceId: String(collectionRelease.instance_id),
       trackPosition: "A1",
@@ -774,6 +774,11 @@ describe("ReleasePlaybackProvider", () => {
 
     expect(readPersistedReleasePlayback()).not.toBeNull();
     expect(result.current.isPlaying).toBe(false);
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
   });
 
   it("waits for additional collection pages before giving up restore", async () => {

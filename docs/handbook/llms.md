@@ -25,7 +25,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Mosaic generator / image proxy | [patterns.md](patterns.md) (Mosaic generator) |
 | Clear user data (Settings / About / Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
 | Settings page (theme, sync, clear data) | [patterns.md](patterns.md) + [components.md](components.md) (`Settings/`) |
-| CI, Knip, scripts, `next.config`, env, CSP | [platform.md](platform.md) |
+| CI, Knip, scripts, mise tasks, `next.config`, env, CSP | [platform.md](platform.md) |
 | Site metadata, sitemap, robots | [patterns.md](patterns.md) (Metadata and OG images) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |
 | Admin dashboard / user lookup | [patterns.md](patterns.md) (Admin dashboard) + [components.md](components.md) (`AdminDashboard/`) |
@@ -43,5 +43,5 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 ## Suggested instruction blurb (copy-paste)
 
 ```text
-Before any work, read docs/handbook/README.md and the chapter that matches the task (see docs/handbook/llms.md for a task→chapter map). Follow documented patterns. When your change affects behavior, setup, or conventions, update the relevant docs/handbook/*.md in the same PR or an immediate follow-up so the handbook stays accurate.
+Before any work, read docs/handbook/README.md and the chapter that matches the task (see docs/handbook/llms.md for a task→chapter map). Follow documented patterns. When your change affects behavior, setup, or conventions, update the relevant docs/handbook/*.md in the same PR or an immediate follow-up so the handbook stays accurate. When user-facing features, routes, setup, or tech stack listed in the root README change, update README.md too.
 ```

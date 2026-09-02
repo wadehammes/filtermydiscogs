@@ -6,25 +6,34 @@ A web application to filter and explore your Discogs collection, including vinyl
 
 ## Features
 
-- 🔐 **OAuth Authentication** - Secure login with your Discogs account
-- 🎵 **Complete Collection Access** - Browse your entire collection across every format Discogs supports
-- 🎨 **Style Filtering** — Filter by style, genre, year, and format
-- 📊 **Advanced Sorting** — Sort by label, artist, title, date added, year, rating, and more
-- 🎲 **Random Release** — View a random release from your collection
-- 📋 **Multiple Views** — Card, list (table on desktop), or random view
-- 📦 **Crate Management** - Save releases to a crate as you browse
-- 🖼️ **Mosaic Generator** - Create and download mosaic grids in different formats/sizes
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
-- ⚡ **Fast Performance** - Built with Next.js and React Query
-- 🎨 **Theme Support** - Light, dark, and system theme preferences
+- **Discogs OAuth** — Secure login with your Discogs account
+- **Full collection browse** — Paginated sync across every format Discogs supports, with local cache for faster return visits
+- **Search & filters** — Search by title, artist, label, or notes; filter by genre/style, year, and format (with ANY / ALL / NONE match modes); save named filter views
+- **Sorting & views** — Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
+- **Release details** — In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
+- **In-app playback** — Preview tracks from a persistent mini player and queue while you browse
+- **Crates** — Multiple crates for gigs or themed lists; reorder releases, section markers, set notes, and optional gig-packing progress; share a crate publicly
+- **Collection insights** — Dashboard with milestones, style evolution, and growth charts
+- **Mosaic generator** — Build and download cover-art grids from your collection or a crate
+- **Settings** — Theme (light / dark / system), collection sync, filter persistence, and clear stored data
+- **Responsive UI** — Desktop sidebar crates, mobile drawers, and touch-friendly filters
 
 ## Setup
 
 ### Prerequisites
 
-- Node.js 24+ and pnpm
+- Node.js 24+ and pnpm (via [mise](https://mise.jdx.dev/) recommended — versions in [`.tool-versions`](./.tool-versions))
 - A Discogs account
 - Discogs API credentials
+- A Postgres database (Vercel / Prisma Postgres for deployed envs)
+
+With mise:
+
+```bash
+mise trust          # once per clone, if prompted
+mise bootstrap      # tools + pnpm install + Prisma generate
+mise run ci         # same quality gates as GitHub Actions
+```
 
 ### Discogs OAuth Setup
 
@@ -35,7 +44,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the root directory (mise loads it automatically in this repo):
 
 ```bash
 # Discogs OAuth Credentials
@@ -48,42 +57,43 @@ DISCOGS_CALLBACK_URL=http://localhost:6767/api/auth/callback
 # Site URL (optional, defaults to https://www.filtermydisco.gs)
 NEXT_PUBLIC_SITE_URL=http://localhost:6767
 
-# Database URL (for Prisma)
-# Get this from your Vercel dashboard: Project Settings > Storage > Postgres > .env.local
-# Vercel provides DATABASE_URL, but Prisma can also use POSTGRES_URL
+# Database (Prisma)
+# From Vercel: Project → Storage / Prisma Postgres → copy env into .env.local
+# Runtime prefers pooled DATABASE_URL; migrations use DIRECT_URL or POSTGRES_URL when set
 DATABASE_URL=your_database_url_here
+# DIRECT_URL=your_direct_database_url_here
+# POSTGRES_URL=your_postgres_url_here
 
-# Admin User ID (optional, for admin dashboard access)
-# Set this to your Discogs user ID to access the admin dashboard at /admin
-# You can find your user ID after logging in - it's stored in the discogs_user_id cookie
+# Admin User ID (optional, for /admin)
+# Discogs user ID — available after login (discogs_user_id cookie)
 ADMIN_USER_ID=your_discogs_user_id_here
 CRON_SECRET=generate_a_long_random_secret_for_vercel_cron
 
-# Stripe (optional, for About page donations)
+# Stripe (optional, About page donations)
 STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 ```
 
+Full variable list: [`docs/handbook/platform.md`](./docs/handbook/platform.md).
+
 ### Database Setup
 
-1. Create a Postgres database in your Vercel project:
-   - Go to your Vercel project dashboard
-   - Navigate to Storage > Create Database > Postgres
-   - Follow the setup instructions
+1. Provision Postgres for the Vercel project (Prisma Postgres / Marketplace storage) and copy connection env vars into `.env.local`.
+2. Install and apply schema:
 
-2. Set up Prisma:
-   - Copy the `DATABASE_URL` from Vercel dashboard to your `.env.local` file
-   - Install dependencies: `pnpm install`
-   - Generate Prisma Client: `pnpm db:generate`
-   - Push the schema to your database: `pnpm db:push`
-   - Or run migrations: `pnpm db:migrate`
+```bash
+pnpm install          # or: mise bootstrap
+pnpm db:generate
+pnpm db:migrate       # local migrate; or pnpm db:push for prototype
+```
+
+Helpers: `pnpm db:pull:dev` / `db:pull:staging` / `db:pull:prod` pull env from Vercel; `pnpm db:studio` opens Prisma Studio.
 
 ### Installation
 
 ```bash
-# Install dependencies
-pnpm install
+mise bootstrap   # recommended
+# or: pnpm install && pnpm db:generate
 
-# Start development server
 pnpm dev
 ```
 
@@ -91,97 +101,70 @@ The app will be available at `http://localhost:6767`.
 
 ## Usage
 
-1. Click "Connect with Discogs" to authenticate
-2. Authorize the application on Discogs
-3. Browse your collection with filters and sorting options
-4. Save releases to your crate as you browse
-5. Create mosaic grids from your crate or filtered collection
-6. Use the logout button to sign out
+1. Click **Connect with Discogs** on the home page and authorize the app
+2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, and preview tracks
+3. Stage picks in the crate drawer, then manage full crates under **Crates** (reorder, sections, packing, public share)
+4. Check **Dashboard** for collection insights; **Mosaic** for cover-art grids
+5. Adjust theme and sync options in **Settings**; sign out from the user menu
 
 ## Pages
 
-- **Home** (`/`) - Login and main dashboard
-- **Releases** (`/releases`) - Browse, filter, and sort your collection
-- **Dashboard** (`/dashboard`) - Collection analytics and insights
-- **Mosaic** (`/mosaic`) - Create mosaic grids from your collection
-- **About** (`/about`) - About the project, support, and data management
-- **Legal** (`/legal`) - Terms of Service and Privacy Policy
-- **Admin** (`/admin`) - Admin dashboard with application statistics (admin access required)
+| Path | Purpose |
+|------|---------|
+| `/` | Public landing / login |
+| `/releases` | Browse, filter, sort collection; crate drawer |
+| `/crates` | Crate hub (your crates) |
+| `/crates/[id]` | Owner crate workspace |
+| `/crate/[id]` | Public shared crate (no login) |
+| `/dashboard` | Collection analytics |
+| `/mosaic` | Cover-art mosaic generator |
+| `/settings` | Theme, sync, data preferences |
+| `/about` | About, support, clear data |
+| `/legal` | Terms of Service and Privacy Policy |
+| `/admin` | Admin stats (requires `ADMIN_USER_ID`) |
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 with App Router
-- **Language**: TypeScript
-- **UI Library**: React 19
-- **Styling**: CSS Modules with modern CSS features
-- **State Management**: Jotai (filters, view) + React Context (auth, collection, crate, theme)
-- **Data Fetching**: TanStack Query (React Query)
-- **Forms**: React Hook Form
-- **Charts**: TanStack Charts (dashboard)
-- **Toasts**: Sonner
-- **Tables**: TanStack Table
-- **Database**: Prisma with Vercel Postgres
-- **Authentication**: OAuth 1.0a with Discogs
-- **Analytics**: Google Tag Manager
-- **Linting & Formatting**: Biome
-- **Testing**: Jest with Testing Library
+- **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
+- **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual
+- **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
+- **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
+- **Forms**: React Hook Form + Zod
+- **Tooling**: pnpm, mise, Biome, Stylelint, Jest + Testing Library, Playwright, Knip
+- **Analytics**: Google Tag Manager (consent-aware)
 
 ## Development
 
 ```bash
-# Start development server
-pnpm dev
+pnpm dev              # http://localhost:6767 (Turbopack)
+pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
-# Run tests
-pnpm test
+mise run ci           # tsc + lint + CSS lint + tests + knip (matches Actions)
+pnpm test             # Jest
+pnpm test:file        # Jest watch for one file
+pnpm test:e2e         # Playwright (run pnpm test:e2e:install once)
 
-# Run tests in watch mode for a specific file
-pnpm test:file
-
-# Run linter
-pnpm lint
-
-# Fix linting issues
-pnpm lint:fix
-
-# Format code
-pnpm format
-
-# Format and fix code
-pnpm format:fix
-
-# Run type checker
+pnpm lint             # Biome check
+pnpm lint:fix        # Biome autofix
+pnpm lint:css         # Stylelint
+pnpm format           # Biome format (check)
+pnpm format:fix      # Biome format write
 pnpm type-check
+pnpm knip
 
-# Build for production
-pnpm build
+pnpm build && pnpm start
+pnpm analyze          # bundle analyzer (webpack build)
+pnpm scaffold         # new component scaffold
 
-# Start production server
-pnpm start
-
-# Analyze bundle size
-pnpm analyze
-
-# Generate bundle report
-pnpm bundle-report
-
-# Run Lighthouse audit
-pnpm lighthouse
-
-# Scaffold new component/page
-pnpm scaffold
-
-# Database commands
-pnpm db:generate  # Generate Prisma Client
-pnpm db:push      # Push schema changes to database
-pnpm db:migrate   # Create and run migrations
-pnpm db:studio    # Open Prisma Studio
+pnpm db:generate      # Prisma Client
+pnpm db:migrate       # migrate dev
+pnpm db:push          # push schema (prototype)
+pnpm db:studio        # Prisma Studio
 ```
 
 ## Release
 
 ```bash
-# Create and push a new release tag
 make release tag=v0.0.1
 ```
 
@@ -201,7 +184,7 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 - **Test factories / Faker data:** [factories.md](./docs/handbook/factories.md).
 - **Adding or changing UI:** [components.md](./docs/handbook/components.md) and [conventions.md](./docs/handbook/conventions.md).
 - **Filters, Jotai atoms, contexts, React Query:** [patterns.md](./docs/handbook/patterns.md).
-- **CI, Knip, env, security headers:** [platform.md](./docs/handbook/platform.md).
+- **CI, mise, Knip, env, security headers:** [platform.md](./docs/handbook/platform.md).
 - **Finding a file:** [source-layout.md](./docs/handbook/source-layout.md).
 
 ## License

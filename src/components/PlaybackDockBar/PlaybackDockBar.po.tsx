@@ -5,10 +5,7 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import {
-  TestProviders,
-  testAuthenticatedAuthState,
-} from "src/tests/utils/testProviders";
+import { testAuthenticatedAuthState } from "src/tests/utils/testProviders";
 import { definedProps } from "src/utils/definedProps";
 import { render } from "test-utils";
 
@@ -26,18 +23,19 @@ export class PlaybackDockBarPageObject extends BasePageObject {
 
   private PlaybackDockBarElement(overrides: PlaybackDockBarRenderProps = {}) {
     return (
-      <TestProviders authInitialState={testAuthenticatedAuthState}>
-        <ReleasePlaybackProvider>
-          <PlaybackDockBar {...definedProps(overrides)} />
-        </ReleasePlaybackProvider>
-      </TestProviders>
+      <ReleasePlaybackProvider>
+        <PlaybackDockBar {...definedProps(overrides)} />
+      </ReleasePlaybackProvider>
     );
   }
 
   renderPlaybackDockBar(
     overrides: PlaybackDockBarRenderProps = {},
   ): RenderResult {
-    return render(this.PlaybackDockBarElement(overrides));
+    return render(this.PlaybackDockBarElement(overrides), {
+      authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
+    });
   }
 
   rerenderPlaybackDockBar(

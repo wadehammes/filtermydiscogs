@@ -38,7 +38,7 @@ export const ReleaseMiniPlayerMarquee = ({
     return () => {
       observer.disconnect();
     };
-  }, [children]);
+  }, []);
 
   return (
     <div ref={containerRef} className={classNames(styles.marquee, className)}>

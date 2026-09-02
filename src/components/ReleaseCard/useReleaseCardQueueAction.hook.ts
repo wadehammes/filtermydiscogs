@@ -4,7 +4,6 @@ import { hashKey, useQueryClient } from "@tanstack/react-query";
 import {
   type MouseEvent,
   useCallback,
-  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -49,10 +48,12 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
   const [fetchedReleaseDetail, setFetchedReleaseDetail] = useState<
     DiscogsReleaseDetail | undefined
   >();
+  const [fetchedForInstanceId, setFetchedForInstanceId] = useState(instanceId);
 
-  useEffect(() => {
+  if (fetchedForInstanceId !== instanceId) {
+    setFetchedForInstanceId(instanceId);
     setFetchedReleaseDetail(undefined);
-  }, [instanceId]);
+  }
 
   const cachedReleaseDetail = useSyncExternalStore(
     (onStoreChange) => {
