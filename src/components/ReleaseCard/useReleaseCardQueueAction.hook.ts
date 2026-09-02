@@ -1,7 +1,20 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { type MouseEvent, useCallback, useMemo, useState } from "react";
+import { hashKey, useQueryClient } from "@tanstack/react-query";
+import {
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import {
+  showReleaseCardQueueAllQueuedToast,
+  showReleaseCardQueueFetchErrorToast,
+  showReleaseCardQueueNoTracksToast,
+  showReleaseCardQueueSuccessToast,
+} from "src/components/ReleaseCard/releaseCardQueueToast";
 import {
   useReleasePlaybackActions,
   useReleasePlaybackState,
@@ -28,15 +41,41 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
     autoPlayOnQueueAdd,
   } = useReleasePlaybackState();
   const releaseId = parseReleaseId(release);
+  const releaseQueryKey =
+    releaseId !== null ? DiscogsReleaseQueryKeys.byId(String(releaseId)) : null;
   const instanceId = String(release.instance_id);
   const [isAdding, setIsAdding] = useState(false);
   const [isFetchingRelease, setIsFetchingRelease] = useState(false);
-  const cachedReleaseDetail =
-    releaseId !== null
-      ? queryClient.getQueryData<DiscogsReleaseDetail>(
-          DiscogsReleaseQueryKeys.byId(String(releaseId)),
-        )
-      : undefined;
+  const [fetchedReleaseDetail, setFetchedReleaseDetail] = useState<
+    DiscogsReleaseDetail | undefined
+  >();
+
+  useEffect(() => {
+    setFetchedReleaseDetail(undefined);
+  }, [instanceId]);
+
+  const cachedReleaseDetail = useSyncExternalStore(
+    (onStoreChange) => {
+      if (!releaseQueryKey) {
+        return () => {};
+      }
+
+      const queryHash = hashKey(releaseQueryKey);
+
+      return queryClient.getQueryCache().subscribe((event) => {
+        if (event.query.queryHash === queryHash) {
+          onStoreChange();
+        }
+      });
+    },
+    () =>
+      releaseQueryKey !== null
+        ? queryClient.getQueryData<DiscogsReleaseDetail>(releaseQueryKey)
+        : undefined,
+    () => undefined,
+  );
+
+  const releaseDetail = cachedReleaseDetail ?? fetchedReleaseDetail;
 
   const isTrackQueuedOrPlaying = useCallback(
     (trackPosition: string) => {
@@ -66,20 +105,20 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
   );
 
   const playableTracks = useMemo(() => {
-    if (!cachedReleaseDetail) {
+    if (!releaseDetail) {
       return [];
     }
 
-    const tracks = flattenTracklist(cachedReleaseDetail.tracklist ?? []);
+    const tracks = flattenTracklist(releaseDetail.tracklist ?? []);
     const matchIndex = buildReleasePlaybackMatchIndex(
       tracks,
-      cachedReleaseDetail.videos ?? [],
+      releaseDetail.videos ?? [],
     );
 
     return tracks.filter((track) =>
       matchIndex.trackVideoByPosition.has(track.position),
     );
-  }, [cachedReleaseDetail]);
+  }, [releaseDetail]);
 
   const isReleaseInQueue = useMemo(() => {
     if (playableTracks.length === 0) {
@@ -96,30 +135,40 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
       event.preventDefault();
       event.stopPropagation();
 
-      if (isReleaseInQueue || isAdding || releaseId === null) {
+      if (
+        isReleaseInQueue ||
+        isAdding ||
+        isFetchingRelease ||
+        releaseId === null
+      ) {
         return;
       }
 
       setIsAdding(true);
 
       try {
-        let releaseDetail = cachedReleaseDetail;
+        let releaseDetailForQueue = releaseDetail;
 
-        if (!releaseDetail) {
+        if (!releaseDetailForQueue) {
           setIsFetchingRelease(true);
 
           try {
-            releaseDetail = await queryClient.fetchQuery(
+            releaseDetailForQueue = await queryClient.fetchQuery(
               discogsReleaseQueryOptions(String(releaseId)),
             );
+            setFetchedReleaseDetail(releaseDetailForQueue);
+          } catch {
+            showReleaseCardQueueFetchErrorToast();
+            return;
           } finally {
             setIsFetchingRelease(false);
           }
         }
-        const tracks = flattenTracklist(releaseDetail?.tracklist ?? []);
+
+        const tracks = flattenTracklist(releaseDetailForQueue?.tracklist ?? []);
         const matchIndex = buildReleasePlaybackMatchIndex(
           tracks,
-          releaseDetail?.videos ?? [],
+          releaseDetailForQueue?.videos ?? [],
         );
         const tracksToQueue = tracks.filter(
           (track) =>
@@ -128,6 +177,16 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
         );
 
         if (tracksToQueue.length === 0) {
+          const playableTrackCount = tracks.filter((track) =>
+            matchIndex.trackVideoByPosition.has(track.position),
+          ).length;
+
+          if (playableTrackCount === 0) {
+            showReleaseCardQueueNoTracksToast();
+          } else {
+            showReleaseCardQueueAllQueuedToast();
+          }
+
           return;
         }
 
@@ -153,17 +212,17 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
               trackTitle: track.title,
             });
           }
-
-          return;
+        } else {
+          for (const track of tracksToQueue) {
+            addToQueue({
+              release,
+              trackPosition: track.position,
+              trackTitle: track.title,
+            });
+          }
         }
 
-        for (const track of tracksToQueue) {
-          addToQueue({
-            release,
-            trackPosition: track.position,
-            trackTitle: track.title,
-          });
-        }
+        showReleaseCardQueueSuccessToast(tracksToQueue.length);
       } finally {
         setIsAdding(false);
       }
@@ -171,13 +230,14 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
     [
       addToQueue,
       autoPlayOnQueueAdd,
-      cachedReleaseDetail,
       isAdding,
+      isFetchingRelease,
       isMiniPlayerVisible,
       isReleaseInQueue,
       isTrackQueuedOrPlaying,
       queryClient,
       release,
+      releaseDetail,
       releaseId,
       startPlayback,
     ],

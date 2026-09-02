@@ -9,10 +9,18 @@ import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import {
   useFilteredReleases,
   useFiltersDispatch,
+  useFormatOperator,
   useIsRandomMode,
   useIsSearching,
   useRandomRelease,
+  useSearchQuery,
+  useSelectedFormats,
+  useSelectedSort,
+  useSelectedStyles,
+  useSelectedYears,
   useSortedFilteredReleases,
+  useStyleOperator,
+  useYearOperator,
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
@@ -26,8 +34,15 @@ import type { DiscogsRelease } from "src/types";
 
 const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
+const INFINITE_SCROLL_ROOT_MARGIN = "0px 0px 750px 0px";
 
-export const useReleasesClient = () => {
+interface UseReleasesClientOptions {
+  scrollElement?: HTMLElement | null;
+}
+
+export const useReleasesClient = ({
+  scrollElement: scrollElementOverride,
+}: UseReleasesClientOptions = {}) => {
   const { state: authState } = useAuth();
   const currentView = useCurrentView();
   const previousView = usePreviousView();
@@ -43,6 +58,14 @@ export const useReleasesClient = () => {
     filteredReleases !== deferredFilteredReleases;
   const randomRelease = useRandomRelease();
   const sortedFilteredReleases = useSortedFilteredReleases();
+  const searchQuery = useSearchQuery();
+  const selectedSort = useSelectedSort();
+  const selectedStyles = useSelectedStyles();
+  const selectedYears = useSelectedYears();
+  const selectedFormats = useSelectedFormats();
+  const styleOperator = useStyleOperator();
+  const formatOperator = useFormatOperator();
+  const yearOperator = useYearOperator();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [showAllLoadedMessage, setShowAllLoadedMessage] = useState(false);
@@ -52,11 +75,12 @@ export const useReleasesClient = () => {
   const { isLoading, hasNextPage, isFetchingNextPage } =
     useCollectionLoadState();
   const { error, hasReleases, hasError } = useReleasesDisplay();
-  const scrollElement = usePlaybackPageScrollElement();
+  const contextScrollElement = usePlaybackPageScrollElement();
+  const scrollElement = scrollElementOverride ?? contextScrollElement;
 
   const { ref, inView } = useInView({
     threshold: 0,
-    rootMargin: "100px",
+    rootMargin: INFINITE_SCROLL_ROOT_MARGIN,
     root: scrollElement,
   });
 
@@ -120,15 +144,18 @@ export const useReleasesClient = () => {
   }, [inView, hasMoreVisible]);
 
   useEffect(() => {
-    if (isRandomMode) {
-      setVisibleCount(INITIAL_VISIBLE_RELEASES);
-      return;
-    }
-
-    if (sortedFilteredReleases.length >= 0) {
-      setVisibleCount(INITIAL_VISIBLE_RELEASES);
-    }
-  }, [isRandomMode, sortedFilteredReleases]);
+    setVisibleCount(INITIAL_VISIBLE_RELEASES);
+  }, [
+    formatOperator,
+    isRandomMode,
+    searchQuery,
+    selectedFormats,
+    selectedSort,
+    selectedStyles,
+    selectedYears,
+    styleOperator,
+    yearOperator,
+  ]);
 
   const {
     selectedRelease,
@@ -137,6 +164,7 @@ export const useReleasesClient = () => {
     handleCloseModal,
   } = useSelectedReleaseModal({
     collectionUsername: authState.username,
+    fallbackReleases: sortedFilteredReleases,
   });
 
   const handleViewChange = useCallback(

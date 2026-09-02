@@ -14,6 +14,7 @@ import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory"
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
@@ -61,12 +62,7 @@ export class ReleasesClientPageObject extends BasePageObject {
       userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
-    mockApiResponse(
-      true,
-      mockApi.discogsCollection,
-      collectionFactory.build({}, { page: 1, totalPages: 1, releaseCount: 2 }),
-      apiError,
-    );
+    this.mockCollectionWithReleaseCount(2);
     mockApiResponse(
       true,
       mockApi.collectionFields,
@@ -79,6 +75,17 @@ export class ReleasesClientPageObject extends BasePageObject {
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: RELEASE_ID }),
       apiError,
     );
+  }
+
+  mockCollectionWithReleaseCount(releaseCount: number) {
+    const releases = releaseFactory.buildList(releaseCount);
+    const page = collectionFactory.build(
+      { releases },
+      { page: 1, totalPages: 1, releaseCount: releases.length },
+    );
+    page.pagination.urls.next = "";
+
+    mockApiResponse(true, mockApi.discogsCollection, page, apiError);
   }
 
   renderReleasesClientUi(initialUrl = "/releases") {

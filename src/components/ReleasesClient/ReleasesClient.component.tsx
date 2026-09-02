@@ -34,6 +34,12 @@ const ReleasesClientContent = () => {
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
+  const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
+
+  const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
+    setScrollRoot(node);
+  }, []);
+
   const {
     isLoading,
     hasNextPage,
@@ -56,17 +62,12 @@ const ReleasesClientContent = () => {
     handleViewChange,
     handleRandomClick,
     handleExitRandomMode,
-  } = useReleasesClient();
+  } = useReleasesClient({ scrollElement: scrollRoot });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
   const allReleasesLoaded = !(isLoading || hasNextPage || isFetchingNextPage);
   useOfferPendingFiltersRestore(allReleasesLoaded);
-  const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
-
-  const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
-    setScrollRoot(node);
-  }, []);
 
   if (shouldRedirectHome) {
     return null;
