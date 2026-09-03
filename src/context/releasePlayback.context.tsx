@@ -56,6 +56,7 @@ import {
   shuffleQueueItems,
   upcomingFromAlbumQueue,
 } from "src/utils/playbackQueue";
+import { requestYoutubePlayerState } from "src/utils/postYoutubePlayerCommand";
 import {
   isSameReleaseInstance,
   matchesInstanceId,
@@ -670,11 +671,13 @@ export const ReleasePlaybackProvider = ({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (
-        document.visibilityState !== "visible" ||
-        !isPlayingRef.current ||
-        isPausedRef.current
-      ) {
+      if (document.visibilityState !== "visible" || !isPlayingRef.current) {
+        return;
+      }
+
+      requestYoutubePlayerState(playbackIframeRef.current);
+
+      if (isPausedRef.current) {
         return;
       }
 
@@ -748,6 +751,10 @@ export const ReleasePlaybackProvider = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
+        if (document.visibilityState === "hidden") {
+          return;
+        }
+
         pendingPlayFromGestureRef.current = false;
         clearPlayFromGestureRetries();
         setIsPaused(true);

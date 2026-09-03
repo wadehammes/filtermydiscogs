@@ -1,11 +1,16 @@
-export type YoutubePlayerCommand = "playVideo" | "pauseVideo";
+export type YoutubePlayerCommand =
+  | "playVideo"
+  | "pauseVideo"
+  | "getPlayerState";
 
-export const postYoutubePlayerCommand = ({
+const postYoutubeIframeCommand = ({
   iframe,
-  command,
+  func,
+  args = "",
 }: {
   iframe: HTMLIFrameElement | null;
-  command: YoutubePlayerCommand;
+  func: YoutubePlayerCommand;
+  args?: string | unknown[];
 }): void => {
   if (!iframe?.contentWindow) {
     return;
@@ -14,11 +19,27 @@ export const postYoutubePlayerCommand = ({
   iframe.contentWindow.postMessage(
     JSON.stringify({
       event: "command",
-      func: command,
-      args: "",
+      func,
+      args,
     }),
     "*",
   );
+};
+
+export const postYoutubePlayerCommand = ({
+  iframe,
+  command,
+}: {
+  iframe: HTMLIFrameElement | null;
+  command: Exclude<YoutubePlayerCommand, "getPlayerState">;
+}): void => {
+  postYoutubeIframeCommand({ iframe, func: command });
+};
+
+export const requestYoutubePlayerState = (
+  iframe: HTMLIFrameElement | null,
+): void => {
+  postYoutubeIframeCommand({ iframe, func: "getPlayerState" });
 };
 
 export const loadYoutubeVideoById = ({

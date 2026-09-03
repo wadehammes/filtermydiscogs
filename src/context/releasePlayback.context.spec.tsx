@@ -23,6 +23,7 @@ import {
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
 import { createQueueItem } from "src/utils/playbackQueue";
+import { requestYoutubePlayerState } from "src/utils/postYoutubePlayerCommand";
 import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
   readPersistedReleasePlayback,
@@ -36,9 +37,11 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
   transitionYoutubeIframeToVideo: jest.fn(),
+  requestYoutubePlayerState: jest.fn(),
 }));
 
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
+const mockRequestYoutubePlayerState = jest.mocked(requestYoutubePlayerState);
 
 const mockApi = jest.mocked(api);
 const preferencesApiError = new Error("Preferences API request failed");
@@ -415,6 +418,151 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(result.current.isPaused).toBe(false);
+  });
+
+  it("ignores embed pause while the document is hidden and still advances the queue on end", async () => {
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 2 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    expect(result.current.isPaused).toBe(false);
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 0 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+  });
+
+  it("advances the queue when embed infoDelivery reports playback ended", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            event: "infoDelivery",
+            info: { playerState: 0 },
+          }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+  });
+
+  it("requests player state when the document becomes visible during playback", async () => {
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+
+    const iframe = document.createElement("iframe");
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockRequestYoutubePlayerState.mockClear();
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+
+    expect(mockRequestYoutubePlayerState).toHaveBeenCalledTimes(1);
+    expect(mockRequestYoutubePlayerState.mock.calls[0]?.[0]).toBe(iframe);
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
   });
 
   it("posts YouTube commands on each play/pause toggle after iframe registration", async () => {

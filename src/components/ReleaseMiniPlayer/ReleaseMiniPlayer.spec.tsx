@@ -30,7 +30,7 @@ import {
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
 } from "src/utils/playbackVideoIntroStorage";
 import { transitionYoutubeIframeToVideo } from "src/utils/releasePlayback";
-import { render, screen, waitFor } from "test-utils";
+import { act, render, screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -480,6 +480,110 @@ describe("ReleaseMiniPlayer", () => {
         videoId: "abc12345678",
       }),
     );
+  });
+
+  it("shows the video panel without reloading the embed src after advancing while hidden", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    const initialSrc = iframe.getAttribute("src");
+
+    expect(initialSrc).toContain("te2jJncBVG4");
+
+    await user.click(screen.getByRole("button", { name: "Hide video" }));
+
+    expect(iframe).toHaveAttribute("data-variant", "hidden");
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    expect(iframe.getAttribute("src")).toBe(initialSrc);
+
+    await user.click(screen.getByRole("button", { name: "Show video" }));
+
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+      "data-video-expanded",
+      "true",
+    );
+    expect(iframe).toHaveAttribute("data-variant", "visible");
+    expect(iframe.getAttribute("src")).toBe(initialSrc);
+  });
+
+  it("advances the queue when the embed reports playback ended while the document is hidden", async () => {
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Next track" }),
+      ).not.toBeDisabled();
+    });
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+
+    act(() => {
+      Object.defineProperty(iframe, "contentWindow", {
+        configurable: true,
+        value: contentWindow,
+      });
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 2 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
+
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({ event: "onStateChange", info: 0 }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Never Gonna Give You Up (Instrumental)"),
+      ).toBeInTheDocument();
+    });
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
   });
 
   it("keeps the video panel open when advancing tracks", async () => {
