@@ -54,7 +54,7 @@ describe("MobileReleaseCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls addToCrate when crate button is clicked and release is not in crate", async () => {
+  it("calls addReleaseToCrate when a crate is checked in the menu", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
@@ -62,16 +62,29 @@ describe("MobileReleaseCard", () => {
 
     await waitFor(() => {
       expect(po.mockApiHelpers.crates).toHaveBeenCalled();
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    const crateName = po.defaultCrateWithCount.name;
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(crateName, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(po.mockApiHelpers.addReleaseToCrate).toHaveBeenCalled();
     });
   });
 
-  it("calls removeFromCrate when release is already in crate", async () => {
+  it("calls removeReleaseFromCrate when a crate is unchecked in the menu", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
@@ -79,12 +92,22 @@ describe("MobileReleaseCard", () => {
     po.renderMobileReleaseCard({ release });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Remove from crate" }),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Remove from crate" }));
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    const crateName = po.defaultCrateWithCount.name;
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(crateName, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(po.mockApiHelpers.removeReleaseFromCrate).toHaveBeenCalled();

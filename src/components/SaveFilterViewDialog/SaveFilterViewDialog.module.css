@@ -22,16 +22,15 @@
     margin: 0;
   }
 
-  .label {
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-  }
-
   .actions {
     display: flex;
     gap: var(--space-3);
     justify-content: flex-end;
   }
+}
+
+.label {
+  composes: label from "../../styles/modules/field-label.module.css";
 }
 
 .input {

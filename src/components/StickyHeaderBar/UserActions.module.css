@@ -26,10 +26,6 @@
   }
 }
 
-.positioner {
-  z-index: var(--z-6-popover);
-}
-
 .usernameTrigger {
   align-items: center;
   background: none;
@@ -78,23 +74,32 @@
   }
 }
 
-.dropdown {
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.menuPopup {
+  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
   min-width: 10rem;
-  padding: var(--space-2);
 }
 
-.menuSeparator {
-  background: var(--border);
-  border: 0;
-  height: 1px;
-  margin: 0;
+.menuList {
+  composes: list from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuFooter {
+  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
+
+  & > * {
+    width: 100%;
+  }
+}
+
+.menuItem {
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuLink {
+  color: inherit;
+  display: flex;
+  gap: var(--space-2);
+  text-decoration: none;
   width: 100%;
 }
 
@@ -107,42 +112,14 @@
   font-family: inherit;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
+  margin: var(--space-1);
   padding: var(--space-2) var(--space-3);
   text-align: center;
-  width: 100%;
+  width: calc(100% - var(--space-2));
 
   &:hover,
   &[data-highlighted] {
     background: color-mix(in srgb, var(--destructive) 88%, var(--foreground));
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-}
-
-.dropdownLink {
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  padding: var(--space-2) var(--space-3);
-  text-decoration: none;
-  transition: var(--transition-fast);
-  width: 100%;
-
-  &.dropdownLinkWithIcon {
-    align-items: center;
-    display: flex;
-    gap: var(--space-2);
-  }
-
-  &:hover,
-  &[data-highlighted] {
-    background: var(--muted);
-    color: var(--primary);
   }
 
   &:focus-visible {

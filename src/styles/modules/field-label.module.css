@@ -1,9 +1,11 @@
 .label {
   color: var(--muted-foreground);
   display: block;
-  font-size: var(--text-xxs);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.08em;
-  line-height: 1.2;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  font-weight: var(--font-medium);
+  letter-spacing: var(--letter-spacing-eyebrow);
+  line-height: 1;
+  margin: 0;
   text-transform: uppercase;
 }

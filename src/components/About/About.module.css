@@ -444,10 +444,7 @@
 }
 
 .donationCustomLabel {
-  color: var(--secondary-foreground);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  margin: 0;
+  composes: label from "../../styles/modules/field-label.module.css";
 }
 
 .donationCustomControls {

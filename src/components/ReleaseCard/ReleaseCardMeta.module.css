@@ -22,19 +22,19 @@
 }
 
 .metaLine {
-  color: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
-  font-family: inherit;
-  font-size: var(--text-meta-sm);
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
   font-weight: var(--font-normal);
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-  margin: var(--space-1) 0 0;
+  line-height: 1.6;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .metaLineMobile {
+  font-size: var(--text-meta-xs);
   margin: 0;
 }
 

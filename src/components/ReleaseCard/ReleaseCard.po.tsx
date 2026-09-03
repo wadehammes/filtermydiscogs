@@ -15,9 +15,11 @@ import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSu
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
@@ -112,6 +114,53 @@ export class ReleaseCardPageObject extends BasePageObject {
       crateMutationSuccessFactory.build(),
       apiError,
     );
+
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build(),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.setReleaseCrateMembership,
+      { success: true, crateIds: [] },
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.createCrate,
+      createCrateResponseFactory.forCrate(
+        crateFactory.build({ id: "new-crate-id", name: "New Crate" }),
+      ),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.updateCrate,
+      createCrateResponseFactory.forCrate(
+        crateFactory.build({
+          id: "new-crate-id",
+          name: "New Crate",
+          is_default: true,
+        }),
+      ),
+      apiError,
+    );
+  }
+
+  private activeCrateReleaseIds = new Set<string>();
+
+  mockReleaseCrateMembership(crateIds: string[]) {
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build({ crateIds }),
+      apiError,
+    );
   }
 
   mockCrateContainsRelease(release: DiscogsRelease) {
@@ -123,15 +172,42 @@ export class ReleaseCardPageObject extends BasePageObject {
       ]),
       apiError,
     );
+    this.activeCrateReleaseIds.add(String(release.instance_id));
+    this.mockReleaseCrateMembership([this.defaultCrate.id]);
+  }
+
+  protected resolveInActiveCrate(
+    release: DiscogsRelease,
+    override?: boolean,
+  ): boolean {
+    if (override !== undefined) {
+      return override;
+    }
+
+    return this.activeCrateReleaseIds.has(String(release.instance_id));
+  }
+
+  mockMultipleCrates(crates: (typeof this.defaultCrateWithCount)[]) {
+    mockApiResponse(
+      true,
+      mockApi.crates,
+      cratesResponseFactory.withCrates(crates),
+      apiError,
+    );
   }
 
   private releaseCardElement(overrides: ReleaseCardRenderProps = {}) {
-    const { release, ...rest } = overrides;
+    const { release, inActiveCrate, ...rest } = overrides;
+    const resolvedRelease = release ?? releaseFactory.withDisplayDefaults();
 
     return (
       <ReleasePlaybackTestTree>
         <ReleaseCard
-          release={release ?? releaseFactory.withDisplayDefaults()}
+          release={resolvedRelease}
+          inActiveCrate={this.resolveInActiveCrate(
+            resolvedRelease,
+            inActiveCrate,
+          )}
           {...rest}
         />
       </ReleasePlaybackTestTree>

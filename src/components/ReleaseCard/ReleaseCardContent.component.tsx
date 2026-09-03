@@ -49,16 +49,18 @@ export function ReleaseCardContent({
     <div className={styles.contentContainer}>
       <div className={styles.mainContent}>
         <ReleaseCardCatalog catno={catno} />
-        <ReleaseCardTitle
-          artists={artists}
-          title={title}
-          releaseUrl={releaseUrl}
-        />
-        <ReleaseCardMeta
-          labelName={labels[0]?.name}
-          labelUrl={labelUrl}
-          year={year}
-        />
+        <div className={styles.headerTextStack}>
+          <ReleaseCardTitle
+            artists={artists}
+            title={title}
+            releaseUrl={releaseUrl}
+          />
+          <ReleaseCardMeta
+            labelName={labels[0]?.name}
+            labelUrl={labelUrl}
+            year={year}
+          />
+        </div>
       </div>
       <HorizontalScrollRow className={styles.genresContainer}>
         {releaseFormats &&

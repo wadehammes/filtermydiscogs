@@ -1,0 +1,203 @@
+.menuRoot {
+  display: flex;
+  isolation: isolate;
+  position: relative;
+  z-index: var(--z-6-popover);
+}
+
+.menuPopup {
+  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
+  max-width: min(18rem, calc(100vw - var(--space-6)));
+  min-width: 14rem;
+
+  --crate-menu-gutter: var(--space-1);
+  --crate-menu-item-pad-inline: var(--space-3);
+
+  @media (width >= 1024px) {
+    max-width: none;
+    min-width: 12rem;
+
+    --crate-menu-gutter: var(--space-2);
+    --crate-menu-item-pad-inline: var(--space-2);
+  }
+}
+
+.menuHeading {
+  composes: label from "../../styles/modules/field-label.module.css";
+  padding-block: var(--space-2) var(--space-1);
+  padding-inline: var(--crate-menu-gutter);
+  padding-inline-start: calc(
+    var(--crate-menu-gutter) +
+    var(--crate-menu-item-pad-inline)
+  );
+}
+
+.menuSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 var(--crate-menu-gutter);
+
+  @media (width >= 1024px) {
+    gap: var(--space-1);
+    padding: var(--space-1) var(--crate-menu-gutter);
+  }
+}
+
+.menuEmpty {
+  padding-inline: var(--crate-menu-gutter);
+}
+
+.menuFooter {
+  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
+  gap: 0;
+  padding: 0 var(--crate-menu-gutter);
+
+  @media (width >= 1024px) {
+    gap: var(--space-1);
+    padding: var(--space-1) var(--crate-menu-gutter);
+  }
+}
+
+.crateListScrollWrap {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: "";
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 1;
+  }
+
+  &::before {
+    background: linear-gradient(to bottom, var(--popover), transparent);
+    height: var(--space-4);
+    top: 0;
+  }
+
+  &::after {
+    background: linear-gradient(to top, var(--popover), transparent);
+    bottom: 0;
+    box-shadow: inset 0 -6px 6px -6px
+      color-mix(in srgb, var(--foreground) 8%, transparent);
+    height: var(--space-4);
+  }
+}
+
+.crateListScrollWrapSeparated {
+  border-top: 1px dashed var(--border);
+}
+
+.crateListScrollFadeTop::before {
+  opacity: 1;
+}
+
+.crateListScrollFadeBottom::after {
+  opacity: 1;
+}
+
+.crateListScroll {
+  --crate-menu-row-height: var(--touch-target-min);
+  --crate-menu-visible-rows: 4;
+
+  flex: 1 1 auto;
+  max-height: calc(
+    var(--crate-menu-visible-rows) *
+    var(--crate-menu-row-height)
+  );
+  min-height: 0;
+  overflow-y: auto;
+
+  @media (width >= 1024px) {
+    --crate-menu-row-height: calc(var(--space-2) * 2 + 1.25 * var(--text-sm));
+
+    max-height: calc(
+      var(--crate-menu-visible-rows) *
+      var(--crate-menu-row-height) +
+      (var(--crate-menu-visible-rows) - 1) *
+      var(--space-1) +
+      var(--space-2)
+    );
+  }
+}
+
+.crateMenuItem {
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+  font-size: var(--text-base);
+  min-height: var(--touch-target-min);
+  padding-block: var(--space-3);
+  padding-inline: var(--crate-menu-item-pad-inline);
+  -webkit-tap-highlight-color: transparent;
+
+  @media (width >= 1024px) {
+    font-size: var(--text-sm);
+    min-height: auto;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-2);
+  }
+}
+
+.menuItemActive {
+  color: var(--primary);
+}
+
+.menuItemLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuItemMeta {
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+}
+
+.checkIndicator {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.checkIcon {
+  height: 1rem;
+  width: 1rem;
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.menuItemIcon {
+  display: flex;
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}

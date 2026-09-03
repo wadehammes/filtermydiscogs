@@ -30,6 +30,7 @@ import {
   useCreateCrateMutation,
   useDeleteCrateMutation,
   useRemoveReleaseFromCrateMutation,
+  useSetReleaseCrateMembershipMutation,
   useSetReleasePackedInCrateMutation,
   useUpdateCrateMutation,
 } from "src/hooks/mutations/useCrateMutations";
@@ -52,39 +53,61 @@ import type {
 } from "src/types/crate.types";
 import { toast } from "src/utils/toast";
 
-interface CrateContextType {
+interface CrateState {
   crates: CrateWithCount[];
   activeCrateId: string | null;
+  activeCrateInstanceIds: ReadonlySet<string>;
   selectedReleases: DiscogsRelease[];
   layoutItems: CrateLayoutItem[];
   isLoading: boolean;
   isPendingCrate: boolean;
   isLoadingCrate: boolean;
   isFetchingCrate: boolean;
+  isDrawerOpen: boolean;
+  packedReleaseCount: number;
+  isUpdatingCrate: boolean;
+  isCreatingCrate: boolean;
+  isDeletingCrate: boolean;
+}
+
+interface CrateActions {
   addToCrate: (release: DiscogsRelease) => void;
+  addReleaseToCrate: (
+    crateId: string,
+    release: DiscogsRelease,
+    options?: { openDrawer?: boolean },
+  ) => void;
   removeFromCrate: (releaseId: string) => void;
+  removeReleaseFromCrate: (crateId: string, releaseId: string) => void;
+  setReleaseCrateMembership: (
+    crateIds: string[],
+    release: DiscogsRelease,
+    options?: { openDrawer?: boolean },
+  ) => void;
   isInCrate: (releaseId: string) => boolean;
   isPacked: (releaseId: string) => boolean;
   setPacked: (releaseId: string, packed: boolean) => void;
   clearAllPacked: () => void;
-  packedReleaseCount: number;
   clearCrate: () => void;
-  createCrate: (name: string) => Promise<void>;
+  createCrate: (
+    name: string,
+    options?: { setAsDefault?: boolean },
+  ) => Promise<string | null>;
   selectCrate: (crateId: string) => void;
   updateCrate: (
     crateId: string,
     updates: Partial<CrateUpdatePayload>,
   ) => Promise<void>;
   deleteCrate: (crateId: string) => Promise<void>;
-  isDrawerOpen: boolean;
   toggleDrawer: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
-  isUpdatingCrate: boolean;
-  isDeletingCrate: boolean;
 }
 
-const CrateContext = createContext<CrateContextType | undefined>(undefined);
+export type CrateContextType = CrateState & CrateActions;
+
+const CrateStateContext = createContext<CrateState | undefined>(undefined);
+const CrateActionsContext = createContext<CrateActions | undefined>(undefined);
 
 interface CrateProviderProps {
   children: ReactNode;
@@ -147,6 +170,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   const deleteCrateMutation = useDeleteCrateMutation(userId);
   const addReleaseMutation = useAddReleaseToCrateMutation(userId);
   const removeReleaseMutation = useRemoveReleaseFromCrateMutation(userId);
+  const setMembershipMutation = useSetReleaseCrateMembershipMutation(userId);
   const setPackedMutation = useSetReleasePackedInCrateMutation(userId);
   const clearAllPackedMutation = useClearAllPackedInCrateMutation(userId);
 
@@ -156,13 +180,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     [],
   );
 
-  useCrateMigration(
-    canLoadCrates,
-    isLoading,
-    crates,
-    findDefaultCrate,
-    addReleaseMutation,
-  );
+  useCrateMigration(canLoadCrates, isLoading);
 
   useEffect(() => {
     const previousUserId = prevUserIdRef.current;
@@ -290,8 +308,20 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     [crateReleaseItems],
   );
 
-  const addToCrate = useCallback(
-    (release: DiscogsRelease) => {
+  const activeCrateInstanceIds = useMemo(
+    () =>
+      new Set(
+        crateReleaseItems.map((item) => String(item.release.instance_id)),
+      ),
+    [crateReleaseItems],
+  );
+
+  const addReleaseToCrate = useCallback(
+    (
+      crateId: string,
+      release: DiscogsRelease,
+      options?: { openDrawer?: boolean },
+    ) => {
       if (isLoading) return;
 
       if (isError) {
@@ -309,6 +339,28 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
         return;
       }
 
+      if (!crateId) return;
+
+      addReleaseMutation.mutate(
+        {
+          crateId,
+          release,
+        },
+        {
+          onSuccess: () => {
+            trackCrateReleaseAdded(release.instance_id);
+            if (options?.openDrawer && isDesktop) {
+              openDrawer();
+            }
+          },
+        },
+      );
+    },
+    [isLoading, isError, error, addReleaseMutation, openDrawer, isDesktop],
+  );
+
+  const addToCrate = useCallback(
+    (release: DiscogsRelease) => {
       let crateIdToUse = activeCrateId;
 
       if (!crateIdToUse) {
@@ -321,32 +373,28 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
       if (!crateIdToUse) return;
 
-      addReleaseMutation.mutate(
+      addReleaseToCrate(crateIdToUse, release, { openDrawer: true });
+    },
+    [activeCrateId, crates, findDefaultCrate, addReleaseToCrate],
+  );
+
+  const removeReleaseFromCrate = useCallback(
+    (crateId: string, releaseId: string | number) => {
+      if (!crateId) return;
+
+      removeReleaseMutation.mutate(
         {
-          crateId: crateIdToUse,
-          release,
+          crateId,
+          releaseId: String(releaseId),
         },
         {
           onSuccess: () => {
-            trackCrateReleaseAdded(release.instance_id);
-            if (isDesktop) {
-              openDrawer();
-            }
+            trackCrateReleaseRemoved(releaseId);
           },
         },
       );
     },
-    [
-      isLoading,
-      isError,
-      error,
-      activeCrateId,
-      crates,
-      findDefaultCrate,
-      addReleaseMutation,
-      openDrawer,
-      isDesktop,
-    ],
+    [removeReleaseMutation],
   );
 
   const removeFromCrate = useCallback(
@@ -363,25 +411,40 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
 
       if (!crateIdToUse) return;
 
-      removeReleaseMutation.mutate(
-        {
-          crateId: crateIdToUse,
-          releaseId: String(releaseId),
-        },
-        {
-          onSuccess: () => {
-            trackCrateReleaseRemoved(releaseId);
-          },
-        },
-      );
+      removeReleaseFromCrate(crateIdToUse, releaseId);
     },
-    [activeCrateId, crates, findDefaultCrate, removeReleaseMutation],
+    [activeCrateId, crates, findDefaultCrate, removeReleaseFromCrate],
   );
 
   const isInCrate = useCallback(
     (releaseId: string | number) =>
-      selectedReleases.some((r) => String(r.instance_id) === String(releaseId)),
-    [selectedReleases],
+      activeCrateInstanceIds.has(String(releaseId)),
+    [activeCrateInstanceIds],
+  );
+
+  const setReleaseCrateMembership = useCallback(
+    (
+      crateIds: string[],
+      release: DiscogsRelease,
+      options?: { openDrawer?: boolean },
+    ) => {
+      setMembershipMutation.mutate(
+        { crateIds, release },
+        {
+          onSuccess: () => {
+            if (
+              options?.openDrawer &&
+              activeCrateId &&
+              crateIds.includes(activeCrateId) &&
+              isDesktop
+            ) {
+              openDrawer();
+            }
+          },
+        },
+      );
+    },
+    [activeCrateId, isDesktop, openDrawer, setMembershipMutation],
   );
 
   const isPacked = useCallback(
@@ -462,14 +525,27 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
   }, [activeCrateId, selectedReleases, removeReleaseMutation]);
 
   const createCrate = useCallback(
-    async (name: string) => {
+    async (name: string, options?: { setAsDefault?: boolean }) => {
       const result = await createCrateMutation.mutateAsync({ name });
-      if (result?.crate?.id) {
-        trackCrateCreated(result.crate.id);
-        setActiveCrateId(result.crate.id);
+      const crateId = result?.crate?.id ?? null;
+
+      if (!crateId) {
+        return null;
       }
+
+      trackCrateCreated(crateId);
+
+      if (options?.setAsDefault) {
+        await updateCrateMutation.mutateAsync({
+          crateId,
+          updates: { is_default: true },
+        });
+      }
+
+      setActiveCrateId(crateId);
+      return crateId;
     },
-    [createCrateMutation],
+    [createCrateMutation, updateCrateMutation],
   );
 
   const selectCrate = useCallback((crateId: string) => {
@@ -507,14 +583,11 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       trackCrateDeleted(crateId);
 
       if (crateId === activeCrateId) {
-        // Switch to default crate if the deleted crate was active
-        // Use optimistic update: filter out deleted crate and find default
         const remainingCrates = crates.filter((c) => c.id !== crateId);
         const defaultCrate = findDefaultCrate({ crateList: remainingCrates });
         if (defaultCrate) {
           setActiveCrateId(defaultCrate.id);
         } else if (remainingCrates.length > 0) {
-          // Fallback to first crate if no default
           const firstCrate = remainingCrates[0];
           if (firstCrate) {
             setActiveCrateId(firstCrate.id);
@@ -529,74 +602,112 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     [activeCrateId, crates, deleteCrateMutation, findDefaultCrate],
   );
 
-  const value: CrateContextType = useMemo(
+  const stateValue: CrateState = useMemo(
     () => ({
       crates,
       activeCrateId,
+      activeCrateInstanceIds,
       selectedReleases,
       layoutItems,
       isLoading,
       isPendingCrate,
       isLoadingCrate,
       isFetchingCrate,
-      addToCrate,
-      removeFromCrate,
-      isInCrate,
-      isPacked,
-      setPacked,
-      clearAllPacked,
-      packedReleaseCount,
-      clearCrate,
-      createCrate,
-      selectCrate,
-      updateCrate,
-      deleteCrate,
       isDrawerOpen,
-      toggleDrawer,
-      openDrawer,
-      closeDrawer,
+      packedReleaseCount,
       isUpdatingCrate: updateCrateMutation.isPending,
+      isCreatingCrate: createCrateMutation.isPending,
       isDeletingCrate: deleteCrateMutation.isPending,
     }),
     [
       crates,
       activeCrateId,
+      activeCrateInstanceIds,
       selectedReleases,
       layoutItems,
       isLoading,
       isPendingCrate,
       isLoadingCrate,
       isFetchingCrate,
+      isDrawerOpen,
+      packedReleaseCount,
+      updateCrateMutation.isPending,
+      createCrateMutation.isPending,
+      deleteCrateMutation.isPending,
+    ],
+  );
+
+  const actionsValue: CrateActions = useMemo(
+    () => ({
       addToCrate,
+      addReleaseToCrate,
       removeFromCrate,
+      removeReleaseFromCrate,
+      setReleaseCrateMembership,
       isInCrate,
       isPacked,
       setPacked,
       clearAllPacked,
-      packedReleaseCount,
       clearCrate,
       createCrate,
       selectCrate,
       updateCrate,
       deleteCrate,
-      isDrawerOpen,
       toggleDrawer,
       openDrawer,
       closeDrawer,
-      updateCrateMutation.isPending,
-      deleteCrateMutation.isPending,
+    }),
+    [
+      addToCrate,
+      addReleaseToCrate,
+      removeFromCrate,
+      removeReleaseFromCrate,
+      setReleaseCrateMembership,
+      isInCrate,
+      isPacked,
+      setPacked,
+      clearAllPacked,
+      clearCrate,
+      createCrate,
+      selectCrate,
+      updateCrate,
+      deleteCrate,
+      toggleDrawer,
+      openDrawer,
+      closeDrawer,
     ],
   );
 
   return (
-    <CrateContext.Provider value={value}>{children}</CrateContext.Provider>
+    <CrateStateContext.Provider value={stateValue}>
+      <CrateActionsContext.Provider value={actionsValue}>
+        {children}
+      </CrateActionsContext.Provider>
+    </CrateStateContext.Provider>
   );
 };
 
-export const useCrate = (): CrateContextType => {
-  const context = useContext(CrateContext);
+export const useCrateState = (): CrateState => {
+  const context = useContext(CrateStateContext);
   if (context === undefined) {
-    throw new Error("useCrate must be used within a CrateProvider");
+    throw new Error("useCrateState must be used within a CrateProvider");
   }
   return context;
+};
+
+export const useCrateActions = (): CrateActions => {
+  const context = useContext(CrateActionsContext);
+  if (context === undefined) {
+    throw new Error("useCrateActions must be used within a CrateProvider");
+  }
+  return context;
+};
+
+export const useCrate = (): CrateContextType => {
+  const state = useContext(CrateStateContext);
+  const actions = useContext(CrateActionsContext);
+  if (state === undefined || actions === undefined) {
+    throw new Error("useCrate must be used within a CrateProvider");
+  }
+  return { ...state, ...actions };
 };

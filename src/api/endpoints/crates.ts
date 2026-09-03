@@ -8,106 +8,29 @@ import type {
   CrateUpdatePayload,
   CrateWithReleasesResponse,
   PaginationInfo,
+  ReleaseCrateMembershipResponse,
 } from "src/types/crate.types";
 
-const CRATE_PAGE_SIZE = 100;
-
-async function fetchPaginatedCrateReleases({
-  buildUrl,
-  init,
-  notFoundMessage,
-}: {
-  buildUrl: (page: number) => string;
-  init: RequestInit;
-  notFoundMessage?: string;
-}): Promise<CrateWithReleasesResponse> {
-  let page = 1;
-  let result: CrateWithReleasesResponse | null = null;
-
-  while (true) {
-    const response = await fetch(buildUrl(page), init);
-
-    if (!response.ok) {
-      if (notFoundMessage && response.status === 404) {
-        throw new Error(notFoundMessage);
-      }
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = (await response.json()) as CrateWithReleasesResponse;
-
-    if (!result) {
-      result = {
-        crate: data.crate,
-        releases: [...data.releases],
-        markers: [...(data.markers ?? [])],
-        ...(data.pagination !== undefined
-          ? { pagination: data.pagination }
-          : {}),
-      };
-    } else {
-      result.releases.push(...data.releases);
-      if (data.pagination !== undefined) {
-        result.pagination = data.pagination;
-      }
-    }
-
-    if (!data.pagination?.hasNextPage) {
-      break;
-    }
-
-    page += 1;
-  }
-
-  if (!result) {
-    throw new Error("Failed to fetch crate");
-  }
-
-  return result;
-}
-
 async function fetchAllCrates(): Promise<CratesResponse["crates"]> {
-  const crates: CratesResponse["crates"] = [];
-  let page = 1;
+  const response = await fetch("/api/crates?all=true", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
 
-  while (true) {
-    const response = await fetch(
-      `/api/crates?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = (await response.json()) as {
-      data?: CratesResponse["crates"];
-      crates?: CratesResponse["crates"];
-      pagination?: PaginationInfo;
-    };
-
-    const pageCrates = data.data ?? data.crates ?? [];
-    if (!Array.isArray(pageCrates)) {
-      return [];
-    }
-
-    crates.push(...pageCrates);
-
-    if (!data.pagination?.hasNextPage) {
-      break;
-    }
-
-    page += 1;
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  return crates;
+  const data = (await response.json()) as {
+    data?: CratesResponse["crates"];
+    crates?: CratesResponse["crates"];
+  };
+
+  const crates = data.data ?? data.crates ?? [];
+  return Array.isArray(crates) ? crates : [];
 }
 
 export const fetchCrates = async (): Promise<CratesResponse> => {
@@ -125,68 +48,39 @@ export const fetchPublicCrate = async (
   crateId: string,
 ): Promise<CrateWithReleasesResponse> => {
   try {
-    let page = 1;
-    let result: CrateWithReleasesResponse | null = null;
+    const response = await fetch(`/api/crates/public/${crateId}?all=true`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-    while (true) {
-      const response = await fetch(
-        `/api/crates/public/${crateId}?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Crate not found or is private");
-        }
-
-        throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Crate not found or is private");
       }
 
-      const data = (await response.json()) as {
-        crate: CrateWithReleasesResponse["crate"];
-        releases: DiscogsRelease[];
-        pagination?: PaginationInfo;
-      };
-
-      const wrappedReleases = data.releases.map((release, index) => ({
-        release,
-        found_at: null,
-        sort_order: (index + 1) * 1000,
-      }));
-
-      if (!result) {
-        result = {
-          crate: data.crate,
-          releases: [...wrappedReleases],
-          markers: [],
-          ...(data.pagination !== undefined
-            ? { pagination: data.pagination }
-            : {}),
-        };
-      } else {
-        result.releases.push(...wrappedReleases);
-        if (data.pagination !== undefined) {
-          result.pagination = data.pagination;
-        }
-      }
-
-      if (!data.pagination?.hasNextPage) {
-        break;
-      }
-
-      page += 1;
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    if (!result) {
-      throw new Error("Failed to fetch public crate");
-    }
+    const data = (await response.json()) as {
+      crate: CrateWithReleasesResponse["crate"];
+      releases: DiscogsRelease[];
+      pagination?: PaginationInfo;
+    };
 
-    return result;
+    const wrappedReleases = data.releases.map((release, index) => ({
+      release,
+      found_at: null,
+      sort_order: (index + 1) * 1000,
+    }));
+
+    return {
+      crate: data.crate,
+      releases: wrappedReleases,
+      markers: [],
+      ...(data.pagination !== undefined ? { pagination: data.pagination } : {}),
+    };
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -196,26 +90,126 @@ export const fetchPublicCrate = async (
   }
 };
 
-export const fetchCrate = async (
-  crateId: string,
-): Promise<CrateWithReleasesResponse> => {
+export const fetchReleaseCrateMembership = async (
+  instanceId: string,
+): Promise<ReleaseCrateMembershipResponse> => {
   try {
-    return fetchPaginatedCrateReleases({
-      buildUrl: (page) =>
-        `/api/crates/${crateId}?page=${page}&pageSize=${CRATE_PAGE_SIZE}`,
-      init: {
+    const response = await fetch(
+      `/api/crates/membership/${encodeURIComponent(instanceId)}`,
+      {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
       },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch release crate membership");
+  }
+};
+
+export const setReleaseCrateMembership = async (
+  instanceId: string,
+  data: {
+    crateIds: string[];
+    release: DiscogsRelease;
+  },
+): Promise<{ success: boolean; crateIds: string[] }> => {
+  try {
+    const response = await fetch(
+      `/api/crates/membership/${encodeURIComponent(instanceId)}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage =
+        errorData?.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update release crate membership");
+  }
+};
+
+export const fetchCrate = async (
+  crateId: string,
+): Promise<CrateWithReleasesResponse> => {
+  try {
+    const response = await fetch(`/api/crates/${crateId}?all=true`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
   } catch (error) {
     if (error instanceof Error) {
       throw error;
     }
     throw new Error("Failed to fetch crate");
+  }
+};
+
+export const migrateLegacyCrate = async (
+  releases: DiscogsRelease[],
+): Promise<{
+  success: boolean;
+  crateId: string;
+  importedCount: number;
+  skippedCount: number;
+}> => {
+  try {
+    const response = await fetch("/api/crates/migrate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ releases }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage =
+        errorData?.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to migrate legacy crate");
   }
 };
 

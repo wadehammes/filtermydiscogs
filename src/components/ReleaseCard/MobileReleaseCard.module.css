@@ -152,8 +152,9 @@
 .releaseInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: var(--space-2) 0 0;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: 0;
 }
 
 .title {

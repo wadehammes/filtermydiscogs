@@ -1,0 +1,105 @@
+.positioner {
+  z-index: var(--z-6-popover);
+}
+
+.popup {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 12rem;
+  overflow: hidden;
+  padding: 0;
+}
+
+.popupScroll {
+  composes: popup;
+  max-height: min(24rem, 70dvh);
+  overflow-y: auto;
+}
+
+.heading {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  margin: 0;
+  padding: var(--space-2) var(--space-3) var(--space-1);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1);
+}
+
+.itemGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.item {
+  composes: menuitemdisabled menuitemhover from "./menu-item-interaction.module.css";
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  gap: var(--space-2);
+  line-height: 1.25;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}
+
+.itemDanger {
+  composes: item menuitemhoverdanger from "./menu-item-interaction.module.css";
+  color: var(--destructive);
+}
+
+.itemNeutral {
+  composes: item menuitemhoverneutral from "./menu-item-interaction.module.css";
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1);
+}
+
+.footerInset {
+  composes: footer;
+  padding-inline: var(--space-3);
+}
+
+.empty {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+.separator {
+  background: var(--border);
+  border: 0;
+  height: 1px;
+  margin: 0;
+  width: 100%;
+}

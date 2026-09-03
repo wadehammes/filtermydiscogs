@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { toast } from "src/utils/toast";
@@ -80,7 +81,26 @@ describe("ReleaseCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls addToCrate when crate button is clicked and release is not in crate", async () => {
+  it("prefetches crate membership when the trigger is hovered", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const user = userEvent.setup();
+
+    po.renderReleaseCard({ release });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await user.hover(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.releaseCrateMembership).toHaveBeenCalledWith(
+        String(release.instance_id),
+      );
+    });
+  });
+
+  it("calls addReleaseToCrate when a crate is checked in the menu", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
@@ -88,16 +108,142 @@ describe("ReleaseCard", () => {
 
     await waitFor(() => {
       expect(po.mockApiHelpers.crates).toHaveBeenCalled();
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    const crateName = po.defaultCrateWithCount.name;
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(crateName, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(po.mockApiHelpers.addReleaseToCrate).toHaveBeenCalled();
     });
   });
 
-  it("calls removeFromCrate when crate button is clicked and release is in crate", async () => {
+  it("creates a crate from the menu dialog and adds the release", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const user = userEvent.setup();
+
+    po.renderReleaseCard({ release });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitem", { name: "Add to new crate" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdCreateCrateDialog")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Crate name"), "Weekend favorites");
+    await user.click(screen.getByRole("button", { name: "Create crate" }));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.createCrate).toHaveBeenCalledWith(
+        "Weekend favorites",
+      );
+      expect(po.mockApiHelpers.addReleaseToCrate).toHaveBeenCalled();
+    });
+  });
+
+  it("calls setReleaseCrateMembership when Add to all is clicked", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const user = userEvent.setup();
+    const secondCrate = crateWithCountFactory.build({
+      id: "crate-2",
+      name: "Second Crate",
+      is_default: false,
+    });
+
+    po.mockMultipleCrates([po.defaultCrateWithCount, secondCrate]);
+    po.renderReleaseCard({ release });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("fmdReleaseCrateMenuToggleAll"),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("menuitem", { name: "Add to all" }));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.setReleaseCrateMembership).toHaveBeenCalledWith(
+        String(release.instance_id),
+        expect.objectContaining({
+          crateIds: [po.defaultCrateWithCount.id, secondCrate.id],
+          release,
+        }),
+      );
+    });
+  });
+
+  it("calls setReleaseCrateMembership with empty crate ids when Remove from all is clicked", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const user = userEvent.setup();
+    const secondCrate = crateWithCountFactory.build({
+      id: "crate-2",
+      name: "Second Crate",
+      is_default: false,
+    });
+
+    po.mockMultipleCrates([po.defaultCrateWithCount, secondCrate]);
+    po.mockReleaseCrateMembership([
+      po.defaultCrateWithCount.id,
+      secondCrate.id,
+    ]);
+    po.renderReleaseCard({ release });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitem", { name: "Remove from all" }),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("menuitem", { name: "Remove from all" }));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.setReleaseCrateMembership).toHaveBeenCalledWith(
+        String(release.instance_id),
+        expect.objectContaining({
+          crateIds: [],
+          release,
+        }),
+      );
+    });
+  });
+
+  it("calls removeReleaseFromCrate when a crate is unchecked in the menu", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
@@ -105,12 +251,22 @@ describe("ReleaseCard", () => {
     po.renderReleaseCard({ release });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Remove from crate" }),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Remove from crate" }));
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    const crateName = po.defaultCrateWithCount.name;
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(crateName, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(po.mockApiHelpers.removeReleaseFromCrate).toHaveBeenCalled();

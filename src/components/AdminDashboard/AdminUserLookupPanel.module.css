@@ -20,11 +20,7 @@
 }
 
 .lookupLabel {
-  color: var(--muted-foreground);
-  font-family: var(--font-family-meta);
-  font-size: var(--text-meta-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  composes: label from "../../styles/modules/field-label.module.css";
 }
 
 .lookupControls {

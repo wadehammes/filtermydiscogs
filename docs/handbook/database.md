@@ -130,12 +130,15 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 
 | Route | Methods | Purpose |
 |-------|---------|---------|
-| `/api/crates` | GET, POST | List/create crates for authenticated user; GET includes `releaseCount` and up to three `previewThumbs` (ordered by `sort_order`) per crate |
-| `/api/crates/[id]` | GET, PATCH, DELETE | Single crate CRUD; can toggle `private`, update `username`; GET returns releases ordered by **`sort_order`** plus **`markers[]`** |
+| `/api/crates` | GET, POST | List/create crates for authenticated user; GET returns crates ordered **default first**, then **name ascending** (`releaseCount` and up to three `previewThumbs` per crate). Pass **`?all=true`** to return up to **`CRATE_LIST_ALL_MAX`** (500) crates in one page (used by the client crate list) |
+| `/api/crates/[id]` | GET, PATCH, DELETE | Single crate CRUD; can toggle `private`, update `username`; GET returns releases ordered by **`sort_order`** plus **`markers[]`**. Pass **`?all=true`** to return up to **`CRATE_DETAIL_ALL_MAX`** (10,000) releases in one page |
 | `/api/crates/[id]/layout` | PUT | Atomically replace crate layout (release order + set markers) |
 | `/api/crates/[id]/releases` | GET, POST, PATCH | List/add releases; bulk clear packed (`clear_found`); new releases prepend at min **`sort_order` − 1000** |
 | `/api/crates/[id]/releases/[releaseId]` | PATCH, DELETE | Mark packed / remove release from crate |
-| `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers) |
+| `/api/crates/membership/[instanceId]` | GET | Crate ids containing a collection release (`instance_id`) for the authenticated user |
+| `/api/crates/membership/[instanceId]` | PUT | Set crate membership for a release in one request (`{ crateIds, release }`) |
+| `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers). Pass **`?all=true`** for a single full payload (up to **`CRATE_DETAIL_ALL_MAX`**) |
+| `/api/crates/migrate` | POST | Bulk import legacy localStorage releases into the user's default crate (`{ releases }`, max **`LEGACY_CRATE_MIGRATE_MAX`**) |
 | `/api/crates/sync` | POST | Sync local crate state with server; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata) |
 | `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
@@ -147,7 +150,9 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 
 All mutating crate routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 
-**Request validation:** Zod schemas live under [`src/lib/validation/`](../../src/lib/validation/). API routes use [`parseRequestBody`](../../src/lib/validation/parseRequestBody.ts) where applicable. Schemas cover crate CRUD/layout/sync, user preferences, analytics ingest, collection note/rating writes, crate release snapshots, admin user lookup (form + route username check), and form inputs. **React Hook Form** + **`@hookform/resolvers/zod`** back crate create/rename, release-notes editors/scratchpads, crate set notes, collection search, crate layout marker labels, and admin user lookup. Prefer extending those schemas (and route/form specs) over ad-hoc validation—keep forgiving parsers for stored/read paths (e.g. **`parseUserPreferences`**, localStorage filters).
+**Request validation:** Zod schemas live under [`src/lib/validation/`](../../src/lib/validation/). API routes use [`parseRequestBody`](../../src/lib/validation/parseRequestBody.ts) where applicable. Schemas cover crate CRUD/layout/sync/migrate (**`crateLegacyMigrateBodySchema`**), membership PUT (**`setReleaseCrateMembershipBodySchema`**), release batch (**`releaseBatchBodySchema`** in [`release.schemas.ts`](../../src/lib/validation/release.schemas.ts)), user preferences, analytics ingest, collection note/rating writes, crate release snapshots, admin user lookup (form + route username check), and form inputs. **React Hook Form** + **`@hookform/resolvers/zod`** back crate create/rename, release-notes editors/scratchpads, crate set notes, collection search, crate layout marker labels, and admin user lookup. Prefer extending those schemas (and route/form specs) over ad-hoc validation—keep forgiving parsers for stored/read paths (e.g. **`parseUserPreferences`**, localStorage filters).
+
+**Pagination:** Crate list/detail/public GET handlers accept **`?all=true`**. [`getPaginationParams(request, { allMaxTake })`](../../src/lib/api-helpers.ts) and [`wantsAllResults`](../../src/lib/api-helpers.ts) return a single page capped by **`CRATE_LIST_ALL_MAX`** / **`CRATE_DETAIL_ALL_MAX`**; client helpers in [`src/api/endpoints/crates.ts`](../../src/api/endpoints/crates.ts) use **`?all=true`** instead of client-side pagination loops.
 
 Authenticated crate handlers return **`privateRouteJson`** / **`createErrorResponse`** ([`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)). With **`cacheComponents`**, do **not** add **`export const dynamic = "force-dynamic"`** — cookie/session access keeps handlers dynamic automatically. See [platform.md](platform.md) (**Private session API responses**).
 
@@ -165,8 +170,9 @@ If **`username`** is missing on an older public crate, the public API may backfi
 
 ## Client integration
 
-- **`CrateProvider`** + **`useCrateMutations`** ([`src/hooks/mutations/useCrateMutations.ts`](../../src/hooks/mutations/useCrateMutations.ts)) call the crate API via **`api.*`** in [`src/api/urls.ts`](../../src/api/urls.ts).
-- **`useCrateMigration`** handles legacy localStorage → server migration on login.
+- **`CrateProvider`** + **`useCrateMutations`** ([`src/hooks/mutations/useCrateMutations.ts`](../../src/hooks/mutations/useCrateMutations.ts)) call the crate API via **`api.*`** in [`src/api/urls.ts`](../../src/api/urls.ts) — including **`api.migrateLegacyCrate`**, **`api.releaseCrateMembership`**, and **`api.setReleaseCrateMembership`**.
+- **`useCrateMigration`** handles legacy localStorage → server migration on login via **`POST /api/crates/migrate`** (one request, then invalidates crate queries).
+- **Client crate fetches:** [`fetchCrates`](../../src/api/endpoints/crates.ts), [`fetchCrate`](../../src/api/endpoints/crates.ts), and [`fetchPublicCrate`](../../src/api/endpoints/crates.ts) request **`?all=true`** so the UI loads full lists in one round trip.
 
 ## Auditing
 

@@ -129,6 +129,28 @@ const shortCollectionRelease = releaseFactory.withDisplayDefaults({
   }),
 });
 
+const similarHouseReleaseDetail =
+  discogsReleaseJsonFactory.withTracklistAndVideos({
+    id: 100002,
+    tracklist: [
+      {
+        position: "A1",
+        title: "Similar Track",
+        duration: "4:00",
+        type_: "track",
+      },
+    ],
+    videos: [
+      {
+        description: "Similar Track",
+        duration: 240,
+        embed: true,
+        title: "Similar Track",
+        uri: "https://www.youtube.com/watch?v=similar12345",
+      },
+    ],
+  });
+
 const setupCollectionAndShortReleaseApiMock = () => {
   setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
     [String(SHORT_RELEASE_ID)]: shortReleaseDetail,
@@ -839,31 +861,8 @@ describe("ReleasePlaybackProvider", () => {
       }),
     });
 
-    mockApi.discogsRelease.mockImplementation(async (releaseId) => {
-      if (releaseId === "100002") {
-        return discogsReleaseJsonFactory.withTracklistAndVideos({
-          id: 100002,
-          tracklist: [
-            {
-              position: "A1",
-              title: "Similar Track",
-              duration: "4:00",
-              type_: "track",
-            },
-          ],
-          videos: [
-            {
-              description: "Similar Track",
-              duration: 240,
-              embed: true,
-              title: "Similar Track",
-              uri: "https://www.youtube.com/watch?v=similar12345",
-            },
-          ],
-        });
-      }
-
-      return releaseDetail;
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      "100002": similarHouseReleaseDetail,
     });
 
     const { result } = renderHook(() => useReleasePlayback(), {
@@ -907,31 +906,8 @@ describe("ReleasePlaybackProvider", () => {
       }),
     });
 
-    mockApi.discogsRelease.mockImplementation(async (releaseId) => {
-      if (releaseId === "100002") {
-        return discogsReleaseJsonFactory.withTracklistAndVideos({
-          id: 100002,
-          tracklist: [
-            {
-              position: "A1",
-              title: "Similar Track",
-              duration: "4:00",
-              type_: "track",
-            },
-          ],
-          videos: [
-            {
-              description: "Similar Track",
-              duration: 240,
-              embed: true,
-              title: "Similar Track",
-              uri: "https://www.youtube.com/watch?v=similar12345",
-            },
-          ],
-        });
-      }
-
-      return releaseDetail;
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      "100002": similarHouseReleaseDetail,
     });
 
     const { result } = renderHook(() => useReleasePlayback(), {

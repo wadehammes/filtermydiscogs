@@ -3,6 +3,7 @@ import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
 import { ReleasesTable } from "src/components/ReleasesTable/ReleasesTable.component";
+import { useCrateState } from "src/context/crate.context";
 import { DiceThinIcon } from "src/styles/icons/DiceThinIcon.component";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
@@ -29,6 +30,7 @@ const ReleasesGridComponent = ({
   randomRelease,
 }: ReleasesGridProps) => {
   "use memo";
+  const { activeCrateInstanceIds } = useCrateState();
   const isActuallyRandomMode = isRandomMode && view === "random";
   const isCardView = view === "card" || isActuallyRandomMode;
   const isListView = view === "list" && !isActuallyRandomMode;
@@ -61,37 +63,45 @@ const ReleasesGridComponent = ({
 
   return (
     <div className={gridClassName} key={`grid-${view}-${isRandomMode}`}>
-      {releasesToShow.map((release: DiscogsRelease) => (
-        <div
-          key={release.instance_id}
-          id={`release-${release.instance_id}`}
-          className={styles.releaseItem}
-        >
-          {isCardView ? (
-            useDesktopCard ? (
-              <ReleaseCard
-                release={release}
-                isRandomMode={isActuallyRandomMode}
-                onExitRandomMode={onExitRandomMode}
-                onReleaseClick={onReleaseClick}
-              />
+      {releasesToShow.map((release: DiscogsRelease) => {
+        const inActiveCrate = activeCrateInstanceIds.has(
+          String(release.instance_id),
+        );
+
+        return (
+          <div
+            key={release.instance_id}
+            id={`release-${release.instance_id}`}
+            className={styles.releaseItem}
+          >
+            {isCardView ? (
+              useDesktopCard ? (
+                <ReleaseCard
+                  release={release}
+                  inActiveCrate={inActiveCrate}
+                  isRandomMode={isActuallyRandomMode}
+                  onExitRandomMode={onExitRandomMode}
+                  onReleaseClick={onReleaseClick}
+                />
+              ) : (
+                <MobileReleaseCard
+                  release={release}
+                  inActiveCrate={inActiveCrate}
+                  isRandomMode={isActuallyRandomMode}
+                  onExitRandomMode={onExitRandomMode}
+                  onReleaseClick={onReleaseClick}
+                />
+              )
             ) : (
-              <MobileReleaseCard
+              <ReleaseListItem
                 release={release}
-                isRandomMode={isActuallyRandomMode}
                 onExitRandomMode={onExitRandomMode}
                 onReleaseClick={onReleaseClick}
               />
-            )
-          ) : (
-            <ReleaseListItem
-              release={release}
-              onExitRandomMode={onExitRandomMode}
-              onReleaseClick={onReleaseClick}
-            />
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
       {isMobile && isRandomMode && onRandomClick && (
         <div className={styles.randomButtonContainer}>
           <button

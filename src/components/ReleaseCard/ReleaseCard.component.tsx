@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import { memo } from "react";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
-import { useCrate } from "src/context/crate.context";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -12,13 +11,13 @@ import { ReleaseCardImage } from "./ReleaseCardImage.component";
 
 const ReleaseCardComponent = ({
   release,
+  inActiveCrate = false,
   isHighlighted = false,
   isRandomMode = false,
   onExitRandomMode,
   onReleaseClick,
 }: ReleaseCardProps) => {
   "use memo";
-  const { isInCrate } = useCrate();
   const { openRelease, canOpen } = useReleaseOpenHandler({
     release,
     onReleaseClick,
@@ -47,7 +46,7 @@ const ReleaseCardComponent = ({
       <div
         className={classNames(styles.releaseCard, {
           [styles.highlighted]: isHighlighted,
-          [styles.inCrate]: isInCrate(release.instance_id),
+          [styles.inCrate]: inActiveCrate,
           [styles.randomMode]: isRandomMode,
         })}
         data-testid="fmdReleaseCard"

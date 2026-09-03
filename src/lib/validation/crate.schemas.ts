@@ -2,6 +2,7 @@ import {
   CRATE_MARKER_MAX_LENGTH,
   CRATE_NAME_MAX_LENGTH,
   CRATE_NOTES_MAX_LENGTH,
+  LEGACY_CRATE_MIGRATE_MAX,
 } from "src/constants/crate";
 import type {
   CrateLayoutPutItem,
@@ -89,6 +90,12 @@ const notesFieldSchema = z
 export const createCrateBodySchema = z.object({
   name: crateNameFieldSchema,
 });
+
+export const createCrateFormSchema = createCrateBodySchema.extend({
+  setAsDefault: z.boolean(),
+});
+
+export type CreateCrateFormValues = z.infer<typeof createCrateFormSchema>;
 
 export const editCrateNameFormSchema = createCrateBodySchema.extend({
   deleteConfirm: z.string(),
@@ -210,4 +217,29 @@ export const clearCrateFoundBodySchema = z.object({
   clear_found: z.literal(true, {
     error: "clear_found must be true",
   }),
+});
+
+export const setReleaseCrateMembershipBodySchema = z.object({
+  crateIds: z.array(
+    z
+      .string({ error: "crateIds must contain strings" })
+      .transform((value) => value.trim())
+      .pipe(
+        z.string().min(1, { message: "crateIds must be non-empty strings" }),
+      ),
+    { error: "crateIds must be an array" },
+  ),
+  release: z.custom<unknown>(
+    (value) => typeof value === "object" && value !== null,
+    { message: "release is required" },
+  ),
+});
+
+export const crateLegacyMigrateBodySchema = z.object({
+  releases: z
+    .array(z.unknown(), { error: "releases must be an array" })
+    .min(1, { message: "At least one release is required" })
+    .max(LEGACY_CRATE_MIGRATE_MAX, {
+      message: `At most ${LEGACY_CRATE_MIGRATE_MAX} releases can be migrated at once`,
+    }),
 });

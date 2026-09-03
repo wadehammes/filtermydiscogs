@@ -56,6 +56,7 @@ class CrateWithCountFactory extends BaseFactory<
   defaultTestCrate(attributes: Partial<CrateWithCount> = {}): CrateWithCount {
     return this.build({
       id: "crate-1",
+      name: "Test Crate",
       is_default: true,
       user_id: 123,
       releaseCount: 0,

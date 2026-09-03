@@ -256,7 +256,7 @@ describe("fetchCrates", () => {
     const result = await fetchCrates();
 
     expect(result).toEqual({ crates: mockCrates.data });
-    expect(mockFetch).toHaveBeenCalledWith("/api/crates?page=1&pageSize=100", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/crates?all=true", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -297,56 +297,13 @@ describe("fetchCrate", () => {
     const result = await fetchCrate(crateId);
 
     expect(result).toEqual(mockCrate);
-    expect(mockFetch).toHaveBeenCalledWith(
-      `/api/crates/${crateId}?page=1&pageSize=100`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}?all=true`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
-  });
-
-  it("fetches all crate pages when paginated", async () => {
-    const crateId = "crate-123";
-    const crate = crateFactory.build({ id: crateId });
-
-    mockFetch
-      .mockResolvedValueOnce(
-        mockFetchSuccess({
-          crate,
-          releases: wrapCrateReleases(releaseFactory.buildList(2)),
-          pagination: {
-            page: 1,
-            pageSize: 2,
-            total: 3,
-            totalPages: 2,
-            hasNextPage: true,
-            hasPreviousPage: false,
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        mockFetchSuccess({
-          crate,
-          releases: wrapCrateReleases(releaseFactory.buildList(1)),
-          pagination: {
-            page: 2,
-            pageSize: 2,
-            total: 3,
-            totalPages: 2,
-            hasNextPage: false,
-            hasPreviousPage: true,
-          },
-        }),
-      );
-
-    const result = await fetchCrate(crateId);
-
-    expect(result.releases).toHaveLength(3);
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+      credentials: "include",
+    });
   });
 
   it("throws error when response is not ok", async () => {

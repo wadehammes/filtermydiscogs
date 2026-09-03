@@ -41,6 +41,19 @@ export const CrateQueryKeys = {
     [...CrateQueryKeys.byUserId(userId), crateId] as const,
 };
 
+export const ReleaseCrateMembershipQueryKeys = {
+  all: () => ["releaseCrateMembership"] as const,
+  byUserAndInstance: (
+    userId: string | number | null,
+    instanceId: string | number | null,
+  ) =>
+    [
+      ...ReleaseCrateMembershipQueryKeys.all(),
+      userId,
+      String(instanceId),
+    ] as const,
+};
+
 export const PublicCrateQueryKeys = {
   byId: (crateId: string | null) => ["publicCrate", crateId] as const,
 };

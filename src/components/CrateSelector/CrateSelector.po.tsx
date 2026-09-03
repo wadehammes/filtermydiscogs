@@ -120,6 +120,16 @@ export class CrateSelectorPageObject extends BasePageObject {
     );
   }
 
+  mockCrates(crates: typeof this.crates) {
+    this.crates = crates;
+    mockApiResponse(
+      true,
+      mockApi.crates,
+      cratesResponseFactory.withCrates(crates),
+      apiError,
+    );
+  }
+
   mockRenameCrateResponse(crateName: string, crateId = "1") {
     mockApiResponse(
       true,

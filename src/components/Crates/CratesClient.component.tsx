@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { Page } from "src/components/Page/Page.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
@@ -12,18 +11,6 @@ import styles from "./CratesClient.module.css";
 export default function CratesClient() {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { crates, isLoading } = useCrate();
-
-  const sortedCrates = useMemo(
-    () =>
-      [...crates].sort((left, right) => {
-        if (left.is_default !== right.is_default) {
-          return left.is_default ? -1 : 1;
-        }
-
-        return left.name.localeCompare(right.name);
-      }),
-    [crates],
-  );
 
   if (shouldRedirectHome || isCheckingAuth) {
     return null;
@@ -42,10 +29,10 @@ export default function CratesClient() {
                   pack for your gig.
                 </p>
               </div>
-              {!isLoading && sortedCrates.length > 0 ? (
+              {!isLoading && crates.length > 0 ? (
                 <p className={styles.headerMeta}>
-                  {sortedCrates.length} crate
-                  {sortedCrates.length === 1 ? "" : "s"}
+                  {crates.length} crate
+                  {crates.length === 1 ? "" : "s"}
                 </p>
               ) : null}
             </header>
@@ -54,7 +41,7 @@ export default function CratesClient() {
               <div className={styles.loadingState}>
                 <PageLoader message="Loading crates..." />
               </div>
-            ) : sortedCrates.length === 0 ? (
+            ) : crates.length === 0 ? (
               <div className={styles.emptyState}>
                 <p className={styles.emptyTitle}>No crates yet</p>
                 <p className={styles.emptyCopy}>
@@ -63,7 +50,7 @@ export default function CratesClient() {
               </div>
             ) : (
               <div className={styles.crateGrid}>
-                {sortedCrates.map((crate) => (
+                {crates.map((crate) => (
                   <CrateHubCard crate={crate} key={crate.id} />
                 ))}
               </div>

@@ -28,8 +28,10 @@ interface ReleaseCardMetaProps {
   labelName?: string | undefined;
   labelUrl?: string | null | undefined;
   year?: number | undefined;
+  catno?: string | null | undefined;
   dateAdded?: string | null | undefined;
   className?: string | undefined;
+  metaClassName?: string | undefined;
 }
 
 function MetaSeparator() {
@@ -44,20 +46,25 @@ export function ReleaseCardMeta({
   labelName,
   labelUrl,
   year,
+  catno,
   dateAdded,
   className,
+  metaClassName,
 }: ReleaseCardMetaProps) {
   const showYear = year !== undefined && year !== 0;
+  const catnoStr = catno ? String(catno) : "";
+  const showCatno = Boolean(catnoStr);
   const formattedDateAdded = dateAdded ? formatDate(dateAdded) : null;
   const showLabel = Boolean(labelName);
-  const hasContent = showLabel || showYear || formattedDateAdded;
+  const hasContent =
+    showLabel || showYear || showCatno || Boolean(formattedDateAdded);
 
   if (!hasContent) {
     return null;
   }
 
   return (
-    <p className={classNames(styles.metaLine, className)}>
+    <div className={classNames(metaClassName ?? styles.metaLine, className)}>
       {showLabel &&
         (labelUrl ? (
           <a
@@ -77,12 +84,16 @@ export function ReleaseCardMeta({
         ))}
       {showLabel && showYear && <MetaSeparator />}
       {showYear && <span>{year}</span>}
-      {(showLabel || showYear) && formattedDateAdded && <MetaSeparator />}
+      {(showLabel || showYear) && showCatno && <MetaSeparator />}
+      {showCatno && <span>{catnoStr}</span>}
+      {(showLabel || showYear || showCatno) && formattedDateAdded && (
+        <MetaSeparator />
+      )}
       {formattedDateAdded && dateAdded && (
         <>
           Added <time dateTime={dateAdded}>{formattedDateAdded}</time>
         </>
       )}
-    </p>
+    </div>
   );
 }

@@ -16,7 +16,10 @@ import {
   fetchCrate,
   fetchCrates,
   fetchPublicCrate,
+  fetchReleaseCrateMembership,
+  migrateLegacyCrate,
   removeReleaseFromCrate,
+  setReleaseCrateMembership,
   setReleasePackedInCrate,
   syncCrates,
   updateCrate,
@@ -29,6 +32,7 @@ import {
 } from "src/api/endpoints/dashboard";
 import {
   fetchDiscogsRelease,
+  fetchDiscogsReleaseBatch,
   fetchDiscogsSearch,
 } from "src/api/endpoints/release";
 import {
@@ -54,12 +58,16 @@ export const api = {
   deleteCrate,
   discogsCollection: fetchDiscogsCollection,
   discogsRelease: fetchDiscogsRelease,
+  discogsReleaseBatch: fetchDiscogsReleaseBatch,
   discogsSearch: fetchDiscogsSearch,
   dismissSupportProjectToast,
   logout,
   mostCratedReleases: fetchMostCratedReleases,
+  migrateLegacyCrate,
   publicCrate: fetchPublicCrate,
+  releaseCrateMembership: fetchReleaseCrateMembership,
   removeReleaseFromCrate,
+  setReleaseCrateMembership,
   setReleasePackedInCrate,
   syncCrates,
   updateCollectionNote,

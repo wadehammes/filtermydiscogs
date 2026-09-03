@@ -3,7 +3,6 @@ import Image from "next/image";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
-import { useCrate } from "src/context/crate.context";
 import {
   useSelectedFormats,
   useSelectedStyles,
@@ -28,12 +27,12 @@ import titleStyles from "./ReleaseCardTitle.module.css";
 
 const MobileReleaseCardComponent = ({
   release,
+  inActiveCrate = false,
   isHighlighted = false,
   isRandomMode = false,
   onExitRandomMode,
   onReleaseClick,
 }: ReleaseCardProps) => {
-  const { isInCrate } = useCrate();
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
   const {
@@ -89,7 +88,7 @@ const MobileReleaseCardComponent = ({
       <div
         className={classNames(styles.releaseCard, {
           [styles.highlighted]: isHighlighted,
-          [styles.inCrate]: isInCrate(release.instance_id),
+          [styles.inCrate]: inActiveCrate,
           [styles.randomMode]: isRandomMode,
         })}
         data-testid="fmdMobileReleaseCard"

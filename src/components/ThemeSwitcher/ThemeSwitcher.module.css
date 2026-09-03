@@ -79,27 +79,7 @@
 }
 
 .submenuTrigger {
-  composes: menuitemhover from "../../styles/modules/menu-item-interaction.module.css";
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  cursor: pointer;
-  display: flex;
-  font-family: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  text-align: left;
-  transition: var(--transition-fast);
-  width: 100%;
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .submenuLabel {
@@ -119,44 +99,25 @@
 }
 
 .submenuPositioner {
-  z-index: var(--z-6-popover);
+  composes: positioner from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .submenuPopup {
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
   max-height: min(20rem, 70dvh);
   min-width: 10rem;
-  overflow-y: auto;
-  padding: var(--space-1);
+}
+
+.submenuList {
+  composes: list from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .radioItem {
-  composes: menuitemhover from "../../styles/modules/menu-item-interaction.module.css";
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  cursor: pointer;
-  display: flex;
-  font-family: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  text-align: left;
-  width: 100%;
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+}
 
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: -2px;
-  }
+.itemGroup {
+  composes: itemgroup from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .radioIndicator {

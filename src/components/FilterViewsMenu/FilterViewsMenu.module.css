@@ -122,63 +122,48 @@
   }
 }
 
-.positioner {
-  z-index: var(--z-6-popover);
-}
-
 .drawerPositioner {
   width: var(--anchor-width);
 }
 
-.menu {
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+.menuPopup {
+  composes: popupscroll from "../../styles/modules/inline-popover-menu.module.css";
   max-height: min(24rem, 70vh);
   max-width: min(18rem, calc(100vw - var(--space-6)));
   min-width: 14rem;
-  overflow: hidden auto;
-  padding: var(--space-1);
+}
+
+.menuPositioner {
+  composes: positioner from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuList {
+  composes: list from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuItemGroup {
+  composes: itemgroup from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuItem {
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuFooter {
+  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuItemNeutral {
+  composes: itemneutral from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.menuEmpty {
+  composes: empty from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .drawerMenu {
   min-width: 0;
   width: var(--anchor-width);
-}
-
-.emptyState {
-  color: var(--muted-foreground);
-  font-size: var(--text-sm);
-  margin: 0;
-  padding: var(--space-2) var(--space-3);
-}
-
-.menuItem {
-  composes: menuitemdisabled menuitemhover from "../../styles/modules/menu-item-interaction.module.css";
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  cursor: pointer;
-  display: flex;
-  font-family: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  gap: var(--space-2);
-  line-height: 1.25;
-  padding: var(--space-2) var(--space-3);
-  text-align: left;
-  text-decoration: none;
-  width: 100%;
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: -2px;
-  }
 }
 
 .menuItemView {
@@ -239,23 +224,5 @@
   color: inherit;
   display: block;
   text-decoration: none;
-  width: 100%;
-}
-
-.menuItemReset {
-  composes: menuitemhoverneutral from "../../styles/modules/menu-item-interaction.module.css";
-  color: var(--foreground);
-
-  &[data-disabled],
-  &[aria-disabled="true"] {
-    color: var(--muted-foreground);
-  }
-}
-
-.menuSeparator {
-  background: var(--border);
-  border: 0;
-  height: 1px;
-  margin: 0;
   width: 100%;
 }

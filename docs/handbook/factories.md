@@ -121,6 +121,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`Release.factory.ts`](../../src/tests/factories/Release.factory.ts) | `releaseFactory` | `DiscogsRelease` |
 | [`Collection.factory.ts`](../../src/tests/factories/Collection.factory.ts) | `collectionFactory` | `DiscogsCollection` |
 | [`Crate.factory.ts`](../../src/tests/factories/Crate.factory.ts) | `crateFactory` | Prisma `Crate` |
+| [`CrateRelease.factory.ts`](../../src/tests/factories/CrateRelease.factory.ts) | `crateReleaseFactory` | Prisma `CrateRelease` |
 | [`CrateWithCount.factory.ts`](../../src/tests/factories/CrateWithCount.factory.ts) | `crateWithCountFactory` | `Crate` + `releaseCount` (UI list shape) |
 | [`SelectOption.factory.ts`](../../src/tests/factories/SelectOption.factory.ts) | `selectOptionFactory` | Select dropdown option |
 | [`ReleaseNote.factory.ts`](../../src/tests/factories/ReleaseNote.factory.ts) | `releaseNoteFactory` | `ReleaseNote` |
@@ -151,6 +152,7 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `selectOptionFactory` | `defaultSelectOptions()` | Select PO default option list |
 | `crateWithCountFactory` | `defaultTestCrate()`, `fromCrate()`, `defaultCrateSelectorCrates()` | Crate list UI shapes and CrateSelector PO defaults |
 | `crateFactory` | `defaultTestCrate()`, `named()` | Default authenticated-user crate and named create flows |
+| `crateReleaseFactory` | `forInstance()` | Prisma crate release rows in route specs |
 | `cratesResponseFactory` | `empty()`, `withCrates()`, `withCrate()` | `fetchCrates` API response |
 | `crateWithReleasesResponseFactory` | `empty()`, `withReleases()` | `fetchCrate` API response |
 | [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) | (helper, not a factory) | PO / hook tests that mock **`src/api/urls`** and mount authenticated **`TestProviders`** without custom crate dataâ€”uses **`defaultTestCrate()`** presets above |

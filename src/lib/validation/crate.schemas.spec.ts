@@ -14,8 +14,10 @@ import {
 
 describe("createCrateBodySchema", () => {
   it("trims and accepts valid names", () => {
-    expect(createCrateBodySchema.parse({ name: "  Gig crate  " })).toEqual({
-      name: "Gig crate",
+    expect(
+      createCrateBodySchema.parse({ name: "  Weekend favorites  " }),
+    ).toEqual({
+      name: "Weekend favorites",
     });
   });
 

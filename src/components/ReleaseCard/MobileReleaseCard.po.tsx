@@ -24,12 +24,17 @@ export class MobileReleaseCardPageObject extends ReleaseCardPageObject {
   private mobileReleaseCardElement(
     overrides: MobileReleaseCardRenderProps = {},
   ) {
-    const { release, ...rest } = overrides;
+    const { release, inActiveCrate, ...rest } = overrides;
+    const resolvedRelease = release ?? releaseFactory.withDisplayDefaults();
 
     return (
       <ReleasePlaybackTestTree>
         <MobileReleaseCard
-          release={release ?? releaseFactory.withDisplayDefaults()}
+          release={resolvedRelease}
+          inActiveCrate={this.resolveInActiveCrate(
+            resolvedRelease,
+            inActiveCrate,
+          )}
           {...rest}
         />
       </ReleasePlaybackTestTree>

@@ -34,13 +34,24 @@ export const getSiteUrl = (): string => {
 export const getResourceUrl = ({
   resourceUrl,
   type,
+  id,
 }: {
-  resourceUrl: string | undefined;
+  resourceUrl?: string | undefined;
   type: "artist" | "label" | "release";
+  id?: number | string | null | undefined;
 }): string | null => {
-  if (!resourceUrl) return null;
-  const id = resourceUrl.split("/").pop();
-  return id ? `https://www.discogs.com/${type}/${id}` : null;
+  if (resourceUrl) {
+    const parsedId = resourceUrl.split("/").filter(Boolean).pop();
+    if (parsedId && /^\d+$/.test(parsedId)) {
+      return `https://www.discogs.com/${type}/${parsedId}`;
+    }
+  }
+
+  if (id != null && id !== "" && /^\d+$/.test(String(id))) {
+    return `https://www.discogs.com/${type}/${id}`;
+  }
+
+  return null;
 };
 
 /**
