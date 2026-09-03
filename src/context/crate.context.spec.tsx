@@ -533,6 +533,80 @@ describe("CrateProvider", () => {
     });
   });
 
+  it("refetches crate detail when release count and loaded releases disagree", async () => {
+    const existingRelease = releaseFactory.build({ instance_id: "release-1" });
+    const addedRelease = releaseFactory.build({ instance_id: "release-2" });
+    const activeCrate = crateFactory.build({
+      id: "crate-1",
+      is_default: true,
+    });
+    const otherCrate = crateFactory.build({
+      id: "crate-2",
+      is_default: false,
+    });
+
+    mockApi.crates.mockResolvedValue(
+      cratesResponseFactory.withCrates([
+        crateWithCountFactory.build({
+          id: "crate-1",
+          is_default: true,
+          releaseCount: 0,
+        }),
+        crateWithCountFactory.build({
+          id: "crate-2",
+          is_default: false,
+          releaseCount: 1,
+        }),
+      ]),
+    );
+
+    mockApi.crate.mockImplementation(async (crateId: string) => {
+      if (crateId === "crate-1") {
+        return crateWithReleasesResponseFactory.withReleases(activeCrate, []);
+      }
+
+      return crateWithReleasesResponseFactory.withReleases(otherCrate, [
+        existingRelease,
+        addedRelease,
+      ]);
+    });
+
+    const { result } = renderHook(() => useCrate(), {
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeCrateId).toBe("crate-1");
+    });
+
+    mockApi.crate.mockClear();
+
+    await act(async () => {
+      result.current.addReleaseToCrate("crate-2", addedRelease);
+    });
+
+    await waitFor(() => {
+      expect(
+        result.current.crates.find((crate) => crate.id === "crate-2")
+          ?.releaseCount,
+      ).toBe(2);
+    });
+
+    act(() => {
+      result.current.selectCrate("crate-2");
+    });
+
+    await waitFor(() => {
+      expect(result.current.selectedReleases).toHaveLength(2);
+    });
+
+    expect(mockApi.crate).toHaveBeenCalledWith("crate-2");
+  });
+
   it("throws error when useCrate is used outside CrateProvider", () => {
     const consoleSpy = jest
       .spyOn(console, "error")

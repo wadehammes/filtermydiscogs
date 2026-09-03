@@ -1,19 +1,14 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback } from "react";
 import {
   ModalToolbar,
-  ModalToolbarAction,
   ModalToolbarLink,
 } from "src/components/ModalToolbar/ModalToolbar.component";
 import modalToolbarStyles from "src/components/ModalToolbar/ModalToolbar.module.css";
+import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import styles from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.module.css";
-import { useCrate } from "src/context/crate.context";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
-import PlusIcon from "src/styles/icons/plus-thin.svg";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
@@ -27,43 +22,22 @@ export const ReleaseSummaryHeroToolbar = ({
   release,
   onClose,
 }: ReleaseSummaryHeroToolbarProps) => {
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
-  const inCrate = isInCrate(release.instance_id);
   const releaseUrl = getResourceUrl({
     resourceUrl: release.basic_information.resource_url,
     type: "release",
   });
 
-  const handleCrateToggle = useCallback(() => {
-    if (inCrate) {
-      removeFromCrate(release.instance_id);
-      return;
-    }
-
-    addToCrate(release);
-    if (!isMobile) {
-      openDrawer();
-    }
-  }, [addToCrate, inCrate, isMobile, openDrawer, release, removeFromCrate]);
-
   return (
     <ModalToolbar {...definedProps({ onClose })}>
-      <ModalToolbarAction
-        className={classNames({
-          [modalToolbarStyles.actionButtonActive]: inCrate,
-        })}
-        onClick={handleCrateToggle}
-        aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-        aria-pressed={inCrate}
-        title={inCrate ? "Remove from Crate" : "Add to Crate"}
-      >
-        {inCrate ? (
-          <MinusIcon className={styles.actionIcon} aria-hidden />
-        ) : (
-          <PlusIcon className={styles.actionIcon} aria-hidden />
-        )}
-      </ModalToolbarAction>
+      <ReleaseCrateMenu
+        release={release}
+        triggerVariant="custom"
+        actionClass={(active) =>
+          classNames(modalToolbarStyles.actionButton, {
+            [modalToolbarStyles.actionButtonActive]: active,
+          })
+        }
+      />
       {releaseUrl ? (
         <ModalToolbarLink
           href={releaseUrl}

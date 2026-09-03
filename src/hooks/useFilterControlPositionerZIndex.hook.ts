@@ -25,7 +25,7 @@ export const useFilterControlPositionerZIndex = (
     const inModal = trigger.closest('[aria-modal="true"]') !== null;
 
     if (inModal) {
-      setPositionerStyle({ zIndex: "calc(var(--z-5-modal) + 1)" });
+      setPositionerStyle({ zIndex: "var(--z-7-tooltip)" });
       return;
     }
 

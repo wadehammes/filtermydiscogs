@@ -2,8 +2,9 @@ import classNames from "classnames";
 import Image from "next/image";
 import type React from "react";
 import { memo, useCallback } from "react";
+import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
-import { useCrate } from "src/context/crate.context";
+import { useCrateState } from "src/context/crate.context";
 import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
@@ -19,7 +20,8 @@ const ReleaseListItemComponent = ({
   onExitRandomMode,
   onReleaseClick,
 }: ReleaseListItemProps) => {
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+  const { activeCrateInstanceIds } = useCrateState();
+  const inActiveCrate = activeCrateInstanceIds.has(String(release.instance_id));
   const selectedStyles = useSelectedStyles();
   const {
     labels,
@@ -71,21 +73,6 @@ const ReleaseListItemComponent = ({
     [handlePillClick],
   );
 
-  const handleCrateToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (isInCrate(release.instance_id)) {
-        removeFromCrate(release.instance_id);
-      } else {
-        addToCrate(release);
-        openDrawer();
-      }
-    },
-    [isInCrate, addToCrate, removeFromCrate, openDrawer, release],
-  );
-
   const { openRelease, canOpen } = useReleaseOpenHandler({
     release,
     onReleaseClick,
@@ -103,7 +90,7 @@ const ReleaseListItemComponent = ({
       data-testid="fmdReleaseListItem"
       className={classNames(styles.releaseItem, {
         [styles.highlighted]: isHighlighted,
-        [styles.inCrate]: isInCrate(release.instance_id),
+        [styles.inCrate]: inActiveCrate,
       })}
     >
       <div
@@ -210,20 +197,12 @@ const ReleaseListItemComponent = ({
         </div>
 
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.crateButton}
-            onClick={handleCrateToggle}
-            aria-label={
-              isInCrate(release.instance_id)
-                ? "Remove from crate"
-                : "Add to crate"
-            }
-          >
-            {isInCrate(release.instance_id)
-              ? "− Remove from Crate"
-              : "+ Add to Crate"}
-          </button>
+          <ReleaseCrateMenu
+            release={release}
+            triggerVariant="custom"
+            triggerStyle="text"
+            actionClass={() => styles.crateButton}
+          />
           {releaseUrl && (
             <a
               href={releaseUrl}

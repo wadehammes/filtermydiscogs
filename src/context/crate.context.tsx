@@ -151,7 +151,6 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     isLoading: isLoadingCrate,
     isFetching: isFetchingCrate,
     isError: isCrateError,
-    refetch: refetchActiveCrate,
   } = useCrateQuery({
     userId,
     crateId: activeCrateId,
@@ -261,7 +260,10 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
       !(activeCrateId && userId && canLoadCrates) ||
       isLoadingCrate ||
       isFetchingCrate ||
-      isCrateError
+      isCrateError ||
+      addReleaseMutation.isPending ||
+      removeReleaseMutation.isPending ||
+      setMembershipMutation.isPending
     ) {
       return;
     }
@@ -271,26 +273,27 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
     const mismatchKey = `${userId}:${activeCrateId}`;
 
     if (
-      expectedReleaseCount > 0 &&
-      crateReleaseItems.length === 0 &&
+      expectedReleaseCount !== crateReleaseItems.length &&
       mismatchRefetchKeyRef.current !== mismatchKey
     ) {
       mismatchRefetchKeyRef.current = mismatchKey;
-      queryClient.removeQueries({
+      void queryClient.invalidateQueries({
         queryKey: CrateQueryKeys.byUserAndId(userId, activeCrateId),
+        refetchType: "active",
       });
-      void refetchActiveCrate();
     }
   }, [
     activeCrateId,
-    crateReleaseItems.length,
+    addReleaseMutation.isPending,
     canLoadCrates,
+    crateReleaseItems.length,
     crates,
     isCrateError,
     isFetchingCrate,
     isLoadingCrate,
     queryClient,
-    refetchActiveCrate,
+    removeReleaseMutation.isPending,
+    setMembershipMutation.isPending,
     userId,
   ]);
 

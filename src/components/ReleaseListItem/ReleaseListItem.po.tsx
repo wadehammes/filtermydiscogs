@@ -18,6 +18,7 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseListItemProps } from "src/types";
@@ -100,6 +101,13 @@ export class ReleaseListItemPageObject extends BasePageObject {
       true,
       mockApi.removeReleaseFromCrate,
       crateMutationSuccessFactory.build(),
+      apiError,
+    );
+
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build(),
       apiError,
     );
   }

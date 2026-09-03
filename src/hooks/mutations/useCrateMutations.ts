@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { trackCrateLayoutUpdated } from "src/analytics/productAnalyticsEvents";
 import { api } from "src/api/urls";
-import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
 import {
   CrateQueryKeys,
   CratesQueryKeys,
@@ -421,89 +420,17 @@ export const useAddReleaseToCrateMutation = (userId: string | null) => {
         crateId,
       );
 
-      const normalizedRelease = {
-        ...release,
-        instance_id: String(release.instance_id),
-      };
-      const releaseId = String(release.instance_id);
-
-      queryClient.setQueryData<CrateWithReleasesResponse>(
-        CrateQueryKeys.byUserAndId(userId, crateId),
-        (old) => {
-          if (!old) {
-            return {
-              crate: {
-                user_id: parseInt(userId || "0", 10),
-                id: crateId,
-                name: "",
-                username: null,
-                is_default: false,
-                private: true,
-                packed_enabled: false,
-                notes: null,
-                created_at: new Date(),
-                updated_at: new Date(),
-              },
-              releases: [
-                {
-                  release: normalizedRelease,
-                  found_at: null,
-                  sort_order: CRATE_LAYOUT_SORT_STEP,
-                },
-              ],
-              markers: [],
-            };
-          }
-
-          const alreadyExists = old.releases.some(
-            (item) => String(item.release.instance_id) === releaseId,
-          );
-
-          if (alreadyExists) {
-            return old;
-          }
-
-          const nextSortOrder = getPrependCrateLayoutSortOrder([
-            ...old.releases.map((item) => item.sort_order ?? 0),
-            ...(old.markers ?? []).map((marker) => marker.sort_order),
-          ]);
-
-          return {
-            ...old,
-            releases: [
-              {
-                release: normalizedRelease,
-                found_at: null,
-                sort_order: nextSortOrder,
-              },
-              ...old.releases,
-            ],
-          };
-        },
-      );
-
-      queryClient.setQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
-        (old) => {
-          if (!old) return old;
-          return {
-            crates: old.crates.map((crate) => {
-              if (crate.id === crateId) {
-                return {
-                  ...crate,
-                  releaseCount: (crate.releaseCount || 0) + 1,
-                };
-              }
-              return crate;
-            }),
-          };
-        },
-      );
+      applyAddReleaseToCrateCache({
+        queryClient,
+        userId,
+        crateId,
+        release,
+      });
 
       patchReleaseCrateMembershipCache({
         queryClient,
         userId,
-        instanceId: releaseId,
+        instanceId: String(release.instance_id),
         crateId,
         member: true,
       });
@@ -537,36 +464,12 @@ export const useRemoveReleaseFromCrateMutation = (userId: string | null) => {
         crateId,
       );
 
-      queryClient.setQueryData<CrateWithReleasesResponse>(
-        CrateQueryKeys.byUserAndId(userId, crateId),
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            releases: old.releases.filter(
-              (item) => String(item.release.instance_id) !== String(releaseId),
-            ),
-          };
-        },
-      );
-
-      queryClient.setQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
-        (old) => {
-          if (!old) return old;
-          return {
-            crates: old.crates.map((crate) => {
-              if (crate.id === crateId) {
-                return {
-                  ...crate,
-                  releaseCount: Math.max((crate.releaseCount || 0) - 1, 0),
-                };
-              }
-              return crate;
-            }),
-          };
-        },
-      );
+      applyRemoveReleaseFromCrateCache({
+        queryClient,
+        userId,
+        crateId,
+        releaseId,
+      });
 
       patchReleaseCrateMembershipCache({
         queryClient,
@@ -606,62 +509,18 @@ const applyAddReleaseToCrateCache = ({
     ...release,
     instance_id: String(release.instance_id),
   };
-  const releaseId = String(release.instance_id);
+  const releaseId = normalizedRelease.instance_id;
+  const crateDetailKey = CrateQueryKeys.byUserAndId(userId, crateId);
+  const existingDetail =
+    queryClient.getQueryData<CrateWithReleasesResponse>(crateDetailKey);
 
-  queryClient.setQueryData<CrateWithReleasesResponse>(
-    CrateQueryKeys.byUserAndId(userId, crateId),
-    (old) => {
-      if (!old) {
-        return {
-          crate: {
-            user_id: parseInt(userId || "0", 10),
-            id: crateId,
-            name: "",
-            username: null,
-            is_default: false,
-            private: true,
-            packed_enabled: false,
-            notes: null,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-          releases: [
-            {
-              release: normalizedRelease,
-              found_at: null,
-              sort_order: CRATE_LAYOUT_SORT_STEP,
-            },
-          ],
-          markers: [],
-        };
-      }
-
-      const alreadyExists = old.releases.some(
-        (item) => String(item.release.instance_id) === releaseId,
-      );
-
-      if (alreadyExists) {
-        return old;
-      }
-
-      const nextSortOrder = getPrependCrateLayoutSortOrder([
-        ...old.releases.map((item) => item.sort_order ?? 0),
-        ...(old.markers ?? []).map((marker) => marker.sort_order),
-      ]);
-
-      return {
-        ...old,
-        releases: [
-          {
-            release: normalizedRelease,
-            found_at: null,
-            sort_order: nextSortOrder,
-          },
-          ...old.releases,
-        ],
-      };
-    },
-  );
+  if (
+    existingDetail?.releases.some(
+      (item) => String(item.release.instance_id) === releaseId,
+    )
+  ) {
+    return;
+  }
 
   queryClient.setQueryData<CratesResponse>(
     CratesQueryKeys.byUserId(userId),
@@ -672,7 +531,7 @@ const applyAddReleaseToCrateCache = ({
           if (crate.id === crateId) {
             return {
               ...crate,
-              releaseCount: (crate.releaseCount || 0) + 1,
+              releaseCount: (crate.releaseCount ?? 0) + 1,
             };
           }
           return crate;
@@ -680,6 +539,34 @@ const applyAddReleaseToCrateCache = ({
       };
     },
   );
+
+  if (!existingDetail) {
+    void queryClient.invalidateQueries({ queryKey: crateDetailKey });
+    return;
+  }
+
+  queryClient.setQueryData<CrateWithReleasesResponse>(crateDetailKey, (old) => {
+    if (!old) {
+      return old;
+    }
+
+    const nextSortOrder = getPrependCrateLayoutSortOrder([
+      ...old.releases.map((item) => item.sort_order ?? 0),
+      ...(old.markers ?? []).map((marker) => marker.sort_order),
+    ]);
+
+    return {
+      ...old,
+      releases: [
+        {
+          release: normalizedRelease,
+          found_at: null,
+          sort_order: nextSortOrder,
+        },
+        ...old.releases,
+      ],
+    };
+  });
 };
 
 const applyRemoveReleaseFromCrateCache = ({
@@ -693,18 +580,18 @@ const applyRemoveReleaseFromCrateCache = ({
   crateId: string;
   releaseId: string;
 }) => {
-  queryClient.setQueryData<CrateWithReleasesResponse>(
-    CrateQueryKeys.byUserAndId(userId, crateId),
-    (old) => {
-      if (!old) return old;
-      return {
-        ...old,
-        releases: old.releases.filter(
-          (item) => String(item.release.instance_id) !== String(releaseId),
-        ),
-      };
-    },
-  );
+  const crateDetailKey = CrateQueryKeys.byUserAndId(userId, crateId);
+  const existingDetail =
+    queryClient.getQueryData<CrateWithReleasesResponse>(crateDetailKey);
+  const normalizedReleaseId = String(releaseId);
+  const wasInDetail =
+    existingDetail?.releases.some(
+      (item) => String(item.release.instance_id) === normalizedReleaseId,
+    ) ?? false;
+
+  if (existingDetail && !wasInDetail) {
+    return;
+  }
 
   queryClient.setQueryData<CratesResponse>(
     CratesQueryKeys.byUserId(userId),
@@ -715,7 +602,7 @@ const applyRemoveReleaseFromCrateCache = ({
           if (crate.id === crateId) {
             return {
               ...crate,
-              releaseCount: Math.max((crate.releaseCount || 0) - 1, 0),
+              releaseCount: Math.max((crate.releaseCount ?? 0) - 1, 0),
             };
           }
           return crate;
@@ -723,6 +610,21 @@ const applyRemoveReleaseFromCrateCache = ({
       };
     },
   );
+
+  if (!existingDetail) {
+    void queryClient.invalidateQueries({ queryKey: crateDetailKey });
+    return;
+  }
+
+  queryClient.setQueryData<CrateWithReleasesResponse>(crateDetailKey, (old) => {
+    if (!old) return old;
+    return {
+      ...old,
+      releases: old.releases.filter(
+        (item) => String(item.release.instance_id) !== normalizedReleaseId,
+      ),
+    };
+  });
 };
 
 export const useSetReleaseCrateMembershipMutation = (userId: string | null) => {

@@ -45,7 +45,7 @@ describe("ReleaseListItem", () => {
     ).toBeInTheDocument();
   });
 
-  it("adds a release to the crate when the crate button is clicked", async () => {
+  it("adds a release to the crate when the crate menu is used", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();
 
@@ -55,7 +55,17 @@ describe("ReleaseListItem", () => {
       expect(po.mockApiHelpers.crates).toHaveBeenCalled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(po.defaultCrateWithCount.name, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(po.mockApiHelpers.addReleaseToCrate).toHaveBeenCalled();
@@ -71,11 +81,21 @@ describe("ReleaseListItem", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: "Remove from crate" }),
+        screen.getByRole("button", { name: "Manage crates" }),
       ).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Remove from crate" }));
+    await user.click(screen.getByRole("button", { name: "Manage crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(po.defaultCrateWithCount.name, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(po.mockApiHelpers.removeReleaseFromCrate).toHaveBeenCalled();

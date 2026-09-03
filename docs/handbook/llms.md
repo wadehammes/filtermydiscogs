@@ -16,7 +16,8 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | API route request validation (Zod) | [database.md](database.md) (Request validation) |
 | Component folders, naming, tests | [components.md](components.md) |
 | Base UI dialogs, popovers, shared UI primitives | [components.md](components.md) (`AppDialog/`, `ScrollModal/`) + [conventions.md](conventions.md) (CSS → modal / portal) |
-| Base UI Menu (`UserActions`, `CrateDetailActionsMenu`) | [conventions.md](conventions.md) (CSS → modal / portal) + [`UserActions`](../../src/components/StickyHeaderBar/UserActions.tsx) |
+| Base UI Menu (`UserActions`, `ReleaseCrateMenu`, `CrateDetailActionsMenu`) | [conventions.md](conventions.md) (CSS → modal / portal) + [components.md](components.md) (`ReleaseCrateMenu`) + [`UserActions`](../../src/components/StickyHeaderBar/UserActions.tsx) |
+| Add release to crate / multi-crate membership UI | [components.md](components.md) (`ReleaseCrateMenu`) + [patterns.md](patterns.md) (Crates) |
 | Base UI Select / Combobox (`Select`, `AutocompleteSelect`, filter controls) | [conventions.md](conventions.md) (CSS → mobile filter controls) + [`Select/`](../../src/components/Select/) + [`AutocompleteSelect/`](../../src/components/AutocompleteSelect/) |
 | Public landing, login page, `PublicAuthLayout` | [components.md](components.md) + [patterns.md](patterns.md) (auth flow) |
 | Filters, view mode, Jotai atoms, contexts, React Query, auth, public crates | [patterns.md](patterns.md) · stack detail in [architecture.md](architecture.md) |

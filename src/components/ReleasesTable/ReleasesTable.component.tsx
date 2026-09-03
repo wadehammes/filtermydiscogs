@@ -11,8 +11,9 @@ import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
+import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
-import { useCrate } from "src/context/crate.context";
+import { useCrateState } from "src/context/crate.context";
 import {
   useSelectedFormats,
   useSelectedStyles,
@@ -52,7 +53,7 @@ const columnHelper = createColumnHelper<
 
 export const ReleasesTable = memo<ReleasesTableProps>(
   ({ releases, onExitRandomMode, onReleaseClick }) => {
-    const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
+    const { activeCrateInstanceIds } = useCrateState();
     const selectedStyles = useSelectedStyles();
     const selectedFormats = useSelectedFormats();
     const { columnSizing, onColumnSizingChange } = useReleasesTableLayout();
@@ -60,18 +61,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
     const handlePillClick = usePillClickHandler({
       onExitRandomMode,
     });
-
-    const handleCheckboxChange = useCallback(
-      (release: DiscogsRelease) => {
-        if (isInCrate(release.instance_id)) {
-          removeFromCrate(release.instance_id);
-        } else {
-          addToCrate(release);
-          openDrawer();
-        }
-      },
-      [isInCrate, addToCrate, removeFromCrate, openDrawer],
-    );
 
     const handleImageClick = useCallback(
       (release: DiscogsRelease) => {
@@ -84,21 +73,19 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       () =>
         columnHelper.columns([
           columnHelper.display({
-            id: "checkbox",
+            id: "crate",
             header: "",
             cell: ({ row }) => {
               const release = row.original;
               return (
-                <div className={styles.checkboxCell}>
-                  <input
-                    type="checkbox"
-                    className={styles.crateCheckbox}
-                    checked={isInCrate(release.instance_id)}
-                    onChange={() => handleCheckboxChange(release)}
-                    aria-label={
-                      isInCrate(release.instance_id)
-                        ? "Remove from crate"
-                        : "Add to crate"
+                <div className={styles.crateCell}>
+                  <ReleaseCrateMenu
+                    release={release}
+                    triggerVariant="custom"
+                    actionClass={(active) =>
+                      classNames(styles.crateTrigger, {
+                        [styles.crateTriggerActive]: active,
+                      })
                     }
                   />
                 </div>
@@ -361,14 +348,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             maxSize: 480,
           }),
         ]),
-      [
-        selectedFormats,
-        selectedStyles,
-        handlePillClick,
-        handleCheckboxChange,
-        handleImageClick,
-        isInCrate,
-      ],
+      [selectedFormats, selectedStyles, handlePillClick, handleImageClick],
     );
 
     const table = useTable({
@@ -476,7 +456,9 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 <tr
                   key={key}
                   className={classNames(styles.dataRow, {
-                    [styles.inCrate]: isInCrate(row.original.instance_id),
+                    [styles.inCrate]: activeCrateInstanceIds.has(
+                      String(row.original.instance_id),
+                    ),
                   })}
                 >
                   {row.getAllCells().map((cell) => (

@@ -10,9 +10,11 @@ import {
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
@@ -106,6 +108,7 @@ const createWrapper = (onReleaseClick?: (instanceId: string) => void) => {
 };
 
 const defaultCrate = crateFactory.defaultTestCrate();
+const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 
 const startPlaybackAndWaitForPlayer = async (
   user: ReturnType<typeof userEvent.setup>,
@@ -141,6 +144,12 @@ describe("ReleaseMiniPlayer", () => {
       true,
       mockApi.removeReleaseFromCrate,
       crateMutationSuccessFactory.build(),
+      new Error("Crate API request failed"),
+    );
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build(),
       new Error("Crate API request failed"),
     );
   });
@@ -748,7 +757,17 @@ describe("ReleaseMiniPlayer", () => {
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(defaultCrateWithCount.name, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(mockApi.addReleaseToCrate).toHaveBeenCalled();
@@ -764,6 +783,14 @@ describe("ReleaseMiniPlayer", () => {
       ]),
       new Error("Crate API request failed"),
     );
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build({
+        crateIds: [defaultCrateWithCount.id],
+      }),
+      new Error("Crate API request failed"),
+    );
 
     const user = userEvent.setup();
 
@@ -773,11 +800,21 @@ describe("ReleaseMiniPlayer", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: "Remove from crate" }),
+        screen.getByRole("button", { name: "Manage crates" }),
       ).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Remove from crate" }));
+    await user.click(screen.getByRole("button", { name: "Manage crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(defaultCrateWithCount.name, "i"),
+      }),
+    );
 
     await waitFor(() => {
       expect(mockApi.removeReleaseFromCrate).toHaveBeenCalled();
