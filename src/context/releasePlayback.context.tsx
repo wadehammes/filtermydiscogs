@@ -68,6 +68,7 @@ import {
   findVideoForTrack,
   flattenTracklist,
   getPreviewTrackPosition,
+  loadYoutubeVideoById,
   PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
@@ -95,6 +96,8 @@ interface PlayQueueItemOptions {
   startPaused?: boolean;
   youtubeVideoId?: string;
 }
+
+const BACKGROUND_PLAYBACK_WATCH_INTERVAL_MS = 2_000;
 
 const ReleasePlaybackStateContext = createContext<
   ReleasePlaybackState | undefined
@@ -172,6 +175,7 @@ export const ReleasePlaybackProvider = ({
   const similarQueueFetchInFlightRef = useRef(false);
   const queueManuallyExtendedRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
+  const backgroundPlaybackWatchIntervalRef = useRef<number | null>(null);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
   const embedVideoIdRef = useRef<string | null>(null);
   const lastSyncedActiveVideoIdRef = useRef<string | null>(null);
@@ -333,17 +337,71 @@ export const ReleasePlaybackProvider = ({
     }
   }, [attemptPlayFromGesture, clearPlayFromGestureRetries]);
 
+  const stopBackgroundPlaybackWatch = useCallback(() => {
+    if (backgroundPlaybackWatchIntervalRef.current === null) {
+      return;
+    }
+
+    window.clearInterval(backgroundPlaybackWatchIntervalRef.current);
+    backgroundPlaybackWatchIntervalRef.current = null;
+  }, []);
+
+  const nudgeBackgroundPlayback = useCallback(() => {
+    if (
+      document.visibilityState !== "hidden" ||
+      !isPlayingRef.current ||
+      isPausedRef.current
+    ) {
+      return;
+    }
+
+    const iframe = playbackIframeRef.current;
+    requestYoutubePlayerState(iframe);
+    pendingPlayFromGestureRef.current = true;
+    postYoutubePlayerCommand({ iframe, command: "playVideo" });
+  }, []);
+
+  const startBackgroundPlaybackWatch = useCallback(() => {
+    stopBackgroundPlaybackWatch();
+
+    if (
+      document.visibilityState !== "hidden" ||
+      !isPlayingRef.current ||
+      isPausedRef.current
+    ) {
+      return;
+    }
+
+    nudgeBackgroundPlayback();
+    backgroundPlaybackWatchIntervalRef.current = window.setInterval(
+      nudgeBackgroundPlayback,
+      BACKGROUND_PLAYBACK_WATCH_INTERVAL_MS,
+    );
+  }, [nudgeBackgroundPlayback, stopBackgroundPlaybackWatch]);
+
   const syncEmbedToVideoId = useCallback(
     (videoId: string) => {
+      const previousVideoId = embedVideoIdRef.current;
       embedVideoIdRef.current = videoId;
       setEmbedVideoId(videoId);
+
+      const iframe = playbackIframeRef.current;
+
+      if (iframe && previousVideoId !== videoId) {
+        loadYoutubeVideoById({ iframe, videoId });
+      }
 
       if (!isPausedRef.current) {
         pendingPlayFromGestureRef.current = true;
         schedulePlayFromGestureAttempts();
+
+        if (document.visibilityState === "hidden") {
+          postYoutubePlayerCommand({ iframe, command: "playVideo" });
+          startBackgroundPlaybackWatch();
+        }
       }
     },
-    [schedulePlayFromGestureAttempts],
+    [schedulePlayFromGestureAttempts, startBackgroundPlaybackWatch],
   );
 
   const persistPlaybackSession = useCallback(() => {
@@ -666,14 +724,18 @@ export const ReleasePlaybackProvider = ({
   useEffect(() => {
     return () => {
       clearPlayFromGestureRetries();
+      stopBackgroundPlaybackWatch();
     };
-  }, [clearPlayFromGestureRetries]);
+  }, [clearPlayFromGestureRetries, stopBackgroundPlaybackWatch]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible") {
+      if (document.visibilityState === "hidden") {
+        startBackgroundPlaybackWatch();
         return;
       }
+
+      stopBackgroundPlaybackWatch();
 
       if (!isPlayingRef.current) {
         return;
@@ -691,7 +753,27 @@ export const ReleasePlaybackProvider = ({
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [schedulePlayFromGestureAttempts]);
+  }, [
+    schedulePlayFromGestureAttempts,
+    startBackgroundPlaybackWatch,
+    stopBackgroundPlaybackWatch,
+  ]);
+
+  useEffect(() => {
+    if (document.visibilityState === "hidden" && isPlaying && !isPaused) {
+      startBackgroundPlaybackWatch();
+      return;
+    }
+
+    if (!isPlaying || isPaused) {
+      stopBackgroundPlaybackWatch();
+    }
+  }, [
+    isPaused,
+    isPlaying,
+    startBackgroundPlaybackWatch,
+    stopBackgroundPlaybackWatch,
+  ]);
 
   useEffect(() => {
     if (
@@ -754,6 +836,10 @@ export const ReleasePlaybackProvider = ({
         !isPausedRef.current
       ) {
         if (document.visibilityState === "hidden") {
+          pendingPlayFromGestureRef.current = true;
+          postYoutubePlayerCommand({ iframe, command: "playVideo" });
+          schedulePlayFromGestureAttempts();
+          startBackgroundPlaybackWatch();
           return;
         }
 
@@ -802,7 +888,11 @@ export const ReleasePlaybackProvider = ({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [clearPlayFromGestureRetries]);
+  }, [
+    clearPlayFromGestureRetries,
+    schedulePlayFromGestureAttempts,
+    startBackgroundPlaybackWatch,
+  ]);
 
   useEffect(() => {
     if (!isPlaying || previewVideo !== null) {

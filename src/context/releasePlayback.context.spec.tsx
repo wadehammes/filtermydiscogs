@@ -371,6 +371,11 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(result.current.isPaused).toBe(false);
+    expect(
+      mockPostYoutubePlayerCommand.mock.calls.some(
+        ([args]) => args.command === "playVideo" && args.iframe === iframe,
+      ),
+    ).toBe(true);
 
     act(() => {
       dispatchYoutubePlayerState({
@@ -383,6 +388,53 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.activeTrackPosition).toBe("B1");
       expect(result.current.queue).toHaveLength(0);
     });
+  });
+
+  it("polls player state while the document is hidden during playback", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockRequestYoutubePlayerState.mockClear();
+    mockPostYoutubePlayerCommand.mockClear();
+
+    act(() => {
+      setDocumentVisibilityState("hidden");
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+
+    expect(mockRequestYoutubePlayerState).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      jest.advanceTimersByTime(2_000);
+    });
+
+    expect(mockRequestYoutubePlayerState).toHaveBeenCalledTimes(2);
+    expect(
+      mockPostYoutubePlayerCommand.mock.calls.some(
+        ([args]) => args.command === "playVideo" && args.iframe === iframe,
+      ),
+    ).toBe(true);
+
+    jest.useRealTimers();
   });
 
   it("requests player state when the tab becomes visible again", async () => {
