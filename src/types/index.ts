@@ -66,6 +66,7 @@ export interface InfiniteQueryResult<T> extends QueryResult<T> {
 export interface ReleaseCardProps {
   release: DiscogsRelease;
   isHighlighted?: boolean;
+  inActiveCrate?: boolean;
   isRandomMode?: boolean;
   onExitRandomMode?: () => void;
   onReleaseClick?: (instanceId: string) => void;

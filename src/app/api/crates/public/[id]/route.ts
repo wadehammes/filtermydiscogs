@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { CRATE_DETAIL_ALL_MAX } from "src/constants/crate";
 import {
   getPaginationParams,
   rethrowNextInternalError,
@@ -36,7 +37,9 @@ export async function GET(
       return NextResponse.json({ error: "Invalid crate id" }, { status: 400 });
     }
 
-    const { skip, take, page, pageSize } = getPaginationParams(request);
+    const { skip, take, page, pageSize, all } = getPaginationParams(request, {
+      allMaxTake: CRATE_DETAIL_ALL_MAX,
+    });
 
     const crate = await findPublicCrateById(id);
 
@@ -106,12 +109,12 @@ export async function GET(
         crate: crateWithUsername,
         releases: mappedReleases,
         pagination: {
-          page,
-          pageSize,
+          page: all ? 1 : page,
+          pageSize: all ? total : pageSize,
           total,
-          totalPages: Math.ceil(total / pageSize),
-          hasNextPage: page < Math.ceil(total / pageSize),
-          hasPreviousPage: page > 1,
+          totalPages: all ? 1 : Math.ceil(total / pageSize),
+          hasNextPage: all ? false : page < Math.ceil(total / pageSize),
+          hasPreviousPage: all ? false : page > 1,
         },
       },
       {

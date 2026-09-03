@@ -26,6 +26,36 @@ export const fetchDiscogsRelease = async (
   }
 };
 
+export const fetchDiscogsReleaseBatch = async (
+  ids: string[],
+): Promise<Record<string, DiscogsReleaseDetail>> => {
+  try {
+    const response = await fetch("/api/release/batch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ ids }),
+    });
+
+    if (!response.ok) {
+      throw new ApiFetchError(response.status);
+    }
+
+    const data = (await response.json()) as {
+      releases: Record<string, DiscogsReleaseDetail>;
+    };
+
+    return data.releases ?? {};
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch releases");
+  }
+};
+
 export const fetchDiscogsSearch = async (
   query: string,
   page: number = 1,

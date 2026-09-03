@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
+import { CRATE_LIST_ALL_MAX } from "src/constants/crate";
 import {
   createErrorResponse,
   createPaginatedResponse,
@@ -24,7 +25,9 @@ export async function GET(request: NextRequest) {
     }
     const { userId: userIdNum, username } = verified.user;
 
-    const { skip, take, page, pageSize } = getPaginationParams(request);
+    const { skip, take, page, pageSize, all } = getPaginationParams(request, {
+      allMaxTake: CRATE_LIST_ALL_MAX,
+    });
 
     // Get total count for pagination
     const total = await prisma.crate.count({
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
     // Get crates for the user with release counts (paginated)
     const crates = await prisma.crate.findMany({
       where: { user_id: userIdNum },
-      orderBy: [{ is_default: "desc" }, { created_at: "asc" }],
+      orderBy: [{ is_default: "desc" }, { name: "asc" }],
       skip,
       take,
       select: {
@@ -135,7 +138,12 @@ export async function GET(request: NextRequest) {
       previewThumbs: previewThumbsByCrateId.get(crate.id) ?? [],
     }));
 
-    return createPaginatedResponse(cratesWithCounts, total, page, pageSize);
+    return createPaginatedResponse(
+      cratesWithCounts,
+      total,
+      all ? 1 : page,
+      all ? total : pageSize,
+    );
   } catch (error) {
     console.error("Error fetching crates:", error);
     return createErrorResponse(error);

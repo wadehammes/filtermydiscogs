@@ -55,9 +55,7 @@
 }
 
 .label {
-  color: var(--foreground);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  composes: label from "../../styles/modules/field-label.module.css";
 }
 
 .input {

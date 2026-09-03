@@ -55,6 +55,11 @@
   background: var(--primary);
   color: var(--primary-foreground);
 
+  &:hover {
+    background: var(--primary-hover);
+    color: var(--on-primary-hover);
+  }
+
   &:focus-visible {
     outline-color: var(--primary-foreground);
   }

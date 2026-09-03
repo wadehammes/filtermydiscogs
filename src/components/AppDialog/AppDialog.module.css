@@ -38,16 +38,12 @@
   max-height: min(90svh, calc(100% - var(--space-8)));
   max-width: 100%;
   overflow: hidden;
-  pointer-events: none;
+  pointer-events: auto;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
   width: 100%;
   z-index: calc(var(--z-5-modal) + 1);
-
-  & > * {
-    pointer-events: auto;
-  }
 
   @media (width >= 1024px) {
     max-width: min(

@@ -1,5 +1,4 @@
 import { Menu } from "@base-ui/react/menu";
-import classNames from "classnames";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
@@ -8,6 +7,7 @@ import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.con
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
+import menuStyles from "src/styles/modules/inline-popover-menu.module.css";
 import styles from "./UserActions.module.css";
 
 interface UserActionsProps {
@@ -65,54 +65,56 @@ export const UserActions = ({
           <Menu.Portal>
             <Menu.Positioner
               align="end"
-              className={styles.positioner}
+              className={menuStyles.positioner}
               sideOffset={8}
             >
-              <Menu.Popup className={styles.dropdown}>
-                <Menu.LinkItem
-                  closeOnClick
-                  render={
-                    <Link href="/settings" className={styles.dropdownLink} />
-                  }
-                  onClick={handleMenuNavigation}
-                >
-                  Settings
-                </Menu.LinkItem>
-                <Menu.LinkItem
-                  closeOnClick
-                  render={
-                    <Link href="/about" className={styles.dropdownLink} />
-                  }
-                  onClick={handleMenuNavigation}
-                >
-                  About
-                </Menu.LinkItem>
-                <Menu.LinkItem
-                  closeOnClick
-                  render={
-                    <SupportProjectNavLink
-                      className={classNames(
-                        styles.dropdownLink,
-                        styles.dropdownLinkWithIcon,
-                      )}
-                      onClick={handleMenuNavigation}
-                    />
-                  }
-                >
-                  <HeartThinIcon className={styles.supportNavIcon} />
-                  {SUPPORT_PROJECT_NAV_LABEL}
-                </Menu.LinkItem>
-                <Menu.Separator className={styles.menuSeparator} />
-                <ThemeSwitcher variant="menu" />
-                <Menu.Separator className={styles.menuSeparator} />
-                <Menu.Item
-                  className={styles.logoutItem}
-                  onClick={() => {
-                    void handleLogout();
-                  }}
-                >
-                  Logout
-                </Menu.Item>
+              <Menu.Popup className={styles.menuPopup}>
+                <div className={styles.menuList}>
+                  <Menu.LinkItem
+                    closeOnClick
+                    render={
+                      <Link href="/settings" className={styles.menuLink} />
+                    }
+                    className={styles.menuItem}
+                    onClick={handleMenuNavigation}
+                  >
+                    Settings
+                  </Menu.LinkItem>
+                  <Menu.LinkItem
+                    closeOnClick
+                    render={<Link href="/about" className={styles.menuLink} />}
+                    className={styles.menuItem}
+                    onClick={handleMenuNavigation}
+                  >
+                    About
+                  </Menu.LinkItem>
+                  <Menu.LinkItem
+                    closeOnClick
+                    render={
+                      <SupportProjectNavLink
+                        className={styles.menuLink}
+                        onClick={handleMenuNavigation}
+                      />
+                    }
+                    className={styles.menuItem}
+                  >
+                    <HeartThinIcon className={styles.supportNavIcon} />
+                    {SUPPORT_PROJECT_NAV_LABEL}
+                  </Menu.LinkItem>
+                </div>
+                <div className={styles.menuFooter}>
+                  <ThemeSwitcher variant="menu" />
+                </div>
+                <div className={styles.menuFooter}>
+                  <Menu.Item
+                    className={styles.logoutItem}
+                    onClick={() => {
+                      void handleLogout();
+                    }}
+                  >
+                    Logout
+                  </Menu.Item>
+                </div>
               </Menu.Popup>
             </Menu.Positioner>
           </Menu.Portal>

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { api } from "src/api/urls";
 import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
@@ -123,6 +124,86 @@ describe("ReleaseSummaryHero", () => {
     expect(mockOpenDrawer).not.toHaveBeenCalled();
   });
 
+  it("links artist names and title to Discogs", () => {
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+        title: "Test Album",
+      },
+    });
+    const artist = release.basic_information.artists[0];
+    if (!artist) {
+      throw new Error("Expected release to include at least one artist");
+    }
+
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+
+    const artistLink = screen.getByRole("link", { name: artist.name });
+    expect(artistLink).toHaveAttribute(
+      "href",
+      `https://www.discogs.com/artist/${artist.id}`,
+    );
+    expect(artistLink).toHaveAttribute("target", "_blank");
+    expect(artistLink).toHaveAttribute("rel", "noopener noreferrer");
+
+    const titleLink = screen.getByRole("link", { name: "Test Album" });
+    expect(titleLink).toHaveTextContent("Test Album");
+    expect(titleLink).toHaveAttribute(
+      "href",
+      `https://www.discogs.com/release/${RELEASE_ID}`,
+    );
+    expect(titleLink).toHaveAttribute("target", "_blank");
+    expect(titleLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("links artist names from Discogs ids when resource_url is missing", () => {
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+        artists: [{ name: "Test Artist", id: 4242 }],
+      },
+    });
+
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+
+    const artistLink = screen.getByRole("link", { name: "Test Artist" });
+    expect(artistLink).toHaveAttribute(
+      "href",
+      "https://www.discogs.com/artist/4242",
+    );
+  });
+
+  it("links label name to Discogs in the catalog meta line", () => {
+    const label = labelFactory.build({
+      name: "Dualtone Music Group",
+      catno: "DT-001",
+    });
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+        labels: [label],
+        year: 2026,
+      },
+    });
+
+    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+
+    const labelLink = screen.getByRole("link", {
+      name: "Dualtone Music Group",
+    });
+    expect(labelLink).toHaveAttribute(
+      "href",
+      `https://www.discogs.com/label/${label.id}`,
+    );
+    expect(labelLink).toHaveAttribute("target", "_blank");
+    expect(labelLink).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getByText("2026")).toBeInTheDocument();
+    expect(screen.getByText("DT-001")).toBeInTheDocument();
+  });
+
   it("shows catalog metadata and community rating on separate lines", async () => {
     setupReleaseDetailMock({
       community: {
@@ -144,9 +225,8 @@ describe("ReleaseSummaryHero", () => {
 
     render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
 
-    expect(
-      screen.getByText(/Test Label · \d{4} · ABC-123/),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Test Label")).toBeInTheDocument();
+    expect(screen.getByText("ABC-123")).toBeInTheDocument();
     expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
     await waitFor(() => {

@@ -32,7 +32,8 @@
   }
 
   @media (hover: hover) {
-    &:hover {
+    &:hover,
+    &:has([data-popup-open]) {
       box-shadow:
         0 12px 28px -10px color-mix(in srgb, var(--background) 14%, transparent),
         0 4px 10px -4px color-mix(in srgb, var(--background) 6%, transparent),
@@ -147,6 +148,13 @@
   text-align: left;
 }
 
+.headerTextStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 @container release-card (max-width: 11rem) {
   .mainContent {
     padding: var(--space-2) var(--space-2) var(--space-1);
@@ -225,9 +233,15 @@
   }
 }
 
-.crateActionButton[aria-pressed="true"] {
+.crateActionButton[aria-pressed="true"],
+.crateActionButtonActive {
   background: var(--primary);
   color: var(--primary-foreground);
+
+  &:hover {
+    background: var(--primary-hover);
+    color: var(--on-primary-hover);
+  }
 
   &:focus-visible {
     outline-color: var(--primary-foreground);
@@ -283,10 +297,14 @@
     }
   }
 
-  &:hover .tooltip,
-  &:focus-within .tooltip {
+  &:hover .tooltip {
     opacity: 1;
     visibility: visible;
+  }
+
+  &:has([data-popup-open]) .tooltip {
+    opacity: 0;
+    visibility: hidden;
   }
 }
 

@@ -2,7 +2,13 @@
 
 import classNames from "classnames";
 import Image from "next/image";
+import { useMemo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
+import { ReleaseCardMeta } from "src/components/ReleaseCard/ReleaseCardMeta.component";
+import {
+  ReleaseHeaderArtistLine,
+  ReleaseHeaderTitle,
+} from "src/components/ReleaseCard/ReleaseHeaderLinks.component";
 import { ReleaseHeroRatingsRow } from "src/components/ReleaseHeroRatingsRow/ReleaseHeroRatingsRow.component";
 import styles from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.module.css";
 import { ReleaseSummaryHeroToolbar } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component";
@@ -14,16 +20,16 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import typographyStyles from "src/styles/modules/typography.module.css";
-import type { DiscogsRelease } from "src/types";
+import type { DiscogsLabel, DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
-import { getReleaseImageUrl } from "src/utils/helpers";
-import {
-  formatArtistNames,
-  formatReleaseMetaLine,
-  getCommunityRatingFromReleaseDetail,
-} from "src/utils/releaseDisplay";
+import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getCommunityRatingFromReleaseDetail } from "src/utils/releaseDisplay";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
+import {
+  mergeReleaseHeaderArtists,
+  mergeReleaseHeaderLabel,
+} from "src/utils/releaseHeaderMetadata";
 import { parseReleaseId } from "src/utils/releaseNotes";
 
 interface ReleaseSummaryHeroProps {
@@ -51,16 +57,38 @@ export const ReleaseSummaryHero = ({
       ? getReleaseFormatTags(releaseFormats)
       : [];
   const genreStyleTags = getReleaseGenreStyleTags(basicInfo);
-  const artistNames = formatArtistNames(release);
+  const { artists, labels, year } = basicInfo;
+  const primaryLabel = labels[0];
   const releaseId = parseReleaseId(release);
   const showPersonalRating = authState.isAuthenticated && releaseId !== null;
   const { data: releaseDetail } = useDiscogsReleaseQuery({
     releaseId: releaseId !== null ? String(releaseId) : "",
     enabled: releaseId !== null,
   });
+  const heroArtists = useMemo(
+    () => mergeReleaseHeaderArtists(artists, releaseDetail?.artists),
+    [artists, releaseDetail?.artists],
+  );
+  const heroLabel = useMemo(
+    () =>
+      mergeReleaseHeaderLabel(
+        primaryLabel,
+        releaseDetail?.labels?.[0] as DiscogsLabel | undefined,
+      ),
+    [primaryLabel, releaseDetail?.labels],
+  );
+  const labelUrl = getResourceUrl({
+    resourceUrl: heroLabel?.resource_url,
+    type: "label",
+    id: heroLabel?.id,
+  });
+  const catno = heroLabel?.catno ? String(heroLabel.catno) : null;
+  const releaseUrl = getResourceUrl({
+    resourceUrl: basicInfo.resource_url,
+    type: "release",
+    id: releaseId,
+  });
   const communityRating = getCommunityRatingFromReleaseDetail(releaseDetail);
-  const catalogMetaLine = formatReleaseMetaLine({ release });
-  const showCatalogMetaLine = catalogMetaLine.length > 0;
   const showRatingsRow = showPersonalRating || communityRating !== null;
   const thumbUrl = getReleaseImageUrl({
     thumb: basicInfo.thumb,
@@ -97,27 +125,31 @@ export const ReleaseSummaryHero = ({
         </div>
         <div className={styles.details}>
           <div className={styles.detailsText}>
-            <p
+            <ReleaseHeaderArtistLine
+              artists={heroArtists}
               className={classNames(
                 typographyStyles.metaCaption,
                 styles.artist,
               )}
-            >
-              {artistNames}
-            </p>
-            <h2 className={styles.title} {...definedProps({ id: titleId })}>
-              {basicInfo.title}
-            </h2>
-            {showCatalogMetaLine ? (
-              <p
-                className={classNames(
-                  typographyStyles.metaCaption,
-                  styles.metaLine,
-                )}
-              >
-                {catalogMetaLine}
-              </p>
-            ) : null}
+            />
+            <ReleaseHeaderTitle
+              title={basicInfo.title}
+              releaseUrl={releaseUrl}
+              className={styles.title}
+              linkClassName={styles.heroTitleLink}
+              titleTag="h2"
+              {...definedProps({ titleId })}
+            />
+            <ReleaseCardMeta
+              labelName={heroLabel?.name}
+              labelUrl={labelUrl}
+              year={year}
+              catno={catno}
+              metaClassName={classNames(
+                typographyStyles.metaCaption,
+                styles.metaLine,
+              )}
+            />
             {showRatingsRow ? (
               <ReleaseHeroRatingsRow
                 communityRating={communityRating}

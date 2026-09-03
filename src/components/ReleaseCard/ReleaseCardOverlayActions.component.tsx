@@ -5,18 +5,15 @@ import type { MouseEvent } from "react";
 import { ReleaseNotesCardAction } from "src/components/ReleaseNotes/ReleaseNotesCardAction.component";
 import { useReleaseNotesEditorContext } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import { Spinner } from "src/components/Spinner/Spinner.component";
-import { useCrate } from "src/context/crate.context";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
-import PlusIcon from "src/styles/icons/plus-thin.svg";
 import { VinylThinIcon } from "src/styles/icons/VinylThinIcon.component";
 import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseCard.module.css";
+import { ReleaseCrateMenu } from "./ReleaseCrateMenu.component";
 import { useReleaseCardQueueAction } from "./useReleaseCardQueueAction.hook";
 
 interface ReleaseCardOverlayActionsProps {
@@ -37,8 +34,6 @@ export const ReleaseCardOverlayActions = ({
   className,
 }: ReleaseCardOverlayActionsProps) => {
   const { isDialogOpen } = useReleaseNotesEditorContext();
-  const { addToCrate, removeFromCrate, isInCrate, openDrawer } = useCrate();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
   const isVertical = layout === "vertical";
   const useMobileTapPadding = isVertical && notesVariant === "mobile";
   const slotClass = isVertical
@@ -46,7 +41,6 @@ export const ReleaseCardOverlayActions = ({
         [stackStyles.overlayActionSlotMobile]: useMobileTapPadding,
       })
     : styles.segmentSlot;
-  const inCrate = isInCrate(release.instance_id);
   const { handleAddToQueue, isReleaseInQueue, isAdding, isFetchingRelease } =
     useReleaseCardQueueAction(release);
 
@@ -59,60 +53,24 @@ export const ReleaseCardOverlayActions = ({
           [segmentedStyles.active]: active,
         });
 
-  const handleCrateToggle = (event: MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const crateAction = (
+    <ReleaseCrateMenu
+      release={release}
+      layout={layout}
+      actionClass={actionClass}
+      slotClass={slotClass}
+    />
+  );
 
-    if (inCrate) {
-      removeFromCrate(release.instance_id);
-      return;
-    }
-
-    addToCrate(release);
-    if (!isMobile) {
-      openDrawer();
-    }
-  };
+  if (isDialogOpen) {
+    return null;
+  }
 
   const handleReleaseOpen = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     onReleaseOpen?.();
   };
-
-  const crateTooltipLabel = inCrate ? "Remove from Crate" : "Add to Crate";
-
-  const crateAction = (
-    <div
-      className={
-        isVertical
-          ? slotClass
-          : classNames(styles.segmentSlot, styles.crateActionSlot)
-      }
-    >
-      <button
-        type="button"
-        className={isVertical ? actionClass(inCrate) : styles.crateActionButton}
-        onClick={handleCrateToggle}
-        aria-pressed={inCrate}
-        aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-        title={crateTooltipLabel}
-      >
-        {inCrate ? (
-          <MinusIcon className={stackStyles.actionIcon} />
-        ) : (
-          <PlusIcon className={stackStyles.actionIcon} />
-        )}
-      </button>
-      {!isVertical ? (
-        <span className={styles.tooltip}>{crateTooltipLabel}</span>
-      ) : null}
-    </div>
-  );
-
-  if (isDialogOpen) {
-    return null;
-  }
 
   const releaseDetailsAction = onReleaseOpen ? (
     <div className={slotClass}>

@@ -114,99 +114,109 @@ export const FilterViewsMenu = ({
           <Menu.Portal>
             <Menu.Positioner
               align="start"
-              className={classNames(styles.positioner, {
+              className={classNames(styles.menuPositioner, {
                 [styles.drawerPositioner]: variant === "drawer",
               })}
               sideOffset={8}
               style={positionerStyle}
             >
               <Menu.Popup
-                className={classNames(styles.menu, {
+                className={classNames(styles.menuPopup, {
                   [styles.drawerMenu]: variant === "drawer",
                 })}
               >
-                {emptyStateLabel ? (
-                  <p className={styles.emptyState}>{emptyStateLabel}</p>
-                ) : null}
-                <Menu.RadioGroup
-                  value={matchingView?.id ?? ""}
-                  onValueChange={(viewId) => {
-                    const view = filterViews.find((item) => item.id === viewId);
-                    if (!view || matchingView?.id === view.id) {
-                      return;
-                    }
+                <div className={styles.menuList}>
+                  {emptyStateLabel ? (
+                    <p className={styles.menuEmpty}>{emptyStateLabel}</p>
+                  ) : null}
+                  <Menu.RadioGroup
+                    className={styles.menuItemGroup}
+                    value={matchingView?.id ?? ""}
+                    onValueChange={(viewId) => {
+                      const view = filterViews.find(
+                        (item) => item.id === viewId,
+                      );
+                      if (!view || matchingView?.id === view.id) {
+                        return;
+                      }
 
-                    runAction(() => {
-                      applyView(view);
-                    });
-                  }}
-                >
-                  {filterViews.map((view) => {
-                    const isSelected = matchingView?.id === view.id;
+                      runAction(() => {
+                        applyView(view);
+                      });
+                    }}
+                  >
+                    {filterViews.map((view) => {
+                      const isSelected = matchingView?.id === view.id;
 
-                    return (
-                      <Menu.RadioItem
-                        key={view.id}
-                        className={classNames(
-                          styles.menuItem,
-                          styles.menuItemView,
-                        )}
-                        label={view.name}
-                        value={view.id}
-                        onClick={() => {
-                          if (!isSelected) {
-                            return;
-                          }
+                      return (
+                        <Menu.RadioItem
+                          key={view.id}
+                          className={classNames(
+                            styles.menuItem,
+                            styles.menuItemView,
+                          )}
+                          label={view.name}
+                          value={view.id}
+                          onClick={() => {
+                            if (!isSelected) {
+                              return;
+                            }
 
-                          runAction(resetFilters);
-                        }}
-                      >
-                        {isSelected ? (
-                          <span className={styles.checkIcon} aria-hidden>
-                            <CheckThinIcon strokeWidth={1.75} />
+                            runAction(resetFilters);
+                          }}
+                        >
+                          {isSelected ? (
+                            <span className={styles.checkIcon} aria-hidden>
+                              <CheckThinIcon strokeWidth={1.75} />
+                            </span>
+                          ) : null}
+                          <span
+                            className={styles.menuItemText}
+                            title={view.name}
+                          >
+                            {view.name}
                           </span>
-                        ) : null}
-                        <span className={styles.menuItemText} title={view.name}>
-                          {view.name}
-                        </span>
-                      </Menu.RadioItem>
-                    );
-                  })}
-                </Menu.RadioGroup>
-                <Menu.Separator className={styles.menuSeparator} />
-                <Menu.Item
-                  className={styles.menuItem}
-                  disabled={!(canSaveCurrentView && canAddView)}
-                  onClick={() => {
-                    closeMenu();
-                    setIsSaveDialogOpen(true);
-                  }}
-                >
-                  Save current view…
-                </Menu.Item>
-                <Menu.LinkItem
-                  closeOnClick
-                  render={
-                    <Link
-                      href="/settings?section=filters"
-                      className={styles.menuLink}
-                    />
-                  }
-                  className={styles.menuItem}
-                  onClick={closeMenu}
-                >
-                  Manage in Settings
-                </Menu.LinkItem>
-                <Menu.Separator className={styles.menuSeparator} />
-                <Menu.Item
-                  className={classNames(styles.menuItem, styles.menuItemReset)}
-                  disabled={!hasActiveFilters}
-                  onClick={() => {
-                    runAction(resetFilters);
-                  }}
-                >
-                  Reset filters
-                </Menu.Item>
+                        </Menu.RadioItem>
+                      );
+                    })}
+                  </Menu.RadioGroup>
+                </div>
+                <div className={styles.menuFooter}>
+                  <Menu.Item
+                    className={styles.menuItem}
+                    disabled={!(canSaveCurrentView && canAddView)}
+                    onClick={() => {
+                      closeMenu();
+                      setIsSaveDialogOpen(true);
+                    }}
+                  >
+                    Save current view…
+                  </Menu.Item>
+                  <Menu.LinkItem
+                    closeOnClick
+                    render={
+                      <Link
+                        href="/settings?section=filters"
+                        className={styles.menuLink}
+                      />
+                    }
+                    className={styles.menuItem}
+                    onClick={closeMenu}
+                  >
+                    Manage in Settings
+                  </Menu.LinkItem>
+                </div>
+                <div className={styles.menuFooter}>
+                  <Menu.Item
+                    className={styles.menuItemNeutral}
+                    disabled={!hasActiveFilters}
+                    onClick={() => {
+                      runAction(resetFilters);
+                    }}
+                  >
+                    Reset filters
+                  </Menu.Item>
+                </div>
               </Menu.Popup>
             </Menu.Positioner>
           </Menu.Portal>

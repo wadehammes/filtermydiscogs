@@ -17,6 +17,10 @@ export interface CratesResponse {
   crates: CrateWithCount[];
 }
 
+export interface ReleaseCrateMembershipResponse {
+  crateIds: string[];
+}
+
 export interface PaginationInfo {
   page: number;
   pageSize: number;

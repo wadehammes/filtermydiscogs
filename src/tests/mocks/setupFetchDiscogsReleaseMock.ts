@@ -7,12 +7,26 @@ export const setupFetchDiscogsReleaseMock = (
   defaultReleaseDetail: DiscogsReleaseDetail,
   releaseDetailsById: Record<string, DiscogsReleaseDetail> = {},
 ) => {
-  mockApi.discogsRelease.mockImplementation(async (releaseId) => {
+  const resolveDetail = (releaseId: string): DiscogsReleaseDetail => {
     const detail = releaseDetailsById[releaseId] ?? defaultReleaseDetail;
 
     return {
       ...detail,
       id: Number(releaseId) || detail.id,
     };
+  };
+
+  mockApi.discogsRelease.mockImplementation(async (releaseId) =>
+    resolveDetail(releaseId),
+  );
+
+  mockApi.discogsReleaseBatch.mockImplementation(async (ids) => {
+    const releases: Record<string, DiscogsReleaseDetail> = {};
+
+    for (const releaseId of ids) {
+      releases[releaseId] = resolveDetail(releaseId);
+    }
+
+    return releases;
   });
 };

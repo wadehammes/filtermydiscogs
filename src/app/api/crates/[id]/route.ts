@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { CRATE_DETAIL_ALL_MAX } from "src/constants/crate";
 import {
   createErrorResponse,
   getPaginationParams,
@@ -41,7 +42,9 @@ export async function GET(
     const { userId: userIdNum } = verified.user;
 
     const { id } = await params;
-    const { skip, take, page, pageSize } = getPaginationParams(request);
+    const { skip, take, page, pageSize, all } = getPaginationParams(request, {
+      allMaxTake: CRATE_DETAIL_ALL_MAX,
+    });
 
     // Get the crate first (without releases to reduce memory usage)
     const crate = await prisma.crate.findUnique({
@@ -96,12 +99,12 @@ export async function GET(
       releases: mappedReleases,
       markers: mappedMarkers,
       pagination: {
-        page,
-        pageSize,
+        page: all ? 1 : page,
+        pageSize: all ? total : pageSize,
         total,
-        totalPages: Math.ceil(total / pageSize),
-        hasNextPage: page < Math.ceil(total / pageSize),
-        hasPreviousPage: page > 1,
+        totalPages: all ? 1 : Math.ceil(total / pageSize),
+        hasNextPage: all ? false : page < Math.ceil(total / pageSize),
+        hasPreviousPage: all ? false : page > 1,
       },
     });
   } catch (error) {

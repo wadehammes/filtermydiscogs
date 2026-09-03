@@ -1,0 +1,96 @@
+.dialog {
+  composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 25rem;
+  padding: var(--space-6);
+  width: min(calc(100vw - var(--space-8)), 25rem);
+
+  & input:not(:is([type="checkbox"], [type="radio"])),
+  & textarea,
+  & select {
+    font-size: 16px;
+  }
+
+  .title {
+    color: var(--foreground);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .description {
+    color: var(--muted-foreground);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .checkboxLabel {
+    align-items: center;
+    color: var(--foreground);
+    cursor: pointer;
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+
+    &:has(input:disabled) {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  .checkbox {
+    accent-color: var(--primary);
+    flex-shrink: 0;
+    height: 1rem;
+    margin: 0;
+    width: 1rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+  }
+}
+
+.label {
+  composes: label from "../../styles/modules/field-label.module.css";
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.input {
+  background: var(--background);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  height: var(--input-height);
+  padding: 0 var(--space-3);
+  width: 100%;
+
+  &:focus-visible {
+    border-color: var(--primary);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}

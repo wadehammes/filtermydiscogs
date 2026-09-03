@@ -37,6 +37,18 @@ jest.mock("src/lib/api-helpers", () => ({
   ),
   getPaginationParams: (request: NextRequest) => {
     const searchParams = request.nextUrl.searchParams;
+    const all = searchParams.get("all") === "true";
+
+    if (all) {
+      return {
+        skip: 0,
+        take: 500,
+        page: 1,
+        pageSize: 500,
+        all: true,
+      };
+    }
+
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const pageSize = Math.min(
       100,
@@ -48,6 +60,7 @@ jest.mock("src/lib/api-helpers", () => ({
       take: pageSize,
       page,
       pageSize,
+      all: false,
     };
   },
   createPaginatedResponse: <T>(
@@ -188,6 +201,44 @@ describe("GET /api/crates", () => {
         hasPreviousPage: false,
       },
     });
+  });
+
+  it("orders crates with default first then name ascending", async () => {
+    const crate = crateFactory.defaultTestCrate({ user_id: USER_ID });
+    mockCount.mockResolvedValue(1);
+    mockFindMany.mockResolvedValue([buildCrateWithCountRow(crate)]);
+
+    await GET(createGetRequest());
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ is_default: "desc" }, { name: "asc" }],
+      }),
+    );
+  });
+
+  it("returns all crates in one page when all=true", async () => {
+    const crate = crateFactory.defaultTestCrate({ user_id: USER_ID });
+    mockCount.mockResolvedValue(1);
+    mockFindMany.mockResolvedValue([buildCrateWithCountRow(crate)]);
+
+    const response = await GET(createGetRequest("?all=true"));
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 0,
+        take: 500,
+      }),
+    );
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        pagination: expect.objectContaining({
+          page: 1,
+          pageSize: 1,
+          total: 1,
+        }),
+      }),
+    );
   });
 
   it("creates a default crate when the user has none", async () => {

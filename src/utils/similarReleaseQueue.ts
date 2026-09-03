@@ -1,13 +1,32 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { api } from "src/api/urls";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
-import type { DiscogsRelease } from "src/types";
+import type { DiscogsRelease, DiscogsReleaseDetail } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { buildFullPlayableAlbumQueue } from "src/utils/playbackQueue";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import { flattenTracklist } from "src/utils/releasePlayback";
 
 const RELEASE_DETAIL_STALE_MS = 5 * 60 * 1000;
+
+const getUncachedReleaseIds = (
+  queryClient: QueryClient,
+  releaseIds: string[],
+) =>
+  releaseIds.filter(
+    (releaseId) =>
+      queryClient.getQueryData(DiscogsReleaseQueryKeys.byId(releaseId)) ===
+      undefined,
+  );
+
+const seedReleaseDetailCache = (
+  queryClient: QueryClient,
+  releases: Record<string, DiscogsReleaseDetail>,
+) => {
+  for (const [releaseId, detail] of Object.entries(releases)) {
+    queryClient.setQueryData(DiscogsReleaseQueryKeys.byId(releaseId), detail);
+  }
+};
 
 const fetchReleaseDetail = (queryClient: QueryClient, releaseId: string) =>
   queryClient.fetchQuery({
@@ -33,11 +52,14 @@ export const prefetchSimilarReleaseDetails = async ({
     }
   }
 
-  await Promise.all(
-    [...releaseIds].map((releaseId) =>
-      fetchReleaseDetail(queryClient, releaseId).catch(() => undefined),
-    ),
-  );
+  const idsToFetch = getUncachedReleaseIds(queryClient, [...releaseIds]);
+
+  if (idsToFetch.length === 0) {
+    return;
+  }
+
+  const batchReleases = await api.discogsReleaseBatch(idsToFetch);
+  seedReleaseDetailCache(queryClient, batchReleases ?? {});
 };
 
 export const fetchPlayableQueuesForSimilarReleases = async ({

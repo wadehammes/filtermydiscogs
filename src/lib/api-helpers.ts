@@ -168,12 +168,32 @@ export function checkRateLimitWithResponse(
 /**
  * Parse pagination parameters from request
  */
-export function getPaginationParams(request: NextRequest): {
+export function wantsAllResults(request: NextRequest): boolean {
+  return request.nextUrl.searchParams.get("all") === "true";
+}
+
+export function getPaginationParams(
+  request: NextRequest,
+  options?: { allMaxTake?: number },
+): {
   skip: number;
   take: number;
   page: number;
   pageSize: number;
+  all: boolean;
 } {
+  if (wantsAllResults(request)) {
+    const take = options?.allMaxTake ?? 500;
+
+    return {
+      skip: 0,
+      take,
+      page: 1,
+      pageSize: take,
+      all: true,
+    };
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const pageSize = Math.min(
@@ -186,6 +206,7 @@ export function getPaginationParams(request: NextRequest): {
     take: pageSize,
     page,
     pageSize,
+    all: false,
   };
 }
 

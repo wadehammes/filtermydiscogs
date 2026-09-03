@@ -1,27 +1,27 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { api } from "src/api/urls";
+import { useAuth } from "src/context/auth.context";
+import {
+  CrateQueryKeys,
+  CratesQueryKeys,
+} from "src/hooks/queries/querykeys.constants";
 import type { DiscogsRelease } from "src/types";
-import type { CrateWithCount } from "src/types/crate.types";
 
 const STORAGE_KEY = "filtermydiscogs_selected_releases";
 
 export function useCrateMigration(
   isAuthenticated: boolean,
   isLoading: boolean,
-  crates: CrateWithCount[],
-  findDefaultCrate: (args: {
-    crateList: CrateWithCount[];
-  }) => CrateWithCount | undefined,
-  addReleaseMutation: {
-    mutateAsync: (args: {
-      crateId: string;
-      release: DiscogsRelease;
-    }) => Promise<unknown>;
-  },
 ) {
+  const queryClient = useQueryClient();
+  const {
+    state: { userId },
+  } = useAuth();
   const [migrationDone, setMigrationDone] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated || isLoading || migrationDone || crates.length === 0) {
+    if (!isAuthenticated || isLoading || migrationDone) {
       return;
     }
 
@@ -40,39 +40,26 @@ export function useCrateMigration(
           return;
         }
 
-        const defaultCrate = findDefaultCrate({ crateList: crates });
-        if (!defaultCrate) {
-          setMigrationDone(true);
-          return;
-        }
-
-        for (const release of parsed) {
-          try {
-            await addReleaseMutation.mutateAsync({
-              crateId: defaultCrate.id,
-              release,
-            });
-          } catch {
-            // Continue with other releases even if one fails
-          }
-        }
-
+        await api.migrateLegacyCrate(parsed);
         localStorage.removeItem(STORAGE_KEY);
+
+        if (userId) {
+          await queryClient.invalidateQueries({
+            queryKey: CratesQueryKeys.byUserId(userId),
+          });
+          await queryClient.invalidateQueries({
+            queryKey: CrateQueryKeys.byUserId(userId),
+          });
+        }
+
         setMigrationDone(true);
       } catch {
         setMigrationDone(true);
       }
     };
 
-    migrateLocalStorage();
-  }, [
-    isAuthenticated,
-    isLoading,
-    migrationDone,
-    crates,
-    addReleaseMutation,
-    findDefaultCrate,
-  ]);
+    void migrateLocalStorage();
+  }, [isAuthenticated, isLoading, migrationDone, queryClient, userId]);
 
   return migrationDone;
 }

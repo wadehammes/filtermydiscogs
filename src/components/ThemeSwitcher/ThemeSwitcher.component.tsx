@@ -77,26 +77,31 @@ export const ThemeSwitcher = ({
             sideOffset={4}
           >
             <Menu.Popup className={styles.submenuPopup}>
-              <Menu.RadioGroup
-                value={activeTheme}
-                onValueChange={(value) => {
-                  handleThemeChange(value as StoredTheme);
-                }}
-              >
-                {THEME_OPTIONS.map(({ value, label }) => (
-                  <Menu.RadioItem
-                    key={value}
-                    className={styles.radioItem}
-                    label={label}
-                    value={value}
-                  >
-                    <Menu.RadioItemIndicator className={styles.radioIndicator}>
-                      <CheckThinIcon className={styles.radioCheck} />
-                    </Menu.RadioItemIndicator>
-                    {label}
-                  </Menu.RadioItem>
-                ))}
-              </Menu.RadioGroup>
+              <div className={styles.submenuList}>
+                <Menu.RadioGroup
+                  className={styles.itemGroup}
+                  value={activeTheme}
+                  onValueChange={(value) => {
+                    handleThemeChange(value as StoredTheme);
+                  }}
+                >
+                  {THEME_OPTIONS.map(({ value, label }) => (
+                    <Menu.RadioItem
+                      key={value}
+                      className={styles.radioItem}
+                      label={label}
+                      value={value}
+                    >
+                      <Menu.RadioItemIndicator
+                        className={styles.radioIndicator}
+                      >
+                        <CheckThinIcon className={styles.radioCheck} />
+                      </Menu.RadioItemIndicator>
+                      {label}
+                    </Menu.RadioItem>
+                  ))}
+                </Menu.RadioGroup>
+              </div>
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>

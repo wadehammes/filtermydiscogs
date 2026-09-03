@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { CrateSelectorPageObject } from "src/components/CrateSelector/CrateSelector.po";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
 
@@ -95,6 +96,58 @@ describe("CrateSelector", () => {
     expect(crate3Option).toBeInTheDocument();
   });
 
+  it("preserves crate order returned by the API", async () => {
+    const user = userEvent.setup();
+    po.mockCrates([
+      crateWithCountFactory.build({
+        id: "b",
+        name: "Test Crate",
+        is_default: true,
+        releaseCount: 0,
+      }),
+      crateWithCountFactory.build({
+        id: "c",
+        name: "Another sick crate",
+        is_default: false,
+        releaseCount: 1,
+      }),
+      crateWithCountFactory.build({
+        id: "d",
+        name: "Test",
+        is_default: false,
+        releaseCount: 1,
+      }),
+      crateWithCountFactory.build({
+        id: "a",
+        name: "Testing Again",
+        is_default: false,
+        releaseCount: 1,
+      }),
+    ]);
+    po.renderCrateSelector();
+    await po.waitUntilLoaded();
+
+    const select = screen.getByRole("combobox", { name: /Select crate/i });
+    await user.click(select);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("option", { hidden: true }).length).toBe(4);
+    });
+
+    const labels = screen
+      .getAllByRole("option", { hidden: true })
+      .map(
+        (option) => option.textContent?.replace(/Default$/, "").trim() ?? "",
+      );
+
+    expect(labels).toEqual([
+      "Test Crate (0)",
+      "Another sick crate (1)",
+      "Test (1)",
+      "Testing Again (1)",
+    ]);
+  });
+
   it("calls selectCrate when option is selected", async () => {
     const user = userEvent.setup();
     po.renderCrateSelector();
@@ -139,7 +192,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    expect(screen.getByPlaceholderText("Crate name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Crate name")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
   });
@@ -153,7 +206,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "My New Crate");
 
     const createButton = screen.getByRole("button", { name: "Create" });
@@ -175,7 +228,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "My New Crate");
     await user.keyboard("{Enter}");
 
@@ -198,9 +251,7 @@ describe("CrateSelector", () => {
     await user.click(cancelButton);
 
     await waitFor(() => {
-      expect(
-        screen.queryByPlaceholderText("Crate name"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Crate name")).not.toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "New Crate" }),
       ).toBeInTheDocument();
@@ -215,14 +266,12 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     input.focus();
     await user.keyboard("{Escape}");
 
     await waitFor(() => {
-      expect(
-        screen.queryByPlaceholderText("Crate name"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Crate name")).not.toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "New Crate" }),
       ).toBeInTheDocument();
@@ -249,7 +298,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "   ");
 
     const createButton = screen.getByRole("button", { name: "Create" });
@@ -265,7 +314,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "  My New Crate  ");
 
     const createButton = screen.getByRole("button", { name: "Create" });
@@ -287,7 +336,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "My New Crate");
 
     const createButton = screen.getByRole("button", { name: "Create" });
@@ -298,7 +347,7 @@ describe("CrateSelector", () => {
         "My New Crate",
       );
     });
-    expect(screen.getByPlaceholderText("Crate name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Crate name")).toBeInTheDocument();
     expect(createButton).toBeInTheDocument();
   });
 
@@ -311,16 +360,14 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "My New Crate");
 
     const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(
-        screen.queryByPlaceholderText("Crate name"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Crate name")).not.toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "New Crate" }),
       ).toBeInTheDocument();
@@ -340,7 +387,7 @@ describe("CrateSelector", () => {
     const newCrateButton = screen.getByRole("button", { name: "New Crate" });
     await user.click(newCrateButton);
 
-    const input = screen.getByPlaceholderText("Crate name");
+    const input = screen.getByLabelText("Crate name");
     await user.type(input, "My New Crate");
 
     const createButton = screen.getByRole("button", { name: "Create" });
@@ -352,7 +399,7 @@ describe("CrateSelector", () => {
       });
     });
 
-    expect(screen.getByPlaceholderText("Crate name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Crate name")).toBeInTheDocument();
     expect(screen.getByDisplayValue("My New Crate")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "New Crate" }),
