@@ -112,6 +112,11 @@ export const PersistentYoutubeIframe = ({
       return;
     }
 
+    if (loadedVideoIdRef.current === videoId) {
+      resumePlaybackFromGesture();
+      return;
+    }
+
     alignIframeSrc(videoId);
     resumePlaybackFromGesture();
   }, [alignIframeSrc, resumePlaybackFromGesture, variant, videoId]);
