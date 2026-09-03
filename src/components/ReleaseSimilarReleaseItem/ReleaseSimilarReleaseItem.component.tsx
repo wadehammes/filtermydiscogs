@@ -2,13 +2,10 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import type { MouseEvent } from "react";
-import { useCallback } from "react";
 import crateItemStyles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
-import { useCrate } from "src/context/crate.context";
+import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
+import { useCrateState } from "src/context/crate.context";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
-import PlusIcon from "src/styles/icons/plus-thin.svg";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -27,9 +24,9 @@ export const ReleaseSimilarReleaseItem = ({
   release,
   onReleaseClick,
 }: ReleaseSimilarReleaseItemProps) => {
-  const { addToCrate, removeFromCrate, isInCrate } = useCrate();
+  const { activeCrateInstanceIds } = useCrateState();
   const { basic_information: basicInfo } = release;
-  const inCrate = isInCrate(release.instance_id);
+  const inActiveCrate = activeCrateInstanceIds.has(String(release.instance_id));
   const imageUrl = getReleaseImageUrl({
     thumb: basicInfo.thumb,
     cover_image: basicInfo.cover_image,
@@ -41,25 +38,10 @@ export const ReleaseSimilarReleaseItem = ({
   const meta = formatReleaseMetaLine({ release, includeCatno: false });
   const { openRelease } = useReleaseOpenHandler({ release, onReleaseClick });
 
-  const handleCrateToggle = useCallback(
-    (event: MouseEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (inCrate) {
-        removeFromCrate(release.instance_id);
-        return;
-      }
-
-      addToCrate(release);
-    },
-    [addToCrate, inCrate, release, removeFromCrate],
-  );
-
   return (
     <div
       className={classNames(crateItemStyles.listItem, styles.listItem, {
-        [styles.listItemInCrate]: inCrate,
+        [styles.listItemInCrate]: inActiveCrate,
       })}
       data-testid="fmdReleaseSimilarItem"
     >
@@ -123,26 +105,12 @@ export const ReleaseSimilarReleaseItem = ({
         )}
       >
         <div className={stackStyles.overlayActions}>
-          <div className={stackStyles.overlayActionSlot}>
-            <button
-              type="button"
-              className={stackStyles.overlayAction}
-              onClick={handleCrateToggle}
-              aria-pressed={inCrate}
-              aria-label={
-                inCrate
-                  ? `Remove ${basicInfo.title} from crate`
-                  : `Add ${basicInfo.title} to crate`
-              }
-              title={inCrate ? "Remove from crate" : "Add to crate"}
-            >
-              {inCrate ? (
-                <MinusIcon className={stackStyles.actionIcon} aria-hidden />
-              ) : (
-                <PlusIcon className={stackStyles.actionIcon} aria-hidden />
-              )}
-            </button>
-          </div>
+          <ReleaseCrateMenu
+            release={release}
+            layout="vertical"
+            actionClass={() => stackStyles.overlayAction}
+            slotClass={stackStyles.overlayActionSlot}
+          />
         </div>
       </div>
     </div>

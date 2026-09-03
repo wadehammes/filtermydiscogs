@@ -2,32 +2,26 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { api } from "src/api/urls";
 import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
+import { crateFactory } from "src/tests/factories/Crate.factory";
+import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { render, screen, waitFor } from "test-utils";
 
-const mockAddToCrate = jest.fn();
-const mockRemoveFromCrate = jest.fn();
-const mockIsInCrate = jest.fn(() => false);
-const mockOpenDrawer = jest.fn();
 const mockUseMediaQuery = jest.fn(() => false);
 
 const mockApi = jest.mocked(api);
 const apiError = new Error("API request failed");
 const RELEASE_ID = 249504;
-
-jest.mock("src/context/crate.context", () => ({
-  useCrate: () => ({
-    addToCrate: mockAddToCrate,
-    removeFromCrate: mockRemoveFromCrate,
-    isInCrate: mockIsInCrate,
-    openDrawer: mockOpenDrawer,
-  }),
-}));
+const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
+const defaultCrate = crateFactory.defaultTestCrate();
 
 jest.mock("src/hooks/useMediaQuery.hook", () => ({
   useMediaQuery: () => mockUseMediaQuery(),
@@ -65,9 +59,26 @@ const setupReleaseDetailMock = (
 describe("ReleaseSummaryHero", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockIsInCrate.mockReturnValue(false);
     mockUseMediaQuery.mockReturnValue(false);
     setupDefaultCrateApiMocks(mockApi);
+    mockApiResponse(
+      true,
+      mockApi.addReleaseToCrate,
+      crateMutationSuccessFactory.build(),
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.removeReleaseFromCrate,
+      crateMutationSuccessFactory.build(),
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build(),
+      apiError,
+    );
     setupReleaseDetailMock();
   });
 
@@ -80,48 +91,98 @@ describe("ReleaseSummaryHero", () => {
     expect(toolbarStyles.default.actionButton).toBeTruthy();
   });
 
-  it("adds release to crate and opens drawer on desktop", async () => {
+  it("adds release to crate from the crate menu", async () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID);
     const user = userEvent.setup();
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />, {
+      authInitialState: testAuthenticatedAuthState,
+    });
 
-    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
 
-    expect(mockAddToCrate).toHaveBeenCalledWith(release);
-    expect(mockOpenDrawer).toHaveBeenCalled();
-    expect(mockRemoveFromCrate).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitemcheckbox", {
+          name: new RegExp(defaultCrateWithCount.name, "i"),
+        }),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(defaultCrateWithCount.name, "i"),
+      }),
+    );
+
+    await waitFor(() => {
+      expect(mockApi.addReleaseToCrate).toHaveBeenCalled();
+    });
   });
 
   it("removes release from crate when already in crate", async () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID);
     const user = userEvent.setup();
-    mockIsInCrate.mockReturnValue(true);
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    mockApiResponse(
+      true,
+      mockApi.crate,
+      crateWithReleasesResponseFactory.withReleases(defaultCrate, [release]),
+      apiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.releaseCrateMembership,
+      releaseCrateMembershipResponseFactory.build({
+        crateIds: [defaultCrateWithCount.id],
+      }),
+      apiError,
+    );
 
-    expect(
-      screen.getByRole("button", { name: "Remove from crate" }),
-    ).toHaveAttribute("aria-pressed", "true");
+    render(<ReleaseSummaryHero release={release} />, {
+      authInitialState: testAuthenticatedAuthState,
+    });
 
-    await user.click(screen.getByRole("button", { name: "Remove from crate" }));
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Manage crates" }),
+      ).toHaveAttribute("aria-pressed", "true");
+    });
 
-    expect(mockRemoveFromCrate).toHaveBeenCalledWith(release.instance_id);
-    expect(mockAddToCrate).not.toHaveBeenCalled();
-    expect(mockOpenDrawer).not.toHaveBeenCalled();
-  });
+    await user.click(screen.getByRole("button", { name: "Manage crates" }));
 
-  it("does not open drawer on mobile when adding to crate", async () => {
-    const release = releaseFactory.withResourceUrl(RELEASE_ID);
-    const user = userEvent.setup();
-    mockUseMediaQuery.mockReturnValue(true);
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitemcheckbox", {
+          name: new RegExp(defaultCrateWithCount.name, "i"),
+        }),
+      ).toBeInTheDocument();
+    });
 
-    await user.click(screen.getByRole("button", { name: "Add to crate" }));
+    await user.click(
+      screen.getByRole("menuitemcheckbox", {
+        name: new RegExp(defaultCrateWithCount.name, "i"),
+      }),
+    );
 
-    expect(mockAddToCrate).toHaveBeenCalledWith(release);
-    expect(mockOpenDrawer).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockApi.removeReleaseFromCrate).toHaveBeenCalledWith(
+        defaultCrateWithCount.id,
+        String(release.instance_id),
+      );
+    });
   });
 
   it("links artist names and title to Discogs", () => {
@@ -137,7 +198,7 @@ describe("ReleaseSummaryHero", () => {
       throw new Error("Expected release to include at least one artist");
     }
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     const artistLink = screen.getByRole("link", { name: artist.name });
     expect(artistLink).toHaveAttribute(
@@ -166,7 +227,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     const artistLink = screen.getByRole("link", { name: "Test Artist" });
     expect(artistLink).toHaveAttribute(
@@ -189,7 +250,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     const labelLink = screen.getByRole("link", {
       name: "Dualtone Music Group",
@@ -223,7 +284,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     expect(screen.getByText("Test Label")).toBeInTheDocument();
     expect(screen.getByText("ABC-123")).toBeInTheDocument();
@@ -249,7 +310,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     expect(
       screen.getByRole("button", { name: "Filter by Vinyl format" }),
@@ -283,7 +344,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
@@ -314,7 +375,6 @@ describe("ReleaseSummaryHero", () => {
     );
 
     render(<ReleaseSummaryHero release={release} />, {
-      includeCrate: false,
       authInitialState: testAuthenticatedAuthState,
     });
 
@@ -340,7 +400,7 @@ describe("ReleaseSummaryHero", () => {
       rating: 3,
     });
 
-    render(<ReleaseSummaryHero release={release} />, { includeCrate: false });
+    render(<ReleaseSummaryHero release={release} />);
 
     expect(screen.queryByTestId("fmdReleaseRatingPicker")).toBeNull();
   });

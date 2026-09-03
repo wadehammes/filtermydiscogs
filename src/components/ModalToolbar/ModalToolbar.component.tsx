@@ -1,9 +1,5 @@
 import classNames from "classnames";
-import type {
-  AnchorHTMLAttributes,
-  ButtonHTMLAttributes,
-  ReactNode,
-} from "react";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import XIcon from "src/styles/icons/x-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ModalToolbar.module.css";
@@ -42,19 +38,6 @@ export function ModalToolbar({
         </button>
       ) : null}
     </div>
-  );
-}
-
-export function ModalToolbarAction({
-  className,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type="button"
-      className={classNames(styles.actionButton, className)}
-      {...props}
-    />
   );
 }
 

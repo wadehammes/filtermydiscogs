@@ -161,22 +161,57 @@
   }
 }
 
-.checkboxCell {
+.crateCell {
   align-items: center;
   display: flex;
   justify-content: center;
   padding: var(--space-1);
 }
 
-.crateCheckbox {
-  accent-color: var(--primary);
+.crateTrigger {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
   cursor: pointer;
-  height: 1.125rem;
-  width: 1.125rem;
+  display: inline-flex;
+  height: var(--button-height-sm);
+  justify-content: center;
+  padding: 0;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+  width: var(--button-height-sm);
+
+  & svg {
+    display: block;
+    flex-shrink: 0;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+
+  &:hover:not([aria-pressed="true"]) {
+    background: var(--muted);
+  }
+
+  &.crateTriggerActive,
+  &[aria-pressed="true"] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+
+    &:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: var(--on-primary-hover);
+    }
   }
 }
 

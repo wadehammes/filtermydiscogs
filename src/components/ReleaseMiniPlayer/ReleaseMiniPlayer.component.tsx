@@ -6,20 +6,18 @@ import { useCallback, useEffect, useState } from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
+import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import {
   TransportSkipNextIcon,
   TransportSkipPreviousIcon,
 } from "src/components/TransportSkipIcons/TransportSkipIcons.component";
-import { useCrate } from "src/context/crate.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
-import PlusIcon from "src/styles/icons/plus-thin.svg";
 import VideoIcon from "src/styles/icons/video-thin.svg";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
@@ -57,7 +55,6 @@ export const ReleaseMiniPlayer = ({
     togglePlayback,
     queue,
   } = useReleasePlayback();
-  const { addToCrate, removeFromCrate, isInCrate } = useCrate();
   const isMobileLayout = useMediaQuery("(max-width: 768px)");
   const filtersDrawerOpen = useFiltersDrawerOpen();
   const [videoPanelOverride, setVideoPanelOverride] = useState<
@@ -67,8 +64,6 @@ export const ReleaseMiniPlayer = ({
   const [isQueueOpen, setIsQueueOpen] = useState(false);
 
   const iframeVideoId = playbackVideoId;
-
-  const inCrate = isInCrate(release?.instance_id ?? "");
 
   useEffect(() => {
     if (isMiniPlayerVisible) {
@@ -101,19 +96,6 @@ export const ReleaseMiniPlayer = ({
     videoPanelOverride === "open" ||
     (videoPanelOverride !== "closed" &&
       (shouldExpandForAutoplay || latchedIntroExpand));
-
-  const handleCrateToggle = useCallback(() => {
-    if (!release) {
-      return;
-    }
-
-    if (inCrate) {
-      removeFromCrate(release.instance_id);
-      return;
-    }
-
-    addToCrate(release);
-  }, [addToCrate, inCrate, release, removeFromCrate]);
 
   const handleVideoToggle = useCallback(() => {
     markPlaybackVideoIntroSeen();
@@ -173,21 +155,16 @@ export const ReleaseMiniPlayer = ({
     );
 
   const crateToggleButton = (
-    <button
-      type="button"
-      className={classNames(styles.controlButton, styles.crateButton, {
-        [styles.crateButtonActive]: inCrate,
-      })}
-      onClick={handleCrateToggle}
-      aria-label={inCrate ? "Remove from crate" : "Add to crate"}
-      title={inCrate ? "Remove from Crate" : "Add to Crate"}
-    >
-      {inCrate ? (
-        <MinusIcon className={styles.controlIcon} aria-hidden />
-      ) : (
-        <PlusIcon className={styles.controlIcon} aria-hidden />
-      )}
-    </button>
+    <ReleaseCrateMenu
+      release={release}
+      triggerVariant="custom"
+      actionClass={(active) =>
+        classNames(styles.controlButton, styles.crateButton, {
+          [styles.crateButtonActive]: active,
+        })
+      }
+      slotClass={styles.crateButton}
+    />
   );
 
   return (

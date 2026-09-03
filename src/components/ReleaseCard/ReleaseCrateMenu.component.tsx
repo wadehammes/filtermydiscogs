@@ -4,7 +4,7 @@ import { Menu } from "@base-ui/react/menu";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import type { MouseEvent } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { CreateCrateDialog } from "src/components/CreateCrateDialog/CreateCrateDialog.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrateActions, useCrateState } from "src/context/crate.context";
@@ -12,6 +12,7 @@ import {
   prefetchReleaseCrateMembership,
   useReleaseCrateMembershipQuery,
 } from "src/hooks/queries/useReleaseCrateMembershipQuery";
+import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
 import { useScrollEdgeFade } from "src/hooks/useScrollEdgeFade.hook";
 import type { CreateCrateFormValues } from "src/lib/validation/crate.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
@@ -26,18 +27,25 @@ import styles from "./ReleaseCrateMenu.module.css";
 interface ReleaseCrateMenuProps {
   release: DiscogsRelease;
   layout?: "horizontal" | "vertical";
+  triggerVariant?: "card" | "custom";
+  triggerStyle?: "icon" | "text";
   actionClass: (active?: boolean) => string;
-  slotClass: string;
+  slotClass?: string;
 }
 
 export const ReleaseCrateMenu = ({
   release,
   layout = "horizontal",
+  triggerVariant = "card",
+  triggerStyle = "icon",
   actionClass,
-  slotClass,
+  slotClass = "",
 }: ReleaseCrateMenuProps) => {
   const isVertical = layout === "vertical";
   const queryClient = useQueryClient();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const { positionerStyle, handleOpenChange: updatePositionerZIndex } =
+    useFilterControlPositionerZIndex(triggerRef);
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const {
@@ -107,6 +115,14 @@ export const ReleaseCrateMenu = ({
   const prefetchMembership = useCallback(() => {
     void prefetchReleaseCrateMembership(queryClient, { userId, instanceId });
   }, [instanceId, queryClient, userId]);
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      setIsOpen(open);
+      updatePositionerZIndex(open);
+    },
+    [updatePositionerZIndex],
+  );
 
   const handleCheckedChange = useCallback(
     (crateId: string, checked: boolean) => {
@@ -200,27 +216,31 @@ export const ReleaseCrateMenu = ({
   };
 
   const triggerLabel = inActiveCrate ? "Manage crates" : "Add to crates";
-  const triggerClass = isVertical
+  const triggerText = inActiveCrate ? "− Remove from Crate" : "+ Add to Crate";
+  const useCustomTrigger = triggerVariant === "custom" || isVertical;
+  const triggerClass = useCustomTrigger
     ? actionClass(inActiveCrate)
     : classNames(cardStyles.crateActionButton, {
         [cardStyles.crateActionButtonActive]: inActiveCrate,
       });
+  const wrapperClass =
+    triggerVariant === "custom" || isVertical
+      ? slotClass
+      : classNames(cardStyles.segmentSlot, cardStyles.crateActionSlot);
+  const showTooltip =
+    triggerVariant === "card" && !isVertical && triggerStyle === "icon";
 
   return (
     <>
-      <div
-        className={
-          isVertical
-            ? slotClass
-            : classNames(cardStyles.segmentSlot, cardStyles.crateActionSlot)
-        }
-      >
-        <Menu.Root open={isOpen} onOpenChange={setIsOpen} modal={false}>
+      <div className={wrapperClass}>
+        <Menu.Root open={isOpen} onOpenChange={handleOpenChange} modal={false}>
           <Menu.Trigger
+            ref={triggerRef}
             type="button"
             className={classNames(styles.menuRoot, triggerClass)}
             aria-haspopup="menu"
             aria-label={triggerLabel}
+            aria-pressed={inActiveCrate}
             disabled={isLoading || isCrateActionPending}
             onClick={handleTriggerClick}
             onFocus={prefetchMembership}
@@ -228,7 +248,9 @@ export const ReleaseCrateMenu = ({
             onPointerEnter={prefetchMembership}
             data-testid="fmdReleaseCrateMenuTrigger"
           >
-            {inActiveCrate ? (
+            {triggerStyle === "text" ? (
+              triggerText
+            ) : inActiveCrate ? (
               <MinusIcon className={stackStyles.actionIcon} aria-hidden />
             ) : (
               <PlusIcon className={stackStyles.actionIcon} aria-hidden />
@@ -240,6 +262,7 @@ export const ReleaseCrateMenu = ({
               className={menuStyles.positioner}
               side={isVertical ? "left" : "bottom"}
               sideOffset={8}
+              style={positionerStyle}
             >
               <Menu.Popup
                 className={styles.menuPopup}
@@ -310,7 +333,7 @@ export const ReleaseCrateMenu = ({
             </Menu.Positioner>
           </Menu.Portal>
         </Menu.Root>
-        {!isVertical ? (
+        {showTooltip ? (
           <span className={cardStyles.tooltip}>{triggerLabel}</span>
         ) : null}
       </div>
