@@ -9,7 +9,7 @@ const postYoutubeIframeCommand = ({
   args = "",
 }: {
   iframe: HTMLIFrameElement | null;
-  func: YoutubePlayerCommand;
+  func: YoutubePlayerCommand | "loadVideoById";
   args?: string | unknown[];
 }): void => {
   if (!iframe?.contentWindow) {
@@ -51,18 +51,11 @@ export const loadYoutubeVideoById = ({
   videoId: string;
   startSeconds?: number;
 }): void => {
-  if (!iframe?.contentWindow) {
-    return;
-  }
-
-  iframe.contentWindow.postMessage(
-    JSON.stringify({
-      event: "command",
-      func: "loadVideoById",
-      args: [videoId, startSeconds],
-    }),
-    "*",
-  );
+  postYoutubeIframeCommand({
+    iframe,
+    func: "loadVideoById",
+    args: [videoId, startSeconds],
+  });
 };
 
 export const transitionYoutubeIframeToVideo = ({

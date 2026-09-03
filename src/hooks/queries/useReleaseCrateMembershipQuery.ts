@@ -54,7 +54,10 @@ export const prefetchReleaseCrateMembership = (
     return Promise.resolve();
   }
 
-  return queryClient.prefetchQuery(options);
+  return queryClient
+    .query(options)
+    .then(() => undefined)
+    .catch(() => undefined);
 };
 
 export const useReleaseCrateMembershipQuery = ({

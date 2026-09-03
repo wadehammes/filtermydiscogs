@@ -154,7 +154,7 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
           setIsFetchingRelease(true);
 
           try {
-            releaseDetailForQueue = await queryClient.fetchQuery(
+            releaseDetailForQueue = await queryClient.query(
               discogsReleaseQueryOptions(String(releaseId)),
             );
             setFetchedReleaseDetail(releaseDetailForQueue);

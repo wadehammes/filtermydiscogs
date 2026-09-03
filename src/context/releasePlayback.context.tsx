@@ -427,7 +427,7 @@ export const ReleasePlaybackProvider = ({
       }
 
       void queryClient
-        .fetchQuery(discogsReleaseQueryOptions(String(itemReleaseId)))
+        .query(discogsReleaseQueryOptions(String(itemReleaseId)))
         .then((detail) => {
           if (!isSameReleaseInstance(releaseRef.current, item.release)) {
             return;
@@ -671,17 +671,19 @@ export const ReleasePlaybackProvider = ({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible" || !isPlayingRef.current) {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      if (!isPlayingRef.current) {
         return;
       }
 
       requestYoutubePlayerState(playbackIframeRef.current);
 
-      if (isPausedRef.current) {
-        return;
+      if (!isPausedRef.current) {
+        schedulePlayFromGestureAttempts();
       }
-
-      schedulePlayFromGestureAttempts();
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
