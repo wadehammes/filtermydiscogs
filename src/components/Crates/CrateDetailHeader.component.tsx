@@ -23,7 +23,7 @@ export const CrateDetailHeader = () => {
   const handleCrateNavigate = useCallback(
     async (nextCrateId: string) => {
       if (userId) {
-        await queryClient.prefetchQuery({
+        await queryClient.query({
           queryKey: CrateQueryKeys.byUserAndId(userId, nextCrateId),
           queryFn: () => api.crate(nextCrateId),
         });

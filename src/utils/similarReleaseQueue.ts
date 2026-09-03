@@ -29,7 +29,7 @@ const seedReleaseDetailCache = (
 };
 
 const fetchReleaseDetail = (queryClient: QueryClient, releaseId: string) =>
-  queryClient.fetchQuery({
+  queryClient.query({
     queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
     queryFn: () => api.discogsRelease(releaseId),
     staleTime: RELEASE_DETAIL_STALE_MS,

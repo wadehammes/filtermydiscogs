@@ -98,13 +98,13 @@ Hook rules (single params object, no side effects in hook files): [conventions.m
 
 ### Hook audit: when to use React Query
 
-Use **`useQuery` / `useInfiniteQuery`** for server-backed reads; use **`useMutation`** for writes. Feature hooks compose query/mutation hooks — they do not call [`src/api/urls.ts`](../../src/api/urls.ts) directly (the **`api`** object is invoked only from **`src/hooks/queries/`** and **`src/hooks/mutations/`**, or via **`queryClient.fetchQuery` / `prefetchQuery`** for cache-aware prefetch).
+Use **`useQuery` / `useInfiniteQuery`** for server-backed reads; use **`useMutation`** for writes. Feature hooks compose query/mutation hooks — they do not call [`src/api/urls.ts`](../../src/api/urls.ts) directly (the **`api`** object is invoked only from **`src/hooks/queries/`** and **`src/hooks/mutations/`**, or via **`queryClient.query`** for cache-aware prefetch/fetch).
 
 | Category | Examples | React Query? |
 |----------|----------|--------------|
 | Server reads | Collection, crates, release detail, prefs, build version | **Yes** — query hook in `src/hooks/queries/` |
 | Server writes | Crate edits, logout, clear data, rating/notes, prefs PATCH | **Yes** — mutation hook in `src/hooks/mutations/`; optimistic cache in mutation; toasts/UI at call site |
-| Imperative prefetch | `CrateDetailHeader` nav, playback similar-release tail, **`ReleaseCrateMenu`** membership | **`queryClient.prefetchQuery` / `fetchQuery`** (or **`prefetchReleaseCrateMembership`**) with shared keys |
+| Imperative prefetch | `CrateDetailHeader` nav, playback similar-release tail, **`ReleaseCrateMenu`** membership | **`queryClient.query`** (or **`prefetchReleaseCrateMembership`**) with shared keys |
 | Cache hydration | [`collectionCacheSync.ts`](../../src/utils/collectionCacheSync.ts) page-1 validation | **Direct helper** — must not seed the infinite collection cache |
 | Client-only UI | `useCrateDrawer`, `useMediaQuery`, filter/view atoms | **No** |
 | Derived client data | `useSimilarReleasesInCollection`, `useCollectionAnalytics` | **No** |
