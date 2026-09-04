@@ -31,13 +31,30 @@
 }
 
 .drawerShell {
+  --bottom-drawer-bottom-inset: 0px;
+  --bottom-drawer-floating-close-offset: calc(
+    var(--button-height-md) +
+    var(--space-4)
+  );
+  --bottom-drawer-top-inset: calc(
+    var(--sticky-header-height) +
+    env(safe-area-inset-top, 0px)
+  );
+
   animation: slideUp 0.15s ease-out;
   bottom: 0;
   display: flex;
   flex-direction: column;
   isolation: isolate;
   left: 0;
-  max-height: min(80svh, calc(100svh - var(--sticky-header-total-height)));
+  max-height: min(
+    80dvh,
+    calc(
+      100dvh -
+      var(--bottom-drawer-top-inset) -
+      var(--bottom-drawer-bottom-inset)
+    )
+  );
   min-height: 0;
   overflow: visible;
   pointer-events: auto;
@@ -48,19 +65,41 @@
   width: 100%;
   z-index: var(--z-10-bottom-drawer);
 
+  &.drawerShellWithFloatingClose {
+    max-height: min(
+      80dvh,
+      calc(
+        100dvh -
+        var(--bottom-drawer-top-inset) -
+        var(--bottom-drawer-bottom-inset) -
+        var(--bottom-drawer-floating-close-offset)
+      )
+    );
+    padding-top: var(--bottom-drawer-floating-close-offset);
+  }
+
   &.aboveMiniPlayer {
-    bottom: calc(
+    --bottom-drawer-bottom-inset: calc(
       var(--release-mini-player-stack-offset, 0) +
       var(--bottom-drawer-mini-player-gap, 0px)
     );
+
+    bottom: var(--bottom-drawer-bottom-inset);
     max-height: calc(
-      100svh -
-      var(--sticky-header-total-height) -
-      var(--release-mini-player-stack-offset, 0) -
-      var(--bottom-drawer-mini-player-gap, 0px) +
-      30px
+      100dvh -
+      var(--bottom-drawer-top-inset) -
+      var(--bottom-drawer-bottom-inset)
     );
     z-index: calc(var(--z-9-playback-dock) - 1);
+
+    &.drawerShellWithFloatingClose {
+      max-height: calc(
+        100dvh -
+        var(--bottom-drawer-top-inset) -
+        var(--bottom-drawer-bottom-inset) -
+        var(--bottom-drawer-floating-close-offset)
+      );
+    }
   }
 
   &.behindMiniPlayer {
@@ -184,7 +223,7 @@
   composes: closebuttonsurface;
   position: absolute;
   right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
-  top: calc(-1 * var(--button-height-md) - var(--space-4));
+  top: 0;
   z-index: calc(var(--z-10-bottom-drawer) + 1);
 
   .closeIcon {

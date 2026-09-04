@@ -154,6 +154,7 @@ export const BottomDrawer = ({
           [styles.open]: isOpen,
           [styles.aboveMiniPlayer]: aboveMiniPlayer,
           [styles.behindMiniPlayer]: behindMiniPlayer,
+          [styles.drawerShellWithFloatingClose]: usesFloatingClose,
           [styles.inline]: inline,
         })}
         data-testid="fmdBottomDrawer"

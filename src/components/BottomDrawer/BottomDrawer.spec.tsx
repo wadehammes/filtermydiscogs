@@ -219,6 +219,7 @@ describe("BottomDrawer", () => {
 
     expect(shell.firstElementChild).toBe(closeButton);
     expect(closeButton.className).toContain("floatingShellClose");
+    expect(shell.className).toContain("drawerShellWithFloatingClose");
     expect(headerAction.closest('[class*="headerChrome"]')).not.toBeNull();
     expect(
       headerAction.closest('[class*="headerChrome"]'),
