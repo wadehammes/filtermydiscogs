@@ -149,7 +149,10 @@ const AutocompleteSelectComponent = ({
         {selectedOptions.length === 0 ? (
           <span className={styles.placeholder}>{placeholder}</span>
         ) : (
-          <HorizontalScrollRow className={styles.pillsContainer}>
+          <HorizontalScrollRow
+            className={styles.pillsContainer}
+            data-testid="fmdFilterPillsScroll"
+          >
             {selectedOptions.map((option) => (
               <span key={option.value} className={styles.pill}>
                 <span className={styles.pillLabel}>{option.label}</span>
