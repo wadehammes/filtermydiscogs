@@ -126,6 +126,16 @@
   width: auto;
 }
 
+.pillsContainer {
+  max-width: 100%;
+  touch-action: pan-x;
+  width: 100%;
+
+  .triggerShell & {
+    padding-right: 0;
+  }
+}
+
 .pillClear {
   align-items: center;
   background: none;
@@ -181,6 +191,11 @@
       pointer-events: none;
     }
 
+    & .pillsContainer {
+      pointer-events: auto;
+      touch-action: pan-x;
+    }
+
     & .pillClear {
       pointer-events: auto;
     }
@@ -205,15 +220,6 @@
   padding-block: 0.0625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.pillsContainer {
-  max-width: 100%;
-  width: 100%;
-
-  .triggerShell & {
-    padding-right: 0;
-  }
 }
 
 .pill {

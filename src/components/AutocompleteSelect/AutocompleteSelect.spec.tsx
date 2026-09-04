@@ -209,6 +209,34 @@ describe("AutocompleteSelect", () => {
     });
   });
 
+  it("exposes a scrollable pill row for multi-select values", () => {
+    po.renderAutocompleteSelect({
+      value: ["option1", "option2", "option3"],
+    });
+
+    const scrollRow = screen.getByTestId("fmdFilterPillsScroll");
+    const scrollSurface = scrollRow.querySelector(".scroll");
+
+    expect(scrollSurface).not.toBeNull();
+    expect(scrollSurface?.className).toContain("pillsContainer");
+
+    Object.defineProperty(scrollSurface, "scrollWidth", {
+      configurable: true,
+      value: 480,
+    });
+    Object.defineProperty(scrollSurface, "clientWidth", {
+      configurable: true,
+      value: 160,
+    });
+
+    if (!(scrollSurface instanceof HTMLElement)) {
+      throw new Error("Expected pill scroll surface");
+    }
+
+    scrollSurface.scrollLeft = 40;
+    expect(scrollSurface.scrollLeft).toBe(40);
+  });
+
   it("removes a selected pill without opening the popup", async () => {
     const handleChange = jest.fn();
     po.renderAutocompleteSelect({

@@ -75,4 +75,36 @@ describe("CrateDrawer", () => {
       screen.getByPlaceholderText("Add set notes for this gig"),
     ).toBeVisible();
   });
+
+  it("floats the close control outside the drawer header", async () => {
+    render(
+      <div className={releasesClientStyles.sidebar}>
+        <CrateDrawer isOpen />
+      </div>,
+      {
+        wrapper: ({ children }) => (
+          <TestProviders authInitialState={testAuthenticatedAuthState}>
+            {children}
+          </TestProviders>
+        ),
+      },
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
+      expect(screen.getByRole("button", { name: "New Crate" })).toBeVisible();
+    });
+
+    const drawer = screen.getByTestId("fmdBottomDrawer");
+    const closeButton = screen.getByRole("button", {
+      name: "Close crate drawer",
+    });
+    const header = drawer.querySelector('[class*="headerChrome"]');
+
+    expect(header).not.toBeNull();
+    expect(header).not.toContainElement(closeButton);
+    expect(drawer).toContainElement(closeButton);
+    expect(closeButton.className).toContain("floatingShellClose");
+    expect(screen.getByRole("button", { name: "New Crate" })).toBeVisible();
+  });
 });

@@ -30,19 +30,16 @@
   }
 }
 
-.drawer {
+.drawerShell {
   animation: slideUp 0.15s ease-out;
-  background: var(--background);
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
   bottom: 0;
   display: flex;
   flex-direction: column;
-  height: auto;
   isolation: isolate;
   left: 0;
   max-height: min(80svh, calc(100svh - var(--sticky-header-total-height)));
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: auto;
   position: fixed;
   right: 0;
@@ -50,10 +47,6 @@
   transition: transform var(--transition-normal);
   width: 100%;
   z-index: var(--z-10-bottom-drawer);
-
-  &:not(.drawerChrome) {
-    border-top: 1px solid var(--border);
-  }
 
   &.aboveMiniPlayer {
     bottom: calc(
@@ -95,6 +88,21 @@
 
   &.open {
     transform: translateY(0);
+  }
+}
+
+.drawer {
+  background: var(--background);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+
+  &:not(.drawerChrome) {
+    border-top: 1px solid var(--border);
   }
 
   & input:not(:is([type="checkbox"], [type="radio"])),
@@ -139,7 +147,7 @@
   margin: 0;
 }
 
-.closeButton {
+.closebuttonsurface {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
@@ -150,11 +158,33 @@
   height: var(--button-height-md);
   padding: 0;
   place-items: center;
-  position: fixed;
-  right: var(--space-4);
-  top: var(--space-4);
-  transition: all var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal),
+    transform var(--transition-normal);
   width: var(--button-height-md);
+
+  &:hover {
+    background: var(--muted);
+    border-color: var(--input);
+  }
+
+  &:active {
+    background: var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.floatingShellClose {
+  composes: closebuttonsurface;
+  position: absolute;
+  right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
+  top: calc(-1 * var(--button-height-md) - var(--space-4));
   z-index: calc(var(--z-10-bottom-drawer) + 1);
 
   .closeIcon {
@@ -163,19 +193,11 @@
   }
 
   &:hover {
-    background: var(--muted);
-    border-color: var(--input);
     transform: translateY(-1px);
   }
 
   &:active {
-    background: var(--accent);
     transform: translateY(0);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
   }
 }
 

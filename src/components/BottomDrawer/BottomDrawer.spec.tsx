@@ -202,4 +202,26 @@ describe("BottomDrawer", () => {
 
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
+
+  it("keeps floating close on the shell outside the header row", () => {
+    po.renderBottomDrawer({
+      chrome: true,
+      closeButtonPlacement: "floating",
+      closeButtonAriaLabel: "Close test drawer",
+      headerContent: <button type="button">Header action</button>,
+    });
+
+    const shell = screen.getByTestId(po.testId);
+    const closeButton = screen.getByRole("button", {
+      name: "Close test drawer",
+    });
+    const headerAction = screen.getByRole("button", { name: "Header action" });
+
+    expect(shell.firstElementChild).toBe(closeButton);
+    expect(closeButton.className).toContain("floatingShellClose");
+    expect(headerAction.closest('[class*="headerChrome"]')).not.toBeNull();
+    expect(
+      headerAction.closest('[class*="headerChrome"]'),
+    ).not.toContainElement(closeButton);
+  });
 });
