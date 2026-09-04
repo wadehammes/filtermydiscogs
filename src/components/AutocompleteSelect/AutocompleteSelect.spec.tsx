@@ -6,7 +6,7 @@ import {
   clickFilterOption,
   openFilterCombobox,
 } from "src/tests/filterControlTestHelpers";
-import { screen } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
 let po: AutocompleteSelectPageObject;
 
@@ -111,8 +111,7 @@ describe("AutocompleteSelect", () => {
       />,
     );
 
-    const user = userEvent.setup({ pointerEventsCheck: 0 });
-    await user.click(screen.getByText("Option 1"));
+    await openFilterCombobox("Test Autocomplete");
 
     expect(screen.getByText("Option 2")).toBeInTheDocument();
   });
@@ -171,6 +170,43 @@ describe("AutocompleteSelect", () => {
     await openFilterCombobox("Test Autocomplete");
 
     expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
+  it("opens on the first click in the pill row when closed", async () => {
+    po.renderAutocompleteSelect({ value: ["option1"] });
+
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    const trigger = screen.getByRole("combobox", {
+      name: "Test Autocomplete",
+    });
+    const pillsRow = trigger.querySelector(".scroll");
+    expect(pillsRow).toBeTruthy();
+    await user.click(pillsRow as Element);
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+    });
+    expect(
+      screen.getByPlaceholderText("Search test autocomplete..."),
+    ).toBeInTheDocument();
+  });
+
+  it("closes when clicking empty space in the pill row while the menu is open", async () => {
+    po.renderAutocompleteSelect({ value: ["option1"] });
+
+    await openFilterCombobox("Test Autocomplete");
+
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    const trigger = screen.getByRole("combobox", {
+      name: "Test Autocomplete",
+    });
+    const pillsRow = trigger.querySelector(".scroll");
+    expect(pillsRow).toBeTruthy();
+    await user.click(pillsRow as Element);
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+    });
   });
 
   it("removes a selected pill without opening the popup", async () => {

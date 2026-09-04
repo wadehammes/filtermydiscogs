@@ -17,6 +17,7 @@
   border: 1px solid var(--input);
   border-radius: var(--radius-ui);
   color: var(--foreground);
+  cursor: pointer;
   display: flex;
   font-family: inherit;
   font-size: var(--text-base);
@@ -26,6 +27,7 @@
   position: relative;
   text-align: left;
   width: 100%;
+  -webkit-tap-highlight-color: transparent;
 
   @media (width >= 768px) {
     font-size: var(--text-sm);
@@ -36,50 +38,24 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  &:has([data-popup-open]) {
+  &[data-popup-open] {
     border-color: var(--primary);
   }
 
-  &:has(.triggerOverlay:disabled) {
+  &[data-disabled] {
     background: var(--muted);
     color: var(--muted-foreground);
     cursor: not-allowed;
   }
 
-  &:hover:not(:has(.triggerOverlay:disabled)) {
-    border-color: var(--border);
-  }
-}
-
-.triggerOverlay {
-  align-items: center;
-  background: transparent;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  display: flex;
-  font-family: inherit;
-  inset: 0;
-  justify-content: flex-end;
-  margin: 0;
-  min-height: 0;
-  padding: var(--space-3) var(--space-4);
-  position: absolute;
-  width: 100%;
-  z-index: 0;
-  -webkit-tap-highlight-color: transparent;
-
-  @media (width >= 768px) {
-    padding: var(--space-2) var(--space-3);
-  }
-
   &:focus,
   &:focus-visible {
+    border-color: var(--primary);
     outline: none;
   }
 
-  &:disabled {
-    cursor: not-allowed;
+  &:hover:not([data-disabled]) {
+    border-color: var(--border);
   }
 }
 
@@ -150,6 +126,39 @@
   width: auto;
 }
 
+.pillClear {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  height: var(--space-4);
+  justify-content: center;
+  line-height: 1;
+  margin-left: var(--space-1);
+  padding: 0;
+  pointer-events: auto;
+  text-align: center;
+  transition: all var(--transition-normal);
+  vertical-align: middle;
+  width: var(--space-4);
+  transform: translateY(-1px);
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 20%, var(--background));
+    color: var(--primary);
+  }
+
+  &:focus {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+  }
+}
+
 .valueContainer {
   align-items: center;
   display: flex;
@@ -157,18 +166,23 @@
   min-width: 0;
   pointer-events: none;
   position: relative;
-  z-index: 1;
 
   &:has(.pillsContainer) {
-    cursor: pointer;
     overflow: hidden;
     padding-inline-end: calc(var(--space-4) + var(--space-2));
-    pointer-events: auto;
 
     & > * {
       flex: 1 1 0;
       min-width: 0;
       width: 100%;
+    }
+
+    & * {
+      pointer-events: none;
+    }
+
+    & .pillClear {
+      pointer-events: auto;
     }
   }
 }
@@ -215,45 +229,11 @@
   font-size: var(--text-xxs);
   height: var(--space-5);
   padding: var(--space-1) var(--space-1) 0.15rem 0.35rem;
-  pointer-events: auto;
 }
 
 .pillLabel {
   margin-right: var(--space-1);
   white-space: nowrap;
-}
-
-.pillClear {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius-full);
-  color: var(--primary);
-  cursor: pointer;
-  display: inline-flex;
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  height: var(--space-4);
-  justify-content: center;
-  line-height: 1;
-  margin-left: var(--space-1);
-  padding: 0;
-  pointer-events: auto;
-  text-align: center;
-  transition: all var(--transition-normal);
-  vertical-align: middle;
-  width: var(--space-4);
-  transform: translateY(-1px);
-
-  &:hover {
-    background: color-mix(in srgb, var(--primary) 20%, var(--background));
-    color: var(--primary);
-  }
-
-  &:focus {
-    outline: 2px solid var(--ring);
-    outline-offset: 1px;
-  }
 }
 
 .icon {
@@ -272,13 +252,13 @@
   }
 
   .trigger[data-popup-open] &,
-  .triggerOverlay[data-popup-open] & {
+  .triggerShell[data-popup-open] & {
     transform: rotate(270deg);
   }
 }
 
 .positioner {
-  z-index: var(--z-6-popover);
+  z-index: var(--overlay-stack-popover-z, var(--z-6-popover));
 }
 
 .popup {
@@ -299,7 +279,7 @@
     border-bottom-color: var(--primary);
   }
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     padding: var(--space-2) var(--space-3);
   }
 }
@@ -310,12 +290,14 @@
   color: var(--foreground);
   font-family: inherit;
   font-size: 1rem;
+  min-height: var(--touch-target-min);
   outline: none;
   padding: var(--space-2) 0;
   width: 100%;
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     font-size: var(--text-sm);
+    min-height: 0;
     padding: var(--space-1) 0;
   }
 
@@ -340,7 +322,7 @@
     overflow: hidden;
   }
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     max-height: min(12.5rem, var(--available-height, 100dvh));
   }
 }
@@ -352,10 +334,10 @@
   cursor: pointer;
   display: flex;
   font-size: var(--text-base);
-  min-height: 3rem;
+  min-height: calc(var(--touch-target-min) + var(--space-3));
   padding: var(--space-4);
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     font-size: var(--text-sm);
     min-height: auto;
     padding: var(--space-3);
@@ -412,7 +394,7 @@
 .noResults {
   color: var(--muted-foreground);
   font-size: var(--text-base);
-  min-height: 3rem;
+  min-height: calc(var(--touch-target-min) + var(--space-3));
   padding: var(--space-4);
   text-align: center;
 
@@ -422,7 +404,7 @@
     padding: 0;
   }
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     font-size: var(--text-sm);
     min-height: auto;
   }

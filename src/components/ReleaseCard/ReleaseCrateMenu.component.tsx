@@ -6,19 +6,21 @@ import classNames from "classnames";
 import type { MouseEvent } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { CreateCrateDialog } from "src/components/CreateCrateDialog/CreateCrateDialog.component";
+import {
+  InlinePopoverMenu,
+  inlinePopoverMenuStyles,
+} from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import { useAuth } from "src/context/auth.context";
 import { useCrateActions, useCrateState } from "src/context/crate.context";
 import {
   prefetchReleaseCrateMembership,
   useReleaseCrateMembershipQuery,
 } from "src/hooks/queries/useReleaseCrateMembershipQuery";
-import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
 import { useScrollEdgeFade } from "src/hooks/useScrollEdgeFade.hook";
 import type { CreateCrateFormValues } from "src/lib/validation/crate.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
-import menuStyles from "src/styles/modules/inline-popover-menu.module.css";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
 import cardStyles from "./ReleaseCard.module.css";
@@ -44,8 +46,6 @@ export const ReleaseCrateMenu = ({
   const isVertical = layout === "vertical";
   const queryClient = useQueryClient();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const { positionerStyle, handleOpenChange: updatePositionerZIndex } =
-    useFilterControlPositionerZIndex(triggerRef);
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const {
@@ -116,13 +116,9 @@ export const ReleaseCrateMenu = ({
     void prefetchReleaseCrateMembership(queryClient, { userId, instanceId });
   }, [instanceId, queryClient, userId]);
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      setIsOpen(open);
-      updatePositionerZIndex(open);
-    },
-    [updatePositionerZIndex],
-  );
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+  }, []);
 
   const handleCheckedChange = useCallback(
     (crateId: string, checked: boolean) => {
@@ -190,9 +186,13 @@ export const ReleaseCrateMenu = ({
       <Menu.CheckboxItem
         key={crate.id}
         checked={isMember}
-        className={classNames(styles.crateMenuItem, {
-          [styles.menuItemActive]: isMember,
-        })}
+        className={classNames(
+          inlinePopoverMenuStyles.item,
+          styles.crateMenuItem,
+          {
+            [styles.menuItemActive]: isMember,
+          },
+        )}
         closeOnClick={false}
         label={crate.name}
         onCheckedChange={(checked) => {
@@ -256,82 +256,84 @@ export const ReleaseCrateMenu = ({
               <PlusIcon className={stackStyles.actionIcon} aria-hidden />
             )}
           </Menu.Trigger>
-          <Menu.Portal>
-            <Menu.Positioner
-              align="end"
-              className={menuStyles.positioner}
-              side={isVertical ? "left" : "bottom"}
-              sideOffset={8}
-              style={positionerStyle}
-            >
-              <Menu.Popup
-                className={styles.menuPopup}
-                data-testid="fmdReleaseCrateMenu"
+          <InlinePopoverMenu.Panel
+            align="end"
+            popupClassName={styles.menuPopup}
+            side={isVertical ? "left" : "bottom"}
+            testId="fmdReleaseCrateMenu"
+          >
+            <p className={styles.menuHeading}>
+              {inActiveCrate ? "Manage crates" : "Add to crates"}
+            </p>
+            {activeCrate ? (
+              <div className={styles.menuSection}>
+                {renderCrateItem(activeCrate, { showCurrentLabel: true })}
+              </div>
+            ) : null}
+            {otherCrates.length > 0 ? (
+              <div
+                className={classNames(styles.crateListScrollWrap, {
+                  [styles.crateListScrollFadeTop]: crateListScrollFade.top,
+                  [styles.crateListScrollFadeBottom]:
+                    crateListScrollFade.bottom,
+                  [styles.crateListScrollWrapSeparated]: activeCrate !== null,
+                })}
               >
-                <p className={styles.menuHeading}>
-                  {inActiveCrate ? "Manage crates" : "Add to crates"}
-                </p>
-                {activeCrate ? (
+                <div
+                  ref={crateListScrollRef}
+                  className={styles.crateListScroll}
+                  onScroll={updateCrateListScrollFade}
+                >
                   <div className={styles.menuSection}>
-                    {renderCrateItem(activeCrate, { showCurrentLabel: true })}
+                    {otherCrates.map((crate) => renderCrateItem(crate))}
                   </div>
-                ) : null}
-                {otherCrates.length > 0 ? (
-                  <div
-                    className={classNames(styles.crateListScrollWrap, {
-                      [styles.crateListScrollFadeTop]: crateListScrollFade.top,
-                      [styles.crateListScrollFadeBottom]:
-                        crateListScrollFade.bottom,
-                      [styles.crateListScrollWrapSeparated]:
-                        activeCrate !== null,
-                    })}
-                  >
-                    <div
-                      ref={crateListScrollRef}
-                      className={styles.crateListScroll}
-                      onScroll={updateCrateListScrollFade}
-                    >
-                      <div className={styles.menuSection}>
-                        {otherCrates.map((crate) => renderCrateItem(crate))}
-                      </div>
-                    </div>
-                  </div>
-                ) : crates.length === 0 ? (
-                  <p className={classNames(menuStyles.empty, styles.menuEmpty)}>
-                    No crates yet
-                  </p>
-                ) : null}
-                {showToggleAllAction ? (
-                  <div className={styles.menuFooter}>
-                    <Menu.Item
-                      className={styles.crateMenuItem}
-                      closeOnClick={false}
-                      data-testid="fmdReleaseCrateMenuToggleAll"
-                      disabled={isCrateActionPending}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleToggleAllCrates();
-                      }}
-                    >
-                      {isInAllCrates ? "Remove from all" : "Add to all"}
-                    </Menu.Item>
-                  </div>
-                ) : null}
-                <div className={styles.menuFooter}>
-                  <Menu.Item
-                    className={styles.crateMenuItem}
-                    disabled={isCrateActionPending}
-                    onClick={handleOpenCreateDialog}
-                  >
-                    <span className={styles.menuItemIcon} aria-hidden="true">
-                      <PlusIcon />
-                    </span>
-                    Add to new crate
-                  </Menu.Item>
                 </div>
-              </Menu.Popup>
-            </Menu.Positioner>
-          </Menu.Portal>
+              </div>
+            ) : crates.length === 0 ? (
+              <p
+                className={classNames(
+                  inlinePopoverMenuStyles.empty,
+                  styles.menuEmpty,
+                )}
+              >
+                No crates yet
+              </p>
+            ) : null}
+            {showToggleAllAction ? (
+              <InlinePopoverMenu.Footer className={styles.menuFooter}>
+                <Menu.Item
+                  className={classNames(
+                    inlinePopoverMenuStyles.item,
+                    styles.crateMenuItem,
+                  )}
+                  closeOnClick={false}
+                  data-testid="fmdReleaseCrateMenuToggleAll"
+                  disabled={isCrateActionPending}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleToggleAllCrates();
+                  }}
+                >
+                  {isInAllCrates ? "Remove from all" : "Add to all"}
+                </Menu.Item>
+              </InlinePopoverMenu.Footer>
+            ) : null}
+            <InlinePopoverMenu.Footer className={styles.menuFooter}>
+              <Menu.Item
+                className={classNames(
+                  inlinePopoverMenuStyles.item,
+                  styles.crateMenuItem,
+                )}
+                disabled={isCrateActionPending}
+                onClick={handleOpenCreateDialog}
+              >
+                <span className={styles.menuItemIcon} aria-hidden="true">
+                  <PlusIcon />
+                </span>
+                Add to new crate
+              </Menu.Item>
+            </InlinePopoverMenu.Footer>
+          </InlinePopoverMenu.Panel>
         </Menu.Root>
         {showTooltip ? (
           <span className={cardStyles.tooltip}>{triggerLabel}</span>

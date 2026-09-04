@@ -47,6 +47,7 @@ const CrateDrawerMobile = ({
       chrome
       closeButtonPlacement="floating"
       closeButtonAriaLabel="Close crate drawer"
+      dataAttribute="data-crate-drawer-open"
       contentClassName={
         showPackingToolbar ? styles.mobileDrawerContentFlushTop : undefined
       }

@@ -5,8 +5,11 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { useCloseMenuWhenFiltersBarHidden } from "src/components/FilterViewsMenu/useCloseMenuWhenFiltersBarHidden.hook";
+import {
+  InlinePopoverMenu,
+  inlinePopoverMenuStyles,
+} from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFilterViewDialog.component";
-import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
 import BookmarkIcon from "src/styles/icons/bookmark-solid.svg";
 import BookmarkOutlineIcon from "src/styles/icons/bookmark-thin.svg";
@@ -28,8 +31,7 @@ export const FilterViewsMenu = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const { positionerStyle, handleOpenChange: updatePositionerZIndex } =
-    useFilterControlPositionerZIndex(triggerRef);
+  const isDrawerVariant = variant === "drawer";
   const {
     filterViews,
     matchingView,
@@ -54,13 +56,9 @@ export const FilterViewsMenu = ({
     onClose: closeMenu,
   });
 
-  const handleMenuOpenChange = useCallback(
-    (open: boolean) => {
-      setIsOpen(open);
-      updatePositionerZIndex(open);
-    },
-    [updatePositionerZIndex],
-  );
+  const handleMenuOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+  }, []);
 
   const runAction = useCallback(
     (action: () => void) => {
@@ -73,11 +71,101 @@ export const FilterViewsMenu = ({
   const emptyStateLabel =
     filterViews.length === 0 ? "No saved views yet" : null;
 
+  const menuPanel = (
+    <>
+      <InlinePopoverMenu.List>
+        {emptyStateLabel ? (
+          <p className={inlinePopoverMenuStyles.empty}>{emptyStateLabel}</p>
+        ) : null}
+        <Menu.RadioGroup
+          className={inlinePopoverMenuStyles.itemGroup}
+          value={matchingView?.id ?? ""}
+          onValueChange={(viewId) => {
+            const view = filterViews.find((item) => item.id === viewId);
+            if (!view || matchingView?.id === view.id) {
+              return;
+            }
+
+            runAction(() => {
+              applyView(view);
+            });
+          }}
+        >
+          {filterViews.map((view) => {
+            const isSelected = matchingView?.id === view.id;
+
+            return (
+              <Menu.RadioItem
+                key={view.id}
+                className={classNames(
+                  inlinePopoverMenuStyles.item,
+                  styles.menuItemView,
+                )}
+                label={view.name}
+                value={view.id}
+                onClick={() => {
+                  if (!isSelected) {
+                    return;
+                  }
+
+                  runAction(resetFilters);
+                }}
+              >
+                {isSelected ? (
+                  <span className={styles.checkIcon} aria-hidden>
+                    <CheckThinIcon strokeWidth={1.75} />
+                  </span>
+                ) : null}
+                <span className={styles.menuItemText} title={view.name}>
+                  {view.name}
+                </span>
+              </Menu.RadioItem>
+            );
+          })}
+        </Menu.RadioGroup>
+      </InlinePopoverMenu.List>
+      <InlinePopoverMenu.Footer>
+        <InlinePopoverMenu.Item
+          disabled={!(canSaveCurrentView && canAddView)}
+          onClick={() => {
+            closeMenu();
+            setIsSaveDialogOpen(true);
+          }}
+        >
+          Save current view…
+        </InlinePopoverMenu.Item>
+        <Menu.LinkItem
+          closeOnClick
+          render={
+            <Link
+              href="/settings?section=filters"
+              className={inlinePopoverMenuStyles.link}
+            />
+          }
+          className={inlinePopoverMenuStyles.item}
+          onClick={closeMenu}
+        >
+          Manage in Settings
+        </Menu.LinkItem>
+      </InlinePopoverMenu.Footer>
+      <InlinePopoverMenu.Footer>
+        <InlinePopoverMenu.ItemNeutral
+          disabled={!hasActiveFilters}
+          onClick={() => {
+            runAction(resetFilters);
+          }}
+        >
+          Reset filters
+        </InlinePopoverMenu.ItemNeutral>
+      </InlinePopoverMenu.Footer>
+    </>
+  );
+
   return (
     <>
       <div
         className={classNames(styles.menuRoot, className, {
-          [styles.drawerVariant]: variant === "drawer",
+          [styles.drawerVariant]: isDrawerVariant,
         })}
         data-testid="fmdFilterViewsMenu"
       >
@@ -111,115 +199,20 @@ export const FilterViewsMenu = ({
               <Chevron />
             </span>
           </Menu.Trigger>
-          <Menu.Portal>
-            <Menu.Positioner
-              align="start"
-              className={classNames(styles.menuPositioner, {
-                [styles.drawerPositioner]: variant === "drawer",
-              })}
-              sideOffset={8}
-              style={positionerStyle}
-            >
-              <Menu.Popup
-                className={classNames(styles.menuPopup, {
-                  [styles.drawerMenu]: variant === "drawer",
-                })}
-              >
-                <div className={styles.menuList}>
-                  {emptyStateLabel ? (
-                    <p className={styles.menuEmpty}>{emptyStateLabel}</p>
-                  ) : null}
-                  <Menu.RadioGroup
-                    className={styles.menuItemGroup}
-                    value={matchingView?.id ?? ""}
-                    onValueChange={(viewId) => {
-                      const view = filterViews.find(
-                        (item) => item.id === viewId,
-                      );
-                      if (!view || matchingView?.id === view.id) {
-                        return;
-                      }
-
-                      runAction(() => {
-                        applyView(view);
-                      });
-                    }}
-                  >
-                    {filterViews.map((view) => {
-                      const isSelected = matchingView?.id === view.id;
-
-                      return (
-                        <Menu.RadioItem
-                          key={view.id}
-                          className={classNames(
-                            styles.menuItem,
-                            styles.menuItemView,
-                          )}
-                          label={view.name}
-                          value={view.id}
-                          onClick={() => {
-                            if (!isSelected) {
-                              return;
-                            }
-
-                            runAction(resetFilters);
-                          }}
-                        >
-                          {isSelected ? (
-                            <span className={styles.checkIcon} aria-hidden>
-                              <CheckThinIcon strokeWidth={1.75} />
-                            </span>
-                          ) : null}
-                          <span
-                            className={styles.menuItemText}
-                            title={view.name}
-                          >
-                            {view.name}
-                          </span>
-                        </Menu.RadioItem>
-                      );
-                    })}
-                  </Menu.RadioGroup>
-                </div>
-                <div className={styles.menuFooter}>
-                  <Menu.Item
-                    className={styles.menuItem}
-                    disabled={!(canSaveCurrentView && canAddView)}
-                    onClick={() => {
-                      closeMenu();
-                      setIsSaveDialogOpen(true);
-                    }}
-                  >
-                    Save current view…
-                  </Menu.Item>
-                  <Menu.LinkItem
-                    closeOnClick
-                    render={
-                      <Link
-                        href="/settings?section=filters"
-                        className={styles.menuLink}
-                      />
-                    }
-                    className={styles.menuItem}
-                    onClick={closeMenu}
-                  >
-                    Manage in Settings
-                  </Menu.LinkItem>
-                </div>
-                <div className={styles.menuFooter}>
-                  <Menu.Item
-                    className={styles.menuItemNeutral}
-                    disabled={!hasActiveFilters}
-                    onClick={() => {
-                      runAction(resetFilters);
-                    }}
-                  >
-                    Reset filters
-                  </Menu.Item>
-                </div>
-              </Menu.Popup>
-            </Menu.Positioner>
-          </Menu.Portal>
+          <InlinePopoverMenu.Panel
+            align="start"
+            popupClassName={
+              isDrawerVariant ? styles.drawerMenuPopup : styles.menuPopup
+            }
+            positionerClassName={classNames({
+              [styles.drawerPositioner]: isDrawerVariant,
+            })}
+            scrollable
+            side="bottom"
+            sideOffset={isDrawerVariant ? 0 : 8}
+          >
+            {menuPanel}
+          </InlinePopoverMenu.Panel>
         </Menu.Root>
       </div>
 

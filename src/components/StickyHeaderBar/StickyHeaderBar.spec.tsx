@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { StickyHeaderBarPageObject } from "src/components/StickyHeaderBar/StickyHeaderBar.po";
-import { screen } from "test-utils";
+import {
+  expectFilterPopupAbovePlaybackDock,
+  openFilterCombobox,
+} from "src/tests/filterControlTestHelpers";
+import { screen, waitFor } from "test-utils";
 
 let po: StickyHeaderBarPageObject;
 
@@ -46,5 +50,21 @@ describe("StickyHeaderBar", () => {
 
     expect(screen.getByTestId(po.searchBarTestId)).toBeInTheDocument();
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+  });
+
+  it("portals desktop filter popups above the playback dock", async () => {
+    po.renderStickyHeaderBar({ part: "filters" });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: "Genre & Style" }),
+      ).toBeEnabled();
+    });
+
+    await openFilterCombobox("Genre & Style");
+
+    expectFilterPopupAbovePlaybackDock(
+      screen.getByRole("dialog", { name: "Genre & Style" }),
+    );
   });
 });

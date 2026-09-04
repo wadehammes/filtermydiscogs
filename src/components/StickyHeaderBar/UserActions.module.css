@@ -75,32 +75,13 @@
 }
 
 .menuPopup {
-  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
   min-width: 10rem;
 }
 
-.menuList {
-  composes: list from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuFooter {
-  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
-
+.menuFooterStretch {
   & > * {
     width: 100%;
   }
-}
-
-.menuItem {
-  composes: item from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuLink {
-  color: inherit;
-  display: flex;
-  gap: var(--space-2);
-  text-decoration: none;
-  width: 100%;
 }
 
 .logoutItem {

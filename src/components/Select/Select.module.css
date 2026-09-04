@@ -117,7 +117,7 @@
 }
 
 .positioner {
-  z-index: var(--z-6-popover);
+  z-index: var(--overlay-stack-popover-z, var(--z-6-popover));
 }
 
 .popup {
@@ -136,7 +136,7 @@
   overflow-y: auto;
   padding: 0;
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     max-height: min(12.5rem, var(--available-height, 100dvh));
   }
 }
@@ -148,10 +148,10 @@
   cursor: pointer;
   display: flex;
   font-size: var(--text-base);
-  min-height: 3rem;
+  min-height: calc(var(--touch-target-min) + var(--space-3));
   padding: var(--space-4);
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
     font-size: var(--text-sm);
     min-height: auto;
     padding: var(--space-3);

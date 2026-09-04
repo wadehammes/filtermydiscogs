@@ -78,10 +78,6 @@
   font-size: var(--text-xs);
 }
 
-.submenuTrigger {
-  composes: item from "../../styles/modules/inline-popover-menu.module.css";
-}
-
 .submenuLabel {
   flex: 1;
 }
@@ -98,26 +94,9 @@
   width: var(--space-4);
 }
 
-.submenuPositioner {
-  composes: positioner from "../../styles/modules/inline-popover-menu.module.css";
-}
-
 .submenuPopup {
-  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
   max-height: min(20rem, 70dvh);
   min-width: 10rem;
-}
-
-.submenuList {
-  composes: list from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.radioItem {
-  composes: item from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.itemGroup {
-  composes: itemgroup from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .radioIndicator {

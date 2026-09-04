@@ -6,7 +6,10 @@ import type { KeyboardEvent, MouseEvent } from "react";
 import { memo, useCallback, useMemo, useRef } from "react";
 import Button from "src/components/Button/Button.component";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
-import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
+import {
+  useOverlayStackPositionerStyle,
+  usePortaledOverlayContainer,
+} from "src/components/OverlayStack/OverlayStack.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
 import { definedProps } from "src/utils/definedProps";
@@ -50,9 +53,9 @@ const AutocompleteSelectComponent = ({
   clearable = false,
 }: AutocompleteSelectProps) => {
   const anchorRef = useRef<HTMLElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const { positionerStyle, handleOpenChange } =
-    useFilterControlPositionerZIndex(anchorRef);
+  const overlayContainer = usePortaledOverlayContainer();
+
+  const positionerStyle = useOverlayStackPositionerStyle();
 
   const comboboxItems = getComboboxItems(options);
   const controlledValue = getFilterControlledValue(value, multiple);
@@ -109,33 +112,6 @@ const AutocompleteSelectComponent = ({
     [multiple, onChange, value],
   );
 
-  const handlePillsContainerClick = useCallback(
-    (event: MouseEvent<HTMLDivElement>) => {
-      if ((event.target as HTMLElement).closest(`.${styles.pillClear}`)) {
-        return;
-      }
-
-      triggerRef.current?.click();
-    },
-    [],
-  );
-
-  const handlePillsContainerKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      if (event.key !== "Enter" && event.key !== " ") {
-        return;
-      }
-
-      if ((event.target as HTMLElement).closest(`.${styles.pillClear}`)) {
-        return;
-      }
-
-      event.preventDefault();
-      triggerRef.current?.click();
-    },
-    [],
-  );
-
   const renderSingleValue = useCallback(
     (selected: string | null) => {
       if (typeof selected !== "string") {
@@ -155,36 +131,21 @@ const AutocompleteSelectComponent = ({
   );
 
   const multipleTrigger = (
-    <div
+    <Combobox.Trigger
       ref={assignAnchorRef}
+      nativeButton={false}
+      render={<div />}
       className={classNames(
         styles.triggerShell,
         showClearButton && styles.triggerWithClear,
       )}
       data-filter-control-trigger
+      disabled={disabled}
+      {...definedProps({
+        "aria-label": showLabel ? undefined : label,
+      })}
     >
-      <Combobox.Trigger
-        ref={triggerRef}
-        className={styles.triggerOverlay}
-        disabled={disabled}
-        {...definedProps({
-          "aria-label": showLabel ? undefined : label,
-        })}
-      >
-        {triggerIcon}
-      </Combobox.Trigger>
-      <div
-        className={styles.valueContainer}
-        {...(selectedOptions.length > 0
-          ? {
-              role: "button" as const,
-              tabIndex: disabled ? -1 : 0,
-              "aria-label": label,
-              onClick: handlePillsContainerClick,
-              onKeyDown: handlePillsContainerKeyDown,
-            }
-          : {})}
-      >
+      <div className={styles.valueContainer}>
         {selectedOptions.length === 0 ? (
           <span className={styles.placeholder}>{placeholder}</span>
         ) : (
@@ -210,7 +171,8 @@ const AutocompleteSelectComponent = ({
           </HorizontalScrollRow>
         )}
       </div>
-    </div>
+      {triggerIcon}
+    </Combobox.Trigger>
   );
 
   const singleTrigger = (
@@ -248,7 +210,6 @@ const AutocompleteSelectComponent = ({
         items={comboboxItems}
         value={controlledValue}
         onValueChange={handleValueChange}
-        onOpenChange={handleOpenChange}
         disabled={disabled}
         modal={false}
         {...definedProps({ multiple: multiple ? true : undefined })}
@@ -276,7 +237,7 @@ const AutocompleteSelectComponent = ({
         ) : (
           trigger
         )}
-        <Combobox.Portal>
+        <Combobox.Portal {...definedProps({ container: overlayContainer })}>
           <Combobox.Positioner
             anchor={anchorRef}
             className={styles.positioner}

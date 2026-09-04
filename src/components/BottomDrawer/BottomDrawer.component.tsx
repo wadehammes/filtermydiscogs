@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { useMounted } from "src/hooks/useMounted.hook";
 import XIcon from "src/styles/icons/x-thin.svg";
@@ -148,13 +149,19 @@ export const BottomDrawer = ({
             {resolvedClosePlacement === "header" ? closeButton : null}
           </div>
         )}
-        <div
-          className={classNames(styles.content, contentClassName, {
-            [styles.contentFlush]: chrome && contentFlush,
-          })}
+        <OverlayStack
+          className={styles.overlayStack}
+          escapeStackingContext
+          popoverZIndex="calc(var(--z-10-bottom-drawer) + 1)"
         >
-          {children}
-        </div>
+          <div
+            className={classNames(styles.content, contentClassName, {
+              [styles.contentFlush]: chrome && contentFlush,
+            })}
+          >
+            {children}
+          </div>
+        </OverlayStack>
         {footer && (
           <div className={styles.footer} data-bottom-drawer-footer>
             {footer}

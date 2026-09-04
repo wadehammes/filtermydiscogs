@@ -1,0 +1,65 @@
+.positioner {
+  composes: positioner from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.popup {
+  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.popupScroll {
+  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
+  max-height: min(24rem, 70dvh);
+  overflow-y: auto;
+}
+
+.heading {
+  composes: heading from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.list {
+  composes: list from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.itemGroup {
+  composes: itemgroup from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.item {
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.itemDanger {
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+  composes: menuitemhoverdanger from "../../styles/modules/menu-item-interaction.module.css";
+  color: var(--destructive);
+}
+
+.itemNeutral {
+  composes: item from "../../styles/modules/inline-popover-menu.module.css";
+  composes: menuitemhoverneutral from "../../styles/modules/menu-item-interaction.module.css";
+}
+
+.footer {
+  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.footerInset {
+  composes: footerinset from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.empty {
+  composes: empty from "../../styles/modules/inline-popover-menu.module.css";
+}
+
+.link {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+  width: 100%;
+}
+
+.linkRow {
+  composes: link;
+  display: flex;
+  gap: var(--space-2);
+}

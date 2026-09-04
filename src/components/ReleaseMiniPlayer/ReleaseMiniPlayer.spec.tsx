@@ -352,6 +352,35 @@ describe("ReleaseMiniPlayer", () => {
     );
   });
 
+  it("collapses the mobile video panel when the crate drawer opens", async () => {
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      '<div data-crate-drawer-open="true"></div>',
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+        "data-video-expanded",
+      );
+    });
+
+    document.querySelector("[data-crate-drawer-open]")?.remove();
+  });
+
   it("collapses the mobile video panel when the filters drawer opens", async () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();

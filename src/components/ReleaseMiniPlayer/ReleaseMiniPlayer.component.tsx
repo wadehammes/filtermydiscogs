@@ -13,6 +13,7 @@ import {
   TransportSkipPreviousIcon,
 } from "src/components/TransportSkipIcons/TransportSkipIcons.component";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
@@ -57,6 +58,7 @@ export const ReleaseMiniPlayer = ({
   } = useReleasePlayback();
   const isMobileLayout = useMediaQuery("(max-width: 768px)");
   const filtersDrawerOpen = useFiltersDrawerOpen();
+  const crateDrawerOpen = useCrateDrawerOpen();
   const [videoPanelOverride, setVideoPanelOverride] = useState<
     null | "open" | "closed"
   >(null);
@@ -76,10 +78,10 @@ export const ReleaseMiniPlayer = ({
   }, [isMiniPlayerVisible]);
 
   useEffect(() => {
-    if (filtersDrawerOpen) {
+    if (filtersDrawerOpen || crateDrawerOpen) {
       setVideoPanelOverride("closed");
     }
-  }, [filtersDrawerOpen]);
+  }, [crateDrawerOpen, filtersDrawerOpen]);
 
   const shouldExpandForAutoplay = isPlaybackReady && shouldAutoplayEmbed;
 

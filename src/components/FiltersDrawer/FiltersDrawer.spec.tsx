@@ -7,7 +7,10 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import {
   clickFilterOption,
+  expectFilterPopupAboveBottomDrawer,
+  expectFilterPopupAbovePlaybackDock,
   openFilterCombobox,
+  openFilterSelect,
 } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
@@ -329,6 +332,88 @@ describe("FiltersDrawer", () => {
     expect(
       screen.getByPlaceholderText("Search genre & style..."),
     ).toBeInTheDocument();
+  });
+
+  it("portals combobox popups above the playback dock from the filters drawer", async () => {
+    po.renderFiltersDrawer();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: "Genre & Style" }),
+      ).toBeEnabled();
+    });
+
+    await openFilterCombobox("Genre & Style");
+
+    const popup = screen.getByRole("dialog", { name: "Genre & Style" });
+    expectFilterPopupAboveBottomDrawer(popup);
+    expectFilterPopupAbovePlaybackDock(popup);
+  });
+
+  it("portals select popups into the bottom drawer overlay stack", async () => {
+    po.renderFiltersDrawer();
+
+    await openFilterSelect("Sort by");
+
+    expectFilterPopupAboveBottomDrawer(
+      screen.getByRole("listbox", { name: "Sort by" }),
+    );
+  });
+
+  it("portals the Views menu with scrollable popup chrome", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    po.renderFiltersDrawer();
+
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+
+    const saveItem = await screen.findByRole("menuitem", {
+      hidden: true,
+      name: "Save current view…",
+    });
+    const popup = saveItem.closest('[role="menu"]');
+    expect(popup).toBeTruthy();
+    expect((popup as HTMLElement).className).toMatch(/popupScroll/);
+    expect((popup as HTMLElement).className).toMatch(/drawerMenuPopup/);
+
+    const resetItem = screen.getByRole("menuitem", {
+      hidden: true,
+      name: "Reset filters",
+    });
+    expect(resetItem.className).toMatch(/itemNeutral/);
+  });
+
+  it("portals the Views menu into the bottom drawer overlay stack", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    po.renderFiltersDrawer();
+
+    await user.click(
+      screen.getByRole("button", { name: "Views and filter actions" }),
+    );
+
+    expectFilterPopupAboveBottomDrawer(
+      await screen.findByRole("menuitem", { name: "Save current view…" }),
+    );
+  });
+
+  it("closes a select dropdown when clicking its trigger again", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    po.renderFiltersDrawer();
+
+    await openFilterSelect("Sort by");
+
+    await user.click(screen.getByRole("combobox", { name: "Sort by" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("combobox", { name: "Sort by" })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+    });
   });
 
   it("supports selecting multiple format types", async () => {

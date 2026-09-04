@@ -1,7 +1,5 @@
-import { Dialog } from "@base-ui/react/dialog";
-import { AppDialog } from "src/components/AppDialog/AppDialog.component";
 import Button from "src/components/Button/Button.component";
-import styles from "./ConfirmDialog.module.css";
+import { FormDialog } from "src/components/FormDialog/FormDialog.component";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -27,38 +25,34 @@ export const ConfirmDialog = ({
   isConfirming = false,
 }: ConfirmDialogProps) => {
   return (
-    <AppDialog
+    <FormDialog
       open={isOpen}
       onClose={onCancel}
       testId="fmdConfirmDialog"
-      ariaLabelledBy="dialog-title"
-      ariaDescribedBy="dialog-message"
-      panelClassName={styles.dialog}
-    >
-      <Dialog.Title id="dialog-title" className={styles.title}>
-        {title}
-      </Dialog.Title>
-      <Dialog.Description id="dialog-message" className={styles.message}>
-        {message}
-      </Dialog.Description>
-      <div className={styles.actions}>
-        <Button
-          variant="secondary"
-          size="md"
-          onPress={onCancel}
-          disabled={isConfirming}
-        >
-          {cancelLabel}
-        </Button>
-        <Button
-          variant={variant === "danger" ? "danger" : "primary"}
-          size="md"
-          onPress={onConfirm}
-          disabled={isConfirming}
-        >
-          {confirmLabel}
-        </Button>
-      </div>
-    </AppDialog>
+      title={title}
+      description={message}
+      titleId="dialog-title"
+      descriptionId="dialog-message"
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            size="md"
+            onPress={onCancel}
+            disabled={isConfirming}
+          >
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={variant === "danger" ? "danger" : "primary"}
+            size="md"
+            onPress={onConfirm}
+            disabled={isConfirming}
+          >
+            {confirmLabel}
+          </Button>
+        </>
+      }
+    />
   );
 };
