@@ -1,5 +1,5 @@
 .positioner {
-  z-index: var(--z-6-popover);
+  z-index: var(--overlay-stack-popover-z, var(--z-6-popover));
 }
 
 .popup {
@@ -32,14 +32,23 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-1);
+  gap: 0;
+  padding: var(--space-2);
+
+  @media (width >= 1024px) {
+    gap: var(--space-1);
+    padding: var(--space-1);
+  }
 }
 
 .itemGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0;
+
+  @media (width >= 1024px) {
+    gap: var(--space-1);
+  }
 }
 
 .item {
@@ -52,18 +61,26 @@
   cursor: pointer;
   display: flex;
   font-family: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: var(--font-medium);
   gap: var(--space-2);
   line-height: 1.25;
-  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
   text-align: left;
   text-decoration: none;
   width: 100%;
+  -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: -2px;
+  }
+
+  @media (width >= 1024px) {
+    font-size: var(--text-sm);
+    min-height: auto;
+    padding: var(--space-2) var(--space-3);
   }
 }
 
@@ -80,8 +97,13 @@
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-1);
+  gap: 0;
+  padding: var(--space-2);
+
+  @media (width >= 1024px) {
+    gap: var(--space-1);
+    padding: var(--space-1);
+  }
 }
 
 .footerInset {

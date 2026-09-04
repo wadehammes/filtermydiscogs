@@ -1,6 +1,10 @@
 .releaseItem {
   min-width: 0;
   width: 100%;
+
+  @media (width > 768px) {
+    max-width: 24rem;
+  }
 }
 
 .releasesGrid {

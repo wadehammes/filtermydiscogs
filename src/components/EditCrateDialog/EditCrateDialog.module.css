@@ -1,33 +1,3 @@
-.dialog {
-  composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  max-width: 28rem;
-  padding: var(--space-6);
-  width: min(calc(100vw - var(--space-8)), 28rem);
-
-  & input:not(:is([type="checkbox"], [type="radio"])),
-  & textarea,
-  & select {
-    font-size: 16px;
-  }
-}
-
-.title {
-  color: var(--foreground);
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  margin: 0;
-}
-
-.titleRow {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
 .defaultBadge {
   background: color-mix(in srgb, var(--primary) 15%, var(--background));
   border: 1px solid var(--primary);
@@ -54,34 +24,12 @@
   margin: 0;
 }
 
-.label {
-  composes: label from "../../styles/modules/field-label.module.css";
-}
-
 .input {
   background-color: var(--muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
   color: var(--foreground);
   padding: var(--space-2) var(--space-3);
-  width: 100%;
-
-  &:focus {
-    border-color: var(--primary);
-    outline: none;
-  }
-}
-
-.textarea {
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  color: var(--foreground);
-  font-family: inherit;
-  line-height: 1.5;
-  min-height: 7.5rem;
-  padding: var(--space-2) var(--space-3);
-  resize: vertical;
   width: 100%;
 
   &:focus {
@@ -108,12 +56,6 @@
 .crateNameHighlight {
   color: var(--foreground);
   font-weight: var(--font-semibold);
-}
-
-.footerActions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
 }
 
 .sectionActions {

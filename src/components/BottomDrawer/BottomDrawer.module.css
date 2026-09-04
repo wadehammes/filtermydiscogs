@@ -21,6 +21,7 @@
       var(--release-mini-player-stack-offset, 0) +
       var(--bottom-drawer-mini-player-gap, 0px)
     );
+    z-index: calc(var(--z-9-playback-dock) - 2);
   }
 
   &.behindMiniPlayer {
@@ -66,6 +67,7 @@
       var(--bottom-drawer-mini-player-gap, 0px) +
       30px
     );
+    z-index: calc(var(--z-9-playback-dock) - 1);
   }
 
   &.behindMiniPlayer {
@@ -216,6 +218,13 @@
   min-height: 0;
   overflow-y: auto;
   padding: var(--space-4);
+}
+
+.overlayStack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .footer {

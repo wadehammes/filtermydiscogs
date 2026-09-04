@@ -6,7 +6,6 @@
 }
 
 .menuPopup {
-  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
   max-width: min(18rem, calc(100vw - var(--space-6)));
   min-width: 14rem;
 
@@ -49,7 +48,6 @@
 }
 
 .menuFooter {
-  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
   gap: 0;
   padding: 0 var(--crate-menu-gutter);
 
@@ -127,7 +125,6 @@
 }
 
 .crateMenuItem {
-  composes: item from "../../styles/modules/inline-popover-menu.module.css";
   font-size: var(--text-base);
   min-height: var(--touch-target-min);
   padding-block: var(--space-3);

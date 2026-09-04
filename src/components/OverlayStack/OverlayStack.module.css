@@ -1,0 +1,14 @@
+.stackRoot {
+  position: relative;
+}
+
+.bodyPortal {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: var(--overlay-stack-popover-z, var(--z-6-popover));
+
+  & > * {
+    pointer-events: auto;
+  }
+}

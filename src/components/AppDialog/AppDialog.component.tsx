@@ -4,6 +4,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { useCallback } from "react";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import {
   usePlaybackPageOverlayPortal,
   usePlaybackPageScrollLock,
@@ -98,7 +99,12 @@ export const AppDialog = ({
             "aria-describedby": ariaDescribedBy,
           })}
         >
-          {children}
+          <OverlayStack
+            className={styles.popupOverlayStack}
+            popoverZIndex="var(--z-7-tooltip)"
+          >
+            {children}
+          </OverlayStack>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

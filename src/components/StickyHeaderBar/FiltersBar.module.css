@@ -14,6 +14,11 @@
     z-index: var(--z-2-sticky);
   }
 
+  .desktopFiltersStack {
+    height: 100%;
+    width: 100%;
+  }
+
   .desktopFilters {
     align-items: center;
     display: flex;

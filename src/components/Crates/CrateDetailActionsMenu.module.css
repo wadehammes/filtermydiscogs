@@ -41,29 +41,11 @@
 }
 
 .menuPopup {
-  composes: popup from "../../styles/modules/inline-popover-menu.module.css";
   min-width: 15rem;
 }
 
-.menuList {
-  composes: list from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuFooter {
-  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
-}
-
 .menuFooterInset {
-  composes: footerinset from "../../styles/modules/inline-popover-menu.module.css";
   padding-inline: calc(var(--space-1) + var(--space-3));
-}
-
-.menuItem {
-  composes: item from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuItemDanger {
-  composes: itemdanger from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .menuItemDangerMultiline {

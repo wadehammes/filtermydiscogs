@@ -1,6 +1,10 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
+import {
+  InlinePopoverMenu,
+  inlinePopoverMenuStyles,
+} from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import Select from "src/components/Select/Select.component";
 import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
@@ -63,48 +67,44 @@ export const ThemeSwitcher = ({
   if (variant === "menu") {
     return (
       <Menu.SubmenuRoot>
-        <Menu.SubmenuTrigger className={styles.submenuTrigger}>
+        <Menu.SubmenuTrigger className={inlinePopoverMenuStyles.item}>
           <span className={styles.submenuLabel}>Theme</span>
           <span className={styles.submenuValue} suppressHydrationWarning>
             {getLabel()}
           </span>
           <ChevronRightThinIcon className={styles.submenuChevron} />
         </Menu.SubmenuTrigger>
-        <Menu.Portal>
-          <Menu.Positioner
-            align="start"
-            className={styles.submenuPositioner}
-            sideOffset={4}
-          >
-            <Menu.Popup className={styles.submenuPopup}>
-              <div className={styles.submenuList}>
-                <Menu.RadioGroup
-                  className={styles.itemGroup}
-                  value={activeTheme}
-                  onValueChange={(value) => {
-                    handleThemeChange(value as StoredTheme);
-                  }}
+        <InlinePopoverMenu.Panel
+          align="start"
+          popupClassName={styles.submenuPopup}
+          scrollable
+          sideOffset={4}
+          useOverlayStack={false}
+        >
+          <InlinePopoverMenu.List>
+            <Menu.RadioGroup
+              className={inlinePopoverMenuStyles.itemGroup}
+              value={activeTheme}
+              onValueChange={(value) => {
+                handleThemeChange(value as StoredTheme);
+              }}
+            >
+              {THEME_OPTIONS.map(({ value, label }) => (
+                <Menu.RadioItem
+                  key={value}
+                  className={inlinePopoverMenuStyles.item}
+                  label={label}
+                  value={value}
                 >
-                  {THEME_OPTIONS.map(({ value, label }) => (
-                    <Menu.RadioItem
-                      key={value}
-                      className={styles.radioItem}
-                      label={label}
-                      value={value}
-                    >
-                      <Menu.RadioItemIndicator
-                        className={styles.radioIndicator}
-                      >
-                        <CheckThinIcon className={styles.radioCheck} />
-                      </Menu.RadioItemIndicator>
-                      {label}
-                    </Menu.RadioItem>
-                  ))}
-                </Menu.RadioGroup>
-              </div>
-            </Menu.Popup>
-          </Menu.Positioner>
-        </Menu.Portal>
+                  <Menu.RadioItemIndicator className={styles.radioIndicator}>
+                    <CheckThinIcon className={styles.radioCheck} />
+                  </Menu.RadioItemIndicator>
+                  {label}
+                </Menu.RadioItem>
+              ))}
+            </Menu.RadioGroup>
+          </InlinePopoverMenu.List>
+        </InlinePopoverMenu.Panel>
       </Menu.SubmenuRoot>
     );
   }

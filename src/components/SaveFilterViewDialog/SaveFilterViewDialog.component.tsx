@@ -1,7 +1,6 @@
-import { Dialog } from "@base-ui/react/dialog";
 import { useEffect, useId, useMemo, useState } from "react";
-import { AppDialog } from "src/components/AppDialog/AppDialog.component";
 import Button from "src/components/Button/Button.component";
+import { FormDialog } from "src/components/FormDialog/FormDialog.component";
 import {
   MAX_FILTER_VIEW_NAME_LENGTH,
   normalizeFilterViewName,
@@ -77,65 +76,58 @@ export const SaveFilterViewDialog = ({
   };
 
   return (
-    <AppDialog
+    <FormDialog
       open={isOpen}
       onClose={onClose}
       testId="fmdSaveFilterViewDialog"
-      ariaLabelledBy={`${inputId}-title`}
-      ariaDescribedBy={`${inputId}-description`}
-      panelClassName={styles.dialog}
+      title={copy.title}
+      description={copy.description}
+      titleId={`${inputId}-title`}
+      descriptionId={`${inputId}-description`}
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            size="md"
+            onPress={onClose}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onPress={handleSave}
+            disabled={isSubmitDisabled}
+            isLoading={isSaving}
+            loadingText={copy.loadingText}
+          >
+            {copy.submitLabel}
+          </Button>
+        </>
+      }
     >
-      <Dialog.Title id={`${inputId}-title`} className={styles.title}>
-        {copy.title}
-      </Dialog.Title>
-      <Dialog.Description
-        id={`${inputId}-description`}
-        className={styles.description}
-      >
-        {copy.description}
-      </Dialog.Description>
-      <label className={styles.label} htmlFor={`${inputId}-name`}>
-        View name
-      </label>
-      <input
-        id={`${inputId}-name`}
-        className={validatedFieldClass(styles.input)}
-        type="text"
-        value={name}
-        maxLength={MAX_FILTER_VIEW_NAME_LENGTH}
-        placeholder="Sunday ambient"
-        autoComplete="off"
-        disabled={isSaving}
-        onChange={(event) => {
-          setName(event.target.value);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            handleSave();
-          }
-        }}
-      />
-      <div className={styles.actions}>
-        <Button
-          variant="secondary"
-          size="md"
-          onPress={onClose}
+      <FormDialog.Field label="View name" htmlFor={`${inputId}-name`}>
+        <input
+          id={`${inputId}-name`}
+          className={validatedFieldClass(styles.input)}
+          type="text"
+          value={name}
+          maxLength={MAX_FILTER_VIEW_NAME_LENGTH}
+          placeholder="Sunday ambient"
+          autoComplete="off"
           disabled={isSaving}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onPress={handleSave}
-          disabled={isSubmitDisabled}
-          isLoading={isSaving}
-          loadingText={copy.loadingText}
-        >
-          {copy.submitLabel}
-        </Button>
-      </div>
-    </AppDialog>
+          onChange={(event) => {
+            setName(event.target.value);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              handleSave();
+            }
+          }}
+        />
+      </FormDialog.Field>
+    </FormDialog>
   );
 };

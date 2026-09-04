@@ -1,11 +1,13 @@
-import { Dialog } from "@base-ui/react/dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
-import { AppDialog } from "src/components/AppDialog/AppDialog.component";
 import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import footerStyles from "src/components/CrateDrawerFooter/CrateDrawerFooter.module.css";
+import {
+  FormDialog,
+  formDialogStyles,
+} from "src/components/FormDialog/FormDialog.component";
 import {
   type EditCrateNameFormValues,
   editCrateNameFormSchema,
@@ -80,29 +82,40 @@ export const EditCrateDialog = () => {
     crateName.trim().length > 0;
 
   return (
-    <AppDialog
+    <FormDialog
       open={showEditCrateDialog}
       onClose={handleClose}
       testId="fmdEditCrateDialog"
-      ariaLabelledBy={titleId}
+      titleId={titleId}
+      panelWidth="md"
       backdropVariant="modal"
-      panelClassName={styles.dialog}
-    >
-      <div className={styles.titleRow}>
-        <Dialog.Title id={titleId} className={styles.title}>
-          Edit Crate
-        </Dialog.Title>
-        {isDefaultCrate ? (
+      title="Edit Crate"
+      headerAddon={
+        isDefaultCrate ? (
           <span className={styles.defaultBadge}>Default</span>
-        ) : null}
-      </div>
-
+        ) : null
+      }
+      footer={
+        <Button
+          type="button"
+          variant="secondary"
+          size="md"
+          onPress={handleClose}
+          disabled={isBusy}
+        >
+          Close
+        </Button>
+      }
+    >
       <form
         className={styles.section}
         aria-labelledby={titleId}
         onSubmit={handleSaveName}
       >
-        <label className={styles.label} htmlFor={`${titleId}-name-input`}>
+        <label
+          className={formDialogStyles.label}
+          htmlFor={`${titleId}-name-input`}
+        >
           Crate name
         </label>
         <input
@@ -161,7 +174,10 @@ export const EditCrateDialog = () => {
             <span className={styles.crateNameHighlight}>{crateName}</span> to
             confirm.
           </p>
-          <label className={styles.label} htmlFor={`${titleId}-delete-input`}>
+          <label
+            className={formDialogStyles.label}
+            htmlFor={`${titleId}-delete-input`}
+          >
             Confirm crate name
           </label>
           <input
@@ -188,18 +204,6 @@ export const EditCrateDialog = () => {
           </div>
         </section>
       ) : null}
-
-      <div className={styles.footerActions}>
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          onPress={handleClose}
-          disabled={isBusy}
-        >
-          Close
-        </Button>
-      </div>
-    </AppDialog>
+    </FormDialog>
   );
 };

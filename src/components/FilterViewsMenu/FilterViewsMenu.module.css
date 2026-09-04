@@ -123,47 +123,22 @@
 }
 
 .drawerPositioner {
+  max-width: var(--anchor-width);
+  width: var(--anchor-width);
+}
+
+.drawerMenuPopup {
+  box-sizing: border-box;
+  max-height: min(24rem, 70dvh);
+  max-width: none;
+  min-width: var(--anchor-width);
   width: var(--anchor-width);
 }
 
 .menuPopup {
-  composes: popupscroll from "../../styles/modules/inline-popover-menu.module.css";
   max-height: min(24rem, 70vh);
   max-width: min(18rem, calc(100vw - var(--space-6)));
   min-width: 14rem;
-}
-
-.menuPositioner {
-  composes: positioner from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuList {
-  composes: list from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuItemGroup {
-  composes: itemgroup from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuItem {
-  composes: item from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuFooter {
-  composes: footer from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuItemNeutral {
-  composes: itemneutral from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.menuEmpty {
-  composes: empty from "../../styles/modules/inline-popover-menu.module.css";
-}
-
-.drawerMenu {
-  min-width: 0;
-  width: var(--anchor-width);
 }
 
 .menuItemView {
@@ -218,11 +193,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.menuLink {
-  color: inherit;
-  display: block;
-  text-decoration: none;
-  width: 100%;
 }

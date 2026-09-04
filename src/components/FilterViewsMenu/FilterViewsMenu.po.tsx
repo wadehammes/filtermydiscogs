@@ -1,4 +1,5 @@
 import type { RenderResult } from "@testing-library/react";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -45,7 +46,12 @@ export class FilterViewsMenuPageObject extends BasePageObject {
         releases={releases}
         {...definedProps({ sessionFilters })}
       >
-        <FilterViewsMenu {...overrides} />
+        <OverlayStack
+          escapeStackingContext
+          popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
+        >
+          <FilterViewsMenu {...overrides} />
+        </OverlayStack>
       </SeedCollectionFilters>
     );
   }

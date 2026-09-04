@@ -2,9 +2,12 @@
 
 import { Select as BaseSelect } from "@base-ui/react/select";
 import classNames from "classnames";
-import { memo, useCallback, useRef } from "react";
+import { memo, useCallback } from "react";
 import Button from "src/components/Button/Button.component";
-import { useFilterControlPositionerZIndex } from "src/hooks/useFilterControlPositionerZIndex.hook";
+import {
+  useOverlayStackPositionerStyle,
+  usePortaledOverlayContainer,
+} from "src/components/OverlayStack/OverlayStack.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
 import { definedProps } from "src/utils/definedProps";
@@ -58,9 +61,8 @@ const SelectComponent = ({
   showLabel = false,
   clearable = false,
 }: SelectProps) => {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const { positionerStyle, handleOpenChange } =
-    useFilterControlPositionerZIndex(triggerRef);
+  const overlayContainer = usePortaledOverlayContainer();
+  const positionerStyle = useOverlayStackPositionerStyle();
 
   const hasSelectedValues =
     multiple && Array.isArray(value) && value.length > 0;
@@ -110,7 +112,6 @@ const SelectComponent = ({
 
   const trigger = (
     <BaseSelect.Trigger
-      ref={triggerRef}
       className={classNames(
         styles.trigger,
         showClearButton && styles.triggerWithClear,
@@ -147,7 +148,6 @@ const SelectComponent = ({
         items={selectItems}
         value={controlledValue}
         onValueChange={handleValueChange}
-        onOpenChange={handleOpenChange}
         disabled={disabled}
         modal={false}
         {...definedProps({ multiple: multiple ? true : undefined })}
@@ -176,7 +176,7 @@ const SelectComponent = ({
           trigger
         )}
         {options.length > 0 ? (
-          <BaseSelect.Portal>
+          <BaseSelect.Portal {...definedProps({ container: overlayContainer })}>
             <BaseSelect.Positioner
               alignItemWithTrigger={false}
               className={styles.positioner}

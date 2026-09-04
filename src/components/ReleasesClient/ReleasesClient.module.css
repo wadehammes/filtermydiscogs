@@ -175,6 +175,7 @@
 
   :global(body:has([data-mobile-menu-open="true"])) &,
   :global(body:has([data-filters-drawer-open="true"])) &,
+  :global(body:has([data-crate-drawer-open="true"])) &,
   :global(body:has([data-playback-queue-open="true"])) & {
     display: none;
   }
