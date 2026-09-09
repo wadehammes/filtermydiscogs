@@ -8,6 +8,7 @@ import {
   PALETTE_THEMES,
   resolvePaletteTheme,
   STORED_THEMES,
+  SYSTEM_DARK_PALETTE,
   themeUsesDarkAssets,
 } from "./themeAppearance";
 
@@ -48,10 +49,12 @@ describe("themeAppearance", () => {
 
   it("resolves system from OS preference", () => {
     expect(resolvePaletteTheme("system", false)).toBe("light");
-    expect(resolvePaletteTheme("system", true)).toBe("dark");
+    expect(resolvePaletteTheme("system", true)).toBe(SYSTEM_DARK_PALETTE);
+    expect(SYSTEM_DARK_PALETTE).toBe("codex");
     expect(resolvePaletteTheme("sepia", true)).toBe("sepia");
     expect(resolvePaletteTheme("forest", false)).toBe("forest");
     expect(resolvePaletteTheme("wine", false)).toBe("wine");
+    expect(resolvePaletteTheme("dark", true)).toBe("dark");
     expect(resolvePaletteTheme("codex", false)).toBe("codex");
   });
 
