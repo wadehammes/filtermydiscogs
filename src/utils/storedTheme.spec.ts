@@ -15,6 +15,7 @@ describe("storedTheme", () => {
     expect(isValidStoredTheme("high-contrast")).toBe(true);
     expect(isValidStoredTheme("system")).toBe(true);
     expect(parseStoredTheme("midnight")).toBe("midnight");
+    expect(parseStoredTheme("codex")).toBe("codex");
   });
 
   it("rejects unknown values", () => {

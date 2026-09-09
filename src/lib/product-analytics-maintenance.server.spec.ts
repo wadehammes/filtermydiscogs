@@ -7,6 +7,16 @@ import {
   jest,
 } from "@jest/globals";
 
+jest.mock("@prisma/client", () => ({
+  Prisma: {
+    sql: (strings: TemplateStringsArray, ...values: unknown[]) => ({
+      strings,
+      values,
+    }),
+    join: (fragments: unknown[]) => fragments,
+  },
+}));
+
 jest.mock("src/lib/db", () => ({
   prisma: {
     productAnalyticsEvent: {

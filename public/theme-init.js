@@ -17,6 +17,7 @@
       "futuristic",
       "high-contrast",
     ]);
+    const systemDarkPalette = "codex";
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
@@ -26,13 +27,13 @@
     let resolvedTheme;
 
     if (!hasSession) {
-      resolvedTheme = prefersDark ? "dark" : "light";
+      resolvedTheme = prefersDark ? systemDarkPalette : "light";
     } else if (stored && paletteThemes.has(stored)) {
       resolvedTheme = stored;
     } else if (stored === "system") {
-      resolvedTheme = prefersDark ? "dark" : "light";
+      resolvedTheme = prefersDark ? systemDarkPalette : "light";
     } else {
-      resolvedTheme = prefersDark ? "dark" : "light";
+      resolvedTheme = prefersDark ? systemDarkPalette : "light";
     }
 
     document.documentElement.setAttribute("data-theme", resolvedTheme);
