@@ -17,7 +17,7 @@
       "futuristic",
       "high-contrast",
     ]);
-    const systemDarkPalette = "codex";
+    const systemDarkPalette = "dark";
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;

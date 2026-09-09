@@ -166,7 +166,7 @@ Playwright runs in CI after Jest. Specs under [`e2e/`](../../e2e/):
 | File | Coverage |
 |------|----------|
 | [`instant-navigation.spec.ts`](../../e2e/instant-navigation.spec.ts) | Public About/Legal shells via **`instant()`** from **`@next/playwright`** |
-| [`theme-init.spec.ts`](../../e2e/theme-init.spec.ts) | Pre-hydration **`data-theme`** on **`/`** for OS light vs dark (**`codex`** when dark) |
+| [`theme-init.spec.ts`](../../e2e/theme-init.spec.ts) | Pre-hydration **`data-theme`** on **`/`** for OS light vs dark (**`dark`** when dark) |
 | [`public-routes.spec.ts`](../../e2e/public-routes.spec.ts) | Home **`200`** + About bento render (no OAuth) |
 
 Config: [`playwright.config.ts`](../../playwright.config.ts) (starts **`pnpm dev`** on port **6767** with **`NODE_OPTIONS`** cleared so the inspector port does not collide). Public-route e2e does **not** require **`DATABASE_URL`** — footer community stats skip when unset ([`getPublicCommunityStats`](../../src/lib/public-stats.server.ts)). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).

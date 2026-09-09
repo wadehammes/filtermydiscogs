@@ -38,7 +38,7 @@ export const PALETTE_THEMES = [
   "high-contrast",
 ] as const satisfies readonly PaletteTheme[];
 
-export const SYSTEM_DARK_PALETTE: PaletteTheme = "codex";
+export const SYSTEM_DARK_PALETTE: PaletteTheme = "dark";
 
 export const DARK_ASSET_THEMES = new Set<PaletteTheme>([
   "dark",
