@@ -987,6 +987,7 @@ export const PLAY_FROM_GESTURE_RETRY_DELAYS_MS = [
 ] as const;
 
 export {
+  loadAndPlayYoutubeVideo,
   loadYoutubeVideoById,
   postYoutubePlayerCommand,
   transitionYoutubeIframeToVideo,

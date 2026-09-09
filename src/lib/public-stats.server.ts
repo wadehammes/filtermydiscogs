@@ -32,6 +32,10 @@ const getCachedPublicCommunityStats = unstable_cache(
 
 export const getPublicCommunityStats =
   async (): Promise<PublicCommunityStats | null> => {
+    if (!process.env.DATABASE_URL) {
+      return null;
+    }
+
     try {
       return await getCachedPublicCommunityStats();
     } catch {

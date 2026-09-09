@@ -3,10 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { AutocompleteSelectPageObject } from "src/components/AutocompleteSelect/AutocompleteSelect.po";
 import {
-  clickFilterOption,
   openFilterCombobox,
+  selectMultiFilterOption,
 } from "src/tests/filterControlTestHelpers";
-import { screen, waitFor } from "test-utils";
+import { fireEvent, screen, waitFor } from "test-utils";
 
 let po: AutocompleteSelectPageObject;
 
@@ -62,7 +62,7 @@ describe("AutocompleteSelect", () => {
     po.renderAutocompleteSelect({ onChange: handleChange });
 
     await openFilterCombobox("Test Autocomplete");
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith(["option1"]);
   });
@@ -99,7 +99,7 @@ describe("AutocompleteSelect", () => {
     });
 
     await openFilterCombobox("Test Autocomplete");
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     rerender(
       <AutocompleteSelect
@@ -125,7 +125,7 @@ describe("AutocompleteSelect", () => {
     });
 
     await openFilterCombobox("Test Autocomplete");
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith(["option1"]);
 
@@ -153,7 +153,7 @@ describe("AutocompleteSelect", () => {
     });
 
     await openFilterCombobox("Test Autocomplete");
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith(["option1"]);
 
@@ -244,12 +244,20 @@ describe("AutocompleteSelect", () => {
       onChange: handleChange,
     });
 
+    const combobox = screen.getByRole("combobox", {
+      name: "Test Autocomplete",
+    });
+    const removeButton = screen.getByRole("button", {
+      name: "Remove Option 1",
+    });
+
+    fireEvent.mouseDown(removeButton);
+    expect(combobox).toHaveAttribute("aria-expanded", "false");
+
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    await user.click(screen.getByRole("button", { name: "Remove Option 1" }));
+    await user.click(removeButton);
 
     expect(handleChange).toHaveBeenCalledWith(["option2"]);
-    expect(
-      screen.getByRole("combobox", { name: "Test Autocomplete" }),
-    ).toHaveAttribute("aria-expanded", "false");
+    expect(combobox).toHaveAttribute("aria-expanded", "false");
   });
 });

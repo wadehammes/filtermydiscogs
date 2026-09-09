@@ -7,6 +7,7 @@ import {
   isStoredTheme,
   PALETTE_THEMES,
   resolvePaletteTheme,
+  resolveThemeInitAttribute,
   STORED_THEMES,
   SYSTEM_DARK_PALETTE,
   themeUsesDarkAssets,
@@ -28,6 +29,22 @@ const readThemeInitPaletteThemes = (): string[] => {
   );
 };
 
+const readThemeInitSystemDarkPalette = (): string => {
+  const themeInit = readFileSync(
+    join(process.cwd(), "public/theme-init.js"),
+    "utf8",
+  );
+  const match = themeInit.match(/const systemDarkPalette = "([^"]+)"/);
+
+  if (!match?.[1]) {
+    throw new Error(
+      "Could not parse systemDarkPalette from public/theme-init.js",
+    );
+  }
+
+  return match[1];
+};
+
 describe("themeAppearance", () => {
   it("cycles through every stored theme", () => {
     let current = cycleTheme("system");
@@ -47,6 +64,10 @@ describe("themeAppearance", () => {
     );
   });
 
+  it("keeps theme-init.js system dark palette in sync with SYSTEM_DARK_PALETTE", () => {
+    expect(readThemeInitSystemDarkPalette()).toBe(SYSTEM_DARK_PALETTE);
+  });
+
   it("resolves system from OS preference", () => {
     expect(resolvePaletteTheme("system", false)).toBe("light");
     expect(resolvePaletteTheme("system", true)).toBe(SYSTEM_DARK_PALETTE);
@@ -57,6 +78,64 @@ describe("themeAppearance", () => {
     expect(resolvePaletteTheme("dark", true)).toBe("dark");
     expect(resolvePaletteTheme("codex", false)).toBe("codex");
   });
+
+  it.each([
+    {
+      stored: null,
+      prefersDark: false,
+      hasSession: false,
+      expected: "light",
+    },
+    {
+      stored: null,
+      prefersDark: true,
+      hasSession: false,
+      expected: SYSTEM_DARK_PALETTE,
+    },
+    {
+      stored: "system",
+      prefersDark: true,
+      hasSession: true,
+      expected: SYSTEM_DARK_PALETTE,
+    },
+    {
+      stored: "system",
+      prefersDark: false,
+      hasSession: true,
+      expected: "light",
+    },
+    {
+      stored: "dark",
+      prefersDark: true,
+      hasSession: true,
+      expected: "dark",
+    },
+    {
+      stored: "sepia",
+      prefersDark: true,
+      hasSession: true,
+      expected: "sepia",
+    },
+    {
+      stored: "not-a-theme",
+      prefersDark: false,
+      hasSession: true,
+      expected: "light",
+    },
+    {
+      stored: "not-a-theme",
+      prefersDark: true,
+      hasSession: true,
+      expected: SYSTEM_DARK_PALETTE,
+    },
+  ] as const)(
+    "resolveThemeInitAttribute stored=$stored prefersDark=$prefersDark hasSession=$hasSession",
+    ({ stored, prefersDark, hasSession, expected }) => {
+      expect(
+        resolveThemeInitAttribute({ stored, prefersDark, hasSession }),
+      ).toBe(expected);
+    },
+  );
 
   it.each(
     PALETTE_THEMES.map((theme) => ({

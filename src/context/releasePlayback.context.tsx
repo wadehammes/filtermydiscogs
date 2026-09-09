@@ -56,7 +56,10 @@ import {
   shuffleQueueItems,
   upcomingFromAlbumQueue,
 } from "src/utils/playbackQueue";
-import { requestYoutubePlayerState } from "src/utils/postYoutubePlayerCommand";
+import {
+  loadAndPlayYoutubeVideo,
+  requestYoutubePlayerState,
+} from "src/utils/postYoutubePlayerCommand";
 import {
   isSameReleaseInstance,
   matchesInstanceId,
@@ -84,6 +87,7 @@ import {
   enableYoutubeIframeListening,
   isYoutubeEmbedOrigin,
   parseYoutubePlayerStateFromMessage,
+  YOUTUBE_PLAYER_STATE_CUED,
   YOUTUBE_PLAYER_STATE_ENDED,
   YOUTUBE_PLAYER_STATE_PAUSED,
   YOUTUBE_PLAYER_STATE_PLAYING,
@@ -324,7 +328,13 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
+    attemptPlayFromGesture();
+
     for (const delay of PLAY_FROM_GESTURE_RETRY_DELAYS_MS) {
+      if (delay === 0) {
+        continue;
+      }
+
       playFromGestureRetryTimeoutsRef.current.push(
         window.setTimeout(() => {
           attemptPlayFromGesture();
@@ -340,6 +350,10 @@ export const ReleasePlaybackProvider = ({
 
       if (!isPausedRef.current) {
         pendingPlayFromGestureRef.current = true;
+        loadAndPlayYoutubeVideo({
+          iframe: playbackIframeRef.current,
+          videoId,
+        });
         schedulePlayFromGestureAttempts();
       }
     },
@@ -769,6 +783,19 @@ export const ReleasePlaybackProvider = ({
         isPausedRef.current
       ) {
         setIsPaused(false);
+        return;
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_CUED &&
+        isPlayingRef.current &&
+        !isPausedRef.current &&
+        pendingPlayFromGestureRef.current
+      ) {
+        postYoutubePlayerCommand({
+          iframe: playbackIframeRef.current,
+          command: "playVideo",
+        });
         return;
       }
 

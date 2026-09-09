@@ -1,23 +1,22 @@
-(() => {
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+import {
+  PALETTE_THEMES,
+  SYSTEM_DARK_PALETTE,
+} from "../src/utils/themeAppearance.ts";
+
+const paletteThemesLiteral = PALETTE_THEMES.map(
+  (theme) => `      "${theme}",`,
+).join("\n");
+
+const themeInitSource = `(() => {
   try {
     const storageKey = "filtermydiscogs_theme";
     const stored = localStorage.getItem(storageKey);
     const paletteThemes = new Set([
-      "light",
-      "dim",
-      "sepia",
-      "forest",
-      "amber",
-      "slate",
-      "dark",
-      "midnight",
-      "codex",
-      "discogs",
-      "wine",
-      "futuristic",
-      "high-contrast",
+${paletteThemesLiteral}
     ]);
-    const systemDarkPalette = "codex";
+    const systemDarkPalette = "${SYSTEM_DARK_PALETTE}";
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
@@ -39,3 +38,6 @@
     document.documentElement.setAttribute("data-theme", resolvedTheme);
   } catch (_e) {}
 })();
+`;
+
+writeFileSync(join(process.cwd(), "public/theme-init.js"), themeInitSource);

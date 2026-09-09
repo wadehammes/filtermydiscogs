@@ -53,11 +53,9 @@
 }
 
 .releasesGrid {
-  align-items: stretch;
   display: grid;
   gap: var(--space-4);
   grid-template-columns: 1fr;
-  justify-content: stretch;
   width: 100%;
   content-visibility: visible;
   contain-intrinsic-size: 400px 300px;
@@ -65,14 +63,17 @@
   & > div {
     min-width: 0;
     scroll-margin-top: var(--space-4);
+    width: 100%;
   }
 
-  @media (width >= 620px) {
-    gap: var(--space-4);
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(clamp(18.75rem, 20vw, 20rem), 1fr)
-      );
+  @media (width >= 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  &[data-fixed-lanes] {
+    @media (width >= 768px) {
+      grid-template-columns: repeat(var(--grid-lane-count), minmax(0, 20rem));
+    }
   }
 }
 

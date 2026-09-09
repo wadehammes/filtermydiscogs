@@ -67,3 +67,16 @@ export const transitionYoutubeIframeToVideo = ({
 }): void => {
   loadYoutubeVideoById({ iframe, videoId });
 };
+
+export const loadAndPlayYoutubeVideo = ({
+  iframe,
+  videoId,
+  startSeconds = 0,
+}: {
+  iframe: HTMLIFrameElement | null;
+  videoId: string;
+  startSeconds?: number;
+}): void => {
+  loadYoutubeVideoById({ iframe, videoId, startSeconds });
+  postYoutubePlayerCommand({ iframe, command: "playVideo" });
+};

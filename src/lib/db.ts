@@ -2,14 +2,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool, type PoolConfig } from "pg";
 
-// PrismaClient and Pool are attached to the `global` object to prevent
-// exhausting your database connection limit in serverless environments.
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
   pool: Pool | undefined;
 };
 
-/** Sanitize DATABASE_URL; pin SSL aliases to verify-full ahead of pg v9. */
 function validateAndSanitizeConnectionString(connectionString: string): string {
   const url = new URL(connectionString);
 
@@ -24,18 +21,13 @@ function validateAndSanitizeConnectionString(connectionString: string): string {
     url.searchParams.set("sslmode", "verify-full");
   }
 
-  // Add performance-related connection parameters
-  url.searchParams.set("statement_timeout", "30000"); // 30 seconds
-  url.searchParams.set("connect_timeout", "10"); // 10 seconds
-  url.searchParams.set("pool_timeout", "10"); // 10 seconds
+  url.searchParams.set("statement_timeout", "30000");
+  url.searchParams.set("connect_timeout", "10");
+  url.searchParams.set("pool_timeout", "10");
 
   return url.toString();
 }
 
-/**
- * Gets a sanitized version of the connection string for logging
- * (removes credentials)
- */
 function sanitizeConnectionStringForLogging(connectionString: string): string {
   try {
     const url = new URL(connectionString);
@@ -51,9 +43,6 @@ function sanitizeConnectionStringForLogging(connectionString: string): string {
   }
 }
 
-/**
- * Environment-aware pool configuration
- */
 function getPoolConfig(connectionString: string): PoolConfig {
   const isProduction = process.env.NODE_ENV === "production";
   const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
@@ -75,55 +64,59 @@ function getPoolConfig(connectionString: string): PoolConfig {
     connectionString,
     max: maxConnections,
     min: minConnections,
-    // Close idle connections quickly in serverless environments
     idleTimeoutMillis: parseInt(
       process.env.DB_POOL_IDLE_TIMEOUT || "30000",
       10,
-    ), // 30 seconds
-    // Fail fast if connection can't be established
+    ),
     connectionTimeoutMillis: parseInt(
       process.env.DB_POOL_CONNECTION_TIMEOUT || "10000",
       10,
-    ), // 10 seconds
-    // Allow pool to close when idle (good for serverless)
+    ),
     allowExitOnIdle: true,
-    // Statement cache for prepared statements (improves performance)
     statement_timeout: parseInt(
       process.env.DB_STATEMENT_TIMEOUT || "30000",
       10,
-    ), // 30 seconds
+    ),
   };
 }
 
-let prismaInstance: PrismaClient;
+const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
+  "crateSetMarker" in client &&
+  "productAnalyticsEvent" in client &&
+  "productAnalyticsDailyRollup" in client;
 
-try {
+function createPrismaInitializationError(error: unknown): Error {
+  const sanitizedError =
+    error instanceof Error
+      ? error.message.replace(/DATABASE_URL[^;]*/gi, "DATABASE_URL=***")
+      : "Unknown error";
+
+  return new Error(
+    `Prisma Client not initialized: ${sanitizedError}. Please run 'pnpm db:generate' and ensure DATABASE_URL is set.`,
+  );
+}
+
+function initializePrismaClient(): PrismaClient {
   const rawConnectionString = process.env.DATABASE_URL;
   if (!rawConnectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  // Validate and enhance connection string
   const connectionString =
     validateAndSanitizeConnectionString(rawConnectionString);
 
-  // Log sanitized connection string for debugging (development only)
   if (process.env.NODE_ENV === "development") {
     console.log(
       `[DB] Connecting with config: ${sanitizeConnectionStringForLogging(connectionString)}`,
     );
   }
 
-  // Reuse pool instance in serverless environments
-  // Configure pool to prevent connection exhaustion
-  // Vercel Postgres limits: Hobby (20), Pro (50), Enterprise (varies)
   const poolConfig = getPoolConfig(connectionString);
   const pool = globalForPrisma.pool ?? new Pool(poolConfig);
 
   if (!globalForPrisma.pool) {
     globalForPrisma.pool = pool;
 
-    // Add connection pool event listeners for monitoring
     pool.on("connect", () => {
       if (process.env.NODE_ENV === "development") {
         console.log("[DB] New connection established");
@@ -152,11 +145,6 @@ try {
         ? (["error", "warn", "query"] as const)
         : (["error"] as const);
 
-  const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
-    "crateSetMarker" in client &&
-    "productAnalyticsEvent" in client &&
-    "productAnalyticsDailyRollup" in client;
-
   if (
     globalForPrisma.prisma &&
     !isCachedPrismaClientCurrent(globalForPrisma.prisma)
@@ -171,14 +159,13 @@ try {
     globalForPrisma.prisma = undefined;
   }
 
-  prismaInstance =
+  const prismaInstance =
     globalForPrisma.prisma ??
     new PrismaClient({
       adapter,
       log: [...prismaClientLog],
     });
 
-  // Connection health check with exponential backoff
   let healthCheckAttempts = 0;
   const maxHealthCheckAttempts = 3;
 
@@ -189,7 +176,7 @@ try {
     } catch (error) {
       healthCheckAttempts++;
       if (healthCheckAttempts < maxHealthCheckAttempts) {
-        const backoffDelay = 2 ** healthCheckAttempts * 1000; // Exponential backoff
+        const backoffDelay = 2 ** healthCheckAttempts * 1000;
         console.warn(
           `[DB] Health check failed (attempt ${healthCheckAttempts}/${maxHealthCheckAttempts}). Retrying in ${backoffDelay}ms...`,
         );
@@ -201,34 +188,43 @@ try {
     }
   }
 
-  // Perform initial health check
   performHealthCheck().catch((error) => {
     console.error("[DB] Initial health check failed:", error);
   });
-} catch (error) {
-  console.error("Failed to initialize Prisma Client:", error);
-  // Don't expose connection string in error
-  const sanitizedError =
-    error instanceof Error
-      ? error.message.replace(/DATABASE_URL[^;]*/gi, "DATABASE_URL=***")
-      : "Unknown error";
-  throw new Error(
-    `Prisma Client not initialized: ${sanitizedError}. Please run 'pnpm db:generate' and ensure DATABASE_URL is set.`,
-  );
+
+  globalForPrisma.prisma = prismaInstance;
+  return prismaInstance;
 }
 
-export const prisma = prismaInstance;
+function getPrismaClient(): PrismaClient {
+  if (
+    globalForPrisma.prisma &&
+    isCachedPrismaClientCurrent(globalForPrisma.prisma)
+  ) {
+    return globalForPrisma.prisma;
+  }
 
-// Always cache Prisma Client in serverless environments (including production)
-// This prevents creating multiple connections per function invocation
-// Vercel serverless functions can reuse the same instance across invocations
-if (!globalForPrisma.prisma) {
-  globalForPrisma.prisma = prisma;
+  try {
+    return initializePrismaClient();
+  } catch (error) {
+    console.error("Failed to initialize Prisma Client:", error);
+    throw createPrismaInitializationError(error);
+  }
 }
 
-/**
- * Get connection pool metrics for monitoring
- */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, prop, receiver);
+
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+
+    return value;
+  },
+});
+
 export function getPoolMetrics() {
   const pool = globalForPrisma.pool;
   if (!pool) {
@@ -242,5 +238,4 @@ export function getPoolMetrics() {
   };
 }
 
-// Re-export Prisma types
 export type { Prisma } from "@prisma/client";

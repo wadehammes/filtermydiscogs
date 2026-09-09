@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { authenticatedDiscogsSessionFactory } from "src/tests/factories/AuthenticatedDiscogsSession.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { suppressConsoleError } from "src/tests/utils/suppressConsoleError";
 
 jest.mock("src/lib/auth-request", () => ({
   requireReadOnlyDiscogsUser: jest.fn(),
@@ -121,6 +122,7 @@ describe("GET /api/collection", () => {
   });
 
   it("forwards Retry-After when Discogs returns 429", async () => {
+    const consoleSpy = suppressConsoleError();
     mockGetCollection.mockRejectedValue(
       Object.assign(new Error("You are making requests too quickly."), {
         status: 429,
@@ -135,5 +137,7 @@ describe("GET /api/collection", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Rate limit exceeded. Please try again in a moment.",
     });
+
+    consoleSpy.mockRestore();
   });
 });

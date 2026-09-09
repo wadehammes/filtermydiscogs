@@ -50,6 +50,22 @@ const clampScale = ({
   return Math.min(Math.max(scale, minScale), maxScale);
 };
 
+const applyLayoutToPanel = (
+  panel: HTMLDivElement,
+  layout: { position: VideoPanelPosition | null; scale: number },
+) => {
+  panel.style.setProperty("--panel-scale", String(layout.scale));
+
+  if (layout.position) {
+    panel.style.left = `${layout.position.x}px`;
+    panel.style.top = `${layout.position.y}px`;
+    return;
+  }
+
+  panel.style.removeProperty("left");
+  panel.style.removeProperty("top");
+};
+
 export const useDraggablePanel = ({
   enabled,
   storageKey,
@@ -61,6 +77,15 @@ export const useDraggablePanel = ({
   const resizeStartRef = useRef({ x: 0, y: 0, width: 0 });
   const maxWidthRef = useRef<number | null>(null);
   const hasHydratedLayoutRef = useRef(false);
+  const pointerFrameRef = useRef<number | null>(null);
+  const pendingPointerRef = useRef<{ x: number; y: number } | null>(null);
+  const liveLayoutRef = useRef<{
+    position: VideoPanelPosition | null;
+    scale: number;
+  }>({
+    position: null,
+    scale: DEFAULT_MAX_SCALE,
+  });
   const storedLayout = storageKey ? readVideoPanelLayout(storageKey) : null;
   const [hasHydratedLayout, setHasHydratedLayout] = useState(
     () => !storedLayout?.position,
@@ -79,16 +104,17 @@ export const useDraggablePanel = ({
   const measureMaxWidth = useCallback(() => {
     const panel = panelRef.current;
 
-    if (!panel || scale <= 0) {
+    if (!panel || liveLayoutRef.current.scale <= 0) {
       return null;
     }
 
-    const width = panel.getBoundingClientRect().width / scale;
+    const width =
+      panel.getBoundingClientRect().width / liveLayoutRef.current.scale;
 
     maxWidthRef.current = width;
 
     return width;
-  }, [scale]);
+  }, []);
 
   const clampPanelPosition = useCallback(
     (nextPosition: VideoPanelPosition): VideoPanelPosition => {
@@ -110,9 +136,57 @@ export const useDraggablePanel = ({
     [],
   );
 
+  const commitLiveLayout = useCallback(() => {
+    const panel = panelRef.current;
+    const { position: nextPosition, scale: nextScale } = liveLayoutRef.current;
+
+    if (panel) {
+      applyLayoutToPanel(panel, { position: nextPosition, scale: nextScale });
+    }
+
+    setPosition(nextPosition);
+    setScale(nextScale);
+  }, []);
+
+  const schedulePointerUpdate = useCallback((update: () => void) => {
+    if (pointerFrameRef.current !== null) {
+      return;
+    }
+
+    pointerFrameRef.current = requestAnimationFrame(() => {
+      pointerFrameRef.current = null;
+      update();
+    });
+  }, []);
+
+  const clearFloatingPosition = useCallback(() => {
+    liveLayoutRef.current = {
+      position: null,
+      scale: liveLayoutRef.current.scale,
+    };
+    setPosition(null);
+
+    const panel = panelRef.current;
+
+    if (panel) {
+      panel.style.removeProperty("left");
+      panel.style.removeProperty("top");
+    }
+  }, []);
+
   const resetLayout = useCallback(() => {
+    liveLayoutRef.current = {
+      position: null,
+      scale: DEFAULT_MAX_SCALE,
+    };
     setPosition(null);
     setScale(DEFAULT_MAX_SCALE);
+
+    const panel = panelRef.current;
+
+    if (panel) {
+      applyLayoutToPanel(panel, liveLayoutRef.current);
+    }
 
     if (storageKey) {
       clearVideoPanelLayout(storageKey);
@@ -129,19 +203,22 @@ export const useDraggablePanel = ({
       event.currentTarget.setPointerCapture(event.pointerId);
 
       const rect = panelRef.current.getBoundingClientRect();
+      const nextPosition = liveLayoutRef.current.position ?? {
+        x: rect.left,
+        y: rect.top,
+      };
 
       dragOffsetRef.current = {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top,
       };
 
-      setPosition((currentPosition) => {
-        if (currentPosition) {
-          return currentPosition;
-        }
-
-        return { x: rect.left, y: rect.top };
-      });
+      liveLayoutRef.current = {
+        position: nextPosition,
+        scale: liveLayoutRef.current.scale,
+      };
+      applyLayoutToPanel(panelRef.current, liveLayoutRef.current);
+      setPosition(nextPosition);
       setIsDragging(true);
     },
     [enabled],
@@ -168,23 +245,35 @@ export const useDraggablePanel = ({
       };
       maxWidthRef.current = maxWidth;
 
-      setPosition((currentPosition) => {
-        if (currentPosition) {
-          return currentPosition;
-        }
+      const rect = panelRef.current.getBoundingClientRect();
+      const shouldSetPosition = liveLayoutRef.current.position === null;
+      const nextPosition = liveLayoutRef.current.position ?? {
+        x: rect.left,
+        y: rect.top,
+      };
 
-        const rect = panelRef.current?.getBoundingClientRect();
+      liveLayoutRef.current = {
+        position: nextPosition,
+        scale: liveLayoutRef.current.scale,
+      };
+      applyLayoutToPanel(panelRef.current, liveLayoutRef.current);
 
-        if (!rect) {
-          return currentPosition;
-        }
+      if (shouldSetPosition) {
+        setPosition(nextPosition);
+      }
 
-        return { x: rect.left, y: rect.top };
-      });
       setIsResizing(true);
     },
     [enabled, measureMaxWidth],
   );
+
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      return;
+    }
+
+    liveLayoutRef.current = { position, scale };
+  }, [isDragging, isResizing, position, scale]);
 
   useEffect(() => {
     if (!enabled) {
@@ -241,6 +330,11 @@ export const useDraggablePanel = ({
         clamped.x === storedPosition.x && clamped.y === storedPosition.y;
 
       if (fitsCurrentViewport) {
+        liveLayoutRef.current = {
+          position: clamped,
+          scale: liveLayoutRef.current.scale,
+        };
+        applyLayoutToPanel(panel, liveLayoutRef.current);
         setPosition(clamped);
       } else if (storageKey) {
         clearVideoPanelLayout(storageKey);
@@ -265,25 +359,39 @@ export const useDraggablePanel = ({
     }
 
     const handlePointerMove = (event: PointerEvent) => {
-      const panel = panelRef.current;
+      pendingPointerRef.current = { x: event.clientX, y: event.clientY };
 
-      if (!panel) {
-        return;
-      }
+      schedulePointerUpdate(() => {
+        const panel = panelRef.current;
+        const pending = pendingPointerRef.current;
 
-      const { width, height } = panel.getBoundingClientRect();
+        if (!(panel && pending)) {
+          return;
+        }
 
-      setPosition(
-        clampPosition({
-          x: event.clientX - dragOffsetRef.current.x,
-          y: event.clientY - dragOffsetRef.current.y,
+        const { width, height } = panel.getBoundingClientRect();
+        const nextPosition = clampPosition({
+          x: pending.x - dragOffsetRef.current.x,
+          y: pending.y - dragOffsetRef.current.y,
           width,
           height,
-        }),
-      );
+        });
+
+        liveLayoutRef.current = {
+          position: nextPosition,
+          scale: liveLayoutRef.current.scale,
+        };
+        applyLayoutToPanel(panel, liveLayoutRef.current);
+      });
     };
 
     const handlePointerUp = () => {
+      if (pointerFrameRef.current !== null) {
+        cancelAnimationFrame(pointerFrameRef.current);
+        pointerFrameRef.current = null;
+      }
+
+      commitLiveLayout();
       setIsDragging(false);
     };
 
@@ -293,8 +401,13 @@ export const useDraggablePanel = ({
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+
+      if (pointerFrameRef.current !== null) {
+        cancelAnimationFrame(pointerFrameRef.current);
+        pointerFrameRef.current = null;
+      }
     };
-  }, [isDragging]);
+  }, [commitLiveLayout, isDragging, schedulePointerUpdate]);
 
   useEffect(() => {
     if (!isResizing) {
@@ -302,39 +415,54 @@ export const useDraggablePanel = ({
     }
 
     const handlePointerMove = (event: PointerEvent) => {
-      const maxWidth = maxWidthRef.current;
+      pendingPointerRef.current = { x: event.clientX, y: event.clientY };
 
-      if (!maxWidth) {
-        return;
-      }
+      schedulePointerUpdate(() => {
+        const panel = panelRef.current;
+        const pending = pendingPointerRef.current;
+        const maxWidth = maxWidthRef.current;
 
-      const delta = Math.max(
-        event.clientX - resizeStartRef.current.x,
-        event.clientY - resizeStartRef.current.y,
-      );
-      const minWidth = maxWidth * minScale;
-      const nextWidth = Math.min(
-        Math.max(resizeStartRef.current.width + delta, minWidth),
-        maxWidth,
-      );
-      const nextScale = clampScale({
-        scale: nextWidth / maxWidth,
-        minScale,
-        maxScale,
-      });
-
-      setScale(nextScale);
-
-      setPosition((currentPosition) => {
-        if (!currentPosition) {
-          return currentPosition;
+        if (!(panel && pending && maxWidth)) {
+          return;
         }
 
-        return clampPanelPosition(currentPosition);
+        const delta = Math.max(
+          pending.x - resizeStartRef.current.x,
+          pending.y - resizeStartRef.current.y,
+        );
+        const minWidth = maxWidth * minScale;
+        const nextWidth = Math.min(
+          Math.max(resizeStartRef.current.width + delta, minWidth),
+          maxWidth,
+        );
+        const nextScale = clampScale({
+          scale: nextWidth / maxWidth,
+          minScale,
+          maxScale,
+        });
+
+        liveLayoutRef.current = {
+          position: liveLayoutRef.current.position,
+          scale: nextScale,
+        };
+        applyLayoutToPanel(panel, liveLayoutRef.current);
       });
     };
 
     const handlePointerUp = () => {
+      if (pointerFrameRef.current !== null) {
+        cancelAnimationFrame(pointerFrameRef.current);
+        pointerFrameRef.current = null;
+      }
+
+      if (liveLayoutRef.current.position) {
+        liveLayoutRef.current = {
+          position: clampPanelPosition(liveLayoutRef.current.position),
+          scale: liveLayoutRef.current.scale,
+        };
+      }
+
+      commitLiveLayout();
       setIsResizing(false);
     };
 
@@ -344,8 +472,20 @@ export const useDraggablePanel = ({
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+
+      if (pointerFrameRef.current !== null) {
+        cancelAnimationFrame(pointerFrameRef.current);
+        pointerFrameRef.current = null;
+      }
     };
-  }, [clampPanelPosition, isResizing, maxScale, minScale]);
+  }, [
+    clampPanelPosition,
+    commitLiveLayout,
+    isResizing,
+    maxScale,
+    minScale,
+    schedulePointerUpdate,
+  ]);
 
   useEffect(() => {
     if (!storageKey || isDragging || isResizing || !hasHydratedLayout) {
@@ -375,7 +515,20 @@ export const useDraggablePanel = ({
           return currentPosition;
         }
 
-        return clampPanelPosition(currentPosition);
+        const clamped = clampPanelPosition(currentPosition);
+
+        liveLayoutRef.current = {
+          position: clamped,
+          scale: liveLayoutRef.current.scale,
+        };
+
+        const panel = panelRef.current;
+
+        if (panel) {
+          applyLayoutToPanel(panel, liveLayoutRef.current);
+        }
+
+        return clamped;
       });
     };
 
@@ -394,6 +547,7 @@ export const useDraggablePanel = ({
     isResizing,
     handlePointerDown,
     handleResizePointerDown,
+    clearFloatingPosition,
     resetLayout,
   };
 };

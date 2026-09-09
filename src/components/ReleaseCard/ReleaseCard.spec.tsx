@@ -81,6 +81,17 @@ describe("ReleaseCard", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders pills in a horizontal scroll row", () => {
+    po.renderReleaseCard({
+      release: releaseFactory.withStyles(["Rock", "Pop"]),
+    });
+
+    expect(screen.getByTestId("fmdReleaseCardPillsRow")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Filter by Rock" }),
+    ).toBeInTheDocument();
+  });
+
   it("prefetches crate membership when the trigger is hovered", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();

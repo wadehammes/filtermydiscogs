@@ -40,5 +40,7 @@ jobs:
         run: pnpm lint:css
       - name: Run Jest
         run: pnpm test:ci
+      - name: Run Playwright
+        run: pnpm test:e2e:ci
       - name: Run Knip
         run: pnpm knip:ci

@@ -9,6 +9,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { authenticatedDiscogsSessionFactory } from "src/tests/factories/AuthenticatedDiscogsSession.factory";
 import { collectionValueFactory } from "src/tests/factories/CollectionValue.factory";
+import { suppressConsoleError } from "src/tests/utils/suppressConsoleError";
 
 jest.mock("src/lib/auth-request", () => ({
   requireReadOnlyDiscogsUser: jest.fn(),
@@ -122,6 +123,7 @@ describe("GET /api/collection/value", () => {
   });
 
   it("returns 500 when Discogs returns invalid value data", async () => {
+    const consoleSpy = suppressConsoleError();
     mockRequireReadOnlyDiscogsUser.mockResolvedValue(authenticatedSession);
     mockGetCollectionValue.mockResolvedValue({
       minimum: Number.NaN,
@@ -135,5 +137,7 @@ describe("GET /api/collection/value", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Invalid collection value data received",
     });
+
+    consoleSpy.mockRestore();
   });
 });
