@@ -36,9 +36,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteCanonicalUrl("/"),
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
   openGraph: {
     title: SITE_DEFAULT_TITLE,
     description: SITE_DESCRIPTION,
