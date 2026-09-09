@@ -25,7 +25,7 @@ describe("applyThemeFromStorage", () => {
 
     applyThemeFromStorage();
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("codex");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
   it("uses stored palette theme when logged in", () => {
@@ -49,6 +49,6 @@ describe("applyThemeFromStorage", () => {
 
     applyThemeFromStorage();
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("codex");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });

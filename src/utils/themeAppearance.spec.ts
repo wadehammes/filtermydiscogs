@@ -71,7 +71,7 @@ describe("themeAppearance", () => {
   it("resolves system from OS preference", () => {
     expect(resolvePaletteTheme("system", false)).toBe("light");
     expect(resolvePaletteTheme("system", true)).toBe(SYSTEM_DARK_PALETTE);
-    expect(SYSTEM_DARK_PALETTE).toBe("codex");
+    expect(SYSTEM_DARK_PALETTE).toBe("dark");
     expect(resolvePaletteTheme("sepia", true)).toBe("sepia");
     expect(resolvePaletteTheme("forest", false)).toBe("forest");
     expect(resolvePaletteTheme("wine", false)).toBe("wine");

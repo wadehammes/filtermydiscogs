@@ -106,9 +106,9 @@ describe("ThemeProvider", () => {
 
     await waitFor(() => {
       expect(result.current.theme).toBe("system");
-      expect(result.current.resolvedTheme).toBe("codex");
+      expect(result.current.resolvedTheme).toBe("dark");
       expect(localStorage.getItem("filtermydiscogs_theme")).toBe("system");
-      expect(document.documentElement.getAttribute("data-theme")).toBe("codex");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     });
   });
 
