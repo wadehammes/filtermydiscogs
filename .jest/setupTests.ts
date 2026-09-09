@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, beforeEach } from "@jest/globals";
 import "@testing-library/jest-dom/jest-globals";
-import "./suppressActWarnings";
 import { TextEncoder } from "node:util";
 import fetchMock from "jest-fetch-mock";
 import {
@@ -38,12 +37,6 @@ if (typeof globalThis.PointerEvent === "undefined") {
   globalThis.PointerEvent =
     PointerEventPolyfill as typeof globalThis.PointerEvent;
 }
-
-declare global {
-  var IS_REACT_ACT_ENVIRONMENT: boolean;
-}
-
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 fetchMock.enableMocks();
 
@@ -122,7 +115,6 @@ beforeAll(() => {
 
 beforeEach(() => {
   resetWindowLocation();
-  jest.clearAllTimers();
 
   jest.clearAllMocks();
   fetchMock.resetMocks();

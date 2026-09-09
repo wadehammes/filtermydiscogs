@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import type { ReactNode } from "react";
 import { useLayoutEffect } from "react";
 import { api } from "src/api/urls";
@@ -17,6 +17,11 @@ import { userPreferencesFactory } from "src/tests/factories/UserPreferences.fact
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
+import {
+  dispatchYoutubePlayerState,
+  setupPlaybackSpecTimers,
+  teardownPlaybackSpecTimers,
+} from "src/tests/utils/playbackTestHelpers";
 import {
   TestProviders,
   testAuthenticatedAuthState,
@@ -53,32 +58,6 @@ const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
     configurable: true,
     get: () => state,
   });
-};
-
-const dispatchYoutubePlayerState = ({
-  contentWindow,
-  playerState,
-  event = "onStateChange",
-}: {
-  contentWindow: Window;
-  playerState: number;
-  event?: "onStateChange" | "infoDelivery";
-}) => {
-  const data =
-    event === "infoDelivery"
-      ? JSON.stringify({
-          event: "infoDelivery",
-          info: { playerState },
-        })
-      : JSON.stringify({ event: "onStateChange", info: playerState });
-
-  window.dispatchEvent(
-    new MessageEvent("message", {
-      data,
-      origin: "https://www.youtube-nocookie.com",
-      source: contentWindow,
-    }),
-  );
 };
 
 const mockApi = jest.mocked(api);
@@ -273,7 +252,12 @@ const createAuthCheckingWrapper = () => {
 };
 
 describe("ReleasePlaybackProvider", () => {
+  afterEach(async () => {
+    await teardownPlaybackSpecTimers();
+  });
+
   beforeEach(() => {
+    setupPlaybackSpecTimers();
     jest.resetAllMocks();
     localStorage.clear();
     mockPostYoutubePlayerCommand.mockClear();
@@ -326,14 +310,9 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.queue[0]?.trackPosition).toBe("B1");
     });
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 0 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 0,
     });
 
     await waitFor(() => {
@@ -458,8 +437,6 @@ describe("ReleasePlaybackProvider", () => {
   });
 
   it("requests playVideo when the embed iframe registers after a user gesture", async () => {
-    jest.useFakeTimers();
-
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),
     });
@@ -490,8 +467,6 @@ describe("ReleasePlaybackProvider", () => {
     );
 
     expect(playVideoCalls.length).toBeGreaterThan(0);
-
-    jest.useRealTimers();
   });
 
   it("toggles paused state while playback is active", async () => {
@@ -545,26 +520,16 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.isPaused).toBe(false);
     });
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 2 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 2,
     });
 
     expect(result.current.isPaused).toBe(true);
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 1 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 1,
     });
 
     expect(result.current.isPaused).toBe(false);
@@ -648,26 +613,16 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.queue).toHaveLength(1);
     });
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 2 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 2,
     });
 
     expect(result.current.isPaused).toBe(false);
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 0 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 0,
     });
 
     await waitFor(() => {
@@ -703,17 +658,10 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.queue).toHaveLength(1);
     });
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({
-            event: "infoDelivery",
-            info: { playerState: 0 },
-          }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 0,
+      event: "infoDelivery",
     });
 
     await waitFor(() => {

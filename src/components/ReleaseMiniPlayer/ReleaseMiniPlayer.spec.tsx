@@ -1,5 +1,4 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
-import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import type { ReactNode } from "react";
 import { api } from "src/api/urls";
 import { ReleaseMiniPlayer } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component";
@@ -21,6 +20,14 @@ import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
+  dispatchYoutubePlayerState,
+  flushPlaybackGestureRetries,
+  setupPlaybackSpecTimers,
+  setupPlaybackUser,
+  teardownPlaybackSpecTimers,
+} from "src/tests/utils/playbackTestHelpers";
+import { settleProviderEffects } from "src/tests/utils/settleProviderEffects";
+import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
@@ -30,7 +37,7 @@ import {
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
 } from "src/utils/playbackVideoIntroStorage";
 import { transitionYoutubeIframeToVideo } from "src/utils/releasePlayback";
-import { act, render, screen, waitFor } from "test-utils";
+import { render, screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -111,12 +118,19 @@ const createWrapper = (onReleaseClick?: (instanceId: string) => void) => {
 const defaultCrate = crateFactory.defaultTestCrate();
 const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 
-const startPlaybackAndWaitForPlayer = async (
-  user: ReturnType<typeof userEvent.setup>,
-) => {
-  await act(async () => {
-    await user.click(screen.getByRole("button", { name: "Start playback" }));
+const settleCrateProvider = async () => {
+  await settleProviderEffects();
+  await waitFor(() => {
+    expect(mockApi.crates).toHaveBeenCalled();
   });
+  await settleProviderEffects();
+};
+
+const startPlaybackAndWaitForPlayer = async (
+  user: ReturnType<typeof setupPlaybackUser>,
+) => {
+  await settleCrateProvider();
+  await user.click(screen.getByRole("button", { name: "Start playback" }));
 
   await waitFor(() => {
     expect(screen.getByTestId("fmdReleaseMiniPlayer")).toBeInTheDocument();
@@ -125,10 +139,29 @@ const startPlaybackAndWaitForPlayer = async (
   await waitFor(() => {
     expect(mockApi.discogsRelease).toHaveBeenCalled();
   });
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
+  });
+
+  await flushPlaybackGestureRetries();
+};
+
+const clickPlaybackControl = async (
+  user: ReturnType<typeof setupPlaybackUser>,
+  name: string | RegExp,
+) => {
+  await user.click(screen.getByRole("button", { name }));
+  await flushPlaybackGestureRetries();
 };
 
 describe("ReleaseMiniPlayer", () => {
+  afterEach(async () => {
+    await teardownPlaybackSpecTimers();
+  });
+
   beforeEach(() => {
+    setupPlaybackSpecTimers();
     jest.clearAllMocks();
     localStorage.clear();
     markPlaybackVideoIntroSeen();
@@ -170,7 +203,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("renders the dock and visible iframe when autoplay playback is active", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -189,7 +222,7 @@ describe("ReleaseMiniPlayer", () => {
 
   it("expands the dock video panel the first time playback becomes ready", async () => {
     localStorage.clear();
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -213,7 +246,7 @@ describe("ReleaseMiniPlayer", () => {
     localStorage.clear();
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: true });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -236,7 +269,7 @@ describe("ReleaseMiniPlayer", () => {
     localStorage.clear();
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: false });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -256,7 +289,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("expands and collapses the video panel without changing the embed src", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -300,7 +333,7 @@ describe("ReleaseMiniPlayer", () => {
 
   it("shows drag and resize handles when the video panel is expanded on desktop", async () => {
     setupMockMatchMedia({ desktop: true });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -326,7 +359,7 @@ describe("ReleaseMiniPlayer", () => {
 
   it("uses a full-width docked video panel on mobile with a close bar", async () => {
     setupMockMatchMedia({ desktop: false });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -361,7 +394,7 @@ describe("ReleaseMiniPlayer", () => {
 
   it("collapses the mobile video panel when the crate drawer opens", async () => {
     setupMockMatchMedia({ desktop: false });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -390,7 +423,7 @@ describe("ReleaseMiniPlayer", () => {
 
   it("collapses the mobile video panel when the filters drawer opens", async () => {
     setupMockMatchMedia({ desktop: false });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -419,7 +452,7 @@ describe("ReleaseMiniPlayer", () => {
 
   it("re-opens the mobile video panel while the filters drawer stays open", async () => {
     setupMockMatchMedia({ desktop: false });
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -447,7 +480,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("loads the next video via embed src when advancing tracks with the panel visible", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -465,7 +498,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -479,7 +512,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("loads the next video via postMessage when advancing tracks with the panel hidden", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -500,7 +533,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -519,7 +552,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("shows the video panel without reloading the embed src after advancing while hidden", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -540,7 +573,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -566,7 +599,7 @@ describe("ReleaseMiniPlayer", () => {
       value: "hidden",
     });
 
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -581,33 +614,21 @@ describe("ReleaseMiniPlayer", () => {
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const contentWindow = { postMessage: jest.fn() } as unknown as Window;
 
-    act(() => {
-      Object.defineProperty(iframe, "contentWindow", {
-        configurable: true,
-        value: contentWindow,
-      });
+    Object.defineProperty(iframe, "contentWindow", {
+      configurable: true,
+      value: contentWindow,
     });
 
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 2 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 2,
     });
 
     expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
 
-    await act(async () => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 0 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 0,
     });
 
     await waitFor(() => {
@@ -616,6 +637,8 @@ describe("ReleaseMiniPlayer", () => {
       ).toBeInTheDocument();
     });
 
+    await flushPlaybackGestureRetries();
+
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
       value: "visible",
@@ -623,7 +646,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("keeps the video panel open when advancing tracks", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -642,7 +665,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -661,7 +684,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("advances to the next track from the dock controls", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -673,7 +696,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -683,7 +706,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("returns to the previous track from the dock controls", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -695,7 +718,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -703,7 +726,7 @@ describe("ReleaseMiniPlayer", () => {
       ).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Previous track" }));
+    await clickPlaybackControl(user, "Previous track");
 
     await waitFor(() => {
       expect(
@@ -775,7 +798,7 @@ describe("ReleaseMiniPlayer", () => {
       );
     };
 
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<QueueAndPlaybackControls />, { wrapper: createWrapper() });
 
@@ -791,7 +814,7 @@ describe("ReleaseMiniPlayer", () => {
       screen.getByRole("button", { name: "Queue second release" }),
     );
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(
@@ -799,7 +822,7 @@ describe("ReleaseMiniPlayer", () => {
       ).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Next track" }));
+    await clickPlaybackControl(user, "Next track");
 
     await waitFor(() => {
       expect(screen.getByText("Short A")).toBeInTheDocument();
@@ -808,13 +831,13 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("keeps the dock visible when playback is paused", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "Pause" }));
+    await clickPlaybackControl(user, "Pause");
 
     expect(screen.getByTestId("fmdReleaseMiniPlayer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
@@ -845,36 +868,36 @@ describe("ReleaseMiniPlayer", () => {
       );
     };
 
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<SessionEnder />, { wrapper: createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "End session" }));
+    await clickPlaybackControl(user, "End session");
 
     expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
     expect(screen.queryByTestId("fmdPersistentYoutubeIframe")).toBeNull();
   });
 
   it("toggles play and pause from the dock controls", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "Pause" }));
+    await clickPlaybackControl(user, "Pause");
 
     expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Play" }));
+    await clickPlaybackControl(user, "Play");
 
     expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
   });
 
   it("calls onReleaseClick when the cover and title area is clicked", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
     const onReleaseClick = jest.fn();
 
     render(<PlaybackStarter />, {
@@ -891,7 +914,7 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("adds the playing release to the active crate", async () => {
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
@@ -932,7 +955,7 @@ describe("ReleaseMiniPlayer", () => {
       new Error("Crate API request failed"),
     );
 
-    const user = userEvent.setup();
+    const user = setupPlaybackUser();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
 
