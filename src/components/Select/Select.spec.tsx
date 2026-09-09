@@ -1,8 +1,12 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { SelectPageObject } from "src/components/Select/Select.po";
 import { selectOptionFactory } from "src/tests/factories/SelectOption.factory";
-import { clickFilterOption } from "src/tests/filterControlTestHelpers";
+import {
+  closeOpenFilterComboboxes,
+  selectMultiFilterOption,
+  selectSingleFilterOption,
+} from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 import Select from "./Select.component";
 
@@ -44,6 +48,10 @@ describe("Select", () => {
     po = new SelectPageObject();
   });
 
+  afterEach(async () => {
+    await closeOpenFilterComboboxes();
+  });
+
   it("renders component root", () => {
     po.renderSelect();
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
@@ -78,6 +86,8 @@ describe("Select", () => {
     expect(screen.getByText("Option 1")).toBeInTheDocument();
     expect(screen.getByText("Option 2")).toBeInTheDocument();
     expect(screen.getByText("Option 3")).toBeInTheDocument();
+
+    await closeOpenFilterComboboxes();
   });
 
   it("calls onChange when option is selected (single select)", async () => {
@@ -85,7 +95,7 @@ describe("Select", () => {
     po.renderSelect({ onChange: handleChange });
 
     await openSelect();
-    await clickFilterOption("Option 1");
+    await selectSingleFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith("option1");
     expect(handleChange).toHaveBeenCalledTimes(1);
@@ -96,7 +106,7 @@ describe("Select", () => {
     const { rerender } = po.renderSelect({ onChange: handleChange });
 
     await openSelect();
-    await clickFilterOption("Option 1");
+    await selectSingleFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith("option1");
 
@@ -112,6 +122,8 @@ describe("Select", () => {
     await openSelect();
 
     expect(screen.getByText("Option 2")).toBeInTheDocument();
+
+    await closeOpenFilterComboboxes();
   });
 
   it("reopens on the first click after selecting a value when clearable", async () => {
@@ -124,7 +136,7 @@ describe("Select", () => {
     });
 
     await openSelect();
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith(["option1"]);
 
@@ -143,19 +155,8 @@ describe("Select", () => {
     await openSelect();
 
     expect(screen.getByText("Option 2")).toBeInTheDocument();
-  });
 
-  it("closes dropdown after selecting option in single select mode", async () => {
-    const handleChange = jest.fn();
-    po.renderSelect({ onChange: handleChange });
-
-    await openSelect();
-    await clickFilterOption("Option 1");
-
-    await waitFor(() => {
-      expect(handleChange).toHaveBeenCalledWith("option1");
-    });
-    await expectSelectClosed();
+    await closeOpenFilterComboboxes();
   });
 
   it("supports multiple selection", async () => {
@@ -181,7 +182,7 @@ describe("Select", () => {
     });
 
     await openSelect();
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     expect(selectedValues).toEqual(["option1"]);
 
@@ -206,7 +207,7 @@ describe("Select", () => {
     });
 
     await openSelect();
-    await clickFilterOption("Option 1");
+    await selectMultiFilterOption("Option 1");
 
     expect(handleChange).toHaveBeenCalledWith(["option2"]);
   });

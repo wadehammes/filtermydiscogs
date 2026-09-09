@@ -8,6 +8,7 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { suppressConsoleError } from "src/tests/utils/suppressConsoleError";
 
 jest.mock("src/lib/auth-request", () => ({
   getVerifiedUserFromRequest: jest.fn(),
@@ -110,6 +111,7 @@ describe("POST /api/auth/clear-data", () => {
   });
 
   it("returns 500 when database deletion fails", async () => {
+    const consoleSpy = suppressConsoleError();
     mockDeleteUser.mockRejectedValue(new Error("Database unavailable"));
 
     const response = await POST(createPostRequest());
@@ -118,5 +120,7 @@ describe("POST /api/auth/clear-data", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Failed to clear stored data",
     });
+
+    consoleSpy.mockRestore();
   });
 });

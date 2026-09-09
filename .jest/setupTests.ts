@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach } from "@jest/globals";
 import "@testing-library/jest-dom/jest-globals";
+import "./suppressActWarnings";
 import { TextEncoder } from "node:util";
 import fetchMock from "jest-fetch-mock";
 import {

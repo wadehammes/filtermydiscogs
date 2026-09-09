@@ -6,7 +6,7 @@ Prisma schema, crate persistence, and related API routes.
 
 - **ORM**: Prisma 7 with **`prisma-client-js`** (production). **Prisma 8** (`prisma@8` RC) is for staging/preview validation only until **`8.0.0` GA** — do not deploy RC builds to production.
 - **Database**: PostgreSQL (Vercel Postgres in production)
-- **Client**: [`src/lib/db.ts`](../../src/lib/db.ts) — singleton Prisma client for route handlers. Normalizes **`sslmode=require`** / **`prefer`** / **`verify-ca`** to **`verify-full`** (current `node-pg` semantics; silences the upcoming pg v9 alias warning) and enforces **`verify-full`** in production when SSL mode is omitted.
+- **Client**: [`src/lib/db.ts`](../../src/lib/db.ts) — singleton Prisma client for route handlers (lazy init on first **`prisma`** access so public pages and Playwright can boot without **`DATABASE_URL`**). Normalizes **`sslmode=require`** / **`prefer`** / **`verify-ca`** to **`verify-full`** (current `node-pg` semantics; silences the upcoming pg v9 alias warning) and enforces **`verify-full`** in production when SSL mode is omitted.
 
 Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`prisma.config.ts`](../../prisma.config.ts) (Prisma 7).
 

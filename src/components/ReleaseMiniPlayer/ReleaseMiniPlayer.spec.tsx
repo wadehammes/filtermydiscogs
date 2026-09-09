@@ -35,6 +35,7 @@ import { act, render, screen, waitFor } from "test-utils";
 jest.mock("src/api/urls");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
+  loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
   transitionYoutubeIframeToVideo: jest.fn(),
 }));
@@ -113,10 +114,16 @@ const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 const startPlaybackAndWaitForPlayer = async (
   user: ReturnType<typeof userEvent.setup>,
 ) => {
-  await user.click(screen.getByRole("button", { name: "Start playback" }));
+  await act(async () => {
+    await user.click(screen.getByRole("button", { name: "Start playback" }));
+  });
 
   await waitFor(() => {
     expect(screen.getByTestId("fmdReleaseMiniPlayer")).toBeInTheDocument();
+  });
+
+  await waitFor(() => {
+    expect(mockApi.discogsRelease).toHaveBeenCalled();
   });
 };
 

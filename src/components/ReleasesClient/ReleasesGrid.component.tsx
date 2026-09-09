@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { type CSSProperties, memo, useMemo } from "react";
 import { MobileReleaseCard } from "src/components/ReleaseCard/MobileReleaseCard.component";
 import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.component";
@@ -51,6 +51,15 @@ const ReleasesGridComponent = ({
 
   const useDesktopCard = !isMobile || isActuallyRandomMode;
 
+  const useFixedLanes = useMemo(() => {
+    if (isMobile || isActuallyRandomMode) {
+      return false;
+    }
+
+    const count = releasesToShow.length;
+    return count >= 2 && count <= 4;
+  }, [isActuallyRandomMode, isMobile, releasesToShow.length]);
+
   if (isListView) {
     return (
       <ReleasesTable
@@ -61,8 +70,17 @@ const ReleasesGridComponent = ({
     );
   }
 
+  const fixedLaneStyle: CSSProperties | undefined = useFixedLanes
+    ? ({ "--grid-lane-count": releasesToShow.length } as CSSProperties)
+    : undefined;
+
   return (
-    <div className={gridClassName} key={`grid-${view}-${isRandomMode}`}>
+    <div
+      className={gridClassName}
+      key={`grid-${view}-${isRandomMode}`}
+      data-fixed-lanes={useFixedLanes ? "" : undefined}
+      style={fixedLaneStyle}
+    >
       {releasesToShow.map((release: DiscogsRelease) => {
         const inActiveCrate = activeCrateInstanceIds.has(
           String(release.instance_id),

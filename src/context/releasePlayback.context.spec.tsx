@@ -23,7 +23,10 @@ import {
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
 import { createQueueItem } from "src/utils/playbackQueue";
-import { requestYoutubePlayerState } from "src/utils/postYoutubePlayerCommand";
+import {
+  loadAndPlayYoutubeVideo,
+  requestYoutubePlayerState,
+} from "src/utils/postYoutubePlayerCommand";
 import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
   readPersistedReleasePlayback,
@@ -35,12 +38,14 @@ import { act, renderHook, waitFor } from "test-utils";
 jest.mock("src/api/urls");
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
+  loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
   transitionYoutubeIframeToVideo: jest.fn(),
   requestYoutubePlayerState: jest.fn(),
 }));
 
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
+const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
 const mockRequestYoutubePlayerState = jest.mocked(requestYoutubePlayerState);
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
@@ -563,6 +568,57 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(result.current.isPaused).toBe(false);
+  });
+
+  it("loads and plays the next embed immediately when advancing the queue in a hidden tab", async () => {
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    expect(mockLoadAndPlayYoutubeVideo.mock.calls.at(-1)?.[0]).toEqual({
+      iframe,
+      videoId: "abc12345678",
+    });
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
   });
 
   it("ignores embed pause while the document is hidden and still advances the queue on end", async () => {

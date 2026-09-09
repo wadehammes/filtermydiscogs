@@ -30,6 +30,7 @@ export const ReleasePlaybackVideoPanel = ({
     isResizing,
     handlePointerDown,
     handleResizePointerDown,
+    clearFloatingPosition,
     resetLayout,
   } = useDraggablePanel({
     enabled: isExpanded && !isMobileLayout,
@@ -39,12 +40,13 @@ export const ReleasePlaybackVideoPanel = ({
   const wasMobileLayoutRef = useRef(isMobileLayout);
 
   useEffect(() => {
-    if (wasMobileLayoutRef.current && !isMobileLayout && isExpanded) {
-      resetLayout();
+    if (wasMobileLayoutRef.current === isMobileLayout) {
+      return;
     }
 
+    clearFloatingPosition();
     wasMobileLayoutRef.current = isMobileLayout;
-  }, [isExpanded, isMobileLayout, resetLayout]);
+  }, [clearFloatingPosition, isMobileLayout]);
 
   const isInteracting = isDragging || isResizing;
   const useFloatingLayout = !isMobileLayout;
@@ -73,7 +75,7 @@ export const ReleasePlaybackVideoPanel = ({
       }}
       data-testid="fmdReleasePlaybackVideoPanel"
     >
-      {isExpanded && isMobileLayout && onClose ? (
+      {isExpanded && onClose ? (
         <button
           type="button"
           className={styles.mobileCloseBar}

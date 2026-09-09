@@ -62,48 +62,53 @@ export function ReleaseCardContent({
           />
         </div>
       </div>
-      <HorizontalScrollRow className={styles.genresContainer}>
-        {releaseFormats &&
-          releaseFormats.length > 0 &&
-          getReleaseFormatTags(releaseFormats).map((formatName) => (
+      <div className={styles.pillsRow}>
+        <HorizontalScrollRow
+          className={styles.genresContainer}
+          data-testid="fmdReleaseCardPillsRow"
+        >
+          {releaseFormats &&
+            releaseFormats.length > 0 &&
+            getReleaseFormatTags(releaseFormats).map((formatName) => (
+              <button
+                key={formatName}
+                type="button"
+                className={classNames("pill", "pillFormat", styles.formatPill, {
+                  pillSelected: selectedFormats.includes(formatName),
+                })}
+                onClick={(e) =>
+                  handlePillClick({
+                    event: e,
+                    value: formatName,
+                    type: "format",
+                  })
+                }
+                aria-label={`Filter by ${formatName} format`}
+              >
+                {formatName}
+              </button>
+            ))}
+          {genreStyleTags.map((tag) => (
             <button
-              key={formatName}
+              key={tag}
               type="button"
-              className={classNames("pill", "pillFormat", styles.formatPill, {
-                pillSelected: selectedFormats.includes(formatName),
+              className={classNames("pill", "pillStyle", styles.stylePill, {
+                pillSelected: selectedStyles.includes(tag),
               })}
               onClick={(e) =>
                 handlePillClick({
                   event: e,
-                  value: formatName,
-                  type: "format",
+                  value: tag,
+                  type: "style",
                 })
               }
-              aria-label={`Filter by ${formatName} format`}
+              aria-label={`Filter by ${tag}`}
             >
-              {formatName}
+              {tag}
             </button>
           ))}
-        {genreStyleTags.map((tag) => (
-          <button
-            key={tag}
-            type="button"
-            className={classNames("pill", "pillStyle", styles.stylePill, {
-              pillSelected: selectedStyles.includes(tag),
-            })}
-            onClick={(e) =>
-              handlePillClick({
-                event: e,
-                value: tag,
-                type: "style",
-              })
-            }
-            aria-label={`Filter by ${tag}`}
-          >
-            {tag}
-          </button>
-        ))}
-      </HorizontalScrollRow>
+        </HorizontalScrollRow>
+      </div>
     </div>
   );
 }

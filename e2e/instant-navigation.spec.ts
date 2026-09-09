@@ -17,8 +17,11 @@ test.describe("instant navigation", () => {
           .getByRole("link", { name: "About" })
           .click();
         await expect(page.getByTestId("fmdPublicAuthLayout")).toBeVisible();
+        await expect(page.getByTestId("fmdAbout")).toBeVisible();
         await expect(
-          page.getByRole("heading", { name: "About This Project" }),
+          page.getByRole("heading", {
+            name: "Your Discogs collection, unlocked",
+          }),
         ).toBeVisible();
       },
       baseURL ? { baseURL } : undefined,

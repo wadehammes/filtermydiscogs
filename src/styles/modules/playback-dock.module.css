@@ -2,6 +2,20 @@
   --playback-dock-module-loaded: initial;
 }
 
+:global(html:has([data-global-playback-dock])) {
+  --crate-sidebar-width: 440px;
+  --release-video-panel-inset-right: var(--space-5);
+}
+
+:global(html:has([data-global-playback-dock])[data-crate-sidebar-open="true"]) {
+  @media (width >= 1024px) {
+    --release-video-panel-inset-right: calc(
+      var(--crate-sidebar-width) +
+      var(--space-5)
+    );
+  }
+}
+
 :global(html:has([data-global-playback-dock])),
 :global([data-global-playback-dock]) {
   --workspace-fab-bottom: var(--space-3);
@@ -68,10 +82,17 @@
     env(safe-area-inset-bottom, 0px)
   );
   pointer-events: none;
+  transition:
+    block-size var(--transition-normal),
+    min-block-size var(--transition-normal);
   width: 100%;
 
   @media (width >= 768px) {
     min-block-size: calc(3.25rem + 1px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 }
 
@@ -80,7 +101,12 @@
   flex-shrink: 0;
   min-block-size: 0;
   pointer-events: none;
+  transition: block-size var(--transition-normal);
   width: 100%;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 :global([data-playback-page-shell-main]) {

@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
@@ -11,6 +11,7 @@ import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModa
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
@@ -31,6 +32,7 @@ const ReleasesClientContent = () => {
     crates,
     activeCrateId,
   } = useCrate();
+  const isCrateSidebarDesktop = useMediaQuery("(min-width: 1024px)");
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
@@ -39,6 +41,20 @@ const ReleasesClientContent = () => {
   const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
     setScrollRoot(node);
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (isDrawerOpen && isCrateSidebarDesktop) {
+      root.setAttribute("data-crate-sidebar-open", "true");
+    } else {
+      root.removeAttribute("data-crate-sidebar-open");
+    }
+
+    return () => {
+      root.removeAttribute("data-crate-sidebar-open");
+    };
+  }, [isCrateSidebarDesktop, isDrawerOpen]);
 
   const {
     isLoading,

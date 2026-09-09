@@ -52,6 +52,31 @@ describe("ReleasesGrid", () => {
     expect(screen.queryByTestId(po.mobileCardTestId)).not.toBeInTheDocument();
   });
 
+  it("uses fixed-width lanes for small desktop result sets", () => {
+    const fixedLanesGrid = po.renderReleasesGrid({
+      releases: releaseFactory.buildList(2),
+      isMobile: false,
+      view: "card",
+    });
+
+    expect(fixedLanesGrid.container.firstElementChild).toHaveAttribute(
+      "data-fixed-lanes",
+    );
+    expect(fixedLanesGrid.container.firstElementChild).toHaveStyle({
+      "--grid-lane-count": "2",
+    });
+
+    const fullGrid = po.renderReleasesGrid({
+      releases: releaseFactory.buildList(5),
+      isMobile: false,
+      view: "card",
+    });
+
+    expect(fullGrid.container.firstElementChild).not.toHaveAttribute(
+      "data-fixed-lanes",
+    );
+  });
+
   it("calls onReleaseClick when a card is activated", async () => {
     const release = releaseFactory.withEmptyNotes();
     const onReleaseClick = jest.fn();

@@ -13,6 +13,7 @@ import { render, screen } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
+  loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
   transitionYoutubeIframeToVideo: jest.fn(),
   requestYoutubePlayerState: jest.fn(),

@@ -139,10 +139,11 @@ The app will be available at `http://localhost:6767`.
 pnpm dev              # http://localhost:6767 (Turbopack)
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
-mise run ci           # tsc + lint + CSS lint + tests + knip (matches Actions)
-pnpm test             # Jest
+mise run ci           # tsc + lint + CSS lint + Jest + Playwright + knip (matches Actions)
+pnpm test             # Jest (--runInBand, same as CI)
 pnpm test:file        # Jest watch for one file
 pnpm test:e2e         # Playwright (run pnpm test:e2e:install once)
+pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
 
 pnpm lint             # Biome check
 pnpm lint:fix        # Biome autofix

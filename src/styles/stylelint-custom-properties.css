@@ -10,6 +10,7 @@
   --reveal-index: 0;
   --font-assistant: system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
+  --grid-lane-count: 1;
   --transform-origin: center;
   --release-mini-player-stack-offset: 0px;
   --release-modal-available-height: 100dvh;

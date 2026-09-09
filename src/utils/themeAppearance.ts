@@ -68,6 +68,26 @@ export const resolvePaletteTheme = (
   return theme;
 };
 
+export const resolveThemeInitAttribute = ({
+  stored,
+  prefersDark,
+  hasSession,
+}: {
+  stored: string | null;
+  prefersDark: boolean;
+  hasSession: boolean;
+}): PaletteTheme => {
+  if (!hasSession) {
+    return prefersDark ? SYSTEM_DARK_PALETTE : "light";
+  }
+
+  if (stored && isPaletteTheme(stored)) {
+    return stored;
+  }
+
+  return prefersDark ? SYSTEM_DARK_PALETTE : "light";
+};
+
 export const themeUsesDarkAssets = (theme: PaletteTheme): boolean =>
   DARK_ASSET_THEMES.has(theme);
 

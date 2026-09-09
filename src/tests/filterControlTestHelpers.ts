@@ -85,27 +85,58 @@ export const openFilterSelect = async (name: string) => {
   return user;
 };
 
-export const clickFilterOption = async (label: string) => {
+const findFilterOption = (label: string) => {
+  const options = screen.getAllByRole("option", { hidden: true });
+  const option = options.find((node) => node.textContent?.includes(label));
+  expect(option).toBeDefined();
+  return option as Element;
+};
+
+const getOpenFilterComboboxes = () =>
+  screen
+    .getAllByRole("combobox")
+    .filter((node) => node.getAttribute("aria-expanded") === "true");
+
+export const expectFilterComboboxesClosed = async () => {
+  await waitFor(() => {
+    expect(getOpenFilterComboboxes()).toHaveLength(0);
+  });
+};
+
+export const closeOpenFilterComboboxes = async (
+  user = userEvent.setup({ pointerEventsCheck: 0 }),
+) => {
+  if (getOpenFilterComboboxes().length === 0) {
+    return user;
+  }
+
+  await user.keyboard("{Escape}");
+
+  if (getOpenFilterComboboxes().length > 0) {
+    await user.pointer({ keys: "[MouseLeft]", target: document.body });
+  }
+
+  await expectFilterComboboxesClosed();
+  return user;
+};
+
+const clickFilterOptionElement = async (label: string) => {
   const user = userEvent.setup({ pointerEventsCheck: 0 });
 
   let option: Element | undefined;
   await waitFor(() => {
-    option = screen
-      .getAllByRole("option", { hidden: true })
-      .find((node) => node.textContent?.includes(label));
-    expect(option).toBeDefined();
+    option = findFilterOption(label);
   });
 
   await user.click(option as Element);
+  return user;
+};
 
-  await user.keyboard("{Escape}");
+export const selectSingleFilterOption = async (label: string) =>
+  clickFilterOptionElement(label);
 
-  await waitFor(() => {
-    const openComboboxes = screen
-      .getAllByRole("combobox")
-      .filter((node) => node.getAttribute("aria-expanded") === "true");
-    expect(openComboboxes).toHaveLength(0);
-  });
-
+export const selectMultiFilterOption = async (label: string) => {
+  const user = await clickFilterOptionElement(label);
+  await closeOpenFilterComboboxes(user);
   return user;
 };

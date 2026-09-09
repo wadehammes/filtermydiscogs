@@ -93,6 +93,14 @@ const AutocompleteSelectComponent = ({
     onChange([]);
   }, [onChange]);
 
+  const stopTriggerOpen = useCallback(
+    (event: MouseEvent | KeyboardEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      event.preventDefault();
+    },
+    [],
+  );
+
   const handleClearOption = useCallback(
     (
       optionValue: string,
@@ -102,14 +110,13 @@ const AutocompleteSelectComponent = ({
         return;
       }
 
-      event.stopPropagation();
-      event.preventDefault();
+      stopTriggerOpen(event);
 
       if (multiple && Array.isArray(value)) {
         onChange(value.filter((item) => item !== optionValue));
       }
     },
-    [multiple, onChange, value],
+    [multiple, onChange, stopTriggerOpen, value],
   );
 
   const renderSingleValue = useCallback(
@@ -159,6 +166,8 @@ const AutocompleteSelectComponent = ({
                 <button
                   type="button"
                   className={styles.pillClear}
+                  onPointerDown={stopTriggerOpen}
+                  onMouseDown={stopTriggerOpen}
                   onClick={(event) => {
                     handleClearOption(option.value, event);
                   }}

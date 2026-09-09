@@ -60,7 +60,7 @@ export const OverlayStack = ({
 
   useLayoutEffect(() => {
     setPortalElement(portalRef.current);
-  }, [escapeStackingContext, mounted]);
+  }, []);
 
   const stackStyle = useMemo(
     () =>

@@ -6,6 +6,7 @@ import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.con
 import { definedProps } from "src/utils/definedProps";
 import {
   buildYoutubeEmbedUrl,
+  loadAndPlayYoutubeVideo,
   transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import styles from "./PersistentYoutubeIframe.module.css";
@@ -96,7 +97,12 @@ export const PersistentYoutubeIframe = ({
       alignIframeSrc(videoId);
     } else {
       loadedVideoIdRef.current = videoId;
-      transitionYoutubeIframeToVideo({ iframe, videoId });
+
+      if (autoplay) {
+        loadAndPlayYoutubeVideo({ iframe, videoId });
+      } else {
+        transitionYoutubeIframeToVideo({ iframe, videoId });
+      }
     }
 
     if (autoplay) {

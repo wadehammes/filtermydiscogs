@@ -13,7 +13,8 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 5. **`pnpm lint:ci`**
 6. **`pnpm lint:css`**
 7. **`pnpm test:ci`**
-8. **`pnpm knip:ci`**
+8. **`pnpm test:e2e:ci`** (Playwright Chromium + public route / theme-init regressions)
+9. **`pnpm knip:ci`**
 
 GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file).
 
@@ -28,7 +29,7 @@ Run the same locally before pushing when possible — with [mise](https://mise.j
 | `mise install` | Install Node/pnpm from `.tool-versions`. |
 | `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm db:generate`). |
 | `mise run bootstrap` | JS deps + Prisma generate only (tools already installed). |
-| `mise run ci` | Same gates as Actions: `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, `knip:ci`. |
+| `mise run ci` | Same gates as Actions: `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, `test:e2e:ci`, `knip:ci`. |
 
 `[env]` loads **`.env.local`** (redacted in mise output) for shells and tasks in this repo. Create that file from the root README before DB/OAuth work; a missing file is harmless.
 
@@ -43,14 +44,16 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
-| `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. |
+| `pnpm lint:ci` / `pnpm test:ci` / `pnpm knip:ci` | Quality gates. **`test:ci`** runs Jest **`--runInBand`** (matches local **`pnpm test`**). |
+| `pnpm generate:theme-init` | Regenerates **`public/theme-init.js`** from [`themeAppearance.ts`](../../src/utils/themeAppearance.ts) (also runs on **`postinstall`**). |
 | `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
 | `pnpm knip` | Find unused exports/files locally ([`knip.json`](../../knip.json)). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
 | `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
 | `pnpm analyze` / `pnpm lighthouse` | Bundle and performance tooling. |
-| `pnpm test:e2e` / `pnpm test:e2e:install` | Playwright instant-navigation regression tests ([`e2e/`](../../e2e/)); run **`test:e2e:install`** once for Chromium. |
+| `pnpm test:e2e` / `pnpm test:e2e:install` | Playwright regression tests ([`e2e/`](../../e2e/)); run **`test:e2e:install`** once for Chromium locally. |
+| `pnpm test:e2e:ci` | CI/local gate: **`playwright install chromium --with-deps`** then **`playwright test`**. |
 
 Full list: [`package.json`](../../package.json).
 
@@ -158,9 +161,19 @@ Do not call **`new Date()`** (or other non-deterministic APIs) directly in compo
 
 ### Playwright instant navigation tests
 
-[`e2e/instant-navigation.spec.ts`](../../e2e/instant-navigation.spec.ts) uses **`instant()`** from **`@next/playwright`** to assert public-route shells appear during navigation without waiting for dynamic data. Config: [`playwright.config.ts`](../../playwright.config.ts) (starts **`pnpm dev`** on port **6767**). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).
+Playwright runs in CI after Jest. Specs under [`e2e/`](../../e2e/):
 
-Add similar tests when authenticated instant routes stabilize (header nav to **`/releases`**, **`/dashboard`**, etc.).
+| File | Coverage |
+|------|----------|
+| [`instant-navigation.spec.ts`](../../e2e/instant-navigation.spec.ts) | Public About/Legal shells via **`instant()`** from **`@next/playwright`** |
+| [`theme-init.spec.ts`](../../e2e/theme-init.spec.ts) | Pre-hydration **`data-theme`** on **`/`** for OS light vs dark (**`codex`** when dark) |
+| [`public-routes.spec.ts`](../../e2e/public-routes.spec.ts) | Home **`200`** + About bento render (no OAuth) |
+
+Config: [`playwright.config.ts`](../../playwright.config.ts) (starts **`pnpm dev`** on port **6767** with **`NODE_OPTIONS`** cleared so the inspector port does not collide). Public-route e2e does **not** require **`DATABASE_URL`** — footer community stats skip when unset ([`getPublicCommunityStats`](../../src/lib/public-stats.server.ts)). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).
+
+Jest [`requiredPrimitiveSpecs.spec.ts`](../../src/tests/utils/requiredPrimitiveSpecs.spec.ts) fails if contract specs for shared primitives (filter controls, overlay stack, theme init) are removed.
+
+Add authenticated Playwright flows when instant routes stabilize (header nav to **`/releases`**, **`/dashboard`**, etc.).
 
 ## Private session API responses
 

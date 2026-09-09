@@ -15,6 +15,10 @@
   width: 100%;
 }
 
+.videoPanelDragging .videoContent {
+  pointer-events: none;
+}
+
 .videoPanel[data-video-expanded="true"] {
   --panel-scale: 1;
   --video-max-height: 16.1rem;
@@ -36,9 +40,21 @@
   pointer-events: auto;
   right: 0;
   transform: none;
+  transition:
+    border-radius var(--transition-normal),
+    bottom var(--transition-normal),
+    box-shadow var(--transition-normal),
+    height var(--transition-normal),
+    left var(--transition-normal),
+    right var(--transition-normal),
+    width var(--transition-normal);
   visibility: visible;
   width: 100%;
   z-index: 2;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 
   @media (width >= 768px) {
     border: 1px solid var(--border);
@@ -51,8 +67,8 @@
     );
     box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
     height: calc(1.25rem + var(--video-max-height) * var(--panel-scale));
-    left: var(--space-5);
-    right: auto;
+    left: auto;
+    right: var(--release-video-panel-inset-right, var(--space-5));
     transform: none;
     width: calc(var(--video-max-height) * var(--panel-scale) * 16 / 9);
   }
@@ -79,7 +95,9 @@
 
 .videoPanelDragging {
   cursor: grabbing;
+  transition: none;
   user-select: none;
+  will-change: height, left, top, width;
 }
 
 .dragHandle {

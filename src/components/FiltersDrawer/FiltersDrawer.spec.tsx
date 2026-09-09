@@ -6,11 +6,11 @@ import { SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import {
-  clickFilterOption,
   expectFilterPopupAboveBottomDrawer,
   expectFilterPopupAbovePlaybackDock,
   openFilterCombobox,
   openFilterSelect,
+  selectMultiFilterOption,
 } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
@@ -443,10 +443,10 @@ describe("FiltersDrawer", () => {
     });
 
     await openFilterCombobox("Format Type");
-    await clickFilterOption("Test Pressing");
+    await selectMultiFilterOption("Test Pressing");
 
     await openFilterCombobox("Format Type");
-    await clickFilterOption("White Label");
+    await selectMultiFilterOption("White Label");
 
     expect(screen.getByText("Test Pressing")).toBeInTheDocument();
     expect(screen.getByText("White Label")).toBeInTheDocument();

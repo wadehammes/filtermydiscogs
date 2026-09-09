@@ -19,5 +19,6 @@ run = [
   "pnpm lint:ci",
   "pnpm lint:css",
   "pnpm test:ci",
+  "pnpm test:e2e:ci",
   "pnpm knip:ci",
 ]
