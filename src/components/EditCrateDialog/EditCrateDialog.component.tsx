@@ -3,11 +3,7 @@ import { useCallback, useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
-import footerStyles from "src/components/CrateDrawerFooter/CrateDrawerFooter.module.css";
-import {
-  FormDialog,
-  formDialogStyles,
-} from "src/components/FormDialog/FormDialog.component";
+import { FormDialog } from "src/components/FormDialog/FormDialog.component";
 import {
   type EditCrateNameFormValues,
   editCrateNameFormSchema,
@@ -112,19 +108,18 @@ export const EditCrateDialog = () => {
         aria-labelledby={titleId}
         onSubmit={handleSaveName}
       >
-        <label
-          className={formDialogStyles.label}
-          htmlFor={`${titleId}-name-input`}
-        >
-          Crate name
-        </label>
-        <input
-          id={`${titleId}-name-input`}
-          type="text"
-          className={validatedFieldClass(styles.input, modalInputStyles.field)}
-          disabled={isBusy}
-          {...register("name")}
-        />
+        <FormDialog.Field label="Crate name" htmlFor={`${titleId}-name-input`}>
+          <input
+            id={`${titleId}-name-input`}
+            type="text"
+            className={validatedFieldClass(
+              styles.input,
+              modalInputStyles.field,
+            )}
+            disabled={isBusy}
+            {...register("name")}
+          />
+        </FormDialog.Field>
         <div className={styles.sectionActions}>
           <Button
             type="submit"
@@ -149,16 +144,12 @@ export const EditCrateDialog = () => {
           this off to hide the checklist in this crate—your packed marks are
           still saved.
         </p>
-        <label className={footerStyles.checkboxLabel}>
-          <input
-            type="checkbox"
-            className={footerStyles.sharingCheckbox}
-            checked={packedEnabled}
-            onChange={() => void handlePackedEnabledToggle()}
-            disabled={isBusy}
-          />
-          <span>Show gig packing checklist</span>
-        </label>
+        <FormDialog.CheckboxField
+          label="Show gig packing checklist"
+          checked={packedEnabled}
+          onChange={() => void handlePackedEnabledToggle()}
+          disabled={isBusy}
+        />
       </section>
 
       {canDelete ? (
@@ -174,23 +165,22 @@ export const EditCrateDialog = () => {
             <span className={styles.crateNameHighlight}>{crateName}</span> to
             confirm.
           </p>
-          <label
-            className={formDialogStyles.label}
+          <FormDialog.Field
+            label="Confirm crate name"
             htmlFor={`${titleId}-delete-input`}
           >
-            Confirm crate name
-          </label>
-          <input
-            id={`${titleId}-delete-input`}
-            type="text"
-            className={validatedFieldClass(
-              styles.input,
-              modalInputStyles.field,
-            )}
-            autoComplete="off"
-            disabled={isBusy}
-            {...register("deleteConfirm")}
-          />
+            <input
+              id={`${titleId}-delete-input`}
+              type="text"
+              className={validatedFieldClass(
+                styles.input,
+                modalInputStyles.field,
+              )}
+              autoComplete="off"
+              disabled={isBusy}
+              {...register("deleteConfirm")}
+            />
+          </FormDialog.Field>
           <div className={styles.sectionActions}>
             <Button
               type="button"

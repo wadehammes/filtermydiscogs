@@ -246,15 +246,15 @@
     background: var(--muted);
     border-color: var(--foreground);
   }
+}
 
-  &.queueButton {
-    position: relative;
-  }
+.queueButton {
+  position: relative;
+}
 
-  &.queueButtonActive {
-    background: var(--muted);
-    border-color: var(--foreground);
-  }
+.queueButtonActive {
+  background: var(--muted);
+  border-color: var(--foreground);
 }
 
 .queueCount {

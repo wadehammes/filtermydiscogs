@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import type { MouseEvent } from "react";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import styles from "./CrateReleaseActions.module.css";
@@ -36,9 +37,9 @@ export const CrateReleaseActions = ({
   return (
     <div className={styles.actions}>
       {packedEnabled ? (
-        <button
-          type="button"
+        <IconButton
           className={styles.action}
+          iconClassName={styles.actionIcon}
           onClick={handlePackedToggle}
           aria-pressed={packed}
           aria-label={
@@ -48,18 +49,19 @@ export const CrateReleaseActions = ({
           }
           title={packed ? "Unmark as packed for gig" : "Mark as packed for gig"}
         >
-          <CheckThinIcon className={styles.actionIcon} aria-hidden />
-        </button>
+          <CheckThinIcon />
+        </IconButton>
       ) : null}
-      <button
-        type="button"
+      <IconButton
+        variant="minus"
         className={classNames(styles.action, styles.removeAction)}
+        iconClassName={styles.actionIcon}
         onClick={handleRemove}
         aria-label={`Remove ${releaseTitle} from crate`}
         title="Remove from crate"
       >
-        <MinusIcon className={styles.actionIcon} aria-hidden />
-      </button>
+        <MinusIcon />
+      </IconButton>
     </div>
   );
 };

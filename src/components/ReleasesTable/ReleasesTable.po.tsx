@@ -17,6 +17,7 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
 import type { RenderResult } from "test-utils";
@@ -164,10 +165,15 @@ export class ReleasesTablePageObject extends BasePageObject {
   }
 
   renderReleasesTable(overrides: ReleasesTableRenderProps = {}): RenderResult {
-    return render(this.releasesTableElement(overrides), {
-      authInitialState: testAuthenticatedAuthState,
-      includeCrate: false,
-      includeCollectionSync: false,
-    });
+    return render(
+      <ReleasePlaybackTestTree>
+        {this.releasesTableElement(overrides)}
+      </ReleasePlaybackTestTree>,
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCrate: false,
+        includeCollectionSync: false,
+      },
+    );
   }
 }

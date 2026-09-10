@@ -5,6 +5,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { useCloseMenuWhenFiltersBarHidden } from "src/components/FilterViewsMenu/useCloseMenuWhenFiltersBarHidden.hook";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import {
   InlinePopoverMenu,
   inlinePopoverMenuStyles,
@@ -176,29 +177,32 @@ export const FilterViewsMenu = ({
         >
           <Menu.Trigger
             ref={triggerRef}
-            className={classNames(styles.menuTrigger, {
-              [styles.menuTriggerActive]: matchingView !== null,
-            })}
-            aria-label={
-              matchingView
-                ? `Views, ${matchingView.name} selected`
-                : "Views and filter actions"
-            }
-            disabled={disabled}
-          >
-            <span className={styles.menuTriggerIcon} aria-hidden>
-              {matchingView ? <BookmarkIcon /> : <BookmarkOutlineIcon />}
-            </span>
-            <span
-              className={styles.menuTriggerLabel}
-              title={matchingView ? matchingView.name : undefined}
-            >
-              {triggerLabel}
-            </span>
-            <span className={styles.chevronIcon} aria-hidden>
-              <Chevron />
-            </span>
-          </Menu.Trigger>
+            render={(props) => (
+              <IconButton
+                {...props}
+                className={classNames(styles.menuTrigger, {
+                  [styles.menuTriggerActive]: matchingView !== null,
+                })}
+                iconClassName={styles.menuTriggerIcon}
+                label={
+                  <span title={matchingView ? matchingView.name : undefined}>
+                    {triggerLabel}
+                  </span>
+                }
+                labelClassName={styles.menuTriggerLabel}
+                addon={<Chevron />}
+                addonClassName={styles.chevronIcon}
+                aria-label={
+                  matchingView
+                    ? `Views, ${matchingView.name} selected`
+                    : "Views and filter actions"
+                }
+                disabled={disabled}
+              >
+                {matchingView ? <BookmarkIcon /> : <BookmarkOutlineIcon />}
+              </IconButton>
+            )}
+          />
           <InlinePopoverMenu.Panel
             align="start"
             popupClassName={

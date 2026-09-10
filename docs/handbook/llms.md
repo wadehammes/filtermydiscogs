@@ -15,6 +15,10 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | API route request validation (Zod) | [database.md](database.md) (Request validation) |
 | Component folders, naming, tests | [components.md](components.md) |
+| Icon-only buttons, hover animation, `IconButton` | [components.md](components.md) (Icon buttons) + [conventions.md](conventions.md) (CSS → shared style modules) |
+| Segmented toggles (view mode, chart range, action rows) | [components.md](components.md) (Segmented controls) + [patterns.md](patterns.md) (Dashboard → Card chrome) |
+| Empty states (no results, empty collection) | [components.md](components.md) (Empty states) |
+| View on Discogs links, text-action buttons | [components.md](components.md) (Links and media) |
 | Base UI dialogs, popovers, shared UI primitives | [components.md](components.md) (`AppDialog/`, `ScrollModal/`) + [conventions.md](conventions.md) (CSS → modal / portal) |
 | Base UI Menu (`UserActions`, `ReleaseCrateMenu`, `CrateDetailActionsMenu`) | [conventions.md](conventions.md) (CSS → modal / portal) + [components.md](components.md) (`ReleaseCrateMenu`) + [`UserActions`](../../src/components/StickyHeaderBar/UserActions.tsx) |
 | Add release to crate / multi-crate membership UI | [components.md](components.md) (`ReleaseCrateMenu`) + [patterns.md](patterns.md) (Crates) |

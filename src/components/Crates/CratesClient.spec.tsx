@@ -51,10 +51,6 @@ describe("CrateDetailClient", () => {
     });
 
     expect(screen.getByTestId(po.detailTestId)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "← All crates" })).toHaveAttribute(
-      "href",
-      "/crates",
-    );
     expect(screen.getByTestId("fmdCrateReleasesTable")).toBeInTheDocument();
     expect(
       screen.getByTestId("fmdCrateDetailHeaderActions"),

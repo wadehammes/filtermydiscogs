@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import { formDialogStyles } from "src/components/FormDialog/FormDialog.component";
 import { ModalToolbar } from "src/components/ModalToolbar/ModalToolbar.component";
 import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
 import {
@@ -232,7 +233,7 @@ export const NoteEditDialog = ({
 
         {errorMessage ? <p className={styles.error}>{errorMessage}</p> : null}
 
-        <div className={styles.actions}>
+        <div className={formDialogStyles.footer}>
           <Button
             type="button"
             variant="secondary"

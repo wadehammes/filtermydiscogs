@@ -22,30 +22,12 @@
   padding: var(--space-2) 0;
 }
 
-.emptyState {
-  align-items: center;
-  color: var(--muted-foreground);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  justify-content: center;
-  min-height: 12.5rem;
+.loadingState {
   padding: var(--space-8);
-  text-align: center;
+}
+
+.emptyState {
   text-wrap: balance;
-
-  h3 {
-    font-size: var(--text-lg);
-    margin: 0;
-    color: var(--foreground);
-  }
-
-  p {
-    margin: 0;
-    line-height: 1.5;
-    font-family: var(--font-family-meta);
-    font-size: var(--text-meta-xs);
-  }
 }
 
 .releasesList {

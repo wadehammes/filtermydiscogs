@@ -1,0 +1,31 @@
+.button {
+  composes: iconaction from "./action-icon-hover.module.css";
+}
+
+.variantplus {
+  composes: iconactionplus from "./action-icon-hover.module.css";
+}
+
+.variantminus {
+  composes: iconactionminus from "./action-icon-hover.module.css";
+}
+
+.variantclose {
+  composes: iconactionclose from "./action-icon-hover.module.css";
+}
+
+.variantexternal {
+  composes: iconactionexternal from "./action-icon-hover.module.css";
+}
+
+.variantqueue {
+  composes: iconactionqueuesubtle from "./action-icon-hover.module.css";
+}
+
+.variantskip {
+  composes: iconactionskip from "./action-icon-hover.module.css";
+}
+
+.icon {
+  composes: icon from "./action-icon-hover.module.css";
+}

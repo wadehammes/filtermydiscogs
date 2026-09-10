@@ -4,6 +4,8 @@ import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
+import { IconButton } from "src/components/IconButton/IconButton.component";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
@@ -171,134 +173,144 @@ export const ReleaseMiniPlayer = ({
 
   return (
     <div className={styles.miniPlayerRoot}>
-      {isQueueOpen ? (
-        <PlaybackQueueDrawerLazy
-          isOpen={isQueueOpen}
-          onClose={() => {
-            setIsQueueOpen(false);
-          }}
-        />
-      ) : null}
-      <section
-        className={styles.miniPlayerShell}
-        data-testid="fmdReleaseMiniPlayer"
-        {...(isVideoPanelExpanded && { "data-video-expanded": true })}
-        aria-label="Now playing"
+      <OverlayStack
+        escapeStackingContext
+        popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
       >
-        {isPlaying && iframeVideoId ? (
-          <ReleasePlaybackVideoPanel
-            panelId="release-playback-video-panel"
-            isExpanded={isVideoPanelExpanded}
-            onClose={handleVideoToggle}
-          >
-            <PersistentYoutubeIframe
-              key={String(release.instance_id)}
-              videoId={iframeVideoId}
-              videoTitle={activePlaybackTitle ?? "Release preview"}
-              playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${iframeVideoId}`}
-              autoplay={shouldAutoplayIframe}
-              variant={isVideoPanelExpanded ? "visible" : "hidden"}
-            />
-          </ReleasePlaybackVideoPanel>
+        {isQueueOpen ? (
+          <PlaybackQueueDrawerLazy
+            isOpen={isQueueOpen}
+            onClose={() => {
+              setIsQueueOpen(false);
+            }}
+          />
         ) : null}
-        <div className={styles.miniPlayerBar}>
-          <div className={styles.releaseArea}>
-            <div className={styles.metaRow}>
-              {!isMobileLayout ? crateToggleButton : null}
-              {onReleaseClick ? (
-                <button
-                  type="button"
-                  className={styles.openReleaseButton}
-                  onClick={handleOpenRelease}
-                  aria-label={`Open ${release.basic_information.title}`}
-                  title="Open release details"
+        <section
+          className={styles.miniPlayerShell}
+          data-testid="fmdReleaseMiniPlayer"
+          {...(isVideoPanelExpanded && { "data-video-expanded": true })}
+          aria-label="Now playing"
+        >
+          {isPlaying && iframeVideoId ? (
+            <ReleasePlaybackVideoPanel
+              panelId="release-playback-video-panel"
+              isExpanded={isVideoPanelExpanded}
+              onClose={handleVideoToggle}
+            >
+              <PersistentYoutubeIframe
+                key={String(release.instance_id)}
+                videoId={iframeVideoId}
+                videoTitle={activePlaybackTitle ?? "Release preview"}
+                playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${iframeVideoId}`}
+                autoplay={shouldAutoplayIframe}
+                variant={isVideoPanelExpanded ? "visible" : "hidden"}
+              />
+            </ReleasePlaybackVideoPanel>
+          ) : null}
+          <div className={styles.miniPlayerBar}>
+            <div className={styles.releaseArea}>
+              <div className={styles.metaRow}>
+                {!isMobileLayout ? crateToggleButton : null}
+                {onReleaseClick ? (
+                  <button
+                    type="button"
+                    className={styles.openReleaseButton}
+                    onClick={handleOpenRelease}
+                    aria-label={`Open ${release.basic_information.title}`}
+                    title="Open release details"
+                  >
+                    {cover}
+                    <div className={styles.metaLines}>{metaLines}</div>
+                  </button>
+                ) : (
+                  <div className={styles.releaseInfo}>
+                    {cover}
+                    <div className={styles.metaLines}>{metaLines}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.controls}>
+              {isMobileLayout ? crateToggleButton : null}
+              <IconButton
+                variant="queue"
+                className={classNames(
+                  styles.controlButton,
+                  styles.queueButton,
+                  {
+                    [styles.queueButtonActive]: isQueueOpen,
+                  },
+                )}
+                iconClassName={styles.controlIcon}
+                addon={
+                  queue.length > 0 ? (
+                    <span className={styles.queueCount}>{queue.length}</span>
+                  ) : undefined
+                }
+                onClick={() => {
+                  setIsQueueOpen((open) => !open);
+                }}
+                aria-expanded={isQueueOpen}
+                aria-label={
+                  queue.length > 0
+                    ? `Open playback queue, ${queue.length} tracks`
+                    : "Open playback queue"
+                }
+                title="Playback queue"
+              >
+                <ListThinIcon />
+              </IconButton>
+              {isPlaybackReady ? (
+                <IconButton
+                  className={classNames(styles.controlButton, {
+                    [styles.videoButtonActive]: isVideoPanelExpanded,
+                  })}
+                  iconClassName={styles.controlIcon}
+                  onClick={handleVideoToggle}
+                  aria-expanded={isVideoPanelExpanded}
+                  aria-controls="release-playback-video-panel"
+                  aria-label={
+                    isVideoPanelExpanded ? "Hide video" : "Show video"
+                  }
+                  title={isVideoPanelExpanded ? "Hide video" : "Show video"}
                 >
-                  {cover}
-                  <div className={styles.metaLines}>{metaLines}</div>
-                </button>
-              ) : (
-                <div className={styles.releaseInfo}>
-                  {cover}
-                  <div className={styles.metaLines}>{metaLines}</div>
-                </div>
-              )}
+                  <VideoIcon />
+                </IconButton>
+              ) : null}
+              <IconButton
+                className={styles.controlButton}
+                iconClassName={styles.controlIcon}
+                onClick={playPrevious}
+                disabled={!hasPrevious}
+                aria-label="Previous track"
+                title="Previous track"
+              >
+                <TransportSkipPreviousIcon />
+              </IconButton>
+              <IconButton
+                className={styles.controlButton}
+                iconClassName={styles.controlIcon}
+                onClick={togglePlayback}
+                disabled={!isPlaybackReady}
+                aria-label={isPaused ? "Play" : "Pause"}
+                title={isPaused ? "Play" : "Pause"}
+              >
+                {isPaused ? <PlayIcon /> : <PauseIcon />}
+              </IconButton>
+              <IconButton
+                className={styles.controlButton}
+                iconClassName={styles.controlIcon}
+                onClick={playNext}
+                disabled={!hasNext}
+                aria-label="Next track"
+                title="Next track"
+              >
+                <TransportSkipNextIcon />
+              </IconButton>
             </div>
           </div>
-          <div className={styles.controls}>
-            {isMobileLayout ? crateToggleButton : null}
-            <button
-              type="button"
-              className={classNames(styles.controlButton, styles.queueButton, {
-                [styles.queueButtonActive]: isQueueOpen,
-              })}
-              onClick={() => {
-                setIsQueueOpen((open) => !open);
-              }}
-              aria-expanded={isQueueOpen}
-              aria-label={
-                queue.length > 0
-                  ? `Open playback queue, ${queue.length} tracks`
-                  : "Open playback queue"
-              }
-              title="Playback queue"
-            >
-              <ListThinIcon className={styles.controlIcon} aria-hidden />
-              {queue.length > 0 ? (
-                <span className={styles.queueCount}>{queue.length}</span>
-              ) : null}
-            </button>
-            {isPlaybackReady ? (
-              <button
-                type="button"
-                className={classNames(styles.controlButton, {
-                  [styles.videoButtonActive]: isVideoPanelExpanded,
-                })}
-                onClick={handleVideoToggle}
-                aria-expanded={isVideoPanelExpanded}
-                aria-controls="release-playback-video-panel"
-                aria-label={isVideoPanelExpanded ? "Hide video" : "Show video"}
-                title={isVideoPanelExpanded ? "Hide video" : "Show video"}
-              >
-                <VideoIcon className={styles.controlIcon} aria-hidden />
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className={styles.controlButton}
-              onClick={playPrevious}
-              disabled={!hasPrevious}
-              aria-label="Previous track"
-              title="Previous track"
-            >
-              <TransportSkipPreviousIcon className={styles.controlIcon} />
-            </button>
-            <button
-              type="button"
-              className={styles.controlButton}
-              onClick={togglePlayback}
-              disabled={!isPlaybackReady}
-              aria-label={isPaused ? "Play" : "Pause"}
-              title={isPaused ? "Play" : "Pause"}
-            >
-              {isPaused ? (
-                <PlayIcon className={styles.controlIcon} aria-hidden />
-              ) : (
-                <PauseIcon className={styles.controlIcon} aria-hidden />
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.controlButton}
-              onClick={playNext}
-              disabled={!hasNext}
-              aria-label="Next track"
-              title="Next track"
-            >
-              <TransportSkipNextIcon className={styles.controlIcon} />
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
+      </OverlayStack>
     </div>
   );
 };

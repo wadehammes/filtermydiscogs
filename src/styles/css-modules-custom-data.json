@@ -1,0 +1,15 @@
+{
+  "version": 1.1,
+  "properties": [
+    {
+      "name": "composes",
+      "description": "CSS Modules: inherit declarations from another local or imported class.",
+      "references": [
+        {
+          "name": "CSS Modules composition",
+          "url": "https://github.com/css-modules/css-modules/blob/master/docs/composition.md"
+        }
+      ]
+    }
+  ]
+}

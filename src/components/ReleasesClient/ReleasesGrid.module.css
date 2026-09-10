@@ -106,17 +106,5 @@
 }
 
 .exitRandomLink {
-  background: none;
-  border: none;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: var(--text-sm);
-  padding: 0;
-  text-decoration: underline;
-  transition: color var(--transition-fast);
-
-  &:hover {
-    color: var(--foreground);
-  }
+  composes: muted from "../../styles/modules/text-action.module.css";
 }

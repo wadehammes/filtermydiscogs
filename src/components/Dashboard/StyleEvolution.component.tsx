@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useMemo } from "react";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import {
   ScrollRevealBar,
   TickerNumber,
@@ -66,9 +67,11 @@ export const StyleEvolution = ({
           )}
           <p className={styles.subtitle}>{sectionLede}</p>
         </header>
-        <div className={styles.emptyState}>
-          <p>Not enough records yet to show how taste shifted.</p>
-        </div>
+        <EmptyState
+          variant="inline"
+          title="Not enough records yet to show how taste shifted."
+          className={styles.emptyState}
+        />
       </div>
     );
   }

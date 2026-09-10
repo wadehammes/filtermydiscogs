@@ -9,6 +9,7 @@ import {
 import { CrateDrawerDialogs } from "src/components/CrateDrawerDialogs/CrateDrawerDialogs.component";
 import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/CrateReleaseListToolbar.component";
 import { CrateSetNotesScratchpad } from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
@@ -64,9 +65,11 @@ const CrateDetailWorkspace = ({
     packedEnabled && visibleReleaseCount === 0 && selectedReleases.length > 0;
 
   const releasesContent = showAllPackedState ? (
-    <div className={styles.emptyState}>
-      <p>All albums packed for your gig.</p>
-    </div>
+    <EmptyState
+      variant="panel"
+      title="All albums packed for your gig."
+      className={styles.emptyState}
+    />
   ) : activeCrateId ? (
     <CrateLayoutList
       crateId={activeCrateId}
@@ -159,12 +162,15 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
               <PageLoader message="Loading crate..." />
             </div>
           ) : !crateExists ? (
-            <div className={styles.emptyState}>
-              <p>Crate not found.</p>
+            <EmptyState
+              variant="panel"
+              title="Crate not found."
+              className={styles.emptyState}
+            >
               <Link href="/crates" className={styles.backLink}>
                 ← Back to crates
               </Link>
-            </div>
+            </EmptyState>
           ) : (
             <CrateDrawerProvider onReleaseClick={handleReleaseClick}>
               <CrateDetailWorkspace onReleaseClick={handleReleaseClick} />

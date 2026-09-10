@@ -1,22 +1,21 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
 import { definedProps } from "src/utils/definedProps";
-import { EmptyState } from "./EmptyState.component";
 import { LoadingTrigger } from "./LoadingTrigger.component";
 import styles from "./ReleasesClient.module.css";
 import { ReleasesGrid } from "./ReleasesGrid.component";
@@ -32,7 +31,6 @@ const ReleasesClientContent = () => {
     crates,
     activeCrateId,
   } = useCrate();
-  const isCrateSidebarDesktop = useMediaQuery("(min-width: 1024px)");
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
@@ -41,20 +39,6 @@ const ReleasesClientContent = () => {
   const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
     setScrollRoot(node);
   }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-
-    if (isDrawerOpen && isCrateSidebarDesktop) {
-      root.setAttribute("data-crate-sidebar-open", "true");
-    } else {
-      root.removeAttribute("data-crate-sidebar-open");
-    }
-
-    return () => {
-      root.removeAttribute("data-crate-sidebar-open");
-    };
-  }, [isCrateSidebarDesktop, isDrawerOpen]);
 
   const {
     isLoading,
@@ -197,7 +181,10 @@ const ReleasesClientContent = () => {
               ) : !allReleasesLoaded ? (
                 <ReleasesSkeleton isMobile={isMobile} />
               ) : (
-                <EmptyState />
+                <EmptyState
+                  title="No releases found"
+                  description="Try adjusting your filters to see more results."
+                />
               )}
 
               <LoadingTrigger

@@ -120,6 +120,14 @@
     width: 100%;
     z-index: 0;
 
+    &.inlineAlignEnd {
+      @media (width >= 768px) {
+        left: auto;
+        right: var(--space-4);
+        width: min(calc(100% - var(--space-8)), 31.25rem);
+      }
+    }
+
     &.behindMiniPlayer {
       z-index: 0;
     }
@@ -226,11 +234,6 @@
   top: 0;
   z-index: calc(var(--z-10-bottom-drawer) + 1);
 
-  .closeIcon {
-    height: 1.25rem;
-    width: 1.25rem;
-  }
-
   &:hover {
     transform: translateY(-1px);
   }
@@ -238,6 +241,11 @@
   &:active {
     transform: translateY(0);
   }
+}
+
+.closeIcon {
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 .headerCloseButton {

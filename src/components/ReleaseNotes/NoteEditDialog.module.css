@@ -88,11 +88,3 @@
   font-size: var(--text-sm);
   margin: 0;
 }
-
-.actions {
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-  padding-top: var(--space-4);
-}

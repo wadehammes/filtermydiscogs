@@ -2,10 +2,13 @@
 
 import classNames from "classnames";
 import { useMemo, useState } from "react";
+import { IconButton } from "src/components/IconButton/IconButton.component";
+import {
+  SegmentedControl,
+  segmentedStyles,
+} from "src/components/SegmentedControl/SegmentedControl.component";
 import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
-import accessibilityStyles from "src/styles/modules/accessibility.module.css";
-import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
 import { THEME_PRIMARY_CHART_COLOR } from "src/utils/chartConfig";
 import { analyzeGrowthByYear } from "src/utils/growthTracker";
@@ -71,36 +74,24 @@ export const GrowthChart = ({
         ) : (
           <h2 className={styles.chartTitle}>Collection growth</h2>
         )}
-        <fieldset className={segmentedStyles.container}>
-          <legend
-            className={classNames(
-              segmentedStyles.legend,
-              accessibilityStyles.visuallyHidden,
-            )}
-          >
-            Collection growth time range
-          </legend>
-          <button
-            type="button"
+        <SegmentedControl legend="Collection growth time range">
+          <IconButton
             className={classNames(segmentedStyles.segment, {
               [segmentedStyles.active]: viewMode === "monthly",
             })}
+            label="Monthly"
             onClick={() => setViewMode("monthly")}
             aria-pressed={viewMode === "monthly"}
-          >
-            Monthly
-          </button>
-          <button
-            type="button"
+          />
+          <IconButton
             className={classNames(segmentedStyles.segment, {
               [segmentedStyles.active]: viewMode === "yearly",
             })}
+            label="Yearly"
             onClick={() => setViewMode("yearly")}
             aria-pressed={viewMode === "yearly"}
-          >
-            Yearly
-          </button>
-        </fieldset>
+          />
+        </SegmentedControl>
       </div>
       <div className={styles.chartWrapper}>
         <TanstackChart

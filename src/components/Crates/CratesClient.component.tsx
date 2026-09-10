@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
@@ -42,12 +43,11 @@ export default function CratesClient() {
                 <PageLoader message="Loading crates..." />
               </div>
             ) : crates.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p className={styles.emptyTitle}>No crates yet</p>
-                <p className={styles.emptyCopy}>
-                  Create a crate from the releases page to start curating a set.
-                </p>
-              </div>
+              <EmptyState
+                variant="page"
+                title="No crates yet"
+                description="Create a crate from the releases page to start curating a set."
+              />
             ) : (
               <div className={styles.crateGrid}>
                 {crates.map((crate) => (

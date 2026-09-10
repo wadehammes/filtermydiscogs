@@ -3,22 +3,5 @@
 }
 
 .button {
-  background: none;
-  border: none;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-  text-decoration: none;
-  transition: color var(--transition-normal);
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  &:hover:not(:disabled) {
-    color: var(--primary);
-    text-decoration: underline;
-  }
+  composes: subtlelink from "../../styles/modules/text-action.module.css";
 }

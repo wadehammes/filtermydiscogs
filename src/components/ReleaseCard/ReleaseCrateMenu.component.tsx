@@ -6,6 +6,7 @@ import classNames from "classnames";
 import type { MouseEvent } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { CreateCrateDialog } from "src/components/CreateCrateDialog/CreateCrateDialog.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import {
   InlinePopoverMenu,
   inlinePopoverMenuStyles,
@@ -236,26 +237,46 @@ export const ReleaseCrateMenu = ({
         <Menu.Root open={isOpen} onOpenChange={handleOpenChange} modal={false}>
           <Menu.Trigger
             ref={triggerRef}
-            type="button"
-            className={classNames(styles.menuRoot, triggerClass)}
-            aria-haspopup="menu"
-            aria-label={triggerLabel}
-            aria-pressed={inActiveCrate}
-            disabled={isLoading || isCrateActionPending}
-            onClick={handleTriggerClick}
-            onFocus={prefetchMembership}
-            onPointerDown={prefetchMembership}
-            onPointerEnter={prefetchMembership}
-            data-testid="fmdReleaseCrateMenuTrigger"
-          >
-            {triggerStyle === "text" ? (
-              triggerText
-            ) : inActiveCrate ? (
-              <MinusIcon className={stackStyles.actionIcon} aria-hidden />
-            ) : (
-              <PlusIcon className={stackStyles.actionIcon} aria-hidden />
-            )}
-          </Menu.Trigger>
+            render={(props) =>
+              triggerStyle === "text" ? (
+                <button
+                  {...props}
+                  type="button"
+                  className={classNames(styles.menuRoot, triggerClass)}
+                  aria-haspopup="menu"
+                  aria-label={triggerLabel}
+                  aria-pressed={inActiveCrate}
+                  disabled={isLoading || isCrateActionPending}
+                  onClick={handleTriggerClick}
+                  onFocus={prefetchMembership}
+                  onPointerDown={prefetchMembership}
+                  onPointerEnter={prefetchMembership}
+                  data-testid="fmdReleaseCrateMenuTrigger"
+                >
+                  {triggerText}
+                </button>
+              ) : (
+                <IconButton
+                  {...props}
+                  variant={inActiveCrate ? "minus" : "plus"}
+                  type="button"
+                  className={classNames(styles.menuRoot, triggerClass)}
+                  iconClassName={stackStyles.actionIcon}
+                  aria-haspopup="menu"
+                  aria-label={triggerLabel}
+                  aria-pressed={inActiveCrate}
+                  disabled={isLoading || isCrateActionPending}
+                  onClick={handleTriggerClick}
+                  onFocus={prefetchMembership}
+                  onPointerDown={prefetchMembership}
+                  onPointerEnter={prefetchMembership}
+                  data-testid="fmdReleaseCrateMenuTrigger"
+                >
+                  {inActiveCrate ? <MinusIcon /> : <PlusIcon />}
+                </IconButton>
+              )
+            }
+          />
           <InlinePopoverMenu.Panel
             align="end"
             popupClassName={styles.menuPopup}

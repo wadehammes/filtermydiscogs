@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import MosaicControls from "src/components/MosaicClient/MosaicControls.component";
 import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
 import { Page } from "src/components/Page/Page.component";
@@ -94,14 +95,15 @@ export default function MosaicClient() {
     return (
       <Page>
         <CollectionPlaybackPageShell allReleasesLoaded currentPage="mosaic">
-          <div className={styles.emptyState}>
-            <h1>No releases to display</h1>
-            <p>
-              {allReleases.length === 0
+          <EmptyState
+            variant="page"
+            title="No releases to display"
+            description={
+              allReleases.length === 0
                 ? "Your collection appears to be empty"
-                : "No releases match your current filters. Try adjusting your filter settings."}
-            </p>
-          </div>
+                : "No releases match your current filters. Try adjusting your filter settings."
+            }
+          />
         </CollectionPlaybackPageShell>
       </Page>
     );

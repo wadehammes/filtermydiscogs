@@ -83,24 +83,7 @@
 
 .addNotesLink,
 .editButton {
-  background: transparent;
-  border: none;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  flex-shrink: 0;
-  font-size: var(--text-xs);
-  padding: 0;
-  text-align: left;
-  text-decoration: underline;
-
-  &:hover {
-    color: var(--foreground);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
+  composes: xsmuted from "../../styles/modules/text-action.module.css";
 }
 
 .notesModal .editButton {

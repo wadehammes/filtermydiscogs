@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
 import { definedProps } from "src/utils/definedProps";
@@ -49,9 +50,11 @@ export function OnThisDay({
       <div className={styles.container}>
         <h2>On this day</h2>
         <p className={styles.date}>{dateString}</p>
-        <div className={styles.emptyState}>
-          <p>No records added on this date in earlier years.</p>
-        </div>
+        <EmptyState
+          variant="inline"
+          title="No records added on this date in earlier years."
+          className={styles.emptyState}
+        />
       </div>
     );
   }

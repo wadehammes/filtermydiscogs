@@ -426,6 +426,9 @@ describe("ReleaseCard", () => {
     expect(
       screen.getByRole("link", { name: "View on Discogs" }),
     ).toHaveAttribute("href", "https://www.discogs.com/release/456");
+    expect(
+      screen.getByRole("group", { name: "Release card actions" }),
+    ).toBeInTheDocument();
   });
 
   it("shows a spinner on the add to queue button while fetching release details", async () => {
@@ -452,9 +455,14 @@ describe("ReleaseCard", () => {
       }),
     );
 
-    expect(
-      screen.getByRole("progressbar", { name: "Loading release" }),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("progressbar", {
+          name: "Loading release",
+          hidden: true,
+        }),
+      ).toBeInTheDocument();
+    });
 
     resolveFetch(discogsReleaseJsonFactory.withTracklistAndVideos());
 

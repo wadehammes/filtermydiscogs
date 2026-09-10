@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
@@ -112,10 +113,11 @@ function DashboardClientContent() {
       >
         <div className={styles.container} data-testid="fmdDashboardClient">
           {!(collectionLoading || analytics) && (
-            <div className={styles.emptyState}>
-              <h1>Nothing on the shelf yet</h1>
-              <p>Add records to your Discogs collection to see them here.</p>
-            </div>
+            <EmptyState
+              variant="page"
+              title="Nothing on the shelf yet"
+              description="Add records to your Discogs collection to see them here."
+            />
           )}
 
           {!collectionLoading && analytics && story && (

@@ -1,7 +1,9 @@
 import classNames from "classnames";
 import { useCallback, useMemo, useState } from "react";
 import { CreateCrateDialog } from "src/components/CreateCrateDialog/CreateCrateDialog.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import Select from "src/components/Select/Select.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useCrate } from "src/context/crate.context";
 import type { CreateCrateFormValues } from "src/lib/validation/crate.schemas";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
@@ -72,7 +74,10 @@ export const CrateSelector = ({
         className={classNames(styles.container, className)}
         data-testid="fmdCrateSelector"
       >
-        <div className={styles.loading}>Loading crates...</div>
+        <div className={styles.loading}>
+          <Spinner size="sm" aria-label="Loading crates" />
+          <span>Loading crates...</span>
+        </div>
       </div>
     );
   }
@@ -93,17 +98,18 @@ export const CrateSelector = ({
         />
         {allowCreate ? (
           <div className={styles.actions}>
-            <button
-              type="button"
+            <IconButton
+              variant="plus"
               className={styles.newCrateButton}
+              iconClassName={styles.newCrateIcon}
               onClick={() => {
                 setIsCreateDialogOpen(true);
               }}
               disabled={isUpdatingCrate || isCreatingCrate}
               aria-label="New Crate"
             >
-              <PlusIcon className={styles.newCrateIcon} aria-hidden />
-            </button>
+              <PlusIcon />
+            </IconButton>
           </div>
         ) : null}
       </div>

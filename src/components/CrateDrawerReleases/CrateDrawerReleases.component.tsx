@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateDrawerReleaseItem } from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.component";
 import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/CrateReleaseListToolbar.component";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import {
   countVisibleCrateReleases,
@@ -44,7 +45,7 @@ export const CrateDrawerReleases = () => {
 
   if (isLoadingReleases) {
     return (
-      <div className={styles.emptyState}>
+      <div className={styles.loadingState}>
         <PageLoader message="Loading crate..." />
       </div>
     );
@@ -52,14 +53,16 @@ export const CrateDrawerReleases = () => {
 
   if (stagingReleases.length === 0) {
     return (
-      <div className={styles.emptyState}>
-        <h3>No releases added yet.</h3>
-        <p>
-          {currentView === "list"
+      <EmptyState
+        variant="panel"
+        title="No releases added yet."
+        description={
+          currentView === "list"
             ? "Toggle the checkbox on any release to stage it in this crate."
-            : 'Click "+ Add to Crate" on any release to stage it here.'}
-        </p>
-      </div>
+            : 'Click "+ Add to Crate" on any release to stage it here.'
+        }
+        className={styles.emptyState}
+      />
     );
   }
 
@@ -84,9 +87,11 @@ export const CrateDrawerReleases = () => {
         </div>
       ) : null}
       {showAllPackedState ? (
-        <div className={styles.emptyState}>
-          <p>All albums packed for your gig.</p>
-        </div>
+        <EmptyState
+          variant="panel"
+          title="All albums packed for your gig."
+          className={styles.emptyState}
+        />
       ) : visibleReleases.length > 0 ? (
         <div className={styles.releasesList}>
           {visibleReleases.map((item) => (

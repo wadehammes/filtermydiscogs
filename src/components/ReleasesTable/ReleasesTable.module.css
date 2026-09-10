@@ -282,14 +282,58 @@
 }
 
 .artistTitleCell {
+  align-items: center;
   color: var(--foreground);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   font-size: clamp(var(--text-xs), 1vw + 0.5rem, var(--text-sm));
-  gap: var(--space-1);
+  gap: var(--space-2);
   line-height: 1.2;
-  padding: var(--space-1) var(--space-2);
+  min-width: 0;
   overflow-wrap: break-word;
+  padding: var(--space-1) var(--space-2);
+}
+
+.artistTitleText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.artistTitleThumb {
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  cursor: pointer;
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
+  transition: all var(--transition-normal);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  img {
+    border-radius: 0;
+    display: block;
+    height: var(--button-height-md);
+    object-fit: cover;
+    width: var(--button-height-md);
+  }
 }
 
 .artistName {
@@ -361,13 +405,11 @@
   text-align: left;
 }
 
-.notesCell {
-  min-width: 0;
-  padding: var(--space-1) var(--space-2);
-
-  > div {
-    padding-top: 0;
-  }
+.actionsCell {
+  padding: var(--space-1);
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .stylesCell {

@@ -20,6 +20,7 @@ import classNames from "classnames";
 import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { useReleasePlaybackQueue } from "src/context/releasePlayback.context";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
@@ -77,15 +78,16 @@ const SortableQueueItem = memo(function SortableQueueItem({
       })}
     >
       <div className={styles.queueItem}>
-        <button
-          type="button"
+        <IconButton
+          variant="skip"
           className={styles.dragHandle}
+          iconClassName={styles.dragHandleIcon}
           aria-label={`Reorder ${item.trackTitle}`}
           {...attributes}
           {...listeners}
         >
-          <GripVerticalIcon className={styles.dragHandleIcon} aria-hidden />
-        </button>
+          <GripVerticalIcon />
+        </IconButton>
         <button
           type="button"
           className={styles.queuePlayButton}
@@ -110,17 +112,18 @@ const SortableQueueItem = memo(function SortableQueueItem({
             </span>
           </span>
         </button>
-        <button
-          type="button"
+        <IconButton
+          variant="close"
           className={styles.queueRemoveButton}
+          iconClassName={styles.queueRemoveIcon}
           onClick={() => {
             onRemove(index);
           }}
           aria-label={`Remove ${item.trackTitle} from queue`}
           title="Remove from queue"
         >
-          <XIcon className={styles.queueRemoveIcon} aria-hidden />
-        </button>
+          <XIcon />
+        </IconButton>
       </div>
     </li>
   );
@@ -181,10 +184,8 @@ export const PlaybackQueueDrawer = ({
       titleId="playback-queue-title"
       closeButtonAriaLabel="Close playback queue"
       dataAttribute="data-playback-queue-open"
-      drawerClassName={classNames(
-        styles.queueDrawer,
-        styles.queueDrawerAlignEnd,
-      )}
+      inlineAlignEnd
+      drawerClassName={styles.queueDrawer}
       behindMiniPlayer
       hideOverlay
       inline

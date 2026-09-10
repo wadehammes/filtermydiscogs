@@ -12,7 +12,6 @@ import { memo, useCallback, useMemo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
-import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrateState } from "src/context/crate.context";
 import {
   useSelectedFormats,
@@ -25,6 +24,7 @@ import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleasesTable.module.css";
+import { ReleasesTableRowActions } from "./ReleasesTableRowActions.component";
 import { releasesTableFeatures } from "./releasesTableFeatures";
 import { useReleasesTableLayout } from "./useReleasesTableLayout.hook";
 
@@ -62,7 +62,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
       onExitRandomMode,
     });
 
-    const handleImageClick = useCallback(
+    const handleReleaseOpen = useCallback(
       (release: DiscogsRelease) => {
         onReleaseClick(String(release.instance_id));
       },
@@ -96,30 +96,34 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             maxSize: 40,
             enableResizing: false,
           }),
-          columnHelper.accessor("basic_information.thumb", {
-            id: "image",
-            header: "",
-            cell: ({ getValue, row }) => {
-              const thumb = getValue();
-              const title = row.original.basic_information.title;
+          columnHelper.display({
+            id: "artistTitle",
+            header: "Artist / Title",
+            cell: ({ row }) => {
               const release = row.original;
+              const { artists, title, thumb, cover_image, resource_url } =
+                release.basic_information;
+              const releaseUrl = getResourceUrl({
+                resourceUrl: resource_url,
+                type: "release",
+              });
               const thumbUrl = getReleaseImageUrl({
                 thumb,
-                cover_image: row.original.basic_information.cover_image,
+                cover_image,
                 width: 40,
                 height: 40,
                 preferCoverImage: false,
               });
 
               return (
-                <div className={styles.imageCell}>
+                <div className={styles.artistTitleCell}>
                   <button
                     type="button"
-                    className={styles.imageButton}
+                    className={styles.artistTitleThumb}
                     title={`View ${title}`}
                     onClick={(event) => {
                       event.stopPropagation();
-                      handleImageClick(release);
+                      handleReleaseOpen(release);
                     }}
                     aria-label={`View ${title}`}
                   >
@@ -128,85 +132,64 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       height={40}
                       width={40}
                       quality={85}
-                      alt={title}
+                      alt=""
                       loading="lazy"
                       sizes="40px"
                     />
                   </button>
+                  <div className={styles.artistTitleText}>
+                    <span className={styles.artistName}>
+                      {artists.map((artist, index) => {
+                        const artistUrl = getResourceUrl({
+                          resourceUrl: artist.resource_url,
+                          type: "artist",
+                        });
+                        return (
+                          <span key={artist.id ?? `${artist.name}-${index}`}>
+                            {artistUrl ? (
+                              <a
+                                href={artistUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`View ${artist.name} on Discogs`}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                }}
+                                className={styles.artistLink}
+                              >
+                                {artist.name}
+                              </a>
+                            ) : (
+                              artist.name
+                            )}
+                            {index < artists.length - 1 && ", "}
+                          </span>
+                        );
+                      })}
+                    </span>
+                    {releaseUrl ? (
+                      <a
+                        href={releaseUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.titleLink}
+                        title="View release on Discogs"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                        }}
+                      >
+                        {title}
+                      </a>
+                    ) : (
+                      <span className={styles.titleLink}>{title}</span>
+                    )}
+                  </div>
                 </div>
               );
             },
-            size: 50,
-            minSize: 50,
-            maxSize: 50,
-            enableResizing: false,
-          }),
-          columnHelper.display({
-            id: "artistTitle",
-            header: "Artist / Title",
-            cell: ({ row }) => {
-              const release = row.original;
-              const artists = release.basic_information.artists;
-              const title = release.basic_information.title;
-              const resourceUrl = release.basic_information.resource_url;
-              const releaseUrl = getResourceUrl({
-                resourceUrl,
-                type: "release",
-              });
-
-              return (
-                <div className={styles.artistTitleCell}>
-                  <span className={styles.artistName}>
-                    {artists.map((artist, index) => {
-                      const artistUrl = getResourceUrl({
-                        resourceUrl: artist.resource_url,
-                        type: "artist",
-                      });
-                      return (
-                        <span key={artist.id ?? `${artist.name}-${index}`}>
-                          {artistUrl ? (
-                            <a
-                              href={artistUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title={`View ${artist.name} on Discogs`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                              }}
-                              className={styles.artistLink}
-                            >
-                              {artist.name}
-                            </a>
-                          ) : (
-                            artist.name
-                          )}
-                          {index < artists.length - 1 && ", "}
-                        </span>
-                      );
-                    })}
-                  </span>
-                  {releaseUrl ? (
-                    <a
-                      href={releaseUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.titleLink}
-                      title="View release on Discogs"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                      }}
-                    >
-                      {title}
-                    </a>
-                  ) : (
-                    <span className={styles.titleLink}>{title}</span>
-                  )}
-                </div>
-              );
-            },
-            size: 300,
-            minSize: 160,
-            maxSize: 560,
+            size: 260,
+            minSize: 180,
+            maxSize: 440,
           }),
           columnHelper.accessor("basic_information.labels", {
             id: "label",
@@ -251,6 +234,22 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             size: 120,
             minSize: 80,
             maxSize: 280,
+          }),
+          columnHelper.accessor("basic_information.labels", {
+            id: "catno",
+            header: "Cat#",
+            cell: ({ getValue }) => {
+              const catno = getValue()[0]?.catno;
+
+              return (
+                <div className={styles.catnoCell}>
+                  {catno ? String(catno) : "—"}
+                </div>
+              );
+            },
+            size: 88,
+            minSize: 64,
+            maxSize: 160,
           }),
           columnHelper.accessor("basic_information.year", {
             id: "year",
@@ -328,27 +327,26 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 </div>
               );
             },
-            size: 180,
-            minSize: 120,
-            maxSize: 360,
-          }),
-          columnHelper.display({
-            id: "notes",
-            header: "Notes",
-            cell: ({ row }) => {
-              const release = row.original;
-              return (
-                <div className={styles.notesCell}>
-                  <ReleaseNotes release={release} variant="table" />
-                </div>
-              );
-            },
-            size: 220,
-            minSize: 120,
+            size: 260,
+            minSize: 180,
             maxSize: 480,
           }),
+          columnHelper.display({
+            id: "actions",
+            header: "",
+            cell: ({ row }) => (
+              <ReleasesTableRowActions
+                release={row.original}
+                onReleaseClick={handleReleaseOpen}
+              />
+            ),
+            size: 120,
+            minSize: 120,
+            maxSize: 120,
+            enableResizing: false,
+          }),
         ]),
-      [selectedFormats, selectedStyles, handlePillClick, handleImageClick],
+      [selectedFormats, selectedStyles, handlePillClick, handleReleaseOpen],
     );
 
     const table = useTable({
@@ -467,6 +465,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       className={classNames(styles.dataCell, {
                         [styles.formatStylesCell]:
                           cell.column.id === "formatStyles",
+                        [styles.actionsCell]: cell.column.id === "actions",
                       })}
                       style={{ width: cell.column.getSize() }}
                     >

@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { type ReactNode, useEffect, useRef } from "react";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { useDraggablePanel } from "src/hooks/useDraggablePanel.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import XIcon from "src/styles/icons/x-thin.svg";
@@ -76,15 +77,16 @@ export const ReleasePlaybackVideoPanel = ({
       data-testid="fmdReleasePlaybackVideoPanel"
     >
       {isExpanded && onClose ? (
-        <button
-          type="button"
+        <IconButton
+          variant="close"
           className={styles.mobileCloseBar}
           onClick={onClose}
           aria-label="Close video panel"
           data-testid="fmdReleasePlaybackVideoPanelCloseButton"
+          iconClassName={styles.mobileCloseIcon}
         >
-          <XIcon className={styles.mobileCloseIcon} aria-hidden />
-        </button>
+          <XIcon />
+        </IconButton>
       ) : null}
       {isExpanded && useFloatingLayout ? (
         <button

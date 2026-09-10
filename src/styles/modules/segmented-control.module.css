@@ -56,6 +56,22 @@
     outline-offset: 2px;
   }
 
+  .container > legend + &,
+  .container > legend + * & {
+    border-inline-start: none;
+    border-top: none;
+  }
+
+  .containerAllowOverflow > legend + &,
+  .containerAllowOverflow > legend + * & {
+    border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+  }
+
+  .containerAllowOverflow > :last-child &,
+  .containerAllowOverflow > &:last-child {
+    border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
+  }
+
   &:hover:not(.active) {
     background: var(--card);
     color: var(--foreground);
@@ -65,34 +81,16 @@
     background: var(--primary);
     color: var(--primary-foreground);
   }
-}
 
-.container > :first-child .segment,
-.container > .segment:first-child,
-.containerVertical > :first-child .segment,
-.containerVertical > .segment:first-child {
-  border-inline-start: none;
-  border-top: none;
-}
+  .containerAllowOverflow.containerVertical > legend + &,
+  .containerAllowOverflow.containerVertical > legend + * & {
+    border-radius: var(--radius-ui) var(--radius-ui) 0 0;
+  }
 
-.containerAllowOverflow > :first-child .segment,
-.containerAllowOverflow > .segment:first-child {
-  border-radius: var(--radius-ui) 0 0 var(--radius-ui);
-}
-
-.containerAllowOverflow > :last-child .segment,
-.containerAllowOverflow > .segment:last-child {
-  border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
-}
-
-.containerAllowOverflow.containerVertical > :first-child .segment,
-.containerAllowOverflow.containerVertical > .segment:first-child {
-  border-radius: var(--radius-ui) var(--radius-ui) 0 0;
-}
-
-.containerAllowOverflow.containerVertical > :last-child .segment,
-.containerAllowOverflow.containerVertical > .segment:last-child {
-  border-radius: 0 0 var(--radius-ui) var(--radius-ui) 0;
+  .containerAllowOverflow.containerVertical > :last-child &,
+  .containerAllowOverflow.containerVertical > &:last-child {
+    border-radius: 0 0 var(--radius-ui) var(--radius-ui) 0;
+  }
 }
 
 .segmentCompact {

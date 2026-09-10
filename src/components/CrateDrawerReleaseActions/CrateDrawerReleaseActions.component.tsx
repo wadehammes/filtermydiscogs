@@ -2,6 +2,7 @@ import classNames from "classnames";
 import type { MouseEvent } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import styles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
@@ -38,9 +39,9 @@ export const CrateDrawerReleaseActions = ({
       <div className={stackStyles.overlayActions}>
         {packedEnabled ? (
           <div className={stackStyles.overlayActionSlot}>
-            <button
-              type="button"
+            <IconButton
               className={stackStyles.overlayAction}
+              iconClassName={stackStyles.actionIcon}
               onClick={handlePackedToggle}
               aria-pressed={packed}
               aria-label={
@@ -52,23 +53,24 @@ export const CrateDrawerReleaseActions = ({
                 packed ? "Unmark as packed for gig" : "Mark as packed for gig"
               }
             >
-              <CheckThinIcon className={stackStyles.actionIcon} aria-hidden />
-            </button>
+              <CheckThinIcon />
+            </IconButton>
           </div>
         ) : null}
         <div className={stackStyles.overlayActionSlot}>
-          <button
-            type="button"
+          <IconButton
+            variant="minus"
             className={classNames(
               stackStyles.overlayAction,
               styles.removeAction,
             )}
+            iconClassName={stackStyles.actionIcon}
             onClick={handleRemove}
             aria-label={`Remove ${releaseTitle} from crate`}
             title="Remove from crate"
           >
-            <MinusIcon className={stackStyles.actionIcon} aria-hidden />
-          </button>
+            <MinusIcon />
+          </IconButton>
         </div>
       </div>
     </div>

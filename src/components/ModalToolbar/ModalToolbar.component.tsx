@@ -1,5 +1,8 @@
 import classNames from "classnames";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
+import type { IconButtonVariant } from "src/components/IconButton/IconButton.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
+import { IconButtonLink } from "src/components/IconButton/IconButtonLink.component";
 import XIcon from "src/styles/icons/x-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ModalToolbar.module.css";
@@ -28,14 +31,15 @@ export function ModalToolbar({
         ) : null}
       </div>
       {onClose ? (
-        <button
-          type="button"
+        <IconButton
+          variant="close"
           className={classNames(styles.actionButton, styles.closeButton)}
           onClick={onClose}
           aria-label="Close modal"
+          iconClassName={styles.actionIcon}
         >
-          <XIcon className={styles.actionIcon} aria-hidden />
-        </button>
+          <XIcon />
+        </IconButton>
       ) : null}
     </div>
   );
@@ -43,9 +47,20 @@ export function ModalToolbar({
 
 export function ModalToolbarLink({
   className,
+  variant = "default",
+  children,
   ...props
-}: AnchorHTMLAttributes<HTMLAnchorElement>) {
+}: AnchorHTMLAttributes<HTMLAnchorElement> & {
+  variant?: IconButtonVariant;
+}) {
   return (
-    <a className={classNames(styles.actionButton, className)} {...props} />
+    <IconButtonLink
+      variant={variant}
+      className={classNames(styles.actionButton, className)}
+      iconClassName={styles.actionIcon}
+      {...props}
+    >
+      {children}
+    </IconButtonLink>
   );
 }
