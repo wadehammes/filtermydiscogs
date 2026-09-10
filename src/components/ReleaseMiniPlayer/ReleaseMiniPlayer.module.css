@@ -58,6 +58,15 @@
   }
 }
 
+.miniPlayerShell[data-playback-queue-shell-open] .miniPlayerBar {
+  position: relative;
+  z-index: 3;
+}
+
+.miniPlayerShell[data-queue-over-video] > #release-playback-video-panel {
+  z-index: 1;
+}
+
 .releaseArea {
   display: flex;
   justify-content: center;

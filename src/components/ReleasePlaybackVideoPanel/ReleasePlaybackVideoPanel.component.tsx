@@ -76,29 +76,36 @@ export const ReleasePlaybackVideoPanel = ({
       }}
       data-testid="fmdReleasePlaybackVideoPanel"
     >
-      {isExpanded && onClose ? (
-        <IconButton
-          variant="close"
-          className={styles.mobileCloseBar}
-          onClick={onClose}
-          aria-label="Close video panel"
-          data-testid="fmdReleasePlaybackVideoPanelCloseButton"
-          iconClassName={styles.mobileCloseIcon}
+      {isExpanded && (onClose || useFloatingLayout) ? (
+        <div
+          className={classNames(styles.panelChrome, {
+            [styles.panelChromeMobile]: !useFloatingLayout,
+          })}
         >
-          <XIcon />
-        </IconButton>
-      ) : null}
-      {isExpanded && useFloatingLayout ? (
-        <button
-          type="button"
-          className={styles.dragHandle}
-          onPointerDown={handlePointerDown}
-          onDoubleClick={resetLayout}
-          aria-label="Drag video panel. Double-click to reset position and size."
-          data-testid="fmdReleasePlaybackVideoPanelHandle"
-        >
-          <span className={styles.dragHandleGrip} aria-hidden />
-        </button>
+          {useFloatingLayout ? (
+            <button
+              type="button"
+              className={styles.dragHandle}
+              onPointerDown={handlePointerDown}
+              onDoubleClick={resetLayout}
+              aria-label="Drag video panel. Double-click to reset position and size."
+              data-testid="fmdReleasePlaybackVideoPanelHandle"
+            >
+              <span className={styles.dragHandleGrip} aria-hidden />
+            </button>
+          ) : null}
+          {onClose ? (
+            <IconButton
+              variant="close"
+              className={styles.panelCloseButton}
+              onClick={onClose}
+              aria-label="Close video panel"
+              data-testid="fmdReleasePlaybackVideoPanelCloseButton"
+            >
+              <XIcon />
+            </IconButton>
+          ) : null}
+        </div>
       ) : null}
       <div
         className={classNames(styles.videoContent, {

@@ -281,7 +281,7 @@ describe("AuthProvider", () => {
     }
   });
 
-  it("keeps isCheckingAuth true until the mount auth revalidation settles", async () => {
+  it("clears isCheckingAuth once the initial auth query is ready while refetch continues", async () => {
     let resolveCheck: (value: AuthStatus) => void = () => {};
     const pendingCheck = new Promise<AuthStatus>((resolve) => {
       resolveCheck = resolve;
@@ -301,9 +301,9 @@ describe("AuthProvider", () => {
 
     const { result } = renderAuthHook();
 
-    expect(result.current.state.isCheckingAuth).toBe(true);
     expect(result.current.state.isAuthenticated).toBe(true);
     expect(result.current.state.username).toBe("cacheduser");
+    expect(result.current.state.isCheckingAuth).toBe(false);
 
     await act(async () => {
       resolveCheck(

@@ -39,10 +39,6 @@
   gap: var(--space-3);
 }
 
-.clearButton {
-  composes: meta from "../../styles/modules/text-action.module.css";
-}
-
 .checkboxLabel {
   align-items: center;
   color: color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground));

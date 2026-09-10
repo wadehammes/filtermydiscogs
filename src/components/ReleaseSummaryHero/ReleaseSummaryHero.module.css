@@ -81,27 +81,28 @@
 
 .title {
   color: var(--foreground);
+  display: -webkit-box;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
-  line-height: 1.25;
-  margin: 0;
-}
-
-.heroTitleLink {
-  color: inherit;
-  display: -webkit-box;
-  font-size: inherit;
-  font-weight: inherit;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  line-height: inherit;
+  line-height: 1.25;
+  margin: 0;
   overflow: hidden;
-  text-decoration: none;
-  transition: color var(--transition-fast);
 
   @media (width >= 768px) {
     -webkit-line-clamp: 2;
   }
+}
+
+.heroTitleLink {
+  color: inherit;
+  display: inline;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
 
   &:hover {
     color: var(--primary);

@@ -43,7 +43,8 @@
 }
 
 .meta {
-  composes: primary;
+  composes: base;
+  color: var(--primary);
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-xs);
   font-weight: var(--font-normal);
@@ -51,13 +52,22 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    color: var(--primary-hover);
+  }
 }
 
 .xsmuted {
-  composes: muted;
+  composes: base;
+  color: var(--muted-foreground);
   flex-shrink: 0;
   font-size: var(--text-xs);
   text-align: left;
+
+  &:hover:not(:disabled) {
+    color: var(--foreground);
+  }
 }
 
 .subtlelink {

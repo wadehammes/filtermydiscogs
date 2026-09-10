@@ -1,15 +1,19 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { prefetchReleaseModal } from "src/components/ReleaseModal/prefetchReleaseModal";
+import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCollectionReleaseByInstanceId } from "src/hooks/queries/useCollectionReleaseByInstanceId.hook";
+import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
 import {
   buildPathWithReleaseInstance,
   parseReleaseInstanceFromSearchParams,
 } from "src/utils/releaseModalUrl";
+import { parseReleaseId } from "src/utils/releaseNotes";
 
 export interface UseSelectedReleaseModalParams {
   collectionUsername?: string | null;
@@ -57,6 +61,7 @@ export const useSelectedReleaseModal = ({
   collectionUsername = null,
   fallbackReleases = [],
 }: UseSelectedReleaseModalParams = {}) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -105,6 +110,20 @@ export const useSelectedReleaseModal = ({
   const handleReleaseClick = useCallback(
     (instanceId: string) => {
       prefetchReleaseModal();
+
+      const clickedRelease = fallbackReleaseIndex.get(instanceId);
+      const releaseId = clickedRelease ? parseReleaseId(clickedRelease) : null;
+
+      if (releaseId !== null) {
+        const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
+
+        if (queryClient.getQueryData(releaseQueryKey) === undefined) {
+          void queryClient.prefetchQuery(
+            discogsReleaseQueryOptions(String(releaseId)),
+          );
+        }
+      }
+
       dispatchModalSync({ type: "open", instanceId });
 
       const url = buildUrl(instanceId);
@@ -115,7 +134,7 @@ export const useSelectedReleaseModal = ({
 
       router.push(url, { scroll: false });
     },
-    [buildUrl, router, selectedReleaseId],
+    [buildUrl, fallbackReleaseIndex, queryClient, router, selectedReleaseId],
   );
 
   const handleCloseModal = useCallback(() => {

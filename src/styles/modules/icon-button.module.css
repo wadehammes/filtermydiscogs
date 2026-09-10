@@ -2,6 +2,19 @@
   composes: iconaction from "./action-icon-hover.module.css";
 }
 
+.iconOnly {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  line-height: 0;
+}
+
+.labeled {
+  align-items: center;
+  display: inline-flex;
+  line-height: inherit;
+}
+
 .variantplus {
   composes: iconactionplus from "./action-icon-hover.module.css";
 }
@@ -28,9 +41,4 @@
 
 .icon {
   composes: icon from "./action-icon-hover.module.css";
-}
-
-.labeled {
-  align-items: center;
-  display: inline-flex;
 }

@@ -81,11 +81,6 @@
   display: block;
 }
 
-.addNotesLink,
-.editButton {
-  composes: xsmuted from "../../styles/modules/text-action.module.css";
-}
-
 .notesModal .editButton {
   align-self: flex-start;
   font-size: var(--text-sm);
@@ -199,6 +194,13 @@
 
 .notesCrateScratchpadFooter {
   composes: footer from "../../styles/modules/scratchpad-textarea.module.css";
+  justify-content: flex-end;
+}
+
+.notesCrateScratchpadFooterTrailing {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
 }
 
 .notesCrateScratchpadStatus {
@@ -207,6 +209,10 @@
 
 .notesCrateScratchpadCount {
   composes: charcount from "../../styles/modules/scratchpad-textarea.module.css";
+}
+
+.notesCrateScratchpadFooterTrailing .notesCrateScratchpadCount {
+  margin-inline-start: 0;
 }
 
 .notesCrateScratchpadCountLimit {

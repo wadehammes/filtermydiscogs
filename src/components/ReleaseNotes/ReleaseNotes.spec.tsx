@@ -88,6 +88,132 @@ describe("ReleaseNotes", () => {
     });
   });
 
+  it("keeps modal note fields editable while a save is in flight", async () => {
+    const user = userEvent.setup();
+    let resolveSave: ((value: { success: boolean }) => void) | undefined;
+
+    po.mockApi.updateCollectionNote.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+    });
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed");
+    await user.tab();
+
+    expect(await screen.findByText("Saving…")).toBeInTheDocument();
+    expect(po.mockToastLoading).not.toHaveBeenCalled();
+
+    expect(notesField).not.toBeDisabled();
+    await user.click(notesField);
+    expect(notesField).toHaveFocus();
+
+    resolveSave?.(crateMutationSuccessFactory.build());
+
+    await waitFor(() => {
+      expect(po.mockToastSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it("autosaves modal notes after debounce when the field stays focused", async () => {
+    jest.useFakeTimers();
+    const user = userEvent.setup({
+      advanceTimers: jest.advanceTimersByTime,
+    });
+
+    po.mockApi.updateCollectionNote.mockResolvedValue(
+      crateMutationSuccessFactory.build(),
+    );
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+    });
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed");
+
+    expect(po.mockApi.updateCollectionNote).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(700);
+
+    await waitFor(() => {
+      expect(po.mockApi.updateCollectionNote).toHaveBeenCalled();
+    });
+
+    jest.useRealTimers();
+  });
+
+  it("does not show a second saved toast when blurring after save", async () => {
+    const user = userEvent.setup();
+
+    po.mockApi.updateCollectionNote.mockResolvedValue(
+      crateMutationSuccessFactory.build(),
+    );
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+    });
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed");
+    await user.click(document.body);
+
+    await waitFor(() => {
+      expect(po.mockToastSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    po.mockToastSuccess.mockClear();
+
+    await user.click(document.body);
+
+    expect(po.mockToastSuccess).not.toHaveBeenCalled();
+  });
+
+  it("shows inline saving and saved status beside the modal notes character count", async () => {
+    const user = userEvent.setup();
+    let resolveSave: ((value: { success: boolean }) => void) | undefined;
+
+    po.mockApi.updateCollectionNote.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+    });
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed");
+    await user.tab();
+
+    const charCount = await screen.findByText("6 / 10000");
+
+    expect(await screen.findByText("Saving…")).toBeInTheDocument();
+
+    resolveSave?.(crateMutationSuccessFactory.build());
+
+    await waitFor(() => {
+      expect(screen.getByText("Saved")).toBeInTheDocument();
+    });
+    expect(charCount).toBeInTheDocument();
+  });
+
   it("shows loading and success toasts when modal notes or condition fields are saved", async () => {
     const user = userEvent.setup();
 
@@ -120,6 +246,117 @@ describe("ReleaseNotes", () => {
       });
     });
     expect(screen.queryByText("Saved")).not.toBeInTheDocument();
+    expect(screen.queryByText("Saving…")).not.toBeInTheDocument();
+  });
+
+  it("saves notes without triggering another collection fetch", async () => {
+    const user = userEvent.setup();
+
+    po.mockApi.discogsCollection.mockImplementation(
+      () => new Promise(() => {}),
+    );
+    po.mockApi.updateCollectionNote.mockResolvedValue(
+      crateMutationSuccessFactory.build(),
+    );
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+      includeCollectionSync: true,
+    });
+
+    await waitFor(() => {
+      expect(po.mockApi.discogsCollection).toHaveBeenCalled();
+    });
+
+    const collectionFetchCount = po.mockApi.discogsCollection.mock.calls.length;
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed copy");
+    await user.tab();
+
+    await waitFor(() => {
+      expect(po.mockApi.updateCollectionNote).toHaveBeenCalled();
+    });
+
+    expect(po.mockApi.discogsCollection.mock.calls.length).toBe(
+      collectionFetchCount,
+    );
+  });
+
+  it("completes note save while the collection fetch is still in flight", async () => {
+    const user = userEvent.setup();
+
+    po.mockApi.discogsCollection.mockImplementation(
+      () => new Promise(() => {}),
+    );
+    po.mockApi.updateCollectionNote.mockResolvedValue(
+      crateMutationSuccessFactory.build(),
+    );
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "modal",
+      includeCollectionSync: true,
+    });
+
+    await waitFor(() => {
+      expect(po.mockApi.discogsCollection).toHaveBeenCalled();
+    });
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed copy");
+    await user.tab();
+
+    await waitFor(() => {
+      expect(po.mockApi.updateCollectionNote).toHaveBeenCalled();
+      expect(po.mockToastSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it("clears in-flight save UI when switching to a different release in the modal", async () => {
+    const user = userEvent.setup();
+    let resolveSave: ((value: { success: boolean }) => void) | undefined;
+
+    po.mockApi.updateCollectionNote.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+
+    const releaseA = releaseFactory.forNotesEditor(12345, {
+      instance_id: "modal-notes-a",
+      notes: [],
+    });
+    const releaseB = releaseFactory.forNotesEditor(67890, {
+      instance_id: "modal-notes-b",
+      notes: [{ field_id: 3, value: "Existing note" }],
+    });
+
+    const view = po.renderReleaseNotes({
+      release: releaseA,
+      variant: "modal",
+    });
+
+    const notesField = await screen.findByRole("textbox", { name: "Notes" });
+
+    await user.type(notesField, "Signed");
+    await user.tab();
+
+    expect(await screen.findByText("Saving…")).toBeInTheDocument();
+
+    po.rerenderReleaseNotes(view, { release: releaseB, variant: "modal" });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Existing note")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Saving…")).not.toBeInTheDocument();
+
+    resolveSave?.(crateMutationSuccessFactory.build());
+
     expect(screen.queryByText("Saving…")).not.toBeInTheDocument();
   });
 

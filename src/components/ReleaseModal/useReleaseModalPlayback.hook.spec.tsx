@@ -22,9 +22,38 @@ jest.mock("src/api/urls");
 const mockApi = jest.mocked(api);
 
 const RELEASE_ID = 249504;
+const OTHER_RELEASE_ID = 100002;
 
 const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: RELEASE_ID,
+});
+
+const otherReleaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
+  id: OTHER_RELEASE_ID,
+  title: "Other Album",
+  tracklist: [
+    {
+      position: "A1",
+      title: "Modal Track One",
+      duration: "4:00",
+      type_: "track",
+    },
+    {
+      position: "A2",
+      title: "Modal Track Two",
+      duration: "3:45",
+      type_: "track",
+    },
+  ],
+  videos: [
+    {
+      description: "Modal Track One",
+      duration: 240,
+      embed: true,
+      title: "Modal Track One",
+      uri: "https://www.youtube.com/watch?v=modalTrackOne1",
+    },
+  ],
 });
 
 const collectionRelease = releaseFactory.withDisplayDefaults({
@@ -32,6 +61,15 @@ const collectionRelease = releaseFactory.withDisplayDefaults({
     id: RELEASE_ID,
     title: "Never Gonna Give You Up",
     resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
+  }),
+});
+
+const otherCollectionRelease = releaseFactory.withDisplayDefaults({
+  instance_id: "modal-release-instance",
+  basic_information: basicInformationFactory.build({
+    id: OTHER_RELEASE_ID,
+    title: "Other Album",
+    resource_url: `https://api.discogs.com/releases/${OTHER_RELEASE_ID}`,
   }),
 });
 
@@ -49,6 +87,280 @@ describe("useReleaseModalPlayback", () => {
     localStorage.clear();
     setupDefaultCrateApiMocks(mockApi);
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
+  });
+
+  it("resolves tracks immediately when the modal reopens with cached release detail", async () => {
+    const { result, rerender } = renderHook(
+      ({ isOpen }: { isOpen: boolean }) =>
+        useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen,
+        }),
+      {
+        initialProps: { isOpen: true },
+        wrapper: createWrapper(),
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.tracks.length).toBeGreaterThan(0);
+    });
+
+    rerender({ isOpen: false });
+
+    rerender({ isOpen: true });
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.tracks.length).toBeGreaterThan(0);
+  });
+
+  it("loads the modal tracklist while a different release plays in the dock", async () => {
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      [String(OTHER_RELEASE_ID)]: otherReleaseDetail,
+    });
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: otherCollectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    act(() => {
+      result.current.playback.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A",
+        trackTitle: "Never Gonna Give You Up",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isPlaying).toBe(true);
+      expect(result.current.modal.isPlayingThisReleaseInBar).toBe(false);
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.tracks.length).toBeGreaterThan(0);
+    });
+
+    expect(result.current.modal.isLoading).toBe(false);
+    expect(result.current.modal.tracks.map((track) => track.position)).toEqual([
+      "A1",
+      "A2",
+    ]);
+  });
+
+  it("does not show loading after clear queue, stop playback, and reopening the modal", async () => {
+    const { result, rerender } = renderHook(
+      ({ isOpen }: { isOpen: boolean }) => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      {
+        initialProps: { isOpen: true },
+        wrapper: createWrapper(),
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.tracks.length).toBeGreaterThan(0);
+    });
+
+    act(() => {
+      result.current.modal.handleTrackSelect("A");
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isPlaying).toBe(true);
+    });
+
+    act(() => {
+      result.current.playback.clearQueue();
+      result.current.playback.stopPlayback();
+    });
+
+    rerender({ isOpen: false });
+    rerender({ isOpen: true });
+
+    expect(result.current.modal.isLoading).toBe(false);
+    expect(result.current.modal.tracks.length).toBeGreaterThan(0);
+    expect(mockApi.discogsRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show loading skeleton when the release query is disabled", () => {
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: false,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.isLoading).toBe(false);
+    expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+  });
+
+  it("does not show loading skeleton when the release id cannot be resolved", () => {
+    const releaseWithoutId = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 0,
+        resource_url: "https://example.com/not-a-release",
+      }),
+    });
+
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: releaseWithoutId,
+          isOpen: true,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.isLoading).toBe(false);
+    expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+  });
+
+  describe("tracklist loading lifecycle", () => {
+    it("does not treat idle pending state as loading when the query is disabled", () => {
+      const { result } = renderHook(
+        () =>
+          useReleaseModalPlayback({
+            release: collectionRelease,
+            isOpen: false,
+          }),
+        { wrapper: createWrapper() },
+      );
+
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.tracks).toEqual([]);
+      expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+    });
+
+    it("shows loading only while the first fetch is in flight", async () => {
+      let resolveFetch!: (value: typeof releaseDetail) => void;
+
+      mockApi.discogsRelease.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          }),
+      );
+
+      const { result } = renderHook(
+        () =>
+          useReleaseModalPlayback({
+            release: collectionRelease,
+            isOpen: true,
+          }),
+        { wrapper: createWrapper() },
+      );
+
+      expect(result.current.isLoading).toBe(true);
+      expect(result.current.tracks).toEqual([]);
+
+      await act(async () => {
+        resolveFetch(releaseDetail);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.tracks.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("fetches release detail when the modal opens with an empty cache", async () => {
+      const { result, rerender } = renderHook(
+        ({ isOpen }: { isOpen: boolean }) =>
+          useReleaseModalPlayback({
+            release: collectionRelease,
+            isOpen,
+          }),
+        {
+          initialProps: { isOpen: false },
+          wrapper: createWrapper(),
+        },
+      );
+
+      expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+
+      rerender({ isOpen: true });
+
+      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID));
+
+      await waitFor(() => {
+        expect(result.current.tracks.length).toBeGreaterThan(0);
+        expect(result.current.isLoading).toBe(false);
+      });
+    });
+
+    it("loads tracklist data when switching to a different release in the modal", async () => {
+      setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+        [String(OTHER_RELEASE_ID)]: otherReleaseDetail,
+      });
+
+      const { result, rerender } = renderHook(
+        ({ release }: { release: typeof collectionRelease }) =>
+          useReleaseModalPlayback({
+            release,
+            isOpen: true,
+          }),
+        {
+          initialProps: { release: collectionRelease },
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(result.current.tracks.length).toBeGreaterThan(0);
+      });
+
+      rerender({ release: otherCollectionRelease });
+
+      await waitFor(() => {
+        expect(result.current.tracks.map((track) => track.title)).toContain(
+          "Modal Track One",
+        );
+      });
+
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  it("does not stay loading on reopen while the same release plays in the dock", async () => {
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.tracks.length).toBeGreaterThan(0);
+    });
+
+    act(() => {
+      result.current.modal.handleTrackSelect("A");
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.isPlayingThisReleaseInBar).toBe(true);
+    });
+
+    expect(result.current.modal.isLoading).toBe(false);
+    expect(result.current.modal.tracks.length).toBeGreaterThan(0);
   });
 
   it("starts background playback when a track row is selected", async () => {

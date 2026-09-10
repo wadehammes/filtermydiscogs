@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+
+jest.mock("react-player", () => ({
+  __esModule: true,
+  default: ({ src }: { src: string }) => (
+    <div data-testid="mockReactPlayer" data-src={src} />
+  ),
+}));
+
 import { LoginPageObject } from "src/components/Login/Login.po";
+import { LOGIN_PREVIEW_VIDEO_URL } from "src/constants/loginPreviewMedia";
 import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
 import { screen } from "test-utils";
 
@@ -49,11 +58,11 @@ describe("Login", () => {
         "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights, and share cover-art mosaics.",
       ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("img", {
-        name: LOGIN_PREVIEW_ALT,
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText(LOGIN_PREVIEW_ALT)).toBeInTheDocument();
+    expect(screen.getByTestId("mockReactPlayer")).toHaveAttribute(
+      "data-src",
+      LOGIN_PREVIEW_VIDEO_URL,
+    );
   });
 
   it("renders feature rows and footer links", () => {

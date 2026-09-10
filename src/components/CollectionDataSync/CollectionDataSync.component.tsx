@@ -10,7 +10,6 @@ export const CollectionDataSync = () => {
     username: authState.username,
     isAuthenticated: authState.isAuthenticated,
     rateLimited: authState.rateLimited,
-    isCheckingAuth: authState.isCheckingAuth,
   });
 
   return null;

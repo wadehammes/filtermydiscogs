@@ -177,18 +177,13 @@ export const ReleaseMiniPlayer = ({
         escapeStackingContext
         popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
       >
-        {isQueueOpen ? (
-          <PlaybackQueueDrawerLazy
-            isOpen={isQueueOpen}
-            onClose={() => {
-              setIsQueueOpen(false);
-            }}
-          />
-        ) : null}
         <section
           className={styles.miniPlayerShell}
           data-testid="fmdReleaseMiniPlayer"
           {...(isVideoPanelExpanded && { "data-video-expanded": true })}
+          {...(isQueueOpen && { "data-playback-queue-shell-open": true })}
+          {...(isQueueOpen &&
+            isVideoPanelExpanded && { "data-queue-over-video": true })}
           aria-label="Now playing"
         >
           {isPlaying && iframeVideoId ? (
@@ -206,6 +201,15 @@ export const ReleaseMiniPlayer = ({
                 variant={isVideoPanelExpanded ? "visible" : "hidden"}
               />
             </ReleasePlaybackVideoPanel>
+          ) : null}
+          {isQueueOpen ? (
+            <PlaybackQueueDrawerLazy
+              isOpen={isQueueOpen}
+              elevateOverVideo={isVideoPanelExpanded}
+              onClose={() => {
+                setIsQueueOpen(false);
+              }}
+            />
           ) : null}
           <div className={styles.miniPlayerBar}>
             <div className={styles.releaseArea}>

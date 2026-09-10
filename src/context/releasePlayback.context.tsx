@@ -19,6 +19,7 @@ import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import {
   discogsReleaseQueryOptions,
   useDiscogsReleaseQuery,
@@ -138,7 +139,15 @@ export const ReleasePlaybackProvider = ({
   const {
     state: { fetchingCollection, collection },
   } = useCollectionContext();
-  const hasMoreCollectionPages = Boolean(collection?.pagination?.urls?.next);
+  const { data: collectionQueryData, hasNextPage: queryHasNextPage } =
+    useDiscogsCollectionQuery({
+      username: authState.username || "",
+      enabled: false,
+    });
+  const hasMoreCollectionPages =
+    (collectionQueryData?.pages.length ?? 0) > 0
+      ? queryHasNextPage
+      : Boolean(collection?.pagination?.urls?.next);
   const allReleases = useAllReleases();
   const queryClient = useQueryClient();
   const { data: userPreferences } = useUserPreferencesQuery({
@@ -1344,7 +1353,7 @@ export const ReleasePlaybackProvider = ({
       playbackIframeRef.current = iframe;
       enableYoutubeIframeListening(iframe);
 
-      if (isPlaybackEmbedMounted) {
+      if (isPlaybackEmbedMounted && !pendingPlayFromGestureRef.current) {
         setShouldAutoplayEmbed(false);
       }
 
@@ -1423,9 +1432,7 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
-    if (queue.length >= 0) {
-      persistPlaybackSession();
-    }
+    persistPlaybackSession();
   }, [
     activeTrackPosition,
     isPlaying,

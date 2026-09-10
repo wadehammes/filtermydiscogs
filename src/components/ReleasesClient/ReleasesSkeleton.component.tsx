@@ -3,7 +3,7 @@ import { MobileReleaseCardSkeleton } from "./MobileReleaseCardSkeleton.component
 import gridStyles from "./ReleasesGrid.module.css";
 import styles from "./ReleasesSkeleton.module.css";
 
-const SKELETON_CARD_COUNT = 12;
+const SKELETON_CARD_COUNT = 15;
 
 interface ReleasesSkeletonProps {
   isMobile?: boolean;

@@ -35,6 +35,13 @@
 
 .footer {
   composes: footer from "../../styles/modules/scratchpad-textarea.module.css";
+  justify-content: flex-end;
+}
+
+.footerTrailing {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
 }
 
 .status {
@@ -43,6 +50,10 @@
 
 .charCount {
   composes: charcount from "../../styles/modules/scratchpad-textarea.module.css";
+}
+
+.footerTrailing .charCount {
+  margin-inline-start: 0;
 }
 
 .charCountLimit {

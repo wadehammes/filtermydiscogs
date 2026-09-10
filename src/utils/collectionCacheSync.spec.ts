@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { api } from "src/api/urls";
-import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
+import {
+  COLLECTION_CACHE_VALIDATION_TIMEOUT_MS,
+  COLLECTION_PAGE_SIZE,
+} from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
@@ -110,6 +113,26 @@ describe("collectionCacheSync", () => {
       page: 1,
       perPage: COLLECTION_PAGE_SIZE,
     });
+  });
+
+  it("treats validation as failed when the count check times out", async () => {
+    jest.useFakeTimers();
+    const queryClient = createTestQueryClient();
+    const cached = buildPersistedCache(1500);
+    mockFetchDiscogsCollection.mockImplementation(
+      () => new Promise<ReturnType<typeof collectionFactory.build>>(() => {}),
+    );
+
+    const validationPromise = validatePersistedCollectionCache(
+      queryClient,
+      "testuser",
+      cached,
+    );
+
+    await jest.advanceTimersByTimeAsync(COLLECTION_CACHE_VALIDATION_TIMEOUT_MS);
+
+    await expect(validationPromise).resolves.toBe(false);
+    jest.useRealTimers();
   });
 
   it("clears cache and query data when Discogs total items changed", async () => {

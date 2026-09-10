@@ -8,7 +8,12 @@ import {
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
 import { useCollectionContext } from "src/context/collection.context";
-import { useCollectionData } from "src/hooks/useCollectionData.hook";
+import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { resetCollectionCacheReady } from "src/hooks/useCollectionCacheReady.hook";
+import {
+  useCollectionData,
+  useCollectionLoadState,
+} from "src/hooks/useCollectionData.hook";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
@@ -25,7 +30,6 @@ import {
   readPersistedCollectionCache,
   writePersistedCollectionCache,
 } from "src/utils/collectionCacheStorage";
-import { resetCollectionCacheReady } from "src/utils/collectionCacheSync";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { toast } from "src/utils/toast";
@@ -459,6 +463,201 @@ describe("useCollectionData", () => {
 
     expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(1);
     expect(mockCheckAuth).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads the collection while auth is still revalidating in the background", async () => {
+    const page = buildSinglePageCollection(3);
+    mockApiResponse(true, mockFetchDiscogsCollection, page, new Error("fail"));
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useAtomValue(allReleasesAtom);
+      },
+      {
+        authInitialState: {
+          ...testAuthenticatedAuthState,
+          isCheckingAuth: true,
+        },
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current).toHaveLength(3);
+    });
+
+    expect(mockFetchDiscogsCollection).toHaveBeenCalled();
+  });
+
+  it("serves a validated cache hit without refetching the full collection", async () => {
+    const cachedPage = buildCachedCollection(2);
+    cachedPage.pagination.urls.next = "";
+    await writePersistedCollectionCache("testuser", {
+      pages: [cachedPage],
+      pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      totalItems: cachedPage.pagination.items,
+      fetchedAt: Date.now(),
+    });
+
+    mockFetchDiscogsCollection.mockResolvedValue(
+      collectionFactory.build(
+        {},
+        {
+          totalItems: cachedPage.pagination.items,
+          totalPages: 1,
+          releaseCount: cachedPage.releases.length,
+        },
+      ),
+    );
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return {
+          releases: useAtomValue(allReleasesAtom),
+          loadState: useCollectionLoadState(),
+        };
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.releases).toHaveLength(2);
+      expect(result.current.loadState.isLoading).toBe(false);
+    });
+
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(1);
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledWith({
+      username: "testuser",
+      page: 1,
+      perPage: COLLECTION_PAGE_SIZE,
+    });
+  });
+
+  it("reports loading from useCollectionLoadState until cache prep finishes", async () => {
+    const cachedPage = buildCachedCollection(2);
+    await writePersistedCollectionCache("testuser", {
+      pages: [cachedPage],
+      pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      totalItems: cachedPage.pagination.items,
+      fetchedAt: Date.now(),
+    });
+
+    let resolveValidation: (value: unknown) => void = () => {};
+    const pendingValidation = new Promise((resolve) => {
+      resolveValidation = resolve;
+    });
+    mockFetchDiscogsCollection.mockReturnValueOnce(
+      pendingValidation as Promise<ReturnType<typeof collectionFactory.build>>,
+    );
+
+    const { result } = renderFeatureHook(() => useCollectionLoadState(), {
+      authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
+    });
+
+    expect(result.current.isLoading).toBe(true);
+
+    await act(async () => {
+      resolveValidation(
+        collectionFactory.build(
+          {},
+          {
+            totalItems: cachedPage.pagination.items,
+            totalPages: 1,
+            releaseCount: cachedPage.releases.length,
+          },
+        ),
+      );
+      await pendingValidation;
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  it("loads the grid after refresh when playback was persisted and cache is valid", async () => {
+    const cachedPage = buildCachedCollection(2);
+    await writePersistedCollectionCache("testuser", {
+      pages: [cachedPage],
+      pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      totalItems: cachedPage.pagination.items,
+      fetchedAt: Date.now(),
+    });
+    localStorage.setItem(
+      "filtermydiscogs_release_playback",
+      JSON.stringify({
+        instanceId: String(cachedPage.releases[0]?.instance_id),
+        trackPosition: "A1",
+      }),
+    );
+
+    mockFetchDiscogsCollection.mockResolvedValue(
+      collectionFactory.build(
+        {},
+        {
+          totalItems: cachedPage.pagination.items,
+          totalPages: 1,
+          releaseCount: cachedPage.releases.length,
+        },
+      ),
+    );
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return {
+          releases: useAtomValue(allReleasesAtom),
+          loadState: useCollectionLoadState(),
+        };
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.releases).toHaveLength(2);
+      expect(result.current.loadState.isLoading).toBe(false);
+    });
+  });
+
+  it("reports not loading from useCollectionLoadState when query pages exist", async () => {
+    const page = buildSinglePageCollection(3);
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(
+      DiscogsCollectionQueryKeys.byUsername("testuser"),
+      {
+        pages: [page],
+        pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      },
+    );
+
+    const { result } = renderFeatureHook(() => useCollectionLoadState(), {
+      queryClient,
+      authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: false,
+    });
+
+    expect(result.current.isLoading).toBe(false);
   });
 
   it("retries after a 503 without rechecking auth", async () => {

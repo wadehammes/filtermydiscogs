@@ -31,6 +31,7 @@ describe("FilterViewsMenu", () => {
     });
 
     expect(button.className).toContain(iconButtonStyles.labeled);
+    expect(button.className).not.toContain(iconButtonStyles.iconOnly);
     expect(button.children[0]).toHaveAttribute("aria-hidden", "true");
     expect(button.children[1]).toHaveClass(styles.menuTriggerLabel);
     expect(button.children[1]).toHaveTextContent("Views");

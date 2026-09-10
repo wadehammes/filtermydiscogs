@@ -70,7 +70,15 @@
 }
 
 .actionIcon {
+  align-items: center;
   display: flex;
   height: 0.875rem;
+  justify-content: center;
   width: 0.875rem;
+
+  svg {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
 }

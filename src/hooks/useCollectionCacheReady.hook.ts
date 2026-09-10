@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   prepareCollectionQueryFromCache,
-  resetCollectionCacheReady,
+  resetCollectionCacheReady as resetCollectionCachePrepareState,
 } from "src/utils/collectionCacheSync";
 
 export interface UseCollectionCacheReadyParams {
@@ -20,43 +20,91 @@ const INITIAL_CACHE_READY_STATE: CollectionCacheReadyState = {
   hydratedFromCache: false,
 };
 
+const cacheReadyByUsername = new Map<string, CollectionCacheReadyState>();
+const cacheReadySubscribers = new Set<() => void>();
+
+function normalizeCacheReadyUsername(username: string): string {
+  return username.trim().toLowerCase();
+}
+
+function notifyCacheReadySubscribers() {
+  for (const subscriber of cacheReadySubscribers) {
+    subscriber();
+  }
+}
+
+function getCacheReadySnapshot(
+  username: string,
+  enabled: boolean,
+): CollectionCacheReadyState {
+  if (!(enabled && username)) {
+    return INITIAL_CACHE_READY_STATE;
+  }
+
+  return (
+    cacheReadyByUsername.get(normalizeCacheReadyUsername(username)) ??
+    INITIAL_CACHE_READY_STATE
+  );
+}
+
+function setSharedCacheReadyState(
+  username: string,
+  state: CollectionCacheReadyState,
+) {
+  cacheReadyByUsername.set(normalizeCacheReadyUsername(username), state);
+  notifyCacheReadySubscribers();
+}
+
+function subscribeToCacheReady(onStoreChange: () => void) {
+  cacheReadySubscribers.add(onStoreChange);
+  return () => {
+    cacheReadySubscribers.delete(onStoreChange);
+  };
+}
+
 export const useCollectionCacheReady = ({
   username,
   enabled,
 }: UseCollectionCacheReadyParams): CollectionCacheReadyState => {
   const queryClient = useQueryClient();
-  const [state, setState] = useState<CollectionCacheReadyState>(
-    INITIAL_CACHE_READY_STATE,
+
+  const state = useSyncExternalStore(
+    subscribeToCacheReady,
+    () => getCacheReadySnapshot(username, enabled),
+    () => getCacheReadySnapshot(username, enabled),
   );
 
   useEffect(() => {
     if (!(enabled && username)) {
-      setState(INITIAL_CACHE_READY_STATE);
       return;
     }
 
-    let cancelled = false;
-    setState(INITIAL_CACHE_READY_STATE);
+    const cacheKey = normalizeCacheReadyUsername(username);
+    const existingState = cacheReadyByUsername.get(cacheKey);
+    if (existingState?.ready) {
+      return;
+    }
 
-    void prepareCollectionQueryFromCache(queryClient, username).then(
-      (result) => {
-        if (cancelled) {
-          return;
-        }
-
-        setState({
+    void prepareCollectionQueryFromCache(queryClient, username)
+      .then((result) => {
+        setSharedCacheReadyState(username, {
           ready: true,
           hydratedFromCache: result.hydratedFromCache,
         });
-      },
-    );
-
-    return () => {
-      cancelled = true;
-    };
+      })
+      .catch(() => {
+        setSharedCacheReadyState(username, {
+          ready: true,
+          hydratedFromCache: false,
+        });
+      });
   }, [enabled, queryClient, username]);
 
   return state;
 };
 
-export { resetCollectionCacheReady };
+export function resetCollectionCacheReady(username: string): void {
+  resetCollectionCachePrepareState(username);
+  cacheReadyByUsername.delete(normalizeCacheReadyUsername(username));
+  notifyCacheReadySubscribers();
+}

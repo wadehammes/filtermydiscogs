@@ -1,10 +1,10 @@
 import classNames from "classnames";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
-import iconButtonStyles from "src/styles/modules/icon-button.module.css";
 import {
   type IconButtonVariant,
   iconButtonClasses,
   iconButtonIconClasses,
+  iconButtonLayoutClass,
 } from "./iconButtonClasses";
 
 export type { IconButtonVariant };
@@ -44,7 +44,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         type={type}
         className={classNames(
           iconButtonClasses(variant),
-          isLabeled && iconButtonStyles.labeled,
+          iconButtonLayoutClass(isLabeled),
           className,
         )}
         data-testid="fmdIconButton"

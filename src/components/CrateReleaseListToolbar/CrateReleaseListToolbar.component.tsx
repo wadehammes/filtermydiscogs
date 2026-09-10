@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import styles from "./CrateReleaseListToolbar.module.css";
 
 interface CrateReleaseListToolbarProps {
@@ -47,7 +48,7 @@ export const CrateReleaseListToolbar = ({
         <div className={styles.actions}>
           <button
             type="button"
-            className={styles.clearButton}
+            className={textActionStyles.meta}
             onClick={() => setShowClearPackedDialog(true)}
             disabled={isBusy}
             aria-label="Clear all packed items"

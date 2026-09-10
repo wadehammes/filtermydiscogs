@@ -104,7 +104,3 @@
     flex-shrink: 0;
   }
 }
-
-.exitRandomLink {
-  composes: muted from "../../styles/modules/text-action.module.css";
-}

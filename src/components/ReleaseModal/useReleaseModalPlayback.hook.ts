@@ -1,6 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
+import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
+import {
+  discogsReleaseQueryOptions,
+  useDiscogsReleaseQuery,
+} from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import { isSameQueueItem } from "src/utils/playbackQueue";
 import { formatArtistNames } from "src/utils/releaseDisplay";
@@ -24,8 +29,11 @@ export const useReleaseModalPlayback = ({
   release,
   isOpen,
 }: UseReleaseModalPlaybackParams) => {
+  const queryClient = useQueryClient();
   const playback = useReleasePlayback();
   const releaseId = parseReleaseId(release);
+  const releaseIdString = releaseId !== null ? String(releaseId) : "";
+  const queryEnabled = isOpen && releaseId !== null;
   const [selectedTrackPosition, setSelectedTrackPosition] = useState<
     string | null
   >(null);
@@ -35,25 +43,56 @@ export const useReleaseModalPlayback = ({
 
   const {
     data: releaseDetail,
-    isLoading: isModalQueryLoading,
+    isLoading: isReleaseDetailLoading,
     isError,
     refetch,
   } = useDiscogsReleaseQuery({
-    releaseId: releaseId !== null ? String(releaseId) : "",
-    enabled: isOpen && releaseId !== null && !isPlayingThisReleaseInBar,
+    releaseId: releaseIdString,
+    enabled: queryEnabled,
   });
 
-  const tracks = useMemo(() => {
-    if (isPlayingThisReleaseInBar) {
-      return playback.tracks;
+  useEffect(() => {
+    if (!queryEnabled) {
+      return;
     }
 
-    return flattenTracklist(releaseDetail?.tracklist ?? []);
-  }, [isPlayingThisReleaseInBar, playback.tracks, releaseDetail?.tracklist]);
+    const releaseQueryKey = DiscogsReleaseQueryKeys.byId(releaseIdString);
 
-  const videos = isPlayingThisReleaseInBar
-    ? playback.videos
-    : (releaseDetail?.videos ?? []);
+    const ensureReleaseDetail = () => {
+      void queryClient.ensureQueryData(
+        discogsReleaseQueryOptions(releaseIdString),
+      );
+    };
+
+    if (queryClient.getQueryData(releaseQueryKey) === undefined) {
+      ensureReleaseDetail();
+    }
+
+    return queryClient.getQueryCache().subscribe((event) => {
+      if (event.type !== "removed") {
+        return;
+      }
+
+      const [removedKeyPrefix, removedReleaseId] = event.query.queryKey;
+
+      if (
+        removedKeyPrefix === releaseQueryKey[0] &&
+        removedReleaseId === releaseQueryKey[1]
+      ) {
+        ensureReleaseDetail();
+      }
+    });
+  }, [queryClient, queryEnabled, releaseIdString]);
+
+  const tracks = useMemo(
+    () => flattenTracklist(releaseDetail?.tracklist ?? []),
+    [releaseDetail?.tracklist],
+  );
+
+  const videos = useMemo(
+    () => releaseDetail?.videos ?? [],
+    [releaseDetail?.videos],
+  );
 
   const playbackMatchIndex = useMemo(
     () => buildReleasePlaybackMatchIndex(tracks, videos),
@@ -106,9 +145,11 @@ export const useReleaseModalPlayback = ({
       : playback.activeTrackPosition
     : selectedTrackPosition;
 
-  const isLoading = isPlayingThisReleaseInBar
-    ? playback.isLoading
-    : isModalQueryLoading;
+  const isLoading =
+    queryEnabled &&
+    !isError &&
+    releaseDetail === undefined &&
+    isReleaseDetailLoading;
 
   const fallbackSearchUrl = buildYoutubeSearchUrl({
     artist: formatArtistNames(release),
@@ -358,7 +399,7 @@ export const useReleaseModalPlayback = ({
     activePreviewTrackPosition,
     fallbackSearchUrl,
     isLoading,
-    isError: isPlayingThisReleaseInBar ? false : isError,
+    isError,
     refetch,
     handleTrackSelect,
     handleTrackQueue,

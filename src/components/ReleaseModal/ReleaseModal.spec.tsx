@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseModalPageObject } from "src/components/ReleaseModal/ReleaseModal.po";
-import { fireEvent, screen, waitFor } from "test-utils";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { act, fireEvent, screen, waitFor } from "test-utils";
 
 let po: ReleaseModalPageObject;
 
@@ -54,5 +55,58 @@ describe("ReleaseModal", () => {
     await user.click(backdrop);
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  describe("tracklist loading", () => {
+    it("shows the tracklist skeleton during the first fetch, then the tracklist", async () => {
+      const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
+        id: 249504,
+      });
+      let resolveFetch!: (value: typeof releaseDetail) => void;
+
+      po.mockApi.discogsRelease.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          }),
+      );
+
+      po.renderReleaseModal();
+
+      expect(
+        screen.getByTestId("fmdReleaseTracklistSkeleton"),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("fmdReleaseTracklist"),
+      ).not.toBeInTheDocument();
+
+      await act(async () => {
+        resolveFetch(releaseDetail);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();
+      });
+      expect(
+        screen.queryByTestId("fmdReleaseTracklistSkeleton"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("does not leave the tracklist skeleton after closing and reopening the modal", async () => {
+      const view = po.renderReleaseModal({ isOpen: true });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();
+      });
+
+      po.rerenderReleaseModal(view, { isOpen: false });
+      po.rerenderReleaseModal(view, { isOpen: true });
+
+      expect(
+        screen.queryByTestId("fmdReleaseTracklistSkeleton"),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();
+      expect(po.mockApi.discogsRelease).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -1,4 +1,4 @@
-<img width="2042" height="1194" alt="app-preview--dark" src="https://github.com/user-attachments/assets/d1206324-c2be-4650-8598-f4b98aff7b41" />
+[![Filter My Discogs app preview](https://img.youtube.com/vi/8g-4ydF1A7U/maxresdefault.jpg)](https://youtu.be/8g-4ydF1A7U)
 
 # FilterMyDisco.gs
 
@@ -126,7 +126,7 @@ The app will be available at `http://localhost:6767`.
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
-- **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual
+- **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, react-player (landing demo)
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod

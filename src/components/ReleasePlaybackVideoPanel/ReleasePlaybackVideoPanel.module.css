@@ -22,6 +22,7 @@
 .videoPanel[data-video-expanded="true"] {
   --panel-scale: 1;
   --video-max-height: 16.1rem;
+  --video-panel-chrome-height: 1.75rem;
 
   background: var(--background);
   border: 1px solid var(--border);
@@ -66,7 +67,11 @@
       var(--space-2)
     );
     box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
-    height: calc(1.25rem + var(--video-max-height) * var(--panel-scale));
+    height: calc(
+      var(--video-panel-chrome-height) +
+      var(--video-max-height) *
+      var(--panel-scale)
+    );
     left: auto;
     right: var(--release-video-panel-inset-right, var(--space-5));
     transform: none;
@@ -100,24 +105,30 @@
   will-change: height, left, top, width;
 }
 
-.dragHandle {
+.panelChrome {
   align-items: center;
   background: color-mix(in srgb, var(--muted) 80%, transparent);
-  border: 0;
   border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  cursor: grab;
-  display: none;
+  display: grid;
   flex-shrink: 0;
-  height: 1.25rem;
+  grid-template-columns: 1fr auto 1fr;
+  min-height: var(--video-panel-chrome-height, 1.75rem);
+  padding-inline: var(--space-1);
+}
+
+.dragHandle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  cursor: grab;
+  display: flex;
+  grid-column: 2;
+  height: var(--video-panel-chrome-height, 1.75rem);
   justify-content: center;
+  justify-self: center;
   padding: 0;
   touch-action: none;
   width: 100%;
-
-  @media (width >= 768px) {
-    display: flex;
-  }
 
   &:active {
     cursor: grabbing;
@@ -133,34 +144,27 @@
   width: 2rem;
 }
 
-.mobileCloseBar {
-  align-items: center;
-  background: color-mix(in srgb, var(--muted) 80%, transparent);
+.panelCloseButton {
+  background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--border);
   color: var(--foreground);
-  cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  justify-content: center;
-  min-height: 2rem;
-  padding: 0 var(--space-3);
-  width: 100%;
-
-  @media (width >= 768px) {
-    display: none;
-  }
+  grid-column: 3;
+  height: var(--video-panel-chrome-height, 1.75rem);
+  place-self: center end;
+  width: var(--video-panel-chrome-height, 1.75rem);
 
   &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
 }
 
-.mobileCloseIcon {
-  display: block;
-  height: 0.875rem;
-  width: 0.875rem;
+.panelChromeMobile {
+  grid-template-columns: 1fr auto;
+
+  .panelCloseButton {
+    grid-column: 2;
+  }
 }
 
 .videoContentInteractive {

@@ -28,3 +28,6 @@ export const iconButtonClasses = (
 export const iconButtonIconClasses = (
   ...className: Array<string | undefined | false | null>
 ) => classNames(iconButtonStyles.icon, ...className);
+
+export const iconButtonLayoutClass = (isLabeled: boolean) =>
+  isLabeled ? iconButtonStyles.labeled : iconButtonStyles.iconOnly;

@@ -23,7 +23,7 @@ export const useCollectionReleaseByInstanceId = ({
   const allReleases = useAllReleases();
   const { data } = useDiscogsCollectionQuery({
     username: username ?? "",
-    enabled: enabled && !!username && !!instanceId,
+    enabled: false,
   });
 
   const releaseIndex = useMemo(() => {
@@ -39,10 +39,10 @@ export const useCollectionReleaseByInstanceId = ({
   }, [allReleases, data?.pages]);
 
   return useMemo(() => {
-    if (!(instanceId && releaseIndex)) {
+    if (!(enabled && instanceId && releaseIndex)) {
       return null;
     }
 
     return releaseIndex.get(String(instanceId)) ?? null;
-  }, [instanceId, releaseIndex]);
+  }, [enabled, instanceId, releaseIndex]);
 };
