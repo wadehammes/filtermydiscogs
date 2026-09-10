@@ -1,4 +1,6 @@
+import classNames from "classnames";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
+import iconButtonStyles from "src/styles/modules/icon-button.module.css";
 import {
   type IconButtonVariant,
   iconButtonClasses,
@@ -34,11 +36,17 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     },
     ref,
   ) {
+    const isLabeled = label != null || addon != null;
+
     return (
       <button
         ref={ref}
         type={type}
-        className={iconButtonClasses(variant, className)}
+        className={classNames(
+          iconButtonClasses(variant),
+          isLabeled && iconButtonStyles.labeled,
+          className,
+        )}
         data-testid="fmdIconButton"
         {...props}
       >

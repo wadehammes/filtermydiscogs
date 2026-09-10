@@ -1,4 +1,6 @@
 import { api } from "src/api/urls";
+import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
+import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -12,14 +14,24 @@ import {
   testUnauthenticatedAuthState,
 } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
+import { toast } from "src/utils/toast";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import { ReleaseNotes } from "./ReleaseNotes.component";
-import { ReleaseNotesEditorProvider } from "./ReleaseNotesEditor.context";
 
 jest.mock("src/api/urls");
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    dismiss: jest.fn(),
+    loading: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}));
 
 const mockApi = jest.mocked(api);
+const mockToastDismiss = jest.mocked(toast.dismiss);
+const mockToastLoading = jest.mocked(toast.loading);
+const mockToastSuccess = jest.mocked(toast.success);
 
 export type ReleaseNotesRenderProps = {
   release?: DiscogsRelease;
@@ -29,6 +41,10 @@ export type ReleaseNotesRenderProps = {
 
 export class ReleaseNotesPageObject extends BasePageObject {
   public testId = "fmdReleaseNotes";
+  mockApi = mockApi;
+  mockToastDismiss = mockToastDismiss;
+  mockToastLoading = mockToastLoading;
+  mockToastSuccess = mockToastSuccess;
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
@@ -40,12 +56,12 @@ export class ReleaseNotesPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.collectionFields,
+      this.mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       new Error("Failed to fetch collection fields"),
     );
 
-    setupDefaultCrateApiMocks(mockApi);
+    setupDefaultCrateApiMocks(this.mockApi);
   }
 
   private releaseNotesElement({

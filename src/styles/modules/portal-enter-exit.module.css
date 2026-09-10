@@ -1,4 +1,4 @@
-.enterExitFade {
+.enterexitfade {
   opacity: 1;
   transition: opacity var(--transition-normal);
 
@@ -25,7 +25,7 @@
   }
 }
 
-.enterExitScale {
+.enterexitscale {
   opacity: 1;
   scale: 1;
   transition:

@@ -81,10 +81,11 @@ const ReleasesGridComponent = ({
       data-fixed-lanes={useFixedLanes ? "" : undefined}
       style={fixedLaneStyle}
     >
-      {releasesToShow.map((release: DiscogsRelease) => {
+      {releasesToShow.map((release: DiscogsRelease, index) => {
         const inActiveCrate = activeCrateInstanceIds.has(
           String(release.instance_id),
         );
+        const imagePriority = index === 0;
 
         return (
           <div
@@ -100,6 +101,7 @@ const ReleasesGridComponent = ({
                   isRandomMode={isActuallyRandomMode}
                   onExitRandomMode={onExitRandomMode}
                   onReleaseClick={onReleaseClick}
+                  priority={imagePriority}
                 />
               ) : (
                 <MobileReleaseCard
@@ -108,6 +110,7 @@ const ReleasesGridComponent = ({
                   isRandomMode={isActuallyRandomMode}
                   onExitRandomMode={onExitRandomMode}
                   onReleaseClick={onReleaseClick}
+                  priority={imagePriority}
                 />
               )
             ) : (

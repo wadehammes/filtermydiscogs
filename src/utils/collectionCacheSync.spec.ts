@@ -172,6 +172,32 @@ describe("collectionCacheSync", () => {
     ).toBeTruthy();
   });
 
+  it("re-hydrates React Query after user-scoped queries are cleared", async () => {
+    const queryClient = createTestQueryClient();
+    await writePersistedCollectionCache("testuser", buildPersistedCache(1500));
+    mockFetchDiscogsCollection.mockResolvedValue(
+      collectionFactory.build({}, { totalItems: 1500 }),
+    );
+
+    await prepareCollectionQueryFromCache(queryClient, "testuser");
+    queryClient.removeQueries({
+      queryKey: DiscogsCollectionQueryKeys.byUsername("testuser"),
+    });
+
+    const result = await prepareCollectionQueryFromCache(
+      queryClient,
+      "testuser",
+    );
+
+    expect(result.hydratedFromCache).toBe(true);
+    expect(
+      queryClient.getQueryData(
+        DiscogsCollectionQueryKeys.byUsername("testuser"),
+      ),
+    ).toBeTruthy();
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(2);
+  });
+
   it("deduplicates concurrent validate calls", async () => {
     const queryClient = createTestQueryClient();
     await writePersistedCollectionCache("testuser", buildPersistedCache(1500));

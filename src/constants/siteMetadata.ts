@@ -4,6 +4,7 @@ import {
 } from "./loginPageCopy.registry";
 
 export const SITE_NAME = "FilterMyDiscogs";
+export const SITE_WORDMARK = "FILTERMYDISCO.GS";
 export const DEFAULT_SITE_URL = "https://www.filtermydisco.gs";
 export const SITE_GITHUB_URL = "https://github.com/wadehammes/filtermydiscogs";
 export const SITE_INSTAGRAM_URL = "https://www.instagram.com/filtermydiscogs";

@@ -103,9 +103,16 @@ export async function prepareCollectionQueryFromCache(
   username: string,
 ): Promise<CollectionCachePrepareResult> {
   const cacheKey = normalizeCollectionCacheUsername(username);
-  const existing = preparePromises.get(cacheKey);
-  if (existing) {
-    return existing;
+  const queryKey = DiscogsCollectionQueryKeys.byUsername(username);
+  const existingQueryData = queryClient.getQueryData(queryKey);
+
+  if (existingQueryData) {
+    return { hydratedFromCache: true };
+  }
+
+  const inFlight = preparePromises.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
   }
 
   const promise = (async (): Promise<CollectionCachePrepareResult> => {
@@ -126,7 +133,9 @@ export async function prepareCollectionQueryFromCache(
 
     hydrateCollectionQueryFromCache(queryClient, username, cached);
     return { hydratedFromCache: true };
-  })();
+  })().finally(() => {
+    preparePromises.delete(cacheKey);
+  });
 
   preparePromises.set(cacheKey, promise);
   return promise;

@@ -85,6 +85,7 @@
   align-items: center;
   color: var(--primary);
   display: inline-flex;
+  flex-shrink: 0;
   height: 1rem;
   justify-content: center;
   width: 1rem;

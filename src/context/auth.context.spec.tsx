@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { api } from "src/api/urls";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
+  type AuthStatus,
   clearSessionAuthCookies,
   clearUrlParams,
   getUsernameFromCookies,
@@ -281,20 +282,8 @@ describe("AuthProvider", () => {
   });
 
   it("keeps isCheckingAuth true until the mount auth revalidation settles", async () => {
-    let resolveCheck: (value: {
-      isAuthenticated: boolean;
-      username: string | null;
-      userId: string | null;
-      reconnectUsername: string | null;
-      rateLimited: boolean;
-    }) => void = () => {};
-    const pendingCheck = new Promise<{
-      isAuthenticated: boolean;
-      username: string | null;
-      userId: string | null;
-      reconnectUsername: string | null;
-      rateLimited: boolean;
-    }>((resolve) => {
+    let resolveCheck: (value: AuthStatus) => void = () => {};
+    const pendingCheck = new Promise<AuthStatus>((resolve) => {
       resolveCheck = resolve;
     });
 
@@ -302,8 +291,10 @@ describe("AuthProvider", () => {
       isAuthenticated: true,
       username: "cacheduser",
       userId: "999",
+      avatarUrl: null,
       reconnectUsername: null,
       rateLimited: false,
+      showSupportProjectToast: false,
     });
 
     mockCheckAuth.mockReturnValueOnce(pendingCheck);

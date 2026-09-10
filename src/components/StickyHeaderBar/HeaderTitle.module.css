@@ -1,14 +1,25 @@
-.title {
+.titleLink {
   align-items: center;
   color: var(--foreground);
   display: flex;
-  justify-content: flex-start;
-  margin: 0;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  text-decoration: none;
+  transition: color var(--transition-normal);
   white-space: nowrap;
 
-  > svg {
-    height: auto;
-    object-fit: contain;
-    max-width: 12rem;
+  &:hover {
+    color: var(--primary);
+  }
+}
+
+.icon {
+  block-size: 1.75rem;
+  flex-shrink: 0;
+  inline-size: 1.75rem;
+
+  @media (width >= 481px) {
+    block-size: 2rem;
+    inline-size: 2rem;
   }
 }

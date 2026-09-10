@@ -92,7 +92,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 
 ## `next.config.ts` highlights
 
-- **Images**: remote patterns for **`i.discogs.com`** and placeholders.
+- **Images**: **`localPatterns`** for **`/api/image-proxy`** (query strings — mosaic canvas / any future **`next/image`** + proxy) plus **`/**`** without search (public assets); remote patterns for **`i.discogs.com`** and placeholders. Header avatars use plain **`<img>`** via the proxy (see [conventions.md](conventions.md)).
 - **`serverExternalPackages: ["sharp"]`**: keeps the image-proxy native module out of the bundler so Vercel can include **`@img/sharp-linux-*`** binaries.
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging. Playback embeds use **`youtube-nocookie.com`** — both **`*.youtube.com`** and **`*.youtube-nocookie.com`** must stay in **`frame-src`** / **`child-src`**. Vercel preview **`script-src`** also allows **`vercel.live`** for the Live feedback widget.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).

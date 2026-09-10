@@ -129,6 +129,15 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? "development",
   },
   images: {
+    localPatterns: [
+      {
+        pathname: "/api/image-proxy",
+      },
+      {
+        pathname: "/**",
+        search: "",
+      },
+    ],
     remotePatterns: [
       {
         protocol: "https",

@@ -11,6 +11,7 @@ import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.con
 import { useAuth } from "src/context/auth.context";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
+import { buildDiscogsAvatarProxyUrl } from "src/utils/discogsAvatarUrl";
 import styles from "./UserActions.module.css";
 
 interface UserActionsProps {
@@ -25,7 +26,7 @@ export const UserActions = ({
   showUsername = true,
 }: UserActionsProps) => {
   const { logout, state: authState } = useAuth();
-  const { username } = authState;
+  const { username, avatarUrl } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = useCallback(async () => {
@@ -60,6 +61,20 @@ export const UserActions = ({
           modal={false}
         >
           <Menu.Trigger className={styles.usernameTrigger}>
+            {avatarUrl ? (
+              <img
+                alt=""
+                className={styles.avatar}
+                src={buildDiscogsAvatarProxyUrl(avatarUrl, 24)}
+                loading="eager"
+                width={24}
+                height={24}
+              />
+            ) : (
+              <span aria-hidden className={styles.avatarFallback}>
+                {username.charAt(0).toUpperCase()}
+              </span>
+            )}
             <span className={styles.username}>{username}</span>
             <span className={styles.chevronIcon} aria-hidden>
               <Chevron />

@@ -41,6 +41,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  avatarUrl: string | null;
   reconnectUsername: string | null;
   isCheckingAuth: boolean;
   isLoading: boolean;
@@ -110,6 +111,7 @@ const unauthenticatedSession: Pick<
   | "isAuthenticated"
   | "username"
   | "userId"
+  | "avatarUrl"
   | "reconnectUsername"
   | "rateLimited"
   | "isCheckingAuth"
@@ -117,6 +119,7 @@ const unauthenticatedSession: Pick<
   isAuthenticated: false,
   username: null,
   userId: null,
+  avatarUrl: null,
   reconnectUsername: null,
   rateLimited: false,
   isCheckingAuth: false,
@@ -174,6 +177,7 @@ export const AuthProvider = ({
         isAuthenticated: initialStateOverride.isAuthenticated,
         username: initialStateOverride.username,
         userId: initialStateOverride.userId,
+        avatarUrl: initialStateOverride.avatarUrl,
         reconnectUsername: initialStateOverride.reconnectUsername,
         rateLimited: initialStateOverride.rateLimited,
         isCheckingAuth: initialStateOverride.isCheckingAuth,
@@ -188,6 +192,7 @@ export const AuthProvider = ({
       isAuthenticated: Boolean(authData?.isAuthenticated && authData.username),
       username: authData?.username ?? null,
       userId: authData?.userId ?? null,
+      avatarUrl: authData?.avatarUrl ?? null,
       reconnectUsername: authData?.isAuthenticated
         ? null
         : (authData?.reconnectUsername ?? null),
@@ -312,6 +317,7 @@ export const AuthProvider = ({
         isAuthenticated: false,
         username: null,
         userId: null,
+        avatarUrl: null,
         rateLimited: false,
         reconnectUsername,
         showSupportProjectToast: false,

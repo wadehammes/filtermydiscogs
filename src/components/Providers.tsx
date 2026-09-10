@@ -7,6 +7,7 @@ import { AppToaster } from "src/components/AppToaster/AppToaster.component";
 import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthCheckingToast.component";
 import { AuthenticatedCollectionSyncGate } from "src/components/AuthenticatedCollectionSyncGate.component";
 import { AuthenticatedProvidersGate } from "src/components/AuthenticatedProvidersGate.component";
+import { CollectionCachePrepGate } from "src/components/CollectionCachePrepGate/CollectionCachePrepGate.component";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
 import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/DeploymentUpdateToast.component";
@@ -77,6 +78,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                 <ViewProvider>
                   <PlaybackReleaseClickProvider>
                     <CrateProvider>
+                      <CollectionCachePrepGate />
                       <AuthenticatedCollectionSyncGate />
                       <AuthenticatedProvidersGate>
                         <AnalyticsShell>

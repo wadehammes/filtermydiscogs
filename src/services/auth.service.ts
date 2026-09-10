@@ -5,6 +5,7 @@ export interface AuthStatus {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  avatarUrl: string | null;
   reconnectUsername: string | null;
   rateLimited: boolean;
   showSupportProjectToast: boolean;
@@ -14,6 +15,7 @@ export const normalizeAuthStatus = (data: {
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  avatarUrl?: string | null;
   reconnectUsername?: string | null;
   rateLimited?: boolean;
   showSupportProjectToast?: boolean;
@@ -21,6 +23,7 @@ export const normalizeAuthStatus = (data: {
   isAuthenticated: data.isAuthenticated,
   username: data.username || null,
   userId: data.userId || null,
+  avatarUrl: data.avatarUrl || null,
   reconnectUsername: data.reconnectUsername || null,
   rateLimited: data.rateLimited === true,
   showSupportProjectToast: data.showSupportProjectToast === true,
@@ -78,6 +81,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      avatarUrl: null,
       reconnectUsername: null,
       rateLimited: false,
       showSupportProjectToast: false,

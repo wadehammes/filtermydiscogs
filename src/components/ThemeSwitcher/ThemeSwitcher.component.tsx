@@ -76,11 +76,10 @@ export const ThemeSwitcher = ({
           <ChevronRightThinIcon className={styles.submenuChevron} />
         </Menu.SubmenuTrigger>
         <InlinePopoverMenu.Panel
-          align="start"
           popupClassName={styles.submenuPopup}
           scrollable
-          sideOffset={4}
           useOverlayStack={false}
+          variant="submenu"
         >
           <InlinePopoverMenu.List>
             <Menu.RadioGroup

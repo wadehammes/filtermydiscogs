@@ -15,7 +15,7 @@
   padding: 0;
 }
 
-.popupScroll {
+.popupscroll {
   composes: popup;
   max-height: min(24rem, 70dvh);
   overflow-y: auto;
@@ -41,7 +41,7 @@
   }
 }
 
-.itemGroup {
+.itemgroup {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -84,13 +84,15 @@
   }
 }
 
-.itemDanger {
-  composes: item menuitemhoverdanger from "./menu-item-interaction.module.css";
+.itemdanger {
+  composes: item;
+  composes: menuitemhoverdanger from "./menu-item-interaction.module.css";
   color: var(--destructive);
 }
 
-.itemNeutral {
-  composes: item menuitemhoverneutral from "./menu-item-interaction.module.css";
+.itemneutral {
+  composes: item;
+  composes: menuitemhoverneutral from "./menu-item-interaction.module.css";
 }
 
 .footer {
@@ -106,7 +108,7 @@
   }
 }
 
-.footerInset {
+.footerinset {
   composes: footer;
   padding-inline: var(--space-3);
 }

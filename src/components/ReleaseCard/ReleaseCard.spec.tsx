@@ -4,20 +4,7 @@ import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
-
-jest.mock("src/utils/toast", () => ({
-  toast: {
-    success: jest.fn(),
-    error: jest.fn(),
-    loading: jest.fn(),
-    dismiss: jest.fn(),
-  },
-}));
-
-const mockToastSuccess = jest.mocked(toast.success);
-const mockToastError = jest.mocked(toast.error);
 
 let po: ReleaseCardPageObject;
 
@@ -474,7 +461,7 @@ describe("ReleaseCard", () => {
       ).toBeDisabled();
     });
 
-    expect(mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue");
+    expect(po.mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue");
   });
 
   it("shows an error toast when the release has no playable tracks", async () => {
@@ -497,7 +484,7 @@ describe("ReleaseCard", () => {
     );
 
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith(
+      expect(po.mockToastError).toHaveBeenCalledWith(
         "No playable tracks to queue",
       );
     });
@@ -533,7 +520,7 @@ describe("ReleaseCard", () => {
       ).toBeDisabled();
     });
 
-    expect(mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue");
+    expect(po.mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue");
   });
 
   it("opens Discogs when title is clicked even if onReleaseClick is provided", async () => {

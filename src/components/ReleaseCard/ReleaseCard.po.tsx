@@ -1,4 +1,5 @@
 import { api } from "src/api/urls";
+import { ReleaseCard } from "src/components/ReleaseCard/ReleaseCard.component";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -25,9 +26,18 @@ import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
+import { toast } from "src/utils/toast";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import { ReleaseCard } from "./ReleaseCard.component";
+
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+    loading: jest.fn(),
+    dismiss: jest.fn(),
+  },
+}));
 
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
@@ -36,6 +46,8 @@ jest.mock("src/analytics/analytics", () => ({
 }));
 
 const mockApi = jest.mocked(api);
+const mockToastSuccess = jest.mocked(toast.success);
+const mockToastError = jest.mocked(toast.error);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -52,6 +64,8 @@ export class ReleaseCardPageObject extends BasePageObject {
   public testId = "fmdReleaseCard";
   public mockApi = mockApi.discogsRelease;
   public mockApiHelpers = mockApi;
+  mockToastSuccess = mockToastSuccess;
+  mockToastError = mockToastError;
   public defaultCrate = crateFactory.defaultTestCrate();
   public defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 
@@ -69,69 +83,69 @@ export class ReleaseCardPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      this.mockApiHelpers.userPreferences,
       userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.discogsRelease,
+      this.mockApiHelpers.discogsRelease,
       discogsReleaseJsonFactory.withTracklistAndVideos(),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.collectionFields,
+      this.mockApiHelpers.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.crates,
+      this.mockApiHelpers.crates,
       cratesResponseFactory.withCrate(this.defaultCrateWithCount),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.crate,
+      this.mockApiHelpers.crate,
       crateWithReleasesResponseFactory.empty(this.defaultCrate),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.addReleaseToCrate,
+      this.mockApiHelpers.addReleaseToCrate,
       crateMutationSuccessFactory.build(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.removeReleaseFromCrate,
+      this.mockApiHelpers.removeReleaseFromCrate,
       crateMutationSuccessFactory.build(),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.releaseCrateMembership,
+      this.mockApiHelpers.releaseCrateMembership,
       releaseCrateMembershipResponseFactory.build(),
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.setReleaseCrateMembership,
+      this.mockApiHelpers.setReleaseCrateMembership,
       { success: true, crateIds: [] },
       apiError,
     );
 
     mockApiResponse(
       true,
-      mockApi.createCrate,
+      this.mockApiHelpers.createCrate,
       createCrateResponseFactory.forCrate(
         crateFactory.build({ id: "new-crate-id", name: "New Crate" }),
       ),
@@ -140,7 +154,7 @@ export class ReleaseCardPageObject extends BasePageObject {
 
     mockApiResponse(
       true,
-      mockApi.updateCrate,
+      this.mockApiHelpers.updateCrate,
       createCrateResponseFactory.forCrate(
         crateFactory.build({
           id: "new-crate-id",
@@ -157,7 +171,7 @@ export class ReleaseCardPageObject extends BasePageObject {
   mockReleaseCrateMembership(crateIds: string[]) {
     mockApiResponse(
       true,
-      mockApi.releaseCrateMembership,
+      this.mockApiHelpers.releaseCrateMembership,
       releaseCrateMembershipResponseFactory.build({ crateIds }),
       apiError,
     );
@@ -166,7 +180,7 @@ export class ReleaseCardPageObject extends BasePageObject {
   mockCrateContainsRelease(release: DiscogsRelease) {
     mockApiResponse(
       true,
-      mockApi.crate,
+      this.mockApiHelpers.crate,
       crateWithReleasesResponseFactory.withReleases(this.defaultCrate, [
         release,
       ]),
@@ -190,7 +204,7 @@ export class ReleaseCardPageObject extends BasePageObject {
   mockMultipleCrates(crates: (typeof this.defaultCrateWithCount)[]) {
     mockApiResponse(
       true,
-      mockApi.crates,
+      this.mockApiHelpers.crates,
       cratesResponseFactory.withCrates(crates),
       apiError,
     );

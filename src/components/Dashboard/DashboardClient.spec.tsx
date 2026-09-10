@@ -1,17 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { COLLECTION_LOADING_TOAST_ID } from "src/components/CollectionLoadingToast/collectionLoadingToast";
-import { DashboardClientPageObject } from "src/components/Dashboard/DashboardClient.po";
-import { toast } from "src/utils/toast";
+import {
+  COLLECTION_LOADING_TOAST_ID,
+  DashboardClientPageObject,
+} from "src/components/Dashboard/DashboardClient.po";
 import { screen, waitFor } from "test-utils";
-
-jest.mock("src/utils/toast", () => ({
-  toast: {
-    loading: jest.fn(),
-    dismiss: jest.fn(),
-  },
-}));
-
-const mockToastLoading = jest.mocked(toast.loading);
 
 let po: DashboardClientPageObject;
 
@@ -50,7 +42,7 @@ describe("DashboardClient", () => {
     po.renderDashboardClient({ paginatedFirstPage: true });
 
     await waitFor(() => {
-      expect(mockToastLoading).toHaveBeenCalledWith(
+      expect(po.mockToastLoading).toHaveBeenCalledWith(
         "Loading 2,500 releases from Discogs…",
         expect.objectContaining({
           id: COLLECTION_LOADING_TOAST_ID,

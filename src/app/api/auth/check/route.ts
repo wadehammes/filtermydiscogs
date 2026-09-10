@@ -12,6 +12,34 @@ import {
   consumeSupportProjectToastPending,
   touchUserLastSeen,
 } from "src/lib/user.server";
+import { resolveDiscogsAvatarUrl } from "src/lib/user-profile.server";
+
+type AuthCheckPayload = {
+  isAuthenticated: boolean;
+  username: string | null;
+  userId: string | null;
+  avatarUrl: string | null;
+  rateLimited: boolean;
+  reconnectUsername: string | null;
+  showSupportProjectToast: boolean;
+};
+
+const AUTH_CHECK_DEFAULTS = {
+  username: null,
+  userId: null,
+  avatarUrl: null,
+  rateLimited: false,
+  reconnectUsername: null,
+  showSupportProjectToast: false,
+} satisfies Omit<AuthCheckPayload, "isAuthenticated">;
+
+function authCheckResponse(
+  payload: Partial<AuthCheckPayload> &
+    Pick<AuthCheckPayload, "isAuthenticated">,
+  init?: ResponseInit,
+) {
+  return privateRouteJson({ ...AUTH_CHECK_DEFAULTS, ...payload }, init);
+}
 
 async function resolveReconnectUsername(
   request: NextRequest,
@@ -42,14 +70,12 @@ export async function GET(request: NextRequest) {
       if (verified.error.status === 503) {
         const displayIdentity = getDisplayIdentityFromCookies(request);
 
-        return privateRouteJson(
+        return authCheckResponse(
           {
             isAuthenticated: Boolean(displayIdentity),
             username: displayIdentity?.username ?? null,
             userId: displayIdentity ? String(displayIdentity.userId) : null,
             rateLimited: true,
-            reconnectUsername: null,
-            showSupportProjectToast: false,
           },
           {
             headers: { "Retry-After": "60" },
@@ -59,39 +85,28 @@ export async function GET(request: NextRequest) {
 
       const reconnectUsername = await resolveReconnectUsername(request);
 
-      return privateRouteJson({
+      return authCheckResponse({
         isAuthenticated: false,
-        username: null,
-        userId: null,
-        rateLimited: false,
         reconnectUsername,
-        showSupportProjectToast: false,
       });
     }
 
-    const [showSupportProjectToast] = await Promise.all([
+    const [showSupportProjectToast, avatarUrl] = await Promise.all([
       consumeSupportProjectToastPending(verified.user.userId),
-      touchUserLastSeen(verified.user.userId),
+      resolveDiscogsAvatarUrl(request, verified.user),
     ]);
+    void touchUserLastSeen(verified.user.userId);
 
-    return privateRouteJson({
+    return authCheckResponse({
       isAuthenticated: true,
       username: verified.user.username,
       userId: String(verified.user.userId),
-      rateLimited: false,
-      reconnectUsername: null,
+      avatarUrl,
       showSupportProjectToast,
     });
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("Auth check error:", error);
-    return privateRouteJson({
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      rateLimited: false,
-      reconnectUsername: null,
-      showSupportProjectToast: false,
-    });
+    return authCheckResponse({ isAuthenticated: false });
   }
 }

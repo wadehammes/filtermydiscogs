@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
 import { FiltersDrawerPageObject } from "src/components/FiltersDrawer/FiltersDrawer.po";
 import { SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
@@ -19,10 +18,6 @@ import {
 } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
-
-jest.mock("src/api/urls");
-
-const mockApi = jest.mocked(api);
 
 let po: FiltersDrawerPageObject;
 
@@ -150,7 +145,7 @@ describe("FiltersDrawer", () => {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      po.mockApi.userPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
@@ -190,7 +185,7 @@ describe("FiltersDrawer", () => {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      po.mockApi.userPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
@@ -229,7 +224,7 @@ describe("FiltersDrawer", () => {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      po.mockApi.userPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
@@ -269,7 +264,7 @@ describe("FiltersDrawer", () => {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      po.mockApi.userPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
