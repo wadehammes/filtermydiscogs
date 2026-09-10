@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -204,7 +204,7 @@ export const useCollectionData = ({
     username,
   ]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!queryEnabled) {
       dispatchFetchingCollection(false);
       setCollectionFiltersActive(false);
@@ -246,11 +246,12 @@ export const useCollectionData = ({
       return;
     }
 
-    if (isLoading) {
+    if (isLoading || !cacheReady.ready) {
       dispatchFetchingCollection(true);
       setCollectionFiltersActive(false);
     }
   }, [
+    cacheReady.ready,
     isCollectionFullyLoaded,
     processedData,
     queryEnabled,
@@ -280,6 +281,11 @@ export const useCollectionLoadState = () => {
   const queryEnabled =
     isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
 
+  const cacheReady = useCollectionCacheReady({
+    username: username || "",
+    enabled: queryEnabled,
+  });
+
   const query = useDiscogsCollectionQuery({
     username: username || "",
     enabled: false,
@@ -288,7 +294,8 @@ export const useCollectionLoadState = () => {
   const hasLoadedPages = (query.data?.pages.length ?? 0) > 0;
 
   return {
-    isLoading: queryEnabled && !hasLoadedPages && !query.isError,
+    isLoading:
+      queryEnabled && !(cacheReady.ready && (hasLoadedPages || query.isError)),
     isError: query.isError,
     queryError: query.error,
     hasNextPage: query.hasNextPage,

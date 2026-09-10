@@ -1,3 +1,15 @@
+.siteWordmark {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-base);
+  font-variant-caps: all-small-caps;
+  letter-spacing: var(--letter-spacing-eyebrow);
+  line-height: 1;
+
+  @media (width >= 481px) {
+    font-size: var(--text-lg);
+  }
+}
+
 .brandEyebrow {
   color: var(--primary);
   font-family: var(--font-family-meta);

@@ -24,6 +24,7 @@ export type InlinePopoverMenuPanelProps = {
   container?: HTMLElement;
   scrollable?: boolean;
   testId?: string;
+  variant?: "menu" | "submenu";
   align?: MenuPositionerProps["align"];
   side?: MenuPositionerProps["side"];
   sideOffset?: number;
@@ -39,9 +40,10 @@ const InlinePopoverMenuPanel = ({
   container: containerProp,
   scrollable = false,
   testId,
+  variant = "menu",
   align = "start",
-  side = "bottom",
-  sideOffset = 8,
+  side = variant === "submenu" ? undefined : "bottom",
+  sideOffset = variant === "submenu" ? 4 : 8,
   alignOffset,
   positionMethod = "fixed",
   useOverlayStack = true,
@@ -55,12 +57,12 @@ const InlinePopoverMenuPanel = ({
     <Menu.Portal {...definedProps({ container })}>
       <Menu.Positioner
         align={align}
-        alignOffset={alignOffset}
         className={classNames(styles.positioner, positionerClassName)}
         positionMethod={positionMethod}
-        side={side}
-        sideOffset={sideOffset}
         {...definedProps({
+          side,
+          sideOffset,
+          alignOffset,
           style: useOverlayStack ? positionerStyle : undefined,
         })}
       >

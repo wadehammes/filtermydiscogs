@@ -11,6 +11,7 @@ interface ReleaseCardImageProps {
   thumbUrl: string | null;
   releaseUrl: string | null;
   onReleaseOpen?: () => void;
+  priority?: boolean;
 }
 
 export const ReleaseCardImage = ({
@@ -18,6 +19,7 @@ export const ReleaseCardImage = ({
   thumbUrl,
   releaseUrl,
   onReleaseOpen,
+  priority = false,
 }: ReleaseCardImageProps) => {
   const activateProps = onReleaseOpen
     ? getReleaseActivateProps({
@@ -40,7 +42,7 @@ export const ReleaseCardImage = ({
             width={200}
             quality={85}
             alt={release.basic_information.title}
-            loading="lazy"
+            {...(priority ? { priority: true } : { loading: "lazy" as const })}
             style={{
               position: "relative",
               zIndex: 2,

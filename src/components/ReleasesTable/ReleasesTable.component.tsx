@@ -101,6 +101,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             header: "Artist / Title",
             cell: ({ row }) => {
               const release = row.original;
+              const imagePriority = row.index === 0;
               const { artists, title, thumb, cover_image, resource_url } =
                 release.basic_information;
               const releaseUrl = getResourceUrl({
@@ -133,7 +134,9 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       width={40}
                       quality={85}
                       alt=""
-                      loading="lazy"
+                      {...(imagePriority
+                        ? { priority: true }
+                        : { loading: "lazy" as const })}
                       sizes="40px"
                     />
                   </button>

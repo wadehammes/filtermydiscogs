@@ -1,4 +1,5 @@
 import { api } from "src/api/urls";
+import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -14,7 +15,6 @@ import type { PersistedFiltersState } from "src/types/filters.types";
 import { definedProps } from "src/utils/definedProps";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import { FiltersDrawer } from "./FiltersDrawer.component";
 
 jest.mock("src/api/urls");
 jest.mock("src/analytics/analytics", () => ({
@@ -34,6 +34,7 @@ export class FiltersDrawerPageObject extends BasePageObject {
   public drawerTestId = "fmdBottomDrawer";
   public searchBarTestId = "fmdSearchBar";
   public onClose = jest.fn();
+  mockApi = mockApi;
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
@@ -42,10 +43,10 @@ export class FiltersDrawerPageObject extends BasePageObject {
 
   setupMocks() {
     jest.clearAllMocks();
-    setupDefaultCrateApiMocks(mockApi);
+    setupDefaultCrateApiMocks(this.mockApi);
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      this.mockApi.userPreferences,
       userPreferencesFactory.defaultsApiResponse(),
       new Error("Preferences request failed"),
     );

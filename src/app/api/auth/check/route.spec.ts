@@ -21,9 +21,14 @@ jest.mock("src/lib/user.server", () => ({
   touchUserLastSeen: jest.fn(),
 }));
 
+jest.mock("src/lib/user-profile.server", () => ({
+  resolveDiscogsAvatarUrl: jest.fn(),
+}));
+
 type RouteModule = typeof import("src/app/api/auth/check/route");
 type AuthRequestModule = typeof import("src/lib/auth-request");
 type UserServerModule = typeof import("src/lib/user.server");
+type UserProfileModule = typeof import("src/lib/user-profile.server");
 
 let GET: RouteModule["GET"];
 let mockGetVerifiedUserFromRequest: jest.MockedFunction<
@@ -44,6 +49,9 @@ let mockConsumeSupportProjectToastPending: jest.MockedFunction<
 let mockTouchUserLastSeen: jest.MockedFunction<
   UserServerModule["touchUserLastSeen"]
 >;
+let mockResolveDiscogsAvatarUrl: jest.MockedFunction<
+  UserProfileModule["resolveDiscogsAvatarUrl"]
+>;
 
 const createRequest = () => new NextRequest("http://localhost/api/auth/check");
 
@@ -54,11 +62,14 @@ const createRateLimitError = () =>
   );
 
 beforeAll(async () => {
-  const [routeModule, authRequest, userServer] = await Promise.all([
-    import("src/app/api/auth/check/route"),
-    import("src/lib/auth-request"),
-    import("src/lib/user.server"),
-  ]);
+  const [routeModule, authRequest, userServer, userProfile] = await Promise.all(
+    [
+      import("src/app/api/auth/check/route"),
+      import("src/lib/auth-request"),
+      import("src/lib/user.server"),
+      import("src/lib/user-profile.server"),
+    ],
+  );
 
   GET = routeModule.GET;
   mockGetVerifiedUserFromRequest = jest.mocked(
@@ -77,6 +88,9 @@ beforeAll(async () => {
     userServer.consumeSupportProjectToastPending,
   );
   mockTouchUserLastSeen = jest.mocked(userServer.touchUserLastSeen);
+  mockResolveDiscogsAvatarUrl = jest.mocked(
+    userProfile.resolveDiscogsAvatarUrl,
+  );
 });
 
 describe("GET /api/auth/check", () => {
@@ -84,6 +98,7 @@ describe("GET /api/auth/check", () => {
     jest.clearAllMocks();
     mockConsumeSupportProjectToastPending.mockResolvedValue(false);
     mockTouchUserLastSeen.mockResolvedValue(undefined);
+    mockResolveDiscogsAvatarUrl.mockResolvedValue(null);
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
@@ -97,16 +112,21 @@ describe("GET /api/auth/check", () => {
       }),
     );
     mockConsumeSupportProjectToastPending.mockResolvedValue(true);
+    mockResolveDiscogsAvatarUrl.mockResolvedValue(
+      "https://i.discogs.com/avatar.jpeg",
+    );
 
     const response = await GET(createRequest());
 
     expect(response.status).toBe(200);
     expect(mockConsumeSupportProjectToastPending).toHaveBeenCalledWith(42);
     expect(mockTouchUserLastSeen).toHaveBeenCalledWith(42);
+    expect(mockResolveDiscogsAvatarUrl).toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({
       isAuthenticated: true,
       username: "crate-digger",
       userId: "42",
+      avatarUrl: "https://i.discogs.com/avatar.jpeg",
       rateLimited: false,
       reconnectUsername: null,
       showSupportProjectToast: true,
@@ -132,6 +152,7 @@ describe("GET /api/auth/check", () => {
       isAuthenticated: true,
       username: "crate-digger",
       userId: "42",
+      avatarUrl: null,
       rateLimited: true,
       reconnectUsername: null,
       showSupportProjectToast: false,
@@ -154,6 +175,7 @@ describe("GET /api/auth/check", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      avatarUrl: null,
       rateLimited: false,
       reconnectUsername: null,
       showSupportProjectToast: false,
@@ -179,6 +201,7 @@ describe("GET /api/auth/check", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      avatarUrl: null,
       rateLimited: false,
       reconnectUsername: "crate-digger",
       showSupportProjectToast: false,
@@ -198,6 +221,7 @@ describe("GET /api/auth/check", () => {
       isAuthenticated: false,
       username: null,
       userId: null,
+      avatarUrl: null,
       rateLimited: false,
       reconnectUsername: "saved-account",
       showSupportProjectToast: false,

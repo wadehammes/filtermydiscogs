@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
 import { ReleaseNotesPageObject } from "src/components/ReleaseNotes/ReleaseNotes.po";
 import {
   RELEASE_NOTES_SAVE_TOAST_ID,
@@ -8,32 +7,16 @@ import {
 } from "src/components/ReleaseNotes/releaseNotesSaveToast";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { toast } from "src/utils/toast";
 import { screen, waitFor } from "test-utils";
-
-jest.mock("src/api/urls");
-jest.mock("src/utils/toast", () => ({
-  toast: {
-    dismiss: jest.fn(),
-    loading: jest.fn(),
-    success: jest.fn(),
-    error: jest.fn(),
-  },
-}));
-
-const mockApi = jest.mocked(api);
-const mockToastDismiss = jest.mocked(toast.dismiss);
-const mockToastLoading = jest.mocked(toast.loading);
-const mockToastSuccess = jest.mocked(toast.success);
 
 let po: ReleaseNotesPageObject;
 
 describe("ReleaseNotes", () => {
   beforeEach(() => {
     po = new ReleaseNotesPageObject();
-    mockToastDismiss.mockClear();
-    mockToastLoading.mockClear();
-    mockToastSuccess.mockClear();
+    po.mockToastDismiss.mockClear();
+    po.mockToastLoading.mockClear();
+    po.mockToastSuccess.mockClear();
   });
 
   it("renders card notes section on every release card", async () => {
@@ -108,7 +91,7 @@ describe("ReleaseNotes", () => {
   it("shows loading and success toasts when modal notes or condition fields are saved", async () => {
     const user = userEvent.setup();
 
-    mockApi.updateCollectionNote.mockResolvedValue(
+    po.mockApi.updateCollectionNote.mockResolvedValue(
       crateMutationSuccessFactory.build(),
     );
 
@@ -127,11 +110,11 @@ describe("ReleaseNotes", () => {
     );
 
     await waitFor(() => {
-      expect(mockToastLoading).toHaveBeenCalledWith("Saving…", {
+      expect(po.mockToastLoading).toHaveBeenCalledWith("Saving…", {
         duration: Number.POSITIVE_INFINITY,
         id: RELEASE_NOTES_SAVE_TOAST_ID,
       });
-      expect(mockToastSuccess).toHaveBeenCalledWith("Saved", {
+      expect(po.mockToastSuccess).toHaveBeenCalledWith("Saved", {
         duration: RELEASE_NOTES_SAVED_TOAST_DURATION_MS,
         id: RELEASE_NOTES_SAVE_TOAST_ID,
       });

@@ -29,6 +29,12 @@ describe("UserActions", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders a circular avatar fallback when no Discogs avatar is available", () => {
+    po.renderUserActions({ variant: "desktop" });
+
+    expect(screen.getByText("T")).toBeInTheDocument();
+  });
+
   it("opens menu with navigation links and logout", async () => {
     po.renderUserActions({ variant: "desktop" });
 

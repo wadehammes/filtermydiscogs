@@ -1,4 +1,5 @@
 import { api } from "src/api/urls";
+import SettingsClient from "src/components/Settings/SettingsClient.component";
 import {
   checkAuthStatus,
   getUsernameFromCookies,
@@ -20,7 +21,6 @@ import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiM
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import SettingsClient from "./SettingsClient.component";
 
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
@@ -42,6 +42,8 @@ const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
 const apiError = new Error("API request failed");
 
 export class SettingsClientPageObject extends BasePageObject {
+  mockApi = mockApi;
+
   constructor(props: BasePageObjectProps = {}) {
     super(props);
     this.setupMocks();
@@ -55,33 +57,35 @@ export class SettingsClientPageObject extends BasePageObject {
     mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
     mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
-    setupDefaultCrateApiMocks(mockApi);
+    setupDefaultCrateApiMocks(this.mockApi);
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      this.mockApi.userPreferences,
       userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.updateUserPreferences,
+      this.mockApi.updateUserPreferences,
       userPreferencesFactory.defaultsApiResponse(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.discogsCollection,
+      this.mockApi.discogsCollection,
       collectionFactory.empty(),
       apiError,
     );
     mockApiResponse(
       true,
-      mockApi.collectionFields,
+      this.mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );
-    mockApi.clearData.mockResolvedValue(crateMutationSuccessFactory.build());
-    mockApi.logout.mockResolvedValue(crateMutationSuccessFactory.build());
+    this.mockApi.clearData.mockResolvedValue(
+      crateMutationSuccessFactory.build(),
+    );
+    this.mockApi.logout.mockResolvedValue(crateMutationSuccessFactory.build());
   }
 
   renderSettingsClient(): RenderResult {

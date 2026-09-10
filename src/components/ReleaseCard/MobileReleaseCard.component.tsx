@@ -32,6 +32,7 @@ const MobileReleaseCardComponent = ({
   isRandomMode = false,
   onExitRandomMode,
   onReleaseClick,
+  priority = false,
 }: ReleaseCardProps) => {
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
@@ -104,7 +105,9 @@ const MobileReleaseCardComponent = ({
               width={96}
               quality={85}
               alt={release.basic_information.title}
-              loading="lazy"
+              {...(priority
+                ? { priority: true }
+                : { loading: "lazy" as const })}
               className={styles.releaseImage}
               style={{
                 maxWidth: "100%",

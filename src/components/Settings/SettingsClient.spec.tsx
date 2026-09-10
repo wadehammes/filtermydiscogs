@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
 import { SettingsClientPageObject } from "src/components/Settings/SettingsClient.po";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
@@ -8,10 +7,6 @@ import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor, within } from "test-utils";
-
-jest.mock("src/api/urls");
-
-const mockApi = jest.mocked(api);
 
 let po: SettingsClientPageObject;
 
@@ -135,7 +130,7 @@ describe("SettingsClient", () => {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      po.mockApi.userPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [technoView],
       }),
@@ -143,7 +138,7 @@ describe("SettingsClient", () => {
     );
     mockApiResponse(
       true,
-      mockApi.updateUserPreferences,
+      po.mockApi.updateUserPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [
           {
@@ -175,7 +170,7 @@ describe("SettingsClient", () => {
     await user.click(within(dialog).getByRole("button", { name: "Save" }));
 
     await waitFor(() => {
-      expect(mockApi.updateUserPreferences).toHaveBeenCalledWith(
+      expect(po.mockApi.updateUserPreferences).toHaveBeenCalledWith(
         expect.objectContaining({
           filterViews: [
             expect.objectContaining({

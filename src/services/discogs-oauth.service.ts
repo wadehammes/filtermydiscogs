@@ -35,6 +35,13 @@ interface DiscogsIdentity {
   [key: string]: unknown;
 }
 
+interface DiscogsUserProfile {
+  id: number;
+  username: string;
+  avatar_url?: string | null;
+  [key: string]: unknown;
+}
+
 interface DiscogsTokens {
   oauth_token: string;
   oauth_token_secret: string;
@@ -327,6 +334,19 @@ class DiscogsOAuthService {
       oauthToken,
       oauthTokenSecret,
     ) as Promise<DiscogsIdentity>;
+  }
+
+  async getUserProfile(
+    username: string,
+    oauthToken: string,
+    oauthTokenSecret: string,
+  ): Promise<DiscogsUserProfile> {
+    return this.makeAuthenticatedRequest(
+      `https://api.discogs.com/users/${encodeURIComponent(username)}`,
+      "GET",
+      oauthToken,
+      oauthTokenSecret,
+    ) as Promise<DiscogsUserProfile>;
   }
 
   async getCollection(

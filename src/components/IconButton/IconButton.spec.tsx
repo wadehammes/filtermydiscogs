@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { IconButtonPageObject } from "src/components/IconButton/IconButton.po";
+import iconButtonStyles from "src/styles/modules/icon-button.module.css";
 import { screen } from "test-utils";
 import { iconButtonClasses, iconButtonIconClasses } from "./iconButtonClasses";
 
@@ -19,5 +20,15 @@ describe("IconButton", () => {
     expect(button.firstElementChild?.className).toContain(
       iconButtonIconClasses(),
     );
+  });
+
+  it("applies labeled flex layout when icon shares a row with text", () => {
+    po.renderIconButton({ label: "Views", children: <svg aria-hidden /> });
+
+    const button = screen.getByTestId(po.testId);
+
+    expect(button.className).toContain(iconButtonStyles.labeled);
+    expect(button.children[0]).toHaveAttribute("aria-hidden", "true");
+    expect(button.children[1]).toHaveTextContent("Views");
   });
 });

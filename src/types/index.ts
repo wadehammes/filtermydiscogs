@@ -70,6 +70,7 @@ export interface ReleaseCardProps {
   isRandomMode?: boolean;
   onExitRandomMode?: () => void;
   onReleaseClick?: (instanceId: string) => void;
+  priority?: boolean;
 }
 
 export interface ReleaseListItemProps {

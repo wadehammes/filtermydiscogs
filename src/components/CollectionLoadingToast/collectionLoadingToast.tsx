@@ -41,16 +41,16 @@ function CollectionLoadingToastDescription({
   totalItems: number;
 }) {
   return (
-    <div className="fmd-collection-loading-toast-description">
+    <span className="fmd-collection-loading-toast-description">
       {loadedCount > 0 ? (
-        <div className="fmd-collection-loading-toast-progress">
+        <span className="fmd-collection-loading-toast-progress">
           {formatLargeCollectionLoadingProgress(loadedCount, totalItems)}
-        </div>
+        </span>
       ) : null}
-      <div className="fmd-collection-loading-toast-hint">
+      <span className="fmd-collection-loading-toast-hint">
         May take a minute or two.
-      </div>
-    </div>
+      </span>
+    </span>
   );
 }
 

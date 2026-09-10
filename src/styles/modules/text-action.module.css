@@ -53,14 +53,14 @@
   white-space: nowrap;
 }
 
-.xsMuted {
+.xsmuted {
   composes: muted;
   flex-shrink: 0;
   font-size: var(--text-xs);
   text-align: left;
 }
 
-.subtleLink {
+.subtlelink {
   composes: base;
   color: var(--muted-foreground);
   font: inherit;

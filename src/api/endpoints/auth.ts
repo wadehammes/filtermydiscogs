@@ -4,6 +4,7 @@ export const checkAuth = async (): Promise<{
   isAuthenticated: boolean;
   username: string | null;
   userId: string | null;
+  avatarUrl: string | null;
   reconnectUsername: string | null;
   rateLimited?: boolean;
   showSupportProjectToast?: boolean;

@@ -1,41 +1,18 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { api } from "src/api/urls";
 import { FilterViewsMenuPageObject } from "src/components/FilterViewsMenu/FilterViewsMenu.po";
+import iconButtonStyles from "src/styles/modules/icon-button.module.css";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
-import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
-
-jest.mock("src/api/urls");
-jest.mock("src/analytics/analytics", () => ({
-  trackEvent: jest.fn(),
-}));
-
-const mockApi = jest.mocked(api);
+import styles from "./FilterViewsMenu.module.css";
 
 let po: FilterViewsMenuPageObject;
 
 describe("FilterViewsMenu", () => {
   beforeEach(() => {
-    localStorage.clear();
-    setupMockMatchMedia({ desktop: true });
     po = new FilterViewsMenuPageObject();
-    setupDefaultCrateApiMocks(mockApi);
-    mockApiResponse(
-      true,
-      mockApi.userPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      new Error("Preferences request failed"),
-    );
-    mockApiResponse(
-      true,
-      mockApi.updateUserPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      new Error("Preferences update failed"),
-    );
   });
 
   it("renders the Views trigger", () => {
@@ -44,6 +21,19 @@ describe("FilterViewsMenu", () => {
     expect(
       screen.getByRole("button", { name: "Views and filter actions" }),
     ).toBeInTheDocument();
+  });
+
+  it("lays out the Views trigger icon before the label in separate flex children", () => {
+    po.renderFilterViewsMenu();
+
+    const button = screen.getByRole("button", {
+      name: "Views and filter actions",
+    });
+
+    expect(button.className).toContain(iconButtonStyles.labeled);
+    expect(button.children[0]).toHaveAttribute("aria-hidden", "true");
+    expect(button.children[1]).toHaveClass(styles.menuTriggerLabel);
+    expect(button.children[1]).toHaveTextContent("Views");
   });
 
   it("derives the active saved view when multi-select order differs", async () => {
@@ -55,7 +45,7 @@ describe("FilterViewsMenu", () => {
 
     mockApiResponse(
       true,
-      mockApi.userPreferences,
+      po.mockApi.userPreferences,
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),

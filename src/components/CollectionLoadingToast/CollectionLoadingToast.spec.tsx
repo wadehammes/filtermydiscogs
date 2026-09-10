@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import type { ReactElement } from "react";
 import {
   COLLECTION_LOADING_TOAST_ID,
   formatLargeCollectionLoadingProgress,
@@ -10,6 +11,7 @@ import { isLargeCollection } from "src/constants/collection";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import { toast } from "src/utils/toast";
+import { render, screen } from "test-utils";
 
 jest.mock("src/utils/toast", () => ({
   toast: {
@@ -101,5 +103,21 @@ describe("showCollectionLoadingToast", () => {
         }),
       }),
     );
+  });
+
+  it("renders toast description with phrasing content only for Toast.Description", () => {
+    showCollectionLoadingToast({ loadedCount: 900, totalItems: 3200 });
+
+    const description = mockToastLoading.mock.calls[0]?.[1]?.description as
+      | ReactElement
+      | undefined;
+
+    expect(description).toBeDefined();
+
+    const { container } = render(<p>{description}</p>);
+
+    expect(container.querySelector("div")).toBeNull();
+    expect(screen.getByText("900 of 3,200 loaded")).toBeInTheDocument();
+    expect(screen.getByText("May take a minute or two.")).toBeInTheDocument();
   });
 });

@@ -1,3 +1,13 @@
+.iconaction,
+.iconactionplus,
+.iconactionminus,
+.iconactionclose,
+.iconactionexternal,
+.iconactionqueuesubtle,
+.iconactionskip {
+  display: inherit;
+}
+
 .icon {
   flex-shrink: 0;
   transform-origin: center;

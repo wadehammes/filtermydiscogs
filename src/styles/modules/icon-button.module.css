@@ -29,3 +29,8 @@
 .icon {
   composes: icon from "./action-icon-hover.module.css";
 }
+
+.labeled {
+  align-items: center;
+  display: inline-flex;
+}

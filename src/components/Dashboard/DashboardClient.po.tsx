@@ -1,5 +1,6 @@
 import { api } from "src/api/urls";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
+import DashboardClient from "src/components/Dashboard/DashboardClient.component";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   checkAuthStatus,
@@ -19,23 +20,25 @@ import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { toast } from "src/utils/toast";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import DashboardClient from "./DashboardClient.component";
 
-jest.mock("./ArtistLabelCharts.component", () => ({
+export { COLLECTION_LOADING_TOAST_ID } from "src/components/CollectionLoadingToast/collectionLoadingToast";
+
+jest.mock("src/components/Dashboard/ArtistLabelCharts.component", () => ({
   ArtistLabelCharts: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./ComparativeGrowthCharts.component", () => ({
+jest.mock("src/components/Dashboard/ComparativeGrowthCharts.component", () => ({
   ComparativeGrowthCharts: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./DistributionCharts.component", () => ({
+jest.mock("src/components/Dashboard/DistributionCharts.component", () => ({
   DistributionCharts: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./GrowthChart.component", () => ({
+jest.mock("src/components/Dashboard/GrowthChart.component", () => ({
   GrowthChart: () => <div data-testid="fmdChartStub" />,
 }));
-jest.mock("./StyleEvolution.component", () => ({
+jest.mock("src/components/Dashboard/StyleEvolution.component", () => ({
   StyleEvolution: () => <div data-testid="fmdChartStub" />,
 }));
 
@@ -55,7 +58,15 @@ jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
 
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    loading: jest.fn(),
+    dismiss: jest.fn(),
+  },
+}));
+
 const mockApi = jest.mocked(api);
+const mockToastLoading = jest.mocked(toast.loading);
 const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
 const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
@@ -68,6 +79,7 @@ export type DashboardClientRenderOptions = {
 
 export class DashboardClientPageObject extends BasePageObject {
   public testId = "fmdDashboardClient";
+  mockToastLoading = mockToastLoading;
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);

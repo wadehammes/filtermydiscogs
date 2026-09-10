@@ -7,6 +7,7 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { clearCachedUserAvatarUrl } from "src/lib/user-profile-cache";
 
 export async function POST(request: NextRequest) {
   const rateLimitResponse = enforceAuthRouteIpRateLimit(request);
@@ -21,6 +22,12 @@ export async function POST(request: NextRequest) {
 
   if (accessToken && accessTokenSecret) {
     clearVerifiedIdentityCache(accessToken, accessTokenSecret);
+  }
+
+  const userIdRaw = request.cookies.get("discogs_user_id")?.value;
+  const userId = userIdRaw ? Number.parseInt(userIdRaw, 10) : Number.NaN;
+  if (Number.isFinite(userId)) {
+    clearCachedUserAvatarUrl(userId);
   }
 
   const response = privateRouteJson({ success: true });

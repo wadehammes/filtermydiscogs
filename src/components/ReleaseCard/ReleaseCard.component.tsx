@@ -16,6 +16,7 @@ const ReleaseCardComponent = ({
   isRandomMode = false,
   onExitRandomMode,
   onReleaseClick,
+  priority = false,
 }: ReleaseCardProps) => {
   "use memo";
   const { openRelease, canOpen } = useReleaseOpenHandler({
@@ -55,6 +56,7 @@ const ReleaseCardComponent = ({
           release={release}
           thumbUrl={thumbUrl}
           releaseUrl={releaseUrl}
+          priority={priority}
           {...definedProps({
             onReleaseOpen: canOpen ? openRelease : undefined,
           })}
