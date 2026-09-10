@@ -53,20 +53,20 @@
     opacity: 0.5;
     pointer-events: none;
   }
+}
 
-  .icon {
-    align-items: center;
-    display: flex;
-    font-size: var(--text-base);
-    height: 1em;
-    justify-content: center;
-    line-height: 1;
-    width: 1em;
+.icon {
+  align-items: center;
+  display: flex;
+  font-size: var(--text-base);
+  height: 1em;
+  justify-content: center;
+  line-height: 1;
+  width: 1em;
 
-    svg {
-      height: 100%;
-      width: 100%;
-    }
+  svg {
+    height: 100%;
+    width: 100%;
   }
 }
 

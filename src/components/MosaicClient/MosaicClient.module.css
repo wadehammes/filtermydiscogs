@@ -313,24 +313,3 @@
 .spinner {
   margin-bottom: var(--space-4);
 }
-
-.emptyState {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  justify-content: center;
-  text-align: center;
-
-  h1 {
-    color: var(--foreground);
-    font-size: var(--text-4xl);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-4);
-  }
-
-  p {
-    color: var(--muted-foreground);
-    font-size: var(--text-lg);
-  }
-}

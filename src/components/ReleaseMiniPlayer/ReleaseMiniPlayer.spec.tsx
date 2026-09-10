@@ -890,6 +890,30 @@ describe("ReleaseMiniPlayer", () => {
     expect(onReleaseClick).toHaveBeenCalledWith(INSTANCE_ID);
   });
 
+  it("portals the crate menu above the playback dock", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    const escapePortal = document.querySelector("[data-overlay-stack-escape]");
+
+    expect(escapePortal).toBeTruthy();
+    expect(escapePortal).toContainElement(
+      screen.getByTestId("fmdReleaseCrateMenu"),
+    );
+    expect(escapePortal).toHaveStyle({
+      zIndex: "calc(var(--z-9-playback-dock) + 1)",
+    });
+  });
+
   it("adds the playing release to the active crate", async () => {
     const user = userEvent.setup();
 

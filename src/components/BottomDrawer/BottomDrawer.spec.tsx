@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import bottomDrawerStyles from "src/components/BottomDrawer/BottomDrawer.module.css";
 import { BottomDrawerPageObject } from "src/components/BottomDrawer/BottomDrawer.po";
 import { screen } from "test-utils";
 
@@ -201,6 +202,20 @@ describe("BottomDrawer", () => {
     po.renderBottomDrawer();
 
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+
+  it("applies shellClassName to the drawer shell", () => {
+    po.renderBottomDrawer({ shellClassName: "custom-shell-class" });
+
+    expect(screen.getByTestId(po.testId)).toHaveClass("custom-shell-class");
+  });
+
+  it("applies inlineAlignEnd when inline and inlineAlignEnd are set", () => {
+    po.renderBottomDrawer({ inline: true, inlineAlignEnd: true });
+
+    expect(screen.getByTestId(po.testId).className).toContain(
+      bottomDrawerStyles.inlineAlignEnd,
+    );
   });
 
   it("keeps floating close on the shell outside the header row", () => {

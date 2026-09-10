@@ -178,6 +178,7 @@ describe("CrateSelector", () => {
     po.mockLoading();
     po.renderCrateSelector();
 
+    expect(screen.getByLabelText("Loading crates")).toBeInTheDocument();
     expect(screen.getByText("Loading crates...")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "New Crate" }),

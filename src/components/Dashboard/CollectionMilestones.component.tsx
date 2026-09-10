@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import { type CSSProperties, useMemo } from "react";
 import { DashboardReleaseItem } from "src/components/Dashboard/DashboardReleaseItem.component";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useScrollRevealInView } from "src/hooks/useScrollRevealInView.hook";
 import { definedProps } from "src/utils/definedProps";
@@ -37,9 +38,11 @@ export function CollectionMilestones({
     return (
       <div className={styles.container}>
         {!hideHeading && <h2>Collection Milestones</h2>}
-        <div className={styles.emptyState}>
-          <p>Milestones appear here as the shelf grows.</p>
-        </div>
+        <EmptyState
+          variant="inline"
+          title="Milestones appear here as the shelf grows."
+          className={styles.emptyState}
+        />
       </div>
     );
   }

@@ -5,6 +5,7 @@ import classNames from "classnames";
 import { useCallback, useState } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateShareControls } from "src/components/CrateShareControls/CrateShareControls.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import EditIcon from "src/styles/icons/edit-thin.svg";
 import MenuIcon from "src/styles/icons/menu-thin.svg";
@@ -44,12 +45,18 @@ export const CrateDetailActionsMenu = () => {
     <div className={styles.menuRoot} data-testid="fmdCrateDetailHeaderActions">
       <Menu.Root open={isOpen} onOpenChange={setIsOpen} modal={false}>
         <Menu.Trigger
-          className={styles.menuTrigger}
-          aria-label="Crate actions"
-          disabled={!activeCrateId}
-        >
-          <MenuIcon className={styles.menuTriggerIcon} aria-hidden="true" />
-        </Menu.Trigger>
+          render={(props) => (
+            <IconButton
+              {...props}
+              className={styles.menuTrigger}
+              iconClassName={styles.menuTriggerIcon}
+              aria-label="Crate actions"
+              disabled={!activeCrateId}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+        />
         <InlinePopoverMenu.Panel
           align="end"
           popupClassName={styles.menuPopup}

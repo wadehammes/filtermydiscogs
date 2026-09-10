@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import Link from "next/link";
 import { useEffect } from "react";
 import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
@@ -8,11 +7,16 @@ import {
   CrateSetNotesScratchpad,
 } from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
 import { CrateShareControls } from "src/components/CrateShareControls/CrateShareControls.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
+import { IconButtonLink } from "src/components/IconButton/IconButtonLink.component";
+import {
+  SegmentedControl,
+  segmentedStyles,
+} from "src/components/SegmentedControl/SegmentedControl.component";
 import EditIcon from "src/styles/icons/edit-thin.svg";
 import NoteStickyIcon from "src/styles/icons/note-sticky-thin.svg";
 import StarIcon from "src/styles/icons/star-thin.svg";
 import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
-import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import styles from "./CrateDrawerFooter.module.css";
 
 export const CrateDrawerFooter = () => {
@@ -49,25 +53,23 @@ export const CrateDrawerFooter = () => {
         <CrateSetNotesScratchpad variant="drawer" />
       </div>
       <div className={styles.footerActionsRow}>
-        <div
-          className={classNames(
-            segmentedStyles.container,
-            styles.footerSegmented,
-          )}
+        <SegmentedControl
+          legend="Crate drawer actions"
+          className={styles.footerSegmented}
         >
           {activeCrateId ? (
-            <Link
+            <IconButtonLink
+              internal
               href={`/crates/${activeCrateId}`}
               className={classNames(
                 segmentedStyles.segment,
                 styles.footerSegment,
               )}
+              iconClassName={styles.footerSegmentIcon}
+              label="Open crate"
             >
-              <span className={styles.footerSegmentIcon} aria-hidden>
-                <EditIcon />
-              </span>
-              <span>Open crate</span>
-            </Link>
+              <EditIcon />
+            </IconButtonLink>
           ) : (
             <span
               className={classNames(
@@ -82,8 +84,7 @@ export const CrateDrawerFooter = () => {
               <span>Open crate</span>
             </span>
           )}
-          <button
-            type="button"
+          <IconButton
             className={classNames(
               segmentedStyles.segment,
               styles.footerSegment,
@@ -91,34 +92,31 @@ export const CrateDrawerFooter = () => {
                 [segmentedStyles.active]: drawerNotesOpen,
               },
             )}
+            iconClassName={styles.footerSegmentIcon}
+            label="Notes"
             onClick={() => setDrawerNotesOpen((open) => !open)}
             disabled={!activeCrateId || isBusy}
             aria-pressed={drawerNotesOpen}
             aria-controls={CRATE_SET_NOTES_SCRATCHPAD_ID}
             aria-expanded={drawerNotesOpen}
           >
-            <span className={styles.footerSegmentIcon} aria-hidden>
-              <NoteStickyIcon />
-            </span>
-            <span>Notes</span>
-          </button>
+            <NoteStickyIcon />
+          </IconButton>
           {!isDefaultCrate ? (
-            <button
-              type="button"
+            <IconButton
               className={classNames(
                 segmentedStyles.segment,
                 styles.footerSegment,
               )}
+              iconClassName={styles.footerSegmentIcon}
+              label={isUpdatingCrate ? "Default…" : "Default"}
               onClick={() => setShowMakeDefaultDialog(true)}
               disabled={isBusy}
             >
-              <span className={styles.footerSegmentIcon} aria-hidden>
-                <StarIcon />
-              </span>
-              <span>{isUpdatingCrate ? "Default…" : "Default"}</span>
-            </button>
+              <StarIcon />
+            </IconButton>
           ) : null}
-        </div>
+        </SegmentedControl>
         <Button
           variant="danger"
           size="sm"

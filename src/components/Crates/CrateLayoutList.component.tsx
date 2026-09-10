@@ -29,6 +29,8 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useAuth } from "src/context/auth.context";
@@ -143,18 +145,16 @@ const SortableReleaseRow = ({
         },
       )}
     >
-      <button
-        type="button"
+      <IconButton
+        variant="skip"
         className={classNames(styles.dragHandle, styles.releaseRowHandle)}
+        iconClassName={styles.dragHandleIcon}
         aria-label="Reorder"
         {...attributes}
         {...listeners}
       >
-        <GripVerticalIcon
-          className={styles.dragHandleIcon}
-          aria-hidden="true"
-        />
-      </button>
+        <GripVerticalIcon />
+      </IconButton>
       <div className={listStyles.noteSlot}>
         <ReleaseNotes release={release} variant="crate" />
       </div>
@@ -249,15 +249,16 @@ const CrateLayoutInsertZone = ({
     })}
   >
     <div className={styles.insertZoneHitArea}>
-      <button
-        type="button"
+      <IconButton
+        variant="plus"
         className={styles.insertButton}
+        iconClassName={styles.insertButtonIcon}
         disabled={disabled}
         aria-label="Add section"
         onClick={() => onInsert(insertIndex)}
       >
-        <PlusIcon className={styles.insertButtonIcon} aria-hidden="true" />
-      </button>
+        <PlusIcon />
+      </IconButton>
     </div>
   </Tag>
 );
@@ -501,13 +502,13 @@ const CrateLayoutListComponent = ({
 
   if (releaseCount === 0 && visibleLayoutItems.length === 0) {
     return (
-      <div
+      <EmptyState
+        variant="panel"
+        title="No releases in this crate yet."
+        description="Add albums from your collection on the Releases page."
         className={listStyles.emptyState}
-        data-testid="fmdCrateReleasesTable"
-      >
-        <p>No releases in this crate yet.</p>
-        <p>Add albums from your collection on the Releases page.</p>
-      </div>
+        testId="fmdCrateReleasesTable"
+      />
     );
   }
 

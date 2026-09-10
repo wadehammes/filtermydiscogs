@@ -23,11 +23,10 @@ describe("ReleasePlaybackVideoPanel.module.css", () => {
 });
 
 describe("playback-dock.module.css", () => {
-  it("insets the default video panel left of the desktop crate sidebar when open", () => {
+  it("keeps the default video panel inset on the bottom-right when the crate sidebar is open", () => {
     const css = readFileSync(PLAYBACK_DOCK_CSS_PATH, "utf8");
 
     expect(css).toContain("--release-video-panel-inset-right: var(--space-5)");
-    expect(css).toContain('[data-crate-sidebar-open="true"]');
-    expect(css).toMatch(/var\(--crate-sidebar-width\)\s*\+\s*var\(--space-5\)/);
+    expect(css).not.toContain('[data-crate-sidebar-open="true"]');
   });
 });

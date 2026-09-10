@@ -48,29 +48,7 @@
 }
 
 .emptyState {
-  --surface: var(--card);
-
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  composes: theme-surface-elevated from global;
-  color: var(--muted-foreground);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-8);
-  text-align: center;
-}
-
-.emptyState p {
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.emptyStateSubtext {
-  color: var(--muted-foreground);
-  font-size: var(--text-xs);
-  margin: 0;
+  composes: card from "../../styles/modules/dashboard-card.module.css";
 }
 
 .emptyStateLink {

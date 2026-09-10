@@ -4,6 +4,7 @@ import { api } from "src/api/urls";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
 import {
   crateDrawerDefaultDetail,
+  crateDrawerPackedAt,
   crateDrawerPartiallyPackedResponse,
   crateDrawerReleasePacked,
   crateDrawerReleaseUnpacked,
@@ -153,7 +154,44 @@ describe("CrateDrawerReleases", () => {
     renderCrateDrawerTree(<CrateDrawerReleases />);
 
     await waitFor(() => {
+      expect(screen.getByTestId("fmdEmptyState")).toBeInTheDocument();
       expect(screen.getByText(/no releases added yet/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows an empty state when every album is packed and hidden", async () => {
+    mockApi.crate.mockResolvedValue(
+      crateWithReleasesResponseFactory.withReleaseItems(
+        crateDrawerDefaultDetail,
+        [
+          {
+            release: crateDrawerReleasePacked,
+            found_at: crateDrawerPackedAt,
+            sort_order: 1000,
+          },
+        ],
+      ),
+    );
+
+    const user = userEvent.setup();
+
+    renderCrateDrawerTree(<CrateDrawerReleases />);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 of 1 packed for gig")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: /hide albums packed for your gig/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdEmptyState")).toBeInTheDocument();
+      expect(
+        screen.getByText(/all albums packed for your gig/i),
+      ).toBeInTheDocument();
     });
   });
 });

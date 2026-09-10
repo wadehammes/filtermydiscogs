@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import type { DuplicateGroup } from "src/types/dashboard.types";
 import { definedProps } from "src/utils/definedProps";
 import { DashboardReleaseItem } from "./DashboardReleaseItem.component";
@@ -16,9 +17,11 @@ export function DuplicatesList({
 }: DuplicatesListProps) {
   if (duplicateGroups.length === 0) {
     return (
-      <div className={styles.emptyState}>
-        <p>Nothing here — shelf looks clean.</p>
-      </div>
+      <EmptyState
+        variant="inline"
+        title="Nothing here — shelf looks clean."
+        className={styles.emptyState}
+      />
     );
   }
 

@@ -54,23 +54,9 @@
 }
 
 .emptyState {
-  --surface: var(--card);
-
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  color: var(--muted-foreground);
-  composes: theme-surface-elevated from global;
+  composes: card from "../../styles/modules/dashboard-card.module.css";
   max-width: 36rem;
-  padding: var(--space-6);
-  text-align: center;
   width: 100%;
-}
-
-.emptyState p {
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  margin: 0;
 }
 
 .moreText {

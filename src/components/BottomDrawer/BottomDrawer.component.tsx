@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { useMounted } from "src/hooks/useMounted.hook";
@@ -24,12 +25,14 @@ interface BottomDrawerProps {
   contentFlush?: boolean;
   dataAttribute?: string;
   drawerClassName?: string;
+  shellClassName?: string;
   headerClassName?: string;
   contentClassName?: string;
   aboveMiniPlayer?: boolean;
   behindMiniPlayer?: boolean;
   hideOverlay?: boolean;
   inline?: boolean;
+  inlineAlignEnd?: boolean;
 }
 
 export const BottomDrawer = ({
@@ -46,12 +49,14 @@ export const BottomDrawer = ({
   contentFlush = false,
   dataAttribute,
   drawerClassName,
+  shellClassName,
   headerClassName,
   contentClassName,
   aboveMiniPlayer = false,
   behindMiniPlayer = false,
   hideOverlay = false,
   inline = false,
+  inlineAlignEnd = false,
 }: BottomDrawerProps) => {
   usePlaybackPageScrollLock(isOpen && !hideOverlay && !inline);
   const mounted = useMounted();
@@ -75,15 +80,16 @@ export const BottomDrawer = ({
       : styles.closeIcon;
 
   const closeButton = (
-    <button
-      type="button"
+    <IconButton
+      variant="close"
       className={closeButtonClassName}
       onClick={onClose}
       aria-label={closeButtonAriaLabel}
       data-testid="fmdBottomDrawerCloseButton"
+      iconClassName={closeIconClassName}
     >
-      <XIcon className={closeIconClassName} aria-hidden />
-    </button>
+      <XIcon />
+    </IconButton>
   );
 
   const drawerPanel = (
@@ -150,13 +156,18 @@ export const BottomDrawer = ({
         />
       )}
       <div
-        className={classNames(styles.drawerShell, {
-          [styles.open]: isOpen,
-          [styles.aboveMiniPlayer]: aboveMiniPlayer,
-          [styles.behindMiniPlayer]: behindMiniPlayer,
-          [styles.drawerShellWithFloatingClose]: usesFloatingClose,
-          [styles.inline]: inline,
-        })}
+        className={classNames(
+          styles.drawerShell,
+          {
+            [styles.open]: isOpen,
+            [styles.aboveMiniPlayer]: aboveMiniPlayer,
+            [styles.behindMiniPlayer]: behindMiniPlayer,
+            [styles.drawerShellWithFloatingClose]: usesFloatingClose,
+            [styles.inline]: inline,
+            [styles.inlineAlignEnd]: inline && inlineAlignEnd,
+          },
+          shellClassName,
+        )}
         data-testid="fmdBottomDrawer"
         {...definedProps({
           "aria-labelledby": title && titleId ? titleId : undefined,

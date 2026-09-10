@@ -24,12 +24,7 @@
 }
 
 .chartContainer {
-  --surface: var(--card);
-
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  composes: theme-surface-elevated from global;
+  composes: card from "../../styles/modules/dashboard-card.module.css";
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -114,15 +109,6 @@
 }
 
 .emptyState {
-  background: var(--background);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-card);
-  color: var(--muted-foreground);
-  padding: var(--space-5);
-  text-align: center;
-}
-
-.emptyState p {
-  font-size: var(--text-sm);
-  margin: 0;
+  composes: card from "../../styles/modules/dashboard-card.module.css";
+  border-style: dashed;
 }

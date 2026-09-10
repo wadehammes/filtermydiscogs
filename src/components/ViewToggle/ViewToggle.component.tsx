@@ -1,10 +1,14 @@
 import classNames from "classnames";
 import type { ViewMode } from "src/atoms/view.atoms";
+import { IconButton } from "src/components/IconButton/IconButton.component";
+import {
+  SegmentedControl,
+  segmentedStyles,
+} from "src/components/SegmentedControl/SegmentedControl.component";
 import CratesIcon from "src/styles/icons/crates-thin.svg";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import GridIcon from "src/styles/icons/grid-thin.svg";
 import TableIcon from "src/styles/icons/table-thin.svg";
-import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import styles from "./ViewToggle.module.css";
 
 const scrollPageToTop = () => {
@@ -33,12 +37,13 @@ export const ViewToggle = ({
       className={classNames(styles.wrapper, className)}
       data-testid="fmdViewToggle"
     >
-      <div className={segmentedStyles.container}>
-        <button
-          type="button"
+      <SegmentedControl legend="Collection view mode">
+        <IconButton
           className={classNames(segmentedStyles.segment, {
             [segmentedStyles.active]: currentView === "card",
           })}
+          iconClassName={styles.segmentIcon}
+          label="Grid"
           onClick={() => {
             scrollPageToTop();
             onViewChange("card");
@@ -46,13 +51,9 @@ export const ViewToggle = ({
           aria-label="Switch to card view"
           title="Card view"
         >
-          <span className={styles.segmentIcon} aria-hidden>
-            <GridIcon />
-          </span>
-          <span>Grid</span>
-        </button>
-        <button
-          type="button"
+          <GridIcon />
+        </IconButton>
+        <IconButton
           className={classNames(
             segmentedStyles.segment,
             styles.listViewButton,
@@ -60,6 +61,8 @@ export const ViewToggle = ({
               [segmentedStyles.active]: currentView === "list",
             },
           )}
+          iconClassName={styles.segmentIcon}
+          label="Table"
           onClick={() => {
             scrollPageToTop();
             onViewChange("list");
@@ -67,16 +70,14 @@ export const ViewToggle = ({
           aria-label="Switch to list view"
           title="List view"
         >
-          <span className={styles.segmentIcon} aria-hidden>
-            <TableIcon />
-          </span>
-          <span>Table</span>
-        </button>
-        <button
-          type="button"
+          <TableIcon />
+        </IconButton>
+        <IconButton
           className={classNames(segmentedStyles.segment, {
             [segmentedStyles.active]: currentView === "random",
           })}
+          iconClassName={styles.segmentIcon}
+          label="Random"
           onClick={() => {
             scrollPageToTop();
             if (currentView === "random" && onRandomClick) {
@@ -96,29 +97,24 @@ export const ViewToggle = ({
               : "Random view"
           }
         >
-          <span className={styles.segmentIcon} aria-hidden>
-            <DiceIcon />
-          </span>
-          <span>Random</span>
-        </button>
-        {onCratesClick && (
-          <button
-            type="button"
+          <DiceIcon />
+        </IconButton>
+        {onCratesClick ? (
+          <IconButton
             className={classNames(segmentedStyles.segment, {
               [segmentedStyles.active]: isCratesOpen,
             })}
+            iconClassName={styles.segmentIcon}
+            label="Crates"
             onClick={onCratesClick}
             aria-label={isCratesOpen ? "Close crates" : "Open crates"}
             title={isCratesOpen ? "Close crates" : "View your crates"}
             aria-pressed={isCratesOpen}
           >
-            <span className={styles.segmentIcon} aria-hidden>
-              <CratesIcon />
-            </span>
-            <span>Crates</span>
-          </button>
-        )}
-      </div>
+            <CratesIcon />
+          </IconButton>
+        ) : null}
+      </SegmentedControl>
     </div>
   );
 };

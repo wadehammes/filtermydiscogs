@@ -1,0 +1,37 @@
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  justify-content: center;
+  width: 100%;
+}
+
+.actionButton {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--button-height-sm);
+  justify-content: center;
+  padding: 0;
+  width: var(--button-height-sm);
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+}

@@ -20,12 +20,14 @@ export type BottomDrawerRenderProps = {
   contentFlush?: boolean;
   dataAttribute?: string;
   drawerClassName?: string;
+  shellClassName?: string;
   headerClassName?: string;
   contentClassName?: string;
   aboveMiniPlayer?: boolean;
   behindMiniPlayer?: boolean;
   hideOverlay?: boolean;
   inline?: boolean;
+  inlineAlignEnd?: boolean;
   children?: ReactNode;
 };
 

@@ -3,17 +3,7 @@
 }
 
 :global(html:has([data-global-playback-dock])) {
-  --crate-sidebar-width: 440px;
   --release-video-panel-inset-right: var(--space-5);
-}
-
-:global(html:has([data-global-playback-dock])[data-crate-sidebar-open="true"]) {
-  @media (width >= 1024px) {
-    --release-video-panel-inset-right: calc(
-      var(--crate-sidebar-width) +
-      var(--space-5)
-    );
-  }
 }
 
 :global(html:has([data-global-playback-dock])),

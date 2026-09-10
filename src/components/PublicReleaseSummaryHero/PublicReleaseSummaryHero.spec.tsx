@@ -47,4 +47,25 @@ describe("PublicReleaseSummaryHero", () => {
       screen.queryByRole("button", { name: /add to crate/i }),
     ).not.toBeInTheDocument();
   });
+
+  it("renders View on Discogs in the toolbar when resource_url is present", () => {
+    const release = releaseFactory.build({
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        resource_url: "https://api.discogs.com/releases/249504",
+      },
+    });
+
+    render(
+      <PublicReleaseSummaryHero
+        release={release}
+        titleId="public-release-modal-title"
+        onClose={() => {}}
+      />,
+    );
+
+    expect(
+      screen.getByRole("link", { name: "View on Discogs" }),
+    ).toHaveAttribute("href", "https://www.discogs.com/release/249504");
+  });
 });

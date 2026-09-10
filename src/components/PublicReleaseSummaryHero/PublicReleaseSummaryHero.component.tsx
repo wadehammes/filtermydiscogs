@@ -3,11 +3,12 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { useMemo } from "react";
-import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import {
-  ModalToolbar,
-  ModalToolbarLink,
-} from "src/components/ModalToolbar/ModalToolbar.component";
+  DiscogsReleaseExternalLink,
+  getDiscogsReleaseUrl,
+} from "src/components/DiscogsExternalLink/DiscogsExternalLink.component";
+import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
+import { ModalToolbar } from "src/components/ModalToolbar/ModalToolbar.component";
 import { ReleaseCardMeta } from "src/components/ReleaseCard/ReleaseCardMeta.component";
 import {
   ReleaseHeaderArtistLine,
@@ -16,7 +17,6 @@ import {
 import { ReleaseHeroRatingsRow } from "src/components/ReleaseHeroRatingsRow/ReleaseHeroRatingsRow.component";
 import styles from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.module.css";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
-import ExternalLinkIcon from "src/styles/icons/external-link-thin.svg";
 import typographyStyles from "src/styles/modules/typography.module.css";
 import type { DiscogsLabel, DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -74,11 +74,7 @@ export const PublicReleaseSummaryHero = ({
   });
   const catno = heroLabel?.catno ? String(heroLabel.catno) : null;
   const communityRating = getCommunityRatingFromReleaseDetail(releaseDetail);
-  const releaseUrl = getResourceUrl({
-    resourceUrl: basicInfo.resource_url,
-    type: "release",
-    id: releaseId,
-  });
+  const releaseUrl = getDiscogsReleaseUrl(release);
   const thumbUrl = getReleaseImageUrl({
     thumb: basicInfo.thumb,
     cover_image: basicInfo.cover_image,
@@ -90,18 +86,7 @@ export const PublicReleaseSummaryHero = ({
   return (
     <div className={styles.hero} data-testid="fmdPublicReleaseSummaryHero">
       <ModalToolbar {...definedProps({ onClose })}>
-        {releaseUrl ? (
-          <ModalToolbarLink
-            href={releaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View on Discogs"
-            title="View on Discogs"
-            onClick={() => {}}
-          >
-            <ExternalLinkIcon className={styles.actionIcon} aria-hidden />
-          </ModalToolbarLink>
-        ) : null}
+        <DiscogsReleaseExternalLink release={release} variant="toolbar" />
       </ModalToolbar>
       <div className={styles.heroMain}>
         <div className={styles.coverWrapper}>

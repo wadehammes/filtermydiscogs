@@ -1,0 +1,51 @@
+.block {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: center;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.page {
+  composes: block;
+  min-height: 50vh;
+}
+
+.panel {
+  composes: block;
+  min-height: 12.5rem;
+}
+
+.inline {
+  composes: block;
+  min-height: auto;
+  padding: var(--space-6);
+}
+
+.title {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  margin: 0;
+}
+
+.titlePage {
+  composes: title;
+  color: var(--muted-foreground);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-normal);
+  margin-bottom: var(--space-2);
+}
+
+.description {
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.descriptionPage {
+  composes: description;
+  font-size: var(--text-base);
+}

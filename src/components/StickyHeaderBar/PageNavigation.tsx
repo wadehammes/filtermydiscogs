@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import Link from "next/link";
+import { IconButtonLink } from "src/components/IconButton/IconButtonLink.component";
 import Crates from "src/styles/icons/crates-thin.svg";
 import Dashboard from "src/styles/icons/dashboard.svg";
 import Mosaic from "src/styles/icons/mosaic.svg";
@@ -36,79 +36,79 @@ export const PageNavigation = ({
       })}
     >
       {showDashboard && (
-        <Link
+        <IconButtonLink
+          internal
           href="/dashboard"
           className={classNames(styles.navItem, {
             [styles.active]: currentPage === "dashboard",
             [styles.disabled]: isDisabled,
           })}
+          iconClassName={styles.icon}
+          label="Dashboard"
           onClick={handleNavigation}
           aria-label="View dashboard"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.icon}>
-            <Dashboard />
-          </span>
-          <span>Dashboard</span>
-        </Link>
+          <Dashboard />
+        </IconButtonLink>
       )}
 
       {showReleases && (
-        <Link
+        <IconButtonLink
+          internal
           href="/releases"
           className={classNames(styles.navItem, {
             [styles.active]: currentPage === "releases",
             [styles.disabled]: isDisabled,
           })}
+          iconClassName={styles.icon}
+          label="Releases"
           onClick={handleNavigation}
           aria-label="View releases"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.icon}>
-            <VinylRecord />
-          </span>
-          <span>Releases</span>
-        </Link>
+          <VinylRecord />
+        </IconButtonLink>
       )}
 
       {showCrates && (
-        <Link
+        <IconButtonLink
+          internal
           href="/crates"
           className={classNames(styles.navItem, {
             [styles.active]: currentPage === "crates",
             [styles.disabled]: isDisabled,
           })}
+          iconClassName={styles.icon}
+          label="Crates"
           onClick={handleNavigation}
           aria-label="View crates"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.icon}>
-            <Crates />
-          </span>
-          <span>Crates</span>
-        </Link>
+          <Crates />
+        </IconButtonLink>
       )}
 
       {showMosaic && (
-        <Link
+        <IconButtonLink
+          internal
           href="/mosaic"
           className={classNames(styles.navItem, {
             [styles.active]: currentPage === "mosaic",
             [styles.disabled]: isDisabled,
           })}
+          iconClassName={styles.icon}
+          label="Mosaic"
           onClick={handleNavigation}
           aria-label="View mosaic"
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
-          <span className={styles.icon}>
-            <Mosaic />
-          </span>
-          <span>Mosaic</span>
-        </Link>
+          <Mosaic />
+        </IconButtonLink>
       )}
     </nav>
   );

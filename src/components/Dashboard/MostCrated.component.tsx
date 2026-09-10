@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { useMostCratedQuery } from "src/hooks/queries/useMostCratedQuery";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
 import { definedProps } from "src/utils/definedProps";
@@ -46,15 +47,16 @@ export function MostCrated({
     return (
       <div className={styles.container}>
         {!hideHeading && <h2>Most Crated Releases</h2>}
-        <div className={styles.emptyState}>
-          <p>No records in multiple crates yet.</p>
-          <p className={styles.emptyStateSubtext}>
-            Pack the same record into two crates to see it here.
-          </p>
+        <EmptyState
+          variant="inline"
+          title="No records in multiple crates yet."
+          description="Pack the same record into two crates to see it here."
+          className={styles.emptyState}
+        >
           <Link href="/releases" className={styles.emptyStateLink}>
             Go to Releases
           </Link>
-        </div>
+        </EmptyState>
       </div>
     );
   }

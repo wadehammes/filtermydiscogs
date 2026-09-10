@@ -67,9 +67,8 @@ describe("DashboardClient", () => {
     po.renderDashboardClient({ releaseCount: 0 });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Nothing on the shelf yet" }),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("fmdEmptyState")).toBeInTheDocument();
+      expect(screen.getByText("Nothing on the shelf yet")).toBeInTheDocument();
     });
 
     expect(

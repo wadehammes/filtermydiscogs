@@ -19,9 +19,27 @@ describe("ReleasesTable", () => {
       screen.getByRole("columnheader", { name: "Artist / Title" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("columnheader", { name: "Cat#" }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("columnheader", { name: "Format/Styles" }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole("row")).toHaveLength(3);
+  });
+
+  it("displays catalog numbers in the Cat# column", () => {
+    po.renderReleasesTable({
+      releases: [
+        releaseFactory.withDisplayDefaults({
+          basic_information: {
+            ...releaseFactory.withDisplayDefaults().basic_information,
+            labels: [{ id: 1, name: "Test Label", catno: "ABC-123" }],
+          },
+        }),
+      ],
+    });
+
+    expect(screen.getByText("ABC-123")).toBeInTheDocument();
   });
 
   it("displays format pills in the table", () => {

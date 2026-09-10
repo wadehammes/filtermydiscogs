@@ -28,12 +28,7 @@
 }
 
 .healthCard {
-  --surface: var(--card);
-
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  composes: theme-surface-elevated from global;
+  composes: card from "../../styles/modules/dashboard-card.module.css";
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -76,15 +71,6 @@
 }
 
 .rateLink {
-  color: var(--primary);
+  composes: primary from "../../styles/modules/text-action.module.css";
   display: inline-block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color var(--transition-fast);
-
-  &:hover {
-    color: var(--primary-hover);
-  }
 }

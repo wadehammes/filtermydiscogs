@@ -2,6 +2,10 @@ import classNames from "classnames";
 import Image from "next/image";
 import type React from "react";
 import { memo, useCallback } from "react";
+import {
+  DiscogsReleaseExternalLink,
+  getDiscogsReleaseUrl,
+} from "src/components/DiscogsExternalLink/DiscogsExternalLink.component";
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { useCrateState } from "src/context/crate.context";
@@ -30,7 +34,6 @@ const ReleaseListItemComponent = ({
     title,
     thumb,
     styles: releaseStyles,
-    resource_url,
     cover_image,
   } = release.basic_information;
   const thumbUrl = getReleaseImageUrl({
@@ -41,10 +44,7 @@ const ReleaseListItemComponent = ({
     preferCoverImage: false,
   });
 
-  const releaseUrl = getResourceUrl({
-    resourceUrl: resource_url,
-    type: "release",
-  });
+  const releaseUrl = getDiscogsReleaseUrl(release);
 
   const labelUrl = getResourceUrl({
     resourceUrl: labels[0]?.resource_url,
@@ -203,19 +203,13 @@ const ReleaseListItemComponent = ({
             triggerStyle="text"
             actionClass={() => styles.crateButton}
           />
-          {releaseUrl && (
-            <a
-              href={releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.discogsButton}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              View on Discogs
-            </a>
-          )}
+          <DiscogsReleaseExternalLink
+            release={release}
+            variant="text"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          />
         </div>
       </div>
     </div>

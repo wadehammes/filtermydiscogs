@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import {
   InlinePopoverMenu,
   inlinePopoverMenuStyles,
@@ -149,22 +150,17 @@ export const ThemeSwitcher = ({
     variant === "mobile" ? styles.mobileButton : styles.desktopButton;
 
   return (
-    <button
-      type="button"
+    <IconButton
       className={containerClass}
+      iconClassName={styles.icon}
+      label={variant === "desktop" ? getLabel() : undefined}
+      labelClassName={styles.label}
       onClick={handleThemeToggle}
       aria-label={`Switch theme (current: ${getLabel()})`}
       title={`Theme: ${getLabel()}`}
       suppressHydrationWarning
     >
-      <span className={styles.icon} suppressHydrationWarning>
-        {getIcon()}
-      </span>
-      {variant === "desktop" ? (
-        <span className={styles.label} suppressHydrationWarning>
-          {getLabel()}
-        </span>
-      ) : null}
-    </button>
+      {getIcon()}
+    </IconButton>
   );
 };

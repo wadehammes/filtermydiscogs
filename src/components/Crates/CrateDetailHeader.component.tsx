@@ -1,7 +1,6 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { api } from "src/api/urls";
@@ -36,10 +35,6 @@ export const CrateDetailHeader = () => {
 
   return (
     <header className={styles.masthead}>
-      <Link href="/crates" className={styles.backLink}>
-        ← All crates
-      </Link>
-
       <div className={styles.mastheadControls}>
         <CrateSelector
           allowCreate={false}

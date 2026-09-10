@@ -1,6 +1,7 @@
 "use client";
 
 import classNames from "classnames";
+import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
@@ -141,11 +142,12 @@ export const ReleaseTracklist = ({
                 ) : null}
                 {showQueueColumn ? (
                   canPlayTrack && onTrackQueue ? (
-                    <button
-                      type="button"
+                    <IconButton
+                      variant="queue"
                       className={classNames(styles.queueButton, {
                         [styles.queueButtonQueued]: isQueued,
                       })}
+                      iconClassName={styles.queueButtonIcon}
                       onClick={() => {
                         onTrackQueue(track.position);
                       }}
@@ -158,18 +160,8 @@ export const ReleaseTracklist = ({
                       title={isQueued ? "In queue" : "Add to queue"}
                       data-testid="fmdReleaseTrackQueueButton"
                     >
-                      {isQueued ? (
-                        <CheckThinIcon
-                          className={styles.queueButtonIcon}
-                          aria-hidden
-                        />
-                      ) : (
-                        <ListPlusThinIcon
-                          className={styles.queueButtonIcon}
-                          aria-hidden
-                        />
-                      )}
-                    </button>
+                      {isQueued ? <CheckThinIcon /> : <ListPlusThinIcon />}
+                    </IconButton>
                   ) : (
                     <span className={styles.queueButtonSpacer} aria-hidden />
                   )
@@ -181,9 +173,11 @@ export const ReleaseTracklist = ({
       </ol>
       {onAddAllToQueue ? (
         <div className={styles.tracklistToolbar}>
-          <button
-            type="button"
+          <IconButton
+            variant="queue"
             className={styles.addAllButton}
+            iconClassName={styles.addAllButtonIcon}
+            label="Add all to queue"
             onClick={onAddAllToQueue}
             disabled={addAllToQueueDisabled}
             aria-label={
@@ -196,9 +190,8 @@ export const ReleaseTracklist = ({
             }
             data-testid="fmdReleaseTracklistAddAllButton"
           >
-            <ListPlusThinIcon className={styles.addAllButtonIcon} aria-hidden />
-            <span>Add all to queue</span>
-          </button>
+            <ListPlusThinIcon />
+          </IconButton>
         </div>
       ) : null}
     </div>

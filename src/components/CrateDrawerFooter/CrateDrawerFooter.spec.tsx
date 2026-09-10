@@ -60,6 +60,9 @@ describe("CrateDrawerFooter", () => {
       "false",
     );
     expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).not.toBeVisible();
+    expect(
+      screen.getByRole("group", { name: "Crate drawer actions" }),
+    ).toBeInTheDocument();
   });
 
   it("toggles set notes scratchpad visibility", async () => {

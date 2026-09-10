@@ -56,7 +56,8 @@ public/rss-es.xml
 public/generated-sitemap-*.xml
 
 # VS Code and IDEs
-.vscode
+.vscode/*
+!.vscode/settings.json
 .idea
 
 .vercel

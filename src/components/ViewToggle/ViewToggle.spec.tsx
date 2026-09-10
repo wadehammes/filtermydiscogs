@@ -15,6 +15,14 @@ describe("ViewToggle", () => {
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
+  it("groups view buttons in a segmented control fieldset", () => {
+    po.renderViewToggle();
+
+    expect(
+      screen.getByRole("group", { name: "Collection view mode" }),
+    ).toBeInTheDocument();
+  });
+
   it("renders all view buttons", () => {
     po.renderViewToggle();
 

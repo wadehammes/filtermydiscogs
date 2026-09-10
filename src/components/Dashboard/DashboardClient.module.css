@@ -86,24 +86,3 @@
     font-family: var(--font-family-meta);
   }
 }
-
-.emptyState {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 50vh;
-  padding: var(--space-8);
-  text-align: center;
-}
-
-.emptyState h1 {
-  color: var(--muted-foreground);
-  font-size: var(--text-2xl);
-  margin-bottom: var(--space-4);
-}
-
-.emptyState p {
-  color: var(--muted-foreground);
-  font-size: var(--text-base);
-}

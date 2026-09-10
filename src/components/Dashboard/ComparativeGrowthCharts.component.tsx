@@ -2,11 +2,15 @@
 
 import classNames from "classnames";
 import { type ReactNode, useMemo, useState } from "react";
+import { EmptyState } from "src/components/EmptyState/EmptyState.component";
+import { IconButton } from "src/components/IconButton/IconButton.component";
+import {
+  SegmentedControl,
+  segmentedStyles,
+} from "src/components/SegmentedControl/SegmentedControl.component";
 import Select from "src/components/Select/Select.component";
 import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
-import accessibilityStyles from "src/styles/modules/accessibility.module.css";
-import segmentedStyles from "src/styles/modules/segmented-control.module.css";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
 import {
   analyzeTagGrowthFromDates,
@@ -162,9 +166,11 @@ function ComparisonChartCard({
           </div>
         </>
       ) : (
-        <div className={styles.emptyState}>
-          <p>{emptyMessage}</p>
-        </div>
+        <EmptyState
+          variant="inline"
+          title={emptyMessage}
+          className={styles.emptyState}
+        />
       )}
     </article>
   );
@@ -178,36 +184,24 @@ function StyleGenreViewToggle({
   onChange: (mode: StyleGenreViewMode) => void;
 }) {
   return (
-    <fieldset className={segmentedStyles.container}>
-      <legend
-        className={classNames(
-          segmentedStyles.legend,
-          accessibilityStyles.visuallyHidden,
-        )}
-      >
-        Style in genre chart view
-      </legend>
-      <button
-        type="button"
+    <SegmentedControl legend="Style in genre chart view">
+      <IconButton
         className={classNames(segmentedStyles.segment, {
           [segmentedStyles.active]: viewMode === "cumulative",
         })}
+        label="Total"
         onClick={() => onChange("cumulative")}
         aria-pressed={viewMode === "cumulative"}
-      >
-        Total
-      </button>
-      <button
-        type="button"
+      />
+      <IconButton
         className={classNames(segmentedStyles.segment, {
           [segmentedStyles.active]: viewMode === "share",
         })}
+        label="Share"
         onClick={() => onChange("share")}
         aria-pressed={viewMode === "share"}
-      >
-        Share
-      </button>
-    </fieldset>
+      />
+    </SegmentedControl>
   );
 }
 
