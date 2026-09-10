@@ -225,7 +225,7 @@
   justify-content: center;
   min-height: 1.75rem;
   min-width: 1.75rem;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1);
   transition: var(--transition-fast);
 
   &:focus-visible {

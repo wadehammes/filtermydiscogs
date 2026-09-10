@@ -1,21 +1,19 @@
 "use client";
 
-import Image from "next/image";
+import {
+  LOGIN_PREVIEW_VIDEO_ASPECT_RATIO,
+  LOGIN_PREVIEW_VIDEO_URL,
+} from "src/constants/loginPreviewMedia";
 import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
-import { useMounted } from "src/hooks/useMounted.hook";
-import { useTheme } from "src/hooks/useTheme.hook";
-import { themeUsesDarkAssets } from "src/utils/themeAppearance";
+import FMDIcon from "src/styles/icons/fmd-icon.svg";
+import { createClientLazyComponent } from "src/utils/createClientLazyComponent";
 import styles from "./LoginPreviewDemo.module.css";
 
+const ReactPlayer = createClientLazyComponent(() =>
+  import("react-player").then((module) => module.default),
+);
+
 export const LoginPreviewDemo = () => {
-  const { resolvedTheme } = useTheme();
-  const mounted = useMounted();
-
-  const activeTheme = mounted ? resolvedTheme : "light";
-  const previewImageSrc = themeUsesDarkAssets(activeTheme)
-    ? "/images/app-preview--dark.png"
-    : "/images/app-preview--light.png";
-
   return (
     <div className={styles.demo} data-testid="fmdLoginPreviewDemo">
       <div className={styles.frame}>
@@ -24,16 +22,36 @@ export const LoginPreviewDemo = () => {
           <span className={styles.trafficLight} />
           <span className={styles.trafficLight} />
         </div>
-        <div className={styles.viewport}>
-          <Image
-            src={previewImageSrc}
-            alt={LOGIN_PREVIEW_ALT}
-            className={styles.previewImage}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 72rem"
+        <section
+          aria-label={LOGIN_PREVIEW_ALT}
+          className={styles.viewport}
+          style={{ aspectRatio: LOGIN_PREVIEW_VIDEO_ASPECT_RATIO }}
+        >
+          <ReactPlayer
+            className={styles.previewPlayer}
+            config={{
+              youtube: {
+                cc_load_policy: 0,
+                disablekb: 1,
+                fs: 0,
+                iv_load_policy: 3,
+                rel: 0,
+              },
+            }}
+            controls={false}
+            height="100%"
+            loop
+            muted
+            playsInline
+            playing
+            src={LOGIN_PREVIEW_VIDEO_URL}
+            width="100%"
           />
-        </div>
+          <div aria-hidden="true" className={styles.interactionShield} />
+          <div aria-hidden="true" className={styles.brandMark}>
+            <FMDIcon className={styles.brandIcon} />
+          </div>
+        </section>
       </div>
     </div>
   );

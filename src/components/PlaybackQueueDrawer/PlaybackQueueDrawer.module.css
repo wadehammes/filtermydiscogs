@@ -5,6 +5,10 @@
   padding: var(--space-4);
 }
 
+.queueDrawerOverVideo.queueDrawerShell.queueLayer.queueElevated {
+  z-index: 2;
+}
+
 .queueDrawer {
   @media (width >= 768px) {
     border-bottom: 1px solid var(--border);

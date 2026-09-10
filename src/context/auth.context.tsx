@@ -156,7 +156,6 @@ export const AuthProvider = ({
   const {
     data: authData,
     isPending,
-    isFetching,
     refetch,
   } = useAuthQuery({
     enabled: !skipInitialAuthCheck,
@@ -164,12 +163,12 @@ export const AuthProvider = ({
   const logoutMutation = useLogoutMutation();
 
   useEffect(() => {
-    if (skipInitialAuthCheck || isPending || isFetching) {
+    if (skipInitialAuthCheck || isPending) {
       return;
     }
 
     setHasCompletedAuthCheck(true);
-  }, [isFetching, isPending, skipInitialAuthCheck]);
+  }, [isPending, skipInitialAuthCheck]);
 
   const sessionState = useMemo(() => {
     if (skipInitialAuthCheck && initialStateOverride) {

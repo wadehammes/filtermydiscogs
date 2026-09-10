@@ -20,6 +20,14 @@ describe("ReleasePlaybackVideoPanel.module.css", () => {
     );
     expect(css).toContain("left: auto");
   });
+
+  it("uses one chrome row for the drag grip and close control", () => {
+    const css = readFileSync(VIDEO_PANEL_CSS_PATH, "utf8");
+
+    expect(css).toContain(".panelChrome");
+    expect(css).toContain("--video-panel-chrome-height: 1.75rem");
+    expect(css).not.toContain(".mobileCloseBar");
+  });
 });
 
 describe("playback-dock.module.css", () => {

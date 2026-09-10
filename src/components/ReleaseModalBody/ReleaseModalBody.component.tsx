@@ -62,7 +62,10 @@ export const ReleaseModalBody = ({
     hasPlayableTracks || releasePreviewVideos.length > 0;
 
   return (
-    <ReleaseNotesEditorProvider release={release}>
+    <ReleaseNotesEditorProvider
+      key={String(release.instance_id)}
+      release={release}
+    >
       <div className={styles.body} data-testid="fmdReleaseModalBody">
         {isError ? (
           <div className={styles.errorState}>

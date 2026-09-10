@@ -61,7 +61,7 @@ export const PersistentYoutubeIframe = ({
     registerPlaybackIframeRef.current(node);
   }, []);
 
-  const alignIframeSrc = useCallback(
+  const transitionIframeToVideo = useCallback(
     (targetVideoId: string) => {
       const iframe = iframeRef.current;
 
@@ -69,15 +69,13 @@ export const PersistentYoutubeIframe = ({
         return;
       }
 
-      const nextSrc = buildEmbedUrlForVideo(targetVideoId, autoplay);
-
-      if (iframe.src === nextSrc) {
-        loadedVideoIdRef.current = targetVideoId;
-        return;
-      }
-
       loadedVideoIdRef.current = targetVideoId;
-      iframe.src = nextSrc;
+
+      if (autoplay) {
+        loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
+      } else {
+        transitionYoutubeIframeToVideo({ iframe, videoId: targetVideoId });
+      }
     },
     [autoplay],
   );
@@ -87,28 +85,12 @@ export const PersistentYoutubeIframe = ({
       return;
     }
 
-    const iframe = iframeRef.current;
-
-    if (!iframe) {
-      return;
-    }
-
-    if (variant === "visible") {
-      alignIframeSrc(videoId);
-    } else {
-      loadedVideoIdRef.current = videoId;
-
-      if (autoplay) {
-        loadAndPlayYoutubeVideo({ iframe, videoId });
-      } else {
-        transitionYoutubeIframeToVideo({ iframe, videoId });
-      }
-    }
+    transitionIframeToVideo(videoId);
 
     if (autoplay) {
       resumePlaybackFromGesture();
     }
-  }, [alignIframeSrc, autoplay, resumePlaybackFromGesture, variant, videoId]);
+  }, [autoplay, resumePlaybackFromGesture, transitionIframeToVideo, videoId]);
 
   useEffect(() => {
     const previousVariant = previousVariantRef.current;
@@ -118,14 +100,12 @@ export const PersistentYoutubeIframe = ({
       return;
     }
 
-    if (loadedVideoIdRef.current === videoId) {
-      resumePlaybackFromGesture();
-      return;
+    if (loadedVideoIdRef.current !== videoId) {
+      transitionIframeToVideo(videoId);
     }
 
-    alignIframeSrc(videoId);
     resumePlaybackFromGesture();
-  }, [alignIframeSrc, resumePlaybackFromGesture, variant, videoId]);
+  }, [resumePlaybackFromGesture, transitionIframeToVideo, variant, videoId]);
 
   return (
     <iframe

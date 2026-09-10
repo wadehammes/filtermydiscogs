@@ -1,13 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { api } from "src/api/urls";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
+import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease, DiscogsReleaseDetail } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { buildFullPlayableAlbumQueue } from "src/utils/playbackQueue";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import { flattenTracklist } from "src/utils/releasePlayback";
-
-const RELEASE_DETAIL_STALE_MS = 5 * 60 * 1000;
 
 const getUncachedReleaseIds = (
   queryClient: QueryClient,
@@ -29,11 +28,7 @@ const seedReleaseDetailCache = (
 };
 
 const fetchReleaseDetail = (queryClient: QueryClient, releaseId: string) =>
-  queryClient.query({
-    queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
-    queryFn: () => api.discogsRelease(releaseId),
-    staleTime: RELEASE_DETAIL_STALE_MS,
-  });
+  queryClient.fetchQuery(discogsReleaseQueryOptions(releaseId));
 
 export const prefetchSimilarReleaseDetails = async ({
   similarReleases,

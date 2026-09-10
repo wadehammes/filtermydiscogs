@@ -1421,6 +1421,57 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
+  it("keeps autoplay enabled when playNext swaps the playback iframe", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const firstIframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+    const secondIframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(firstIframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    expect(result.current.queue).toHaveLength(2);
+
+    act(() => {
+      result.current.playNext();
+      result.current.registerPlaybackIframe(null);
+      result.current.registerPlaybackIframe(secondIframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    expect(result.current.shouldAutoplayEmbed).toBe(true);
+    expect(result.current.isPaused).toBe(false);
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalled();
+  });
+
   it("keeps the active track playing when the queue is cleared", async () => {
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),

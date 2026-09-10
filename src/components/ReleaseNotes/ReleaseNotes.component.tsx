@@ -1,6 +1,7 @@
 "use client";
 
 import classNames from "classnames";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import { releaseHasStoredConditionNotes } from "src/utils/releaseNotes";
 import { NoteEditDialog } from "./NoteEditDialog.component";
@@ -55,7 +56,10 @@ const ReleaseNotesCardDisplay = ({
         ) : canEdit ? (
           <button
             type="button"
-            className={styles.addNotesLink}
+            className={classNames(
+              textActionStyles.xsmuted,
+              styles.addNotesLink,
+            )}
             onClick={openDialog}
           >
             Add notes
@@ -150,7 +154,10 @@ const ReleaseNotesTable = ({ release }: { release: DiscogsRelease }) => {
         ) : canEdit ? (
           <button
             type="button"
-            className={styles.addNotesLink}
+            className={classNames(
+              textActionStyles.xsmuted,
+              styles.addNotesLink,
+            )}
             onClick={openDialog}
           >
             Add notes
@@ -162,7 +169,7 @@ const ReleaseNotesTable = ({ release }: { release: DiscogsRelease }) => {
         {canEdit && cardDisplayedNotes.length > 0 ? (
           <button
             type="button"
-            className={styles.editButton}
+            className={classNames(textActionStyles.xsmuted, styles.editButton)}
             onClick={openDialog}
           >
             Edit
@@ -222,7 +229,7 @@ const ReleaseNotesInline = ({ release }: { release: DiscogsRelease }) => {
         {canEdit ? (
           <button
             type="button"
-            className={styles.editButton}
+            className={classNames(textActionStyles.xsmuted, styles.editButton)}
             onClick={openDialog}
           >
             {displayedNotes.length > 0

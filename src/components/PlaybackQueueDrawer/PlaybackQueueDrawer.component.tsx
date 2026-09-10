@@ -33,6 +33,7 @@ import styles from "./PlaybackQueueDrawer.module.css";
 interface PlaybackQueueDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  elevateOverVideo?: boolean;
 }
 
 interface SortableQueueItemProps {
@@ -132,6 +133,7 @@ const SortableQueueItem = memo(function SortableQueueItem({
 export const PlaybackQueueDrawer = ({
   isOpen,
   onClose,
+  elevateOverVideo = false,
 }: PlaybackQueueDrawerProps) => {
   const { queue, playQueueAtIndex, removeFromQueue, reorderQueue, clearQueue } =
     useReleasePlaybackQueue();
@@ -186,6 +188,12 @@ export const PlaybackQueueDrawer = ({
       dataAttribute="data-playback-queue-open"
       inlineAlignEnd
       drawerClassName={styles.queueDrawer}
+      shellClassName={classNames(
+        styles.queueDrawerShell,
+        styles.queueLayer,
+        elevateOverVideo && styles.queueDrawerOverVideo,
+        elevateOverVideo && styles.queueElevated,
+      )}
       behindMiniPlayer
       hideOverlay
       inline

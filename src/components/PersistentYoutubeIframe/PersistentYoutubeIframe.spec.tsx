@@ -8,7 +8,10 @@ import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
-import { transitionYoutubeIframeToVideo } from "src/utils/releasePlayback";
+import {
+  loadAndPlayYoutubeVideo,
+  transitionYoutubeIframeToVideo,
+} from "src/utils/releasePlayback";
 import { render, screen } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -19,6 +22,7 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   requestYoutubePlayerState: jest.fn(),
 }));
 
+const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
 const mockTransitionYoutubeIframeToVideo = jest.mocked(
   transitionYoutubeIframeToVideo,
 );
@@ -125,6 +129,42 @@ describe("PersistentYoutubeIframe", () => {
     await user.click(screen.getByRole("button", { name: "Show iframe" }));
 
     expect(iframe).toHaveAttribute("data-variant", "visible");
+    expect(iframe.getAttribute("src")).toBe(initialSrc);
+  });
+
+  it("loads the next video via postMessage while visible without reloading iframe src", async () => {
+    const user = userEvent.setup();
+
+    const VideoSwitchHarness = () => {
+      const [videoId, setVideoId] = useState("te2jJncBVG4");
+
+      return (
+        <>
+          <button type="button" onClick={() => setVideoId("abc12345678")}>
+            Switch video
+          </button>
+          <PersistentYoutubeIframe
+            videoId={videoId}
+            videoTitle="Test video"
+            playbackKey="test"
+            autoplay
+            variant="visible"
+          />
+        </>
+      );
+    };
+
+    render(<VideoSwitchHarness />, { wrapper: createWrapper() });
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    const initialSrc = iframe.getAttribute("src");
+
+    await user.click(screen.getByRole("button", { name: "Switch video" }));
+
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+      videoId: "abc12345678",
+    });
     expect(iframe.getAttribute("src")).toBe(initialSrc);
   });
 });

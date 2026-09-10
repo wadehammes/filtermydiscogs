@@ -1,6 +1,9 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { api } from "src/api/urls";
-import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
+import {
+  COLLECTION_CACHE_VALIDATION_TIMEOUT_MS,
+  COLLECTION_PAGE_SIZE,
+} from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import type { DiscogsCollection, DiscogsRelease } from "src/types";
 import {
@@ -69,17 +72,40 @@ export function hydrateCollectionQueryFromCache(
   );
 }
 
+async function withCollectionCacheValidationTimeout<T>(
+  promise: Promise<T>,
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error("Collection cache validation timed out"));
+        }, COLLECTION_CACHE_VALIDATION_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 export async function validatePersistedCollectionCache(
   queryClient: QueryClient,
   username: string,
   cached: PersistedCollectionCache,
 ): Promise<boolean> {
   try {
-    const page = await api.discogsCollection({
-      username,
-      page: 1,
-      perPage: COLLECTION_PAGE_SIZE,
-    });
+    const page = await withCollectionCacheValidationTimeout(
+      api.discogsCollection({
+        username,
+        page: 1,
+        perPage: COLLECTION_PAGE_SIZE,
+      }),
+    );
 
     if (page.pagination.items === cached.totalItems) {
       return true;
@@ -171,7 +197,9 @@ export async function ensureCollectionCacheValidated(
     }
 
     return validatePersistedCollectionCache(queryClient, username, cached);
-  })();
+  })().finally(() => {
+    validatePromises.delete(cacheKey);
+  });
 
   validatePromises.set(cacheKey, promise);
   return promise;

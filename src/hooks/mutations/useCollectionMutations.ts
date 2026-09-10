@@ -67,8 +67,8 @@ export const useSaveReleaseRatingMutation = ({
         rating: nextRating,
       });
     },
-    onMutate: async ({ releaseId, nextRating }) => {
-      await queryClient.cancelQueries({ queryKey: collectionQueryKey });
+    onMutate: ({ releaseId, nextRating }) => {
+      void queryClient.cancelQueries({ queryKey: collectionQueryKey });
 
       const previousQueryData =
         queryClient.getQueryData<
@@ -166,8 +166,8 @@ export const useSaveReleaseNotesMutation = ({
         });
       }
     },
-    onMutate: async ({ release, values }) => {
-      await queryClient.cancelQueries({ queryKey: collectionQueryKey });
+    onMutate: ({ release, values }) => {
+      void queryClient.cancelQueries({ queryKey: collectionQueryKey });
 
       const previousQueryData =
         queryClient.getQueryData<
@@ -233,7 +233,6 @@ export const useSaveReleaseNotesMutation = ({
         instanceId,
         nextNotes,
       );
-      await queryClient.invalidateQueries({ queryKey: collectionQueryKey });
     },
   });
 };

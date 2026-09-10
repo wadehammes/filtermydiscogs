@@ -17,9 +17,7 @@ const isMissingLayoutSchemaError = (error: unknown): boolean => {
 };
 
 export const hasCrateSetMarkerDelegate = (): boolean =>
-  "crateSetMarker" in prisma &&
-  prisma.crateSetMarker != null &&
-  typeof prisma.crateSetMarker.findMany === "function";
+  typeof prisma.crateSetMarker?.findMany === "function";
 
 const crateReleaseLayoutSelect = {
   release_data: true,

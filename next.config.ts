@@ -10,6 +10,7 @@ const scriptSrc = isProduction
       "'unsafe-inline'",
       "*.googletagmanager.com",
       "*.google.com",
+      "*.youtube.com",
       ...(isVercelPreview ? ["vercel.live"] : []),
     ]
   : [
@@ -18,6 +19,7 @@ const scriptSrc = isProduction
       "'unsafe-inline'",
       "polyfill.io",
       "*.googletagmanager.com",
+      "*.youtube.com",
     ];
 
 const connectSrc = isProduction
@@ -27,6 +29,7 @@ const connectSrc = isProduction
       "*.google-analytics.com",
       "*.analytics.google.com",
       "*.google.com",
+      "*.youtube.com",
       "https://www.discogs.com",
       "https://api.discogs.com",
     ]

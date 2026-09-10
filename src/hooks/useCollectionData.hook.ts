@@ -29,14 +29,12 @@ export interface UseCollectionDataParams {
   username: string | null;
   isAuthenticated: boolean;
   rateLimited?: boolean;
-  isCheckingAuth?: boolean;
 }
 
 export const useCollectionData = ({
   username,
   isAuthenticated,
   rateLimited = false,
-  isCheckingAuth = false,
 }: UseCollectionDataParams) => {
   const queryClient = useQueryClient();
   const { state: authState } = useAuth();
@@ -50,11 +48,12 @@ export const useCollectionData = ({
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
   const lastCollectionRef = useRef<DiscogsCollection | null>(null);
 
+  const normalizedUsername = username ?? "";
   const queryEnabled =
-    isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
+    isAuthenticated && normalizedUsername.length > 0 && !rateLimited;
 
   const cacheReady = useCollectionCacheReady({
-    username: username || "",
+    username: normalizedUsername,
     enabled: queryEnabled,
   });
 
@@ -69,7 +68,7 @@ export const useCollectionData = ({
     hasNextPage,
     isFetchingNextPage,
   } = useDiscogsCollectionQuery({
-    username: username || "",
+    username: normalizedUsername,
     enabled: queryFetchEnabled,
   });
 
@@ -276,26 +275,33 @@ export const useCollectionData = ({
 
 export const useCollectionLoadState = () => {
   const { state: authState } = useAuth();
-  const { username, isAuthenticated, rateLimited, isCheckingAuth } = authState;
+  const { username, isAuthenticated, rateLimited } = authState;
 
+  const normalizedUsername = username ?? "";
   const queryEnabled =
-    isAuthenticated && !!username && !rateLimited && !isCheckingAuth;
+    isAuthenticated && normalizedUsername.length > 0 && !rateLimited;
 
   const cacheReady = useCollectionCacheReady({
-    username: username || "",
+    username: normalizedUsername,
     enabled: queryEnabled,
   });
 
   const query = useDiscogsCollectionQuery({
-    username: username || "",
+    username: normalizedUsername,
     enabled: false,
   });
 
   const hasLoadedPages = (query.data?.pages.length ?? 0) > 0;
+  const awaitingPrep = !(hasLoadedPages || cacheReady.ready);
 
   return {
     isLoading:
-      queryEnabled && !(cacheReady.ready && (hasLoadedPages || query.isError)),
+      queryEnabled &&
+      !query.isError &&
+      (awaitingPrep ||
+        query.isFetchingNextPage ||
+        query.hasNextPage ||
+        (!hasLoadedPages && (query.isLoading || query.isFetching))),
     isError: query.isError,
     queryError: query.error,
     hasNextPage: query.hasNextPage,

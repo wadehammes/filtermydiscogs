@@ -1,13 +1,7 @@
 "use client";
 
-import { hashKey, useQueryClient } from "@tanstack/react-query";
-import {
-  type MouseEvent,
-  useCallback,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { type MouseEvent, useCallback, useMemo, useState } from "react";
 import {
   showReleaseCardQueueAllQueuedToast,
   showReleaseCardQueueFetchErrorToast,
@@ -18,10 +12,11 @@ import {
   useReleasePlaybackActions,
   useReleasePlaybackState,
 } from "src/context/releasePlayback.context";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
+import {
+  discogsReleaseQueryOptions,
+  useDiscogsReleaseQuery,
+} from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
-import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import { isSameQueueItem } from "src/utils/playbackQueue";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
@@ -40,43 +35,15 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
     autoPlayOnQueueAdd,
   } = useReleasePlaybackState();
   const releaseId = parseReleaseId(release);
-  const releaseQueryKey =
-    releaseId !== null ? DiscogsReleaseQueryKeys.byId(String(releaseId)) : null;
+  const releaseIdString = releaseId !== null ? String(releaseId) : "";
   const instanceId = String(release.instance_id);
   const [isAdding, setIsAdding] = useState(false);
   const [isFetchingRelease, setIsFetchingRelease] = useState(false);
-  const [fetchedReleaseDetail, setFetchedReleaseDetail] = useState<
-    DiscogsReleaseDetail | undefined
-  >();
-  const [fetchedForInstanceId, setFetchedForInstanceId] = useState(instanceId);
 
-  if (fetchedForInstanceId !== instanceId) {
-    setFetchedForInstanceId(instanceId);
-    setFetchedReleaseDetail(undefined);
-  }
-
-  const cachedReleaseDetail = useSyncExternalStore(
-    (onStoreChange) => {
-      if (!releaseQueryKey) {
-        return () => {};
-      }
-
-      const queryHash = hashKey(releaseQueryKey);
-
-      return queryClient.getQueryCache().subscribe((event) => {
-        if (event.query.queryHash === queryHash) {
-          onStoreChange();
-        }
-      });
-    },
-    () =>
-      releaseQueryKey !== null
-        ? queryClient.getQueryData<DiscogsReleaseDetail>(releaseQueryKey)
-        : undefined,
-    () => undefined,
-  );
-
-  const releaseDetail = cachedReleaseDetail ?? fetchedReleaseDetail;
+  const { data: releaseDetail } = useDiscogsReleaseQuery({
+    releaseId: releaseIdString,
+    enabled: false,
+  });
 
   const isTrackQueuedOrPlaying = useCallback(
     (trackPosition: string) => {
@@ -154,10 +121,9 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
           setIsFetchingRelease(true);
 
           try {
-            releaseDetailForQueue = await queryClient.query(
-              discogsReleaseQueryOptions(String(releaseId)),
+            releaseDetailForQueue = await queryClient.fetchQuery(
+              discogsReleaseQueryOptions(releaseIdString),
             );
-            setFetchedReleaseDetail(releaseDetailForQueue);
           } catch {
             showReleaseCardQueueFetchErrorToast();
             return;
@@ -240,6 +206,7 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
       release,
       releaseDetail,
       releaseId,
+      releaseIdString,
       startPlayback,
     ],
   );

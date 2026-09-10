@@ -1,12 +1,12 @@
 import classNames from "classnames";
 import Link, { type LinkProps } from "next/link";
 import { type AnchorHTMLAttributes, forwardRef, type ReactNode } from "react";
-import iconButtonStyles from "src/styles/modules/icon-button.module.css";
 import { definedProps } from "src/utils/definedProps";
 import {
   type IconButtonVariant,
   iconButtonClasses,
   iconButtonIconClasses,
+  iconButtonLayoutClass,
 } from "./iconButtonClasses";
 
 export interface IconButtonLinkProps
@@ -43,7 +43,7 @@ export const IconButtonLink = forwardRef<
   const isLabeled = label != null || addon != null;
   const classes = classNames(
     iconButtonClasses(variant),
-    isLabeled && iconButtonStyles.labeled,
+    iconButtonLayoutClass(isLabeled),
     className,
   );
   const content = (

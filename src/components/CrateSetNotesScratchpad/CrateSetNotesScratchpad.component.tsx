@@ -180,22 +180,22 @@ export const CrateSetNotesScratchpad = ({
         {...notesFieldProps}
       />
       <div className={styles.footer}>
-        {statusLabel ? (
-          <p className={styles.status} aria-live="polite">
-            {statusLabel}
+        <div className={styles.footerTrailing}>
+          {statusLabel ? (
+            <p className={styles.status} aria-live="polite">
+              {statusLabel}
+            </p>
+          ) : null}
+          <p
+            id="crate-set-notes-length"
+            className={classNames(
+              styles.charCount,
+              isNotesOverLimit && styles.charCountLimit,
+            )}
+          >
+            {notesLength} / {CRATE_NOTES_MAX_LENGTH}
           </p>
-        ) : (
-          <span aria-hidden />
-        )}
-        <p
-          id="crate-set-notes-length"
-          className={classNames(
-            styles.charCount,
-            isNotesOverLimit && styles.charCountLimit,
-          )}
-        >
-          {notesLength} / {CRATE_NOTES_MAX_LENGTH}
-        </p>
+        </div>
       </div>
     </section>
   );

@@ -10,10 +10,12 @@ import {
   clearPersistedCollectionCaches,
   writePersistedCollectionCache,
 } from "src/utils/collectionCacheStorage";
-import { resetCollectionCacheReady } from "src/utils/collectionCacheSync";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
 import { renderFeatureHook, waitFor } from "test-utils";
-import { useCollectionCacheReady } from "./useCollectionCacheReady.hook";
+import {
+  resetCollectionCacheReady,
+  useCollectionCacheReady,
+} from "./useCollectionCacheReady.hook";
 
 jest.mock("src/api/urls", () => ({
   api: {
@@ -118,6 +120,73 @@ describe("useCollectionCacheReady", () => {
     });
 
     expect(result.current.hydratedFromCache).toBe(false);
+  });
+
+  it("shares ready state across hook instances for the same username", async () => {
+    const { result: firstResult } = renderFeatureHook(
+      () =>
+        useCollectionCacheReady({
+          username: "testuser",
+          enabled: true,
+        }),
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(firstResult.current.ready).toBe(true);
+    });
+
+    const { result: secondResult } = renderFeatureHook(
+      () =>
+        useCollectionCacheReady({
+          username: "testuser",
+          enabled: true,
+        }),
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    expect(secondResult.current.ready).toBe(true);
+    expect(secondResult.current.hydratedFromCache).toBe(
+      firstResult.current.hydratedFromCache,
+    );
+  });
+
+  it("marks ready after prep completes even when the initiating hook unmounts", async () => {
+    const { unmount } = renderFeatureHook(
+      () =>
+        useCollectionCacheReady({
+          username: "testuser",
+          enabled: true,
+        }),
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    unmount();
+
+    const { result: nextResult } = renderFeatureHook(
+      () =>
+        useCollectionCacheReady({
+          username: "testuser",
+          enabled: true,
+        }),
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(nextResult.current.ready).toBe(true);
+    });
   });
 
   it("resets when disabled", async () => {

@@ -5,6 +5,7 @@ import { ReleaseListItem } from "src/components/ReleaseListItem/ReleaseListItem.
 import { ReleasesTable } from "src/components/ReleasesTable/ReleasesTable.component";
 import { useCrateState } from "src/context/crate.context";
 import { DiceThinIcon } from "src/styles/icons/DiceThinIcon.component";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import styles from "./ReleasesGrid.module.css";
 
@@ -136,7 +137,7 @@ const ReleasesGridComponent = ({
           </button>
           <button
             type="button"
-            className={styles.exitRandomLink}
+            className={textActionStyles.muted}
             onClick={onExitRandomMode}
             aria-label="Exit random mode"
           >

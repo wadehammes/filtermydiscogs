@@ -142,9 +142,9 @@ const ReleaseNotesCrateFieldScratchpad = ({
         debounceRef.current = null;
       }
 
-      void persist(draft);
+      void persist(event.target.value);
     },
-    [draft, onBlur, persist],
+    [onBlur, persist],
   );
 
   const handleChange = useCallback(
@@ -187,22 +187,22 @@ const ReleaseNotesCrateFieldScratchpad = ({
         {...valueFieldProps}
       />
       <div className={styles.notesCrateScratchpadFooter}>
-        {statusLabel ? (
-          <p className={styles.notesCrateScratchpadStatus} aria-live="polite">
-            {statusLabel}
+        <div className={styles.notesCrateScratchpadFooterTrailing}>
+          {statusLabel ? (
+            <p className={styles.notesCrateScratchpadStatus} aria-live="polite">
+              {statusLabel}
+            </p>
+          ) : null}
+          <p
+            id={`${textareaId}-length`}
+            className={classNames(
+              styles.notesCrateScratchpadCount,
+              isNotesOverLimit && styles.notesCrateScratchpadCountLimit,
+            )}
+          >
+            {notesLength} / {COLLECTION_NOTE_MAX_LENGTH}
           </p>
-        ) : (
-          <span aria-hidden />
-        )}
-        <p
-          id={`${textareaId}-length`}
-          className={classNames(
-            styles.notesCrateScratchpadCount,
-            isNotesOverLimit && styles.notesCrateScratchpadCountLimit,
-          )}
-        >
-          {notesLength} / {COLLECTION_NOTE_MAX_LENGTH}
-        </p>
+        </div>
       </div>
     </div>
   );

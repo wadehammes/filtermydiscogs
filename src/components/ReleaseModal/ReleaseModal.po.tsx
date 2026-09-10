@@ -72,6 +72,7 @@ export type ReleaseModalRenderProps = {
 
 export class ReleaseModalPageObject extends BasePageObject {
   public testId = "fmdReleaseModal";
+  public mockApi = mockApi;
   public defaultRelease = releaseFactory.withTitle(
     "Never Gonna Give You Up",
     RELEASE_ID,
@@ -144,5 +145,12 @@ export class ReleaseModalPageObject extends BasePageObject {
       authInitialState: testAuthenticatedAuthState,
       includeCollectionSync: false,
     });
+  }
+
+  rerenderReleaseModal(
+    view: RenderResult,
+    overrides: ReleaseModalRenderProps = {},
+  ): void {
+    view.rerender(this.releaseModalElement(overrides));
   }
 }

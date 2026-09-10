@@ -317,6 +317,9 @@ describe("ReleaseMiniPlayer", () => {
       screen.getByTestId("fmdReleasePlaybackVideoPanelHandle"),
     ).toBeInTheDocument();
     expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanelCloseButton"),
+    ).toBeInTheDocument();
+    expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanel"),
     ).toBeInTheDocument();
     expect(
@@ -446,7 +449,7 @@ describe("ReleaseMiniPlayer", () => {
     document.querySelector("[data-filters-drawer-open]")?.remove();
   });
 
-  it("loads the next video via embed src when advancing tracks with the panel visible", async () => {
+  it("loads the next video via postMessage when advancing tracks with the panel visible", async () => {
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: createWrapper() });
@@ -473,9 +476,14 @@ describe("ReleaseMiniPlayer", () => {
       ).toBeInTheDocument();
     });
 
-    expect(iframe.getAttribute("src")).toContain("abc12345678");
-    expect(iframe.getAttribute("src")).not.toBe(initialSrc);
-    expect(mockTransitionYoutubeIframeToVideo).not.toHaveBeenCalled();
+    expect(iframe.getAttribute("src")).toBe(initialSrc);
+    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
+    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iframe,
+        videoId: "abc12345678",
+      }),
+    );
   });
 
   it("loads the next video via postMessage when advancing tracks with the panel hidden", async () => {
@@ -888,6 +896,38 @@ describe("ReleaseMiniPlayer", () => {
     );
 
     expect(onReleaseClick).toHaveBeenCalledWith(INSTANCE_ID);
+  });
+
+  it("stacks the playback queue above the expanded video panel", async () => {
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: /Open playback queue/ }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-queue-over-video",
+        "true",
+      );
+    });
+
+    const queueDrawer = screen.getByTestId("fmdBottomDrawer");
+
+    expect(queueDrawer.className).toMatch(/queueDrawerOverVideo/);
+    expect(queueDrawer.className).toMatch(/queueElevated/);
+    expect(screen.getByRole("dialog", { name: "Queue" })).toBeInTheDocument();
   });
 
   it("portals the crate menu above the playback dock", async () => {

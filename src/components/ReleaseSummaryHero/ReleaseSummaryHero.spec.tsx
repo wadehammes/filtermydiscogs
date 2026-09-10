@@ -355,6 +355,96 @@ describe("ReleaseSummaryHero", () => {
     expect(screen.queryByText(/^Community /)).toBeNull();
   });
 
+  it("saves a rating without triggering another collection fetch", async () => {
+    const user = userEvent.setup();
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      rating: 3,
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+      },
+    });
+
+    mockApi.discogsCollection.mockImplementation(() => new Promise(() => {}));
+    mockApiResponse(
+      true,
+      mockApi.updateReleaseRating,
+      {
+        username: "testuser",
+        release_id: RELEASE_ID,
+        rating: 5,
+      },
+      apiError,
+    );
+
+    render(<ReleaseSummaryHero release={release} />, {
+      authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: true,
+    });
+
+    await waitFor(() => {
+      expect(mockApi.discogsCollection).toHaveBeenCalled();
+    });
+
+    const collectionFetchCount = mockApi.discogsCollection.mock.calls.length;
+
+    await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
+
+    await waitFor(() => {
+      expect(mockApi.updateReleaseRating).toHaveBeenCalledWith({
+        username: "testuser",
+        releaseId: RELEASE_ID,
+        rating: 5,
+      });
+    });
+
+    expect(mockApi.discogsCollection.mock.calls.length).toBe(
+      collectionFetchCount,
+    );
+  });
+
+  it("completes rating save while the collection fetch is still in flight", async () => {
+    const user = userEvent.setup();
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      rating: 3,
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+      },
+    });
+
+    mockApi.discogsCollection.mockImplementation(() => new Promise(() => {}));
+    mockApiResponse(
+      true,
+      mockApi.updateReleaseRating,
+      {
+        username: "testuser",
+        release_id: RELEASE_ID,
+        rating: 5,
+      },
+      apiError,
+    );
+
+    render(<ReleaseSummaryHero release={release} />, {
+      authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: true,
+    });
+
+    await waitFor(() => {
+      expect(mockApi.discogsCollection).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
+
+    await waitFor(() => {
+      expect(mockApi.updateReleaseRating).toHaveBeenCalledWith({
+        username: "testuser",
+        releaseId: RELEASE_ID,
+        rating: 5,
+      });
+    });
+  });
+
   it("shows an editable rating picker for authenticated users", async () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 3,

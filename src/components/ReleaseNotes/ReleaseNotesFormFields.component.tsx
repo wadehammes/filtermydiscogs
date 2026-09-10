@@ -13,6 +13,22 @@ export const getNoteFieldLabelId = (fieldId: number) =>
 
 export const CONDITION_NOT_SET_VALUE = "";
 
+export type ReleaseNotesTextFieldSaveStatus = "idle" | "pending" | "saved";
+
+const getTextFieldSaveStatusLabel = (
+  status: ReleaseNotesTextFieldSaveStatus | undefined,
+): string | null => {
+  if (status === "pending") {
+    return "Saving…";
+  }
+
+  if (status === "saved") {
+    return "Saved";
+  }
+
+  return null;
+};
+
 export const getConditionSelectOptions = (field: DiscogsCollectionField) => {
   return [
     { value: CONDITION_NOT_SET_VALUE, label: "Not set" },
@@ -37,6 +53,7 @@ interface ReleaseNotesFormFieldsProps {
   onTextFieldBlur?: (fieldId: number) => void;
   onConditionFieldChange?: (fieldId: number, value: string) => void;
   textFieldErrors?: Record<string, { message?: string } | undefined>;
+  textFieldSaveStatus?: Record<string, ReleaseNotesTextFieldSaveStatus>;
 }
 
 export const ReleaseNotesFormFields = ({
@@ -50,6 +67,7 @@ export const ReleaseNotesFormFields = ({
   onTextFieldBlur,
   onConditionFieldChange,
   textFieldErrors = {},
+  textFieldSaveStatus = {},
 }: ReleaseNotesFormFieldsProps) => {
   const isModalLayout = layout === "modal";
 
@@ -61,6 +79,9 @@ export const ReleaseNotesFormFields = ({
         const fieldLength = fieldValue.length;
         const fieldError = textFieldErrors[fieldKey];
         const isFieldOverLimit = fieldLength > COLLECTION_NOTE_MAX_LENGTH;
+        const statusLabel = getTextFieldSaveStatusLabel(
+          textFieldSaveStatus[fieldKey],
+        );
 
         return (
           <div className={styles.fieldGroup} key={field.id}>
@@ -95,15 +116,22 @@ export const ReleaseNotesFormFields = ({
               ) : (
                 <span className={styles.fieldFooterSpacer} aria-hidden />
               )}
-              <p
-                id={`note-field-${field.id}-length`}
-                className={classNames(
-                  styles.charCount,
-                  isFieldOverLimit && styles.charCountLimit,
-                )}
-              >
-                {fieldLength} / {COLLECTION_NOTE_MAX_LENGTH}
-              </p>
+              <div className={styles.fieldFooterTrailing}>
+                {statusLabel ? (
+                  <p className={styles.saveStatus} aria-live="polite">
+                    {statusLabel}
+                  </p>
+                ) : null}
+                <p
+                  id={`note-field-${field.id}-length`}
+                  className={classNames(
+                    styles.charCount,
+                    isFieldOverLimit && styles.charCountLimit,
+                  )}
+                >
+                  {fieldLength} / {COLLECTION_NOTE_MAX_LENGTH}
+                </p>
+              </div>
             </div>
           </div>
         );

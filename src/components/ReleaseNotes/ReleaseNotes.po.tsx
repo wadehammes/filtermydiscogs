@@ -37,6 +37,7 @@ export type ReleaseNotesRenderProps = {
   release?: DiscogsRelease;
   variant?: "inline" | "displayOnly" | "modal";
   authenticated?: boolean;
+  includeCollectionSync?: boolean;
 };
 
 export class ReleaseNotesPageObject extends BasePageObject {
@@ -72,7 +73,10 @@ export class ReleaseNotesPageObject extends BasePageObject {
 
     if (variant === "displayOnly" || variant === "modal") {
       return (
-        <ReleaseNotesEditorProvider release={release}>
+        <ReleaseNotesEditorProvider
+          key={String(release.instance_id)}
+          release={release}
+        >
           {notes}
         </ReleaseNotesEditorProvider>
       );
@@ -83,13 +87,21 @@ export class ReleaseNotesPageObject extends BasePageObject {
 
   renderReleaseNotes({
     authenticated = true,
+    includeCollectionSync = false,
     ...overrides
   }: ReleaseNotesRenderProps = {}): RenderResult {
     return render(this.releaseNotesElement(overrides), {
       authInitialState: authenticated
         ? testAuthenticatedAuthState
         : testUnauthenticatedAuthState,
-      includeCollectionSync: false,
+      includeCollectionSync,
     });
+  }
+
+  rerenderReleaseNotes(
+    view: RenderResult,
+    overrides: ReleaseNotesRenderProps = {},
+  ): void {
+    view.rerender(this.releaseNotesElement(overrides));
   }
 }

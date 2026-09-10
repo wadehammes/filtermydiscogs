@@ -1,89 +1,118 @@
-.iconaction,
-.iconactionplus,
-.iconactionminus,
-.iconactionclose,
-.iconactionexternal,
-.iconactionqueuesubtle,
-.iconactionskip {
-  display: inherit;
-}
-
 .icon {
+  align-items: center;
+  display: inline-flex;
   flex-shrink: 0;
+  justify-content: center;
   transform-origin: center;
   transition: transform 220ms cubic-bezier(0.34, 1.35, 0.64, 1);
+
+  svg {
+    display: block;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
 }
 
-.iconaction:not(.iconactionskip, .iconactionqueuesubtle):hover:not(:disabled)
-  :is(.icon, svg),
-.iconaction:not(.iconactionskip, .iconactionqueuesubtle):focus-visible:not(
-    :disabled
-  )
-  :is(.icon, svg),
-.iconaction:not(.iconactionskip, .iconactionqueuesubtle)[data-highlighted]:not(
-    :is([data-disabled], [aria-disabled="true"])
-  )
-  :is(.icon, svg) {
-  transform: scale(1.08);
+.iconactionqueuesubtle:hover:not(:disabled),
+.iconactionqueuesubtle:focus-visible:not(:disabled) {
+  .icon,
+  > svg {
+    transform: scale(1.04);
 
-  @media (prefers-reduced-motion: reduce) {
-    transform: none;
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
   }
 }
 
-.iconactionqueuesubtle:hover:not(:disabled) :is(.icon, svg),
-.iconactionqueuesubtle:focus-visible:not(:disabled) :is(.icon, svg) {
-  transform: scale(1.04);
-
-  @media (prefers-reduced-motion: reduce) {
-    transform: none;
-  }
-}
-
-.iconactionplus:hover:not(:disabled) :is(.icon, svg),
-.iconactionplus:focus-visible:not(:disabled) :is(.icon, svg),
+.iconactionplus:hover:not(:disabled),
+.iconactionplus:focus-visible:not(:disabled),
 .iconactionplus[data-highlighted]:not(
-    :is([data-disabled], [aria-disabled="true"])
-  )
-  :is(.icon, svg) {
-  transform: rotate(90deg) scale(1.08);
+  :is([data-disabled], [aria-disabled="true"])
+) {
+  .icon,
+  > svg {
+    transform: rotate(90deg) scale(1.08);
 
-  @media (prefers-reduced-motion: reduce) {
-    transform: none;
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
   }
 }
 
-.iconactionminus:hover:not(:disabled) :is(.icon, svg),
-.iconactionminus:focus-visible:not(:disabled) :is(.icon, svg),
+.iconactionminus:hover:not(:disabled),
+.iconactionminus:focus-visible:not(:disabled),
 .iconactionminus[data-highlighted]:not(
-    :is([data-disabled], [aria-disabled="true"])
-  )
-  :is(.icon, svg) {
-  transform: rotate(-90deg) scale(1.06);
+  :is([data-disabled], [aria-disabled="true"])
+) {
+  .icon,
+  > svg {
+    transform: rotate(180deg) scale(1.06);
 
-  @media (prefers-reduced-motion: reduce) {
-    transform: none;
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
   }
 }
 
-.iconactionexternal:hover:not(:disabled) :is(.icon, svg),
-.iconactionexternal:focus-visible:not(:disabled) :is(.icon, svg) {
-  transform: translate(1px, -1px) scale(1.08);
+.iconactionexternal:hover:not(:disabled),
+.iconactionexternal:focus-visible:not(:disabled) {
+  .icon,
+  > svg {
+    transform: translate(1px, -1px) scale(1.08);
 
-  @media (prefers-reduced-motion: reduce) {
-    transform: none;
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
   }
 }
 
-.iconactionclose:hover:not(:disabled) :is(.icon, svg),
-.iconactionclose:focus-visible:not(:disabled) :is(.icon, svg) {
-  transform: rotate(90deg) scale(1.08);
+.iconactionclose:hover:not(:disabled),
+.iconactionclose:focus-visible:not(:disabled) {
+  .icon,
+  > svg {
+    transform: rotate(90deg) scale(1.08);
 
-  @media (prefers-reduced-motion: reduce) {
-    transform: none;
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
+  }
+}
+
+.iconaction:not(
+  .iconactionskip,
+  .iconactionqueuesubtle,
+  .iconactionplus,
+  .iconactionminus,
+  .iconactionclose,
+  .iconactionexternal
+):hover:not(:disabled),
+.iconaction:not(
+  .iconactionskip,
+  .iconactionqueuesubtle,
+  .iconactionplus,
+  .iconactionminus,
+  .iconactionclose,
+  .iconactionexternal
+):focus-visible:not(:disabled),
+.iconaction:not(
+  .iconactionskip,
+  .iconactionqueuesubtle,
+  .iconactionplus,
+  .iconactionminus,
+  .iconactionclose,
+  .iconactionexternal
+)[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+  .icon,
+  > svg {
+    transform: scale(1.08);
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
   }
 }

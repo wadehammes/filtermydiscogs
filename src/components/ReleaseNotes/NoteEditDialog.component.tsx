@@ -26,7 +26,10 @@ import {
   parseReleaseId,
 } from "src/utils/releaseNotes";
 import styles from "./NoteEditDialog.module.css";
-import { ReleaseNotesFormFields } from "./ReleaseNotesFormFields.component";
+import {
+  ReleaseNotesFormFields,
+  type ReleaseNotesTextFieldSaveStatus,
+} from "./ReleaseNotesFormFields.component";
 
 interface NoteEditDialogProps {
   isOpen: boolean;
@@ -106,6 +109,15 @@ export const NoteEditDialog = ({
   });
 
   const formValues = watch();
+  const textFieldSaveStatus = useMemo(() => {
+    if (!isSaving) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      editableTextFields.map((field) => [String(field.id), "pending"] as const),
+    ) satisfies Record<string, ReleaseNotesTextFieldSaveStatus>;
+  }, [editableTextFields, isSaving]);
   const textFieldErrors = useMemo(() => {
     const fieldErrors: Record<string, { message?: string }> = {};
 
@@ -220,6 +232,7 @@ export const NoteEditDialog = ({
             values={formValues}
             disabled={isSaving}
             textFieldErrors={textFieldErrors}
+            textFieldSaveStatus={textFieldSaveStatus}
             onTextFieldChange={(fieldId, event) => {
               setValue(String(fieldId), event.target.value, {
                 shouldDirty: true,

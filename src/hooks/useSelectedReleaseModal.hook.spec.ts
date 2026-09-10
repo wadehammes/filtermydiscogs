@@ -1,10 +1,18 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { api } from "src/api/urls";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
-import { act, renderHookWithTestProviders } from "test-utils";
+import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
+import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { parseReleaseId } from "src/utils/releaseNotes";
+import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
+jest.mock("src/api/urls");
+
+const mockApi = jest.mocked(api);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
 const mockUseSearchParams = jest.mocked(useSearchParams);
@@ -246,6 +254,106 @@ describe("useSelectedReleaseModal", () => {
     expect(result.current.selectedReleaseId).toBeNull();
   });
 
+  it("does not fetch the collection when resolving a release from fallbackReleases", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockPush = jest.fn();
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(
+      () =>
+        useSelectedReleaseModal({
+          fallbackReleases: releases,
+          collectionUsername: testAuthenticatedAuthState.username,
+        }),
+      { includeCollectionSync: false },
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[0]?.instance_id,
+    );
+    expect(mockApi.discogsCollection).not.toHaveBeenCalled();
+  });
+
+  it("fetches release detail on click when the cache is empty", async () => {
+    const releases = releaseFactory.buildList(1);
+    const release = releases[0];
+    const releaseId = release ? parseReleaseId(release) : null;
+
+    expect(releaseId).not.toBeNull();
+
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos({ id: releaseId ?? 0 }),
+    );
+
+    const mockPush = jest.fn();
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(release?.instance_id));
+    });
+
+    await waitFor(() => {
+      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(releaseId));
+    });
+  });
+
+  it("does not fetch release detail again when the cache already has data", async () => {
+    const releases = releaseFactory.buildList(1);
+    const release = releases[0];
+    const releaseId = release ? parseReleaseId(release) : null;
+
+    expect(releaseId).not.toBeNull();
+
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos({ id: releaseId ?? 0 }),
+    );
+
+    const mockPush = jest.fn((url: string) => {
+      applyUrl(url);
+    });
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(release?.instance_id));
+    });
+
+    await waitFor(() => {
+      expect(mockApi.discogsRelease).toHaveBeenCalledTimes(1);
+    });
+
+    act(() => {
+      result.current.handleCloseModal();
+    });
+
+    rerender();
+
+    act(() => {
+      result.current.handleReleaseClick(String(release?.instance_id));
+    });
+
+    expect(mockApi.discogsRelease).toHaveBeenCalledTimes(1);
+  });
+
   it("ignores unknown instance ids in the URL", () => {
     const releases = releaseFactory.buildList(1);
 
@@ -257,5 +365,6 @@ describe("useSelectedReleaseModal", () => {
 
     expect(result.current.selectedReleaseId).toBe("unknown");
     expect(result.current.selectedRelease).toBeNull();
+    expect(mockApi.discogsCollection).not.toHaveBeenCalled();
   });
 });

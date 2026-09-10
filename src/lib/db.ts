@@ -223,6 +223,10 @@ export const prisma = new Proxy({} as PrismaClient, {
 
     return value;
   },
+  has(_target, prop) {
+    const client = getPrismaClient();
+    return prop in client;
+  },
 });
 
 export function getPoolMetrics() {

@@ -8,7 +8,7 @@ describe("ReleasesSkeleton", () => {
 
     expect(screen.getByTestId("fmdReleasesSkeleton")).toBeInTheDocument();
     expect(screen.getAllByTestId("fmdDesktopReleaseCardSkeleton")).toHaveLength(
-      12,
+      15,
     );
     expect(screen.queryByTestId("fmdMobileReleaseCardSkeleton")).toBeNull();
   });
@@ -17,7 +17,7 @@ describe("ReleasesSkeleton", () => {
     render(<ReleasesSkeleton isMobile />);
 
     expect(screen.getAllByTestId("fmdMobileReleaseCardSkeleton")).toHaveLength(
-      12,
+      15,
     );
     expect(screen.queryByTestId("fmdDesktopReleaseCardSkeleton")).toBeNull();
   });
