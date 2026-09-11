@@ -5,13 +5,13 @@ import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
-import { ViewActionTypes } from "src/context/view.context";
 import {
   useAppliedFilterCount,
   useFiltersDispatch,
   useIsRandomMode,
 } from "src/hooks/useFilterAtoms.hook";
 import { useViewDispatch } from "src/hooks/useViewAtoms.hook";
+import { dispatchViewChangeWithTransition } from "src/utils/dispatchViewChangeWithTransition";
 import styles from "./MobileMenu.module.css";
 import { MobileMenuDrawerFooter } from "./MobileMenuDrawerFooter";
 import { MobileMenuHeader } from "./MobileMenuHeader";
@@ -69,10 +69,7 @@ export const MobileMenu = ({
     const newIsRandomMode = !isRandomMode;
 
     if (newIsRandomMode) {
-      viewDispatch({
-        type: ViewActionTypes.SetView,
-        payload: "random",
-      });
+      dispatchViewChangeWithTransition(viewDispatch, "random");
     }
 
     filtersDispatch({

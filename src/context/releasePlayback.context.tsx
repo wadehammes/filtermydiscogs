@@ -214,6 +214,30 @@ export const ReleasePlaybackProvider = ({
   autoPlayOnQueueAddRef.current = autoPlayOnQueueAdd;
   activeTrackIndexRef.current = activeTrackIndex;
 
+  const persistPlaybackSession = useCallback(() => {
+    const currentRelease = releaseRef.current;
+
+    if (!(isPlayingRef.current && currentRelease)) {
+      return;
+    }
+
+    const previewVideo = previewVideoRef.current;
+    const activeTrack = tracksRef.current[activeTrackIndexRef.current] ?? null;
+    const trackPosition = previewVideo
+      ? getPreviewTrackPosition(previewVideo)
+      : activeTrack?.position;
+
+    if (!trackPosition) {
+      return;
+    }
+
+    writePersistedReleasePlayback({
+      instanceId: String(currentRelease.instance_id),
+      trackPosition,
+      queue: queueRef.current.map(toPersistedQueueItem),
+    });
+  }, []);
+
   const getCurrentQueueItem = useCallback((): PlaybackQueueItem | null => {
     const currentRelease = releaseRef.current;
 
@@ -228,20 +252,25 @@ export const ReleasePlaybackProvider = ({
     });
   }, []);
 
-  const setUpcomingQueue = useCallback((nextQueue: PlaybackQueueItem[]) => {
-    queueRef.current = nextQueue;
-    setQueue(nextQueue);
-  }, []);
+  const setUpcomingQueue = useCallback(
+    (nextQueue: PlaybackQueueItem[]) => {
+      queueRef.current = nextQueue;
+      setQueue(nextQueue);
+      persistPlaybackSession();
+    },
+    [persistPlaybackSession],
+  );
 
   const updateUpcomingQueue = useCallback(
     (updater: (previousQueue: PlaybackQueueItem[]) => PlaybackQueueItem[]) => {
       setQueue((previousQueue) => {
         const nextQueue = updater(previousQueue);
         queueRef.current = nextQueue;
+        persistPlaybackSession();
         return nextQueue;
       });
     },
-    [],
+    [persistPlaybackSession],
   );
 
   const clearPlaybackHistory = useCallback(() => {
@@ -368,30 +397,6 @@ export const ReleasePlaybackProvider = ({
     },
     [schedulePlayFromGestureAttempts],
   );
-
-  const persistPlaybackSession = useCallback(() => {
-    const currentRelease = releaseRef.current;
-
-    if (!(isPlayingRef.current && currentRelease)) {
-      return;
-    }
-
-    const previewVideo = previewVideoRef.current;
-    const activeTrack = tracksRef.current[activeTrackIndexRef.current] ?? null;
-    const trackPosition = previewVideo
-      ? getPreviewTrackPosition(previewVideo)
-      : activeTrack?.position;
-
-    if (!trackPosition) {
-      return;
-    }
-
-    writePersistedReleasePlayback({
-      instanceId: String(currentRelease.instance_id),
-      trackPosition,
-      queue: queueRef.current.map(toPersistedQueueItem),
-    });
-  }, []);
 
   const resolveQueueItemEmbedVideoId = useCallback(
     (item: PlaybackQueueItem): string | null => {
@@ -1439,7 +1444,6 @@ export const ReleasePlaybackProvider = ({
     isReleasePreview,
     pendingTrackPosition,
     persistPlaybackSession,
-    queue,
     release,
   ]);
 

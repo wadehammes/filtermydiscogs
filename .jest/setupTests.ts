@@ -80,7 +80,6 @@ jest.mock("next/image", () => ({
     className?: string;
     [key: string]: unknown;
   }) => {
-    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
     return React.createElement("img", {
       src: props.src,
       alt: props.alt,
@@ -102,11 +101,26 @@ console.warn = (...args: unknown[]) => {
   originalWarn.apply(console, args);
 };
 
+const mockLayoutRect = {
+  x: 100,
+  y: 200,
+  width: 240,
+  height: 44,
+  top: 200,
+  left: 100,
+  right: 340,
+  bottom: 244,
+  toJSON: () => {},
+} as DOMRect;
+
 beforeAll(() => {
   replaceLocation();
   replaceHistory();
   setupIntersectionObserverMock();
   setupMockMatchMedia();
+  jest
+    .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+    .mockReturnValue(mockLayoutRect);
 
   const baseUiTestStyles = document.createElement("style");
   baseUiTestStyles.textContent = `
@@ -129,19 +143,8 @@ beforeEach(() => {
   setupMockMatchMedia();
   window.scrollTo = jest.fn();
   localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "denied");
-  jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
-    x: 100,
-    y: 200,
-    width: 240,
-    height: 44,
-    top: 200,
-    left: 100,
-    right: 340,
-    bottom: 244,
-    toJSON: () => {},
-  } as DOMRect);
 });
 
 afterAll(() => {
-  jest.resetAllMocks();
+  jest.restoreAllMocks();
 });

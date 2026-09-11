@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 
 const MosaicClient = dynamic(() => import("./MosaicClient.component"), {
   ssr: false,
@@ -9,5 +10,9 @@ const MosaicClient = dynamic(() => import("./MosaicClient.component"), {
 });
 
 export default function MosaicClientWrapper() {
-  return <MosaicClient />;
+  return (
+    <ViewTransitionShell mode="deferredUpdate">
+      <MosaicClient />
+    </ViewTransitionShell>
+  );
 }

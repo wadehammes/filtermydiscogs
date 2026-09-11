@@ -1,6 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -129,31 +135,7 @@ export const useCollectionData = ({
     !(hasNextPage || isFetchingNextPage) &&
     !!processedData;
 
-  useEffect(() => {
-    if (
-      !(
-        isCollectionFullyLoaded &&
-        username &&
-        collectionData?.pages?.length &&
-        collectionData.pageParams?.length
-      )
-    ) {
-      return;
-    }
-
-    void persistCollectionQueryToCache(
-      username,
-      collectionData.pages,
-      collectionData.pageParams as CollectionPageParam[],
-    );
-  }, [
-    collectionData?.pageParams,
-    collectionData?.pages,
-    isCollectionFullyLoaded,
-    username,
-  ]);
-
-  useEffect(() => {
+  const runAutoCrateSync = useEffectEvent(() => {
     if (
       !(
         cacheReady.hydratedFromCache &&
@@ -191,15 +173,27 @@ export const useCollectionData = ({
         },
       },
     );
+  });
+
+  useEffect(() => {
+    if (
+      isCollectionFullyLoaded &&
+      username &&
+      collectionData?.pages?.length &&
+      collectionData.pageParams?.length
+    ) {
+      void persistCollectionQueryToCache(
+        username,
+        collectionData.pages,
+        collectionData.pageParams as CollectionPageParam[],
+      );
+    }
+
+    runAutoCrateSync();
   }, [
-    cacheReady.hydratedFromCache,
-    collectionData,
-    hasNextPage,
+    collectionData?.pageParams,
+    collectionData?.pages,
     isCollectionFullyLoaded,
-    isFetchingNextPage,
-    isSyncPending,
-    rateLimited,
-    syncCrates,
     username,
   ]);
 

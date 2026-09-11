@@ -1,18 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useMounted } from "src/hooks/useMounted.hook";
+import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import { handleDonationSuccessReturn } from "src/utils/donationSuccessToast";
 
-export const DonationSuccessToast = () => {
-  const mounted = useMounted();
+const DonationSuccessToastInner = () => {
   const handledRef = useRef(false);
 
   useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-
     handleDonationSuccessReturn(handledRef);
 
     const handlePageShow = () => {
@@ -24,7 +19,15 @@ export const DonationSuccessToast = () => {
     return () => {
       window.removeEventListener("pageshow", handlePageShow);
     };
-  }, [mounted]);
+  }, []);
 
   return null;
+};
+
+export const DonationSuccessToast = () => {
+  return (
+    <BrowserOnly>
+      <DonationSuccessToastInner />
+    </BrowserOnly>
+  );
 };

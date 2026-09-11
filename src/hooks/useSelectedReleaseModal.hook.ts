@@ -2,7 +2,14 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import { prefetchReleaseModal } from "src/components/ReleaseModal/prefetchReleaseModal";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCollectionReleaseByInstanceId } from "src/hooks/queries/useCollectionReleaseByInstanceId.hook";
@@ -72,8 +79,14 @@ export const useSelectedReleaseModal = ({
     initialModalSyncState,
   );
 
+  const syncModalFromUrl = useEffectEvent(
+    (nextUrlInstanceId: string | null) => {
+      dispatchModalSync({ type: "syncUrl", urlInstanceId: nextUrlInstanceId });
+    },
+  );
+
   useEffect(() => {
-    dispatchModalSync({ type: "syncUrl", urlInstanceId });
+    syncModalFromUrl(urlInstanceId);
   }, [urlInstanceId]);
 
   const selectedReleaseId = modalSync.closing

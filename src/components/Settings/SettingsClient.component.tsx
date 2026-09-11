@@ -10,7 +10,6 @@ import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
 import { useAuth } from "src/context/auth.context";
-import { ViewActionTypes } from "src/context/view.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
@@ -21,6 +20,7 @@ import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   type StoredViewState,
 } from "src/types/userPreferences.types";
+import { dispatchViewChangeWithTransition } from "src/utils/dispatchViewChangeWithTransition";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import { toast } from "src/utils/toast";
@@ -144,10 +144,7 @@ export default function SettingsClient() {
   };
 
   const handleViewChange = (view: "card" | "list") => {
-    dispatchView({
-      type: ViewActionTypes.SetView,
-      payload: view,
-    });
+    dispatchViewChangeWithTransition(dispatchView, view);
     const { currentView, previousView } = store.get(viewStateAtom);
     const persistedView: StoredViewState = { currentView, previousView };
     persistPreferences(

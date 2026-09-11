@@ -3,10 +3,11 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
-import { useMounted } from "src/hooks/useMounted.hook";
+import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 import XIcon from "src/styles/icons/x-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./BottomDrawer.module.css";
@@ -59,13 +60,12 @@ export const BottomDrawer = ({
   inlineAlignEnd = false,
 }: BottomDrawerProps) => {
   usePlaybackPageScrollLock(isOpen && !hideOverlay && !inline);
-  const mounted = useMounted();
   const resolvedClosePlacement =
     closeButtonPlacement ?? (chrome ? "header" : "floating");
   const hasHeader = Boolean(title || headerContent);
   const usesFloatingClose = resolvedClosePlacement === "floating";
 
-  if (!(isOpen && mounted)) {
+  if (!isOpen) {
     return null;
   }
 
@@ -194,9 +194,15 @@ export const BottomDrawer = ({
     </>
   );
 
+  const drawerContent = (
+    <ViewTransitionShell mode="mount">{drawer}</ViewTransitionShell>
+  );
+
   if (inline) {
-    return drawer;
+    return <BrowserOnly>{drawerContent}</BrowserOnly>;
   }
 
-  return createPortal(drawer, document.body);
+  return (
+    <BrowserOnly>{createPortal(drawerContent, document.body)}</BrowserOnly>
+  );
 };

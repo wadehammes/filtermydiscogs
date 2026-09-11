@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { Activity, useCallback, useEffect, useState } from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
@@ -202,7 +202,7 @@ export const ReleaseMiniPlayer = ({
               />
             </ReleasePlaybackVideoPanel>
           ) : null}
-          {isQueueOpen ? (
+          <Activity mode={isQueueOpen ? "visible" : "hidden"}>
             <PlaybackQueueDrawerLazy
               isOpen={isQueueOpen}
               elevateOverVideo={isVideoPanelExpanded}
@@ -210,7 +210,7 @@ export const ReleaseMiniPlayer = ({
                 setIsQueueOpen(false);
               }}
             />
-          ) : null}
+          </Activity>
           <div className={styles.miniPlayerBar}>
             <div className={styles.releaseArea}>
               <div className={styles.metaRow}>

@@ -2,7 +2,7 @@
 
 import { Toast } from "@base-ui/react/toast";
 import classNames from "classnames";
-import { useMounted } from "src/hooks/useMounted.hook";
+import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import type { FmdToastData } from "src/lib/toastManagers";
 import { centerToastManager, toastManager } from "src/lib/toastManagers";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
@@ -113,15 +113,9 @@ function ToastViewportList({ position }: { position: ToastViewportPosition }) {
   );
 }
 
-export function AppToaster() {
-  const mounted = useMounted();
-
-  if (!mounted) {
-    return null;
-  }
-
+export const AppToaster = () => {
   return (
-    <>
+    <BrowserOnly>
       <Toast.Provider toastManager={toastManager} limit={3} timeout={5000}>
         <ToastViewportList position="bottom-right" />
       </Toast.Provider>
@@ -132,6 +126,6 @@ export function AppToaster() {
       >
         <ToastViewportList position="bottom-center" />
       </Toast.Provider>
-    </>
+    </BrowserOnly>
   );
-}
+};

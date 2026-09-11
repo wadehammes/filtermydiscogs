@@ -16,17 +16,23 @@ export const setupFetchDiscogsReleaseMock = (
     };
   };
 
+  if (!jest.isMockFunction(mockApi.discogsRelease)) {
+    return;
+  }
+
   mockApi.discogsRelease.mockImplementation(async (releaseId) =>
     resolveDetail(releaseId),
   );
 
-  mockApi.discogsReleaseBatch.mockImplementation(async (ids) => {
-    const releases: Record<string, DiscogsReleaseDetail> = {};
+  if (jest.isMockFunction(mockApi.discogsReleaseBatch)) {
+    mockApi.discogsReleaseBatch.mockImplementation(async (ids) => {
+      const releases: Record<string, DiscogsReleaseDetail> = {};
 
-    for (const releaseId of ids) {
-      releases[releaseId] = resolveDetail(releaseId);
-    }
+      for (const releaseId of ids) {
+        releases[releaseId] = resolveDetail(releaseId);
+      }
 
-    return releases;
-  });
+      return releases;
+    });
+  }
 };
