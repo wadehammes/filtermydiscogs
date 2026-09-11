@@ -1,8 +1,7 @@
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
-import type {
-  DiscogsTrack,
-  DiscogsVideo,
-} from "src/types/discogs-release-detail.types";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
+import type { DiscogsTrack } from "src/types/discogs-release-detail.types";
 import {
   buildReleasePlaybackMatchIndex,
   buildYoutubeEmbedUrl,
@@ -53,22 +52,17 @@ describe("normalizeTrackTitle", () => {
 
 describe("getEmbeddableVideos", () => {
   it("filters to embeddable YouTube videos", () => {
-    const videos: DiscogsVideo[] = [
-      {
+    const videos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Track A",
-        embed: true,
-      },
-      {
-        uri: "https://www.discogs.com/release/1",
-        title: "Not YouTube",
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.nonYoutube({ title: "Not YouTube" }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=xyz98765432",
         title: "No Embed",
         embed: false,
-      },
+      }),
     ];
 
     expect(getEmbeddableVideos(videos)).toHaveLength(1);
@@ -77,25 +71,26 @@ describe("getEmbeddableVideos", () => {
 });
 
 describe("findVideoForTrack", () => {
-  const videos: DiscogsVideo[] = [
-    {
+  const videos = [
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "Artist - Never Gonna Give You Up (Official Video)",
-      embed: true,
-    },
-    {
+      duration: undefined,
+    }),
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=xyz98765432",
       title: "Full Album Upload",
-      embed: true,
-    },
+      duration: undefined,
+    }),
   ];
 
   it("matches track title within video title", () => {
-    const track: DiscogsTrack = {
+    const track = discogsTrackFactory.build({
       position: "A",
       title: "Never Gonna Give You Up",
       type_: "track",
-    };
+      duration: undefined,
+    });
 
     expect(findVideoForTrack({ track, videos })?.title).toContain(
       "Never Gonna Give You Up",
@@ -103,55 +98,38 @@ describe("findVideoForTrack", () => {
   });
 
   it("returns null when no title match exists", () => {
-    const track: DiscogsTrack = {
+    const track = discogsTrackFactory.build({
       position: "B",
       title: "Unknown B-Side",
       type_: "track",
-    };
+      duration: undefined,
+    });
 
     expect(findVideoForTrack({ track, videos })).toBeNull();
   });
 
   it("matches untitled tracks to numbered videos by order and duration", () => {
-    const untitledTracks: DiscogsTrack[] = [
-      {
-        position: "A1",
-        title: "Untitled",
-        duration: "5:50",
-        type_: "track",
-      },
-      {
-        position: "A2",
-        title: "Untitled",
-        duration: "4:54",
-        type_: "track",
-      },
-      {
-        position: "B",
-        title: "Untitled",
-        duration: "4:38",
-        type_: "track",
-      },
+    const untitledTracks = [
+      discogsTrackFactory.untitled({ position: "A1", duration: "5:50" }),
+      discogsTrackFactory.untitled({ position: "A2", duration: "4:54" }),
+      discogsTrackFactory.untitled({ position: "B", duration: "4:38" }),
     ];
-    const veditVideos: DiscogsVideo[] = [
-      {
+    const veditVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Vedit - Track 1 (Vedit 01)",
         duration: 347,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "Vedit - Track 2 (Vedit 01)",
         duration: 277,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=ghi11223344",
         title: "Vedit - Track 3 (Vedit 01)",
         duration: 274,
-        embed: true,
-      },
+      }),
     ];
 
     const matchIndex = buildReleasePlaybackMatchIndex(
@@ -173,45 +151,27 @@ describe("findVideoForTrack", () => {
   });
 
   it("findVideoForTrack uses duration fallback when given the full tracklist", () => {
-    const untitledTracks: DiscogsTrack[] = [
-      {
-        position: "A1",
-        title: "Untitled",
-        duration: "5:50",
-        type_: "track",
-      },
-      {
-        position: "A2",
-        title: "Untitled",
-        duration: "4:54",
-        type_: "track",
-      },
-      {
-        position: "B",
-        title: "Untitled",
-        duration: "4:38",
-        type_: "track",
-      },
+    const untitledTracks = [
+      discogsTrackFactory.untitled({ position: "A1", duration: "5:50" }),
+      discogsTrackFactory.untitled({ position: "A2", duration: "4:54" }),
+      discogsTrackFactory.untitled({ position: "B", duration: "4:38" }),
     ];
-    const veditVideos: DiscogsVideo[] = [
-      {
+    const veditVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Vedit - Track 1 (Vedit 01)",
         duration: 347,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "Vedit - Track 2 (Vedit 01)",
         duration: 277,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=ghi11223344",
         title: "Vedit - Track 3 (Vedit 01)",
         duration: 274,
-        embed: true,
-      },
+      }),
     ];
 
     expect(
@@ -223,46 +183,200 @@ describe("findVideoForTrack", () => {
     ).toContain("Track 1");
   });
 
+  it("matches Untitled tracks to position-prefixed Unknown videos without track durations", () => {
+    const untitledTracks = [
+      discogsTrackFactory.untitled({ position: "A1", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "A2", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "B1", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "B2", duration: undefined }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        title: "Fulvio Ruffert & Max / Unknown Collective - A1 Unknown (UNK10)",
+        duration: 486,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=bbbbbbbbbbb",
+        title: "Fulvio Ruffert & Max / Unknown Collective - A2 Unknown (UNK10)",
+        duration: 367,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=ccccccccccc",
+        title: "Fulvio Ruffert & Max / Unknown Collective - B1 Unknown (UNK10)",
+        duration: 455,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=ddddddddddd",
+        title: "Fulvio Ruffert & Max / Unknown Collective - B2 Unknown (UNK10)",
+        duration: 453,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(untitledTracks, videos);
+
+    expect(matchIndex.hasPlayableTracks).toBe(true);
+    expect(matchIndex.previewVideos).toHaveLength(0);
+    expect(matchIndex.trackVideoByPosition.get("A1")?.title).toContain(
+      "A1 Unknown",
+    );
+    expect(matchIndex.trackVideoByPosition.get("A2")?.title).toContain(
+      "A2 Unknown",
+    );
+    expect(matchIndex.trackVideoByPosition.get("B1")?.title).toContain(
+      "B1 Unknown",
+    );
+    expect(matchIndex.trackVideoByPosition.get("B2")?.title).toContain(
+      "B2 Unknown",
+    );
+  });
+
+  it("matches position-prefixed Unknown videos even when video list order differs from the tracklist", () => {
+    const untitledTracks = [
+      discogsTrackFactory.untitled({ position: "A1", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "A2", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "B1", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "B2", duration: undefined }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=ddddddddddd",
+        title: "Fulvio Ruffert & Max / Unknown Collective - B2 Unknown (UNK10)",
+        duration: 453,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=bbbbbbbbbbb",
+        title: "Fulvio Ruffert & Max / Unknown Collective - A2 Unknown (UNK10)",
+        duration: 367,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        title: "Fulvio Ruffert & Max / Unknown Collective - A1 Unknown (UNK10)",
+        duration: 486,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=ccccccccccc",
+        title: "Fulvio Ruffert & Max / Unknown Collective - B1 Unknown (UNK10)",
+        duration: 455,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(untitledTracks, videos);
+
+    expect(matchIndex.trackVideoByPosition.get("A1")?.uri).toContain(
+      "aaaaaaaaaaa",
+    );
+    expect(matchIndex.trackVideoByPosition.get("A2")?.uri).toContain(
+      "bbbbbbbbbbb",
+    );
+    expect(matchIndex.trackVideoByPosition.get("B1")?.uri).toContain(
+      "ccccccccccc",
+    );
+    expect(matchIndex.trackVideoByPosition.get("B2")?.uri).toContain(
+      "ddddddddddd",
+    );
+    expect(matchIndex.previewVideos).toHaveLength(0);
+  });
+
+  it("does not pair a named track to a position-prefixed Unknown video by position alone", () => {
+    const tracks = [
+      discogsTrackFactory.build({
+        position: "A1",
+        title: "Sunset Drive",
+        type_: "track",
+        duration: undefined,
+      }),
+      discogsTrackFactory.untitled({ position: "A2", duration: undefined }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        title: "Artist - A1 Unknown (CAT01)",
+        duration: 200,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=bbbbbbbbbbb",
+        title: "Artist - A2 Unknown (CAT01)",
+        duration: 210,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.trackVideoByPosition.has("A1")).toBe(false);
+    expect(matchIndex.trackVideoByPosition.get("A2")?.title).toContain(
+      "A2 Unknown",
+    );
+    expect(matchIndex.previewVideos).toHaveLength(1);
+    expect(matchIndex.previewVideos[0]?.title).toContain("A1 Unknown");
+  });
+
+  it("matches Untitled box-set sides beyond D by position prefix", () => {
+    const tracks = [
+      discogsTrackFactory.untitled({ position: "G1", duration: undefined }),
+      discogsTrackFactory.untitled({ position: "Z2", duration: undefined }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=zzzzzzzzzzz",
+        title: "Various - Z2 Unknown (BOX1)",
+        duration: 300,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=ggggggggggg",
+        title: "Various - G1 Unknown (BOX1)",
+        duration: 280,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.trackVideoByPosition.get("G1")?.uri).toContain(
+      "ggggggggggg",
+    );
+    expect(matchIndex.trackVideoByPosition.get("Z2")?.uri).toContain(
+      "zzzzzzzzzzz",
+    );
+    expect(matchIndex.previewVideos).toHaveLength(0);
+  });
+
   it("matches untitled variants with attached numbers", () => {
-    const untitledTracks: DiscogsTrack[] = [
-      {
+    const untitledTracks = [
+      discogsTrackFactory.build({
         position: "A1",
         title: "Untitled01",
         duration: "5:50",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "A2",
         title: "Untitled02",
         duration: "4:54",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "B1",
         title: "Untitled03",
         duration: "4:38",
         type_: "track",
-      },
+      }),
     ];
-    const veditVideos: DiscogsVideo[] = [
-      {
+    const veditVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Vedit - Track 1 (Vedit 01)",
         duration: 347,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "Vedit - Track 2 (Vedit 01)",
         duration: 277,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=ghi11223344",
         title: "Vedit - Track 3 (Vedit 01)",
         duration: 274,
-        embed: true,
-      },
+      }),
     ];
 
     const matchIndex = buildReleasePlaybackMatchIndex(
@@ -275,159 +389,168 @@ describe("findVideoForTrack", () => {
   });
 
   it("matches Discogs-style track and video titles with mix and venue details", () => {
-    const kerriVideos: DiscogsVideo[] = [
-      {
+    const kerriVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title:
           "Kerri Chandler Feat. Lady Linn - You Get Lost In It (Full Vocal Main Mix)",
-        embed: true,
-      },
-      {
+        duration: undefined,
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "Never Thought [Printworks] (623 Again Vocal)",
-        embed: true,
-      },
-      {
+        duration: undefined,
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=ghi11223344",
         title:
           "Kerri Chandler ft. Lady Linn - You Get Lost In It [The Warehouse Project] (Instrumental)",
-        embed: true,
-      },
-      {
+        duration: undefined,
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=jkl55667788",
         title: "Never Thought (623 Again Instrumental) [Printworks]",
-        embed: true,
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "A1",
           title: "Never Thought (623 Again Vocal) (Printworks)",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: kerriVideos,
       })?.title,
     ).toBe("Never Thought [Printworks] (623 Again Vocal)");
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "B1",
           title:
             "You Get Lost In It (Full Vocal Main Mix) (The Warehouse Project)",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: kerriVideos,
       })?.title,
     ).toContain("Full Vocal Main Mix");
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "B2",
           title: "You Get Lost In It (Instrumental) (The Warehouse Project)",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: kerriVideos,
       })?.title,
     ).toContain("Instrumental");
   });
 
   it("matches Unicode track titles when video uses a prefixed title and side suffix", () => {
-    const sideVideos: DiscogsVideo[] = [
-      {
+    const sideVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "YYY黒803 - A",
-        embed: true,
-      },
-      {
+        duration: undefined,
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "YYY黒803 - B",
-        embed: true,
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "A",
           title: "黒803A",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: sideVideos,
       })?.title,
     ).toBe("YYY黒803 - A");
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "B",
           title: "黒803B",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: sideVideos,
       })?.title,
     ).toBe("YYY黒803 - B");
   });
 
   it("matches when video titles insert extra characters between shared segments", () => {
-    const sideVideos: DiscogsVideo[] = [
-      {
+    const sideVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "YYY – 金606 A",
-        embed: true,
-      },
-      {
+        duration: undefined,
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "YYY – 金606 B",
-        embed: true,
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "A",
           title: "YYY606 A",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: sideVideos,
       })?.title,
     ).toBe("YYY – 金606 A");
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "B",
           title: "YYY606 B",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: sideVideos,
       })?.title,
     ).toBe("YYY – 金606 B");
   });
 
   it("matches duplicate track titles using position when only the video includes the side", () => {
-    const sideVideos: DiscogsVideo[] = [
-      {
+    const sideVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "YYY - 金344 B",
-        embed: true,
-      },
+        duration: undefined,
+      }),
     ];
-    const tracks: DiscogsTrack[] = [
-      {
+    const tracks = [
+      discogsTrackFactory.build({
         position: "A",
         title: "金344",
         type_: "track",
-      },
-      {
+        duration: undefined,
+      }),
+      discogsTrackFactory.build({
         position: "B",
         title: "金344",
         type_: "track",
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(
@@ -460,19 +583,18 @@ describe("findVideoForTrack", () => {
   });
 
   it("matches when video titles use a common name spelling variant", () => {
-    const track: DiscogsTrack = {
+    const track = discogsTrackFactory.build({
       position: "B2.a",
       title: "Zack's Fanfare",
       duration: "0:50",
       type_: "track",
-    };
-    const videos: DiscogsVideo[] = [
-      {
+    });
+    const videos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=bbbbbbbbbbb",
         title: "MFSB - Zach's Fanfare (I Hear Music)",
         duration: 51,
-        embed: true,
-      },
+      }),
     ];
 
     const matchIndex = buildReleasePlaybackMatchIndex([track], videos);
@@ -484,37 +606,39 @@ describe("findVideoForTrack", () => {
   });
 
   it("matches when numerals and text are reordered in the video title", () => {
-    const sideVideos: DiscogsVideo[] = [
-      {
+    const sideVideos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "YYY - 白161A [YYY161]",
-        embed: true,
-      },
-      {
+        duration: undefined,
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=def98765432",
         title: "YYY - 白161B [YYY161]",
-        embed: true,
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "A",
           title: "161白A",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: sideVideos,
       })?.title,
     ).toBe("YYY - 白161A [YYY161]");
 
     expect(
       findVideoForTrack({
-        track: {
+        track: discogsTrackFactory.build({
           position: "B",
           title: "161白B",
           type_: "track",
-        },
+          duration: undefined,
+        }),
         videos: sideVideos,
       })?.title,
     ).toBe("YYY - 白161B [YYY161]");
@@ -522,25 +646,26 @@ describe("findVideoForTrack", () => {
 });
 
 describe("buildReleasePlaybackMatchIndex", () => {
-  const videos: DiscogsVideo[] = [
-    {
+  const videos = [
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "Artist - Never Gonna Give You Up (Official Video)",
-      embed: true,
-    },
-    {
+      duration: undefined,
+    }),
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=xyz98765432",
       title: "Full Album Upload",
-      embed: true,
-    },
+      duration: undefined,
+    }),
   ];
 
-  const tracks: DiscogsTrack[] = [
-    {
+  const tracks = [
+    discogsTrackFactory.build({
       position: "A",
       title: "Never Gonna Give You Up",
       type_: "track",
-    },
+      duration: undefined,
+    }),
   ];
 
   it("indexes track matches and preview videos in one pass", () => {
@@ -573,26 +698,27 @@ describe("buildReleasePlaybackMatchIndex", () => {
 });
 
 describe("getReleasePreviewVideos", () => {
-  const videos: DiscogsVideo[] = [
-    {
+  const videos = [
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "Artist - Never Gonna Give You Up (Official Video)",
-      embed: true,
-    },
-    {
+      duration: undefined,
+    }),
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=xyz98765432",
       title: "Full Album Upload",
-      embed: true,
-    },
+      duration: undefined,
+    }),
   ];
 
   it("returns videos not matched to any track", () => {
-    const tracks: DiscogsTrack[] = [
-      {
+    const tracks = [
+      discogsTrackFactory.build({
         position: "A",
         title: "Never Gonna Give You Up",
         type_: "track",
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(
@@ -601,12 +727,13 @@ describe("getReleasePreviewVideos", () => {
   });
 
   it("returns all embeddable videos when no tracks match", () => {
-    const tracks: DiscogsTrack[] = [
-      {
+    const tracks = [
+      discogsTrackFactory.build({
         position: "A",
         title: "Unknown Track",
         type_: "track",
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(getReleasePreviewVideos(tracks, videos)).toHaveLength(2);
@@ -615,16 +742,26 @@ describe("getReleasePreviewVideos", () => {
 
 describe("hasPlayableTrackVideo", () => {
   it("returns true when at least one track matches a video", () => {
-    const tracks: DiscogsTrack[] = [
-      { position: "A", title: "No Match", type_: "track" },
-      { position: "B", title: "Never Gonna Give You Up", type_: "track" },
+    const tracks = [
+      discogsTrackFactory.build({
+        position: "A",
+        title: "No Match",
+        type_: "track",
+        duration: undefined,
+      }),
+      discogsTrackFactory.build({
+        position: "B",
+        title: "Never Gonna Give You Up",
+        type_: "track",
+        duration: undefined,
+      }),
     ];
-    const videos: DiscogsVideo[] = [
-      {
+    const videos = [
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Artist - Never Gonna Give You Up",
-        embed: true,
-      },
+        duration: undefined,
+      }),
     ];
 
     expect(hasPlayableTrackVideo(tracks, videos)).toBe(true);
@@ -645,24 +782,27 @@ describe("hasPlayableTrackVideo", () => {
 
 describe("flattenTracklist", () => {
   it("flattens nested sub-tracks and skips headings", () => {
-    const tracklist: DiscogsTrack[] = [
-      {
+    const tracklist = [
+      discogsTrackFactory.build({
         position: "",
         title: "Side A",
         type_: "heading",
-      },
-      {
+        duration: undefined,
+      }),
+      discogsTrackFactory.build({
         position: "A1",
         title: "First Track",
         type_: "track",
+        duration: undefined,
         sub_tracks: [
-          {
+          discogsTrackFactory.build({
             position: "A1.a",
             title: "Nested Track",
             type_: "track",
-          },
+            duration: undefined,
+          }),
         ],
-      },
+      }),
     ];
 
     expect(flattenTracklist(tracklist).map((track) => track.title)).toEqual([
@@ -780,12 +920,11 @@ describe("formatVideoDuration", () => {
 
 describe("previewVideoToTrack", () => {
   it("maps preview videos to track rows with synthetic positions", () => {
-    const video: DiscogsVideo = {
+    const video = discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "Full Album Upload",
       duration: 330,
-      embed: true,
-    };
+    });
 
     const track = previewVideoToTrack(video);
 
@@ -801,108 +940,100 @@ describe("MFSB Love Is The Message duplicate fanfare regression", () => {
     id: 365838,
     title: "Love Is The Message",
     tracklist: [
-      {
+      discogsTrackFactory.build({
         position: "A1.a",
         title: "Zack's Fanfare",
         duration: "0:23",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "A1.b",
         title: "Love Is The Message",
         duration: "6:35",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "A2",
         title: "Cheaper To Keep Her",
         duration: "6:52",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "A3",
         title: "My One And Only Love",
         duration: "4:34",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "B1",
         title:
           'TSOP (The Sound Of Philadelphia) (Theme From The Television Show "Soul Train")',
         duration: "3:43",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "B2.a",
         title: "Zack's Fanfare",
         duration: "0:50",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "B2.b",
         title: "Touch Me In The Morning",
         duration: "6:21",
         type_: "track",
-      },
-      {
+      }),
+      discogsTrackFactory.build({
         position: "B3",
         title: "Bitter Sweet",
         duration: "5:26",
         type_: "track",
-      },
+      }),
     ],
     videos: [
-      {
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=whSKnSfkhFQ",
         title: "Zack's Fanfare",
         duration: 25,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=M3wpG6Rw-tE",
         title:
           "MFSB - Love Is the Message (Official Audio) ft. The Three Degrees",
         duration: 398,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=J38ylUZESuc",
         title: "Cheaper to Keep Her",
         duration: 415,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=LS2PQs_IRNk",
         title:
           "MFSB - T.S.O.P. (The Sound of Philadelphia) (Official Audio) ft. The Three Degrees",
         duration: 225,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=M5v24kPWeuA",
         title: "Zack's Fanfare (I Hear Music)",
         duration: 51,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=BDgvtCsYN1A",
         title: "Touch Me In The Morning",
         duration: 381,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=LE9ag97xcxw",
         title: "Bitter Sweet",
         duration: 326,
-        embed: true,
-      },
-      {
+      }),
+      discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=z0VxVJIsxfA",
         title:
           "MFSB ft. The Three Degrees - T.S.O.P. (The Sound of Philadelphia)",
         duration: 349,
-        embed: true,
-      },
+      }),
     ],
   });
   const tracks = flattenTracklist(release.tracklist ?? []);
@@ -926,23 +1057,38 @@ describe("MFSB Love Is The Message duplicate fanfare regression", () => {
 });
 
 describe("findPlayableTrackIndex", () => {
-  const tracks: DiscogsTrack[] = [
-    { position: "A1", title: "No Video", type_: "track" },
-    { position: "A2", title: "Has Video", type_: "track" },
-    { position: "B1", title: "Also Has Video", type_: "track" },
+  const tracks = [
+    discogsTrackFactory.build({
+      position: "A1",
+      title: "No Video",
+      type_: "track",
+      duration: undefined,
+    }),
+    discogsTrackFactory.build({
+      position: "A2",
+      title: "Has Video",
+      type_: "track",
+      duration: undefined,
+    }),
+    discogsTrackFactory.build({
+      position: "B1",
+      title: "Also Has Video",
+      type_: "track",
+      duration: undefined,
+    }),
   ];
 
-  const videos: DiscogsVideo[] = [
-    {
+  const videos = [
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "Artist - Has Video",
-      embed: true,
-    },
-    {
+      duration: undefined,
+    }),
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=def98765432",
       title: "Artist - Also Has Video",
-      embed: true,
-    },
+      duration: undefined,
+    }),
   ];
 
   it("finds the first playable track", () => {

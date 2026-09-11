@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import type { DiscogsReleaseJson } from "src/types";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 
@@ -42,27 +44,26 @@ class DiscogsReleaseJsonFactory extends BaseFactory<
       title: "Never Gonna Give You Up",
       artists: [{ name: "Rick Astley" }],
       tracklist: [
-        {
+        discogsTrackFactory.build({
           position: "A",
           title: "Never Gonna Give You Up",
           duration: "3:32",
           type_: "track",
-        },
-        {
+        }),
+        discogsTrackFactory.build({
           position: "B",
           title: "Never Gonna Give You Up (Instrumental)",
           duration: "3:30",
           type_: "track",
-        },
+        }),
       ],
       videos: [
-        {
+        discogsVideoFactory.youtube({
           description: "Rick Astley - Never Gonna Give You Up",
           duration: 330,
-          embed: true,
           title: "Rick Astley - Never Gonna Give You Up",
           uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-        },
+        }),
       ],
       ...attributes,
     }) as DiscogsReleaseDetail;
