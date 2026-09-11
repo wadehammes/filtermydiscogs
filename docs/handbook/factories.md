@@ -36,17 +36,14 @@ Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts) 
 ## `build()` body (canonical shape)
 
 ```typescript
-build(attributes?: Partial<MyType>, _options?: MyFactoryOptions): MyType {
+build(attributes?: FactoryOverrides<MyType>, _options?: MyFactoryOptions): MyType {
   const instance = {
     id: faker.string.uuid(),
     title: faker.music.songName(),
     // every declared field gets faker (or nested factory.build())
   } satisfies MyType;
 
-  const factoryBuilt: MyType = {
-    ...instance,
-    ...(attributes ?? {}),
-  };
+  const factoryBuilt = mergeFactoryAttributes(instance, attributes);
 
   const _allKeysMustBeInTheInstance: KeysMatch<MyType, typeof instance> = undefined;
 
@@ -54,6 +51,7 @@ build(attributes?: Partial<MyType>, _options?: MyFactoryOptions): MyType {
 }
 ```
 
+Use **`FactoryOverrides<T>`** and **`mergeFactoryAttributes`** from [`mergeFactoryAttributes.ts`](../../src/tests/factories/mergeFactoryAttributes.ts) (also the **`BaseFactory.build`** attribute type). Under **`exactOptionalPropertyTypes`**, `Partial<T>` does not allow `field: undefined`. Overrides may pass **`duration: undefined`** (etc.) to **clear** a faker-filled optional field; **`mergeFactoryAttributes`** omits those keys on the result.
 ### `KeysMatch`
 
 [`src/types/KeysMatch.ts`](../../src/types/KeysMatch.ts) fails the build if the target type gains a field the factory does not set. Use it on **closed** types (e.g. **`DiscogsCollection`**, **`Crate`** from Prisma).
@@ -75,6 +73,7 @@ master_url: nullish([`https://www.discogs.com/master/${masterId}`]),
 
 Tests that need a fixed value pass **`.build({ username: "wadehammes" })`**.
 
+For **optional** fields (`foo?: T`, not `T | null`), prefer **`faker.helpers.maybe(() => value)`** spread through **`definedProps({ ... })`** so absent keys stay omitted under **`exactOptionalPropertyTypes`**—do not use **`nullish`** (that yields **`null`**).
 ### Nested shapes
 
 Compose existing factories—do not inline duplicate objects:
@@ -141,6 +140,8 @@ Use **`options`** for **build-time knobs** that are not part of the domain type�
 | [`AdminUserLookupStats.factory.ts`](../../src/tests/factories/AdminUserLookupStats.factory.ts) | `adminUserLookupStatsFactory` | Admin user lookup DTO |
 | [`UserPreferences.factory.ts`](../../src/tests/factories/UserPreferences.factory.ts) | `userPreferencesFactory`, `persistedFiltersFactory` | `UserPreferences`, `PersistedFiltersState` (uses [`SortValues`](../../src/constants/sortValues.ts)) |
 | [`DiscogsReleaseJson.factory.ts`](../../src/tests/factories/DiscogsReleaseJson.factory.ts) | `discogsReleaseJsonFactory` | `DiscogsReleaseJson` |
+| [`DiscogsTrack.factory.ts`](../../src/tests/factories/DiscogsTrack.factory.ts) | `discogsTrackFactory` | `DiscogsTrack` (release tracklist rows) |
+| [`DiscogsVideo.factory.ts`](../../src/tests/factories/DiscogsVideo.factory.ts) | `discogsVideoFactory` | `DiscogsVideo` (release video links) |
 
 ### Preset methods
 
@@ -168,7 +169,9 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `discogsSearchResponseFactory` | `empty()` | Search route empty results |
 | `adminUserLookupStatsFactory` | `forUsername()` | Admin user lookup route spec |
 | `persistedFiltersFactory` | `empty()` | Default filter state in preferences tests |
-| `discogsReleaseJsonFactory` | `forReleaseId()` | `api.discogsRelease` URI payload |
+| `discogsReleaseJsonFactory` | `forReleaseId()`, `withTracklistAndVideos()` | `api.discogsRelease` URI payload; detail shape with factory-built tracks/videos |
+| `discogsTrackFactory` | `untitled()` | Tracklist rows; **`Untitled`** + **`type_: "track"`** for generic-title playback matching |
+| `discogsVideoFactory` | `youtube()`, `nonYoutube()` | Embeddable YouTube links vs Discogs (non-YouTube) URIs |
 | `discogsCollectionFieldFactory` | `notesField()` | Notes field for release-notes editor tests |
 | `discogsCollectionFieldsResponseFactory` | `forReleaseNotes()` | Collection fields API for notes editor |
 | `collectionFactory` | `empty()` | Empty collection pages |

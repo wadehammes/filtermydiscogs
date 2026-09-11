@@ -22,6 +22,9 @@ const MATCH_STOP_WORDS = new Set([
   "with",
 ]);
 
+const SIDE_LETTER_CLASS = "[a-z]";
+const TRACK_POSITION_TOKEN_PATTERN = `${SIDE_LETTER_CLASS}\\d+(?:\\.\\w+)?`;
+
 const extractVideoSongTitle = (title: string): string => {
   const dashIndex = title.lastIndexOf(" - ");
 
@@ -35,6 +38,25 @@ const extractVideoSongTitle = (title: string): string => {
 
   return title;
 };
+
+const normalizeTrackPositionKey = (position: string): string =>
+  position.trim().toLowerCase();
+
+const extractLeadingTrackPosition = (title: string): string | null => {
+  const match = normalizeTrackTitle(title).match(
+    new RegExp(`^(${TRACK_POSITION_TOKEN_PATTERN})(?:\\s|$)`),
+  );
+
+  return match?.[1] ?? null;
+};
+
+const stripLeadingTrackPosition = (title: string): string =>
+  normalizeTrackTitle(title)
+    .replace(new RegExp(`^${TRACK_POSITION_TOKEN_PATTERN}\\s*`), "")
+    .trim();
+
+const stripCatalogAnnotations = (title: string): string =>
+  title.replace(/\([^)]*\)/g, " ").replace(/\[[^\]]*\]/g, " ");
 
 const getMatchTokens = (normalizedTitle: string): string[] => {
   return normalizedTitle
@@ -124,7 +146,6 @@ const trackTokenMatchesVideoTokens = (
 };
 
 const MIN_FUZZY_MATCH_LENGTH = 3;
-const SIDE_LETTER_CLASS = "[a-d]";
 const MAX_DURATION_MATCH_DELTA_SECONDS = 30;
 
 const GENERIC_TRACK_TITLES = new Set([
@@ -291,7 +312,7 @@ const getTrackSideIdentifier = (track: DiscogsTrack): string | null => {
     track.position
       .trim()
       .toLowerCase()
-      .match(/^([a-d])\d*/)?.[1] ??
+      .match(new RegExp(`^(${SIDE_LETTER_CLASS})\\d*`))?.[1] ??
     null
   );
 };
@@ -307,6 +328,9 @@ interface TrackVideoMatchContext {
   videoTokenSet: Set<string>;
   trackSide: string | null;
   videoSide: string | null;
+  trackPositionKey: string;
+  videoTrackPosition: string | null;
+  videoSongWithoutPosition: string;
 }
 
 interface PreparedTrackMatchData {
@@ -315,6 +339,7 @@ interface PreparedTrackMatchData {
   trackAlnum: string;
   trackTokens: string[];
   trackSide: string | null;
+  trackPositionKey: string;
   trackDurationSeconds: number | null;
 }
 
@@ -326,6 +351,8 @@ interface PreparedVideoMatchData {
   videoSongAlnum: string;
   videoTokenSet: Set<string>;
   videoSide: string | null;
+  videoTrackPosition: string | null;
+  videoSongWithoutPosition: string;
 }
 
 const prepareTrackMatchData = (track: DiscogsTrack): PreparedTrackMatchData => {
@@ -337,6 +364,7 @@ const prepareTrackMatchData = (track: DiscogsTrack): PreparedTrackMatchData => {
     trackAlnum: stripToAlnum(track.title),
     trackTokens: getMatchTokens(normalizedTrack),
     trackSide: getTrackSideIdentifier(track),
+    trackPositionKey: normalizeTrackPositionKey(track.position),
     trackDurationSeconds: parseTrackDurationToSeconds(track.duration),
   };
 };
@@ -346,6 +374,10 @@ const prepareVideoMatchData = (video: DiscogsVideo): PreparedVideoMatchData => {
   const videoSongTitle = extractVideoSongTitle(label);
   const normalizedVideoSong = normalizeTrackTitle(videoSongTitle);
   const normalizedFullVideo = normalizeTrackTitle(label);
+  const videoTrackPosition = extractLeadingTrackPosition(videoSongTitle);
+  const videoSongWithoutPosition = stripLeadingTrackPosition(
+    stripCatalogAnnotations(videoSongTitle),
+  );
 
   return {
     video,
@@ -357,7 +389,10 @@ const prepareVideoMatchData = (video: DiscogsVideo): PreparedVideoMatchData => {
       ...getMatchTokens(normalizedVideoSong),
       ...getMatchTokens(normalizedFullVideo),
     ]),
-    videoSide: extractVideoSideSuffix(label),
+    videoSide:
+      extractVideoSideSuffix(label) ?? videoTrackPosition?.charAt(0) ?? null,
+    videoTrackPosition,
+    videoSongWithoutPosition,
   };
 };
 
@@ -375,6 +410,9 @@ const toMatchContext = (
   videoTokenSet: video.videoTokenSet,
   trackSide: track.trackSide,
   videoSide: video.videoSide,
+  trackPositionKey: track.trackPositionKey,
+  videoTrackPosition: video.videoTrackPosition,
+  videoSongWithoutPosition: video.videoSongWithoutPosition,
 });
 
 const trackVideoSidesAreCompatible = (
@@ -421,9 +459,24 @@ const scorePreparedTrackVideoMatch = (
 
   const context = toMatchContext(track, video);
 
+  if (
+    context.videoTrackPosition &&
+    context.videoTrackPosition !== context.trackPositionKey
+  ) {
+    return 0;
+  }
+
   if (!trackVideoSidesAreCompatible(context)) {
     return 0;
   }
+
+  const positionMatches =
+    context.videoTrackPosition !== null &&
+    context.videoTrackPosition === context.trackPositionKey;
+  const genericPositionMatch =
+    positionMatches &&
+    isGenericTrackTitle(track.track.title) &&
+    isGenericTrackTitle(context.videoSongWithoutPosition);
 
   const overlaps = titlesOverlapFromContext(context);
   let matchedTokenCount = 0;
@@ -438,7 +491,7 @@ const scorePreparedTrackVideoMatch = (
     context.trackTokens.length > 0 &&
     matchedTokenCount === context.trackTokens.length;
 
-  if (!(overlaps || tokensMatch)) {
+  if (!(overlaps || tokensMatch || genericPositionMatch)) {
     return 0;
   }
 
@@ -462,7 +515,9 @@ const scorePreparedTrackVideoMatch = (
     score += 1;
   }
 
-  if (
+  if (positionMatches) {
+    score += 3;
+  } else if (
     context.videoSide &&
     context.trackSide &&
     context.trackSide.charAt(0) === context.videoSide.charAt(0)
@@ -609,7 +664,9 @@ const extractVideoTrackNumber = (title: string): number | null => {
 const compareTrackPositions = (left: string, right: string): number => {
   const toSortKey = (position: string): [number, number, string] => {
     const normalized = position.trim().toLowerCase();
-    const sideMatch = normalized.match(/^([a-d])(\d*)/);
+    const sideMatch = normalized.match(
+      new RegExp(`^(${SIDE_LETTER_CLASS})(\\d*)`),
+    );
 
     if (sideMatch?.[1]) {
       return [
@@ -661,6 +718,25 @@ const sortVideosForGenericTrackMatching = (
       (left, right) =>
         (extractVideoTrackNumber(getVideoMatchLabel(left)) ?? 0) -
         (extractVideoTrackNumber(getVideoMatchLabel(right)) ?? 0),
+    );
+  }
+
+  const videoPositions = videos.map((video) =>
+    extractLeadingTrackPosition(
+      extractVideoSongTitle(getVideoMatchLabel(video)),
+    ),
+  );
+
+  if (videoPositions.every((position) => position !== null)) {
+    return [...videos].sort((left, right) =>
+      compareTrackPositions(
+        extractLeadingTrackPosition(
+          extractVideoSongTitle(getVideoMatchLabel(left)),
+        ) ?? "",
+        extractLeadingTrackPosition(
+          extractVideoSongTitle(getVideoMatchLabel(right)),
+        ) ?? "",
+      ),
     );
   }
 

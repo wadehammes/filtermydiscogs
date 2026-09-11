@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import type { FactoryOverrides } from "src/tests/factories/mergeFactoryAttributes";
 
 export abstract class BaseFactory<
   FactoryType,
@@ -14,13 +15,13 @@ export abstract class BaseFactory<
   }
 
   public abstract build(
-    attributes?: Partial<FactoryType>,
+    attributes?: FactoryOverrides<FactoryType>,
     options?: Options,
   ): FactoryType;
 
   public buildList(
     quantity: number,
-    attributes?: Partial<FactoryType>,
+    attributes?: FactoryOverrides<FactoryType>,
     options?: Options,
   ) {
     return Array.from({ length: quantity }).map(() => {
@@ -29,7 +30,7 @@ export abstract class BaseFactory<
   }
 
   public buildModel(
-    attributes?: Partial<FactoryType>,
+    attributes?: FactoryOverrides<FactoryType>,
     options?: Options,
   ): FactoryModel {
     if (!this.FactoryModel) {
@@ -42,7 +43,7 @@ export abstract class BaseFactory<
 
   public buildListModel(
     quantity: number,
-    attributes?: Partial<FactoryType>,
+    attributes?: FactoryOverrides<FactoryType>,
     options?: Options,
   ): FactoryModel[] {
     if (!this.FactoryModel) {
