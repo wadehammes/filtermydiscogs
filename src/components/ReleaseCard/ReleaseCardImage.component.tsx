@@ -11,6 +11,7 @@ interface ReleaseCardImageProps {
   thumbUrl: string | null;
   releaseUrl: string | null;
   onReleaseOpen?: () => void;
+  onReleasePrefetch?: () => void;
   priority?: boolean;
 }
 
@@ -19,12 +20,14 @@ export const ReleaseCardImage = ({
   thumbUrl,
   releaseUrl,
   onReleaseOpen,
+  onReleasePrefetch,
   priority = false,
 }: ReleaseCardImageProps) => {
   const activateProps = onReleaseOpen
     ? getReleaseActivateProps({
         onActivate: onReleaseOpen,
         ariaLabel: `Open release details for ${release.basic_information.title}`,
+        ...(onReleasePrefetch ? { onFocus: onReleasePrefetch } : {}),
       })
     : undefined;
 

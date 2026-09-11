@@ -3,11 +3,13 @@ import type { KeyboardEvent } from "react";
 interface GetReleaseActivatePropsParams {
   onActivate: () => void;
   ariaLabel: string;
+  onFocus?: () => void;
 }
 
 export const getReleaseActivateProps = ({
   onActivate,
   ariaLabel,
+  onFocus,
 }: GetReleaseActivatePropsParams) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -23,6 +25,7 @@ export const getReleaseActivateProps = ({
   return {
     onClick: handleClick,
     onKeyDown: handleKeyDown,
+    ...(onFocus ? { onFocus } : {}),
     role: "button" as const,
     tabIndex: 0,
     "aria-label": ariaLabel,

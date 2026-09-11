@@ -9,22 +9,18 @@ import {
 } from "src/constants/loginPreviewMedia";
 import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
-import { createClientLazyComponent } from "src/utils/createClientLazyComponent";
+import YouTubeVideo from "youtube-video-element/react";
 import styles from "./LoginPreviewDemo.module.css";
 
-const ReactPlayer = createClientLazyComponent(() =>
-  import("react-player").then((module) => module.default),
-);
-
 export const LoginPreviewDemo = () => {
-  const previewPlayerRef = useRef<HTMLVideoElement>(null);
+  const previewPlayerRef = useRef<HTMLElement>(null);
 
   const requestHd1080 = useCallback(() => {
     requestLoginPreviewHd1080(previewPlayerRef.current);
   }, []);
 
   const setPreviewPlayerRef = useCallback(
-    (node: HTMLVideoElement | null) => {
+    (node: HTMLElement | null) => {
       const previousNode = previewPlayerRef.current;
 
       if (
@@ -56,21 +52,17 @@ export const LoginPreviewDemo = () => {
           className={styles.viewport}
           style={{ aspectRatio: LOGIN_PREVIEW_VIDEO_ASPECT_RATIO }}
         >
-          <ReactPlayer
+          <YouTubeVideo
             ref={setPreviewPlayerRef}
             className={styles.previewPlayer}
-            config={{
-              youtube: LOGIN_PREVIEW_YOUTUBE_PLAYER_CONFIG,
-            }}
+            config={LOGIN_PREVIEW_YOUTUBE_PLAYER_CONFIG}
             controls
-            height="100%"
             loop
             muted
             onPlay={requestHd1080}
             playsInline
-            playing
+            autoplay
             src={LOGIN_PREVIEW_VIDEO_URL}
-            width="100%"
           />
           <div aria-hidden="true" className={styles.brandMark}>
             <FMDIcon className={styles.brandIcon} />

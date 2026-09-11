@@ -47,6 +47,7 @@ export function DashboardReleaseItem({
           openRelease();
         },
         ariaLabel: `Open release details for ${title}`,
+        onFocus: prefetchReleaseOpen,
       })
     : undefined;
 

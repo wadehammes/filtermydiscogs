@@ -44,6 +44,7 @@ export const LoginFeatureVisual = ({
         alt={alt ?? ""}
         className={styles.image}
         fill
+        loading="eager"
         sizes="(max-width: 768px) 100vw, 27.5rem"
       />
     </div>

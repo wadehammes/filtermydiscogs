@@ -8,7 +8,7 @@ const VIDEO_PANEL_CSS_PATH = join(
 );
 const PLAYBACK_DOCK_CSS_PATH = join(
   process.cwd(),
-  "src/styles/modules/playback-dock.module.css",
+  "src/styles/global/playback-dock.css",
 );
 
 describe("ReleasePlaybackVideoPanel.module.css", () => {
@@ -30,7 +30,7 @@ describe("ReleasePlaybackVideoPanel.module.css", () => {
   });
 });
 
-describe("playback-dock.module.css", () => {
+describe("playback-dock.css", () => {
   it("keeps the default video panel inset on the bottom-right when the crate sidebar is open", () => {
     const css = readFileSync(PLAYBACK_DOCK_CSS_PATH, "utf8");
 

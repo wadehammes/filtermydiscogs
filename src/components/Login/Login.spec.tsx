@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 
-jest.mock("react-player", () => {
+jest.mock("youtube-video-element/react", () => {
   const React = require("react");
 
   return {
     __esModule: true,
     default: React.forwardRef(
       ({ src }: { src: string }, ref: React.Ref<HTMLDivElement>) => (
-        <div ref={ref} data-testid="mockReactPlayer" data-src={src} />
+        <div ref={ref} data-testid="mockYoutubeVideo" data-src={src} />
       ),
     ),
   };
@@ -65,7 +65,7 @@ describe("Login", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(LOGIN_PREVIEW_ALT)).toBeInTheDocument();
-    expect(screen.getByTestId("mockReactPlayer")).toHaveAttribute(
+    expect(screen.getByTestId("mockYoutubeVideo")).toHaveAttribute(
       "data-src",
       LOGIN_PREVIEW_VIDEO_URL,
     );

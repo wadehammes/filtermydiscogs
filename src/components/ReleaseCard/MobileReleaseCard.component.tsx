@@ -34,6 +34,7 @@ const MobileReleaseCardComponent = ({
   onReleaseClick,
   priority = false,
 }: ReleaseCardProps) => {
+  "use memo";
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
   const {
@@ -87,6 +88,7 @@ const MobileReleaseCardComponent = ({
     ? getReleaseActivateProps({
         onActivate: openRelease,
         ariaLabel: `Open release details for ${title}`,
+        onFocus: prefetchReleaseOpen,
       })
     : undefined;
 
