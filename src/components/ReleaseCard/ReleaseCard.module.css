@@ -47,10 +47,21 @@
 }
 
 .highlighted {
-  composes: theme-highlighted-surface from global;
   border: none;
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
+    0 1px 2px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 8%, transparent),
+      transparent
+    ),
+    0 4px 12px
+    light-dark(
+      color-mix(in srgb, var(--foreground) 10%, transparent),
+      transparent
+    ),
+    inset 0 0 0 2px var(--primary);
+  composes: theme-highlighted-surface from global;
   transform: scale(1.02);
 }
 
