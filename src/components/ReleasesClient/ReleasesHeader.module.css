@@ -11,7 +11,7 @@
   transition:
     background-color var(--transition-normal),
     backdrop-filter var(--transition-normal);
-  z-index: calc(var(--z-2-sticky) - 10);
+  z-index: var(--z-2-sticky);
 
   @media (width > 768px) {
     padding: var(--space-4);
