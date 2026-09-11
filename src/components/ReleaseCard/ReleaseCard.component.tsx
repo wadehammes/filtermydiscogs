@@ -74,6 +74,7 @@ const ReleaseCardComponent = ({
           priority={priority}
           {...definedProps({
             onReleaseOpen: canOpen ? openRelease : undefined,
+            onReleasePrefetch: canOpen ? prefetchReleaseOpen : undefined,
           })}
         />
         <ReleaseCardContent

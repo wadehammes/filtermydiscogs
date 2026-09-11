@@ -50,6 +50,7 @@ export default function MosaicItem({
               onPointerEnter: schedulePrefetchReleaseOpen,
               onPointerLeave: cancelPrefetchReleaseOpen,
               onPointerDown: prefetchReleaseOpen,
+              onFocus: prefetchReleaseOpen,
             }
           : {},
       )}

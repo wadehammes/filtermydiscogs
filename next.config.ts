@@ -1,4 +1,9 @@
+import bundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const isProduction = process.env.NODE_ENV === "production";
 const isVercelPreview = process.env.VERCEL_ENV === "preview";
@@ -55,6 +60,19 @@ const ContentSecurityPolicy = `
   worker-src 'self' *.vercel.app;
   manifest-src 'self' *.vercel.app;
 `;
+
+const svgrLoaderOptions = {
+  ref: true,
+  svgoConfig: {
+    plugins: [
+      {
+        active: false,
+        name: "removeViewBox",
+      },
+    ],
+  },
+  titleProp: true,
+};
 
 const securityHeaders = [
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
@@ -175,18 +193,7 @@ const nextConfig: NextConfig = {
         loaders: [
           {
             loader: "@svgr/webpack",
-            options: {
-              ref: true,
-              svgoConfig: {
-                plugins: [
-                  {
-                    active: false,
-                    name: "removeViewBox",
-                  },
-                ],
-              },
-              titleProp: true,
-            },
+            options: svgrLoaderOptions,
           },
         ],
       },
@@ -228,4 +235,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

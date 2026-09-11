@@ -14,7 +14,11 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useScrollRevealInView } from "src/hooks/useScrollRevealInView.hook";
+import {
+  SCROLL_REVEAL_ONCE_ROOT_MARGIN,
+  SCROLL_REVEAL_ONCE_THRESHOLD,
+  useScrollRevealInView,
+} from "src/hooks/useScrollRevealInView.hook";
 import scrollRevealStyles from "src/styles/modules/scroll-reveal.module.css";
 import {
   buildLocaleTickerSegments,
@@ -148,6 +152,8 @@ interface ScrollRevealOnceProps
   className?: string;
   as?: ElementType;
   style?: CSSProperties;
+  rootMargin?: string;
+  threshold?: number;
 }
 
 export function ScrollRevealOnce({
@@ -155,9 +161,11 @@ export function ScrollRevealOnce({
   className,
   as: Component = "div",
   style,
+  rootMargin = SCROLL_REVEAL_ONCE_ROOT_MARGIN,
+  threshold = SCROLL_REVEAL_ONCE_THRESHOLD,
   ...rest
 }: ScrollRevealOnceProps) {
-  const { ref, inView } = useScrollRevealInView();
+  const { ref, inView } = useScrollRevealInView({ rootMargin, threshold });
 
   return (
     <Component

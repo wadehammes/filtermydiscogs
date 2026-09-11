@@ -24,6 +24,7 @@ const ReleaseListItemComponent = ({
   onExitRandomMode,
   onReleaseClick,
 }: ReleaseListItemProps) => {
+  "use memo";
   const { activeCrateInstanceIds } = useCrateState();
   const inActiveCrate = activeCrateInstanceIds.has(String(release.instance_id));
   const selectedStyles = useSelectedStyles();
@@ -88,6 +89,7 @@ const ReleaseListItemComponent = ({
     ? getReleaseActivateProps({
         onActivate: openRelease,
         ariaLabel: `Open ${title} details`,
+        onFocus: prefetchReleaseOpen,
       })
     : undefined;
 

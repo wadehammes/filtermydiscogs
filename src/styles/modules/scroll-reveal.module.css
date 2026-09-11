@@ -39,17 +39,16 @@
 }
 
 .once {
+  contain: content;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(0.5rem);
-  transition:
-    opacity var(--reveal-duration, 650ms) ease-out,
-    transform var(--reveal-duration, 650ms) ease-out;
+  transition: opacity var(--reveal-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1);
 
   @media (prefers-reduced-motion: reduce) {
+    contain: none;
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
     transition: none;
   }
 }
@@ -57,7 +56,6 @@
 .onceRevealed {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
 }
 
 .barFill {

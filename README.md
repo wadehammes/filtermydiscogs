@@ -126,7 +126,7 @@ The app will be available at `http://localhost:6767`.
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
-- **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, react-player (landing demo)
+- **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, youtube-video-element (landing demo)
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod

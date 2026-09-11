@@ -7,6 +7,7 @@ import {
   useHasReleasePlaybackProvider,
   useIsMiniPlayerVisible,
 } from "src/context/releasePlayback.context";
+import "src/styles/global/playback-dock.css";
 import playbackDockStyles from "src/styles/modules/playback-dock.module.css";
 import styles from "./PlaybackDockBar.module.css";
 

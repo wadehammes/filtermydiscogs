@@ -53,6 +53,7 @@ const columnHelper = createColumnHelper<
 
 export const ReleasesTable = memo<ReleasesTableProps>(
   ({ releases, onExitRandomMode, onReleaseClick }) => {
+    "use memo";
     const { activeCrateInstanceIds } = useCrateState();
     const selectedStyles = useSelectedStyles();
     const selectedFormats = useSelectedFormats();
