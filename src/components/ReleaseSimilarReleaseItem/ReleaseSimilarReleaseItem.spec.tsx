@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { api } from "src/api/urls";
 import { ReleaseSimilarReleaseItem } from "src/components/ReleaseSimilarReleaseItem/ReleaseSimilarReleaseItem.component";
+import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
@@ -115,6 +117,36 @@ describe("ReleaseSimilarReleaseItem", () => {
     } finally {
       teardownReleaseOpenPrefetchHoverTimers();
     }
+  });
+
+  it("applies listItemInCrate when the release is in the active crate", async () => {
+    const similarRelease = releaseFactory.withTitle("Similar Album", 249504, {
+      instance_id: "similar-instance",
+    });
+    const defaultCrate = crateFactory.defaultTestCrate();
+
+    mockApiResponse(
+      true,
+      mockApi.crate,
+      crateWithReleasesResponseFactory.withReleases(defaultCrate, [
+        similarRelease,
+      ]),
+      apiError,
+    );
+
+    const { container } = render(
+      <ReleaseSimilarReleaseItem release={similarRelease} />,
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await waitFor(() => {
+      const item = container.querySelector(
+        '[data-testid="fmdReleaseSimilarItem"]',
+      );
+      expect(item?.className).toContain("listItemInCrate");
+    });
   });
 
   it("adds a release to a crate from the row action menu", async () => {

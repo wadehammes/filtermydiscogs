@@ -36,7 +36,7 @@
 ) {
   .icon,
   > svg {
-    transform: rotate(90deg) scale(1.08);
+    transform: rotate(90deg) scale(1.1);
 
     @media (prefers-reduced-motion: reduce) {
       transform: none;
@@ -51,7 +51,7 @@
 ) {
   .icon,
   > svg {
-    transform: rotate(180deg) scale(1.06);
+    transform: scale(1.06);
 
     @media (prefers-reduced-motion: reduce) {
       transform: none;
@@ -63,7 +63,7 @@
 .iconactionexternal:focus-visible:not(:disabled) {
   .icon,
   > svg {
-    transform: translate(1px, -1px) scale(1.08);
+    transform: translate(1px, -1px) scale(1.1);
 
     @media (prefers-reduced-motion: reduce) {
       transform: none;
@@ -75,7 +75,7 @@
 .iconactionclose:focus-visible:not(:disabled) {
   .icon,
   > svg {
-    transform: rotate(90deg) scale(1.08);
+    transform: rotate(90deg) scale(1.1);
 
     @media (prefers-reduced-motion: reduce) {
       transform: none;
@@ -109,7 +109,7 @@
 )[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
   .icon,
   > svg {
-    transform: scale(1.08);
+    transform: scale(1.1);
 
     @media (prefers-reduced-motion: reduce) {
       transform: none;

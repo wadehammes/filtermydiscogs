@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { DiscogsRelease } from "src/types";
 import { prefetchReleaseOpenData } from "src/utils/prefetchReleaseOpenData";
 
-export const RELEASE_OPEN_PREFETCH_HOVER_MS = 100;
+export const RELEASE_OPEN_PREFETCH_HOVER_MS = 50;
 
 interface UseReleaseOpenHandlerParams {
   release: DiscogsRelease | null | undefined;
