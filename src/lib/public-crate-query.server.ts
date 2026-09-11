@@ -1,39 +1,36 @@
-import { prisma } from "src/lib/db";
-
-const PUBLIC_CRATE_SELECT = {
-  user_id: true,
-  id: true,
-  name: true,
-  username: true,
-  is_default: true,
-  private: true,
-  created_at: true,
-  updated_at: true,
-} as const;
+import { and } from "@prisma/orm-postgres/orm-client";
+import { orm } from "src/lib/db";
 
 export type PublicCrateRow = {
-  user_id: number;
+  userId: number;
   id: string;
   name: string;
   username: string | null;
-  is_default: boolean;
+  isDefault: boolean;
   private: boolean;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export const findPublicCrateById = async (
   crateId: string,
 ): Promise<PublicCrateRow | null> => {
-  const crates = await prisma.crate.findMany({
-    where: {
-      id: crateId,
-      private: false,
-    },
-    select: PUBLIC_CRATE_SELECT,
-    take: 2,
-    orderBy: { updated_at: "desc" },
-  });
+  const crates = await orm.Crates.where((crate) =>
+    and(crate.id.eq(crateId), crate.private.eq(false)),
+  )
+    .select(
+      "userId",
+      "id",
+      "name",
+      "username",
+      "isDefault",
+      "private",
+      "createdAt",
+      "updatedAt",
+    )
+    .orderBy((crate) => crate.updatedAt.desc())
+    .limit(2)
+    .all();
 
   if (crates.length > 1) {
     console.warn(
