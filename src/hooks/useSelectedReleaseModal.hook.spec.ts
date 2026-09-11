@@ -385,7 +385,10 @@ describe("useSelectedReleaseModal", () => {
     });
 
     await waitFor(() => {
-      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(releaseId));
+      expect(mockApi.discogsRelease).toHaveBeenCalledWith(
+        String(releaseId),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
     });
   });
 

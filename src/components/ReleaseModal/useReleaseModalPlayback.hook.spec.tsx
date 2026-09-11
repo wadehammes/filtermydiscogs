@@ -294,7 +294,10 @@ describe("useReleaseModalPlayback", () => {
 
       rerender({ isOpen: true });
 
-      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID));
+      expect(mockApi.discogsRelease).toHaveBeenCalledWith(
+        String(RELEASE_ID),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
 
       await waitFor(() => {
         expect(result.current.tracks.length).toBeGreaterThan(0);

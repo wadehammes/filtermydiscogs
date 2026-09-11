@@ -532,7 +532,10 @@ describe("ReleaseCard", () => {
     );
 
     await waitFor(() => {
-      expect(po.mockApiHelpers.discogsRelease).toHaveBeenCalledWith("249504");
+      expect(po.mockApiHelpers.discogsRelease).toHaveBeenCalledWith(
+        "249504",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
     });
 
     await waitFor(() => {
