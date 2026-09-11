@@ -79,6 +79,29 @@ describe("ReleaseCard", () => {
     ).toBeInTheDocument();
   });
 
+  it("prefetches release detail when the card is hovered", async () => {
+    jest.useFakeTimers();
+    const release = releaseFactory.withEmptyNotes();
+    const onReleaseClick = jest.fn();
+    const user = userEvent.setup({
+      advanceTimers: jest.advanceTimersByTime,
+    });
+
+    po.renderReleaseCard({ release, onReleaseClick });
+
+    await user.hover(screen.getByTestId(po.testId));
+
+    expect(po.mockApi).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(100);
+
+    await waitFor(() => {
+      expect(po.mockApi).toHaveBeenCalled();
+    });
+
+    jest.useRealTimers();
+  });
+
   it("prefetches crate membership when the trigger is hovered", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();

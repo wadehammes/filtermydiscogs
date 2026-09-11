@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -9,27 +9,75 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
 } from "react";
 import { prefetchReleaseModal } from "src/components/ReleaseModal/prefetchReleaseModal";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCollectionReleaseByInstanceId } from "src/hooks/queries/useCollectionReleaseByInstanceId.hook";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
+import { prefetchReleaseOpenData } from "src/utils/prefetchReleaseOpenData";
 import {
   buildPathWithReleaseInstance,
   parseReleaseInstanceFromSearchParams,
 } from "src/utils/releaseModalUrl";
-import { parseReleaseId } from "src/utils/releaseNotes";
 
 export interface UseSelectedReleaseModalParams {
   collectionUsername?: string | null;
   fallbackReleases?: DiscogsRelease[];
 }
 
+const prefetchReleaseForOpen = (
+  queryClient: QueryClient,
+  fallbackReleaseIndex: Map<string, DiscogsRelease>,
+  instanceId: string,
+): void => {
+  const clickedRelease = fallbackReleaseIndex.get(instanceId);
+
+  if (clickedRelease) {
+    prefetchReleaseOpenData(queryClient, clickedRelease);
+    return;
+  }
+
+  prefetchReleaseModal();
+};
+
+const useResolvedSelectedRelease = ({
+  collectionUsername,
+  fallbackReleases,
+  selectedReleaseId,
+}: UseSelectedReleaseModalParams & {
+  selectedReleaseId: string | null;
+}) => {
+  const collectionRelease = useCollectionReleaseByInstanceId({
+    username: collectionUsername,
+    instanceId: selectedReleaseId,
+    enabled: !!collectionUsername,
+  });
+
+  const fallbackReleaseIndex = useMemo(
+    () => buildReleaseIndexFromList(fallbackReleases ?? []),
+    [fallbackReleases],
+  );
+
+  const selectedRelease = useMemo(() => {
+    if (!selectedReleaseId) {
+      return null;
+    }
+
+    return (
+      fallbackReleaseIndex.get(selectedReleaseId) ?? collectionRelease ?? null
+    );
+  }, [collectionRelease, fallbackReleaseIndex, selectedReleaseId]);
+
+  return {
+    fallbackReleaseIndex,
+    selectedRelease,
+    selectedReleaseId,
+  };
+};
+
 interface ModalSyncState {
   optimisticId: string | null;
-  closing: boolean;
 }
 
 type ModalSyncAction =
@@ -39,7 +87,6 @@ type ModalSyncAction =
 
 const initialModalSyncState: ModalSyncState = {
   optimisticId: null,
-  closing: false,
 };
 
 const modalSyncReducer = (
@@ -48,17 +95,21 @@ const modalSyncReducer = (
 ): ModalSyncState => {
   switch (action.type) {
     case "open":
-      return { optimisticId: action.instanceId, closing: false };
+      return { optimisticId: action.instanceId };
     case "close":
-      return { optimisticId: null, closing: true };
+      return { optimisticId: null };
     case "syncUrl":
       if (!action.urlInstanceId) {
-        return { optimisticId: null, closing: false };
+        if (state.optimisticId) {
+          return state;
+        }
+
+        return { optimisticId: null };
       }
       if (state.optimisticId === action.urlInstanceId) {
-        return { closing: false, optimisticId: null };
+        return { optimisticId: null };
       }
-      return { ...state, closing: false };
+      return state;
     default:
       return state;
   }
@@ -89,9 +140,7 @@ export const useSelectedReleaseModal = ({
     syncModalFromUrl(urlInstanceId);
   }, [urlInstanceId]);
 
-  const selectedReleaseId = modalSync.closing
-    ? null
-    : (urlInstanceId ?? modalSync.optimisticId);
+  const selectedReleaseId = modalSync.optimisticId ?? urlInstanceId;
 
   useEffect(() => {
     if (!selectedReleaseId) {
@@ -99,16 +148,11 @@ export const useSelectedReleaseModal = ({
     }
   }, [selectedReleaseId]);
 
-  const collectionRelease = useCollectionReleaseByInstanceId({
-    username: collectionUsername,
-    instanceId: selectedReleaseId,
-    enabled: !!collectionUsername,
+  const { fallbackReleaseIndex, selectedRelease } = useResolvedSelectedRelease({
+    collectionUsername,
+    fallbackReleases,
+    selectedReleaseId,
   });
-
-  const fallbackReleaseIndex = useMemo(
-    () => buildReleaseIndexFromList(fallbackReleases),
-    [fallbackReleases],
-  );
 
   const buildUrl = useCallback(
     (instanceId: string | null) =>
@@ -122,20 +166,7 @@ export const useSelectedReleaseModal = ({
 
   const handleReleaseClick = useCallback(
     (instanceId: string) => {
-      prefetchReleaseModal();
-
-      const clickedRelease = fallbackReleaseIndex.get(instanceId);
-      const releaseId = clickedRelease ? parseReleaseId(clickedRelease) : null;
-
-      if (releaseId !== null) {
-        const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
-
-        if (queryClient.getQueryData(releaseQueryKey) === undefined) {
-          void queryClient.prefetchQuery(
-            discogsReleaseQueryOptions(String(releaseId)),
-          );
-        }
-      }
+      prefetchReleaseForOpen(queryClient, fallbackReleaseIndex, instanceId);
 
       dispatchModalSync({ type: "open", instanceId });
 
@@ -167,15 +198,40 @@ export const useSelectedReleaseModal = ({
     }
   }, [buildUrl, modalSync.optimisticId, router, urlInstanceId]);
 
-  const selectedRelease = useMemo(() => {
-    if (!selectedReleaseId) {
-      return null;
-    }
+  return {
+    selectedRelease,
+    selectedReleaseId,
+    handleReleaseClick,
+    handleCloseModal,
+  };
+};
 
-    return (
-      fallbackReleaseIndex.get(selectedReleaseId) ?? collectionRelease ?? null
-    );
-  }, [collectionRelease, fallbackReleaseIndex, selectedReleaseId]);
+export const useLocalSelectedReleaseModal = ({
+  collectionUsername = null,
+  fallbackReleases = [],
+}: UseSelectedReleaseModalParams = {}) => {
+  const queryClient = useQueryClient();
+  const [selectedReleaseId, setSelectedReleaseId] = useState<string | null>(
+    null,
+  );
+
+  const { fallbackReleaseIndex, selectedRelease } = useResolvedSelectedRelease({
+    collectionUsername,
+    fallbackReleases,
+    selectedReleaseId,
+  });
+
+  const handleReleaseClick = useCallback(
+    (instanceId: string) => {
+      prefetchReleaseForOpen(queryClient, fallbackReleaseIndex, instanceId);
+      setSelectedReleaseId(instanceId);
+    },
+    [fallbackReleaseIndex, queryClient],
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedReleaseId(null);
+  }, []);
 
   return {
     selectedRelease,

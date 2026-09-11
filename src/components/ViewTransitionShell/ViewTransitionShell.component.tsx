@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, ViewTransition } from "react";
+import { type ReactNode, useSyncExternalStore, ViewTransition } from "react";
 
 type ViewTransitionShellMode = "mount" | "deferredUpdate" | "content";
 
@@ -8,6 +8,16 @@ interface ViewTransitionShellProps {
   children: ReactNode;
   mode?: ViewTransitionShellMode;
 }
+
+const subscribeDocumentVisibility = (onStoreChange: () => void) => {
+  document.addEventListener("visibilitychange", onStoreChange);
+
+  return () => {
+    document.removeEventListener("visibilitychange", onStoreChange);
+  };
+};
+
+const getDocumentVisible = () => !document.hidden;
 
 const modeProps = {
   mount: {
@@ -34,7 +44,16 @@ export const ViewTransitionShell = ({
   children,
   mode = "deferredUpdate",
 }: ViewTransitionShellProps) => {
+  const documentVisible = useSyncExternalStore(
+    subscribeDocumentVisibility,
+    getDocumentVisible,
+    () => true,
+  );
   const transitionProps = modeProps[mode];
+
+  if (!documentVisible) {
+    return children;
+  }
 
   return (
     <ViewTransition

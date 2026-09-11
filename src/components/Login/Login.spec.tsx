@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 
-jest.mock("react-player", () => ({
-  __esModule: true,
-  default: ({ src }: { src: string }) => (
-    <div data-testid="mockReactPlayer" data-src={src} />
-  ),
-}));
+jest.mock("react-player", () => {
+  const React = require("react");
+
+  return {
+    __esModule: true,
+    default: React.forwardRef(
+      ({ src }: { src: string }, ref: React.Ref<HTMLDivElement>) => (
+        <div ref={ref} data-testid="mockReactPlayer" data-src={src} />
+      ),
+    ),
+  };
+});
 
 import { LoginPageObject } from "src/components/Login/Login.po";
 import { LOGIN_PREVIEW_VIDEO_URL } from "src/constants/loginPreviewMedia";

@@ -19,7 +19,13 @@ const ReleaseCardComponent = ({
   priority = false,
 }: ReleaseCardProps) => {
   "use memo";
-  const { openRelease, canOpen } = useReleaseOpenHandler({
+  const {
+    openRelease,
+    prefetchReleaseOpen,
+    schedulePrefetchReleaseOpen,
+    cancelPrefetchReleaseOpen,
+    canOpen,
+  } = useReleaseOpenHandler({
     release,
     onReleaseClick,
   });
@@ -51,6 +57,15 @@ const ReleaseCardComponent = ({
           [styles.randomMode]: isRandomMode,
         })}
         data-testid="fmdReleaseCard"
+        {...definedProps(
+          canOpen
+            ? {
+                onPointerEnter: schedulePrefetchReleaseOpen,
+                onPointerLeave: cancelPrefetchReleaseOpen,
+                onPointerDown: prefetchReleaseOpen,
+              }
+            : {},
+        )}
       >
         <ReleaseCardImage
           release={release}

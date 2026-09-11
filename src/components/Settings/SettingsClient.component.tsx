@@ -4,7 +4,11 @@ import classNames from "classnames";
 import { useSetAtom, useStore } from "jotai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { viewDispatchAtom, viewStateAtom } from "src/atoms/view.atoms";
+import {
+  ViewActionTypes,
+  viewDispatchAtom,
+  viewStateAtom,
+} from "src/atoms/view.atoms";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
@@ -20,7 +24,6 @@ import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   type StoredViewState,
 } from "src/types/userPreferences.types";
-import { dispatchViewChangeWithTransition } from "src/utils/dispatchViewChangeWithTransition";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import { toast } from "src/utils/toast";
@@ -144,7 +147,10 @@ export default function SettingsClient() {
   };
 
   const handleViewChange = (view: "card" | "list") => {
-    dispatchViewChangeWithTransition(dispatchView, view);
+    dispatchView({
+      type: ViewActionTypes.SetView,
+      payload: view,
+    });
     const { currentView, previousView } = store.get(viewStateAtom);
     const persistedView: StoredViewState = { currentView, previousView };
     persistPreferences(

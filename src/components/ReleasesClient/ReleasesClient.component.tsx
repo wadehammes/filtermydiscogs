@@ -9,7 +9,6 @@ import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
-import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
@@ -162,26 +161,24 @@ const ReleasesClientContent = () => {
               ) : null}
 
               {hasReleases ? (
-                <ViewTransitionShell mode="content">
-                  <div
-                    key={currentView}
-                    {...definedProps({
-                      "aria-busy": isFilterPending ? true : undefined,
-                    })}
-                    aria-live="polite"
-                  >
-                    <ReleasesGrid
-                      releases={visibleReleases}
-                      view={currentView}
-                      isMobile={isMobile}
-                      isRandomMode={isRandomMode}
-                      onExitRandomMode={handleExitRandomMode}
-                      onRandomClick={handleRandomClick}
-                      onReleaseClick={handleReleaseClick}
-                      randomRelease={randomRelease}
-                    />
-                  </div>
-                </ViewTransitionShell>
+                <div
+                  key={currentView}
+                  {...definedProps({
+                    "aria-busy": isFilterPending ? true : undefined,
+                  })}
+                  aria-live="polite"
+                >
+                  <ReleasesGrid
+                    releases={visibleReleases}
+                    view={currentView}
+                    isMobile={isMobile}
+                    isRandomMode={isRandomMode}
+                    onExitRandomMode={handleExitRandomMode}
+                    onRandomClick={handleRandomClick}
+                    onReleaseClick={handleReleaseClick}
+                    randomRelease={randomRelease}
+                  />
+                </div>
               ) : !allReleasesLoaded ? (
                 <ReleasesSkeleton isMobile={isMobile} />
               ) : (

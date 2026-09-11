@@ -37,7 +37,6 @@ import {
   useViewDispatch,
 } from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
-import { dispatchViewChangeWithTransition } from "src/utils/dispatchViewChangeWithTransition";
 
 const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
@@ -199,7 +198,10 @@ export const useReleasesClient = ({
   const handleViewChange = useCallback(
     (view: "card" | "list" | "random") => {
       trackViewModeChanged(view);
-      dispatchViewChangeWithTransition(viewDispatch, view);
+      viewDispatch({
+        type: ViewActionTypes.SetView,
+        payload: view,
+      });
       toggleRandomModeForView(view);
     },
     [viewDispatch],

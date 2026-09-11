@@ -7,11 +7,14 @@ import MosaicControls from "src/components/MosaicClient/MosaicControls.component
 import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
+import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
+import { useAuth } from "src/context/auth.context";
 import {
   FiltersActionTypes,
   useMemoizedFilteredReleases,
 } from "src/context/filters.context";
+import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { ViewActionTypes } from "src/context/view.context";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import {
@@ -23,10 +26,12 @@ import { useGridDimensions } from "src/hooks/useGridDimensions.hook";
 import { useMosaicGenerator } from "src/hooks/useMosaicGenerator.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
+import { useLocalSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { useCurrentView, useViewDispatch } from "src/hooks/useViewAtoms.hook";
 import styles from "./MosaicClient.module.css";
 
 export default function MosaicClient() {
+  const { state: authState } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const allReleases = useAllReleases();
   const {
@@ -71,6 +76,13 @@ export default function MosaicClient() {
     useState<keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS>("SQUARE");
 
   const releasesToDisplay = useMemoizedFilteredReleases();
+  const { selectedRelease, handleReleaseClick, handleCloseModal } =
+    useLocalSelectedReleaseModal({
+      collectionUsername: authState.username,
+      fallbackReleases: releasesToDisplay,
+    });
+
+  useRegisterPlaybackReleaseClick(handleReleaseClick);
 
   const gridDimensions = useGridDimensions({
     itemCount: releasesToDisplay.length,
@@ -111,7 +123,17 @@ export default function MosaicClient() {
 
   return (
     <Page>
-      <CollectionPlaybackPageShell allReleasesLoaded currentPage="mosaic">
+      <CollectionPlaybackPageShell
+        allReleasesLoaded
+        currentPage="mosaic"
+        overlays={
+          <ReleaseModalLazyOverlay
+            release={selectedRelease}
+            onClose={handleCloseModal}
+            onReleaseClick={handleReleaseClick}
+          />
+        }
+      >
         <div className={styles.container}>
           <div className={styles.header}>
             <h1>Album Mosaic</h1>
@@ -148,6 +170,7 @@ export default function MosaicClient() {
                         key={release.instance_id}
                         release={release}
                         totalReleases={releasesToDisplay.length}
+                        onReleaseClick={handleReleaseClick}
                       />
                     ))}
                   </div>

@@ -28,7 +28,11 @@
 }
 
 .viewport {
+  --login-preview-video-height: 1080px;
+  --login-preview-video-width: 1680px;
+
   background: var(--muted);
+  container-type: size;
   min-height: 16rem;
   overflow: hidden;
   position: relative;
@@ -39,22 +43,32 @@
   display: block;
   height: 100%;
   inset: 0;
+  overflow: hidden;
   position: absolute;
   width: 100%;
 }
 
-.interactionShield {
-  inset: 0;
+.previewPlayer :global(youtube-video) {
+  height: var(--login-preview-video-height);
+  left: 0;
   position: absolute;
-  z-index: 1;
+  top: 0;
+  transform: scale(
+    min(
+      calc(100cqw / var(--login-preview-video-width)),
+      calc(100cqh / var(--login-preview-video-height))
+    )
+  );
+  transform-origin: 0 0;
+  width: var(--login-preview-video-width);
 }
 
 .brandMark {
   bottom: var(--space-3);
+  left: var(--space-3);
   pointer-events: none;
   position: absolute;
-  right: var(--space-3);
-  z-index: 2;
+  z-index: 1;
 }
 
 .brandIcon {
