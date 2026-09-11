@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import OAuth from "oauth-1.0a";
 import { parseRetryAfterMs } from "src/api/apiFetchError";
 import type { DiscogsApiError } from "src/lib/discogs-api-error";
+import { discogsFetch } from "src/lib/discogs-fetch";
 import { recordDiscogsRateLimitHeaders } from "src/lib/discogs-rate-limit";
 import { runThrottledDiscogsRequest } from "src/lib/discogs-request-throttle";
 import type {
@@ -123,6 +124,7 @@ class DiscogsOAuthService {
     oauthToken: string,
     oauthTokenSecret: string,
     additionalData: AuthenticatedRequestData = {},
+    options: { skipThrottle?: boolean } = {},
   ): Promise<unknown> {
     try {
       let requestUrl = url;
@@ -162,9 +164,10 @@ class DiscogsOAuthService {
         fetchOptions.body = JSON.stringify(additionalData);
       }
 
-      const response = await runThrottledDiscogsRequest(() =>
-        fetch(requestUrl, fetchOptions),
-      );
+      const runFetch = () => discogsFetch(requestUrl, fetchOptions);
+      const response = options.skipThrottle
+        ? await runFetch()
+        : await runThrottledDiscogsRequest(runFetch);
       recordDiscogsRateLimitHeaders(response.headers);
 
       if (!response.ok) {
@@ -235,7 +238,7 @@ class DiscogsOAuthService {
       this.oauth.authorize(request_data),
     );
 
-    const response = await fetch(url, {
+    const response = await discogsFetch(url, {
       method,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -295,7 +298,7 @@ class DiscogsOAuthService {
       this.oauth.authorize(request_data, token),
     );
 
-    const response = await fetch(url, {
+    const response = await discogsFetch(url, {
       method,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -333,6 +336,8 @@ class DiscogsOAuthService {
       "GET",
       oauthToken,
       oauthTokenSecret,
+      {},
+      { skipThrottle: true },
     ) as Promise<DiscogsIdentity>;
   }
 

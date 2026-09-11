@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
-import { runThrottledDiscogsRequest } from "src/lib/discogs-request-throttle";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { releaseBatchBodySchema } from "src/lib/validation/release.schemas";
@@ -50,21 +49,20 @@ export async function POST(request: NextRequest) {
       const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
 
       try {
-        releases[releaseId] = await runThrottledDiscogsRequest(async () => {
-          if (accessToken && accessTokenSecret) {
-            return discogsOAuthService.makeAuthenticatedRequest(
+        if (accessToken && accessTokenSecret) {
+          releases[releaseId] =
+            (await discogsOAuthService.makeAuthenticatedRequest(
               releaseUrl,
               "GET",
               accessToken,
               accessTokenSecret,
-            ) as Promise<DiscogsReleaseDetail>;
-          }
-
-          return discogsOAuthService.makeConsumerRequest(
+            )) as DiscogsReleaseDetail;
+        } else {
+          releases[releaseId] = (await discogsOAuthService.makeConsumerRequest(
             releaseUrl,
             "GET",
-          ) as Promise<DiscogsReleaseDetail>;
-        });
+          )) as DiscogsReleaseDetail;
+        }
       } catch {}
     }
 
