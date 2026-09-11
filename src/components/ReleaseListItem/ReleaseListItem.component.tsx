@@ -73,7 +73,13 @@ const ReleaseListItemComponent = ({
     [handlePillClick],
   );
 
-  const { openRelease, canOpen } = useReleaseOpenHandler({
+  const {
+    openRelease,
+    prefetchReleaseOpen,
+    schedulePrefetchReleaseOpen,
+    cancelPrefetchReleaseOpen,
+    canOpen,
+  } = useReleaseOpenHandler({
     release,
     onReleaseClick,
   });
@@ -92,6 +98,15 @@ const ReleaseListItemComponent = ({
         [styles.highlighted]: isHighlighted,
         [styles.inCrate]: inActiveCrate,
       })}
+      {...definedProps(
+        canOpen
+          ? {
+              onPointerEnter: schedulePrefetchReleaseOpen,
+              onPointerLeave: cancelPrefetchReleaseOpen,
+              onPointerDown: prefetchReleaseOpen,
+            }
+          : {},
+      )}
     >
       <div
         className={styles.imageContainer}

@@ -15,13 +15,8 @@
 }
 
 .itemImage.itemImage {
-  height: 3.75rem;
-  width: 3.75rem;
-
-  @media (width >= 1024px) {
-    height: 5rem;
-    width: 5rem;
-  }
+  height: 5rem;
+  width: 5rem;
 }
 
 .listItemActions.listItemActions {

@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { api } from "src/api/urls";
-import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
+import {
+  useLocalSelectedReleaseModal,
+  useSelectedReleaseModal,
+} from "src/hooks/useSelectedReleaseModal.hook";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
@@ -38,6 +41,37 @@ describe("useSelectedReleaseModal", () => {
     applyUrl("/releases");
   });
 
+  it("keeps an optimistic open when the URL still has no instance param", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockPush = jest.fn();
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    rerender();
+
+    act(() => {
+      applyUrl("/releases");
+    });
+
+    rerender();
+
+    expect(result.current.selectedReleaseId).toBe(
+      String(releases[0]?.instance_id),
+    );
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[0]?.instance_id,
+    );
+  });
+
   it("opens optimistically before the router updates search params", () => {
     const releases = releaseFactory.buildList(1);
     const mockPush = jest.fn();
@@ -65,10 +99,14 @@ describe("useSelectedReleaseModal", () => {
     );
   });
 
-  it("closes optimistically before the router clears search params", () => {
+  it("clears the selection after the router removes the instance param", () => {
     const releases = releaseFactory.buildList(1);
-    const mockReplace = jest.fn();
-    const mockPush = jest.fn((url: string) => {
+    const mockReplace = jest.fn(
+      (url: string, _options?: { scroll?: boolean }) => {
+        applyUrl(url);
+      },
+    );
+    const mockPush = jest.fn((url: string, _options?: { scroll?: boolean }) => {
       applyUrl(url);
     });
     const mockRouter = createMockAppRouter({
@@ -78,7 +116,7 @@ describe("useSelectedReleaseModal", () => {
 
     mockUseRouter.mockReturnValue(mockRouter);
 
-    const { result } = renderHookWithTestProviders(() =>
+    const { result, rerender } = renderHookWithTestProviders(() =>
       useSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
@@ -86,9 +124,13 @@ describe("useSelectedReleaseModal", () => {
       result.current.handleReleaseClick(String(releases[0]?.instance_id));
     });
 
+    rerender();
+
     act(() => {
       result.current.handleCloseModal();
     });
+
+    rerender();
 
     expect(mockReplace).toHaveBeenCalledWith("/releases", { scroll: false });
     expect(result.current.selectedReleaseId).toBeNull();
@@ -122,6 +164,39 @@ describe("useSelectedReleaseModal", () => {
     );
     expect(result.current.selectedRelease?.instance_id).toBe(
       releases[0]?.instance_id,
+    );
+  });
+
+  it("resolves the new release optimistically before the router updates the URL", () => {
+    const releases = releaseFactory.buildList(2);
+    const mockPush = jest.fn((url: string) => {
+      if (mockPush.mock.calls.length === 1) {
+        applyUrl(url);
+      }
+    });
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    rerender();
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[1]?.instance_id));
+    });
+
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[1]?.instance_id,
+    );
+    expect(mockPush.mock.calls[1]?.[0]).toBe(
+      `/releases?instance=${releases[1]?.instance_id}`,
     );
   });
 
@@ -370,5 +445,57 @@ describe("useSelectedReleaseModal", () => {
     expect(result.current.selectedReleaseId).toBe("unknown");
     expect(result.current.selectedRelease).toBeNull();
     expect(mockApi.discogsCollection).not.toHaveBeenCalled();
+  });
+});
+
+describe("useLocalSelectedReleaseModal", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos(),
+    );
+  });
+
+  it("opens and closes without updating the router", () => {
+    const releases = releaseFactory.buildList(2);
+    const mockPush = jest.fn();
+    const mockReplace = jest.fn();
+    const mockRouter = createMockAppRouter({
+      push: mockPush,
+      replace: mockReplace,
+    });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      useLocalSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[0]?.instance_id,
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[1]?.instance_id));
+    });
+
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[1]?.instance_id,
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.handleCloseModal();
+    });
+
+    expect(result.current.selectedReleaseId).toBeNull();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });

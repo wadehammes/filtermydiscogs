@@ -1,62 +1,33 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-import { Spinner } from "src/components/Spinner/Spinner.component";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import styles from "./MosaicClient.module.css";
 
 interface MosaicItemProps {
   release: DiscogsRelease;
   totalReleases: number;
+  onReleaseClick?: (instanceId: string) => void;
 }
 
 export default function MosaicItem({
   release,
   totalReleases,
+  onReleaseClick,
 }: MosaicItemProps) {
-  const [isClicked, setIsClicked] = useState(false);
-  const { resource_url } = release.basic_information;
-
-  const releaseId = resource_url.split("/").pop() || "";
-  const fallbackUri = `https://www.discogs.com/release/${releaseId}`;
-
-  const { data: releaseData, isLoading } = useDiscogsReleaseQuery({
-    releaseId,
-    enabled: isClicked,
+  const {
+    openRelease,
+    prefetchReleaseOpen,
+    schedulePrefetchReleaseOpen,
+    cancelPrefetchReleaseOpen,
+    canOpen,
+  } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
   });
-
-  const handleReleaseClick = useCallback(
-    async (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      setIsClicked(true);
-
-      if (releaseData?.uri) {
-        window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-        return;
-      }
-    },
-    [releaseData?.uri],
-  );
-
-  const handleUrlOpen = useCallback(() => {
-    if (releaseData?.uri) {
-      window.open(releaseData.uri, "_blank", "noopener,noreferrer");
-    } else if (!isLoading) {
-      window.open(fallbackUri, "_blank", "noopener,noreferrer");
-    }
-  }, [releaseData?.uri, isLoading, fallbackUri]);
-
-  useEffect(() => {
-    if (isClicked && releaseData?.uri) {
-      handleUrlOpen();
-      setIsClicked(false);
-    }
-  }, [isClicked, releaseData?.uri, handleUrlOpen]);
 
   const imageUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
@@ -70,9 +41,18 @@ export default function MosaicItem({
     <button
       type="button"
       className={styles.mosaicItem}
-      onClick={handleReleaseClick}
-      aria-label={`View ${release.basic_information.title} on Discogs`}
+      onClick={canOpen ? openRelease : undefined}
+      aria-label={`Open release details for ${release.basic_information.title}`}
       data-release-id={release.instance_id}
+      {...definedProps(
+        canOpen
+          ? {
+              onPointerEnter: schedulePrefetchReleaseOpen,
+              onPointerLeave: cancelPrefetchReleaseOpen,
+              onPointerDown: prefetchReleaseOpen,
+            }
+          : {},
+      )}
     >
       <Image
         src={imageUrl}
@@ -83,11 +63,6 @@ export default function MosaicItem({
         height={100}
         sizes="100px"
       />
-      {isLoading && (
-        <div className={styles.loadingOverlay}>
-          <Spinner size="sm" aria-label="Loading release" />
-        </div>
-      )}
     </button>
   );
 }

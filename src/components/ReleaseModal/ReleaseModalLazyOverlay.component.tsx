@@ -1,6 +1,5 @@
 "use client";
 
-import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { ReleaseModalLazy } from "./ReleaseModalLazy.component";
@@ -21,13 +20,12 @@ export const ReleaseModalLazyOverlay = ({
   }
 
   return (
-    <ViewTransitionShell mode="mount">
-      <ReleaseModalLazy
-        isOpen={true}
-        release={release}
-        onClose={onClose}
-        {...definedProps({ onReleaseClick })}
-      />
-    </ViewTransitionShell>
+    <ReleaseModalLazy
+      key={String(release.instance_id)}
+      isOpen={true}
+      release={release}
+      onClose={onClose}
+      {...definedProps({ onReleaseClick })}
+    />
   );
 };

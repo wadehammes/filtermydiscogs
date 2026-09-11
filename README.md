@@ -14,7 +14,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **In-app playback** — Preview tracks from a persistent mini player and queue while you browse
 - **Crates** — Multiple crates for gigs or themed lists; reorder releases, section markers, set notes, and optional gig-packing progress; share a crate publicly
 - **Collection insights** — Dashboard with milestones, style evolution, and growth charts
-- **Mosaic generator** — Build and download cover-art grids from your collection or a crate
+- **Mosaic generator** — Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
 - **Settings** — Theme (light / dark / system), collection sync, filter persistence, and clear stored data
 - **Responsive UI** — Desktop sidebar crates, mobile drawers, and touch-friendly filters
 
@@ -104,7 +104,7 @@ The app will be available at `http://localhost:6767`.
 1. Click **Connect with Discogs** on the home page and authorize the app
 2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, and preview tracks
 3. Stage picks in the crate drawer, then manage full crates under **Crates** (reorder, sections, packing, public share)
-4. Check **Dashboard** for collection insights; **Mosaic** for cover-art grids
+4. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 5. Adjust theme and sync options in **Settings**; sign out from the user menu
 
 ## Pages
@@ -117,7 +117,7 @@ The app will be available at `http://localhost:6767`.
 | `/crates/[id]` | Owner crate workspace |
 | `/crate/[id]` | Public shared crate (no login) |
 | `/dashboard` | Collection analytics |
-| `/mosaic` | Cover-art mosaic generator |
+| `/mosaic` | Cover-art mosaic grid (click tiles for release details; export download) |
 | `/settings` | Theme, sync, data preferences |
 | `/about` | About, support, clear data |
 | `/legal` | Terms of Service and Privacy Policy |

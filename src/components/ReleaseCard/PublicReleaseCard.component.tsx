@@ -22,7 +22,13 @@ const PublicReleaseCardComponent = ({
   isHighlighted = false,
   onReleaseClick,
 }: Omit<ReleaseCardProps, "isRandomMode" | "onExitRandomMode">) => {
-  const { openRelease, canOpen } = useReleaseOpenHandler({
+  const {
+    openRelease,
+    prefetchReleaseOpen,
+    schedulePrefetchReleaseOpen,
+    cancelPrefetchReleaseOpen,
+    canOpen,
+  } = useReleaseOpenHandler({
     release,
     onReleaseClick,
   });
@@ -71,6 +77,15 @@ const PublicReleaseCardComponent = ({
         [styles.highlighted]: isHighlighted,
       })}
       data-testid="fmdPublicReleaseCard"
+      {...definedProps(
+        canOpen
+          ? {
+              onPointerEnter: schedulePrefetchReleaseOpen,
+              onPointerLeave: cancelPrefetchReleaseOpen,
+              onPointerDown: prefetchReleaseOpen,
+            }
+          : {},
+      )}
     >
       <div className={styles.imageShell}>
         <div

@@ -30,7 +30,13 @@ export function DashboardReleaseItem({
   });
   const primaryLabel = labels[0];
   const artistNames = artists.map((a) => a.name).join(", ");
-  const { openRelease, canOpen } = useReleaseOpenHandler({
+  const {
+    openRelease,
+    prefetchReleaseOpen,
+    schedulePrefetchReleaseOpen,
+    cancelPrefetchReleaseOpen,
+    canOpen,
+  } = useReleaseOpenHandler({
     release,
     onReleaseClick,
   });
@@ -53,6 +59,15 @@ export function DashboardReleaseItem({
       className={classNames(styles.releaseItemContainer, {
         [styles.releaseItemWrap]: wrapText,
       })}
+      {...definedProps(
+        canOpen
+          ? {
+              onPointerEnter: schedulePrefetchReleaseOpen,
+              onPointerLeave: cancelPrefetchReleaseOpen,
+              onPointerDown: prefetchReleaseOpen,
+            }
+          : {},
+      )}
     >
       {thumb && (
         <div
