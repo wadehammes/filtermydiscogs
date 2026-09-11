@@ -1,21 +1,21 @@
 [data-theme="dim"] {
-  --primary: #3a5a75;
+  --primary: #2f4d63;
 }
 
 [data-theme="sepia"] {
-  --primary: #7a5534;
+  --primary: #6b4828;
 }
 
 [data-theme="forest"] {
-  --primary: #3a5640;
+  --primary: #243830;
 }
 
 [data-theme="amber"] {
-  --primary: #b87a08;
+  --primary: #5a3d00;
 }
 
 [data-theme="slate"] {
-  --primary: #456b8a;
+  --primary: #173248;
 }
 
 :is(

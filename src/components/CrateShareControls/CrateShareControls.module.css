@@ -121,7 +121,7 @@
 
   &:checked {
     background: var(--primary);
-    border-color: var(--primary);
+    border-color: var(--link);
 
     &::before {
       transform: translate(1rem, -50%);
@@ -167,6 +167,6 @@
 
   &:hover:not(:disabled) {
     background: var(--muted);
-    color: var(--primary);
+    color: var(--link);
   }
 }

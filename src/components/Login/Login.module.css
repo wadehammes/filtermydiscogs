@@ -72,7 +72,7 @@
   transition: color var(--transition-normal);
 
   &:hover {
-    color: var(--primary);
+    color: var(--link);
     text-decoration: underline;
   }
 }

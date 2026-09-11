@@ -139,7 +139,7 @@
 }
 
 .menuItemActive {
-  color: var(--primary);
+  color: var(--link);
 }
 
 .menuItemLabel {

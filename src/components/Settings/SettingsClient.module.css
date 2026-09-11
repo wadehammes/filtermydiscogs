@@ -108,7 +108,7 @@
 
 .sidebarButtonActive {
   background: var(--secondary);
-  border-color: var(--primary);
+  border-color: var(--link);
 }
 
 .sidebarButtonLabel {
@@ -128,7 +128,7 @@
 }
 
 .panel {
-  accent-color: var(--primary);
+  accent-color: var(--link);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -280,13 +280,13 @@
 }
 
 .settingCheckbox {
-  accent-color: var(--primary);
+  accent-color: var(--link);
   height: 1rem;
   width: 1rem;
 }
 
 .inlineLink {
-  color: var(--primary);
+  color: var(--link);
   cursor: pointer;
   position: relative;
   text-decoration: none;
@@ -294,7 +294,7 @@
   z-index: 1;
 
   &:hover {
-    color: var(--primary-hover);
+    color: var(--link-hover);
     text-decoration: underline;
   }
 }

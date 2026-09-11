@@ -27,12 +27,12 @@
 
 .primary {
   background: var(--primary);
-  border-color: var(--primary);
+  border-color: var(--link);
   color: var(--primary-foreground);
 
   &:hover:not(:disabled) {
     background: var(--primary-hover);
-    border-color: var(--primary-hover);
+    border-color: var(--link-hover);
     color: var(--on-primary-hover);
   }
 
@@ -61,8 +61,8 @@
 
 .outlinePrimary {
   background: var(--card);
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--link);
+  color: var(--link);
 
   &:hover:not(:disabled) {
     background: var(--primary);

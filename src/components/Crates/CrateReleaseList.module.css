@@ -115,7 +115,7 @@
 }
 
 .identity:hover .identityTitle {
-  color: var(--primary);
+  color: var(--link);
 }
 
 .identityMeta {

@@ -1,9 +1,9 @@
 [data-theme="codex"] {
   color-scheme: dark;
 
-  --background: #0d1117;
-  --gradientPink: #161b22;
-  --gradientTeal: #21262d;
+  --background: #090b0f;
+  --gradientPink: #121418;
+  --gradientTeal: #181a20;
   --gradient-surface: color-mix(
     in oklch,
     var(--gradientPink) 48%,

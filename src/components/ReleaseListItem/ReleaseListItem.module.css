@@ -14,7 +14,7 @@
   }
 
   &:hover {
-    border-color: var(--primary);
+    border-color: var(--link);
     box-shadow: var(--shadow-sm);
   }
 
@@ -27,7 +27,7 @@
 }
 
 .highlighted {
-  border-color: var(--primary);
+  border-color: var(--link);
   composes: theme-highlighted-surface from global;
 }
 

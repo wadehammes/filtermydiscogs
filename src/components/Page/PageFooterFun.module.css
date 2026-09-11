@@ -200,7 +200,7 @@
 }
 
 .vinylIcon {
-  color: var(--primary);
+  color: var(--link);
   filter: drop-shadow(
     0 2px 4px color-mix(in srgb, var(--foreground) 12%, transparent)
   );

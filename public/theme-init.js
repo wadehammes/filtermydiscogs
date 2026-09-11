@@ -3,19 +3,19 @@
     const storageKey = "filtermydiscogs_theme";
     const stored = localStorage.getItem(storageKey);
     const paletteThemes = new Set([
-      "light",
-      "dim",
-      "sepia",
-      "forest",
       "amber",
-      "slate",
-      "dark",
-      "midnight",
       "codex",
+      "dark",
+      "dim",
       "discogs",
-      "wine",
+      "forest",
       "futuristic",
       "high-contrast",
+      "light",
+      "midnight",
+      "sepia",
+      "slate",
+      "wine",
     ]);
     const systemDarkPalette = "dark";
     const prefersDark = window.matchMedia(

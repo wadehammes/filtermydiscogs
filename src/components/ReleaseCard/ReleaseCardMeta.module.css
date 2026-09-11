@@ -49,6 +49,6 @@
   transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--primary);
+    color: var(--link);
   }
 }

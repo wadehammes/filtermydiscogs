@@ -9,8 +9,8 @@
     var(--gradientPink) 52%,
     var(--gradientTeal)
   );
-  --pill-style-foreground: #3a5640;
-  --pill-style-border: #486650;
+  --pill-style-foreground: #3a4f42;
+  --pill-style-border: #243830;
   --pill-style-selected-foreground: #fff;
   --pill-format-foreground: #5c6340;
   --pill-format-border: #6e764c;

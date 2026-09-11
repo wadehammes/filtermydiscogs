@@ -46,7 +46,7 @@
   white-space: nowrap;
 
   &:hover {
-    color: var(--primary);
+    color: var(--link);
   }
 }
 
@@ -106,7 +106,7 @@
 }
 
 .navLinkActive {
-  color: var(--primary);
+  color: var(--link);
 }
 
 .navLinkGradient {

@@ -97,7 +97,7 @@
 }
 
 .searchLink {
-  color: var(--primary);
+  color: var(--link);
   font-size: var(--text-sm);
   text-decoration: none;
 
@@ -117,7 +117,7 @@
   width: 100%;
 
   & a {
-    color: var(--primary);
+    color: var(--link);
     font-size: var(--text-sm);
     text-decoration: none;
 

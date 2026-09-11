@@ -6,47 +6,47 @@ import type {
 export type { PaletteTheme, StoredTheme };
 
 export const THEME_LABELS: Record<StoredTheme, string> = {
-  light: "Light",
-  dim: "Dim",
-  sepia: "Sepia",
-  forest: "Forest",
   amber: "Amber",
-  slate: "Slate",
-  dark: "Dark",
-  midnight: "Midnight",
   codex: "Codex",
+  dark: "Dark",
+  dim: "Dim",
   discogs: "Discogs",
-  wine: "Wine",
+  forest: "Forest",
   futuristic: "Futuristic",
   "high-contrast": "High contrast",
+  light: "Light",
+  midnight: "Midnight",
+  sepia: "Sepia",
+  slate: "Slate",
   system: "System",
+  wine: "Wine",
 };
 
 export const PALETTE_THEMES = [
-  "light",
-  "dim",
-  "sepia",
-  "forest",
   "amber",
-  "slate",
-  "dark",
-  "midnight",
   "codex",
+  "dark",
+  "dim",
   "discogs",
-  "wine",
+  "forest",
   "futuristic",
   "high-contrast",
+  "light",
+  "midnight",
+  "sepia",
+  "slate",
+  "wine",
 ] as const satisfies readonly PaletteTheme[];
 
 export const SYSTEM_DARK_PALETTE: PaletteTheme = "dark";
 
 export const DARK_ASSET_THEMES = new Set<PaletteTheme>([
-  "dark",
-  "midnight",
   "codex",
-  "wine",
+  "dark",
   "futuristic",
   "high-contrast",
+  "midnight",
+  "wine",
 ]);
 
 export const STORED_THEMES: StoredTheme[] = [...PALETTE_THEMES, "system"];

@@ -113,7 +113,7 @@
   padding: var(--space-2) var(--space-3);
 
   &:focus {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
   }
 

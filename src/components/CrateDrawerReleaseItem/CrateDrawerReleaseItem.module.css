@@ -133,10 +133,10 @@
 }
 
 .listItemFound {
-  border-color: var(--primary);
+  border-color: var(--link);
 
   &:hover {
-    border-color: var(--primary-hover);
+    border-color: var(--link-hover);
   }
 
   .itemArtist,

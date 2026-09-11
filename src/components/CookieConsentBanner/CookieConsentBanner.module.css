@@ -56,7 +56,7 @@
 }
 
 .link {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

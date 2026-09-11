@@ -83,7 +83,7 @@
 }
 
 .sharingCheckbox {
-  accent-color: var(--primary);
+  accent-color: var(--link);
   cursor: pointer;
   height: 1rem;
   width: 1rem;

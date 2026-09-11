@@ -7,19 +7,19 @@ export const USER_PREFERENCES_VERSION = 1;
 export const DEFAULT_AUTO_PLAY_ON_QUEUE_ADD = true;
 
 export type PaletteTheme =
-  | "light"
-  | "dim"
-  | "dark"
-  | "sepia"
-  | "forest"
   | "amber"
-  | "slate"
-  | "midnight"
   | "codex"
+  | "dark"
+  | "dim"
   | "discogs"
-  | "wine"
+  | "forest"
+  | "futuristic"
   | "high-contrast"
-  | "futuristic";
+  | "light"
+  | "midnight"
+  | "sepia"
+  | "slate"
+  | "wine";
 
 export type StoredTheme = PaletteTheme | "system";
 

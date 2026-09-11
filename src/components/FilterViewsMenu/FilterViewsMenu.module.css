@@ -34,11 +34,11 @@
   &.menuTriggerActive {
     background: color-mix(in srgb, var(--primary) 12%, var(--background));
     border-color: color-mix(in srgb, var(--primary) 45%, var(--input));
-    border-inline-start-color: var(--primary);
+    border-inline-start-color: var(--link);
   }
 
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
   }
 
@@ -66,7 +66,7 @@
   transition: border-color var(--transition-normal);
 
   &[data-popup-open] {
-    border-color: var(--primary);
+    border-color: var(--link);
   }
 
   &:disabled {
@@ -83,7 +83,7 @@
 
 .menuTriggerIcon {
   align-items: center;
-  color: var(--primary);
+  color: var(--link);
   display: inline-flex;
   flex-shrink: 0;
   height: 1rem;

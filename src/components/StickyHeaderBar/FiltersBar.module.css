@@ -89,7 +89,7 @@
     & > * > [data-filter-control-trigger]:focus-visible,
     & > * > [data-filter-control-trigger][aria-expanded="true"],
     & > * > [data-filter-control-trigger][data-popup-open] {
-      border-color: var(--primary);
+      border-color: var(--link);
       outline: none;
     }
 
@@ -122,7 +122,7 @@
     align-items: center;
     background: var(--card);
     border-radius: var(--radius-full);
-    color: var(--primary);
+    color: var(--link);
     display: flex;
     font-size: var(--text-xxs);
     font-weight: var(--font-bold);

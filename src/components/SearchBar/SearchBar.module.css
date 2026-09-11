@@ -45,7 +45,7 @@
   }
 
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
     box-shadow: none;
     outline-offset: 0;
@@ -63,7 +63,7 @@
 
   &.searching {
     background: var(--muted);
-    border-color: var(--primary);
+    border-color: var(--link);
     color: var(--muted-foreground);
   }
 

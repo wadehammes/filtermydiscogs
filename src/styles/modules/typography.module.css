@@ -11,7 +11,7 @@
 }
 
 .brandEyebrow {
-  color: var(--primary);
+  color: var(--link);
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-sm);
   font-weight: var(--font-medium);
@@ -22,7 +22,7 @@
 }
 
 .sectionEyebrow {
-  color: var(--primary);
+  color: var(--link);
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-sm);
   font-weight: var(--font-medium);

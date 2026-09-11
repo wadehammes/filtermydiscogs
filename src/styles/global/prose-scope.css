@@ -76,12 +76,12 @@
 
   @scope ([data-prose-section]) to ([data-prose-actions]) {
     a:not([class]) {
-      color: var(--primary);
+      color: var(--link);
       text-decoration: none;
       transition: color var(--transition-normal);
 
       &:hover {
-        color: var(--primary-hover);
+        color: var(--link-hover);
         text-decoration: underline;
       }
     }
