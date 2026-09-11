@@ -9,26 +9,45 @@
   }
 }
 
-.menuitemhover {
+.menuitemhoverbase {
   &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
   &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
-    background: var(--muted);
-    color: var(--primary);
+    background: var(--menu-item-hover-bg);
+    color: var(--menu-item-hover-color);
   }
+}
+
+.menuitemhover {
+  composes: menuitemhoverbase;
+
+  --menu-item-hover-bg: var(--muted);
+  --menu-item-hover-color: var(--primary);
 }
 
 .menuitemhoverneutral {
-  &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
-  &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
-    background: var(--muted);
-    color: var(--foreground);
-  }
+  composes: menuitemhoverbase;
+
+  --menu-item-hover-bg: var(--muted);
+  --menu-item-hover-color: var(--foreground);
 }
 
 .menuitemhoverdanger {
-  &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
-  &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
-    background: color-mix(in srgb, var(--destructive) 8%, transparent);
-    color: var(--destructive);
+  composes: menuitemhoverbase;
+
+  --menu-item-hover-bg: color-mix(in srgb, var(--destructive) 8%, transparent);
+  --menu-item-hover-color: var(--destructive);
+}
+
+.menuitemchecked {
+  &[data-checked] {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    font-weight: var(--font-semibold);
+
+    &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
+    &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+      background: color-mix(in srgb, var(--primary) 14%, var(--muted));
+      color: var(--primary);
+    }
   }
 }

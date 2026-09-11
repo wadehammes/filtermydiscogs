@@ -1,14 +1,3 @@
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-
-  50% {
-    opacity: 0.85;
-  }
-}
-
 .fieldGroup {
   display: flex;
   flex-direction: column;
@@ -34,8 +23,7 @@
 .textareaBar,
 .selectLabel,
 .selectBar {
-  animation: pulse 1.4s ease-in-out infinite;
-  background: var(--muted);
+  composes: pulsesurface from "../../styles/modules/skeleton-pulse.module.css";
   border-radius: var(--radius-ui);
 }
 

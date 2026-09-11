@@ -1,14 +1,3 @@
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-
-  50% {
-    opacity: 0.85;
-  }
-}
-
 .skeletonRow {
   align-items: center;
   display: grid;
@@ -48,8 +37,7 @@
 .skeletonDuration,
 .skeletonQueue,
 .skeletonToolbarButton {
-  animation: pulse 1.4s ease-in-out infinite;
-  background: var(--muted);
+  composes: pulsesurface from "../../styles/modules/skeleton-pulse.module.css";
   border-radius: var(--radius-ui);
 }
 

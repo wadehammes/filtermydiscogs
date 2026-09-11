@@ -24,7 +24,8 @@
   min-height: 2.5rem;
 }
 
-.overlayAction {
+.overlayAction,
+.overlayactioncard {
   align-items: center;
   background: transparent;
   border: none;
@@ -51,7 +52,8 @@
   }
 }
 
-.overlayAction[aria-pressed="true"] {
+.overlayAction[aria-pressed="true"],
+.overlayactioncard[aria-pressed="true"] {
   background: var(--primary);
   color: var(--primary-foreground);
 
@@ -67,6 +69,22 @@
 
 .overlayActionMobile {
   padding-block: var(--space-2);
+}
+
+.overlayactioncard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius-ui) + 1px);
+  box-sizing: border-box;
+  flex: none;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  padding: var(--space-1);
+  width: auto;
+
+  &:focus-visible {
+    outline-offset: 2px;
+  }
 }
 
 .actionIcon {

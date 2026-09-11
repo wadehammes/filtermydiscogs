@@ -300,16 +300,8 @@
 }
 
 .loadingContainer {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
+  composes: loadingpage from "../../styles/modules/empty-state.module.css";
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-sm);
   height: 100dvh;
-  justify-content: center;
-  text-align: center;
-}
-
-.spinner {
-  margin-bottom: var(--space-4);
 }

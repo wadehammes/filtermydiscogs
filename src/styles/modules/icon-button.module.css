@@ -1,7 +1,3 @@
-.button {
-  composes: iconaction from "./action-icon-hover.module.css";
-}
-
 .iconOnly {
   align-items: center;
   display: flex;
@@ -15,8 +11,12 @@
   line-height: inherit;
 }
 
+.variantdefault {
+  composes: iconactionscale from "./action-icon-hover.module.css";
+}
+
 .variantplus {
-  composes: iconactionplus from "./action-icon-hover.module.css";
+  composes: iconactionrotate from "./action-icon-hover.module.css";
 }
 
 .variantminus {
@@ -24,7 +24,7 @@
 }
 
 .variantclose {
-  composes: iconactionclose from "./action-icon-hover.module.css";
+  composes: iconactionrotate from "./action-icon-hover.module.css";
 }
 
 .variantexternal {
@@ -33,10 +33,6 @@
 
 .variantqueue {
   composes: iconactionqueuesubtle from "./action-icon-hover.module.css";
-}
-
-.variantskip {
-  composes: iconactionskip from "./action-icon-hover.module.css";
 }
 
 .icon {

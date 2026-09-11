@@ -21,6 +21,32 @@
   overflow-y: auto;
 }
 
+.popupwide {
+  max-height: min(24rem, 70dvh);
+  max-width: min(18rem, calc(100vw - var(--space-6)));
+  min-width: 14rem;
+}
+
+.popupdesktopcompact {
+  @media (width >= 1024px) {
+    max-width: none;
+    min-width: 12rem;
+  }
+}
+
+.popupanchored {
+  box-sizing: border-box;
+  max-height: min(24rem, 70dvh);
+  max-width: none;
+  min-width: var(--anchor-width);
+  width: var(--anchor-width);
+}
+
+.popupcompact {
+  max-height: min(20rem, 70dvh);
+  min-width: 10rem;
+}
+
 .heading {
   color: var(--muted-foreground);
   font-size: var(--text-xs);

@@ -1,23 +1,9 @@
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-
-  50% {
-    opacity: 0.85;
-  }
-}
-
 .pulse {
-  animation: pulse 1.4s ease-in-out infinite;
-  background: var(--muted);
+  composes: pulsesurface from "../../styles/modules/skeleton-pulse.module.css";
 }
 
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
+  composes: card from "../../styles/modules/dashboard-card.module.css";
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;

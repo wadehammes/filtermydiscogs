@@ -1,3 +1,11 @@
 .field {
   font-size: 16px;
 }
+
+.scope {
+  & input:not(:is([type="checkbox"], [type="radio"])),
+  & textarea,
+  & select {
+    font-size: 16px;
+  }
+}

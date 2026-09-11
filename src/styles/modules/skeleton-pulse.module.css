@@ -1,0 +1,19 @@
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.pulse {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.pulsesurface {
+  composes: pulse;
+  background: var(--muted);
+}

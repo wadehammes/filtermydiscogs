@@ -72,17 +72,11 @@
 }
 
 .loadingContainer {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  justify-content: center;
-  min-height: 50vh;
-  padding: var(--space-8);
+  composes: loadingpage from "../../styles/modules/empty-state.module.css";
 
   p {
     color: var(--muted-foreground);
-    font-size: var(--text-meta-sm);
     font-family: var(--font-family-meta);
+    font-size: var(--text-meta-sm);
   }
 }

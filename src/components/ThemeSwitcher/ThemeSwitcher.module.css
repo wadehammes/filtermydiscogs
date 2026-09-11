@@ -95,8 +95,7 @@
 }
 
 .submenuPopup {
-  max-height: min(20rem, 70dvh);
-  min-width: 10rem;
+  composes: popupcompact from "../../styles/modules/inline-popover-menu.module.css";
 }
 
 .radioIndicator {

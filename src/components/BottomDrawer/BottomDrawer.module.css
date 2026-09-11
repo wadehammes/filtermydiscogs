@@ -139,6 +139,7 @@
 }
 
 .drawer {
+  composes: scope from "../../styles/modules/modal-input.module.css";
   background: var(--background);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
   display: flex;
@@ -150,12 +151,6 @@
 
   &:not(.drawerChrome) {
     border-top: 1px solid var(--border);
-  }
-
-  & input:not(:is([type="checkbox"], [type="radio"])),
-  & textarea,
-  & select {
-    font-size: 16px;
   }
 }
 
