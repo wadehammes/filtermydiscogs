@@ -18,16 +18,11 @@ export default function MosaicItem({
   totalReleases,
   onReleaseClick,
 }: MosaicItemProps) {
-  const {
-    openRelease,
-    prefetchReleaseOpen,
-    schedulePrefetchReleaseOpen,
-    cancelPrefetchReleaseOpen,
-    canOpen,
-  } = useReleaseOpenHandler({
-    release,
-    onReleaseClick,
-  });
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
 
   const imageUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
@@ -44,16 +39,10 @@ export default function MosaicItem({
       onClick={canOpen ? openRelease : undefined}
       aria-label={`Open release details for ${release.basic_information.title}`}
       data-release-id={release.instance_id}
-      {...definedProps(
-        canOpen
-          ? {
-              onPointerEnter: schedulePrefetchReleaseOpen,
-              onPointerLeave: cancelPrefetchReleaseOpen,
-              onPointerDown: prefetchReleaseOpen,
-              onFocus: prefetchReleaseOpen,
-            }
-          : {},
-      )}
+      {...definedProps({
+        ...(prefetchPointerProps ?? {}),
+        ...(canOpen ? { onFocus: prefetchReleaseOpen } : {}),
+      })}
     >
       <Image
         src={imageUrl}

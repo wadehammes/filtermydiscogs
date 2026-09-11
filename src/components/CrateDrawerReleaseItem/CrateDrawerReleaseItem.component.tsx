@@ -1,9 +1,13 @@
+"use client";
+
 import classNames from "classnames";
 import Image from "next/image";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateDrawerReleaseActions } from "src/components/CrateDrawerReleaseActions/CrateDrawerReleaseActions.component";
 import styles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
@@ -27,6 +31,11 @@ export const CrateDrawerReleaseItem = ({
 }: CrateDrawerReleaseItemProps) => {
   const { packedEnabled } = useCrateDrawerContext();
   const { basic_information } = release;
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
   const imageUrl = getReleaseImageUrl({
     thumb: basic_information.thumb,
     cover_image: basic_information.cover_image,
@@ -34,10 +43,6 @@ export const CrateDrawerReleaseItem = ({
     height: 100,
     preferCoverImage: true,
   });
-
-  const handleActivate = () => {
-    onReleaseClick?.(String(release.instance_id));
-  };
 
   const artist = formatArtistNames(release);
   const meta = formatReleaseMetaLine({ release, includeCatno: false }) || null;
@@ -47,11 +52,14 @@ export const CrateDrawerReleaseItem = ({
       className={classNames(styles.listItem, {
         [styles.listItemFound]: packedEnabled && packed,
       })}
+      data-testid="fmdCrateDrawerReleaseItem"
+      {...definedProps(prefetchPointerProps ?? {})}
     >
       <button
         type="button"
         className={styles.listItemMain}
-        onClick={handleActivate}
+        onClick={openRelease}
+        {...definedProps(canOpen ? { onFocus: prefetchReleaseOpen } : {})}
       >
         <div className={styles.itemImage}>
           <Image

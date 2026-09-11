@@ -1,3 +1,6 @@
+import { DISCOGS_OAUTH_TEST_ENV } from "../src/tests/discogsOAuthTestEnv";
+
 process.env.ENVIRONMENT = "staging";
-process.env.DISCOGS_CONSUMER_KEY = "test-consumer-key";
-process.env.DISCOGS_CONSUMER_SECRET = "test-consumer-secret";
+process.env.DISCOGS_CONSUMER_KEY = DISCOGS_OAUTH_TEST_ENV.DISCOGS_CONSUMER_KEY;
+process.env.DISCOGS_CONSUMER_SECRET =
+  DISCOGS_OAUTH_TEST_ENV.DISCOGS_CONSUMER_SECRET;

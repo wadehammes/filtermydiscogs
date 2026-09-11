@@ -6,7 +6,7 @@ import { prefetchReleaseOpenData } from "src/utils/prefetchReleaseOpenData";
 export const RELEASE_OPEN_PREFETCH_HOVER_MS = 100;
 
 interface UseReleaseOpenHandlerParams {
-  release: DiscogsRelease;
+  release: DiscogsRelease | null | undefined;
   onReleaseClick?: ((instanceId: string) => void) | undefined;
 }
 
@@ -27,7 +27,7 @@ export const useReleaseOpenHandler = ({
   }, []);
 
   const prefetchReleaseOpen = useCallback(() => {
-    if (!onReleaseClick) {
+    if (!(onReleaseClick && release)) {
       return;
     }
 
@@ -35,7 +35,7 @@ export const useReleaseOpenHandler = ({
   }, [onReleaseClick, queryClient, release]);
 
   const schedulePrefetchReleaseOpen = useCallback(() => {
-    if (!onReleaseClick) {
+    if (!(onReleaseClick && release)) {
       return;
     }
 
@@ -49,14 +49,30 @@ export const useReleaseOpenHandler = ({
   useEffect(() => clearHoverPrefetch, [clearHoverPrefetch]);
 
   const openRelease = useCallback(() => {
+    if (!release) {
+      return;
+    }
+
     onReleaseClick?.(String(release.instance_id));
-  }, [onReleaseClick, release.instance_id]);
+  }, [onReleaseClick, release]);
+
+  const canOpen =
+    onReleaseClick !== undefined && release !== null && release !== undefined;
+
+  const prefetchPointerProps = canOpen
+    ? {
+        onPointerEnter: schedulePrefetchReleaseOpen,
+        onPointerLeave: clearHoverPrefetch,
+        onPointerDown: prefetchReleaseOpen,
+      }
+    : undefined;
 
   return {
     openRelease,
     prefetchReleaseOpen,
     schedulePrefetchReleaseOpen,
     cancelPrefetchReleaseOpen: clearHoverPrefetch,
-    canOpen: onReleaseClick !== undefined,
+    prefetchPointerProps,
+    canOpen,
   };
 };

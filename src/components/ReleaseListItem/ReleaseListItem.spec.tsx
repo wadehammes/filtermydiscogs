@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseListItemPageObject } from "src/components/ReleaseListItem/ReleaseListItem.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  expectReleaseOpenPrefetchAfterHover,
+  setupReleaseOpenPrefetchHoverTimers,
+  teardownReleaseOpenPrefetchHoverTimers,
+} from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
 import { screen, waitFor } from "test-utils";
 
 let po: ReleaseListItemPageObject;
@@ -122,6 +127,43 @@ describe("ReleaseListItem", () => {
       const item = container.querySelector(".releaseItem");
       expect(item?.className).toContain("inCrate");
     });
+  });
+
+  it("prefetches release detail when the row shell is hovered", async () => {
+    const onReleaseClick = jest.fn();
+    const user = setupReleaseOpenPrefetchHoverTimers();
+
+    po.renderReleaseListItem({ onReleaseClick });
+
+    try {
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByTestId(po.testId),
+        mockDiscogsRelease: po.mockApiHelpers.discogsRelease,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
+  });
+
+  it("prefetches release detail when a style pill is hovered", async () => {
+    const release = releaseFactory.withStyles(["Rock"]);
+    const onReleaseClick = jest.fn();
+    const user = setupReleaseOpenPrefetchHoverTimers();
+
+    po.renderReleaseListItem({ release, onReleaseClick });
+
+    try {
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByRole("button", {
+          name: "Filter by Rock style",
+        }),
+        mockDiscogsRelease: po.mockApiHelpers.discogsRelease,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
   });
 
   it("calls onReleaseClick when the cover is activated", async () => {

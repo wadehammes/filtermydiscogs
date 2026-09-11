@@ -18,10 +18,12 @@ import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
 import VideoIcon from "src/styles/icons/video-thin.svg";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   hasSeenPlaybackVideoIntro,
@@ -66,6 +68,10 @@ export const ReleaseMiniPlayer = ({
   >(null);
   const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const { openRelease, prefetchPointerProps } = useReleaseOpenHandler({
+    release,
+    onReleaseClick,
+  });
 
   const iframeVideoId = playbackVideoId;
 
@@ -125,14 +131,6 @@ export const ReleaseMiniPlayer = ({
   const hasPrevious = canPlayPrevious;
   const hasNext = canPlayNext;
   const shouldAutoplayIframe = shouldAutoplayEmbed && !isPlaybackEmbedMounted;
-
-  const handleOpenRelease = () => {
-    if (!onReleaseClick) {
-      return;
-    }
-
-    onReleaseClick(String(release.instance_id));
-  };
 
   const cover = thumbUrl ? (
     <Image
@@ -219,9 +217,10 @@ export const ReleaseMiniPlayer = ({
                   <button
                     type="button"
                     className={styles.openReleaseButton}
-                    onClick={handleOpenRelease}
+                    onClick={openRelease}
                     aria-label={`Open ${release.basic_information.title}`}
                     title="Open release details"
+                    {...definedProps(prefetchPointerProps ?? {})}
                   >
                     {cover}
                     <div className={styles.metaLines}>{metaLines}</div>

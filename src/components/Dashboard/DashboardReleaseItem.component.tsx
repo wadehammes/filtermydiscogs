@@ -30,16 +30,11 @@ export function DashboardReleaseItem({
   });
   const primaryLabel = labels[0];
   const artistNames = artists.map((a) => a.name).join(", ");
-  const {
-    openRelease,
-    prefetchReleaseOpen,
-    schedulePrefetchReleaseOpen,
-    cancelPrefetchReleaseOpen,
-    canOpen,
-  } = useReleaseOpenHandler({
-    release,
-    onReleaseClick,
-  });
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
 
   const imageActivateProps = canOpen
     ? getReleaseActivateProps({
@@ -60,15 +55,8 @@ export function DashboardReleaseItem({
       className={classNames(styles.releaseItemContainer, {
         [styles.releaseItemWrap]: wrapText,
       })}
-      {...definedProps(
-        canOpen
-          ? {
-              onPointerEnter: schedulePrefetchReleaseOpen,
-              onPointerLeave: cancelPrefetchReleaseOpen,
-              onPointerDown: prefetchReleaseOpen,
-            }
-          : {},
-      )}
+      data-testid="fmdDashboardReleaseItem"
+      {...definedProps(prefetchPointerProps ?? {})}
     >
       {thumb && (
         <div

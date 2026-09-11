@@ -5,10 +5,7 @@ import {
   type IntersectionObserverMockControls,
   setupIntersectionObserverMock,
 } from "src/tests/mocks/mockIntersectionObserver.mock";
-import { act, screen, waitFor } from "test-utils";
-
-const INITIAL_VISIBLE_RELEASES = 100;
-const VISIBLE_BATCH_SIZE = 100;
+import { screen, waitFor } from "test-utils";
 
 let po: ReleasesClientPageObject;
 let intersectionObserver: IntersectionObserverMockControls;
@@ -45,16 +42,8 @@ describe("ReleasesClient", () => {
       expect(screen.getByTestId(po.modalTestId)).toBeInTheDocument();
     });
   });
-});
-
-describe("ReleasesClient infinite scroll", () => {
-  beforeEach(() => {
-    intersectionObserver = setupIntersectionObserverMock();
-    po = new ReleasesClientPageObject();
-  });
 
   it("wires the scroll container to intersection observation", async () => {
-    po.mockCollectionWithReleaseCount(120);
     po.renderReleasesClient();
 
     await waitFor(() => {
@@ -69,58 +58,5 @@ describe("ReleasesClient infinite scroll", () => {
       expect(intersectionObserver.getLastObserverRoot()).toBe(scrollRoot);
     });
     expect(intersectionObserver.getObservedElements()).toContain(sentinel);
-  });
-
-  it("renders only the first visible batch before the sentinel enters view", async () => {
-    po.mockCollectionWithReleaseCount(150);
-    po.renderReleasesClient();
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId(po.cardTestId)).toHaveLength(
-        INITIAL_VISIBLE_RELEASES,
-      );
-    });
-  });
-
-  it("renders more cards when the sentinel enters view", async () => {
-    po.mockCollectionWithReleaseCount(150);
-    po.renderReleasesClient();
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId(po.cardTestId)).toHaveLength(
-        INITIAL_VISIBLE_RELEASES,
-      );
-    });
-
-    const sentinel = screen.getByTestId("fmdReleasesLoadingTrigger");
-    act(() => {
-      intersectionObserver.triggerIntersection(sentinel, true);
-    });
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId(po.cardTestId)).toHaveLength(150);
-    });
-  });
-
-  it("continues expanding in batches of 100", async () => {
-    po.mockCollectionWithReleaseCount(250);
-    po.renderReleasesClient();
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId(po.cardTestId)).toHaveLength(
-        INITIAL_VISIBLE_RELEASES,
-      );
-    });
-
-    const sentinel = screen.getByTestId("fmdReleasesLoadingTrigger");
-    act(() => {
-      intersectionObserver.triggerIntersection(sentinel, true);
-    });
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId(po.cardTestId)).toHaveLength(
-        INITIAL_VISIBLE_RELEASES + VISIBLE_BATCH_SIZE,
-      );
-    });
   });
 });

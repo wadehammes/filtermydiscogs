@@ -23,16 +23,11 @@ const PublicMobileReleaseCardComponent = ({
   isHighlighted = false,
   onReleaseClick,
 }: Omit<ReleaseCardProps, "isRandomMode" | "onExitRandomMode">) => {
-  const {
-    openRelease,
-    prefetchReleaseOpen,
-    schedulePrefetchReleaseOpen,
-    cancelPrefetchReleaseOpen,
-    canOpen,
-  } = useReleaseOpenHandler({
-    release,
-    onReleaseClick,
-  });
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
   const {
     labels,
     year,
@@ -79,15 +74,7 @@ const PublicMobileReleaseCardComponent = ({
         [styles.highlighted]: isHighlighted,
       })}
       data-testid="fmdPublicMobileReleaseCard"
-      {...definedProps(
-        canOpen
-          ? {
-              onPointerEnter: schedulePrefetchReleaseOpen,
-              onPointerLeave: cancelPrefetchReleaseOpen,
-              onPointerDown: prefetchReleaseOpen,
-            }
-          : {},
-      )}
+      {...definedProps(prefetchPointerProps ?? {})}
     >
       <div
         className={styles.imageContainer}

@@ -35,6 +35,7 @@ import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useAuth } from "src/context/auth.context";
 import { useUpdateCrateLayoutMutation } from "src/hooks/mutations/useCrateMutations";
+import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import {
   assignSequentialCrateLayoutSortOrders,
   crateLayoutItemsToPutRequest,
@@ -127,6 +128,11 @@ const SortableReleaseRow = ({
 
   const artist = formatArtistNames(release);
   const meta = formatReleaseMetaLine({ release, includeCatno: false }) || null;
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
 
   return (
     <li
@@ -144,6 +150,7 @@ const SortableReleaseRow = ({
           [styles.releaseRowDragging]: isDragging,
         },
       )}
+      {...definedProps(prefetchPointerProps ?? {})}
     >
       <IconButton
         variant="skip"
@@ -161,8 +168,9 @@ const SortableReleaseRow = ({
       <button
         type="button"
         className={listStyles.identity}
-        onClick={() => onReleaseClick(instanceId)}
+        onClick={openRelease}
         aria-label={`Open ${basic_information.title}`}
+        {...definedProps(canOpen ? { onFocus: prefetchReleaseOpen } : {})}
       >
         <span className={listStyles.cover}>
           <Image src={imageUrl} alt="" width={40} height={40} sizes="40px" />

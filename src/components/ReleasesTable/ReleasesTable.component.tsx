@@ -7,7 +7,6 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
-import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
@@ -21,9 +20,10 @@ import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useRegisterPlaybackPageScrollToTop } from "src/hooks/useRegisterPlaybackPageScrollToTop.hook";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
-import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
+import { getResourceUrl } from "src/utils/helpers";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleasesTable.module.css";
+import { ReleasesTableArtistTitleCell } from "./ReleasesTableArtistTitleCell.component";
 import { ReleasesTableRowActions } from "./ReleasesTableRowActions.component";
 import { releasesTableFeatures } from "./releasesTableFeatures";
 import { useReleasesTableLayout } from "./useReleasesTableLayout.hook";
@@ -100,97 +100,13 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           columnHelper.display({
             id: "artistTitle",
             header: "Artist / Title",
-            cell: ({ row }) => {
-              const release = row.original;
-              const imagePriority = row.index === 0;
-              const { artists, title, thumb, cover_image, resource_url } =
-                release.basic_information;
-              const releaseUrl = getResourceUrl({
-                resourceUrl: resource_url,
-                type: "release",
-              });
-              const thumbUrl = getReleaseImageUrl({
-                thumb,
-                cover_image,
-                width: 40,
-                height: 40,
-                preferCoverImage: false,
-              });
-
-              return (
-                <div className={styles.artistTitleCell}>
-                  <button
-                    type="button"
-                    className={styles.artistTitleThumb}
-                    title={`View ${title}`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleReleaseOpen(release);
-                    }}
-                    aria-label={`View ${title}`}
-                  >
-                    <Image
-                      src={thumbUrl}
-                      height={40}
-                      width={40}
-                      quality={85}
-                      alt=""
-                      {...(imagePriority
-                        ? { priority: true }
-                        : { loading: "lazy" as const })}
-                      sizes="40px"
-                    />
-                  </button>
-                  <div className={styles.artistTitleText}>
-                    <span className={styles.artistName}>
-                      {artists.map((artist, index) => {
-                        const artistUrl = getResourceUrl({
-                          resourceUrl: artist.resource_url,
-                          type: "artist",
-                        });
-                        return (
-                          <span key={artist.id ?? `${artist.name}-${index}`}>
-                            {artistUrl ? (
-                              <a
-                                href={artistUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={`View ${artist.name} on Discogs`}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                }}
-                                className={styles.artistLink}
-                              >
-                                {artist.name}
-                              </a>
-                            ) : (
-                              artist.name
-                            )}
-                            {index < artists.length - 1 && ", "}
-                          </span>
-                        );
-                      })}
-                    </span>
-                    {releaseUrl ? (
-                      <a
-                        href={releaseUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.titleLink}
-                        title="View release on Discogs"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                        }}
-                      >
-                        {title}
-                      </a>
-                    ) : (
-                      <span className={styles.titleLink}>{title}</span>
-                    )}
-                  </div>
-                </div>
-              );
-            },
+            cell: ({ row }) => (
+              <ReleasesTableArtistTitleCell
+                release={row.original}
+                imagePriority={row.index === 0}
+                onReleaseClick={onReleaseClick}
+              />
+            ),
             size: 260,
             minSize: 180,
             maxSize: 440,
@@ -350,7 +266,13 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             enableResizing: false,
           }),
         ]),
-      [selectedFormats, selectedStyles, handlePillClick, handleReleaseOpen],
+      [
+        selectedFormats,
+        selectedStyles,
+        handlePillClick,
+        handleReleaseOpen,
+        onReleaseClick,
+      ],
     );
 
     const table = useTable({

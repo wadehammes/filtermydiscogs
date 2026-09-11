@@ -14,7 +14,14 @@ import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDra
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
+import {
+  expectReleaseOpenPrefetchAfterHover,
+  setupReleaseOpenPrefetchHoverTimers,
+  teardownReleaseOpenPrefetchHoverTimers,
+} from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
 import { screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -24,6 +31,37 @@ const mockApi = jest.mocked(api);
 describe("CrateDrawerReleases", () => {
   beforeEach(() => {
     setupCrateDrawerTests(mockApi);
+  });
+
+  it("prefetches release detail when a drawer row action is hovered", async () => {
+    const onReleaseClick = jest.fn();
+    const user = setupReleaseOpenPrefetchHoverTimers();
+
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos({ id: 249504 }),
+    );
+
+    renderCrateDrawerTree(<CrateDrawerReleases />, { onReleaseClick });
+
+    try {
+      await waitFor(() => {
+        expect(
+          screen.getByText(crateDrawerReleaseUnpacked.basic_information.title),
+        ).toBeInTheDocument();
+      });
+
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByRole("button", {
+          name: `Remove ${crateDrawerReleaseUnpacked.basic_information.title} from crate`,
+        }),
+        mockDiscogsRelease: mockApi.discogsRelease,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
   });
 
   it("lists staged releases in layout order without section markers", async () => {

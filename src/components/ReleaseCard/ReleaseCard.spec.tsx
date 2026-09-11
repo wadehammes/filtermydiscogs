@@ -4,6 +4,11 @@ import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  expectReleaseOpenPrefetchAfterHover,
+  setupReleaseOpenPrefetchHoverTimers,
+  teardownReleaseOpenPrefetchHoverTimers,
+} from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
 import { screen, waitFor } from "test-utils";
 
 let po: ReleaseCardPageObject;
@@ -80,26 +85,21 @@ describe("ReleaseCard", () => {
   });
 
   it("prefetches release detail when the card is hovered", async () => {
-    jest.useFakeTimers();
     const release = releaseFactory.withEmptyNotes();
     const onReleaseClick = jest.fn();
-    const user = userEvent.setup({
-      advanceTimers: jest.advanceTimersByTime,
-    });
+    const user = setupReleaseOpenPrefetchHoverTimers();
 
     po.renderReleaseCard({ release, onReleaseClick });
 
-    await user.hover(screen.getByTestId(po.testId));
-
-    expect(po.mockApi).not.toHaveBeenCalled();
-
-    jest.advanceTimersByTime(100);
-
-    await waitFor(() => {
-      expect(po.mockApi).toHaveBeenCalled();
-    });
-
-    jest.useRealTimers();
+    try {
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByTestId(po.testId),
+        mockDiscogsRelease: po.mockApi,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
   });
 
   it("prefetches crate membership when the trigger is hovered", async () => {

@@ -8,6 +8,7 @@ import { useCrateState } from "src/context/crate.context";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
   formatArtistNames,
@@ -36,7 +37,11 @@ export const ReleaseSimilarReleaseItem = ({
   });
   const artist = formatArtistNames(release);
   const meta = formatReleaseMetaLine({ release, includeCatno: false });
-  const { openRelease } = useReleaseOpenHandler({ release, onReleaseClick });
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
 
   return (
     <div
@@ -44,6 +49,7 @@ export const ReleaseSimilarReleaseItem = ({
         [styles.listItemInCrate]: inActiveCrate,
       })}
       data-testid="fmdReleaseSimilarItem"
+      {...definedProps(prefetchPointerProps ?? {})}
     >
       <button
         type="button"
@@ -53,6 +59,7 @@ export const ReleaseSimilarReleaseItem = ({
         )}
         onClick={openRelease}
         aria-label={`Open ${basicInfo.title} details`}
+        {...definedProps(canOpen ? { onFocus: prefetchReleaseOpen } : {})}
       >
         <div
           className={classNames(crateItemStyles.itemImage, styles.itemImage)}
