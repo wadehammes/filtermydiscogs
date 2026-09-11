@@ -34,9 +34,7 @@ const prefetchReleaseForOpen = (
   const clickedRelease = fallbackReleaseIndex.get(instanceId);
 
   if (clickedRelease) {
-    prefetchReleaseOpenData(queryClient, clickedRelease, {
-      cancelOtherFetches: true,
-    });
+    prefetchReleaseOpenData(queryClient, clickedRelease);
     return;
   }
 

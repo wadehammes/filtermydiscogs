@@ -1,1 +1,0 @@
-export const RELEASE_OPEN_PREFETCH_HOVER_MS = 50;

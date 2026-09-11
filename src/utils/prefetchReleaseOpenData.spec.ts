@@ -40,86 +40,13 @@ describe("prefetchReleaseOpenData", () => {
     const release = releaseFactory.withDisplayDefaults();
     const releaseId = parseReleaseId(release);
 
-    prefetchReleaseOpenData(queryClient, release, {
-      cancelOtherFetches: true,
-    });
+    prefetchReleaseOpenData(queryClient, release);
 
     await queryClient.fetchQuery({
       queryKey: DiscogsReleaseQueryKeys.byId(String(releaseId)),
     });
 
-    expect(mockApi.discogsRelease).toHaveBeenCalledWith(
-      String(releaseId),
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
-    );
-  });
-
-  it("cancels other in-flight discogs release prefetches before starting a new one", async () => {
-    const firstRelease = releaseFactory.withDisplayDefaults();
-    const secondRelease = releaseFactory.withTitle("Second Album", 888001);
-    const firstReleaseId = String(parseReleaseId(firstRelease));
-    const secondReleaseId = String(parseReleaseId(secondRelease));
-    let resolveFirstFetch!: () => void;
-
-    mockApi.discogsRelease.mockImplementation(
-      (releaseId) =>
-        new Promise((resolve) => {
-          if (releaseId === firstReleaseId) {
-            resolveFirstFetch = () => {
-              resolve(
-                discogsReleaseJsonFactory.withTracklistAndVideos({
-                  id: Number(firstReleaseId),
-                }),
-              );
-            };
-            return;
-          }
-
-          resolve(
-            discogsReleaseJsonFactory.withTracklistAndVideos({
-              id: Number(releaseId),
-            }),
-          );
-        }),
-    );
-
-    prefetchReleaseOpenData(queryClient, firstRelease, {
-      cancelOtherFetches: true,
-    });
-
-    await waitForQueryFetchStatus(
-      queryClient,
-      DiscogsReleaseQueryKeys.byId(firstReleaseId),
-      "fetching",
-    );
-
-    prefetchReleaseOpenData(queryClient, secondRelease, {
-      cancelOtherFetches: true,
-    });
-
-    await queryClient.fetchQuery({
-      queryKey: DiscogsReleaseQueryKeys.byId(secondReleaseId),
-    });
-
-    expect(mockApi.discogsRelease).toHaveBeenCalledWith(
-      secondReleaseId,
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
-    );
-
-    resolveFirstFetch();
-
-    await waitForQueryFetchStatus(
-      queryClient,
-      DiscogsReleaseQueryKeys.byId(firstReleaseId),
-      "idle",
-    );
-
-    expect(
-      queryClient.getQueryData(DiscogsReleaseQueryKeys.byId(firstReleaseId)),
-    ).toBeUndefined();
-    expect(
-      queryClient.getQueryData(DiscogsReleaseQueryKeys.byId(secondReleaseId)),
-    ).toBeDefined();
+    expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(releaseId));
   });
 
   it("does not prefetch release detail when it is already cached", () => {
@@ -137,23 +64,3 @@ describe("prefetchReleaseOpenData", () => {
     expect(mockApi.discogsRelease).not.toHaveBeenCalled();
   });
 });
-
-const waitForQueryFetchStatus = async (
-  queryClient: QueryClient,
-  queryKey: readonly unknown[],
-  fetchStatus: string,
-) => {
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    if (queryClient.getQueryState(queryKey)?.fetchStatus === fetchStatus) {
-      return;
-    }
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 0);
-    });
-  }
-
-  throw new Error(
-    `Timed out waiting for ${String(queryKey)} fetchStatus=${fetchStatus}`,
-  );
-};

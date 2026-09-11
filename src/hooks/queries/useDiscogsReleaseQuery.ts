@@ -9,8 +9,7 @@ export interface UseDiscogsReleaseQueryParams {
 
 export const discogsReleaseQueryOptions = (releaseId: string) => ({
   queryKey: DiscogsReleaseQueryKeys.byId(releaseId),
-  queryFn: ({ signal }: { signal: AbortSignal }) =>
-    api.discogsRelease(releaseId, { signal }),
+  queryFn: () => api.discogsRelease(releaseId),
   staleTime: 5 * 60 * 1000,
   gcTime: 10 * 60 * 1000,
 });
