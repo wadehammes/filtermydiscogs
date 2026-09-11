@@ -24,7 +24,9 @@ export const CollectionValueQueryKeys = {
 };
 
 export const DiscogsReleaseQueryKeys = {
-  byId: (releaseId: string) => ["discogsRelease", releaseId] as const,
+  all: () => ["discogsRelease"] as const,
+  byId: (releaseId: string) =>
+    [...DiscogsReleaseQueryKeys.all(), releaseId] as const,
 };
 
 export const CratesQueryKeys = {
