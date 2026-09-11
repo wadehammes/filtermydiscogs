@@ -2,13 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import type { DiscogsRelease } from "src/types";
 import { prefetchReleaseOpenData } from "src/utils/prefetchReleaseOpenData";
-import { parseReleaseId } from "src/utils/releaseNotes";
-import {
-  clearScheduledReleaseOpenHoverPrefetch,
-  scheduleReleaseOpenHoverPrefetch,
-} from "src/utils/releaseOpenPrefetch";
 
-export { RELEASE_OPEN_PREFETCH_HOVER_MS } from "src/constants/releaseOpenPrefetch";
+export const RELEASE_OPEN_PREFETCH_HOVER_MS = 50;
 
 interface UseReleaseOpenHandlerParams {
   release: DiscogsRelease | null | undefined;
@@ -20,25 +15,15 @@ export const useReleaseOpenHandler = ({
   onReleaseClick,
 }: UseReleaseOpenHandlerParams) => {
   const queryClient = useQueryClient();
-  const releaseIdRef = useRef<string | null>(null);
-
-  releaseIdRef.current =
-    release === null || release === undefined
-      ? null
-      : (() => {
-          const releaseId = parseReleaseId(release);
-          return releaseId === null ? null : String(releaseId);
-        })();
+  const hoverPrefetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const clearHoverPrefetch = useCallback(() => {
-    const releaseId = releaseIdRef.current;
-
-    if (releaseId === null) {
-      clearScheduledReleaseOpenHoverPrefetch();
-      return;
+    if (hoverPrefetchTimeoutRef.current !== null) {
+      clearTimeout(hoverPrefetchTimeoutRef.current);
+      hoverPrefetchTimeoutRef.current = null;
     }
-
-    clearScheduledReleaseOpenHoverPrefetch(releaseId);
   }, []);
 
   const prefetchReleaseOpen = useCallback(() => {
@@ -46,10 +31,7 @@ export const useReleaseOpenHandler = ({
       return;
     }
 
-    clearScheduledReleaseOpenHoverPrefetch();
-    prefetchReleaseOpenData(queryClient, release, {
-      cancelOtherFetches: true,
-    });
+    prefetchReleaseOpenData(queryClient, release);
   }, [onReleaseClick, queryClient, release]);
 
   const schedulePrefetchReleaseOpen = useCallback(() => {
@@ -57,18 +39,12 @@ export const useReleaseOpenHandler = ({
       return;
     }
 
-    const releaseId = releaseIdRef.current;
-
-    if (releaseId === null) {
-      return;
-    }
-
-    scheduleReleaseOpenHoverPrefetch(releaseId, () => {
-      prefetchReleaseOpenData(queryClient, release, {
-        cancelOtherFetches: true,
-      });
-    });
-  }, [onReleaseClick, queryClient, release]);
+    clearHoverPrefetch();
+    hoverPrefetchTimeoutRef.current = setTimeout(() => {
+      hoverPrefetchTimeoutRef.current = null;
+      prefetchReleaseOpenData(queryClient, release);
+    }, RELEASE_OPEN_PREFETCH_HOVER_MS);
+  }, [clearHoverPrefetch, onReleaseClick, queryClient, release]);
 
   useEffect(() => clearHoverPrefetch, [clearHoverPrefetch]);
 

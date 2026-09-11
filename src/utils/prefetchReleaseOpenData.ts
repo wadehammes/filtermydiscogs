@@ -4,16 +4,10 @@ import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import { parseReleaseId } from "src/utils/releaseNotes";
-import { cancelInFlightDiscogsReleasePrefetches } from "src/utils/releaseOpenPrefetch";
-
-export interface PrefetchReleaseOpenDataOptions {
-  cancelOtherFetches?: boolean;
-}
 
 export const prefetchReleaseOpenData = (
   queryClient: QueryClient,
   release: DiscogsRelease,
-  options: PrefetchReleaseOpenDataOptions = {},
 ): void => {
   prefetchReleaseModal();
 
@@ -22,13 +16,7 @@ export const prefetchReleaseOpenData = (
     return;
   }
 
-  const idString = String(releaseId);
-  const releaseQueryKey = DiscogsReleaseQueryKeys.byId(idString);
-
-  if (options.cancelOtherFetches) {
-    cancelInFlightDiscogsReleasePrefetches(queryClient, idString);
-  }
-
+  const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
   const queryState = queryClient.getQueryState(releaseQueryKey);
 
   if (queryState?.fetchStatus === "fetching") {
@@ -36,6 +24,8 @@ export const prefetchReleaseOpenData = (
   }
 
   if (queryClient.getQueryData(releaseQueryKey) === undefined) {
-    void queryClient.prefetchQuery(discogsReleaseQueryOptions(idString));
+    void queryClient.prefetchQuery(
+      discogsReleaseQueryOptions(String(releaseId)),
+    );
   }
 };

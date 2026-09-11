@@ -3,7 +3,6 @@ import type { DiscogsReleaseDetail, DiscogsSearchResponse } from "src/types";
 
 export const fetchDiscogsRelease = async (
   releaseId: string,
-  options: { signal?: AbortSignal } = {},
 ): Promise<DiscogsReleaseDetail> => {
   try {
     const response = await fetch(`/api/release/${releaseId}`, {
@@ -12,7 +11,6 @@ export const fetchDiscogsRelease = async (
         "Content-Type": "application/json",
       },
       credentials: "include",
-      ...(options.signal !== undefined ? { signal: options.signal } : {}),
     });
 
     if (!response.ok) {
