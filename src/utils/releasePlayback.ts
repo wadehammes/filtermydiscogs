@@ -58,6 +58,46 @@ const stripLeadingTrackPosition = (title: string): string =>
 const stripCatalogAnnotations = (title: string): string =>
   title.replace(/\([^)]*\)/g, " ").replace(/\[[^\]]*\]/g, " ");
 
+const getMatchCoreTitle = (title: string): string =>
+  normalizeTrackTitle(stripCatalogAnnotations(title));
+
+const hasRemixHint = (title: string): boolean => /\bremix\b/i.test(title);
+
+const CORE_ONLY_VERSION_TOKENS = new Set([
+  "acapella",
+  "dub",
+  "edit",
+  "extended",
+  "instrumental",
+  "radio",
+  "vocal",
+]);
+
+const extractParentheticalSegments = (title: string): string[] =>
+  [...title.matchAll(/\(([^)]*)\)/g)]
+    .map((match) => match[1]?.trim())
+    .filter((segment): segment is string => Boolean(segment));
+
+const coreOnlyBlockedByParenthetical = (
+  trackTitle: string,
+  videoLabel: string,
+): boolean => {
+  const normalizedVideo = normalizeTrackTitle(videoLabel);
+
+  for (const segment of extractParentheticalSegments(trackTitle)) {
+    for (const token of getMatchTokens(normalizeTrackTitle(segment))) {
+      if (
+        CORE_ONLY_VERSION_TOKENS.has(token) &&
+        !normalizedVideo.includes(token)
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
 const getMatchTokens = (normalizedTitle: string): string[] => {
   return normalizedTitle
     .split(" ")
@@ -336,8 +376,11 @@ interface TrackVideoMatchContext {
 interface PreparedTrackMatchData {
   track: DiscogsTrack;
   normalizedTrack: string;
+  normalizedTrackCore: string;
   trackAlnum: string;
+  trackCoreAlnum: string;
   trackTokens: string[];
+  trackCoreTokens: string[];
   trackSide: string | null;
   trackPositionKey: string;
   trackDurationSeconds: number | null;
@@ -346,10 +389,13 @@ interface PreparedTrackMatchData {
 interface PreparedVideoMatchData {
   video: DiscogsVideo;
   normalizedVideoSong: string;
+  normalizedVideoSongCore: string;
   normalizedFullVideo: string;
   videoAlnum: string;
   videoSongAlnum: string;
+  videoSongCoreAlnum: string;
   videoTokenSet: Set<string>;
+  videoCoreTokenSet: Set<string>;
   videoSide: string | null;
   videoTrackPosition: string | null;
   videoSongWithoutPosition: string;
@@ -357,12 +403,17 @@ interface PreparedVideoMatchData {
 
 const prepareTrackMatchData = (track: DiscogsTrack): PreparedTrackMatchData => {
   const normalizedTrack = normalizeTrackTitle(track.title);
+  const normalizedTrackCore = getMatchCoreTitle(track.title);
+  const strippedTrackTitle = stripCatalogAnnotations(track.title);
 
   return {
     track,
     normalizedTrack,
+    normalizedTrackCore,
     trackAlnum: stripToAlnum(track.title),
+    trackCoreAlnum: stripToAlnum(strippedTrackTitle),
     trackTokens: getMatchTokens(normalizedTrack),
+    trackCoreTokens: getMatchTokens(normalizedTrackCore),
     trackSide: getTrackSideIdentifier(track),
     trackPositionKey: normalizeTrackPositionKey(track.position),
     trackDurationSeconds: parseTrackDurationToSeconds(track.duration),
@@ -373,22 +424,27 @@ const prepareVideoMatchData = (video: DiscogsVideo): PreparedVideoMatchData => {
   const label = getVideoMatchLabel(video);
   const videoSongTitle = extractVideoSongTitle(label);
   const normalizedVideoSong = normalizeTrackTitle(videoSongTitle);
+  const normalizedVideoSongCore = getMatchCoreTitle(videoSongTitle);
   const normalizedFullVideo = normalizeTrackTitle(label);
+  const strippedVideoSongTitle = stripCatalogAnnotations(videoSongTitle);
   const videoTrackPosition = extractLeadingTrackPosition(videoSongTitle);
   const videoSongWithoutPosition = stripLeadingTrackPosition(
-    stripCatalogAnnotations(videoSongTitle),
+    strippedVideoSongTitle,
   );
 
   return {
     video,
     normalizedVideoSong,
+    normalizedVideoSongCore,
     normalizedFullVideo,
     videoAlnum: stripToAlnum(label),
     videoSongAlnum: stripToAlnum(videoSongTitle),
+    videoSongCoreAlnum: stripToAlnum(strippedVideoSongTitle),
     videoTokenSet: new Set([
       ...getMatchTokens(normalizedVideoSong),
       ...getMatchTokens(normalizedFullVideo),
     ]),
+    videoCoreTokenSet: new Set(getMatchTokens(normalizedVideoSongCore)),
     videoSide:
       extractVideoSideSuffix(label) ?? videoTrackPosition?.charAt(0) ?? null,
     videoTrackPosition,
@@ -491,11 +547,62 @@ const scorePreparedTrackVideoMatch = (
     context.trackTokens.length > 0 &&
     matchedTokenCount === context.trackTokens.length;
 
-  if (!(overlaps || tokensMatch || genericPositionMatch)) {
+  let coreMatchedTokenCount = 0;
+
+  for (const token of track.trackCoreTokens) {
+    if (trackTokenMatchesVideoTokens(token, video.videoCoreTokenSet)) {
+      coreMatchedTokenCount += 1;
+    }
+  }
+
+  const coreTokensMatch =
+    track.trackCoreTokens.length > 0 &&
+    coreMatchedTokenCount === track.trackCoreTokens.length;
+
+  const coreOverlaps =
+    normalizedTitlesOverlap(
+      track.normalizedTrackCore,
+      video.normalizedVideoSongCore,
+    ) || alnumTitlesOverlap(track.trackCoreAlnum, video.videoSongCoreAlnum);
+
+  const matchedViaCoreOnly =
+    (coreTokensMatch || coreOverlaps) && !(overlaps || tokensMatch);
+
+  if (matchedViaCoreOnly) {
+    const videoLabel = getVideoMatchLabel(video.video);
+    const trackRemix = hasRemixHint(track.track.title);
+    const videoRemix =
+      hasRemixHint(videoLabel) ||
+      hasRemixHint(extractVideoSongTitle(videoLabel));
+
+    if (
+      trackRemix !== videoRemix ||
+      coreOnlyBlockedByParenthetical(track.track.title, videoLabel)
+    ) {
+      return 0;
+    }
+  }
+
+  if (
+    !(
+      overlaps ||
+      tokensMatch ||
+      coreTokensMatch ||
+      coreOverlaps ||
+      genericPositionMatch
+    )
+  ) {
     return 0;
   }
 
   let score = matchedTokenCount / Math.max(context.trackTokens.length, 1);
+
+  if (coreTokensMatch && !tokensMatch) {
+    score = Math.max(
+      score,
+      coreMatchedTokenCount / Math.max(track.trackCoreTokens.length, 1),
+    );
+  }
 
   if (context.normalizedTrack === context.normalizedVideoSong) {
     score += 3;
@@ -506,11 +613,20 @@ const scorePreparedTrackVideoMatch = (
     )
   ) {
     score += 1;
+  } else if (
+    track.normalizedTrackCore === video.normalizedVideoSongCore ||
+    normalizedTitlesOverlap(
+      track.normalizedTrackCore,
+      video.normalizedVideoSongCore,
+    )
+  ) {
+    score += 1;
   }
 
   if (
     alnumTitlesOverlap(context.trackAlnum, context.videoAlnum) ||
-    alnumTitlesOverlap(context.trackAlnum, context.videoSongAlnum)
+    alnumTitlesOverlap(context.trackAlnum, context.videoSongAlnum) ||
+    alnumTitlesOverlap(track.trackCoreAlnum, video.videoSongCoreAlnum)
   ) {
     score += 1;
   }

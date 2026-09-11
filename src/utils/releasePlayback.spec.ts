@@ -643,6 +643,83 @@ describe("findVideoForTrack", () => {
       })?.title,
     ).toBe("YYY - 白161B [YYY161]");
   });
+
+  it("matches when the video title omits mix suffixes present on the track", () => {
+    const tracks = [
+      discogsTrackFactory.build({
+        position: "A1",
+        title: "Ama 76 (Original Mix)",
+        type_: "track",
+        duration: "7:30",
+      }),
+      discogsTrackFactory.build({
+        position: "A2",
+        title: "Part2",
+        type_: "track",
+        duration: "7:00",
+      }),
+      discogsTrackFactory.build({
+        position: "B1",
+        title: "Ama 76 (Crihan Remix)",
+        type_: "track",
+        duration: "7:45",
+      }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Moratu - Ama 76 [VISAGE001]",
+        duration: 450,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.previewVideos).toHaveLength(0);
+    expect(matchIndex.trackVideoByPosition.get("A1")?.title).toBe(
+      "Moratu - Ama 76 [VISAGE001]",
+    );
+    expect(matchIndex.trackVideoByPosition.has("B1")).toBe(false);
+    expect(
+      findVideoForTrack({
+        track: tracks[0] as DiscogsTrack,
+        videos,
+        matchIndex,
+      })?.title,
+    ).toBe("Moratu - Ama 76 [VISAGE001]");
+  });
+
+  it("matches remix tracks when the video title includes remix", () => {
+    const tracks = [
+      discogsTrackFactory.build({
+        position: "A1",
+        title: "Ama 76 (Original Mix)",
+        type_: "track",
+        duration: "7:30",
+      }),
+      discogsTrackFactory.build({
+        position: "B1",
+        title: "Ama 76 (Crihan Remix)",
+        type_: "track",
+        duration: "7:45",
+      }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=def98765432",
+        title: "Moratu - Ama 76 (Crihan Remix) [VISAGE001]",
+        duration: 465,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.previewVideos).toHaveLength(0);
+    expect(matchIndex.trackVideoByPosition.get("B1")?.title).toBe(
+      "Moratu - Ama 76 (Crihan Remix) [VISAGE001]",
+    );
+    expect(matchIndex.trackVideoByPosition.has("A1")).toBe(false);
+  });
 });
 
 describe("buildReleasePlaybackMatchIndex", () => {
