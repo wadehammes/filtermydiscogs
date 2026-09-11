@@ -9,8 +9,10 @@
 }
 
 .videoContent {
+  container-type: size;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
   position: relative;
   width: 100%;
 }
