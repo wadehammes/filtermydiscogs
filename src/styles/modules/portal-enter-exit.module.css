@@ -28,6 +28,7 @@
 .enterexitscale {
   opacity: 1;
   scale: 1;
+  transform-origin: bottom center;
   transition:
     opacity var(--transition-normal),
     scale var(--transition-normal);
