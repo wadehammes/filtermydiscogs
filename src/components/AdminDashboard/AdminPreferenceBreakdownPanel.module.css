@@ -35,12 +35,6 @@
   min-width: 0;
 }
 
-.chartSection :global(svg:focus),
-.chartSection :global(svg:focus-visible) {
-  border: none !important;
-  outline: none !important;
-}
-
 .emptyChart {
   color: var(--muted-foreground);
   font-size: var(--text-sm);

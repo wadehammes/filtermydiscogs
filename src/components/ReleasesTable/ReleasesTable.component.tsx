@@ -18,6 +18,7 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useRegisterPlaybackPageScrollToTop } from "src/hooks/useRegisterPlaybackPageScrollToTop.hook";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getResourceUrl } from "src/utils/helpers";
@@ -141,7 +142,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                       onClick={(event) => {
                         event.stopPropagation();
                       }}
-                      className={styles.labelLink}
+                      className={textActionStyles.entitylinkprimary}
                     >
                       {label.name}
                     </a>

@@ -30,6 +30,23 @@ describe("IconButton", () => {
     expect(button.className).toContain(iconButtonClasses("plus"));
   });
 
+  it("composes default scale hover on the trigger", () => {
+    po.renderIconButton({ children: <svg aria-hidden /> });
+
+    const button = screen.getByTestId(po.testId);
+
+    expect(button.className).toContain(iconButtonStyles.variantdefault);
+  });
+
+  it("omits hover motion for skip variant", () => {
+    po.renderIconButton({ variant: "skip", children: <svg aria-hidden /> });
+
+    const button = screen.getByTestId(po.testId);
+
+    expect(iconButtonClasses("skip")).toBe("");
+    expect(button.className).not.toContain(iconButtonStyles.variantdefault);
+  });
+
   it("applies iconOnly reset layout for icon-only triggers", () => {
     po.renderIconButton({ children: <svg aria-hidden /> });
 

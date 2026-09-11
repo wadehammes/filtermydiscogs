@@ -82,3 +82,52 @@
     text-decoration: underline;
   }
 }
+
+.entitylinkprimary {
+  composes: base;
+  color: var(--muted-foreground);
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+}
+
+.entitylinktitle {
+  composes: base;
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+}
+
+.underlinedlink {
+  composes: base;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
+  }
+}
+
+.inheritlink {
+  composes: base;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
+  }
+}

@@ -97,23 +97,7 @@
 }
 
 .icon {
-  align-items: center;
-  color: var(--muted-foreground);
-  display: flex;
-  flex-shrink: 0;
-  font-size: var(--text-xs);
-  margin-left: var(--space-2);
-  transform: rotate(90deg);
-  transition: transform var(--transition-normal);
-
-  & svg {
-    height: var(--space-4);
-    width: var(--space-4);
-  }
-
-  .trigger[data-popup-open] & {
-    transform: rotate(270deg);
-  }
+  composes: chevron chevronmuted from "../../styles/modules/chevron-expand.module.css";
 }
 
 .positioner {
@@ -212,15 +196,6 @@
 }
 
 .defaultBadge {
-  background: color-mix(in srgb, var(--primary) 15%, var(--background));
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-full);
-  color: var(--primary);
-  font-size: var(--text-xxs);
-  font-weight: var(--font-medium);
+  composes: defaultbadge from "../../styles/modules/badge.module.css";
   margin-left: auto;
-  padding: 0.145rem var(--space-2) 0.1rem;
-  text-transform: uppercase;
-  white-space: nowrap;
-  letter-spacing: 0.075em;
 }

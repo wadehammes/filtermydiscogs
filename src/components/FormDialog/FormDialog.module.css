@@ -1,17 +1,12 @@
 .panel {
   composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
+  composes: scope from "../../styles/modules/modal-input.module.css";
 
   --form-dialog-max-width: 25rem;
 
   max-width: var(--form-dialog-max-width);
   padding: var(--space-6);
   width: min(calc(100vw - var(--space-8)), var(--form-dialog-max-width));
-
-  & input:not(:is([type="checkbox"], [type="radio"])),
-  & textarea,
-  & select {
-    font-size: 16px;
-  }
 }
 
 .panelMd {

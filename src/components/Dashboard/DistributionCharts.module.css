@@ -56,12 +56,3 @@
   overflow: visible;
   width: 100%;
 }
-
-.chartWrapper :global(*),
-.chartWrapper :global(*:focus),
-.chartWrapper :global(*:focus-visible),
-.chartWrapper :global(svg:focus),
-.chartWrapper :global(svg:focus-visible) {
-  border: none !important;
-  outline: none !important;
-}

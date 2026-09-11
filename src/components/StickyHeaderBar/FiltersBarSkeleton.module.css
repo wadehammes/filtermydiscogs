@@ -1,14 +1,3 @@
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-
-  50% {
-    opacity: 0.85;
-  }
-}
-
 .searchShell,
 .viewsShell,
 .selectShell {
@@ -32,7 +21,7 @@
 
 .viewsIcon {
   align-items: center;
-  animation: pulse 1.5s ease-in-out infinite;
+  composes: pulse from "../../styles/modules/skeleton-pulse.module.css";
   color: var(--primary);
   display: inline-flex;
   flex-shrink: 0;
@@ -108,8 +97,7 @@
 .viewsLine,
 .placeholderLine,
 .placeholderLineWide {
-  animation: pulse 1.4s ease-in-out infinite;
-  background: var(--muted);
+  composes: pulsesurface from "../../styles/modules/skeleton-pulse.module.css";
   border-radius: var(--radius-ui);
   height: 0.75rem;
 }
@@ -132,14 +120,5 @@
 }
 
 .chevron {
-  align-items: center;
-  color: var(--muted-foreground);
-  display: flex;
-  flex-shrink: 0;
-  transform: rotate(90deg);
-
-  & svg {
-    height: var(--space-4);
-    width: var(--space-4);
-  }
+  composes: chevron chevronmuted from "../../styles/modules/chevron-expand.module.css";
 }

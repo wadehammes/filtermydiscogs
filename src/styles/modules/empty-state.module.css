@@ -19,6 +19,20 @@
   min-height: 12.5rem;
 }
 
+.loadingpanel {
+  composes: block;
+  gap: var(--space-4);
+  min-height: 12.5rem;
+  width: 100%;
+}
+
+.loadingpage {
+  composes: block;
+  gap: var(--space-4);
+  min-height: 50vh;
+  width: 100%;
+}
+
 .inline {
   composes: block;
   min-height: auto;

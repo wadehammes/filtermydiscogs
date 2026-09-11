@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
@@ -89,6 +90,7 @@ export function DashboardReleaseItem({
                     href={artistUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className={textActionStyles.inheritlink}
                     onClick={() => {}}
                   >
                     {artist.name}
@@ -104,7 +106,7 @@ export function DashboardReleaseItem({
           {canOpen ? (
             <button
               type="button"
-              className={styles.releaseTitleButton}
+              className={textActionStyles.inheritlink}
               onClick={handleTitleOpen}
             >
               {title}
@@ -114,6 +116,7 @@ export function DashboardReleaseItem({
               href={releaseUrl}
               target="_blank"
               rel="noopener noreferrer"
+              className={textActionStyles.inheritlink}
               onClick={() => {}}
             >
               {title}
@@ -139,6 +142,7 @@ export function DashboardReleaseItem({
                       href={labelUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      className={textActionStyles.inheritlink}
                       onClick={() => {}}
                     >
                       {primaryLabel.name}

@@ -1,0 +1,12 @@
+.defaultbadge {
+  background: color-mix(in srgb, var(--primary) 15%, var(--background));
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  font-size: var(--text-xxs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.075em;
+  padding: 0.145rem var(--space-2) 0.1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

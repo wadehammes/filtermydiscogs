@@ -30,19 +30,11 @@
 }
 
 .chartTitle {
-  color: var(--foreground);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  margin: 0;
+  composes: charttitle from "../../styles/modules/dashboard-chart.module.css";
 }
 
 .chartDescription {
-  color: var(--muted-foreground);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  margin: 0;
+  composes: chartdescription from "../../styles/modules/dashboard-chart.module.css";
   max-width: 42rem;
 }
 
@@ -60,13 +52,4 @@
   height: 260px;
   min-height: 0;
   width: 100%;
-}
-
-.chartWrapper :global(*),
-.chartWrapper :global(*:focus),
-.chartWrapper :global(*:focus-visible),
-.chartWrapper :global(svg:focus),
-.chartWrapper :global(svg:focus-visible) {
-  border: none !important;
-  outline: none !important;
 }

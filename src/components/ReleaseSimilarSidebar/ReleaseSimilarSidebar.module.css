@@ -65,10 +65,6 @@
 }
 
 .loadingState {
-  align-items: center;
-  display: flex;
+  composes: loadingpanel from "../../styles/modules/empty-state.module.css";
   flex: 1 1 0;
-  justify-content: center;
-  min-height: 12.5rem;
-  padding: var(--space-8);
 }

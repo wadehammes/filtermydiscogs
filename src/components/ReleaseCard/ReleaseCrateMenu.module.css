@@ -8,16 +8,13 @@
 }
 
 .menuPopup {
-  max-width: min(18rem, calc(100vw - var(--space-6)));
-  min-width: 14rem;
+  composes: popupwide from "../../styles/modules/inline-popover-menu.module.css";
+  composes: popupdesktopcompact from "../../styles/modules/inline-popover-menu.module.css";
 
   --crate-menu-gutter: var(--space-1);
   --crate-menu-item-pad-inline: var(--space-3);
 
   @media (width >= 1024px) {
-    max-width: none;
-    min-width: 12rem;
-
     --crate-menu-gutter: var(--space-2);
     --crate-menu-item-pad-inline: var(--space-2);
   }

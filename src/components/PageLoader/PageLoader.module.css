@@ -1,12 +1,5 @@
 .container {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  justify-content: center;
-  min-height: 12.5rem;
-  padding: var(--space-8);
-  text-align: center;
+  composes: loadingpanel from "../../styles/modules/empty-state.module.css";
 }
 
 .fullHeight {
@@ -16,6 +9,6 @@
 
 .text {
   color: var(--muted-foreground);
-  font-size: var(--text-meta-xs);
   font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
 }

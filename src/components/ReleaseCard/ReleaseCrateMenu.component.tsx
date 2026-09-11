@@ -221,9 +221,7 @@ export const ReleaseCrateMenu = ({
   const useCustomTrigger = triggerVariant === "custom" || isVertical;
   const triggerClass = useCustomTrigger
     ? actionClass(inActiveCrate)
-    : classNames(cardStyles.crateActionButton, {
-        [cardStyles.crateActionButtonActive]: inActiveCrate,
-      });
+    : cardStyles.crateActionButton;
   const wrapperClass =
     triggerVariant === "custom" || isVertical
       ? slotClass

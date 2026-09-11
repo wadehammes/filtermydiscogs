@@ -12,6 +12,7 @@ import { useCrateState } from "src/context/crate.context";
 import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsArtist, ReleaseListItemProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -128,7 +129,7 @@ const ReleaseListItemComponent = ({
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
-                        className={styles.artistLink}
+                        className={textActionStyles.underlinedlink}
                       >
                         {artist.name}
                       </a>
@@ -148,7 +149,7 @@ const ReleaseListItemComponent = ({
                   onClick={(event) => {
                     event.stopPropagation();
                   }}
-                  className={styles.titleLink}
+                  className={textActionStyles.underlinedlink}
                   title="View release on Discogs"
                 >
                   {title}
@@ -166,7 +167,7 @@ const ReleaseListItemComponent = ({
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  className={styles.labelLink}
+                  className={textActionStyles.subtlelink}
                 >
                   {labels[0]?.name}
                 </a>
@@ -185,9 +186,8 @@ const ReleaseListItemComponent = ({
                   <button
                     key={style}
                     type="button"
-                    className={classNames(styles.stylePill, {
-                      [styles.stylePillSelected]:
-                        selectedStyles.includes(style),
+                    className={classNames("pill", "pillStyle", {
+                      pillSelected: selectedStyles.includes(style),
                     })}
                     onClick={(e) => handleStylePillClick(e, style)}
                     aria-label={`Filter by ${style} style`}

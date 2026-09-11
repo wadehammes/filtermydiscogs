@@ -11,19 +11,19 @@ export type IconButtonVariant =
   | "skip";
 
 const VARIANT_CLASS: Record<IconButtonVariant, string | undefined> = {
-  default: undefined,
+  default: iconButtonStyles.variantdefault,
   plus: iconButtonStyles.variantplus,
   minus: iconButtonStyles.variantminus,
   close: iconButtonStyles.variantclose,
   external: iconButtonStyles.variantexternal,
   queue: iconButtonStyles.variantqueue,
-  skip: iconButtonStyles.variantskip,
+  skip: undefined,
 };
 
 export const iconButtonClasses = (
   variant: IconButtonVariant = "default",
   ...className: Array<string | undefined | false | null>
-) => classNames(iconButtonStyles.button, VARIANT_CLASS[variant], ...className);
+) => classNames(VARIANT_CLASS[variant], ...className);
 
 export const iconButtonIconClasses = (
   ...className: Array<string | undefined | false | null>

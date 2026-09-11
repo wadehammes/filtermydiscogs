@@ -1,13 +1,8 @@
 .form {
+  composes: scope from "../../styles/modules/modal-input.module.css";
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-
-  & input:not(:is([type="checkbox"], [type="radio"])),
-  & textarea,
-  & select {
-    font-size: 16px;
-  }
 }
 
 .releaseSummary {

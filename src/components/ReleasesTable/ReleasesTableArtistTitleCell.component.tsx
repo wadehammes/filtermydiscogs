@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -81,7 +82,7 @@ export const ReleasesTableArtistTitleCell = ({
                     onClick={(event) => {
                       event.stopPropagation();
                     }}
-                    className={styles.artistLink}
+                    className={textActionStyles.entitylinkprimary}
                   >
                     {artist.name}
                   </a>
@@ -98,7 +99,7 @@ export const ReleasesTableArtistTitleCell = ({
             href={releaseUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.titleLink}
+            className={textActionStyles.entitylinktitle}
             title="View release on Discogs"
             onClick={(event) => {
               event.stopPropagation();
@@ -107,7 +108,7 @@ export const ReleasesTableArtistTitleCell = ({
             {title}
           </a>
         ) : (
-          <span className={styles.titleLink}>{title}</span>
+          <span className={textActionStyles.entitylinktitle}>{title}</span>
         )}
       </div>
     </div>

@@ -17,102 +17,47 @@
   }
 }
 
-.iconactionqueuesubtle:hover:not(:disabled),
-.iconactionqueuesubtle:focus-visible:not(:disabled) {
-  .icon,
-  > svg {
-    transform: scale(1.04);
+.iconactionmotion {
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled),
+  &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+    .icon,
+    > svg {
+      transform: var(--icon-action-transform);
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: none;
+      @media (prefers-reduced-motion: reduce) {
+        transform: none;
+      }
     }
   }
 }
 
-.iconactionplus:hover:not(:disabled),
-.iconactionplus:focus-visible:not(:disabled),
-.iconactionplus[data-highlighted]:not(
-  :is([data-disabled], [aria-disabled="true"])
-) {
-  .icon,
-  > svg {
-    transform: rotate(90deg) scale(1.1);
+.iconactionscale {
+  composes: iconactionmotion;
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: none;
-    }
-  }
+  --icon-action-transform: scale(1.1);
 }
 
-.iconactionminus:hover:not(:disabled),
-.iconactionminus:focus-visible:not(:disabled),
-.iconactionminus[data-highlighted]:not(
-  :is([data-disabled], [aria-disabled="true"])
-) {
-  .icon,
-  > svg {
-    transform: scale(1.06);
+.iconactionqueuesubtle {
+  composes: iconactionmotion;
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: none;
-    }
-  }
+  --icon-action-transform: scale(1.04);
 }
 
-.iconactionexternal:hover:not(:disabled),
-.iconactionexternal:focus-visible:not(:disabled) {
-  .icon,
-  > svg {
-    transform: translate(1px, -1px) scale(1.1);
+.iconactionrotate {
+  composes: iconactionmotion;
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: none;
-    }
-  }
+  --icon-action-transform: rotate(90deg) scale(1.1);
 }
 
-.iconactionclose:hover:not(:disabled),
-.iconactionclose:focus-visible:not(:disabled) {
-  .icon,
-  > svg {
-    transform: rotate(90deg) scale(1.1);
+.iconactionminus {
+  composes: iconactionmotion;
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: none;
-    }
-  }
+  --icon-action-transform: scale(1.06);
 }
 
-.iconaction:not(
-  .iconactionskip,
-  .iconactionqueuesubtle,
-  .iconactionplus,
-  .iconactionminus,
-  .iconactionclose,
-  .iconactionexternal
-):hover:not(:disabled),
-.iconaction:not(
-  .iconactionskip,
-  .iconactionqueuesubtle,
-  .iconactionplus,
-  .iconactionminus,
-  .iconactionclose,
-  .iconactionexternal
-):focus-visible:not(:disabled),
-.iconaction:not(
-  .iconactionskip,
-  .iconactionqueuesubtle,
-  .iconactionplus,
-  .iconactionminus,
-  .iconactionclose,
-  .iconactionexternal
-)[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
-  .icon,
-  > svg {
-    transform: scale(1.1);
+.iconactionexternal {
+  composes: iconactionmotion;
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: none;
-    }
-  }
+  --icon-action-transform: translate(1px, -1px) scale(1.1);
 }

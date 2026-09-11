@@ -17,6 +17,8 @@
 }
 
 .releaseItem {
+  contain-intrinsic-size: auto 400px;
+  content-visibility: auto;
   min-width: 0;
   scroll-margin-top: var(--space-4);
   width: 100%;
@@ -29,14 +31,7 @@
 }
 
 .loadingContainer {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  justify-content: center;
-  min-height: 12.5rem;
-  padding: var(--space-8);
-  text-align: center;
+  composes: loadingpanel from "../../styles/modules/empty-state.module.css";
 }
 
 .loadingText {

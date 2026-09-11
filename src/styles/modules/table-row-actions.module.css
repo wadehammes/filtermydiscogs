@@ -35,3 +35,62 @@
     color: var(--foreground);
   }
 }
+
+.actionbuttontoggle {
+  align-items: center;
+  background: var(--toggle-action-bg, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--toggle-action-radius, var(--radius-sm));
+  color: var(--toggle-action-color, var(--foreground));
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: var(--toggle-action-size, var(--button-height-sm));
+  justify-content: center;
+  padding: 0;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+  width: var(--toggle-action-size, var(--button-height-sm));
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:hover:not(:disabled, [aria-pressed="true"]) {
+    background: var(--muted);
+    border-color: var(--input);
+    color: var(--foreground);
+  }
+
+  &[aria-pressed="true"] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+
+    &:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: var(--on-primary-hover);
+    }
+  }
+}
+
+.actionbuttontoggleactive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: var(--on-primary-hover);
+  }
+}

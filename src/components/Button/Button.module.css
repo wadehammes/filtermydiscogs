@@ -148,12 +148,3 @@
   min-height: 3rem;
   padding: 0 var(--space-4);
 }
-
-.pressed {
-  transform: translateY(1px);
-}
-
-.focusVisible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
