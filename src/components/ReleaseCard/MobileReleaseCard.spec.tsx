@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { MobileReleaseCardPageObject } from "src/components/ReleaseCard/MobileReleaseCard.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  expectReleaseOpenPrefetchAfterHover,
+  setupReleaseOpenPrefetchHoverTimers,
+  teardownReleaseOpenPrefetchHoverTimers,
+} from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
 import { screen, waitFor } from "test-utils";
 
 let po: MobileReleaseCardPageObject;
@@ -133,6 +138,43 @@ describe("MobileReleaseCard", () => {
       const card = container.querySelector(".releaseCard");
       expect(card?.className).toContain("inCrate");
     });
+  });
+
+  it("prefetches release detail when the card shell is hovered", async () => {
+    const onReleaseClick = jest.fn();
+    const user = setupReleaseOpenPrefetchHoverTimers();
+
+    po.renderMobileReleaseCard({ onReleaseClick });
+
+    try {
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByTestId(po.testId),
+        mockDiscogsRelease: po.mockApi,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
+  });
+
+  it("prefetches release detail when a format pill is hovered", async () => {
+    const release = releaseFactory.withNamedFormats(["Vinyl"]);
+    const onReleaseClick = jest.fn();
+    const user = setupReleaseOpenPrefetchHoverTimers();
+
+    po.renderMobileReleaseCard({ release, onReleaseClick });
+
+    try {
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByRole("button", {
+          name: "Filter by Vinyl format",
+        }),
+        mockDiscogsRelease: po.mockApi,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
   });
 
   it("calls onReleaseClick when cover is clicked", async () => {

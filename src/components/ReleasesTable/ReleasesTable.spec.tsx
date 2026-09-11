@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleasesTablePageObject } from "src/components/ReleasesTable/ReleasesTable.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  expectReleaseOpenPrefetchAfterHover,
+  setupReleaseOpenPrefetchHoverTimers,
+  teardownReleaseOpenPrefetchHoverTimers,
+} from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
 import { screen } from "test-utils";
 
 let po: ReleasesTablePageObject;
@@ -50,6 +55,26 @@ describe("ReleasesTable", () => {
     expect(
       screen.getByRole("button", { name: "Filter by Vinyl format" }),
     ).toBeInTheDocument();
+  });
+
+  it("prefetches release detail when the artist/title cell shell is hovered", async () => {
+    const release = releaseFactory.withTitle("Table Album", 249504);
+    const onReleaseClick = jest.fn();
+    const user = setupReleaseOpenPrefetchHoverTimers();
+
+    po.renderReleasesTable({ releases: [release], onReleaseClick });
+
+    try {
+      await expectReleaseOpenPrefetchAfterHover({
+        hoverTarget: screen.getByRole("link", {
+          name: release.basic_information.title,
+        }),
+        mockDiscogsRelease: po.mockApiHelpers.discogsRelease,
+        user,
+      });
+    } finally {
+      teardownReleaseOpenPrefetchHoverTimers();
+    }
   });
 
   it("calls onReleaseClick when the cover image is clicked", async () => {

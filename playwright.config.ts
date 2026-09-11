@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { DISCOGS_OAUTH_TEST_ENV } from "./src/tests/discogsOAuthTestEnv";
 
 const port = 6767;
 const baseURL = `http://localhost:${port}`;
@@ -28,6 +29,12 @@ export default defineConfig({
     env: {
       ...process.env,
       NODE_OPTIONS: "",
+      DISCOGS_CONSUMER_KEY:
+        process.env.DISCOGS_CONSUMER_KEY ??
+        DISCOGS_OAUTH_TEST_ENV.DISCOGS_CONSUMER_KEY,
+      DISCOGS_CONSUMER_SECRET:
+        process.env.DISCOGS_CONSUMER_SECRET ??
+        DISCOGS_OAUTH_TEST_ENV.DISCOGS_CONSUMER_SECRET,
     },
   },
 });

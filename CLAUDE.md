@@ -4,4 +4,6 @@
 
 Follow documented patterns.
 
+**Test-driven development:** For substantive work, use TDD—write thoughtful, meaningful failing specs **first**, then implement the smallest change that greens them (red → green → refactor). See [conventions.md → Testing → TDD](docs/handbook/conventions.md#test-driven-development-tdd).
+
 **Keep docs accurate:** Whenever a change would make the handbook wrong or incomplete—new flows (CI, env, auth cookies), moved files, component or convention changes, Discogs/Prisma patterns, or anything a future reader would be misled by—update the relevant **`docs/handbook/*.md`** in the **same PR** when practical, or in a small follow-up right away. When the change shifts **user-facing features, routes, setup, or tech stack** listed in the root **[README.md](./README.md)**, update that file too. Do not leave docs stale on purpose.

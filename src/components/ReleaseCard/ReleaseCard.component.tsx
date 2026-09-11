@@ -19,16 +19,11 @@ const ReleaseCardComponent = ({
   priority = false,
 }: ReleaseCardProps) => {
   "use memo";
-  const {
-    openRelease,
-    prefetchReleaseOpen,
-    schedulePrefetchReleaseOpen,
-    cancelPrefetchReleaseOpen,
-    canOpen,
-  } = useReleaseOpenHandler({
-    release,
-    onReleaseClick,
-  });
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
 
   const thumbUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
@@ -57,15 +52,7 @@ const ReleaseCardComponent = ({
           [styles.randomMode]: isRandomMode,
         })}
         data-testid="fmdReleaseCard"
-        {...definedProps(
-          canOpen
-            ? {
-                onPointerEnter: schedulePrefetchReleaseOpen,
-                onPointerLeave: cancelPrefetchReleaseOpen,
-                onPointerDown: prefetchReleaseOpen,
-              }
-            : {},
-        )}
+        {...definedProps(prefetchPointerProps ?? {})}
       >
         <ReleaseCardImage
           release={release}

@@ -73,16 +73,11 @@ const MobileReleaseCardComponent = ({
     onExitRandomMode,
   });
 
-  const {
-    openRelease,
-    prefetchReleaseOpen,
-    schedulePrefetchReleaseOpen,
-    cancelPrefetchReleaseOpen,
-    canOpen,
-  } = useReleaseOpenHandler({
-    release,
-    onReleaseClick,
-  });
+  const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
+    useReleaseOpenHandler({
+      release,
+      onReleaseClick,
+    });
 
   const imageActivateProps = canOpen
     ? getReleaseActivateProps({
@@ -101,15 +96,7 @@ const MobileReleaseCardComponent = ({
           [styles.randomMode]: isRandomMode,
         })}
         data-testid="fmdMobileReleaseCard"
-        {...definedProps(
-          canOpen
-            ? {
-                onPointerEnter: schedulePrefetchReleaseOpen,
-                onPointerLeave: cancelPrefetchReleaseOpen,
-                onPointerDown: prefetchReleaseOpen,
-              }
-            : {},
-        )}
+        {...definedProps(prefetchPointerProps ?? {})}
       >
         <div
           className={styles.imageContainer}

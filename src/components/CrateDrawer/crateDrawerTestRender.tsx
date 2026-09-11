@@ -5,11 +5,19 @@ import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
+import { definedProps } from "src/utils/definedProps";
 import { render } from "test-utils";
 
-export const renderCrateDrawerTree = (ui: ReactElement) =>
+interface RenderCrateDrawerTreeOptions {
+  onReleaseClick?: (instanceId: string) => void;
+}
+
+export const renderCrateDrawerTree = (
+  ui: ReactElement,
+  options: RenderCrateDrawerTreeOptions = {},
+) =>
   render(
-    <CrateDrawerProvider>
+    <CrateDrawerProvider {...definedProps(options)}>
       {ui}
       <CrateDrawerDialogs />
     </CrateDrawerProvider>,
