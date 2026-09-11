@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { api } from "src/api/urls";
+import { AuthProvider, type AuthState } from "src/context/auth.context";
+import { CrateProvider } from "src/context/crate.context";
 import {
   checkAuthStatus,
   clearAuthCookies,
@@ -10,7 +13,6 @@ import {
 } from "src/services/auth.service";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
-import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
@@ -24,11 +26,31 @@ import {
   testAuthenticatedAuthState,
   testUnauthenticatedAuthState,
 } from "src/tests/utils/testAuthStates";
-import { act, renderHook, TestProviders, waitFor } from "test-utils";
+import { createTestQueryClient } from "src/tests/utils/testQueryClient";
+import { act, renderHook, waitFor } from "test-utils";
 import { useCrate } from "./crate.context";
 
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
+jest.mock("src/analytics/productAnalyticsEvents", () => ({
+  trackCrateCleared: jest.fn(),
+  trackCrateCreated: jest.fn(),
+  trackCrateDeleted: jest.fn(),
+  trackCrateNotesSaved: jest.fn(),
+  trackCratePackedCleared: jest.fn(),
+  trackCratePackingEnabled: jest.fn(),
+  trackCrateReleaseAdded: jest.fn(),
+  trackCrateReleaseRemoved: jest.fn(),
+  trackCrateVisibilityChanged: jest.fn(),
+  trackReleasePacked: jest.fn(),
+}));
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+    dismiss: jest.fn(),
+  },
+}));
 
 const mockApi = jest.mocked(api);
 const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
@@ -39,23 +61,44 @@ const mockClearUrlParams = jest.mocked(clearUrlParams);
 
 const apiError = new Error("API request failed");
 
-const createAuthTransitionWrapper = (authState: { authenticated: boolean }) => {
-  return ({ children }: { children: ReactNode }) => (
-    <TestProviders
-      authInitialState={
-        authState.authenticated
-          ? testAuthenticatedAuthState
-          : testUnauthenticatedAuthState
-      }
-    >
-      {children}
-    </TestProviders>
-  );
-};
-
 describe("CrateProvider", () => {
+  let queryClient: QueryClient;
+
+  const renderCrateHook = (
+    authInitialState: AuthState = testAuthenticatedAuthState,
+  ) =>
+    renderHook(() => useCrate(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider initialState={authInitialState} skipInitialAuthCheck>
+            <CrateProvider>{children}</CrateProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      ),
+    });
+
+  const createAuthTransitionWrapper = (authState: {
+    authenticated: boolean;
+  }) => {
+    return ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider
+          initialState={
+            authState.authenticated
+              ? testAuthenticatedAuthState
+              : testUnauthenticatedAuthState
+          }
+          skipInitialAuthCheck
+        >
+          <CrateProvider>{children}</CrateProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
-    jest.resetAllMocks();
+    queryClient = createTestQueryClient();
+    jest.clearAllMocks();
     localStorage.clear();
     setupMockMatchMedia();
 
@@ -75,12 +118,6 @@ describe("CrateProvider", () => {
       true,
       mockApi.crate,
       crateWithReleasesResponseFactory.empty({ user_id: 123 }),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.discogsCollection,
-      collectionFactory.empty(),
       apiError,
     );
     mockApiResponse(
@@ -119,13 +156,7 @@ describe("CrateProvider", () => {
   });
 
   it("provides initial state", async () => {
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -147,13 +178,7 @@ describe("CrateProvider", () => {
       apiError,
     );
 
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -174,13 +199,7 @@ describe("CrateProvider", () => {
       apiError,
     );
 
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -190,13 +209,7 @@ describe("CrateProvider", () => {
   });
 
   it("selects crate", async () => {
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -238,9 +251,14 @@ describe("CrateProvider", () => {
     };
     const { result, rerender } = renderHook(() => useCrate(), {
       wrapper: ({ children }) => (
-        <TestProviders authInitialState={authStateRef.current}>
-          {children}
-        </TestProviders>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider
+            initialState={authStateRef.current}
+            skipInitialAuthCheck
+          >
+            <CrateProvider>{children}</CrateProvider>
+          </AuthProvider>
+        </QueryClientProvider>
       ),
     });
 
@@ -346,13 +364,7 @@ describe("CrateProvider", () => {
   });
 
   it("toggles drawer", async () => {
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -379,13 +391,7 @@ describe("CrateProvider", () => {
   });
 
   it("opens and closes drawer", async () => {
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -428,13 +434,7 @@ describe("CrateProvider", () => {
       apiError,
     );
 
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -469,13 +469,7 @@ describe("CrateProvider", () => {
       apiError,
     );
 
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -509,13 +503,7 @@ describe("CrateProvider", () => {
       apiError,
     );
 
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current).not.toBeNull();
@@ -571,13 +559,7 @@ describe("CrateProvider", () => {
       ]);
     });
 
-    const { result } = renderHook(() => useCrate(), {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    });
+    const { result } = renderCrateHook();
 
     await waitFor(() => {
       expect(result.current.activeCrateId).toBe("crate-1");
@@ -613,7 +595,13 @@ describe("CrateProvider", () => {
       .mockImplementation(() => {});
 
     expect(() => {
-      renderHook(() => useCrate());
+      renderHook(() => useCrate(), {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        ),
+      });
     }).toThrow("useCrate must be used within a CrateProvider");
 
     consoleSpy.mockRestore();

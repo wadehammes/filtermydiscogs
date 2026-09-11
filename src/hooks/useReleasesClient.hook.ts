@@ -1,4 +1,10 @@
-import { useCallback, useDeferredValue, useEffect, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useEffectEvent,
+  useState,
+} from "react";
 import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
@@ -31,6 +37,7 @@ import {
   useViewDispatch,
 } from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
+import { dispatchViewChangeWithTransition } from "src/utils/dispatchViewChangeWithTransition";
 
 const INITIAL_VISIBLE_RELEASES = 100;
 const VISIBLE_BATCH_SIZE = 100;
@@ -170,27 +177,32 @@ export const useReleasesClient = ({
     fallbackReleases: sortedFilteredReleases,
   });
 
-  const handleViewChange = useCallback(
+  const toggleRandomModeForView = useEffectEvent(
     (view: "card" | "list" | "random") => {
-      trackViewModeChanged(view);
-      viewDispatch({
-        type: ViewActionTypes.SetView,
-        payload: view,
-      });
-
       if (view === "random") {
         filtersDispatch({
           type: FiltersActionTypes.ToggleRandomMode,
           payload: undefined,
         });
-      } else if (isRandomMode) {
+        return;
+      }
+
+      if (isRandomMode) {
         filtersDispatch({
           type: FiltersActionTypes.ToggleRandomMode,
           payload: undefined,
         });
       }
     },
-    [viewDispatch, filtersDispatch, isRandomMode],
+  );
+
+  const handleViewChange = useCallback(
+    (view: "card" | "list" | "random") => {
+      trackViewModeChanged(view);
+      dispatchViewChangeWithTransition(viewDispatch, view);
+      toggleRandomModeForView(view);
+    },
+    [viewDispatch],
   );
 
   const getRandomRelease = useCallback((releases: DiscogsRelease[]) => {

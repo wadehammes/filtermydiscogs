@@ -3,15 +3,17 @@
 import {
   createContext,
   type ReactNode,
+  Suspense,
+  use,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
+import { browser } from "react-dom";
 import { trackAnalyticsConsentGranted } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
-import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { AnalyticsConsentState } from "src/types/analyticsConsent.types";
 import {
@@ -34,23 +36,29 @@ type AnalyticsConsentContextValue = {
 const AnalyticsConsentContext =
   createContext<AnalyticsConsentContextValue | null>(null);
 
-export const AnalyticsConsentProvider = ({
+const pendingConsentValue: AnalyticsConsentContextValue = {
+  hasChosen: false,
+  isAnalyticsEnabled: false,
+  isReady: false,
+  acceptAnalytics: () => {},
+  rejectAnalytics: () => {},
+  setAnalyticsEnabled: () => {},
+  syncFromServerPreference: () => {},
+};
+
+const AnalyticsConsentProviderInner = ({
   children,
 }: {
   children: ReactNode;
 }) => {
-  const mounted = useMounted();
+  use(browser());
   const { state: authState } = useAuth();
   const { persistPreferences } = usePersistUserPreferences();
   const [consent, setConsent] = useState<AnalyticsConsentState>("pending");
 
   useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-
     setConsent(readAnalyticsConsentState());
-  }, [mounted]);
+  }, []);
 
   const applyChoice = useCallback(
     (nextConsent: Exclude<AnalyticsConsentState, "pending">) => {
@@ -113,7 +121,7 @@ export const AnalyticsConsentProvider = ({
     (): AnalyticsConsentContextValue => ({
       hasChosen: consent !== "pending",
       isAnalyticsEnabled: consent === "granted",
-      isReady: mounted,
+      isReady: true,
       acceptAnalytics,
       rejectAnalytics,
       setAnalyticsEnabled,
@@ -122,7 +130,6 @@ export const AnalyticsConsentProvider = ({
     [
       acceptAnalytics,
       consent,
-      mounted,
       rejectAnalytics,
       setAnalyticsEnabled,
       syncFromServerPreference,
@@ -133,6 +140,24 @@ export const AnalyticsConsentProvider = ({
     <AnalyticsConsentContext.Provider value={value}>
       {children}
     </AnalyticsConsentContext.Provider>
+  );
+};
+
+export const AnalyticsConsentProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
+  return (
+    <Suspense
+      fallback={
+        <AnalyticsConsentContext.Provider value={pendingConsentValue}>
+          {children}
+        </AnalyticsConsentContext.Provider>
+      }
+    >
+      <AnalyticsConsentProviderInner>{children}</AnalyticsConsentProviderInner>
+    </Suspense>
   );
 };
 

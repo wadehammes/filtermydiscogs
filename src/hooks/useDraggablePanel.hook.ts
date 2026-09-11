@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import {
   clearVideoPanelLayout,
   DEFAULT_VIDEO_PANEL_SCALE,
@@ -275,13 +281,17 @@ export const useDraggablePanel = ({
     liveLayoutRef.current = { position, scale };
   }, [isDragging, isResizing, position, scale]);
 
+  const measurePanelMaxWidth = useEffectEvent(() => {
+    measureMaxWidth();
+  });
+
   useEffect(() => {
     if (!enabled) {
       return;
     }
 
-    measureMaxWidth();
-  }, [enabled, measureMaxWidth]);
+    measurePanelMaxWidth();
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled) {
@@ -318,7 +328,7 @@ export const useDraggablePanel = ({
         return;
       }
 
-      measureMaxWidth();
+      measurePanelMaxWidth();
 
       const clamped = clampPosition({
         x: storedPosition.x,
@@ -351,7 +361,7 @@ export const useDraggablePanel = ({
         cancelAnimationFrame(frameId);
       }
     };
-  }, [enabled, measureMaxWidth, storageKey]);
+  }, [enabled, storageKey]);
 
   useEffect(() => {
     if (!isDragging) {

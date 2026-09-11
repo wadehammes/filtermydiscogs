@@ -127,6 +127,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/components/StickyHeaderBar/UserActions.tsx"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
     }
   ]
 }

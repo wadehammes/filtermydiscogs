@@ -5,6 +5,7 @@
 @import url("./global/base-ui-setup.css") layer(utilities);
 @import url("./global/prose-scope.css") layer(utilities);
 @import url("./global/form-validation.css") layer(utilities);
+@import url("./global/view-transitions.css") layer(utilities);
 
 .typography-h1 {
   font-family: inherit;

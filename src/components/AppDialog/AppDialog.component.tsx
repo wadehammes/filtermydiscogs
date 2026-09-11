@@ -2,8 +2,7 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
-import type { ReactNode } from "react";
-import { useCallback } from "react";
+import { type ReactNode, useCallback, useLayoutEffect, useRef } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import {
   usePlaybackPageOverlayPortal,
@@ -58,6 +57,7 @@ export const AppDialog = ({
   usePlaybackPageScrollLock(open);
   const overlayPortal = usePlaybackPageOverlayPortal();
   const usesShellPortal = overlayPortal !== null;
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -67,6 +67,14 @@ export const AppDialog = ({
     },
     [onClose],
   );
+
+  useLayoutEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    contentRef.current?.focus();
+  }, [open]);
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange} modal="trap-focus">
@@ -99,12 +107,14 @@ export const AppDialog = ({
             "aria-describedby": ariaDescribedBy,
           })}
         >
-          <OverlayStack
-            className={styles.popupOverlayStack}
-            popoverZIndex="var(--z-7-tooltip)"
-          >
-            {children}
-          </OverlayStack>
+          <div ref={contentRef} tabIndex={-1} className={styles.popupFocusRoot}>
+            <OverlayStack
+              className={styles.popupOverlayStack}
+              popoverZIndex="var(--z-7-tooltip)"
+            >
+              {children}
+            </OverlayStack>
+          </div>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

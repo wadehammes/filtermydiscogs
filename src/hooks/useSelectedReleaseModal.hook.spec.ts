@@ -30,6 +30,10 @@ const applyUrl = (url: string) => {
 describe("useSelectedReleaseModal", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos(),
+    );
     mockUsePathname.mockReturnValue("/releases");
     applyUrl("/releases");
   });

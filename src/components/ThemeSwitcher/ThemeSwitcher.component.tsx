@@ -1,13 +1,14 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
+import { use } from "react";
+import { browser } from "react-dom";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import {
   InlinePopoverMenu,
   inlinePopoverMenuStyles,
 } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import Select from "src/components/Select/Select.component";
-import { useMounted } from "src/hooks/useMounted.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
@@ -42,11 +43,9 @@ export const ThemeSwitcher = ({
   onThemePersisted,
   onThemePersistError,
 }: ThemeSwitcherProps) => {
+  use(browser());
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { persistPreferences } = usePersistUserPreferences();
-  const mounted = useMounted();
-
-  const activeTheme = mounted ? theme : "light";
 
   const handleThemeChange = (nextTheme: StoredTheme) => {
     setTheme(nextTheme);
@@ -63,16 +62,14 @@ export const ThemeSwitcher = ({
     );
   };
 
-  const getLabel = () => (mounted ? THEME_LABELS[theme] : "Light");
+  const getLabel = () => THEME_LABELS[theme];
 
   if (variant === "menu") {
     return (
       <Menu.SubmenuRoot>
         <Menu.SubmenuTrigger className={inlinePopoverMenuStyles.item}>
           <span className={styles.submenuLabel}>Theme</span>
-          <span className={styles.submenuValue} suppressHydrationWarning>
-            {getLabel()}
-          </span>
+          <span className={styles.submenuValue}>{getLabel()}</span>
           <ChevronRightThinIcon className={styles.submenuChevron} />
         </Menu.SubmenuTrigger>
         <InlinePopoverMenu.Panel
@@ -84,7 +81,7 @@ export const ThemeSwitcher = ({
           <InlinePopoverMenu.List>
             <Menu.RadioGroup
               className={inlinePopoverMenuStyles.itemGroup}
-              value={activeTheme}
+              value={theme}
               onValueChange={(value) => {
                 handleThemeChange(value as StoredTheme);
               }}
@@ -114,7 +111,7 @@ export const ThemeSwitcher = ({
       <Select
         label="Theme"
         options={THEME_OPTIONS}
-        value={activeTheme}
+        value={theme}
         onChange={(value) => {
           handleThemeChange(value as StoredTheme);
         }}
@@ -129,15 +126,6 @@ export const ThemeSwitcher = ({
   };
 
   const getIcon = () => {
-    if (!mounted) {
-      return (
-        <div
-          className={styles.iconSvg}
-          style={{ width: "1em", height: "1em" }}
-        />
-      );
-    }
-
     return themeUsesDarkAssets(resolvedTheme) ? (
       <Moon className={styles.iconSvg} />
     ) : (
@@ -157,7 +145,6 @@ export const ThemeSwitcher = ({
       onClick={handleThemeToggle}
       aria-label={`Switch theme (current: ${getLabel()})`}
       title={`Theme: ${getLabel()}`}
-      suppressHydrationWarning
     >
       {getIcon()}
     </IconButton>

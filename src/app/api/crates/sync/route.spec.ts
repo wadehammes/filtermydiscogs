@@ -1,4 +1,5 @@
 import {
+  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -82,6 +83,7 @@ beforeAll(async () => {
 describe("POST /api/crates/sync", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, "log").mockImplementation(() => {});
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
@@ -92,6 +94,10 @@ describe("POST /api/crates/sync", () => {
       }),
     );
     mockDeleteMany.mockResolvedValue({ count: 1 });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("records sync_force_override when force bypasses the deletion threshold", async () => {
@@ -123,7 +129,5 @@ describe("POST /api/crates/sync", () => {
       undefined,
       expect.objectContaining({ operation: "sync_force_override" }),
     );
-
-    warnSpy.mockRestore();
   });
 });

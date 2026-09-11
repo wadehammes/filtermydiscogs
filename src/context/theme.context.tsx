@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import {
   createContext,
   Suspense,
+  use,
   useCallback,
   useContext,
   useLayoutEffect,
@@ -11,8 +12,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { browser } from "react-dom";
 import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
-import { useMounted } from "src/hooks/useMounted.hook";
 import type {
   PaletteTheme,
   StoredTheme,
@@ -108,12 +109,12 @@ const themeProviderFallbackValue: ThemeContextType = {
 };
 
 function ThemeProviderInner({ children }: ThemeProviderProps) {
+  use(browser());
   const prefersDark = useMediaQuery("(prefers-color-scheme: dark)", {
     defaultValue: false,
   });
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
-  const mounted = useMounted();
 
   const [theme, setThemeState] = useState<StoredTheme>(() =>
     getInitialThemePreference(),
@@ -137,10 +138,6 @@ function ThemeProviderInner({ children }: ThemeProviderProps) {
   }, []);
 
   useLayoutEffect(() => {
-    if (!mounted) {
-      return;
-    }
-
     const domTheme = getInitialPaletteThemeFromDOM();
     if (domTheme && domTheme !== resolvedTheme) {
       applyThemeToDocument(resolvedTheme);
@@ -148,13 +145,9 @@ function ThemeProviderInner({ children }: ThemeProviderProps) {
     }
 
     applyThemeToDocument(resolvedTheme);
-  }, [mounted, resolvedTheme]);
+  }, [resolvedTheme]);
 
   useLayoutEffect(() => {
-    if (!mounted) {
-      return;
-    }
-
     if (pathnameRef.current !== pathname) {
       pathnameRef.current = pathname;
       const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -162,7 +155,7 @@ function ThemeProviderInner({ children }: ThemeProviderProps) {
         applyThemeToDocument(resolvedTheme);
       }
     }
-  }, [pathname, resolvedTheme, mounted]);
+  }, [pathname, resolvedTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>

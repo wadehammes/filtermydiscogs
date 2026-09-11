@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useState } from "react";
+import { Activity, useCallback, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
@@ -9,6 +9,7 @@ import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
+import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
@@ -161,23 +162,26 @@ const ReleasesClientContent = () => {
               ) : null}
 
               {hasReleases ? (
-                <div
-                  {...definedProps({
-                    "aria-busy": isFilterPending ? true : undefined,
-                  })}
-                  aria-live="polite"
-                >
-                  <ReleasesGrid
-                    releases={visibleReleases}
-                    view={currentView}
-                    isMobile={isMobile}
-                    isRandomMode={isRandomMode}
-                    onExitRandomMode={handleExitRandomMode}
-                    onRandomClick={handleRandomClick}
-                    onReleaseClick={handleReleaseClick}
-                    randomRelease={randomRelease}
-                  />
-                </div>
+                <ViewTransitionShell mode="content">
+                  <div
+                    key={currentView}
+                    {...definedProps({
+                      "aria-busy": isFilterPending ? true : undefined,
+                    })}
+                    aria-live="polite"
+                  >
+                    <ReleasesGrid
+                      releases={visibleReleases}
+                      view={currentView}
+                      isMobile={isMobile}
+                      isRandomMode={isRandomMode}
+                      onExitRandomMode={handleExitRandomMode}
+                      onRandomClick={handleRandomClick}
+                      onReleaseClick={handleReleaseClick}
+                      randomRelease={randomRelease}
+                    />
+                  </div>
+                </ViewTransitionShell>
               ) : !allReleasesLoaded ? (
                 <ReleasesSkeleton isMobile={isMobile} />
               ) : (
@@ -194,13 +198,13 @@ const ReleasesClientContent = () => {
             </div>
 
             <div className={styles.sidebar}>
-              {isDrawerOpen ? (
+              <Activity mode={isDrawerOpen ? "visible" : "hidden"}>
                 <CrateDrawerLazy
                   isOpen={isDrawerOpen}
                   onReleaseClick={handleReleaseClick}
                   aboveMiniPlayer={isMiniPlayerVisible}
                 />
-              ) : null}
+              </Activity>
             </div>
           </div>
         </div>

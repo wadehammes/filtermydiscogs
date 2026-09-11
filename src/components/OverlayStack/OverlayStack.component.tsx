@@ -12,7 +12,7 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { useMounted } from "src/hooks/useMounted.hook";
+import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./OverlayStack.module.css";
 
@@ -56,7 +56,6 @@ export const OverlayStack = ({
 }: OverlayStackProps) => {
   const portalRef = useRef<HTMLDivElement>(null);
   const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
-  const mounted = useMounted();
 
   useLayoutEffect(() => {
     setPortalElement(portalRef.current);
@@ -92,19 +91,20 @@ export const OverlayStack = ({
     [portalElement, popoverZIndex],
   );
 
-  const bodyPortal =
-    escapeStackingContext && mounted
-      ? createPortal(
-          <div
-            ref={portalRef}
-            className={styles.bodyPortal}
-            data-overlay-stack-escape
-            data-overlay-stack-portal
-            style={bodyPortalStyle}
-          />,
-          document.body,
-        )
-      : null;
+  const bodyPortal = escapeStackingContext ? (
+    <BrowserOnly>
+      {createPortal(
+        <div
+          ref={portalRef}
+          className={styles.bodyPortal}
+          data-overlay-stack-escape
+          data-overlay-stack-portal
+          style={bodyPortalStyle}
+        />,
+        document.body,
+      )}
+    </BrowserOnly>
+  ) : null;
 
   return (
     <OverlayStackContext.Provider value={value}>
