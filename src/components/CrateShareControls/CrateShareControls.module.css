@@ -92,8 +92,8 @@
 
 .shareSwitch {
   appearance: none;
-  background: var(--muted);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 7%, var(--background));
+  border: 1px solid color-mix(in srgb, var(--foreground) 16%, var(--border));
   border-radius: var(--radius-full);
   cursor: pointer;
   flex-shrink: 0;
@@ -106,24 +106,27 @@
   width: 2.5rem;
 
   &::before {
-    background: var(--background);
+    background: color-mix(in srgb, var(--foreground) 78%, var(--muted));
     border-radius: var(--radius-full);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 14%);
     content: "";
     height: 1.125rem;
     left: 0.125rem;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    transition: transform var(--transition-fast);
+    transition:
+      background var(--transition-fast),
+      transform var(--transition-fast);
     width: 1.125rem;
   }
 
   &:checked {
-    background: var(--primary);
-    border-color: var(--link);
+    background: color-mix(in srgb, var(--primary) 82%, var(--background));
+    border-color: color-mix(in srgb, var(--link) 72%, var(--border));
 
     &::before {
+      background: color-mix(in srgb, var(--on-primary) 94%, var(--background));
       transform: translate(1rem, -50%);
     }
   }

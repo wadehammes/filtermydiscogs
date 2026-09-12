@@ -306,8 +306,8 @@
   --muted-foreground: #8b949e;
   --accent: color-mix(in srgb, var(--background) 88%, var(--primary) 12%);
   --accent-foreground: #e6edf3;
-  --border: #30363d;
-  --input: #30363d;
+  --border: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%);
+  --input: var(--border);
   --popover: var(--card);
   --popover-foreground: #e6edf3;
   --secondary: color-mix(
@@ -332,12 +332,12 @@
   --shadow-modal: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
   --shadow-xl: 0 20px 25px -5px transparent, 0 8px 10px -6px transparent;
   --white: #e6edf3;
-  --black: #0d1117;
-  --gray-50: #0d1117;
-  --gray-100: #161b22;
-  --gray-200: #21262d;
-  --gray-300: #30363d;
-  --gray-400: #484f58;
+  --black: var(--background);
+  --gray-50: var(--background);
+  --gray-100: var(--card);
+  --gray-200: var(--muted);
+  --gray-300: var(--border);
+  --gray-400: color-mix(in srgb, var(--foreground) 20%, var(--background) 80%);
   --gray-500: #6e7681;
   --gray-600: #8b949e;
   --gray-700: #8b949e;
@@ -356,6 +356,16 @@
   --warning: #d29922;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
+  --release-card-stroke: color-mix(
+    in srgb,
+    var(--card) 92%,
+    var(--foreground) 8%
+  );
+  --release-card-stroke-hover: color-mix(
+    in srgb,
+    var(--card) 86%,
+    var(--foreground) 14%
+  );
 }
 
 [data-theme="futuristic"] {
@@ -450,7 +460,6 @@
   [data-theme="slate"],
   [data-theme="discogs"],
   [data-theme="midnight"],
-  [data-theme="codex"],
   [data-theme="wine"],
   [data-theme="futuristic"]
 ) {
