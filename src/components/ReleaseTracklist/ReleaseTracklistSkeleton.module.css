@@ -37,7 +37,6 @@
 .skeletonDuration,
 .skeletonQueue,
 .skeletonToolbarButton {
-  composes: pulsesurface from "../../styles/modules/skeleton-pulse.module.css";
   border-radius: var(--radius-ui);
 }
 

@@ -1,4 +1,8 @@
+import classNames from "classnames";
+import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import styles from "./DesktopReleaseCardSkeleton.module.css";
+
+const pulseSurface = skeletonPulseStyles.pulsesurface;
 
 export function DesktopReleaseCardSkeleton() {
   return (
@@ -7,20 +11,20 @@ export function DesktopReleaseCardSkeleton() {
       data-testid="fmdDesktopReleaseCardSkeleton"
       aria-hidden
     >
-      <div className={styles.cover} />
+      <div className={classNames(styles.cover, pulseSurface)} />
       <div className={styles.content}>
         <div className={styles.mainContent}>
-          <div className={styles.lineCatalog} />
+          <div className={classNames(styles.lineCatalog, pulseSurface)} />
           <div className={styles.textStack}>
-            <div className={styles.lineArtist} />
-            <div className={styles.lineTitle} />
-            <div className={styles.lineMeta} />
+            <div className={classNames(styles.lineArtist, pulseSurface)} />
+            <div className={classNames(styles.lineTitle, pulseSurface)} />
+            <div className={classNames(styles.lineMeta, pulseSurface)} />
           </div>
         </div>
         <div className={styles.pillsRow}>
-          <div className={styles.pill} />
-          <div className={styles.pill} />
-          <div className={styles.pillWide} />
+          <div className={classNames(styles.pill, pulseSurface)} />
+          <div className={classNames(styles.pill, pulseSurface)} />
+          <div className={classNames(styles.pillWide, pulseSurface)} />
         </div>
       </div>
     </div>
