@@ -3,17 +3,17 @@
   display: inline-flex;
   flex-shrink: 0;
   justify-content: center;
-  transform-origin: center;
-  transition: transform 220ms cubic-bezier(0.34, 1.35, 0.64, 1);
 
   svg {
     display: block;
     height: 0.875rem;
+    transform-origin: center;
+    transition: transform 220ms cubic-bezier(0.34, 1.35, 0.64, 1);
     width: 0.875rem;
-  }
 
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 }
 
@@ -21,8 +21,15 @@
   &:hover:not(:disabled),
   &:focus-visible:not(:disabled),
   &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
-    .icon,
     > svg {
+      transform: var(--icon-action-transform);
+
+      @media (prefers-reduced-motion: reduce) {
+        transform: none;
+      }
+    }
+
+    .icon svg {
       transform: var(--icon-action-transform);
 
       @media (prefers-reduced-motion: reduce) {
@@ -45,6 +52,12 @@
 }
 
 .iconactionrotate {
+  composes: iconactionmotion;
+
+  --icon-action-transform: rotate(90deg);
+}
+
+.iconactionplus {
   composes: iconactionmotion;
 
   --icon-action-transform: rotate(90deg) scale(1.1);

@@ -16,7 +16,7 @@
 }
 
 .variantplus {
-  composes: iconactionrotate from "./action-icon-hover.module.css";
+  composes: iconactionplus from "./action-icon-hover.module.css";
 }
 
 .variantminus {

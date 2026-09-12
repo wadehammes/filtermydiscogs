@@ -189,92 +189,21 @@
   margin: 0;
 }
 
-.closebuttonsurface {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  color: var(--foreground);
-  cursor: pointer;
-  display: grid;
-  flex-shrink: 0;
-  height: var(--button-height-md);
-  padding: 0;
-  place-items: center;
-  transition:
-    background-color var(--transition-normal),
-    border-color var(--transition-normal),
-    color var(--transition-normal),
-    transform var(--transition-normal);
-  width: var(--button-height-md);
-
-  &:hover {
-    background: var(--muted);
-    border-color: var(--input);
-  }
-
-  &:active {
-    background: var(--accent);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-}
-
 .floatingShellClose {
-  composes: closebuttonsurface;
+  --toggle-action-bg: var(--card);
+  --toggle-action-radius: var(--radius-full);
+  --toggle-action-size: var(--button-height-md);
+
   position: absolute;
   right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
   top: 0;
   z-index: calc(var(--z-10-bottom-drawer) + 1);
-
-  &:hover {
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-.closeIcon {
-  height: 1.25rem;
-  width: 1.25rem;
 }
 
 .headerCloseButton {
-  align-items: center;
-  background: transparent;
-  border: none;
   border-radius: var(--radius-ui);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  display: inline-flex;
-  flex-shrink: 0;
   height: var(--button-height-md);
-  justify-content: center;
-  padding: 0;
-  transition:
-    background-color var(--transition-normal),
-    color var(--transition-normal);
   width: var(--button-height-md);
-
-  &:hover {
-    background: var(--muted);
-    color: var(--foreground);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-}
-
-.headerCloseIcon {
-  display: block;
-  height: 1.25rem;
-  width: 1.25rem;
 }
 
 .content {
