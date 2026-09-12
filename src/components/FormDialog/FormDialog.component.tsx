@@ -134,7 +134,12 @@ const FormDialogCheckboxField = ({
   ...inputProps
 }: FormDialogCheckboxFieldProps) => (
   <label className={classNames(styles.checkboxLabel, className)}>
-    <input type="checkbox" className={styles.checkbox} {...inputProps} />
+    <input
+      type="checkbox"
+      className={styles.checkbox}
+      {...inputProps}
+      data-1p-ignore
+    />
     <span>{label}</span>
   </label>
 );

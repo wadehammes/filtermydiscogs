@@ -93,6 +93,7 @@ export const ReleaseNotesFormFields = ({
               {field.name}
             </label>
             <textarea
+              data-1p-ignore
               id={`note-field-${field.id}`}
               className={validatedFieldClass(
                 styles.textarea,

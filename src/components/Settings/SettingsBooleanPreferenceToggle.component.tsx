@@ -24,6 +24,7 @@ export function SettingsBooleanPreferenceToggle({
     <div className={styles.panelBlock}>
       <label className={styles.settingToggle}>
         <input
+          data-1p-ignore
           type="checkbox"
           checked={checked}
           onChange={(event) => onChange(event.target.checked)}

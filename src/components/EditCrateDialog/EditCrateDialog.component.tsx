@@ -118,6 +118,7 @@ export const EditCrateDialog = () => {
             )}
             disabled={isBusy}
             {...register("name")}
+            data-1p-ignore
           />
         </FormDialog.Field>
         <div className={styles.sectionActions}>
@@ -179,6 +180,7 @@ export const EditCrateDialog = () => {
               autoComplete="off"
               disabled={isBusy}
               {...register("deleteConfirm")}
+              data-1p-ignore
             />
           </FormDialog.Field>
           <div className={styles.sectionActions}>

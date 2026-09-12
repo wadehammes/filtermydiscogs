@@ -185,6 +185,7 @@ const ReleaseNotesCrateFieldScratchpad = ({
         aria-describedby={`${textareaId}-length`}
         aria-invalid={isNotesOverLimit ? true : undefined}
         {...valueFieldProps}
+        data-1p-ignore
       />
       <div className={styles.notesCrateScratchpadFooter}>
         <div className={styles.notesCrateScratchpadFooterTrailing}>

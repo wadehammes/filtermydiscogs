@@ -109,6 +109,7 @@ export const SaveFilterViewDialog = ({
     >
       <FormDialog.Field label="View name" htmlFor={`${inputId}-name`}>
         <input
+          data-1p-ignore
           id={`${inputId}-name`}
           className={validatedFieldClass(styles.input)}
           type="text"

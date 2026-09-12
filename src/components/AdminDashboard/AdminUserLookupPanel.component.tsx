@@ -82,6 +82,7 @@ export const AdminUserLookupPanel = () => {
             <input
               {...register("username")}
               autoComplete="off"
+              data-1p-ignore
               className={styles.lookupInput}
               id="admin-user-lookup"
               placeholder="Paste a username"
