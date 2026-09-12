@@ -4,7 +4,7 @@
   border-radius: var(--radius-card);
   box-shadow:
     var(--shadow-sm),
-    inset 0 0 0 1px var(--border);
+    inset 0 0 0 1px var(--release-card-stroke);
   color: inherit;
   container-name: release-card;
   container-type: inline-size;
@@ -38,7 +38,7 @@
         0 12px 28px -10px color-mix(in srgb, var(--background) 14%, transparent),
         0 4px 10px -4px color-mix(in srgb, var(--background) 6%, transparent),
         var(--shadow-lg),
-        inset 0 0 0 1px var(--input);
+        inset 0 0 0 1px var(--release-card-stroke-hover);
       color: inherit;
       text-decoration: none;
       transform: scale(1.01);

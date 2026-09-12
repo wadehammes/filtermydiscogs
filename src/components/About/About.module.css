@@ -336,12 +336,12 @@
 }
 
 .link {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: none;
   transition: color var(--transition-normal);
 
   &:hover {
-    color: var(--primary-hover);
+    color: var(--link-hover);
     text-decoration: underline;
   }
 }
@@ -466,7 +466,7 @@
   padding-inline: var(--space-4);
 
   &:focus-within {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
     outline-offset: 1px;
   }

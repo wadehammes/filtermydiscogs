@@ -47,13 +47,14 @@ const readThemeInitSystemDarkPalette = (): string => {
 
 describe("themeAppearance", () => {
   it("cycles through every stored theme", () => {
-    let current = cycleTheme("system");
+    const start = cycleTheme("system");
+    let current = start;
     const visited = new Set<string>();
 
     do {
       visited.add(current);
       current = cycleTheme(current);
-    } while (current !== "light");
+    } while (current !== start);
 
     expect(visited.size).toBe(STORED_THEMES.length);
   });

@@ -84,7 +84,7 @@
 }
 
 .checkbox {
-  accent-color: var(--primary);
+  accent-color: var(--link);
   flex-shrink: 0;
   height: 1rem;
   margin: 0;

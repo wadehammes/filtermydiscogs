@@ -1,0 +1,23 @@
+:is(
+  [data-theme="light"],
+  [data-theme="dim"],
+  [data-theme="sepia"],
+  [data-theme="forest"],
+  [data-theme="amber"],
+  [data-theme="slate"],
+  [data-theme="discogs"],
+  [data-theme="midnight"],
+  [data-theme="codex"],
+  [data-theme="futuristic"],
+  [data-theme="high-contrast"]
+) {
+  --link: var(--primary);
+  --link-hover: var(--primary-hover);
+  --link-active: var(--primary-active);
+}
+
+[data-theme="wine"] {
+  --link: color-mix(in srgb, var(--primary) 72%, white 28%);
+  --link-hover: color-mix(in srgb, var(--link) 82%, white 18%);
+  --link-active: color-mix(in srgb, var(--link) 72%, black 28%);
+}

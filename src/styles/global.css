@@ -92,7 +92,7 @@
 .layout-sticky-header {
   align-items: center;
   backdrop-filter: blur(0.75rem);
-  background: color-mix(in srgb, var(--card) 92%, transparent);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   display: flex;
   height: var(--sticky-header-height);

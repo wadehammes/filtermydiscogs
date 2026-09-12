@@ -3,7 +3,7 @@
 
   --background: #04060f;
   --gradientPink: #2a0845;
-  --gradientTeal: #061f33;
+  --gradientTeal: #0a0c12;
   --gradient-surface: color-mix(
     in oklch,
     var(--gradientPink) 42%,

@@ -20,34 +20,38 @@
 .menuitemhover {
   composes: menuitemhoverbase;
 
-  --menu-item-hover-bg: var(--muted);
-  --menu-item-hover-color: var(--primary);
+  --menu-item-hover-bg: color-mix(in srgb, var(--primary) 14%, var(--popover));
+  --menu-item-hover-color: var(--link);
 }
 
 .menuitemhoverneutral {
   composes: menuitemhoverbase;
 
-  --menu-item-hover-bg: var(--muted);
+  --menu-item-hover-bg: color-mix(in srgb, var(--primary) 14%, var(--popover));
   --menu-item-hover-color: var(--foreground);
 }
 
 .menuitemhoverdanger {
   composes: menuitemhoverbase;
 
-  --menu-item-hover-bg: color-mix(in srgb, var(--destructive) 8%, transparent);
+  --menu-item-hover-bg: color-mix(
+    in srgb,
+    var(--destructive) 14%,
+    var(--popover)
+  );
   --menu-item-hover-color: var(--destructive);
 }
 
 .menuitemchecked {
   &[data-checked] {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
+    background: color-mix(in srgb, var(--link) 12%, var(--popover));
+    color: var(--link);
     font-weight: var(--font-semibold);
 
     &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
     &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
-      background: color-mix(in srgb, var(--primary) 14%, var(--muted));
-      color: var(--primary);
+      background: color-mix(in srgb, var(--link) 18%, var(--popover));
+      color: var(--link);
     }
   }
 }

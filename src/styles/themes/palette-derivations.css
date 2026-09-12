@@ -4,41 +4,24 @@
 [data-theme="slate"],
 [data-theme="discogs"] {
   --foreground: contrast-color(var(--background));
-  --card: color-mix(in srgb, var(--background) 75%, white 25%);
+  --card: color-mix(in srgb, var(--background) 88%, var(--gradientPink) 12%);
   --card-foreground: contrast-color(var(--card));
-  --muted: color-mix(
-    in srgb,
-    var(--background) 88%,
-    contrast-color(var(--background)) 12%
-  );
+  --muted: color-mix(in srgb, var(--background) 94%, var(--gradientTeal) 6%);
   --muted-foreground: color-mix(
     in srgb,
-    var(--foreground) 55%,
-    var(--background) 45%
+    var(--foreground) 72%,
+    var(--background) 28%
   );
-  --accent: color-mix(
-    in srgb,
-    var(--background) 80%,
-    contrast-color(var(--background)) 20%
-  );
+  --accent: color-mix(in srgb, var(--background) 86%, var(--primary) 14%);
   --accent-foreground: var(--foreground);
-  --border: color-mix(
-    in srgb,
-    var(--background) 55%,
-    contrast-color(var(--background)) 45%
-  );
+  --border: color-mix(in srgb, var(--background) 58%, var(--foreground) 42%);
   --input: var(--border);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --sticky-header-background: color-mix(
-    in srgb,
-    var(--background) 88%,
-    contrast-color(var(--background)) 12%
-  );
   --secondary: color-mix(
     in srgb,
-    var(--background) 76%,
-    contrast-color(var(--background)) 24%
+    var(--background) 84%,
+    var(--gradientPink) 16%
   );
   --secondary-foreground: color-mix(
     in srgb,
@@ -47,13 +30,13 @@
   );
   --secondary-hover: color-mix(
     in srgb,
-    var(--secondary) 82%,
-    contrast-color(var(--secondary)) 18%
+    var(--secondary) 86%,
+    var(--primary) 14%
   );
   --secondary-active: color-mix(
     in srgb,
-    var(--secondary) 68%,
-    contrast-color(var(--secondary)) 32%
+    var(--secondary) 74%,
+    var(--primary) 26%
   );
   --shadow-sm: 0 1px 2px 0
     color-mix(in srgb, var(--foreground) 10%, transparent);
@@ -97,7 +80,7 @@
 }
 
 [data-theme="discogs"] {
-  --muted: #f7f7f7;
+  --muted: color-mix(in srgb, var(--background) 96%, var(--gradientTeal) 4%);
   --warning: #f5a623;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, black 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);
@@ -105,41 +88,24 @@
 
 [data-theme="dim"] {
   --foreground: contrast-color(var(--background));
-  --card: color-mix(in srgb, var(--background) 82%, white 18%);
+  --card: color-mix(in srgb, var(--background) 88%, var(--gradientPink) 12%);
   --card-foreground: contrast-color(var(--card));
-  --muted: color-mix(
-    in srgb,
-    var(--background) 92%,
-    contrast-color(var(--background)) 8%
-  );
+  --muted: color-mix(in srgb, var(--background) 94%, var(--gradientTeal) 6%);
   --muted-foreground: color-mix(
     in srgb,
-    var(--foreground) 50%,
-    var(--background) 50%
+    var(--foreground) 58%,
+    var(--background) 42%
   );
-  --accent: color-mix(
-    in srgb,
-    var(--background) 88%,
-    contrast-color(var(--background)) 12%
-  );
+  --accent: color-mix(in srgb, var(--background) 86%, var(--primary) 14%);
   --accent-foreground: var(--foreground);
-  --border: color-mix(
-    in srgb,
-    var(--background) 72%,
-    contrast-color(var(--background)) 28%
-  );
+  --border: color-mix(in srgb, var(--background) 72%, var(--foreground) 28%);
   --input: var(--border);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --sticky-header-background: color-mix(
-    in srgb,
-    var(--background) 92%,
-    contrast-color(var(--background)) 8%
-  );
   --secondary: color-mix(
     in srgb,
     var(--background) 84%,
-    contrast-color(var(--background)) 16%
+    var(--gradientPink) 16%
   );
   --secondary-foreground: color-mix(
     in srgb,
@@ -148,13 +114,13 @@
   );
   --secondary-hover: color-mix(
     in srgb,
-    var(--secondary) 90%,
-    contrast-color(var(--secondary)) 10%
+    var(--secondary) 86%,
+    var(--primary) 14%
   );
   --secondary-active: color-mix(
     in srgb,
-    var(--secondary) 78%,
-    contrast-color(var(--secondary)) 22%
+    var(--secondary) 74%,
+    var(--primary) 26%
   );
   --shadow-sm: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
   --shadow-md:
@@ -196,36 +162,42 @@
   --warning-active: color-mix(in srgb, var(--warning) 76%, black 24%);
 }
 
-[data-theme="midnight"],
-[data-theme="wine"] {
+[data-theme="midnight"] {
   --foreground: contrast-color(var(--background));
-  --card: color-mix(in srgb, var(--background) 80%, white 20%);
+  --card: color-mix(in srgb, var(--background) 90%, var(--gradientTeal) 10%);
   --card-foreground: contrast-color(var(--card));
-  --muted: color-mix(in srgb, var(--background) 90%, white 10%);
+  --muted: color-mix(in srgb, var(--background) 96%, var(--gradientTeal) 4%);
   --muted-foreground: color-mix(
     in srgb,
-    var(--foreground) 62%,
-    var(--background) 38%
+    var(--foreground) 68%,
+    var(--background) 32%
   );
-  --accent: color-mix(in srgb, var(--background) 84%, white 16%);
+  --accent: color-mix(in srgb, var(--background) 88%, var(--primary) 12%);
   --accent-foreground: var(--foreground);
-  --border: color-mix(in srgb, var(--background) 62%, var(--foreground) 38%);
+  --border: color-mix(in srgb, var(--background) 72%, var(--foreground) 28%);
   --input: var(--border);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --sticky-header-background: color-mix(
+  --secondary: color-mix(
     in srgb,
-    var(--background) 92%,
-    black 8%
+    var(--background) 88%,
+    var(--gradientTeal) 12%
   );
-  --secondary: color-mix(in srgb, var(--background) 82%, white 18%);
   --secondary-foreground: color-mix(
     in srgb,
     var(--foreground) 88%,
     var(--background) 12%
   );
-  --secondary-hover: color-mix(in srgb, var(--secondary) 86%, white 14%);
-  --secondary-active: color-mix(in srgb, var(--secondary) 72%, white 28%);
+  --secondary-hover: color-mix(
+    in srgb,
+    var(--secondary) 84%,
+    var(--primary) 16%
+  );
+  --secondary-active: color-mix(
+    in srgb,
+    var(--secondary) 72%,
+    var(--primary) 28%
+  );
   --shadow-sm: 0 1px 2px 0 transparent;
   --shadow-md: 0 4px 6px -1px transparent, 0 2px 4px -2px transparent;
   --shadow-lg: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
@@ -243,38 +215,117 @@
   --gray-700: var(--muted-foreground);
   --gray-800: color-mix(in srgb, var(--foreground) 82%, var(--background) 18%);
   --gray-900: var(--foreground);
-  --destructive: #f87171;
+  --destructive: #e07070;
   --destructive-hover: color-mix(in srgb, var(--destructive) 88%, white 12%);
   --destructive-active: color-mix(in srgb, var(--destructive) 76%, white 24%);
   --on-destructive: #000;
   --on-destructive-hover: #000;
   --on-destructive-active: #000;
   --destructive-foreground: var(--on-destructive);
-  --success: #22c55e;
+  --success: #5db87a;
   --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
   --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
-  --warning: #fbbf24;
+  --warning: #c9925a;
+  --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
+  --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
+}
+
+[data-theme="wine"] {
+  --foreground: contrast-color(var(--background));
+  --card: color-mix(in srgb, var(--background) 90%, var(--gradientTeal) 10%);
+  --card-foreground: contrast-color(var(--card));
+  --muted: color-mix(in srgb, var(--background) 96%, var(--gradientTeal) 4%);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--foreground) 68%,
+    var(--background) 32%
+  );
+  --accent: color-mix(in srgb, var(--background) 88%, var(--primary) 12%);
+  --accent-foreground: var(--foreground);
+  --border: color-mix(in srgb, var(--background) 72%, var(--foreground) 28%);
+  --input: var(--border);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --secondary: color-mix(
+    in srgb,
+    var(--background) 88%,
+    var(--gradientTeal) 12%
+  );
+  --secondary-foreground: color-mix(
+    in srgb,
+    var(--foreground) 88%,
+    var(--background) 12%
+  );
+  --secondary-hover: color-mix(
+    in srgb,
+    var(--secondary) 84%,
+    var(--primary) 16%
+  );
+  --secondary-active: color-mix(
+    in srgb,
+    var(--secondary) 72%,
+    var(--primary) 28%
+  );
+  --shadow-sm: 0 1px 2px 0 transparent;
+  --shadow-md: 0 4px 6px -1px transparent, 0 2px 4px -2px transparent;
+  --shadow-lg: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
+  --shadow-modal: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
+  --shadow-xl: 0 20px 25px -5px transparent, 0 8px 10px -6px transparent;
+  --white: var(--foreground);
+  --black: var(--background);
+  --gray-50: var(--background);
+  --gray-100: var(--card);
+  --gray-200: var(--muted);
+  --gray-300: var(--accent);
+  --gray-400: var(--secondary-active);
+  --gray-500: var(--border);
+  --gray-600: color-mix(in srgb, var(--foreground) 55%, var(--background) 45%);
+  --gray-700: var(--muted-foreground);
+  --gray-800: color-mix(in srgb, var(--foreground) 82%, var(--background) 18%);
+  --gray-900: var(--foreground);
+  --destructive: #e07070;
+  --destructive-hover: color-mix(in srgb, var(--destructive) 88%, white 12%);
+  --destructive-active: color-mix(in srgb, var(--destructive) 76%, white 24%);
+  --on-destructive: #000;
+  --on-destructive-hover: #000;
+  --on-destructive-active: #000;
+  --destructive-foreground: var(--on-destructive);
+  --success: #7a9478;
+  --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
+  --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
+  --warning: #c9925a;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
 }
 
 [data-theme="codex"] {
   --foreground: #e6edf3;
-  --card: #161b22;
+  --card: color-mix(in srgb, var(--background) 90%, var(--gradientTeal) 10%);
   --card-foreground: #e6edf3;
-  --muted: #21262d;
+  --muted: color-mix(in srgb, var(--background) 96%, var(--gradientTeal) 4%);
   --muted-foreground: #8b949e;
-  --accent: #21262d;
+  --accent: color-mix(in srgb, var(--background) 88%, var(--primary) 12%);
   --accent-foreground: #e6edf3;
   --border: #30363d;
   --input: #30363d;
-  --popover: #161b22;
+  --popover: var(--card);
   --popover-foreground: #e6edf3;
-  --sticky-header-background: #0d1117;
-  --secondary: #21262d;
+  --secondary: color-mix(
+    in srgb,
+    var(--background) 88%,
+    var(--gradientTeal) 12%
+  );
   --secondary-foreground: #e6edf3;
-  --secondary-hover: #30363d;
-  --secondary-active: #484f58;
+  --secondary-hover: color-mix(
+    in srgb,
+    var(--secondary) 84%,
+    var(--primary) 16%
+  );
+  --secondary-active: color-mix(
+    in srgb,
+    var(--secondary) 72%,
+    var(--primary) 28%
+  );
   --shadow-sm: 0 1px 2px 0 transparent;
   --shadow-md: 0 4px 6px -1px transparent, 0 2px 4px -2px transparent;
   --shadow-lg: 0 10px 15px -3px transparent, 0 4px 6px -4px transparent;
@@ -309,9 +360,9 @@
 
 [data-theme="futuristic"] {
   --foreground: #e8f7ff;
-  --card: color-mix(in srgb, var(--background) 68%, #120a24 32%);
+  --card: color-mix(in srgb, var(--background) 90%, var(--gradientTeal) 10%);
   --card-foreground: var(--foreground);
-  --muted: color-mix(in srgb, var(--background) 78%, #0d1828 22%);
+  --muted: color-mix(in srgb, var(--background) 96%, var(--gradientTeal) 4%);
   --muted-foreground: color-mix(
     in srgb,
     var(--primary) 28%,
@@ -323,11 +374,6 @@
   --input: color-mix(in srgb, var(--primary) 42%, var(--background) 58%);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --sticky-header-background: color-mix(
-    in srgb,
-    var(--background) 88%,
-    #ff4dcc 12%
-  );
   --secondary: color-mix(in srgb, var(--background) 72%, var(--primary) 28%);
   --secondary-foreground: var(--foreground);
   --secondary-hover: color-mix(
@@ -359,10 +405,10 @@
   --on-destructive-hover: #000;
   --on-destructive-active: #000;
   --destructive-foreground: var(--on-destructive);
-  --success: #00ff9c;
+  --success: #0c8;
   --success-hover: color-mix(in srgb, var(--success) 88%, white 12%);
   --success-active: color-mix(in srgb, var(--success) 76%, white 24%);
-  --warning: #ffe066;
+  --warning: #e6c855;
   --warning-hover: color-mix(in srgb, var(--warning) 88%, white 12%);
   --warning-active: color-mix(in srgb, var(--warning) 76%, white 24%);
 }
@@ -379,7 +425,6 @@
   --input: var(--foreground);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --sticky-header-background: var(--background);
   --secondary: var(--muted);
   --secondary-foreground: var(--foreground);
   --secondary-hover: color-mix(in srgb, var(--secondary) 80%, white 20%);
@@ -395,4 +440,28 @@
   --on-destructive-hover: #000;
   --on-destructive-active: #000;
   --destructive-foreground: var(--on-destructive);
+}
+
+:is(
+  [data-theme="dim"],
+  [data-theme="sepia"],
+  [data-theme="forest"],
+  [data-theme="amber"],
+  [data-theme="slate"],
+  [data-theme="discogs"],
+  [data-theme="midnight"],
+  [data-theme="codex"],
+  [data-theme="wine"],
+  [data-theme="futuristic"]
+) {
+  --release-card-stroke: color-mix(
+    in srgb,
+    var(--card) 82%,
+    var(--foreground) 18%
+  );
+  --release-card-stroke-hover: color-mix(
+    in srgb,
+    var(--card) 74%,
+    var(--foreground) 26%
+  );
 }

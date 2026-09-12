@@ -125,7 +125,7 @@
   transition: var(--transition-fast);
 
   &:focus {
-    border-color: var(--primary);
+    border-color: var(--link);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
     outline: none;
   }
@@ -136,7 +136,7 @@
   }
 
   &:hover:not(:disabled) {
-    border-color: var(--primary);
+    border-color: var(--link);
   }
 }
 

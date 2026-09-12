@@ -10,7 +10,7 @@
   width: 100%;
 
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
   }
 

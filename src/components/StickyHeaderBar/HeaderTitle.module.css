@@ -9,7 +9,7 @@
   white-space: nowrap;
 
   &:hover {
-    color: var(--primary);
+    color: var(--link);
   }
 }
 

@@ -23,15 +23,15 @@
   width: var(--button-height-sm);
 
   &:hover {
-    color: var(--primary);
+    color: var(--link);
   }
 
   &.active {
-    color: var(--primary);
+    color: var(--link);
   }
 
   .filterIconActive {
-    color: var(--primary);
+    color: var(--link);
   }
 
   .filterIcon {
@@ -84,7 +84,7 @@
   width: var(--button-height-sm);
 
   &:hover {
-    color: var(--primary);
+    color: var(--link);
   }
 
   .menuIcon {
@@ -135,7 +135,7 @@
 
   &.active {
     background: color-mix(in srgb, var(--primary) 15%, var(--background));
-    color: var(--primary);
+    color: var(--link);
     font-weight: var(--font-semibold);
   }
 

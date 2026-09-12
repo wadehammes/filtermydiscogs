@@ -181,12 +181,12 @@
 }
 
 .inlineLink {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: none;
   transition: color var(--transition-normal);
 
   &:hover {
-    color: var(--primary-hover);
+    color: var(--link-hover);
     text-decoration: underline;
   }
 }

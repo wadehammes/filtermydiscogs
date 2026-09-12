@@ -19,11 +19,7 @@
 
   &.stuck {
     backdrop-filter: blur(10px);
-    background: color-mix(
-      in srgb,
-      var(--sticky-header-background) 82%,
-      transparent
-    );
+    background: color-mix(in srgb, var(--background) 82%, transparent);
   }
 
   .headerText {
@@ -40,7 +36,7 @@
 
 .loadingIcon {
   align-items: center;
-  color: var(--primary);
+  color: var(--link);
   display: flex;
   font-family: inherit;
   font-size: inherit;

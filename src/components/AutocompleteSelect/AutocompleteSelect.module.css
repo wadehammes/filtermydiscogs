@@ -39,7 +39,7 @@
   }
 
   &[data-popup-open] {
-    border-color: var(--primary);
+    border-color: var(--link);
   }
 
   &[data-disabled] {
@@ -50,7 +50,7 @@
 
   &:focus,
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
   }
 
@@ -87,12 +87,12 @@
 
   &:focus,
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
   }
 
   &[data-popup-open] {
-    border-color: var(--primary);
+    border-color: var(--link);
   }
 
   &:disabled {
@@ -141,7 +141,7 @@
   background: none;
   border: none;
   border-radius: var(--radius-full);
-  color: var(--primary);
+  color: var(--link);
   cursor: pointer;
   display: inline-flex;
   font-size: var(--text-xs);
@@ -160,7 +160,7 @@
 
   &:hover {
     background: color-mix(in srgb, var(--primary) 20%, var(--background));
-    color: var(--primary);
+    color: var(--link);
   }
 
   &:focus {
@@ -227,7 +227,7 @@
   background: color-mix(in srgb, var(--primary) 15%, var(--background));
   border: 1px solid var(--primary);
   border-radius: var(--radius-ui);
-  color: var(--primary);
+  color: var(--link);
   cursor: default;
   display: inline-flex;
   flex-shrink: 0;
@@ -265,7 +265,7 @@
   transition: border-color var(--transition-normal);
 
   &:focus-within {
-    border-bottom-color: var(--primary);
+    border-bottom-color: var(--link);
   }
 
   @media (width >= 1024px) {
@@ -338,7 +338,7 @@
 
   &:hover,
   &[data-highlighted] {
-    background: color-mix(in srgb, var(--primary) 10%, var(--background));
+    background: color-mix(in srgb, var(--primary) 14%, var(--popover));
   }
 
   &:focus-visible {
@@ -347,13 +347,13 @@
   }
 
   &[data-selected] {
-    background: color-mix(in srgb, var(--primary) 15%, var(--background));
-    color: var(--primary);
+    background: color-mix(in srgb, var(--link) 12%, var(--popover));
+    color: var(--link);
 
     &:hover,
     &[data-highlighted] {
-      background: color-mix(in srgb, var(--primary) 20%, var(--background));
-      color: var(--primary);
+      background: color-mix(in srgb, var(--link) 18%, var(--popover));
+      color: var(--link);
     }
   }
 }

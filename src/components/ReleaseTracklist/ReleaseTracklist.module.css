@@ -235,7 +235,7 @@
 }
 
 .queueButtonQueued {
-  color: var(--primary);
+  color: var(--link);
   cursor: default;
 }
 

@@ -16,50 +16,67 @@
   color-scheme: light dark;
 
   /* Base colors */
-  --background: light-dark(#fff, #121212);
+  --background: light-dark(#fff, #0a0a0c);
   --foreground: light-dark(#171717, #fafafa);
 
   /* Muted colors */
-  --muted: light-dark(#f8fafc, #1e1e1e);
+  --muted: light-dark(#f8fafc, #131316);
   --muted-foreground: light-dark(
     #475569,
-    #a3a3a3
+    #a1a1aa
   ); /* WCAG AA compliant: ~4.7:1 contrast on white */
 
   /* Accent colors */
-  --accent: light-dark(#f1f5f9, #2a2a2a);
+  --accent: light-dark(#f1f5f9, #1a1a1e);
   --accent-foreground: light-dark(#0f172a, #fafafa);
 
   /* Border and input */
-  --border: light-dark(#cbd5e0, #333);
-  --input: light-dark(#cbd5e0, #333);
-  --ring: var(--primary);
+  --border: light-dark(#cbd5e0, #27272a);
+  --input: light-dark(#cbd5e0, #27272a);
+  --release-card-stroke: var(--border);
+  --release-card-stroke-hover: var(--input);
+  --ring: var(--link);
 
   /* Card */
-  --card: light-dark(#fff, #1a1a1a);
+  --card: light-dark(#fff, #0f0f12);
   --card-foreground: light-dark(#171717, #fafafa);
 
   /* Sticky Header */
-  --sticky-header-background: light-dark(#fff, #080808);
+  --sticky-header-background: var(--background);
 
   /* Popover */
-  --popover: light-dark(#fff, #1a1a1a);
+  --popover: light-dark(#fff, #0f0f12);
   --popover-foreground: light-dark(#171717, #fafafa);
 
   /* Primary */
-  --primary: #06c;
-  --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
-  --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
+  --primary: light-dark(#06c, #06f);
+  --primary-hover: light-dark(
+    color-mix(in srgb, var(--primary) 85%, black 15%),
+    color-mix(in srgb, var(--primary) 88%, black 12%)
+  );
+  --primary-active: light-dark(
+    color-mix(in srgb, var(--primary) 72%, black 28%),
+    color-mix(in srgb, var(--primary) 76%, black 24%)
+  );
   --on-primary: #fff;
   --on-primary-hover: #fff;
   --on-primary-active: #fff;
   --primary-foreground: var(--on-primary);
+  --link: light-dark(#06c, #07f);
+  --link-hover: light-dark(
+    color-mix(in srgb, var(--link) 85%, black 15%),
+    color-mix(in srgb, var(--link) 82%, white 18%)
+  );
+  --link-active: light-dark(
+    color-mix(in srgb, var(--link) 72%, black 28%),
+    color-mix(in srgb, var(--link) 72%, black 28%)
+  );
 
   /* Secondary */
-  --secondary: light-dark(#f1f5f9, #262626);
-  --secondary-foreground: light-dark(#334155, #e5e5e5);
-  --secondary-hover: light-dark(#e2e8f0, #404040);
-  --secondary-active: light-dark(#cbd5e0, #525252);
+  --secondary: light-dark(#f1f5f9, #161619);
+  --secondary-foreground: light-dark(#334155, #e4e4e7);
+  --secondary-hover: light-dark(#e2e8f0, #1f1f23);
+  --secondary-active: light-dark(#cbd5e0, #27272a);
 
   /* Destructive */
   --destructive: #dc2626;
@@ -154,17 +171,17 @@
 
   /* Legacy color mappings for backward compatibility during migration */
   --white: light-dark(#fff, #fafafa);
-  --black: light-dark(#171717, #121212);
+  --black: light-dark(#171717, #0a0a0c);
   --trueBlack: hsl(5deg 92% 1% / 83%);
-  --gray-50: light-dark(#f8fafc, #121212);
-  --gray-100: light-dark(#f1f5f9, #1a1a1a);
-  --gray-200: light-dark(#e2e8f0, #1e1e1e);
-  --gray-300: light-dark(#cbd5e0, #2a2a2a);
-  --gray-400: light-dark(#94a3b8, #404040);
-  --gray-500: light-dark(#64748b, #525252);
-  --gray-600: light-dark(#475569, #737373);
-  --gray-700: light-dark(#334155, #a3a3a3);
-  --gray-800: light-dark(#1e293b, #d4d4d4);
+  --gray-50: light-dark(#f8fafc, #0a0a0c);
+  --gray-100: light-dark(#f1f5f9, #0f0f12);
+  --gray-200: light-dark(#e2e8f0, #131316);
+  --gray-300: light-dark(#cbd5e0, #1a1a1e);
+  --gray-400: light-dark(#94a3b8, #27272a);
+  --gray-500: light-dark(#64748b, #3f3f46);
+  --gray-600: light-dark(#475569, #71717a);
+  --gray-700: light-dark(#334155, #a1a1aa);
+  --gray-800: light-dark(#1e293b, #d4d4d8);
   --gray-900: light-dark(#0f172a, #fafafa);
   --primary-50: light-dark(#eff6ff, #1e3a8a);
   --primary-100: light-dark(#dbeafe, #1e40af);
@@ -225,4 +242,7 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
+
+  --gradientPink: #18181b;
+  --gradientTeal: #222226;
 }

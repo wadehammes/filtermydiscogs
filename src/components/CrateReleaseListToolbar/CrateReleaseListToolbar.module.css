@@ -59,7 +59,7 @@
 }
 
 .checkbox {
-  accent-color: var(--primary);
+  accent-color: var(--link);
   cursor: pointer;
   height: 0.875rem;
   width: 0.875rem;

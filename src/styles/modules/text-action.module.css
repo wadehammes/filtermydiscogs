@@ -19,14 +19,14 @@
 
 .primary {
   composes: base;
-  color: var(--primary);
+  color: var(--link);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
 
   &:hover:not(:disabled) {
-    color: var(--primary-hover);
+    color: var(--link-hover);
     text-decoration-thickness: 2px;
   }
 }
@@ -44,7 +44,7 @@
 
 .meta {
   composes: base;
-  color: var(--primary);
+  color: var(--link);
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-xs);
   font-weight: var(--font-normal);
@@ -54,7 +54,7 @@
   white-space: nowrap;
 
   &:hover:not(:disabled) {
-    color: var(--primary-hover);
+    color: var(--link-hover);
   }
 }
 
@@ -78,7 +78,7 @@
   transition: color var(--transition-normal);
 
   &:hover:not(:disabled) {
-    color: var(--primary);
+    color: var(--link);
     text-decoration: underline;
   }
 }
@@ -89,7 +89,7 @@
   text-decoration: none;
 
   &:hover:not(:disabled) {
-    color: var(--primary);
+    color: var(--link);
     text-decoration: underline;
   }
 }
@@ -102,7 +102,7 @@
   text-decoration: none;
 
   &:hover:not(:disabled) {
-    color: var(--primary);
+    color: var(--link);
     text-decoration: underline;
   }
 }
@@ -115,7 +115,7 @@
   text-underline-offset: 2px;
 
   &:hover:not(:disabled) {
-    color: var(--primary);
+    color: var(--link);
   }
 }
 
@@ -128,6 +128,6 @@
   text-underline-offset: 2px;
 
   &:hover:not(:disabled) {
-    color: var(--primary);
+    color: var(--link);
   }
 }

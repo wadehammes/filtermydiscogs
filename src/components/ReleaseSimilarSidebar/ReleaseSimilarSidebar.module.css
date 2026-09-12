@@ -10,7 +10,7 @@
 }
 
 .sidebarInline {
-  background: var(--card);
+  background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   display: flex;
@@ -49,6 +49,8 @@
 }
 
 .releasesListAside {
+  --in-crate-ring-gap: var(--background);
+
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden auto;
@@ -61,6 +63,8 @@
 }
 
 .releasesListInline {
+  --in-crate-ring-gap: var(--background);
+
   padding: var(--space-3) var(--space-4) var(--space-4);
 }
 

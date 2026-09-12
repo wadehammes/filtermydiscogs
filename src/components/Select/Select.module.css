@@ -39,12 +39,12 @@
 
   &:focus,
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--link);
     outline: none;
   }
 
   &[data-popup-open] {
-    border-color: var(--primary);
+    border-color: var(--link);
   }
 
   &:disabled {
@@ -147,7 +147,7 @@
 
   &:hover,
   &[data-highlighted] {
-    background: color-mix(in srgb, var(--primary) 10%, var(--background));
+    background: color-mix(in srgb, var(--primary) 14%, var(--popover));
   }
 
   &:focus-visible {
@@ -156,13 +156,13 @@
   }
 
   &[data-selected] {
-    background: color-mix(in srgb, var(--primary) 15%, var(--background));
-    color: var(--primary);
+    background: color-mix(in srgb, var(--link) 12%, var(--popover));
+    color: var(--link);
 
     &:hover,
     &[data-highlighted] {
-      background: color-mix(in srgb, var(--primary) 20%, var(--background));
-      color: var(--primary);
+      background: color-mix(in srgb, var(--link) 18%, var(--popover));
+      color: var(--link);
     }
   }
 }

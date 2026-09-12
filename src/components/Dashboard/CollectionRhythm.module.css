@@ -215,7 +215,7 @@
 .artistCount {
   background: color-mix(in srgb, var(--primary) 16%, transparent);
   border-radius: var(--radius-full);
-  color: var(--primary);
+  color: var(--link);
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-xs);
   font-weight: var(--font-semibold);

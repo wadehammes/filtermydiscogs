@@ -22,7 +22,7 @@
 .viewsIcon {
   align-items: center;
   composes: pulse from "../../styles/modules/skeleton-pulse.module.css";
-  color: var(--primary);
+  color: var(--link);
   display: inline-flex;
   flex-shrink: 0;
   height: 1rem;

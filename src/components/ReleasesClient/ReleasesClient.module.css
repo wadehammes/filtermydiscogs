@@ -96,7 +96,7 @@
     --surface: var(--primary-hover);
 
     background: var(--primary-hover);
-    border-color: var(--primary-hover);
+    border-color: var(--link-hover);
     color: var(--on-primary-hover);
     transform: translateY(-2px);
   }
@@ -161,7 +161,7 @@
   align-items: center;
   background: var(--primary-foreground);
   border-radius: var(--radius-full);
-  color: var(--primary);
+  color: var(--link);
   display: flex;
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
