@@ -163,6 +163,7 @@ export const CrateSetMarkerRow = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...labelFieldProps}
+          data-1p-ignore
         />
         <span className={styles.rule} aria-hidden="true" />
       </div>

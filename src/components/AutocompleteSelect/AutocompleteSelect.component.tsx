@@ -260,6 +260,7 @@ const AutocompleteSelectComponent = ({
               <div className={styles.searchContainer}>
                 <Combobox.Input
                   className={styles.searchInput}
+                  data-1p-ignore
                   placeholder={`Search ${label.toLowerCase()}...`}
                 />
               </div>

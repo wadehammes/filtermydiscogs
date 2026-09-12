@@ -178,6 +178,7 @@ export const CrateSetNotesScratchpad = ({
         aria-describedby="crate-set-notes-length"
         aria-invalid={isNotesOverLimit ? true : undefined}
         {...notesFieldProps}
+        data-1p-ignore
       />
       <div className={styles.footer}>
         <div className={styles.footerTrailing}>

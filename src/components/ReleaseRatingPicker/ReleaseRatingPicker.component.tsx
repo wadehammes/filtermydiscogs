@@ -70,6 +70,7 @@ export const ReleaseRatingPicker = ({
             }}
           >
             <input
+              data-1p-ignore
               id={inputId}
               type="radio"
               name={radioName}

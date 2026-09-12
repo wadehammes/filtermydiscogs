@@ -97,6 +97,7 @@ export const AboutDonationSection = () => {
                 <input
                   {...register("customAmountDollars")}
                   className={validatedFieldClass(styles.donationCustomInput)}
+                  data-1p-ignore
                   disabled={isSubmitting}
                   id="donation-custom-amount"
                   inputMode="decimal"

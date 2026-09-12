@@ -158,6 +158,7 @@ export const SearchBar = ({
           <SearchIcon />
         </span>
         <input
+          data-1p-ignore
           ref={(element) => {
             registerRef(element);
             inputRef.current = element;

@@ -70,6 +70,7 @@ export const CrateShareControls = ({
 
   const shareSwitch = (
     <input
+      data-1p-ignore
       id={shareSwitchId}
       type="checkbox"
       role="switch"

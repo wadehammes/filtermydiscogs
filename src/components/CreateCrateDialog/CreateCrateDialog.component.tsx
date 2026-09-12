@@ -122,6 +122,7 @@ export const CreateCrateDialog = ({
             autoComplete="off"
             disabled={isSubmitting}
             {...register("name")}
+            data-1p-ignore
           />
         </FormDialog.Field>
         {showSetAsDefault ? (

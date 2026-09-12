@@ -57,6 +57,7 @@ export const CrateReleaseListToolbar = ({
           </button>
           <label className={styles.checkboxLabel}>
             <input
+              data-1p-ignore
               type="checkbox"
               className={styles.checkbox}
               checked={hidePackedItems}
