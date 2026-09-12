@@ -1,14 +1,3 @@
-.skeletonText,
-.skeletonTitle,
-.skeletonChartBody,
-.skeletonHorizontalBarLabel,
-.skeletonHorizontalBar,
-.skeletonCircle,
-.skeletonLegendItem,
-.skeletonListItem {
-  composes: pulsesurface from "../../styles/modules/skeleton-pulse.module.css";
-}
-
 .skeletonCard {
   composes: card from "../../styles/modules/dashboard-card.module.css";
   display: flex;

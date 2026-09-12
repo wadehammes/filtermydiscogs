@@ -1,8 +1,12 @@
+import classNames from "classnames";
 import BookmarkIcon from "src/styles/icons/bookmark-thin.svg";
 import ChevronIcon from "src/styles/icons/chevron-right-thin.svg";
 import SearchIcon from "src/styles/icons/search-thin.svg";
+import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import filtersBarStyles from "./FiltersBar.module.css";
 import styles from "./FiltersBarSkeleton.module.css";
+
+const pulseSurface = skeletonPulseStyles.pulsesurface;
 
 export function FiltersBarSkeleton() {
   return (
@@ -16,10 +20,12 @@ export function FiltersBarSkeleton() {
           data-testid="fmdFilterViewsMenu"
           aria-hidden
         >
-          <span className={styles.viewsIcon}>
+          <span
+            className={classNames(styles.viewsIcon, skeletonPulseStyles.pulse)}
+          >
             <BookmarkIcon />
           </span>
-          <div className={styles.viewsLine} />
+          <div className={classNames(styles.viewsLine, pulseSurface)} />
           <span className={styles.chevron}>
             <ChevronIcon />
           </span>
@@ -28,7 +34,9 @@ export function FiltersBarSkeleton() {
           <span className={styles.searchIcon}>
             <SearchIcon />
           </span>
-          <div className={styles.placeholderLineWide} />
+          <div
+            className={classNames(styles.placeholderLineWide, pulseSurface)}
+          />
         </div>
         <div className={filtersBarStyles.styleFilterGroup}>
           <div data-testid="fmdAutocompleteSelect" aria-hidden>
@@ -37,7 +45,9 @@ export function FiltersBarSkeleton() {
               data-filter-control-trigger
               aria-hidden
             >
-              <div className={styles.placeholderLineWide} />
+              <div
+                className={classNames(styles.placeholderLineWide, pulseSurface)}
+              />
               <span className={styles.chevron}>
                 <ChevronIcon />
               </span>
@@ -49,33 +59,9 @@ export function FiltersBarSkeleton() {
               data-filter-control-trigger
               aria-hidden
             >
-              <div className={styles.placeholderLine} />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={filtersBarStyles.styleFilterGroup}>
-          <div data-testid="fmdAutocompleteSelect" aria-hidden>
-            <div
-              className={styles.styleFilterPrimaryShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
-              <div className={styles.placeholderLineWide} />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
-            </div>
-          </div>
-          <div data-testid="fmdSelect" aria-hidden>
-            <div
-              className={styles.operatorShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
-              <div className={styles.placeholderLine} />
+              <div
+                className={classNames(styles.placeholderLine, pulseSurface)}
+              />
               <span className={styles.chevron}>
                 <ChevronIcon />
               </span>
@@ -89,7 +75,9 @@ export function FiltersBarSkeleton() {
               data-filter-control-trigger
               aria-hidden
             >
-              <div className={styles.placeholderLineWide} />
+              <div
+                className={classNames(styles.placeholderLineWide, pulseSurface)}
+              />
               <span className={styles.chevron}>
                 <ChevronIcon />
               </span>
@@ -101,7 +89,39 @@ export function FiltersBarSkeleton() {
               data-filter-control-trigger
               aria-hidden
             >
-              <div className={styles.placeholderLine} />
+              <div
+                className={classNames(styles.placeholderLine, pulseSurface)}
+              />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className={filtersBarStyles.styleFilterGroup}>
+          <div data-testid="fmdAutocompleteSelect" aria-hidden>
+            <div
+              className={styles.styleFilterPrimaryShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div
+                className={classNames(styles.placeholderLineWide, pulseSurface)}
+              />
+              <span className={styles.chevron}>
+                <ChevronIcon />
+              </span>
+            </div>
+          </div>
+          <div data-testid="fmdSelect" aria-hidden>
+            <div
+              className={styles.operatorShell}
+              data-filter-control-trigger
+              aria-hidden
+            >
+              <div
+                className={classNames(styles.placeholderLine, pulseSurface)}
+              />
               <span className={styles.chevron}>
                 <ChevronIcon />
               </span>
@@ -109,7 +129,7 @@ export function FiltersBarSkeleton() {
           </div>
         </div>
         <div className={styles.selectShell} aria-hidden>
-          <div className={styles.placeholderLine} />
+          <div className={classNames(styles.placeholderLine, pulseSurface)} />
           <span className={styles.chevron}>
             <ChevronIcon />
           </span>
