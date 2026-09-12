@@ -107,6 +107,15 @@
   }
 }
 
+.entitylinktitletruncated {
+  composes: entitylinktitle;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .underlinedlink {
   composes: base;
   color: var(--foreground);

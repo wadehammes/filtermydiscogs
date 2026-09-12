@@ -99,8 +99,8 @@ export const ReleasesTableArtistTitleCell = ({
             href={releaseUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={textActionStyles.entitylinktitle}
-            title="View release on Discogs"
+            className={textActionStyles.entitylinktitletruncated}
+            title={title}
             onClick={(event) => {
               event.stopPropagation();
             }}
@@ -108,7 +108,12 @@ export const ReleasesTableArtistTitleCell = ({
             {title}
           </a>
         ) : (
-          <span className={textActionStyles.entitylinktitle}>{title}</span>
+          <span
+            className={textActionStyles.entitylinktitletruncated}
+            title={title}
+          >
+            {title}
+          </span>
         )}
       </div>
     </div>
