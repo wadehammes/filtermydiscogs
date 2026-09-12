@@ -9,6 +9,7 @@ import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 import XIcon from "src/styles/icons/x-thin.svg";
+import tableRowActionStyles from "src/styles/modules/table-row-actions.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./BottomDrawer.module.css";
 
@@ -69,24 +70,20 @@ export const BottomDrawer = ({
     return null;
   }
 
-  const closeButtonClassName =
-    resolvedClosePlacement === "header"
-      ? styles.headerCloseButton
-      : styles.floatingShellClose;
-
-  const closeIconClassName =
-    resolvedClosePlacement === "header"
-      ? styles.headerCloseIcon
-      : styles.closeIcon;
-
   const closeButton = (
     <IconButton
       variant="close"
-      className={closeButtonClassName}
+      className={classNames(
+        resolvedClosePlacement === "header"
+          ? tableRowActionStyles.actionButton
+          : tableRowActionStyles.actionbuttontoggle,
+        resolvedClosePlacement === "header"
+          ? styles.headerCloseButton
+          : styles.floatingShellClose,
+      )}
       onClick={onClose}
       aria-label={closeButtonAriaLabel}
       data-testid="fmdBottomDrawerCloseButton"
-      iconClassName={closeIconClassName}
     >
       <XIcon />
     </IconButton>

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import bottomDrawerStyles from "src/components/BottomDrawer/BottomDrawer.module.css";
 import { BottomDrawerPageObject } from "src/components/BottomDrawer/BottomDrawer.po";
+import tableRowActionStyles from "src/styles/modules/table-row-actions.module.css";
 import { screen } from "test-utils";
 
 let po: BottomDrawerPageObject;
@@ -59,9 +60,15 @@ describe("BottomDrawer", () => {
       closeButtonAriaLabel: "Close test drawer",
     });
 
-    expect(
-      screen.getByRole("button", { name: "Close test drawer" }),
-    ).toBeInTheDocument();
+    const closeButton = screen.getByRole("button", {
+      name: "Close test drawer",
+    });
+
+    expect(closeButton).toBeInTheDocument();
+    expect(closeButton.className).toContain(tableRowActionStyles.actionButton);
+    expect(closeButton.className).toContain(
+      bottomDrawerStyles.headerCloseButton,
+    );
     expect(
       screen.getAllByRole("button", { name: "Close test drawer" }),
     ).toHaveLength(1);
@@ -233,6 +240,9 @@ describe("BottomDrawer", () => {
     const headerAction = screen.getByRole("button", { name: "Header action" });
 
     expect(shell.firstElementChild).toBe(closeButton);
+    expect(closeButton.className).toContain(
+      tableRowActionStyles.actionbuttontoggle,
+    );
     expect(closeButton.className).toContain("floatingShellClose");
     expect(shell.className).toContain("drawerShellWithFloatingClose");
     expect(headerAction.closest('[class*="headerChrome"]')).not.toBeNull();
