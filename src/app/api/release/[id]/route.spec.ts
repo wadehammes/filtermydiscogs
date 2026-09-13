@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { GET } from "src/app/api/release/[id]/route";
 import { DISCOGS_SESSION_COOKIE } from "src/lib/auth-request";
+import { DiscogsThrottleQueueError } from "src/lib/discogs-request-throttle";
 import {
   clearCachedIdentity,
   getIdentityCacheKey,
@@ -122,6 +123,30 @@ describe("GET /api/release/[id]", () => {
     expect(response.headers.get("Cache-Control")).toBe(
       "public, max-age=3600, stale-while-revalidate=7200",
     );
+  });
+
+  it("returns 503 with Retry-After when the Discogs throttle queue times out", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
+    jest
+      .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
+      .mockRejectedValue(new DiscogsThrottleQueueError());
+
+    const response = await GET(
+      createRequest(RELEASE_ID, authenticatedCookies),
+      {
+        params: Promise.resolve({ id: RELEASE_ID }),
+      },
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("5");
+    await expect(response.json()).resolves.toEqual({
+      error: "Discogs request queue is busy; retry shortly",
+    });
   });
 
   it("returns 500 when Discogs request fails", async () => {

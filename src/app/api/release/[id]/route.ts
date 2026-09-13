@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
+import {
+  discogsThrottleQueueResponseInit,
+  isDiscogsThrottleQueueError,
+} from "src/lib/discogs-api-error";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -67,6 +71,12 @@ export async function GET(
     });
   } catch (error) {
     rethrowNextInternalError(error);
+    if (isDiscogsThrottleQueueError(error)) {
+      return NextResponse.json(
+        { error: "Discogs request queue is busy; retry shortly" },
+        discogsThrottleQueueResponseInit(error),
+      );
+    }
     console.error("Release API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch release" },

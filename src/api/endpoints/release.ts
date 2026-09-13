@@ -1,4 +1,4 @@
-import { ApiFetchError } from "src/api/apiFetchError";
+import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
 import type { DiscogsReleaseDetail, DiscogsSearchResponse } from "src/types";
 
 export const fetchDiscogsRelease = async (
@@ -14,7 +14,11 @@ export const fetchDiscogsRelease = async (
     });
 
     if (!response.ok) {
-      throw new ApiFetchError(response.status);
+      throw new ApiFetchError(
+        response.status,
+        undefined,
+        parseRetryAfterMs(response),
+      );
     }
 
     return response.json();
