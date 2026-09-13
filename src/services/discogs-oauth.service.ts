@@ -60,6 +60,7 @@ class DiscogsOAuthService {
   private consumerKey: string;
   private consumerSecret: string;
   private callbackUrl: string;
+  private inFlightGetRequests = new Map<string, Promise<unknown>>();
 
   constructor() {
     this.consumerKey = process.env.DISCOGS_CONSUMER_KEY || "";
@@ -126,16 +127,62 @@ class DiscogsOAuthService {
     additionalData: AuthenticatedRequestData = {},
     options: { skipThrottle?: boolean } = {},
   ): Promise<unknown> {
-    try {
-      let requestUrl = url;
-      if (method === "GET" && Object.keys(additionalData).length > 0) {
-        const urlObj = new URL(url);
-        Object.entries(additionalData).forEach(([key, value]) => {
-          urlObj.searchParams.append(key, String(value));
-        });
-        requestUrl = urlObj.toString();
-      }
+    let requestUrl = url;
+    if (method === "GET" && Object.keys(additionalData).length > 0) {
+      const urlObj = new URL(url);
+      Object.entries(additionalData).forEach(([key, value]) => {
+        urlObj.searchParams.append(key, String(value));
+      });
+      requestUrl = urlObj.toString();
+    }
 
+    const inFlightKey =
+      method === "GET" && !options.skipThrottle
+        ? `${requestUrl}:${oauthToken || "consumer"}`
+        : null;
+
+    if (inFlightKey) {
+      const inFlight = this.inFlightGetRequests.get(inFlightKey);
+      if (inFlight) {
+        return inFlight;
+      }
+    }
+
+    const request = this.executeAuthenticatedRequest({
+      requestUrl,
+      method,
+      oauthToken,
+      oauthTokenSecret,
+      additionalData,
+      options,
+    });
+
+    if (inFlightKey) {
+      this.inFlightGetRequests.set(inFlightKey, request);
+      void request.finally(() => {
+        this.inFlightGetRequests.delete(inFlightKey);
+      });
+    }
+
+    return request;
+  }
+
+  private async executeAuthenticatedRequest({
+    requestUrl,
+    method,
+    oauthToken,
+    oauthTokenSecret,
+    additionalData,
+    options,
+  }: {
+    requestUrl: string;
+    method: string;
+    oauthToken: string;
+    oauthTokenSecret: string;
+    additionalData: AuthenticatedRequestData;
+    options: { skipThrottle?: boolean };
+  }): Promise<unknown> {
+    try {
       const oauthHeaders = this.getOAuthHeaders(
         requestUrl,
         method,

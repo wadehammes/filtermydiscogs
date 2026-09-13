@@ -1,7 +1,11 @@
+import { isDiscogsThrottleQueueError } from "src/lib/discogs-request-throttle";
+
 export type DiscogsApiError = Error & {
   status?: number;
   retryAfterSeconds?: number;
 };
+
+export { isDiscogsThrottleQueueError };
 
 export const DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS = 60;
 
@@ -36,6 +40,22 @@ export function discogsRateLimitResponseInit(error: unknown): {
   return {
     headers: {
       "Retry-After": String(getDiscogsRateLimitRetryAfterSeconds(error)),
+    },
+  };
+}
+
+export function discogsThrottleQueueResponseInit(error: unknown): {
+  status: 503;
+  headers: { "Retry-After": string };
+} {
+  const retryAfterSeconds = isDiscogsThrottleQueueError(error)
+    ? error.retryAfterSeconds
+    : 5;
+
+  return {
+    status: 503,
+    headers: {
+      "Retry-After": String(retryAfterSeconds),
     },
   };
 }

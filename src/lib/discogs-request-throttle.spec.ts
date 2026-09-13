@@ -69,9 +69,8 @@ describe("discogs-request-throttle", () => {
     process.env.DISCOGS_MIN_REQUEST_INTERVAL_MS = "50";
     jest.resetModules();
 
-    const { runThrottledDiscogsRequest } = await import(
-      "./discogs-request-throttle"
-    );
+    const { DiscogsThrottleQueueError, runThrottledDiscogsRequest } =
+      await import("./discogs-request-throttle");
 
     const stuck = runThrottledDiscogsRequest(async () => {
       await new Promise<void>(() => undefined);
@@ -81,6 +80,6 @@ describe("discogs-request-throttle", () => {
 
     await expect(
       runThrottledDiscogsRequest(async () => "queued"),
-    ).rejects.toThrow("Discogs throttle queue timed out");
+    ).rejects.toBeInstanceOf(DiscogsThrottleQueueError);
   });
 });
