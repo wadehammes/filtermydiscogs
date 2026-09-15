@@ -64,7 +64,7 @@
     "@tanstack/react-charts": "^0.16.2",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-table": "^9.2.4",
-    "@tanstack/react-virtual": "^3.14.12",
+    "@tanstack/react-virtual": "^3.14.13",
     "classnames": "^2.5.1",
     "d3-shape": "^3.2.0",
     "jotai": "^2.20.3",
@@ -80,7 +80,7 @@
     "stripe": "^22.6.2",
     "usehooks-ts": "^3.1.1",
     "youtube-video-element": "^1.9.0",
-    "zod": "^4.6.4"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.13",

@@ -51,7 +51,8 @@
 }
 
 .crateSelector {
-  flex: 1 1 12rem;
+  flex: 1 1 min(100%, 18rem);
+  max-width: 100%;
   min-width: 0;
 
   [data-testid="fmdSelect"],
@@ -60,9 +61,13 @@
   }
 
   @media (width >= 768px) {
-    flex: 0 1 16rem;
-    max-width: 16rem;
+    flex: 1 1 22rem;
+    max-width: min(100%, 28rem);
     width: auto;
+  }
+
+  @media (width >= 1280px) {
+    max-width: min(100%, 34rem);
   }
 }
 
