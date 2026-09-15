@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useDraggablePanel } from "src/hooks/useDraggablePanel.hook";
+import { DEFAULT_VIDEO_PANEL_INITIAL_SCALE } from "src/utils/videoPanelLayoutStorage";
 import { act, render, renderHook, screen, waitFor } from "test-utils";
 
 function DraggablePanelHarness({
@@ -63,13 +64,13 @@ describe("useDraggablePanel", () => {
     });
   });
 
-  it("returns a null position and full scale by default", () => {
+  it("returns a null position and the default initial scale by default", () => {
     const { result } = renderHook(() =>
       useDraggablePanel({ enabled: true, storageKey: "test-panel-layout" }),
     );
 
     expect(result.current.position).toBeNull();
-    expect(result.current.scale).toBe(1);
+    expect(result.current.scale).toBe(DEFAULT_VIDEO_PANEL_INITIAL_SCALE);
     expect(result.current.isDragging).toBe(false);
     expect(result.current.isResizing).toBe(false);
   });
@@ -152,7 +153,9 @@ describe("useDraggablePanel", () => {
       "data-position",
       "null",
     );
-    expect(screen.getByTestId("fmdDraggablePanelScale")).toHaveTextContent("1");
+    expect(screen.getByTestId("fmdDraggablePanelScale")).toHaveTextContent(
+      String(DEFAULT_VIDEO_PANEL_INITIAL_SCALE),
+    );
     expect(sessionStorage.getItem("test-panel-layout")).toBeNull();
   });
 });

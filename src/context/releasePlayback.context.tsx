@@ -86,6 +86,7 @@ import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQ
 import { getSimilarReleases } from "src/utils/similarReleases";
 import {
   enableYoutubeIframeListening,
+  HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
   isYoutubeEmbedOrigin,
   parseYoutubePlayerStateFromMessage,
   YOUTUBE_PLAYER_STATE_CUED,
@@ -697,6 +698,74 @@ export const ReleasePlaybackProvider = ({
     };
   }, [clearPlayFromGestureRetries]);
 
+  const handlePlaybackEnded = useCallback(() => {
+    if (!isPlayingRef.current || isPausedRef.current) {
+      return;
+    }
+
+    if (queueRef.current.length === 0) {
+      void extendQueueTailRef.current().then((extended) => {
+        if (
+          extended &&
+          isPlayingRef.current &&
+          !isPausedRef.current &&
+          queueRef.current.length > 0
+        ) {
+          playNextRef.current();
+        }
+      });
+      return;
+    }
+
+    playNextRef.current();
+  }, []);
+
+  const handleYoutubeEmbedPlayerState = useCallback(
+    (playerState: number) => {
+      if (playerState === YOUTUBE_PLAYER_STATE_ENDED) {
+        handlePlaybackEnded();
+        return;
+      }
+
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_PAUSED &&
+        isPlayingRef.current &&
+        !isPausedRef.current
+      ) {
+        pendingPlayFromGestureRef.current = false;
+        clearPlayFromGestureRetries();
+        setIsPaused(true);
+        return;
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
+        isPlayingRef.current &&
+        isPausedRef.current
+      ) {
+        setIsPaused(false);
+        return;
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_CUED &&
+        isPlayingRef.current &&
+        !isPausedRef.current &&
+        pendingPlayFromGestureRef.current
+      ) {
+        postYoutubePlayerCommand({
+          iframe: playbackIframeRef.current,
+          command: "playVideo",
+        });
+      }
+    },
+    [clearPlayFromGestureRetries, handlePlaybackEnded],
+  );
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState !== "visible") {
@@ -720,6 +789,29 @@ export const ReleasePlaybackProvider = ({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [schedulePlayFromGestureAttempts]);
+
+  useEffect(() => {
+    if (!isPlaying || isPaused) {
+      return;
+    }
+
+    const pollHiddenTabPlayerState = () => {
+      if (document.visibilityState !== "hidden") {
+        return;
+      }
+
+      requestYoutubePlayerState(playbackIframeRef.current);
+    };
+
+    const intervalId = window.setInterval(
+      pollHiddenTabPlayerState,
+      HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+    );
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isPlaying, isPaused]);
 
   useEffect(() => {
     if (
@@ -776,66 +868,7 @@ export const ReleasePlaybackProvider = ({
         return;
       }
 
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PAUSED &&
-        isPlayingRef.current &&
-        !isPausedRef.current
-      ) {
-        if (document.visibilityState === "hidden") {
-          return;
-        }
-
-        pendingPlayFromGestureRef.current = false;
-        clearPlayFromGestureRetries();
-        setIsPaused(true);
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
-        isPlayingRef.current &&
-        isPausedRef.current
-      ) {
-        setIsPaused(false);
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_CUED &&
-        isPlayingRef.current &&
-        !isPausedRef.current &&
-        pendingPlayFromGestureRef.current
-      ) {
-        postYoutubePlayerCommand({
-          iframe: playbackIframeRef.current,
-          command: "playVideo",
-        });
-        return;
-      }
-
-      if (playerState !== YOUTUBE_PLAYER_STATE_ENDED) {
-        return;
-      }
-
-      if (!isPlayingRef.current || isPausedRef.current) {
-        return;
-      }
-
-      if (queueRef.current.length === 0) {
-        void extendQueueTailRef.current().then((extended) => {
-          if (
-            extended &&
-            isPlayingRef.current &&
-            !isPausedRef.current &&
-            queueRef.current.length > 0
-          ) {
-            playNextRef.current();
-          }
-        });
-        return;
-      }
-
-      playNextRef.current();
+      handleYoutubeEmbedPlayerState(playerState);
     };
 
     window.addEventListener("message", handleMessage);
@@ -843,7 +876,7 @@ export const ReleasePlaybackProvider = ({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [clearPlayFromGestureRetries]);
+  }, [handleYoutubeEmbedPlayerState]);
 
   useEffect(() => {
     if (!isPlaying || previewVideo !== null) {

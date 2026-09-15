@@ -12,6 +12,7 @@ export interface VideoPanelLayout {
 }
 
 export const DEFAULT_VIDEO_PANEL_SCALE = 1;
+export const DEFAULT_VIDEO_PANEL_INITIAL_SCALE = 0.75;
 
 const isVideoPanelPosition = (value: unknown): value is VideoPanelPosition => {
   if (!value || typeof value !== "object") {
@@ -51,23 +52,23 @@ export const readVideoPanelLayout = (
   }
 
   try {
-    const raw = sessionStorage.getItem(storageKey);
+    const storedLayoutJson = sessionStorage.getItem(storageKey);
 
-    if (!raw) {
+    if (!storedLayoutJson) {
       return null;
     }
 
-    const parsed: unknown = JSON.parse(raw);
+    const parsedLayout: unknown = JSON.parse(storedLayoutJson);
 
-    if (isVideoPanelPosition(parsed)) {
-      return { position: parsed, scale: DEFAULT_VIDEO_PANEL_SCALE };
+    if (isVideoPanelPosition(parsedLayout)) {
+      return { position: parsedLayout, scale: DEFAULT_VIDEO_PANEL_SCALE };
     }
 
-    if (!isVideoPanelLayout(parsed)) {
+    if (!isVideoPanelLayout(parsedLayout)) {
       return null;
     }
 
-    return parsed;
+    return parsedLayout;
   } catch {
     return null;
   }
