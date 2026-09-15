@@ -7,6 +7,7 @@ import {
 } from "react";
 import {
   clearVideoPanelLayout,
+  DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
   DEFAULT_VIDEO_PANEL_SCALE,
   readVideoPanelLayout,
   type VideoPanelLayout,
@@ -90,7 +91,7 @@ export const useDraggablePanel = ({
     scale: number;
   }>({
     position: null,
-    scale: DEFAULT_MAX_SCALE,
+    scale: DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
   });
   const storedLayout = storageKey ? readVideoPanelLayout(storageKey) : null;
   const [hasHydratedLayout, setHasHydratedLayout] = useState(
@@ -99,7 +100,7 @@ export const useDraggablePanel = ({
   const [position, setPosition] = useState<VideoPanelPosition | null>(null);
   const [scale, setScale] = useState(() =>
     clampScale({
-      scale: storedLayout?.scale ?? DEFAULT_MAX_SCALE,
+      scale: storedLayout?.scale ?? DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
       minScale,
       maxScale,
     }),
@@ -183,10 +184,10 @@ export const useDraggablePanel = ({
   const resetLayout = useCallback(() => {
     liveLayoutRef.current = {
       position: null,
-      scale: DEFAULT_MAX_SCALE,
+      scale: DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
     };
     setPosition(null);
-    setScale(DEFAULT_MAX_SCALE);
+    setScale(DEFAULT_VIDEO_PANEL_INITIAL_SCALE);
 
     const panel = panelRef.current;
 
@@ -346,8 +347,18 @@ export const useDraggablePanel = ({
         };
         applyLayoutToPanel(panel, liveLayoutRef.current);
         setPosition(clamped);
-      } else if (storageKey) {
-        clearVideoPanelLayout(storageKey);
+      } else {
+        liveLayoutRef.current = {
+          position: null,
+          scale: DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
+        };
+        applyLayoutToPanel(panel, liveLayoutRef.current);
+        setPosition(null);
+        setScale(DEFAULT_VIDEO_PANEL_INITIAL_SCALE);
+
+        if (storageKey) {
+          clearVideoPanelLayout(storageKey);
+        }
       }
 
       hasHydratedLayoutRef.current = true;
@@ -502,7 +513,7 @@ export const useDraggablePanel = ({
       return;
     }
 
-    if (position === null && scale === DEFAULT_MAX_SCALE) {
+    if (position === null && scale === DEFAULT_VIDEO_PANEL_INITIAL_SCALE) {
       clearVideoPanelLayout(storageKey);
       return;
     }

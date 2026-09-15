@@ -3,6 +3,8 @@ export const YOUTUBE_PLAYER_STATE_PLAYING = 1;
 export const YOUTUBE_PLAYER_STATE_PAUSED = 2;
 export const YOUTUBE_PLAYER_STATE_CUED = 5;
 
+export const HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS = 1000;
+
 const YOUTUBE_EMBED_ORIGINS = new Set([
   "https://www.youtube.com",
   "https://www.youtube-nocookie.com",

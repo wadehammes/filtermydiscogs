@@ -28,6 +28,14 @@ describe("ReleasePlaybackVideoPanel.module.css", () => {
     expect(css).toContain("--video-panel-chrome-height: 1.75rem");
     expect(css).not.toContain(".mobileCloseBar");
   });
+
+  it("reveals the floating desktop panel from the bottom-right corner", () => {
+    const css = readFileSync(VIDEO_PANEL_CSS_PATH, "utf8");
+
+    expect(css).toContain("animation-name: videoPanelExpandDesktop");
+    expect(css).toContain("transform-origin: bottom right");
+    expect(css).toContain("@keyframes videoPanelExpandDesktop");
+  });
 });
 
 describe("playback-dock.css", () => {

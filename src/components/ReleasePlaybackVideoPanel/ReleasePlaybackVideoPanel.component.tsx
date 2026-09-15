@@ -80,25 +80,29 @@ export const ReleasePlaybackVideoPanel = ({
         <div
           className={classNames(styles.panelChrome, {
             [styles.panelChromeMobile]: !useFloatingLayout,
+            [styles.panelChromeDraggable]: useFloatingLayout,
           })}
+          {...(useFloatingLayout
+            ? {
+                onPointerDown: handlePointerDown,
+                onDoubleClick: resetLayout,
+                "aria-label":
+                  "Drag video panel. Double-click to reset position and size.",
+                "data-testid": "fmdReleasePlaybackVideoPanelHandle",
+              }
+            : {})}
         >
           {useFloatingLayout ? (
-            <button
-              type="button"
-              className={styles.dragHandle}
-              onPointerDown={handlePointerDown}
-              onDoubleClick={resetLayout}
-              aria-label="Drag video panel. Double-click to reset position and size."
-              data-testid="fmdReleasePlaybackVideoPanelHandle"
-            >
-              <span className={styles.dragHandleGrip} aria-hidden />
-            </button>
+            <span className={styles.dragHandleGrip} aria-hidden />
           ) : null}
           {onClose ? (
             <IconButton
               variant="close"
               className={styles.panelCloseButton}
               onClick={onClose}
+              onPointerDown={(event) => {
+                event.stopPropagation();
+              }}
               aria-label="Close video panel"
               data-testid="fmdReleasePlaybackVideoPanelCloseButton"
             >

@@ -345,6 +345,56 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.activeVideoId).toBe("abc12345678");
   });
 
+  it("polls player state in a hidden tab and advances when the embed reports ended", async () => {
+    jest.useFakeTimers();
+    setDocumentVisibilityState("hidden");
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    mockRequestYoutubePlayerState.mockClear();
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(mockRequestYoutubePlayerState.mock.calls[0]?.[0]).toBe(iframe);
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+        event: "infoDelivery",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+
+    jest.useRealTimers();
+    setDocumentVisibilityState("visible");
+  });
+
   it("ignores background-tab pause events so the queue can advance while hidden", async () => {
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;
