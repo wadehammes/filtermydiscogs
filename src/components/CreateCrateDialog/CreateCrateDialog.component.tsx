@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
@@ -10,6 +9,7 @@ import {
   type CreateCrateFormValues,
   createCrateFormSchema,
 } from "src/lib/validation/crate.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./CreateCrateDialog.module.css";
@@ -39,7 +39,7 @@ export const CreateCrateDialog = ({
 
   const { register, handleSubmit, reset, watch } =
     useForm<CreateCrateFormValues>({
-      resolver: zodResolver(createCrateFormSchema),
+      resolver: zodFormResolver(createCrateFormSchema),
       defaultValues: {
         name: "",
         setAsDefault: false,

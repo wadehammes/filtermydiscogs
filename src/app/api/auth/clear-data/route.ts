@@ -5,7 +5,7 @@ import {
   getVerifiedUserFromRequest,
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
-import { prisma } from "src/lib/db";
+import { orm } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
@@ -39,13 +39,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await prisma.productAnalyticsEvent.deleteMany({
-      where: { user_id: verified.user.userId },
-    });
+    await orm.ProductAnalyticsEvents.where({
+      userId: verified.user.userId,
+    }).deleteAndCount();
 
-    await prisma.user.delete({
-      where: { discogs_user_id: verified.user.userId },
-    });
+    await orm.Users.where({
+      discogsUserId: verified.user.userId,
+    }).delete();
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("Error clearing crate data for user:", error);

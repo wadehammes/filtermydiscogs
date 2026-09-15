@@ -5,7 +5,7 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
-import { type Prisma, prisma } from "src/lib/db";
+import { db, orm, toOrmJson } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { setReleaseCrateMembershipBodySchema } from "src/lib/validation/crate.schemas";
@@ -27,18 +27,15 @@ export async function GET(
     const { userId: userIdNum } = verified.user;
     const { instanceId } = await params;
 
-    const rows = await prisma.crateRelease.findMany({
-      where: {
-        user_id: userIdNum,
-        instance_id: String(instanceId),
-      },
-      select: {
-        crate_id: true,
-      },
-    });
+    const rows = await orm.CrateReleases.where({
+      userId: userIdNum,
+      instanceId: String(instanceId),
+    })
+      .select("crateId")
+      .all();
 
     return privateRouteJson({
-      crateIds: rows.map((row) => row.crate_id),
+      crateIds: rows.map((row) => row.crateId),
     });
   } catch (error) {
     console.error("Error fetching release crate membership:", error);
@@ -95,13 +92,10 @@ export async function PUT(
     const targetCrateIds = [...new Set(parsedBody.data.crateIds)];
 
     if (targetCrateIds.length > 0) {
-      const ownedCrates = await prisma.crate.findMany({
-        where: {
-          user_id: userIdNum,
-          id: { in: targetCrateIds },
-        },
-        select: { id: true },
-      });
+      const ownedCrates = await orm.Crates.where({ userId: userIdNum })
+        .where((crate) => crate.id.in(targetCrateIds))
+        .select("id")
+        .all();
 
       if (ownedCrates.length !== targetCrateIds.length) {
         return privateRouteJson(
@@ -111,15 +105,14 @@ export async function PUT(
       }
     }
 
-    const currentRows = await prisma.crateRelease.findMany({
-      where: {
-        user_id: userIdNum,
-        instance_id: instanceId,
-      },
-      select: { crate_id: true },
-    });
+    const currentRows = await orm.CrateReleases.where({
+      userId: userIdNum,
+      instanceId,
+    })
+      .select("crateId")
+      .all();
 
-    const currentCrateIds = new Set(currentRows.map((row) => row.crate_id));
+    const currentCrateIds = new Set(currentRows.map((row) => row.crateId));
     const targetCrateIdSet = new Set(targetCrateIds);
     const crateIdsToAdd = targetCrateIds.filter(
       (crateId) => !currentCrateIds.has(crateId),
@@ -133,15 +126,14 @@ export async function PUT(
       instance_id: instanceId,
     };
 
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       if (crateIdsToRemove.length > 0) {
-        await tx.crateRelease.deleteMany({
-          where: {
-            user_id: userIdNum,
-            instance_id: instanceId,
-            crate_id: { in: crateIdsToRemove },
-          },
-        });
+        await tx.orm.public.CrateReleases.where({
+          userId: userIdNum,
+          instanceId,
+        })
+          .where((row) => row.crateId.in(crateIdsToRemove))
+          .deleteAndCount();
       }
 
       for (const crateId of crateIdsToAdd) {
@@ -151,14 +143,12 @@ export async function PUT(
           tx,
         });
 
-        await tx.crateRelease.create({
-          data: {
-            user_id: userIdNum,
-            crate_id: crateId,
-            instance_id: instanceId,
-            release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
-            sort_order: sortOrder,
-          },
+        await tx.orm.public.CrateReleases.create({
+          userId: userIdNum,
+          crateId,
+          instanceId,
+          releaseData: toOrmJson(normalizedRelease),
+          sortOrder,
         });
       }
     });

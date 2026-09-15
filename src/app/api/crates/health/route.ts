@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { verifyAdminFromRequest } from "src/lib/admin-helpers";
-import { getPoolMetrics, prisma } from "src/lib/db";
+import { countRows, db, getPoolMetrics, orm, queryRawRows } from "src/lib/db";
 import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
 import { privateRouteJson } from "src/lib/private-route-response";
@@ -34,7 +34,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const startTime = Date.now();
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
+    const result = await queryRawRows<{ test: number }>(
+      db.raw.sql`SELECT 1 as test`.returnsRow({ test: "pg/int4@1" }).build(),
+    );
     const queryDuration = Date.now() - startTime;
 
     diagnostics.prismaClientStatus = "connected";
@@ -43,7 +45,7 @@ export async function GET(request: NextRequest) {
     diagnostics.queryDuration = `${queryDuration}ms`;
 
     try {
-      const crateCount = await prisma.crate.count();
+      const crateCount = await countRows(orm.Crates);
       diagnostics.crateTableAccessible = true;
       diagnostics.crateCount = crateCount;
     } catch (error) {
@@ -54,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const analyticsEventCount = await prisma.productAnalyticsEvent.count();
+      const analyticsEventCount = await countRows(orm.ProductAnalyticsEvents);
       diagnostics.analyticsEventsTableAccessible = true;
       diagnostics.analyticsEventCount = analyticsEventCount;
     } catch (error) {

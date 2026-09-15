@@ -1,6 +1,14 @@
-import { Prisma } from "@prisma/client";
+import { and, not, or } from "@prisma/orm-postgres/orm-client";
 import { cacheLife, cacheTag } from "next/cache";
-import { prisma } from "src/lib/db";
+import {
+  countRows,
+  db,
+  orm,
+  ormTimestamp,
+  queryRawRows,
+  sqlDate,
+  sqlTimestamp,
+} from "src/lib/db";
 import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
 import type {
   AdminStats,
@@ -11,7 +19,6 @@ import type {
   AdminStatsTopUser,
 } from "src/types/dashboard.types";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
-import { STORED_THEMES } from "src/utils/themeAppearance";
 
 export const ADMIN_STATS_CACHE_SECONDS = 60;
 export const RETURNING_USERS_SERIES_DAYS = 90;
@@ -62,14 +69,6 @@ type AccountPreferencesSavedViewsOverviewRow = {
 
 const SAVED_VIEW_COUNT_BUCKETS = ["0", "1", "2-5", "6+"] as const;
 
-const savedViewCountSql = Prisma.sql`
-  CASE
-    WHEN jsonb_typeof(preferences->'filterViews') = 'array'
-    THEN jsonb_array_length(preferences->'filterViews')
-    ELSE 0
-  END
-`;
-
 const normalizeSavedViewsBreakdown = (
   rows: AccountPreferencesBreakdownRow[],
 ): AccountPreferencesBreakdownRow[] => {
@@ -94,14 +93,18 @@ const roundAverage = (numerator: number, denominator: number): number => {
 };
 
 const countDistinctActiveUsers = async (since: Date): Promise<number> => {
-  const rows = await prisma.$queryRaw<Array<{ count: number }>>`
-    SELECT COUNT(*)::int AS count
-    FROM (
-      SELECT user_id FROM crates WHERE updated_at >= ${since}
-      UNION
-      SELECT user_id FROM crate_releases WHERE added_at >= ${since}
-    ) active_users
-  `;
+  const rows = await queryRawRows<{ count: number }>(
+    db.raw.sql`
+      SELECT COUNT(*)::int AS count
+      FROM (
+        SELECT user_id FROM crates WHERE updated_at >= ${sqlTimestamp(since)}::timestamptz
+        UNION
+        SELECT user_id FROM crate_releases WHERE added_at >= ${sqlTimestamp(since)}::timestamptz
+      ) active_users
+    `
+      .returnsRow({ count: "pg/int4@1" })
+      .build(),
+  );
 
   return rows[0]?.count ?? 0;
 };
@@ -111,44 +114,51 @@ const fetchReturningUsersTimeSeries =
     const end = startOfUtcDay(new Date());
     const start = addUtcDays(end, -(RETURNING_USERS_SERIES_DAYS - 1));
 
-    const rows = await prisma.$queryRaw<
-      Array<{
-        date: string;
-        count_7d: number;
-        count_30d: number;
-        count_90d: number;
-      }>
-    >`
-      WITH days AS (
-        SELECT day::date AS day
-        FROM generate_series(
-          ${start}::date,
-          ${end}::date,
-          INTERVAL '1 day'
-        ) AS day
-      )
-      SELECT
-        to_char(days.day, 'YYYY-MM-DD') AS date,
-        COUNT(*) FILTER (
-          WHERE u.created_at < days.day - INTERVAL '7 days'
-            AND u.updated_at >= days.day - INTERVAL '7 days'
-            AND u.updated_at < days.day + INTERVAL '1 day'
-        )::int AS count_7d,
-        COUNT(*) FILTER (
-          WHERE u.created_at < days.day - INTERVAL '30 days'
-            AND u.updated_at >= days.day - INTERVAL '30 days'
-            AND u.updated_at < days.day + INTERVAL '1 day'
-        )::int AS count_30d,
-        COUNT(*) FILTER (
-          WHERE u.created_at < days.day - INTERVAL '90 days'
-            AND u.updated_at >= days.day - INTERVAL '90 days'
-            AND u.updated_at < days.day + INTERVAL '1 day'
-        )::int AS count_90d
-      FROM days
-      CROSS JOIN users u
-      GROUP BY days.day
-      ORDER BY days.day
-    `;
+    const rows = await queryRawRows<{
+      date: string;
+      count_7d: number;
+      count_30d: number;
+      count_90d: number;
+    }>(
+      db.raw.sql`
+        WITH days AS (
+          SELECT day::date AS day
+          FROM generate_series(
+            ${sqlDate(start)}::date,
+            ${sqlDate(end)}::date,
+            INTERVAL '1 day'
+          ) AS day
+        )
+        SELECT
+          to_char(days.day, 'YYYY-MM-DD') AS date,
+          COUNT(*) FILTER (
+            WHERE u.created_at < days.day - INTERVAL '7 days'
+              AND u.updated_at >= days.day - INTERVAL '7 days'
+              AND u.updated_at < days.day + INTERVAL '1 day'
+          )::int AS count_7d,
+          COUNT(*) FILTER (
+            WHERE u.created_at < days.day - INTERVAL '30 days'
+              AND u.updated_at >= days.day - INTERVAL '30 days'
+              AND u.updated_at < days.day + INTERVAL '1 day'
+          )::int AS count_30d,
+          COUNT(*) FILTER (
+            WHERE u.created_at < days.day - INTERVAL '90 days'
+              AND u.updated_at >= days.day - INTERVAL '90 days'
+              AND u.updated_at < days.day + INTERVAL '1 day'
+          )::int AS count_90d
+        FROM days
+        CROSS JOIN users u
+        GROUP BY days.day
+        ORDER BY days.day
+      `
+        .returnsRow({
+          date: "pg/text@1",
+          count_7d: "pg/int4@1",
+          count_30d: "pg/int4@1",
+          count_90d: "pg/int4@1",
+        })
+        .build(),
+    );
 
     const last7Days: AdminStatsDailyCountPoint[] = [];
     const last30Days: AdminStatsDailyCountPoint[] = [];
@@ -188,41 +198,43 @@ export const fetchAdminEngagementStats = async ({
   ] = await Promise.all([
     countDistinctActiveUsers(sevenDaysAgo),
     countDistinctActiveUsers(thirtyDaysAgo),
-    prisma.user.count({
-      where: {
-        updated_at: { gte: sevenDaysAgo },
-        created_at: { lt: sevenDaysAgo },
-      },
-    }),
-    prisma.user.count({
-      where: {
-        updated_at: { gte: thirtyDaysAgo },
-        created_at: { lt: thirtyDaysAgo },
-      },
-    }),
-    prisma.user.count({
-      where: { crates: { none: {} } },
-    }),
-    prisma.user.count({
-      where: { crates: { some: {} } },
-    }),
-    prisma.user.count({
-      where: {
-        crates: { some: {} },
-        NOT: {
-          OR: [
-            { crates: { some: { updated_at: { gte: ninetyDaysAgo } } } },
-            {
-              crates: {
-                some: {
-                  releases: { some: { added_at: { gte: ninetyDaysAgo } } },
-                },
-              },
-            },
-          ],
-        },
-      },
-    }),
+    countRows(
+      orm.Users.where((user) =>
+        and(
+          user.updatedAt.gte(ormTimestamp(sevenDaysAgo)),
+          user.createdAt.lt(ormTimestamp(sevenDaysAgo)),
+        ),
+      ),
+    ),
+    countRows(
+      orm.Users.where((user) =>
+        and(
+          user.updatedAt.gte(ormTimestamp(thirtyDaysAgo)),
+          user.createdAt.lt(ormTimestamp(thirtyDaysAgo)),
+        ),
+      ),
+    ),
+    countRows(orm.Users.where((user) => user.crates.none())),
+    countRows(orm.Users.where((user) => user.crates.some())),
+    countRows(
+      orm.Users.where((user) =>
+        and(
+          user.crates.some(),
+          not(
+            or(
+              user.crates.some((crate) =>
+                crate.updatedAt.gte(ormTimestamp(ninetyDaysAgo)),
+              ),
+              user.crates.some((crate) =>
+                crate.crateReleases.some((release) =>
+                  release.addedAt.gte(ormTimestamp(ninetyDaysAgo)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
     fetchReturningUsersTimeSeries(),
   ]);
 
@@ -301,10 +313,6 @@ const mapAnalyticsConsentCounts = (
 export const fetchAdminAccountPreferencesStats = async (): Promise<
   AdminStats["accountPreferences"]
 > => {
-  const storedThemeSqlList = Prisma.join(
-    STORED_THEMES.map((theme) => Prisma.sql`${theme}`),
-  );
-
   const [
     persistFiltersRows,
     analyticsRows,
@@ -313,12 +321,17 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
     savedViewsOverviewRows,
     savedViewsBreakdownRows,
   ] = await Promise.all([
-    prisma.$queryRaw<Array<{ count: number }>>`
+    queryRawRows<{ count: number }>(
+      db.raw.sql`
         SELECT COUNT(*)::int AS count
         FROM users
         WHERE COALESCE((preferences->>'persistFilters')::boolean, true) = true
-      `,
-    prisma.$queryRaw<AccountPreferencesAnalyticsRow[]>`
+      `
+        .returnsRow({ count: "pg/int4@1" })
+        .build(),
+    ),
+    queryRawRows<AccountPreferencesAnalyticsRow>(
+      db.raw.sql`
         SELECT
           CASE
             WHEN preferences->'analyticsConsent' IS NULL THEN 'unset'
@@ -328,19 +341,48 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
           COUNT(*)::int AS count
         FROM users
         GROUP BY 1
-      `,
-    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+      `
+        .returnsRow({
+          status: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<AccountPreferencesBreakdownRow>(
+      db.raw.sql`
         SELECT
           CASE
-            WHEN preferences->>'theme' IN (${storedThemeSqlList}) THEN preferences->>'theme'
+            WHEN preferences->>'theme' IN (
+              'light',
+              'dim',
+              'sepia',
+              'forest',
+              'amber',
+              'slate',
+              'dark',
+              'midnight',
+              'codex',
+              'discogs',
+              'wine',
+              'futuristic',
+              'high-contrast',
+              'system'
+            ) THEN preferences->>'theme'
             ELSE 'light'
           END AS key,
           COUNT(*)::int AS count
         FROM users
         GROUP BY 1
         ORDER BY count DESC, key ASC
-      `,
-    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+      `
+        .returnsRow({
+          key: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<AccountPreferencesBreakdownRow>(
+      db.raw.sql`
         SELECT
           CASE
             WHEN preferences->'view'->>'currentView' IN ('card', 'list', 'random')
@@ -351,16 +393,50 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
         FROM users
         GROUP BY 1
         ORDER BY count DESC, key ASC
-      `,
-    prisma.$queryRaw<AccountPreferencesSavedViewsOverviewRow[]>`
+      `
+        .returnsRow({
+          key: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<AccountPreferencesSavedViewsOverviewRow>(
+      db.raw.sql`
         SELECT
-          COUNT(*) FILTER (WHERE ${savedViewCountSql} > 0)::int AS users_with_saved_views,
-          COALESCE(SUM(${savedViewCountSql}), 0)::int AS total_saved_views
+          COUNT(*) FILTER (
+            WHERE CASE
+              WHEN jsonb_typeof(preferences->'filterViews') = 'array'
+              THEN jsonb_array_length(preferences->'filterViews')
+              ELSE 0
+            END > 0
+          )::int AS users_with_saved_views,
+          COALESCE(
+            SUM(
+              CASE
+                WHEN jsonb_typeof(preferences->'filterViews') = 'array'
+                THEN jsonb_array_length(preferences->'filterViews')
+                ELSE 0
+              END
+            ),
+            0
+          )::int AS total_saved_views
         FROM users
-      `,
-    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+      `
+        .returnsRow({
+          users_with_saved_views: "pg/int4@1",
+          total_saved_views: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<AccountPreferencesBreakdownRow>(
+      db.raw.sql`
         WITH view_counts AS (
-          SELECT ${savedViewCountSql} AS view_count
+          SELECT
+            CASE
+              WHEN jsonb_typeof(preferences->'filterViews') = 'array'
+              THEN jsonb_array_length(preferences->'filterViews')
+              ELSE 0
+            END AS view_count
           FROM users
         )
         SELECT
@@ -374,7 +450,13 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
         FROM view_counts
         GROUP BY 1
         ORDER BY MIN(view_count)
-      `,
+      `
+        .returnsRow({
+          key: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
   ]);
 
   const savedViewsOverview = savedViewsOverviewRows[0];
@@ -413,105 +495,196 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     featureUsage,
     accountPreferences,
   ] = await Promise.all([
-    prisma.$queryRaw<UserOverviewRow[]>`
-      SELECT
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE created_at >= ${sevenDaysAgo})::int AS last_7d,
-        COUNT(*) FILTER (WHERE created_at >= ${thirtyDaysAgo})::int AS last_30d
-      FROM users
-    `,
-    prisma.$queryRaw<CrateOverviewRow[]>`
-      SELECT
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE private = false)::int AS public_crates,
-        COUNT(*) FILTER (WHERE packed_enabled = true)::int AS packed_enabled_crates,
-        COUNT(*) FILTER (WHERE notes IS NOT NULL AND notes <> '')::int AS crates_with_notes,
-        COUNT(*) FILTER (WHERE created_at >= ${sevenDaysAgo})::int AS last_7d,
-        COUNT(*) FILTER (WHERE created_at >= ${thirtyDaysAgo})::int AS last_30d,
-        COUNT(*) FILTER (WHERE private = false AND created_at >= ${sevenDaysAgo})::int AS public_last_7d,
-        COUNT(*) FILTER (WHERE private = false AND created_at >= ${thirtyDaysAgo})::int AS public_last_30d
-      FROM crates
-    `,
-    prisma.$queryRaw<ReleaseOverviewRow[]>`
-      SELECT
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE added_at >= ${sevenDaysAgo})::int AS last_7d,
-        COUNT(*) FILTER (WHERE added_at >= ${thirtyDaysAgo})::int AS last_30d,
-        COUNT(*) FILTER (WHERE found_at IS NOT NULL)::int AS packed_total,
-        COUNT(*) FILTER (WHERE found_at >= ${sevenDaysAgo})::int AS packed_last_7d,
-        COUNT(*) FILTER (WHERE found_at >= ${thirtyDaysAgo})::int AS packed_last_30d
-      FROM crate_releases
-    `,
-    prisma.$queryRaw<SetMarkerOverviewRow[]>`
-      SELECT
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE created_at >= ${sevenDaysAgo})::int AS last_7d,
-        COUNT(*) FILTER (WHERE created_at >= ${thirtyDaysAgo})::int AS last_30d
-      FROM crate_set_markers
-    `,
-    prisma.$queryRaw<TopUserRow[]>`
-      SELECT
-        c.user_id,
-        u.username,
-        COUNT(*)::int AS count
-      FROM crates c
-      INNER JOIN users u ON u.discogs_user_id = c.user_id
-      GROUP BY c.user_id, u.username
-      ORDER BY count DESC
-      LIMIT 10
-    `,
-    prisma.$queryRaw<TopUserRow[]>`
-      SELECT
-        cr.user_id,
-        u.username,
-        COUNT(*)::int AS count
-      FROM crate_releases cr
-      INNER JOIN users u ON u.discogs_user_id = cr.user_id
-      GROUP BY cr.user_id, u.username
-      ORDER BY count DESC
-      LIMIT 10
-    `,
-    prisma.$queryRaw<GrowthRow[]>`
-      SELECT
-        to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
-        COUNT(*)::int AS count
-      FROM users
-      GROUP BY 1
-      ORDER BY 1
-    `,
-    prisma.$queryRaw<GrowthRow[]>`
-      SELECT
-        to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
-        COUNT(*)::int AS count
-      FROM crates
-      GROUP BY 1
-      ORDER BY 1
-    `,
-    prisma.$queryRaw<GrowthRow[]>`
-      SELECT
-        to_char(date_trunc('month', added_at), 'YYYY-MM') AS month,
-        COUNT(*)::int AS count
-      FROM crate_releases
-      GROUP BY 1
-      ORDER BY 1
-    `,
-    prisma.$queryRaw<GrowthRow[]>`
-      SELECT
-        to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
-        COUNT(*)::int AS count
-      FROM crates
-      WHERE private = false
-      GROUP BY 1
-      ORDER BY 1
-    `,
-    prisma.$queryRaw<GrowthRow[]>`
-      SELECT
-        to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
-        COUNT(*)::int AS count
-      FROM crate_set_markers
-      GROUP BY 1
-      ORDER BY 1
-    `,
+    queryRawRows<UserOverviewRow>(
+      db.raw.sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE created_at >= ${sqlTimestamp(sevenDaysAgo)}::timestamptz)::int AS last_7d,
+          COUNT(*) FILTER (WHERE created_at >= ${sqlTimestamp(thirtyDaysAgo)}::timestamptz)::int AS last_30d
+        FROM users
+      `
+        .returnsRow({
+          total: "pg/int4@1",
+          last_7d: "pg/int4@1",
+          last_30d: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<CrateOverviewRow>(
+      db.raw.sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE private = false)::int AS public_crates,
+          COUNT(*) FILTER (WHERE packed_enabled = true)::int AS packed_enabled_crates,
+          COUNT(*) FILTER (WHERE notes IS NOT NULL AND notes <> '')::int AS crates_with_notes,
+          COUNT(*) FILTER (WHERE created_at >= ${sqlTimestamp(sevenDaysAgo)}::timestamptz)::int AS last_7d,
+          COUNT(*) FILTER (WHERE created_at >= ${sqlTimestamp(thirtyDaysAgo)}::timestamptz)::int AS last_30d,
+          COUNT(*) FILTER (WHERE private = false AND created_at >= ${sqlTimestamp(sevenDaysAgo)}::timestamptz)::int AS public_last_7d,
+          COUNT(*) FILTER (WHERE private = false AND created_at >= ${sqlTimestamp(thirtyDaysAgo)}::timestamptz)::int AS public_last_30d
+        FROM crates
+      `
+        .returnsRow({
+          total: "pg/int4@1",
+          public_crates: "pg/int4@1",
+          packed_enabled_crates: "pg/int4@1",
+          crates_with_notes: "pg/int4@1",
+          last_7d: "pg/int4@1",
+          last_30d: "pg/int4@1",
+          public_last_7d: "pg/int4@1",
+          public_last_30d: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<ReleaseOverviewRow>(
+      db.raw.sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE added_at >= ${sqlTimestamp(sevenDaysAgo)}::timestamptz)::int AS last_7d,
+          COUNT(*) FILTER (WHERE added_at >= ${sqlTimestamp(thirtyDaysAgo)}::timestamptz)::int AS last_30d,
+          COUNT(*) FILTER (WHERE found_at IS NOT NULL)::int AS packed_total,
+          COUNT(*) FILTER (WHERE found_at >= ${sqlTimestamp(sevenDaysAgo)}::timestamptz)::int AS packed_last_7d,
+          COUNT(*) FILTER (WHERE found_at >= ${sqlTimestamp(thirtyDaysAgo)}::timestamptz)::int AS packed_last_30d
+        FROM crate_releases
+      `
+        .returnsRow({
+          total: "pg/int4@1",
+          last_7d: "pg/int4@1",
+          last_30d: "pg/int4@1",
+          packed_total: "pg/int4@1",
+          packed_last_7d: "pg/int4@1",
+          packed_last_30d: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<SetMarkerOverviewRow>(
+      db.raw.sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE created_at >= ${sqlTimestamp(sevenDaysAgo)}::timestamptz)::int AS last_7d,
+          COUNT(*) FILTER (WHERE created_at >= ${sqlTimestamp(thirtyDaysAgo)}::timestamptz)::int AS last_30d
+        FROM crate_set_markers
+      `
+        .returnsRow({
+          total: "pg/int4@1",
+          last_7d: "pg/int4@1",
+          last_30d: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<TopUserRow>(
+      db.raw.sql`
+        SELECT
+          c.user_id,
+          u.username,
+          COUNT(*)::int AS count
+        FROM crates c
+        INNER JOIN users u ON u.discogs_user_id = c.user_id
+        GROUP BY c.user_id, u.username
+        ORDER BY count DESC
+        LIMIT 10
+      `
+        .returnsRow({
+          user_id: "pg/int4@1",
+          username: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<TopUserRow>(
+      db.raw.sql`
+        SELECT
+          cr.user_id,
+          u.username,
+          COUNT(*)::int AS count
+        FROM crate_releases cr
+        INNER JOIN users u ON u.discogs_user_id = cr.user_id
+        GROUP BY cr.user_id, u.username
+        ORDER BY count DESC
+        LIMIT 10
+      `
+        .returnsRow({
+          user_id: "pg/int4@1",
+          username: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<GrowthRow>(
+      db.raw.sql`
+        SELECT
+          to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+          COUNT(*)::int AS count
+        FROM users
+        GROUP BY 1
+        ORDER BY 1
+      `
+        .returnsRow({
+          month: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<GrowthRow>(
+      db.raw.sql`
+        SELECT
+          to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+          COUNT(*)::int AS count
+        FROM crates
+        GROUP BY 1
+        ORDER BY 1
+      `
+        .returnsRow({
+          month: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<GrowthRow>(
+      db.raw.sql`
+        SELECT
+          to_char(date_trunc('month', added_at), 'YYYY-MM') AS month,
+          COUNT(*)::int AS count
+        FROM crate_releases
+        GROUP BY 1
+        ORDER BY 1
+      `
+        .returnsRow({
+          month: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<GrowthRow>(
+      db.raw.sql`
+        SELECT
+          to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+          COUNT(*)::int AS count
+        FROM crates
+        WHERE private = false
+        GROUP BY 1
+        ORDER BY 1
+      `
+        .returnsRow({
+          month: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
+    queryRawRows<GrowthRow>(
+      db.raw.sql`
+        SELECT
+          to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+          COUNT(*)::int AS count
+        FROM crate_set_markers
+        GROUP BY 1
+        ORDER BY 1
+      `
+        .returnsRow({
+          month: "pg/text@1",
+          count: "pg/int4@1",
+        })
+        .build(),
+    ),
     fetchAdminFeatureUsageStats().catch((error) => {
       console.error("Admin feature usage stats error:", error);
       return emptyFeatureUsage();

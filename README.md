@@ -31,7 +31,7 @@ With mise:
 
 ```bash
 mise trust          # once per clone, if prompted
-mise bootstrap      # tools + pnpm install + Prisma generate
+mise bootstrap      # tools + pnpm install + contract emit
 mise run ci         # same quality gates as GitHub Actions
 ```
 
@@ -82,17 +82,17 @@ Full variable list: [`docs/handbook/platform.md`](./docs/handbook/platform.md).
 
 ```bash
 pnpm install          # or: mise bootstrap
-pnpm db:generate
-pnpm db:migrate       # local migrate; or pnpm db:push for prototype
+pnpm contract:emit
+pnpm db:push          # apply contract to local DB; see docs/handbook/database.md for migrate workflow
 ```
 
-Helpers: `pnpm db:pull:dev` / `db:pull:staging` / `db:pull:prod` pull env from Vercel; `pnpm db:studio` opens Prisma Studio.
+Helpers: `pnpm db:pull:dev` / `db:pull:staging` / `db:pull:prod` pull env from Vercel; see `docs/handbook/database.md` for contract, migrate, and verify commands.
 
 ### Installation
 
 ```bash
 mise bootstrap   # recommended
-# or: pnpm install && pnpm db:generate
+# or: pnpm install && pnpm contract:emit
 
 pnpm dev
 ```
@@ -128,7 +128,7 @@ The app will be available at `http://localhost:6767`.
 - **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
 - **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, youtube-video-element (landing demo)
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
-- **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
+- **Data**: TanStack Query, Prisma 8 (contract ORM) + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod
 - **Tooling**: pnpm, mise, Biome, Stylelint, Jest + Testing Library, Playwright, Knip
 - **Analytics**: Google Tag Manager (consent-aware)
@@ -157,10 +157,10 @@ pnpm build && pnpm start
 pnpm analyze          # bundle analyzer (webpack build)
 pnpm scaffold         # new component scaffold
 
-pnpm db:generate      # Prisma Client
-pnpm db:migrate       # migrate dev
-pnpm db:push          # push schema (prototype)
-pnpm db:studio        # Prisma Studio
+pnpm contract:emit    # emit contract types (also runs on postinstall / predev)
+pnpm db:push          # apply contract to DB
+pnpm db:migrate:deploy # deploy pending graph migrations
+pnpm db:verify        # verify DB marker + schema
 ```
 
 ## Release

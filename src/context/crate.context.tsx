@@ -336,7 +336,7 @@ export const CrateProvider = ({ children }: CrateProviderProps) => {
           errorMessage.includes("DATABASE_URL")
         ) {
           toast.error(
-            "Database not set up. Please run 'pnpm db:generate' and 'pnpm db:push' in your terminal.",
+            "Database not set up. Please run 'pnpm contract:emit' and 'pnpm db:push' in your terminal.",
           );
         }
         return;

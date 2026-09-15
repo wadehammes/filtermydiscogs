@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,6 +9,7 @@ import {
   type CrateNotesScratchpadValues,
   crateNotesScratchpadSchema,
 } from "src/lib/validation/crate.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import styles from "./CrateSetNotesScratchpad.module.css";
 
 export const CRATE_SET_NOTES_SCRATCHPAD_ID = "fmdCrateSetNotesScratchpad";
@@ -37,7 +37,7 @@ export const CrateSetNotesScratchpad = ({
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { register, reset, watch } = useForm<CrateNotesScratchpadValues>({
-    resolver: zodResolver(crateNotesScratchpadSchema),
+    resolver: zodFormResolver(crateNotesScratchpadSchema),
     defaultValues: { notes: crateNotes },
     mode: "onChange",
   });
