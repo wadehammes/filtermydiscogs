@@ -1,10 +1,7 @@
 "use client";
 
 import { createContext } from "react";
-import type {
-  CrateActions,
-  CrateState,
-} from "src/context/crate.context.types";
+import type { CrateActions, CrateState } from "src/context/crate.context.types";
 
 export const CrateStateContext = createContext<CrateState | undefined>(
   undefined,

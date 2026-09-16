@@ -2,7 +2,7 @@
 
 import { ReleaseCardOverlayActions } from "src/components/ReleaseCard/ReleaseCardOverlayActions.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getResourceUrl } from "src/utils/helpers";
@@ -16,7 +16,7 @@ export const ReleasesTableRowActions = ({
   release,
   onReleaseClick,
 }: ReleasesTableRowActionsProps) => {
-  const { openRelease, prefetchPointerProps } = useReleaseOpenHandler({
+  const { openRelease, prefetchPointerProps } = useReleaseCardOpenHandler({
     release,
     onReleaseClick: (_instanceId: string) => {
       onReleaseClick(release);

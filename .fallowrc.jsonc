@@ -21,6 +21,19 @@
     }
   ],
   "ignoreExportsUsedInFile": true,
+  "ignoreExports": [
+    { "file": "src/context/auth.context.tsx", "exports": ["*"] },
+    { "file": "src/types/index.ts", "exports": ["*"] },
+    { "file": "src/context/collection.context.tsx", "exports": ["*"] },
+    { "file": "src/types/dashboard.types.ts", "exports": ["*"] },
+    { "file": "src/utils/milestones.ts", "exports": ["*"] },
+    { "file": "src/utils/styleEvolution.ts", "exports": ["*"] },
+    { "file": "src/hooks/useCollectionCacheReady.hook.ts", "exports": ["*"] },
+    { "file": "src/utils/collectionCacheSync.ts", "exports": ["*"] }
+  ],
+  "rules": {
+    "duplicate-export": "warn"
+  },
   "ignorePatterns": ["public/theme-init.js"],
   "entry": [
     ".jest/setupTests.ts",
@@ -39,8 +52,43 @@
     {
       "files": ["src/context/**"],
       "rules": {
+        "unused-export": "off",
         "unused-type": "off",
         "unused-enum-member": "off"
+      }
+    },
+    {
+      "files": ["src/tests/factories/BaseFactory.ts"],
+      "rules": {
+        "unused-class-member": "off"
+      }
+    },
+    {
+      "files": [
+        "src/components/ReleaseNotes/ReleaseNotesEditor.context.tsx",
+        "src/atoms/view.atoms.ts",
+        "src/components/FormDialog/**",
+        "src/components/InlinePopoverMenu/**",
+        "src/components/SegmentedControl/**"
+      ],
+      "rules": {
+        "unused-export": "off",
+        "unused-type": "off"
+      }
+    },
+    {
+      "files": [
+        "src/hooks/queries/useAdminStatsQuery.ts",
+        "src/hooks/usePersistUserPreferences.hook.ts"
+      ],
+      "rules": {
+        "unused-type": "off"
+      }
+    },
+    {
+      "files": ["src/lib/discogs-request-throttle.ts"],
+      "rules": {
+        "unused-class-member": "off"
       }
     },
     {

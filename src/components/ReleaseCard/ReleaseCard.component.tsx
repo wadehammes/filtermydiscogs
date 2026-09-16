@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { memo } from "react";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -20,7 +20,7 @@ const ReleaseCardComponent = ({
 }: ReleaseCardProps) => {
   "use memo";
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
-    useReleaseOpenHandler({
+    useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });

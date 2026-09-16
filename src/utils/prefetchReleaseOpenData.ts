@@ -1,31 +1,22 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { prefetchReleaseModal } from "src/components/ReleaseModal/prefetchReleaseModal";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
-import { parseReleaseId } from "src/utils/releaseNotes";
+import { prefetchDiscogsReleaseQuery } from "src/utils/prefetchDiscogsReleaseQuery";
+import { prefetchReleaseModalChunk } from "src/utils/prefetchReleaseModalChunk";
+
+export type PrefetchReleaseOpenDataOptions = {
+  prefetchModalChunk?: boolean;
+};
 
 export const prefetchReleaseOpenData = (
   queryClient: QueryClient,
   release: DiscogsRelease,
+  options: PrefetchReleaseOpenDataOptions = {},
 ): void => {
-  prefetchReleaseModal();
+  const { prefetchModalChunk = true } = options;
 
-  const releaseId = parseReleaseId(release);
-  if (releaseId === null) {
-    return;
+  if (prefetchModalChunk) {
+    prefetchReleaseModalChunk();
   }
 
-  const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
-  const queryState = queryClient.getQueryState(releaseQueryKey);
-
-  if (queryState?.fetchStatus === "fetching") {
-    return;
-  }
-
-  if (queryClient.getQueryData(releaseQueryKey) === undefined) {
-    void queryClient.prefetchQuery(
-      discogsReleaseQueryOptions(String(releaseId)),
-    );
-  }
+  prefetchDiscogsReleaseQuery(queryClient, release);
 };

@@ -18,7 +18,7 @@ import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
@@ -68,7 +68,7 @@ export const ReleaseMiniPlayer = ({
   >(null);
   const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
-  const { openRelease, prefetchPointerProps } = useReleaseOpenHandler({
+  const { openRelease, prefetchPointerProps } = useReleaseCardOpenHandler({
     release,
     onReleaseClick,
   });

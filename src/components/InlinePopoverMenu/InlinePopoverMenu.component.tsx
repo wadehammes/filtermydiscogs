@@ -71,7 +71,10 @@ const InlinePopoverMenuPanel = ({
             scrollable ? styles.popupScroll : styles.popup,
             popupClassName,
           )}
-          {...definedProps({ "data-testid": testId })}
+          {...definedProps({
+            "data-testid": testId,
+            "data-variant": variant,
+          })}
         >
           {children}
         </Menu.Popup>

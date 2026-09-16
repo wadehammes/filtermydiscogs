@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -19,7 +19,7 @@ export const ReleasesTableArtistTitleCell = ({
   imagePriority,
   onReleaseClick,
 }: ReleasesTableArtistTitleCellProps) => {
-  const { openRelease, prefetchPointerProps } = useReleaseOpenHandler({
+  const { openRelease, prefetchPointerProps } = useReleaseCardOpenHandler({
     release,
     onReleaseClick,
   });

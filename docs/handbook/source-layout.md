@@ -54,5 +54,6 @@ Quick map of **`src/`** and related top-level folders.
 | Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home in [`Login/`](../../src/components/Login/), about in [`About/`](../../src/components/About/), legal in [`Legal/`](../../src/components/Legal/), public crate in [`PublicCrate/`](../../src/components/PublicCrate/) |
 | Unused code / dead exports (CI) | [`knip.json`](../../knip.json), `pnpm knip` |
 | Codebase intelligence (agents, optional) | [`.fallowrc.jsonc`](../../.fallowrc.jsonc), `pnpm fallow:*` — see [platform.md](platform.md) |
+| Large providers (playback / crates) | Hook surface: [`releasePlayback.context.tsx`](../../src/context/releasePlayback.context.tsx), [`crate.context.tsx`](../../src/context/crate.context.tsx); implementations: [`ReleasePlaybackProvider.component.tsx`](../../src/context/ReleasePlaybackProvider.component.tsx), [`CrateProvider.component.tsx`](../../src/context/CrateProvider.component.tsx) |
 
 **Tests** for a module usually sit **next to** that module as **`*.spec.ts(x)`** (optional **`*.po.tsx`** for page objects). Shared test infra lives under **`src/tests/`** (`BasePageObject.po.ts`, factories, mocks).

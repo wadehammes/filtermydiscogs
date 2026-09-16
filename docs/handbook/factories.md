@@ -26,7 +26,7 @@ Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts) 
 
 - **`build(attributes?, options?)`** — one instance; pass **`Partial<Type>`** overrides for fields the test cares about.
 - **`buildList(n, attributes?, options?)`** — array of `n` instances.
-- **`buildModel` / `buildListModel`** — optional when a domain class wraps the built type.
+- **`buildModel`** — optional when a domain class wraps the built type.
 
 ## File and export naming
 

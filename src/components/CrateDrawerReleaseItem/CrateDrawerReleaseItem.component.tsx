@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateDrawerReleaseActions } from "src/components/CrateDrawerReleaseActions/CrateDrawerReleaseActions.component";
 import styles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -32,7 +32,7 @@ export const CrateDrawerReleaseItem = ({
   const { packedEnabled } = useCrateDrawerContext();
   const { basic_information } = release;
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
-    useReleaseOpenHandler({
+    useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });

@@ -35,7 +35,7 @@ import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useAuth } from "src/context/auth.context";
 import { useUpdateCrateLayoutMutation } from "src/hooks/mutations/useCrateMutations";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import {
   assignSequentialCrateLayoutSortOrders,
   crateLayoutItemsToPutRequest,
@@ -129,7 +129,7 @@ const SortableReleaseRow = ({
   const artist = formatArtistNames(release);
   const meta = formatReleaseMetaLine({ release, includeCatno: false }) || null;
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
-    useReleaseOpenHandler({
+    useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });

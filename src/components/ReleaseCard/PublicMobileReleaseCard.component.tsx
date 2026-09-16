@@ -2,7 +2,7 @@ import classNames from "classnames";
 import Image from "next/image";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
@@ -24,7 +24,7 @@ const PublicMobileReleaseCardComponent = ({
   onReleaseClick,
 }: Omit<ReleaseCardProps, "isRandomMode" | "onExitRandomMode">) => {
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
-    useReleaseOpenHandler({
+    useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });

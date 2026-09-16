@@ -22,6 +22,11 @@ import {
   trackReleasePacked,
 } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
+import type { CrateActions, CrateState } from "src/context/crate.context.types";
+import {
+  CrateActionsContext,
+  CrateStateContext,
+} from "src/context/crateContexts";
 import {
   useAddReleaseToCrateMutation,
   useClearAllPackedInCrateMutation,
@@ -44,21 +49,8 @@ import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import { buildCrateLayout } from "src/lib/crate-layout";
 import type { DiscogsRelease } from "src/types";
-import type {
-  CrateLayoutItem,
-  CrateUpdatePayload,
-  CrateWithCount,
-} from "src/types/crate.types";
+import type { CrateUpdatePayload } from "src/types/crate.types";
 import { toast } from "src/utils/toast";
-
-import {
-  CrateActionsContext,
-  CrateStateContext,
-} from "src/context/crateContexts";
-import type {
-  CrateActions,
-  CrateState,
-} from "src/context/crate.context.types";
 
 interface CrateProviderProps {
   children: ReactNode;

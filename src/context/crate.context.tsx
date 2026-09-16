@@ -17,11 +17,6 @@ export type {
   CrateState,
 } from "src/context/crate.context.types";
 
-export {
-  CrateActionsContext,
-  CrateStateContext,
-} from "src/context/crateContexts";
-
 export { CrateProvider } from "./CrateProvider.component";
 
 export const useCrateState = (): CrateState => {
