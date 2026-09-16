@@ -26,7 +26,7 @@ if (!username) {
 - **No barrel files.** Do not add `index.ts` (or `index.tsx`) that re-export from other modules under `src/`. Import directly from the target file (e.g. `from "src/components/ReleaseCard/ReleaseCard.component"`).
 - **Absolute imports (`src/…`).** Import application TS/TSX with paths rooted at `src/`. Do not use `../` across `src/` boundaries unless an exception below applies.
 - **Exceptions to absolute imports:** (1) **CSS Modules** and static assets co-located with the importer (e.g. `import styles from "./MyComponent.module.css"`). (2) **Factory imports** within `src/tests/factories/` may use relative imports to sibling factories.
-- **Do not re-export types (or values) from another module** just to shorten import paths. Consumers import from the defining module. Do not re-export types from a component file; use `src/types/` or a colocated `*.types.ts` if needed.
+- **Do not re-export types (or values) from another module** just to shorten import paths. Consumers import from the defining module. Do not re-export types from a component file; use `src/types/` or a colocated `*.types.ts` if needed. **Exception — context hook barrels** ([`crate.context.tsx`](../../src/context/crate.context.tsx), [`releasePlayback.context.tsx`](../../src/context/releasePlayback.context.tsx), [`ReleaseNotesEditor.context.tsx`](../../src/components/ReleaseNotes/ReleaseNotesEditor.context.tsx)): re-export **`XProvider`** and **hooks** for a stable app import path; keep **`createContext`** exports on **`*Contexts.tsx`** / **`ReleaseNotesEditorContext.tsx`** only ([patterns.md → Large context providers](patterns.md#large-context-providers-playback-crates-notes-editor)).
 - **No pointless `*.interfaces.ts`.** Scaffold may emit **`Name.interfaces.ts`** — delete it when it would only re-export types already on the component or a colocated helper (see [components.md → Scaffolding](components.md#scaffolding)). Keep **`*.interfaces.ts`** only when it holds domain types shared by factories, POs, or multiple files in the folder.
 - **Single params object** for helpers, hooks, and any function with more than one argument or optional arguments (e.g. `useDiscogsCollectionQuery({ username, enabled })`, `getResourceUrl({ resourceUrl, type, id })`) so call sites are self-documenting. Define an interface for params in the same file when it helps.
 - **Semantic parameter and variable names.** Describe what the value *is*, not generic placeholders like `raw`, `data`, `val`, `tmp`.
@@ -85,6 +85,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
   - `pnpm tsc:ci` — `db:generate` then strict TypeScript (`tsc --strict`)
 - **Configs**: [`biome.json`](../../biome.json), [`stylelint.config.mjs`](../../stylelint.config.mjs).
 - **CI**: `pnpm lint:ci`, `pnpm lint:css`, `pnpm test:ci` (**`--runInBand`**, same as local **`pnpm test`**), `pnpm knip:ci` (see [platform.md](platform.md)).
+- **Stacked PRs:** Each branch tip in a dependency stack should pass **`pnpm lint:all`** on its own (Biome uses **`--changed --since origin/main`**, so the check is cumulative from trunk). Fix lint/Knip on the **lowest** branch that introduces the failure, then **`gh stack rebase --upstack`** — do not pile unrelated fixes on the top PR only.
 
 ## CSS and styling
 

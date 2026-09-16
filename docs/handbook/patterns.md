@@ -25,6 +25,36 @@ Cross-cutting patterns for auth, global state, data fetching, filtering, and pub
 
 **Auth**, **collection**, **crate**, and **theme** still use React context. When adding a new global concern, use **Jotai** for derived client UI state with many subscribers; use **context + reducer** (or React Query) for session lifecycle, server-backed data, or side-effect-heavy flows.
 
+### Large context providers (playback, crates, notes editor)
+
+When a provider module grows past maintainability (or Fallow reports a **import cycle**), split along stable boundaries — do not duplicate hook APIs.
+
+| Layer | Role | Examples |
+|-------|------|----------|
+| **`*.context.types.ts`** | Shared action/state types (no React) | [`crate.context.types.ts`](../../src/context/crate.context.types.ts), [`releasePlaybackContext.types.ts`](../../src/types/releasePlaybackContext.types.ts) |
+| **`*Contexts.tsx`** | **`createContext`** only | [`crateContexts.tsx`](../../src/context/crateContexts.tsx), [`releasePlaybackContexts.tsx`](../../src/context/releasePlaybackContexts.tsx) |
+| **`*Provider.component.tsx`** | Provider component + reducers/effects | [`CrateProvider.component.tsx`](../../src/context/CrateProvider.component.tsx), [`ReleasePlaybackProvider.component.tsx`](../../src/context/ReleasePlaybackProvider.component.tsx) |
+| **`*.context.tsx`** | Consumer hooks (+ optional **`useX()`** combo); re-export **`XProvider`** only | [`crate.context.tsx`](../../src/context/crate.context.tsx), [`releasePlayback.context.tsx`](../../src/context/releasePlayback.context.tsx) |
+
+**Release notes** (feature-scoped, same idea): implementation in [`ReleaseNotesEditorContext.tsx`](../../src/components/ReleaseNotes/ReleaseNotesEditorContext.tsx) + [`ReleaseNotesEditorProvider.component.tsx`](../../src/components/ReleaseNotes/ReleaseNotesEditorProvider.component.tsx); app code imports hooks/provider from [`ReleaseNotesEditor.context.tsx`](../../src/components/ReleaseNotes/ReleaseNotesEditor.context.tsx).
+
+**Knip / hook barrels:** Import context objects from **`*Contexts.tsx`** (or the feature **`…EditorContext.tsx`**) inside the provider and hook module. Do **not** re-export those context instances from the hook barrel — nothing should import them from there, and **`pnpm knip:ci`** flags unused re-exports. Export **hooks**, **`XProvider`**, and **types** only.
+
+**Breaking cycles:** (1) Move shared props/types to a **`*.types.ts`** file both sides can import. (2) Prefer **constants** modules over utils that pull in UI (e.g. **`SortValues`** from [`sortValues.ts`](../../src/constants/sortValues.ts), not filter context). (3) For lazy route/modal chunks, warm with **`import()`** in a leaf util (e.g. [`prefetchReleaseModalChunk.ts`](../../src/utils/prefetchReleaseModalChunk.ts)) — never add a **static** import from the lazy module into shared code the lazy module also imports. Use **Fallow** (`pnpm fallow:dead-code`) to find cycles before merge; **Knip** does not report them.
+
+### Release open prefetch (modal + release detail)
+
+Collection surfaces that open **`ReleaseModal`** should warm **two** things on hover/pointer-down: uncached **`discogsReleaseQueryOptions`** and the lazy modal chunk.
+
+| Hook / util | Use when |
+|-------------|----------|
+| [`useReleaseCardOpenHandler`](../../src/hooks/useReleaseCardOpenHandler.hook.ts) | Cards, list/table rows, mosaic tiles, dashboard rows, crate drawer/layout, mini-player open control, public crate cards — composes query prefetch + modal chunk |
+| [`useReleaseOpenHandler`](../../src/hooks/useReleaseOpenHandler.hook.ts) | Already inside an open modal (e.g. **`ReleaseSimilarReleaseItem`**) — query prefetch only; modal chunk is redundant |
+| [`prefetchReleaseOpenData`](../../src/utils/prefetchReleaseOpenData.ts) | Imperative full warm (both steps); tests mock **`prefetchReleaseModalChunk`**, not the modal loader |
+| [`prefetchDiscogsReleaseQuery`](../../src/utils/prefetchDiscogsReleaseQuery.ts) | Release detail only |
+
+Card/table specs and shared timer helpers: [conventions.md → Testing](conventions.md#testing) (**Release open hover prefetch** bullet). UI spread rules: [components.md → ReleaseCard](components.md#feature-example-releasecard-desktop-grid) (**Open detail modal** row).
+
 ## Authentication flow
 
 1. **Start OAuth**: client navigates to **`GET /api/auth/discogs`**, which reuses stored OAuth tokens when present (no Discogs authorize screen) or starts a fresh OAuth flow. Pass **`?force=1`** to clear tokens and require a new Discogs authorization (e.g. **Use a different Discogs account** on the landing page).
