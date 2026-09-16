@@ -1,25 +1,18 @@
 "use client";
 
 import { useContext, useMemo } from "react";
-import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
-import type {
-  ReleasePlaybackActions,
-  ReleasePlaybackContextValue,
-  ReleasePlaybackState,
-} from "src/types/releasePlaybackContext.types";
 import {
   ReleasePlaybackActionsContext,
   ReleasePlaybackQueueContext,
   ReleasePlaybackStateContext,
   ReleasePlaybackVisibilityContext,
 } from "src/context/releasePlaybackContexts";
-
-export {
-  ReleasePlaybackActionsContext,
-  ReleasePlaybackQueueContext,
-  ReleasePlaybackStateContext,
-  ReleasePlaybackVisibilityContext,
-} from "src/context/releasePlaybackContexts";
+import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import type {
+  ReleasePlaybackActions,
+  ReleasePlaybackContextValue,
+  ReleasePlaybackState,
+} from "src/types/releasePlaybackContext.types";
 
 export { ReleasePlaybackProvider } from "./ReleasePlaybackProvider.component";
 

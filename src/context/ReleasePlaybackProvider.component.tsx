@@ -16,6 +16,12 @@ import {
 import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
+import {
+  ReleasePlaybackActionsContext,
+  ReleasePlaybackQueueContext,
+  ReleasePlaybackStateContext,
+  ReleasePlaybackVisibilityContext,
+} from "src/context/releasePlaybackContexts";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import {
@@ -31,7 +37,6 @@ import type {
   AddPreviewToQueueParams,
   AddToQueueParams,
   ReleasePlaybackActions,
-  ReleasePlaybackContextValue,
   ReleasePlaybackState,
   StartPlaybackParams,
   StartReleasePreviewParams,
@@ -93,13 +98,6 @@ import {
   YOUTUBE_PLAYER_STATE_PLAYING,
 } from "src/utils/youtubeIframeEvents";
 
-import {
-  ReleasePlaybackActionsContext,
-  ReleasePlaybackQueueContext,
-  ReleasePlaybackStateContext,
-  ReleasePlaybackVisibilityContext,
-} from "src/context/releasePlaybackContexts";
-
 interface PlayQueueItemOptions {
   autoplay?: boolean;
   rebuildAlbumQueue?: boolean;
@@ -122,7 +120,6 @@ const createSimilarQueueMode = (enabled: boolean): SimilarQueueMode => ({
   enabled,
   initialAppendPending: enabled,
 });
-
 
 export const ReleasePlaybackProvider = ({
   children,
