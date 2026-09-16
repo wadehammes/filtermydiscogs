@@ -60,7 +60,7 @@ Full list: [`package.json`](../../package.json).
 
 ### Fallow vs Knip
 
-**Knip** remains the **CI gate** (`pnpm knip:ci`). **Fallow** is **optional** for agents and local analysis: import cycles, duplication, complexity/health, unresolved imports, and changed-file **`fallow audit`**. Config lives in [`.fallowrc.jsonc`](../../.fallowrc.jsonc) (Knip-equivalent ignores via **`overrides`**, intentional context/type **barrel** pairs via **`ignoreExports`**, Jest mock **entry** points, Jest-only **ignoreDependencies**). Fallow does not traverse hidden **`.jest/`**; setup is reached via explicit **entry** paths and mock files under **`src/tests/mocks/`**.
+**Knip** remains the **CI gate** (`pnpm knip:ci`) — unused exports, deps, and files. **Fallow** is **optional** for agents and local analysis: **import cycles**, duplication, complexity/health, unresolved imports, and changed-file **`fallow audit`**. When Fallow reports a cycle, fix with the patterns in [patterns.md → Large context providers](patterns.md#large-context-providers-playback-crates-notes-editor) (types split, dynamic chunk prefetch, no static lazy-loader imports in shared utils). Config lives in [`.fallowrc.jsonc`](../../.fallowrc.jsonc) (Knip-equivalent ignores via **`overrides`**, intentional duplicate **type barrel** pairs via **`ignoreExports`**, Jest mock **entry** points, Jest-only **ignoreDependencies**). Fallow does not traverse hidden **`.jest/`**; setup is reached via explicit **entry** paths and mock files under **`src/tests/mocks/`**.
 
 Known stderr noise on this repo: Fallow may warn about an invalid entry glob **`1/3}`** from the **`test:ci:shard`** script placeholder in **`package.json`** — harmless for ad-hoc runs.
 
