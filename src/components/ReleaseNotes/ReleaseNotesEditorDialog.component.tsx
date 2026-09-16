@@ -2,7 +2,7 @@
 
 import type { DiscogsRelease } from "src/types";
 import { NoteEditDialog } from "./NoteEditDialog.component";
-import { useReleaseNotesEditorContext } from "./ReleaseNotesEditor.context";
+import { useReleaseNotesEditorContext } from "./ReleaseNotesEditorContext";
 
 interface ReleaseNotesEditorDialogProps {
   release: DiscogsRelease;
