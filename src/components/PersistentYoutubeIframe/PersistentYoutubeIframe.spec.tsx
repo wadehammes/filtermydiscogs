@@ -10,6 +10,7 @@ import {
 } from "src/tests/utils/testProviders";
 import {
   loadAndPlayYoutubeVideo,
+  refreshYoutubeEmbedPlayerLayout,
   transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import { render, screen } from "test-utils";
@@ -19,12 +20,16 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
   transitionYoutubeIframeToVideo: jest.fn(),
+  refreshYoutubeEmbedPlayerLayout: jest.fn(),
   requestYoutubePlayerState: jest.fn(),
 }));
 
 const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
 const mockTransitionYoutubeIframeToVideo = jest.mocked(
   transitionYoutubeIframeToVideo,
+);
+const mockRefreshYoutubeEmbedPlayerLayout = jest.mocked(
+  refreshYoutubeEmbedPlayerLayout,
 );
 
 const createWrapper = () => {
@@ -84,6 +89,7 @@ describe("PersistentYoutubeIframe", () => {
 
     expect(iframe).toHaveAttribute("data-variant", "visible");
     expect(iframe.getAttribute("src")).toBe(initialSrc);
+    expect(mockTransitionYoutubeIframeToVideo).not.toHaveBeenCalled();
   });
 
   it("loads the next video via postMessage while hidden, then shows without src reload", async () => {
@@ -130,6 +136,10 @@ describe("PersistentYoutubeIframe", () => {
 
     expect(iframe).toHaveAttribute("data-variant", "visible");
     expect(iframe.getAttribute("src")).toBe(initialSrc);
+    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
   });
 
   it("loads the next video via postMessage while visible without reloading iframe src", async () => {

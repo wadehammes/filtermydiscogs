@@ -3,13 +3,16 @@ export type YoutubePlayerCommand =
   | "pauseVideo"
   | "getPlayerState";
 
+export const YOUTUBE_EMBED_PLAYER_WIDTH = 640;
+export const YOUTUBE_EMBED_PLAYER_HEIGHT = 360;
+
 const postYoutubeIframeCommand = ({
   iframe,
   func,
   args = "",
 }: {
   iframe: HTMLIFrameElement | null;
-  func: YoutubePlayerCommand | "loadVideoById";
+  func: YoutubePlayerCommand | "loadVideoById" | "setSize";
   args?: string | unknown[];
 }): void => {
   if (!iframe?.contentWindow) {
@@ -66,6 +69,22 @@ export const transitionYoutubeIframeToVideo = ({
   videoId: string;
 }): void => {
   loadYoutubeVideoById({ iframe, videoId });
+};
+
+export const refreshYoutubeEmbedPlayerLayout = ({
+  iframe,
+  width = YOUTUBE_EMBED_PLAYER_WIDTH,
+  height = YOUTUBE_EMBED_PLAYER_HEIGHT,
+}: {
+  iframe: HTMLIFrameElement | null;
+  width?: number;
+  height?: number;
+}): void => {
+  postYoutubeIframeCommand({
+    iframe,
+    func: "setSize",
+    args: [width, height],
+  });
 };
 
 export const loadAndPlayYoutubeVideo = ({

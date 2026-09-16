@@ -7,6 +7,7 @@ import { definedProps } from "src/utils/definedProps";
 import {
   buildYoutubeEmbedUrl,
   loadAndPlayYoutubeVideo,
+  refreshYoutubeEmbedPlayerLayout,
   transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import styles from "./PersistentYoutubeIframe.module.css";
@@ -48,6 +49,7 @@ export const PersistentYoutubeIframe = ({
 
   const [bootstrapVideoId] = useState(videoId);
   const loadedVideoIdRef = useRef(bootstrapVideoId);
+  const loadedWhileHiddenRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const previousVariantRef = useRef(variant);
 
@@ -70,6 +72,7 @@ export const PersistentYoutubeIframe = ({
       }
 
       loadedVideoIdRef.current = targetVideoId;
+      loadedWhileHiddenRef.current = variant === "hidden";
 
       if (autoplay) {
         loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
@@ -77,7 +80,7 @@ export const PersistentYoutubeIframe = ({
         transitionYoutubeIframeToVideo({ iframe, videoId: targetVideoId });
       }
     },
-    [autoplay],
+    [autoplay, variant],
   );
 
   useEffect(() => {
@@ -102,6 +105,9 @@ export const PersistentYoutubeIframe = ({
 
     if (loadedVideoIdRef.current !== videoId) {
       transitionIframeToVideo(videoId);
+    } else if (loadedWhileHiddenRef.current) {
+      loadedWhileHiddenRef.current = false;
+      refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
     }
 
     resumePlaybackFromGesture();
