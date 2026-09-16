@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from "react";
@@ -61,6 +62,14 @@ import {
   upcomingFromAlbumQueue,
 } from "src/utils/playbackQueue";
 import {
+  getSessionRelease,
+  initialPlaybackSessionState,
+  playbackSessionReducer,
+  selectIsMiniPlayerVisible,
+  selectIsPaused,
+  selectIsPlaying,
+} from "src/utils/playbackSessionState";
+import {
   loadAndPlayYoutubeVideo,
   requestYoutubePlayerState,
 } from "src/utils/postYoutubePlayerCommand";
@@ -87,6 +96,7 @@ import {
 } from "src/utils/releasePlaybackStorage";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
 import { getSimilarReleases } from "src/utils/similarReleases";
+import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
 import {
   enableYoutubeIframeListening,
   HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
@@ -146,24 +156,22 @@ export const ReleasePlaybackProvider = ({
   });
   const autoPlayOnQueueAdd =
     userPreferences?.autoPlayOnQueueAdd ?? DEFAULT_AUTO_PLAY_ON_QUEUE_ADD;
-  const [release, setRelease] = useState<DiscogsRelease | null>(null);
-  const [queue, setQueue] = useState<PlaybackQueueItem[]>([]);
-  const [playbackHistory, setPlaybackHistory] = useState<PlaybackQueueItem[]>(
-    [],
+  const [session, dispatchSession] = useReducer(
+    playbackSessionReducer,
+    initialPlaybackSessionState,
   );
-  const [activeTrackIndex, setActiveTrackIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const release = getSessionRelease(session);
+  const queue = session.queue;
+  const playbackHistory = session.playbackHistory;
+  const activeTrackIndex = session.activeTrackIndex;
+  const previewVideo = session.kind === "idle" ? null : session.previewVideo;
+  const pendingTrackPosition = session.pendingTrackPosition;
+  const pendingPreviewVideoUri = session.pendingPreviewVideoUri;
+  const isPlaying = selectIsPlaying(session);
+  const isPaused = selectIsPaused(session);
   const [shouldAutoplayEmbed, setShouldAutoplayEmbed] = useState(false);
   const [isPlaybackEmbedMounted, setIsPlaybackEmbedMounted] = useState(false);
   const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
-  const [pendingTrackPosition, setPendingTrackPosition] = useState<
-    string | null
-  >(null);
-  const [pendingPreviewVideoUri, setPendingPreviewVideoUri] = useState<
-    string | null
-  >(null);
-  const [previewVideo, setPreviewVideo] = useState<DiscogsVideo | null>(null);
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
   const pendingPlayFromGestureRef = useRef(false);
@@ -195,14 +203,16 @@ export const ReleasePlaybackProvider = ({
   const isPlayingRef = useRef(isPlaying);
   const previewVideoRef = useRef<DiscogsVideo | null>(null);
 
-  isPausedRef.current = isPaused;
-  isPlayingRef.current = isPlaying;
-  previewVideoRef.current = previewVideo;
-  releaseRef.current = release;
-  queueRef.current = queue;
-  playbackHistoryRef.current = playbackHistory;
   autoPlayOnQueueAddRef.current = autoPlayOnQueueAdd;
-  activeTrackIndexRef.current = activeTrackIndex;
+  syncPlaybackSessionRefs(session, {
+    release: releaseRef,
+    queue: queueRef,
+    playbackHistory: playbackHistoryRef,
+    activeTrackIndex: activeTrackIndexRef,
+    previewVideo: previewVideoRef,
+    isPlaying: isPlayingRef,
+    isPaused: isPausedRef,
+  });
 
   const persistPlaybackSession = useCallback(() => {
     const currentRelease = releaseRef.current;
@@ -242,48 +252,31 @@ export const ReleasePlaybackProvider = ({
     });
   }, []);
 
-  const setUpcomingQueue = useCallback(
-    (nextQueue: PlaybackQueueItem[]) => {
-      queueRef.current = nextQueue;
-      setQueue(nextQueue);
-      persistPlaybackSession();
-    },
-    [persistPlaybackSession],
-  );
+  const setUpcomingQueue = useCallback((nextQueue: PlaybackQueueItem[]) => {
+    queueRef.current = nextQueue;
+    dispatchSession({ type: "SET_QUEUE", queue: nextQueue });
+  }, []);
 
   const updateUpcomingQueue = useCallback(
     (updater: (previousQueue: PlaybackQueueItem[]) => PlaybackQueueItem[]) => {
-      setQueue((previousQueue) => {
-        const nextQueue = updater(previousQueue);
-        queueRef.current = nextQueue;
-        persistPlaybackSession();
-        return nextQueue;
-      });
+      dispatchSession({ type: "UPDATE_QUEUE", updater });
     },
-    [persistPlaybackSession],
+    [],
   );
 
-  const clearPlaybackHistory = useCallback(() => {
-    playbackHistoryRef.current = [];
-    setPlaybackHistory([]);
-  }, []);
+  useEffect(() => {
+    queueRef.current = session.queue;
+    persistPlaybackSession();
+  }, [session.queue, persistPlaybackSession]);
 
   const abortUnresolvedPlayback = useCallback(() => {
-    setPendingTrackPosition(null);
-    setPendingPreviewVideoUri(null);
-    setIsPlaying(false);
-    setIsPaused(false);
+    dispatchSession({ type: "STOP" });
     setShouldAutoplayEmbed(false);
     setEmbedVideoId(null);
     embedVideoIdRef.current = null;
     lastSyncedActiveVideoIdRef.current = null;
-    setPreviewVideo(null);
-    setRelease(null);
-    setActiveTrackIndex(0);
-    setUpcomingQueue([]);
-    clearPlaybackHistory();
     clearPersistedReleasePlayback();
-  }, [clearPlaybackHistory, setUpcomingQueue]);
+  }, []);
 
   const pushCurrentToHistory = useCallback(() => {
     const currentItem = getCurrentQueueItem();
@@ -292,11 +285,7 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
-    setPlaybackHistory((previousHistory) => {
-      const nextHistory = [...previousHistory, currentItem];
-      playbackHistoryRef.current = nextHistory;
-      return nextHistory;
-    });
+    dispatchSession({ type: "PUSH_HISTORY", item: currentItem });
   }, [getCurrentQueueItem]);
 
   const maybePushCurrentToHistory = useCallback(() => {
@@ -663,7 +652,7 @@ export const ReleasePlaybackProvider = ({
     : (activeTrack?.position ?? null);
 
   const isPlaybackReady = isPlaying && activeVideoId !== null;
-  const isMiniPlayerVisible = release !== null;
+  const isMiniPlayerVisible = selectIsMiniPlayerVisible(session);
 
   const playbackVideoId = useMemo(() => {
     if (pendingTrackPosition || pendingPreviewVideoUri) {
@@ -727,7 +716,7 @@ export const ReleasePlaybackProvider = ({
       ) {
         pendingPlayFromGestureRef.current = false;
         clearPlayFromGestureRetries();
-        setIsPaused(true);
+        dispatchSession({ type: "PAUSE" });
         return;
       }
 
@@ -736,7 +725,7 @@ export const ReleasePlaybackProvider = ({
         isPlayingRef.current &&
         isPausedRef.current
       ) {
-        setIsPaused(false);
+        dispatchSession({ type: "RESUME" });
         return;
       }
 
@@ -892,12 +881,11 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
-    setPreviewVideo(null);
-    setActiveTrackIndex(index);
-
-    if (!awaitingResumeGestureRef.current) {
-      setIsPaused(false);
-    }
+    dispatchSession({
+      type: "RESOLVE_PENDING_TRACK",
+      index,
+      resumeTransport: !awaitingResumeGestureRef.current,
+    });
 
     awaitingResumeGestureRef.current = false;
 
@@ -922,8 +910,6 @@ export const ReleasePlaybackProvider = ({
         });
       }
     }
-
-    setPendingTrackPosition(null);
   }, [
     abortUnresolvedPlayback,
     appendSimilarReleasesToQueue,
@@ -953,8 +939,7 @@ export const ReleasePlaybackProvider = ({
       return;
     }
 
-    setPreviewVideo(video);
-    setPendingPreviewVideoUri(null);
+    dispatchSession({ type: "RESOLVE_PREVIEW_VIDEO", video });
   }, [
     abortUnresolvedPlayback,
     pendingPreviewVideoUri,
@@ -974,7 +959,7 @@ export const ReleasePlaybackProvider = ({
     }
 
     if (tracks.length > 0 && activeVideoId === null && !isReleasePreview) {
-      setIsPlaying(false);
+      dispatchSession({ type: "SET_TRANSPORT_OFF" });
       clearPersistedReleasePlayback();
     }
   }, [
@@ -993,8 +978,8 @@ export const ReleasePlaybackProvider = ({
     }
 
     if (activeTrackIndex >= tracks.length) {
-      setActiveTrackIndex(0);
-      setIsPaused(false);
+      dispatchSession({ type: "SET_ACTIVE_TRACK_INDEX", index: 0 });
+      dispatchSession({ type: "RESUME" });
     }
   }, [activeTrackIndex, pendingTrackPosition, tracks.length]);
 
@@ -1019,8 +1004,11 @@ export const ReleasePlaybackProvider = ({
         return false;
       }
 
-      setActiveTrackIndex(index);
-      setPendingTrackPosition(null);
+      dispatchSession({
+        type: "RESOLVE_PENDING_TRACK",
+        index,
+        resumeTransport: true,
+      });
       return true;
     },
     [],
@@ -1058,38 +1046,19 @@ export const ReleasePlaybackProvider = ({
         prefetchQueueItemEmbed(item);
       }
 
-      setRelease(item.release);
       releaseRef.current = item.release;
-      setPreviewVideo(null);
-      setPendingPreviewVideoUri(null);
 
-      if (item.previewVideoUri) {
-        shouldRebuildAlbumQueueRef.current = false;
-        setPendingTrackPosition(null);
-        setIsPlaying(true);
-        setIsPaused(startPaused);
-        setShouldAutoplayEmbed(autoplay && !startPaused);
-        awaitingResumeGestureRef.current = startPaused;
-        pendingPlayFromGestureRef.current = autoplay && !startPaused;
+      dispatchSession({
+        type: "PLAY_QUEUE_ITEM",
+        params: {
+          release: item.release,
+          startPaused,
+          isSameRelease,
+          pendingTrackPosition: null,
+          pendingPreviewVideoUri: item.previewVideoUri ?? null,
+        },
+      });
 
-        if (startPaused) {
-          clearPlayFromGestureRetries();
-        }
-
-        setPendingPreviewVideoUri(item.previewVideoUri);
-        return;
-      }
-
-      if (!isSameRelease) {
-        setActiveTrackIndex(0);
-
-        if (!preparedEmbedVideoId) {
-          lastSyncedActiveVideoIdRef.current = null;
-        }
-      }
-
-      setIsPlaying(true);
-      setIsPaused(startPaused);
       setShouldAutoplayEmbed(autoplay && !startPaused);
       awaitingResumeGestureRef.current = startPaused;
       pendingPlayFromGestureRef.current = autoplay && !startPaused;
@@ -1098,11 +1067,23 @@ export const ReleasePlaybackProvider = ({
         clearPlayFromGestureRetries();
       }
 
+      if (item.previewVideoUri) {
+        shouldRebuildAlbumQueueRef.current = false;
+        return;
+      }
+
+      if (!(isSameRelease || preparedEmbedVideoId)) {
+        lastSyncedActiveVideoIdRef.current = null;
+      }
+
       if (!rebuildAlbumQueue && resolveQueueItemPlayback(item)) {
         return;
       }
 
-      setPendingTrackPosition(item.trackPosition);
+      dispatchSession({
+        type: "SET_PENDING_TRACK_POSITION",
+        position: item.trackPosition,
+      });
     },
     [
       applyTargetEmbedVideoId,
@@ -1149,8 +1130,7 @@ export const ReleasePlaybackProvider = ({
       rebuildAlbumQueue: rebuildAlbumQueueOption,
       youtubeVideoId,
     }: StartPlaybackParams) => {
-      setPreviewVideo(null);
-      setPendingPreviewVideoUri(null);
+      dispatchSession({ type: "CLEAR_PREVIEW_PENDING" });
       const item = createQueueItem({
         release: nextRelease,
         trackPosition,
@@ -1214,30 +1194,25 @@ export const ReleasePlaybackProvider = ({
     ({ release: nextRelease, video }: StartReleasePreviewParams) => {
       const previewVideoId = parseYoutubeVideoId(video.uri);
 
-      setPreviewVideo(video);
-      setPendingPreviewVideoUri(null);
       shouldRebuildAlbumQueueRef.current = false;
       similarQueueModeRef.current = createSimilarQueueMode(false);
       similarQueueGenerationRef.current += 1;
-      setRelease(nextRelease);
+      dispatchSession({
+        type: "START_RELEASE_PREVIEW",
+        params: { release: nextRelease, video },
+      });
       releaseRef.current = nextRelease;
-      setUpcomingQueue([]);
-      clearPlaybackHistory();
-      setActiveTrackIndex(0);
-      setPendingTrackPosition(null);
 
       if (previewVideoId) {
         applyTargetEmbedVideoId(previewVideoId);
       }
 
-      setIsPlaying(true);
-      setIsPaused(false);
       setShouldAutoplayEmbed(true);
       awaitingResumeGestureRef.current = false;
       pendingPlayFromGestureRef.current = true;
       trackPlaybackStarted(nextRelease.instance_id);
     },
-    [applyTargetEmbedVideoId, clearPlaybackHistory, setUpcomingQueue],
+    [applyTargetEmbedVideoId],
   );
 
   const addToQueue = useCallback(
@@ -1340,8 +1315,7 @@ export const ReleasePlaybackProvider = ({
     }
 
     const nextHistory = playbackHistoryRef.current.slice(0, -1);
-    setPlaybackHistory(nextHistory);
-    playbackHistoryRef.current = nextHistory;
+    dispatchSession({ type: "SET_HISTORY", history: nextHistory });
     playQueueItem(previousItem, { autoplay: true, rebuildAlbumQueue: false });
   }, [playQueueItem, prependCurrentToUpcoming]);
 
@@ -1403,7 +1377,7 @@ export const ReleasePlaybackProvider = ({
         command: "playVideo",
       });
       schedulePlayFromGestureAttempts();
-      setIsPaused(false);
+      dispatchSession({ type: "RESUME" });
       return;
     }
 
@@ -1413,7 +1387,7 @@ export const ReleasePlaybackProvider = ({
       iframe: playbackIframeRef.current,
       command: "pauseVideo",
     });
-    setIsPaused(true);
+    dispatchSession({ type: "PAUSE" });
   }, [clearPlayFromGestureRetries, isPaused, schedulePlayFromGestureAttempts]);
 
   const stopPlayback = useCallback(() => {
@@ -1423,22 +1397,14 @@ export const ReleasePlaybackProvider = ({
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
     queueManuallyExtendedRef.current = false;
-    setPreviewVideo(null);
-    setPendingPreviewVideoUri(null);
-    setIsPlaying(false);
-    setIsPaused(false);
+    dispatchSession({ type: "STOP" });
     setShouldAutoplayEmbed(false);
     setIsPlaybackEmbedMounted(false);
     setEmbedVideoId(null);
     embedVideoIdRef.current = null;
     lastSyncedActiveVideoIdRef.current = null;
-    setRelease(null);
-    setActiveTrackIndex(0);
-    setPendingTrackPosition(null);
-    setUpcomingQueue([]);
-    clearPlaybackHistory();
     clearPersistedReleasePlayback();
-  }, [clearPlayFromGestureRetries, clearPlaybackHistory, setUpcomingQueue]);
+  }, [clearPlayFromGestureRetries]);
 
   const clearQueue = useCallback(() => {
     similarQueueModeRef.current = createSimilarQueueMode(false);
