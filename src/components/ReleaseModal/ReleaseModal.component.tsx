@@ -10,14 +10,10 @@ import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
+import type { ReleaseModalProps } from "./ReleaseModal.types";
 import { useSimilarReleasesInCollection } from "./useSimilarReleasesInCollection.hook";
 
-export interface ReleaseModalProps {
-  isOpen: boolean;
-  release: DiscogsRelease | null;
-  onClose: () => void;
-  onReleaseClick?: (instanceId: string) => void;
-}
+export type { ReleaseModalProps } from "./ReleaseModal.types";
 
 export const ReleaseModal = ({
   isOpen,
