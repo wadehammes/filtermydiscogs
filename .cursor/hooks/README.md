@@ -36,6 +36,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `block-query-hook-mocks.sh` | `preToolUse` | Denies feature-test edits that mock `src/hooks/queries/*` instead of `src/api/urls`. |
 | `login-page-copy-drift-check.sh` | `stop` | Runs login page literary-rule Jest tests when landing copy source files changed (via **`mise exec -- pnpm`**). |
 | `query-hook-mock-drift-check.sh` | `stop` | Runs query-hook mock rule Jest tests when feature test files changed (via **`mise exec -- pnpm`**). |
+| `lint-all-check.sh` | `stop` | Runs **`pnpm lint:all`** when the session changed meaningful source ( **`src/**`**, Prisma, lockfile, `package.json`, `next.config`) and follow up once on failure. |
 
 ### Not ported
 
