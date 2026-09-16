@@ -151,7 +151,8 @@ pnpm lint:css         # Stylelint
 pnpm format           # Biome format (check)
 pnpm format:fix      # Biome format write
 pnpm type-check
-pnpm knip
+pnpm knip             # CI dead-code gate (unused exports/files)
+pnpm fallow:health    # optional agent tooling — complexity, dupes, cycles (see AGENTS.md)
 
 pnpm build && pnpm start
 pnpm analyze          # bundle analyzer (webpack build)

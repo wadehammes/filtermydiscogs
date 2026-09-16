@@ -47,7 +47,8 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm lint:ci` / `pnpm test:ci` / `pnpm test:ci:shard` / `pnpm knip:ci` | Quality gates. **`test:ci`** runs Jest **`--runInBand`** (matches local **`pnpm test`**). Optional local sharding: **`JEST_SHARD=2/3 pnpm test:ci:shard`**. |
 | `pnpm generate:theme-init` | Regenerates **`public/theme-init.js`** from [`themeAppearance.ts`](../../src/utils/themeAppearance.ts) (also runs on **`postinstall`**). |
 | `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
-| `pnpm knip` | Find unused exports/files locally ([`knip.json`](../../knip.json)). |
+| `pnpm knip` | CI dead-code gate — unused exports/files/deps ([`knip.json`](../../knip.json)); **`pnpm knip:ci`** in Actions. |
+| `pnpm fallow` / `pnpm fallow:dead-code` / `pnpm fallow:health` / `pnpm fallow:dupes` | Optional **Fallow** codebase intelligence for agents and local deep dives ([`.fallowrc.jsonc`](../../.fallowrc.jsonc)) — cycles, dupes, complexity, unresolved imports; **not** a CI gate. **`pnpm fallow:audit`** scopes to changes since **`origin/staging`**. Cursor: [`.cursor/mcp.json`](../../.cursor/mcp.json) + [`.agents/skills/fallow`](../../.agents/skills/fallow); task map in [`AGENTS.md`](../../AGENTS.md). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
 | `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
@@ -56,6 +57,14 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm test:e2e:ci` | CI/local gate: **`playwright install chromium --with-deps`** then **`playwright test`**. |
 
 Full list: [`package.json`](../../package.json).
+
+### Fallow vs Knip
+
+**Knip** remains the **CI gate** (`pnpm knip:ci`). **Fallow** is **optional** for agents and local analysis: import cycles, duplication, complexity/health, unresolved imports, and changed-file **`fallow audit`**. Config lives in [`.fallowrc.jsonc`](../../.fallowrc.jsonc) (Knip-equivalent ignores via **`overrides`**, Jest mock **entry** points, Jest-only **ignoreDependencies**). Fallow does not traverse hidden **`.jest/`**; setup is reached via explicit **entry** paths and mock files under **`src/tests/mocks/`**.
+
+Known stderr noise on this repo: Fallow may warn about an invalid entry glob **`1/3}`** from the **`test:ci:shard`** script placeholder in **`package.json`** — harmless for ad-hoc runs.
+
+Wire-up: **`pnpm exec fallow agent install --harness cursor --without hooks`** (re-run after Fallow upgrades). Commit hooks are **not** used here.
 
 ### `pg` and `@types/pg`
 

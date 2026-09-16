@@ -18,10 +18,10 @@ export const crateDrawerDefaultCrate = crateWithCountFactory.build({
   releaseCount: 2,
 });
 
-export const {
-  releaseCount: _defaultReleaseCount,
-  ...crateDrawerDefaultDetail
-} = crateDrawerDefaultCrate;
+const { releaseCount, ...crateDrawerDefaultDetail } = crateDrawerDefaultCrate;
+void releaseCount;
+
+export { crateDrawerDefaultDetail };
 
 export const crateDrawerReleasePacked = releaseFactory.build({
   instance_id: "111",

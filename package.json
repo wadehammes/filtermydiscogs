@@ -48,7 +48,12 @@
     "lighthouse": "npx lighthouse http://localhost:6767 --output=html --output-path=./lighthouse-report.html",
     "type-check": "tsc --noEmit",
     "knip": "knip",
-    "knip:ci": "knip --no-progress"
+    "knip:ci": "knip --no-progress",
+    "fallow": "fallow",
+    "fallow:dead-code": "fallow dead-code",
+    "fallow:health": "fallow health",
+    "fallow:dupes": "fallow dupes",
+    "fallow:audit": "fallow audit --changed-since origin/staging"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -103,6 +108,7 @@
     "@types/react-dom": "^19.3.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv-cli": "^11.0.0",
+    "fallow": "3.26.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.1",
     "jest-environment-jsdom": "^30.5.1",
