@@ -1,7 +1,12 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
-import { type MutableRefObject, type RefObject, useCallback } from "react";
+import {
+  type MutableRefObject,
+  type RefObject,
+  useCallback,
+  useState,
+} from "react";
 import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -56,6 +61,7 @@ export const useReleasePlaybackSimilarQueue = ({
     similarQueueGenerationRef,
     similarQueueFetchInFlightRef,
   } = refs;
+  const [isSimilarQueueLoading, setIsSimilarQueueLoading] = useState(false);
 
   const fetchSimilarQueueItems = useCallback(
     async ({
@@ -117,26 +123,38 @@ export const useReleasePlaybackSimilarQueue = ({
       generation: number;
       existingQueue?: PlaybackQueueItem[];
     }): Promise<boolean> => {
-      const similarItems = await fetchSimilarQueueItems({
-        sourceRelease,
-        existingQueue,
-      });
-
-      if (
-        generation !== similarQueueGenerationRef.current ||
-        similarItems.length === 0
-      ) {
+      if (similarQueueFetchInFlightRef.current) {
         return false;
       }
 
-      updateUpcomingQueue((previousQueue) =>
-        appendUniqueQueueItems(previousQueue, similarItems),
-      );
-      return true;
+      similarQueueFetchInFlightRef.current = true;
+      setIsSimilarQueueLoading(true);
+
+      try {
+        const similarItems = await fetchSimilarQueueItems({
+          sourceRelease,
+          existingQueue,
+        });
+
+        if (
+          generation !== similarQueueGenerationRef.current ||
+          similarItems.length === 0
+        ) {
+          return false;
+        }
+
+        updateUpcomingQueue((previousQueue) =>
+          appendUniqueQueueItems(previousQueue, similarItems),
+        );
+        return true;
+      } finally {
+        similarQueueFetchInFlightRef.current = false;
+        setIsSimilarQueueLoading(false);
+      }
     },
     [
       fetchSimilarQueueItems,
-      queueRef,
+      similarQueueFetchInFlightRef,
       similarQueueGenerationRef,
       updateUpcomingQueue,
     ],
@@ -158,17 +176,11 @@ export const useReleasePlaybackSimilarQueue = ({
       return false;
     }
 
-    similarQueueFetchInFlightRef.current = true;
-
-    try {
-      return await appendSimilarReleasesToQueue({
-        sourceRelease: lastItem.release,
-        generation: similarQueueGenerationRef.current,
-        existingQueue: currentQueue,
-      });
-    } finally {
-      similarQueueFetchInFlightRef.current = false;
-    }
+    return appendSimilarReleasesToQueue({
+      sourceRelease: lastItem.release,
+      generation: similarQueueGenerationRef.current,
+      existingQueue: currentQueue,
+    });
   }, [
     appendSimilarReleasesToQueue,
     previewVideoRef,
@@ -207,5 +219,6 @@ export const useReleasePlaybackSimilarQueue = ({
     appendSimilarReleasesToQueue,
     extendQueueTail,
     maybeExtendQueueTail,
+    isSimilarQueueLoading,
   };
 };

@@ -20,3 +20,4 @@ export type FmdToastData = {
 
 export const toastManager = Toast.createToastManager<FmdToastData>();
 export const centerToastManager = Toast.createToastManager<FmdToastData>();
+export const topCenterToastManager = Toast.createToastManager<FmdToastData>();

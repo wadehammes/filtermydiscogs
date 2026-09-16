@@ -4,6 +4,7 @@ import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import {
   expectReleaseOpenPrefetchAfterHover,
   setupReleaseOpenPrefetchHoverTimers,
@@ -15,6 +16,7 @@ let po: ReleaseCardPageObject;
 
 describe("ReleaseCard", () => {
   beforeEach(() => {
+    setupMockMatchMedia({ desktop: true });
     po = new ReleaseCardPageObject();
     jest.clearAllMocks();
   });
@@ -484,7 +486,9 @@ describe("ReleaseCard", () => {
       ).toBeDisabled();
     });
 
-    expect(po.mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue");
+    expect(po.mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue", {
+      position: "bottom-center",
+    });
   });
 
   it("shows an error toast when the release has no playable tracks", async () => {
@@ -509,6 +513,7 @@ describe("ReleaseCard", () => {
     await waitFor(() => {
       expect(po.mockToastError).toHaveBeenCalledWith(
         "No playable tracks to queue",
+        { position: "bottom-center" },
       );
     });
 
@@ -543,7 +548,9 @@ describe("ReleaseCard", () => {
       ).toBeDisabled();
     });
 
-    expect(po.mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue");
+    expect(po.mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue", {
+      position: "bottom-center",
+    });
   });
 
   it("opens Discogs when title is clicked even if onReleaseClick is provided", async () => {

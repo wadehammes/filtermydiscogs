@@ -3,12 +3,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type MouseEvent, useCallback, useMemo, useState } from "react";
 import {
-  showReleaseCardQueueAllQueuedToast,
-  showReleaseCardQueueFetchErrorToast,
-  showReleaseCardQueueNoTracksToast,
-  showReleaseCardQueueSuccessToast,
-} from "src/components/ReleaseCard/releaseCardQueueToast";
-import {
   useReleasePlaybackActions,
   useReleasePlaybackState,
 } from "src/context/releasePlayback.context";
@@ -18,6 +12,12 @@ import {
 } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import { isSameQueueItem } from "src/utils/playbackQueue";
+import {
+  showPlaybackQueueAllQueuedToast,
+  showPlaybackQueueFetchErrorToast,
+  showPlaybackQueueNoTracksToast,
+  showPlaybackQueueSuccessToast,
+} from "src/utils/playbackQueueToast";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
   buildReleasePlaybackMatchIndex,
@@ -125,7 +125,7 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
               discogsReleaseQueryOptions(releaseIdString),
             );
           } catch {
-            showReleaseCardQueueFetchErrorToast();
+            showPlaybackQueueFetchErrorToast();
             return;
           } finally {
             setIsFetchingRelease(false);
@@ -149,9 +149,9 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
           ).length;
 
           if (playableTrackCount === 0) {
-            showReleaseCardQueueNoTracksToast();
+            showPlaybackQueueNoTracksToast();
           } else {
-            showReleaseCardQueueAllQueuedToast();
+            showPlaybackQueueAllQueuedToast();
           }
 
           return;
@@ -189,7 +189,7 @@ export const useReleaseCardQueueAction = (release: DiscogsRelease) => {
           }
         }
 
-        showReleaseCardQueueSuccessToast(tracksToQueue.length);
+        showPlaybackQueueSuccessToast(tracksToQueue.length);
       } finally {
         setIsAdding(false);
       }

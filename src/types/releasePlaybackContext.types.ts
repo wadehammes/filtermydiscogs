@@ -49,6 +49,7 @@ export interface ReleasePlaybackState {
   canPlayPrevious: boolean;
   canPlayNext: boolean;
   isLoading: boolean;
+  isQueueBuilding: boolean;
 }
 
 export interface ReleasePlaybackActions {

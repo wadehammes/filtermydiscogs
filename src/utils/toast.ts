@@ -3,9 +3,10 @@ import {
   centerToastManager,
   type FmdToastClassNames,
   toastManager,
+  topCenterToastManager,
 } from "src/lib/toastManagers";
 
-export type ToastPosition = "bottom-right" | "bottom-center";
+export type ToastPosition = "bottom-right" | "bottom-center" | "top-center";
 
 export interface ToastOptions {
   id?: string;
@@ -20,8 +21,17 @@ export interface ToastOptions {
   classNames?: FmdToastClassNames;
 }
 
-const getManager = (position?: ToastPosition) =>
-  position === "bottom-center" ? centerToastManager : toastManager;
+const getManager = (position?: ToastPosition) => {
+  if (position === "bottom-center") {
+    return centerToastManager;
+  }
+
+  if (position === "top-center") {
+    return topCenterToastManager;
+  }
+
+  return toastManager;
+};
 
 const toTimeout = (duration?: number): number | undefined => {
   if (duration === undefined) {
@@ -66,6 +76,7 @@ const addToast = (
 const dismiss = (id?: string) => {
   toastManager.close(id);
   centerToastManager.close(id);
+  topCenterToastManager.close(id);
 };
 
 export const toast = Object.assign(

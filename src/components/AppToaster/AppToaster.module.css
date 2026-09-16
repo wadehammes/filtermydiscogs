@@ -20,6 +20,14 @@
   overflow: visible;
 }
 
+.viewportTopCenter {
+  composes: viewport;
+  inset: calc(1rem + env(safe-area-inset-top, 0px)) auto auto 50%;
+  transform: translateX(-50%);
+  max-width: min(calc(100vw - 2rem), 36rem);
+  overflow: visible;
+}
+
 .root {
   --gap: 0.5rem;
   --peek: 0.5rem;
@@ -165,7 +173,8 @@
   }
 }
 
-.viewportBottomCenter > .root {
+.viewportBottomCenter > .root,
+.viewportTopCenter > .root {
   right: 0;
   left: 0;
   margin-inline: auto;
