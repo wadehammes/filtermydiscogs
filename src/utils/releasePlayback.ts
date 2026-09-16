@@ -1182,6 +1182,7 @@ export {
   loadAndPlayYoutubeVideo,
   loadYoutubeVideoById,
   postYoutubePlayerCommand,
+  refreshYoutubeEmbedPlayerLayout,
   transitionYoutubeIframeToVideo,
 } from "./postYoutubePlayerCommand";
 

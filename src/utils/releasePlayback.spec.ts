@@ -22,6 +22,7 @@ import {
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
   previewVideoToTrack,
+  refreshYoutubeEmbedPlayerLayout,
 } from "./releasePlayback";
 
 describe("parseYoutubeVideoId", () => {
@@ -942,6 +943,24 @@ describe("postYoutubePlayerCommand", () => {
         event: "command",
         func: "playVideo",
         args: "",
+      }),
+      "*",
+    );
+  });
+
+  it("refreshes embed layout without reloading the video", () => {
+    const postMessage = jest.fn();
+    const iframe = {
+      contentWindow: { postMessage },
+    } as unknown as HTMLIFrameElement;
+
+    refreshYoutubeEmbedPlayerLayout({ iframe });
+
+    expect(postMessage).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "command",
+        func: "setSize",
+        args: [640, 360],
       }),
       "*",
     );
