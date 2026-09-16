@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import {
+  getVideoPanelHeightForWidth,
   getVideoPanelPositionAfterResize,
   getVideoPanelResizeDelta,
 } from "./videoPanelCornerResize";
@@ -19,6 +20,19 @@ describe("getVideoPanelResizeDelta", () => {
 
   it("grows from the bottom-left when dragging down-left", () => {
     expect(getVideoPanelResizeDelta("sw", -12, 18)).toBe(18);
+  });
+});
+
+describe("getVideoPanelHeightForWidth", () => {
+  it("scales only the video area, not the fixed chrome row", () => {
+    expect(
+      getVideoPanelHeightForWidth({
+        startWidth: 320,
+        startHeight: 200,
+        nextWidth: 400,
+        chromeHeight: 28,
+      }),
+    ).toBe(28 + (200 - 28) * (400 / 320));
   });
 });
 

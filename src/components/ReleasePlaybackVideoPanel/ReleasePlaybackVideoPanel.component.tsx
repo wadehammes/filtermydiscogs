@@ -106,13 +106,13 @@ export const ReleasePlaybackVideoPanel = ({
       })}
       {...(isExpanded ? { "data-video-expanded": "true" as const } : {})}
       style={{
-        ...(useFloatingLayout && position && !isInteracting
+        ...(useFloatingLayout && position
           ? {
               left: `${position.x}px`,
               top: `${position.y}px`,
             }
           : {}),
-        ...(isExpanded && useFloatingLayout && !isInteracting
+        ...(isExpanded && useFloatingLayout
           ? {
               ["--panel-scale" as string]: String(scale),
             }

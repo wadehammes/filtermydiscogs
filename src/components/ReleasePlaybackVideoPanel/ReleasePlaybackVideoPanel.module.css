@@ -108,6 +108,10 @@
   will-change: height, left, top, width;
 }
 
+.videoPanel[data-video-expanded="true"].videoPanelDragging {
+  transition: none;
+}
+
 .panelChrome {
   align-items: center;
   background: color-mix(in srgb, var(--muted) 80%, transparent);

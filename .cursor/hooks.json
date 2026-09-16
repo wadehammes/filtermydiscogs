@@ -91,6 +91,11 @@
         "command": ".cursor/hooks/query-hook-mock-drift-check.sh",
         "timeout": 30,
         "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/lint-all-check.sh",
+        "timeout": 180,
+        "loop_limit": 1
       }
     ]
   }
