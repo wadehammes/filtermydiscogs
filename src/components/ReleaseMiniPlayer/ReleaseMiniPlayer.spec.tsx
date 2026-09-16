@@ -318,14 +318,17 @@ describe("ReleaseMiniPlayer", () => {
       screen.getByTestId("fmdReleasePlaybackVideoPanelHandle"),
     ).toBeInTheDocument();
     expect(
+      screen.getByTestId("fmdReleasePlaybackVideoPanelResetButton"),
+    ).toBeInTheDocument();
+    expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanelCloseButton"),
     ).toBeInTheDocument();
     expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanel"),
     ).toBeInTheDocument();
     expect(
-      screen.getByTestId("fmdReleasePlaybackVideoPanelResizeHandle"),
-    ).toBeInTheDocument();
+      screen.getAllByTestId("fmdReleasePlaybackVideoPanelResizeHandle"),
+    ).toHaveLength(4);
   });
 
   it("uses a full-width docked video panel on mobile with a close bar", async () => {

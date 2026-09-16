@@ -29,6 +29,16 @@ describe("ReleasePlaybackVideoPanel.module.css", () => {
     expect(css).not.toContain(".mobileCloseBar");
   });
 
+  it("exposes resize handles on all four desktop corners", () => {
+    const css = readFileSync(VIDEO_PANEL_CSS_PATH, "utf8");
+
+    expect(css).toMatch(/\.videoPanelPositioned[\s\S]*right:\s*auto/);
+    expect(css).toContain(".panelChromeNwResize");
+    expect(css).toContain(".resizeHandleSE");
+    expect(css).toContain(".resizeHandleNE");
+    expect(css).toContain(".resizeHandleSW");
+  });
+
   it("reveals the floating desktop panel from the bottom-right corner", () => {
     const css = readFileSync(VIDEO_PANEL_CSS_PATH, "utf8");
 

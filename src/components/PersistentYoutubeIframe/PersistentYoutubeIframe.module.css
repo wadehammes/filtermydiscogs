@@ -23,4 +23,5 @@
   top: 0;
   transform: scale(calc(100cqw / var(--youtube-iframe-width)));
   transform-origin: 0 0;
+  z-index: 0;
 }

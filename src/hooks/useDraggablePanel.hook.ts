@@ -6,9 +6,15 @@ import {
   useState,
 } from "react";
 import {
+  getVideoPanelPositionAfterResize,
+  getVideoPanelResizeDelta,
+  type VideoPanelResizeCorner,
+} from "src/utils/videoPanelCornerResize";
+import {
   clearVideoPanelLayout,
   DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
   DEFAULT_VIDEO_PANEL_SCALE,
+  getVideoPanelMaxScaleForYoutubeEmbed,
   readVideoPanelLayout,
   type VideoPanelLayout,
   type VideoPanelPosition,
@@ -23,7 +29,6 @@ interface UseDraggablePanelParams {
 }
 
 const DEFAULT_MIN_SCALE = 0.45;
-const DEFAULT_MAX_SCALE = DEFAULT_VIDEO_PANEL_SCALE;
 
 const clampPosition = ({
   x,
@@ -66,23 +71,43 @@ const applyLayoutToPanel = (
   if (layout.position) {
     panel.style.left = `${layout.position.x}px`;
     panel.style.top = `${layout.position.y}px`;
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
     return;
   }
 
   panel.style.removeProperty("left");
   panel.style.removeProperty("top");
+  panel.style.removeProperty("right");
+  panel.style.removeProperty("bottom");
 };
 
 export const useDraggablePanel = ({
   enabled,
   storageKey,
   minScale = DEFAULT_MIN_SCALE,
-  maxScale = DEFAULT_MAX_SCALE,
+  maxScale: maxScaleOverride,
 }: UseDraggablePanelParams) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
-  const resizeStartRef = useRef({ x: 0, y: 0, width: 0 });
+  const dragClampSizeRef = useRef({ width: 0, height: 0 });
+  const resizeStartRef = useRef<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    position: VideoPanelPosition;
+    corner: VideoPanelResizeCorner;
+  }>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    position: { x: 0, y: 0 },
+    corner: "se",
+  });
   const maxWidthRef = useRef<number | null>(null);
+  const maxScaleRef = useRef(DEFAULT_VIDEO_PANEL_SCALE);
   const hasHydratedLayoutRef = useRef(false);
   const pointerFrameRef = useRef<number | null>(null);
   const pendingPointerRef = useRef<{ x: number; y: number } | null>(null);
@@ -93,18 +118,28 @@ export const useDraggablePanel = ({
     position: null,
     scale: DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
   });
-  const storedLayout = storageKey ? readVideoPanelLayout(storageKey) : null;
-  const [hasHydratedLayout, setHasHydratedLayout] = useState(
-    () => !storedLayout?.position,
-  );
+  const [hasHydratedLayout, setHasHydratedLayout] = useState(() => {
+    if (!storageKey) {
+      return true;
+    }
+
+    return !readVideoPanelLayout(storageKey)?.position;
+  });
   const [position, setPosition] = useState<VideoPanelPosition | null>(null);
-  const [scale, setScale] = useState(() =>
-    clampScale({
-      scale: storedLayout?.scale ?? DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
-      minScale,
-      maxScale,
-    }),
-  );
+  const [scale, setScale] = useState(() => {
+    if (!storageKey) {
+      return DEFAULT_VIDEO_PANEL_INITIAL_SCALE;
+    }
+
+    return (
+      readVideoPanelLayout(storageKey)?.scale ??
+      DEFAULT_VIDEO_PANEL_INITIAL_SCALE
+    );
+  });
+
+  const resolveMaxScale = useCallback((): number => {
+    return maxScaleOverride ?? maxScaleRef.current;
+  }, [maxScaleOverride]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
@@ -119,6 +154,7 @@ export const useDraggablePanel = ({
       panel.getBoundingClientRect().width / liveLayoutRef.current.scale;
 
     maxWidthRef.current = width;
+    maxScaleRef.current = getVideoPanelMaxScaleForYoutubeEmbed(width);
 
     return width;
   }, []);
@@ -176,8 +212,7 @@ export const useDraggablePanel = ({
     const panel = panelRef.current;
 
     if (panel) {
-      panel.style.removeProperty("left");
-      panel.style.removeProperty("top");
+      applyLayoutToPanel(panel, liveLayoutRef.current);
     }
   }, []);
 
@@ -206,10 +241,18 @@ export const useDraggablePanel = ({
         return;
       }
 
+      if (
+        event.target instanceof Element &&
+        event.target.closest("button, a")
+      ) {
+        return;
+      }
+
       event.preventDefault();
       event.currentTarget.setPointerCapture(event.pointerId);
 
       const rect = panelRef.current.getBoundingClientRect();
+      dragClampSizeRef.current = { width: rect.width, height: rect.height };
       const nextPosition = liveLayoutRef.current.position ?? {
         x: rect.left,
         y: rect.top,
@@ -232,45 +275,48 @@ export const useDraggablePanel = ({
   );
 
   const handleResizePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
-      if (!(enabled && panelRef.current)) {
-        return;
-      }
+    (corner: VideoPanelResizeCorner) =>
+      (event: React.PointerEvent<HTMLElement>) => {
+        if (!(enabled && panelRef.current)) {
+          return;
+        }
 
-      event.preventDefault();
-      event.stopPropagation();
-      event.currentTarget.setPointerCapture(event.pointerId);
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.setPointerCapture(event.pointerId);
 
-      const maxWidth =
-        measureMaxWidth() ?? panelRef.current.getBoundingClientRect().width;
-      const { width } = panelRef.current.getBoundingClientRect();
+        const rect = panelRef.current.getBoundingClientRect();
+        const maxWidth = measureMaxWidth() ?? rect.width;
 
-      resizeStartRef.current = {
-        x: event.clientX,
-        y: event.clientY,
-        width,
-      };
-      maxWidthRef.current = maxWidth;
+        maxWidthRef.current = maxWidth;
 
-      const rect = panelRef.current.getBoundingClientRect();
-      const shouldSetPosition = liveLayoutRef.current.position === null;
-      const nextPosition = liveLayoutRef.current.position ?? {
-        x: rect.left,
-        y: rect.top,
-      };
+        const shouldSetPosition = liveLayoutRef.current.position === null;
+        const nextPosition = liveLayoutRef.current.position ?? {
+          x: rect.left,
+          y: rect.top,
+        };
 
-      liveLayoutRef.current = {
-        position: nextPosition,
-        scale: liveLayoutRef.current.scale,
-      };
-      applyLayoutToPanel(panelRef.current, liveLayoutRef.current);
+        resizeStartRef.current = {
+          x: event.clientX,
+          y: event.clientY,
+          width: rect.width,
+          height: rect.height,
+          position: nextPosition,
+          corner,
+        };
 
-      if (shouldSetPosition) {
-        setPosition(nextPosition);
-      }
+        liveLayoutRef.current = {
+          position: nextPosition,
+          scale: liveLayoutRef.current.scale,
+        };
+        applyLayoutToPanel(panelRef.current, liveLayoutRef.current);
 
-      setIsResizing(true);
-    },
+        if (shouldSetPosition) {
+          setPosition(nextPosition);
+        }
+
+        setIsResizing(true);
+      },
     [enabled, measureMaxWidth],
   );
 
@@ -291,8 +337,15 @@ export const useDraggablePanel = ({
       return;
     }
 
-    measurePanelMaxWidth();
-  }, [enabled]);
+    measureMaxWidth();
+    setScale((current) =>
+      clampScale({
+        scale: current,
+        minScale,
+        maxScale: resolveMaxScale(),
+      }),
+    );
+  }, [enabled, measureMaxWidth, minScale, resolveMaxScale]);
 
   useEffect(() => {
     if (!enabled) {
@@ -390,7 +443,7 @@ export const useDraggablePanel = ({
           return;
         }
 
-        const { width, height } = panel.getBoundingClientRect();
+        const { width, height } = dragClampSizeRef.current;
         const nextPosition = clampPosition({
           x: pending.x - dragOffsetRef.current.x,
           y: pending.y - dragOffsetRef.current.y,
@@ -447,23 +500,43 @@ export const useDraggablePanel = ({
           return;
         }
 
-        const delta = Math.max(
-          pending.x - resizeStartRef.current.x,
-          pending.y - resizeStartRef.current.y,
+        const {
+          x: startPointerX,
+          y: startPointerY,
+          width: startWidth,
+          height: startHeight,
+          position: startPosition,
+          corner,
+        } = resizeStartRef.current;
+        const delta = getVideoPanelResizeDelta(
+          corner,
+          pending.x - startPointerX,
+          pending.y - startPointerY,
         );
+        const effectiveMaxScale = resolveMaxScale();
         const minWidth = maxWidth * minScale;
+        const maxRenderedWidth = maxWidth * effectiveMaxScale;
         const nextWidth = Math.min(
-          Math.max(resizeStartRef.current.width + delta, minWidth),
-          maxWidth,
+          Math.max(startWidth + delta, minWidth),
+          maxRenderedWidth,
         );
+        const nextHeight = startHeight * (nextWidth / startWidth);
         const nextScale = clampScale({
           scale: nextWidth / maxWidth,
           minScale,
-          maxScale,
+          maxScale: effectiveMaxScale,
+        });
+        const nextPosition = getVideoPanelPositionAfterResize({
+          corner,
+          startPosition,
+          startWidth,
+          startHeight,
+          nextWidth,
+          nextHeight,
         });
 
         liveLayoutRef.current = {
-          position: liveLayoutRef.current.position,
+          position: nextPosition,
           scale: nextScale,
         };
         applyLayoutToPanel(panel, liveLayoutRef.current);
@@ -503,8 +576,8 @@ export const useDraggablePanel = ({
     clampPanelPosition,
     commitLiveLayout,
     isResizing,
-    maxScale,
     minScale,
+    resolveMaxScale,
     schedulePointerUpdate,
   ]);
 

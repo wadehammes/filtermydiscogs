@@ -175,6 +175,46 @@ describe("PersistentYoutubeIframe", () => {
       iframe: expect.any(HTMLIFrameElement),
       videoId: "abc12345678",
     });
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
     expect(iframe.getAttribute("src")).toBe(initialSrc);
+  });
+
+  it("refreshes embed layout on load when the panel is already visible", () => {
+    render(
+      <PersistentYoutubeIframe
+        videoId="te2jJncBVG4"
+        videoTitle="Test video"
+        playbackKey="test"
+        variant="visible"
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    iframe.dispatchEvent(new Event("load"));
+
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
+  });
+
+  it("refreshes embed layout when opening the panel after the initial src load", async () => {
+    const user = userEvent.setup();
+
+    render(<VariantHarness videoId="te2jJncBVG4" />, {
+      wrapper: createWrapper(),
+    });
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    iframe.dispatchEvent(new Event("load"));
+    mockRefreshYoutubeEmbedPlayerLayout.mockClear();
+
+    await user.click(screen.getByRole("button", { name: "Show iframe" }));
+
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
   });
 });
