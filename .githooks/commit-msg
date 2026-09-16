@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Reject commit messages that add Co-authored-by trailers.
+
+msg_file="${1:?commit-msg hook requires message file path}"
+
+if grep -qiE '^Co-authored-by:' "$msg_file"; then
+  echo 'commit-msg: Co-authored-by trailers are not allowed in this repository.' >&2
+  echo 'Remove Co-authored-by lines from the commit message and try again.' >&2
+  exit 1
+fi
+
+exit 0

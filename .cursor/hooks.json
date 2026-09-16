@@ -7,6 +7,14 @@
         "timeout": 10
       }
     ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/block-co-authored-by-commit.sh",
+        "matcher": "git commit",
+        "timeout": 5,
+        "failClosed": true
+      }
+    ],
     "preToolUse": [
       {
         "command": ".cursor/hooks/block-added-comments.sh",
