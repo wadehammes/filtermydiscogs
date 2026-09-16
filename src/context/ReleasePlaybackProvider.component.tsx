@@ -23,16 +23,17 @@ import {
   ReleasePlaybackStateContext,
   ReleasePlaybackVisibilityContext,
 } from "src/context/releasePlaybackContexts";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
-import {
-  discogsReleaseQueryOptions,
-  useDiscogsReleaseQuery,
-} from "src/hooks/queries/useDiscogsReleaseQuery";
+import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import {
+  usePersistPlaybackSessionOnQueueChange,
+  usePersistPlaybackSessionWhilePlaying,
+  useRestorePlaybackSessionFromStorage,
+} from "src/hooks/useReleasePlaybackSessionPersistence.hook";
+import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYoutubeEmbed.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
-import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
   AddPreviewToQueueParams,
@@ -56,8 +57,6 @@ import {
   prependQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
-  resolvePersistedQueueItems,
-  resolveQueueItemYoutubeVideoId,
   shuffleQueueItems,
   upcomingFromAlbumQueue,
 } from "src/utils/playbackQueue";
@@ -69,44 +68,24 @@ import {
   selectIsPaused,
   selectIsPlaying,
 } from "src/utils/playbackSessionState";
-import {
-  loadAndPlayYoutubeVideo,
-  requestYoutubePlayerState,
-} from "src/utils/postYoutubePlayerCommand";
-import {
-  isSameReleaseInstance,
-  matchesInstanceId,
-  parseReleaseId,
-} from "src/utils/releaseNotes";
+import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
   buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
   findVideoForTrack,
   flattenTracklist,
   getPreviewTrackPosition,
-  PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import {
   clearPersistedReleasePlayback,
-  readPersistedReleasePlayback,
   toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
 import { getSimilarReleases } from "src/utils/similarReleases";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
-import {
-  enableYoutubeIframeListening,
-  HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
-  isYoutubeEmbedOrigin,
-  parseYoutubePlayerStateFromMessage,
-  YOUTUBE_PLAYER_STATE_CUED,
-  YOUTUBE_PLAYER_STATE_ENDED,
-  YOUTUBE_PLAYER_STATE_PAUSED,
-  YOUTUBE_PLAYER_STATE_PLAYING,
-} from "src/utils/youtubeIframeEvents";
 
 interface PlayQueueItemOptions {
   autoplay?: boolean;
@@ -266,8 +245,12 @@ export const ReleasePlaybackProvider = ({
 
   useEffect(() => {
     queueRef.current = session.queue;
-    persistPlaybackSession();
-  }, [session.queue, persistPlaybackSession]);
+  }, [session.queue]);
+
+  usePersistPlaybackSessionOnQueueChange({
+    sessionQueue: session.queue,
+    persistPlaybackSession,
+  });
 
   const abortUnresolvedPlayback = useCallback(() => {
     dispatchSession({ type: "STOP" });
@@ -318,148 +301,6 @@ export const ReleasePlaybackProvider = ({
 
     return false;
   }, []);
-
-  const clearPlayFromGestureRetries = useCallback(() => {
-    for (const timeoutId of playFromGestureRetryTimeoutsRef.current) {
-      window.clearTimeout(timeoutId);
-    }
-
-    playFromGestureRetryTimeoutsRef.current = [];
-  }, []);
-
-  const attemptPlayFromGesture = useCallback(() => {
-    if (!pendingPlayFromGestureRef.current || isPausedRef.current) {
-      return;
-    }
-
-    postYoutubePlayerCommand({
-      iframe: playbackIframeRef.current,
-      command: "playVideo",
-    });
-  }, []);
-
-  const schedulePlayFromGestureAttempts = useCallback(() => {
-    clearPlayFromGestureRetries();
-
-    if (!pendingPlayFromGestureRef.current || isPausedRef.current) {
-      return;
-    }
-
-    attemptPlayFromGesture();
-
-    for (const delay of PLAY_FROM_GESTURE_RETRY_DELAYS_MS) {
-      if (delay === 0) {
-        continue;
-      }
-
-      playFromGestureRetryTimeoutsRef.current.push(
-        window.setTimeout(() => {
-          attemptPlayFromGesture();
-        }, delay),
-      );
-    }
-  }, [attemptPlayFromGesture, clearPlayFromGestureRetries]);
-
-  const syncEmbedToVideoId = useCallback(
-    (videoId: string) => {
-      embedVideoIdRef.current = videoId;
-      setEmbedVideoId(videoId);
-
-      if (!isPausedRef.current) {
-        pendingPlayFromGestureRef.current = true;
-        loadAndPlayYoutubeVideo({
-          iframe: playbackIframeRef.current,
-          videoId,
-        });
-        schedulePlayFromGestureAttempts();
-      }
-    },
-    [schedulePlayFromGestureAttempts],
-  );
-
-  const resolveQueueItemEmbedVideoId = useCallback(
-    (item: PlaybackQueueItem): string | null => {
-      let tracks = tracksRef.current;
-      let videos = videosRef.current;
-
-      if (!isSameReleaseInstance(releaseRef.current, item.release)) {
-        const itemReleaseId = parseReleaseId(item.release);
-
-        if (itemReleaseId === null) {
-          return null;
-        }
-
-        const cached = queryClient.getQueryData<DiscogsReleaseDetail>(
-          DiscogsReleaseQueryKeys.byId(String(itemReleaseId)),
-        );
-
-        if (!cached) {
-          return null;
-        }
-
-        tracks = flattenTracklist(cached.tracklist ?? []);
-        videos = cached.videos ?? [];
-      }
-
-      return resolveQueueItemYoutubeVideoId({
-        item,
-        tracks,
-        videos,
-      });
-    },
-    [queryClient],
-  );
-
-  const syncEmbedForQueueItem = useCallback(
-    (item: PlaybackQueueItem) => {
-      const videoId = resolveQueueItemEmbedVideoId(item);
-
-      if (!videoId) {
-        return null;
-      }
-
-      lastSyncedActiveVideoIdRef.current = videoId;
-      syncEmbedToVideoId(videoId);
-      return videoId;
-    },
-    [resolveQueueItemEmbedVideoId, syncEmbedToVideoId],
-  );
-
-  const prefetchQueueItemEmbed = useCallback(
-    (item: PlaybackQueueItem) => {
-      const itemReleaseId = parseReleaseId(item.release);
-
-      if (itemReleaseId === null) {
-        return;
-      }
-
-      void queryClient
-        .query(discogsReleaseQueryOptions(String(itemReleaseId)))
-        .then((detail) => {
-          if (!isSameReleaseInstance(releaseRef.current, item.release)) {
-            return;
-          }
-
-          const videoId = resolveQueueItemYoutubeVideoId({
-            item,
-            tracks: flattenTracklist(detail.tracklist ?? []),
-            videos: detail.videos ?? [],
-          });
-
-          if (
-            !videoId ||
-            lastSyncedActiveVideoIdRef.current === videoId ||
-            embedVideoIdRef.current === videoId
-          ) {
-            return;
-          }
-
-          lastSyncedActiveVideoIdRef.current = videoId;
-          syncEmbedToVideoId(videoId);
-        });
-    },
-    [queryClient, syncEmbedToVideoId],
-  );
 
   const fetchSimilarQueueItems = useCallback(
     async ({
@@ -589,10 +430,6 @@ export const ReleasePlaybackProvider = ({
     void extendQueueTail();
   }, [extendQueueTail]);
 
-  const resumePlaybackFromGesture = useCallback(() => {
-    schedulePlayFromGestureAttempts();
-  }, [schedulePlayFromGestureAttempts]);
-
   const releaseId = release ? parseReleaseId(release) : null;
 
   const { data: releaseDetail, isLoading } = useDiscogsReleaseQuery({
@@ -670,12 +507,6 @@ export const ReleasePlaybackProvider = ({
   const canPlayPrevious = isPlaybackReady && playbackHistory.length > 0;
   const canPlayNext = isPlaybackReady && queue.length > 0;
 
-  useEffect(() => {
-    return () => {
-      clearPlayFromGestureRetries();
-    };
-  }, [clearPlayFromGestureRetries]);
-
   const handlePlaybackEnded = useCallback(() => {
     if (!isPlayingRef.current || isPausedRef.current) {
       return;
@@ -698,163 +529,50 @@ export const ReleasePlaybackProvider = ({
     playNextRef.current();
   }, []);
 
-  const handleYoutubeEmbedPlayerState = useCallback(
-    (playerState: number) => {
-      if (playerState === YOUTUBE_PLAYER_STATE_ENDED) {
-        handlePlaybackEnded();
-        return;
-      }
-
-      if (document.visibilityState === "hidden") {
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PAUSED &&
-        isPlayingRef.current &&
-        !isPausedRef.current
-      ) {
-        pendingPlayFromGestureRef.current = false;
-        clearPlayFromGestureRetries();
-        dispatchSession({ type: "PAUSE" });
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
-        isPlayingRef.current &&
-        isPausedRef.current
-      ) {
-        dispatchSession({ type: "RESUME" });
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_CUED &&
-        isPlayingRef.current &&
-        !isPausedRef.current &&
-        pendingPlayFromGestureRef.current
-      ) {
-        postYoutubePlayerCommand({
-          iframe: playbackIframeRef.current,
-          command: "playVideo",
-        });
-      }
-    },
-    [clearPlayFromGestureRetries, handlePlaybackEnded],
-  );
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-
-      if (!isPlayingRef.current) {
-        return;
-      }
-
-      requestYoutubePlayerState(playbackIframeRef.current);
-
-      if (!isPausedRef.current) {
-        schedulePlayFromGestureAttempts();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [schedulePlayFromGestureAttempts]);
-
-  useEffect(() => {
-    if (!isPlaying || isPaused) {
-      return;
-    }
-
-    const pollHiddenTabPlayerState = () => {
-      if (document.visibilityState !== "hidden") {
-        return;
-      }
-
-      requestYoutubePlayerState(playbackIframeRef.current);
-    };
-
-    const intervalId = window.setInterval(
-      pollHiddenTabPlayerState,
-      HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
-    );
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [isPlaying, isPaused]);
-
-  useEffect(() => {
-    if (
-      !(activeVideoId && isPlaying) ||
-      pendingTrackPosition ||
-      pendingPreviewVideoUri ||
-      releaseId === null ||
-      Number(releaseDetail?.id) !== Number(releaseId)
-    ) {
-      return;
-    }
-
-    if (lastSyncedActiveVideoIdRef.current === activeVideoId) {
-      return;
-    }
-
-    lastSyncedActiveVideoIdRef.current = activeVideoId;
-    syncEmbedToVideoId(activeVideoId);
-  }, [
-    activeVideoId,
-    isPlaying,
-    pendingPreviewVideoUri,
-    pendingTrackPosition,
-    releaseDetail?.id,
-    releaseId,
+  const {
+    clearPlayFromGestureRetries,
+    schedulePlayFromGestureAttempts,
     syncEmbedToVideoId,
-  ]);
+    syncEmbedForQueueItem,
+    prefetchQueueItemEmbed,
+    registerPlaybackIframe,
+    notifyPlaybackIframeLoaded,
+    resumePlaybackFromGesture,
+  } = useReleasePlaybackYoutubeEmbed({
+    queryClient,
+    dispatchSession,
+    refs: {
+      playbackIframeRef,
+      embedVideoIdRef,
+      lastSyncedActiveVideoIdRef,
+      isPlayingRef,
+      isPausedRef,
+      pendingPlayFromGestureRef,
+      playFromGestureRetryTimeoutsRef,
+      releaseRef,
+      tracksRef,
+      videosRef,
+    },
+    isPlaying,
+    isPaused,
+    isPlaybackReady,
+    isPlaybackEmbedMounted,
+    activeVideoId,
+    pendingTrackPosition,
+    pendingPreviewVideoUri,
+    releaseId,
+    releaseDetailId: releaseDetail?.id,
+    setEmbedVideoId,
+    setShouldAutoplayEmbed,
+    setIsPlaybackEmbedMounted,
+    onPlaybackEnded: handlePlaybackEnded,
+  });
 
   useEffect(() => {
-    if (
-      !(activeVideoId && isPlaybackReady && pendingPlayFromGestureRef.current)
-    ) {
-      return;
-    }
-
-    schedulePlayFromGestureAttempts();
-  }, [activeVideoId, isPlaybackReady, schedulePlayFromGestureAttempts]);
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const iframe = playbackIframeRef.current;
-
-      if (
-        !iframe?.contentWindow ||
-        event.source !== iframe.contentWindow ||
-        !isYoutubeEmbedOrigin(event.origin)
-      ) {
-        return;
-      }
-
-      const playerState = parseYoutubePlayerStateFromMessage(event.data);
-
-      if (playerState === null) {
-        return;
-      }
-
-      handleYoutubeEmbedPlayerState(playerState);
-    };
-
-    window.addEventListener("message", handleMessage);
-
     return () => {
-      window.removeEventListener("message", handleMessage);
+      clearPlayFromGestureRetries();
     };
-  }, [handleYoutubeEmbedPlayerState]);
+  }, [clearPlayFromGestureRetries]);
 
   useEffect(() => {
     if (!isPlaying || previewVideo !== null) {
@@ -1322,52 +1040,6 @@ export const ReleasePlaybackProvider = ({
   playNextRef.current = playNext;
   extendQueueTailRef.current = extendQueueTail;
 
-  const notifyPlaybackIframeLoaded = useCallback(() => {
-    enableYoutubeIframeListening(playbackIframeRef.current);
-    schedulePlayFromGestureAttempts();
-  }, [schedulePlayFromGestureAttempts]);
-
-  const registerPlaybackIframe = useCallback(
-    (iframe: HTMLIFrameElement | null) => {
-      const previousIframe = playbackIframeRef.current;
-
-      if (!iframe) {
-        if (previousIframe) {
-          postYoutubePlayerCommand({
-            iframe: previousIframe,
-            command: "pauseVideo",
-          });
-        }
-
-        playbackIframeRef.current = null;
-        clearPlayFromGestureRetries();
-        return;
-      }
-
-      if (previousIframe && previousIframe !== iframe) {
-        postYoutubePlayerCommand({
-          iframe: previousIframe,
-          command: "pauseVideo",
-        });
-      }
-
-      playbackIframeRef.current = iframe;
-      enableYoutubeIframeListening(iframe);
-
-      if (isPlaybackEmbedMounted && !pendingPlayFromGestureRef.current) {
-        setShouldAutoplayEmbed(false);
-      }
-
-      setIsPlaybackEmbedMounted(true);
-      schedulePlayFromGestureAttempts();
-    },
-    [
-      clearPlayFromGestureRetries,
-      isPlaybackEmbedMounted,
-      schedulePlayFromGestureAttempts,
-    ],
-  );
-
   const togglePlayback = useCallback(() => {
     if (isPaused) {
       awaitingResumeGestureRef.current = false;
@@ -1416,95 +1088,28 @@ export const ReleasePlaybackProvider = ({
 
   startPlaybackRef.current = startPlayback;
 
-  useEffect(() => {
-    if (!(isPlaying && release) || pendingTrackPosition) {
-      return;
-    }
-
-    if (!(activeTrackPosition || isReleasePreview)) {
-      return;
-    }
-
-    persistPlaybackSession();
-  }, [
-    activeTrackPosition,
+  usePersistPlaybackSessionWhilePlaying({
     isPlaying,
-    isReleasePreview,
-    pendingTrackPosition,
-    persistPlaybackSession,
     release,
-  ]);
+    pendingTrackPosition,
+    activeTrackPosition,
+    isReleasePreview,
+    persistPlaybackSession,
+  });
 
-  useEffect(() => {
-    if (hasAttemptedRestoreRef.current || isPlaying) {
-      return;
-    }
-
-    const persisted = readPersistedReleasePlayback();
-
-    if (!persisted) {
-      hasAttemptedRestoreRef.current = true;
-      return;
-    }
-
-    if (isCheckingAuth) {
-      return;
-    }
-
-    if (!isAuthenticated) {
-      clearPersistedReleasePlayback();
-      hasAttemptedRestoreRef.current = true;
-      return;
-    }
-
-    if (fetchingCollection) {
-      return;
-    }
-
-    if (collection === null) {
-      return;
-    }
-
-    const matchingRelease = allReleases.find((collectionRelease) =>
-      matchesInstanceId(collectionRelease, persisted.instanceId),
-    );
-
-    if (matchingRelease) {
-      hasAttemptedRestoreRef.current = true;
-
-      const restoredQueue = resolvePersistedQueueItems({
-        items: persisted.queue ?? [],
-        releases: allReleases,
-      });
-
-      setUpcomingQueue(restoredQueue);
-      queueManuallyExtendedRef.current = restoredQueue.length > 0;
-
-      startPlaybackRef.current({
-        release: matchingRelease,
-        trackPosition: persisted.trackPosition,
-        startPaused: true,
-        rebuildAlbumQueue: false,
-      });
-      return;
-    }
-
-    if (hasMoreCollectionPages) {
-      return;
-    }
-
-    clearPersistedReleasePlayback();
-    hasAttemptedRestoreRef.current = true;
-  }, [
-    allReleases,
-    collection,
-    fetchingCollection,
-    hasMoreCollectionPages,
-    isAuthenticated,
-    isCheckingAuth,
+  useRestorePlaybackSessionFromStorage({
     isPlaying,
+    isCheckingAuth,
+    isAuthenticated,
+    fetchingCollection,
+    collection,
+    allReleases,
+    hasMoreCollectionPages,
+    hasAttemptedRestoreRef,
+    queueManuallyExtendedRef,
     setUpcomingQueue,
-  ]);
+    startPlaybackRef,
+  });
 
   const stateValue = useMemo(
     (): ReleasePlaybackState => ({
