@@ -1,3 +1,5 @@
+import { YOUTUBE_EMBED_PLAYER_WIDTH } from "src/utils/postYoutubePlayerCommand";
+
 export const VIDEO_PANEL_LAYOUT_STORAGE_KEY =
   "filtermydiscogs_release_playback_video_panel_layout";
 
@@ -13,6 +15,17 @@ export interface VideoPanelLayout {
 
 export const DEFAULT_VIDEO_PANEL_SCALE = 1;
 export const DEFAULT_VIDEO_PANEL_INITIAL_SCALE = 0.75;
+
+export const getVideoPanelMaxScaleForYoutubeEmbed = (
+  basePanelWidthAtScaleOne: number,
+  embedLayoutWidth = YOUTUBE_EMBED_PLAYER_WIDTH,
+): number => {
+  if (!(basePanelWidthAtScaleOne > 0)) {
+    return DEFAULT_VIDEO_PANEL_SCALE;
+  }
+
+  return embedLayoutWidth / basePanelWidthAtScaleOne;
+};
 
 const isVideoPanelPosition = (value: unknown): value is VideoPanelPosition => {
   if (!value || typeof value !== "object") {

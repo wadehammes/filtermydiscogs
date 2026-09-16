@@ -79,9 +79,21 @@ export const PersistentYoutubeIframe = ({
       } else {
         transitionYoutubeIframeToVideo({ iframe, videoId: targetVideoId });
       }
+
+      if (variant === "visible") {
+        refreshYoutubeEmbedPlayerLayout({ iframe });
+      }
     },
     [autoplay, variant],
   );
+
+  const handleIframeLoad = useCallback(() => {
+    notifyPlaybackIframeLoaded();
+
+    if (variant === "visible") {
+      refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
+    }
+  }, [notifyPlaybackIframeLoaded, variant]);
 
   useEffect(() => {
     if (videoId === loadedVideoIdRef.current) {
@@ -105,18 +117,18 @@ export const PersistentYoutubeIframe = ({
 
     if (loadedVideoIdRef.current !== videoId) {
       transitionIframeToVideo(videoId);
-    } else if (loadedWhileHiddenRef.current) {
+    } else {
       loadedWhileHiddenRef.current = false;
-      refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
     }
 
+    refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
     resumePlaybackFromGesture();
   }, [resumePlaybackFromGesture, transitionIframeToVideo, variant, videoId]);
 
   return (
     <iframe
       ref={setIframeRef}
-      onLoad={notifyPlaybackIframeLoaded}
+      onLoad={handleIframeLoad}
       src={embedUrl}
       title={videoTitle}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
