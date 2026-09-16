@@ -8,7 +8,6 @@ import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSum
 import { ReleaseSummaryHeroToolbar } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component";
 import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import type { ReleaseModalProps } from "./ReleaseModal.types";
 import { useSimilarReleasesInCollection } from "./useSimilarReleasesInCollection.hook";
