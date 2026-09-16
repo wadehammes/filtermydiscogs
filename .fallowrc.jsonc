@@ -34,7 +34,16 @@
   "rules": {
     "duplicate-export": "warn"
   },
-  "ignorePatterns": ["public/theme-init.js"],
+  "ignorePatterns": ["public/theme-init.js", ".jest/**"],
+  "health": {
+    // Score and complexity focus on shipped code; specs/page objects stay reachable via the graph.
+    "ignore": [
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+      "**/*.po.tsx",
+      "e2e/**"
+    ]
+  },
   "entry": [
     ".jest/setupTests.ts",
     ".jest/setEnvVars.ts",

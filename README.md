@@ -152,7 +152,7 @@ pnpm format           # Biome format (check)
 pnpm format:fix      # Biome format write
 pnpm type-check
 pnpm knip             # CI dead-code gate (unused exports/files)
-pnpm fallow:health    # optional agent tooling — complexity, dupes, cycles (see AGENTS.md)
+pnpm fallow:health    # optional — project health score (see AGENTS.md; fallow:health:full for detail)
 
 pnpm build && pnpm start
 pnpm analyze          # bundle analyzer (webpack build)

@@ -23,7 +23,7 @@
     "format:fix": "biome format --write src",
     "test": "NODE_OPTIONS='--max-old-space-size=4096' jest --runInBand --detectOpenHandles",
     "test:ci": "NODE_OPTIONS='--max-old-space-size=4096' jest --runInBand --passWithNoTests",
-    "test:ci:shard": "NODE_OPTIONS='--max-old-space-size=4096' jest --runInBand --passWithNoTests --shard=${JEST_SHARD:?Set JEST_SHARD e.g. 1/3}",
+    "test:ci:shard": "NODE_OPTIONS='--max-old-space-size=4096' jest --runInBand --passWithNoTests --shard=${JEST_SHARD:?Set JEST_SHARD}",
     "generate:theme-init": "node --experimental-strip-types scripts/generate-theme-init.ts && biome format --write public/theme-init.js",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
@@ -51,7 +51,8 @@
     "knip:ci": "knip --no-progress",
     "fallow": "fallow",
     "fallow:dead-code": "fallow dead-code",
-    "fallow:health": "fallow health",
+    "fallow:health": "fallow health --score",
+    "fallow:health:full": "fallow health",
     "fallow:dupes": "fallow dupes",
     "fallow:audit": "fallow audit --changed-since origin/staging"
   },
