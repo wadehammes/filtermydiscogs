@@ -11,7 +11,7 @@ import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component
 import { useCrateState } from "src/context/crate.context";
 import { useSelectedStyles } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsArtist, ReleaseListItemProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -76,7 +76,7 @@ const ReleaseListItemComponent = ({
   );
 
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
-    useReleaseOpenHandler({
+    useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });

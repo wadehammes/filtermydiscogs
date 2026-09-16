@@ -8,7 +8,7 @@ import {
   useSelectedStyles,
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
-import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
+import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
@@ -74,7 +74,7 @@ const MobileReleaseCardComponent = ({
   });
 
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
-    useReleaseOpenHandler({
+    useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });

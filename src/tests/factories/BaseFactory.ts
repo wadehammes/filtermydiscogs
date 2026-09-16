@@ -40,18 +40,4 @@ export abstract class BaseFactory<
 
     return new this.FactoryModel(factoryTypeInstance);
   }
-
-  public buildListModel(
-    quantity: number,
-    attributes?: FactoryOverrides<FactoryType>,
-    options?: Options,
-  ): FactoryModel[] {
-    if (!this.FactoryModel) {
-      throw new Error("Model not existent");
-    }
-
-    return Array.from({ length: quantity }).map(() => {
-      return this.buildModel(attributes ?? {}, options);
-    });
-  }
 }

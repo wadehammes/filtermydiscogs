@@ -1,18 +1,20 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import type { DiscogsRelease } from "src/types";
-import { prefetchReleaseOpenData } from "src/utils/prefetchReleaseOpenData";
+import { prefetchDiscogsReleaseQuery } from "src/utils/prefetchDiscogsReleaseQuery";
 
 export const RELEASE_OPEN_PREFETCH_HOVER_MS = 50;
 
 interface UseReleaseOpenHandlerParams {
   release: DiscogsRelease | null | undefined;
   onReleaseClick?: ((instanceId: string) => void) | undefined;
+  onPrefetch?: () => void;
 }
 
 export const useReleaseOpenHandler = ({
   release,
   onReleaseClick,
+  onPrefetch,
 }: UseReleaseOpenHandlerParams) => {
   const queryClient = useQueryClient();
   const hoverPrefetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -31,8 +33,9 @@ export const useReleaseOpenHandler = ({
       return;
     }
 
-    prefetchReleaseOpenData(queryClient, release);
-  }, [onReleaseClick, queryClient, release]);
+    onPrefetch?.();
+    prefetchDiscogsReleaseQuery(queryClient, release);
+  }, [onReleaseClick, onPrefetch, queryClient, release]);
 
   const schedulePrefetchReleaseOpen = useCallback(() => {
     if (!(onReleaseClick && release)) {
@@ -42,9 +45,10 @@ export const useReleaseOpenHandler = ({
     clearHoverPrefetch();
     hoverPrefetchTimeoutRef.current = setTimeout(() => {
       hoverPrefetchTimeoutRef.current = null;
-      prefetchReleaseOpenData(queryClient, release);
+      onPrefetch?.();
+      prefetchDiscogsReleaseQuery(queryClient, release);
     }, RELEASE_OPEN_PREFETCH_HOVER_MS);
-  }, [clearHoverPrefetch, onReleaseClick, queryClient, release]);
+  }, [clearHoverPrefetch, onReleaseClick, onPrefetch, queryClient, release]);
 
   useEffect(() => clearHoverPrefetch, [clearHoverPrefetch]);
 
