@@ -8,6 +8,10 @@ import {
 } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import { isSameQueueItem } from "src/utils/playbackQueue";
+import {
+  showPlaybackQueueAllQueuedToast,
+  showPlaybackQueueSuccessToast,
+} from "src/utils/playbackQueueToast";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
@@ -209,6 +213,7 @@ export const useReleaseModalPlayback = ({
         trackPosition,
         trackTitle: track.title,
       });
+      showPlaybackQueueSuccessToast(1);
     },
     [playback.addToQueue, playbackMatchIndex, release, tracks],
   );
@@ -259,6 +264,7 @@ export const useReleaseModalPlayback = ({
       }
 
       playback.addPreviewToQueue({ release, video });
+      showPlaybackQueueSuccessToast(1);
     },
     [playback.addPreviewToQueue, release, releasePreviewVideos],
   );
@@ -337,6 +343,7 @@ export const useReleaseModalPlayback = ({
     );
 
     if (tracksToQueue.length === 0) {
+      showPlaybackQueueAllQueuedToast();
       return;
     }
 
@@ -363,6 +370,7 @@ export const useReleaseModalPlayback = ({
         });
       }
 
+      showPlaybackQueueSuccessToast(tracksToQueue.length);
       return;
     }
 
@@ -373,6 +381,8 @@ export const useReleaseModalPlayback = ({
         trackTitle: track.title,
       });
     }
+
+    showPlaybackQueueSuccessToast(tracksToQueue.length);
   }, [
     playback.autoPlayOnQueueAdd,
     isTrackQueued,

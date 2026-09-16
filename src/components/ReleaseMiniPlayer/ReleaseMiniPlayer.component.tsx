@@ -2,7 +2,13 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { Activity, useCallback, useEffect, useState } from "react";
+import {
+  Activity,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
@@ -10,6 +16,7 @@ import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
+import { Spinner } from "src/components/Spinner/Spinner.component";
 import {
   TransportSkipNextIcon,
   TransportSkipPreviousIcon,
@@ -54,6 +61,7 @@ export const ReleaseMiniPlayer = ({
     canPlayPrevious,
     canPlayNext,
     isLoading,
+    isQueueBuilding,
     isMiniPlayerVisible,
     playNext,
     playPrevious,
@@ -117,6 +125,32 @@ export const ReleaseMiniPlayer = ({
 
   if (!(isMiniPlayerVisible && release)) {
     return null;
+  }
+
+  let queueButtonAriaLabel = "Open playback queue";
+
+  if (isQueueBuilding) {
+    queueButtonAriaLabel = "Open playback queue, building";
+  } else if (queue.length > 0) {
+    queueButtonAriaLabel = `Open playback queue, ${queue.length} tracks`;
+  }
+
+  let queueButtonAddon: ReactNode;
+
+  if (isQueueBuilding) {
+    queueButtonAddon = (
+      <span className={styles.queueCount}>
+        <Spinner
+          size="xs"
+          className={styles.queueCountSpinner}
+          aria-label="Building playback queue"
+        />
+      </span>
+    );
+  } else if (queue.length > 0) {
+    queueButtonAddon = (
+      <span className={styles.queueCount}>{queue.length}</span>
+    );
   }
 
   const artistNames = formatArtistNames(release);
@@ -245,20 +279,12 @@ export const ReleaseMiniPlayer = ({
                   },
                 )}
                 iconClassName={styles.controlIcon}
-                addon={
-                  queue.length > 0 ? (
-                    <span className={styles.queueCount}>{queue.length}</span>
-                  ) : undefined
-                }
+                addon={queueButtonAddon}
                 onClick={() => {
                   setIsQueueOpen((open) => !open);
                 }}
                 aria-expanded={isQueueOpen}
-                aria-label={
-                  queue.length > 0
-                    ? `Open playback queue, ${queue.length} tracks`
-                    : "Open playback queue"
-                }
+                aria-label={queueButtonAriaLabel}
                 title="Playback queue"
               >
                 <ListThinIcon />

@@ -22,6 +22,7 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
+import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { createQueueItem } from "src/utils/playbackQueue";
 import {
   loadAndPlayYoutubeVideo,
@@ -33,9 +34,13 @@ import {
   toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
+import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
 import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
+jest.mock("src/utils/similarReleaseQueue", () => ({
+  fetchPlayableQueuesForSimilarReleases: jest.fn(),
+}));
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadAndPlayYoutubeVideo: jest.fn(),
@@ -45,6 +50,12 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   requestYoutubePlayerState: jest.fn(),
 }));
 
+const actualSimilarReleaseQueue = jest.requireActual<
+  typeof import("src/utils/similarReleaseQueue")
+>("src/utils/similarReleaseQueue");
+const mockFetchPlayableQueuesForSimilarReleases = jest.mocked(
+  fetchPlayableQueuesForSimilarReleases,
+);
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
 const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
 const mockRequestYoutubePlayerState = jest.mocked(requestYoutubePlayerState);
@@ -278,6 +289,9 @@ describe("ReleasePlaybackProvider", () => {
     jest.resetAllMocks();
     localStorage.clear();
     mockPostYoutubePlayerCommand.mockClear();
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(
+      actualSimilarReleaseQueue.fetchPlayableQueuesForSimilarReleases,
+    );
     mockUserPreferencesResponse();
     setupDefaultCrateApiMocks(mockApi);
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
@@ -1239,6 +1253,74 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.canPlayNext).toBe(true);
     expect(result.current.activeTrackPosition).toBe("A1");
     expect(result.current.queue[0]?.trackPosition).toBe("B1");
+  });
+
+  it("sets isQueueBuilding while similar releases are loading", async () => {
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: RELEASE_ID,
+        title: "Never Gonna Give You Up",
+        genres: ["Electronic"],
+        styles: ["House"],
+        resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100002,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        resource_url: "https://api.discogs.com/releases/100002",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      "100002": similarHouseReleaseDetail,
+    });
+
+    let resolveSimilarFetch: ((value: PlaybackQueueItem[][]) => void) | null =
+      null;
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSimilarFetch = resolve;
+        }),
+    );
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue.length).toBeGreaterThanOrEqual(1);
+      expect(result.current.isQueueBuilding).toBe(true);
+      expect(mockFetchPlayableQueuesForSimilarReleases).toHaveBeenCalled();
+    });
+
+    await act(async () => {
+      resolveSimilarFetch?.([
+        [
+          createQueueItem({
+            release: similarRelease,
+            trackPosition: "A1",
+            trackTitle: "Similar Track",
+          }),
+        ],
+      ]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isQueueBuilding).toBe(false);
+      expect(result.current.queue).toHaveLength(2);
+    });
   });
 
   it("appends playable tracks from similar releases when playback starts", async () => {

@@ -9,6 +9,7 @@ import {
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
@@ -18,6 +19,17 @@ import {
 import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+    dismiss: jest.fn(),
+  },
+}));
+
+import { toast } from "src/utils/toast";
+
+const mockToastSuccess = jest.mocked(toast.success);
 
 const mockApi = jest.mocked(api);
 
@@ -85,6 +97,7 @@ describe("useReleaseModalPlayback", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
+    setupMockMatchMedia({ desktop: true });
     setupDefaultCrateApiMocks(mockApi);
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
   });
@@ -529,6 +542,32 @@ describe("useReleaseModalPlayback", () => {
 
     expect(result.current.playback.isReleasePreview).toBe(true);
     expect(result.current.playback.queue).toHaveLength(0);
+    expect(mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue", {
+      position: "bottom-center",
+    });
+  });
+
+  it("shows a success toast when adding a single track to the queue", async () => {
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.handleTrackQueue("A");
+    });
+
+    expect(mockToastSuccess).toHaveBeenCalledWith("Added 1 track to queue", {
+      position: "bottom-center",
+    });
   });
 
   it("queues every playable album track from add-all", async () => {
@@ -583,5 +622,8 @@ describe("useReleaseModalPlayback", () => {
       result.current.playback.queue.map((item) => item.trackPosition),
     ).toEqual(["B"]);
     expect(result.current.modal.allPlayableTracksQueued).toBe(true);
+    expect(mockToastSuccess).toHaveBeenCalledWith("Added 2 tracks to queue", {
+      position: "bottom-center",
+    });
   });
 });

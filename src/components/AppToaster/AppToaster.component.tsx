@@ -4,16 +4,21 @@ import { Toast } from "@base-ui/react/toast";
 import classNames from "classnames";
 import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import type { FmdToastData } from "src/lib/toastManagers";
-import { centerToastManager, toastManager } from "src/lib/toastManagers";
+import {
+  centerToastManager,
+  toastManager,
+  topCenterToastManager,
+} from "src/lib/toastManagers";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./AppToaster.module.css";
 
-type ToastViewportPosition = "bottom-right" | "bottom-center";
+type ToastViewportPosition = "bottom-right" | "bottom-center" | "top-center";
 
 const viewportClassByPosition: Record<ToastViewportPosition, string> = {
   "bottom-right": styles.viewportBottomRight,
   "bottom-center": styles.viewportBottomCenter,
+  "top-center": styles.viewportTopCenter,
 };
 
 function ToastViewportList({ position }: { position: ToastViewportPosition }) {
@@ -125,6 +130,13 @@ export const AppToaster = () => {
         timeout={5000}
       >
         <ToastViewportList position="bottom-center" />
+      </Toast.Provider>
+      <Toast.Provider
+        toastManager={topCenterToastManager}
+        limit={3}
+        timeout={5000}
+      >
+        <ToastViewportList position="top-center" />
       </Toast.Provider>
     </BrowserOnly>
   );

@@ -284,6 +284,12 @@
   top: -0.15rem;
 }
 
+.queueCountSpinner {
+  border-width: 1px;
+  height: 0.625rem;
+  width: 0.625rem;
+}
+
 .cover {
   border-radius: var(--radius-sm);
   flex-shrink: 0;

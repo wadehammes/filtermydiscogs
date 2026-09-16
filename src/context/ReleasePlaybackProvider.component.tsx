@@ -273,6 +273,7 @@ export const ReleasePlaybackProvider = ({
     appendSimilarReleasesToQueue,
     extendQueueTail,
     maybeExtendQueueTail,
+    isSimilarQueueLoading,
   } = useReleasePlaybackSimilarQueue({
     queryClient,
     allReleases,
@@ -650,6 +651,10 @@ export const ReleasePlaybackProvider = ({
     startPlaybackRef,
   });
 
+  const isQueueBuilding =
+    isSimilarQueueLoading ||
+    (queue.length === 0 && pendingTrackPosition !== null);
+
   const stateValue = useMemo(
     (): ReleasePlaybackState => ({
       release,
@@ -674,6 +679,7 @@ export const ReleasePlaybackProvider = ({
       canPlayPrevious,
       canPlayNext,
       isLoading,
+      isQueueBuilding,
     }),
     [
       release,
@@ -698,6 +704,7 @@ export const ReleasePlaybackProvider = ({
       canPlayPrevious,
       canPlayNext,
       isLoading,
+      isQueueBuilding,
     ],
   );
 
