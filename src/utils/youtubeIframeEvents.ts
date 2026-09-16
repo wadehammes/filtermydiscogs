@@ -4,6 +4,15 @@ export const YOUTUBE_PLAYER_STATE_PAUSED = 2;
 export const YOUTUBE_PLAYER_STATE_CUED = 5;
 
 export const HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS = 1000;
+export const EMBED_TRACK_SWITCH_PAUSE_GRACE_MS = 5000;
+export const YOUTUBE_EMBED_END_TIME_TOLERANCE_SEC = 1;
+export const EMBED_PLAYBACK_ENDED_DEBOUNCE_MS = 1500;
+
+export type YoutubeInfoDelivery = {
+  playerState?: number;
+  currentTime?: number;
+  duration?: number;
+};
 
 const YOUTUBE_EMBED_ORIGINS = new Set([
   "https://www.youtube.com",
@@ -43,6 +52,75 @@ export const parseYoutubePlayerStateFromMessage = (
   }
 
   return null;
+};
+
+export const parseYoutubeInfoDelivery = (
+  data: unknown,
+): YoutubeInfoDelivery | null => {
+  if (typeof data !== "string") {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(data) as {
+      event?: string;
+      info?: {
+        playerState?: number;
+        currentTime?: number;
+        duration?: number;
+      };
+    };
+
+    if (payload.event !== "infoDelivery" || typeof payload.info !== "object") {
+      return null;
+    }
+
+    if (payload.info === null) {
+      return null;
+    }
+
+    const { playerState, currentTime, duration } = payload.info;
+
+    if (
+      playerState === undefined &&
+      currentTime === undefined &&
+      duration === undefined
+    ) {
+      return null;
+    }
+
+    return {
+      ...(playerState !== undefined && { playerState }),
+      ...(currentTime !== undefined && { currentTime }),
+      ...(duration !== undefined && { duration }),
+    };
+  } catch {
+    return null;
+  }
+};
+
+export const isYoutubeEmbedAtOrPastEnd = (
+  info: YoutubeInfoDelivery,
+): boolean => {
+  if (info.playerState === YOUTUBE_PLAYER_STATE_ENDED) {
+    return true;
+  }
+
+  if (info.playerState === YOUTUBE_PLAYER_STATE_PLAYING) {
+    return false;
+  }
+
+  if (info.duration === undefined || info.duration <= 0) {
+    return false;
+  }
+
+  if (info.currentTime === undefined) {
+    return false;
+  }
+
+  return (
+    info.currentTime >= info.duration - YOUTUBE_EMBED_END_TIME_TOLERANCE_SEC
+  );
 };
 
 export const enableYoutubeIframeListening = (
