@@ -20,6 +20,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | Script | Event | What it does |
 |--------|-------|--------------|
 | `session-handbook-routing.sh` | `sessionStart` | Injects the handbook routing map (`llms.md`) into session context. |
+| `block-co-authored-by-commit.sh` | `beforeShellExecution` (`git commit`) | Denies raw `git commit` (agents must use `scripts/git-commit.sh` or `git -c core.hooksPath=.githooks commit`) and blocks `Co-authored-by` in the command string. |
 | `block-added-comments.sh` | `preToolUse` | Denies edits that add code comments. |
 | `block-toplevel-media.sh` | `preToolUse` | Denies top-level `@media` in CSS — nest inside selectors. |
 | `block-custom-media.sh` | `preToolUse` | Denies `@custom-media` / `@media (--var)` — use range syntax. |
