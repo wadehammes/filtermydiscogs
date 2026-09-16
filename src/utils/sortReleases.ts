@@ -1,4 +1,4 @@
-import { SortValues } from "src/context/filters.context";
+import { SortValues } from "src/constants/sortValues";
 import type { DiscogsRelease } from "src/types";
 
 const compareNumeric = (a: number, b: number, descending: boolean) =>
