@@ -84,7 +84,7 @@ describe("ReleaseSummaryHero", () => {
 
   it("exports shared modal toolbar classes for hero actions", async () => {
     const toolbarStyles = await import(
-      "../shared/ModalToolbar/ModalToolbar.module.css"
+      "../ModalToolbar/ModalToolbar.module.css"
     );
 
     expect(toolbarStyles.default.toolbar).toBeTruthy();

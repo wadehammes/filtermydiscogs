@@ -1,11 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Cursor — share committed rules & hooks; ignore local + runtime state
+# Cursor — share committed rules, hooks, MCP; ignore local + runtime state
 .cursor/*
 !.cursor/hooks.json
 !.cursor/hooks/
 !.cursor/rules/
-.cursor/mcp.json
+!.cursor/mcp.json
 .cursor/*.log
 .cursor/settings.local.json
 .cursor/checkpoints/

@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  // Ad-hoc codebase intelligence for agents (CI dead-code gate stays on Knip — knip.json).
+  "ignoreDependencies": [
+    "@svgr/webpack",
+    "identity-obj-proxy",
+    "jest-fetch-mock",
+    "jest-location-mock",
+    "typescript-langservice",
+    "tslib"
+  ],
+  "ignoreDependencyOverrides": [
+    { "package": "svgo", "source": "pnpm-workspace.yaml" },
+    { "package": "picomatch", "source": "pnpm-workspace.yaml" },
+    { "package": "postcss", "source": "pnpm-workspace.yaml" },
+    { "package": "hono", "source": "pnpm-workspace.yaml" },
+    { "package": "@hono/node-server", "source": "pnpm-workspace.yaml" },
+    {
+      "package": "@babel/plugin-transform-modules-systemjs",
+      "source": "pnpm-workspace.yaml"
+    }
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignorePatterns": ["public/theme-init.js"],
+  "entry": [
+    ".jest/setupTests.ts",
+    ".jest/setEnvVars.ts",
+    "src/tests/mocks/mockCanvas.mock.ts",
+    "src/tests/mocks/mockNextRouter.mock.ts"
+  ],
+  "overrides": [
+    {
+      "files": ["src/types/**"],
+      "rules": {
+        "unused-export": "off",
+        "unused-type": "off"
+      }
+    },
+    {
+      "files": ["src/context/**"],
+      "rules": {
+        "unused-type": "off",
+        "unused-enum-member": "off"
+      }
+    },
+    {
+      "files": ["**/*.po.tsx"],
+      "rules": {
+        "unused-class-member": "off"
+      }
+    }
+  ]
+}

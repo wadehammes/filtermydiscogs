@@ -52,6 +52,7 @@ Quick map of **`src/`** and related top-level folders.
 | Private session API cache headers | [`src/lib/private-route-cache.ts`](../../src/lib/private-route-cache.ts), [`src/lib/private-route-response.ts`](../../src/lib/private-route-response.ts), [`src/proxy.ts`](../../src/proxy.ts) — see [platform.md](platform.md) |
 | Site metadata / sitemap / robots | [`src/constants/siteMetadata.ts`](../../src/constants/siteMetadata.ts), [`src/app/sitemap.ts`](../../src/app/sitemap.ts), [`src/app/robots.ts`](../../src/app/robots.ts) — see [patterns.md → Metadata and OG images](patterns.md#metadata-and-og-images) |
 | Public landing / about / legal shell | [`PublicAuthLayout`](../../src/components/PublicAuthLayout/PublicAuthLayout.component.tsx) + server [`PageFooter`](../../src/components/Page/PageFooter.server.tsx); home in [`Login/`](../../src/components/Login/), about in [`About/`](../../src/components/About/), legal in [`Legal/`](../../src/components/Legal/), public crate in [`PublicCrate/`](../../src/components/PublicCrate/) |
-| Unused code / dead exports | [`knip.json`](../../knip.json), `pnpm knip` |
+| Unused code / dead exports (CI) | [`knip.json`](../../knip.json), `pnpm knip` |
+| Codebase intelligence (agents, optional) | [`.fallowrc.jsonc`](../../.fallowrc.jsonc), `pnpm fallow:*` — see [platform.md](platform.md) |
 
 **Tests** for a module usually sit **next to** that module as **`*.spec.ts(x)`** (optional **`*.po.tsx`** for page objects). Shared test infra lives under **`src/tests/`** (`BasePageObject.po.ts`, factories, mocks).
