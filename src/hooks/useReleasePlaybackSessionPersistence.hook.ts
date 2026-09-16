@@ -22,7 +22,9 @@ export const usePersistPlaybackSessionOnQueueChange = ({
   persistPlaybackSession,
 }: UsePersistPlaybackSessionOnQueueChangeParams): void => {
   useEffect(() => {
-    persistPlaybackSession();
+    if (sessionQueue) {
+      persistPlaybackSession();
+    }
   }, [sessionQueue, persistPlaybackSession]);
 };
 

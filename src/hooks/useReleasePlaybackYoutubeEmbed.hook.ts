@@ -7,6 +7,7 @@ import {
   type RefObject,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
@@ -17,7 +18,8 @@ import { resolveQueueItemYoutubeVideoId } from "src/utils/playbackQueue";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
 import {
   loadAndPlayYoutubeVideo,
-  requestYoutubePlayerState,
+  refreshYoutubeEmbedPlayerLayout,
+  requestYoutubeEmbedPlaybackSync,
 } from "src/utils/postYoutubePlayerCommand";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
@@ -26,9 +28,13 @@ import {
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import {
+  EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
+  EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
   enableYoutubeIframeListening,
   HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+  isYoutubeEmbedAtOrPastEnd,
   isYoutubeEmbedOrigin,
+  parseYoutubeInfoDelivery,
   parseYoutubePlayerStateFromMessage,
   YOUTUBE_PLAYER_STATE_CUED,
   YOUTUBE_PLAYER_STATE_ENDED,
@@ -99,6 +105,40 @@ export const useReleasePlaybackYoutubeEmbed = ({
     videosRef,
   } = refs;
 
+  const embedTrackSwitchGraceUntilRef = useRef(0);
+  const lastEmbedPlaybackEndedAtRef = useRef(0);
+
+  const notifyEmbedPlaybackEnded = useCallback(() => {
+    const now = Date.now();
+
+    if (
+      now - lastEmbedPlaybackEndedAtRef.current <
+      EMBED_PLAYBACK_ENDED_DEBOUNCE_MS
+    ) {
+      return;
+    }
+
+    lastEmbedPlaybackEndedAtRef.current = now;
+    onPlaybackEnded();
+  }, [onPlaybackEnded]);
+
+  const markEmbedTrackSwitchGrace = useCallback(() => {
+    embedTrackSwitchGraceUntilRef.current =
+      Date.now() + EMBED_TRACK_SWITCH_PAUSE_GRACE_MS;
+  }, []);
+
+  const isWithinEmbedTrackSwitchGrace = useCallback(() => {
+    return Date.now() < embedTrackSwitchGraceUntilRef.current;
+  }, []);
+
+  const refreshEmbedPlayerLayout = useCallback(() => {
+    refreshYoutubeEmbedPlayerLayout({ iframe: playbackIframeRef.current });
+  }, [playbackIframeRef]);
+
+  const syncEmbedPlaybackState = useCallback(() => {
+    requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
+  }, [playbackIframeRef]);
+
   const clearPlayFromGestureRetries = useCallback(() => {
     for (const timeoutId of playFromGestureRetryTimeoutsRef.current) {
       window.clearTimeout(timeoutId);
@@ -146,6 +186,25 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playFromGestureRetryTimeoutsRef,
   ]);
 
+  const recoverPlaybackAfterTabVisible = useCallback(() => {
+    refreshEmbedPlayerLayout();
+    syncEmbedPlaybackState();
+
+    if (!isPausedRef.current) {
+      schedulePlayFromGestureAttempts();
+    }
+
+    window.setTimeout(() => {
+      refreshEmbedPlayerLayout();
+      syncEmbedPlaybackState();
+    }, 200);
+  }, [
+    isPausedRef,
+    refreshEmbedPlayerLayout,
+    schedulePlayFromGestureAttempts,
+    syncEmbedPlaybackState,
+  ]);
+
   const syncEmbedToVideoId = useCallback(
     (videoId: string) => {
       embedVideoIdRef.current = videoId;
@@ -153,6 +212,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       if (!isPausedRef.current) {
         pendingPlayFromGestureRef.current = true;
+        markEmbedTrackSwitchGrace();
         loadAndPlayYoutubeVideo({
           iframe: playbackIframeRef.current,
           videoId,
@@ -165,6 +225,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       isPausedRef,
       pendingPlayFromGestureRef,
       playbackIframeRef,
+      markEmbedTrackSwitchGrace,
       schedulePlayFromGestureAttempts,
       setEmbedVideoId,
     ],
@@ -267,11 +328,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   const handleYoutubeEmbedPlayerState = useCallback(
     (playerState: number) => {
       if (playerState === YOUTUBE_PLAYER_STATE_ENDED) {
-        onPlaybackEnded();
-        return;
-      }
-
-      if (document.visibilityState === "hidden") {
+        notifyEmbedPlaybackEnded();
         return;
       }
 
@@ -280,6 +337,21 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
+        if (
+          document.visibilityState === "hidden" &&
+          !isWithinEmbedTrackSwitchGrace()
+        ) {
+          return;
+        }
+
+        if (isWithinEmbedTrackSwitchGrace()) {
+          postYoutubePlayerCommand({
+            iframe: playbackIframeRef.current,
+            command: "playVideo",
+          });
+          return;
+        }
+
         pendingPlayFromGestureRef.current = false;
         clearPlayFromGestureRetries();
         dispatchSession({ type: "PAUSE" });
@@ -292,6 +364,15 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPausedRef.current
       ) {
         dispatchSession({ type: "RESUME" });
+      }
+
+      if (
+        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
+        isPlayingRef.current &&
+        !isPausedRef.current
+      ) {
+        pendingPlayFromGestureRef.current = false;
+        embedTrackSwitchGraceUntilRef.current = 0;
         return;
       }
 
@@ -312,7 +393,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
       dispatchSession,
       isPausedRef,
       isPlayingRef,
-      onPlaybackEnded,
+      isWithinEmbedTrackSwitchGrace,
+      notifyEmbedPlaybackEnded,
       pendingPlayFromGestureRef,
       playbackIframeRef,
     ],
@@ -328,11 +410,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
-      requestYoutubePlayerState(playbackIframeRef.current);
-
-      if (!isPausedRef.current) {
-        schedulePlayFromGestureAttempts();
-      }
+      recoverPlaybackAfterTabVisible();
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -340,12 +418,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [
-    isPausedRef,
-    isPlayingRef,
-    playbackIframeRef,
-    schedulePlayFromGestureAttempts,
-  ]);
+  }, [isPlayingRef, recoverPlaybackAfterTabVisible]);
 
   useEffect(() => {
     if (!isPlaying || isPaused) {
@@ -357,7 +430,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
-      requestYoutubePlayerState(playbackIframeRef.current);
+      syncEmbedPlaybackState();
+
+      if (isWithinEmbedTrackSwitchGrace()) {
+        attemptPlayFromGesture();
+      }
     };
 
     const intervalId = window.setInterval(
@@ -368,7 +445,13 @@ export const useReleasePlaybackYoutubeEmbed = ({
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isPaused, isPlaying, playbackIframeRef]);
+  }, [
+    attemptPlayFromGesture,
+    isPaused,
+    isPlaying,
+    isWithinEmbedTrackSwitchGrace,
+    syncEmbedPlaybackState,
+  ]);
 
   useEffect(() => {
     if (
@@ -425,7 +508,17 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
-      const playerState = parseYoutubePlayerStateFromMessage(event.data);
+      const infoDelivery = parseYoutubeInfoDelivery(event.data);
+
+      if (infoDelivery && isYoutubeEmbedAtOrPastEnd(infoDelivery)) {
+        notifyEmbedPlaybackEnded();
+        return;
+      }
+
+      const playerState =
+        parseYoutubePlayerStateFromMessage(event.data) ??
+        infoDelivery?.playerState ??
+        null;
 
       if (playerState === null) {
         return;
@@ -439,7 +532,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [handleYoutubeEmbedPlayerState, playbackIframeRef]);
+  }, [
+    handleYoutubeEmbedPlayerState,
+    notifyEmbedPlaybackEnded,
+    playbackIframeRef,
+  ]);
 
   const resumePlaybackFromGesture = useCallback(() => {
     schedulePlayFromGestureAttempts();

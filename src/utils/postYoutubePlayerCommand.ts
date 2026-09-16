@@ -3,6 +3,13 @@ export type YoutubePlayerCommand =
   | "pauseVideo"
   | "getPlayerState";
 
+type YoutubeIframeFunc =
+  | YoutubePlayerCommand
+  | "loadVideoById"
+  | "setSize"
+  | "getCurrentTime"
+  | "getDuration";
+
 export const YOUTUBE_EMBED_PLAYER_WIDTH = 640;
 export const YOUTUBE_EMBED_PLAYER_HEIGHT = 360;
 
@@ -12,7 +19,7 @@ const postYoutubeIframeCommand = ({
   args = "",
 }: {
   iframe: HTMLIFrameElement | null;
-  func: YoutubePlayerCommand | "loadVideoById" | "setSize";
+  func: YoutubeIframeFunc;
   args?: string | unknown[];
 }): void => {
   if (!iframe?.contentWindow) {
@@ -39,10 +46,20 @@ export const postYoutubePlayerCommand = ({
   postYoutubeIframeCommand({ iframe, func: command });
 };
 
-export const requestYoutubePlayerState = (
+const requestYoutubePlayerState = (iframe: HTMLIFrameElement | null): void => {
+  postYoutubeIframeCommand({ iframe, func: "getPlayerState" });
+};
+
+export const requestYoutubeEmbedPlaybackSync = (
   iframe: HTMLIFrameElement | null,
 ): void => {
-  postYoutubeIframeCommand({ iframe, func: "getPlayerState" });
+  if (!iframe) {
+    return;
+  }
+
+  requestYoutubePlayerState(iframe);
+  postYoutubeIframeCommand({ iframe, func: "getCurrentTime" });
+  postYoutubeIframeCommand({ iframe, func: "getDuration" });
 };
 
 export const loadYoutubeVideoById = ({

@@ -117,7 +117,7 @@ export const useReleasePlaybackSimilarQueue = ({
     async ({
       sourceRelease,
       generation,
-      existingQueue = queueRef.current,
+      existingQueue,
     }: {
       sourceRelease: DiscogsRelease;
       generation: number;
@@ -130,10 +130,12 @@ export const useReleasePlaybackSimilarQueue = ({
       similarQueueFetchInFlightRef.current = true;
       setIsSimilarQueueLoading(true);
 
+      const queueSnapshot = existingQueue ?? queueRef.current;
+
       try {
         const similarItems = await fetchSimilarQueueItems({
           sourceRelease,
-          existingQueue,
+          existingQueue: queueSnapshot,
         });
 
         if (
@@ -154,6 +156,7 @@ export const useReleasePlaybackSimilarQueue = ({
     },
     [
       fetchSimilarQueueItems,
+      queueRef,
       similarQueueFetchInFlightRef,
       similarQueueGenerationRef,
       updateUpcomingQueue,

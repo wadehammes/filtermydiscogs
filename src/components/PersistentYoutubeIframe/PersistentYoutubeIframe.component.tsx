@@ -125,6 +125,26 @@ export const PersistentYoutubeIframe = ({
     resumePlaybackFromGesture();
   }, [resumePlaybackFromGesture, transitionIframeToVideo, variant, videoId]);
 
+  useEffect(() => {
+    if (variant !== "visible") {
+      return;
+    }
+
+    const handleDocumentVisible = () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
+    };
+
+    document.addEventListener("visibilitychange", handleDocumentVisible);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleDocumentVisible);
+    };
+  }, [variant]);
+
   return (
     <iframe
       ref={setIframeRef}

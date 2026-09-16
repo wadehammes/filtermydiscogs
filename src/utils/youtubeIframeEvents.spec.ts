@@ -1,9 +1,12 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   enableYoutubeIframeListening,
+  isYoutubeEmbedAtOrPastEnd,
   isYoutubeEmbedOrigin,
+  parseYoutubeInfoDelivery,
   parseYoutubePlayerStateFromMessage,
   YOUTUBE_PLAYER_STATE_ENDED,
+  YOUTUBE_PLAYER_STATE_PLAYING,
 } from "./youtubeIframeEvents";
 
 describe("isYoutubeEmbedOrigin", () => {
@@ -47,6 +50,44 @@ describe("parseYoutubePlayerStateFromMessage", () => {
         JSON.stringify({ event: "onReady", info: 1 }),
       ),
     ).toBeNull();
+  });
+});
+
+describe("parseYoutubeInfoDelivery", () => {
+  it("parses playback position fields", () => {
+    expect(
+      parseYoutubeInfoDelivery(
+        JSON.stringify({
+          event: "infoDelivery",
+          info: { currentTime: 212, duration: 212, playerState: 0 },
+        }),
+      ),
+    ).toEqual({
+      currentTime: 212,
+      duration: 212,
+      playerState: 0,
+    });
+  });
+});
+
+describe("isYoutubeEmbedAtOrPastEnd", () => {
+  it("does not treat in-progress playback as ended from time alone", () => {
+    expect(
+      isYoutubeEmbedAtOrPastEnd({
+        playerState: YOUTUBE_PLAYER_STATE_PLAYING,
+        currentTime: 200,
+        duration: 212,
+      }),
+    ).toBe(false);
+  });
+
+  it("treats paused playback at the end as ended", () => {
+    expect(
+      isYoutubeEmbedAtOrPastEnd({
+        currentTime: 211.5,
+        duration: 212,
+      }),
+    ).toBe(true);
   });
 });
 

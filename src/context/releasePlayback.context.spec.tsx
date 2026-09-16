@@ -26,7 +26,8 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { createQueueItem } from "src/utils/playbackQueue";
 import {
   loadAndPlayYoutubeVideo,
-  requestYoutubePlayerState,
+  refreshYoutubeEmbedPlayerLayout,
+  requestYoutubeEmbedPlaybackSync,
 } from "src/utils/postYoutubePlayerCommand";
 import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
@@ -47,7 +48,7 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   loadYoutubeVideoById: jest.fn(),
   transitionYoutubeIframeToVideo: jest.fn(),
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubePlayerState: jest.fn(),
+  requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
 const actualSimilarReleaseQueue = jest.requireActual<
@@ -58,7 +59,12 @@ const mockFetchPlayableQueuesForSimilarReleases = jest.mocked(
 );
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
 const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
-const mockRequestYoutubePlayerState = jest.mocked(requestYoutubePlayerState);
+const mockRequestYoutubeEmbedPlaybackSync = jest.mocked(
+  requestYoutubeEmbedPlaybackSync,
+);
+const mockRefreshYoutubeEmbedPlayerLayout = jest.mocked(
+  refreshYoutubeEmbedPlayerLayout,
+);
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
   Object.defineProperty(document, "visibilityState", {
@@ -385,13 +391,13 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.queue).toHaveLength(1);
     });
 
-    mockRequestYoutubePlayerState.mockClear();
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
 
     act(() => {
       jest.advanceTimersByTime(1000);
     });
 
-    expect(mockRequestYoutubePlayerState.mock.calls[0]?.[0]).toBe(iframe);
+    expect(mockRequestYoutubeEmbedPlaybackSync.mock.calls[0]?.[0]).toBe(iframe);
 
     act(() => {
       dispatchYoutubePlayerState({
@@ -455,7 +461,7 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
-  it("requests player state when the tab becomes visible again", async () => {
+  it("syncs embed playback when the tab becomes visible again", async () => {
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;
     const iframe = { contentWindow } as HTMLIFrameElement;
@@ -476,14 +482,14 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.isPlaybackReady).toBe(true);
     });
 
-    mockRequestYoutubePlayerState.mockClear();
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
 
     act(() => {
       setDocumentVisibilityState("visible");
       document.dispatchEvent(new Event("visibilitychange"));
     });
 
-    expect(mockRequestYoutubePlayerState.mock.calls[0]?.[0]).toBe(iframe);
+    expect(mockRequestYoutubeEmbedPlaybackSync.mock.calls[0]?.[0]).toBe(iframe);
   });
 
   it("advances the queue when infoDelivery reports playback ended", async () => {
@@ -514,6 +520,47 @@ describe("ReleasePlaybackProvider", () => {
         playerState: 0,
         event: "infoDelivery",
       });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+  });
+
+  it("advances the queue when infoDelivery reports the embed at the end by time", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            event: "infoDelivery",
+            info: { currentTime: 211.5, duration: 212, playerState: 2 },
+          }),
+          origin: "https://www.youtube-nocookie.com",
+          source: contentWindow,
+        }),
+      );
     });
 
     await waitFor(() => {
@@ -611,28 +658,89 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 2 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
     });
 
     expect(result.current.isPaused).toBe(true);
 
     act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 1 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
     });
 
     expect(result.current.isPaused).toBe(false);
+  });
+
+  it("keeps autoplaying the next track when the embed pauses during a visible track switch", async () => {
+    setDocumentVisibilityState("visible");
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    mockPostYoutubePlayerCommand.mockClear();
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
+    });
+
+    expect(result.current.isPaused).toBe(false);
+
+    const playVideoCalls = mockPostYoutubePlayerCommand.mock.calls.filter(
+      ([args]) => args.command === "playVideo" && args.iframe === iframe,
+    );
+
+    expect(playVideoCalls.length).toBeGreaterThan(0);
   });
 
   it("loads and plays the next embed immediately when advancing the queue in a hidden tab", async () => {
@@ -811,7 +919,8 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.isPlaybackReady).toBe(true);
     });
 
-    mockRequestYoutubePlayerState.mockClear();
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
+    mockRefreshYoutubeEmbedPlayerLayout.mockClear();
 
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
@@ -822,8 +931,10 @@ describe("ReleasePlaybackProvider", () => {
       document.dispatchEvent(new Event("visibilitychange"));
     });
 
-    expect(mockRequestYoutubePlayerState).toHaveBeenCalledTimes(1);
-    expect(mockRequestYoutubePlayerState.mock.calls[0]?.[0]).toBe(iframe);
+    expect(mockRequestYoutubeEmbedPlaybackSync.mock.calls[0]?.[0]).toBe(iframe);
+    expect(mockRefreshYoutubeEmbedPlayerLayout.mock.calls[0]?.[0]?.iframe).toBe(
+      iframe,
+    );
 
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
