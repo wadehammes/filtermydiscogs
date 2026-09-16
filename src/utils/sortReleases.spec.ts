@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { SortValues } from "src/context/filters.context";
+import { SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsRelease } from "src/types";
 import { sortReleases } from "./sortReleases";
