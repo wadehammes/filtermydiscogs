@@ -4,8 +4,8 @@ import {
   VIEW_STATE_STORAGE_KEY,
 } from "src/constants/storageKeys";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
-import { buildLocalPreferencesSeedPatch } from "src/utils/userPreferencesLocalSeedPatch";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import { buildLocalPreferencesSeedPatch } from "src/utils/userPreferencesLocalSeedPatch";
 
 describe("buildLocalPreferencesSeedPatch", () => {
   beforeEach(() => {
