@@ -24,7 +24,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   activeVideoId: string | null;
   appendSimilarReleasesToQueue: (
     params: AppendSimilarReleasesParams,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   awaitingResumeGestureRef: MutableRefObject<boolean>;
   dispatchSession: Dispatch<PlaybackSessionAction>;
   isLoading: boolean;
