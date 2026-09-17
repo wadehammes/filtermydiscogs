@@ -6,7 +6,7 @@ import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmb
 
 describe("resolveQueueItemEmbedTracksVideos", () => {
   it("reuses in-memory tracklist when the queue item matches the active release", () => {
-    const release = releaseFactory.build({ id: 1, instance_id: 10 });
+    const release = releaseFactory.build();
     const tracks = [{ position: "A", title: "Track", type_: "track" as const }];
     const videos = [{ uri: "https://youtube.com/watch?v=abc", title: "Vid" }];
 
@@ -22,9 +22,11 @@ describe("resolveQueueItemEmbedTracksVideos", () => {
   });
 
   it("falls back to cached release detail for other releases in the queue", () => {
-    const currentRelease = releaseFactory.build({ id: 1, instance_id: 10 });
-    const queuedRelease = releaseFactory.build({ id: 2, instance_id: 20 });
-    const cached = discogsReleaseJsonFactory.withTracklistAndVideos({ id: 2 });
+    const currentRelease = releaseFactory.build();
+    const queuedRelease = releaseFactory.build();
+    const cached = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: Number(queuedRelease.basic_information.id),
+    });
 
     const result = resolveQueueItemEmbedTracksVideos({
       item: createQueueItem({
