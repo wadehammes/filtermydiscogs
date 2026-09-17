@@ -1,352 +1,51 @@
 "use client";
 
-import classNames from "classnames";
-import { type ReactNode, useMemo, useState } from "react";
-import { EmptyState } from "src/components/EmptyState/EmptyState.component";
-import { IconButton } from "src/components/IconButton/IconButton.component";
-import {
-  SegmentedControl,
-  segmentedStyles,
-} from "src/components/SegmentedControl/SegmentedControl.component";
-import Select from "src/components/Select/Select.component";
-import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
-import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { ComparisonChartCard } from "src/components/Dashboard/ComparisonChartCard.component";
+import { StyleGenreViewToggle } from "src/components/Dashboard/StyleGenreViewToggle.component";
+import { useComparativeGrowthChartsState } from "src/components/Dashboard/useComparativeGrowthChartsState.hook";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
-import {
-  analyzeTagGrowthFromDates,
-  collectArtistOptions,
-  collectGenreOptions,
-  collectMediaTypeOptions,
-  collectStyleOptionsForGenre,
-  type DualSeriesPoint,
-  mergeDualCumulativeSeries,
-  mergeStyleWithinGenreShareSeries,
-  releaseHasArtist,
-  releaseHasGenre,
-  releaseHasGenreAndStyle,
-  releaseHasMediaType,
-  type TagOption,
-} from "src/utils/tagGrowthTracker";
-import {
-  createDualSeriesAreaChartDefinition,
-  formatMonthYear,
-} from "src/utils/tanstackCharts";
 import styles from "./ComparativeGrowthCharts.module.css";
 
 interface ComparativeGrowthChartsProps {
   hideHeading?: boolean;
 }
 
-type StyleGenreViewMode = "cumulative" | "share";
-
-interface ComparisonChartCardProps {
-  title: string;
-  testId: string;
-  primarySelectLabel: string;
-  secondarySelectLabel: string;
-  primaryOptions: TagOption[];
-  secondaryOptions: TagOption[];
-  resolvedPrimary: string;
-  resolvedSecondary: string;
-  onPrimaryChange: (value: string) => void;
-  onSecondaryChange: (value: string) => void;
-  primaryLegendLabel: string;
-  secondaryLegendLabel: string;
-  chartData: DualSeriesPoint[];
-  primaryColor: string;
-  secondaryColor: string;
-  valueFormat: "count" | "percent";
-  emptyMessage: string;
-  ariaLabel: string;
-  headerExtra?: ReactNode;
-}
-
-const toSelectOptions = (options: TagOption[]) =>
-  options.map((option) => ({
-    value: option.value,
-    label: `${option.label} (${option.count})`,
-  }));
-
-function ComparisonChartCard({
-  title,
-  testId,
-  primarySelectLabel,
-  secondarySelectLabel,
-  primaryOptions,
-  secondaryOptions,
-  resolvedPrimary,
-  resolvedSecondary,
-  onPrimaryChange,
-  onSecondaryChange,
-  primaryLegendLabel,
-  secondaryLegendLabel,
-  chartData,
-  primaryColor,
-  secondaryColor,
-  valueFormat,
-  emptyMessage,
-  ariaLabel,
-  headerExtra,
-}: ComparisonChartCardProps) {
-  const definition = useMemo(
-    () =>
-      createDualSeriesAreaChartDefinition(chartData, {
-        primaryColor,
-        secondaryColor,
-        primaryLabel: primaryLegendLabel,
-        secondaryLabel: secondaryLegendLabel,
-        formatX: formatMonthYear,
-        valueFormat,
-      }),
-    [
-      chartData,
-      primaryColor,
-      primaryLegendLabel,
-      secondaryColor,
-      secondaryLegendLabel,
-      valueFormat,
-    ],
-  );
-
-  return (
-    <article className={styles.chartContainer} data-testid={testId}>
-      <div className={styles.chartHeader}>
-        <h3 className={styles.chartTitle}>{title}</h3>
-        {headerExtra}
-      </div>
-      <div className={styles.controls}>
-        {primaryOptions.length > 0 ? (
-          <Select
-            className={styles.select}
-            label={primarySelectLabel}
-            options={toSelectOptions(primaryOptions)}
-            showLabel={true}
-            value={resolvedPrimary}
-            onChange={(value) => onPrimaryChange(String(value))}
-          />
-        ) : null}
-        {secondaryOptions.length > 0 ? (
-          <Select
-            className={styles.select}
-            label={secondarySelectLabel}
-            options={toSelectOptions(secondaryOptions)}
-            showLabel={true}
-            value={resolvedSecondary}
-            onChange={(value) => onSecondaryChange(String(value))}
-          />
-        ) : null}
-      </div>
-
-      {chartData.length > 0 ? (
-        <>
-          <ul aria-label="Chart legend" className={styles.legend}>
-            <li className={styles.legendItem}>
-              <span
-                aria-hidden="true"
-                className={styles.legendSwatch}
-                style={{ backgroundColor: primaryColor }}
-              />
-              <span className={styles.legendLabel}>{primaryLegendLabel}</span>
-            </li>
-            <li className={styles.legendItem}>
-              <span
-                aria-hidden="true"
-                className={styles.legendSwatch}
-                style={{ backgroundColor: secondaryColor }}
-              />
-              <span className={styles.legendLabel}>{secondaryLegendLabel}</span>
-            </li>
-          </ul>
-          <div className={styles.chartWrapper}>
-            <TanstackChart
-              ariaLabel={ariaLabel}
-              definition={definition}
-              height={260}
-            />
-          </div>
-        </>
-      ) : (
-        <EmptyState
-          variant="inline"
-          title={emptyMessage}
-          className={styles.emptyState}
-        />
-      )}
-    </article>
-  );
-}
-
-function StyleGenreViewToggle({
-  viewMode,
-  onChange,
-}: {
-  viewMode: StyleGenreViewMode;
-  onChange: (mode: StyleGenreViewMode) => void;
-}) {
-  return (
-    <SegmentedControl legend="Style in genre chart view">
-      <IconButton
-        className={classNames(segmentedStyles.segment, {
-          [segmentedStyles.active]: viewMode === "cumulative",
-        })}
-        label="Total"
-        onClick={() => onChange("cumulative")}
-        aria-pressed={viewMode === "cumulative"}
-      />
-      <IconButton
-        className={classNames(segmentedStyles.segment, {
-          [segmentedStyles.active]: viewMode === "share",
-        })}
-        label="Share"
-        onClick={() => onChange("share")}
-        aria-pressed={viewMode === "share"}
-      />
-    </SegmentedControl>
-  );
-}
-
 export function ComparativeGrowthCharts({
   hideHeading = false,
 }: ComparativeGrowthChartsProps) {
-  const releases = useAllReleases();
   const colors = useChartColors();
-
-  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
-  const [selectedFormatPrimary, setSelectedFormatPrimary] = useState<
-    string | null
-  >(null);
-  const [selectedFormatSecondary, setSelectedFormatSecondary] = useState<
-    string | null
-  >(null);
-  const [selectedArtistPrimary, setSelectedArtistPrimary] = useState<
-    string | null
-  >(null);
-  const [selectedArtistSecondary, setSelectedArtistSecondary] = useState<
-    string | null
-  >(null);
-  const [styleGenreViewMode, setStyleGenreViewMode] =
-    useState<StyleGenreViewMode>("cumulative");
-
-  const genreOptions = useMemo(
-    () => collectGenreOptions(releases ?? []),
-    [releases],
-  );
-  const resolvedGenre = selectedGenre ?? genreOptions[0]?.value ?? "";
-
-  const styleOptionsForGenre = useMemo(
-    () => collectStyleOptionsForGenre(releases ?? [], resolvedGenre),
-    [releases, resolvedGenre],
-  );
-
-  const resolvedStyle =
-    selectedStyle &&
-    styleOptionsForGenre.some((option) => option.value === selectedStyle)
-      ? selectedStyle
-      : (styleOptionsForGenre[0]?.value ?? "");
-
-  const formatOptions = useMemo(
-    () => collectMediaTypeOptions(releases ?? []),
-    [releases],
-  );
-  const artistOptions = useMemo(
-    () => collectArtistOptions(releases ?? []),
-    [releases],
-  );
-
-  const resolvedFormatPrimary =
-    selectedFormatPrimary ?? formatOptions[0]?.value ?? "";
-  const resolvedFormatSecondary =
-    selectedFormatSecondary ??
-    formatOptions[1]?.value ??
-    formatOptions[0]?.value ??
-    "";
-  const resolvedArtistPrimary =
-    selectedArtistPrimary ?? artistOptions[0]?.value ?? "";
-  const resolvedArtistSecondary =
-    selectedArtistSecondary ??
-    artistOptions[1]?.value ??
-    artistOptions[0]?.value ??
-    "";
-
-  const selectedStyleLabel =
-    styleOptionsForGenre.find((option) => option.value === resolvedStyle)
-      ?.label ?? resolvedStyle;
-  const selectedGenreLabel =
-    genreOptions.find((option) => option.value === resolvedGenre)?.label ??
-    resolvedGenre;
-  const styleInGenreLegendLabel = `${selectedStyleLabel} in ${selectedGenreLabel}`;
-  const allGenreLegendLabel = `All ${selectedGenreLabel}`;
-  const selectedFormatPrimaryLabel =
-    formatOptions.find((option) => option.value === resolvedFormatPrimary)
-      ?.label ?? resolvedFormatPrimary;
-  const selectedFormatSecondaryLabel =
-    formatOptions.find((option) => option.value === resolvedFormatSecondary)
-      ?.label ?? resolvedFormatSecondary;
-  const selectedArtistPrimaryLabel =
-    artistOptions.find((option) => option.value === resolvedArtistPrimary)
-      ?.label ?? resolvedArtistPrimary;
-  const selectedArtistSecondaryLabel =
-    artistOptions.find((option) => option.value === resolvedArtistSecondary)
-      ?.label ?? resolvedArtistSecondary;
-
-  const styleGenreData = useMemo(() => {
-    if (!(releases && resolvedGenre && resolvedStyle)) {
-      return [];
-    }
-
-    if (styleGenreViewMode === "share") {
-      return mergeStyleWithinGenreShareSeries(
-        releases,
-        resolvedGenre,
-        resolvedStyle,
-      );
-    }
-
-    const styleInGenreGrowth = analyzeTagGrowthFromDates(releases, (release) =>
-      releaseHasGenreAndStyle(release, resolvedGenre, resolvedStyle),
-    );
-    const genreGrowth = analyzeTagGrowthFromDates(releases, (release) =>
-      releaseHasGenre(release, resolvedGenre),
-    );
-
-    return mergeDualCumulativeSeries(styleInGenreGrowth, genreGrowth);
-  }, [releases, resolvedGenre, resolvedStyle, styleGenreViewMode]);
-
-  const formatData = useMemo(() => {
-    if (!(releases && resolvedFormatPrimary && resolvedFormatSecondary)) {
-      return [];
-    }
-
-    const primaryGrowth = analyzeTagGrowthFromDates(releases, (release) =>
-      releaseHasMediaType(release, resolvedFormatPrimary),
-    );
-    const secondaryGrowth = analyzeTagGrowthFromDates(releases, (release) =>
-      releaseHasMediaType(release, resolvedFormatSecondary),
-    );
-
-    return mergeDualCumulativeSeries(primaryGrowth, secondaryGrowth);
-  }, [releases, resolvedFormatPrimary, resolvedFormatSecondary]);
-
-  const artistData = useMemo(() => {
-    if (!(releases && resolvedArtistPrimary && resolvedArtistSecondary)) {
-      return [];
-    }
-
-    const primaryGrowth = analyzeTagGrowthFromDates(releases, (release) =>
-      releaseHasArtist(release, resolvedArtistPrimary),
-    );
-    const secondaryGrowth = analyzeTagGrowthFromDates(releases, (release) =>
-      releaseHasArtist(release, resolvedArtistSecondary),
-    );
-
-    return mergeDualCumulativeSeries(primaryGrowth, secondaryGrowth);
-  }, [releases, resolvedArtistPrimary, resolvedArtistSecondary]);
-
-  const showStyleGenre =
-    genreOptions.length > 0 && styleOptionsForGenre.length > 0;
-  const showFormat = formatOptions.length > 0;
-  const showArtist = artistOptions.length > 0;
+  const {
+    genreOptions,
+    styleOptionsForGenre,
+    formatOptions,
+    artistOptions,
+    resolvedGenre,
+    resolvedStyle,
+    resolvedFormatPrimary,
+    resolvedFormatSecondary,
+    resolvedArtistPrimary,
+    resolvedArtistSecondary,
+    styleInGenreLegendLabel,
+    allGenreLegendLabel,
+    selectedFormatPrimaryLabel,
+    selectedFormatSecondaryLabel,
+    selectedArtistPrimaryLabel,
+    selectedArtistSecondaryLabel,
+    styleGenreData,
+    formatData,
+    artistData,
+    styleGenreViewMode,
+    setStyleGenreViewMode,
+    setSelectedGenre,
+    setSelectedStyle,
+    setSelectedFormatPrimary,
+    setSelectedFormatSecondary,
+    setSelectedArtistPrimary,
+    setSelectedArtistSecondary,
+    showStyleGenre,
+    showFormat,
+    showArtist,
+  } = useComparativeGrowthChartsState();
 
   if (!(showStyleGenre || showFormat || showArtist)) {
     return null;
