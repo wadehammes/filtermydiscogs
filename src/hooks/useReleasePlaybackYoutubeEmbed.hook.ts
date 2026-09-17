@@ -184,20 +184,28 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
   const syncEmbedToVideoId = useCallback(
     (videoId: string) => {
+      const isSameVideo = embedVideoIdRef.current === videoId;
       embedVideoIdRef.current = videoId;
       setEmbedVideoId(videoId);
 
-      if (!isPausedRef.current) {
-        pendingPlayFromGestureRef.current = true;
-        markEmbedTrackSwitchGrace();
-        if (!isPlaybackEmbedMounted) {
-          loadAndPlayYoutubeVideo({
-            iframe: playbackIframeRef.current,
-            videoId,
-          });
-        }
-        schedulePlayFromGestureAttempts();
+      if (isPausedRef.current) {
+        return;
       }
+
+      if (isSameVideo) {
+        pendingPlayFromGestureRef.current = false;
+        return;
+      }
+
+      pendingPlayFromGestureRef.current = true;
+      markEmbedTrackSwitchGrace();
+      if (!isPlaybackEmbedMounted) {
+        loadAndPlayYoutubeVideo({
+          iframe: playbackIframeRef.current,
+          videoId,
+        });
+      }
+      schedulePlayFromGestureAttempts();
     },
     [
       embedVideoIdRef,

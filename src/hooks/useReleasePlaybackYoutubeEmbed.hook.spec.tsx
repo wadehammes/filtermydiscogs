@@ -124,6 +124,19 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(pendingPlayFromGestureRef.current).toBe(true);
   });
 
+  it("syncEmbedToVideoId does not request gesture unlock when the youtube video id is unchanged", () => {
+    const { embedVideoIdRef, pendingPlayFromGestureRef, result } = buildHarness(
+      {
+        isPlaybackEmbedMounted: true,
+      },
+    );
+    embedVideoIdRef.current = "same-video-id";
+
+    result.current.syncEmbedToVideoId("same-video-id");
+
+    expect(pendingPlayFromGestureRef.current).toBe(false);
+  });
+
   it("syncEmbedToVideoId still updates embed state when the persistent iframe is already mounted", () => {
     const {
       embedVideoIdRef,
