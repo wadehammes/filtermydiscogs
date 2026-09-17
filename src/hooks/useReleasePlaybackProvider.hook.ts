@@ -1,14 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useReleaseDetailPlaybackIndex } from "src/components/ReleaseModal/useReleaseDetailPlaybackIndex.hook";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
@@ -29,6 +22,7 @@ import {
   type SimilarQueueMode,
   useReleasePlaybackSimilarQueue,
 } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
+import { useReleasePlaybackTransportToggle } from "src/hooks/useReleasePlaybackTransportToggle.hook";
 import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYoutubeEmbed.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -50,7 +44,6 @@ import { parseReleaseId } from "src/utils/releaseNotes";
 import {
   findVideoForTrack,
   parseYoutubeVideoId,
-  postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import {
   resolveActivePlaybackTitle,
@@ -58,6 +51,7 @@ import {
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
 } from "src/utils/releasePlaybackActivePresentation";
+import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
 
 export const useReleasePlaybackProvider = (): {
@@ -265,27 +259,17 @@ export const useReleasePlaybackProvider = (): {
   const canPlayPrevious = isPlaybackReady && playbackHistory.length > 0;
   const canPlayNext = isPlaybackReady && queue.length > 0;
 
-  const handlePlaybackEnded = useCallback(() => {
-    if (!isPlayingRef.current || isPausedRef.current) {
-      return;
-    }
-
-    if (queueRef.current.length === 0) {
-      void extendQueueTailRef.current().then((extended) => {
-        if (
-          extended &&
-          isPlayingRef.current &&
-          !isPausedRef.current &&
-          queueRef.current.length > 0
-        ) {
-          playNextRef.current();
-        }
-      });
-      return;
-    }
-
-    playNextRef.current();
-  }, []);
+  const handlePlaybackEnded = useMemo(
+    () =>
+      createPlaybackEndedAdvanceHandler({
+        isPlayingRef,
+        isPausedRef,
+        queueRef,
+        extendQueueTailRef,
+        playNextRef,
+      }),
+    [],
+  );
 
   const {
     clearPlayFromGestureRetries,
@@ -406,27 +390,15 @@ export const useReleasePlaybackProvider = (): {
     videos,
   });
 
-  const togglePlayback = useCallback(() => {
-    if (isPaused) {
-      awaitingResumeGestureRef.current = false;
-      pendingPlayFromGestureRef.current = true;
-      postYoutubePlayerCommand({
-        iframe: playbackIframeRef.current,
-        command: "playVideo",
-      });
-      schedulePlayFromGestureAttempts();
-      dispatchSession({ type: "RESUME" });
-      return;
-    }
-
-    pendingPlayFromGestureRef.current = false;
-    clearPlayFromGestureRetries();
-    postYoutubePlayerCommand({
-      iframe: playbackIframeRef.current,
-      command: "pauseVideo",
-    });
-    dispatchSession({ type: "PAUSE" });
-  }, [clearPlayFromGestureRetries, isPaused, schedulePlayFromGestureAttempts]);
+  const togglePlayback = useReleasePlaybackTransportToggle({
+    isPaused,
+    dispatchSession,
+    playbackIframeRef,
+    awaitingResumeGestureRef,
+    pendingPlayFromGestureRef,
+    schedulePlayFromGestureAttempts,
+    clearPlayFromGestureRetries,
+  });
 
   usePersistPlaybackSessionWhilePlaying({
     isPlaying,
