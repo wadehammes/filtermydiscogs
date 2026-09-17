@@ -1935,6 +1935,8 @@ describe("ReleasePlaybackProvider", () => {
 
     expect(result.current.playbackVideoId).toBe("def98765432");
     expect(result.current.embedVideoId).toBe("def98765432");
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.isPlaybackReady).toBe(true);
   });
 
   it("loads the new release video when play is clicked in another release modal while playback is active", async () => {
