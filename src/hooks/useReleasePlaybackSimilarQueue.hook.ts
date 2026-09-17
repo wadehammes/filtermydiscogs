@@ -1,11 +1,7 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
-import {
-  type RefObject,
-  useCallback,
-  useState,
-} from "react";
+import { type RefObject, useCallback, useState } from "react";
 import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";

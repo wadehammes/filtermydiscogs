@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  type Dispatch,
-  type RefObject,
-  useCallback,
-} from "react";
+import { type Dispatch, type RefObject, useCallback } from "react";
 import {
   trackPlaybackQueued,
   trackPlaybackStarted,
