@@ -64,9 +64,7 @@ const PlaybackProbe = () => {
   const { isPlaying } = useReleasePlaybackState();
 
   return (
-    <div data-testid="fmdPlaybackProbe">
-      {isPlaying ? "playing" : "idle"}
-    </div>
+    <div data-testid="fmdPlaybackProbe">{isPlaying ? "playing" : "idle"}</div>
   );
 };
 
