@@ -1,6 +1,6 @@
 "use client";
 
-import { type Dispatch, type MutableRefObject, useEffect } from "react";
+import { type Dispatch, type RefObject, useEffect } from "react";
 import type { SimilarQueueMode } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -32,7 +32,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   appendSimilarReleasesToQueue: (
     params: AppendSimilarReleasesParams,
   ) => Promise<boolean>;
-  awaitingResumeGestureRef: MutableRefObject<boolean>;
+  awaitingResumeGestureRef: RefObject<boolean>;
   dispatchSession: Dispatch<PlaybackSessionAction>;
   isLoading: boolean;
   isPlaying: boolean;
@@ -45,9 +45,9 @@ interface UseReleasePlaybackPendingResolutionParams {
   releaseDetailId: number | undefined;
   releaseId: number | null;
   setUpcomingQueue: (nextQueue: PlaybackQueueItem[]) => void;
-  shouldRebuildAlbumQueueRef: MutableRefObject<boolean>;
-  similarQueueGenerationRef: MutableRefObject<number>;
-  similarQueueModeRef: MutableRefObject<SimilarQueueMode>;
+  shouldRebuildAlbumQueueRef: RefObject<boolean>;
+  similarQueueGenerationRef: RefObject<number>;
+  similarQueueModeRef: RefObject<SimilarQueueMode>;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
 }

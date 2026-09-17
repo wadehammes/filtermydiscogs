@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  type Dispatch,
-  type MutableRefObject,
-  type RefObject,
-  useCallback,
-} from "react";
+import { type Dispatch, type RefObject, useCallback } from "react";
 import {
   trackPlaybackQueued,
   trackPlaybackStarted,
@@ -50,20 +45,20 @@ export interface PlayQueueItemOptions {
 }
 
 interface QueueActionRefs {
-  awaitingResumeGestureRef: MutableRefObject<boolean>;
-  pendingPlayFromGestureRef: MutableRefObject<boolean>;
-  shouldRebuildAlbumQueueRef: MutableRefObject<boolean>;
-  similarQueueModeRef: MutableRefObject<SimilarQueueMode>;
-  similarQueueGenerationRef: MutableRefObject<number>;
-  queueManuallyExtendedRef: MutableRefObject<boolean>;
-  releaseRef: MutableRefObject<DiscogsRelease | null>;
+  awaitingResumeGestureRef: RefObject<boolean>;
+  pendingPlayFromGestureRef: RefObject<boolean>;
+  shouldRebuildAlbumQueueRef: RefObject<boolean>;
+  similarQueueModeRef: RefObject<SimilarQueueMode>;
+  similarQueueGenerationRef: RefObject<number>;
+  queueManuallyExtendedRef: RefObject<boolean>;
+  releaseRef: RefObject<DiscogsRelease | null>;
   queueRef: RefObject<PlaybackQueueItem[]>;
   playbackHistoryRef: RefObject<PlaybackQueueItem[]>;
   isPlayingRef: RefObject<boolean>;
   releaseDetailIdRef: RefObject<number | undefined>;
   tracksRef: RefObject<DiscogsTrack[]>;
-  lastSyncedActiveVideoIdRef: MutableRefObject<string | null>;
-  embedVideoIdRef: MutableRefObject<string | null>;
+  lastSyncedActiveVideoIdRef: RefObject<string | null>;
+  embedVideoIdRef: RefObject<string | null>;
 }
 
 interface UseReleasePlaybackQueueActionsParams {
@@ -83,9 +78,9 @@ interface UseReleasePlaybackQueueActionsParams {
   prependCurrentToUpcoming: () => void;
   tryAutoStartOnEmptyQueue: (start: () => void) => boolean;
   extendQueueTail: () => Promise<boolean>;
-  playNextRef: MutableRefObject<() => void>;
-  extendQueueTailRef: MutableRefObject<() => Promise<boolean>>;
-  startPlaybackRef: MutableRefObject<(params: StartPlaybackParams) => void>;
+  playNextRef: RefObject<() => void>;
+  extendQueueTailRef: RefObject<() => Promise<boolean>>;
+  startPlaybackRef: RefObject<(params: StartPlaybackParams) => void>;
   refs: QueueActionRefs;
 }
 

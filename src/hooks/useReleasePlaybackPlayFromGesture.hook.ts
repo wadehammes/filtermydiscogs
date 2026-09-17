@@ -1,14 +1,14 @@
 "use client";
 
-import { type MutableRefObject, type RefObject, useCallback } from "react";
+import { type RefObject, useCallback } from "react";
 import { postYoutubePlayerCommand } from "src/utils/postYoutubePlayerCommand";
 import { PLAY_FROM_GESTURE_RETRY_DELAYS_MS } from "src/utils/releasePlayback";
 
 interface UseReleasePlaybackPlayFromGestureParams {
   isPausedRef: RefObject<boolean>;
-  pendingPlayFromGestureRef: MutableRefObject<boolean>;
-  playbackIframeRef: MutableRefObject<HTMLIFrameElement | null>;
-  playFromGestureRetryTimeoutsRef: MutableRefObject<number[]>;
+  pendingPlayFromGestureRef: RefObject<boolean>;
+  playbackIframeRef: RefObject<HTMLIFrameElement | null>;
+  playFromGestureRetryTimeoutsRef: RefObject<number[]>;
 }
 
 export const useReleasePlaybackPlayFromGesture = ({

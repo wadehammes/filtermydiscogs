@@ -1,6 +1,6 @@
 "use client";
 
-import { type MutableRefObject, type RefObject, useEffect } from "react";
+import { type RefObject, useEffect } from "react";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type { StartPlaybackParams } from "src/types/releasePlaybackContext.types";
@@ -73,8 +73,8 @@ interface UseRestorePlaybackSessionParams {
   collection: { pagination?: { urls?: { next?: string } } } | null;
   allReleases: DiscogsRelease[];
   hasMoreCollectionPages: boolean;
-  hasAttemptedRestoreRef: MutableRefObject<boolean>;
-  queueManuallyExtendedRef: MutableRefObject<boolean>;
+  hasAttemptedRestoreRef: RefObject<boolean>;
+  queueManuallyExtendedRef: RefObject<boolean>;
   setUpcomingQueue: (nextQueue: PlaybackQueueItem[]) => void;
   startPlaybackRef: RefObject<(params: StartPlaybackParams) => void>;
 }

@@ -1,12 +1,7 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
-import {
-  type MutableRefObject,
-  type RefObject,
-  useCallback,
-  useState,
-} from "react";
+import { type RefObject, useCallback, useState } from "react";
 import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -34,9 +29,9 @@ export const createSimilarQueueMode = (enabled: boolean): SimilarQueueMode => ({
 interface SimilarQueueRefs {
   queueRef: RefObject<PlaybackQueueItem[]>;
   previewVideoRef: RefObject<DiscogsVideo | null>;
-  similarQueueModeRef: MutableRefObject<SimilarQueueMode>;
-  similarQueueGenerationRef: MutableRefObject<number>;
-  similarQueueFetchInFlightRef: MutableRefObject<boolean>;
+  similarQueueModeRef: RefObject<SimilarQueueMode>;
+  similarQueueGenerationRef: RefObject<number>;
+  similarQueueFetchInFlightRef: RefObject<boolean>;
 }
 
 interface UseReleasePlaybackSimilarQueueParams {

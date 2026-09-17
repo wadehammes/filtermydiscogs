@@ -3,7 +3,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import {
   type Dispatch,
-  type MutableRefObject,
   type RefObject,
   useCallback,
   useEffect,
@@ -49,13 +48,13 @@ import {
 } from "src/utils/youtubeIframeEvents";
 
 export interface ReleasePlaybackYoutubeEmbedRefs {
-  playbackIframeRef: MutableRefObject<HTMLIFrameElement | null>;
-  embedVideoIdRef: MutableRefObject<string | null>;
-  lastSyncedActiveVideoIdRef: MutableRefObject<string | null>;
+  playbackIframeRef: RefObject<HTMLIFrameElement | null>;
+  embedVideoIdRef: RefObject<string | null>;
+  lastSyncedActiveVideoIdRef: RefObject<string | null>;
   isPlayingRef: RefObject<boolean>;
   isPausedRef: RefObject<boolean>;
-  pendingPlayFromGestureRef: MutableRefObject<boolean>;
-  playFromGestureRetryTimeoutsRef: MutableRefObject<number[]>;
+  pendingPlayFromGestureRef: RefObject<boolean>;
+  playFromGestureRetryTimeoutsRef: RefObject<number[]>;
   releaseRef: RefObject<import("src/types").DiscogsRelease | null>;
   tracksRef: RefObject<DiscogsTrack[]>;
   videosRef: RefObject<DiscogsVideo[]>;

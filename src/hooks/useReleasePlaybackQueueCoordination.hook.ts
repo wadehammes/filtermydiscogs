@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  type Dispatch,
-  type MutableRefObject,
-  type RefObject,
-  useCallback,
-  useEffect,
-} from "react";
+import { type Dispatch, type RefObject, useCallback, useEffect } from "react";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
@@ -23,13 +17,13 @@ import {
 } from "src/utils/releasePlaybackStorage";
 
 interface UseReleasePlaybackQueueCoordinationParams {
-  autoPlayOnQueueAddRef: MutableRefObject<boolean>;
+  autoPlayOnQueueAddRef: RefObject<boolean>;
   dispatchSession: Dispatch<PlaybackSessionAction>;
-  embedVideoIdRef: MutableRefObject<string | null>;
+  embedVideoIdRef: RefObject<string | null>;
   isPlayingRef: RefObject<boolean>;
-  lastSyncedActiveVideoIdRef: MutableRefObject<string | null>;
+  lastSyncedActiveVideoIdRef: RefObject<string | null>;
   previewVideoRef: RefObject<DiscogsVideo | null>;
-  queueRef: MutableRefObject<PlaybackQueueItem[]>;
+  queueRef: RefObject<PlaybackQueueItem[]>;
   releaseRef: RefObject<DiscogsRelease | null>;
   sessionQueue: PlaybackQueueItem[];
   activeTrackIndexRef: RefObject<number>;
