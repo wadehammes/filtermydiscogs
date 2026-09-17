@@ -40,7 +40,9 @@ import {
   HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
   isYoutubeEmbedAtOrPastEnd,
   isYoutubeEmbedOrigin,
+  parseYoutubeEmbedReadyFromMessage,
   parseYoutubeInfoDelivery,
+  parseYoutubePlayerErrorFromMessage,
   parseYoutubePlayerStateFromMessage,
   YOUTUBE_PLAYER_STATE_CUED,
   YOUTUBE_PLAYER_STATE_ENDED,
@@ -84,6 +86,8 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   setIsPlaybackEmbedMounted: (value: boolean) => void;
   clearPlaybackVideoUiLoading: () => void;
   onPlaybackEnded: () => void;
+  onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
+  onEmbedPlaybackConfirmed?: () => void;
 }
 
 export const useReleasePlaybackYoutubeEmbed = ({
@@ -104,6 +108,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
   setIsPlaybackEmbedMounted,
   clearPlaybackVideoUiLoading,
   onPlaybackEnded,
+  onYoutubeEmbedPlaybackError,
+  onEmbedPlaybackConfirmed,
 }: UseReleasePlaybackYoutubeEmbedParams) => {
   const {
     playbackIframeRef,
@@ -407,6 +413,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
           clearPlaybackVideoUiLoading();
         }
 
+        onEmbedPlaybackConfirmed?.();
+
         return;
       }
 
@@ -434,6 +442,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       isPlaybackVideoUiLoadingRef,
       pendingPlayFromGestureRef,
       playbackIframeRef,
+      onEmbedPlaybackConfirmed,
       playbackVideoUiLoadingEmbedLoadStartedRef,
       playbackVideoUiLoadingTargetVideoIdRef,
     ],
@@ -564,6 +573,18 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
+      if (parseYoutubeEmbedReadyFromMessage(event.data)) {
+        enableYoutubeIframeListening(iframe);
+        return;
+      }
+
+      const embedErrorCode = parseYoutubePlayerErrorFromMessage(event.data);
+
+      if (embedErrorCode !== null) {
+        onYoutubeEmbedPlaybackError?.(embedErrorCode);
+        return;
+      }
+
       const infoDelivery = parseYoutubeInfoDelivery(event.data);
 
       if (infoDelivery && isYoutubeEmbedAtOrPastEnd(infoDelivery)) {
@@ -591,6 +612,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   }, [
     handleYoutubeEmbedPlayerState,
     notifyEmbedPlaybackEnded,
+    onYoutubeEmbedPlaybackError,
     playbackIframeRef,
   ]);
 

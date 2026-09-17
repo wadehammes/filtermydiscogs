@@ -24,6 +24,7 @@ import {
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { createQueueItem } from "src/utils/playbackQueue";
+import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
@@ -49,6 +50,11 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
+jest.mock("src/utils/playbackSkippedTrackToast", () => ({
+  appendPlaybackSkipAndSchedule: jest.fn(),
+  resetPlaybackSkipLogToast: jest.fn(),
+  PLAYBACK_SKIPPED_TRACKS_TOAST_ID: "playback-skipped-tracks",
+}));
 
 const actualSimilarReleaseQueue = jest.requireActual<
   typeof import("src/utils/similarReleaseQueue")
@@ -63,6 +69,9 @@ const mockRequestYoutubeEmbedPlaybackSync = jest.mocked(
 );
 const mockRefreshYoutubeEmbedPlayerLayout = jest.mocked(
   refreshYoutubeEmbedPlayerLayout,
+);
+const mockAppendPlaybackSkipAndSchedule = jest.mocked(
+  appendPlaybackSkipAndSchedule,
 );
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
@@ -740,6 +749,44 @@ describe("ReleasePlaybackProvider", () => {
     );
 
     expect(playVideoCalls.length).toBeGreaterThan(0);
+  });
+
+  it("schedules unavailable skip toast when embed load starts but playback never confirms", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
   });
 
   it("playNext keeps video UI loading until the advanced upload reports playing", async () => {

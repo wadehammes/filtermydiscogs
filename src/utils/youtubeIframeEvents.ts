@@ -22,6 +22,81 @@ const YOUTUBE_EMBED_ORIGINS = new Set([
 export const isYoutubeEmbedOrigin = (origin: string): boolean =>
   YOUTUBE_EMBED_ORIGINS.has(origin);
 
+const parseYoutubeErrorCode = (info: unknown): number | null => {
+  if (typeof info === "number" && Number.isFinite(info)) {
+    return info;
+  }
+
+  if (typeof info === "string" && info.trim() !== "") {
+    const parsed = Number(info);
+
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  if (typeof info === "object" && info !== null) {
+    if ("errorCode" in info) {
+      const { errorCode } = info as { errorCode?: unknown };
+
+      if (typeof errorCode === "number" && Number.isFinite(errorCode)) {
+        return errorCode;
+      }
+    }
+
+    if ("data" in info) {
+      const { data } = info as { data?: unknown };
+      const parsedData = parseYoutubeErrorCode(data);
+
+      if (parsedData !== null) {
+        return parsedData;
+      }
+    }
+  }
+
+  return null;
+};
+
+const isYoutubeEmbedErrorEvent = (event: string | undefined): boolean =>
+  event === "onError" || event === "error";
+
+export const parseYoutubeEmbedReadyFromMessage = (data: unknown): boolean => {
+  if (typeof data !== "string") {
+    return false;
+  }
+
+  try {
+    const payload = JSON.parse(data) as { event?: string };
+
+    return payload.event === "onReady";
+  } catch {
+    return false;
+  }
+};
+
+export const parseYoutubePlayerErrorFromMessage = (
+  data: unknown,
+): number | null => {
+  if (typeof data !== "string") {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(data) as {
+      event?: string;
+      info?: unknown;
+    };
+
+    if (!isYoutubeEmbedErrorEvent(payload.event)) {
+      return null;
+    }
+
+    return parseYoutubeErrorCode(payload.info);
+  } catch {
+    return null;
+  }
+};
+
 export const parseYoutubePlayerStateFromMessage = (
   data: unknown,
 ): number | null => {

@@ -3,7 +3,9 @@ import {
   enableYoutubeIframeListening,
   isYoutubeEmbedAtOrPastEnd,
   isYoutubeEmbedOrigin,
+  parseYoutubeEmbedReadyFromMessage,
   parseYoutubeInfoDelivery,
+  parseYoutubePlayerErrorFromMessage,
   parseYoutubePlayerStateFromMessage,
   YOUTUBE_PLAYER_STATE_ENDED,
   YOUTUBE_PLAYER_STATE_PLAYING,
@@ -50,6 +52,59 @@ describe("parseYoutubePlayerStateFromMessage", () => {
         JSON.stringify({ event: "onReady", info: 1 }),
       ),
     ).toBeNull();
+  });
+});
+
+describe("parseYoutubePlayerErrorFromMessage", () => {
+  it("parses numeric onError payloads", () => {
+    expect(
+      parseYoutubePlayerErrorFromMessage(
+        JSON.stringify({ event: "onError", info: 100 }),
+      ),
+    ).toBe(100);
+  });
+
+  it("parses string numeric onError payloads", () => {
+    expect(
+      parseYoutubePlayerErrorFromMessage(
+        JSON.stringify({ event: "onError", info: "150" }),
+      ),
+    ).toBe(150);
+  });
+
+  it("parses legacy onError payloads with nested data", () => {
+    expect(
+      parseYoutubePlayerErrorFromMessage(
+        JSON.stringify({ event: "onError", info: { data: 100 } }),
+      ),
+    ).toBe(100);
+  });
+
+  it("parses lowercase error events", () => {
+    expect(
+      parseYoutubePlayerErrorFromMessage(
+        JSON.stringify({ event: "error", info: 150 }),
+      ),
+    ).toBe(150);
+  });
+
+  it("returns null for unrelated messages", () => {
+    expect(parseYoutubePlayerErrorFromMessage("not-json")).toBeNull();
+    expect(
+      parseYoutubePlayerErrorFromMessage(
+        JSON.stringify({ event: "onStateChange", info: 1 }),
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("parseYoutubeEmbedReadyFromMessage", () => {
+  it("detects onReady payloads", () => {
+    expect(
+      parseYoutubeEmbedReadyFromMessage(
+        JSON.stringify({ event: "onReady", info: 1 }),
+      ),
+    ).toBe(true);
   });
 });
 
