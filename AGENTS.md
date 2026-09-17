@@ -8,6 +8,8 @@ Follow documented patterns.
 
 **Keep docs accurate:** Whenever a change would make the handbook wrong or incomplete—new flows (CI, env, auth cookies), moved files, component or convention changes, Discogs/Prisma patterns, or anything a future reader would be misled by—update the relevant **`docs/handbook/*.md`** in the **same PR** when practical, or in a small follow-up right away. When the change shifts **user-facing features, routes, setup, or tech stack** listed in the root **[README.md](./README.md)**, update that file too. Do not leave docs stale on purpose.
 
+**Stacked PRs:** For multi-part features or refactors, use **`st`** ([`gh-stack.zsh`](https://gist.github.com/wadehammes/1bcc3aad88f876e3ac68e642df2899b5) + **`gh extension install github/gh-stack`**) — **`st init`**, commit on the bottom branch, **`st add`** for each layer, **`st sync`**, **`st ss --auto`**. Trunk **`staging`**. Do not pile unrelated commits on one branch when the work was planned as a stack; see [platform.md → Stacked pull requests](docs/handbook/platform.md#stacked-pull-requests-st).
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

@@ -951,6 +951,35 @@ export const buildReleasePlaybackMatchIndex = (
   };
 };
 
+export const resolvePlayableTrackAtPosition = ({
+  trackPosition,
+  tracks,
+  playbackMatchIndex,
+}: {
+  trackPosition: string;
+  tracks: DiscogsTrack[];
+  playbackMatchIndex: ReleasePlaybackMatchIndex;
+}): { track: DiscogsTrack; matchedVideo: DiscogsVideo } | null => {
+  if (!playbackMatchIndex.trackVideoByPosition.has(trackPosition)) {
+    return null;
+  }
+
+  const track = tracks.find((entry) => entry.position === trackPosition);
+
+  if (!track) {
+    return null;
+  }
+
+  const matchedVideo =
+    playbackMatchIndex.trackVideoByPosition.get(trackPosition);
+
+  if (!matchedVideo) {
+    return null;
+  }
+
+  return { track, matchedVideo };
+};
+
 export const dedupeVideosByYoutubeId = (
   videos: DiscogsVideo[],
 ): DiscogsVideo[] => {
@@ -1048,6 +1077,22 @@ export const getPreviewVideoUriFromPosition = (
   }
 
   return position.slice(PREVIEW_TRACK_POSITION_PREFIX.length);
+};
+
+export const findPreviewVideoForTrackPosition = ({
+  trackPosition,
+  releasePreviewVideos,
+}: {
+  trackPosition: string;
+  releasePreviewVideos: DiscogsVideo[];
+}): DiscogsVideo | null => {
+  const videoUri = getPreviewVideoUriFromPosition(trackPosition);
+
+  if (!videoUri) {
+    return null;
+  }
+
+  return releasePreviewVideos.find((entry) => entry.uri === videoUri) ?? null;
 };
 
 export const formatVideoDuration = (
