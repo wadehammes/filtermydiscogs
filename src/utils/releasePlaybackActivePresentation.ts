@@ -61,6 +61,10 @@ export const resolvePlaybackVideoId = ({
     return embedVideoId ?? activeVideoId;
   }
 
+  if (embedVideoId && activeVideoId && embedVideoId !== activeVideoId) {
+    return embedVideoId;
+  }
+
   return activeVideoId ?? embedVideoId;
 };
 

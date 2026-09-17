@@ -190,16 +190,19 @@ export const useReleasePlaybackYoutubeEmbed = ({
       if (!isPausedRef.current) {
         pendingPlayFromGestureRef.current = true;
         markEmbedTrackSwitchGrace();
-        loadAndPlayYoutubeVideo({
-          iframe: playbackIframeRef.current,
-          videoId,
-        });
+        if (!isPlaybackEmbedMounted) {
+          loadAndPlayYoutubeVideo({
+            iframe: playbackIframeRef.current,
+            videoId,
+          });
+        }
         schedulePlayFromGestureAttempts();
       }
     },
     [
       embedVideoIdRef,
       isPausedRef,
+      isPlaybackEmbedMounted,
       pendingPlayFromGestureRef,
       playbackIframeRef,
       markEmbedTrackSwitchGrace,
