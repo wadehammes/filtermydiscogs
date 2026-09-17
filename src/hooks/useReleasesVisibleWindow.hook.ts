@@ -30,7 +30,7 @@ export const useReleasesVisibleWindow = ({
   const { ref, inView } = useInView({
     threshold: 0,
     rootMargin: INFINITE_SCROLL_ROOT_MARGIN,
-    root: scrollElement,
+    ...(scrollElement != null ? { root: scrollElement } : {}),
   });
 
   const hasMoreVisible = !isRandomMode && gridSourceLength > visibleCount;
