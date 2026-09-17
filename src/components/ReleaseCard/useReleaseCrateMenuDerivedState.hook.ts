@@ -10,7 +10,7 @@ interface UseReleaseCrateMenuDerivedStateParams {
   isOpen: boolean;
   crates: { id: string; name: string }[];
   activeCrateId: string | null;
-  activeCrateInstanceIds: Set<string>;
+  activeCrateInstanceIds: ReadonlySet<string>;
 }
 
 export const useReleaseCrateMenuDerivedState = ({
