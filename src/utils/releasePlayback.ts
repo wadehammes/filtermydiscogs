@@ -1165,7 +1165,6 @@ export {
   loadYoutubeVideoById,
   postYoutubePlayerCommand,
   refreshYoutubeEmbedPlayerLayout,
-  transitionYoutubeIframeToVideo,
 } from "./postYoutubePlayerCommand";
 
 export const findPlayableTrackIndex = ({

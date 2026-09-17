@@ -58,15 +58,23 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe("active-id");
   });
 
-  it("resolvePlaybackVideoId prefers active track video id when pending resolution has finished", () => {
+  it("resolvePlaybackVideoId uses active track video id when idle and falls back to embed when active is missing", () => {
     expect(
       resolvePlaybackVideoId({
         pendingTrackPosition: null,
         pendingPreviewVideoUri: null,
-        embedVideoId: "stale-embed-id",
-        activeVideoId: "active-track-id",
+        embedVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
       }),
-    ).toBe("active-track-id");
+    ).toBe("abc12345678");
+    expect(
+      resolvePlaybackVideoId({
+        pendingTrackPosition: null,
+        pendingPreviewVideoUri: null,
+        embedVideoId: "embed-fallback-id",
+        activeVideoId: null,
+      }),
+    ).toBe("embed-fallback-id");
   });
 
   it("resolveActivePlaybackTitle uses preview video title during release preview playback", () => {

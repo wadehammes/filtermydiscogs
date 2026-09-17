@@ -26,10 +26,7 @@ import {
   flattenTracklist,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
-import {
-  shouldProviderImperativeLoadEmbed,
-  shouldRegisterIframeImperativeLoadEmbed,
-} from "src/utils/releasePlaybackEmbedLoadOwnership";
+import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
   isWithinEmbedTrackSwitchGrace,
   nextEmbedTrackSwitchGraceUntil,
@@ -198,14 +195,16 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       if (isSameVideo) {
         pendingPlayFromGestureRef.current = false;
+        if (!isPausedRef.current) {
+          markEmbedTrackSwitchGrace();
+        }
         return;
       }
 
-      pendingPlayFromGestureRef.current = true;
       markEmbedTrackSwitchGrace();
 
       if (
-        !shouldProviderImperativeLoadEmbed({
+        shouldPersistentIframeOwnEmbedLoad({
           isPlaybackEmbedMounted,
           hasRegisteredPlaybackIframe: playbackIframeRef.current !== null,
         })
@@ -213,6 +212,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
+      pendingPlayFromGestureRef.current = true;
       loadAndPlayYoutubeVideo({
         iframe: playbackIframeRef.current,
         videoId,
@@ -589,40 +589,25 @@ export const useReleasePlaybackYoutubeEmbed = ({
       playbackIframeRef.current = iframe;
       enableYoutubeIframeListening(iframe);
 
-      const embedVideoId = embedVideoIdRef.current;
+      const isIframeElementSwap =
+        previousIframe !== null && previousIframe !== iframe;
 
       if (
-        shouldRegisterIframeImperativeLoadEmbed({
-          isIframeElementChange:
-            previousIframe !== null && previousIframe !== iframe,
-          isRebindAfterUnregister:
-            previousIframe === null && isPlaybackEmbedMounted,
-          pendingPlayFromGesture: pendingPlayFromGestureRef.current,
-          embedVideoId,
-        }) &&
-        !isPausedRef.current &&
-        embedVideoId
+        isPlaybackEmbedMounted &&
+        !pendingPlayFromGestureRef.current &&
+        !isIframeElementSwap &&
+        previousIframe !== null
       ) {
-        markEmbedTrackSwitchGrace();
-        loadAndPlayYoutubeVideo({ iframe, videoId: embedVideoId });
-      }
-
-      if (isPlaybackEmbedMounted && !pendingPlayFromGestureRef.current) {
         setShouldAutoplayEmbed(false);
       }
 
       setIsPlaybackEmbedMounted(true);
-      schedulePlayFromGestureAttempts();
     },
     [
       clearPlayFromGestureRetries,
-      embedVideoIdRef,
-      isPausedRef,
       isPlaybackEmbedMounted,
-      markEmbedTrackSwitchGrace,
       pendingPlayFromGestureRef,
       playbackIframeRef,
-      schedulePlayFromGestureAttempts,
       setIsPlaybackEmbedMounted,
       setShouldAutoplayEmbed,
     ],

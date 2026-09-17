@@ -78,16 +78,6 @@ export const loadYoutubeVideoById = ({
   });
 };
 
-export const transitionYoutubeIframeToVideo = ({
-  iframe,
-  videoId,
-}: {
-  iframe: HTMLIFrameElement | null;
-  videoId: string;
-}): void => {
-  loadYoutubeVideoById({ iframe, videoId });
-};
-
 export const refreshYoutubeEmbedPlayerLayout = ({
   iframe,
   width = YOUTUBE_EMBED_PLAYER_WIDTH,

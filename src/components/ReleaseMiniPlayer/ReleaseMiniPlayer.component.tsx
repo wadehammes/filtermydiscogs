@@ -32,7 +32,6 @@ export const ReleaseMiniPlayer = ({
   "use memo";
   const {
     release,
-    activeTrack,
     activePlaybackTitle,
     playbackVideoId,
     isPaused,
@@ -181,7 +180,6 @@ export const ReleaseMiniPlayer = ({
                 key={String(release.instance_id)}
                 videoId={iframeVideoId}
                 videoTitle={activePlaybackTitle ?? "Release preview"}
-                playbackKey={`${release.instance_id}-${activeTrack?.position ?? "preview"}-${iframeVideoId}`}
                 autoplay={shouldAutoplayIframe}
                 variant={isVideoPanelExpanded ? "visible" : "hidden"}
               />

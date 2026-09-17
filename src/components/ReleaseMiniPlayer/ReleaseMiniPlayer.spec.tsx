@@ -29,7 +29,7 @@ import {
   markPlaybackVideoIntroSeen,
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
 } from "src/utils/playbackVideoIntroStorage";
-import { transitionYoutubeIframeToVideo } from "src/utils/releasePlayback";
+import { loadAndPlayYoutubeVideo } from "src/utils/releasePlayback";
 import { act, render, screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -37,13 +37,10 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
-  transitionYoutubeIframeToVideo: jest.fn(),
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
 }));
 
-const mockTransitionYoutubeIframeToVideo = jest.mocked(
-  transitionYoutubeIframeToVideo,
-);
+const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
 
 const mockApi = jest.mocked(api);
 
@@ -481,8 +478,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
       expect.objectContaining({
         iframe,
         videoId: "abc12345678",
@@ -521,8 +517,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
       expect.objectContaining({
         iframe,
         videoId: "abc12345678",

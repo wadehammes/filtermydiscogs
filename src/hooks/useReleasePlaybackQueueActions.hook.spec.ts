@@ -178,6 +178,72 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(queueRef.current).toHaveLength(2);
   });
 
+  it("PLAY_QUEUE_ITEM includes pending track position when release detail is not ready to resolve the target track", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const queuedItem = createQueueItem({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Track B1",
+    });
+    const dispatchSession = jest.fn();
+    const queueRef = { current: [queuedItem] };
+    const releaseRef = { current: release };
+    const tracksRef = {
+      current: [] as ReturnType<typeof discogsTrackFactory.build>[],
+    };
+    const isPlayingRef = { current: true };
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: dispatchSession as Dispatch<PlaybackSessionAction>,
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem: jest.fn(() => "abc12345678"),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(true) },
+          similarQueueGenerationRef: { current: 0 },
+          queueManuallyExtendedRef: { current: false },
+          releaseRef,
+          queueRef,
+          playbackHistoryRef: { current: [] },
+          isPlayingRef,
+          releaseDetailIdRef: { current: release.basic_information.id },
+          tracksRef,
+          lastSyncedActiveVideoIdRef: { current: null },
+          embedVideoIdRef: { current: "te2jJncBVG4" },
+        },
+      }),
+    );
+
+    result.current.playNext();
+
+    expect(dispatchSession).toHaveBeenCalledWith({
+      type: "PLAY_QUEUE_ITEM",
+      params: expect.objectContaining({
+        pendingTrackPosition: "B1",
+      }),
+    });
+    expect(dispatchSession).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: "SET_PENDING_TRACK_POSITION" }),
+    );
+  });
+
   it("removeFromQueue drops the item at the requested index", () => {
     const first = createQueueItem({
       release: releaseFactory.withDisplayDefaults(),
