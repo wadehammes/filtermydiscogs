@@ -2,7 +2,6 @@
 
 import type { QueryClient } from "@tanstack/react-query";
 import {
-  type MutableRefObject,
   type RefObject,
   useCallback,
   useState,
@@ -34,9 +33,9 @@ export const createSimilarQueueMode = (enabled: boolean): SimilarQueueMode => ({
 interface SimilarQueueRefs {
   queueRef: RefObject<PlaybackQueueItem[]>;
   previewVideoRef: RefObject<DiscogsVideo | null>;
-  similarQueueModeRef: MutableRefObject<SimilarQueueMode>;
-  similarQueueGenerationRef: MutableRefObject<number>;
-  similarQueueFetchInFlightRef: MutableRefObject<boolean>;
+  similarQueueModeRef: RefObject<SimilarQueueMode>;
+  similarQueueGenerationRef: RefObject<number>;
+  similarQueueFetchInFlightRef: RefObject<boolean>;
 }
 
 interface UseReleasePlaybackSimilarQueueParams {
