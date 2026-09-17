@@ -7,6 +7,7 @@ import {
   buildYoutubeEmbedUrl,
   buildYoutubeSearchUrl,
   findPlayableTrackIndex,
+  findPreviewVideoForTrackPosition,
   findVideoForTrack,
   flattenTracklist,
   formatVideoDuration,
@@ -23,6 +24,7 @@ import {
   postYoutubePlayerCommand,
   previewVideoToTrack,
   refreshYoutubeEmbedPlayerLayout,
+  resolvePlayableTrackAtPosition,
 } from "./releasePlayback";
 
 describe("parseYoutubeVideoId", () => {
@@ -1216,6 +1218,69 @@ describe("findPlayableTrackIndex", () => {
         videos: [],
         startIndex: -1,
         direction: 1,
+      }),
+    ).toBeNull();
+  });
+});
+
+describe("resolvePlayableTrackAtPosition", () => {
+  it("returns track and matched video for a playable position", () => {
+    const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 1,
+    });
+    const tracks = flattenTracklist(releaseDetail.tracklist ?? []);
+    const matchIndex = buildReleasePlaybackMatchIndex(
+      tracks,
+      releaseDetail.videos ?? [],
+    );
+    const position = tracks[0]?.position;
+
+    expect(position).toBeDefined();
+
+    const resolved = resolvePlayableTrackAtPosition({
+      trackPosition: position ?? "",
+      tracks,
+      playbackMatchIndex: matchIndex,
+    });
+
+    expect(resolved?.track.position).toBe(position);
+    expect(resolved?.matchedVideo.uri).toContain("youtube");
+  });
+
+  it("returns null when the position has no matched video", () => {
+    const tracks = [discogsTrackFactory.build({ position: "Z9" })];
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, []);
+
+    expect(
+      resolvePlayableTrackAtPosition({
+        trackPosition: "Z9",
+        tracks,
+        playbackMatchIndex: matchIndex,
+      }),
+    ).toBeNull();
+  });
+});
+
+describe("findPreviewVideoForTrackPosition", () => {
+  it("finds preview video from synthetic preview track position", () => {
+    const video = discogsVideoFactory.youtube({
+      uri: "https://www.youtube.com/watch?v=preview12345",
+    });
+    const trackPosition = getPreviewTrackPosition(video);
+
+    expect(
+      findPreviewVideoForTrackPosition({
+        trackPosition,
+        releasePreviewVideos: [video],
+      }),
+    ).toBe(video);
+  });
+
+  it("returns null for non-preview positions", () => {
+    expect(
+      findPreviewVideoForTrackPosition({
+        trackPosition: "A1",
+        releasePreviewVideos: [],
       }),
     ).toBeNull();
   });

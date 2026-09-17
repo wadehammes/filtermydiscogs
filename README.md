@@ -154,6 +154,8 @@ pnpm type-check
 pnpm knip             # CI dead-code gate (unused exports/files)
 pnpm fallow:health    # optional — project health score (see AGENTS.md; fallow:health:full for detail)
 
+# Stacked PRs (optional): gh extension install github/gh-stack; source ~/.gh-stack.zsh — see docs/handbook/platform.md
+
 pnpm build && pnpm start
 pnpm analyze          # bundle analyzer (webpack build)
 pnpm scaffold         # new component scaffold

@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useReleaseDetailPlaybackIndex } from "src/components/ReleaseModal/useReleaseDetailPlaybackIndex.hook";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import {
@@ -58,10 +59,8 @@ import {
 } from "src/utils/playbackSessionState";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import {
-  buildReleasePlaybackMatchIndex,
   findTrackIndexByPosition,
   findVideoForTrack,
-  flattenTracklist,
   getPreviewTrackPosition,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
@@ -294,20 +293,10 @@ export const ReleasePlaybackProvider = ({
     enabled: releaseId !== null && isPlaying,
   });
 
-  const tracks = useMemo(
-    () => flattenTracklist(releaseDetail?.tracklist ?? []),
-    [releaseDetail?.tracklist],
-  );
-
-  const videos = useMemo(
-    () => releaseDetail?.videos ?? [],
-    [releaseDetail?.videos],
-  );
-
-  const playbackMatchIndex = useMemo(
-    () => buildReleasePlaybackMatchIndex(tracks, videos),
-    [tracks, videos],
-  );
+  const { tracks, videos, playbackMatchIndex } = useReleaseDetailPlaybackIndex({
+    tracklist: releaseDetail?.tracklist,
+    videos: releaseDetail?.videos,
+  });
 
   tracksRef.current = tracks;
   videosRef.current = videos;

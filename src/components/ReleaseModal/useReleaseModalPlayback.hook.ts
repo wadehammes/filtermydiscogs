@@ -1,26 +1,15 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useReleaseDetailPlaybackIndex } from "src/components/ReleaseModal/useReleaseDetailPlaybackIndex.hook";
+import { useReleaseModalPlaybackQueue } from "src/components/ReleaseModal/useReleaseModalPlaybackQueue.hook";
+import { useReleaseModalPlaybackSelection } from "src/components/ReleaseModal/useReleaseModalPlaybackSelection.hook";
+import { useReleaseModalPlaybackTrackActions } from "src/components/ReleaseModal/useReleaseModalPlaybackTrackActions.hook";
+import { useReleaseModalReleaseDetailQuery } from "src/components/ReleaseModal/useReleaseModalReleaseDetailQuery.hook";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
-import {
-  discogsReleaseQueryOptions,
-  useDiscogsReleaseQuery,
-} from "src/hooks/queries/useDiscogsReleaseQuery";
-import type { DiscogsRelease, DiscogsVideo } from "src/types";
-import { isSameQueueItem } from "src/utils/playbackQueue";
-import {
-  showPlaybackQueueAllQueuedToast,
-  showPlaybackQueueSuccessToast,
-} from "src/utils/playbackQueueToast";
+import type { DiscogsRelease } from "src/types";
 import { formatArtistNames } from "src/utils/releaseDisplay";
-import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
+import { parseReleaseId } from "src/utils/releaseNotes";
 import {
-  buildReleasePlaybackMatchIndex,
   buildYoutubeSearchUrl,
-  flattenTracklist,
-  getPreviewTrackPosition,
-  getPreviewVideoUriFromPosition,
-  parseYoutubeVideoId,
   previewVideosToTracks,
 } from "src/utils/releasePlayback";
 
@@ -33,81 +22,39 @@ export const useReleaseModalPlayback = ({
   release,
   isOpen,
 }: UseReleaseModalPlaybackParams) => {
-  const queryClient = useQueryClient();
   const playback = useReleasePlayback();
   const releaseId = parseReleaseId(release);
   const releaseIdString = releaseId !== null ? String(releaseId) : "";
   const queryEnabled = isOpen && releaseId !== null;
-  const [selectedTrackPosition, setSelectedTrackPosition] = useState<
-    string | null
-  >(null);
 
-  const isPlayingThisReleaseInBar =
-    playback.isPlaying && isSameReleaseInstance(playback.release, release);
-
-  const {
-    data: releaseDetail,
-    isLoading: isReleaseDetailLoading,
-    isError,
-    refetch,
-  } = useDiscogsReleaseQuery({
-    releaseId: releaseIdString,
-    enabled: queryEnabled,
-  });
-
-  useEffect(() => {
-    if (!queryEnabled) {
-      return;
-    }
-
-    const releaseQueryKey = DiscogsReleaseQueryKeys.byId(releaseIdString);
-
-    const ensureReleaseDetail = () => {
-      void queryClient.ensureQueryData(
-        discogsReleaseQueryOptions(releaseIdString),
-      );
-    };
-
-    if (queryClient.getQueryData(releaseQueryKey) === undefined) {
-      ensureReleaseDetail();
-    }
-
-    return queryClient.getQueryCache().subscribe((event) => {
-      if (event.type !== "removed") {
-        return;
-      }
-
-      const [removedKeyPrefix, removedReleaseId] = event.query.queryKey;
-
-      if (
-        removedKeyPrefix === releaseQueryKey[0] &&
-        removedReleaseId === releaseQueryKey[1]
-      ) {
-        ensureReleaseDetail();
-      }
+  const { releaseDetail, isLoading, isError, refetch } =
+    useReleaseModalReleaseDetailQuery({
+      releaseIdString,
+      enabled: queryEnabled,
     });
-  }, [queryClient, queryEnabled, releaseIdString]);
 
-  const tracks = useMemo(
-    () => flattenTracklist(releaseDetail?.tracklist ?? []),
-    [releaseDetail?.tracklist],
-  );
-
-  const videos = useMemo(
-    () => releaseDetail?.videos ?? [],
-    [releaseDetail?.videos],
-  );
-
-  const playbackMatchIndex = useMemo(
-    () => buildReleasePlaybackMatchIndex(tracks, videos),
-    [tracks, videos],
-  );
+  const { tracks, videos, playbackMatchIndex } = useReleaseDetailPlaybackIndex({
+    tracklist: releaseDetail?.tracklist,
+    videos: releaseDetail?.videos,
+  });
 
   const hasEmbeddableVideo = playbackMatchIndex.embeddableVideos.length > 0;
 
   const hasPlayableTracks = playbackMatchIndex.hasPlayableTracks;
 
   const releasePreviewVideos = playbackMatchIndex.previewVideos;
+
+  const {
+    isPlayingThisReleaseInBar,
+    activePreviewTrackPosition,
+    activeTrackPosition,
+    setSelectedTrackPosition,
+  } = useReleaseModalPlaybackSelection({
+    release,
+    isOpen,
+    playback,
+    releasePreviewVideos,
+  });
 
   const releasePreviewTracks = useMemo(
     () => previewVideosToTracks(releasePreviewVideos),
@@ -120,278 +67,35 @@ export const useReleaseModalPlayback = ({
     [playbackMatchIndex],
   );
 
-  const activePreviewTrackPosition = useMemo(() => {
-    if (
-      !(
-        isPlayingThisReleaseInBar &&
-        playback.isReleasePreview &&
-        playback.activeVideoId
-      )
-    ) {
-      return null;
-    }
-
-    const video = releasePreviewVideos.find(
-      (entry) => parseYoutubeVideoId(entry.uri) === playback.activeVideoId,
-    );
-
-    return video ? getPreviewTrackPosition(video) : null;
-  }, [
-    isPlayingThisReleaseInBar,
-    playback.activeVideoId,
-    playback.isReleasePreview,
-    releasePreviewVideos,
-  ]);
-
-  const activeTrackPosition = isPlayingThisReleaseInBar
-    ? playback.isReleasePreview
-      ? null
-      : playback.activeTrackPosition
-    : selectedTrackPosition;
-
-  const isLoading =
-    queryEnabled &&
-    !isError &&
-    releaseDetail === undefined &&
-    isReleaseDetailLoading;
-
   const fallbackSearchUrl = buildYoutubeSearchUrl({
     artist: formatArtistNames(release),
     trackTitle: release.basic_information.title,
   });
 
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedTrackPosition(null);
-    }
-  }, [isOpen]);
-
-  const handleTrackSelect = useCallback(
-    (trackPosition: string) => {
-      if (!playbackMatchIndex.trackVideoByPosition.has(trackPosition)) {
-        return;
-      }
-
-      const track = tracks.find((entry) => entry.position === trackPosition);
-
-      if (!track) {
-        return;
-      }
-
-      setSelectedTrackPosition(trackPosition);
-
-      const matchedVideo =
-        playbackMatchIndex.trackVideoByPosition.get(trackPosition);
-      const youtubeVideoId = matchedVideo
-        ? parseYoutubeVideoId(matchedVideo.uri)
-        : null;
-
-      playback.startPlayback({
-        release,
-        trackPosition,
-        trackTitle: track.title,
-        ...(youtubeVideoId ? { youtubeVideoId } : {}),
-      });
-    },
-    [playback.startPlayback, playbackMatchIndex, release, tracks],
-  );
-
-  const handleTrackQueue = useCallback(
-    (trackPosition: string) => {
-      if (!playbackMatchIndex.trackVideoByPosition.has(trackPosition)) {
-        return;
-      }
-
-      const track = tracks.find((entry) => entry.position === trackPosition);
-
-      if (!track) {
-        return;
-      }
-
-      playback.addToQueue({
-        release,
-        trackPosition,
-        trackTitle: track.title,
-      });
-      showPlaybackQueueSuccessToast(1);
-    },
-    [playback.addToQueue, playbackMatchIndex, release, tracks],
-  );
-
-  const handleReleasePreview = useCallback(
-    (video: DiscogsVideo) => {
-      setSelectedTrackPosition(null);
-      playback.startReleasePreview({ release, video });
-    },
-    [playback.startReleasePreview, release],
-  );
-
-  const handlePreviewTrackSelect = useCallback(
-    (trackPosition: string) => {
-      const videoUri = getPreviewVideoUriFromPosition(trackPosition);
-
-      if (!videoUri) {
-        return;
-      }
-
-      const video = releasePreviewVideos.find(
-        (entry) => entry.uri === videoUri,
-      );
-
-      if (!video) {
-        return;
-      }
-
-      handleReleasePreview(video);
-    },
-    [handleReleasePreview, releasePreviewVideos],
-  );
-
-  const handlePreviewTrackQueue = useCallback(
-    (trackPosition: string) => {
-      const videoUri = getPreviewVideoUriFromPosition(trackPosition);
-
-      if (!videoUri) {
-        return;
-      }
-
-      const video = releasePreviewVideos.find(
-        (entry) => entry.uri === videoUri,
-      );
-
-      if (!video) {
-        return;
-      }
-
-      playback.addPreviewToQueue({ release, video });
-      showPlaybackQueueSuccessToast(1);
-    },
-    [playback.addPreviewToQueue, release, releasePreviewVideos],
-  );
-
-  const isQueuePositionActive = useCallback(
-    (trackPosition: string, mode: "track" | "preview") => {
-      if (!isSameReleaseInstance(release, playback.release)) {
-        return false;
-      }
-
-      if (mode === "preview") {
-        return (
-          playback.isReleasePreview &&
-          playback.activeTrackPosition === trackPosition
-        );
-      }
-
-      return (
-        !playback.isReleasePreview &&
-        playback.isMiniPlayerVisible &&
-        playback.activeTrackPosition === trackPosition
-      );
-    },
-    [
-      playback.activeTrackPosition,
-      playback.isMiniPlayerVisible,
-      playback.isReleasePreview,
-      playback.release,
-      release,
-    ],
-  );
-
-  const isQueuedForRelease = useCallback(
-    (trackPosition: string) =>
-      playback.queue.some((item) =>
-        isSameQueueItem(item, {
-          instanceId: String(release.instance_id),
-          trackPosition,
-        }),
-      ),
-    [playback.queue, release.instance_id],
-  );
-
-  const isPreviewTrackQueued = useCallback(
-    (trackPosition: string) =>
-      isQueuePositionActive(trackPosition, "preview") ||
-      isQueuedForRelease(trackPosition),
-    [isQueuePositionActive, isQueuedForRelease],
-  );
-
-  const isTrackQueued = useCallback(
-    (trackPosition: string) =>
-      isQueuePositionActive(trackPosition, "track") ||
-      isQueuedForRelease(trackPosition),
-    [isQueuePositionActive, isQueuedForRelease],
-  );
-
-  const playableTracks = useMemo(
-    () =>
-      tracks.filter((track) =>
-        playbackMatchIndex.trackVideoByPosition.has(track.position),
-      ),
-    [playbackMatchIndex, tracks],
-  );
-
-  const allPlayableTracksQueued = useMemo(
-    () =>
-      playableTracks.length === 0 ||
-      playableTracks.every((track) => isTrackQueued(track.position)),
-    [isTrackQueued, playableTracks],
-  );
-
-  const handleAddAllToQueue = useCallback(() => {
-    const tracksToQueue = playableTracks.filter(
-      (track) => !isTrackQueued(track.position),
-    );
-
-    if (tracksToQueue.length === 0) {
-      showPlaybackQueueAllQueuedToast();
-      return;
-    }
-
-    if (!playback.isMiniPlayerVisible) {
-      const firstTrack = tracksToQueue[0];
-
-      if (!firstTrack) {
-        return;
-      }
-
-      playback.startPlayback({
-        release,
-        trackPosition: firstTrack.position,
-        trackTitle: firstTrack.title,
-        ...(playback.autoPlayOnQueueAdd ? {} : { startPaused: true }),
-        rebuildAlbumQueue: false,
-      });
-
-      for (const track of tracksToQueue.slice(1)) {
-        playback.addToQueue({
-          release,
-          trackPosition: track.position,
-          trackTitle: track.title,
-        });
-      }
-
-      showPlaybackQueueSuccessToast(tracksToQueue.length);
-      return;
-    }
-
-    for (const track of tracksToQueue) {
-      playback.addToQueue({
-        release,
-        trackPosition: track.position,
-        trackTitle: track.title,
-      });
-    }
-
-    showPlaybackQueueSuccessToast(tracksToQueue.length);
-  }, [
-    playback.autoPlayOnQueueAdd,
-    isTrackQueued,
-    playback.addToQueue,
-    playback.isMiniPlayerVisible,
-    playback.startPlayback,
-    playableTracks,
+  const {
+    handleTrackSelect,
+    handleTrackQueue,
+    handleReleasePreview,
+    handlePreviewTrackSelect,
+    handlePreviewTrackQueue,
+  } = useReleaseModalPlaybackTrackActions({
     release,
-  ]);
+    tracks,
+    playbackMatchIndex,
+    releasePreviewVideos,
+    setSelectedTrackPosition,
+  });
+
+  const {
+    isTrackQueued,
+    isPreviewTrackQueued,
+    allPlayableTracksQueued,
+    handleAddAllToQueue,
+  } = useReleaseModalPlaybackQueue({
+    release,
+    tracks,
+    playbackMatchIndex,
+  });
 
   const handleActiveTrackToggle = useCallback(() => {
     playback.togglePlayback();
@@ -427,3 +131,7 @@ export const useReleaseModalPlayback = ({
       isPlayingThisReleaseInBar && playback.isReleasePreview,
   };
 };
+
+export type ReleaseModalPlaybackState = ReturnType<
+  typeof useReleaseModalPlayback
+>;
