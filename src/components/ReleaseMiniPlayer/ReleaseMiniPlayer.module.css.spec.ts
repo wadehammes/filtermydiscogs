@@ -38,4 +38,12 @@ describe("ReleaseMiniPlayer queue and video stacking", () => {
     );
     expect(css).toContain("z-index: 2");
   });
+
+  it("uses foreground spinner strokes on the primary queue-building badge", () => {
+    const css = readFileSync(MINI_PLAYER_CSS_PATH, "utf8");
+
+    expect(css).toMatch(
+      /\.queueCountSpinner[\s\S]*border-top-color:\s*var\(--foreground\)/,
+    );
+  });
 });
