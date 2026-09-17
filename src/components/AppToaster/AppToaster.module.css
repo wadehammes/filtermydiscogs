@@ -26,6 +26,16 @@
   transform: translateX(-50%);
   max-width: min(calc(100vw - 2rem), 36rem);
   overflow: visible;
+
+  @media (width <= 768px) {
+    inset: calc(
+        var(--sticky-header-total-height) +
+        env(safe-area-inset-top, 0px) +
+        0.5rem
+      )
+      auto auto 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .root {
@@ -173,11 +183,68 @@
   }
 }
 
-.viewportBottomCenter > .root,
-.viewportTopCenter > .root {
+.viewportBottomCenter > .root {
   right: 0;
   left: 0;
   margin-inline: auto;
+}
+
+.viewportTopCenter > .root {
+  inset: 0 0 auto;
+  margin-inline: auto;
+  transform-origin: top center;
+  transform: translateX(var(--toast-swipe-movement-x, 0))
+    translateY(
+      calc(
+        var(--toast-swipe-movement-y, 0) +
+        (var(--toast-index) * var(--gap)) +
+        (var(--shrink) * var(--height))
+      )
+    )
+    scale(var(--scale));
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(-150%);
+  }
+
+  &[data-expanded] {
+    transform: translateX(var(--toast-swipe-movement-x, 0))
+      translateY(calc(-1 * var(--offset-y)));
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+
+  &:not([data-starting-style], [data-ending-style]) {
+    opacity: 1;
+  }
+
+  &[data-ending-style][data-swipe-direction="down"] {
+    transform: translateY(calc(var(--toast-swipe-movement-y, 0) - 150%));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @starting-style {
+      opacity: 1;
+      transform: translateX(var(--toast-swipe-movement-x, 0))
+        translateY(
+          calc(
+            var(--toast-swipe-movement-y, 0) +
+            (var(--toast-index) * var(--gap)) +
+            (var(--shrink) * var(--height))
+          )
+        )
+        scale(var(--scale));
+    }
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 1;
+    }
+  }
 }
 
 .icon {
@@ -434,6 +501,18 @@
   min-width: min(100%, 22rem);
   max-width: min(calc(100vw - 2rem), 32rem);
   align-items: flex-start;
+  overflow: visible;
+
+  @media (width <= 768px) {
+    min-width: 0;
+    max-width: 100%;
+    padding-inline-end: 1.625rem;
+
+    & :global(.fmd-playback-skip-log-list) {
+      max-height: min(32vh, 11rem);
+      padding-inline-start: 1rem;
+    }
+  }
 
   @media (width >= 480px) {
     width: max-content;
