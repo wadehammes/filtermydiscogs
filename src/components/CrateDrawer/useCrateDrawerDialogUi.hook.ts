@@ -59,9 +59,7 @@ export const crateDrawerDialogUiReducer = (
     case CrateDrawerDialogUiActionTypes.SetField: {
       const current = state[action.field];
       const nextValue =
-        typeof action.next === "function"
-          ? action.next(current)
-          : action.next;
+        typeof action.next === "function" ? action.next(current) : action.next;
       return { ...state, [action.field]: nextValue };
     }
     default:
@@ -109,7 +107,10 @@ export const useCrateDrawerDialogUi = (activeCrateId: string | null) => {
     dispatch,
     "showClearPackedDialog",
   );
-  const setShowDeleteDialog = useDialogUiFieldSetter(dispatch, "showDeleteDialog");
+  const setShowDeleteDialog = useDialogUiFieldSetter(
+    dispatch,
+    "showDeleteDialog",
+  );
   const setShowMakeDefaultDialog = useDialogUiFieldSetter(
     dispatch,
     "showMakeDefaultDialog",
@@ -118,7 +119,10 @@ export const useCrateDrawerDialogUi = (activeCrateId: string | null) => {
     dispatch,
     "showEditCrateDialog",
   );
-  const setHidePackedItems = useDialogUiFieldSetter(dispatch, "hidePackedItems");
+  const setHidePackedItems = useDialogUiFieldSetter(
+    dispatch,
+    "hidePackedItems",
+  );
   const setDrawerNotesOpen = useDialogUiFieldSetter(
     dispatch,
     "drawerNotesOpen",
