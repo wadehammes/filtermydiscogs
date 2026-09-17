@@ -39,6 +39,7 @@ import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import { buildCrateLayout } from "src/lib/crate-layout";
 import type { DiscogsRelease } from "src/types";
 import type { CrateUpdatePayload } from "src/types/crate.types";
+import { resolveActiveCrateId } from "src/utils/crateProviderActiveCrate";
 import { toast } from "src/utils/toast";
 
 export const useCrateProvider = (): {
@@ -171,20 +172,13 @@ export const useCrateProvider = (): {
       return;
     }
 
-    setActiveCrateId((currentActiveCrateId) => {
-      const hasActiveCrate =
-        currentActiveCrateId &&
-        crates.some((crate) => crate.id === currentActiveCrateId);
-
-      if (hasActiveCrate) {
-        return currentActiveCrateId;
-      }
-
-      const defaultCrate = findDefaultCrate({ crateList: crates });
-
-      return defaultCrate?.id ?? null;
-    });
-  }, [crates, findDefaultCrate, userId]);
+    setActiveCrateId((currentActiveCrateId) =>
+      resolveActiveCrateId({
+        crates,
+        activeCrateId: currentActiveCrateId,
+      }),
+    );
+  }, [crates, userId]);
 
   useEffect(() => {
     if (
