@@ -2,43 +2,25 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import {
-  Activity,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
-import { IconButton } from "src/components/IconButton/IconButton.component";
+import { Activity, type ReactNode, useEffect, useState } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import { Spinner } from "src/components/Spinner/Spinner.component";
-import {
-  TransportSkipNextIcon,
-  TransportSkipPreviousIcon,
-} from "src/components/TransportSkipIcons/TransportSkipIcons.component";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
-import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
-import PauseIcon from "src/styles/icons/pause-thin.svg";
-import PlayIcon from "src/styles/icons/play-thin.svg";
-import VideoIcon from "src/styles/icons/video-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
-import {
-  hasSeenPlaybackVideoIntro,
-  markPlaybackVideoIntroSeen,
-} from "src/utils/playbackVideoIntroStorage";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./ReleaseMiniPlayer.module.css";
 import { ReleaseMiniPlayerMarquee } from "./ReleaseMiniPlayerMarquee.component";
+import { ReleaseMiniPlayerTransportControls } from "./ReleaseMiniPlayerTransportControls.component";
+import { useReleaseMiniPlayerVideoPanelState } from "./useReleaseMiniPlayerVideoPanelState.hook";
 
 interface ReleaseMiniPlayerProps {
   onReleaseClick?: (instanceId: string) => void;
@@ -71,15 +53,20 @@ export const ReleaseMiniPlayer = ({
   const isMobileLayout = useMediaQuery("(max-width: 768px)");
   const filtersDrawerOpen = useFiltersDrawerOpen();
   const crateDrawerOpen = useCrateDrawerOpen();
-  const [videoPanelOverride, setVideoPanelOverride] = useState<
-    null | "open" | "closed"
-  >(null);
-  const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const { openRelease, prefetchPointerProps } = useReleaseCardOpenHandler({
     release,
     onReleaseClick,
   });
+
+  const { isVideoPanelExpanded, handleVideoToggle } =
+    useReleaseMiniPlayerVideoPanelState({
+      isMiniPlayerVisible,
+      isPlaybackReady,
+      shouldAutoplayEmbed,
+      filtersDrawerOpen,
+      crateDrawerOpen,
+    });
 
   const iframeVideoId = playbackVideoId;
 
@@ -88,40 +75,8 @@ export const ReleaseMiniPlayer = ({
       return;
     }
 
-    setVideoPanelOverride(null);
-    setLatchedIntroExpand(false);
     setIsQueueOpen(false);
   }, [isMiniPlayerVisible]);
-
-  useEffect(() => {
-    if (filtersDrawerOpen || crateDrawerOpen) {
-      setVideoPanelOverride("closed");
-    }
-  }, [crateDrawerOpen, filtersDrawerOpen]);
-
-  const shouldExpandForAutoplay = isPlaybackReady && shouldAutoplayEmbed;
-
-  useEffect(() => {
-    if (!(isPlaybackReady && !hasSeenPlaybackVideoIntro())) {
-      return;
-    }
-
-    setLatchedIntroExpand(true);
-    markPlaybackVideoIntroSeen();
-  }, [isPlaybackReady]);
-
-  const isVideoPanelExpanded =
-    videoPanelOverride === "open" ||
-    (videoPanelOverride !== "closed" &&
-      (shouldExpandForAutoplay || latchedIntroExpand));
-
-  const handleVideoToggle = useCallback(() => {
-    markPlaybackVideoIntroSeen();
-    if (!isVideoPanelExpanded) {
-      trackPlaybackVideoOpened();
-    }
-    setVideoPanelOverride(isVideoPanelExpanded ? "closed" : "open");
-  }, [isVideoPanelExpanded]);
 
   if (!(isMiniPlayerVisible && release)) {
     return null;
@@ -162,8 +117,6 @@ export const ReleaseMiniPlayer = ({
     preferCoverImage: true,
   });
 
-  const hasPrevious = canPlayPrevious;
-  const hasNext = canPlayNext;
   const shouldAutoplayIframe = shouldAutoplayEmbed && !isPlaybackEmbedMounted;
 
   const cover = thumbUrl ? (
@@ -267,76 +220,25 @@ export const ReleaseMiniPlayer = ({
                 )}
               </div>
             </div>
-            <div className={styles.controls}>
-              {isMobileLayout ? crateToggleButton : null}
-              <IconButton
-                variant="queue"
-                className={classNames(
-                  styles.controlButton,
-                  styles.queueButton,
-                  {
-                    [styles.queueButtonActive]: isQueueOpen,
-                  },
-                )}
-                iconClassName={styles.controlIcon}
-                addon={queueButtonAddon}
-                onClick={() => {
-                  setIsQueueOpen((open) => !open);
-                }}
-                aria-expanded={isQueueOpen}
-                aria-label={queueButtonAriaLabel}
-                title="Playback queue"
-              >
-                <ListThinIcon />
-              </IconButton>
-              {isPlaybackReady ? (
-                <IconButton
-                  className={classNames(styles.controlButton, {
-                    [styles.videoButtonActive]: isVideoPanelExpanded,
-                  })}
-                  iconClassName={styles.controlIcon}
-                  onClick={handleVideoToggle}
-                  aria-expanded={isVideoPanelExpanded}
-                  aria-controls="release-playback-video-panel"
-                  aria-label={
-                    isVideoPanelExpanded ? "Hide video" : "Show video"
-                  }
-                  title={isVideoPanelExpanded ? "Hide video" : "Show video"}
-                >
-                  <VideoIcon />
-                </IconButton>
-              ) : null}
-              <IconButton
-                className={styles.controlButton}
-                iconClassName={styles.controlIcon}
-                onClick={playPrevious}
-                disabled={!hasPrevious}
-                aria-label="Previous track"
-                title="Previous track"
-              >
-                <TransportSkipPreviousIcon />
-              </IconButton>
-              <IconButton
-                className={styles.controlButton}
-                iconClassName={styles.controlIcon}
-                onClick={togglePlayback}
-                disabled={!isPlaybackReady}
-                aria-label={isPaused ? "Play" : "Pause"}
-                title={isPaused ? "Play" : "Pause"}
-              >
-                {isPaused ? <PlayIcon /> : <PauseIcon />}
-              </IconButton>
-              <IconButton
-                className={styles.controlButton}
-                iconClassName={styles.controlIcon}
-                onClick={playNext}
-                disabled={!hasNext}
-                aria-label="Next track"
-                title="Next track"
-              >
-                <TransportSkipNextIcon />
-              </IconButton>
-            </div>
+            <ReleaseMiniPlayerTransportControls
+              isMobileLayout={isMobileLayout}
+              crateToggleButton={crateToggleButton}
+              isQueueOpen={isQueueOpen}
+              queueButtonAriaLabel={queueButtonAriaLabel}
+              {...(queueButtonAddon !== undefined ? { queueButtonAddon } : {})}
+              onQueueToggle={() => {
+                setIsQueueOpen((open) => !open);
+              }}
+              isPlaybackReady={isPlaybackReady}
+              isVideoPanelExpanded={isVideoPanelExpanded}
+              onVideoToggle={handleVideoToggle}
+              hasPrevious={canPlayPrevious}
+              hasNext={canPlayNext}
+              isPaused={isPaused}
+              onPlayPrevious={playPrevious}
+              onTogglePlayback={togglePlayback}
+              onPlayNext={playNext}
+            />
           </div>
         </section>
       </OverlayStack>
