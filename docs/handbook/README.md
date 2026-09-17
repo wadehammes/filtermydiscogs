@@ -9,7 +9,7 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 ## How to read this handbook
 
 1. **Orientation** — [architecture.md](architecture.md): stack, folders, and how data gets from Discogs and Postgres to the screen.
-2. **Day-to-day coding** — [conventions.md](conventions.md): TypeScript, React, CSS (Biome + Stylelint), tests.
+2. **Day-to-day coding** — [conventions.md](conventions.md): TypeScript, React, CSS (Biome + Stylelint), tests (**TDD**, **factories**, flat hook **`describe`** — [Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents)).
 3. **Discogs integration** — [discogs.md](discogs.md): OAuth, API service, username validation, cookies.
 4. **Database** — [database.md](database.md): Prisma schema, crates, route handlers.
 5. **UI structure** — [components.md](components.md): folders, naming, tests.
