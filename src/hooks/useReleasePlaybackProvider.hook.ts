@@ -16,6 +16,7 @@ import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectio
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useReleasePlaybackPendingResolution } from "src/hooks/useReleasePlaybackPendingResolution.hook";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
 import {
   usePersistPlaybackSessionOnQueueChange,
@@ -38,9 +39,7 @@ import type {
 import { DEFAULT_AUTO_PLAY_ON_QUEUE_ADD } from "src/types/userPreferences.types";
 import {
   buildCurrentQueueItem,
-  buildPlayableAlbumQueue,
   prependQueueItem,
-  upcomingFromAlbumQueue,
 } from "src/utils/playbackQueue";
 import {
   getSessionRelease,
@@ -52,7 +51,6 @@ import {
 } from "src/utils/playbackSessionState";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import {
-  findTrackIndexByPosition,
   findVideoForTrack,
   getPreviewTrackPosition,
   parseYoutubeVideoId,
@@ -460,132 +458,30 @@ export const useReleasePlaybackProvider = (): {
     },
   });
 
-  useEffect(() => {
-    if (!isPlaying || previewVideo !== null) {
-      return;
-    }
-
-    maybeExtendQueueTail();
-  }, [isPlaying, previewVideo, maybeExtendQueueTail]);
-
-  useEffect(() => {
-    if (
-      !pendingTrackPosition ||
-      tracks.length === 0 ||
-      releaseId === null ||
-      Number(releaseDetail?.id) !== Number(releaseId)
-    ) {
-      return;
-    }
-
-    const index = findTrackIndexByPosition(tracks, pendingTrackPosition);
-
-    if (index < 0) {
-      abortUnresolvedPlayback();
-      return;
-    }
-
-    dispatchSession({
-      type: "RESOLVE_PENDING_TRACK",
-      index,
-      resumeTransport: !awaitingResumeGestureRef.current,
-    });
-
-    awaitingResumeGestureRef.current = false;
-
-    if (shouldRebuildAlbumQueueRef.current && release) {
-      const albumQueue = buildPlayableAlbumQueue({
-        release,
-        tracks,
-        videos,
-        startPosition: pendingTrackPosition,
-      });
-      const upcoming = upcomingFromAlbumQueue(albumQueue);
-
-      setUpcomingQueue(upcoming);
-      shouldRebuildAlbumQueueRef.current = false;
-
-      if (similarQueueModeRef.current.initialAppendPending) {
-        similarQueueModeRef.current.initialAppendPending = false;
-        void appendSimilarReleasesToQueue({
-          sourceRelease: release,
-          generation: similarQueueGenerationRef.current,
-          existingQueue: upcoming,
-        });
-      }
-    }
-  }, [
+  useReleasePlaybackPendingResolution({
     abortUnresolvedPlayback,
-    appendSimilarReleasesToQueue,
-    pendingTrackPosition,
-    release,
-    setUpcomingQueue,
-    tracks,
-    videos,
-    releaseDetail?.id,
-    releaseId,
-  ]);
-
-  useEffect(() => {
-    if (
-      !pendingPreviewVideoUri ||
-      videos.length === 0 ||
-      releaseId === null ||
-      Number(releaseDetail?.id) !== Number(releaseId)
-    ) {
-      return;
-    }
-
-    const video = videos.find((entry) => entry.uri === pendingPreviewVideoUri);
-
-    if (!video) {
-      abortUnresolvedPlayback();
-      return;
-    }
-
-    dispatchSession({ type: "RESOLVE_PREVIEW_VIDEO", video });
-  }, [
-    abortUnresolvedPlayback,
-    pendingPreviewVideoUri,
-    releaseDetail?.id,
-    releaseId,
-    videos,
-  ]);
-
-  useEffect(() => {
-    if (
-      !isPlaying ||
-      isLoading ||
-      pendingTrackPosition ||
-      pendingPreviewVideoUri
-    ) {
-      return;
-    }
-
-    if (tracks.length > 0 && activeVideoId === null && !isReleasePreview) {
-      dispatchSession({ type: "SET_TRANSPORT_OFF" });
-      clearPersistedReleasePlayback();
-    }
-  }, [
+    activeTrackIndex,
     activeVideoId,
+    appendSimilarReleasesToQueue,
+    awaitingResumeGestureRef,
+    dispatchSession,
     isLoading,
     isPlaying,
     isReleasePreview,
+    maybeExtendQueueTail,
     pendingPreviewVideoUri,
     pendingTrackPosition,
-    tracks.length,
-  ]);
-
-  useEffect(() => {
-    if (tracks.length === 0 || pendingTrackPosition) {
-      return;
-    }
-
-    if (activeTrackIndex >= tracks.length) {
-      dispatchSession({ type: "SET_ACTIVE_TRACK_INDEX", index: 0 });
-      dispatchSession({ type: "RESUME" });
-    }
-  }, [activeTrackIndex, pendingTrackPosition, tracks.length]);
+    previewVideo,
+    release,
+    releaseDetailId: releaseDetail?.id,
+    releaseId,
+    setUpcomingQueue,
+    shouldRebuildAlbumQueueRef,
+    similarQueueGenerationRef,
+    similarQueueModeRef,
+    tracks,
+    videos,
+  });
 
   const togglePlayback = useCallback(() => {
     if (isPaused) {
