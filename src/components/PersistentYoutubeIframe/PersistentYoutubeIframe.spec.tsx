@@ -189,6 +189,47 @@ describe("PersistentYoutubeIframe", () => {
     });
   });
 
+  it("defers loadVideoById until deferVideoLoad is cleared", async () => {
+    const user = userEvent.setup();
+
+    const DeferredLoadHarness = () => {
+      const [videoId, setVideoId] = useState("te2jJncBVG4");
+      const [deferVideoLoad, setDeferVideoLoad] = useState(true);
+
+      return (
+        <>
+          <button type="button" onClick={() => setVideoId("abc12345678")}>
+            Switch video
+          </button>
+          <button type="button" onClick={() => setDeferVideoLoad(false)}>
+            Allow load
+          </button>
+          <PersistentYoutubeIframe
+            videoId={videoId}
+            videoTitle="Test video"
+            deferVideoLoad={deferVideoLoad}
+            variant="visible"
+          />
+        </>
+      );
+    };
+
+    render(<DeferredLoadHarness />, { wrapper: createWrapper() });
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
+    await user.click(screen.getByRole("button", { name: "Switch video" }));
+
+    expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Allow load" }));
+
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+      videoId: "abc12345678",
+    });
+  });
+
   it("refreshes embed layout when opening the panel after the initial src load", async () => {
     const user = userEvent.setup();
 

@@ -50,6 +50,8 @@ export interface ReleasePlaybackState {
   canPlayNext: boolean;
   isLoading: boolean;
   isQueueBuilding: boolean;
+  isPlaybackVideoLoading: boolean;
+  isPlaybackVideoTransitionPending: boolean;
 }
 
 export interface ReleasePlaybackActions {
@@ -65,6 +67,8 @@ export interface ReleasePlaybackActions {
   togglePlayback: () => void;
   registerPlaybackIframe: (iframe: HTMLIFrameElement | null) => void;
   notifyPlaybackIframeLoaded: () => void;
+  notifyPlaybackVideoLoadStarted: () => void;
+  notifyPlaybackVideoPresentationReady: () => void;
   resumePlaybackFromGesture: () => void;
   clearQueue: () => void;
   stopPlayback: () => void;

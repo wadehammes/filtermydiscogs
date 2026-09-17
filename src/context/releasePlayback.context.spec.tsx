@@ -742,6 +742,59 @@ describe("ReleasePlaybackProvider", () => {
     expect(playVideoCalls.length).toBeGreaterThan(0);
   });
 
+  it("playNext keeps video UI loading until the advanced upload reports playing", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    expect(result.current.isPlaybackVideoLoading).toBe(true);
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackVideoLoading).toBe(false);
+    });
+  });
+
   it("does not imperatively loadAndPlay on playNext when the playback iframe stays registered", async () => {
     const iframe = {
       contentWindow: { postMessage: jest.fn() },

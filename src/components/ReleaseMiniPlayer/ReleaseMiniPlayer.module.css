@@ -316,3 +316,25 @@
     width: auto;
   }
 }
+
+.videoEmbedHost {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.videoEmbedHostLoading :global(iframe) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.videoLoadingOverlay {
+  align-items: center;
+  background: var(--background);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}

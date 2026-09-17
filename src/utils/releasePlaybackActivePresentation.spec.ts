@@ -8,7 +8,9 @@ import {
   resolveActiveTrackPosition,
   resolveActiveVideoId,
   resolveIsPlaybackReady,
+  resolveNeedsPlaybackVideoSwitch,
   resolvePlaybackVideoId,
+  shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
 
 describe("releasePlaybackActivePresentation", () => {
@@ -32,6 +34,58 @@ describe("releasePlaybackActivePresentation", () => {
       resolveIsPlaybackReady({
         isPlaying: true,
         playbackVideoId: null,
+      }),
+    ).toBe(false);
+  });
+
+  it("resolvePlaybackVideoId uses the transition target while queue advance is settling", () => {
+    expect(
+      resolvePlaybackVideoId({
+        transitionTargetVideoId: "abc12345678",
+        pendingTrackPosition: null,
+        pendingPreviewVideoUri: null,
+        embedVideoId: "abc12345678",
+        activeVideoId: "te2jJncBVG4",
+      }),
+    ).toBe("abc12345678");
+  });
+
+  it("resolveNeedsPlaybackVideoSwitch is true when the prepared upload differs from the active upload", () => {
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: "te2jJncBVG4",
+      }),
+    ).toBe(true);
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
+      }),
+    ).toBe(false);
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("shouldClearPlaybackVideoTransition clears when active video matches the target and nothing is pending", () => {
+    expect(
+      shouldClearPlaybackVideoTransition({
+        transitionTargetVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
+        pendingTrackPosition: null,
+        pendingPreviewVideoUri: null,
+      }),
+    ).toBe(true);
+    expect(
+      shouldClearPlaybackVideoTransition({
+        transitionTargetVideoId: "abc12345678",
+        activeVideoId: "te2jJncBVG4",
+        pendingTrackPosition: "B1",
+        pendingPreviewVideoUri: null,
       }),
     ).toBe(false);
   });

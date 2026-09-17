@@ -43,6 +43,7 @@ export const ReleaseMiniPlayer = ({
     canPlayNext,
     isLoading,
     isQueueBuilding,
+    isPlaybackVideoLoading,
     isMiniPlayerVisible,
     playNext,
     playPrevious,
@@ -67,7 +68,7 @@ export const ReleaseMiniPlayer = ({
       crateDrawerOpen,
     });
 
-  const iframeVideoId = playbackVideoId;
+  const showVideoLoading = isPlaybackVideoLoading && isVideoPanelExpanded;
 
   useEffect(() => {
     if (isMiniPlayerVisible) {
@@ -168,21 +169,38 @@ export const ReleaseMiniPlayer = ({
           {...(isQueueOpen && { "data-playback-queue-shell-open": true })}
           {...(isQueueOpen &&
             isVideoPanelExpanded && { "data-queue-over-video": true })}
+          {...(showVideoLoading && { "data-playback-video-loading": true })}
           aria-label="Now playing"
         >
-          {isPlaying && iframeVideoId ? (
+          {isPlaying && playbackVideoId ? (
             <ReleasePlaybackVideoPanel
               panelId="release-playback-video-panel"
               isExpanded={isVideoPanelExpanded}
               onClose={handleVideoToggle}
             >
-              <PersistentYoutubeIframe
-                key={String(release.instance_id)}
-                videoId={iframeVideoId}
-                videoTitle={activePlaybackTitle ?? "Release preview"}
-                autoplay={shouldAutoplayIframe}
-                variant={isVideoPanelExpanded ? "visible" : "hidden"}
-              />
+              <div
+                className={classNames(styles.videoEmbedHost, {
+                  [styles.videoEmbedHostLoading]: showVideoLoading,
+                })}
+              >
+                {showVideoLoading ? (
+                  <div
+                    className={styles.videoLoadingOverlay}
+                    role="status"
+                    aria-label="Loading video"
+                  >
+                    <Spinner size="sm" aria-label="Loading video" aria-hidden />
+                  </div>
+                ) : null}
+                <PersistentYoutubeIframe
+                  key={String(release.instance_id)}
+                  videoId={playbackVideoId}
+                  videoTitle={activePlaybackTitle ?? "Release preview"}
+                  autoplay={shouldAutoplayIframe}
+                  deferVideoLoad={false}
+                  variant={isVideoPanelExpanded ? "visible" : "hidden"}
+                />
+              </div>
             </ReleasePlaybackVideoPanel>
           ) : null}
           <Activity mode={isQueueOpen ? "visible" : "hidden"}>
