@@ -59,18 +59,20 @@
   margin: 0;
 }
 
-.saveStatus {
+.footermeta {
   color: var(--muted-foreground);
   font-size: var(--text-xs);
+  line-height: 1;
   margin: 0;
   white-space: nowrap;
 }
 
+.saveStatus {
+  composes: footermeta;
+}
+
 .charCount {
-  color: var(--muted-foreground);
-  font-size: var(--text-xs);
-  margin: 0;
-  white-space: nowrap;
+  composes: footermeta;
 }
 
 .charCountLimit {

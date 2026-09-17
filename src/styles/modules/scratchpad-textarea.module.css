@@ -96,19 +96,22 @@
   justify-content: space-between;
 }
 
-.status {
+.footermeta {
   color: var(--muted-foreground);
-  font-size: var(--text-xxs);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xxxs);
+  line-height: 1;
   margin: 0;
+  white-space: nowrap;
+}
+
+.status {
+  composes: footermeta;
 }
 
 .charcount {
-  color: var(--muted-foreground);
-  font-family: var(--font-family-meta);
-  font-size: 0.5rem;
-  margin: 0;
+  composes: footermeta;
   margin-inline-start: auto;
-  white-space: nowrap;
 }
 
 .charcountlimit {
