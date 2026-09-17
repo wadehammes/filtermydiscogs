@@ -13,6 +13,11 @@ import {
   type VideoPanelResizeCorner,
 } from "src/utils/videoPanelCornerResize";
 import {
+  applyVideoPanelLayoutToElement,
+  clampVideoPanelPosition,
+  clampVideoPanelScale,
+} from "src/utils/videoPanelDragLayout";
+import {
   clearVideoPanelLayout,
   DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
   DEFAULT_VIDEO_PANEL_SCALE,
@@ -32,58 +37,6 @@ interface UseDraggablePanelParams {
 
 const DEFAULT_MIN_SCALE = 0.45;
 const DRAG_ACTIVATION_PX = 4;
-
-const clampPosition = ({
-  x,
-  y,
-  width,
-  height,
-}: {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}): VideoPanelPosition => {
-  const maxX = Math.max(window.innerWidth - width, 0);
-  const maxY = Math.max(window.innerHeight - height, 0);
-
-  return {
-    x: Math.min(Math.max(x, 0), maxX),
-    y: Math.min(Math.max(y, 0), maxY),
-  };
-};
-
-const clampScale = ({
-  scale,
-  minScale,
-  maxScale,
-}: {
-  scale: number;
-  minScale: number;
-  maxScale: number;
-}): number => {
-  return Math.min(Math.max(scale, minScale), maxScale);
-};
-
-const applyLayoutToPanel = (
-  panel: HTMLDivElement,
-  layout: { position: VideoPanelPosition | null; scale: number },
-) => {
-  panel.style.setProperty("--panel-scale", String(layout.scale));
-
-  if (layout.position) {
-    panel.style.left = `${layout.position.x}px`;
-    panel.style.top = `${layout.position.y}px`;
-    panel.style.right = "auto";
-    panel.style.bottom = "auto";
-    return;
-  }
-
-  panel.style.removeProperty("left");
-  panel.style.removeProperty("top");
-  panel.style.removeProperty("right");
-  panel.style.removeProperty("bottom");
-};
 
 export const useDraggablePanel = ({
   enabled,
@@ -176,7 +129,7 @@ export const useDraggablePanel = ({
 
       const { width, height } = panel.getBoundingClientRect();
 
-      return clampPosition({
+      return clampVideoPanelPosition({
         x: nextPosition.x,
         y: nextPosition.y,
         width,
@@ -191,7 +144,10 @@ export const useDraggablePanel = ({
     const { position: nextPosition, scale: nextScale } = liveLayoutRef.current;
 
     if (panel) {
-      applyLayoutToPanel(panel, { position: nextPosition, scale: nextScale });
+      applyVideoPanelLayoutToElement(panel, {
+        position: nextPosition,
+        scale: nextScale,
+      });
     }
 
     setPosition(nextPosition);
@@ -219,7 +175,7 @@ export const useDraggablePanel = ({
     const panel = panelRef.current;
 
     if (panel) {
-      applyLayoutToPanel(panel, liveLayoutRef.current);
+      applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
     }
   }, []);
 
@@ -234,7 +190,7 @@ export const useDraggablePanel = ({
     const panel = panelRef.current;
 
     if (panel) {
-      applyLayoutToPanel(panel, liveLayoutRef.current);
+      applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
     }
 
     if (storageKey) {
@@ -288,7 +244,7 @@ export const useDraggablePanel = ({
       }
 
       const { width, height } = dragClampSizeRef.current;
-      const nextPosition = clampPosition({
+      const nextPosition = clampVideoPanelPosition({
         x: event.clientX - dragOffsetRef.current.x,
         y: event.clientY - dragOffsetRef.current.y,
         width,
@@ -299,7 +255,7 @@ export const useDraggablePanel = ({
         position: nextPosition,
         scale: liveLayoutRef.current.scale,
       };
-      applyLayoutToPanel(panel, liveLayoutRef.current);
+      applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
       setPosition(nextPosition);
       setIsDragPending(false);
       setIsDragging(true);
@@ -365,7 +321,7 @@ export const useDraggablePanel = ({
           position: nextPosition,
           scale: liveLayoutRef.current.scale,
         };
-        applyLayoutToPanel(panelRef.current, liveLayoutRef.current);
+        applyVideoPanelLayoutToElement(panelRef.current, liveLayoutRef.current);
 
         if (shouldSetPosition) {
           setPosition(nextPosition);
@@ -395,7 +351,7 @@ export const useDraggablePanel = ({
 
     measureMaxWidth();
     setScale((current) =>
-      clampScale({
+      clampVideoPanelScale({
         scale: current,
         minScale,
         maxScale: resolveMaxScale(),
@@ -440,7 +396,7 @@ export const useDraggablePanel = ({
 
       measurePanelMaxWidth();
 
-      const clamped = clampPosition({
+      const clamped = clampVideoPanelPosition({
         x: storedPosition.x,
         y: storedPosition.y,
         width,
@@ -454,14 +410,14 @@ export const useDraggablePanel = ({
           position: clamped,
           scale: liveLayoutRef.current.scale,
         };
-        applyLayoutToPanel(panel, liveLayoutRef.current);
+        applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
         setPosition(clamped);
       } else {
         liveLayoutRef.current = {
           position: null,
           scale: DEFAULT_VIDEO_PANEL_INITIAL_SCALE,
         };
-        applyLayoutToPanel(panel, liveLayoutRef.current);
+        applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
         setPosition(null);
         setScale(DEFAULT_VIDEO_PANEL_INITIAL_SCALE);
 
@@ -500,7 +456,7 @@ export const useDraggablePanel = ({
         }
 
         const { width, height } = dragClampSizeRef.current;
-        const nextPosition = clampPosition({
+        const nextPosition = clampVideoPanelPosition({
           x: pending.x - dragOffsetRef.current.x,
           y: pending.y - dragOffsetRef.current.y,
           width,
@@ -511,7 +467,7 @@ export const useDraggablePanel = ({
           position: nextPosition,
           scale: liveLayoutRef.current.scale,
         };
-        applyLayoutToPanel(panel, liveLayoutRef.current);
+        applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
       });
     };
 
@@ -583,7 +539,7 @@ export const useDraggablePanel = ({
           nextWidth,
           chromeHeight,
         });
-        const nextScale = clampScale({
+        const nextScale = clampVideoPanelScale({
           scale: nextWidth / maxWidth,
           minScale,
           maxScale: effectiveMaxScale,
@@ -601,7 +557,7 @@ export const useDraggablePanel = ({
           position: nextPosition,
           scale: nextScale,
         };
-        applyLayoutToPanel(panel, liveLayoutRef.current);
+        applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
       });
     };
 
@@ -681,7 +637,7 @@ export const useDraggablePanel = ({
         const panel = panelRef.current;
 
         if (panel) {
-          applyLayoutToPanel(panel, liveLayoutRef.current);
+          applyVideoPanelLayoutToElement(panel, liveLayoutRef.current);
         }
 
         return clamped;
