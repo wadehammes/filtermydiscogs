@@ -19,7 +19,7 @@ On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Rou
 
 ## During implementation
 
-- **TDD** — for substantive work, write thoughtful failing specs first, then the smallest production change to green them (red → green → refactor). See [conventions.md → Testing → TDD](docs/handbook/conventions.md#test-driven-development-tdd). Mock **`api.*`**, not React Query cache.
+- **Testing non-negotiables** — TDD (failing spec before production code), **factories** for domain/API test data, **one flat `describe`** per hook spec (no nested `describe`). See [conventions.md → Non-negotiables](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents) and [Hook checklist](docs/handbook/conventions.md#hook-and-feature-spec-checklist). Mock **`api.*`**, not React Query cache.
 - **UI state defaults** — check whether an existing hook already owns them (e.g. `useCrateDrawer`: `userToggled ?? isDesktop`; login uses `resetDrawer()`, not duplicate breakpoint checks).
 - **Optional props** — `classNames()` for module `className`; `definedProps({ ... })` for other optional spreads ([conventions.md](docs/handbook/conventions.md)).
 - **CSS** — mobile-first `(width >= …)`; nest under block classes per Stylelint ([conventions.md](docs/handbook/conventions.md)).

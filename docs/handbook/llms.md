@@ -8,6 +8,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 |------------------|------------|
 | Stack, folders, Discogs → UI data flow | [architecture.md](architecture.md) |
 | TypeScript / React / Biome / Stylelint / CSS / tests / TDD | [conventions.md](conventions.md) |
+| Hook specs (TDD, factories, no nested `describe`) | [conventions.md](conventions.md) ([Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents), [Hook checklist](conventions.md#hook-and-feature-spec-checklist)) + [factories.md](factories.md) |
 | CSS Modules nesting, mobile-first breakpoints, modern CSS | [conventions.md](conventions.md) (CSS and styling) |
 | OAuth login, Discogs API, username format, cookies | [discogs.md](discogs.md) |
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |

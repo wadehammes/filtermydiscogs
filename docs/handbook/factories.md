@@ -6,7 +6,7 @@ All factories live under **[`src/tests/factories/`](../../src/tests/factories/)*
 
 ## Always use factories
 
-**Default rule:** Any structured test data or mocked return value with a named type—domain entities, auth/session shapes, API payloads, nested objects—comes from a factory under **`src/tests/factories/`**, not an inline object literal in a spec or PO.
+**Default rule:** Any structured test data or mocked return value with a named type—domain entities, auth/session shapes, API payloads, nested objects—comes from a factory under **`src/tests/factories/`**, not an inline object literal in a spec or PO. This is a [Testing non-negotiable](conventions.md#non-negotiables-substantive-work-and-agents) alongside TDD and flat hook **`describe`** blocks—especially for **`src/hooks/*.hook.spec.ts(x)`** ([checklist](conventions.md#hook-and-feature-spec-checklist)).
 
 - **PO `setupMocks()`**, hook specs, and route specs: **`mockResolvedValue(authStatusFactory.authenticated())`**, **`userPreferencesFactory.defaultsApiResponse()`**, **`verifiedDiscogsUserFactory.asVerifiedResult()`**, etc.—not `{ isAuthenticated: true, username: "testuser", … }`.
 - **Preset methods** (`authenticated()`, `empty()`, `forUser()`, `dashboardDefaults()`, …) exist for repeated shapes; prefer them over copying literals across files.

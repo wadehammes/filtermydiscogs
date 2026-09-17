@@ -261,13 +261,23 @@ Mono text uses **`--text-meta-*`** size tokens (2px smaller than the matching **
 
 Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTests.ts`](../../.jest/setupTests.ts)). Prefer **`screen`** and **`userEvent`** in specs.
 
+### Non-negotiables (substantive work and agents)
+
+Before you touch production code for a new behavior, regression fix, or extracted hook, confirm all three:
+
+1. **TDD** — Write or extend a **failing** spec first; run it and see red for the right reason; only then implement the smallest change to green. Do **not** implement hook/provider logic first and add specs at the end of the PR. See [Test-driven development (TDD)](#test-driven-development-tdd).
+2. **Factories** — Domain data in specs and POs comes from **[`src/tests/factories/`](../../src/tests/factories/)** (`releaseFactory`, `discogsTrackFactory`, `discogsReleaseJsonFactory`, `collectionFactory`, …)—**not** hand-rolled `{ id: 1, title: "…" }` objects. Override with `.build({ … })` only for fields the assertion names. See [Test data and factories](#test-data-and-factories) and **[factories.md](factories.md)**.
+3. **Flat hook specs** — **`src/hooks/*.hook.spec.ts(x)`** uses **exactly one** top-level **`describe`** (usually the hook name). **Never nest** **`describe`** blocks; use long, outcome-focused **`it`** strings and module-level helpers (`buildHarness`, `createProps`, …) instead. See [Hook and feature spec checklist](#hook-and-feature-spec-checklist).
+
 **Playwright** ([`playwright.config.ts`](../../playwright.config.ts), [`e2e/`](../../e2e/)): public-route regressions (instant navigation, theme-init **`data-theme`**, home/about smoke). Run **`pnpm test:e2e:install`** once locally, then **`pnpm test:e2e`**. CI uses **`pnpm test:e2e:ci`**. Prefer **contract specs** on shared primitives (**`Select`**, **`AutocompleteSelect`**, **`OverlayStack`**, theme init) — see [`requiredPrimitiveSpecs.spec.ts`](../../src/tests/utils/requiredPrimitiveSpecs.spec.ts); feature specs smoke wiring only.
 
 **Behavior first:** Write tests for the behavior you expect—user-visible outcomes, hook side effects, API contracts—not for whatever the current implementation happens to do. If a new or updated test fails, treat that as a signal to fix the production code (or the test setup), not to weaken the assertion so it passes. Prefer correcting bugs and regressions over bending specs to match broken behavior.
 
 ### Test-driven development (TDD)
 
-**Team default (non-negotiable for substantive work):** this repo runs **test-driven development**—write **thoughtful, meaningful tests first**, watch them fail for the right reason, then implement the smallest production change that makes them pass (red → green → refactor). Do not ship new behavior by coding first and backfilling specs afterward unless the task is explicitly exempt below.
+**Team default (non-negotiable for substantive work):** this repo runs **test-driven development**—write **thoughtful, meaningful tests first**, watch them fail for the right reason, then implement the smallest production change that makes them pass (red → green → refactor). **Agents and humans:** if you already edited `*.hook.ts`, `*.tsx` provider logic, or util behavior before adding/updating a spec, stop and add the failing test (or revert the production change), run **`pnpm test -- <spec path>`**, confirm red, then proceed. Do not ship new behavior by coding first and backfilling specs afterward unless the task is explicitly exempt below.
+
+**Quick gate:** Can you point to a spec commit or file hunk that existed **before** the production fix? If not, you are not done with TDD for that change.
 
 **What “thoughtful” means:** assert real outcomes (DOM, API calls, user flows, contracts)—not implementation trivia. Prefer one spec that would catch the actual regression (e.g. hover prefetch on the row **action column**, not only the open button) over several tests that only restate types or render smoke. Reuse shared helpers ([`expectReleaseOpenPrefetchOnHover`](../../src/tests/utils/expectReleaseOpenPrefetchOnHover.ts), POs, factories) when the pattern repeats.
 
@@ -282,10 +292,50 @@ Jest with **jsdom** ([`jest.config.ts`](../../jest.config.ts), [`.jest/setupTest
 | Pure util / helper | `src/utils/*.spec.ts` | No mocks; run the real function. |
 | API route / server | `src/app/api/**/route.spec.ts` | Assert status, JSON shape, auth. |
 | Client helper | `src/api/helpers.spec.ts` | [`mockFetchResponse`](../../src/tests/mocks/mockFetchResponse.ts). |
-| Feature hook | `src/hooks/*.hook.spec.ts` | [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx), mock **`src/api/urls`**. |
+| Feature hook | `src/hooks/*.hook.spec.ts(x)` | One flat **`describe`**; factories; [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx); mock **`src/api/urls`** (not query hooks). |
 | Component / page | `src/components/**/*.spec.tsx` | PO + **`TestProviders`**; assert DOM and toasts. |
 
-Follow the recipes below (**Do not test React Query**, factories, **`includeCollectionSync: false`** when seeding collection state manually, etc.). A failing feature test is the spec of done—not an afterthought once implementation is finished.
+Follow the [hook checklist](#hook-and-feature-spec-checklist) and recipes below (**Do not test React Query**, factories, **`includeCollectionSync: false`** when seeding collection state manually, etc.). A failing feature test is the spec of done—not an afterthought once implementation is finished.
+
+### Hook and feature spec checklist
+
+Use this for every **`src/hooks/*.hook.spec.ts(x)`** and when splitting logic out of a context provider. **All items are required** unless the task is explicitly TDD-exempt ([below](#test-driven-development-tdd)).
+
+| Step | Rule |
+|------|------|
+| **1. Red** | Add **`it`** for the outcome (effect fired, state updated, **`api.*`** called, storage written)—run the file and confirm failure **before** editing the hook. |
+| **2. Data** | Build releases, tracks, collection rows, and API JSON with **factories** ([`discogsTrackFactory`](../../src/tests/factories/DiscogsTrack.factory.ts), [`releaseFactory`](../../src/tests/factories/Release.factory.ts), [`discogsReleaseJsonFactory.withTracklistAndVideos()`](../../src/tests/factories/DiscogsReleaseJson.factory.ts), [`collectionFactory`](../../src/tests/factories/Collection.factory.ts), …). Presets beat repeated `.build({ … })` blocks. |
+| **3. Structure** | **One** top-level **`describe("useMyHook", () => { … })`**. **Do not** nest **`describe("when …")`** / **`describe("edge cases")`**—fold those into **`it("when …, …")`** names or shared setup at module scope. |
+| **4. Mocks** | Mock **`src/api/urls`** (or route-level fetch helpers), not **`src/hooks/queries/*`**. Prefer real pure utils (e.g. [`similarReleaseQueue`](../../src/utils/similarReleaseQueue.ts)) with API stubs over mocking the util the hook imports. |
+| **5. Green** | Minimal hook change; refactor with suite still green. |
+
+**Structure — do not nest `describe`:**
+
+```ts
+// ❌ Breaks handbook rules
+describe("useReleasePlaybackSessionPersistence", () => {
+  describe("restore", () => {
+    it("…", () => { … });
+  });
+});
+
+// ✅ One block; scenario in the test name
+describe("useReleasePlaybackSessionPersistence", () => {
+  it("restores upcoming queue from localStorage after collection finishes loading", () => { … });
+});
+```
+
+**Data — use factories:**
+
+```ts
+// ❌ Inline domain shape
+const track = { position: "A1", title: "Track", type_: "track" };
+
+// ✅ Factory + literal only where asserted
+const track = discogsTrackFactory.build({ title: "Night Drive" });
+```
+
+**References (playback hooks, all flat single-`describe`):** [`useReleasePlaybackTransportToggle.spec.ts`](../../src/hooks/useReleasePlaybackTransportToggle.spec.ts), [`useReleasePlaybackSessionPersistence.hook.spec.ts`](../../src/hooks/useReleasePlaybackSessionPersistence.hook.spec.ts), [`useReleasePlaybackPendingResolution.hook.spec.ts`](../../src/hooks/useReleasePlaybackPendingResolution.hook.spec.ts), [`useReleasePlaybackSimilarQueue.hook.spec.tsx`](../../src/hooks/useReleasePlaybackSimilarQueue.hook.spec.tsx), [`useReleasePlaybackQueueActions.hook.spec.ts`](../../src/hooks/useReleasePlaybackQueueActions.hook.spec.ts). Integration-style provider behavior stays in [`releasePlayback.context.spec.tsx`](../../src/context/releasePlayback.context.spec.tsx)—do not duplicate full provider tests in every sub-hook file.
 
 **When TDD is optional:** narrow mechanical fixes (typos, copy-only tweaks with existing spec coverage), pure styling, or spikes you throw away. Even then, add or extend tests before merge if behavior changed.
 
@@ -298,7 +348,7 @@ Follow the recipes below (**Do not test React Query**, factories, **`includeColl
 - **Render helpers**: Set component defaults on the JSX element, then spread overrides: `{...overrides}`. Do **not** use conditional spreads like `{...(overrides.foo !== undefined && { foo: overrides.foo })}`.
 - **Shared element helpers**: When `render*` and `rerender*` need the same JSX, extract a private `*Element(overrides)` method and reuse it—specs call `po.rerender*(rerender, overrides)`, not `rerender(<Component />)` directly.
 - **Mocks in POs**: Put `jest.mock(...)` in the PO when the component depends on context or modules—not in the **`.spec.tsx`**. Expose **`jest.mocked(...)`** helpers on the PO class (e.g. **`mockUseCollectionData`**, **`mockApi`**, **`mockToastLoading`**) when specs assert call args. Inside the PO class, reference exposed mocks via **`this.mockApi`**, **`this.mockToastLoading`**, etc.—not the module-level **`const`** (see [`FilterViewsMenu.po.tsx`](../../src/components/FilterViewsMenu/FilterViewsMenu.po.tsx)). Component **`.spec.tsx`** files import **`@jest/globals`** and the **PO only**—plus test helpers, factories, or CSS modules the spec asserts on; never the component under test, never a mocked module, and never **`jest.mock`** in the spec. **PO and spec imports** use absolute **`src/…`** paths (including **`jest.mock("src/…")`** targets); co-located **`.module.css`** stays relative (**`import styles from "./MyComponent.module.css"`**). Reference: [`CollectionDataSync.spec.tsx`](../../src/components/CollectionDataSync/CollectionDataSync.spec.tsx) + [`CollectionDataSync.po.tsx`](../../src/components/CollectionDataSync/CollectionDataSync.po.tsx). **Import order:** the PO must be the first local import so its hoisted **`jest.mock`** runs before any other import that transitively loads a mocked module (e.g. do not import [`collectionLoadingToast`](../../src/components/CollectionLoadingToast/collectionLoadingToast.tsx) in the spec when **`src/utils/toast`** is mocked in the PO—re-export needed constants from the PO instead; see [`DashboardClient.po.tsx`](../../src/components/Dashboard/DashboardClient.po.tsx)). When production wraps the component in a layout and server footer, the PO **`render*`** helper should use the same wrapper and mock server-only children (see [components.md → Testing](components.md#testing)).
-- **Specs**: Use **`* .spec.ts(x)`** co-located with source — **`<Name>.spec.tsx`** for component tests with page objects (import the PO from **`src/components/<Name>/<Name>.po`**), and **`* .spec.ts`** / **`* .spec.tsx`** for context, hook, util, and route tests. Import **`describe`**, **`it`**, **`expect`**, and lifecycle hooks from **`@jest/globals`** in every test file (not ambient globals). Use the global **`jest`** object for **`jest.mock`**, **`jest.fn`**, **`jest.spyOn`**, and **`jest.mocked`**—do **not** import **`jest`** from **`@jest/globals`** (that breaks the mock registry). Import Testing Library helpers from the **`test-utils`** alias. Jest DOM matchers are wired in [`.jest/setupTests.ts`](../../.jest/setupTests.ts) via **`@testing-library/jest-dom/jest-globals`**; types come from [`.jest/jest-dom-globals.d.ts`](../../.jest/jest-dom-globals.d.ts). **Hook specs** (`src/hooks/*.hook.spec.ts(x)`): one top-level **`describe`** for the module under test—**do not nest** **`describe`** blocks; use descriptive **`it`** names (and module-level helpers like **`buildHarness`**) instead. Reference: [`useReleasePlaybackTransportToggle.spec.ts`](../../src/hooks/useReleasePlaybackTransportToggle.spec.ts), [`useReleasePlaybackSessionPersistence.hook.spec.ts`](../../src/hooks/useReleasePlaybackSessionPersistence.hook.spec.ts).
+- **Specs**: Use **`* .spec.ts(x)`** co-located with source — **`<Name>.spec.tsx`** for component tests with page objects (import the PO from **`src/components/<Name>/<Name>.po`**), and **`* .spec.ts`** / **`* .spec.tsx`** for context, hook, util, and route tests. Import **`describe`**, **`it`**, **`expect`**, and lifecycle hooks from **`@jest/globals`** in every test file (not ambient globals). Use the global **`jest`** object for **`jest.mock`**, **`jest.fn`**, **`jest.spyOn`**, and **`jest.mocked`**—do **not** import **`jest`** from **`@jest/globals`** (that breaks the mock registry). Import Testing Library helpers from the **`test-utils`** alias. Jest DOM matchers are wired in [`.jest/setupTests.ts`](../../.jest/setupTests.ts) via **`@testing-library/jest-dom/jest-globals`**; types come from [`.jest/jest-dom-globals.d.ts`](../../.jest/jest-dom-globals.d.ts). **Hook specs** must follow the [Hook and feature spec checklist](#hook-and-feature-spec-checklist) (TDD, factories, single flat **`describe`**).
 - **Assert on literal user-visible strings in specs**, not `po.someField` read back from the PO—repeat the literal in both PO factory/render setup and `screen.getBy*` / `expect` so coupling stays visible.
 - **Custom render**: Use **`render`** and **`renderHookWithTestProviders`** / **`renderFeatureHook`** from **`test-utils`** ([`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)). Both wrap with [`TestProviders`](../../src/tests/utils/testProviders.tsx)—pass **`authInitialState`**, **`skipInitialAuthCheck`**, and optionally **`includeCrate: false`** ( **`renderFeatureHook`** defaults **`includeCrate: false`** ). Prefer this over hand-rolling provider stacks. Global styles load via **`src/styles/global.css`** in test-utils (same as rhythm-marketing). Pass a custom **`wrapper`** only when a test intentionally needs a subset (e.g. “outside provider” error cases). **`renderHookWithTestProviders`** composes a custom **`wrapper`** *inside* **`TestProviders`** (outer)—use [`SeedCollectionFilters`](../../src/tests/utils/seedCollectionFilters.tsx) this way for hook tests that need collection + filter facet state. Optional **`sessionFilters`** on **`SeedCollectionFilters`** bulk-sets **`sessionFiltersAtom`** and **`persistedFiltersAtom`** after **`SetAllReleases`** (merged with **`defaultPersistedFilters`**)—use this instead of pre-writing **`localStorage`** when the UI reads **`sessionFiltersAtom`** (see [patterns.md → Filtering and sorting](patterns.md#filtering-and-sorting)).
 - **`TestProviders` auth defaults**: **`skipInitialAuthCheck`** defaults to **`true`** so most component tests get a stable idle auth state without async **`checkAuthStatus`** updates (avoids act warnings). Pass **`skipInitialAuthCheck={false}`** only when testing real mount-time auth (e.g. **`auth.context.spec.tsx`** with a minimal **`QueryClientProvider` + `AuthProvider`** wrapper). Optional **`authInitialState`** seeds **`AuthProvider`**; when **`skipInitialAuthCheck`** is **`false`** and **`authInitialState`** is omitted, production initial state (**`isCheckingAuth: true`**, **`isLoading: false`**) applies. Presets live in [`testAuthStates.ts`](../../src/tests/utils/testAuthStates.ts). Do **not** suppress act warnings in **`setupTests.ts`**—fix async provider setup instead.
@@ -320,11 +370,13 @@ Follow the recipes below (**Do not test React Query**, factories, **`includeColl
 
 See **[factories.md](factories.md)** for the full factory pattern (`BaseFactory`, `KeysMatch`, `nullish`, nested factories, one file per factory).
 
+**Required in hook specs and feature tests:** any Discogs release, track, collection item, crate payload, or API JSON body in a spec should come from a factory unless you are asserting on a one-field edge case—and even then, start from `.build()` and override that field. Inline object literals for domain types are a review failure.
+
 - Factories live only under **[`src/tests/factories/`](../../src/tests/factories/)**.
 - Import singletons by path (e.g. `releaseFactory` from `src/tests/factories/Release.factory`).
 - Override with `.build({ field: "literal" })` for values the spec asserts on.
 - **Always use factories** in tests and POs—domain entities, API response shapes, and nested objects come from **`src/tests/factories/`**, not inline object literals.
-- Use **preset methods** on factories for common test shapes (e.g. `releaseFactory.withDisplayDefaults()`, `cratesResponseFactory.empty()`) instead of ad-hoc PO builder methods or repeated inline `.build({ ... })` blocks.
+- Use **preset methods** on factories for common test shapes (e.g. `releaseFactory.withDisplayDefaults()`, `discogsReleaseJsonFactory.withTracklistAndVideos()`, `cratesResponseFactory.empty()`) instead of ad-hoc PO builder methods or repeated inline `.build({ ... })` blocks.
 
 ### What to mock (and what not)
 
