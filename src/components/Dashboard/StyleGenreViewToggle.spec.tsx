@@ -8,9 +8,7 @@ describe("StyleGenreViewToggle", () => {
     const user = userEvent.setup();
     const onChange = jest.fn();
 
-    render(
-      <StyleGenreViewToggle viewMode="cumulative" onChange={onChange} />,
-    );
+    render(<StyleGenreViewToggle viewMode="cumulative" onChange={onChange} />);
 
     await user.click(screen.getByRole("button", { name: "Share" }));
     expect(onChange).toHaveBeenCalledWith("share");
