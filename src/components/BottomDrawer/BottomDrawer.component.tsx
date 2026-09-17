@@ -3,10 +3,10 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import { BottomDrawerCloseButton } from "src/components/BottomDrawer/BottomDrawerCloseButton.component";
 import { BottomDrawerOverlay } from "src/components/BottomDrawer/BottomDrawerOverlay.component";
 import { BottomDrawerPanel } from "src/components/BottomDrawer/BottomDrawerPanel.component";
+import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
 import { definedProps } from "src/utils/definedProps";
