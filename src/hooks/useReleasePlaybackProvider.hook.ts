@@ -18,6 +18,7 @@ import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQue
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useReleasePlaybackPendingResolution } from "src/hooks/useReleasePlaybackPendingResolution.hook";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
+import { useReleasePlaybackQueueCoordination } from "src/hooks/useReleasePlaybackQueueCoordination.hook";
 import {
   usePersistPlaybackSessionOnQueueChange,
   usePersistPlaybackSessionWhilePlaying,
@@ -38,10 +39,6 @@ import type {
 } from "src/types/releasePlaybackContext.types";
 import { DEFAULT_AUTO_PLAY_ON_QUEUE_ADD } from "src/types/userPreferences.types";
 import {
-  buildCurrentQueueItem,
-  prependQueueItem,
-} from "src/utils/playbackQueue";
-import {
   getSessionRelease,
   initialPlaybackSessionState,
   playbackSessionReducer,
@@ -52,15 +49,15 @@ import {
 import { parseReleaseId } from "src/utils/releaseNotes";
 import {
   findVideoForTrack,
-  getPreviewTrackPosition,
   parseYoutubeVideoId,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import {
-  clearPersistedReleasePlayback,
-  toPersistedQueueItem,
-  writePersistedReleasePlayback,
-} from "src/utils/releasePlaybackStorage";
+  resolveActivePlaybackTitle,
+  resolveActiveTrackPosition,
+  resolveIsPlaybackReady,
+  resolvePlaybackVideoId,
+} from "src/utils/releasePlaybackActivePresentation";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
 
 export const useReleasePlaybackProvider = (): {
@@ -149,114 +146,34 @@ export const useReleasePlaybackProvider = (): {
     isPaused: isPausedRef,
   });
 
-  const persistPlaybackSession = useCallback(() => {
-    const currentRelease = releaseRef.current;
-
-    if (!(isPlayingRef.current && currentRelease)) {
-      return;
-    }
-
-    const previewVideo = previewVideoRef.current;
-    const activeTrack = tracksRef.current[activeTrackIndexRef.current] ?? null;
-    const trackPosition = previewVideo
-      ? getPreviewTrackPosition(previewVideo)
-      : activeTrack?.position;
-
-    if (!trackPosition) {
-      return;
-    }
-
-    writePersistedReleasePlayback({
-      instanceId: String(currentRelease.instance_id),
-      trackPosition,
-      queue: queueRef.current.map(toPersistedQueueItem),
-    });
-  }, []);
-
-  const getCurrentQueueItem = useCallback((): PlaybackQueueItem | null => {
-    const currentRelease = releaseRef.current;
-
-    if (!currentRelease) {
-      return null;
-    }
-
-    return buildCurrentQueueItem({
-      release: currentRelease,
-      previewVideo: previewVideoRef.current,
-      activeTrack: tracksRef.current[activeTrackIndexRef.current] ?? null,
-    });
-  }, []);
-
-  const setUpcomingQueue = useCallback((nextQueue: PlaybackQueueItem[]) => {
-    queueRef.current = nextQueue;
-    dispatchSession({ type: "SET_QUEUE", queue: nextQueue });
-  }, []);
-
-  const updateUpcomingQueue = useCallback(
-    (updater: (previousQueue: PlaybackQueueItem[]) => PlaybackQueueItem[]) => {
-      dispatchSession({ type: "UPDATE_QUEUE", updater });
-    },
-    [],
-  );
-
-  useEffect(() => {
-    queueRef.current = session.queue;
-  }, [session.queue]);
+  const {
+    abortUnresolvedPlayback,
+    maybePushCurrentToHistory,
+    persistPlaybackSession,
+    prependCurrentToUpcoming,
+    setUpcomingQueue,
+    tryAutoStartOnEmptyQueue,
+    updateUpcomingQueue,
+  } = useReleasePlaybackQueueCoordination({
+    autoPlayOnQueueAddRef,
+    dispatchSession,
+    embedVideoIdRef,
+    isPlayingRef,
+    lastSyncedActiveVideoIdRef,
+    previewVideoRef,
+    queueRef,
+    releaseRef,
+    sessionQueue: session.queue,
+    activeTrackIndexRef,
+    tracksRef,
+    setEmbedVideoId,
+    setShouldAutoplayEmbed,
+  });
 
   usePersistPlaybackSessionOnQueueChange({
     sessionQueue: session.queue,
     persistPlaybackSession,
   });
-
-  const abortUnresolvedPlayback = useCallback(() => {
-    dispatchSession({ type: "STOP" });
-    setShouldAutoplayEmbed(false);
-    setEmbedVideoId(null);
-    embedVideoIdRef.current = null;
-    lastSyncedActiveVideoIdRef.current = null;
-    clearPersistedReleasePlayback();
-  }, []);
-
-  const pushCurrentToHistory = useCallback(() => {
-    const currentItem = getCurrentQueueItem();
-
-    if (!currentItem) {
-      return;
-    }
-
-    dispatchSession({ type: "PUSH_HISTORY", item: currentItem });
-  }, [getCurrentQueueItem]);
-
-  const maybePushCurrentToHistory = useCallback(() => {
-    if (isPlayingRef.current) {
-      pushCurrentToHistory();
-    }
-  }, [pushCurrentToHistory]);
-
-  const prependCurrentToUpcoming = useCallback(() => {
-    const currentItem = getCurrentQueueItem();
-
-    if (!currentItem) {
-      return;
-    }
-
-    updateUpcomingQueue((previousQueue) =>
-      prependQueueItem(previousQueue, currentItem),
-    );
-  }, [getCurrentQueueItem, updateUpcomingQueue]);
-
-  const tryAutoStartOnEmptyQueue = useCallback((start: () => void) => {
-    if (
-      autoPlayOnQueueAddRef.current &&
-      releaseRef.current === null &&
-      queueRef.current.length === 0
-    ) {
-      start();
-      return true;
-    }
-
-    return false;
-  }, []);
 
   const {
     appendSimilarReleasesToQueue,
@@ -316,29 +233,34 @@ export const useReleasePlaybackProvider = (): {
 
   const isReleasePreview = previewVideo !== null;
 
-  const activePlaybackTitle = isReleasePreview
-    ? (activeVideo?.title ?? null)
-    : (activeTrack?.title ?? null);
+  const activePlaybackTitle = resolveActivePlaybackTitle({
+    isReleasePreview,
+    previewTitle: activeVideo?.title ?? null,
+    trackTitle: activeTrack?.title ?? null,
+  });
 
-  const activeTrackPosition = isReleasePreview
-    ? null
-    : (activeTrack?.position ?? null);
+  const activeTrackPosition = resolveActiveTrackPosition({
+    isReleasePreview,
+    trackPosition: activeTrack?.position ?? null,
+  });
 
-  const isPlaybackReady = isPlaying && activeVideoId !== null;
   const isMiniPlayerVisible = selectIsMiniPlayerVisible(session);
 
-  const playbackVideoId = useMemo(() => {
-    if (pendingTrackPosition || pendingPreviewVideoUri) {
-      return embedVideoId ?? activeVideoId;
-    }
+  const playbackVideoId = useMemo(
+    () =>
+      resolvePlaybackVideoId({
+        pendingTrackPosition,
+        pendingPreviewVideoUri,
+        embedVideoId,
+        activeVideoId,
+      }),
+    [activeVideoId, embedVideoId, pendingPreviewVideoUri, pendingTrackPosition],
+  );
 
-    return activeVideoId ?? embedVideoId;
-  }, [
-    activeVideoId,
-    embedVideoId,
-    pendingPreviewVideoUri,
-    pendingTrackPosition,
-  ]);
+  const isPlaybackReady = resolveIsPlaybackReady({
+    isPlaying,
+    playbackVideoId,
+  });
 
   const canPlayPrevious = isPlaybackReady && playbackHistory.length > 0;
   const canPlayNext = isPlaybackReady && queue.length > 0;
