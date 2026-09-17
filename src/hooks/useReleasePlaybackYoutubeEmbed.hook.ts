@@ -9,6 +9,7 @@ import {
   useEffect,
   useRef,
 } from "react";
+import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
@@ -23,10 +24,12 @@ import {
 } from "src/utils/postYoutubePlayerCommand";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
-  flattenTracklist,
-  PLAY_FROM_GESTURE_RETRY_DELAYS_MS,
-  postYoutubePlayerCommand,
-} from "src/utils/releasePlayback";
+  isWithinEmbedTrackSwitchGrace,
+  nextEmbedTrackSwitchGraceUntil,
+  shouldNotifyEmbedPlaybackEnded,
+} from "src/utils/releasePlaybackEmbedTiming";
+import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
+import { flattenTracklist, postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
   EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
   EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
@@ -112,8 +115,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
     const now = Date.now();
 
     if (
-      now - lastEmbedPlaybackEndedAtRef.current <
-      EMBED_PLAYBACK_ENDED_DEBOUNCE_MS
+      !shouldNotifyEmbedPlaybackEnded({
+        lastEndedAtMs: lastEmbedPlaybackEndedAtRef.current,
+        nowMs: now,
+        debounceMs: EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
+      })
     ) {
       return;
     }
@@ -123,13 +129,29 @@ export const useReleasePlaybackYoutubeEmbed = ({
   }, [onPlaybackEnded]);
 
   const markEmbedTrackSwitchGrace = useCallback(() => {
-    embedTrackSwitchGraceUntilRef.current =
-      Date.now() + EMBED_TRACK_SWITCH_PAUSE_GRACE_MS;
+    embedTrackSwitchGraceUntilRef.current = nextEmbedTrackSwitchGraceUntil({
+      nowMs: Date.now(),
+      graceMs: EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
+    });
   }, []);
 
-  const isWithinEmbedTrackSwitchGrace = useCallback(() => {
-    return Date.now() < embedTrackSwitchGraceUntilRef.current;
+  const isWithinTrackSwitchGrace = useCallback(() => {
+    return isWithinEmbedTrackSwitchGrace(
+      embedTrackSwitchGraceUntilRef.current,
+      Date.now(),
+    );
   }, []);
+
+  const {
+    attemptPlayFromGesture,
+    clearPlayFromGestureRetries,
+    schedulePlayFromGestureAttempts,
+  } = useReleasePlaybackPlayFromGesture({
+    isPausedRef,
+    pendingPlayFromGestureRef,
+    playbackIframeRef,
+    playFromGestureRetryTimeoutsRef,
+  });
 
   const refreshEmbedPlayerLayout = useCallback(() => {
     refreshYoutubeEmbedPlayerLayout({ iframe: playbackIframeRef.current });
@@ -138,53 +160,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
   const syncEmbedPlaybackState = useCallback(() => {
     requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
   }, [playbackIframeRef]);
-
-  const clearPlayFromGestureRetries = useCallback(() => {
-    for (const timeoutId of playFromGestureRetryTimeoutsRef.current) {
-      window.clearTimeout(timeoutId);
-    }
-
-    playFromGestureRetryTimeoutsRef.current = [];
-  }, [playFromGestureRetryTimeoutsRef]);
-
-  const attemptPlayFromGesture = useCallback(() => {
-    if (!pendingPlayFromGestureRef.current || isPausedRef.current) {
-      return;
-    }
-
-    postYoutubePlayerCommand({
-      iframe: playbackIframeRef.current,
-      command: "playVideo",
-    });
-  }, [isPausedRef, pendingPlayFromGestureRef, playbackIframeRef]);
-
-  const schedulePlayFromGestureAttempts = useCallback(() => {
-    clearPlayFromGestureRetries();
-
-    if (!pendingPlayFromGestureRef.current || isPausedRef.current) {
-      return;
-    }
-
-    attemptPlayFromGesture();
-
-    for (const delay of PLAY_FROM_GESTURE_RETRY_DELAYS_MS) {
-      if (delay === 0) {
-        continue;
-      }
-
-      playFromGestureRetryTimeoutsRef.current.push(
-        window.setTimeout(() => {
-          attemptPlayFromGesture();
-        }, delay),
-      );
-    }
-  }, [
-    attemptPlayFromGesture,
-    clearPlayFromGestureRetries,
-    isPausedRef,
-    pendingPlayFromGestureRef,
-    playFromGestureRetryTimeoutsRef,
-  ]);
 
   const recoverPlaybackAfterTabVisible = useCallback(() => {
     refreshEmbedPlayerLayout();
@@ -233,27 +208,30 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
   const resolveQueueItemEmbedVideoId = useCallback(
     (item: PlaybackQueueItem): string | null => {
-      let tracks = tracksRef.current;
-      let videos = videosRef.current;
+      const itemReleaseId = parseReleaseId(item.release);
 
-      if (!isSameReleaseInstance(releaseRef.current, item.release)) {
-        const itemReleaseId = parseReleaseId(item.release);
-
-        if (itemReleaseId === null) {
-          return null;
-        }
-
-        const cached = queryClient.getQueryData<DiscogsReleaseDetail>(
-          DiscogsReleaseQueryKeys.byId(String(itemReleaseId)),
-        );
-
-        if (!cached) {
-          return null;
-        }
-
-        tracks = flattenTracklist(cached.tracklist ?? []);
-        videos = cached.videos ?? [];
+      if (itemReleaseId === null) {
+        return null;
       }
+
+      const cached = queryClient.getQueryData<DiscogsReleaseDetail>(
+        DiscogsReleaseQueryKeys.byId(String(itemReleaseId)),
+      );
+
+      if (
+        !isSameReleaseInstance(releaseRef.current, item.release) &&
+        !cached
+      ) {
+        return null;
+      }
+
+      const { tracks, videos } = resolveQueueItemEmbedTracksVideos({
+        item,
+        currentRelease: releaseRef.current,
+        currentTracks: tracksRef.current,
+        currentVideos: videosRef.current,
+        cachedReleaseDetail: cached,
+      });
 
       return resolveQueueItemYoutubeVideoId({
         item,
@@ -339,12 +317,12 @@ export const useReleasePlaybackYoutubeEmbed = ({
       ) {
         if (
           document.visibilityState === "hidden" &&
-          !isWithinEmbedTrackSwitchGrace()
+          !isWithinTrackSwitchGrace()
         ) {
           return;
         }
 
-        if (isWithinEmbedTrackSwitchGrace()) {
+        if (isWithinTrackSwitchGrace()) {
           postYoutubePlayerCommand({
             iframe: playbackIframeRef.current,
             command: "playVideo",
@@ -393,7 +371,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       dispatchSession,
       isPausedRef,
       isPlayingRef,
-      isWithinEmbedTrackSwitchGrace,
+      isWithinTrackSwitchGrace,
       notifyEmbedPlaybackEnded,
       pendingPlayFromGestureRef,
       playbackIframeRef,
@@ -432,7 +410,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       syncEmbedPlaybackState();
 
-      if (isWithinEmbedTrackSwitchGrace()) {
+      if (isWithinTrackSwitchGrace()) {
         attemptPlayFromGesture();
       }
     };
@@ -449,7 +427,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     attemptPlayFromGesture,
     isPaused,
     isPlaying,
-    isWithinEmbedTrackSwitchGrace,
+    isWithinTrackSwitchGrace,
     syncEmbedPlaybackState,
   ]);
 
