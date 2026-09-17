@@ -10,6 +10,7 @@ import {
   getPrependCrateLayoutSortOrder,
   splitCrateLayoutItemsForCache,
 } from "src/lib/crate-layout";
+import { crateQueryFilterKey } from "src/lib/crateQueryFilterKey";
 import type { DiscogsRelease } from "src/types";
 import type {
   CrateLayoutItem,
@@ -89,16 +90,9 @@ const invalidateCrateQueries = (
     queryClient.invalidateQueries({
       queryKey: CratesQueryKeys.byUserId(userId),
     });
-
-    if (crateId) {
-      queryClient.invalidateQueries({
-        queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
-      });
-    } else {
-      queryClient.invalidateQueries({
-        queryKey: CrateQueryKeys.byUserId(userId),
-      });
-    }
+    queryClient.invalidateQueries({
+      queryKey: crateQueryFilterKey(userId, crateId),
+    });
   } else {
     queryClient.invalidateQueries({
       queryKey: CratesQueryKeys.all(),
