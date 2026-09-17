@@ -1,4 +1,7 @@
-import type { Store } from "jotai";
+import type { createStore } from "jotai/vanilla";
+
+type JotaiStore = ReturnType<typeof createStore>;
+
 import { persistedFiltersAtom } from "src/atoms/filters.atoms";
 import { viewStateAtom } from "src/atoms/view.atoms";
 import type { PersistedFiltersState } from "src/types/filters.types";
@@ -17,7 +20,7 @@ import {
 } from "src/utils/userPreferencesSyncState";
 
 interface ApplyUserPreferencesToClientParams {
-  store: Store;
+  store: JotaiStore;
   preferences: UserPreferences;
   setPersistedFilters: (filters: PersistedFiltersState) => void;
   setPendingFiltersRestore: (filters: PersistedFiltersState | null) => void;
