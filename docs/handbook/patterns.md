@@ -128,6 +128,8 @@ Route outbound browser HTTP through the **`api`** object in **[`src/api/urls.ts`
 
 Hook rules (single params object, no side effects in hook files): [conventions.md → React Query](conventions.md#react-query).
 
+Crate **`invalidateQueries` / `removeQueries` / `cancelQueries`** filters use [`crateQueryFilterKey`](../../src/lib/crateQueryFilterKey.ts) so optional crate ids never produce a trailing **`undefined`** segment (TanStack Query ≥5.103 partial-key matching). Query hooks still register **`CrateQueryKeys.byUserAndId(userId, crateId)`** as today.
+
 **Single path through the cache:** Server-backed reads have **one** reach — the shared query hook and its exported **`*QueryOptions`**. UI subscribes with **`useQuery` / `useInfiniteQuery`** (or **`enabled: false`** when a surface only needs cached data until the user acts). Imperative warm-up uses **`queryClient.prefetchQuery`** / **`fetchQuery`** / **`query`** with the **same options object** — never a parallel **`api.*`** call, local **`useState`** copy, or context fallback for the same payload. Example: release detail for modal tracklist, card queue, hero metadata, and dock playback all flow through **`discogsReleaseQueryOptions`** / **`useDiscogsReleaseQuery`**. Batch helpers (e.g. similar-release queue seeding via **`discogsReleaseBatch`**) may hydrate individual **`DiscogsReleaseQueryKeys.byId`** entries; consumers still read through the release query hook.
 
 ### Hook audit: when to use React Query
