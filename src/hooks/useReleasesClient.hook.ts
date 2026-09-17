@@ -3,9 +3,8 @@ import {
   useDeferredValue,
   useEffect,
   useEffectEvent,
-  useState,
+  useMemo,
 } from "react";
-import { useInView } from "react-intersection-observer";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { useAuth } from "src/context/auth.context";
@@ -30,6 +29,10 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
+import {
+  sliceVisibleReleases,
+  useReleasesVisibleWindow,
+} from "src/hooks/useReleasesVisibleWindow.hook";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import {
   useCurrentView,
@@ -37,10 +40,6 @@ import {
   useViewDispatch,
 } from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
-
-const INITIAL_VISIBLE_RELEASES = 100;
-const VISIBLE_BATCH_SIZE = 100;
-const INFINITE_SCROLL_ROOT_MARGIN = "0px 0px 750px 0px";
 
 interface UseReleasesClientOptions {
   scrollElement?: HTMLElement | null;
@@ -74,34 +73,61 @@ export const useReleasesClient = ({
   const yearOperator = useYearOperator();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  const [showAllLoadedMessage, setShowAllLoadedMessage] = useState(false);
-
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_RELEASES);
-
   const { isLoading, hasNextPage, isFetchingNextPage } =
     useCollectionLoadState();
   const { error, hasReleases, hasError } = useReleasesDisplay();
   const contextScrollElement = usePlaybackPageScrollElement();
   const scrollElement = scrollElementOverride ?? contextScrollElement;
 
-  const { ref, inView } = useInView({
-    threshold: 0,
-    rootMargin: INFINITE_SCROLL_ROOT_MARGIN,
-    root: scrollElement,
-  });
-
   const releaseCount = filteredReleases.length;
 
   const gridSourceReleases =
     isRandomMode || !isSearching ? filteredReleases : deferredFilteredReleases;
 
-  const visibleReleases =
-    !isRandomMode && gridSourceReleases.length > visibleCount
-      ? gridSourceReleases.slice(0, visibleCount)
-      : gridSourceReleases;
+  const visibleCountResetKey = useMemo(
+    () =>
+      [
+        formatOperator,
+        isRandomMode,
+        searchQuery,
+        selectedFormats.join("\0"),
+        selectedSort,
+        selectedStyles.join("\0"),
+        selectedYears.join("\0"),
+        styleOperator,
+        yearOperator,
+      ].join("\u001f"),
+    [
+      formatOperator,
+      isRandomMode,
+      searchQuery,
+      selectedFormats,
+      selectedSort,
+      selectedStyles,
+      selectedYears,
+      styleOperator,
+      yearOperator,
+    ],
+  );
 
-  const hasMoreVisible =
-    !isRandomMode && gridSourceReleases.length > visibleReleases.length;
+  const { infiniteScrollRef, showAllLoadedMessage, visibleReleasesEndIndex } =
+    useReleasesVisibleWindow({
+      scrollElement,
+      gridSourceLength: gridSourceReleases.length,
+      isRandomMode,
+      visibleCountResetKey,
+      hasNextPage,
+      isFetchingNextPage,
+      hasReleases,
+    });
+
+  const visibleReleases = sliceVisibleReleases(
+    filteredReleases,
+    visibleReleasesEndIndex,
+    isRandomMode,
+    isSearching,
+    deferredFilteredReleases,
+  );
 
   useEffect(() => {
     if (isMobile && currentView === "list") {
@@ -122,49 +148,6 @@ export const useReleasesClient = ({
       });
     }
   }, [isRandomMode, currentView, previousView, viewDispatch]);
-
-  useEffect(() => {
-    const allLoaded = !(hasNextPage || isFetchingNextPage) && hasReleases;
-    let timeout: NodeJS.Timeout | undefined;
-
-    if (allLoaded) {
-      setShowAllLoadedMessage(true);
-      timeout = setTimeout(() => {
-        setShowAllLoadedMessage(false);
-      }, 3000);
-    } else {
-      setShowAllLoadedMessage(false);
-    }
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    };
-  }, [hasNextPage, isFetchingNextPage, hasReleases]);
-
-  useEffect(() => {
-    if (inView && hasMoreVisible) {
-      setVisibleCount((prev) => prev + VISIBLE_BATCH_SIZE);
-    }
-  }, [inView, hasMoreVisible]);
-
-  const visibleCountResetKey = [
-    formatOperator,
-    isRandomMode,
-    searchQuery,
-    selectedFormats.join("\0"),
-    selectedSort,
-    selectedStyles.join("\0"),
-    selectedYears.join("\0"),
-    styleOperator,
-    yearOperator,
-  ].join("\u001f");
-
-  useEffect(() => {
-    void visibleCountResetKey;
-    setVisibleCount(INITIAL_VISIBLE_RELEASES);
-  }, [visibleCountResetKey]);
 
   const {
     selectedRelease,
@@ -249,7 +232,7 @@ export const useReleasesClient = ({
     isMobile,
     currentView,
 
-    infiniteScrollRef: ref,
+    infiniteScrollRef,
 
     selectedReleaseId,
     selectedRelease,
