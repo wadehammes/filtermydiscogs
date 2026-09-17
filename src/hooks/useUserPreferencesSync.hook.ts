@@ -9,34 +9,20 @@ import {
   sessionFiltersAtom,
 } from "src/atoms/filters.atoms";
 import { viewStateAtom } from "src/atoms/view.atoms";
-import {
-  FILTERS_STORAGE_KEY,
-  VIEW_STATE_STORAGE_KEY,
-} from "src/constants/storageKeys";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import { useAuth } from "src/context/auth.context";
 import { useTheme } from "src/context/theme.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { PersistedFiltersState } from "src/types/filters.types";
-import type { UserPreferencesPatch } from "src/types/userPreferences.types";
-import { defaultViewState, parseViewStateJson } from "src/types/view.types";
-import {
-  analyticsConsentChoiceToBoolean,
-  readAnalyticsConsentChoice,
-} from "src/utils/analyticsConsentStorage";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import {
-  clearPersistedFilters,
   defaultPersistedFilters,
   hasRestorableFilterSelections,
-  parsePersistedFilters,
   persistedFiltersEqual,
 } from "src/utils/filtersStorage";
-import {
-  consumePendingFilterPersist,
-  viewStateMatches,
-} from "src/utils/userPreferencesSyncState";
+import { applyUserPreferencesToClient } from "src/utils/userPreferencesClientApply";
+import { buildLocalPreferencesSeedPatch } from "src/utils/userPreferencesLocalSeedPatch";
 
 export const useUserPreferencesSync = () => {
   const { state: authState } = useAuth();
@@ -98,61 +84,10 @@ export const useUserPreferencesSync = () => {
     }
 
     if (!hasSeededLocalPreferencesRef.current) {
-      const localTheme = themeRef.current;
-      const localView = parseViewStateJson(
-        typeof window === "undefined"
-          ? null
-          : localStorage.getItem(VIEW_STATE_STORAGE_KEY),
-      );
-      const localFilters = parsePersistedFilters(
-        typeof window === "undefined"
-          ? null
-          : localStorage.getItem(FILTERS_STORAGE_KEY),
-      );
-      const seedPatch: UserPreferencesPatch = {};
-
-      if (
-        localTheme !== preferences.theme &&
-        preferences.theme === "system" &&
-        localTheme !== "system"
-      ) {
-        seedPatch.theme = localTheme;
-      }
-
-      if (
-        !viewStateMatches(localView, preferences.view) &&
-        viewStateMatches(preferences.view, defaultViewState) &&
-        !viewStateMatches(localView, defaultViewState)
-      ) {
-        seedPatch.view = localView;
-      }
-
-      const serverFiltersAreDefault = persistedFiltersEqual(
-        preferences.filters,
-        defaultPersistedFilters,
-      );
-      const localFiltersAreDefault = persistedFiltersEqual(
-        localFilters,
-        defaultPersistedFilters,
-      );
-
-      if (
-        preferences.persistFilters &&
-        !persistedFiltersEqual(localFilters, preferences.filters) &&
-        serverFiltersAreDefault &&
-        !localFiltersAreDefault
-      ) {
-        seedPatch.filters = localFilters;
-      }
-
-      const localAnalyticsChoice = readAnalyticsConsentChoice();
-      if (
-        localAnalyticsChoice !== null &&
-        preferences.analyticsConsent === undefined
-      ) {
-        seedPatch.analyticsConsent =
-          analyticsConsentChoiceToBoolean(localAnalyticsChoice);
-      }
+      const seedPatch = buildLocalPreferencesSeedPatch({
+        preferences,
+        localTheme: themeRef.current,
+      });
 
       hasSeededLocalPreferencesRef.current = true;
 
@@ -169,42 +104,17 @@ export const useUserPreferencesSync = () => {
 
     appliedPreferencesKeyRef.current = preferencesKey;
 
-    setFilterPersistenceEnabled(preferences.persistFilters);
-
-    const currentView = store.get(viewStateAtom);
-    const currentFilters = store.get(persistedFiltersAtom);
-    const skipFilterHydrate = consumePendingFilterPersist(preferences.filters);
-
-    if (!preferences.persistFilters) {
-      if (!persistedFiltersEqual(currentFilters, defaultPersistedFilters)) {
-        clearPersistedFilters();
-        setPersistedFilters(defaultPersistedFilters);
-      }
-      setPendingFiltersRestore(null);
-    } else if (
-      !(
-        skipFilterHydrate ||
-        persistedFiltersEqual(currentFilters, preferences.filters)
-      )
-    ) {
-      setPersistedFilters(preferences.filters);
-      syncPendingFiltersRestoreOffer(preferences.filters);
-    } else if (
-      persistedFiltersEqual(currentFilters, preferences.filters) &&
-      hasRestorableFilterSelections(preferences.filters)
-    ) {
-      syncPendingFiltersRestoreOffer(preferences.filters);
-    }
-
-    if (themeRef.current !== preferences.theme) {
-      setTheme(preferences.theme);
-    }
-
-    if (!viewStateMatches(currentView, preferences.view)) {
-      setViewState(preferences.view);
-    }
-
-    syncFromServerPreference(preferences.analyticsConsent);
+    applyUserPreferencesToClient({
+      store,
+      preferences,
+      setPersistedFilters,
+      setPendingFiltersRestore,
+      setTheme,
+      setViewState,
+      syncFromServerPreference,
+      syncPendingFiltersRestoreOffer,
+      currentTheme: themeRef.current,
+    });
   }, [
     isAuthenticated,
     isCheckingAuth,
