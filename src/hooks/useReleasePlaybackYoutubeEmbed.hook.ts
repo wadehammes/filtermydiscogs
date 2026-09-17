@@ -9,9 +9,9 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
 import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
+import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -24,12 +24,15 @@ import {
 } from "src/utils/postYoutubePlayerCommand";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
+  flattenTracklist,
+  postYoutubePlayerCommand,
+} from "src/utils/releasePlayback";
+import {
   isWithinEmbedTrackSwitchGrace,
   nextEmbedTrackSwitchGraceUntil,
   shouldNotifyEmbedPlaybackEnded,
 } from "src/utils/releasePlaybackEmbedTiming";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
-import { flattenTracklist, postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import {
   EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
   EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
@@ -219,8 +222,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       );
 
       if (
-        !isSameReleaseInstance(releaseRef.current, item.release) &&
-        !cached
+        !(isSameReleaseInstance(releaseRef.current, item.release) || cached)
       ) {
         return null;
       }
