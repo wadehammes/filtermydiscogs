@@ -2,16 +2,15 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { useReleaseDetailPlaybackIndex } from "src/components/ReleaseModal/useReleaseDetailPlaybackIndex.hook";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
-import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useReleasePlaybackPendingResolution } from "src/hooks/useReleasePlaybackPendingResolution.hook";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
 import { useReleasePlaybackQueueCoordination } from "src/hooks/useReleasePlaybackQueueCoordination.hook";
+import { useReleasePlaybackReleaseDetail } from "src/hooks/useReleasePlaybackReleaseDetail.hook";
 import {
   usePersistPlaybackSessionOnQueueChange,
   usePersistPlaybackSessionWhilePlaying,
@@ -40,14 +39,11 @@ import {
   selectIsPaused,
   selectIsPlaying,
 } from "src/utils/playbackSessionState";
-import { parseReleaseId } from "src/utils/releaseNotes";
-import {
-  findVideoForTrack,
-  parseYoutubeVideoId,
-} from "src/utils/releasePlayback";
 import {
   resolveActivePlaybackTitle,
+  resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
+  resolveActiveVideoId,
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
 } from "src/utils/releasePlaybackActivePresentation";
@@ -187,43 +183,35 @@ export const useReleasePlaybackProvider = (): {
     },
   });
 
-  const releaseId = release ? parseReleaseId(release) : null;
-
-  const { data: releaseDetail, isLoading } = useDiscogsReleaseQuery({
-    releaseId: releaseId !== null ? String(releaseId) : "",
-    enabled: releaseId !== null && isPlaying,
+  const {
+    isLoading,
+    playbackMatchIndex,
+    releaseDetailId,
+    releaseId,
+    tracks,
+    videos,
+  } = useReleasePlaybackReleaseDetail({
+    release,
+    isPlaying,
+    tracksRef,
+    videosRef,
+    releaseDetailIdRef,
   });
-
-  const { tracks, videos, playbackMatchIndex } = useReleaseDetailPlaybackIndex({
-    tracklist: releaseDetail?.tracklist,
-    videos: releaseDetail?.videos,
-  });
-
-  tracksRef.current = tracks;
-  videosRef.current = videos;
-  releaseDetailIdRef.current = releaseDetail?.id;
 
   const activeTrack = tracks[activeTrackIndex] ?? null;
 
-  const activeVideo = useMemo(() => {
-    if (previewVideo) {
-      return previewVideo;
-    }
+  const activeVideo = useMemo(
+    () =>
+      resolveActivePlaybackVideo({
+        previewVideo,
+        activeTrack,
+        videos,
+        playbackMatchIndex,
+      }),
+    [activeTrack, playbackMatchIndex, previewVideo, videos],
+  );
 
-    if (!activeTrack) {
-      return null;
-    }
-
-    return findVideoForTrack({
-      track: activeTrack,
-      videos,
-      matchIndex: playbackMatchIndex,
-    });
-  }, [activeTrack, playbackMatchIndex, previewVideo, videos]);
-
-  const activeVideoId = activeVideo
-    ? parseYoutubeVideoId(activeVideo.uri)
-    : null;
+  const activeVideoId = resolveActiveVideoId(activeVideo);
 
   const isReleasePreview = previewVideo !== null;
 
@@ -303,7 +291,7 @@ export const useReleasePlaybackProvider = (): {
     pendingTrackPosition,
     pendingPreviewVideoUri,
     releaseId,
-    releaseDetailId: releaseDetail?.id,
+    releaseDetailId,
     setEmbedVideoId,
     setShouldAutoplayEmbed,
     setIsPlaybackEmbedMounted,
@@ -380,7 +368,7 @@ export const useReleasePlaybackProvider = (): {
     pendingTrackPosition,
     previewVideo,
     release,
-    releaseDetailId: releaseDetail?.id,
+    releaseDetailId,
     releaseId,
     setUpcomingQueue,
     shouldRebuildAlbumQueueRef,
