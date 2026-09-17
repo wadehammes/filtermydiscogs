@@ -9,6 +9,7 @@ import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
 } from "src/utils/releasePlayback";
+import { enableYoutubeIframeListening } from "src/utils/youtubeIframeEvents";
 import styles from "./PersistentYoutubeIframe.module.css";
 
 interface PersistentYoutubeIframeProps {
@@ -48,7 +49,7 @@ export const PersistentYoutubeIframe = ({
   registerPlaybackIframeRef.current = registerPlaybackIframe;
 
   const [bootstrapVideoId] = useState(videoId);
-  const loadedVideoIdRef = useRef(bootstrapVideoId);
+  const loadedVideoIdRef = useRef<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const previousVariantRef = useRef(variant);
 
@@ -78,6 +79,7 @@ export const PersistentYoutubeIframe = ({
       loadedVideoIdRef.current = targetVideoId;
       loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
       refreshYoutubeEmbedPlayerLayout({ iframe });
+      enableYoutubeIframeListening(iframe);
       notifyPlaybackVideoLoadStarted();
     },
     [notifyPlaybackVideoLoadStarted, notifyPlaybackVideoPresentationReady],
@@ -86,7 +88,11 @@ export const PersistentYoutubeIframe = ({
   const handleIframeLoad = useCallback(() => {
     notifyPlaybackIframeLoaded();
     refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
-  }, [notifyPlaybackIframeLoaded]);
+
+    if (loadedVideoIdRef.current === null) {
+      syncIframeToVideoId(videoId);
+    }
+  }, [notifyPlaybackIframeLoaded, syncIframeToVideoId, videoId]);
 
   useEffect(() => {
     if (deferVideoLoad) {

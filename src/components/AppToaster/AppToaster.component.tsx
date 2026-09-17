@@ -77,6 +77,9 @@ function ToastViewportList({ position }: { position: ToastViewportPosition }) {
                       "fmd-toast-description",
                       classNamesConfig?.description,
                     )}
+                    {...(typeof toastItem.description === "string"
+                      ? {}
+                      : { render: <div /> })}
                   >
                     {toastItem.description}
                   </Toast.Description>

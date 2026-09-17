@@ -40,6 +40,14 @@ import type {
 } from "src/types/releasePlaybackContext.types";
 import { DEFAULT_AUTO_PLAY_ON_QUEUE_ADD } from "src/types/userPreferences.types";
 import {
+  createEmbedPlaybackStartWatchdog,
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+} from "src/utils/playbackEmbedStartWatchdog";
+import {
+  createPlaybackEmbedUnavailableSkipHandler,
+  PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
+} from "src/utils/playbackEmbedUnavailableSkip";
+import {
   getSessionRelease,
   initialPlaybackSessionState,
   playbackSessionReducer,
@@ -47,6 +55,8 @@ import {
   selectIsPaused,
   selectIsPlaying,
 } from "src/utils/playbackSessionState";
+import { resolvePlaybackSkipTrackLabel } from "src/utils/playbackSkippedTrackLog";
+import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
   PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS,
   resolveActivePlaybackTitle,
@@ -143,6 +153,42 @@ export const useReleasePlaybackProvider = (): {
   const extendQueueTailRef = useRef<() => Promise<boolean>>(async () => false);
   const isPlayingRef = useRef(isPlaying);
   const previewVideoRef = useRef<DiscogsVideo | null>(null);
+  const clearPlayFromGestureRetriesRef = useRef<() => void>(() => undefined);
+  const embedPlaybackConfirmedRef = useRef(false);
+  const clearPlaybackVideoUiLoadingRef = useRef<() => void>(() => undefined);
+  const embedStartWatchdogRef = useRef(
+    createEmbedPlaybackStartWatchdog({
+      delayMs: PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+      schedule: (callback, delayMs) => window.setTimeout(callback, delayMs),
+      cancel: (timeoutId) => {
+        window.clearTimeout(timeoutId);
+      },
+    }),
+  );
+  const embedUnavailableSkipHandlerRef = useRef(
+    createPlaybackEmbedUnavailableSkipHandler({
+      appendSkip: appendPlaybackSkipAndSchedule,
+      resolveTrackLabel: () =>
+        resolvePlaybackSkipTrackLabel({
+          release: releaseRef.current,
+          tracks: tracksRef.current,
+          activeTrackIndex: activeTrackIndexRef.current,
+          previewVideo: previewVideoRef.current,
+        }),
+      isSkipAllowed: () => isPlayingRef.current && !isPausedRef.current,
+      onBeforeSkip: () => {
+        embedStartWatchdogRef.current.disarm();
+        embedPlaybackConfirmedRef.current = false;
+        clearPlaybackVideoUiLoadingRef.current();
+        clearPlayFromGestureRetriesRef.current();
+        pendingPlayFromGestureRef.current = false;
+      },
+    }),
+  );
+  const onYoutubeEmbedPlaybackErrorRef = useRef<(errorCode: number) => void>(
+    () => undefined,
+  );
+  const onEmbedPlaybackConfirmedRef = useRef<() => void>(() => undefined);
 
   autoPlayOnQueueAddRef.current = autoPlayOnQueueAdd;
   syncPlaybackSessionRefs(session, {
@@ -294,6 +340,8 @@ export const useReleasePlaybackProvider = (): {
     setIsPlaybackVideoUiLoading(false);
   }, []);
 
+  clearPlaybackVideoUiLoadingRef.current = clearPlaybackVideoUiLoading;
+
   useEffect(() => {
     if (
       !shouldClearPlaybackVideoTransition({
@@ -356,6 +404,14 @@ export const useReleasePlaybackProvider = (): {
     [],
   );
 
+  const forwardYoutubeEmbedPlaybackError = useCallback((errorCode: number) => {
+    onYoutubeEmbedPlaybackErrorRef.current(errorCode);
+  }, []);
+
+  const forwardEmbedPlaybackConfirmed = useCallback(() => {
+    onEmbedPlaybackConfirmedRef.current();
+  }, []);
+
   const {
     clearPlayFromGestureRetries,
     schedulePlayFromGestureAttempts,
@@ -400,18 +456,58 @@ export const useReleasePlaybackProvider = (): {
     setIsPlaybackEmbedMounted,
     clearPlaybackVideoUiLoading,
     onPlaybackEnded: handlePlaybackEnded,
+    onYoutubeEmbedPlaybackError: forwardYoutubeEmbedPlaybackError,
+    onEmbedPlaybackConfirmed: forwardEmbedPlaybackConfirmed,
   });
 
-  const notifyPlaybackVideoLoadStarted = notifyImperativeEmbedLoadStarted;
+  clearPlayFromGestureRetriesRef.current = clearPlayFromGestureRetries;
+
+  onEmbedPlaybackConfirmedRef.current = () => {
+    embedPlaybackConfirmedRef.current = true;
+    embedStartWatchdogRef.current.disarm();
+  };
+
+  const advanceQueueAfterSkip = useCallback(() => {
+    playNextRef.current();
+  }, []);
+
+  onYoutubeEmbedPlaybackErrorRef.current = (errorCode) => {
+    embedUnavailableSkipHandlerRef.current.handleFailure(
+      errorCode,
+      advanceQueueAfterSkip,
+    );
+  };
+
+  const notifyPlaybackVideoLoadStarted = useCallback(() => {
+    notifyImperativeEmbedLoadStarted();
+    embedPlaybackConfirmedRef.current = false;
+    embedStartWatchdogRef.current.disarm();
+    embedStartWatchdogRef.current.arm(() => {
+      if (embedPlaybackConfirmedRef.current) {
+        return;
+      }
+
+      embedUnavailableSkipHandlerRef.current.handleFailure(
+        PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
+        advanceQueueAfterSkip,
+      );
+    });
+  }, [advanceQueueAfterSkip, notifyImperativeEmbedLoadStarted]);
 
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
     notifyImperativeEmbedLoadStarted();
     clearPlaybackVideoUiLoading();
   }, [clearPlaybackVideoUiLoading, notifyImperativeEmbedLoadStarted]);
 
+  const resetPlaybackSkipState = useCallback(() => {
+    embedStartWatchdogRef.current.disarm();
+    embedUnavailableSkipHandlerRef.current.resetDedupe();
+  }, []);
+
   useEffect(() => {
     return () => {
       clearPlayFromGestureRetries();
+      embedStartWatchdogRef.current.disarm();
     };
   }, [clearPlayFromGestureRetries]);
 
@@ -450,6 +546,7 @@ export const useReleasePlaybackProvider = (): {
     playNextRef,
     extendQueueTailRef,
     startPlaybackRef,
+    resetPlaybackSkipState,
     refs: {
       awaitingResumeGestureRef,
       pendingPlayFromGestureRef,

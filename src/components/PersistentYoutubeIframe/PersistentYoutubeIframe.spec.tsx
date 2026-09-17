@@ -66,6 +66,22 @@ describe("PersistentYoutubeIframe", () => {
     jest.clearAllMocks();
   });
 
+  it("imperatively loads the initial video instead of assuming the bootstrap src already played it", () => {
+    render(
+      <PersistentYoutubeIframe
+        videoId="te2jJncBVG4"
+        videoTitle="Test video"
+        variant="visible"
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+      videoId: "te2jJncBVG4",
+    });
+  });
+
   it("does not reload iframe src when opening a hidden panel for the current video", async () => {
     const user = userEvent.setup();
 
@@ -78,6 +94,8 @@ describe("PersistentYoutubeIframe", () => {
 
     expect(initialSrc).toContain("te2jJncBVG4");
     expect(iframe).toHaveAttribute("data-variant", "hidden");
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
 
     await user.click(screen.getByRole("button", { name: "Show iframe" }));
 
@@ -114,6 +132,9 @@ describe("PersistentYoutubeIframe", () => {
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const initialSrc = iframe.getAttribute("src");
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
+    mockRefreshYoutubeEmbedPlayerLayout.mockClear();
 
     await user.click(screen.getByRole("button", { name: "Switch video" }));
 
@@ -158,6 +179,9 @@ describe("PersistentYoutubeIframe", () => {
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const initialSrc = iframe.getAttribute("src");
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
+    mockRefreshYoutubeEmbedPlayerLayout.mockClear();
 
     await user.click(screen.getByRole("button", { name: "Switch video" }));
 

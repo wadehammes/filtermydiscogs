@@ -26,6 +26,7 @@ import {
   reorderQueueItems,
 } from "src/utils/playbackQueue";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
+import { resetPlaybackSkipLogToast } from "src/utils/playbackSkippedTrackToast";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
   findTrackIndexByPosition,
@@ -87,6 +88,7 @@ interface UseReleasePlaybackQueueActionsParams {
   playNextRef: RefObject<() => void>;
   extendQueueTailRef: RefObject<() => Promise<boolean>>;
   startPlaybackRef: RefObject<(params: StartPlaybackParams) => void>;
+  resetPlaybackSkipState?: () => void;
   refs: QueueActionRefs;
 }
 
@@ -112,6 +114,7 @@ export const useReleasePlaybackQueueActions = ({
   playNextRef,
   extendQueueTailRef,
   startPlaybackRef,
+  resetPlaybackSkipState,
   refs,
 }: UseReleasePlaybackQueueActionsParams) => {
   const {
@@ -266,7 +269,6 @@ export const useReleasePlaybackQueueActions = ({
       awaitingResumeGestureRef,
       clearPlayFromGestureRetries,
       dispatchSession,
-      embedVideoIdRef,
       findQueueItemResolutionIndex,
       lastSyncedActiveVideoIdRef,
       pendingPlayFromGestureRef,
@@ -296,7 +298,13 @@ export const useReleasePlaybackQueueActions = ({
       setUpcomingQueue(removeQueueItemAtIndex(upcoming, index));
       playQueueItem(item, { autoplay: true });
     },
-    [maybePushCurrentToHistory, playQueueItem, queueRef, setUpcomingQueue],
+    [
+      maybePushCurrentToHistory,
+      playQueueItem,
+      queueRef,
+      setUpcomingQueue,
+      clearPlaybackVideoUiLoading,
+    ],
   );
 
   const appendManualQueueItem = useCallback(
@@ -547,6 +555,8 @@ export const useReleasePlaybackQueueActions = ({
   startPlaybackRef.current = startPlayback;
 
   const stopPlayback = useCallback(() => {
+    resetPlaybackSkipLogToast();
+    resetPlaybackSkipState?.();
     pendingPlayFromGestureRef.current = false;
     clearPlayFromGestureRetries();
     shouldRebuildAlbumQueueRef.current = false;
@@ -577,6 +587,7 @@ export const useReleasePlaybackQueueActions = ({
     shouldRebuildAlbumQueueRef,
     similarQueueGenerationRef,
     similarQueueModeRef,
+    resetPlaybackSkipState,
   ]);
 
   const clearQueue = useCallback(() => {

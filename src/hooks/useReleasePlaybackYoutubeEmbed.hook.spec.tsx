@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYoutubeEmbed.hook";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
+import { definedProps } from "src/utils/definedProps";
 import { renderHook } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -24,10 +25,12 @@ const buildHarness = ({
   isPaused = false,
   isPlaying = true,
   isPlaybackEmbedMounted = false,
+  onYoutubeEmbedPlaybackError,
 }: {
   isPaused?: boolean;
   isPlaying?: boolean;
   isPlaybackEmbedMounted?: boolean;
+  onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
 } = {}) => {
   const queryClient = createTestQueryClient();
   const release = releaseFactory.withDisplayDefaults();
@@ -95,6 +98,7 @@ const buildHarness = ({
         setIsPlaybackEmbedMounted,
         clearPlaybackVideoUiLoading,
         onPlaybackEnded,
+        ...definedProps({ onYoutubeEmbedPlaybackError }),
       }),
     { wrapper },
   );
@@ -124,6 +128,22 @@ const dispatchYoutubePlayerState = ({
   window.dispatchEvent(
     new MessageEvent("message", {
       data: JSON.stringify({ event: "onStateChange", info: playerState }),
+      origin: "https://www.youtube.com",
+      source: contentWindow,
+    }),
+  );
+};
+
+const dispatchYoutubePlayerError = ({
+  contentWindow,
+  errorCode,
+}: {
+  contentWindow: Window;
+  errorCode: number;
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({ event: "onError", info: errorCode }),
       origin: "https://www.youtube.com",
       source: contentWindow,
     }),
@@ -209,6 +229,18 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(setIsPlaybackEmbedMounted).toHaveBeenCalledWith(true);
     expect(iframe.contentWindow?.postMessage).toHaveBeenCalled();
+  });
+
+  it("forwards YouTube onError messages to the playback error handler", () => {
+    const onYoutubeEmbedPlaybackError = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { playbackIframeRef } = buildHarness({ onYoutubeEmbedPlaybackError });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+
+    dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
+
+    expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
   });
 
   it("ignores stale PLAYING while video UI loading until imperative embed load starts", () => {
