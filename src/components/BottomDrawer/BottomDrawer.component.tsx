@@ -3,13 +3,12 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { BottomDrawerCloseButton } from "src/components/BottomDrawer/BottomDrawerCloseButton.component";
+import { BottomDrawerOverlay } from "src/components/BottomDrawer/BottomDrawerOverlay.component";
+import { BottomDrawerPanel } from "src/components/BottomDrawer/BottomDrawerPanel.component";
 import { BrowserOnly } from "src/components/BrowserOnly/BrowserOnly.component";
-import { IconButton } from "src/components/IconButton/IconButton.component";
-import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { usePlaybackPageScrollLock } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTransitionShell.component";
-import XIcon from "src/styles/icons/x-thin.svg";
-import tableRowActionStyles from "src/styles/modules/table-row-actions.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./BottomDrawer.module.css";
 
@@ -70,86 +69,15 @@ export const BottomDrawer = ({
     return null;
   }
 
-  const closeButton = (
-    <IconButton
-      variant="close"
-      className={classNames(
-        resolvedClosePlacement === "header"
-          ? tableRowActionStyles.actionButton
-          : tableRowActionStyles.actionbuttontoggle,
-        resolvedClosePlacement === "header"
-          ? styles.headerCloseButton
-          : styles.floatingShellClose,
-      )}
-      onClick={onClose}
-      aria-label={closeButtonAriaLabel}
-      data-testid="fmdBottomDrawerCloseButton"
-    >
-      <XIcon />
-    </IconButton>
-  );
-
-  const drawerPanel = (
-    <div
-      className={classNames(styles.drawer, drawerClassName, {
-        [styles.drawerChrome]: chrome,
-      })}
-    >
-      {hasHeader ? (
-        <div
-          className={classNames(
-            chrome ? styles.headerChrome : styles.header,
-            headerClassName,
-          )}
-        >
-          <div className={styles.headerContent}>
-            {title ? (
-              <h2
-                className={chrome ? styles.titleChrome : styles.title}
-                {...definedProps({ id: titleId })}
-              >
-                {title}
-              </h2>
-            ) : null}
-            {headerContent}
-          </div>
-          {resolvedClosePlacement === "header" ? closeButton : null}
-        </div>
-      ) : null}
-      <OverlayStack
-        className={styles.overlayStack}
-        escapeStackingContext
-        popoverZIndex="calc(var(--z-10-bottom-drawer) + 1)"
-      >
-        <div
-          className={classNames(styles.content, contentClassName, {
-            [styles.contentFlush]: chrome && contentFlush,
-          })}
-        >
-          {children}
-        </div>
-      </OverlayStack>
-      {footer ? (
-        <div className={styles.footer} data-bottom-drawer-footer>
-          {footer}
-        </div>
-      ) : null}
-    </div>
-  );
-
   const drawer = (
     <>
       {hideOverlay || inline ? null : (
-        <button
-          type="button"
-          className={classNames(styles.overlay, {
-            [styles.open]: isOpen,
-            [styles.aboveMiniPlayer]: aboveMiniPlayer,
-            [styles.behindMiniPlayer]: behindMiniPlayer,
-          })}
-          onClick={onClose}
-          aria-label="Close drawer overlay"
-          {...(dataAttribute ? { [dataAttribute]: "true" } : {})}
+        <BottomDrawerOverlay
+          isOpen={isOpen}
+          aboveMiniPlayer={aboveMiniPlayer}
+          behindMiniPlayer={behindMiniPlayer}
+          {...(dataAttribute ? { dataAttribute } : {})}
+          onClose={onClose}
         />
       )}
       <div
@@ -185,8 +113,32 @@ export const BottomDrawer = ({
         aria-modal={hideOverlay || inline ? "false" : "true"}
         tabIndex={-1}
       >
-        {usesFloatingClose ? closeButton : null}
-        {drawerPanel}
+        {usesFloatingClose ? (
+          <BottomDrawerCloseButton
+            placement="floating"
+            ariaLabel={closeButtonAriaLabel}
+            onClose={onClose}
+          />
+        ) : null}
+        <BottomDrawerPanel
+          chrome={chrome}
+          {...definedProps({
+            drawerClassName,
+            headerClassName,
+            title,
+            titleId,
+            headerContent,
+            contentClassName,
+            footer,
+          })}
+          hasHeader={hasHeader}
+          closePlacement={resolvedClosePlacement}
+          closeButtonAriaLabel={closeButtonAriaLabel}
+          contentFlush={contentFlush}
+          onClose={onClose}
+        >
+          {children}
+        </BottomDrawerPanel>
       </div>
     </>
   );
