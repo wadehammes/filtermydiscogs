@@ -10,6 +10,12 @@ import {
 } from "src/utils/playbackQueue";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
 import { findTrackIndexByPosition } from "src/utils/releasePlayback";
+import {
+  findPendingPreviewVideo,
+  isPlaybackReleaseDetailSynced,
+  shouldClearTransportForMissingVideo,
+  shouldResetActiveTrackIndex,
+} from "src/utils/releasePlaybackPendingResolution";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 
 interface AppendSimilarReleasesParams {
@@ -81,8 +87,7 @@ export const useReleasePlaybackPendingResolution = ({
     if (
       !pendingTrackPosition ||
       tracks.length === 0 ||
-      releaseId === null ||
-      Number(releaseDetailId) !== Number(releaseId)
+      !isPlaybackReleaseDetailSynced(releaseId, releaseDetailId)
     ) {
       return;
     }
@@ -144,13 +149,12 @@ export const useReleasePlaybackPendingResolution = ({
     if (
       !pendingPreviewVideoUri ||
       videos.length === 0 ||
-      releaseId === null ||
-      Number(releaseDetailId) !== Number(releaseId)
+      !isPlaybackReleaseDetailSynced(releaseId, releaseDetailId)
     ) {
       return;
     }
 
-    const video = videos.find((entry) => entry.uri === pendingPreviewVideoUri);
+    const video = findPendingPreviewVideo(videos, pendingPreviewVideoUri);
 
     if (!video) {
       abortUnresolvedPlayback();
@@ -177,7 +181,13 @@ export const useReleasePlaybackPendingResolution = ({
       return;
     }
 
-    if (tracks.length > 0 && activeVideoId === null && !isReleasePreview) {
+    if (
+      shouldClearTransportForMissingVideo({
+        tracksLength: tracks.length,
+        activeVideoId,
+        isReleasePreview,
+      })
+    ) {
       dispatchSession({ type: "SET_TRANSPORT_OFF" });
       clearPersistedReleasePlayback();
     }
@@ -193,13 +203,17 @@ export const useReleasePlaybackPendingResolution = ({
   ]);
 
   useEffect(() => {
-    if (tracks.length === 0 || pendingTrackPosition) {
+    if (
+      !shouldResetActiveTrackIndex({
+        tracksLength: tracks.length,
+        activeTrackIndex,
+        pendingTrackPosition,
+      })
+    ) {
       return;
     }
 
-    if (activeTrackIndex >= tracks.length) {
-      dispatchSession({ type: "SET_ACTIVE_TRACK_INDEX", index: 0 });
-      dispatchSession({ type: "RESUME" });
-    }
+    dispatchSession({ type: "SET_ACTIVE_TRACK_INDEX", index: 0 });
+    dispatchSession({ type: "RESUME" });
   }, [activeTrackIndex, dispatchSession, pendingTrackPosition, tracks.length]);
 };
