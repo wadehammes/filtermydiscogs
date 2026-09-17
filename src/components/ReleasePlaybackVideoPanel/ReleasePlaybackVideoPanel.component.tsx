@@ -2,35 +2,15 @@
 
 import classNames from "classnames";
 import { type ReactNode, useEffect, useRef } from "react";
-import { IconButton } from "src/components/IconButton/IconButton.component";
+import { ReleasePlaybackVideoPanelChrome } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanelChrome.component";
+import {
+  DESKTOP_VIDEO_RESIZE_CORNERS,
+  ReleasePlaybackVideoPanelResizeHandle,
+} from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanelResizeHandle.component";
 import { useDraggablePanel } from "src/hooks/useDraggablePanel.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { RestorePanelLayoutThinIcon } from "src/styles/icons/RestorePanelLayoutThinIcon.component";
-import XIcon from "src/styles/icons/x-thin.svg";
-import type { VideoPanelResizeCorner } from "src/utils/videoPanelCornerResize";
 import { VIDEO_PANEL_LAYOUT_STORAGE_KEY } from "src/utils/videoPanelLayoutStorage";
 import styles from "./ReleasePlaybackVideoPanel.module.css";
-
-const DESKTOP_VIDEO_RESIZE_CORNERS: VideoPanelResizeCorner[] = [
-  "ne",
-  "sw",
-  "se",
-];
-
-const RESIZE_CORNER_ARIA_LABEL: Record<VideoPanelResizeCorner, string> = {
-  nw: "Resize video panel from top-left corner",
-  ne: "Resize video panel from top-right corner",
-  sw: "Resize video panel from bottom-left corner",
-  se: "Resize video panel from bottom-right corner",
-};
-
-const VIDEO_CORNER_RESIZE_CLASS: Partial<
-  Record<VideoPanelResizeCorner, string>
-> = {
-  ne: styles.resizeHandleNE,
-  sw: styles.resizeHandleSW,
-  se: styles.resizeHandleSE,
-};
 
 interface ReleasePlaybackVideoPanelProps {
   panelId: string;
@@ -75,26 +55,6 @@ export const ReleasePlaybackVideoPanel = ({
   const isInteracting = isDragging || isResizing;
   const useFloatingLayout = !isMobileLayout;
 
-  const renderResizeHandle = (
-    corner: VideoPanelResizeCorner,
-    placement: "chrome" | "video" = "video",
-  ) => (
-    <button
-      key={`${placement}-${corner}`}
-      type="button"
-      className={classNames(
-        placement === "chrome"
-          ? styles.panelChromeNwResize
-          : styles.resizeHandle,
-        VIDEO_CORNER_RESIZE_CLASS[corner],
-      )}
-      onPointerDown={handleResizePointerDown(corner)}
-      aria-label={RESIZE_CORNER_ARIA_LABEL[corner]}
-      data-testid="fmdReleasePlaybackVideoPanelResizeHandle"
-      data-resize-corner={corner}
-    />
-  );
-
   return (
     <div
       ref={panelRef}
@@ -121,51 +81,13 @@ export const ReleasePlaybackVideoPanel = ({
       data-testid="fmdReleasePlaybackVideoPanel"
     >
       {isExpanded && (onClose || useFloatingLayout) ? (
-        <div
-          className={classNames(styles.panelChrome, {
-            [styles.panelChromeMobile]: !useFloatingLayout,
-            [styles.panelChromeDraggable]: useFloatingLayout,
-          })}
-          {...(useFloatingLayout
-            ? {
-                onPointerDown: handlePointerDown,
-                onDoubleClick: resetLayout,
-                "aria-label":
-                  "Drag video panel. Double-click or use Reset to restore default position and size.",
-                "data-testid": "fmdReleasePlaybackVideoPanelHandle",
-              }
-            : {})}
-        >
-          {useFloatingLayout ? renderResizeHandle("nw", "chrome") : null}
-          {useFloatingLayout ? (
-            <span className={styles.dragHandleGrip} aria-hidden />
-          ) : null}
-          {useFloatingLayout || onClose ? (
-            <div className={styles.panelChromeActions}>
-              {useFloatingLayout ? (
-                <IconButton
-                  className={styles.panelChromeButton}
-                  onClick={resetLayout}
-                  aria-label="Reset video panel position and size"
-                  data-testid="fmdReleasePlaybackVideoPanelResetButton"
-                >
-                  <RestorePanelLayoutThinIcon />
-                </IconButton>
-              ) : null}
-              {onClose ? (
-                <IconButton
-                  variant="close"
-                  className={styles.panelChromeButton}
-                  onClick={onClose}
-                  aria-label="Close video panel"
-                  data-testid="fmdReleasePlaybackVideoPanelCloseButton"
-                >
-                  <XIcon />
-                </IconButton>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
+        <ReleasePlaybackVideoPanelChrome
+          useFloatingLayout={useFloatingLayout}
+          {...(onClose ? { onClose } : {})}
+          onDragPointerDown={handlePointerDown}
+          onResetLayout={resetLayout}
+          onResizePointerDown={handleResizePointerDown}
+        />
       ) : null}
       <div
         className={classNames(styles.videoContent, {
@@ -174,9 +96,14 @@ export const ReleasePlaybackVideoPanel = ({
       >
         {children}
         {isExpanded && useFloatingLayout
-          ? DESKTOP_VIDEO_RESIZE_CORNERS.map((corner) =>
-              renderResizeHandle(corner),
-            )
+          ? DESKTOP_VIDEO_RESIZE_CORNERS.map((corner) => (
+              <ReleasePlaybackVideoPanelResizeHandle
+                key={corner}
+                corner={corner}
+                placement="video"
+                onResizePointerDown={handleResizePointerDown}
+              />
+            ))
           : null}
       </div>
     </div>
