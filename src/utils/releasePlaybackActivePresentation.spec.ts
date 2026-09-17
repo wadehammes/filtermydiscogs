@@ -60,6 +60,17 @@ describe("releasePlaybackActivePresentation", () => {
         }),
       ).toBe("active-id");
     });
+
+    it("prefers embed video id while active track index has not caught up yet", () => {
+      expect(
+        resolvePlaybackVideoId({
+          pendingTrackPosition: null,
+          pendingPreviewVideoUri: null,
+          embedVideoId: "next-track-id",
+          activeVideoId: "previous-track-id",
+        }),
+      ).toBe("next-track-id");
+    });
   });
 
   describe("resolveActivePlaybackTitle", () => {

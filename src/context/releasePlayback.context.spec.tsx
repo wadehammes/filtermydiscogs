@@ -743,7 +743,7 @@ describe("ReleasePlaybackProvider", () => {
     expect(playVideoCalls.length).toBeGreaterThan(0);
   });
 
-  it("loads and plays the next embed immediately when advancing the queue in a hidden tab", async () => {
+  it("resolves the next playback video id immediately when advancing the queue in a hidden tab", async () => {
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
       value: "hidden",
@@ -770,8 +770,6 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.queue).toHaveLength(1);
     });
 
-    mockLoadAndPlayYoutubeVideo.mockClear();
-
     act(() => {
       dispatchYoutubePlayerState({
         contentWindow,
@@ -781,11 +779,7 @@ describe("ReleasePlaybackProvider", () => {
 
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("B1");
-    });
-
-    expect(mockLoadAndPlayYoutubeVideo.mock.calls.at(-1)?.[0]).toEqual({
-      iframe,
-      videoId: "abc12345678",
+      expect(result.current.playbackVideoId).toBe("abc12345678");
     });
 
     Object.defineProperty(document, "visibilityState", {

@@ -23,9 +23,11 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
 const buildHarness = ({
   isPaused = false,
   isPlaying = true,
+  isPlaybackEmbedMounted = false,
 }: {
   isPaused?: boolean;
   isPlaying?: boolean;
+  isPlaybackEmbedMounted?: boolean;
 } = {}) => {
   const queryClient = createTestQueryClient();
   const release = releaseFactory.withDisplayDefaults();
@@ -69,7 +71,7 @@ const buildHarness = ({
         isPlaying,
         isPaused,
         isPlaybackReady: true,
-        isPlaybackEmbedMounted: false,
+        isPlaybackEmbedMounted,
         activeVideoId: null,
         pendingTrackPosition: null,
         pendingPreviewVideoUri: null,
@@ -119,6 +121,21 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(setEmbedVideoId).toHaveBeenCalledWith("embed-video-id");
     expect(embedVideoIdRef.current).toBe("embed-video-id");
+    expect(pendingPlayFromGestureRef.current).toBe(true);
+  });
+
+  it("syncEmbedToVideoId still updates embed state when the persistent iframe is already mounted", () => {
+    const {
+      embedVideoIdRef,
+      pendingPlayFromGestureRef,
+      result,
+      setEmbedVideoId,
+    } = buildHarness({ isPlaybackEmbedMounted: true });
+
+    result.current.syncEmbedToVideoId("next-video-id");
+
+    expect(setEmbedVideoId).toHaveBeenCalledWith("next-video-id");
+    expect(embedVideoIdRef.current).toBe("next-video-id");
     expect(pendingPlayFromGestureRef.current).toBe(true);
   });
 
