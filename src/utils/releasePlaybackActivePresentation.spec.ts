@@ -61,15 +61,15 @@ describe("releasePlaybackActivePresentation", () => {
       ).toBe("active-id");
     });
 
-    it("prefers embed video id while active track index has not caught up yet", () => {
+    it("prefers active track video id when pending resolution has finished", () => {
       expect(
         resolvePlaybackVideoId({
           pendingTrackPosition: null,
           pendingPreviewVideoUri: null,
-          embedVideoId: "next-track-id",
-          activeVideoId: "previous-track-id",
+          embedVideoId: "stale-embed-id",
+          activeVideoId: "active-track-id",
         }),
-      ).toBe("next-track-id");
+      ).toBe("active-track-id");
     });
   });
 

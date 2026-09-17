@@ -176,6 +176,7 @@ export const useReleasePlaybackQueueActions = ({
         releaseRef.current,
         item.release,
       );
+      const previousEmbedVideoId = embedVideoIdRef.current;
       const preparedEmbedVideoId = youtubeVideoId
         ? applyTargetEmbedVideoId(youtubeVideoId)
         : syncEmbedForQueueItem(item);
@@ -199,7 +200,11 @@ export const useReleasePlaybackQueueActions = ({
 
       setShouldAutoplayEmbed(autoplay && !startPaused);
       awaitingResumeGestureRef.current = startPaused;
-      pendingPlayFromGestureRef.current = autoplay && !startPaused;
+      const embedVideoChanged =
+        preparedEmbedVideoId !== null &&
+        preparedEmbedVideoId !== previousEmbedVideoId;
+      pendingPlayFromGestureRef.current =
+        autoplay && !startPaused && embedVideoChanged;
 
       if (startPaused) {
         clearPlayFromGestureRetries();
@@ -228,6 +233,7 @@ export const useReleasePlaybackQueueActions = ({
       awaitingResumeGestureRef,
       clearPlayFromGestureRetries,
       dispatchSession,
+      embedVideoIdRef,
       lastSyncedActiveVideoIdRef,
       pendingPlayFromGestureRef,
       prefetchQueueItemEmbed,
