@@ -47,22 +47,55 @@ export const resolveIsPlaybackReady = ({
 }): boolean => isPlaying && playbackVideoId !== null;
 
 export const resolvePlaybackVideoId = ({
+  transitionTargetVideoId = null,
   pendingTrackPosition,
   pendingPreviewVideoUri,
   embedVideoId,
   activeVideoId,
 }: {
+  transitionTargetVideoId?: string | null;
   pendingTrackPosition: string | null;
   pendingPreviewVideoUri: string | null;
   embedVideoId: string | null;
   activeVideoId: string | null;
 }): string | null => {
+  if (transitionTargetVideoId) {
+    return transitionTargetVideoId;
+  }
+
   if (pendingTrackPosition || pendingPreviewVideoUri) {
     return embedVideoId ?? activeVideoId;
   }
 
   return activeVideoId ?? embedVideoId;
 };
+
+export const PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS = 8000;
+
+export const resolveNeedsPlaybackVideoSwitch = ({
+  preparedEmbedVideoId,
+  activeVideoId,
+}: {
+  preparedEmbedVideoId: string | null;
+  activeVideoId: string | null;
+}): boolean =>
+  preparedEmbedVideoId !== null && preparedEmbedVideoId !== activeVideoId;
+
+export const shouldClearPlaybackVideoTransition = ({
+  transitionTargetVideoId,
+  activeVideoId,
+  pendingTrackPosition,
+  pendingPreviewVideoUri,
+}: {
+  transitionTargetVideoId: string | null;
+  activeVideoId: string | null;
+  pendingTrackPosition: string | null;
+  pendingPreviewVideoUri: string | null;
+}): boolean =>
+  transitionTargetVideoId !== null &&
+  pendingTrackPosition === null &&
+  pendingPreviewVideoUri === null &&
+  activeVideoId === transitionTargetVideoId;
 
 export const resolveActivePlaybackTitle = ({
   isReleasePreview,

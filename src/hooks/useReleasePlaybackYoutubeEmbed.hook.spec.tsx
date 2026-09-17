@@ -36,6 +36,13 @@ const buildHarness = ({
   const lastSyncedActiveVideoIdRef = { current: null as string | null };
   const isPlayingRef = { current: isPlaying };
   const isPausedRef = { current: isPaused };
+  const activeVideoIdRef = { current: null as string | null };
+  const isPlaybackVideoUiLoadingRef = { current: false };
+  const playbackVideoTransitionTargetIdRef = { current: null as string | null };
+  const playbackVideoUiLoadingTargetVideoIdRef = {
+    current: null as string | null,
+  };
+  const playbackVideoUiLoadingEmbedLoadStartedRef = { current: false };
   const pendingPlayFromGestureRef = { current: false };
   const playFromGestureRetryTimeoutsRef = { current: [] as number[] };
   const releaseRef = { current: release };
@@ -45,6 +52,7 @@ const buildHarness = ({
   const setShouldAutoplayEmbed = jest.fn();
   const setIsPlaybackEmbedMounted = jest.fn();
   const onPlaybackEnded = jest.fn();
+  const clearPlaybackVideoUiLoading = jest.fn();
   const dispatchSession = jest.fn();
 
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -62,7 +70,12 @@ const buildHarness = ({
           lastSyncedActiveVideoIdRef,
           isPlayingRef,
           isPausedRef,
+          activeVideoIdRef,
+          isPlaybackVideoUiLoadingRef,
           pendingPlayFromGestureRef,
+          playbackVideoTransitionTargetIdRef,
+          playbackVideoUiLoadingTargetVideoIdRef,
+          playbackVideoUiLoadingEmbedLoadStartedRef,
           playFromGestureRetryTimeoutsRef,
           releaseRef,
           tracksRef,
@@ -80,19 +93,41 @@ const buildHarness = ({
         setEmbedVideoId,
         setShouldAutoplayEmbed,
         setIsPlaybackEmbedMounted,
+        clearPlaybackVideoUiLoading,
         onPlaybackEnded,
       }),
     { wrapper },
   );
 
   return {
+    activeVideoIdRef,
+    clearPlaybackVideoUiLoading,
     embedVideoIdRef,
+    isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
     playbackIframeRef,
+    playbackVideoUiLoadingEmbedLoadStartedRef,
+    playbackVideoUiLoadingTargetVideoIdRef,
     result,
     setEmbedVideoId,
     setIsPlaybackEmbedMounted,
   };
+};
+
+const dispatchYoutubePlayerState = ({
+  contentWindow,
+  playerState,
+}: {
+  contentWindow: Window;
+  playerState: number;
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({ event: "onStateChange", info: playerState }),
+      origin: "https://www.youtube.com",
+      source: contentWindow,
+    }),
+  );
 };
 
 describe("useReleasePlaybackYoutubeEmbed", () => {
@@ -174,6 +209,41 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(setIsPlaybackEmbedMounted).toHaveBeenCalledWith(true);
     expect(iframe.contentWindow?.postMessage).toHaveBeenCalled();
+  });
+
+  it("ignores stale PLAYING while video UI loading until imperative embed load starts", () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      activeVideoIdRef,
+      clearPlaybackVideoUiLoading,
+      isPlaybackVideoUiLoadingRef,
+      pendingPlayFromGestureRef,
+      playbackIframeRef,
+      playbackVideoUiLoadingEmbedLoadStartedRef,
+      playbackVideoUiLoadingTargetVideoIdRef,
+      result,
+    } = buildHarness();
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    playbackVideoUiLoadingTargetVideoIdRef.current = "next-video-id";
+    activeVideoIdRef.current = "next-video-id";
+    pendingPlayFromGestureRef.current = true;
+    playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).not.toHaveBeenCalled();
+    expect(pendingPlayFromGestureRef.current).toBe(true);
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    expect(pendingPlayFromGestureRef.current).toBe(true);
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(pendingPlayFromGestureRef.current).toBe(false);
   });
 
   it("syncEmbedToVideoId does not request gesture unlock while transport is paused", () => {

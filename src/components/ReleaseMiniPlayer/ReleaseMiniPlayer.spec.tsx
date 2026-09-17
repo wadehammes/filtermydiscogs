@@ -469,7 +469,25 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
     await user.click(screen.getByRole("button", { name: "Next track" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-playback-video-loading",
+        "true",
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          iframe,
+          videoId: "abc12345678",
+        }),
+      );
+    });
 
     await waitFor(() => {
       expect(
@@ -478,12 +496,6 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
-    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
-      expect.objectContaining({
-        iframe,
-        videoId: "abc12345678",
-      }),
-    );
   });
 
   it("loads the next video via postMessage when advancing tracks with the panel hidden", async () => {

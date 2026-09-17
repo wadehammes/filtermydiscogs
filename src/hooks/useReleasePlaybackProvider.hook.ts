@@ -1,7 +1,14 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
@@ -10,6 +17,7 @@ import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useReleasePlaybackPendingResolution } from "src/hooks/useReleasePlaybackPendingResolution.hook";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
 import { useReleasePlaybackQueueCoordination } from "src/hooks/useReleasePlaybackQueueCoordination.hook";
+import { useReleasePlaybackQueueWarmup } from "src/hooks/useReleasePlaybackQueueWarmup.hook";
 import { useReleasePlaybackReleaseDetail } from "src/hooks/useReleasePlaybackReleaseDetail.hook";
 import {
   usePersistPlaybackSessionOnQueueChange,
@@ -40,12 +48,14 @@ import {
   selectIsPlaying,
 } from "src/utils/playbackSessionState";
 import {
+  PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS,
   resolveActivePlaybackTitle,
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
   resolveActiveVideoId,
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
+  shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
@@ -94,6 +104,15 @@ export const useReleasePlaybackProvider = (): {
   const [shouldAutoplayEmbed, setShouldAutoplayEmbed] = useState(false);
   const [isPlaybackEmbedMounted, setIsPlaybackEmbedMounted] = useState(false);
   const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
+  const [playbackVideoTransitionTargetId, setPlaybackVideoTransitionTargetId] =
+    useState<string | null>(null);
+  const [isPlaybackVideoUiLoading, setIsPlaybackVideoUiLoading] =
+    useState(false);
+  const isPlaybackVideoUiLoadingRef = useRef(false);
+  const playbackVideoTransitionTargetIdRef = useRef<string | null>(null);
+  const playbackVideoUiLoadingTargetVideoIdRef = useRef<string | null>(null);
+  const playbackVideoUiLoadingEmbedLoadStartedRef = useRef(false);
+  const activeVideoIdRef = useRef<string | null>(null);
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
   const pendingPlayFromGestureRef = useRef(false);
@@ -212,6 +231,7 @@ export const useReleasePlaybackProvider = (): {
   );
 
   const activeVideoId = resolveActiveVideoId(activeVideo);
+  activeVideoIdRef.current = activeVideoId;
 
   const isReleasePreview = previewVideo !== null;
 
@@ -231,13 +251,90 @@ export const useReleasePlaybackProvider = (): {
   const playbackVideoId = useMemo(
     () =>
       resolvePlaybackVideoId({
+        transitionTargetVideoId: playbackVideoTransitionTargetId,
         pendingTrackPosition,
         pendingPreviewVideoUri,
         embedVideoId,
         activeVideoId,
       }),
-    [activeVideoId, embedVideoId, pendingPreviewVideoUri, pendingTrackPosition],
+    [
+      activeVideoId,
+      embedVideoId,
+      pendingPreviewVideoUri,
+      pendingTrackPosition,
+      playbackVideoTransitionTargetId,
+    ],
   );
+
+  const setPlaybackVideoTransitionTargetIdWithRef = useCallback(
+    (videoId: string | null) => {
+      playbackVideoTransitionTargetIdRef.current = videoId;
+      setPlaybackVideoTransitionTargetId(videoId);
+    },
+    [],
+  );
+
+  const beginPlaybackVideoUiLoading = useCallback(() => {
+    isPlaybackVideoUiLoadingRef.current = true;
+    playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+    setIsPlaybackVideoUiLoading(true);
+  }, []);
+
+  const setPlaybackVideoUiLoadingTargetId = useCallback(
+    (videoId: string | null) => {
+      playbackVideoUiLoadingTargetVideoIdRef.current = videoId;
+    },
+    [],
+  );
+
+  const clearPlaybackVideoUiLoading = useCallback(() => {
+    isPlaybackVideoUiLoadingRef.current = false;
+    playbackVideoUiLoadingTargetVideoIdRef.current = null;
+    playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+    setIsPlaybackVideoUiLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (
+      !shouldClearPlaybackVideoTransition({
+        transitionTargetVideoId: playbackVideoTransitionTargetId,
+        activeVideoId,
+        pendingTrackPosition,
+        pendingPreviewVideoUri,
+      })
+    ) {
+      return;
+    }
+
+    setPlaybackVideoTransitionTargetIdWithRef(null);
+  }, [
+    activeVideoId,
+    pendingPreviewVideoUri,
+    pendingTrackPosition,
+    playbackVideoTransitionTargetId,
+    setPlaybackVideoTransitionTargetIdWithRef,
+  ]);
+
+  useEffect(() => {
+    if (!isPlaybackVideoUiLoading) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      isPlaybackVideoUiLoadingRef.current = false;
+      playbackVideoUiLoadingTargetVideoIdRef.current = null;
+      playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+      setIsPlaybackVideoUiLoading(false);
+    }, PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isPlaybackVideoUiLoading]);
+
+  const isPlaybackVideoLoading = isPlaybackVideoUiLoading;
+  const isPlaybackVideoTransitionPending =
+    playbackVideoTransitionTargetId !== null;
 
   const isPlaybackReady = resolveIsPlaybackReady({
     isPlaying,
@@ -267,6 +364,7 @@ export const useReleasePlaybackProvider = (): {
     prefetchQueueItemEmbed,
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
+    notifyImperativeEmbedLoadStarted,
     resumePlaybackFromGesture,
   } = useReleasePlaybackYoutubeEmbed({
     queryClient,
@@ -277,7 +375,12 @@ export const useReleasePlaybackProvider = (): {
       lastSyncedActiveVideoIdRef,
       isPlayingRef,
       isPausedRef,
+      activeVideoIdRef,
+      isPlaybackVideoUiLoadingRef,
       pendingPlayFromGestureRef,
+      playbackVideoTransitionTargetIdRef,
+      playbackVideoUiLoadingTargetVideoIdRef,
+      playbackVideoUiLoadingEmbedLoadStartedRef,
       playFromGestureRetryTimeoutsRef,
       releaseRef,
       tracksRef,
@@ -295,8 +398,16 @@ export const useReleasePlaybackProvider = (): {
     setEmbedVideoId,
     setShouldAutoplayEmbed,
     setIsPlaybackEmbedMounted,
+    clearPlaybackVideoUiLoading,
     onPlaybackEnded: handlePlaybackEnded,
   });
+
+  const notifyPlaybackVideoLoadStarted = notifyImperativeEmbedLoadStarted;
+
+  const notifyPlaybackVideoPresentationReady = useCallback(() => {
+    notifyImperativeEmbedLoadStarted();
+    clearPlaybackVideoUiLoading();
+  }, [clearPlaybackVideoUiLoading, notifyImperativeEmbedLoadStarted]);
 
   useEffect(() => {
     return () => {
@@ -320,6 +431,11 @@ export const useReleasePlaybackProvider = (): {
     dispatchSession,
     setShouldAutoplayEmbed,
     setIsPlaybackEmbedMounted,
+    setPlaybackVideoTransitionTargetId:
+      setPlaybackVideoTransitionTargetIdWithRef,
+    setPlaybackVideoUiLoadingTargetId,
+    beginPlaybackVideoUiLoading,
+    clearPlaybackVideoUiLoading,
     setEmbedVideoId,
     clearPlayFromGestureRetries,
     syncEmbedToVideoId,
@@ -348,8 +464,15 @@ export const useReleasePlaybackProvider = (): {
       releaseDetailIdRef,
       tracksRef,
       lastSyncedActiveVideoIdRef,
+      activeVideoIdRef,
       embedVideoIdRef,
     },
+  });
+
+  useReleasePlaybackQueueWarmup({
+    queryClient,
+    isPlaying,
+    queue,
   });
 
   useReleasePlaybackPendingResolution({
@@ -440,6 +563,8 @@ export const useReleasePlaybackProvider = (): {
       canPlayNext,
       isLoading,
       isQueueBuilding,
+      isPlaybackVideoLoading,
+      isPlaybackVideoTransitionPending,
     }),
     [
       release,
@@ -465,6 +590,8 @@ export const useReleasePlaybackProvider = (): {
       canPlayNext,
       isLoading,
       isQueueBuilding,
+      isPlaybackVideoLoading,
+      isPlaybackVideoTransitionPending,
     ],
   );
 
@@ -482,6 +609,8 @@ export const useReleasePlaybackProvider = (): {
       togglePlayback,
       registerPlaybackIframe,
       notifyPlaybackIframeLoaded,
+      notifyPlaybackVideoLoadStarted,
+      notifyPlaybackVideoPresentationReady,
       resumePlaybackFromGesture,
       clearQueue,
       stopPlayback,
@@ -499,6 +628,8 @@ export const useReleasePlaybackProvider = (): {
       togglePlayback,
       registerPlaybackIframe,
       notifyPlaybackIframeLoaded,
+      notifyPlaybackVideoLoadStarted,
+      notifyPlaybackVideoPresentationReady,
       resumePlaybackFromGesture,
       clearQueue,
       stopPlayback,

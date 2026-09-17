@@ -15,6 +15,7 @@ interface PersistentYoutubeIframeProps {
   videoId: string;
   videoTitle: string;
   autoplay?: boolean;
+  deferVideoLoad?: boolean;
   variant?: "hidden" | "visible";
 }
 
@@ -33,10 +34,15 @@ export const PersistentYoutubeIframe = ({
   videoId,
   videoTitle,
   autoplay = false,
+  deferVideoLoad = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
-  const { registerPlaybackIframe, notifyPlaybackIframeLoaded } =
-    useReleasePlaybackIframeActions();
+  const {
+    registerPlaybackIframe,
+    notifyPlaybackIframeLoaded,
+    notifyPlaybackVideoLoadStarted,
+    notifyPlaybackVideoPresentationReady,
+  } = useReleasePlaybackIframeActions();
 
   const registerPlaybackIframeRef = useRef(registerPlaybackIframe);
   registerPlaybackIframeRef.current = registerPlaybackIframe;
@@ -56,17 +62,26 @@ export const PersistentYoutubeIframe = ({
     registerPlaybackIframeRef.current(node);
   }, []);
 
-  const syncIframeToVideoId = useCallback((targetVideoId: string) => {
-    const iframe = iframeRef.current;
+  const syncIframeToVideoId = useCallback(
+    (targetVideoId: string) => {
+      const iframe = iframeRef.current;
 
-    if (!iframe || targetVideoId === loadedVideoIdRef.current) {
-      return;
-    }
+      if (!iframe) {
+        return;
+      }
 
-    loadedVideoIdRef.current = targetVideoId;
-    loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
-    refreshYoutubeEmbedPlayerLayout({ iframe });
-  }, []);
+      if (targetVideoId === loadedVideoIdRef.current) {
+        notifyPlaybackVideoPresentationReady();
+        return;
+      }
+
+      loadedVideoIdRef.current = targetVideoId;
+      loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
+      refreshYoutubeEmbedPlayerLayout({ iframe });
+      notifyPlaybackVideoLoadStarted();
+    },
+    [notifyPlaybackVideoLoadStarted, notifyPlaybackVideoPresentationReady],
+  );
 
   const handleIframeLoad = useCallback(() => {
     notifyPlaybackIframeLoaded();
@@ -74,8 +89,12 @@ export const PersistentYoutubeIframe = ({
   }, [notifyPlaybackIframeLoaded]);
 
   useEffect(() => {
+    if (deferVideoLoad) {
+      return;
+    }
+
     syncIframeToVideoId(videoId);
-  }, [syncIframeToVideoId, videoId]);
+  }, [deferVideoLoad, syncIframeToVideoId, videoId]);
 
   useEffect(() => {
     const previousVariant = previousVariantRef.current;

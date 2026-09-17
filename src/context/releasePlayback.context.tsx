@@ -83,17 +83,23 @@ export const useReleasePlaybackIframeActions = (): Pick<
   ReleasePlaybackActions,
   | "registerPlaybackIframe"
   | "notifyPlaybackIframeLoaded"
+  | "notifyPlaybackVideoLoadStarted"
+  | "notifyPlaybackVideoPresentationReady"
   | "resumePlaybackFromGesture"
 > => {
   const {
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
+    notifyPlaybackVideoLoadStarted,
+    notifyPlaybackVideoPresentationReady,
     resumePlaybackFromGesture,
   } = useReleasePlaybackActions();
 
   return {
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
+    notifyPlaybackVideoLoadStarted,
+    notifyPlaybackVideoPresentationReady,
     resumePlaybackFromGesture,
   };
 };

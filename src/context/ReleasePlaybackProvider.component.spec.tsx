@@ -31,6 +31,8 @@ const idlePlaybackState: ReleasePlaybackState = {
   canPlayNext: false,
   isLoading: false,
   isQueueBuilding: false,
+  isPlaybackVideoLoading: false,
+  isPlaybackVideoTransitionPending: false,
 };
 
 const idlePlaybackActions: ReleasePlaybackActions = {
@@ -46,6 +48,8 @@ const idlePlaybackActions: ReleasePlaybackActions = {
   togglePlayback: () => undefined,
   registerPlaybackIframe: () => undefined,
   notifyPlaybackIframeLoaded: () => undefined,
+  notifyPlaybackVideoLoadStarted: () => undefined,
+  notifyPlaybackVideoPresentationReady: () => undefined,
   resumePlaybackFromGesture: () => undefined,
   clearQueue: () => undefined,
   stopPlayback: () => undefined,
