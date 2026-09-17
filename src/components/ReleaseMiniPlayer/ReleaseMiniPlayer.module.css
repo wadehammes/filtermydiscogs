@@ -285,7 +285,8 @@
 }
 
 .queueCountSpinner {
-  border-width: 1px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+  border-top-color: var(--foreground);
   height: 0.625rem;
   width: 0.625rem;
 }
