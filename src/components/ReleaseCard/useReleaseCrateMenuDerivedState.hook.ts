@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useReleaseCrateMembershipQuery } from "src/hooks/queries/useReleaseCrateMembershipQuery";
 import type { DiscogsRelease } from "src/types";
+import { buildReleaseCrateMenuMemberIds } from "src/utils/releaseCrateMenuMemberIds";
 
 interface UseReleaseCrateMenuDerivedStateParams {
   release: DiscogsRelease;
@@ -28,15 +29,16 @@ export const useReleaseCrateMenuDerivedState = ({
     enabled: isOpen,
   });
 
-  const memberCrateIds = useMemo(() => {
-    const ids = new Set(membership?.crateIds ?? []);
-
-    if (activeCrateInstanceIds.has(instanceId) && activeCrateId) {
-      ids.add(activeCrateId);
-    }
-
-    return ids;
-  }, [activeCrateId, activeCrateInstanceIds, instanceId, membership?.crateIds]);
+  const memberCrateIds = useMemo(
+    () =>
+      buildReleaseCrateMenuMemberIds({
+        membershipCrateIds: membership?.crateIds ?? [],
+        activeCrateId,
+        activeCrateInstanceIds,
+        instanceId,
+      }),
+    [activeCrateId, activeCrateInstanceIds, instanceId, membership?.crateIds],
+  );
 
   const inActiveCrate = activeCrateInstanceIds.has(instanceId);
   const activeCrate = useMemo(
