@@ -1,13 +1,94 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+} from "react";
+
+type CrateDrawerDialogUiState = {
+  showClearDialog: boolean;
+  showClearPackedDialog: boolean;
+  showDeleteDialog: boolean;
+  showMakeDefaultDialog: boolean;
+  showEditCrateDialog: boolean;
+  hidePackedItems: boolean;
+  drawerNotesOpen: boolean;
+};
+
+type CrateDrawerDialogUiField = keyof CrateDrawerDialogUiState;
+
+export enum CrateDrawerDialogUiActionTypes {
+  ActiveCrateChanged = "ActiveCrateChanged",
+  SetField = "SetField",
+}
+
+type CrateDrawerDialogUiAction =
+  | { type: CrateDrawerDialogUiActionTypes.ActiveCrateChanged }
+  | {
+      type: CrateDrawerDialogUiActionTypes.SetField;
+      field: CrateDrawerDialogUiField;
+      next: SetStateAction<boolean>;
+    };
+
+const initialCrateDrawerDialogUiState: CrateDrawerDialogUiState = {
+  showClearDialog: false,
+  showClearPackedDialog: false,
+  showDeleteDialog: false,
+  showMakeDefaultDialog: false,
+  showEditCrateDialog: false,
+  hidePackedItems: false,
+  drawerNotesOpen: false,
+};
+
+export const crateDrawerDialogUiReducer = (
+  state: CrateDrawerDialogUiState,
+  action: CrateDrawerDialogUiAction,
+): CrateDrawerDialogUiState => {
+  switch (action.type) {
+    case CrateDrawerDialogUiActionTypes.ActiveCrateChanged:
+      return {
+        ...state,
+        showEditCrateDialog: false,
+        showClearPackedDialog: false,
+        showDeleteDialog: false,
+        hidePackedItems: false,
+        drawerNotesOpen: false,
+      };
+    case CrateDrawerDialogUiActionTypes.SetField: {
+      const current = state[action.field];
+      const nextValue =
+        typeof action.next === "function"
+          ? action.next(current)
+          : action.next;
+      return { ...state, [action.field]: nextValue };
+    }
+    default:
+      return state;
+  }
+};
+
+const useDialogUiFieldSetter = (
+  dispatch: Dispatch<CrateDrawerDialogUiAction>,
+  field: CrateDrawerDialogUiField,
+) =>
+  useCallback(
+    (next: SetStateAction<boolean>) => {
+      dispatch({
+        type: CrateDrawerDialogUiActionTypes.SetField,
+        field,
+        next,
+      });
+    },
+    [dispatch, field],
+  );
 
 export const useCrateDrawerDialogUi = (activeCrateId: string | null) => {
-  const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showClearPackedDialog, setShowClearPackedDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
-  const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
-  const [hidePackedItems, setHidePackedItems] = useState(false);
-  const [drawerNotesOpen, setDrawerNotesOpen] = useState(false);
+  const [state, dispatch] = useReducer(
+    crateDrawerDialogUiReducer,
+    initialCrateDrawerDialogUiState,
+  );
 
   const prevActiveCrateIdRef = useRef(activeCrateId);
 
@@ -17,27 +98,46 @@ export const useCrateDrawerDialogUi = (activeCrateId: string | null) => {
     }
 
     prevActiveCrateIdRef.current = activeCrateId;
-    setShowEditCrateDialog(false);
-    setShowClearPackedDialog(false);
-    setShowDeleteDialog(false);
-    setHidePackedItems(false);
-    setDrawerNotesOpen(false);
+    dispatch({ type: CrateDrawerDialogUiActionTypes.ActiveCrateChanged });
   }, [activeCrateId]);
 
+  const setShowClearDialog = useDialogUiFieldSetter(
+    dispatch,
+    "showClearDialog",
+  );
+  const setShowClearPackedDialog = useDialogUiFieldSetter(
+    dispatch,
+    "showClearPackedDialog",
+  );
+  const setShowDeleteDialog = useDialogUiFieldSetter(dispatch, "showDeleteDialog");
+  const setShowMakeDefaultDialog = useDialogUiFieldSetter(
+    dispatch,
+    "showMakeDefaultDialog",
+  );
+  const setShowEditCrateDialog = useDialogUiFieldSetter(
+    dispatch,
+    "showEditCrateDialog",
+  );
+  const setHidePackedItems = useDialogUiFieldSetter(dispatch, "hidePackedItems");
+  const setDrawerNotesOpen = useDialogUiFieldSetter(
+    dispatch,
+    "drawerNotesOpen",
+  );
+
   return {
-    showClearDialog,
+    showClearDialog: state.showClearDialog,
     setShowClearDialog,
-    showClearPackedDialog,
+    showClearPackedDialog: state.showClearPackedDialog,
     setShowClearPackedDialog,
-    showDeleteDialog,
+    showDeleteDialog: state.showDeleteDialog,
     setShowDeleteDialog,
-    showMakeDefaultDialog,
+    showMakeDefaultDialog: state.showMakeDefaultDialog,
     setShowMakeDefaultDialog,
-    showEditCrateDialog,
+    showEditCrateDialog: state.showEditCrateDialog,
     setShowEditCrateDialog,
-    hidePackedItems,
+    hidePackedItems: state.hidePackedItems,
     setHidePackedItems,
-    drawerNotesOpen,
+    drawerNotesOpen: state.drawerNotesOpen,
     setDrawerNotesOpen,
   };
 };
