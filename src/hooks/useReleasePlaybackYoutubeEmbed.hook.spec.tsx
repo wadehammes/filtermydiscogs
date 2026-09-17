@@ -105,17 +105,13 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     jest.useRealTimers();
   });
 
-  it("syncEmbedToVideoId updates embed state and requests gesture unlock while transport is active", () => {
+  it("syncEmbedToVideoId updates embed state and requests gesture unlock when no iframe is registered", () => {
     const {
       embedVideoIdRef,
       pendingPlayFromGestureRef,
-      playbackIframeRef,
       result,
       setEmbedVideoId,
     } = buildHarness({ isPaused: false });
-    playbackIframeRef.current = {
-      contentWindow: { postMessage: jest.fn() },
-    } as unknown as HTMLIFrameElement;
 
     result.current.syncEmbedToVideoId("embed-video-id");
 
@@ -137,19 +133,23 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(pendingPlayFromGestureRef.current).toBe(false);
   });
 
-  it("syncEmbedToVideoId still updates embed state when the persistent iframe is already mounted", () => {
+  it("syncEmbedToVideoId only updates embed state when the persistent iframe owns postMessage loads", () => {
     const {
       embedVideoIdRef,
       pendingPlayFromGestureRef,
+      playbackIframeRef,
       result,
       setEmbedVideoId,
     } = buildHarness({ isPlaybackEmbedMounted: true });
+    playbackIframeRef.current = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
 
     result.current.syncEmbedToVideoId("next-video-id");
 
     expect(setEmbedVideoId).toHaveBeenCalledWith("next-video-id");
     expect(embedVideoIdRef.current).toBe("next-video-id");
-    expect(pendingPlayFromGestureRef.current).toBe(true);
+    expect(pendingPlayFromGestureRef.current).toBe(false);
   });
 
   it("registerPlaybackIframe clears the iframe ref when the embed unmounts", () => {

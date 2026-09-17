@@ -8,14 +8,12 @@ import {
   buildYoutubeEmbedUrl,
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
-  transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import styles from "./PersistentYoutubeIframe.module.css";
 
 interface PersistentYoutubeIframeProps {
   videoId: string;
   videoTitle: string;
-  playbackKey: string;
   autoplay?: boolean;
   variant?: "hidden" | "visible";
 }
@@ -34,22 +32,17 @@ const buildEmbedUrlForVideo = (videoId: string, autoplay: boolean): string => {
 export const PersistentYoutubeIframe = ({
   videoId,
   videoTitle,
-  playbackKey: _playbackKey,
   autoplay = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
-  const {
-    registerPlaybackIframe,
-    notifyPlaybackIframeLoaded,
-    resumePlaybackFromGesture,
-  } = useReleasePlaybackIframeActions();
+  const { registerPlaybackIframe, notifyPlaybackIframeLoaded } =
+    useReleasePlaybackIframeActions();
 
   const registerPlaybackIframeRef = useRef(registerPlaybackIframe);
   registerPlaybackIframeRef.current = registerPlaybackIframe;
 
   const [bootstrapVideoId] = useState(videoId);
   const loadedVideoIdRef = useRef(bootstrapVideoId);
-  const loadedWhileHiddenRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const previousVariantRef = useRef(variant);
 
@@ -63,46 +56,26 @@ export const PersistentYoutubeIframe = ({
     registerPlaybackIframeRef.current(node);
   }, []);
 
-  const transitionIframeToVideo = useCallback(
-    (targetVideoId: string) => {
-      const iframe = iframeRef.current;
+  const syncIframeToVideoId = useCallback((targetVideoId: string) => {
+    const iframe = iframeRef.current;
 
-      if (!iframe) {
-        return;
-      }
-
-      loadedVideoIdRef.current = targetVideoId;
-      loadedWhileHiddenRef.current = variant === "hidden";
-
-      if (autoplay) {
-        loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
-      } else {
-        transitionYoutubeIframeToVideo({ iframe, videoId: targetVideoId });
-      }
-
-      if (variant === "visible") {
-        refreshYoutubeEmbedPlayerLayout({ iframe });
-      }
-    },
-    [autoplay, variant],
-  );
-
-  const handleIframeLoad = useCallback(() => {
-    notifyPlaybackIframeLoaded();
-
-    if (variant === "visible") {
-      refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
-    }
-  }, [notifyPlaybackIframeLoaded, variant]);
-
-  useEffect(() => {
-    if (videoId === loadedVideoIdRef.current) {
+    if (!iframe || targetVideoId === loadedVideoIdRef.current) {
       return;
     }
 
-    transitionIframeToVideo(videoId);
-    resumePlaybackFromGesture();
-  }, [resumePlaybackFromGesture, transitionIframeToVideo, videoId]);
+    loadedVideoIdRef.current = targetVideoId;
+    loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
+    refreshYoutubeEmbedPlayerLayout({ iframe });
+  }, []);
+
+  const handleIframeLoad = useCallback(() => {
+    notifyPlaybackIframeLoaded();
+    refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
+  }, [notifyPlaybackIframeLoaded]);
+
+  useEffect(() => {
+    syncIframeToVideoId(videoId);
+  }, [syncIframeToVideoId, videoId]);
 
   useEffect(() => {
     const previousVariant = previousVariantRef.current;
@@ -112,15 +85,8 @@ export const PersistentYoutubeIframe = ({
       return;
     }
 
-    if (loadedVideoIdRef.current !== videoId) {
-      transitionIframeToVideo(videoId);
-    } else {
-      loadedWhileHiddenRef.current = false;
-    }
-
     refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
-    resumePlaybackFromGesture();
-  }, [resumePlaybackFromGesture, transitionIframeToVideo, variant, videoId]);
+  }, [variant]);
 
   useEffect(() => {
     if (variant !== "visible") {

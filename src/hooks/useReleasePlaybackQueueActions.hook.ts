@@ -121,8 +121,8 @@ export const useReleasePlaybackQueueActions = ({
     embedVideoIdRef,
   } = refs;
 
-  const resolveQueueItemPlayback = useCallback(
-    (item: PlaybackQueueItem): boolean => {
+  const findQueueItemResolutionIndex = useCallback(
+    (item: PlaybackQueueItem): number => {
       const itemReleaseId = parseReleaseId(item.release);
 
       if (
@@ -130,13 +130,17 @@ export const useReleasePlaybackQueueActions = ({
         Number(releaseDetailIdRef.current) !== itemReleaseId ||
         tracksRef.current.length === 0
       ) {
-        return false;
+        return -1;
       }
 
-      const index = findTrackIndexByPosition(
-        tracksRef.current,
-        item.trackPosition,
-      );
+      return findTrackIndexByPosition(tracksRef.current, item.trackPosition);
+    },
+    [releaseDetailIdRef, tracksRef],
+  );
+
+  const resolveQueueItemPlayback = useCallback(
+    (item: PlaybackQueueItem): boolean => {
+      const index = findQueueItemResolutionIndex(item);
 
       if (index < 0) {
         return false;
@@ -149,7 +153,7 @@ export const useReleasePlaybackQueueActions = ({
       });
       return true;
     },
-    [dispatchSession, releaseDetailIdRef, tracksRef],
+    [dispatchSession, findQueueItemResolutionIndex],
   );
 
   const applyTargetEmbedVideoId = useCallback(
@@ -187,13 +191,21 @@ export const useReleasePlaybackQueueActions = ({
 
       releaseRef.current = item.release;
 
+      const resolutionIndex = item.previewVideoUri
+        ? -1
+        : findQueueItemResolutionIndex(item);
+      const pendingTrackPositionForPlay =
+        item.previewVideoUri || resolutionIndex >= 0
+          ? null
+          : item.trackPosition;
+
       dispatchSession({
         type: "PLAY_QUEUE_ITEM",
         params: {
           release: item.release,
           startPaused,
           isSameRelease,
-          pendingTrackPosition: null,
+          pendingTrackPosition: pendingTrackPositionForPlay,
           pendingPreviewVideoUri: item.previewVideoUri ?? null,
         },
       });
@@ -223,10 +235,12 @@ export const useReleasePlaybackQueueActions = ({
         return;
       }
 
-      dispatchSession({
-        type: "SET_PENDING_TRACK_POSITION",
-        position: item.trackPosition,
-      });
+      if (pendingTrackPositionForPlay === null) {
+        dispatchSession({
+          type: "SET_PENDING_TRACK_POSITION",
+          position: item.trackPosition,
+        });
+      }
     },
     [
       applyTargetEmbedVideoId,
@@ -234,6 +248,7 @@ export const useReleasePlaybackQueueActions = ({
       clearPlayFromGestureRetries,
       dispatchSession,
       embedVideoIdRef,
+      findQueueItemResolutionIndex,
       lastSyncedActiveVideoIdRef,
       pendingPlayFromGestureRef,
       prefetchQueueItemEmbed,

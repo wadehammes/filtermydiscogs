@@ -46,7 +46,6 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
-  transitionYoutubeIframeToVideo: jest.fn(),
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
@@ -1739,8 +1738,6 @@ describe("ReleasePlaybackProvider", () => {
       expect(result.current.activeTrackPosition).toBe("B1");
     });
 
-    mockLoadAndPlayYoutubeVideo.mockClear();
-
     act(() => {
       result.current.registerPlaybackIframe(null);
       result.current.registerPlaybackIframe(secondIframe);
@@ -1748,13 +1745,7 @@ describe("ReleasePlaybackProvider", () => {
 
     expect(result.current.shouldAutoplayEmbed).toBe(true);
     expect(result.current.isPaused).toBe(false);
-    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledTimes(1);
-    expect(mockLoadAndPlayYoutubeVideo.mock.calls[0]?.[0]?.iframe).toBe(
-      secondIframe,
-    );
-    expect(mockLoadAndPlayYoutubeVideo.mock.calls[0]?.[0]?.videoId).toBe(
-      "abc12345678",
-    );
+    expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
   });
 
   it("keeps the active track playing when the queue is cleared", async () => {

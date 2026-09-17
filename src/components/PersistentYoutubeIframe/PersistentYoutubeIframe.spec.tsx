@@ -11,7 +11,6 @@ import {
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
-  transitionYoutubeIframeToVideo,
 } from "src/utils/releasePlayback";
 import { render, screen } from "test-utils";
 
@@ -19,15 +18,11 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
-  transitionYoutubeIframeToVideo: jest.fn(),
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
 const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
-const mockTransitionYoutubeIframeToVideo = jest.mocked(
-  transitionYoutubeIframeToVideo,
-);
 const mockRefreshYoutubeEmbedPlayerLayout = jest.mocked(
   refreshYoutubeEmbedPlayerLayout,
 );
@@ -60,7 +55,6 @@ const VariantHarness = ({
       <PersistentYoutubeIframe
         videoId={videoId}
         videoTitle="Test video"
-        playbackKey="test"
         variant={variant}
       />
     </>
@@ -89,10 +83,10 @@ describe("PersistentYoutubeIframe", () => {
 
     expect(iframe).toHaveAttribute("data-variant", "visible");
     expect(iframe.getAttribute("src")).toBe(initialSrc);
-    expect(mockTransitionYoutubeIframeToVideo).not.toHaveBeenCalled();
+    expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
   });
 
-  it("loads the next video via postMessage while hidden, then shows without src reload", async () => {
+  it("loads the next video via postMessage while hidden and refreshes embed layout to keep controls", async () => {
     const user = userEvent.setup();
 
     const VideoSwitchHarness = () => {
@@ -110,7 +104,6 @@ describe("PersistentYoutubeIframe", () => {
           <PersistentYoutubeIframe
             videoId={videoId}
             videoTitle="Test video"
-            playbackKey="test"
             variant={variant}
           />
         </>
@@ -124,23 +117,20 @@ describe("PersistentYoutubeIframe", () => {
 
     await user.click(screen.getByRole("button", { name: "Switch video" }));
 
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledWith(
-      expect.objectContaining({
-        iframe,
-        videoId: "abc12345678",
-      }),
-    );
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+      videoId: "abc12345678",
+    });
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
     expect(iframe.getAttribute("src")).toBe(initialSrc);
 
     await user.click(screen.getByRole("button", { name: "Show iframe" }));
 
     expect(iframe).toHaveAttribute("data-variant", "visible");
     expect(iframe.getAttribute("src")).toBe(initialSrc);
-    expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
-    expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
-    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
-      iframe: expect.any(HTMLIFrameElement),
-    });
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledTimes(1);
   });
 
   it("loads the next video via postMessage while visible without reloading iframe src", async () => {
@@ -157,7 +147,6 @@ describe("PersistentYoutubeIframe", () => {
           <PersistentYoutubeIframe
             videoId={videoId}
             videoTitle="Test video"
-            playbackKey="test"
             autoplay
             variant="visible"
           />
@@ -187,7 +176,6 @@ describe("PersistentYoutubeIframe", () => {
       <PersistentYoutubeIframe
         videoId="te2jJncBVG4"
         videoTitle="Test video"
-        playbackKey="test"
         variant="visible"
       />,
       { wrapper: createWrapper() },
