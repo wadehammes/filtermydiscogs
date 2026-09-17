@@ -20,7 +20,7 @@ import { viewStateMatches } from "src/utils/userPreferencesSyncState";
 
 interface BuildLocalPreferencesSeedPatchParams {
   preferences: UserPreferences;
-  localTheme: "light" | "dark" | "system";
+  localTheme: UserPreferences["theme"];
 }
 
 export const buildLocalPreferencesSeedPatch = ({
