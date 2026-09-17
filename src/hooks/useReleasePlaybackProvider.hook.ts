@@ -462,6 +462,7 @@ export const useReleasePlaybackProvider = (): {
     abortUnresolvedPlayback,
     activeTrackIndex,
     activeVideoId,
+    embedVideoId,
     appendSimilarReleasesToQueue,
     awaitingResumeGestureRef,
     dispatchSession,

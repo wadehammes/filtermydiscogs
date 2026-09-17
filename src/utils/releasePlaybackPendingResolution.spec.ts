@@ -44,7 +44,9 @@ describe("releasePlaybackPendingResolution", () => {
         shouldClearTransportForMissingVideo({
           tracksLength: 3,
           activeVideoId: null,
+          embedVideoId: null,
           isReleasePreview: false,
+          isReleaseDetailSynced: true,
         }),
       ).toBe(true);
     });
@@ -54,14 +56,39 @@ describe("releasePlaybackPendingResolution", () => {
         shouldClearTransportForMissingVideo({
           tracksLength: 3,
           activeVideoId: "abc",
+          embedVideoId: null,
           isReleasePreview: false,
+          isReleaseDetailSynced: true,
         }),
       ).toBe(false);
       expect(
         shouldClearTransportForMissingVideo({
           tracksLength: 3,
           activeVideoId: null,
+          embedVideoId: null,
           isReleasePreview: true,
+          isReleaseDetailSynced: true,
+        }),
+      ).toBe(false);
+    });
+
+    it("waits for release detail sync and keeps transport when the embed already has a video", () => {
+      expect(
+        shouldClearTransportForMissingVideo({
+          tracksLength: 3,
+          activeVideoId: null,
+          embedVideoId: null,
+          isReleasePreview: false,
+          isReleaseDetailSynced: false,
+        }),
+      ).toBe(false);
+      expect(
+        shouldClearTransportForMissingVideo({
+          tracksLength: 3,
+          activeVideoId: null,
+          embedVideoId: "embed-id",
+          isReleasePreview: false,
+          isReleaseDetailSynced: true,
         }),
       ).toBe(false);
     });

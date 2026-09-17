@@ -20,12 +20,21 @@ export const findPendingPreviewVideo = (
 export const shouldClearTransportForMissingVideo = ({
   tracksLength,
   activeVideoId,
+  embedVideoId,
   isReleasePreview,
+  isReleaseDetailSynced,
 }: {
   tracksLength: number;
   activeVideoId: string | null;
+  embedVideoId: string | null;
   isReleasePreview: boolean;
-}): boolean => tracksLength > 0 && activeVideoId === null && !isReleasePreview;
+  isReleaseDetailSynced: boolean;
+}): boolean =>
+  isReleaseDetailSynced &&
+  tracksLength > 0 &&
+  activeVideoId === null &&
+  embedVideoId === null &&
+  !isReleasePreview;
 
 export const shouldResetActiveTrackIndex = ({
   tracksLength,

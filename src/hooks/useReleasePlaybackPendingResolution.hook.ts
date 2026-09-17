@@ -28,6 +28,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   abortUnresolvedPlayback: () => void;
   activeTrackIndex: number;
   activeVideoId: string | null;
+  embedVideoId: string | null;
   appendSimilarReleasesToQueue: (
     params: AppendSimilarReleasesParams,
   ) => Promise<boolean>;
@@ -55,6 +56,7 @@ export const useReleasePlaybackPendingResolution = ({
   abortUnresolvedPlayback,
   activeTrackIndex,
   activeVideoId,
+  embedVideoId,
   appendSimilarReleasesToQueue,
   awaitingResumeGestureRef,
   dispatchSession,
@@ -181,24 +183,36 @@ export const useReleasePlaybackPendingResolution = ({
       return;
     }
 
+    const isReleaseDetailSynced = isPlaybackReleaseDetailSynced(
+      releaseId,
+      releaseDetailId,
+    );
+
     if (
-      shouldClearTransportForMissingVideo({
+      !shouldClearTransportForMissingVideo({
         tracksLength: tracks.length,
         activeVideoId,
+        embedVideoId,
         isReleasePreview,
+        isReleaseDetailSynced,
       })
     ) {
-      dispatchSession({ type: "SET_TRANSPORT_OFF" });
-      clearPersistedReleasePlayback();
+      return;
     }
+
+    dispatchSession({ type: "SET_TRANSPORT_OFF" });
+    clearPersistedReleasePlayback();
   }, [
     activeVideoId,
     dispatchSession,
+    embedVideoId,
     isLoading,
     isPlaying,
     isReleasePreview,
     pendingPreviewVideoUri,
     pendingTrackPosition,
+    releaseDetailId,
+    releaseId,
     tracks.length,
   ]);
 
