@@ -1,5 +1,7 @@
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useCrateDrawerDeletePolicy } from "src/components/CrateDrawer/useCrateDrawerDeletePolicy.hook";
+import { useCrateDrawerDialogUi } from "src/components/CrateDrawer/useCrateDrawerDialogUi.hook";
 import { useCrate } from "src/context/crate.context";
 import { copyToClipboard } from "src/utils/copyToClipboard";
 import { getSiteUrl } from "src/utils/helpers";
@@ -23,13 +25,24 @@ export const useCrateDrawerState = () => {
 
   const router = useRouter();
   const pathname = usePathname();
-  const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showClearPackedDialog, setShowClearPackedDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showMakeDefaultDialog, setShowMakeDefaultDialog] = useState(false);
-  const [showEditCrateDialog, setShowEditCrateDialog] = useState(false);
-  const [hidePackedItems, setHidePackedItems] = useState(false);
-  const [drawerNotesOpen, setDrawerNotesOpen] = useState(false);
+
+  const dialogUi = useCrateDrawerDialogUi(activeCrateId);
+  const {
+    showClearDialog,
+    setShowClearDialog,
+    showClearPackedDialog,
+    setShowClearPackedDialog,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    showMakeDefaultDialog,
+    setShowMakeDefaultDialog,
+    showEditCrateDialog,
+    setShowEditCrateDialog,
+    hidePackedItems,
+    setHidePackedItems,
+    drawerNotesOpen,
+    setDrawerNotesOpen,
+  } = dialogUi;
 
   const activeCrate = useMemo(
     () => crates.find((crate) => crate.id === activeCrateId),
@@ -42,18 +55,11 @@ export const useCrateDrawerState = () => {
   const isDefaultCrate = activeCrate?.is_default === true;
   const isPublic = activeCrate?.private === false;
   const packedEnabled = activeCrate?.packed_enabled ?? false;
-  const deleteBlockedReason = useMemo(() => {
-    if (crates.length <= 1) {
-      return "You need at least one crate.";
-    }
 
-    if (isDefaultCrate) {
-      return "Set another crate as default first.";
-    }
-
-    return null;
-  }, [crates.length, isDefaultCrate]);
-  const canDelete = deleteBlockedReason === null;
+  const { deleteBlockedReason, canDelete } = useCrateDrawerDeletePolicy({
+    crateCount: crates.length,
+    isDefaultCrate,
+  });
 
   const toggleCrateBoolean = useCallback(
     async (
@@ -74,13 +80,13 @@ export const useCrateDrawerState = () => {
   const handleClearConfirm = useCallback(() => {
     clearCrate();
     setShowClearDialog(false);
-  }, [clearCrate]);
+  }, [clearCrate, setShowClearDialog]);
 
   const handleClearPackedConfirm = useCallback(() => {
     clearAllPacked();
     setHidePackedItems(false);
     setShowClearPackedDialog(false);
-  }, [clearAllPacked]);
+  }, [clearAllPacked, setHidePackedItems, setShowClearPackedDialog]);
 
   const handleDeleteCrate = useCallback(async () => {
     if (!(activeCrateId && canDelete)) {
@@ -95,7 +101,15 @@ export const useCrateDrawerState = () => {
     if (pathname === `/crates/${deletedCrateId}`) {
       router.push("/crates");
     }
-  }, [activeCrateId, canDelete, deleteCrate, pathname, router]);
+  }, [
+    activeCrateId,
+    canDelete,
+    deleteCrate,
+    pathname,
+    router,
+    setShowDeleteDialog,
+    setShowEditCrateDialog,
+  ]);
 
   const handleMakeDefaultConfirm = useCallback(async () => {
     if (!activeCrateId) {
@@ -104,7 +118,7 @@ export const useCrateDrawerState = () => {
 
     await updateCrate(activeCrateId, { is_default: true });
     setShowMakeDefaultDialog(false);
-  }, [activeCrateId, updateCrate]);
+  }, [activeCrateId, setShowMakeDefaultDialog, updateCrate]);
 
   const handlePrivacyToggle = useCallback(async () => {
     await toggleCrateBoolean("private");
@@ -127,7 +141,7 @@ export const useCrateDrawerState = () => {
         setHidePackedItems(false);
       }
     });
-  }, [toggleCrateBoolean]);
+  }, [setHidePackedItems, toggleCrateBoolean]);
 
   const handleCopyLink = useCallback(async () => {
     if (!activeCrateId) {
@@ -153,7 +167,7 @@ export const useCrateDrawerState = () => {
       await updateCrate(activeCrateId, { name });
       setShowEditCrateDialog(false);
     },
-    [activeCrateId, updateCrate],
+    [activeCrateId, setShowEditCrateDialog, updateCrate],
   );
 
   const handleSaveCrateNotes = useCallback(
@@ -174,21 +188,6 @@ export const useCrateDrawerState = () => {
     },
     [activeCrate, activeCrateId, updateCrate],
   );
-
-  const prevActiveCrateIdRef = useRef(activeCrateId);
-
-  useEffect(() => {
-    if (prevActiveCrateIdRef.current === activeCrateId) {
-      return;
-    }
-
-    prevActiveCrateIdRef.current = activeCrateId;
-    setShowEditCrateDialog(false);
-    setShowClearPackedDialog(false);
-    setShowDeleteDialog(false);
-    setHidePackedItems(false);
-    setDrawerNotesOpen(false);
-  }, [activeCrateId]);
 
   return {
     activeCrateId,
