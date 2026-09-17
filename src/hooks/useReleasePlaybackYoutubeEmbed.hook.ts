@@ -27,6 +27,10 @@ import {
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import {
+  shouldProviderImperativeLoadEmbed,
+  shouldRegisterIframeImperativeLoadEmbed,
+} from "src/utils/releasePlaybackEmbedLoadOwnership";
+import {
   isWithinEmbedTrackSwitchGrace,
   nextEmbedTrackSwitchGraceUntil,
   shouldNotifyEmbedPlaybackEnded,
@@ -199,12 +203,20 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       pendingPlayFromGestureRef.current = true;
       markEmbedTrackSwitchGrace();
-      if (!isPlaybackEmbedMounted) {
-        loadAndPlayYoutubeVideo({
-          iframe: playbackIframeRef.current,
-          videoId,
-        });
+
+      if (
+        !shouldProviderImperativeLoadEmbed({
+          isPlaybackEmbedMounted,
+          hasRegisteredPlaybackIframe: playbackIframeRef.current !== null,
+        })
+      ) {
+        return;
       }
+
+      loadAndPlayYoutubeVideo({
+        iframe: playbackIframeRef.current,
+        videoId,
+      });
       schedulePlayFromGestureAttempts();
     },
     [
@@ -459,16 +471,23 @@ export const useReleasePlaybackYoutubeEmbed = ({
     }
 
     lastSyncedActiveVideoIdRef.current = activeVideoId;
-    syncEmbedToVideoId(activeVideoId);
+
+    if (embedVideoIdRef.current === activeVideoId) {
+      return;
+    }
+
+    embedVideoIdRef.current = activeVideoId;
+    setEmbedVideoId(activeVideoId);
   }, [
     activeVideoId,
+    embedVideoIdRef,
     isPlaying,
+    setEmbedVideoId,
     lastSyncedActiveVideoIdRef,
     pendingPreviewVideoUri,
     pendingTrackPosition,
     releaseDetailId,
     releaseId,
-    syncEmbedToVideoId,
   ]);
 
   useEffect(() => {
@@ -478,11 +497,17 @@ export const useReleasePlaybackYoutubeEmbed = ({
       return;
     }
 
+    if (isPlaybackEmbedMounted || playbackIframeRef.current !== null) {
+      return;
+    }
+
     schedulePlayFromGestureAttempts();
   }, [
     activeVideoId,
+    isPlaybackEmbedMounted,
     isPlaybackReady,
     pendingPlayFromGestureRef,
+    playbackIframeRef,
     schedulePlayFromGestureAttempts,
   ]);
 
@@ -564,6 +589,24 @@ export const useReleasePlaybackYoutubeEmbed = ({
       playbackIframeRef.current = iframe;
       enableYoutubeIframeListening(iframe);
 
+      const embedVideoId = embedVideoIdRef.current;
+
+      if (
+        shouldRegisterIframeImperativeLoadEmbed({
+          isIframeElementChange:
+            previousIframe !== null && previousIframe !== iframe,
+          isRebindAfterUnregister:
+            previousIframe === null && isPlaybackEmbedMounted,
+          pendingPlayFromGesture: pendingPlayFromGestureRef.current,
+          embedVideoId,
+        }) &&
+        !isPausedRef.current &&
+        embedVideoId
+      ) {
+        markEmbedTrackSwitchGrace();
+        loadAndPlayYoutubeVideo({ iframe, videoId: embedVideoId });
+      }
+
       if (isPlaybackEmbedMounted && !pendingPlayFromGestureRef.current) {
         setShouldAutoplayEmbed(false);
       }
@@ -573,7 +616,10 @@ export const useReleasePlaybackYoutubeEmbed = ({
     },
     [
       clearPlayFromGestureRetries,
+      embedVideoIdRef,
+      isPausedRef,
       isPlaybackEmbedMounted,
+      markEmbedTrackSwitchGrace,
       pendingPlayFromGestureRef,
       playbackIframeRef,
       schedulePlayFromGestureAttempts,

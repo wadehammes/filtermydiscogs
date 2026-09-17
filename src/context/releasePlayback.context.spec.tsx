@@ -743,6 +743,42 @@ describe("ReleasePlaybackProvider", () => {
     expect(playVideoCalls.length).toBeGreaterThan(0);
   });
 
+  it("does not imperatively loadAndPlay on playNext when the playback iframe stays registered", async () => {
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.playbackVideoId).toBe("abc12345678");
+    });
+
+    expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
+  });
+
   it("resolves the next playback video id immediately when advancing the queue in a hidden tab", async () => {
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
@@ -1697,17 +1733,28 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.playNext();
-      result.current.registerPlaybackIframe(null);
-      result.current.registerPlaybackIframe(secondIframe);
     });
 
     await waitFor(() => {
       expect(result.current.activeTrackPosition).toBe("B1");
     });
 
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
+    act(() => {
+      result.current.registerPlaybackIframe(null);
+      result.current.registerPlaybackIframe(secondIframe);
+    });
+
     expect(result.current.shouldAutoplayEmbed).toBe(true);
     expect(result.current.isPaused).toBe(false);
-    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalled();
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledTimes(1);
+    expect(mockLoadAndPlayYoutubeVideo.mock.calls[0]?.[0]?.iframe).toBe(
+      secondIframe,
+    );
+    expect(mockLoadAndPlayYoutubeVideo.mock.calls[0]?.[0]?.videoId).toBe(
+      "abc12345678",
+    );
   });
 
   it("keeps the active track playing when the queue is cleared", async () => {

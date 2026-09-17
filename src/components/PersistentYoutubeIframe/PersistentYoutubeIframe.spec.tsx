@@ -137,6 +137,7 @@ describe("PersistentYoutubeIframe", () => {
     expect(iframe).toHaveAttribute("data-variant", "visible");
     expect(iframe.getAttribute("src")).toBe(initialSrc);
     expect(mockTransitionYoutubeIframeToVideo).toHaveBeenCalledTimes(1);
+    expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
     expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
       iframe: expect.any(HTMLIFrameElement),
     });

@@ -101,11 +101,8 @@ export const PersistentYoutubeIframe = ({
     }
 
     transitionIframeToVideo(videoId);
-
-    if (autoplay) {
-      resumePlaybackFromGesture();
-    }
-  }, [autoplay, resumePlaybackFromGesture, transitionIframeToVideo, videoId]);
+    resumePlaybackFromGesture();
+  }, [resumePlaybackFromGesture, transitionIframeToVideo, videoId]);
 
   useEffect(() => {
     const previousVariant = previousVariantRef.current;
