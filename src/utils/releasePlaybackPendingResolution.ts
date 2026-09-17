@@ -25,8 +25,7 @@ export const shouldClearTransportForMissingVideo = ({
   tracksLength: number;
   activeVideoId: string | null;
   isReleasePreview: boolean;
-}): boolean =>
-  tracksLength > 0 && activeVideoId === null && !isReleasePreview;
+}): boolean => tracksLength > 0 && activeVideoId === null && !isReleasePreview;
 
 export const shouldResetActiveTrackIndex = ({
   tracksLength,
