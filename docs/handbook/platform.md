@@ -32,7 +32,7 @@ Large or multi-theme work should land as a **stack** of dependent PRs into **`st
 | Push + open/update PRs | `st ss --auto` (alias for `st submit --auto`) |
 | Inspect stack | `st view --json` |
 
-**Agents:** Plan layers **before** coding (foundation → tests → follow-ups). Commit **one concern per branch**; use **`st bottom`** / **`st up`** to move between layers. Prefer **`st`** over raw **`gh stack`** so local workflows match maintainer scripts. Example multi-PR plans live under [`docs/plans/`](../../docs/plans/). Non-interactive automation must pass flags documented in **`st cheatsheet`** (e.g. **`st ss --auto`**, **`st view --json`**).
+**Agents:** Plan layers **before** coding (foundation → tests → follow-ups). Commit **one concern per branch**; use **`st bottom`** / **`st up`** to move between layers. Prefer **`st`** over raw **`gh stack`** so local workflows match maintainer scripts. Non-interactive automation must pass flags documented in **`st cheatsheet`** (e.g. **`st ss --auto`**, **`st view --json`**).
 
 ## mise
 
@@ -62,7 +62,7 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm generate:theme-init` | Regenerates **`public/theme-init.js`** from [`themeAppearance.ts`](../../src/utils/themeAppearance.ts) (also runs on **`postinstall`**). |
 | `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
 | `pnpm knip` | CI dead-code gate — unused exports/files/deps ([`knip.json`](../../knip.json)); **`pnpm knip:ci`** in Actions. |
-| `pnpm fallow` / `pnpm fallow:dead-code` / `pnpm fallow:health` / `pnpm fallow:health:full` / `pnpm fallow:dupes` | Optional **Fallow** codebase intelligence for agents and local deep dives ([`.fallowrc.jsonc`](../../.fallowrc.jsonc)) — cycles, dupes, complexity, unresolved imports; **not** a CI gate. **`pnpm fallow:health`** prints the project **health score** (`--score`, no git-churn hotspot penalty). **`pnpm fallow:health:full`** adds complexity findings, large-function lists, and hotspot deductions. **`pnpm fallow:audit`** scopes to changes since **`origin/staging`**. Stacked refactor plans from health runs: [`docs/plans/refactor-fallow-health-playback.md`](../../docs/plans/refactor-fallow-health-playback.md). Cursor: [`.cursor/mcp.json`](../../.cursor/mcp.json) + [`.agents/skills/fallow`](../../.agents/skills/fallow); task map in [`AGENTS.md`](../../AGENTS.md). |
+| `pnpm fallow` / `pnpm fallow:dead-code` / `pnpm fallow:health` / `pnpm fallow:health:full` / `pnpm fallow:dupes` | Optional **Fallow** codebase intelligence for agents and local deep dives ([`.fallowrc.jsonc`](../../.fallowrc.jsonc)) — cycles, dupes, complexity, unresolved imports; **not** a CI gate. **`pnpm fallow:health`** prints the project **health score** (`--score`, no git-churn hotspot penalty). **`pnpm fallow:health:full`** adds complexity findings, large-function lists, and hotspot deductions. **`pnpm fallow:audit`** scopes to changes since **`origin/staging`**. Cursor: [`.cursor/mcp.json`](../../.cursor/mcp.json) + [`.agents/skills/fallow`](../../.agents/skills/fallow); task map in [`AGENTS.md`](../../AGENTS.md). |
 | `pnpm lint:css` | Stylelint over `src/**/*.css`. |
 | `pnpm scaffold` | New component scaffold script. |
 | `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
