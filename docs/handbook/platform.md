@@ -48,7 +48,9 @@ Run the same locally before pushing when possible — with [mise](https://mise.j
 | Require status checks | On — required check: **`Lint/Test`** ([`ci.yml`](../../.github/workflows/ci.yml)) |
 | Require branches up to date before merging | On (recommended) |
 
-**Bypass:** org/repo **owners** only (break-glass).
+Do **not** add an **`update`** rule on **`staging`**: it restricts *all* ref updates to bypass actors and blocks normal **Squash and merge** on PRs (“Cannot update this protected ref”). Use **`pull_request`** + status checks to gate merges; reserve **`update`** for **`main`** only.
+
+**Bypass:** repo **admin** only (break-glass direct pushes if ever needed).
 
 ### Ruleset 2 — `Production — main` (id **23658577**)
 
@@ -61,7 +63,11 @@ Run the same locally before pushing when possible — with [mise](https://mise.j
 | Require a pull request | **Off** (production is not merge-driven) |
 | Restrict who can push | On — **no human teams** on the allow list |
 
-**Who may update `main`:** only automation from [`.github/workflows/release.yml`](../../.github/workflows/release.yml) after **`make release tag=vX.Y.Z`** pushes a **`v*`** tag. The **`Production — main`** ruleset uses an **`update`** rule (push restricted to bypass actors) plus **`github-actions[bot]`** as a **User** bypass actor (user id **41898282**; **Integration** id **15368** is org-only). Repo **admins** retain bypass for break-glass.
+**Who may update `main`:** only [`.github/workflows/release.yml`](../../.github/workflows/release.yml) after **`make release tag=vX.Y.Z`**. The **`Production — main`** ruleset **`update`** rule blocks the default **`GITHUB_TOKEN`** push; the **Reset Main** step uses repository secret **`RELEASE_PUSH_TOKEN`** (fine-grained or classic **PAT** for a **repo admin** with **Contents** read/write). Repo **admins** can also push **`refs/tags/vX.Y.Z:main`** locally (ruleset bypass).
+
+**Tag push message:** **`Release tags — v*`** restricts tag **creation**; admins see `Bypassed rule violations… Cannot create ref due to creations being restricted` while the tag still lands — expected when you have admin bypass.
+
+**Local `make release`:** requires **admin** (or ruleset bypass) to create **`v*`** tags; then ensure **`create-release`** succeeds ( **`RELEASE_PUSH_TOKEN`** configured).
 
 **Maintain rulesets (API):** canonical JSON under [`.github/rulesets/`](../../.github/rulesets/). Re-apply after edits:
 

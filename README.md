@@ -175,7 +175,7 @@ pnpm db:studio        # Prisma Studio
 
 **Vercel:** point **Production** at **`main`**, previews/staging at **`staging`**.
 
-GitHub **rulesets** (who may push, required checks) are documented in [`docs/handbook/platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets).
+GitHub **rulesets** enforce this on the repo (**`staging`**: PR + **`Lint/Test`**; **`main`**: release automation only; **`v*`** tags: maintainers). Policy and API commands: [`docs/handbook/platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets). JSON sources: [`.github/rulesets/`](.github/rulesets/).
 
 ### Release checklist
 
@@ -187,10 +187,10 @@ GitHub **rulesets** (who may push, required checks) are documented in [`docs/han
 make release tag=v0.0.1
 ```
 
-4. Confirm [`.github/workflows/release.yml`](.github/workflows/release.yml) (**`create-release`**) succeeded: **`main`** matches the tag and the GitHub Release exists.
+4. Confirm [`.github/workflows/release.yml`](.github/workflows/release.yml) (**`create-release`**) succeeded: **`main`** matches the tag and the GitHub Release exists. The workflow needs repository secret **`RELEASE_PUSH_TOKEN`** (admin PAT with **Contents** write) so it can update **`main`** under rulesets — see [`platform.md`](./docs/handbook/platform.md#branching-and-github-rulesets).
 5. Confirm Vercel **Production** deployed from **`main`**.
 
-Maintainers: configure rulesets once using the handbook section above ( **`main`** write-restricted; **`staging`** requires PR + CI).
+If **`create-release`** failed on **Reset Main**, add **`RELEASE_PUSH_TOKEN`**, then **`gh run rerun --failed`** on the workflow run, or as an admin: **`git push origin refs/tags/vX.Y.Z:main`**.
 
 ## Handbook
 

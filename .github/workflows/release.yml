@@ -18,9 +18,15 @@ jobs:
           fetch-depth: 0
       - name: Reset Main
         id: reset_main
+        env:
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: |
-          echo ${{ github.ref }} 
-          /usr/bin/git push origin ${{ github.ref }}:main
+          if [ -z "$RELEASE_PUSH_TOKEN" ]; then
+            echo "::error::Add repository secret RELEASE_PUSH_TOKEN (admin PAT with Contents read/write) so this job can update main under rulesets. See docs/handbook/platform.md → Branching and GitHub rulesets."
+            exit 1
+          fi
+          git remote set-url origin "https://x-access-token:${RELEASE_PUSH_TOKEN}@github.com/${{ github.repository }}.git"
+          git push origin "${{ github.ref }}:main"
       - name: Generate changelog
         id: changelog
         uses: metcalfc/changelog-generator@0440d0932f9a0dd1cc9ecd8412830761351323bd # v4.7.0
