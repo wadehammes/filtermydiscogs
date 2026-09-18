@@ -20,6 +20,75 @@ GitHub Actions are **pinned to commit SHAs** with version comments (see workflow
 
 Run the same locally before pushing when possible — with [mise](https://mise.jdx.dev/), prefer **`mise run ci`**.
 
+## Branching and GitHub rulesets
+
+| Branch | Role |
+|--------|------|
+| **`staging`** | Default **trunk** — feature work, stacked PRs, CI, Vercel **Preview** / staging deploys. |
+| **`main`** | **Production only** — updated by the release workflow when a **`v*`** tag is pushed; Vercel **Production** should track **`main`**. |
+
+**Contributors:** open PRs into **`staging`** only. Do not push to **`main`** or open PRs targeting **`main`**.
+
+### Repository settings (once per repo)
+
+1. **Settings → General → Default branch** → **`staging`** (so clones, “Compare & pull request”, and new forks target trunk).
+2. **Settings → Collaborators** — grant **Write** only to people who merge to **`staging`**; everyone else **Read** / **Triage** as appropriate.
+3. **Dependabot / Code scanning** — target **`staging`** (not **`main`**).
+4. Migrate legacy **branch protection** on **`staging`** / **`main`** into **rulesets** in one pass so there is no gap.
+
+### Ruleset 1 — `Trunk — staging` (two rulesets on the same ref)
+
+**Target:** `refs/heads/staging` — implemented as **`Trunk — staging (protect ref)`** (id **23658599**) and **`Trunk — staging (PR & CI)`** (id **23658600**)
+
+| Rule | Setting |
+|------|---------|
+| Restrict deletions | On |
+| Block force pushes | On |
+| Require a pull request | On (direct pushes off, or admins only if you need hotfixes) |
+| Require status checks | On — required check: **`Lint/Test`** ([`ci.yml`](../../.github/workflows/ci.yml)) |
+| Require branches up to date before merging | On (recommended) |
+
+**Bypass:** org/repo **owners** only (break-glass).
+
+### Ruleset 2 — `Production — main` (id **23658577**)
+
+**Target:** `refs/heads/main`
+
+| Rule | Setting |
+|------|---------|
+| Restrict deletions | On |
+| Block force pushes | On |
+| Require a pull request | **Off** (production is not merge-driven) |
+| Restrict who can push | On — **no human teams** on the allow list |
+
+**Who may update `main`:** only automation from [`.github/workflows/release.yml`](../../.github/workflows/release.yml) after **`make release tag=vX.Y.Z`** pushes a **`v*`** tag. The **`Production — main`** ruleset uses an **`update`** rule (push restricted to bypass actors) plus **`github-actions[bot]`** as a **User** bypass actor (user id **41898282**; **Integration** id **15368** is org-only). Repo **admins** retain bypass for break-glass.
+
+**Maintain rulesets (API):** canonical JSON under [`.github/rulesets/`](../../.github/rulesets/). Re-apply after edits:
+
+```bash
+gh api --method PUT repos/wadehammes/filtermydiscogs/rulesets/23658577 --input .github/rulesets/production-main.json
+gh api --method PUT repos/wadehammes/filtermydiscogs/rulesets/23658599 --input .github/rulesets/trunk-staging-protect-ref.json
+gh api --method PUT repos/wadehammes/filtermydiscogs/rulesets/23658600 --input .github/rulesets/trunk-staging-pr-ci.json
+gh api --method PUT repos/wadehammes/filtermydiscogs/rulesets/23658836 --input .github/rulesets/release-tags-v.json
+```
+
+List live rulesets: **`gh api repos/wadehammes/filtermydiscogs/rulesets`**
+
+**Note:** The release job runs **`git push origin <tag-ref>:main`**. If **`main`** ever diverges from the tagged commit, that update may be rejected while force pushes are blocked. Prefer tagging a commit that **fast-forwards** **`main`**, or grant **narrow bypass** for the release workflow only (not broad **Write** access).
+
+**Ruleset 3 — `Release tags — v*`** (id **23658836**): target **`refs/tags/v*`**; **`creation`** / **`update`** / **`deletion`** require bypass (repo **admin** only) so only maintainers can create **`v*`** tags that trigger [release.yml](../../.github/workflows/release.yml).
+
+### Verify after enabling rulesets
+
+| Action | Expected |
+|--------|----------|
+| `git push origin main` (human) | Denied |
+| PR into **`main`** | Blocked or non-mergeable for contributors |
+| PR into **`staging`** without green **`Lint/Test`** | Blocked |
+| `make release tag=vX.Y.Z` from an allowed maintainer | Tag push → **`create-release`** → **`main`** updates → GitHub Release |
+
+Local Biome “changed files” checks use **`origin/staging`** as the baseline ([`package.json`](../../package.json) **`lint:check`**) so they match trunk, not production.
+
 ## Stacked pull requests (`st`)
 
 Large or multi-theme work should land as a **stack** of dependent PRs into **`staging`** (each PR’s base is the branch below it), not one oversized branch. Use the **`st`** wrapper around the [`github/gh-stack`](https://github.com/github/gh-stack) extension ([`gh-stack.zsh` gist](https://gist.github.com/wadehammes/1bcc3aad88f876e3ac68e642df2899b5)) — install **`gh extension install github/gh-stack`**, source **`~/.gh-stack.zsh`** (or **`st upgrade`** to refresh from the gist), then **`st cheatsheet`** for the full command map.
@@ -258,4 +327,10 @@ Project agent hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json) and
 
 ## Releases
 
-Tag releases with **`make release tag=vX.Y.Z`** (see root README). Release workflow: [`.github/workflows/release.yml`](../../.github/workflows/release.yml).
+Production promotion is **tag-driven**, not a merge into **`main`**:
+
+1. Merge and validate work on **`staging`** (CI green on the PR).
+2. From **`staging`** (or a release commit reachable from it), run **`make release tag=vX.Y.Z`** ([`Makefile`](../../Makefile)) — pushes a **`v*`** tag.
+3. [`.github/workflows/release.yml`](../../.github/workflows/release.yml) (**`create-release`**) on tag push: updates **`main`** to that ref, generates changelog, creates the GitHub Release.
+
+See root **[README.md → Release](../../README.md#release)** and [Branching and GitHub rulesets](#branching-and-github-rulesets) for protecting **`main`**.
