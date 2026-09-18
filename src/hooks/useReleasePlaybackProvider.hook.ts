@@ -158,6 +158,7 @@ export const useReleasePlaybackProvider = (): {
   const previewVideoRef = useRef<DiscogsVideo | null>(null);
   const clearPlayFromGestureRetriesRef = useRef<() => void>(() => undefined);
   const embedPlaybackConfirmedRef = useRef(false);
+  const embedWatchdogVideoIdRef = useRef<string | null>(null);
   const clearPlaybackVideoUiLoadingRef = useRef<() => void>(() => undefined);
   const embedStartWatchdogRef = useRef(
     createEmbedPlaybackStartWatchdog({
@@ -182,6 +183,7 @@ export const useReleasePlaybackProvider = (): {
       onBeforeSkip: () => {
         embedStartWatchdogRef.current.disarm();
         embedPlaybackConfirmedRef.current = false;
+        embedWatchdogVideoIdRef.current = null;
         clearPlaybackVideoUiLoadingRef.current();
         clearPlayFromGestureRetriesRef.current();
         pendingPlayFromGestureRef.current = false;
@@ -474,6 +476,16 @@ export const useReleasePlaybackProvider = (): {
       return;
     }
 
+    const watchdogVideoId = embedWatchdogVideoIdRef.current;
+
+    if (
+      watchdogVideoId !== null &&
+      embedVideoIdRef.current !== null &&
+      watchdogVideoId !== embedVideoIdRef.current
+    ) {
+      return;
+    }
+
     embedUnavailableSkipHandlerRef.current.handleFailure(
       PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
       advanceQueueAfterSkip,
@@ -492,14 +504,29 @@ export const useReleasePlaybackProvider = (): {
     );
   };
 
-  const notifyPlaybackVideoLoadStarted = useCallback(() => {
-    notifyImperativeEmbedLoadStarted();
-    embedPlaybackConfirmedRef.current = false;
+  const notifyPlaybackVideoLoadStarted = useCallback(
+    (videoId?: string) => {
+      notifyImperativeEmbedLoadStarted();
 
-    if (!isPausedRef.current) {
-      armEmbedStartWatchdog();
-    }
-  }, [armEmbedStartWatchdog, notifyImperativeEmbedLoadStarted]);
+      const resolvedVideoId = videoId ?? embedVideoIdRef.current;
+
+      if (
+        embedPlaybackConfirmedRef.current &&
+        resolvedVideoId !== null &&
+        resolvedVideoId === embedWatchdogVideoIdRef.current
+      ) {
+        return;
+      }
+
+      embedWatchdogVideoIdRef.current = resolvedVideoId;
+      embedPlaybackConfirmedRef.current = false;
+
+      if (!isPausedRef.current) {
+        armEmbedStartWatchdog();
+      }
+    },
+    [armEmbedStartWatchdog, notifyImperativeEmbedLoadStarted],
+  );
 
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
     notifyImperativeEmbedLoadStarted();

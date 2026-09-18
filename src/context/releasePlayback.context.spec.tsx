@@ -7,6 +7,7 @@ import { FiltersActionTypes } from "src/context/filters.context";
 import {
   ReleasePlaybackProvider,
   useReleasePlayback,
+  useReleasePlaybackIframeActions,
 } from "src/context/releasePlayback.context";
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
@@ -849,6 +850,52 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("does not re-arm the embed watchdog after playback is confirmed for the same video load", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(
+      () => ({
+        ...useReleasePlayback(),
+        ...useReleasePlaybackIframeActions(),
+      }),
+      {
+        wrapper: createWrapper([collectionRelease]),
+      },
+    );
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      result.current.notifyPlaybackVideoPresentationReady();
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
     jest.useRealTimers();
   });

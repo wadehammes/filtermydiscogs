@@ -67,7 +67,7 @@ export interface ReleasePlaybackActions {
   togglePlayback: () => void;
   registerPlaybackIframe: (iframe: HTMLIFrameElement | null) => void;
   notifyPlaybackIframeLoaded: () => void;
-  notifyPlaybackVideoLoadStarted: () => void;
+  notifyPlaybackVideoLoadStarted: (videoId?: string) => void;
   notifyPlaybackVideoPresentationReady: () => void;
   resumePlaybackFromGesture: () => void;
   clearQueue: () => void;
