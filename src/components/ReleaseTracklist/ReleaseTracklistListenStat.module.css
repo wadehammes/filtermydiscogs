@@ -1,0 +1,33 @@
+.trigger {
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: help;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  line-height: 1.2;
+  padding: 0;
+  text-align: right;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.positioner {
+  z-index: var(--z-7-tooltip);
+}
+
+.popup {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
+  color: var(--popover-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  max-width: 14rem;
+  padding: var(--space-2) var(--space-3);
+}

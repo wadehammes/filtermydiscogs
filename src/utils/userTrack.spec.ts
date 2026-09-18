@@ -6,6 +6,8 @@ import {
   buildUserTrackFieldsFromQueueItem,
   buildUserTrackFieldsFromRelease,
   formatTopUserTrackHeadLabel,
+  formatUserTrackListenLabel,
+  formatUserTrackListenTooltip,
   formatUserTrackStatsLabel,
   mapTrackStatsByPosition,
 } from "src/utils/userTrack";
@@ -52,6 +54,28 @@ describe("userTrack utils", () => {
     );
     expect(formatUserTrackStatsLabel({ play_count: 0, listen_count: 0 })).toBe(
       null,
+    );
+  });
+
+  it("formatUserTrackListenLabel shows listens only", () => {
+    expect(formatUserTrackListenLabel({ play_count: 4, listen_count: 1 })).toBe(
+      "1 listen",
+    );
+    expect(formatUserTrackListenLabel({ play_count: 0, listen_count: 0 })).toBe(
+      null,
+    );
+  });
+
+  it("formatUserTrackListenTooltip explains listens and adds plays when starts exceed listens", () => {
+    expect(
+      formatUserTrackListenTooltip({ play_count: 4, listen_count: 1 }),
+    ).toBe(
+      "4 plays, 1 listen. A listen is 30+ seconds in a row, or the full track. Skipping early does not count.",
+    );
+    expect(
+      formatUserTrackListenTooltip({ play_count: 1, listen_count: 1 }),
+    ).toBe(
+      "A listen is 30+ seconds in a row, or the full track. Skipping early does not count.",
     );
   });
 
