@@ -63,7 +63,16 @@ Do **not** add an **`update`** rule on **`staging`**: it restricts *all* ref upd
 | Require a pull request | **Off** (production is not merge-driven) |
 | Restrict who can push | On — **no human teams** on the allow list |
 
-**Who may update `main`:** only [`.github/workflows/release.yml`](../../.github/workflows/release.yml) after **`make release tag=vX.Y.Z`**. The **`Production — main`** ruleset **`update`** rule blocks the default **`GITHUB_TOKEN`** push; the **Reset Main** step uses repository secret **`RELEASE_PUSH_TOKEN`** (fine-grained or classic **PAT** for a **repo admin** with **Contents** read/write). Repo **admins** can also push **`refs/tags/vX.Y.Z:main`** locally (ruleset bypass).
+**Who may update `main`:** only [`.github/workflows/release.yml`](../../.github/workflows/release.yml) after **`make release tag=vX.Y.Z`**. The **`Production — main`** ruleset **`update`** rule blocks the default **`GITHUB_TOKEN`** push; the **Reset Main** step uses repository secret **`RELEASE_PUSH_TOKEN`** (fine-grained or classic **PAT** with **Contents** read/write on this repo). The PAT **owner** must appear on the ruleset **bypass** list ([`production-main.json`](../../.github/rulesets/production-main.json) includes repo **admin** role and the maintainer user used for release automation). **`GITHUB_TOKEN`** is **not** a bypass for **`update`** (do not rely on **`github-actions[bot]`** on the bypass list). Repo **admins** can also push **`refs/tags/vX.Y.Z:main`** locally (ruleset bypass).
+
+**If Reset Main fails with `Cannot update this protected ref` but the secret is set:** the push is authenticated as the PAT owner, who is not treated as a bypass actor. Regenerate the PAT on the **same GitHub user** listed in **`production-main.json`** bypass (or add that user via **Add bypass** on ruleset **23658577**), then re-test locally before re-running Actions:
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_PAT" https://api.github.com/user | jq -r .login
+git push "https://x-access-token:YOUR_PAT@github.com/wadehammes/filtermydiscogs.git" refs/tags/vX.Y.Z:main
+```
+
+Success looks like **`Bypassed rule violations`** (same as a manual admin push), not **`push declined due to repository rule violations`**.
 
 **Tag push message:** **`Release tags — v*`** restricts tag **creation**; admins see `Bypassed rule violations… Cannot create ref due to creations being restricted` while the tag still lands — expected when you have admin bypass.
 
