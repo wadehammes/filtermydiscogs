@@ -65,9 +65,9 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@svgr/webpack": "^8.1.0",
-    "@tanstack/charts": "^0.16.2",
-    "@tanstack/charts-scales": "^0.16.2",
-    "@tanstack/react-charts": "^0.16.2",
+    "@tanstack/charts": "^0.18.0",
+    "@tanstack/charts-scales": "^0.18.0",
+    "@tanstack/react-charts": "^0.18.0",
     "@tanstack/react-query": "^5.103.1",
     "@tanstack/react-table": "^9.2.4",
     "@tanstack/react-virtual": "^3.14.13",
@@ -75,7 +75,7 @@
     "d3-shape": "^3.2.0",
     "jotai": "^2.20.3",
     "js-cookie": "^3.0.8",
-    "next": "16.3.4",
+    "next": "16.3.5",
     "oauth-1.0a": "^2.2.6",
     "pg": "catalog:",
     "react": "^19.3.0",
@@ -94,8 +94,8 @@
     "@jest/globals": "^30.5.1",
     "@jest/types": "^30.5.1",
     "@next/bundle-analyzer": "^16.3.5",
-    "@next/playwright": "16.3.4",
-    "@playwright/test": "1.62.1",
+    "@next/playwright": "16.3.5",
+    "@playwright/test": "1.63.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -125,6 +125,6 @@
     "stylelint-value-no-unknown-custom-properties": "^6.1.1",
     "tslib": "^2.8.1",
     "typescript": "^7.0.2",
-    "typescript-langservice": "npm:typescript@6.0.3"
+    "typescript-langservice": "npm:typescript@7.0.2"
   }
 }

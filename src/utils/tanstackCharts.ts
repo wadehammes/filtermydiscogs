@@ -383,8 +383,8 @@ export const createCollectionGrowthAreaChartDefinition = (
     },
     tooltip: {
       ...chartTooltip,
-      content(points) {
-        const point = points[0] as ChartPoint<GrowthDataPoint> | undefined;
+      content(points: readonly ChartPoint<GrowthDataPoint>[]) {
+        const point = points[0];
 
         if (!point) {
           return { rows: [] };
@@ -479,9 +479,8 @@ export const createDualSeriesAreaChartDefinition = (
     },
     tooltip: {
       ...chartTooltip,
-      formatGroup(points) {
-        const datum = (points[0] as ChartPoint<DualSeriesPoint> | undefined)
-          ?.datum;
+      formatGroup(points: readonly ChartPoint<DualSeriesPoint>[]) {
+        const datum = points[0]?.datum;
 
         if (!datum) {
           return "";
@@ -557,13 +556,12 @@ export const createDailyCountAreaChartDefinition = (
     },
     tooltip: {
       ...chartTooltip,
-      format(point) {
-        const typedPoint = point as ChartPoint<{ date: string; count: number }>;
-        const xValue = String(typedPoint.xValue ?? "");
+      format(point: ChartPoint<{ date: string; count: number }>) {
+        const xValue = String(point.xValue ?? "");
         const yValue =
-          typeof typedPoint.yValue === "number"
-            ? typedPoint.yValue.toLocaleString()
-            : String(typedPoint.yValue ?? "");
+          typeof point.yValue === "number"
+            ? point.yValue.toLocaleString()
+            : String(point.yValue ?? "");
 
         return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel ?? "records"}`;
       },
@@ -619,13 +617,12 @@ export const createAdminGrowthAreaChartDefinition = (
     },
     tooltip: {
       ...chartTooltip,
-      format(point) {
-        const typedPoint = point as ChartPoint<AdminGrowthPoint>;
-        const xValue = String(typedPoint.xValue ?? "");
+      format(point: ChartPoint<AdminGrowthPoint>) {
+        const xValue = String(point.xValue ?? "");
         const yValue =
-          typeof typedPoint.yValue === "number"
-            ? typedPoint.yValue.toLocaleString()
-            : String(typedPoint.yValue ?? "");
+          typeof point.yValue === "number"
+            ? point.yValue.toLocaleString()
+            : String(point.yValue ?? "");
 
         return `${options.formatX(xValue)}: ${yValue} ${options.tooltipValueLabel ?? "records"}`;
       },
