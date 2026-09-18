@@ -179,7 +179,7 @@ export const useReleasePlaybackProvider = (): {
           activeTrackIndex: activeTrackIndexRef.current,
           previewVideo: previewVideoRef.current,
         }),
-      isSkipAllowed: () => isPlayingRef.current,
+      isSkipAllowed: () => isPlayingRef.current && !isPausedRef.current,
       onBeforeSkip: () => {
         embedStartWatchdogRef.current.disarm();
         embedPlaybackConfirmedRef.current = false;
@@ -463,6 +463,9 @@ export const useReleasePlaybackProvider = (): {
     onPlaybackEnded: handlePlaybackEnded,
     onYoutubeEmbedPlaybackError: forwardYoutubeEmbedPlaybackError,
     onEmbedPlaybackConfirmed: confirmEmbedPlayback,
+    onEmbedTransportPaused: () => {
+      embedStartWatchdogRef.current.disarm();
+    },
   });
 
   clearPlayFromGestureRetriesRef.current = clearPlayFromGestureRetries;

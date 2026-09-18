@@ -154,13 +154,6 @@ function DashboardClientContent() {
               </div>
 
               <DashboardSection
-                lede={story.sections.playback.lede}
-                title={story.sections.playback.title}
-              >
-                <TopTracks onReleaseClick={handleReleaseClick} />
-              </DashboardSection>
-
-              <DashboardSection
                 lede={story.sections.growth.lede}
                 title={story.sections.growth.title}
               >
@@ -186,6 +179,13 @@ function DashboardClientContent() {
                   hideHeading={true}
                   sectionCopy={story.sections.styleEvolution}
                 />
+              </DashboardSection>
+
+              <DashboardSection
+                lede={story.sections.playback.lede}
+                title={story.sections.playback.title}
+              >
+                <TopTracks onReleaseClick={handleReleaseClick} />
               </DashboardSection>
 
               <DashboardSection
