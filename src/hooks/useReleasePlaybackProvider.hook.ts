@@ -65,6 +65,7 @@ import {
   resolveActiveVideoId,
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
+  shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
@@ -121,7 +122,9 @@ export const useReleasePlaybackProvider = (): {
   const isPlaybackVideoUiLoadingRef = useRef(false);
   const playbackVideoTransitionTargetIdRef = useRef<string | null>(null);
   const playbackVideoUiLoadingTargetVideoIdRef = useRef<string | null>(null);
-  const playbackVideoUiLoadingEmbedLoadStartedRef = useRef(false);
+  const playbackVideoUiLoadingEmbedLoadStartedAtMsRef = useRef<number | null>(
+    null,
+  );
   const activeVideoIdRef = useRef<string | null>(null);
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
@@ -175,7 +178,7 @@ export const useReleasePlaybackProvider = (): {
           activeTrackIndex: activeTrackIndexRef.current,
           previewVideo: previewVideoRef.current,
         }),
-      isSkipAllowed: () => isPlayingRef.current && !isPausedRef.current,
+      isSkipAllowed: () => isPlayingRef.current,
       onBeforeSkip: () => {
         embedStartWatchdogRef.current.disarm();
         embedPlaybackConfirmedRef.current = false;
@@ -320,7 +323,7 @@ export const useReleasePlaybackProvider = (): {
 
   const beginPlaybackVideoUiLoading = useCallback(() => {
     isPlaybackVideoUiLoadingRef.current = true;
-    playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+    playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
     setIsPlaybackVideoUiLoading(true);
   }, []);
 
@@ -334,7 +337,7 @@ export const useReleasePlaybackProvider = (): {
   const clearPlaybackVideoUiLoading = useCallback(() => {
     isPlaybackVideoUiLoadingRef.current = false;
     playbackVideoUiLoadingTargetVideoIdRef.current = null;
-    playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+    playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
     setIsPlaybackVideoUiLoading(false);
   }, []);
 
@@ -369,7 +372,7 @@ export const useReleasePlaybackProvider = (): {
     const timeoutId = window.setTimeout(() => {
       isPlaybackVideoUiLoadingRef.current = false;
       playbackVideoUiLoadingTargetVideoIdRef.current = null;
-      playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
+      playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
       setIsPlaybackVideoUiLoading(false);
     }, PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS);
 
@@ -436,7 +439,7 @@ export const useReleasePlaybackProvider = (): {
       pendingPlayFromGestureRef,
       playbackVideoTransitionTargetIdRef,
       playbackVideoUiLoadingTargetVideoIdRef,
-      playbackVideoUiLoadingEmbedLoadStartedRef,
+      playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
       playFromGestureRetryTimeoutsRef,
       releaseRef,
       tracksRef,
@@ -466,6 +469,22 @@ export const useReleasePlaybackProvider = (): {
     playNextRef.current();
   }, []);
 
+  const runEmbedUnavailableSkipIfUnconfirmed = useCallback(() => {
+    if (embedPlaybackConfirmedRef.current) {
+      return;
+    }
+
+    embedUnavailableSkipHandlerRef.current.handleFailure(
+      PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
+      advanceQueueAfterSkip,
+    );
+  }, [advanceQueueAfterSkip]);
+
+  const armEmbedStartWatchdog = useCallback(() => {
+    embedStartWatchdogRef.current.disarm();
+    embedStartWatchdogRef.current.arm(runEmbedUnavailableSkipIfUnconfirmed);
+  }, [runEmbedUnavailableSkipIfUnconfirmed]);
+
   onYoutubeEmbedPlaybackErrorRef.current = (errorCode) => {
     embedUnavailableSkipHandlerRef.current.handleFailure(
       errorCode,
@@ -476,18 +495,8 @@ export const useReleasePlaybackProvider = (): {
   const notifyPlaybackVideoLoadStarted = useCallback(() => {
     notifyImperativeEmbedLoadStarted();
     embedPlaybackConfirmedRef.current = false;
-    embedStartWatchdogRef.current.disarm();
-    embedStartWatchdogRef.current.arm(() => {
-      if (embedPlaybackConfirmedRef.current) {
-        return;
-      }
-
-      embedUnavailableSkipHandlerRef.current.handleFailure(
-        PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
-        advanceQueueAfterSkip,
-      );
-    });
-  }, [advanceQueueAfterSkip, notifyImperativeEmbedLoadStarted]);
+    armEmbedStartWatchdog();
+  }, [armEmbedStartWatchdog, notifyImperativeEmbedLoadStarted]);
 
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
     notifyImperativeEmbedLoadStarted();
@@ -498,6 +507,31 @@ export const useReleasePlaybackProvider = (): {
     confirmEmbedPlayback,
     notifyImperativeEmbedLoadStarted,
   ]);
+
+  const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
+
+  const prepareQueueAdvancePlayback = useCallback(
+    (item: PlaybackQueueItem | null) => {
+      const preparedEmbedVideoId = item
+        ? resolveQueueItemEmbedVideoId(item)
+        : null;
+
+      if (
+        shouldBeginPlaybackVideoUiLoading({
+          hasQueueItem: item != null,
+          preparedEmbedVideoId,
+          activeVideoId: activeVideoIdRef.current,
+        })
+      ) {
+        beginPlaybackVideoUiLoading();
+      }
+    },
+    [
+      activeVideoIdRef,
+      beginPlaybackVideoUiLoading,
+      resolveQueueItemEmbedVideoId,
+    ],
+  );
 
   const resetPlaybackSkipState = useCallback(() => {
     embedStartWatchdogRef.current.disarm();
@@ -530,10 +564,9 @@ export const useReleasePlaybackProvider = (): {
     setPlaybackVideoTransitionTargetId:
       setPlaybackVideoTransitionTargetIdWithRef,
     setPlaybackVideoUiLoadingTargetId,
-    beginPlaybackVideoUiLoading,
     clearPlaybackVideoUiLoading,
-    notifyPlaybackVideoPresentationReady,
-    resolveQueueItemEmbedVideoId,
+    prepareQueueAdvancePlayback,
+    settleSameUploadQueueAdvance,
     setEmbedVideoId,
     clearPlayFromGestureRetries,
     syncEmbedToVideoId,
@@ -600,7 +633,7 @@ export const useReleasePlaybackProvider = (): {
     videos,
   });
 
-  const togglePlayback = useReleasePlaybackTransportToggle({
+  const togglePlaybackBase = useReleasePlaybackTransportToggle({
     isPaused,
     dispatchSession,
     playbackIframeRef,
@@ -609,6 +642,16 @@ export const useReleasePlaybackProvider = (): {
     schedulePlayFromGestureAttempts,
     clearPlayFromGestureRetries,
   });
+
+  const togglePlayback = useCallback(() => {
+    const resumingFromPause = isPaused;
+
+    togglePlaybackBase();
+
+    if (resumingFromPause && !embedPlaybackConfirmedRef.current) {
+      armEmbedStartWatchdog();
+    }
+  }, [armEmbedStartWatchdog, isPaused, togglePlaybackBase]);
 
   usePersistPlaybackSessionWhilePlaying({
     isPlaying,
