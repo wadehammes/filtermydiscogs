@@ -32,6 +32,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Clear user data (Settings / About / Legal) | [discogs.md](discogs.md) + [patterns.md](patterns.md) (Clear stored data) |
 | Settings page (theme, sync, clear data) | [patterns.md](patterns.md) + [components.md](components.md) (`Settings/`) |
 | CI, Knip, Fallow (agents), scripts, mise tasks, `next.config`, env, CSP | [platform.md](platform.md) |
+| Branches (`staging` trunk, `main` production), GitHub rulesets, releases | [platform.md](platform.md) (Branching and GitHub rulesets, Releases) |
 | Stacked PRs (`st` / gh-stack) | [platform.md](platform.md) (Stacked pull requests) |
 | Site metadata, sitemap, robots | [patterns.md](patterns.md) (Metadata and OG images) |
 | Private session API cache headers, `proxy.ts`, `privateRouteJson` | [platform.md](platform.md) + [database.md](database.md) (crate routes) |

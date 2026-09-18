@@ -80,13 +80,13 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 - **Commands**:
   - `pnpm lint` — Biome check
   - `pnpm lint:fix` — `biome check --fix`
-  - `pnpm lint:check` — Biome on changed files since `origin/main`
+  - `pnpm lint:check` — Biome on changed files since `origin/staging` (trunk baseline)
   - `pnpm lint:css` / `pnpm lint:css:fix` — Stylelint over `src/**/*.css`
   - `pnpm lint:all` — `lint:check` then `lint:css:fix`
   - `pnpm tsc:ci` — `db:generate` then strict TypeScript (`tsc --strict`)
 - **Configs**: [`biome.json`](../../biome.json), [`stylelint.config.mjs`](../../stylelint.config.mjs).
 - **CI**: `pnpm lint:ci`, `pnpm lint:css`, `pnpm test:ci` (**`--runInBand`**, same as local **`pnpm test`**), `pnpm knip:ci` (see [platform.md](platform.md)).
-- **Stacked PRs:** Each branch tip in a dependency stack should pass **`pnpm lint:all`** on its own (Biome uses **`--changed --since origin/main`**, so the check is cumulative from trunk). Fix lint/Knip on the **lowest** branch that introduces the failure, then **`gh stack rebase --upstack`** — do not pile unrelated fixes on the top PR only.
+- **Stacked PRs:** Each branch tip in a dependency stack should pass **`pnpm lint:all`** on its own (Biome uses **`--changed --since origin/staging`**, so the check is cumulative from trunk). Fix lint/Knip on the **lowest** branch that introduces the failure, then **`gh stack rebase --upstack`** — do not pile unrelated fixes on the top PR only.
 
 ## CSS and styling
 

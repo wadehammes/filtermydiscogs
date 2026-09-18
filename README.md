@@ -166,11 +166,31 @@ pnpm db:push          # push schema (prototype)
 pnpm db:studio        # Prisma Studio
 ```
 
-## Release
+## Branches and production
+
+| Branch | Purpose |
+|--------|---------|
+| **`staging`** | Default trunk — open PRs here; [CI](.github/workflows/ci.yml) runs on PRs to **`staging`**. |
+| **`main`** | Production only — updated automatically when you cut a release tag; do **not** push or PR here. |
+
+**Vercel:** point **Production** at **`main`**, previews/staging at **`staging`**.
+
+GitHub **rulesets** (who may push, required checks) are documented in [`docs/handbook/platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets).
+
+### Release checklist
+
+1. Merge your work into **`staging`** and confirm **`Lint/Test`** is green.
+2. Check out **`staging`** and pull latest.
+3. Tag and push (tag name must start with **`v`**):
 
 ```bash
 make release tag=v0.0.1
 ```
+
+4. Confirm [`.github/workflows/release.yml`](.github/workflows/release.yml) (**`create-release`**) succeeded: **`main`** matches the tag and the GitHub Release exists.
+5. Confirm Vercel **Production** deployed from **`main`**.
+
+Maintainers: configure rulesets once using the handbook section above ( **`main`** write-restricted; **`staging`** requires PR + CI).
 
 ## Handbook
 

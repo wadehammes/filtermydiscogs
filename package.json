@@ -15,7 +15,7 @@
     "lint": "biome check",
     "lint:ci": "biome ci --reporter=github",
     "lint:fix": "biome check --fix",
-    "lint:check": "biome check --changed --since origin/main --no-errors-on-unmatched --verbose --write --diagnostic-level=error",
+    "lint:check": "biome check --changed --since origin/staging --no-errors-on-unmatched --verbose --write --diagnostic-level=error",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
     "lint:all": "pnpm lint:check && pnpm lint:css:fix && pnpm tsc:ci && pnpm knip:ci",
