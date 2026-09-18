@@ -20,7 +20,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/tests/`](../../src/tests/) | Factories ([`factories/`](../../src/tests/factories/)), test providers, base page object, shared test helpers ([`filterControlTestHelpers.ts`](../../src/tests/filterControlTestHelpers.ts)), mocks ([`setupDefaultCrateApiMocks.ts`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts), [`mockWindowLocation.ts`](../../src/tests/mocks/mockWindowLocation.ts), [`mockApiResponse.ts`](../../src/tests/mocks/mockApiResponse.ts)). |
 | [`public/images/`](../../public/images/) | Static marketing/login preview images. |
 | [`prisma/`](../../prisma/) | Schema and migrations; datasource in [`prisma.config.ts`](../../prisma.config.ts). |
-| [`scripts/`](../../scripts/) | Scaffold, env loading, DB pull helpers. |
+| [`scripts/`](../../scripts/) | Scaffold, env loading, DB pull helpers; release: **[`verify-vercel-for-release.sh`](../../scripts/verify-vercel-for-release.sh)** / **[`verify-vercel-release.mjs`](../../scripts/verify-vercel-release.mjs)** (Vercel team role gate), **[`watch-release.sh`](../../scripts/watch-release.sh)** (follow **`create-release`**). **`pnpm test:scripts`** runs **`verify-vercel-release.test.mjs`**. |
 | [`.jest/`](../../.jest/) | Jest setup, env vars, SVG mock. |
 | [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx) | Custom Testing Library render helpers (`test-utils` import alias). |
 | [`src/tests/utils/releasePlaybackTestTree.tsx`](../../src/tests/utils/releasePlaybackTestTree.tsx) | Shared **`ReleasePlaybackProvider`** wrapper for release-card and grid PO renders. |

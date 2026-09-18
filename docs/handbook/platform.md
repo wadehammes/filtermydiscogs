@@ -76,7 +76,9 @@ Success looks like **`Bypassed rule violations`** (same as a manual admin push),
 
 **Tag push message:** **`Release tags — v*`** restricts tag **creation**; admins see `Bypassed rule violations… Cannot create ref due to creations being restricted` while the tag still lands — expected when you have admin bypass.
 
-**Local `make release`:** requires **admin** (or ruleset bypass) to create **`v*`** tags; then ensure **`create-release`** succeeds ( **`RELEASE_PUSH_TOKEN`** configured).
+**Who can cut a release.** GitHub tag push needs repo **admin** (or ruleset bypass) for **`v*`** tags. The workflow push to **`main`** uses **`RELEASE_PUSH_TOKEN`**, not the tagger’s identity. The local gate for production impact is **Vercel**: **`make release`** runs [`scripts/verify-vercel-for-release.sh`](../../scripts/verify-vercel-for-release.sh) first and refuses anyone whose Vercel team role on **`worldwadeweb`** (override with **`VERCEL_TEAM_ID`**) is below **Member** — **Developer** and lower cannot run release. That person also needs **`vercel login`** or **`VERCEL_TOKEN`** locally.
+
+**Local `make release`:** run from **`staging`** only ([`Makefile`](../../Makefile)); **`verify-vercel-team`** then tag push (Git may print **Bypassed rule violations** on tag create — expected). After the push, [`scripts/watch-release.sh`](../../scripts/watch-release.sh) polls **`create-release`** and runs **`gh run watch`** when the **GitHub CLI** is installed; without **`gh`**, the tag still releases and the script prints the Actions URL. Ensure **`RELEASE_PUSH_TOKEN`** is configured so Reset Main can update **`main`**.
 
 **Maintain rulesets (API):** canonical JSON under [`.github/rulesets/`](../../.github/rulesets/). Re-apply after edits:
 

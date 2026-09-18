@@ -181,7 +181,7 @@ GitHub **rulesets** enforce this on the repo (**`staging`**: PR + **`Lint/Test`*
 
 1. Merge your work into **`staging`** and confirm **`Lint/Test`** is green.
 2. Check out **`staging`** and pull latest.
-3. Tag and push (tag name must start with **`v`**):
+3. Tag and push from **`staging`** (tag name must start with **`v`**). Requires **`vercel login`** (or **`VERCEL_TOKEN`**) and **Member+** on the Vercel team **`worldwadeweb`**; with **`gh`** installed, the Makefile watches **`create-release`** until it finishes.
 
 ```bash
 make release tag=v0.0.1
