@@ -3,6 +3,7 @@ import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { buildReleasePlaybackMatchIndex } from "src/utils/releasePlayback";
 import {
+  doesPlaybackVideoUiLoadingTargetMatch,
   resolveActivePlaybackTitle,
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
@@ -10,6 +11,7 @@ import {
   resolveIsPlaybackReady,
   resolveNeedsPlaybackVideoSwitch,
   resolvePlaybackVideoId,
+  shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
 
@@ -48,6 +50,57 @@ describe("releasePlaybackActivePresentation", () => {
         activeVideoId: "te2jJncBVG4",
       }),
     ).toBe("abc12345678");
+  });
+
+  it("shouldBeginPlaybackVideoUiLoading is false for same-upload queue rows and true when the upload changes", () => {
+    expect(
+      shouldBeginPlaybackVideoUiLoading({
+        hasQueueItem: true,
+        preparedEmbedVideoId: "shared-id",
+        activeVideoId: "shared-id",
+      }),
+    ).toBe(false);
+    expect(
+      shouldBeginPlaybackVideoUiLoading({
+        hasQueueItem: true,
+        preparedEmbedVideoId: "next-id",
+        activeVideoId: "prev-id",
+      }),
+    ).toBe(true);
+    expect(
+      shouldBeginPlaybackVideoUiLoading({
+        hasQueueItem: false,
+        preparedEmbedVideoId: null,
+        activeVideoId: "prev-id",
+      }),
+    ).toBe(true);
+  });
+
+  it("doesPlaybackVideoUiLoadingTargetMatch accepts embed or transition ids while session activeVideoId lags", () => {
+    expect(
+      doesPlaybackVideoUiLoadingTargetMatch({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: null,
+      }),
+    ).toBe(true);
+    expect(
+      doesPlaybackVideoUiLoadingTargetMatch({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: null,
+        transitionTargetVideoId: "next-id",
+      }),
+    ).toBe(true);
+    expect(
+      doesPlaybackVideoUiLoadingTargetMatch({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "other-id",
+        transitionTargetVideoId: null,
+      }),
+    ).toBe(false);
   });
 
   it("resolveNeedsPlaybackVideoSwitch is true when the prepared upload differs from the active upload", () => {

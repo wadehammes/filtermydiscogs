@@ -62,6 +62,8 @@ const buildHarness = ({
 
   const beginPlaybackVideoUiLoading = jest.fn();
   const clearPlaybackVideoUiLoading = jest.fn();
+  const notifyPlaybackVideoPresentationReady = jest.fn();
+  const resolveQueueItemEmbedVideoId = jest.fn(() => null);
   const setUpcomingQueue = jest.fn((nextQueue: typeof sessionQueue) => {
     queueRef.current = nextQueue;
   });
@@ -80,6 +82,8 @@ const buildHarness = ({
       setPlaybackVideoUiLoadingTargetId,
       beginPlaybackVideoUiLoading,
       clearPlaybackVideoUiLoading,
+      notifyPlaybackVideoPresentationReady,
+      resolveQueueItemEmbedVideoId,
       setEmbedVideoId: jest.fn(),
       clearPlayFromGestureRetries: jest.fn(),
       syncEmbedToVideoId: jest.fn(),
@@ -155,6 +159,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        notifyPlaybackVideoPresentationReady: jest.fn(),
+        resolveQueueItemEmbedVideoId: jest.fn(() => "abc12345678"),
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),
@@ -205,6 +211,73 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(pendingPlayFromGestureRef.current).toBe(true);
   });
 
+  it("playNext confirms embed playback when the next row reuses the same YouTube upload", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const nextItem = createQueueItem({
+      release,
+      trackPosition: "A2",
+      trackTitle: "Same upload",
+    });
+    const sharedVideoId = "abc12345678";
+    const notifyPlaybackVideoPresentationReady = jest.fn();
+    const clearPlaybackVideoUiLoading = jest.fn();
+    const resolveQueueItemEmbedVideoId = jest.fn(() => sharedVideoId);
+    const queueRef = { current: [nextItem] };
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        clearPlaybackVideoUiLoading,
+        notifyPlaybackVideoPresentationReady,
+        resolveQueueItemEmbedVideoId,
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem: jest.fn(() => sharedVideoId),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(
+          (updater: (previous: (typeof nextItem)[]) => (typeof nextItem)[]) => {
+            queueRef.current = updater(queueRef.current);
+          },
+        ),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          queueManuallyExtendedRef: { current: false },
+          releaseRef: { current: release },
+          queueRef,
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: true },
+          releaseDetailIdRef: { current: release.basic_information.id },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          activeVideoIdRef: { current: sharedVideoId },
+          embedVideoIdRef: { current: sharedVideoId },
+        },
+      }),
+    );
+
+    result.current.playNext();
+
+    expect(notifyPlaybackVideoPresentationReady).toHaveBeenCalledTimes(1);
+  });
+
   it("playNext begins video UI loading before advancing the queue", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({
@@ -219,6 +292,69 @@ describe("useReleasePlaybackQueueActions", () => {
     result.current.playNext();
 
     expect(beginPlaybackVideoUiLoading).toHaveBeenCalledTimes(1);
+  });
+
+  it("playPrevious confirms embed playback when history reuses the same YouTube upload", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const historyItem = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Same upload",
+    });
+    const sharedVideoId = "abc12345678";
+    const notifyPlaybackVideoPresentationReady = jest.fn();
+    const beginPlaybackVideoUiLoading = jest.fn();
+    const playbackHistoryRef = { current: [historyItem] };
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        beginPlaybackVideoUiLoading,
+        clearPlaybackVideoUiLoading: jest.fn(),
+        notifyPlaybackVideoPresentationReady,
+        resolveQueueItemEmbedVideoId: jest.fn(() => sharedVideoId),
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem: jest.fn(() => sharedVideoId),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          queueManuallyExtendedRef: { current: false },
+          releaseRef: { current: release },
+          queueRef: { current: [] },
+          playbackHistoryRef,
+          isPlayingRef: { current: true },
+          releaseDetailIdRef: { current: release.basic_information.id },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          activeVideoIdRef: { current: sharedVideoId },
+          embedVideoIdRef: { current: sharedVideoId },
+        },
+      }),
+    );
+
+    result.current.playPrevious();
+
+    expect(beginPlaybackVideoUiLoading).not.toHaveBeenCalled();
+    expect(notifyPlaybackVideoPresentationReady).toHaveBeenCalledTimes(1);
   });
 
   it("playPrevious begins video UI loading before playing history", () => {
@@ -243,6 +379,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         beginPlaybackVideoUiLoading,
         clearPlaybackVideoUiLoading: jest.fn(),
+        notifyPlaybackVideoPresentationReady: jest.fn(),
+        resolveQueueItemEmbedVideoId: jest.fn(() => null),
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),
@@ -362,6 +500,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        notifyPlaybackVideoPresentationReady: jest.fn(),
+        resolveQueueItemEmbedVideoId: jest.fn(() => null),
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),

@@ -81,6 +81,51 @@ export const resolveNeedsPlaybackVideoSwitch = ({
 }): boolean =>
   preparedEmbedVideoId !== null && preparedEmbedVideoId !== activeVideoId;
 
+export const shouldBeginPlaybackVideoUiLoading = ({
+  hasQueueItem,
+  preparedEmbedVideoId,
+  activeVideoId,
+}: {
+  hasQueueItem: boolean;
+  preparedEmbedVideoId: string | null;
+  activeVideoId: string | null;
+}): boolean => {
+  if (!hasQueueItem) {
+    return true;
+  }
+
+  if (preparedEmbedVideoId === null) {
+    return true;
+  }
+
+  return resolveNeedsPlaybackVideoSwitch({
+    preparedEmbedVideoId,
+    activeVideoId,
+  });
+};
+
+export const doesPlaybackVideoUiLoadingTargetMatch = ({
+  loadingTargetVideoId,
+  activeVideoId,
+  embedVideoId,
+  transitionTargetVideoId,
+}: {
+  loadingTargetVideoId: string | null;
+  activeVideoId: string | null;
+  embedVideoId: string | null;
+  transitionTargetVideoId: string | null;
+}): boolean => {
+  if (loadingTargetVideoId === null) {
+    return true;
+  }
+
+  return (
+    activeVideoId === loadingTargetVideoId ||
+    embedVideoId === loadingTargetVideoId ||
+    transitionTargetVideoId === loadingTargetVideoId
+  );
+};
+
 export const shouldClearPlaybackVideoTransition = ({
   transitionTargetVideoId,
   activeVideoId,
