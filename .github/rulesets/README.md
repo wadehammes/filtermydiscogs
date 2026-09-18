@@ -19,3 +19,5 @@ gh api --method PUT repos/wadehammes/filtermydiscogs/rulesets/23658836 --input .
 ```
 
 New rulesets use **`POST .../rulesets`** instead of **`PUT`**.
+
+**Releases:** set GitHub **Settings → Secrets → Actions → `RELEASE_PUSH_TOKEN`** (admin PAT) so [`release.yml`](../workflows/release.yml) can push the tag to **`main`**.
