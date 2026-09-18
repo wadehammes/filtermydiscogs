@@ -36,7 +36,10 @@ describe("createPlaybackSkipLogToast", () => {
     });
 
     toast.appendAndScheduleSkip(
-      { trackLabel: "Artist — A1 · Track", reason: "Private or removed" },
+      {
+        trackLabel: "A1 Track - Artist, Album",
+        reason: "Private or removed",
+      },
       onSkip,
     );
 
@@ -52,7 +55,10 @@ describe("createPlaybackSkipLogToast", () => {
     });
 
     toast.appendAndScheduleSkip(
-      { trackLabel: "Artist — A1 · Track", reason: "Private or removed" },
+      {
+        trackLabel: "A2 Howler - Various, HDZ 06",
+        reason: "Private or removed",
+      },
       onSkip,
     );
 
@@ -61,7 +67,7 @@ describe("createPlaybackSkipLogToast", () => {
     render(createElement(Fragment, null, description));
 
     expect(screen.queryByRole("list")).toBeNull();
-    expect(screen.getByText("Artist — A1 · Track")).toBeInTheDocument();
+    expect(screen.getByText("A2 Howler - Various, HDZ 06")).toBeInTheDocument();
   });
 
   it("renders multiple skips as a bullet list", () => {

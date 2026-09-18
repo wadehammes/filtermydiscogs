@@ -1,5 +1,8 @@
 import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
-import { resolveYoutubeEmbedErrorReason } from "src/utils/playbackSkippedTrackLog";
+import {
+  playbackSkipLogDedupeKey,
+  resolveYoutubeEmbedErrorReason,
+} from "src/utils/playbackSkippedTrackLog";
 
 export const PLAYBACK_EMBED_UNAVAILABLE_FALLBACK = -1;
 
@@ -15,12 +18,12 @@ export const resolvePlaybackEmbedUnavailableReason = (
 
 export const createPlaybackEmbedUnavailableSkipHandler = ({
   appendSkip,
-  resolveTrackLabel,
+  resolveSkipDisplay,
   isSkipAllowed,
   onBeforeSkip,
 }: {
   appendSkip: (entry: PlaybackSkipLogEntry, onSkip: () => void) => void;
-  resolveTrackLabel: () => string;
+  resolveSkipDisplay: () => Pick<PlaybackSkipLogEntry, "trackLabel">;
   isSkipAllowed: () => boolean;
   onBeforeSkip?: () => void;
 }) => {
@@ -32,17 +35,18 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
         return;
       }
 
-      const trackLabel = resolveTrackLabel();
+      const display = resolveSkipDisplay();
       const reason = resolvePlaybackEmbedUnavailableReason(errorCode);
+      const dedupeKey = playbackSkipLogDedupeKey(display);
 
-      if (lastDedupeKey === trackLabel) {
+      if (lastDedupeKey === dedupeKey) {
         return;
       }
 
-      lastDedupeKey = trackLabel;
+      lastDedupeKey = dedupeKey;
       onBeforeSkip?.();
 
-      appendSkip({ trackLabel, reason }, () => {
+      appendSkip({ ...display, reason }, () => {
         lastDedupeKey = null;
         playNext();
       });

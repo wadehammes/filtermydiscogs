@@ -34,6 +34,10 @@ export const resolveYoutubeEmbedErrorReason = (errorCode: number): string => {
   return "Unavailable on YouTube";
 };
 
+export const playbackSkipLogDedupeKey = (
+  entry: Pick<PlaybackSkipLogEntry, "trackLabel">,
+): string => entry.trackLabel;
+
 export const formatPlaybackSkipLogTitle = (entryCount: number): string => {
   if (entryCount <= 1) {
     return "Skipped unavailable track";
@@ -42,7 +46,7 @@ export const formatPlaybackSkipLogTitle = (entryCount: number): string => {
   return `Skipped ${entryCount} unavailable tracks`;
 };
 
-export const resolvePlaybackSkipTrackLabel = ({
+export const resolvePlaybackSkipLogDisplay = ({
   release,
   tracks,
   activeTrackIndex,
@@ -52,20 +56,29 @@ export const resolvePlaybackSkipTrackLabel = ({
   tracks: DiscogsTrack[];
   activeTrackIndex: number;
   previewVideo: DiscogsVideo | null;
-}): string => {
+}): Pick<PlaybackSkipLogEntry, "trackLabel"> => {
   if (previewVideo?.title?.trim()) {
-    return previewVideo.title.trim();
+    return { trackLabel: previewVideo.title.trim() };
   }
 
   if (!release) {
-    return "Current track";
+    return { trackLabel: "Current track" };
   }
 
   const artist = formatArtistNames(release);
+  const album = release.basic_information.title?.trim() ?? "";
   const track = tracks[activeTrackIndex];
   const position = track?.position?.trim() ?? "";
   const title = track?.title?.trim() ?? "Unknown track";
-  const positionPrefix = position ? `${position} · ` : "";
+  const trackHead = position ? `${position} ${title}` : title;
+  const releaseTail = [artist, album]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(", ");
 
-  return `${artist} — ${positionPrefix}${title}`;
+  if (!releaseTail) {
+    return { trackLabel: trackHead };
+  }
+
+  return { trackLabel: `${trackHead} - ${releaseTail}` };
 };
