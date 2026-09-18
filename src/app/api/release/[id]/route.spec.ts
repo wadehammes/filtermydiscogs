@@ -105,6 +105,33 @@ describe("GET /api/release/[id]", () => {
     );
   });
 
+  it("returns no-store cache headers when fresh=1", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
+    jest
+      .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
+      .mockResolvedValue(releaseDetail);
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/release/${RELEASE_ID}?fresh=1`, {
+        headers: {
+          cookie: Object.entries(authenticatedCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        },
+      }),
+      {
+        params: Promise.resolve({ id: RELEASE_ID }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+  });
+
   it("returns release detail from Discogs for visitors without OAuth cookies", async () => {
     jest
       .spyOn(discogsOAuthService, "makeConsumerRequest")

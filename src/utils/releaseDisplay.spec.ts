@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsTrack } from "src/types";
 import {
@@ -8,7 +9,9 @@ import {
   formatTrackCreditsLine,
   formatTrackExtraartists,
   getCommunityRatingFromReleaseDetail,
+  mergeReleaseDetailWhenRefetchedCommunityIsStale,
   normalizeDiscogsJoin,
+  patchReleaseDetailCommunityForUserRatingChange,
 } from "src/utils/releaseDisplay";
 
 describe("normalizeDiscogsJoin", () => {
@@ -189,5 +192,81 @@ describe("getCommunityRatingFromReleaseDetail", () => {
         },
       }),
     ).toBeNull();
+  });
+});
+
+describe("patchReleaseDetailCommunityForUserRatingChange", () => {
+  it("increments the community count when the user adds a first rating", () => {
+    const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 1,
+      community: {
+        rating: {
+          average: 5,
+          count: 4,
+        },
+      },
+    });
+
+    const patched = patchReleaseDetailCommunityForUserRatingChange(
+      releaseDetail,
+      {
+        previousUserRating: 0,
+        nextUserRating: 5,
+      },
+    );
+
+    expect(getCommunityRatingFromReleaseDetail(patched)).toEqual({
+      average: 5,
+      count: 5,
+    });
+  });
+
+  it("updates the average when the user changes an existing rating", () => {
+    const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 1,
+      community: {
+        rating: {
+          average: 4,
+          count: 2,
+        },
+      },
+    });
+
+    const patched = patchReleaseDetailCommunityForUserRatingChange(
+      releaseDetail,
+      {
+        previousUserRating: 3,
+        nextUserRating: 5,
+      },
+    );
+
+    expect(getCommunityRatingFromReleaseDetail(patched)).toEqual({
+      average: 5,
+      count: 2,
+    });
+  });
+});
+
+describe("mergeReleaseDetailWhenRefetchedCommunityIsStale", () => {
+  it("keeps optimistic community stats when the refetch count lags", () => {
+    const fetched = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 1,
+      community: { rating: { average: 5, count: 4 } },
+    });
+    const optimistic = patchReleaseDetailCommunityForUserRatingChange(fetched, {
+      previousUserRating: 0,
+      nextUserRating: 5,
+    });
+
+    const merged = mergeReleaseDetailWhenRefetchedCommunityIsStale(
+      fetched,
+      optimistic,
+      5,
+    );
+
+    expect(getCommunityRatingFromReleaseDetail(merged)).toEqual({
+      average: 5,
+      count: 5,
+    });
   });
 });

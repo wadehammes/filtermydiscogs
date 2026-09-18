@@ -20,6 +20,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | Script | Event | What it does |
 |--------|-------|--------------|
 | `session-handbook-routing.sh` | `sessionStart` | Injects the handbook routing map (`llms.md`) into session context. |
+| `handbook-adherence-reminder.sh` | `beforeSubmitPrompt` | Brief handbook nudge on each user message (skips very short replies); routing detail is on `sessionStart`. |
 | `block-co-authored-by-commit.sh` | `beforeShellExecution` (`git commit`) | Denies raw `git commit` (agents must use `scripts/git-commit.sh` or `git -c core.hooksPath=.githooks commit`) and blocks `Co-authored-by` in the command string. |
 | `block-added-comments.sh` | `preToolUse` | Denies edits that add code comments. |
 | `block-toplevel-media.sh` | `preToolUse` | Denies top-level `@media` in CSS — nest inside selectors. |
@@ -34,9 +35,9 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update, and/or product/setup surfaces changed without **README.md**. |
 | `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
 | `block-login-page-copy-violations.sh` | `preToolUse` | Denies login landing copy edits that add em dashes, embellishment, or banned inaccurate phrases. |
-| `block-query-hook-mocks.sh` | `preToolUse` | Denies feature-test edits that mock `src/hooks/queries/*` instead of `src/api/urls`. |
+| `block-query-hook-mocks.sh` | `preToolUse` | Denies specs under `src/hooks/queries/` or `src/hooks/mutations/`, and feature-test edits that mock those hooks instead of `src/api/urls`. |
 | `login-page-copy-drift-check.sh` | `stop` | Runs login page literary-rule Jest tests when landing copy source files changed (via **`mise exec -- pnpm`**). |
-| `query-hook-mock-drift-check.sh` | `stop` | Runs query-hook mock rule Jest tests when feature test files changed (via **`mise exec -- pnpm`**). |
+| `handbook-test-drift-check.sh` | `stop` | Runs handbook testing rule Jest tests (`handbookTestRules.spec.ts`) when feature test files changed (via **`mise exec -- pnpm`**). |
 | `lint-all-check.sh` | `stop` | Runs **`pnpm lint:all`** when the session changed meaningful source ( **`src/**`**, Prisma, lockfile, `package.json`, `next.config`) and follow up once on failure. |
 
 ### Not ported

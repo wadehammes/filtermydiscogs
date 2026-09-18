@@ -1,16 +1,25 @@
 import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
 import type { DiscogsReleaseDetail, DiscogsSearchResponse } from "src/types";
 
+export interface FetchDiscogsReleaseOptions {
+  bypassCache?: boolean;
+}
+
 export const fetchDiscogsRelease = async (
   releaseId: string,
+  { bypassCache = false }: FetchDiscogsReleaseOptions = {},
 ): Promise<DiscogsReleaseDetail> => {
   try {
-    const response = await fetch(`/api/release/${releaseId}`, {
+    const releasePath = bypassCache
+      ? `/api/release/${releaseId}?fresh=1`
+      : `/api/release/${releaseId}`;
+    const response = await fetch(releasePath, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
+      ...(bypassCache ? { cache: "no-store" as const } : {}),
     });
 
     if (!response.ok) {
