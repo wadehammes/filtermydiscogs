@@ -27,6 +27,7 @@ import {
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import { doesPlaybackVideoUiLoadingTargetMatch } from "src/utils/releasePlaybackActivePresentation";
+import { shouldAcceptEmbedPlayingConfirmation } from "src/utils/releasePlaybackEmbedConfirm";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
   isWithinEmbedTrackSwitchGrace,
@@ -62,7 +63,7 @@ export interface ReleasePlaybackYoutubeEmbedRefs {
   pendingPlayFromGestureRef: RefObject<boolean>;
   playbackVideoTransitionTargetIdRef: RefObject<string | null>;
   playbackVideoUiLoadingTargetVideoIdRef: RefObject<string | null>;
-  playbackVideoUiLoadingEmbedLoadStartedRef: RefObject<boolean>;
+  playbackVideoUiLoadingEmbedLoadStartedAtMsRef: RefObject<number | null>;
   playFromGestureRetryTimeoutsRef: RefObject<number[]>;
   releaseRef: RefObject<import("src/types").DiscogsRelease | null>;
   tracksRef: RefObject<DiscogsTrack[]>;
@@ -123,7 +124,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     pendingPlayFromGestureRef,
     playbackVideoTransitionTargetIdRef,
     playbackVideoUiLoadingTargetVideoIdRef,
-    playbackVideoUiLoadingEmbedLoadStartedRef,
+    playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
     playFromGestureRetryTimeoutsRef,
     releaseRef,
     tracksRef,
@@ -392,17 +393,14 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
-        if (
-          isPlaybackVideoUiLoadingRef.current &&
-          !playbackVideoUiLoadingEmbedLoadStartedRef.current
-        ) {
-          return;
-        }
-
-        pendingPlayFromGestureRef.current = false;
-        embedTrackSwitchGraceUntilRef.current = 0;
-
         if (isPlaybackVideoUiLoadingRef.current) {
+          const embedLoadStartedAtMs =
+            playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current;
+
+          if (embedLoadStartedAtMs === null) {
+            return;
+          }
+
           const loadingTarget = playbackVideoUiLoadingTargetVideoIdRef.current;
 
           if (
@@ -417,9 +415,20 @@ export const useReleasePlaybackYoutubeEmbed = ({
             return;
           }
 
+          if (
+            !shouldAcceptEmbedPlayingConfirmation({
+              embedLoadStartedAtMs,
+              nowMs: Date.now(),
+            })
+          ) {
+            return;
+          }
+
           clearPlaybackVideoUiLoading();
         }
 
+        pendingPlayFromGestureRef.current = false;
+        embedTrackSwitchGraceUntilRef.current = 0;
         onEmbedPlaybackConfirmed?.();
 
         return;
@@ -452,7 +461,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       playbackIframeRef,
       onEmbedPlaybackConfirmed,
       playbackVideoTransitionTargetIdRef,
-      playbackVideoUiLoadingEmbedLoadStartedRef,
+      playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
       playbackVideoUiLoadingTargetVideoIdRef,
     ],
   );
@@ -631,11 +640,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
   const notifyImperativeEmbedLoadStarted = useCallback(() => {
     markEmbedTrackSwitchGrace();
-    playbackVideoUiLoadingEmbedLoadStartedRef.current = true;
+    playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = Date.now();
     schedulePlayFromGestureAttempts();
   }, [
     markEmbedTrackSwitchGrace,
-    playbackVideoUiLoadingEmbedLoadStartedRef,
+    playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
     schedulePlayFromGestureAttempts,
   ]);
 

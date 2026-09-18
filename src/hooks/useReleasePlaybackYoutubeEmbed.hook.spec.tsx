@@ -12,7 +12,8 @@ import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYout
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { definedProps } from "src/utils/definedProps";
-import { renderHook } from "test-utils";
+import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
+import { act, renderHook } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
@@ -47,7 +48,9 @@ const buildHarness = ({
   const playbackVideoUiLoadingTargetVideoIdRef = {
     current: null as string | null,
   };
-  const playbackVideoUiLoadingEmbedLoadStartedRef = { current: false };
+  const playbackVideoUiLoadingEmbedLoadStartedAtMsRef = {
+    current: null as number | null,
+  };
   const pendingPlayFromGestureRef = { current: false };
   const playFromGestureRetryTimeoutsRef = { current: [] as number[] };
   const releaseRef = { current: release };
@@ -80,7 +83,7 @@ const buildHarness = ({
           pendingPlayFromGestureRef,
           playbackVideoTransitionTargetIdRef,
           playbackVideoUiLoadingTargetVideoIdRef,
-          playbackVideoUiLoadingEmbedLoadStartedRef,
+          playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
           playFromGestureRetryTimeoutsRef,
           releaseRef,
           tracksRef,
@@ -115,7 +118,6 @@ const buildHarness = ({
     isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
     playbackIframeRef,
-    playbackVideoUiLoadingEmbedLoadStartedRef,
     playbackVideoUiLoadingTargetVideoIdRef,
     result,
     setEmbedVideoId,
@@ -258,8 +260,8 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
       embedVideoIdRef,
       isPlaybackVideoUiLoadingRef,
       playbackIframeRef,
-      playbackVideoUiLoadingEmbedLoadStartedRef,
       playbackVideoUiLoadingTargetVideoIdRef,
+      result,
     } = buildHarness({
       onEmbedPlaybackConfirmed,
     });
@@ -268,7 +270,12 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     playbackVideoUiLoadingTargetVideoIdRef.current = "next-video-id";
     activeVideoIdRef.current = "prev-video-id";
     embedVideoIdRef.current = "next-video-id";
-    playbackVideoUiLoadingEmbedLoadStartedRef.current = true;
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
 
     dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
 
@@ -285,7 +292,6 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
       isPlaybackVideoUiLoadingRef,
       pendingPlayFromGestureRef,
       playbackIframeRef,
-      playbackVideoUiLoadingEmbedLoadStartedRef,
       playbackVideoUiLoadingTargetVideoIdRef,
       result,
     } = buildHarness();
@@ -294,7 +300,6 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     playbackVideoUiLoadingTargetVideoIdRef.current = "next-video-id";
     activeVideoIdRef.current = "next-video-id";
     pendingPlayFromGestureRef.current = true;
-    playbackVideoUiLoadingEmbedLoadStartedRef.current = false;
 
     dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
 
@@ -304,6 +309,15 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     result.current.notifyImperativeEmbedLoadStarted();
 
     expect(pendingPlayFromGestureRef.current).toBe(true);
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).not.toHaveBeenCalled();
+    expect(pendingPlayFromGestureRef.current).toBe(true);
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
 
     dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
 

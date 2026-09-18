@@ -30,6 +30,37 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
     expect(playNext).toHaveBeenCalledTimes(1);
   });
 
+  it("does not append skip when there is no active playback session", () => {
+    const appendSkip = jest.fn();
+    const playNext = jest.fn();
+
+    const handler = createPlaybackEmbedUnavailableSkipHandler({
+      appendSkip,
+      resolveTrackLabel: () => "Artist — Track",
+      isSkipAllowed: () => false,
+    });
+
+    handler.handleFailure(100, playNext);
+
+    expect(appendSkip).not.toHaveBeenCalled();
+    expect(playNext).not.toHaveBeenCalled();
+  });
+
+  it("appends skip when transport is paused but the playback session is still active", () => {
+    const appendSkip = jest.fn();
+    const playNext = jest.fn();
+
+    const handler = createPlaybackEmbedUnavailableSkipHandler({
+      appendSkip,
+      resolveTrackLabel: () => "Artist — Track",
+      isSkipAllowed: () => true,
+    });
+
+    handler.handleFailure(100, playNext);
+
+    expect(appendSkip).toHaveBeenCalledTimes(1);
+  });
+
   it("uses fallback copy when onError never arrives", () => {
     const appendSkip = jest.fn();
     const playNext = jest.fn();

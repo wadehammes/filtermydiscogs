@@ -23,6 +23,7 @@ import {
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import { PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS } from "src/utils/playbackEmbedStartWatchdog";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
@@ -31,6 +32,7 @@ import {
   requestYoutubeEmbedPlaybackSync,
 } from "src/utils/postYoutubePlayerCommand";
 import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
+import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import {
   readPersistedReleasePlayback,
   toPersistedQueueItem,
@@ -79,6 +81,22 @@ const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
     configurable: true,
     get: () => state,
   });
+};
+
+const dispatchYoutubePlayerError = ({
+  contentWindow,
+  errorCode,
+}: {
+  contentWindow: Window;
+  errorCode: number;
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({ event: "onError", info: errorCode }),
+      origin: "https://www.youtube-nocookie.com",
+      source: contentWindow,
+    }),
+  );
 };
 
 const dispatchYoutubePlayerState = ({
@@ -751,6 +769,46 @@ describe("ReleasePlaybackProvider", () => {
     expect(playVideoCalls.length).toBeGreaterThan(0);
   });
 
+  it("schedules unavailable skip toast when embed load starts on a paused restore session", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+        startPaused: true,
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.isPaused).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
   it("schedules unavailable skip toast when embed load starts but playback never confirms", async () => {
     jest.useFakeTimers();
 
@@ -781,10 +839,170 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("skips and advances when YouTube posts onError for the active embed", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockImplementation((_entry, onSkip) => {
+      onSkip();
+    });
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+    expect(mockAppendPlaybackSkipAndSchedule.mock.calls[0]?.[0]?.reason).toBe(
+      "Private or removed on YouTube",
+    );
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+  });
+
+  it("does not treat immediate stale PLAYING as confirmed so the embed watchdog can skip", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    expect(result.current.isPlaybackVideoLoading).toBe(true);
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("confirms embed playback after the post-load PLAYING delay during video UI loading", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    expect(result.current.isPlaybackVideoLoading).toBe(true);
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackVideoLoading).toBe(false);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
     jest.useRealTimers();
   });
@@ -829,6 +1047,8 @@ describe("ReleasePlaybackProvider", () => {
 
     expect(result.current.isPlaybackVideoLoading).toBe(true);
 
+    jest.useFakeTimers();
+
     act(() => {
       result.current.notifyPlaybackVideoLoadStarted();
       dispatchYoutubePlayerState({
@@ -836,6 +1056,18 @@ describe("ReleasePlaybackProvider", () => {
         playerState: 1,
       });
     });
+
+    expect(result.current.isPlaybackVideoLoading).toBe(true);
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    jest.useRealTimers();
 
     await waitFor(() => {
       expect(result.current.isPlaybackVideoLoading).toBe(false);

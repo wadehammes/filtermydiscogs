@@ -60,10 +60,9 @@ const buildHarness = ({
   };
   const startPlaybackRef = { current: () => {} };
 
-  const beginPlaybackVideoUiLoading = jest.fn();
   const clearPlaybackVideoUiLoading = jest.fn();
-  const notifyPlaybackVideoPresentationReady = jest.fn();
-  const resolveQueueItemEmbedVideoId = jest.fn(() => null);
+  const prepareQueueAdvancePlayback = jest.fn();
+  const settleSameUploadQueueAdvance = jest.fn();
   const setUpcomingQueue = jest.fn((nextQueue: typeof sessionQueue) => {
     queueRef.current = nextQueue;
   });
@@ -80,10 +79,9 @@ const buildHarness = ({
       setIsPlaybackEmbedMounted: jest.fn(),
       setPlaybackVideoTransitionTargetId: jest.fn(),
       setPlaybackVideoUiLoadingTargetId,
-      beginPlaybackVideoUiLoading,
       clearPlaybackVideoUiLoading,
-      notifyPlaybackVideoPresentationReady,
-      resolveQueueItemEmbedVideoId,
+      prepareQueueAdvancePlayback,
+      settleSameUploadQueueAdvance,
       setEmbedVideoId: jest.fn(),
       clearPlayFromGestureRetries: jest.fn(),
       syncEmbedToVideoId: jest.fn(),
@@ -124,8 +122,8 @@ const buildHarness = ({
     queueRef,
     result,
     similarQueueModeRef,
-    beginPlaybackVideoUiLoading,
     clearPlaybackVideoUiLoading,
+    prepareQueueAdvancePlayback,
     setUpcomingQueue,
     updateUpcomingQueue,
   };
@@ -157,10 +155,9 @@ describe("useReleasePlaybackQueueActions", () => {
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId,
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
-        beginPlaybackVideoUiLoading: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
-        notifyPlaybackVideoPresentationReady: jest.fn(),
-        resolveQueueItemEmbedVideoId: jest.fn(() => "abc12345678"),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),
@@ -219,9 +216,8 @@ describe("useReleasePlaybackQueueActions", () => {
       trackTitle: "Same upload",
     });
     const sharedVideoId = "abc12345678";
-    const notifyPlaybackVideoPresentationReady = jest.fn();
-    const clearPlaybackVideoUiLoading = jest.fn();
-    const resolveQueueItemEmbedVideoId = jest.fn(() => sharedVideoId);
+    const settleSameUploadQueueAdvance = jest.fn();
+    const prepareQueueAdvancePlayback = jest.fn();
     const queueRef = { current: [nextItem] };
 
     const { result } = renderHook(() =>
@@ -231,10 +227,9 @@ describe("useReleasePlaybackQueueActions", () => {
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
-        beginPlaybackVideoUiLoading: jest.fn(),
-        clearPlaybackVideoUiLoading,
-        notifyPlaybackVideoPresentationReady,
-        resolveQueueItemEmbedVideoId,
+        clearPlaybackVideoUiLoading: jest.fn(),
+        prepareQueueAdvancePlayback,
+        settleSameUploadQueueAdvance,
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),
@@ -275,23 +270,24 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.playNext();
 
-    expect(notifyPlaybackVideoPresentationReady).toHaveBeenCalledTimes(1);
+    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(nextItem);
+    expect(settleSameUploadQueueAdvance).toHaveBeenCalledTimes(1);
   });
 
-  it("playNext begins video UI loading before advancing the queue", () => {
+  it("playNext prepares queue advance playback before advancing the queue", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({
       release,
       trackPosition: "B1",
       trackTitle: "Next",
     });
-    const { result, beginPlaybackVideoUiLoading } = buildHarness({
+    const { result, prepareQueueAdvancePlayback } = buildHarness({
       sessionQueue: [nextItem],
     });
 
     result.current.playNext();
 
-    expect(beginPlaybackVideoUiLoading).toHaveBeenCalledTimes(1);
+    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(nextItem);
   });
 
   it("playPrevious confirms embed playback when history reuses the same YouTube upload", () => {
@@ -302,8 +298,8 @@ describe("useReleasePlaybackQueueActions", () => {
       trackTitle: "Same upload",
     });
     const sharedVideoId = "abc12345678";
-    const notifyPlaybackVideoPresentationReady = jest.fn();
-    const beginPlaybackVideoUiLoading = jest.fn();
+    const settleSameUploadQueueAdvance = jest.fn();
+    const prepareQueueAdvancePlayback = jest.fn();
     const playbackHistoryRef = { current: [historyItem] };
 
     const { result } = renderHook(() =>
@@ -313,10 +309,9 @@ describe("useReleasePlaybackQueueActions", () => {
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
-        beginPlaybackVideoUiLoading,
         clearPlaybackVideoUiLoading: jest.fn(),
-        notifyPlaybackVideoPresentationReady,
-        resolveQueueItemEmbedVideoId: jest.fn(() => sharedVideoId),
+        prepareQueueAdvancePlayback,
+        settleSameUploadQueueAdvance,
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),
@@ -353,18 +348,18 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.playPrevious();
 
-    expect(beginPlaybackVideoUiLoading).not.toHaveBeenCalled();
-    expect(notifyPlaybackVideoPresentationReady).toHaveBeenCalledTimes(1);
+    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(historyItem);
+    expect(settleSameUploadQueueAdvance).toHaveBeenCalledTimes(1);
   });
 
-  it("playPrevious begins video UI loading before playing history", () => {
+  it("playPrevious prepares queue advance playback before playing history", () => {
     const release = releaseFactory.withDisplayDefaults();
     const historyItem = createQueueItem({
       release,
       trackPosition: "A1",
       trackTitle: "Previous",
     });
-    const beginPlaybackVideoUiLoading = jest.fn();
+    const prepareQueueAdvancePlayback = jest.fn();
     const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
     const playbackHistoryRef = { current: [historyItem] };
     const queueRef = { current: [] as ReturnType<typeof createQueueItem>[] };
@@ -377,10 +372,9 @@ describe("useReleasePlaybackQueueActions", () => {
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
-        beginPlaybackVideoUiLoading,
         clearPlaybackVideoUiLoading: jest.fn(),
-        notifyPlaybackVideoPresentationReady: jest.fn(),
-        resolveQueueItemEmbedVideoId: jest.fn(() => null),
+        prepareQueueAdvancePlayback,
+        settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),
@@ -417,7 +411,7 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.playPrevious();
 
-    expect(beginPlaybackVideoUiLoading).toHaveBeenCalledTimes(1);
+    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(historyItem);
   });
 
   it("clearQueue empties the upcoming queue and turns off similar tail extension", () => {
@@ -498,10 +492,9 @@ describe("useReleasePlaybackQueueActions", () => {
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
-        beginPlaybackVideoUiLoading: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
-        notifyPlaybackVideoPresentationReady: jest.fn(),
-        resolveQueueItemEmbedVideoId: jest.fn(() => null),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
         clearPlayFromGestureRetries: jest.fn(),
         syncEmbedToVideoId: jest.fn(),

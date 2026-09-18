@@ -32,10 +32,7 @@ import {
   findTrackIndexByPosition,
   parseYoutubeVideoId,
 } from "src/utils/releasePlayback";
-import {
-  resolveNeedsPlaybackVideoSwitch,
-  shouldBeginPlaybackVideoUiLoading,
-} from "src/utils/releasePlaybackActivePresentation";
+import { resolveNeedsPlaybackVideoSwitch } from "src/utils/releasePlaybackActivePresentation";
 import {
   clearPersistedReleasePlayback,
   toPersistedQueueItem,
@@ -73,10 +70,9 @@ interface UseReleasePlaybackQueueActionsParams {
   setIsPlaybackEmbedMounted: (value: boolean) => void;
   setPlaybackVideoTransitionTargetId: (videoId: string | null) => void;
   setPlaybackVideoUiLoadingTargetId: (videoId: string | null) => void;
-  beginPlaybackVideoUiLoading: () => void;
   clearPlaybackVideoUiLoading: () => void;
-  notifyPlaybackVideoPresentationReady: () => void;
-  resolveQueueItemEmbedVideoId: (item: PlaybackQueueItem) => string | null;
+  prepareQueueAdvancePlayback: (item: PlaybackQueueItem | null) => void;
+  settleSameUploadQueueAdvance: () => void;
   setEmbedVideoId: (videoId: string | null) => void;
   clearPlayFromGestureRetries: () => void;
   syncEmbedToVideoId: (videoId: string) => void;
@@ -103,10 +99,9 @@ export const useReleasePlaybackQueueActions = ({
   setIsPlaybackEmbedMounted,
   setPlaybackVideoTransitionTargetId,
   setPlaybackVideoUiLoadingTargetId,
-  beginPlaybackVideoUiLoading,
   clearPlaybackVideoUiLoading,
-  notifyPlaybackVideoPresentationReady,
-  resolveQueueItemEmbedVideoId,
+  prepareQueueAdvancePlayback,
+  settleSameUploadQueueAdvance,
   setEmbedVideoId,
   clearPlayFromGestureRetries,
   syncEmbedToVideoId,
@@ -255,7 +250,7 @@ export const useReleasePlaybackQueueActions = ({
         preparedEmbedVideoId &&
         !needsPlaybackVideoSwitch
       ) {
-        notifyPlaybackVideoPresentationReady();
+        settleSameUploadQueueAdvance();
       }
 
       if (startPaused) {
@@ -294,7 +289,7 @@ export const useReleasePlaybackQueueActions = ({
       releaseRef,
       resolveQueueItemPlayback,
       activeVideoIdRef,
-      notifyPlaybackVideoPresentationReady,
+      settleSameUploadQueueAdvance,
       setPlaybackVideoTransitionTargetId,
       setPlaybackVideoUiLoadingTargetId,
       setShouldAutoplayEmbed,
@@ -313,29 +308,17 @@ export const useReleasePlaybackQueueActions = ({
         return;
       }
 
-      const preparedEmbedVideoId = resolveQueueItemEmbedVideoId(item);
-
-      if (
-        shouldBeginPlaybackVideoUiLoading({
-          hasQueueItem: true,
-          preparedEmbedVideoId,
-          activeVideoId: activeVideoIdRef.current,
-        })
-      ) {
-        beginPlaybackVideoUiLoading();
-      }
+      prepareQueueAdvancePlayback(item);
 
       maybePushCurrentToHistory();
       setUpcomingQueue(removeQueueItemAtIndex(upcoming, index));
       playQueueItem(item, { autoplay: true });
     },
     [
-      activeVideoIdRef,
-      beginPlaybackVideoUiLoading,
       maybePushCurrentToHistory,
       playQueueItem,
+      prepareQueueAdvancePlayback,
       queueRef,
-      resolveQueueItemEmbedVideoId,
       setUpcomingQueue,
       clearPlaybackVideoUiLoading,
     ],
@@ -530,19 +513,8 @@ export const useReleasePlaybackQueueActions = ({
 
   const playNext = useCallback(() => {
     const item = queueRef.current[0];
-    const preparedEmbedVideoId = item
-      ? resolveQueueItemEmbedVideoId(item)
-      : null;
 
-    if (
-      shouldBeginPlaybackVideoUiLoading({
-        hasQueueItem: item != null,
-        preparedEmbedVideoId,
-        activeVideoId: activeVideoIdRef.current,
-      })
-    ) {
-      beginPlaybackVideoUiLoading();
-    }
+    prepareQueueAdvancePlayback(item ?? null);
 
     if (!item) {
       void extendQueueTail().then((extended) => {
@@ -560,33 +532,20 @@ export const useReleasePlaybackQueueActions = ({
     setUpcomingQueue(queueRef.current.slice(1));
     playQueueItem(item, { autoplay: true });
   }, [
-    activeVideoIdRef,
-    beginPlaybackVideoUiLoading,
     clearPlaybackVideoUiLoading,
     extendQueueTail,
     maybePushCurrentToHistory,
     playNextRef,
     playQueueItem,
+    prepareQueueAdvancePlayback,
     queueRef,
-    resolveQueueItemEmbedVideoId,
     setUpcomingQueue,
   ]);
 
   const playPrevious = useCallback(() => {
     const previousItem = playbackHistoryRef.current.at(-1);
-    const preparedEmbedVideoId = previousItem
-      ? resolveQueueItemEmbedVideoId(previousItem)
-      : null;
 
-    if (
-      shouldBeginPlaybackVideoUiLoading({
-        hasQueueItem: previousItem != null,
-        preparedEmbedVideoId,
-        activeVideoId: activeVideoIdRef.current,
-      })
-    ) {
-      beginPlaybackVideoUiLoading();
-    }
+    prepareQueueAdvancePlayback(previousItem ?? null);
 
     if (!previousItem) {
       clearPlaybackVideoUiLoading();
@@ -601,15 +560,13 @@ export const useReleasePlaybackQueueActions = ({
     dispatchSession({ type: "SET_HISTORY", history: nextHistory });
     playQueueItem(previousItem, { autoplay: true, rebuildAlbumQueue: false });
   }, [
-    activeVideoIdRef,
-    beginPlaybackVideoUiLoading,
     clearPlaybackVideoUiLoading,
     dispatchSession,
     isPlayingRef,
     playbackHistoryRef,
     playQueueItem,
+    prepareQueueAdvancePlayback,
     prependCurrentToUpcoming,
-    resolveQueueItemEmbedVideoId,
   ]);
 
   playNextRef.current = playNext;
