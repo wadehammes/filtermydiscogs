@@ -80,7 +80,7 @@ export const PersistentYoutubeIframe = ({
       loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
       refreshYoutubeEmbedPlayerLayout({ iframe });
       enableYoutubeIframeListening(iframe);
-      notifyPlaybackVideoLoadStarted();
+      notifyPlaybackVideoLoadStarted(targetVideoId);
     },
     [notifyPlaybackVideoLoadStarted, notifyPlaybackVideoPresentationReady],
   );
