@@ -94,6 +94,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   onPlaybackEnded: () => void;
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
   onEmbedPlaybackConfirmed?: () => void;
+  onEmbedTransportPaused?: () => void;
 }
 
 export const useReleasePlaybackYoutubeEmbed = ({
@@ -116,6 +117,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   onPlaybackEnded,
   onYoutubeEmbedPlaybackError,
   onEmbedPlaybackConfirmed,
+  onEmbedTransportPaused,
 }: UseReleasePlaybackYoutubeEmbedParams) => {
   const {
     playbackIframeRef,
@@ -365,13 +367,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
-        if (
-          document.visibilityState === "hidden" &&
-          !isWithinTrackSwitchGrace()
-        ) {
-          return;
-        }
-
         if (isWithinTrackSwitchGrace()) {
           postYoutubePlayerCommand({
             iframe: playbackIframeRef.current,
@@ -382,6 +377,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
         pendingPlayFromGestureRef.current = false;
         clearPlayFromGestureRetries();
+        onEmbedTransportPaused?.();
         dispatchSession({ type: "PAUSE" });
         return;
       }
@@ -459,6 +455,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       isPlayingRef,
       isWithinTrackSwitchGrace,
       notifyEmbedPlaybackEnded,
+      onEmbedTransportPaused,
       activeVideoIdRef,
       clearPlaybackVideoUiLoading,
       embedVideoIdRef,

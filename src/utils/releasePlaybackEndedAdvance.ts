@@ -17,18 +17,13 @@ export const createPlaybackEndedAdvanceHandler = ({
   playNextRef,
 }: PlaybackEndedAdvanceRefs): (() => void) => {
   return () => {
-    if (!isPlayingRef.current || isPausedRef.current) {
+    if (!isPlayingRef.current) {
       return;
     }
 
     if (queueRef.current.length === 0) {
       void extendQueueTailRef.current().then((extended) => {
-        if (
-          extended &&
-          isPlayingRef.current &&
-          !isPausedRef.current &&
-          queueRef.current.length > 0
-        ) {
+        if (extended && isPlayingRef.current && queueRef.current.length > 0) {
           playNextRef.current();
         }
       });

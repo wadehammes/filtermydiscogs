@@ -29,7 +29,7 @@ describe("releasePlaybackEndedAdvance", () => {
     expect(playNext).not.toHaveBeenCalled();
   });
 
-  it("does nothing when the session is user-paused", () => {
+  it("advances on ended even when transport is paused (background PAUSE before ENDED)", () => {
     const playNext = jest.fn();
 
     const handler = createPlaybackEndedAdvanceHandler({
@@ -42,7 +42,7 @@ describe("releasePlaybackEndedAdvance", () => {
 
     handler();
 
-    expect(playNext).not.toHaveBeenCalled();
+    expect(playNext).toHaveBeenCalledTimes(1);
   });
 
   it("advances immediately when upcoming has rows", () => {

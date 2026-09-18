@@ -40,6 +40,7 @@ import {
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
+import { EMBED_TRACK_SWITCH_PAUSE_GRACE_MS } from "src/utils/youtubeIframeEvents";
 import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -1366,7 +1367,7 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
-  it("ignores embed pause while the document is hidden and still advances the queue on end", async () => {
+  it("syncs embed pause while the document is hidden and still advances the queue on end", async () => {
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
       value: "hidden",
@@ -1394,25 +1395,28 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 2 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
     });
 
-    expect(result.current.isPaused).toBe(false);
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(true);
+    });
 
     act(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: JSON.stringify({ event: "onStateChange", info: 0 }),
-          origin: "https://www.youtube-nocookie.com",
-          source: contentWindow,
-        }),
-      );
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
     });
 
     await waitFor(() => {
@@ -1424,6 +1428,66 @@ describe("ReleasePlaybackProvider", () => {
       configurable: true,
       value: "visible",
     });
+  });
+
+  it("does not run the embed watchdog skip after pausing in a hidden tab", async () => {
+    jest.useFakeTimers();
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      jest.advanceTimersByTime(EMBED_TRACK_SWITCH_PAUSE_GRACE_MS + 1);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+
+    jest.useRealTimers();
   });
 
   it("advances the queue when embed infoDelivery reports playback ended", async () => {
