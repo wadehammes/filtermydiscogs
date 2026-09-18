@@ -557,6 +557,7 @@
     font-size: var(--text-meta-sm);
     font-weight: var(--font-medium);
     line-height: 1.35;
+    text-wrap: pretty;
   }
 
   & :global(.fmd-playback-skip-log-reason) {

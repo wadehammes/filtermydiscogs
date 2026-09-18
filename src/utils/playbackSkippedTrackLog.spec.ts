@@ -3,7 +3,8 @@ import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   formatPlaybackSkipLogTitle,
-  resolvePlaybackSkipTrackLabel,
+  playbackSkipLogDedupeKey,
+  resolvePlaybackSkipLogDisplay,
   resolveYoutubeEmbedErrorReason,
 } from "src/utils/playbackSkippedTrackLog";
 
@@ -40,8 +41,18 @@ describe("formatPlaybackSkipLogTitle", () => {
   });
 });
 
-describe("resolvePlaybackSkipTrackLabel", () => {
-  it("formats artist, position, and title for the active album track", () => {
+describe("playbackSkipLogDedupeKey", () => {
+  it("uses the track label", () => {
+    expect(
+      playbackSkipLogDedupeKey({
+        trackLabel: "B2 Labyrinth - Various, HDZ 06",
+      }),
+    ).toBe("B2 Labyrinth - Various, HDZ 06");
+  });
+});
+
+describe("resolvePlaybackSkipLogDisplay", () => {
+  it("formats track line with release tail for the active album track", () => {
     const release = releaseFactory.withDisplayDefaults();
     const tracks = [
       discogsTrackFactory.build({
@@ -52,20 +63,14 @@ describe("resolvePlaybackSkipTrackLabel", () => {
     ];
 
     expect(
-      resolvePlaybackSkipTrackLabel({
+      resolvePlaybackSkipLogDisplay({
         release,
         tracks,
         activeTrackIndex: 0,
         previewVideo: null,
       }),
-    ).toContain("B1");
-    expect(
-      resolvePlaybackSkipTrackLabel({
-        release,
-        tracks,
-        activeTrackIndex: 0,
-        previewVideo: null,
-      }),
-    ).toContain("Deep Track");
+    ).toEqual({
+      trackLabel: "B1 Deep Track - Test Artist, Test Album",
+    });
   });
 });

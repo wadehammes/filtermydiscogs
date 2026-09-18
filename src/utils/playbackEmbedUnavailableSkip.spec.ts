@@ -8,11 +8,13 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
   it("appends skip toast once per track while failures are in flight", () => {
     const appendSkip = jest.fn();
     const playNext = jest.fn();
-    const resolveTrackLabel = jest.fn(() => "Artist — A1 · Track");
+    const resolveSkipDisplay = jest.fn(() => ({
+      trackLabel: "A1 Track - Artist, Album",
+    }));
 
     const handler = createPlaybackEmbedUnavailableSkipHandler({
       appendSkip,
-      resolveTrackLabel,
+      resolveSkipDisplay,
       isSkipAllowed: () => true,
     });
 
@@ -21,7 +23,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
 
     expect(appendSkip).toHaveBeenCalledTimes(1);
     expect(appendSkip.mock.calls[0]?.[0]).toEqual({
-      trackLabel: "Artist — A1 · Track",
+      trackLabel: "A1 Track - Artist, Album",
       reason: "Private or removed on YouTube",
     });
 
@@ -36,7 +38,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
 
     const handler = createPlaybackEmbedUnavailableSkipHandler({
       appendSkip,
-      resolveTrackLabel: () => "Artist — Track",
+      resolveSkipDisplay: () => ({ trackLabel: "A1 Track - Artist, Album" }),
       isSkipAllowed: () => false,
     });
 
@@ -52,7 +54,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
 
     const handler = createPlaybackEmbedUnavailableSkipHandler({
       appendSkip,
-      resolveTrackLabel: () => "Artist — Track",
+      resolveSkipDisplay: () => ({ trackLabel: "A1 Track" }),
       isSkipAllowed: () => true,
     });
 
@@ -67,7 +69,9 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
 
     const handler = createPlaybackEmbedUnavailableSkipHandler({
       appendSkip,
-      resolveTrackLabel: () => "Artist — Track",
+      resolveSkipDisplay: () => ({
+        trackLabel: "A1 Track - Artist, Album",
+      }),
       isSkipAllowed: () => true,
     });
 
@@ -75,7 +79,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
 
     expect(appendSkip).toHaveBeenCalledTimes(1);
     expect(appendSkip.mock.calls[0]?.[0]).toEqual({
-      trackLabel: "Artist — Track",
+      trackLabel: "A1 Track - Artist, Album",
       reason: "Private, removed, blocked, or still loading",
     });
   });

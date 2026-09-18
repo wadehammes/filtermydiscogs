@@ -55,7 +55,7 @@ import {
   selectIsPaused,
   selectIsPlaying,
 } from "src/utils/playbackSessionState";
-import { resolvePlaybackSkipTrackLabel } from "src/utils/playbackSkippedTrackLog";
+import { resolvePlaybackSkipLogDisplay } from "src/utils/playbackSkippedTrackLog";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
   PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS,
@@ -172,8 +172,8 @@ export const useReleasePlaybackProvider = (): {
   const embedUnavailableSkipHandlerRef = useRef(
     createPlaybackEmbedUnavailableSkipHandler({
       appendSkip: appendPlaybackSkipAndSchedule,
-      resolveTrackLabel: () =>
-        resolvePlaybackSkipTrackLabel({
+      resolveSkipDisplay: () =>
+        resolvePlaybackSkipLogDisplay({
           release: releaseRef.current,
           tracks: tracksRef.current,
           activeTrackIndex: activeTrackIndexRef.current,
