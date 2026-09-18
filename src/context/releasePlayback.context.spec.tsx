@@ -769,7 +769,7 @@ describe("ReleasePlaybackProvider", () => {
     expect(playVideoCalls.length).toBeGreaterThan(0);
   });
 
-  it("schedules unavailable skip toast when embed load starts on a paused restore session", async () => {
+  it("does not arm the embed watchdog while transport is paused after refresh restore", async () => {
     jest.useFakeTimers();
 
     const iframe = {
@@ -798,6 +798,50 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.notifyPlaybackVideoLoadStarted();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("arms the embed watchdog after resume when embed load started while paused", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+        startPaused: true,
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.togglePlayback();
     });
 
     act(() => {
