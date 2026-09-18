@@ -38,6 +38,10 @@ import {
   toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
+import {
+  recordTrackPlayFromQueueItem,
+  resetUserTrackRecordingSession,
+} from "src/utils/userTrackRecording";
 
 export interface PlayQueueItemOptions {
   autoplay?: boolean;
@@ -205,6 +209,7 @@ export const useReleasePlaybackQueueActions = ({
       }
 
       releaseRef.current = item.release;
+      recordTrackPlayFromQueueItem(item, preparedEmbedVideoId ?? null);
 
       const resolutionIndex = item.previewVideoUri
         ? -1
@@ -431,6 +436,10 @@ export const useReleasePlaybackQueueActions = ({
       awaitingResumeGestureRef.current = false;
       pendingPlayFromGestureRef.current = true;
       trackPlaybackStarted(nextRelease.instance_id);
+      recordTrackPlayFromQueueItem(
+        createPreviewQueueItem({ release: nextRelease, video }),
+        previewVideoId,
+      );
     },
     [
       applyTargetEmbedVideoId,
@@ -574,6 +583,7 @@ export const useReleasePlaybackQueueActions = ({
   startPlaybackRef.current = startPlayback;
 
   const stopPlayback = useCallback(() => {
+    resetUserTrackRecordingSession();
     resetPlaybackSkipLogToast();
     resetPlaybackSkipState?.();
     pendingPlayFromGestureRef.current = false;

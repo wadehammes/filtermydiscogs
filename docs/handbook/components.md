@@ -296,6 +296,21 @@ Dashboard sections that list releases (On this day, most crated, milestones, dup
 
 Section modules may add layout wrappers around **`.releaseRow`**, but the inner release presentation stays in **`DashboardReleaseItem`**. Optional trailing slots (e.g. **[`OnThisDay`](../../src/components/Dashboard/OnThisDay.component.tsx)** year added, **[`MostCrated`](../../src/components/Dashboard/MostCrated.component.tsx)** crate count) use **`children`**. Default title/meta lines single-line ellipsis; pass **`wrapText`** on **`DashboardReleaseItem`** when a section needs wrapped copy (On this day). **[`OnThisDay.module.css`](../../src/components/Dashboard/OnThisDay.module.css)** caps list width (~**`36rem`**) so rows do not span the full dashboard. See [patterns.md → Dashboard analytics → Card chrome](patterns.md#dashboard-analytics).
 
+## Dashboard track rows (On repeat)
+
+**On repeat** ([`TopTracks.component.tsx`](../../src/components/Dashboard/TopTracks.component.tsx)) lists **`UserTrack`** leaderboards in **`releaseRow`** cards — not **`DashboardReleaseItem`**.
+
+| Piece | Location |
+|-------|----------|
+| Card shell | Same **`.releaseRow`** from [`dashboard-card.module.css`](../../src/styles/modules/dashboard-card.module.css) |
+| Row content | [`DashboardTrackItem.component.tsx`](../../src/components/Dashboard/DashboardTrackItem.component.tsx) + [`DashboardTrackItem.module.css`](../../src/components/Dashboard/DashboardTrackItem.module.css) |
+| Stats | [`useTopUserTracksQuery`](../../src/hooks/queries/useTopUserTracksQuery.ts) |
+| Cover art | Memoized map from **`useAllReleases()`** + **`getReleaseImageUrl`** (then API **`release_thumb`**, then placeholder in **`DashboardTrackItem`**) |
+| Track title | [`formatTopUserTrackHeadLabel`](../../src/utils/userTrack.ts) — **`{position} - {title}`** when both differ; catalog names from release tracklists via **`useQueries`** + **`discogsReleaseQueryOptions`** and **`buildCatalogTitleByTrackKey`** |
+| List scroll | **`TopTracks.module.css`** **`.trackList`** — **`max-height`** + **`overflow-y: auto`** per column |
+
+Pass **`onReleaseClick`** from **`DashboardClient`** so cover and title open **`ReleaseModal`** (same as release rows). Section copy lives in [`dashboardStory.ts`](../../src/utils/dashboardStory.ts) (**`sections.playback`**). Column layout lives in the same file (**`TopTracksColumn`**).
+
 ## Client page shells
 
 | Shell | Route | Layout |

@@ -1,5 +1,9 @@
 import type { AdminUserLookupStats } from "src/types/adminUserLookup.types";
-import type { AdminStats, MostCratedRelease } from "src/types/dashboard.types";
+import type {
+  AdminStats,
+  MostCratedRelease,
+  TopUserTracksResponse,
+} from "src/types/dashboard.types";
 
 export const fetchMostCratedReleases = async (
   limit: number = 10,
@@ -28,6 +32,34 @@ export const fetchMostCratedReleases = async (
       throw error;
     }
     throw new Error("Failed to fetch most crated releases");
+  }
+};
+
+export const fetchTopUserTracks = async (
+  limit: number = 10,
+): Promise<TopUserTracksResponse> => {
+  try {
+    const response = await fetch(`/api/dashboard/top-tracks?limit=${limit}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error || `Failed to fetch top tracks: ${response.statusText}`,
+      );
+    }
+
+    return response.json() as Promise<TopUserTracksResponse>;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch top tracks");
   }
 };
 

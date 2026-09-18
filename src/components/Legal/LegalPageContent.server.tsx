@@ -87,6 +87,12 @@ export function LegalPageContent() {
               database so they stick around between sessions.
             </li>
             <li>
+              When you use in-app playback, I store per-track play and listen
+              counts (and basic track labels) in Postgres so your dashboard and
+              tracklists can show them. This is separate from optional product
+              analytics below.
+            </li>
+            <li>
               When you&apos;re logged in, account preferences also live in
               Postgres: theme (light, dim, sepia, slate, dark, midnight, high
               contrast, or system), default view (grid or table), whether to
@@ -198,6 +204,11 @@ export function LegalPageContent() {
             <li>
               Every crate you&apos;ve created, including which releases are in
               each crate (deleted from Postgres, gone forever. No takebacks)
+            </li>
+            <li>
+              Your in-app playback stats: per-track play and listen counts we
+              store when you use in-app playback (not product analytics; deleted
+              with your account row)
             </li>
             <li>
               Your saved account preferences on our server: theme, default view

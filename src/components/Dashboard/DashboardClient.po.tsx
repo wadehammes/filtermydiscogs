@@ -50,6 +50,7 @@ jest.mock("src/api/urls", () => ({
     userPreferences: jest.fn(),
     collectionValue: jest.fn(),
     mostCratedReleases: jest.fn(),
+    topUserTracks: jest.fn(),
   },
 }));
 
@@ -123,6 +124,12 @@ export class DashboardClientPageObject extends BasePageObject {
       apiError,
     );
     mockApiResponse(true, mockApi.mostCratedReleases, [], apiError);
+    mockApiResponse(
+      true,
+      mockApi.topUserTracks,
+      { most_played: [], most_listened: [] },
+      apiError,
+    );
   }
 
   renderDashboardClient(

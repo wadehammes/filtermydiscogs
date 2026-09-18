@@ -1,13 +1,17 @@
 "use client";
 
 import classNames from "classnames";
+import { useMemo } from "react";
 import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "src/components/ReleasePlaybackFallback/ReleasePlaybackFallback.component";
 import { ReleasePlaybackPreview } from "src/components/ReleasePlaybackPreview/ReleasePlaybackPreview.component";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
+import { useAuth } from "src/context/auth.context";
+import { useTrackStatsQuery } from "src/hooks/queries/useTrackStatsQuery";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
+import { buildTrackKey, mapTrackStatsByPosition } from "src/utils/userTrack";
 
 interface ReleaseModalPlaybackTracksSectionProps {
   release: DiscogsRelease;
@@ -60,8 +64,32 @@ export const ReleaseModalPlaybackTracksSection = ({
   isPlaybackPaused,
   isReleasePreviewPlaying,
 }: ReleaseModalPlaybackTracksSectionProps) => {
+  const { state: authState } = useAuth();
   const reserveQueueColumn =
     hasPlayableTracks || releasePreviewVideos.length > 0;
+
+  const trackKeys = useMemo(
+    () =>
+      tracks.map((track) => buildTrackKey(release.instance_id, track.position)),
+    [release.instance_id, tracks],
+  );
+
+  const { data: trackStatsResponse } = useTrackStatsQuery({
+    userId: authState.userId,
+    trackKeys,
+    enabled:
+      authState.isAuthenticated && hasPlayableTracks && tracks.length > 0,
+  });
+
+  const trackStatsByPosition = useMemo(
+    () =>
+      mapTrackStatsByPosition(
+        release.instance_id,
+        tracks,
+        trackStatsResponse?.stats,
+      ),
+    [release.instance_id, trackStatsResponse?.stats, tracks],
+  );
 
   return (
     <section
@@ -79,6 +107,7 @@ export const ReleaseModalPlaybackTracksSection = ({
         releaseArtistNames={formatArtistNames(release)}
         activeTrackPosition={activeTrackPosition}
         reserveQueueColumn={reserveQueueColumn}
+        {...definedProps({ trackStatsByPosition })}
         showPlayingIndicatorOnActiveTrack={
           hasPlayableTracks &&
           isPlayingThisReleaseInBar &&

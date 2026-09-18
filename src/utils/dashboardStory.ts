@@ -26,6 +26,7 @@ export interface DashboardStorySections {
   markers: DashboardSectionCopy;
   share: DashboardSectionCopy;
   upkeep: DashboardSectionCopy;
+  playback: DashboardSectionCopy;
 }
 
 export interface DashboardStory {
@@ -293,6 +294,10 @@ export const buildDashboardStory = ({
       upkeep: {
         title: "Shelf check",
         lede: "Duplicates, near-matches, and records still waiting for a rating.",
+      },
+      playback: {
+        title: "On repeat",
+        lede: "What you play and listen to in the app, ranked from your collection.",
       },
     },
   };

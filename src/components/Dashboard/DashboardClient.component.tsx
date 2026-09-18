@@ -31,6 +31,7 @@ import { GrowthChart } from "./GrowthChart.component";
 import { MostCrated } from "./MostCrated.component";
 import { OnThisDay } from "./OnThisDay.component";
 import { StyleEvolution } from "./StyleEvolution.component";
+import { TopTracks } from "./TopTracks.component";
 import { WeeklyRecap } from "./WeeklyRecap.component";
 
 function DashboardClientContent() {
@@ -151,6 +152,13 @@ function DashboardClientContent() {
                   />
                 </DashboardSection>
               </div>
+
+              <DashboardSection
+                lede={story.sections.playback.lede}
+                title={story.sections.playback.title}
+              >
+                <TopTracks onReleaseClick={handleReleaseClick} />
+              </DashboardSection>
 
               <DashboardSection
                 lede={story.sections.growth.lede}
