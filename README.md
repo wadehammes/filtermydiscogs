@@ -11,9 +11,9 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Search & filters** — Search by title, artist, label, or notes; filter by genre/style, year, and format (with ANY / ALL / NONE match modes); save named filter views
 - **Sorting & views** — Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
 - **Release details** — In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
-- **In-app playback** — Preview tracks from a persistent mini player and queue while you browse
+- **In-app playback** — Preview tracks from a persistent mini player and queue while you browse; per-track play and listen counts on release tracklists (stored on our server when you play)
 - **Crates** — Multiple crates for gigs or themed lists; reorder releases, section markers, set notes, and optional gig-packing progress; share a crate publicly
-- **Collection insights** — Dashboard with milestones, style evolution, and growth charts
+- **Collection insights** — Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
 - **Mosaic generator** — Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
 - **Settings** — Theme (light / dark / system), collection sync, filter persistence, and clear stored data
 - **Responsive UI** — Desktop sidebar crates, mobile drawers, and touch-friendly filters

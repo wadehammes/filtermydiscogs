@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+
+jest.mock("src/analytics/productAnalyticsEvents", () => ({
+  trackPlaybackQueued: jest.fn(),
+  trackPlaybackStarted: jest.fn(),
+}));
+
 import type { Dispatch } from "react";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
 import { createSimilarQueueMode } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
+import type { UserTrackRecordBody } from "src/lib/validation/userTrack.schemas";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createQueueItem } from "src/utils/playbackQueue";
@@ -10,12 +17,12 @@ import {
   readPersistedReleasePlayback,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
+import {
+  bindRecordTrackEvent,
+  resetRecordTrackEventBinding,
+  resetUserTrackRecordingSession,
+} from "src/utils/userTrackRecording";
 import { renderHook } from "test-utils";
-
-jest.mock("src/analytics/productAnalyticsEvents", () => ({
-  trackPlaybackQueued: jest.fn(),
-  trackPlaybackStarted: jest.fn(),
-}));
 
 const buildHarness = ({
   sessionQueue = [] as ReturnType<typeof createQueueItem>[],
@@ -133,6 +140,53 @@ describe("useReleasePlaybackQueueActions", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+  });
+
+  it("does not record a play when startPlayback begins paused after session restore", () => {
+    const recordedPlays: UserTrackRecordBody[] = [];
+
+    resetUserTrackRecordingSession();
+    bindRecordTrackEvent((body) => {
+      if (body.event === "play") {
+        recordedPlays.push(body);
+      }
+    });
+
+    const release = releaseFactory.withDisplayDefaults();
+    const { result } = buildHarness();
+
+    result.current.startPlayback({
+      release,
+      trackPosition: "A1",
+      startPaused: true,
+      rebuildAlbumQueue: false,
+    });
+
+    expect(recordedPlays).toHaveLength(0);
+    resetRecordTrackEventBinding();
+  });
+
+  it("records a play when startPlayback begins unpaused transport", () => {
+    const recordedPlays: UserTrackRecordBody[] = [];
+
+    resetUserTrackRecordingSession();
+    bindRecordTrackEvent((body) => {
+      if (body.event === "play") {
+        recordedPlays.push(body);
+      }
+    });
+
+    const release = releaseFactory.withDisplayDefaults();
+    const { result } = buildHarness();
+
+    result.current.startPlayback({
+      release,
+      trackPosition: "A1",
+      rebuildAlbumQueue: false,
+    });
+
+    expect(recordedPlays).toHaveLength(1);
+    resetRecordTrackEventBinding();
   });
 
   it("playNext sets transition and gesture retries when the embed id was prefetched ahead of the active upload", () => {

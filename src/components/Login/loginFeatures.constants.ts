@@ -12,16 +12,16 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Insights",
     title: "Collection insights dashboard",
     description:
-      "See milestones, style evolution, and growth trends with charts and stats. Spot patterns in your buying habits and follow the story your records tell over time.",
+      "See milestones, style evolution, and growth trends with charts and stats. On repeat highlights the tracks you play and listen to most. Spot patterns in your buying habits and follow the story your records tell over time.",
     imageBase: "dashboard",
     imageAlt:
-      "Collections insights dashboard with stats, charts, and collection milestones",
+      "Collections insights dashboard with stats, charts, on-repeat track leaders, and collection milestones",
   },
   {
     eyebrow: "Browse",
     title: "Browse, search, and filter",
     description:
-      "Rediscover albums across your library. Search by title, artist, or label, switch between grid and table views, and open any release for its tracklist. Preview tracks with the in-app player and add or edit collection notes that stay synced with Discogs.",
+      "Rediscover albums across your library. Search by title, artist, or label, switch between grid and table views, and open any release for its tracklist. Preview tracks with the in-app player, see per-track play and listen counts on each tracklist, and add or edit collection notes that stay synced with Discogs.",
     imageBase: "releases",
     imageAlt:
       "Releases page with search, filters, tracklist, in-app player, and release cards",
