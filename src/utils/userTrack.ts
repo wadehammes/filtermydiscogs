@@ -144,6 +144,32 @@ export const formatUserTrackStatsLabel = (
   return parts.length > 0 ? parts.join(" · ") : null;
 };
 
+export const formatUserTrackListenLabel = (
+  stats: UserTrackStatCounts,
+): string | null => {
+  if (stats.listen_count <= 0) {
+    return null;
+  }
+
+  return `${stats.listen_count} ${stats.listen_count === 1 ? "listen" : "listens"}`;
+};
+
+export const formatUserTrackListenTooltip = (
+  stats: UserTrackStatCounts,
+): string => {
+  const listenRule =
+    "A listen is 30+ seconds in a row, or the full track. Skipping early does not count.";
+
+  if (stats.play_count <= stats.listen_count) {
+    return listenRule;
+  }
+
+  const playLabel = stats.play_count === 1 ? "play" : "plays";
+  const listenLabel = stats.listen_count === 1 ? "listen" : "listens";
+
+  return `${stats.play_count} ${playLabel}, ${stats.listen_count} ${listenLabel}. ${listenRule}`;
+};
+
 export const mapTrackStatsByPosition = (
   instanceId: string | number,
   tracks: readonly { position: string }[],

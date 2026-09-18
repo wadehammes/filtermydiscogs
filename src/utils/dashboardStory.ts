@@ -297,7 +297,7 @@ export const buildDashboardStory = ({
       },
       playback: {
         title: "On repeat",
-        lede: "What you play and listen to in the app, ranked from your collection.",
+        lede: "Two sides of the same habit: how often you start tracks vs how often you stay for a real listen.",
       },
     },
   };

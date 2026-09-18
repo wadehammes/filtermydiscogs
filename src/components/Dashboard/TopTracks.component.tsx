@@ -24,11 +24,15 @@ interface TopTracksProps {
 const COLUMN_COPY = {
   played: {
     title: "Most played",
-    hint: "Each time you start a track from playback.",
+    hint: "How often you start a track.",
+    detail:
+      "Counts every play press, queue advance to this track, or resume after pause. Skipping early still adds a play.",
   },
   listened: {
     title: "Most listened",
-    hint: "30 seconds in one go, or the full track if shorter.",
+    hint: "Tracks you actually stayed with.",
+    detail:
+      "One listen after 30 seconds in a row, or when the track ends (even under 30 seconds). Tracklists show listens only.",
   },
 } as const;
 
@@ -64,6 +68,7 @@ function TopTracksColumn({
           {copy.title}
         </h3>
         <p className={styles.columnHint}>{copy.hint}</p>
+        <p className={styles.columnDetail}>{copy.detail}</p>
       </header>
       <div className={styles.columnBody}>
         {tracks.length === 0 ? (
