@@ -18,6 +18,7 @@ import { act, renderHook } from "test-utils";
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   postYoutubePlayerCommand: jest.fn(),
   loadAndPlayYoutubeVideo: jest.fn(),
+  loadYoutubeVideoById: jest.fn(),
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
@@ -128,13 +129,23 @@ const buildHarness = ({
 const dispatchYoutubePlayerState = ({
   contentWindow,
   playerState,
+  event = "onStateChange",
 }: {
   contentWindow: Window;
   playerState: number;
+  event?: "onStateChange" | "infoDelivery";
 }) => {
+  const data =
+    event === "infoDelivery"
+      ? JSON.stringify({
+          event: "infoDelivery",
+          info: { playerState },
+        })
+      : JSON.stringify({ event: "onStateChange", info: playerState });
+
   window.dispatchEvent(
     new MessageEvent("message", {
-      data: JSON.stringify({ event: "onStateChange", info: playerState }),
+      data,
       origin: "https://www.youtube.com",
       source: contentWindow,
     }),
@@ -323,6 +334,48 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
     expect(pendingPlayFromGestureRef.current).toBe(false);
+  });
+
+  it("confirms playback via infoDelivery after sync when early PLAYING was ignored", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      activeVideoIdRef,
+      clearPlaybackVideoUiLoading,
+      embedVideoIdRef,
+      isPlaybackVideoUiLoadingRef,
+      playbackIframeRef,
+      playbackVideoUiLoadingTargetVideoIdRef,
+      result,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    playbackVideoUiLoadingTargetVideoIdRef.current = "next-video-id";
+    activeVideoIdRef.current = "next-video-id";
+    embedVideoIdRef.current = "next-video-id";
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).not.toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    dispatchYoutubePlayerState({
+      contentWindow,
+      playerState: 1,
+      event: "infoDelivery",
+    });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
   it("syncEmbedToVideoId does not request gesture unlock while transport is paused", () => {

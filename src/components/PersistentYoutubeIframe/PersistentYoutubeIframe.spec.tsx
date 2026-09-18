@@ -8,10 +8,6 @@ import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
-import {
-  loadAndPlayYoutubeVideo,
-  refreshYoutubeEmbedPlayerLayout,
-} from "src/utils/releasePlayback";
 import { render, screen } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -22,10 +18,12 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
-const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
-const mockRefreshYoutubeEmbedPlayerLayout = jest.mocked(
-  refreshYoutubeEmbedPlayerLayout,
-);
+const mockLoadAndPlayYoutubeVideo = jest.requireMock<{
+  loadAndPlayYoutubeVideo: jest.Mock;
+}>("src/utils/postYoutubePlayerCommand").loadAndPlayYoutubeVideo;
+const mockRefreshYoutubeEmbedPlayerLayout = jest.requireMock<{
+  refreshYoutubeEmbedPlayerLayout: jest.Mock;
+}>("src/utils/postYoutubePlayerCommand").refreshYoutubeEmbedPlayerLayout;
 
 const createWrapper = () => {
   return ({ children }: { children: ReactNode }) => (
