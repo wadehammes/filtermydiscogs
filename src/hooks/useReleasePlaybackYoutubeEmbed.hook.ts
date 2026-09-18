@@ -27,7 +27,10 @@ import {
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
 import { doesPlaybackVideoUiLoadingTargetMatch } from "src/utils/releasePlaybackActivePresentation";
-import { shouldAcceptEmbedPlayingConfirmation } from "src/utils/releasePlaybackEmbedConfirm";
+import {
+  EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+  shouldAcceptEmbedPlayingConfirmation,
+} from "src/utils/releasePlaybackEmbedConfirm";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
   isWithinEmbedTrackSwitchGrace,
@@ -132,6 +135,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   } = refs;
 
   const embedTrackSwitchGraceUntilRef = useRef(0);
+  const embedLoadStateSyncTimeoutRef = useRef<number | null>(null);
   const lastEmbedPlaybackEndedAtRef = useRef(0);
 
   const notifyEmbedPlaybackEnded = useCallback(() => {
@@ -638,12 +642,28 @@ export const useReleasePlaybackYoutubeEmbed = ({
     schedulePlayFromGestureAttempts();
   }, [schedulePlayFromGestureAttempts]);
 
+  const clearEmbedLoadStateSyncTimeout = useCallback(() => {
+    if (embedLoadStateSyncTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(embedLoadStateSyncTimeoutRef.current);
+    embedLoadStateSyncTimeoutRef.current = null;
+  }, []);
+
   const notifyImperativeEmbedLoadStarted = useCallback(() => {
     markEmbedTrackSwitchGrace();
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = Date.now();
     schedulePlayFromGestureAttempts();
+    clearEmbedLoadStateSyncTimeout();
+    embedLoadStateSyncTimeoutRef.current = window.setTimeout(() => {
+      embedLoadStateSyncTimeoutRef.current = null;
+      requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
+    }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
   }, [
+    clearEmbedLoadStateSyncTimeout,
     markEmbedTrackSwitchGrace,
+    playbackIframeRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
     schedulePlayFromGestureAttempts,
   ]);
@@ -666,6 +686,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         }
 
         playbackIframeRef.current = null;
+        clearEmbedLoadStateSyncTimeout();
         clearPlayFromGestureRetries();
         return;
       }
@@ -695,6 +716,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       setIsPlaybackEmbedMounted(true);
     },
     [
+      clearEmbedLoadStateSyncTimeout,
       clearPlayFromGestureRetries,
       isPlaybackEmbedMounted,
       pendingPlayFromGestureRef,

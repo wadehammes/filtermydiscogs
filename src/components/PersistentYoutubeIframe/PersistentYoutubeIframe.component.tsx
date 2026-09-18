@@ -2,13 +2,14 @@
 
 import classNames from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { imperativelySyncPersistentYoutubeIframeToVideoId } from "src/components/PersistentYoutubeIframe/persistentYoutubeIframeVideoSwitch";
 import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
 import { definedProps } from "src/utils/definedProps";
 import {
-  buildYoutubeEmbedUrl,
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
-} from "src/utils/releasePlayback";
+} from "src/utils/postYoutubePlayerCommand";
+import { buildYoutubeEmbedUrl } from "src/utils/releasePlayback";
 import { enableYoutubeIframeListening } from "src/utils/youtubeIframeEvents";
 import styles from "./PersistentYoutubeIframe.module.css";
 
@@ -65,22 +66,17 @@ export const PersistentYoutubeIframe = ({
 
   const syncIframeToVideoId = useCallback(
     (targetVideoId: string) => {
-      const iframe = iframeRef.current;
-
-      if (!iframe) {
-        return;
-      }
-
-      if (targetVideoId === loadedVideoIdRef.current) {
-        notifyPlaybackVideoPresentationReady();
-        return;
-      }
-
-      loadedVideoIdRef.current = targetVideoId;
-      loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
-      refreshYoutubeEmbedPlayerLayout({ iframe });
-      enableYoutubeIframeListening(iframe);
-      notifyPlaybackVideoLoadStarted(targetVideoId);
+      loadedVideoIdRef.current =
+        imperativelySyncPersistentYoutubeIframeToVideoId({
+          iframe: iframeRef.current,
+          targetVideoId,
+          loadedVideoId: loadedVideoIdRef.current,
+          notifyPlaybackVideoLoadStarted,
+          notifyPlaybackVideoPresentationReady,
+          loadAndPlayYoutubeVideo,
+          refreshYoutubeEmbedPlayerLayout,
+          enableYoutubeIframeListening,
+        });
     },
     [notifyPlaybackVideoLoadStarted, notifyPlaybackVideoPresentationReady],
   );
