@@ -8,7 +8,14 @@ import {
   type RendererChartProps,
 } from "@tanstack/react-charts/tooltip";
 import classNames from "classnames";
-import { useCallback, useMemo } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useScrollRevealInView } from "src/hooks/useScrollRevealInView.hook";
 import scrollRevealStyles from "src/styles/modules/scroll-reveal.module.css";
 import { isGrowthTooltipContent } from "src/utils/tanstackCharts";
@@ -23,11 +30,36 @@ interface TanstackChartProps {
   animateOnView?: boolean;
 }
 
+interface ChartLayoutSize {
+  width: number;
+  height: number;
+}
+
+const SIZE_EPSILON = 2;
+
 const chartRenderer = motion({
   initial: "always",
   respectReducedMotion: true,
   transition: { type: "tween", duration: 750, easing: "ease-out" },
 });
+
+const resolveLayoutHeight = (
+  viewport: HTMLDivElement,
+  heightProp: number | undefined,
+): number => {
+  if (heightProp !== undefined) {
+    return heightProp;
+  }
+
+  return Math.round(viewport.clientHeight);
+};
+
+const layoutSizeStable = (
+  previous: ChartLayoutSize,
+  next: ChartLayoutSize,
+): boolean =>
+  Math.abs(previous.width - next.width) < SIZE_EPSILON &&
+  Math.abs(previous.height - next.height) < SIZE_EPSILON;
 
 export const TanstackChart = ({
   definition,
@@ -37,9 +69,100 @@ export const TanstackChart = ({
   className,
   animateOnView = true,
 }: TanstackChartProps) => {
-  const { ref, inView } = useScrollRevealInView({ skip: !animateOnView });
+  const { ref: scrollRevealRef, inView } = useScrollRevealInView({
+    skip: !animateOnView,
+  });
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [layoutSize, setLayoutSize] = useState<ChartLayoutSize | null>(null);
+  const [fontsReady, setFontsReady] = useState(() => !animateOnView);
 
   const shouldRenderChart = !animateOnView || inView;
+  const usesFluidHeight = height === undefined;
+
+  const mergeViewportRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      viewportRef.current = node;
+      scrollRevealRef(node);
+    },
+    [scrollRevealRef],
+  );
+
+  useEffect(() => {
+    if (!animateOnView) {
+      setFontsReady(true);
+      return;
+    }
+
+    if (!shouldRenderChart) {
+      setFontsReady(false);
+      return;
+    }
+
+    let cancelled = false;
+    setFontsReady(false);
+
+    void document.fonts.ready.then(() => {
+      if (!cancelled) {
+        setFontsReady(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [animateOnView, shouldRenderChart]);
+
+  useLayoutEffect(() => {
+    if (!shouldRenderChart) {
+      setLayoutSize(null);
+      return;
+    }
+
+    const viewport = viewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    const measure = () => {
+      const width = Math.round(viewport.clientWidth);
+      const measuredHeight = resolveLayoutHeight(viewport, height);
+
+      if (width <= 0 || measuredHeight <= 0) {
+        return;
+      }
+
+      const next = { width, height: measuredHeight };
+
+      setLayoutSize((previous) => {
+        if (!previous) {
+          return next;
+        }
+
+        if (layoutSizeStable(previous, next)) {
+          return previous;
+        }
+
+        return next;
+      });
+    };
+
+    measure();
+
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(viewport);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [height, shouldRenderChart]);
+
+  const chartMountReady =
+    shouldRenderChart && fontsReady && layoutSize !== null;
+  const awaitingMount =
+    shouldRenderChart && (!fontsReady || layoutSize === null);
+  const showChartPlaceholder =
+    (animateOnView && !shouldRenderChart) || awaitingMount;
 
   const renderTooltipBody = useCallback(
     ({ content, defaultBody }: ChartTooltipBodyRenderContext) => {
@@ -59,43 +182,46 @@ export const TanstackChart = ({
     [],
   );
 
-  const chartProps = useMemo(
-    (): RendererChartProps => ({
+  const chartProps = useMemo((): RendererChartProps | null => {
+    if (!layoutSize) {
+      return null;
+    }
+
+    return {
       definition,
       ariaLabel,
       renderer: chartRenderer,
       className: classNames(styles.chart, className),
       renderTooltipBody,
-      ...(height !== undefined ? { height } : {}),
+      width: layoutSize.width,
+      height: layoutSize.height,
+      initialWidth: layoutSize.width,
       ...(ariaDescription ? { ariaDescription } : {}),
-    }),
-    [
-      ariaDescription,
-      ariaLabel,
-      className,
-      definition,
-      height,
-      renderTooltipBody,
-    ],
-  );
+    };
+  }, [
+    ariaDescription,
+    ariaLabel,
+    className,
+    definition,
+    layoutSize,
+    renderTooltipBody,
+  ]);
 
   return (
     <div
-      ref={ref}
+      ref={mergeViewportRef}
       className={classNames(
         scrollRevealStyles.root,
         inView && scrollRevealStyles.revealed,
         styles.viewport,
-        height === undefined && styles.viewportFluid,
+        usesFluidHeight && styles.viewportFluid,
       )}
       style={height !== undefined ? { height } : undefined}
-      aria-busy={animateOnView && !shouldRenderChart ? true : undefined}
+      aria-busy={showChartPlaceholder ? true : undefined}
     >
-      {shouldRenderChart ? (
-        <div className={scrollRevealStyles.enter}>
-          <RendererChart {...chartProps} />
-        </div>
-      ) : animateOnView ? (
+      {chartMountReady && chartProps ? (
+        <RendererChart {...chartProps} />
+      ) : showChartPlaceholder ? (
         <div className={scrollRevealStyles.placeholder} aria-hidden="true" />
       ) : null}
     </div>
