@@ -8,8 +8,15 @@ import {
   trackReleaseRatingSaved,
 } from "src/analytics/productAnalyticsEvents";
 import { api } from "src/api/urls";
-import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
-import type { DiscogsCollection, DiscogsRelease } from "src/types";
+import {
+  DiscogsCollectionQueryKeys,
+  DiscogsReleaseQueryKeys,
+} from "src/hooks/queries/querykeys.constants";
+import type {
+  DiscogsCollection,
+  DiscogsRelease,
+  DiscogsReleaseDetail,
+} from "src/types";
 import {
   patchCollectionQueryReleaseNotes,
   patchCollectionQueryReleaseRating,
@@ -17,6 +24,10 @@ import {
   patchPersistedCollectionReleaseRating,
 } from "src/utils/collectionCacheSync";
 import type { CollectionPageParam } from "src/utils/collectionPagination";
+import {
+  mergeReleaseDetailWhenRefetchedCommunityIsStale,
+  patchReleaseDetailCommunityForUserRatingChange,
+} from "src/utils/releaseDisplay";
 import {
   getReleaseFolderId,
   getReleaseNotes,
@@ -30,6 +41,8 @@ interface ReleaseRatingMutationContext {
     | InfiniteData<DiscogsCollection, CollectionPageParam>
     | undefined;
   previousRating: number;
+  previousReleaseDetail: DiscogsReleaseDetail | undefined;
+  releaseQueryKey: ReturnType<typeof DiscogsReleaseQueryKeys.byId>;
 }
 
 export interface SaveReleaseRatingVariables {
@@ -70,14 +83,19 @@ export const useSaveReleaseRatingMutation = ({
     onMutate: ({ releaseId, nextRating }) => {
       void queryClient.cancelQueries({ queryKey: collectionQueryKey });
 
+      const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
       const previousQueryData =
         queryClient.getQueryData<
           InfiniteData<DiscogsCollection, CollectionPageParam>
         >(collectionQueryKey);
-      const previousRating =
+      const previousRatingRaw =
         previousQueryData?.pages
           .flatMap((page) => page.releases)
           .find((entry) => parseReleaseId(entry) === releaseId)?.rating ?? 0;
+      const previousRating =
+        typeof previousRatingRaw === "number" ? previousRatingRaw : 0;
+      const previousReleaseDetail =
+        queryClient.getQueryData<DiscogsReleaseDetail>(releaseQueryKey);
 
       queryClient.setQueryData<
         InfiniteData<DiscogsCollection, CollectionPageParam>
@@ -85,10 +103,25 @@ export const useSaveReleaseRatingMutation = ({
         patchCollectionQueryReleaseRating(current, releaseId, nextRating),
       );
 
+      if (previousReleaseDetail) {
+        queryClient.setQueryData(
+          releaseQueryKey,
+          patchReleaseDetailCommunityForUserRatingChange(
+            previousReleaseDetail,
+            {
+              previousUserRating: previousRating,
+              nextUserRating: nextRating,
+            },
+          ),
+        );
+      }
+
       return {
         collectionQueryKey,
         previousQueryData,
-        previousRating: typeof previousRating === "number" ? previousRating : 0,
+        previousRating,
+        previousReleaseDetail,
+        releaseQueryKey,
       };
     },
     onError: async (_error, variables, context) => {
@@ -100,14 +133,39 @@ export const useSaveReleaseRatingMutation = ({
         context.collectionQueryKey,
         context.previousQueryData,
       );
+      queryClient.setQueryData(
+        context.releaseQueryKey,
+        context.previousReleaseDetail,
+      );
       await patchPersistedCollectionReleaseRating(
         username,
         variables.releaseId,
         context.previousRating,
       );
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (_data, variables, context) => {
       trackReleaseRatingSaved(variables.instanceId);
+
+      const releaseId = String(variables.releaseId);
+      const releaseQueryKey =
+        context?.releaseQueryKey ?? DiscogsReleaseQueryKeys.byId(releaseId);
+      const optimisticDetail =
+        queryClient.getQueryData<DiscogsReleaseDetail>(releaseQueryKey);
+      const fetchedDetail = await api
+        .discogsRelease(releaseId, { bypassCache: true })
+        .catch(() => null);
+
+      if (fetchedDetail) {
+        queryClient.setQueryData(
+          releaseQueryKey,
+          mergeReleaseDetailWhenRefetchedCommunityIsStale(
+            fetchedDetail,
+            optimisticDetail,
+            variables.nextRating,
+          ),
+        );
+      }
+
       await patchPersistedCollectionReleaseRating(
         username,
         variables.releaseId,

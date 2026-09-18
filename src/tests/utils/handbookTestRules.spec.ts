@@ -1,32 +1,62 @@
 import { describe, expect, it } from "@jest/globals";
 import {
-  collectQueryHookMockViolations,
-  formatQueryHookMockViolations,
+  collectHandbookTestViolations,
+  formatHandbookTestViolations,
   isFeatureTestFile,
-  isQueryHookMockAllowlisted,
+  isHandbookTestRulesAllowlisted,
   validateFeatureTestSource,
-} from "src/tests/utils/queryHookMockRules";
+} from "src/tests/utils/handbookTestRules";
 
-describe("queryHookMockRules", () => {
-  it("identifies feature test files and query-hook spec allowlist paths", () => {
+describe("handbookTestRules", () => {
+  it("identifies feature test files and handbook rules spec allowlist paths", () => {
     expect(
       isFeatureTestFile("src/context/releasePlayback.context.spec.tsx"),
     ).toBe(true);
     expect(
       isFeatureTestFile("src/components/ReleaseModal/ReleaseModal.po.tsx"),
     ).toBe(true);
-    expect(isFeatureTestFile("src/tests/utils/queryHookMockRules.ts")).toBe(
+    expect(isFeatureTestFile("src/tests/utils/handbookTestRules.ts")).toBe(
       false,
     );
 
     expect(
-      isQueryHookMockAllowlisted("src/tests/utils/queryHookMockRules.spec.ts"),
+      isHandbookTestRulesAllowlisted(
+        "src/tests/utils/handbookTestRules.spec.ts",
+      ),
     ).toBe(true);
     expect(
-      isQueryHookMockAllowlisted(
+      isHandbookTestRulesAllowlisted(
         "src/context/releasePlayback.context.spec.tsx",
       ),
     ).toBe(false);
+  });
+
+  it("flags specs under src/hooks/mutations or src/hooks/queries", () => {
+    const violations = validateFeatureTestSource(
+      "src/hooks/mutations/useCollectionMutations.hook.spec.ts",
+      `describe("useSaveReleaseRatingMutation", () => {});\n`,
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        rule: "forbidden-hook-layer-spec",
+        line: 1,
+      }),
+    ]);
+  });
+
+  it("flags jest.mock on src/hooks/mutations in feature tests", () => {
+    const violations = validateFeatureTestSource(
+      "src/components/ReleaseSummaryHero/ReleaseSummaryHero.spec.tsx",
+      `jest.mock("src/hooks/mutations/useCollectionMutations");\n`,
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        rule: "jest-mock-mutation-hook",
+        line: 1,
+      }),
+    ]);
   });
 
   it("flags jest.mock on src/hooks/queries in feature tests", () => {
@@ -57,14 +87,14 @@ describe("queryHookMockRules", () => {
     ]);
   });
 
-  it("keeps feature tests free of query-hook mocks", () => {
-    const violations = collectQueryHookMockViolations(process.cwd());
+  it("keeps feature tests free of handbook testing violations", () => {
+    const violations = collectHandbookTestViolations(process.cwd());
 
     expect(violations).toEqual([]);
   });
 
   it("formats violations for hook and CI output", () => {
-    const formatted = formatQueryHookMockViolations([
+    const formatted = formatHandbookTestViolations([
       {
         filePath: "src/context/releasePlayback.context.spec.tsx",
         line: 12,

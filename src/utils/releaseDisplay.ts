@@ -4,6 +4,7 @@ import type {
   DiscogsReleaseDetail,
   DiscogsTrack,
 } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 
 interface DiscogsCreditName {
   name: string;
@@ -131,6 +132,122 @@ const parseCommunityRatingAverage = (payload: unknown): number | null => {
   }
 
   return rating.average;
+};
+
+export const adjustCommunityRatingForUserChange = (
+  community: DiscogsReleaseDetail["community"],
+  {
+    previousUserRating,
+    nextUserRating,
+  }: {
+    previousUserRating: number;
+    nextUserRating: number;
+  },
+): DiscogsReleaseDetail["community"] => {
+  const hadPrevious = previousUserRating > 0;
+  const hasNext = nextUserRating > 0;
+
+  if (!(hadPrevious || hasNext)) {
+    return community;
+  }
+
+  const current = community?.rating;
+  const hasCommunityAggregate =
+    current !== undefined &&
+    typeof current.average === "number" &&
+    current.average > 0 &&
+    typeof current.count === "number" &&
+    current.count > 0;
+
+  if (!hasCommunityAggregate) {
+    if (!hasNext) {
+      return community;
+    }
+
+    return {
+      ...community,
+      rating: {
+        average: nextUserRating,
+        count: 1,
+      },
+    };
+  }
+
+  const { average, count } = current;
+  let totalStars = average * count;
+  let nextCount = count;
+
+  if (hadPrevious && hasNext) {
+    totalStars = totalStars - previousUserRating + nextUserRating;
+  } else if (!hadPrevious && hasNext) {
+    totalStars += nextUserRating;
+    nextCount += 1;
+  } else if (hadPrevious && !hasNext) {
+    totalStars -= previousUserRating;
+    nextCount -= 1;
+  }
+
+  if (nextCount <= 0) {
+    return {
+      ...community,
+      rating: {
+        average: 0,
+        count: 0,
+      },
+    };
+  }
+
+  return {
+    ...community,
+    rating: {
+      average: totalStars / nextCount,
+      count: nextCount,
+    },
+  };
+};
+
+export const patchReleaseDetailCommunityForUserRatingChange = (
+  releaseDetail: DiscogsReleaseDetail,
+  {
+    previousUserRating,
+    nextUserRating,
+  }: {
+    previousUserRating: number;
+    nextUserRating: number;
+  },
+): DiscogsReleaseDetail => {
+  const community = adjustCommunityRatingForUserChange(
+    releaseDetail.community,
+    {
+      previousUserRating,
+      nextUserRating,
+    },
+  );
+
+  return {
+    ...releaseDetail,
+    ...definedProps({ community }),
+  };
+};
+
+export const mergeReleaseDetailWhenRefetchedCommunityIsStale = (
+  fetched: DiscogsReleaseDetail,
+  optimistic: DiscogsReleaseDetail | undefined,
+  nextUserRating: number,
+): DiscogsReleaseDetail => {
+  if (
+    nextUserRating <= 0 ||
+    !optimistic?.community?.rating ||
+    !fetched.community?.rating ||
+    fetched.community.rating.count >= optimistic.community.rating.count
+  ) {
+    return fetched;
+  }
+
+  return {
+    ...fetched,
+    community: optimistic.community,
+  };
 };
 
 export const getCommunityRatingFromReleaseDetail = (

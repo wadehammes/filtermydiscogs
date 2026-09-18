@@ -431,7 +431,7 @@ Use a factory when the test must stub a subset without pulling in the full mocke
 
 **Do not add specs under `src/hooks/queries/` or `src/hooks/mutations/`** — cover read/write behavior at the call site (feature hooks, contexts, components) with mocked **`api.*`**, or in route/endpoint tests for HTTP contracts. Collection query edge cases (401 recheck, bootstrap page size, rate-limit retry) live in [`useCollectionData.hook.spec.ts`](../../src/hooks/useCollectionData.hook.spec.ts).
 
-**Enforcement:** Cursor [`block-query-hook-mocks.sh`](../../.cursor/hooks/block-query-hook-mocks.sh) denies new query-hook mocks in feature tests; [`queryHookMockRules.spec.ts`](../../src/tests/utils/queryHookMockRules.spec.ts) scans the repo in CI/Jest and on session **`stop`** when test files changed.
+**Enforcement:** Cursor [`block-query-hook-mocks.sh`](../../.cursor/hooks/block-query-hook-mocks.sh) denies new specs under `src/hooks/queries/` or `src/hooks/mutations/` and query/mutation-hook mocks in feature tests; [`handbookTestRules.spec.ts`](../../src/tests/utils/handbookTestRules.spec.ts) scans the repo in CI/Jest and on session **`stop`** when test files changed ([`handbook-test-drift-check.sh`](../../.cursor/hooks/handbook-test-drift-check.sh)).
 
 **Feature-hook test recipe:** canonical **`jest.mock("src/api/urls")`** → [`renderFeatureHook`](../../src/tests/utils/test-utils.tsx) → **`mockApiResponse`** → **`waitFor`** on outcomes. Examples: [`useUserPreferencesSync.hook.spec.tsx`](../../src/hooks/useUserPreferencesSync.hook.spec.tsx), [`useCollectionData.hook.spec.ts`](../../src/hooks/useCollectionData.hook.spec.ts).
 

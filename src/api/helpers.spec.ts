@@ -134,6 +134,21 @@ describe("fetchDiscogsRelease", () => {
     });
   });
 
+  it("bypasses the HTTP cache when bypassCache is true", async () => {
+    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ id: "123" }));
+
+    await fetchDiscogsRelease("123", { bypassCache: true });
+
+    expect(mockFetch).toHaveBeenCalledWith("/api/release/123?fresh=1", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      cache: "no-store",
+    });
+  });
+
   it("throws error when response is not ok", async () => {
     mockFetch.mockResolvedValueOnce(mockFetchError(404));
 

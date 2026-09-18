@@ -11,6 +11,7 @@ const AUTHENTICATED_RELEASE_CACHE =
   "private, max-age=3600, stale-while-revalidate=7200";
 const PUBLIC_RELEASE_CACHE =
   "public, max-age=3600, stale-while-revalidate=7200";
+const FRESH_RELEASE_CACHE = "private, no-store";
 
 export async function GET(
   request: NextRequest,
@@ -37,6 +38,7 @@ export async function GET(
     const accessTokenSecret = request.cookies.get(
       "discogs_access_token_secret",
     )?.value;
+    const fresh = request.nextUrl.searchParams.get("fresh") === "1";
     const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
 
     if (accessToken && accessTokenSecret) {
@@ -54,7 +56,9 @@ export async function GET(
 
       return NextResponse.json(release, {
         headers: {
-          "Cache-Control": AUTHENTICATED_RELEASE_CACHE,
+          "Cache-Control": fresh
+            ? FRESH_RELEASE_CACHE
+            : AUTHENTICATED_RELEASE_CACHE,
         },
       });
     }
@@ -66,7 +70,7 @@ export async function GET(
 
     return NextResponse.json(release, {
       headers: {
-        "Cache-Control": PUBLIC_RELEASE_CACHE,
+        "Cache-Control": fresh ? FRESH_RELEASE_CACHE : PUBLIC_RELEASE_CACHE,
       },
     });
   } catch (error) {

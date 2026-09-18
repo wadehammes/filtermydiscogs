@@ -7,6 +7,12 @@
         "timeout": 10
       }
     ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/handbook-adherence-reminder.sh",
+        "timeout": 5
+      }
+    ],
     "beforeShellExecution": [
       {
         "command": ".cursor/hooks/block-co-authored-by-commit.sh",
@@ -96,7 +102,7 @@
         "loop_limit": 1
       },
       {
-        "command": ".cursor/hooks/query-hook-mock-drift-check.sh",
+        "command": ".cursor/hooks/handbook-test-drift-check.sh",
         "timeout": 30,
         "loop_limit": 1
       },

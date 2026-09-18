@@ -20,6 +20,17 @@ const mockUseMediaQuery = jest.fn(() => false);
 const mockApi = jest.mocked(api);
 const apiError = new Error("API request failed");
 const RELEASE_ID = 249504;
+
+const communityReleaseDetail = (count: number) =>
+  discogsReleaseJsonFactory.withTracklistAndVideos({
+    id: RELEASE_ID,
+    community: {
+      rating: {
+        average: 5,
+        count,
+      },
+    },
+  });
 const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 const defaultCrate = crateFactory.defaultTestCrate();
 
@@ -401,6 +412,52 @@ describe("ReleaseSummaryHero", () => {
     expect(mockApi.discogsCollection.mock.calls.length).toBe(
       collectionFetchCount,
     );
+  });
+
+  it("updates community after save with bypassCache refetch and keeps optimistic count when Discogs is stale", async () => {
+    const user = userEvent.setup();
+
+    mockApi.discogsRelease.mockImplementation(() =>
+      Promise.resolve(communityReleaseDetail(4)),
+    );
+
+    const release = releaseFactory.withResourceUrl(RELEASE_ID, {
+      rating: 3,
+      basic_information: {
+        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
+        id: RELEASE_ID,
+      },
+    });
+
+    mockApiResponse(
+      true,
+      mockApi.updateReleaseRating,
+      {
+        username: "testuser",
+        release_id: RELEASE_ID,
+        rating: 5,
+      },
+      apiError,
+    );
+
+    render(<ReleaseSummaryHero release={release} />, {
+      authInitialState: testAuthenticatedAuthState,
+      includeCollectionSync: true,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/5\.00 \(4\)/)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/5\.00 \(5\)/)).toBeInTheDocument();
+    });
+
+    expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID), {
+      bypassCache: true,
+    });
   });
 
   it("completes rating save while the collection fetch is still in flight", async () => {
