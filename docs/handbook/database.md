@@ -66,6 +66,22 @@ Composite primary key: **`[user_id, crate_id, instance_id]`**. Cascades on crate
 
 Owner-only section labels within a crate layout (e.g. “Peak hour”). Composite primary key: **`[user_id, crate_id, id]`** (UUID). **`sort_order`** interleaves with releases in the unified layout. Not returned on public crate routes.
 
+### `UserTrack`
+
+Per-user playback stats for collection tracks (same identity as the playback queue: **`track_key`** = `` `${instance_id}:${track_position}` ``). User-owned data (not product analytics); rows cascade when **`User`** is deleted.
+
+| Field | Notes |
+|-------|-------|
+| `track_key` | Composite playback key (part of primary key with `user_id`) |
+| `youtube_id` | Parsed YouTube id at last record (optional) |
+| `track_title`, `track_position`, `instance_id` | Denormalized for display |
+| `artist`, `release_title` | Optional display metadata |
+| `play_count` | User started playback (row click, queue, skip, auto-advance) — once per active track session |
+| `listen_count` | ≥ **30s** continuous playback in one session, or embed ended before 30s (short tracks) |
+| `last_played_at` / `last_listened_at` | Updated when the matching counter increments |
+
+Client writes via **`POST /api/tracks/record`** (`event`: **`play`** \| **`listen`**); reads via **`GET /api/tracks/stats?keys=`** (comma-separated **`track_key`** list, max 100) — release modal tracklist via **`useTrackStatsQuery`** ([`ReleaseModalPlaybackTracksSection`](../../src/components/ReleaseModal/ReleaseModalPlaybackTracksSection.component.tsx)). Dashboard leaderboards: **`GET /api/dashboard/top-tracks?limit=`** ( **`fetchTopUserTracks`** in [`user-track.server.ts`](../../src/lib/user-track.server.ts) — parallel **`play_count`** / **`listen_count`** queries; each row includes optional **`release_thumb`** from a single batched **`crate_releases`** lookup for all distinct **`instance_id`** values on both leaderboards). UI may still prefer live collection art via **`useAllReleases()`**. Playback wiring: [`userTrackRecording.ts`](../../src/utils/userTrackRecording.ts) + [`TrackStatsRecorder`](../../src/components/TrackStatsRecorder/TrackStatsRecorder.component.tsx) (binds **`useRecordTrackEventMutation`**). Constant **`TRACK_LISTEN_MIN_MS`** (30_000) in [`userTrack.ts`](../../src/utils/userTrack.ts). Rows delete with **Clear stored data** (**`User`** cascade).
+
 ### `ProductAnalyticsEvent`
 
 First-party product analytics when the visitor opts in (same consent gate as GTM). No FK to **`User`** — optional **`user_id`** for signed-in events.
@@ -140,6 +156,8 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers). Pass **`?all=true`** for a single full payload (up to **`CRATE_DETAIL_ALL_MAX`**) |
 | `/api/crates/migrate` | POST | Bulk import legacy localStorage releases into the user's default crate (`{ releases }`, max **`LEGACY_CRATE_MIGRATE_MAX`**) |
 | `/api/crates/sync` | POST | Sync local crate state with server; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata) |
+| `/api/tracks/record` | POST | Record **`play`** or **`listen`** for a track (`userTrackRecordBodySchema`) |
+| `/api/tracks/stats` | GET | Batch stats for **`?keys=`** (comma-separated **`track_key`**) |
 | `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
 | `/api/dashboard/most-crated` | GET | Aggregated stats |
 | `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, **account preferences** (filter persistence, analytics consent, themes, default view, saved filter views), and **feature usage** from **`product_analytics_daily_rollups`** + recent raw events) |

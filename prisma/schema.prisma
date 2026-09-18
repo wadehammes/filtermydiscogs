@@ -25,9 +25,34 @@ model User {
   created_at              DateTime @default(now())
   updated_at              DateTime @updatedAt
 
-  crates Crate[]
+  crates      Crate[]
+  user_tracks UserTrack[]
 
   @@map("users")
+}
+
+model UserTrack {
+  user_id          Int
+  track_key        String
+  youtube_id       String?
+  track_title      String
+  track_position   String
+  release_title    String?
+  artist           String?
+  instance_id      String
+  play_count       Int      @default(0)
+  listen_count     Int      @default(0)
+  last_played_at   DateTime?
+  last_listened_at DateTime?
+  first_played_at  DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [discogs_user_id], onDelete: Cascade)
+
+  @@id([user_id, track_key])
+  @@index([user_id, last_played_at])
+  @@index([user_id, last_listened_at])
+  @@map("user_tracks")
 }
 
 model Crate {

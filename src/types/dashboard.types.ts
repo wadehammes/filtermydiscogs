@@ -99,6 +99,23 @@ export interface MostCratedRelease {
   release: DiscogsRelease;
 }
 
+export interface TopUserTrack {
+  track_key: string;
+  instance_id: string;
+  track_title: string;
+  track_position: string;
+  artist: string | null;
+  release_title: string | null;
+  release_thumb: string | null;
+  play_count: number;
+  listen_count: number;
+}
+
+export interface TopUserTracksResponse {
+  most_played: TopUserTrack[];
+  most_listened: TopUserTrack[];
+}
+
 export interface AdminStatsTopUser {
   user_id: number;
   username: string;

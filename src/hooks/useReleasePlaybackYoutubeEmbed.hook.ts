@@ -38,6 +38,7 @@ import {
   shouldNotifyEmbedPlaybackEnded,
 } from "src/utils/releasePlaybackEmbedTiming";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
+import { creditTrackListenOnEmbedEndedForActiveItem } from "src/utils/userTrackRecording";
 import {
   EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
   EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
@@ -152,6 +153,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     }
 
     lastEmbedPlaybackEndedAtRef.current = now;
+    creditTrackListenOnEmbedEndedForActiveItem();
     onPlaybackEnded();
   }, [onPlaybackEnded]);
 

@@ -62,6 +62,11 @@ export const MostCratedQueryKeys = {
   list: (limit: number) => ["mostCrated", limit] as const,
 };
 
+export const TopUserTracksQueryKeys = {
+  all: () => ["topUserTracks"] as const,
+  list: (limit: number) => [...TopUserTracksQueryKeys.all(), limit] as const,
+};
+
 export const AdminStatsQueryKeys = {
   all: () => ["adminStats"] as const,
 };
@@ -76,4 +81,12 @@ export const UserPreferencesQueryKeys = {
   all: () => ["userPreferences"] as const,
   byUserId: (userId: string | number | null) =>
     [...UserPreferencesQueryKeys.all(), userId] as const,
+};
+
+export const TrackStatsQueryKeys = {
+  all: () => ["trackStats"] as const,
+  byUserId: (userId: string | number | null) =>
+    [...TrackStatsQueryKeys.all(), userId] as const,
+  byUserAndKeys: (userId: string | number | null, keysSignature: string) =>
+    [...TrackStatsQueryKeys.byUserId(userId), keysSignature] as const,
 };

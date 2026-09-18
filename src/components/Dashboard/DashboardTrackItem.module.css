@@ -1,0 +1,93 @@
+.trackItem {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--space-3);
+  justify-content: space-between;
+  min-width: 0;
+  width: 100%;
+}
+
+.imageWrapper {
+  flex-shrink: 0;
+  height: 3rem;
+  overflow: hidden;
+  width: 3rem;
+
+  &[role="button"] {
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+}
+
+.coverImage {
+  border-radius: var(--radius-sm);
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.trackInfo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.trackTitleRow {
+  min-width: 0;
+}
+
+.trackTitle,
+.trackTitleButton {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  line-height: 1.3;
+  margin: 0;
+  text-align: left;
+}
+
+.trackTitleButton {
+  display: block;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackMeta {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.metricNumber {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  line-height: 1;
+}
+
+.metricLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  text-transform: lowercase;
+}

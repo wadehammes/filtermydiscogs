@@ -29,12 +29,14 @@ import {
   fetchAdminStats,
   fetchAdminUserLookup,
   fetchMostCratedReleases,
+  fetchTopUserTracks,
 } from "src/api/endpoints/dashboard";
 import {
   fetchDiscogsRelease,
   fetchDiscogsReleaseBatch,
   fetchDiscogsSearch,
 } from "src/api/endpoints/release";
+import { fetchTrackStats, recordTrackEvent } from "src/api/endpoints/tracks";
 import {
   fetchUserPreferences,
   updateUserPreferences,
@@ -63,6 +65,7 @@ export const api = {
   dismissSupportProjectToast,
   logout,
   mostCratedReleases: fetchMostCratedReleases,
+  topUserTracks: fetchTopUserTracks,
   migrateLegacyCrate,
   publicCrate: fetchPublicCrate,
   releaseCrateMembership: fetchReleaseCrateMembership,
@@ -70,6 +73,8 @@ export const api = {
   setReleaseCrateMembership,
   setReleasePackedInCrate,
   syncCrates,
+  recordTrackEvent,
+  fetchTrackStats,
   updateCollectionNote,
   updateCrate,
   updateCrateLayout,

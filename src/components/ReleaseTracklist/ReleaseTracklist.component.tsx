@@ -8,11 +8,16 @@ import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
+import {
+  formatUserTrackStatsLabel,
+  type UserTrackStatCounts,
+} from "src/utils/userTrack";
 import styles from "./ReleaseTracklist.module.css";
 
 interface ReleaseTracklistProps {
   tracks: DiscogsTrack[];
   releaseArtistNames: string;
+  trackStatsByPosition?: Record<string, UserTrackStatCounts>;
   activeTrackPosition: string | null;
   showPlayingIndicatorOnActiveTrack?: boolean;
   isPlaybackPaused?: boolean;
@@ -44,6 +49,7 @@ export const ReleaseTracklist = ({
   onAddAllToQueue,
   addAllToQueueDisabled = false,
   onActiveTrackToggle,
+  trackStatsByPosition,
 }: ReleaseTracklistProps) => {
   const hasSelectableTracks = onTrackSelect !== undefined;
   const showQueueColumn = onTrackQueue !== undefined || reserveQueueColumn;
@@ -81,6 +87,10 @@ export const ReleaseTracklist = ({
           });
           const positionLabel =
             getPositionLabel?.(track.position) ?? track.position;
+          const trackStats = trackStatsByPosition?.[track.position];
+          const trackStatsLabel = trackStats
+            ? formatUserTrackStatsLabel(trackStats)
+            : null;
 
           const trackTitleContent = (
             <span className={styles.trackTitle}>
@@ -137,6 +147,9 @@ export const ReleaseTracklist = ({
                 <div className={styles.trackMainStatic}>{trackMainContent}</div>
               )}
               <div className={styles.trackTrailing}>
+                {trackStatsLabel ? (
+                  <span className={styles.trackStats}>{trackStatsLabel}</span>
+                ) : null}
                 {track.duration ? (
                   <span className={styles.trackDuration}>{track.duration}</span>
                 ) : null}

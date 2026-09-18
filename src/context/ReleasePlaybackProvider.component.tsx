@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { TrackStatsRecorder } from "src/components/TrackStatsRecorder/TrackStatsRecorder.component";
 import {
   ReleasePlaybackActionsContext,
   ReleasePlaybackQueueContext,
@@ -26,6 +27,7 @@ export const ReleasePlaybackProvider = ({
           <ReleasePlaybackVisibilityContext.Provider
             value={isMiniPlayerVisible}
           >
+            <TrackStatsRecorder />
             {children}
           </ReleasePlaybackVisibilityContext.Provider>
         </ReleasePlaybackQueueContext.Provider>
