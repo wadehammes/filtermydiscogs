@@ -88,9 +88,11 @@ export function LegalPageContent() {
             </li>
             <li>
               When you use in-app playback, I store per-track play and listen
-              counts (and basic track labels) in Postgres so your dashboard and
-              tracklists can show them. This is separate from optional product
-              analytics below.
+              counts (and basic track labels) in Postgres so your dashboard
+              (including On repeat) and release tracklists can show them. Counts
+              increment when playback actually starts or you resume from pause,
+              not when a paused session reopens after a page refresh. This is
+              separate from optional product analytics below.
             </li>
             <li>
               When you&apos;re logged in, account preferences also live in
@@ -140,10 +142,11 @@ export function LegalPageContent() {
             </li>
             <li>
               Want to nuke everything on my side? Hit &quot;Clear All Data&quot;
-              below and I&apos;ll wipe your crates and saved preferences from
-              the database and clear local app data on this browser. That does
-              not delete or change your Discogs collection or notes. You&apos;d
-              need to edit or remove those on Discogs itself.
+              below and I&apos;ll wipe your crates, in-app playback stats, and
+              saved preferences from the database and clear local app data on
+              this browser. That does not delete or change your Discogs
+              collection or notes. You&apos;d need to edit or remove those on
+              Discogs itself.
             </li>
           </ul>
           <h3 id="cookies">Cookies & Storage</h3>

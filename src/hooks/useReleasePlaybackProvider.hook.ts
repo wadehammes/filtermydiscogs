@@ -47,6 +47,7 @@ import {
   createPlaybackEmbedUnavailableSkipHandler,
   PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
 } from "src/utils/playbackEmbedUnavailableSkip";
+import { buildCurrentQueueItem } from "src/utils/playbackQueue";
 import {
   getSessionRelease,
   initialPlaybackSessionState,
@@ -70,6 +71,7 @@ import {
 } from "src/utils/releasePlaybackActivePresentation";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
+import { recordTrackPlayFromQueueItem } from "src/utils/userTrackRecording";
 
 export const useReleasePlaybackProvider = (): {
   actionsValue: ReleasePlaybackActions;
@@ -682,6 +684,21 @@ export const useReleasePlaybackProvider = (): {
     togglePlaybackBase();
 
     if (resumingFromPause) {
+      if (release) {
+        const item = buildCurrentQueueItem({
+          release,
+          previewVideo,
+          activeTrack,
+        });
+
+        if (item) {
+          recordTrackPlayFromQueueItem(
+            item,
+            activeVideoIdRef.current ?? embedVideoIdRef.current,
+          );
+        }
+      }
+
       if (!embedPlaybackConfirmedRef.current) {
         armEmbedStartWatchdog();
       }
@@ -690,7 +707,14 @@ export const useReleasePlaybackProvider = (): {
     }
 
     embedStartWatchdogRef.current.disarm();
-  }, [armEmbedStartWatchdog, isPaused, togglePlaybackBase]);
+  }, [
+    activeTrack,
+    armEmbedStartWatchdog,
+    isPaused,
+    previewVideo,
+    release,
+    togglePlaybackBase,
+  ]);
 
   usePersistPlaybackSessionWhilePlaying({
     isPlaying,

@@ -61,7 +61,7 @@ describe("Login", () => {
     );
     expect(
       screen.getByText(
-        "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights, and share cover-art mosaics.",
+        "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(LOGIN_PREVIEW_ALT)).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("Login", () => {
     expect(screen.getByText("Mosaics")).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Collections insights dashboard with stats, charts, and collection milestones",
+        name: "Collections insights dashboard with stats, charts, on-repeat track leaders, and collection milestones",
       }),
     ).toBeInTheDocument();
     expect(

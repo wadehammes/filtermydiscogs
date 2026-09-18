@@ -209,7 +209,10 @@ export const useReleasePlaybackQueueActions = ({
       }
 
       releaseRef.current = item.release;
-      recordTrackPlayFromQueueItem(item, preparedEmbedVideoId ?? null);
+
+      if (autoplay && !startPaused) {
+        recordTrackPlayFromQueueItem(item, preparedEmbedVideoId ?? null);
+      }
 
       const resolutionIndex = item.previewVideoUri
         ? -1

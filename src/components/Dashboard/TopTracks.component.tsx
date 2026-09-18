@@ -8,6 +8,7 @@ import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQ
 import { useTopUserTracksQuery } from "src/hooks/queries/useTopUserTracksQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
+import type { DiscogsRelease } from "src/types";
 import type { TopUserTrack } from "src/types/dashboard.types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
 import { definedProps } from "src/utils/definedProps";
@@ -41,6 +42,7 @@ interface TopTracksColumnProps {
   emptyMessage: string;
   coverUrlByInstanceId: Map<string, string>;
   catalogTitleByTrackKey: Map<string, string>;
+  releaseIndex: Map<string, DiscogsRelease>;
   onReleaseClick?: (instanceId: string) => void;
 }
 
@@ -52,6 +54,7 @@ function TopTracksColumn({
   emptyMessage,
   coverUrlByInstanceId,
   catalogTitleByTrackKey,
+  releaseIndex,
   onReleaseClick,
 }: TopTracksColumnProps) {
   return (
@@ -76,6 +79,7 @@ function TopTracksColumn({
                   track={track}
                   metric={metric}
                   {...definedProps({
+                    release: releaseIndex.get(String(track.instance_id)),
                     onReleaseClick,
                     coverUrl: coverUrlByInstanceId.get(
                       String(track.instance_id),
@@ -205,6 +209,7 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
         emptyMessage="No plays recorded yet."
         coverUrlByInstanceId={coverUrlByInstanceId}
         catalogTitleByTrackKey={catalogTitleByTrackKey}
+        releaseIndex={releaseIndex}
         {...definedProps({ onReleaseClick })}
       />
       <TopTracksColumn
@@ -215,6 +220,7 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
         emptyMessage="No listens recorded yet."
         coverUrlByInstanceId={coverUrlByInstanceId}
         catalogTitleByTrackKey={catalogTitleByTrackKey}
+        releaseIndex={releaseIndex}
         {...definedProps({ onReleaseClick })}
       />
     </div>

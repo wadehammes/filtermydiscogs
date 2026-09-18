@@ -40,9 +40,9 @@ export const PRIVATE_PAGE_ROBOTS = {
 
 export const PAGE_DESCRIPTIONS = {
   releases:
-    "Search, filter, and sort your Discogs collection. Open releases for tracklists and in-app playback, and add albums to crates as you browse.",
+    "Search, filter, and sort your Discogs collection. Open releases for tracklists, in-app playback, and per-track play stats, and add albums to crates as you browse.",
   dashboard:
-    "Explore collection insights: milestones, style evolution, growth trends, and more.",
+    "Explore collection insights: milestones, style evolution, growth trends, on-repeat tracks, and more.",
   mosaic:
     "Create cover-art mosaic grids from your collection or crates for social sharing.",
   crates:
@@ -51,7 +51,7 @@ export const PAGE_DESCRIPTIONS = {
     "Open a crate to review releases, edit collection notes, and pack for your gig.",
   settings:
     "Manage theme, sync preferences, and stored data for your FilterMyDiscogs account.",
-  about: `About FilterMyDiscogs: collection insights, search and filters, crates with set notes and gig packing, in-app playback, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
+  about: `About FilterMyDiscogs: collection insights and on-repeat tracks, search and filters, crates with set notes and gig packing, in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
   legal: "Terms of Service and Privacy Policy for FilterMyDiscogs.",
   admin: "Admin statistics and analytics dashboard.",
   crateFallback: "A shared crate on FilterMyDiscogs.",
