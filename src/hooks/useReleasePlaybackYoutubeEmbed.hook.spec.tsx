@@ -26,11 +26,13 @@ const buildHarness = ({
   isPlaying = true,
   isPlaybackEmbedMounted = false,
   onYoutubeEmbedPlaybackError,
+  onEmbedPlaybackConfirmed,
 }: {
   isPaused?: boolean;
   isPlaying?: boolean;
   isPlaybackEmbedMounted?: boolean;
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
+  onEmbedPlaybackConfirmed?: () => void;
 } = {}) => {
   const queryClient = createTestQueryClient();
   const release = releaseFactory.withDisplayDefaults();
@@ -98,7 +100,10 @@ const buildHarness = ({
         setIsPlaybackEmbedMounted,
         clearPlaybackVideoUiLoading,
         onPlaybackEnded,
-        ...definedProps({ onYoutubeEmbedPlaybackError }),
+        ...definedProps({
+          onYoutubeEmbedPlaybackError,
+          onEmbedPlaybackConfirmed,
+        }),
       }),
     { wrapper },
   );
@@ -241,6 +246,34 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
 
     expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
+  });
+
+  it("clears video UI loading on PLAYING when embed video id matches the loading target before activeVideoId catches up", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      activeVideoIdRef,
+      clearPlaybackVideoUiLoading,
+      embedVideoIdRef,
+      isPlaybackVideoUiLoadingRef,
+      playbackIframeRef,
+      playbackVideoUiLoadingEmbedLoadStartedRef,
+      playbackVideoUiLoadingTargetVideoIdRef,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    playbackVideoUiLoadingTargetVideoIdRef.current = "next-video-id";
+    activeVideoIdRef.current = "prev-video-id";
+    embedVideoIdRef.current = "next-video-id";
+    playbackVideoUiLoadingEmbedLoadStartedRef.current = true;
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
   it("ignores stale PLAYING while video UI loading until imperative embed load starts", () => {

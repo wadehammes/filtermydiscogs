@@ -26,6 +26,7 @@ import {
   flattenTracklist,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
+import { doesPlaybackVideoUiLoadingTargetMatch } from "src/utils/releasePlaybackActivePresentation";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
   isWithinEmbedTrackSwitchGrace,
@@ -403,9 +404,15 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
         if (isPlaybackVideoUiLoadingRef.current) {
           const loadingTarget = playbackVideoUiLoadingTargetVideoIdRef.current;
+
           if (
-            loadingTarget !== null &&
-            activeVideoIdRef.current !== loadingTarget
+            !doesPlaybackVideoUiLoadingTargetMatch({
+              loadingTargetVideoId: loadingTarget,
+              activeVideoId: activeVideoIdRef.current,
+              embedVideoId: embedVideoIdRef.current,
+              transitionTargetVideoId:
+                playbackVideoTransitionTargetIdRef.current,
+            })
           ) {
             return;
           }
@@ -439,10 +446,12 @@ export const useReleasePlaybackYoutubeEmbed = ({
       notifyEmbedPlaybackEnded,
       activeVideoIdRef,
       clearPlaybackVideoUiLoading,
+      embedVideoIdRef,
       isPlaybackVideoUiLoadingRef,
       pendingPlayFromGestureRef,
       playbackIframeRef,
       onEmbedPlaybackConfirmed,
+      playbackVideoTransitionTargetIdRef,
       playbackVideoUiLoadingEmbedLoadStartedRef,
       playbackVideoUiLoadingTargetVideoIdRef,
     ],
@@ -691,6 +700,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     schedulePlayFromGestureAttempts,
     syncEmbedToVideoId,
     syncEmbedForQueueItem,
+    resolveQueueItemEmbedVideoId,
     prefetchQueueItemEmbed,
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,

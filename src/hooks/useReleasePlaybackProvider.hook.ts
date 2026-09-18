@@ -188,8 +188,6 @@ export const useReleasePlaybackProvider = (): {
   const onYoutubeEmbedPlaybackErrorRef = useRef<(errorCode: number) => void>(
     () => undefined,
   );
-  const onEmbedPlaybackConfirmedRef = useRef<() => void>(() => undefined);
-
   autoPlayOnQueueAddRef.current = autoPlayOnQueueAdd;
   syncPlaybackSessionRefs(session, {
     release: releaseRef,
@@ -408,8 +406,9 @@ export const useReleasePlaybackProvider = (): {
     onYoutubeEmbedPlaybackErrorRef.current(errorCode);
   }, []);
 
-  const forwardEmbedPlaybackConfirmed = useCallback(() => {
-    onEmbedPlaybackConfirmedRef.current();
+  const confirmEmbedPlayback = useCallback(() => {
+    embedPlaybackConfirmedRef.current = true;
+    embedStartWatchdogRef.current.disarm();
   }, []);
 
   const {
@@ -417,6 +416,7 @@ export const useReleasePlaybackProvider = (): {
     schedulePlayFromGestureAttempts,
     syncEmbedToVideoId,
     syncEmbedForQueueItem,
+    resolveQueueItemEmbedVideoId,
     prefetchQueueItemEmbed,
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
@@ -457,15 +457,10 @@ export const useReleasePlaybackProvider = (): {
     clearPlaybackVideoUiLoading,
     onPlaybackEnded: handlePlaybackEnded,
     onYoutubeEmbedPlaybackError: forwardYoutubeEmbedPlaybackError,
-    onEmbedPlaybackConfirmed: forwardEmbedPlaybackConfirmed,
+    onEmbedPlaybackConfirmed: confirmEmbedPlayback,
   });
 
   clearPlayFromGestureRetriesRef.current = clearPlayFromGestureRetries;
-
-  onEmbedPlaybackConfirmedRef.current = () => {
-    embedPlaybackConfirmedRef.current = true;
-    embedStartWatchdogRef.current.disarm();
-  };
 
   const advanceQueueAfterSkip = useCallback(() => {
     playNextRef.current();
@@ -497,7 +492,12 @@ export const useReleasePlaybackProvider = (): {
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
     notifyImperativeEmbedLoadStarted();
     clearPlaybackVideoUiLoading();
-  }, [clearPlaybackVideoUiLoading, notifyImperativeEmbedLoadStarted]);
+    confirmEmbedPlayback();
+  }, [
+    clearPlaybackVideoUiLoading,
+    confirmEmbedPlayback,
+    notifyImperativeEmbedLoadStarted,
+  ]);
 
   const resetPlaybackSkipState = useCallback(() => {
     embedStartWatchdogRef.current.disarm();
@@ -532,6 +532,8 @@ export const useReleasePlaybackProvider = (): {
     setPlaybackVideoUiLoadingTargetId,
     beginPlaybackVideoUiLoading,
     clearPlaybackVideoUiLoading,
+    notifyPlaybackVideoPresentationReady,
+    resolveQueueItemEmbedVideoId,
     setEmbedVideoId,
     clearPlayFromGestureRetries,
     syncEmbedToVideoId,
