@@ -190,7 +190,7 @@ make release tag=v0.0.1
 4. Confirm [`.github/workflows/release.yml`](.github/workflows/release.yml) (**`create-release`**) succeeded: **`main`** matches the tag and the GitHub Release exists. One-time repo setup: Actions secret **`RELEASE_PUSH_TOKEN`** — a **PAT** (fine-grained or classic) with **Contents** read/write on this repo, owned by a GitHub user on the **`Production — main`** ruleset bypass list ([`production-main.json`](.github/rulesets/production-main.json)); see [`platform.md`](./docs/handbook/platform.md#branching-and-github-rulesets).
 5. Confirm Vercel **Production** deployed from **`main`**.
 
-If **`create-release`** failed on **Reset Main** (`Cannot update this protected ref`), fix or rotate **`RELEASE_PUSH_TOKEN`** (PAT owner must bypass **`main`** rules), test the push locally per the handbook, then **`gh run rerun --failed`**. As a break-glass admin you can **`git push origin refs/tags/vX.Y.Z:main`** and **`gh release create vX.Y.Z --generate-notes`** if the GitHub Release was never created.
+If **`create-release`** failed on **Reset Main**, use [`platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets) ( **`RELEASE_PUSH_TOKEN`**, bypass list, release workflow checkout). Re-run only on a tag that includes any workflow fix. Break-glass: **`git push origin refs/tags/vX.Y.Z:main`** and **`gh release create vX.Y.Z --generate-notes`** if **`main`** or the GitHub Release was never updated.
 
 ## Handbook
 

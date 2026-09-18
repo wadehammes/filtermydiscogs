@@ -16,15 +16,21 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # Default checkout persists GITHUB_TOKEN on git HTTP auth; that overrides a PAT embedded in the remote URL and Reset Main still pushes as github-actions[bot] (no ruleset bypass).
+          persist-credentials: false
       - name: Reset Main
         id: reset_main
         env:
           RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: |
           if [ -z "$RELEASE_PUSH_TOKEN" ]; then
-            echo "::error::Add repository secret RELEASE_PUSH_TOKEN (admin PAT with Contents read/write) so this job can update main under rulesets. See docs/handbook/platform.md → Branching and GitHub rulesets."
+            echo "::error::Add repository secret RELEASE_PUSH_TOKEN (PAT with Contents read/write; owner on Production — main bypass). See docs/handbook/platform.md → Branching and GitHub rulesets."
             exit 1
           fi
+          # Clear any persisted git HTTP auth before pointing origin at the PAT. checkout
+          # writes this key to LOCAL config, so the global unset alone is not a backstop.
+          git config --global --unset-all "http.https://github.com/.extraheader" || true
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
           git remote set-url origin "https://x-access-token:${RELEASE_PUSH_TOKEN}@github.com/${{ github.repository }}.git"
           git push origin "${{ github.ref }}:main"
       - name: Generate changelog
