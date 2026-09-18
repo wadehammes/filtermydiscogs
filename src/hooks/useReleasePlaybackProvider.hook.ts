@@ -495,7 +495,10 @@ export const useReleasePlaybackProvider = (): {
   const notifyPlaybackVideoLoadStarted = useCallback(() => {
     notifyImperativeEmbedLoadStarted();
     embedPlaybackConfirmedRef.current = false;
-    armEmbedStartWatchdog();
+
+    if (!isPausedRef.current) {
+      armEmbedStartWatchdog();
+    }
   }, [armEmbedStartWatchdog, notifyImperativeEmbedLoadStarted]);
 
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
@@ -648,9 +651,15 @@ export const useReleasePlaybackProvider = (): {
 
     togglePlaybackBase();
 
-    if (resumingFromPause && !embedPlaybackConfirmedRef.current) {
-      armEmbedStartWatchdog();
+    if (resumingFromPause) {
+      if (!embedPlaybackConfirmedRef.current) {
+        armEmbedStartWatchdog();
+      }
+
+      return;
     }
+
+    embedStartWatchdogRef.current.disarm();
   }, [armEmbedStartWatchdog, isPaused, togglePlaybackBase]);
 
   usePersistPlaybackSessionWhilePlaying({
