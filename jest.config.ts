@@ -31,5 +31,13 @@ export default async () => {
     "^test-utils$": "<rootDir>/src/tests/utils/test-utils.tsx",
   };
 
-  return { ...jestConfig, moduleNameMapper, testTimeout: 20000 };
+  return {
+    ...jestConfig,
+    moduleNameMapper,
+    testPathIgnorePatterns: [
+      ...(jestConfig.testPathIgnorePatterns ?? []),
+      "<rootDir>/scripts/.*\\.test\\.mjs$",
+    ],
+    testTimeout: 20000,
+  };
 };
