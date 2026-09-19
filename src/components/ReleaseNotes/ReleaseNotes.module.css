@@ -172,6 +172,10 @@
   width: 100%;
 }
 
+.notesCrateScratchpadFieldPicker {
+  width: 100%;
+}
+
 .notesCrateScratchpadField {
   display: flex;
   flex-direction: column;

@@ -197,6 +197,62 @@ export const isEditableCollectionField = (
   return field.type === "text" || field.type === "textarea";
 };
 
+export const RELEASE_NOTES_TEXT_FIELD_PICKER_LABEL = "Note Field";
+
+export const sortTextCollectionFields = (
+  fields: DiscogsCollectionField[],
+): DiscogsCollectionField[] => {
+  return [...fields].sort(
+    (left, right) => (left.position ?? 0) - (right.position ?? 0),
+  );
+};
+
+export const parseReleaseNotesTextFieldPickerValue = (
+  value: string | string[],
+): number | null => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const fieldId = Number.parseInt(value, 10);
+
+  return Number.isNaN(fieldId) ? null : fieldId;
+};
+
+export const getInitialActiveTextFieldId = (
+  sortedTextFields: DiscogsCollectionField[],
+  values: Record<string, string>,
+): number | undefined => {
+  const fieldWithContent = sortedTextFields.find(
+    (field) => (values[String(field.id)] ?? "").trim().length > 0,
+  );
+
+  return (fieldWithContent ?? sortedTextFields[0])?.id;
+};
+
+export type ReleaseNotesTextFieldPickerOption = {
+  value: string;
+  label: string;
+  storedCharCount?: number;
+};
+
+export const getReleaseNotesTextFieldPickerOptions = (
+  sortedTextFields: DiscogsCollectionField[],
+  values: Record<string, string>,
+): ReleaseNotesTextFieldPickerOption[] => {
+  return sortedTextFields.map((field) => {
+    const fieldKey = String(field.id);
+    const fieldValue = values[fieldKey] ?? "";
+    const hasStoredValue = fieldValue.trim().length > 0;
+
+    return {
+      value: fieldKey,
+      label: field.name,
+      ...(hasStoredValue ? { storedCharCount: fieldValue.length } : {}),
+    };
+  });
+};
+
 export const upsertReleaseNote = ({
   notes,
   fieldId,
