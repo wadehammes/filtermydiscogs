@@ -1,10 +1,21 @@
 "use client";
 
 import classNames from "classnames";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import Select from "src/components/Select/Select.component";
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
+import type { ReleaseNotesFormValues } from "src/lib/validation/releaseNotes.schemas";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import type { DiscogsCollectionField } from "src/types";
+import { definedProps } from "src/utils/definedProps";
+import {
+  getInitialActiveTextFieldId,
+  getReleaseNotesTextFieldPickerOptions,
+  parseReleaseNotesTextFieldPickerValue,
+  RELEASE_NOTES_TEXT_FIELD_PICKER_LABEL,
+  sortTextCollectionFields,
+} from "src/utils/releaseNotes";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./ReleaseNotesFormFields.module.css";
 
@@ -29,6 +40,19 @@ const getTextFieldSaveStatusLabel = (
   return null;
 };
 
+export const getReleaseNotesTextFieldError = (
+  errors: Record<string, { message?: unknown } | undefined>,
+  fieldKey: string,
+): { message?: string } | undefined => {
+  const message = errors[fieldKey]?.message;
+
+  if (typeof message === "string") {
+    return { message };
+  }
+
+  return undefined;
+};
+
 export const getConditionSelectOptions = (field: DiscogsCollectionField) => {
   return [
     { value: CONDITION_NOT_SET_VALUE, label: "Not set" },
@@ -39,10 +63,96 @@ export const getConditionSelectOptions = (field: DiscogsCollectionField) => {
   ];
 };
 
+interface ReleaseNotesTextFieldEditorProps {
+  field: DiscogsCollectionField;
+  fieldValue: string;
+  disabled: boolean;
+  fieldError?: { message?: string };
+  statusLabel: string | null;
+  showVisibleLabel: boolean;
+  onTextFieldChange?: (
+    fieldId: number,
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => void;
+  onTextFieldFocus?: (fieldId: number) => void;
+  onTextFieldBlur?: (fieldId: number) => void;
+}
+
+const ReleaseNotesTextFieldEditor = ({
+  field,
+  fieldValue,
+  disabled,
+  fieldError,
+  statusLabel,
+  showVisibleLabel,
+  onTextFieldChange,
+  onTextFieldFocus,
+  onTextFieldBlur,
+}: ReleaseNotesTextFieldEditorProps) => {
+  const fieldLength = fieldValue.length;
+  const isFieldOverLimit = fieldLength > COLLECTION_NOTE_MAX_LENGTH;
+
+  return (
+    <div className={styles.fieldGroup}>
+      {showVisibleLabel ? (
+        <label
+          className={styles.label}
+          htmlFor={`note-field-${field.id}`}
+          id={getNoteFieldLabelId(field.id)}
+        >
+          {field.name}
+        </label>
+      ) : null}
+      <textarea
+        data-1p-ignore
+        id={`note-field-${field.id}`}
+        className={validatedFieldClass(
+          styles.textarea,
+          modalInputStyles.field,
+          (fieldError || isFieldOverLimit) && styles.textareaInvalid,
+        )}
+        disabled={disabled}
+        maxLength={COLLECTION_NOTE_MAX_LENGTH}
+        value={fieldValue}
+        aria-label={field.name}
+        aria-describedby={`note-field-${field.id}-length`}
+        aria-invalid={fieldError || isFieldOverLimit ? true : undefined}
+        onChange={(event) => onTextFieldChange?.(field.id, event)}
+        onFocus={() => onTextFieldFocus?.(field.id)}
+        onBlur={() => onTextFieldBlur?.(field.id)}
+      />
+      <div className={styles.fieldFooter}>
+        {fieldError ? (
+          <p className={styles.fieldError} role="alert">
+            {fieldError.message}
+          </p>
+        ) : (
+          <span className={styles.fieldFooterSpacer} aria-hidden />
+        )}
+        <div className={styles.fieldFooterTrailing}>
+          {statusLabel ? (
+            <p className={styles.saveStatus} aria-live="polite">
+              {statusLabel}
+            </p>
+          ) : null}
+          <p
+            id={`note-field-${field.id}-length`}
+            className={classNames(
+              styles.charCount,
+              isFieldOverLimit && styles.charCountLimit,
+            )}
+          >
+            {fieldLength} / {COLLECTION_NOTE_MAX_LENGTH}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface ReleaseNotesFormFieldsProps {
   textFields: DiscogsCollectionField[];
   conditionFields: DiscogsCollectionField[];
-  values: Record<string, string>;
   disabled?: boolean;
   layout?: "default" | "modal";
   onTextFieldChange?: (
@@ -52,91 +162,182 @@ interface ReleaseNotesFormFieldsProps {
   onTextFieldFocus?: (fieldId: number) => void;
   onTextFieldBlur?: (fieldId: number) => void;
   onConditionFieldChange?: (fieldId: number, value: string) => void;
-  textFieldErrors?: Record<string, { message?: string } | undefined>;
   textFieldSaveStatus?: Record<string, ReleaseNotesTextFieldSaveStatus>;
 }
 
 export const ReleaseNotesFormFields = ({
   textFields,
   conditionFields,
-  values,
   disabled = false,
   layout = "default",
   onTextFieldChange,
   onTextFieldFocus,
   onTextFieldBlur,
   onConditionFieldChange,
-  textFieldErrors = {},
   textFieldSaveStatus = {},
 }: ReleaseNotesFormFieldsProps) => {
+  const { setValue, watch, formState } =
+    useFormContext<ReleaseNotesFormValues>();
+  const values = watch();
+  const { errors } = formState;
+
   const isModalLayout = layout === "modal";
+  const sortedTextFields = useMemo(
+    () => sortTextCollectionFields(textFields),
+    [textFields],
+  );
+  const hasMultipleTextFields = sortedTextFields.length > 1;
+  const valuesRef = useRef(values);
+  valuesRef.current = values;
+
+  const [activeTextFieldId, setActiveTextFieldId] = useState(() =>
+    getInitialActiveTextFieldId(sortedTextFields, values),
+  );
+
+  useEffect(() => {
+    setActiveTextFieldId((currentFieldId) => {
+      if (
+        currentFieldId !== undefined &&
+        sortedTextFields.some((field) => field.id === currentFieldId)
+      ) {
+        return currentFieldId;
+      }
+
+      return getInitialActiveTextFieldId(sortedTextFields, valuesRef.current);
+    });
+  }, [sortedTextFields]);
+
+  const textFieldPickerOptions = useMemo(
+    () => getReleaseNotesTextFieldPickerOptions(sortedTextFields, values),
+    [sortedTextFields, values],
+  );
+
+  const handleTextFieldPickerChange = useCallback(
+    (value: string | string[]) => {
+      const nextFieldId = parseReleaseNotesTextFieldPickerValue(value);
+
+      if (nextFieldId === null) {
+        return;
+      }
+
+      if (activeTextFieldId !== undefined) {
+        onTextFieldBlur?.(activeTextFieldId);
+      }
+
+      setActiveTextFieldId(nextFieldId);
+      onTextFieldFocus?.(nextFieldId);
+    },
+    [activeTextFieldId, onTextFieldBlur, onTextFieldFocus],
+  );
+
+  const handleTextFieldChange = useCallback(
+    (fieldId: number, event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      if (onTextFieldChange) {
+        onTextFieldChange(fieldId, event);
+        return;
+      }
+
+      setValue(String(fieldId), event.target.value, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [onTextFieldChange, setValue],
+  );
+
+  const handleConditionFieldChange = useCallback(
+    (fieldId: number, value: string) => {
+      if (onConditionFieldChange) {
+        onConditionFieldChange(fieldId, value);
+        return;
+      }
+
+      setValue(String(fieldId), value, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [onConditionFieldChange, setValue],
+  );
+
+  const activeTextField =
+    sortedTextFields.find((field) => field.id === activeTextFieldId) ??
+    sortedTextFields[0];
 
   return (
-    <div className={classNames(isModalLayout && styles.modalLayout)}>
-      {textFields.map((field) => {
-        const fieldKey = String(field.id);
-        const fieldValue = values[fieldKey] ?? "";
-        const fieldLength = fieldValue.length;
-        const fieldError = textFieldErrors[fieldKey];
-        const isFieldOverLimit = fieldLength > COLLECTION_NOTE_MAX_LENGTH;
-        const statusLabel = getTextFieldSaveStatusLabel(
-          textFieldSaveStatus[fieldKey],
-        );
-
-        return (
-          <div className={styles.fieldGroup} key={field.id}>
-            <label
-              className={styles.label}
-              htmlFor={`note-field-${field.id}`}
-              id={getNoteFieldLabelId(field.id)}
-            >
-              {field.name}
-            </label>
-            <textarea
-              data-1p-ignore
-              id={`note-field-${field.id}`}
-              className={validatedFieldClass(
-                styles.textarea,
-                modalInputStyles.field,
-                (fieldError || isFieldOverLimit) && styles.textareaInvalid,
-              )}
+    <div
+      className={classNames(
+        styles.formFieldsLayout,
+        isModalLayout && styles.modalLayout,
+      )}
+    >
+      {hasMultipleTextFields ? (
+        <>
+          <Select
+            className={styles.conditionSelect}
+            disabled={disabled}
+            label={RELEASE_NOTES_TEXT_FIELD_PICKER_LABEL}
+            showLabel
+            options={textFieldPickerOptions}
+            {...definedProps({
+              value:
+                activeTextFieldId !== undefined
+                  ? String(activeTextFieldId)
+                  : undefined,
+            })}
+            onChange={handleTextFieldPickerChange}
+          />
+          {activeTextField ? (
+            <ReleaseNotesTextFieldEditor
+              key={activeTextField.id}
+              field={activeTextField}
+              fieldValue={values[String(activeTextField.id)] ?? ""}
               disabled={disabled}
-              maxLength={COLLECTION_NOTE_MAX_LENGTH}
-              value={fieldValue}
-              aria-describedby={`note-field-${field.id}-length`}
-              aria-invalid={fieldError || isFieldOverLimit ? true : undefined}
-              onChange={(event) => onTextFieldChange?.(field.id, event)}
-              onFocus={() => onTextFieldFocus?.(field.id)}
-              onBlur={() => onTextFieldBlur?.(field.id)}
-            />
-            <div className={styles.fieldFooter}>
-              {fieldError ? (
-                <p className={styles.fieldError} role="alert">
-                  {fieldError.message}
-                </p>
-              ) : (
-                <span className={styles.fieldFooterSpacer} aria-hidden />
+              {...definedProps({
+                fieldError: getReleaseNotesTextFieldError(
+                  errors,
+                  String(activeTextField.id),
+                ),
+              })}
+              statusLabel={getTextFieldSaveStatusLabel(
+                textFieldSaveStatus[String(activeTextField.id)],
               )}
-              <div className={styles.fieldFooterTrailing}>
-                {statusLabel ? (
-                  <p className={styles.saveStatus} aria-live="polite">
-                    {statusLabel}
-                  </p>
-                ) : null}
-                <p
-                  id={`note-field-${field.id}-length`}
-                  className={classNames(
-                    styles.charCount,
-                    isFieldOverLimit && styles.charCountLimit,
-                  )}
-                >
-                  {fieldLength} / {COLLECTION_NOTE_MAX_LENGTH}
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+              showVisibleLabel={false}
+              onTextFieldChange={handleTextFieldChange}
+              {...definedProps({
+                onTextFieldFocus,
+                onTextFieldBlur,
+              })}
+            />
+          ) : null}
+        </>
+      ) : (
+        sortedTextFields.map((field) => {
+          const fieldKey = String(field.id);
+          const fieldValue = values[fieldKey] ?? "";
+
+          return (
+            <ReleaseNotesTextFieldEditor
+              key={field.id}
+              field={field}
+              fieldValue={fieldValue}
+              disabled={disabled}
+              {...definedProps({
+                fieldError: getReleaseNotesTextFieldError(errors, fieldKey),
+              })}
+              statusLabel={getTextFieldSaveStatusLabel(
+                textFieldSaveStatus[fieldKey],
+              )}
+              showVisibleLabel
+              onTextFieldChange={handleTextFieldChange}
+              {...definedProps({
+                onTextFieldFocus,
+                onTextFieldBlur,
+              })}
+            />
+          );
+        })
+      )}
 
       {conditionFields.length > 0 ? (
         <div
@@ -161,7 +362,7 @@ export const ReleaseNotesFormFields = ({
                 value={fieldValue}
                 onChange={(value) => {
                   if (typeof value === "string") {
-                    onConditionFieldChange?.(field.id, value);
+                    handleConditionFieldChange(field.id, value);
                   }
                 }}
               />

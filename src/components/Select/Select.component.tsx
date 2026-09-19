@@ -17,10 +17,18 @@ import {
 } from "src/utils/filterControlValue";
 import styles from "./Select.module.css";
 
+export const formatSelectStoredCharCount = (count: number): string => {
+  return `(${count} ${count === 1 ? "char" : "chars"})`;
+};
+
+const hasStoredCharCount = (count: number | undefined): count is number =>
+  count !== undefined && count > 0;
+
 interface SelectOption {
   value: string;
   label: string;
   isDefault?: boolean;
+  storedCharCount?: number;
 }
 
 interface SelectProps {
@@ -48,6 +56,17 @@ const getSelectItems = (options: SelectOption[]): SelectItem[] =>
     label,
     ...definedProps({ isDefault }),
   }));
+
+const SelectStoredCharCount = ({ count }: { count: number }) => {
+  return (
+    <span
+      className={styles.storedCharCount}
+      data-testid="fmdSelectStoredCharCount"
+    >
+      {formatSelectStoredCharCount(count)}
+    </span>
+  );
+};
 
 const SelectComponent = ({
   label,
@@ -129,6 +148,9 @@ const SelectComponent = ({
         >
           {renderValue}
         </BaseSelect.Value>
+        {hasStoredCharCount(selectedSingleOption?.storedCharCount) ? (
+          <SelectStoredCharCount count={selectedSingleOption.storedCharCount} />
+        ) : null}
         {selectedSingleOption?.isDefault ? (
           <span className={styles.defaultBadge}>Default</span>
         ) : null}
@@ -196,9 +218,16 @@ const SelectComponent = ({
                           <CheckThinIcon />
                         </BaseSelect.ItemIndicator>
                         <span className={styles.optionLabel}>
-                          <BaseSelect.ItemText>
-                            {option.label}
-                          </BaseSelect.ItemText>
+                          <span className={styles.optionLabelPrimary}>
+                            <BaseSelect.ItemText>
+                              {option.label}
+                            </BaseSelect.ItemText>
+                            {hasStoredCharCount(option.storedCharCount) ? (
+                              <SelectStoredCharCount
+                                count={option.storedCharCount}
+                              />
+                            ) : null}
+                          </span>
                           {option.isDefault ? (
                             <span className={styles.defaultBadge}>Default</span>
                           ) : null}

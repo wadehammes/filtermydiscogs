@@ -7,7 +7,7 @@ import {
   selectMultiFilterOption,
   selectSingleFilterOption,
 } from "src/tests/filterControlTestHelpers";
-import { screen, waitFor } from "test-utils";
+import { render, screen, waitFor } from "test-utils";
 import Select from "./Select.component";
 
 let po: SelectPageObject;
@@ -75,6 +75,31 @@ describe("Select", () => {
     po.renderSelect({ value: "option2", onChange: handleChange });
 
     expect(screen.getByText("Option 2")).toBeInTheDocument();
+  });
+
+  it("shows stored char counts on the trigger and matching options", async () => {
+    const handleChange = jest.fn();
+
+    render(
+      <Select
+        label="Stored Select"
+        showLabel
+        value="option1"
+        onChange={handleChange}
+        options={[
+          { value: "option1", label: "Option 1", storedCharCount: 34 },
+          { value: "option2", label: "Option 2" },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText("(34 chars)")).toHaveLength(1);
+
+    await openSelect("Stored Select");
+
+    expect(screen.getAllByText("(34 chars)")).toHaveLength(2);
+
+    await closeOpenFilterComboboxes();
   });
 
   it("opens dropdown when clicked", async () => {

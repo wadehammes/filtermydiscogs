@@ -6,9 +6,12 @@ import {
   getReleaseNotes,
   getReleaseNotesDisplay,
   getReleaseNotesSearchText,
+  getReleaseNotesTextFieldPickerOptions,
   isConditionCollectionField,
   parseReleaseId,
+  parseReleaseNotesTextFieldPickerValue,
   releaseHasStoredConditionNotes,
+  sortTextCollectionFields,
   upsertReleaseNote,
 } from "src/utils/releaseNotes";
 
@@ -149,5 +152,28 @@ describe("releaseNotes", () => {
     });
 
     expect(cleared).toEqual([]);
+  });
+
+  it("marks note field picker options that have trimmed text", () => {
+    const sortedTextFields = sortTextCollectionFields([
+      { id: 3, name: "Notes", type: "textarea", position: 1 },
+      { id: 4, name: "Other Notes", type: "textarea", position: 2 },
+    ]);
+
+    expect(
+      getReleaseNotesTextFieldPickerOptions(sortedTextFields, {
+        "3": " Signed ",
+        "4": "   ",
+      }),
+    ).toEqual([
+      { value: "3", label: "Notes", storedCharCount: 8 },
+      { value: "4", label: "Other Notes" },
+    ]);
+  });
+
+  it("parses note field picker select values", () => {
+    expect(parseReleaseNotesTextFieldPickerValue("3")).toBe(3);
+    expect(parseReleaseNotesTextFieldPickerValue(["3"])).toBeNull();
+    expect(parseReleaseNotesTextFieldPickerValue("not-a-number")).toBeNull();
   });
 });

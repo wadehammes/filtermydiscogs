@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { formDialogStyles } from "src/components/FormDialog/FormDialog.component";
 import { ModalToolbar } from "src/components/ModalToolbar/ModalToolbar.component";
@@ -96,19 +96,18 @@ export const NoteEditDialog = ({
     [editableTextFields],
   );
 
-  const {
-    formState: { errors, isValid },
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-  } = useForm<ReleaseNotesFormValues>({
+  const formMethods = useForm<ReleaseNotesFormValues>({
     resolver: zodResolver(noteFormSchema),
     defaultValues: defaultFormValues,
     mode: "onChange",
   });
 
-  const formValues = watch();
+  const {
+    formState: { isValid },
+    handleSubmit,
+    reset,
+  } = formMethods;
+
   const textFieldSaveStatus = useMemo(() => {
     if (!isSaving) {
       return {};
@@ -118,20 +117,6 @@ export const NoteEditDialog = ({
       editableTextFields.map((field) => [String(field.id), "pending"] as const),
     ) satisfies Record<string, ReleaseNotesTextFieldSaveStatus>;
   }, [editableTextFields, isSaving]);
-  const textFieldErrors = useMemo(() => {
-    const fieldErrors: Record<string, { message?: string }> = {};
-
-    for (const field of editableTextFields) {
-      const fieldKey = String(field.id);
-      const message = errors[fieldKey]?.message;
-
-      if (typeof message === "string") {
-        fieldErrors[fieldKey] = { message };
-      }
-    }
-
-    return fieldErrors;
-  }, [editableTextFields, errors]);
 
   useEffect(() => {
     if (isOpen) {
@@ -226,22 +211,14 @@ export const NoteEditDialog = ({
             No editable note fields are configured in your Discogs collection.
           </p>
         ) : (
-          <ReleaseNotesFormFields
-            textFields={editableTextFields}
-            conditionFields={editableConditionFields}
-            values={formValues}
-            disabled={isSaving}
-            textFieldErrors={textFieldErrors}
-            textFieldSaveStatus={textFieldSaveStatus}
-            onTextFieldChange={(fieldId, event) => {
-              setValue(String(fieldId), event.target.value, {
-                shouldDirty: true,
-              });
-            }}
-            onConditionFieldChange={(fieldId, value) => {
-              setValue(String(fieldId), value, { shouldDirty: true });
-            }}
-          />
+          <FormProvider {...formMethods}>
+            <ReleaseNotesFormFields
+              textFields={editableTextFields}
+              conditionFields={editableConditionFields}
+              disabled={isSaving}
+              textFieldSaveStatus={textFieldSaveStatus}
+            />
+          </FormProvider>
         )}
 
         {errorMessage ? <p className={styles.error}>{errorMessage}</p> : null}

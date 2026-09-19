@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import {
   buildReleaseNotesFormSchema,
   isReleaseNoteTextWithinLimit,
@@ -79,18 +79,13 @@ export const ReleaseNotesModalEditor = ({
     null,
   );
 
-  const {
-    formState: { errors },
-    getValues,
-    setValue,
-    watch,
-  } = useForm<ReleaseNotesFormValues>({
+  const formMethods = useForm<ReleaseNotesFormValues>({
     resolver: zodResolver(noteFormSchema),
     defaultValues: savedValues,
     mode: "onChange",
   });
 
-  const formValues = watch();
+  const { getValues, setValue } = formMethods;
 
   const textFieldSaveStatus = useMemo(() => {
     const status: Record<string, ReleaseNotesTextFieldSaveStatus> = {};
@@ -107,21 +102,6 @@ export const ReleaseNotesModalEditor = ({
 
     return status;
   }, [editableFields, pendingFieldId, savedFlashFieldId]);
-
-  const textFieldErrors = useMemo(() => {
-    const fieldErrors: Record<string, { message?: string }> = {};
-
-    for (const field of editableFields) {
-      const fieldKey = String(field.id);
-      const message = errors[fieldKey]?.message;
-
-      if (typeof message === "string") {
-        fieldErrors[fieldKey] = { message };
-      }
-    }
-
-    return fieldErrors;
-  }, [editableFields, errors]);
 
   useEffect(() => {
     return () => {
@@ -257,7 +237,7 @@ export const ReleaseNotesModalEditor = ({
   );
 
   const sectionLabelId =
-    editableFields[0] !== undefined
+    editableFields.length === 1 && editableFields[0] !== undefined
       ? getNoteFieldLabelId(editableFields[0].id)
       : undefined;
 
@@ -268,17 +248,17 @@ export const ReleaseNotesModalEditor = ({
         : { "aria-label": "Release notes" })}
       className={styles.notesModalEditor}
     >
-      <ReleaseNotesFormFields
-        textFields={editableFields}
-        conditionFields={editableConditionFields}
-        values={formValues}
-        layout="modal"
-        textFieldErrors={textFieldErrors}
-        textFieldSaveStatus={textFieldSaveStatus}
-        onTextFieldChange={handleTextFieldChange}
-        onTextFieldBlur={handleTextFieldBlur}
-        onConditionFieldChange={handleConditionFieldChange}
-      />
+      <FormProvider {...formMethods}>
+        <ReleaseNotesFormFields
+          textFields={editableFields}
+          conditionFields={editableConditionFields}
+          layout="modal"
+          textFieldSaveStatus={textFieldSaveStatus}
+          onTextFieldChange={handleTextFieldChange}
+          onTextFieldBlur={handleTextFieldBlur}
+          onConditionFieldChange={handleConditionFieldChange}
+        />
+      </FormProvider>
 
       {errorMessage ? (
         <div className={styles.notesModalEditorFooter}>
