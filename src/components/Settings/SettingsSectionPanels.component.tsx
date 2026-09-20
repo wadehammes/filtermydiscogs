@@ -102,31 +102,50 @@ export function SettingsAppearancePanel({
 
 type SettingsPlaybackPanelProps = {
   autoPlayOnQueueAdd: boolean;
+  extendQueueWithSimilarReleases: boolean;
   isPreferencesLoading: boolean;
   isPreferencesSaving: boolean;
   onAutoPlayOnQueueAddChange: (enabled: boolean) => void;
+  onExtendQueueWithSimilarReleasesChange: (enabled: boolean) => void;
 };
 
 export function SettingsPlaybackPanel({
   autoPlayOnQueueAdd,
+  extendQueueWithSimilarReleases,
   isPreferencesLoading,
   isPreferencesSaving,
   onAutoPlayOnQueueAddChange,
+  onExtendQueueWithSimilarReleasesChange,
 }: SettingsPlaybackPanelProps) {
   return (
-    <SettingsBooleanPreferenceToggle
-      checked={autoPlayOnQueueAdd}
-      label="Play immediately when adding to an empty queue"
-      description={
-        <>
-          When enabled, the first track you add to an empty queue starts playing
-          right away and opens the video player. When disabled, tracks are
-          queued without starting playback until you press play.
-        </>
-      }
-      disabled={isPreferencesLoading || isPreferencesSaving}
-      onChange={onAutoPlayOnQueueAddChange}
-    />
+    <>
+      <SettingsBooleanPreferenceToggle
+        checked={autoPlayOnQueueAdd}
+        label="Play immediately when adding to an empty queue"
+        description={
+          <>
+            When enabled, the first track you add to an empty queue starts
+            playing right away and opens the video player. When disabled, tracks
+            are queued without starting playback until you press play.
+          </>
+        }
+        disabled={isPreferencesLoading || isPreferencesSaving}
+        onChange={onAutoPlayOnQueueAddChange}
+      />
+      <SettingsBooleanPreferenceToggle
+        checked={extendQueueWithSimilarReleases}
+        label="Extend queue with similar releases"
+        description={
+          <>
+            When enabled, one related track from your collection is added to up
+            next when the queue runs low. When disabled, up next is only tracks
+            you add or the rest of the current album.
+          </>
+        }
+        disabled={isPreferencesLoading || isPreferencesSaving}
+        onChange={onExtendQueueWithSimilarReleasesChange}
+      />
+    </>
   );
 }
 

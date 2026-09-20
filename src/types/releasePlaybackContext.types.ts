@@ -32,6 +32,7 @@ export interface ReleasePlaybackState {
   videos: DiscogsVideo[];
   queue: PlaybackQueueItem[];
   autoPlayOnQueueAdd: boolean;
+  extendQueueWithSimilarReleases: boolean;
   activeTrackIndex: number;
   activeTrackPosition: string | null;
   activeTrack: DiscogsTrack | null;

@@ -3,35 +3,46 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { type RefObject, useCallback, useState } from "react";
 import { SIMILAR_RELEASES_LIMIT } from "src/constants/collection";
-import type { DiscogsRelease, DiscogsVideo } from "src/types";
+import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
   appendUniqueQueueItems,
+  buildCurrentQueueItem,
   collectQueueItemKeys,
   getQueueItemKey,
+  resolveSimilarTailExtensionContext,
   shuffleQueueItems,
 } from "src/utils/playbackQueue";
+import { showSimilarQueueTailToast } from "src/utils/playbackQueueToast";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
 import { getSimilarReleases } from "src/utils/similarReleases";
 
 export const QUEUE_TAIL_EXTEND_THRESHOLD = 2;
 
+export const MANUAL_QUEUE_TAIL_EXTEND_THRESHOLD = 1;
+
+export const SIMILAR_QUEUE_TAIL_TRACK_LIMIT = 1;
+
 export interface SimilarQueueMode {
   enabled: boolean;
-  initialAppendPending: boolean;
 }
 
 export const createSimilarQueueMode = (enabled: boolean): SimilarQueueMode => ({
   enabled,
-  initialAppendPending: enabled,
 });
 
 interface SimilarQueueRefs {
   queueRef: RefObject<PlaybackQueueItem[]>;
   previewVideoRef: RefObject<DiscogsVideo | null>;
+  releaseRef: RefObject<DiscogsRelease | null>;
+  tracksRef: RefObject<DiscogsTrack[]>;
+  activeTrackIndexRef: RefObject<number>;
   similarQueueModeRef: RefObject<SimilarQueueMode>;
   similarQueueGenerationRef: RefObject<number>;
   similarQueueFetchInFlightRef: RefObject<boolean>;
+  similarQueueTailToastShownRef: RefObject<boolean>;
+  queueManuallyExtendedRef: RefObject<boolean>;
+  extendQueueWithSimilarReleasesRef: RefObject<boolean>;
 }
 
 interface UseReleasePlaybackSimilarQueueParams {
@@ -52,9 +63,15 @@ export const useReleasePlaybackSimilarQueue = ({
   const {
     queueRef,
     previewVideoRef,
+    releaseRef,
+    tracksRef,
+    activeTrackIndexRef,
     similarQueueModeRef,
     similarQueueGenerationRef,
     similarQueueFetchInFlightRef,
+    similarQueueTailToastShownRef,
+    queueManuallyExtendedRef,
+    extendQueueWithSimilarReleasesRef,
   } = refs;
   const [isSimilarQueueLoading, setIsSimilarQueueLoading] = useState(false);
 
@@ -103,7 +120,10 @@ export const useReleasePlaybackSimilarQueue = ({
         }
       }
 
-      return shuffleQueueItems(similarItems);
+      return shuffleQueueItems(similarItems).slice(
+        0,
+        SIMILAR_QUEUE_TAIL_TRACK_LIMIT,
+      );
     },
     [allReleases, queryClient],
   );
@@ -140,9 +160,36 @@ export const useReleasePlaybackSimilarQueue = ({
           return false;
         }
 
-        updateUpcomingQueue((previousQueue) =>
-          appendUniqueQueueItems(previousQueue, similarItems),
-        );
+        const markedSimilarItems = similarItems.map((item) => ({
+          ...item,
+          fromSimilarRelease: true,
+        }));
+
+        let shouldShowSimilarTailToast = false;
+
+        updateUpcomingQueue((previousQueue) => {
+          const nextQueue = appendUniqueQueueItems(
+            previousQueue,
+            markedSimilarItems,
+          );
+
+          if (
+            nextQueue.length > previousQueue.length &&
+            !similarQueueTailToastShownRef.current
+          ) {
+            similarQueueTailToastShownRef.current = true;
+            shouldShowSimilarTailToast = true;
+          }
+
+          return nextQueue;
+        });
+
+        if (shouldShowSimilarTailToast) {
+          queueMicrotask(() => {
+            showSimilarQueueTailToast();
+          });
+        }
+
         return true;
       } finally {
         similarQueueFetchInFlightRef.current = false;
@@ -154,6 +201,7 @@ export const useReleasePlaybackSimilarQueue = ({
       queueRef,
       similarQueueFetchInFlightRef,
       similarQueueGenerationRef,
+      similarQueueTailToastShownRef,
       updateUpcomingQueue,
     ],
   );
@@ -167,47 +215,82 @@ export const useReleasePlaybackSimilarQueue = ({
       return false;
     }
 
-    const currentQueue = queueRef.current;
-    const lastItem = currentQueue[currentQueue.length - 1];
+    const playingRelease = releaseRef.current;
+    const playingQueueItem =
+      playingRelease === null
+        ? null
+        : buildCurrentQueueItem({
+            release: playingRelease,
+            previewVideo: previewVideoRef.current,
+            activeTrack: tracksRef.current[activeTrackIndexRef.current] ?? null,
+          });
 
-    if (!lastItem) {
+    const tailContext = resolveSimilarTailExtensionContext({
+      upcomingQueue: queueRef.current,
+      playingRelease,
+      playingQueueItem,
+    });
+
+    if (!tailContext) {
       return false;
     }
 
     return appendSimilarReleasesToQueue({
-      sourceRelease: lastItem.release,
+      sourceRelease: tailContext.sourceRelease,
       generation: similarQueueGenerationRef.current,
-      existingQueue: currentQueue,
+      existingQueue: tailContext.existingQueue,
     });
   }, [
+    activeTrackIndexRef,
     appendSimilarReleasesToQueue,
     previewVideoRef,
     queueRef,
+    releaseRef,
     similarQueueFetchInFlightRef,
     similarQueueGenerationRef,
     similarQueueModeRef,
+    tracksRef,
   ]);
 
   const maybeExtendQueueTail = useCallback(() => {
     if (
-      !similarQueueModeRef.current.enabled ||
       previewVideoRef.current !== null ||
-      similarQueueModeRef.current.initialAppendPending ||
       similarQueueFetchInFlightRef.current
     ) {
       return;
     }
 
     const remainingTracks = queueRef.current.length;
+    const threshold = queueManuallyExtendedRef.current
+      ? MANUAL_QUEUE_TAIL_EXTEND_THRESHOLD
+      : QUEUE_TAIL_EXTEND_THRESHOLD;
 
-    if (remainingTracks > QUEUE_TAIL_EXTEND_THRESHOLD) {
+    if (remainingTracks > threshold) {
+      return;
+    }
+
+    if (queueRef.current.some((item) => item.fromSimilarRelease === true)) {
+      return;
+    }
+
+    if (
+      !similarQueueModeRef.current.enabled &&
+      queueManuallyExtendedRef.current &&
+      extendQueueWithSimilarReleasesRef.current
+    ) {
+      similarQueueModeRef.current = createSimilarQueueMode(true);
+    }
+
+    if (!similarQueueModeRef.current.enabled) {
       return;
     }
 
     void extendQueueTail();
   }, [
     extendQueueTail,
+    extendQueueWithSimilarReleasesRef,
     previewVideoRef,
+    queueManuallyExtendedRef,
     queueRef,
     similarQueueFetchInFlightRef,
     similarQueueModeRef,

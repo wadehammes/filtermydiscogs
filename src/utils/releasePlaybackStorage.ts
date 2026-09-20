@@ -7,6 +7,7 @@ export interface PersistedQueueItem {
   trackPosition: string;
   trackTitle: string;
   previewVideoUri?: string;
+  fromSimilarRelease?: boolean;
 }
 
 export interface PersistedReleasePlayback {
@@ -30,7 +31,9 @@ const isPersistedQueueItem = (value: unknown): value is PersistedQueueItem => {
     typeof candidate.trackTitle === "string" &&
     candidate.trackTitle.length > 0 &&
     (candidate.previewVideoUri === undefined ||
-      typeof candidate.previewVideoUri === "string")
+      typeof candidate.previewVideoUri === "string") &&
+    (candidate.fromSimilarRelease === undefined ||
+      candidate.fromSimilarRelease === true)
   );
 };
 
@@ -69,6 +72,7 @@ export const toPersistedQueueItem = (
   trackPosition: item.trackPosition,
   trackTitle: item.trackTitle,
   ...(item.previewVideoUri ? { previewVideoUri: item.previewVideoUri } : {}),
+  ...(item.fromSimilarRelease ? { fromSimilarRelease: true } : {}),
 });
 
 export const readPersistedReleasePlayback =

@@ -38,7 +38,10 @@ import type {
   ReleasePlaybackState,
   StartPlaybackParams,
 } from "src/types/releasePlaybackContext.types";
-import { DEFAULT_AUTO_PLAY_ON_QUEUE_ADD } from "src/types/userPreferences.types";
+import {
+  DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
+} from "src/types/userPreferences.types";
 import {
   createEmbedPlaybackStartWatchdog,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
@@ -101,6 +104,9 @@ export const useReleasePlaybackProvider = (): {
   });
   const autoPlayOnQueueAdd =
     userPreferences?.autoPlayOnQueueAdd ?? DEFAULT_AUTO_PLAY_ON_QUEUE_ADD;
+  const extendQueueWithSimilarReleases =
+    userPreferences?.extendQueueWithSimilarReleases ??
+    DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES;
   const [session, dispatchSession] = useReducer(
     playbackSessionReducer,
     initialPlaybackSessionState,
@@ -137,6 +143,7 @@ export const useReleasePlaybackProvider = (): {
   );
   const similarQueueGenerationRef = useRef(0);
   const similarQueueFetchInFlightRef = useRef(false);
+  const similarQueueTailToastShownRef = useRef(false);
   const queueManuallyExtendedRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -147,6 +154,9 @@ export const useReleasePlaybackProvider = (): {
   const queueRef = useRef(queue);
   const playbackHistoryRef = useRef(playbackHistory);
   const autoPlayOnQueueAddRef = useRef(autoPlayOnQueueAdd);
+  const extendQueueWithSimilarReleasesRef = useRef(
+    extendQueueWithSimilarReleases,
+  );
   const tracksRef = useRef<DiscogsTrack[]>([]);
   const videosRef = useRef<DiscogsVideo[]>([]);
   const activeTrackIndexRef = useRef(activeTrackIndex);
@@ -196,6 +206,7 @@ export const useReleasePlaybackProvider = (): {
     () => undefined,
   );
   autoPlayOnQueueAddRef.current = autoPlayOnQueueAdd;
+  extendQueueWithSimilarReleasesRef.current = extendQueueWithSimilarReleases;
   syncPlaybackSessionRefs(session, {
     release: releaseRef,
     queue: queueRef,
@@ -235,23 +246,25 @@ export const useReleasePlaybackProvider = (): {
     persistPlaybackSession,
   });
 
-  const {
-    appendSimilarReleasesToQueue,
-    extendQueueTail,
-    maybeExtendQueueTail,
-    isSimilarQueueLoading,
-  } = useReleasePlaybackSimilarQueue({
-    queryClient,
-    allReleases,
-    updateUpcomingQueue,
-    refs: {
-      queueRef,
-      previewVideoRef,
-      similarQueueModeRef,
-      similarQueueGenerationRef,
-      similarQueueFetchInFlightRef,
-    },
-  });
+  const { extendQueueTail, maybeExtendQueueTail, isSimilarQueueLoading } =
+    useReleasePlaybackSimilarQueue({
+      queryClient,
+      allReleases,
+      updateUpcomingQueue,
+      refs: {
+        queueRef,
+        previewVideoRef,
+        releaseRef,
+        tracksRef,
+        activeTrackIndexRef,
+        similarQueueModeRef,
+        similarQueueGenerationRef,
+        similarQueueFetchInFlightRef,
+        similarQueueTailToastShownRef,
+        queueManuallyExtendedRef,
+        extendQueueWithSimilarReleasesRef,
+      },
+    });
 
   const {
     isLoading,
@@ -623,6 +636,8 @@ export const useReleasePlaybackProvider = (): {
       shouldRebuildAlbumQueueRef,
       similarQueueModeRef,
       similarQueueGenerationRef,
+      extendQueueWithSimilarReleasesRef,
+      similarQueueTailToastShownRef,
       queueManuallyExtendedRef,
       releaseRef,
       queueRef,
@@ -647,13 +662,13 @@ export const useReleasePlaybackProvider = (): {
     activeTrackIndex,
     activeVideoId,
     embedVideoId,
-    appendSimilarReleasesToQueue,
     awaitingResumeGestureRef,
     dispatchSession,
     isLoading,
     isPlaying,
     isReleasePreview,
     maybeExtendQueueTail,
+    upcomingQueueLength: queue.length,
     pendingPreviewVideoUri,
     pendingTrackPosition,
     previewVideo,
@@ -662,8 +677,6 @@ export const useReleasePlaybackProvider = (): {
     releaseId,
     setUpcomingQueue,
     shouldRebuildAlbumQueueRef,
-    similarQueueGenerationRef,
-    similarQueueModeRef,
     tracks,
     videos,
   });
@@ -750,6 +763,7 @@ export const useReleasePlaybackProvider = (): {
       videos,
       queue,
       autoPlayOnQueueAdd,
+      extendQueueWithSimilarReleases,
       activeTrackIndex,
       activeTrackPosition,
       activeTrack,
@@ -777,6 +791,7 @@ export const useReleasePlaybackProvider = (): {
       videos,
       queue,
       autoPlayOnQueueAdd,
+      extendQueueWithSimilarReleases,
       activeTrackIndex,
       activeTrackPosition,
       activeTrack,

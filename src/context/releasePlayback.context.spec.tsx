@@ -2003,12 +2003,16 @@ describe("ReleasePlaybackProvider", () => {
   });
 
   it("sets isQueueBuilding while similar releases are loading", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
     const sourceRelease = releaseFactory.withDisplayDefaults({
       basic_information: basicInformationFactory.build({
         id: RELEASE_ID,
         title: "Never Gonna Give You Up",
         genres: ["Electronic"],
         styles: ["House"],
+        master_id: 100,
         resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
       }),
     });
@@ -2018,6 +2022,7 @@ describe("ReleasePlaybackProvider", () => {
         title: "Similar House EP",
         genres: ["Electronic"],
         styles: ["House"],
+        master_id: 200,
         resource_url: "https://api.discogs.com/releases/100002",
       }),
     });
@@ -2028,15 +2033,25 @@ describe("ReleasePlaybackProvider", () => {
 
     let resolveSimilarFetch: ((value: PlaybackQueueItem[][]) => void) | null =
       null;
-    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(
-      () =>
-        new Promise((resolve) => {
+    let similarFetchCallCount = 0;
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(() => {
+      similarFetchCallCount += 1;
+
+      if (similarFetchCallCount === 1) {
+        return new Promise((resolve) => {
           resolveSimilarFetch = resolve;
-        }),
-    );
+        });
+      }
+
+      return Promise.resolve([]);
+    });
 
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.extendQueueWithSimilarReleases).toBe(true);
     });
 
     act(() => {
@@ -2070,13 +2085,17 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
-  it("appends playable tracks from similar releases when playback starts", async () => {
+  it("appends one similar track when the queue runs low and the preference is enabled", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
     const sourceRelease = releaseFactory.withDisplayDefaults({
       basic_information: basicInformationFactory.build({
         id: RELEASE_ID,
         title: "Never Gonna Give You Up",
         genres: ["Electronic"],
         styles: ["House"],
+        master_id: 100,
         resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
       }),
     });
@@ -2086,6 +2105,142 @@ describe("ReleasePlaybackProvider", () => {
         title: "Similar House EP",
         genres: ["Electronic"],
         styles: ["House"],
+        master_id: 200,
+        resource_url: "https://api.discogs.com/releases/100002",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      "100002": similarHouseReleaseDetail,
+    });
+
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(async () => [
+      [
+        createQueueItem({
+          release: similarRelease,
+          trackPosition: "A1",
+          trackTitle: "Similar Track",
+        }),
+      ],
+    ]);
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.extendQueueWithSimilarReleases).toBe(true);
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(mockFetchPlayableQueuesForSimilarReleases).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(2);
+    });
+
+    expect(result.current.queue[1]?.instanceId).toBe(
+      similarRelease.instance_id,
+    );
+    expect(result.current.queue[1]?.trackPosition).toBe("A1");
+  });
+
+  it("appends a similar track when upcoming is empty after a single-track album play", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: SHORT_RELEASE_ID,
+        title: "Short EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 100,
+        resource_url: `https://api.discogs.com/releases/${SHORT_RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100003,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 200,
+        resource_url: "https://api.discogs.com/releases/100003",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, shortReleaseDetail, {
+      "100003": { ...similarHouseReleaseDetail, id: 100003 },
+    });
+
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(async () => [
+      [
+        createQueueItem({
+          release: similarRelease,
+          trackPosition: "A1",
+          trackTitle: "Similar Track",
+        }),
+      ],
+    ]);
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.extendQueueWithSimilarReleases).toBe(true);
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(mockFetchPlayableQueuesForSimilarReleases).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    expect(result.current.queue[0]?.instanceId).toBe(
+      similarRelease.instance_id,
+    );
+  });
+
+  it("does not append similar tracks when extendQueueWithSimilarReleases is disabled", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: false }),
+    );
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: RELEASE_ID,
+        title: "Never Gonna Give You Up",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 100,
+        resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100002,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 200,
         resource_url: "https://api.discogs.com/releases/100002",
       }),
     });
@@ -2106,13 +2261,12 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.queue).toHaveLength(2);
+      expect(result.current.isPlaybackReady).toBe(true);
     });
 
-    expect(result.current.queue[1]?.instanceId).toBe(
-      similarRelease.instance_id,
-    );
-    expect(result.current.queue[1]?.trackPosition).toBe("A1");
+    expect(result.current.queue).toHaveLength(1);
+    expect(result.current.queue[0]?.trackPosition).toBe("B1");
+    expect(mockFetchPlayableQueuesForSimilarReleases).not.toHaveBeenCalled();
   });
 
   it("does not append similar releases when playback starts paused", async () => {
@@ -2122,6 +2276,7 @@ describe("ReleasePlaybackProvider", () => {
         title: "Never Gonna Give You Up",
         genres: ["Electronic"],
         styles: ["House"],
+        master_id: 100,
         resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
       }),
     });
@@ -2131,6 +2286,7 @@ describe("ReleasePlaybackProvider", () => {
         title: "Similar House EP",
         genres: ["Electronic"],
         styles: ["House"],
+        master_id: 200,
         resource_url: "https://api.discogs.com/releases/100002",
       }),
     });

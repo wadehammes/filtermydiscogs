@@ -39,3 +39,10 @@ export const showPlaybackQueueAllQueuedToast = (): void => {
 export const showPlaybackQueueFetchErrorToast = (): void => {
   toast.error("Could not load release details", queueToastOptions());
 };
+
+export const showSimilarQueueTailToast = (): void => {
+  toast.success(
+    "Added a related track from your collection to Up next.",
+    queueToastOptions(),
+  );
+};

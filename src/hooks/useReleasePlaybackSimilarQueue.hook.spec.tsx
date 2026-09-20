@@ -12,7 +12,7 @@ import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
-import type { DiscogsVideo } from "src/types";
+import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { renderHook, waitFor } from "test-utils";
 
@@ -75,6 +75,14 @@ const buildHarness = (
   };
   const similarQueueGenerationRef = { current: 1 };
   const similarQueueFetchInFlightRef = { current: false };
+  const similarQueueTailToastShownRef = { current: false };
+  const queueManuallyExtendedRef = { current: false };
+  const extendQueueWithSimilarReleasesRef = { current: true };
+  const releaseRef = { current: sourceRelease };
+  const tracksRef = {
+    current: playableReleaseDetail.tracklist as DiscogsTrack[],
+  };
+  const activeTrackIndexRef = { current: 0 };
   const updateUpcomingQueue = jest.fn(
     (
       updater: (previous: typeof queueRef.current) => typeof queueRef.current,
@@ -99,6 +107,12 @@ const buildHarness = (
           similarQueueModeRef,
           similarQueueGenerationRef,
           similarQueueFetchInFlightRef,
+          similarQueueTailToastShownRef,
+          releaseRef,
+          tracksRef,
+          activeTrackIndexRef,
+          queueManuallyExtendedRef,
+          extendQueueWithSimilarReleasesRef,
         },
       }),
     { wrapper },
@@ -133,34 +147,9 @@ describe("useReleasePlaybackSimilarQueue", () => {
     });
   });
 
-  it("createSimilarQueueMode enables similar queue tail extension when album queue rebuild is on", () => {
-    expect(createSimilarQueueMode(true)).toEqual({
-      enabled: true,
-      initialAppendPending: true,
-    });
-  });
-
-  it("createSimilarQueueMode disables similar queue extension for preview-only sessions", () => {
-    expect(createSimilarQueueMode(false)).toEqual({
-      enabled: false,
-      initialAppendPending: false,
-    });
-  });
-
-  it("skips tail extension while the initial similar append is still pending", () => {
-    const { result, updateUpcomingQueue } = buildHarness({
-      similarQueueMode: { enabled: true, initialAppendPending: true },
-      queue: [],
-    });
-
-    result.current.maybeExtendQueueTail();
-
-    expect(updateUpcomingQueue).not.toHaveBeenCalled();
-  });
-
   it("extends the queue tail when remaining items drop to the threshold", async () => {
     const { result, updateUpcomingQueue } = buildHarness({
-      similarQueueMode: { enabled: true, initialAppendPending: false },
+      similarQueueMode: { enabled: true },
     });
 
     result.current.maybeExtendQueueTail();
@@ -168,6 +157,41 @@ describe("useReleasePlaybackSimilarQueue", () => {
     await waitFor(() => {
       expect(updateUpcomingQueue).toHaveBeenCalled();
     });
+
+    const appendedCount =
+      updateUpcomingQueue.mock.calls.at(-1)?.[0]([])?.length ?? 0;
+    expect(appendedCount).toBeLessThanOrEqual(1);
+  });
+
+  it("extends from the playing track when upcoming is empty", async () => {
+    const { result, updateUpcomingQueue } = buildHarness({
+      queue: [],
+      similarQueueMode: { enabled: true },
+    });
+
+    await expect(result.current.extendQueueTail()).resolves.toBe(true);
+
+    expect(updateUpcomingQueue).toHaveBeenCalled();
+    const nextQueue = updateUpcomingQueue.mock.calls.at(-1)?.[0]([]) ?? [];
+    expect(nextQueue[0]?.fromSimilarRelease).toBe(true);
+  });
+
+  it("does not stack another similar track while one is already in up next", () => {
+    const similarItem = createQueueItem({
+      release: catalogSimilarRelease,
+      trackPosition: "B1",
+      trackTitle: "Already queued similar",
+    });
+    similarItem.fromSimilarRelease = true;
+
+    const { result, updateUpcomingQueue } = buildHarness({
+      queue: [similarItem],
+      similarQueueMode: { enabled: true },
+    });
+
+    result.current.maybeExtendQueueTail();
+
+    expect(updateUpcomingQueue).not.toHaveBeenCalled();
   });
 
   it("appends fetched similar items when the generation still matches", async () => {
@@ -182,6 +206,8 @@ describe("useReleasePlaybackSimilarQueue", () => {
     ).resolves.toBe(true);
 
     expect(updateUpcomingQueue).toHaveBeenCalled();
+    const nextQueue = updateUpcomingQueue.mock.calls.at(-1)?.[0]([]) ?? [];
+    expect(nextQueue[0]?.fromSimilarRelease).toBe(true);
   });
 
   it("ignores stale similar append results after the generation bumps", async () => {

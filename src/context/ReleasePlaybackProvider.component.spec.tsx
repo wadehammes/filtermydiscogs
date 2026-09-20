@@ -13,6 +13,7 @@ const idlePlaybackState: ReleasePlaybackState = {
   videos: [],
   queue: [],
   autoPlayOnQueueAdd: true,
+  extendQueueWithSimilarReleases: false,
   activeTrackIndex: 0,
   activeTrackPosition: null,
   activeTrack: null,

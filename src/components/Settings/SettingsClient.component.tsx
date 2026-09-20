@@ -22,6 +22,7 @@ import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthentic
 import { useCurrentView } from "src/hooks/useViewAtoms.hook";
 import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
   type StoredViewState,
 } from "src/types/userPreferences.types";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
@@ -132,18 +133,25 @@ export default function SettingsClient() {
     );
   };
 
+  const persistPlaybackBooleanPreference = (
+    patch:
+      | { autoPlayOnQueueAdd: boolean }
+      | { extendQueueWithSimilarReleases: boolean },
+  ) => {
+    persistPreferences(patch, {
+      onSuccess: showPreferencesSavedToast,
+      onError: showPreferencesSaveErrorToast,
+    });
+  };
+
   const handleAutoPlayOnQueueAddChange = (enabled: boolean) => {
-    persistPreferences(
-      { autoPlayOnQueueAdd: enabled },
-      {
-        onSuccess: () => {
-          showPreferencesSavedToast();
-        },
-        onError: () => {
-          showPreferencesSaveErrorToast();
-        },
-      },
-    );
+    persistPlaybackBooleanPreference({ autoPlayOnQueueAdd: enabled });
+  };
+
+  const handleExtendQueueWithSimilarReleasesChange = (enabled: boolean) => {
+    persistPlaybackBooleanPreference({
+      extendQueueWithSimilarReleases: enabled,
+    });
   };
 
   const handleViewChange = (view: "card" | "list") => {
@@ -194,9 +202,16 @@ export default function SettingsClient() {
             autoPlayOnQueueAdd={
               preferences?.autoPlayOnQueueAdd ?? DEFAULT_AUTO_PLAY_ON_QUEUE_ADD
             }
+            extendQueueWithSimilarReleases={
+              preferences?.extendQueueWithSimilarReleases ??
+              DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES
+            }
             isPreferencesLoading={isPreferencesLoading}
             isPreferencesSaving={isPreferencesSaving}
             onAutoPlayOnQueueAddChange={handleAutoPlayOnQueueAddChange}
+            onExtendQueueWithSimilarReleasesChange={
+              handleExtendQueueWithSimilarReleasesChange
+            }
           />
         );
       case "filters":

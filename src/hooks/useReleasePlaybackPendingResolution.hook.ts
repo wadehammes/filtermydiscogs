@@ -1,7 +1,7 @@
 "use client";
 
 import { type Dispatch, type RefObject, useEffect } from "react";
-import type { SimilarQueueMode } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
+import { QUEUE_TAIL_EXTEND_THRESHOLD } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
@@ -18,26 +18,18 @@ import {
 } from "src/utils/releasePlaybackPendingResolution";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 
-interface AppendSimilarReleasesParams {
-  sourceRelease: DiscogsRelease;
-  generation: number;
-  existingQueue: PlaybackQueueItem[];
-}
-
 interface UseReleasePlaybackPendingResolutionParams {
   abortUnresolvedPlayback: () => void;
   activeTrackIndex: number;
   activeVideoId: string | null;
   embedVideoId: string | null;
-  appendSimilarReleasesToQueue: (
-    params: AppendSimilarReleasesParams,
-  ) => Promise<boolean>;
   awaitingResumeGestureRef: RefObject<boolean>;
   dispatchSession: Dispatch<PlaybackSessionAction>;
   isLoading: boolean;
   isPlaying: boolean;
   isReleasePreview: boolean;
   maybeExtendQueueTail: () => void;
+  upcomingQueueLength: number;
   pendingPreviewVideoUri: string | null;
   pendingTrackPosition: string | null;
   previewVideo: DiscogsVideo | null;
@@ -46,8 +38,6 @@ interface UseReleasePlaybackPendingResolutionParams {
   releaseId: number | null;
   setUpcomingQueue: (nextQueue: PlaybackQueueItem[]) => void;
   shouldRebuildAlbumQueueRef: RefObject<boolean>;
-  similarQueueGenerationRef: RefObject<number>;
-  similarQueueModeRef: RefObject<SimilarQueueMode>;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
 }
@@ -57,13 +47,13 @@ export const useReleasePlaybackPendingResolution = ({
   activeTrackIndex,
   activeVideoId,
   embedVideoId,
-  appendSimilarReleasesToQueue,
   awaitingResumeGestureRef,
   dispatchSession,
   isLoading,
   isPlaying,
   isReleasePreview,
   maybeExtendQueueTail,
+  upcomingQueueLength,
   pendingPreviewVideoUri,
   pendingTrackPosition,
   previewVideo,
@@ -72,8 +62,6 @@ export const useReleasePlaybackPendingResolution = ({
   releaseId,
   setUpcomingQueue,
   shouldRebuildAlbumQueueRef,
-  similarQueueGenerationRef,
-  similarQueueModeRef,
   tracks,
   videos,
 }: UseReleasePlaybackPendingResolutionParams): void => {
@@ -82,8 +70,19 @@ export const useReleasePlaybackPendingResolution = ({
       return;
     }
 
+    if (upcomingQueueLength > QUEUE_TAIL_EXTEND_THRESHOLD) {
+      return;
+    }
+
     maybeExtendQueueTail();
-  }, [isPlaying, maybeExtendQueueTail, previewVideo]);
+  }, [
+    activeTrackIndex,
+    isPlaying,
+    maybeExtendQueueTail,
+    previewVideo,
+    tracks.length,
+    upcomingQueueLength,
+  ]);
 
   useEffect(() => {
     if (
@@ -120,19 +119,9 @@ export const useReleasePlaybackPendingResolution = ({
 
       setUpcomingQueue(upcoming);
       shouldRebuildAlbumQueueRef.current = false;
-
-      if (similarQueueModeRef.current.initialAppendPending) {
-        similarQueueModeRef.current.initialAppendPending = false;
-        void appendSimilarReleasesToQueue({
-          sourceRelease: release,
-          generation: similarQueueGenerationRef.current,
-          existingQueue: upcoming,
-        });
-      }
     }
   }, [
     abortUnresolvedPlayback,
-    appendSimilarReleasesToQueue,
     awaitingResumeGestureRef,
     dispatchSession,
     pendingTrackPosition,
@@ -141,8 +130,6 @@ export const useReleasePlaybackPendingResolution = ({
     releaseId,
     setUpcomingQueue,
     shouldRebuildAlbumQueueRef,
-    similarQueueGenerationRef,
-    similarQueueModeRef,
     tracks,
     videos,
   ]);

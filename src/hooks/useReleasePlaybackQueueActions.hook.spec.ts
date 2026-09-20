@@ -41,7 +41,9 @@ const buildHarness = ({
   const similarQueueModeRef = {
     current: createSimilarQueueMode(true),
   };
+  const extendQueueWithSimilarReleasesRef = { current: true };
   const similarQueueGenerationRef = { current: 0 };
+  const similarQueueTailToastShownRef = { current: false };
   const queueManuallyExtendedRef = { current: true };
   const shouldRebuildAlbumQueueRef = { current: false };
   const awaitingResumeGestureRef = { current: false };
@@ -109,6 +111,8 @@ const buildHarness = ({
         shouldRebuildAlbumQueueRef,
         similarQueueModeRef,
         similarQueueGenerationRef,
+        extendQueueWithSimilarReleasesRef,
+        similarQueueTailToastShownRef,
         queueManuallyExtendedRef,
         releaseRef,
         queueRef,
@@ -240,6 +244,8 @@ describe("useReleasePlaybackQueueActions", () => {
           shouldRebuildAlbumQueueRef: { current: false },
           similarQueueModeRef: { current: createSimilarQueueMode(false) },
           similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
           releaseRef: { current: release },
           queueRef,
@@ -308,6 +314,8 @@ describe("useReleasePlaybackQueueActions", () => {
           shouldRebuildAlbumQueueRef: { current: false },
           similarQueueModeRef: { current: createSimilarQueueMode(false) },
           similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
           releaseRef: { current: release },
           queueRef,
@@ -386,6 +394,8 @@ describe("useReleasePlaybackQueueActions", () => {
           shouldRebuildAlbumQueueRef: { current: false },
           similarQueueModeRef: { current: createSimilarQueueMode(false) },
           similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
           releaseRef: { current: release },
           queueRef: { current: [] },
@@ -449,6 +459,8 @@ describe("useReleasePlaybackQueueActions", () => {
           shouldRebuildAlbumQueueRef: { current: false },
           similarQueueModeRef: { current: createSimilarQueueMode(false) },
           similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
           releaseRef,
           queueRef,
@@ -466,6 +478,74 @@ describe("useReleasePlaybackQueueActions", () => {
     result.current.playPrevious();
 
     expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(historyItem);
+  });
+
+  it("enables similar tail mode on startPlayback only when extendQueueWithSimilarReleases is true", () => {
+    const enabledHarness = buildHarness();
+    enabledHarness.result.current.startPlayback({
+      release: releaseFactory.withDisplayDefaults(),
+      trackPosition: "A1",
+    });
+    expect(enabledHarness.similarQueueModeRef.current.enabled).toBe(true);
+
+    const extendQueueWithSimilarReleasesRef = { current: false };
+    const similarQueueModeRef = {
+      current: createSimilarQueueMode(false),
+    };
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        clearPlaybackVideoUiLoading: jest.fn(),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance: jest.fn(),
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem: jest.fn(() => null),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef,
+          similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef,
+          similarQueueTailToastShownRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
+          releaseRef: { current: releaseFactory.withDisplayDefaults() },
+          queueRef: { current: [] },
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: false },
+          releaseDetailIdRef: {
+            current: releaseFactory.withDisplayDefaults().basic_information.id,
+          },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: null },
+          activeVideoIdRef: { current: null },
+          embedVideoIdRef: { current: null },
+        },
+      }),
+    );
+
+    result.current.startPlayback({
+      release: releaseFactory.withDisplayDefaults(),
+      trackPosition: "A1",
+    });
+
+    expect(similarQueueModeRef.current.enabled).toBe(false);
   });
 
   it("clearQueue empties the upcoming queue and turns off similar tail extension", () => {
@@ -569,6 +649,8 @@ describe("useReleasePlaybackQueueActions", () => {
           shouldRebuildAlbumQueueRef: { current: false },
           similarQueueModeRef: { current: createSimilarQueueMode(true) },
           similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
           releaseRef,
           queueRef,

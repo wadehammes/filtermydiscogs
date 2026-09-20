@@ -15,7 +15,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Crates** — Multiple crates for gigs or themed lists; reorder releases, section markers, set notes, and optional gig-packing progress; share a crate publicly
 - **Collection insights** — Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
 - **Mosaic generator** — Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
-- **Settings** — Theme (light / dark / system), collection sync, filter persistence, and clear stored data
+- **Settings** — Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, and clear stored data
 - **Responsive UI** — Desktop sidebar crates, mobile drawers, and touch-friendly filters
 
 ## Setup
@@ -105,7 +105,7 @@ The app will be available at `http://localhost:6767`.
 2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, and preview tracks
 3. Stage picks in the crate drawer, then manage full crates under **Crates** (reorder, sections, packing, public share)
 4. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
-5. Adjust theme and sync options in **Settings**; sign out from the user menu
+5. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
 
 ## Pages
 
