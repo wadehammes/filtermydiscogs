@@ -59,6 +59,7 @@ interface QueueActionRefs {
   extendQueueWithSimilarReleasesRef: RefObject<boolean>;
   similarQueueTailToastShownRef: RefObject<boolean>;
   queueManuallyExtendedRef: RefObject<boolean>;
+  similarQueueSuppressedAfterClearRef: RefObject<boolean>;
   releaseRef: RefObject<DiscogsRelease | null>;
   queueRef: RefObject<PlaybackQueueItem[]>;
   playbackHistoryRef: RefObject<PlaybackQueueItem[]>;
@@ -133,6 +134,7 @@ export const useReleasePlaybackQueueActions = ({
     similarQueueGenerationRef,
     queueManuallyExtendedRef,
     similarQueueTailToastShownRef,
+    similarQueueSuppressedAfterClearRef,
     releaseRef,
     queueRef,
     playbackHistoryRef,
@@ -337,6 +339,7 @@ export const useReleasePlaybackQueueActions = ({
 
   const appendManualQueueItem = useCallback(
     (item: PlaybackQueueItem) => {
+      similarQueueSuppressedAfterClearRef.current = false;
       queueManuallyExtendedRef.current = true;
       similarQueueModeRef.current = createSimilarQueueMode(false);
       trackPlaybackQueued(item.release.instance_id);
@@ -344,7 +347,12 @@ export const useReleasePlaybackQueueActions = ({
         appendQueueItem(previousQueue, item),
       );
     },
-    [queueManuallyExtendedRef, similarQueueModeRef, updateUpcomingQueue],
+    [
+      queueManuallyExtendedRef,
+      similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
+      updateUpcomingQueue,
+    ],
   );
 
   const startPlayback = useCallback(
@@ -356,6 +364,7 @@ export const useReleasePlaybackQueueActions = ({
       rebuildAlbumQueue: rebuildAlbumQueueOption,
       youtubeVideoId,
     }: StartPlaybackParams) => {
+      similarQueueSuppressedAfterClearRef.current = false;
       dispatchSession({ type: "CLEAR_PREVIEW_PENDING" });
       const item = createQueueItem({
         release: nextRelease,
@@ -423,6 +432,7 @@ export const useReleasePlaybackQueueActions = ({
       shouldRebuildAlbumQueueRef,
       similarQueueGenerationRef,
       similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
     ],
   );
 
@@ -513,9 +523,24 @@ export const useReleasePlaybackQueueActions = ({
 
   const removeFromQueue = useCallback(
     (index: number) => {
-      setUpcomingQueue(removeQueueItemAtIndex(queueRef.current, index));
+      const upcoming = queueRef.current;
+      const removed = upcoming[index];
+
+      if (removed?.fromSimilarRelease === true) {
+        similarQueueSuppressedAfterClearRef.current = true;
+        similarQueueModeRef.current = createSimilarQueueMode(false);
+        similarQueueGenerationRef.current += 1;
+      }
+
+      setUpcomingQueue(removeQueueItemAtIndex(upcoming, index));
     },
-    [queueRef, setUpcomingQueue],
+    [
+      queueRef,
+      setUpcomingQueue,
+      similarQueueGenerationRef,
+      similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
+    ],
   );
 
   const reorderQueue = useCallback(
@@ -604,6 +629,7 @@ export const useReleasePlaybackQueueActions = ({
     similarQueueGenerationRef.current += 1;
     similarQueueTailToastShownRef.current = false;
     queueManuallyExtendedRef.current = false;
+    similarQueueSuppressedAfterClearRef.current = false;
     dispatchSession({ type: "STOP" });
     setShouldAutoplayEmbed(false);
     setIsPlaybackEmbedMounted(false);
@@ -621,6 +647,7 @@ export const useReleasePlaybackQueueActions = ({
     lastSyncedActiveVideoIdRef,
     pendingPlayFromGestureRef,
     queueManuallyExtendedRef,
+    similarQueueSuppressedAfterClearRef,
     setEmbedVideoId,
     setIsPlaybackEmbedMounted,
     setPlaybackVideoTransitionTargetId,
@@ -633,6 +660,7 @@ export const useReleasePlaybackQueueActions = ({
   ]);
 
   const clearQueue = useCallback(() => {
+    similarQueueSuppressedAfterClearRef.current = true;
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
     shouldRebuildAlbumQueueRef.current = false;
@@ -644,6 +672,7 @@ export const useReleasePlaybackQueueActions = ({
     shouldRebuildAlbumQueueRef,
     similarQueueGenerationRef,
     similarQueueModeRef,
+    similarQueueSuppressedAfterClearRef,
   ]);
 
   return {

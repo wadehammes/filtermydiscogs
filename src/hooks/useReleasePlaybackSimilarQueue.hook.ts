@@ -43,6 +43,7 @@ interface SimilarQueueRefs {
   similarQueueTailToastShownRef: RefObject<boolean>;
   queueManuallyExtendedRef: RefObject<boolean>;
   extendQueueWithSimilarReleasesRef: RefObject<boolean>;
+  similarQueueSuppressedAfterClearRef: RefObject<boolean>;
 }
 
 interface UseReleasePlaybackSimilarQueueParams {
@@ -72,6 +73,7 @@ export const useReleasePlaybackSimilarQueue = ({
     similarQueueTailToastShownRef,
     queueManuallyExtendedRef,
     extendQueueWithSimilarReleasesRef,
+    similarQueueSuppressedAfterClearRef,
   } = refs;
   const [isSimilarQueueLoading, setIsSimilarQueueLoading] = useState(false);
 
@@ -255,7 +257,8 @@ export const useReleasePlaybackSimilarQueue = ({
   const maybeExtendQueueTail = useCallback(() => {
     if (
       previewVideoRef.current !== null ||
-      similarQueueFetchInFlightRef.current
+      similarQueueFetchInFlightRef.current ||
+      similarQueueSuppressedAfterClearRef.current
     ) {
       return;
     }
@@ -275,10 +278,15 @@ export const useReleasePlaybackSimilarQueue = ({
 
     if (
       !similarQueueModeRef.current.enabled &&
-      queueManuallyExtendedRef.current &&
       extendQueueWithSimilarReleasesRef.current
     ) {
-      similarQueueModeRef.current = createSimilarQueueMode(true);
+      const canEnableSimilarTail =
+        queueManuallyExtendedRef.current ||
+        (releaseRef.current !== null && previewVideoRef.current === null);
+
+      if (canEnableSimilarTail) {
+        similarQueueModeRef.current = createSimilarQueueMode(true);
+      }
     }
 
     if (!similarQueueModeRef.current.enabled) {
@@ -292,8 +300,10 @@ export const useReleasePlaybackSimilarQueue = ({
     previewVideoRef,
     queueManuallyExtendedRef,
     queueRef,
+    releaseRef,
     similarQueueFetchInFlightRef,
     similarQueueModeRef,
+    similarQueueSuppressedAfterClearRef,
   ]);
 
   return {

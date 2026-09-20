@@ -45,6 +45,7 @@ describe("useReleasePlaybackPendingResolution", () => {
         isReleasePreview: false,
         maybeExtendQueueTail,
         upcomingQueueLength: 0,
+        allReleasesLength: 0,
         pendingPreviewVideoUri: null,
         pendingTrackPosition: null,
         previewVideo: null,
@@ -97,6 +98,7 @@ describe("useReleasePlaybackPendingResolution", () => {
           isReleasePreview: false,
           maybeExtendQueueTail,
           upcomingQueueLength,
+          allReleasesLength: 0,
           pendingPreviewVideoUri: null,
           pendingTrackPosition: null,
           previewVideo: null,
@@ -120,6 +122,46 @@ describe("useReleasePlaybackPendingResolution", () => {
     expect(maybeExtendQueueTail).toHaveBeenCalledTimes(2);
   });
 
+  it("retries tail extension when the collection finishes loading", () => {
+    const maybeExtendQueueTail = jest.fn();
+    const { rerender } = renderHook(
+      ({ allReleasesLength }: { allReleasesLength: number }) =>
+        useReleasePlaybackPendingResolution({
+          abortUnresolvedPlayback: jest.fn(),
+          activeTrackIndex: 0,
+          activeVideoId: null,
+          awaitingResumeGestureRef: { current: false },
+          dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+          embedVideoId: null,
+          isLoading: false,
+          isPlaying: true,
+          isReleasePreview: false,
+          maybeExtendQueueTail,
+          upcomingQueueLength: 0,
+          allReleasesLength,
+          pendingPreviewVideoUri: null,
+          pendingTrackPosition: null,
+          previewVideo: null,
+          release: releaseFactory.withDisplayDefaults({ id: RELEASE_ID }),
+          releaseDetailId: RELEASE_ID,
+          releaseId: RELEASE_ID,
+          setUpcomingQueue: jest.fn(),
+          shouldRebuildAlbumQueueRef: { current: false },
+          tracks: [
+            discogsTrackFactory.build({ position: "A1", type_: "track" }),
+          ],
+          videos: [],
+        }),
+      { initialProps: { allReleasesLength: 0 } },
+    );
+
+    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(1);
+
+    rerender({ allReleasesLength: 120 });
+
+    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(2);
+  });
+
   it("resolves a pending track position once release detail is synced", () => {
     const { dispatchSession, awaitingResumeGestureRef } = buildHarness({
       pendingTrackPosition: "A1",
@@ -131,6 +173,44 @@ describe("useReleasePlaybackPendingResolution", () => {
       resumeTransport: true,
     });
     expect(awaitingResumeGestureRef.current).toBe(false);
+  });
+
+  it("extends the queue tail after rebuilding an empty album queue", () => {
+    const maybeExtendQueueTail = jest.fn();
+    const setUpcomingQueue = jest.fn();
+    const shouldRebuildAlbumQueueRef = { current: true };
+    const track = discogsTrackFactory.build({ position: "A1", type_: "track" });
+    const release = releaseFactory.withDisplayDefaults({ id: RELEASE_ID });
+
+    renderHook(() =>
+      useReleasePlaybackPendingResolution({
+        abortUnresolvedPlayback: jest.fn(),
+        activeTrackIndex: 0,
+        activeVideoId: null,
+        awaitingResumeGestureRef: { current: false },
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        embedVideoId: null,
+        isLoading: false,
+        isPlaying: true,
+        isReleasePreview: false,
+        maybeExtendQueueTail,
+        upcomingQueueLength: 0,
+        allReleasesLength: 1,
+        pendingPreviewVideoUri: null,
+        pendingTrackPosition: "A1",
+        previewVideo: null,
+        release,
+        releaseDetailId: RELEASE_ID,
+        releaseId: RELEASE_ID,
+        setUpcomingQueue,
+        shouldRebuildAlbumQueueRef,
+        tracks: [track],
+        videos: [],
+      }),
+    );
+
+    expect(setUpcomingQueue).toHaveBeenCalled();
+    expect(maybeExtendQueueTail).toHaveBeenCalled();
   });
 
   it("aborts playback when the pending track position is missing from the tracklist", () => {

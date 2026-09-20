@@ -46,6 +46,7 @@ const buildHarness = (
     queue?: ReturnType<typeof createQueueItem>[];
     similarQueueMode?: ReturnType<typeof createSimilarQueueMode>;
     previewVideo?: DiscogsVideo | null;
+    similarQueueSuppressedAfterClear?: boolean;
   } = {},
 ) => {
   const queryClient = createTestQueryClient();
@@ -78,6 +79,9 @@ const buildHarness = (
   const similarQueueTailToastShownRef = { current: false };
   const queueManuallyExtendedRef = { current: false };
   const extendQueueWithSimilarReleasesRef = { current: true };
+  const similarQueueSuppressedAfterClearRef = {
+    current: overrides.similarQueueSuppressedAfterClear ?? false,
+  };
   const releaseRef = { current: sourceRelease };
   const tracksRef = {
     current: playableReleaseDetail.tracklist as DiscogsTrack[],
@@ -113,6 +117,7 @@ const buildHarness = (
           activeTrackIndexRef,
           queueManuallyExtendedRef,
           extendQueueWithSimilarReleasesRef,
+          similarQueueSuppressedAfterClearRef,
         },
       }),
     { wrapper },
@@ -174,6 +179,31 @@ describe("useReleasePlaybackSimilarQueue", () => {
     expect(updateUpcomingQueue).toHaveBeenCalled();
     const nextQueue = updateUpcomingQueue.mock.calls.at(-1)?.[0]([]) ?? [];
     expect(nextQueue[0]?.fromSimilarRelease).toBe(true);
+  });
+
+  it("does not extend the tail after the user clears the queue", () => {
+    const { result, updateUpcomingQueue } = buildHarness({
+      queue: [],
+      similarQueueMode: { enabled: true },
+      similarQueueSuppressedAfterClear: true,
+    });
+
+    result.current.maybeExtendQueueTail();
+
+    expect(updateUpcomingQueue).not.toHaveBeenCalled();
+  });
+
+  it("enables similar tail mode when the preference loads after album playback started", async () => {
+    const { result, updateUpcomingQueue } = buildHarness({
+      queue: [],
+      similarQueueMode: { enabled: false },
+    });
+
+    result.current.maybeExtendQueueTail();
+
+    await waitFor(() => {
+      expect(updateUpcomingQueue).toHaveBeenCalled();
+    });
   });
 
   it("does not stack another similar track while one is already in up next", () => {

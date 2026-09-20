@@ -145,6 +145,7 @@ export const useReleasePlaybackProvider = (): {
   const similarQueueFetchInFlightRef = useRef(false);
   const similarQueueTailToastShownRef = useRef(false);
   const queueManuallyExtendedRef = useRef(false);
+  const similarQueueSuppressedAfterClearRef = useRef(false);
   const playFromGestureRetryTimeoutsRef = useRef<number[]>([]);
   const playbackIframeRef = useRef<HTMLIFrameElement | null>(null);
   const embedVideoIdRef = useRef<string | null>(null);
@@ -263,6 +264,7 @@ export const useReleasePlaybackProvider = (): {
         similarQueueTailToastShownRef,
         queueManuallyExtendedRef,
         extendQueueWithSimilarReleasesRef,
+        similarQueueSuppressedAfterClearRef,
       },
     });
 
@@ -639,6 +641,7 @@ export const useReleasePlaybackProvider = (): {
       extendQueueWithSimilarReleasesRef,
       similarQueueTailToastShownRef,
       queueManuallyExtendedRef,
+      similarQueueSuppressedAfterClearRef,
       releaseRef,
       queueRef,
       playbackHistoryRef,
@@ -669,6 +672,7 @@ export const useReleasePlaybackProvider = (): {
     isReleasePreview,
     maybeExtendQueueTail,
     upcomingQueueLength: queue.length,
+    allReleasesLength: allReleases.length,
     pendingPreviewVideoUri,
     pendingTrackPosition,
     previewVideo,

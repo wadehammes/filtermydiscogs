@@ -30,6 +30,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   isReleasePreview: boolean;
   maybeExtendQueueTail: () => void;
   upcomingQueueLength: number;
+  allReleasesLength: number;
   pendingPreviewVideoUri: string | null;
   pendingTrackPosition: string | null;
   previewVideo: DiscogsVideo | null;
@@ -54,6 +55,7 @@ export const useReleasePlaybackPendingResolution = ({
   isReleasePreview,
   maybeExtendQueueTail,
   upcomingQueueLength,
+  allReleasesLength,
   pendingPreviewVideoUri,
   pendingTrackPosition,
   previewVideo,
@@ -77,6 +79,7 @@ export const useReleasePlaybackPendingResolution = ({
     maybeExtendQueueTail();
   }, [
     activeTrackIndex,
+    allReleasesLength,
     isPlaying,
     maybeExtendQueueTail,
     previewVideo,
@@ -119,11 +122,13 @@ export const useReleasePlaybackPendingResolution = ({
 
       setUpcomingQueue(upcoming);
       shouldRebuildAlbumQueueRef.current = false;
+      maybeExtendQueueTail();
     }
   }, [
     abortUnresolvedPlayback,
     awaitingResumeGestureRef,
     dispatchSession,
+    maybeExtendQueueTail,
     pendingTrackPosition,
     release,
     releaseDetailId,
