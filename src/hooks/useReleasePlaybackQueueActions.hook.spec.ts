@@ -45,6 +45,7 @@ const buildHarness = ({
   const similarQueueGenerationRef = { current: 0 };
   const similarQueueTailToastShownRef = { current: false };
   const queueManuallyExtendedRef = { current: true };
+  const similarQueueSuppressedAfterClearRef = { current: false };
   const shouldRebuildAlbumQueueRef = { current: false };
   const awaitingResumeGestureRef = { current: false };
   const pendingPlayFromGestureRef = { current: false };
@@ -114,6 +115,7 @@ const buildHarness = ({
         extendQueueWithSimilarReleasesRef,
         similarQueueTailToastShownRef,
         queueManuallyExtendedRef,
+        similarQueueSuppressedAfterClearRef,
         releaseRef,
         queueRef,
         playbackHistoryRef,
@@ -133,6 +135,7 @@ const buildHarness = ({
     queueRef,
     result,
     similarQueueModeRef,
+    similarQueueSuppressedAfterClearRef,
     clearPlaybackVideoUiLoading,
     prepareQueueAdvancePlayback,
     setUpcomingQueue,
@@ -247,6 +250,7 @@ describe("useReleasePlaybackQueueActions", () => {
           extendQueueWithSimilarReleasesRef: { current: true },
           similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
           releaseRef: { current: release },
           queueRef,
           playbackHistoryRef: { current: [] },
@@ -317,6 +321,7 @@ describe("useReleasePlaybackQueueActions", () => {
           extendQueueWithSimilarReleasesRef: { current: true },
           similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
           releaseRef: { current: release },
           queueRef,
           playbackHistoryRef: { current: [] },
@@ -397,6 +402,7 @@ describe("useReleasePlaybackQueueActions", () => {
           extendQueueWithSimilarReleasesRef: { current: true },
           similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
           releaseRef: { current: release },
           queueRef: { current: [] },
           playbackHistoryRef,
@@ -462,6 +468,7 @@ describe("useReleasePlaybackQueueActions", () => {
           extendQueueWithSimilarReleasesRef: { current: true },
           similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
           releaseRef,
           queueRef,
           playbackHistoryRef,
@@ -525,6 +532,7 @@ describe("useReleasePlaybackQueueActions", () => {
           extendQueueWithSimilarReleasesRef,
           similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
           releaseRef: { current: releaseFactory.withDisplayDefaults() },
           queueRef: { current: [] },
           playbackHistoryRef: { current: [] },
@@ -559,6 +567,7 @@ describe("useReleasePlaybackQueueActions", () => {
       queueManuallyExtendedRef,
       setUpcomingQueue,
       similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
     } = buildHarness({ sessionQueue: [existingItem] });
 
     result.current.clearQueue();
@@ -566,6 +575,7 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(setUpcomingQueue).toHaveBeenCalledWith([]);
     expect(queueManuallyExtendedRef.current).toBe(false);
     expect(similarQueueModeRef.current.enabled).toBe(false);
+    expect(similarQueueSuppressedAfterClearRef.current).toBe(true);
   });
 
   it("stopPlayback clears persisted session state and stops transport", () => {
@@ -652,6 +662,7 @@ describe("useReleasePlaybackQueueActions", () => {
           extendQueueWithSimilarReleasesRef: { current: true },
           similarQueueTailToastShownRef: { current: false },
           queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
           releaseRef,
           queueRef,
           playbackHistoryRef: { current: [] },
@@ -676,6 +687,27 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(dispatchSession).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: "SET_PENDING_TRACK_POSITION" }),
     );
+  });
+
+  it("removeFromQueue suppresses similar tail when dismissing a generated row", () => {
+    const similarItem = createQueueItem({
+      release: releaseFactory.withDisplayDefaults(),
+      trackPosition: "A1",
+      trackTitle: "Similar pick",
+    });
+    similarItem.fromSimilarRelease = true;
+    const {
+      result,
+      setUpcomingQueue,
+      similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
+    } = buildHarness({ sessionQueue: [similarItem] });
+
+    result.current.removeFromQueue(0);
+
+    expect(setUpcomingQueue).toHaveBeenCalledWith([]);
+    expect(similarQueueModeRef.current.enabled).toBe(false);
+    expect(similarQueueSuppressedAfterClearRef.current).toBe(true);
   });
 
   it("removeFromQueue drops the item at the requested index", () => {

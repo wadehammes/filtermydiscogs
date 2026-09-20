@@ -2220,6 +2220,160 @@ describe("ReleasePlaybackProvider", () => {
     );
   });
 
+  it("does not append similar tracks after clear queue while playback continues", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: SHORT_RELEASE_ID,
+        title: "Short EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 100,
+        resource_url: `https://api.discogs.com/releases/${SHORT_RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100003,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 200,
+        resource_url: "https://api.discogs.com/releases/100003",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, shortReleaseDetail, {
+      "100003": { ...similarHouseReleaseDetail, id: 100003 },
+    });
+
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(async () => [
+      [
+        createQueueItem({
+          release: similarRelease,
+          trackPosition: "A1",
+          trackTitle: "Similar Track",
+        }),
+      ],
+    ]);
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.extendQueueWithSimilarReleases).toBe(true);
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    const fetchCountAfterPlay =
+      mockFetchPlayableQueuesForSimilarReleases.mock.calls.length;
+
+    act(() => {
+      result.current.clearQueue();
+    });
+
+    expect(result.current.queue).toHaveLength(0);
+    expect(result.current.isPlaying).toBe(true);
+
+    await waitFor(() => {
+      expect(mockFetchPlayableQueuesForSimilarReleases.mock.calls.length).toBe(
+        fetchCountAfterPlay,
+      );
+    });
+
+    expect(result.current.queue).toHaveLength(0);
+  });
+
+  it("does not append another similar track after removing the generated queue row", async () => {
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: SHORT_RELEASE_ID,
+        title: "Short EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 100,
+        resource_url: `https://api.discogs.com/releases/${SHORT_RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100003,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 200,
+        resource_url: "https://api.discogs.com/releases/100003",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, shortReleaseDetail, {
+      "100003": { ...similarHouseReleaseDetail, id: 100003 },
+    });
+
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(async () => [
+      [
+        createQueueItem({
+          release: similarRelease,
+          trackPosition: "A1",
+          trackTitle: "Similar Track",
+        }),
+      ],
+    ]);
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([sourceRelease, similarRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.extendQueueWithSimilarReleases).toBe(true);
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: sourceRelease,
+        trackPosition: "1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    const fetchCountAfterPlay =
+      mockFetchPlayableQueuesForSimilarReleases.mock.calls.length;
+
+    act(() => {
+      result.current.removeFromQueue(0);
+    });
+
+    expect(result.current.queue).toHaveLength(0);
+    expect(result.current.isPlaying).toBe(true);
+
+    await waitFor(() => {
+      expect(mockFetchPlayableQueuesForSimilarReleases.mock.calls.length).toBe(
+        fetchCountAfterPlay,
+      );
+    });
+
+    expect(result.current.queue).toHaveLength(0);
+  });
+
   it("does not append similar tracks when extendQueueWithSimilarReleases is disabled", async () => {
     mockUserPreferencesResponse(
       userPreferencesFactory.build({ extendQueueWithSimilarReleases: false }),
