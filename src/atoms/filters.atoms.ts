@@ -252,6 +252,7 @@ export const applyPendingFiltersRestoreAtom = atom(null, (get, set) => {
 export const dismissPendingFiltersRestoreAtom = atom(null, (_get, set) => {
   set(pendingFiltersRestoreAtom, null);
   set(pendingFiltersRestoreDismissedAtom, true);
+  set(persistedFiltersAtom, { ...defaultPersistedFilters });
 });
 
 export const allReleasesAtom = atom<DiscogsRelease[]>([]);

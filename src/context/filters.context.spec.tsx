@@ -3,11 +3,16 @@ import { useAtomValue, useSetAtom } from "jotai";
 import {
   applyPendingFiltersRestoreAtom,
   collectionFiltersActiveAtom,
+  dismissPendingFiltersRestoreAtom,
   pendingFiltersRestoreAtom,
 } from "src/atoms/filters.atoms";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
-import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import {
+  defaultPersistedFilters,
+  FILTERS_STORAGE_KEY,
+  parsePersistedFilters,
+} from "src/utils/filtersStorage";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
 import { act, renderHook, TestProviders, waitFor } from "test-utils";
 import { FiltersActionTypes, SortValues, useFilters } from "./filters.context";
@@ -196,6 +201,68 @@ describe("FiltersProvider", () => {
         yearOperator: "OR",
         searchQuery: "ambient",
       });
+    });
+  });
+
+  it("clears saved filters when pending restore is dismissed so remount does not re-offer", async () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Electronic"],
+        selectedYears: [],
+        selectedFormats: [],
+        selectedSort: SortValues.DateAddedNew,
+        styleOperator: "OR",
+        searchQuery: "ambient",
+      }),
+    );
+
+    const { result, unmount } = renderHook(
+      () => {
+        const filters = useFilters();
+        const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
+        const dismissPendingRestore = useSetAtom(
+          dismissPendingFiltersRestoreAtom,
+        );
+        return { filters, pendingRestore, dismissPendingRestore };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.pendingRestore?.selectedStyles).toEqual([
+        "Electronic",
+      ]);
+    });
+
+    act(() => {
+      result.current.dismissPendingRestore();
+    });
+
+    await waitFor(() => {
+      expect(result.current.pendingRestore).toBeNull();
+    });
+    expect(
+      parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
+    ).toEqual(defaultPersistedFilters);
+
+    unmount();
+
+    const { result: remountedResult } = renderHook(
+      () => {
+        const filters = useFilters();
+        const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
+        return { filters, pendingRestore };
+      },
+      {
+        wrapper: TestProviders,
+      },
+    );
+
+    await waitFor(() => {
+      expect(remountedResult.current.pendingRestore).toBeNull();
     });
   });
 

@@ -14,9 +14,15 @@ import {
   showPendingFiltersRestoreToast,
 } from "src/components/PendingFiltersRestoreOffer/pendingFiltersRestoreToast";
 import { usePlaybackPageScrollLockCountRef } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
+import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { PersistedFiltersState } from "src/types/filters.types";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
-import { persistedFiltersEqual } from "src/utils/filtersStorage";
+import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
+import {
+  defaultPersistedFilters,
+  persistedFiltersEqual,
+} from "src/utils/filtersStorage";
+import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
 
 export const useOfferPendingFiltersRestore = (enabled: boolean) => {
   const pendingRestore = useAtomValue(pendingFiltersRestoreAtom);
@@ -24,6 +30,7 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
   const allReleases = useAtomValue(allReleasesAtom);
   const applyPendingRestore = useSetAtom(applyPendingFiltersRestoreAtom);
   const dismissPendingRestore = useSetAtom(dismissPendingFiltersRestoreAtom);
+  const { persistPreferences } = usePersistUserPreferences();
   const scrollLockCountRef = usePlaybackPageScrollLockCountRef();
   const offeredPendingRef = useRef<PersistedFiltersState | null>(null);
 
@@ -83,6 +90,10 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
       },
       onDismiss: () => {
         dismissPendingRestore();
+        if (getFilterPersistenceEnabled()) {
+          markFiltersPendingPersist(defaultPersistedFilters);
+          persistPreferences({ filters: defaultPersistedFilters });
+        }
         dismissPendingFiltersRestoreToast();
         offeredPendingRef.current = null;
       },
@@ -94,6 +105,7 @@ export const useOfferPendingFiltersRestore = (enabled: boolean) => {
     dismissPendingRestore,
     enabled,
     pendingRestore,
+    persistPreferences,
     scrollLockCountRef,
   ]);
 };
