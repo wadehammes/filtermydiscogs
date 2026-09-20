@@ -1,5 +1,9 @@
 export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS = 5000;
 
+export const shouldArmPlaybackEmbedStartWatchdog = (
+  visibilityState: DocumentVisibilityState,
+): boolean => visibilityState !== "hidden";
+
 export const createEmbedPlaybackStartWatchdog = ({
   delayMs,
   schedule,
