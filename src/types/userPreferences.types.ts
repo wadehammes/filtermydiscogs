@@ -5,6 +5,7 @@ import type { FilterView } from "src/utils/filterViews";
 export const USER_PREFERENCES_VERSION = 1;
 
 export const DEFAULT_AUTO_PLAY_ON_QUEUE_ADD = true;
+export const DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES = false;
 
 export type PaletteTheme =
   | "amber"
@@ -32,6 +33,7 @@ export type UserPreferencesJson = {
   version: typeof USER_PREFERENCES_VERSION;
   persistFilters: boolean;
   autoPlayOnQueueAdd: boolean;
+  extendQueueWithSimilarReleases: boolean;
   theme: StoredTheme;
   view: StoredViewState;
   filters: PersistedFiltersJson;
@@ -46,6 +48,7 @@ export type UserPreferencesPatch = Partial<
     UserPreferences,
     | "persistFilters"
     | "autoPlayOnQueueAdd"
+    | "extendQueueWithSimilarReleases"
     | "theme"
     | "view"
     | "filters"

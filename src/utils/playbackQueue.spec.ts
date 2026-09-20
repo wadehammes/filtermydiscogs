@@ -16,6 +16,7 @@ import {
   prependQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
+  resolveSimilarTailExtensionContext,
   shuffleQueueItems,
   upcomingFromAlbumQueue,
 } from "./playbackQueue";
@@ -245,5 +246,48 @@ describe("playbackQueue", () => {
     expect(
       reorderQueueItems(queue, 0, 2).map((item) => item.trackTitle),
     ).toEqual(["Second", "Third", "First"]);
+  });
+
+  it("uses the playing track as the similar tail source when upcoming is empty", () => {
+    const playingItem = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Only track",
+    });
+
+    expect(
+      resolveSimilarTailExtensionContext({
+        upcomingQueue: [],
+        playingRelease: release,
+        playingQueueItem: playingItem,
+      }),
+    ).toEqual({
+      sourceRelease: release,
+      existingQueue: [playingItem],
+    });
+  });
+
+  it("uses the last upcoming row as the similar tail source when the queue is not empty", () => {
+    const first = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const last = createQueueItem({
+      release: otherRelease,
+      trackPosition: "B1",
+      trackTitle: "Last queued",
+    });
+
+    expect(
+      resolveSimilarTailExtensionContext({
+        upcomingQueue: [first, last],
+        playingRelease: release,
+        playingQueueItem: null,
+      }),
+    ).toEqual({
+      sourceRelease: otherRelease,
+      existingQueue: [first, last],
+    });
   });
 });

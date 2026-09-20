@@ -156,7 +156,10 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `crateReleaseFactory` | `forInstance()` | Prisma crate release rows in route specs |
 | `cratesResponseFactory` | `empty()`, `withCrates()`, `withCrate()` | `fetchCrates` API response |
 | `crateWithReleasesResponseFactory` | `empty()`, `withReleases()` | `fetchCrate` API response |
-| [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) | (helper, not a factory) | PO / hook tests that mock **`src/api/urls`** and mount authenticated **`TestProviders`** without custom crate data—uses **`defaultTestCrate()`** presets above |
+| `userTrackStatsResponseFactory` | `build()` | **`fetchTrackStats`** / **`GET /api/tracks/stats`** mocks (empty **`stats`** by default) |
+| [`setupDefaultTrackStatsApiMock`](../../src/tests/mocks/setupDefaultTrackStatsApiMock.ts) | (helper, not a factory) | Stubs **`api.fetchTrackStats`** with empty **`stats`** for **`useTrackStatsQuery`** |
+| [`setupFetchDiscogsReleaseMock`](../../src/tests/mocks/setupFetchDiscogsReleaseMock.ts) | (helper, not a factory) | Release-detail **`discogsRelease`** / batch mocks; also calls **`setupDefaultTrackStatsApiMock`** |
+| [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) | (helper, not a factory) | PO / hook tests that mock **`src/api/urls`** and mount authenticated **`TestProviders`** without custom crate data—uses **`defaultTestCrate()`** presets above (includes track stats) |
 | `createCrateResponseFactory` | `forCrate()`, `named()` | `createCrate` / `updateCrate` API response |
 | `crateMutationSuccessFactory` | `build()`, `sync()`, `clearPacked()` | Add/remove crate, sync, and clear-packed success payloads |
 | `userPreferencesFactory` | `defaults()`, `asApiResponse()`, `defaultsApiResponse()` | Account prefs mocks and `{ preferences }` API wrappers |

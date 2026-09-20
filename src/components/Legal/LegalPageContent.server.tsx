@@ -99,7 +99,9 @@ export function LegalPageContent() {
               Postgres: theme (light, dim, sepia, slate, dark, midnight, high
               contrast, or system), default view (grid or table), whether to
               remember filter selections, whether to auto-play when adding to an
-              empty queue, your analytics cookie choice (when set), named saved
+              empty queue, whether to extend the playback queue with similar
+              releases from your collection when up next runs low (opt-in;
+              default off), your analytics cookie choice (when set), named saved
               views you create from the Views menu on Releases (search, filters,
               and sort snapshots), and—when that option is on—your saved filter
               and sort choices (styles, years, formats, sort order, genre/style,
@@ -218,7 +220,8 @@ export function LegalPageContent() {
               (grid or table), your analytics cookie choice, named saved views
               from the Views menu on Releases, filter/sort selections when
               &quot;Remember filter selections&quot; is enabled in Settings, and
-              playback settings (auto-play on queue add)
+              playback settings (auto-play on queue add and extend queue with
+              similar releases)
             </li>
             <li>
               Product analytics events linked to your account (when you had

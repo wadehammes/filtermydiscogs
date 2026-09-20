@@ -7,6 +7,7 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultTrackStatsApiMock } from "src/tests/mocks/setupDefaultTrackStatsApiMock";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 
 const defaultCrateApiError = new Error("Crate API request failed");
@@ -46,4 +47,6 @@ export function setupDefaultCrateApiMocks(
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: 249504 }),
     );
   }
+
+  setupDefaultTrackStatsApiMock(mockApi);
 }

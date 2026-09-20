@@ -1,5 +1,6 @@
 import type { Api } from "src/api/urls";
 import { api } from "src/api/urls";
+import { setupDefaultTrackStatsApiMock } from "src/tests/mocks/setupDefaultTrackStatsApiMock";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 
 export const setupFetchDiscogsReleaseMock = (
@@ -17,6 +18,7 @@ export const setupFetchDiscogsReleaseMock = (
   };
 
   if (!jest.isMockFunction(mockApi.discogsRelease)) {
+    setupDefaultTrackStatsApiMock(mockApi);
     return;
   }
 
@@ -35,4 +37,6 @@ export const setupFetchDiscogsReleaseMock = (
       return releases;
     });
   }
+
+  setupDefaultTrackStatsApiMock(mockApi);
 };

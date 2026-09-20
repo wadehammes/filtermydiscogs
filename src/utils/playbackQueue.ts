@@ -322,8 +322,40 @@ export const resolvePersistedQueueItems = ({
       ...(item.previewVideoUri
         ? { previewVideoUri: item.previewVideoUri }
         : {}),
+      ...(item.fromSimilarRelease ? { fromSimilarRelease: true } : {}),
     });
   }
 
   return resolved;
+};
+
+export const resolveSimilarTailExtensionContext = ({
+  upcomingQueue,
+  playingRelease,
+  playingQueueItem,
+}: {
+  upcomingQueue: PlaybackQueueItem[];
+  playingRelease: DiscogsRelease | null;
+  playingQueueItem: PlaybackQueueItem | null;
+}): {
+  sourceRelease: DiscogsRelease;
+  existingQueue: PlaybackQueueItem[];
+} | null => {
+  const lastQueuedItem = upcomingQueue[upcomingQueue.length - 1];
+
+  if (lastQueuedItem) {
+    return {
+      sourceRelease: lastQueuedItem.release,
+      existingQueue: upcomingQueue,
+    };
+  }
+
+  if (!(playingRelease && playingQueueItem)) {
+    return null;
+  }
+
+  return {
+    sourceRelease: playingRelease,
+    existingQueue: [playingQueueItem],
+  };
 };

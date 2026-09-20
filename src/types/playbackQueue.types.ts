@@ -6,4 +6,5 @@ export interface PlaybackQueueItem {
   trackTitle: string;
   release: DiscogsRelease;
   previewVideoUri?: string;
+  fromSimilarRelease?: boolean;
 }

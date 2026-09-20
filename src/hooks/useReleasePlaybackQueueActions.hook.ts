@@ -56,6 +56,8 @@ interface QueueActionRefs {
   shouldRebuildAlbumQueueRef: RefObject<boolean>;
   similarQueueModeRef: RefObject<SimilarQueueMode>;
   similarQueueGenerationRef: RefObject<number>;
+  extendQueueWithSimilarReleasesRef: RefObject<boolean>;
+  similarQueueTailToastShownRef: RefObject<boolean>;
   queueManuallyExtendedRef: RefObject<boolean>;
   releaseRef: RefObject<DiscogsRelease | null>;
   queueRef: RefObject<PlaybackQueueItem[]>;
@@ -130,6 +132,7 @@ export const useReleasePlaybackQueueActions = ({
     similarQueueModeRef,
     similarQueueGenerationRef,
     queueManuallyExtendedRef,
+    similarQueueTailToastShownRef,
     releaseRef,
     queueRef,
     playbackHistoryRef,
@@ -335,12 +338,13 @@ export const useReleasePlaybackQueueActions = ({
   const appendManualQueueItem = useCallback(
     (item: PlaybackQueueItem) => {
       queueManuallyExtendedRef.current = true;
+      similarQueueModeRef.current = createSimilarQueueMode(false);
       trackPlaybackQueued(item.release.instance_id);
       updateUpcomingQueue((previousQueue) =>
         appendQueueItem(previousQueue, item),
       );
     },
-    [queueManuallyExtendedRef, updateUpcomingQueue],
+    [queueManuallyExtendedRef, similarQueueModeRef, updateUpcomingQueue],
   );
 
   const startPlayback = useCallback(
@@ -386,8 +390,12 @@ export const useReleasePlaybackQueueActions = ({
       }
 
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
+      const shouldEnableSimilarTail =
+        !startPaused &&
+        refs.extendQueueWithSimilarReleasesRef.current &&
+        (rebuildAlbumQueue || queueManuallyExtendedRef.current);
       similarQueueModeRef.current = createSimilarQueueMode(
-        rebuildAlbumQueue && !startPaused,
+        shouldEnableSimilarTail,
       );
       similarQueueGenerationRef.current += 1;
       setUpcomingQueue(nextQueue);
@@ -594,6 +602,7 @@ export const useReleasePlaybackQueueActions = ({
     shouldRebuildAlbumQueueRef.current = false;
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
+    similarQueueTailToastShownRef.current = false;
     queueManuallyExtendedRef.current = false;
     dispatchSession({ type: "STOP" });
     setShouldAutoplayEmbed(false);
@@ -619,6 +628,7 @@ export const useReleasePlaybackQueueActions = ({
     shouldRebuildAlbumQueueRef,
     similarQueueGenerationRef,
     similarQueueModeRef,
+    similarQueueTailToastShownRef,
     resetPlaybackSkipState,
   ]);
 

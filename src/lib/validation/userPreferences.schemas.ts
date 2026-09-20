@@ -12,6 +12,11 @@ export const userPreferencesPatchSchema = z
     autoPlayOnQueueAdd: z
       .boolean({ error: "autoPlayOnQueueAdd must be a boolean" })
       .optional(),
+    extendQueueWithSimilarReleases: z
+      .boolean({
+        error: "extendQueueWithSimilarReleases must be a boolean",
+      })
+      .optional(),
     theme: z
       .string()
       .optional()
@@ -49,6 +54,7 @@ export const userPreferencesPatchSchema = z
     (patch) =>
       patch.persistFilters !== undefined ||
       patch.autoPlayOnQueueAdd !== undefined ||
+      patch.extendQueueWithSimilarReleases !== undefined ||
       patch.theme !== undefined ||
       patch.view !== undefined ||
       patch.filters !== undefined ||
