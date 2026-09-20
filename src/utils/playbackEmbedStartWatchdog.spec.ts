@@ -6,7 +6,20 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import { createEmbedPlaybackStartWatchdog } from "src/utils/playbackEmbedStartWatchdog";
+import {
+  createEmbedPlaybackStartWatchdog,
+  shouldArmPlaybackEmbedStartWatchdog,
+} from "src/utils/playbackEmbedStartWatchdog";
+
+describe("shouldArmPlaybackEmbedStartWatchdog", () => {
+  it("returns false while the document is hidden", () => {
+    expect(shouldArmPlaybackEmbedStartWatchdog("hidden")).toBe(false);
+  });
+
+  it("returns true while the document is visible", () => {
+    expect(shouldArmPlaybackEmbedStartWatchdog("visible")).toBe(true);
+  });
+});
 
 describe("createEmbedPlaybackStartWatchdog", () => {
   beforeEach(() => {

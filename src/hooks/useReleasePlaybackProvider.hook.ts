@@ -45,6 +45,7 @@ import {
 import {
   createEmbedPlaybackStartWatchdog,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+  shouldArmPlaybackEmbedStartWatchdog,
 } from "src/utils/playbackEmbedStartWatchdog";
 import {
   createPlaybackEmbedUnavailableSkipHandler,
@@ -513,9 +514,36 @@ export const useReleasePlaybackProvider = (): {
   }, [advanceQueueAfterSkip]);
 
   const armEmbedStartWatchdog = useCallback(() => {
+    if (!shouldArmPlaybackEmbedStartWatchdog(document.visibilityState)) {
+      return;
+    }
+
     embedStartWatchdogRef.current.disarm();
     embedStartWatchdogRef.current.arm(runEmbedUnavailableSkipIfUnconfirmed);
   }, [runEmbedUnavailableSkipIfUnconfirmed]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        embedStartWatchdogRef.current.disarm();
+        return;
+      }
+
+      if (
+        isPlayingRef.current &&
+        !isPausedRef.current &&
+        !embedPlaybackConfirmedRef.current
+      ) {
+        armEmbedStartWatchdog();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [armEmbedStartWatchdog]);
 
   onYoutubeEmbedPlaybackErrorRef.current = (errorCode) => {
     embedUnavailableSkipHandlerRef.current.handleFailure(
