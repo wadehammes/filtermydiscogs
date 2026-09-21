@@ -1,7 +1,7 @@
 "use client";
 
-import { useSetAtom } from "jotai";
-import { type ReactNode, useLayoutEffect } from "react";
+import { useStore } from "jotai";
+import { type ReactNode, useLayoutEffect, useMemo, useRef } from "react";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -26,8 +26,36 @@ export const SeedCollectionFilters = ({
 }: SeedCollectionFiltersProps) => {
   const { dispatchFetchingCollection, dispatchCollection } =
     useCollectionContext();
-  const dispatchFilters = useSetAtom(filtersDispatchAtom);
-  const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
+  const store = useStore();
+  const releasesSeedKey = useMemo(
+    () => releases.map((release) => String(release.instance_id)).join(","),
+    [releases],
+  );
+  const seededReleasesKeyRef = useRef<string | null>(null);
+  const seededSessionFiltersKeyRef = useRef<string | null>(null);
+  const sessionFiltersSeedKey = sessionFilters
+    ? JSON.stringify(sessionFilters)
+    : null;
+
+  if (seededReleasesKeyRef.current !== releasesSeedKey) {
+    seededReleasesKeyRef.current = releasesSeedKey;
+    store.set(filtersDispatchAtom, {
+      type: FiltersActionTypes.SetAllReleases,
+      payload: releases,
+    });
+    store.set(collectionFiltersActiveAtom, true);
+  }
+
+  if (
+    sessionFiltersSeedKey !== null &&
+    seededSessionFiltersKeyRef.current !== sessionFiltersSeedKey
+  ) {
+    seededSessionFiltersKeyRef.current = sessionFiltersSeedKey;
+    store.set(filtersDispatchAtom, {
+      type: FiltersActionTypes.ApplySessionFilters,
+      payload: { ...defaultPersistedFilters, ...sessionFilters },
+    });
+  }
 
   useLayoutEffect(() => {
     dispatchFetchingCollection(false);
@@ -37,25 +65,7 @@ export const SeedCollectionFilters = ({
         { page: 1, totalPages: 1, releaseCount: releases.length },
       ),
     );
-    dispatchFilters({
-      type: FiltersActionTypes.SetAllReleases,
-      payload: releases,
-    });
-    if (sessionFilters) {
-      dispatchFilters({
-        type: FiltersActionTypes.ApplySessionFilters,
-        payload: { ...defaultPersistedFilters, ...sessionFilters },
-      });
-    }
-    setCollectionFiltersActive(true);
-  }, [
-    dispatchCollection,
-    dispatchFetchingCollection,
-    dispatchFilters,
-    releases,
-    sessionFilters,
-    setCollectionFiltersActive,
-  ]);
+  }, [dispatchCollection, dispatchFetchingCollection, releases]);
 
   return children;
 };

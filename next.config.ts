@@ -127,6 +127,7 @@ const nextConfig: NextConfig = {
   // Faker 10+ is ESM-only; Next’s Jest SWC pipeline must transpile it (see next/dist/build/jest/jest.js).
   transpilePackages: [
     "@faker-js/faker",
+    "jotai",
     "@tanstack/react-table",
     "@tanstack/table-core",
     "@tanstack/charts",
