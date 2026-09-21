@@ -144,7 +144,7 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |
-| `pnpm lint:ci` / `pnpm test:ci` / `pnpm test:ci:shard` / `pnpm knip:ci` | Quality gates. **`test:ci`** runs Jest **`--runInBand`** (matches local **`pnpm test`**). Optional local sharding: **`JEST_SHARD=2/3 pnpm test:ci:shard`**. |
+| `pnpm lint:ci` / `pnpm test:ci` / `pnpm test:ci:shard` / `pnpm knip:ci` | Quality gates. **`test:ci`** runs Jest in parallel (**`--maxWorkers=50%`**). Local **`pnpm test`** uses **`--runInBand --detectOpenHandles`**. Optional local sharding: **`JEST_SHARD=2/3 pnpm test:ci:shard`**. |
 | `pnpm generate:theme-init` | Regenerates **`public/theme-init.js`** from [`themeAppearance.ts`](../../src/utils/themeAppearance.ts) (also runs on **`postinstall`**). |
 | `pnpm test:coverage` | Jest coverage report (`jest --coverage`). |
 | `pnpm knip` | CI dead-code gate — unused exports/files/deps ([`knip.json`](../../knip.json)); **`pnpm knip:ci`** in Actions. |
@@ -310,13 +310,14 @@ Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`
 - **`test-utils`** alias → [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)
 - **`src/`** path alias
 - SVG and CSS mocks under **`.jest/`**
-- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`**, **`@tanstack/react-table`** / **`@tanstack/table-core`**, **`@tanstack/charts`** packages, and **`d3-shape`** (see comments in config)
+- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`**, **`jotai`**, **`@tanstack/react-table`** / **`@tanstack/table-core`**, **`@tanstack/charts`** packages, and **`d3-shape`** (see comments in config)
 - **`verbose: false`** by default (pass **`--verbose`** when debugging a single suite)
 - **`workerIdleMemoryLimit: "512MB"`** so parallel workers recycle before idle heap grows without bound
-- **`pnpm test`** / **`pnpm test:ci`** run **`--runInBand`** with **`NODE_OPTIONS='--max-old-space-size=4096'`** — do not drop **`runInBand`** for parallel workers without fixing memory; [`.jest/setupTests.ts`](../../.jest/setupTests.ts) installs shared DOM mocks once in **`beforeAll`** (not per-test **`spyOn`**, which stacked ~1.3k wrappers and OOM’d the suite)
-- **Local sharding (optional)**: **`pnpm test:ci:shard`** with **`JEST_SHARD=1/3`** … **`3/3`** splits ~208 suites across processes when debugging memory. CI runs the full **`pnpm test:ci`** in one **Lint/Test** job. Do not pass **`--shard`** via **`pnpm test:ci -- …`** — pnpm inserts **`--`**, which Jest treats as end-of-options.
+- **`NODE_OPTIONS='--max-old-space-size=4096'`** on **`pnpm test`**, **`pnpm test:ci`**, and coverage. **`pnpm test:ci`** / **`test:ci:shard`** use parallel workers (**`--maxWorkers=50%`**). **`pnpm test`** / **`test:file`** / **`test:coverage`** keep **`--runInBand --detectOpenHandles`** for local leak debugging (slower full-suite run).
+- **Global setup memory**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) mocks **`HTMLElement.prototype.getBoundingClientRect`** once in **`beforeAll`** (not **`beforeEach`**). Per-test **`spyOn`** on prototypes stacked ~1.3k wrappers and OOM’d parallel runs; do not move shared prototype mocks back into **`beforeEach`** without **`restoreAllMocks`** / a non-stacking pattern (see **`setupMockMatchMedia`**).
+- **Local sharding (optional)**: **`pnpm test:ci:shard`** with **`JEST_SHARD=1/3`** … **`3/3`** splits ~274 suites across processes when debugging memory or comparing to CI. CI runs the full **`pnpm test:ci`** in one **Lint/Test** job. Do not pass **`--shard`** via **`pnpm test:ci -- …`** — pnpm inserts **`--`**, which Jest treats as end-of-options.
 
-Faker, TanStack Table, and TanStack Charts transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
+Faker, Jotai, TanStack Table, and TanStack Charts transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
 
 ## Analytics
 

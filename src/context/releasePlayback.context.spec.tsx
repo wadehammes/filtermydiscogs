@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { ReactNode } from "react";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { api } from "src/api/urls";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -258,6 +258,19 @@ const SeedCollectionReleases = ({
   const { dispatchFetchingCollection, dispatchCollection } =
     useCollectionContext();
   const filtersDispatch = useFiltersDispatch();
+  const releasesSeedKey = useMemo(
+    () => releases.map((release) => String(release.instance_id)).join(","),
+    [releases],
+  );
+  const seededReleasesKeyRef = useRef<string | null>(null);
+
+  if (seededReleasesKeyRef.current !== releasesSeedKey) {
+    seededReleasesKeyRef.current = releasesSeedKey;
+    filtersDispatch({
+      type: FiltersActionTypes.SetAllReleases,
+      payload: releases,
+    });
+  }
 
   useLayoutEffect(() => {
     dispatchFetchingCollection(false);
@@ -267,16 +280,11 @@ const SeedCollectionReleases = ({
         { page: collectionPage, totalPages: collectionTotalPages },
       ),
     );
-    filtersDispatch({
-      type: FiltersActionTypes.SetAllReleases,
-      payload: releases,
-    });
   }, [
     collectionPage,
     collectionTotalPages,
     dispatchCollection,
     dispatchFetchingCollection,
-    filtersDispatch,
     releases,
   ]);
 

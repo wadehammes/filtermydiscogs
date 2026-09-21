@@ -12,7 +12,7 @@ const customJestConfig: Config.InitialOptions = {
     "<rootDir>/e2e/",
   ],
   transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape)",
+    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|jotai|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape)",
   ],
   verbose: false,
   workerIdleMemoryLimit: "512MB",
