@@ -988,6 +988,47 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
+  it("stops playback when an unavailable skip advances with an empty queue", async () => {
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "B1",
+        rebuildAlbumQueue: false,
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockImplementation((_entry, onSkip) => {
+      onSkip();
+    });
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBeNull();
+      expect(result.current.isMiniPlayerVisible).toBe(false);
+    });
+  });
+
   it("does not treat immediate stale PLAYING as confirmed so the embed watchdog can skip", async () => {
     jest.useFakeTimers();
 

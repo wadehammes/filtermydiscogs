@@ -32,12 +32,17 @@ export const ReleaseModalPlaybackTracksFromState = ({
     fallbackSearchUrl,
     handleTrackSelect,
     handleTrackQueue,
+    handleTrackUnqueue,
     handleAddAllToQueue,
+    handleRemoveAllFromQueue,
     allPlayableTracksQueued,
     handlePreviewTrackSelect,
     handlePreviewTrackQueue,
+    handlePreviewTrackUnqueue,
     isTrackQueued,
+    isTrackUnqueueable,
     isPreviewTrackQueued,
+    isPreviewTrackUnqueueable,
     handleActiveTrackToggle,
     isPlayingThisReleaseInBar,
     isPlaybackPaused,
@@ -59,12 +64,17 @@ export const ReleaseModalPlaybackTracksFromState = ({
       fallbackSearchUrl={fallbackSearchUrl}
       handleTrackSelect={handleTrackSelect}
       handleTrackQueue={handleTrackQueue}
+      handleTrackUnqueue={handleTrackUnqueue}
       handleAddAllToQueue={handleAddAllToQueue}
+      handleRemoveAllFromQueue={handleRemoveAllFromQueue}
       allPlayableTracksQueued={allPlayableTracksQueued}
       handlePreviewTrackSelect={handlePreviewTrackSelect}
       handlePreviewTrackQueue={handlePreviewTrackQueue}
+      handlePreviewTrackUnqueue={handlePreviewTrackUnqueue}
       isTrackQueued={isTrackQueued}
+      isTrackUnqueueable={isTrackUnqueueable}
       isPreviewTrackQueued={isPreviewTrackQueued}
+      isPreviewTrackUnqueueable={isPreviewTrackUnqueueable}
       handleActiveTrackToggle={handleActiveTrackToggle}
       isPlayingThisReleaseInBar={isPlayingThisReleaseInBar}
       isPlaybackPaused={isPlaybackPaused}

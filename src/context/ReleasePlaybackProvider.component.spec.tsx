@@ -41,6 +41,7 @@ const idlePlaybackActions: ReleasePlaybackActions = {
   startReleasePreview: () => undefined,
   addToQueue: () => undefined,
   addPreviewToQueue: () => undefined,
+  removeAlbumTracksFromQueue: () => undefined,
   removeFromQueue: () => undefined,
   reorderQueue: () => undefined,
   playQueueAtIndex: () => undefined,

@@ -26,6 +26,11 @@ export interface AddPreviewToQueueParams {
   video: DiscogsVideo;
 }
 
+export interface RemoveAlbumTracksFromQueueParams {
+  release: DiscogsRelease;
+  trackPositions: string[];
+}
+
 export interface ReleasePlaybackState {
   release: DiscogsRelease | null;
   tracks: DiscogsTrack[];
@@ -60,6 +65,9 @@ export interface ReleasePlaybackActions {
   startReleasePreview: (params: StartReleasePreviewParams) => void;
   addToQueue: (params: AddToQueueParams) => void;
   addPreviewToQueue: (params: AddPreviewToQueueParams) => void;
+  removeAlbumTracksFromQueue: (
+    params: RemoveAlbumTracksFromQueueParams,
+  ) => void;
   removeFromQueue: (index: number) => void;
   reorderQueue: (fromIndex: number, toIndex: number) => void;
   playQueueAtIndex: (index: number) => void;

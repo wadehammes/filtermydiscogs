@@ -630,6 +630,7 @@ export const useReleasePlaybackProvider = (): {
     playPrevious,
     stopPlayback,
     clearQueue,
+    removeAlbumTracksFromQueue,
   } = useReleasePlaybackQueueActions({
     dispatchSession,
     setShouldAutoplayEmbed,
@@ -848,6 +849,7 @@ export const useReleasePlaybackProvider = (): {
       startReleasePreview,
       addToQueue,
       addPreviewToQueue,
+      removeAlbumTracksFromQueue,
       removeFromQueue,
       reorderQueue,
       playQueueAtIndex,
@@ -867,6 +869,7 @@ export const useReleasePlaybackProvider = (): {
       startReleasePreview,
       addToQueue,
       addPreviewToQueue,
+      removeAlbumTracksFromQueue,
       removeFromQueue,
       reorderQueue,
       playQueueAtIndex,

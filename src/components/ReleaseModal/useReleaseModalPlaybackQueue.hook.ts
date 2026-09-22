@@ -2,13 +2,21 @@ import { useCallback, useMemo } from "react";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import type { DiscogsRelease } from "src/types";
 import type { DiscogsTrack } from "src/types/discogs-release-detail.types";
-import { isSameQueueItem } from "src/utils/playbackQueue";
+import {
+  findQueueItemIndex,
+  getQueuedTrackPositionsForInstance,
+} from "src/utils/playbackQueue";
 import {
   showPlaybackQueueAllQueuedToast,
+  showPlaybackQueueRemovedToast,
   showPlaybackQueueSuccessToast,
 } from "src/utils/playbackQueueToast";
 import { isSameReleaseInstance } from "src/utils/releaseNotes";
-import type { ReleasePlaybackMatchIndex } from "src/utils/releasePlayback";
+import {
+  getPreviewVideoUriFromPosition,
+  parseYoutubeVideoId,
+  type ReleasePlaybackMatchIndex,
+} from "src/utils/releasePlayback";
 
 interface UseReleaseModalPlaybackQueueParams {
   release: DiscogsRelease;
@@ -22,6 +30,12 @@ export const useReleaseModalPlaybackQueue = ({
   playbackMatchIndex,
 }: UseReleaseModalPlaybackQueueParams) => {
   const playback = useReleasePlayback();
+  const releaseInstanceId = String(release.instance_id);
+
+  const queuedTrackPositionsForRelease = useMemo(
+    () => getQueuedTrackPositionsForInstance(playback.queue, releaseInstanceId),
+    [playback.queue, releaseInstanceId],
+  );
 
   const isQueuePositionActive = useCallback(
     (trackPosition: string, mode: "track" | "preview") => {
@@ -30,10 +44,17 @@ export const useReleaseModalPlaybackQueue = ({
       }
 
       if (mode === "preview") {
-        return (
-          playback.isReleasePreview &&
-          playback.activeTrackPosition === trackPosition
-        );
+        if (!(playback.isReleasePreview && playback.activeVideoId)) {
+          return false;
+        }
+
+        const previewVideoUri = getPreviewVideoUriFromPosition(trackPosition);
+
+        if (!previewVideoUri) {
+          return false;
+        }
+
+        return parseYoutubeVideoId(previewVideoUri) === playback.activeVideoId;
       }
 
       return (
@@ -44,6 +65,7 @@ export const useReleaseModalPlaybackQueue = ({
     },
     [
       playback.activeTrackPosition,
+      playback.activeVideoId,
       playback.isMiniPlayerVisible,
       playback.isReleasePreview,
       playback.release,
@@ -53,13 +75,8 @@ export const useReleaseModalPlaybackQueue = ({
 
   const isQueuedForRelease = useCallback(
     (trackPosition: string) =>
-      playback.queue.some((item) =>
-        isSameQueueItem(item, {
-          instanceId: String(release.instance_id),
-          trackPosition,
-        }),
-      ),
-    [playback.queue, release.instance_id],
+      queuedTrackPositionsForRelease.has(trackPosition),
+    [queuedTrackPositionsForRelease],
   );
 
   const isPreviewTrackQueued = useCallback(
@@ -147,10 +164,80 @@ export const useReleaseModalPlaybackQueue = ({
     release,
   ]);
 
+  const handleRemoveAllFromQueue = useCallback(() => {
+    const tracksToRemove = playableTracks.filter((track) =>
+      isTrackQueued(track.position),
+    );
+
+    if (tracksToRemove.length === 0) {
+      return;
+    }
+
+    playback.removeAlbumTracksFromQueue({
+      release,
+      trackPositions: tracksToRemove.map((track) => track.position),
+    });
+
+    if (
+      playback.activeTrackPosition !== null &&
+      isQueuePositionActive(playback.activeTrackPosition, "track")
+    ) {
+      playback.stopPlayback();
+    }
+
+    showPlaybackQueueRemovedToast(tracksToRemove.length);
+  }, [
+    isQueuePositionActive,
+    isTrackQueued,
+    playback.activeTrackPosition,
+    playback.removeAlbumTracksFromQueue,
+    playback.stopPlayback,
+    playableTracks,
+    release,
+  ]);
+
+  const unqueueTrackPosition = useCallback(
+    (trackPosition: string, mode: "track" | "preview") => {
+      if (isQueuePositionActive(trackPosition, mode)) {
+        return;
+      }
+
+      if (!isQueuedForRelease(trackPosition)) {
+        return;
+      }
+
+      const queueIndex = findQueueItemIndex(playback.queue, {
+        instanceId: String(release.instance_id),
+        trackPosition,
+      });
+
+      if (queueIndex < 0) {
+        return;
+      }
+
+      playback.removeFromQueue(queueIndex);
+      showPlaybackQueueRemovedToast(1);
+    },
+    [
+      isQueuePositionActive,
+      isQueuedForRelease,
+      playback.queue,
+      playback.removeFromQueue,
+      release.instance_id,
+    ],
+  );
+
   return {
     isTrackQueued,
+    isTrackUnqueueable: isQueuedForRelease,
     isPreviewTrackQueued,
+    isPreviewTrackUnqueueable: isQueuedForRelease,
     allPlayableTracksQueued,
     handleAddAllToQueue,
+    handleRemoveAllFromQueue,
+    handleTrackUnqueue: (trackPosition: string) =>
+      unqueueTrackPosition(trackPosition, "track"),
+    handlePreviewTrackUnqueue: (trackPosition: string) =>
+      unqueueTrackPosition(trackPosition, "preview"),
   };
 };

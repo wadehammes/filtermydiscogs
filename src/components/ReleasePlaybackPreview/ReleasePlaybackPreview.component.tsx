@@ -12,8 +12,10 @@ interface ReleasePlaybackPreviewProps {
   showPlayingIndicatorOnActiveTrack?: boolean;
   isPlaybackPaused?: boolean;
   isTrackQueued?: (position: string) => boolean;
+  isTrackUnqueueable?: (position: string) => boolean;
   onTrackSelect: (position: string) => void;
   onTrackQueue: (position: string) => void;
+  onTrackUnqueue?: (position: string) => void;
   onActiveTrackToggle?: () => void;
 }
 
@@ -24,8 +26,10 @@ export const ReleasePlaybackPreview = ({
   showPlayingIndicatorOnActiveTrack = false,
   isPlaybackPaused = false,
   isTrackQueued,
+  isTrackUnqueueable,
   onTrackSelect,
   onTrackQueue,
+  onTrackUnqueue,
   onActiveTrackToggle,
 }: ReleasePlaybackPreviewProps) => {
   if (tracks.length === 0) {
@@ -52,8 +56,10 @@ export const ReleasePlaybackPreview = ({
         isTrackPlayable={() => true}
         {...definedProps({
           isTrackQueued,
+          isTrackUnqueueable,
           onTrackSelect,
           onTrackQueue,
+          onTrackUnqueue,
           onActiveTrackToggle,
         })}
       />
