@@ -17,7 +17,7 @@ export function createAuthenticatedE2eHandlers(options?: {
 
   return [
     ...createDefaultAuthHandlers({ authStatus }),
-    ...createDefaultCrateApiHandlers(),
+    ...createDefaultCrateApiHandlers({ releases }),
     ...createDefaultCollectionApiHandlers({ username, releases }),
     ...createDefaultDashboardApiHandlers({ releases }),
     ...createDefaultUserApiHandlers(),
