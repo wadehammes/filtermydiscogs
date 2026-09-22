@@ -28,7 +28,7 @@
 }
 
 .variantexternal {
-  composes: iconactionexternal from "./action-icon-hover.module.css";
+  composes: iconactionscale from "./action-icon-hover.module.css";
 }
 
 .variantqueue {

@@ -68,9 +68,3 @@
 
   --icon-action-transform: scale(1.06);
 }
-
-.iconactionexternal {
-  composes: iconactionmotion;
-
-  --icon-action-transform: translate(1px, -1px) scale(1.1);
-}
