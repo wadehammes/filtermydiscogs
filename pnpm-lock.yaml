@@ -286,6 +286,9 @@ importers:
       '@jest/types':
         specifier: ^30.5.1
         version: 30.5.1
+      '@msw/playwright':
+        specifier: ^0.6.7
+        version: 0.6.7(msw@2.15.0(@types/node@26.6.2)(typescript@7.0.2))
       '@next/bundle-analyzer':
         specifier: ^16.3.5
         version: 16.3.5
@@ -1996,6 +1999,12 @@ packages:
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
+
+  '@msw/playwright@0.6.7':
+    resolution: {integrity: sha512-q7m2JtnN1Iz25xauqx5lkD+tbbDM3oXZBg67aXr4EbxK7IZKTh6c71bbTCnDi/F2SuHq/jPUfS8NJXPcdroARA==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      msw: ^2.12.10
 
   '@mswjs/interceptors@0.41.9':
     resolution: {integrity: sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==}
@@ -7902,6 +7911,12 @@ snapshots:
       keyv: 5.6.0
 
   '@keyv/serialize@1.1.1': {}
+
+  '@msw/playwright@0.6.7(msw@2.15.0(@types/node@26.6.2)(typescript@7.0.2))':
+    dependencies:
+      '@mswjs/interceptors': 0.41.9
+      msw: 2.15.0(@types/node@26.6.2)(typescript@7.0.2)
+      outvariant: 1.4.3
 
   '@mswjs/interceptors@0.41.9':
     dependencies:

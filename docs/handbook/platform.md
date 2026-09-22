@@ -277,12 +277,13 @@ Playwright runs in CI after Jest. Specs under [`e2e/`](../../e2e/):
 | [`instant-navigation.spec.ts`](../../e2e/instant-navigation.spec.ts) | Public About/Legal shells via **`instant()`** from **`@next/playwright`** |
 | [`theme-init.spec.ts`](../../e2e/theme-init.spec.ts) | Pre-hydration **`data-theme`** on **`/`** for OS light vs dark (**`dark`** when dark) |
 | [`public-routes.spec.ts`](../../e2e/public-routes.spec.ts) | Home **`200`** + About bento render (no OAuth) |
+| [`authenticated-releases.spec.ts`](../../e2e/authenticated-releases.spec.ts) | **`/releases`** header, view controls, crate drawer, and 3 factory-backed release cards |
+
+Authenticated browser specs extend Playwright with **`@msw/playwright`** ([`e2e/fixtures/msw.fixture.ts`](../../e2e/fixtures/msw.fixture.ts)): **`defineNetworkFixture`** routes **`fetch`** through shared MSW handlers from [`createAuthenticatedE2eHandlers`](../../src/tests/msw/createAuthenticatedE2eHandlers.ts), including a **three-release** collection from [`buildE2eCollectionReleases`](../../src/tests/msw/e2eCollectionData.ts) (**`placehold.co`** cover URLs match [`next.config.ts`](../../next.config.ts) **`images.remotePatterns`**). **`onUnhandledRequest`** errors only for **`/api/*`**; [`installClearClientStorage`](../../e2e/helpers/clearClientStorage.ts) clears persisted collection cache before each test. Override per test with **`network.use(...)`** like **`setupServer`**. Dev dependency **`@msw/playwright`** — no service worker in the browser for these specs.
 
 Config: [`playwright.config.ts`](../../playwright.config.ts) (starts **`pnpm dev`** on port **6767** with **`NODE_OPTIONS`** cleared so the inspector port does not collide). The webServer injects placeholder **`DISCOGS_CONSUMER_*`** values from [`discogsOAuthTestEnv.ts`](../../src/tests/discogsOAuthTestEnv.ts) when unset (same as Jest [`.jest/setEnvVars.ts`](../../.jest/setEnvVars.ts)) so **`/api/auth/check`** can load without **`Discogs OAuth credentials not configured`** errors on public pages. Public-route e2e does **not** require real Discogs app credentials or **`DATABASE_URL`** — footer community stats skip when unset ([`getPublicCommunityStats`](../../src/lib/public-stats.server.ts)). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).
 
 Jest [`requiredPrimitiveSpecs.spec.ts`](../../src/tests/utils/requiredPrimitiveSpecs.spec.ts) fails if contract specs for shared primitives (filter controls, overlay stack, theme init) are removed.
-
-Add authenticated Playwright flows when instant routes stabilize (header nav to **`/releases`**, **`/dashboard`**, etc.).
 
 ## Private session API responses
 

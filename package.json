@@ -94,6 +94,7 @@
     "@faker-js/faker": "10.6.0",
     "@jest/globals": "^30.5.2",
     "@jest/types": "^30.5.1",
+    "@msw/playwright": "^0.6.7",
     "@next/bundle-analyzer": "^16.3.5",
     "@next/playwright": "16.3.5",
     "@playwright/test": "1.63.0",
