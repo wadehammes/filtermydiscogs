@@ -6,6 +6,13 @@
           "tsdk": "node_modules/typescript-langservice/lib"
         }
       }
+    },
+    "vscode-css-language-server": {
+      "settings": {
+        "css": {
+          "customData": ["./src/styles/css-modules-custom-data.json"]
+        }
+      }
     }
   }
 }

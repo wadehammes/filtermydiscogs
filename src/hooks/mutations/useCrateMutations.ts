@@ -894,3 +894,25 @@ export const useUpdateCrateLayoutMutation = (userId: string | null) => {
     },
   });
 };
+
+export const useMigrateLegacyCrateMutation = (userId: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["migrateLegacyCrate"],
+    mutationFn: (releases: DiscogsRelease[]) =>
+      api.migrateLegacyCrate(releases),
+    onSuccess: async () => {
+      if (!userId) {
+        return;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: CratesQueryKeys.byUserId(userId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: CrateQueryKeys.byUserId(userId),
+      });
+    },
+  });
+};

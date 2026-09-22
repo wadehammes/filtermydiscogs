@@ -1,0 +1,16 @@
+---
+description: App Router API handlers — auth, validation, private responses
+globs: "src/app/api/**/*.ts"
+alwaysApply: false
+---
+
+# API routes
+
+Read [database.md → Request validation](../../docs/handbook/database.md) and [discogs.md](../../docs/handbook/discogs.md) for OAuth/session patterns.
+
+- **Auth:** Use existing helpers (`requireAuthenticatedDiscogsUser`, verified OAuth on data routes). Do not skip session checks on private data.
+- **Validation:** Zod schemas under **`src/lib/validation/`** + **`parseRequestBody`** — extend schemas; avoid ad-hoc parsing in handlers.
+- **Responses:** Private session JSON via **`privateRouteJson`** / **`createErrorResponse`** — not bare **`NextResponse.json`** on authenticated routes ([platform.md → Private session API responses](../../docs/handbook/platform.md)).
+- **Discogs usernames:** **`isValidDiscogsUsername`** from **`src/lib/discogs-username.ts`**.
+- **Tests:** Co-locate **`route.spec.ts`**; mock Prisma/services; assert status, body shape, auth failures.
+- **Do not** add **`export const dynamic = "force-dynamic"`** for cookies alone (Cache Components — see database.md).

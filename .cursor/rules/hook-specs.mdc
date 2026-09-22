@@ -1,0 +1,16 @@
+---
+description: Jest specs for hooks and feature tests — TDD, flat describe, api mocks
+globs: "src/hooks/**/*.spec.ts,src/hooks/**/*.spec.tsx,src/components/**/*.spec.tsx,src/context/**/*.spec.tsx"
+alwaysApply: false
+---
+
+# Hook and feature specs
+
+Handbook: [conventions.md → Testing](../../docs/handbook/conventions.md#testing). Project skill: `.cursor/skills/hook-feature-specs/SKILL.md`.
+
+- **TDD:** Failing spec before production code for new behavior.
+- **Hook specs (`src/hooks/*.hook.spec.*`):** Exactly **one** top-level **`describe`** — no nesting.
+- **Factories** for domain data; **`renderFeatureHook`** / **`TestProviders`** for hooks and UI.
+- Mock **`src/api/urls`** only — never **`src/hooks/queries/*`** or **`src/hooks/mutations/*`**.
+- No new specs under **`src/hooks/queries/`** or **`src/hooks/mutations/`**.
+- POs: no assertions; specs use **`screen`** / **`userEvent`**.

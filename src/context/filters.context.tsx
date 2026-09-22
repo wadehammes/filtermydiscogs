@@ -6,7 +6,6 @@ import {
   type FiltersActions,
   filtersDispatchAtom,
   filtersStateAtom,
-  sortedFilteredReleasesAtom,
 } from "src/atoms/filters.atoms";
 import { useInitializePendingFiltersRestore } from "src/hooks/useInitializePendingFiltersRestore.hook";
 
@@ -46,10 +45,4 @@ export const useFilters = () => {
   const dispatch = useSetAtom(filtersDispatchAtom);
 
   return { state, dispatch: dispatch as React.Dispatch<FiltersActions> };
-};
-
-export const useMemoizedFilteredReleases = () => {
-  useFiltersScope();
-
-  return useAtomValue(sortedFilteredReleasesAtom);
 };

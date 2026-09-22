@@ -1,0 +1,16 @@
+---
+description: CSS Modules conventions (mobile-first, nesting, Stylelint alignment)
+globs: "**/*.module.css"
+alwaysApply: false
+---
+
+# CSS Modules
+
+Handbook: [conventions.md → CSS](../../docs/handbook/conventions.md#css-and-styling). Cursor hooks block top-level `@media`, `@custom-media`, and `margin-top` (except `0` / `scroll-margin-top`).
+
+- **Mobile-first:** `@media (width >= 768px)` (range syntax), nested **inside** the block they affect — never a column of `@media` at file bottom.
+- **Block structure:** One block class per surface; nest `&:hover`, states, and responsive rules under that block.
+- **Spacing:** Prefer flex **`gap`** over **`margin-top`** between siblings.
+- **Classes in TSX:** **`classNames`** when combining or conditioning; single static class may use `className={styles.block}` directly.
+- **Shared modules:** Import from `src/styles/modules/` paths; do not add barrel `index.ts` re-exports.
+- After edits: **`pnpm lint:css`** on touched files.

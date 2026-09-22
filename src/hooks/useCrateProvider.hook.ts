@@ -24,6 +24,7 @@ import {
   useRemoveReleaseFromCrateMutation,
   useSetReleaseCrateMembershipMutation,
   useSetReleasePackedInCrateMutation,
+  useUpdateCrateLayoutMutation,
   useUpdateCrateMutation,
 } from "src/hooks/mutations/useCrateMutations";
 import {
@@ -37,8 +38,13 @@ import {
 import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import { buildCrateLayout } from "src/lib/crate-layout";
+import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import type { DiscogsRelease } from "src/types";
-import type { CrateUpdatePayload } from "src/types/crate.types";
+import type {
+  CrateLayoutItem,
+  CrateLayoutPutRequest,
+  CrateUpdatePayload,
+} from "src/types/crate.types";
 import { resolveActiveCrateId } from "src/utils/crateProviderActiveCrate";
 import { toast } from "src/utils/toast";
 
@@ -98,6 +104,7 @@ export const useCrateProvider = (): {
 
   const createCrateMutation = useCreateCrateMutation(userId);
   const updateCrateMutation = useUpdateCrateMutation(userId);
+  const updateCrateLayoutMutation = useUpdateCrateLayoutMutation(userId);
   const deleteCrateMutation = useDeleteCrateMutation(userId);
   const addReleaseMutation = useAddReleaseToCrateMutation(userId);
   const removeReleaseMutation = useRemoveReleaseFromCrateMutation(userId);
@@ -162,7 +169,7 @@ export const useCrateProvider = (): {
 
     if (hasOwnershipMismatch) {
       console.error("Crate ownership mismatch detected; clearing session.");
-      queryClient.clear();
+      clearUserScopedQueries(queryClient);
       void logout();
     }
   }, [crates, userId, queryClient, logout]);
@@ -530,6 +537,23 @@ export const useCrateProvider = (): {
     [activeCrateId, crates, deleteCrateMutation, findDefaultCrate],
   );
 
+  const updateCrateLayout = useCallback(
+    (
+      crateId: string,
+      params: {
+        layout: CrateLayoutPutRequest;
+        optimisticLayoutItems: CrateLayoutItem[];
+      },
+    ) => {
+      updateCrateLayoutMutation.mutate({
+        crateId,
+        layout: params.layout,
+        optimisticLayoutItems: params.optimisticLayoutItems,
+      });
+    },
+    [updateCrateLayoutMutation],
+  );
+
   const stateValue: CrateState = useMemo(
     () => ({
       crates,
@@ -544,6 +568,7 @@ export const useCrateProvider = (): {
       isDrawerOpen,
       packedReleaseCount,
       isUpdatingCrate: updateCrateMutation.isPending,
+      isUpdatingCrateLayout: updateCrateLayoutMutation.isPending,
       isCreatingCrate: createCrateMutation.isPending,
       isDeletingCrate: deleteCrateMutation.isPending,
     }),
@@ -560,6 +585,7 @@ export const useCrateProvider = (): {
       isDrawerOpen,
       packedReleaseCount,
       updateCrateMutation.isPending,
+      updateCrateLayoutMutation.isPending,
       createCrateMutation.isPending,
       deleteCrateMutation.isPending,
     ],
@@ -580,6 +606,7 @@ export const useCrateProvider = (): {
       createCrate,
       selectCrate,
       updateCrate,
+      updateCrateLayout,
       deleteCrate,
       toggleDrawer,
       openDrawer,
@@ -599,6 +626,7 @@ export const useCrateProvider = (): {
       createCrate,
       selectCrate,
       updateCrate,
+      updateCrateLayout,
       deleteCrate,
       toggleDrawer,
       openDrawer,

@@ -27,6 +27,12 @@ case "$file" in
     chapter="database.md (Prisma, db helpers, crate routes)" ;;
 esac
 
+skills=""
+case "$file" in
+  */docs/handbook/* | docs/handbook/*)
+    skills=".cursor/skills/README.md — if this chapter changed workflows or non-negotiables, update any skill that would now contradict the handbook (checklists only; do not duplicate prose)." ;;
+esac
+
 readme=""
 case "$file" in
   */src/app/page.tsx | src/app/page.tsx | */src/app/*/page.tsx | src/app/*/page.tsx)
@@ -42,7 +48,7 @@ case "$file" in
     readme="README.md (Setup / env) if setup steps or env vars users need changed" ;;
 esac
 
-if [ -z "$chapter" ] && [ -z "$readme" ]; then
+if [ -z "$chapter" ] && [ -z "$readme" ] && [ -z "$skills" ]; then
   exit 0
 fi
 
@@ -52,6 +58,9 @@ if [ -n "$chapter" ]; then
 fi
 if [ -n "$readme" ]; then
   parts+=("If this change shifts user-facing features, routes, setup, or tech stack listed in the root README, update $readme so newcomers are not misled.")
+fi
+if [ -n "$skills" ]; then
+  parts+=("$skills")
 fi
 
 ctx="Docs-sync check: you just edited $file. ${parts[*]}"

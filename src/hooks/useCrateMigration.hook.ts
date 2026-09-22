@@ -1,23 +1,19 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { api } from "src/api/urls";
 import { useAuth } from "src/context/auth.context";
-import {
-  CrateQueryKeys,
-  CratesQueryKeys,
-} from "src/hooks/queries/querykeys.constants";
+import { useMigrateLegacyCrateMutation } from "src/hooks/mutations/useCrateMutations";
 import type { DiscogsRelease } from "src/types";
 
 const STORAGE_KEY = "filtermydiscogs_selected_releases";
 
-export function useCrateMigration(
+export const useCrateMigration = (
   isAuthenticated: boolean,
   isLoading: boolean,
-) {
-  const queryClient = useQueryClient();
+) => {
   const {
     state: { userId },
   } = useAuth();
+  const { mutateAsync: migrateLegacyCrate } =
+    useMigrateLegacyCrateMutation(userId);
   const [migrationDone, setMigrationDone] = useState(false);
 
   useEffect(() => {
@@ -40,18 +36,8 @@ export function useCrateMigration(
           return;
         }
 
-        await api.migrateLegacyCrate(parsed);
+        await migrateLegacyCrate(parsed);
         localStorage.removeItem(STORAGE_KEY);
-
-        if (userId) {
-          await queryClient.invalidateQueries({
-            queryKey: CratesQueryKeys.byUserId(userId),
-          });
-          await queryClient.invalidateQueries({
-            queryKey: CrateQueryKeys.byUserId(userId),
-          });
-        }
-
         setMigrationDone(true);
       } catch {
         setMigrationDone(true);
@@ -59,7 +45,7 @@ export function useCrateMigration(
     };
 
     void migrateLocalStorage();
-  }, [isAuthenticated, isLoading, migrationDone, queryClient, userId]);
+  }, [isAuthenticated, isLoading, migrateLegacyCrate, migrationDone]);
 
   return migrationDone;
-}
+};
