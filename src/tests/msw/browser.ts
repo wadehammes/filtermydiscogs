@@ -1,18 +1,13 @@
 import { setupWorker } from "msw/browser";
 import type { AuthStatus } from "src/services/auth.service";
-import { createDefaultAuthHandlers } from "src/tests/msw/handlers/auth";
-import { createDefaultCrateApiHandlers } from "src/tests/msw/handlers/crates";
+import { createAuthenticatedE2eHandlers } from "src/tests/msw/createAuthenticatedE2eHandlers";
 
 export const mswBrowserWorker = setupWorker(
-  ...createDefaultAuthHandlers(),
-  ...createDefaultCrateApiHandlers(),
+  ...createAuthenticatedE2eHandlers(),
 );
 
 export function createAuthenticatedBrowserHandlers(options?: {
   authStatus?: AuthStatus;
 }) {
-  return [
-    ...createDefaultAuthHandlers(options),
-    ...createDefaultCrateApiHandlers(),
-  ];
+  return createAuthenticatedE2eHandlers(options);
 }
