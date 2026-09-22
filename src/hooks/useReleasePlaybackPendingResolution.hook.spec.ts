@@ -45,7 +45,7 @@ describe("useReleasePlaybackPendingResolution", () => {
         isReleasePreview: false,
         maybeExtendQueueTail,
         upcomingQueueLength: 0,
-        allReleasesLength: 0,
+        allReleasesLength: 1,
         pendingPreviewVideoUri: null,
         pendingTrackPosition: null,
         previewVideo: null,
@@ -98,7 +98,7 @@ describe("useReleasePlaybackPendingResolution", () => {
           isReleasePreview: false,
           maybeExtendQueueTail,
           upcomingQueueLength,
-          allReleasesLength: 0,
+          allReleasesLength: 1,
           pendingPreviewVideoUri: null,
           pendingTrackPosition: null,
           previewVideo: null,
@@ -155,11 +155,11 @@ describe("useReleasePlaybackPendingResolution", () => {
       { initialProps: { allReleasesLength: 0 } },
     );
 
-    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(1);
+    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(0);
 
     rerender({ allReleasesLength: 120 });
 
-    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(2);
+    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(1);
   });
 
   it("resolves a pending track position once release detail is synced", () => {

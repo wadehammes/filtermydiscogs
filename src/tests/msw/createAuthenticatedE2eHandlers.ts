@@ -5,6 +5,7 @@ import { buildE2eCollectionReleases } from "src/tests/msw/e2eCollectionData";
 import { createDefaultAuthHandlers } from "src/tests/msw/handlers/auth";
 import { createDefaultCollectionApiHandlers } from "src/tests/msw/handlers/collection";
 import { createDefaultCrateApiHandlers } from "src/tests/msw/handlers/crates";
+import { createDefaultDashboardApiHandlers } from "src/tests/msw/handlers/dashboard";
 import { createDefaultUserApiHandlers } from "src/tests/msw/handlers/user";
 
 export function createAuthenticatedE2eHandlers(options?: {
@@ -18,6 +19,7 @@ export function createAuthenticatedE2eHandlers(options?: {
     ...createDefaultAuthHandlers({ authStatus }),
     ...createDefaultCrateApiHandlers(),
     ...createDefaultCollectionApiHandlers({ username, releases }),
+    ...createDefaultDashboardApiHandlers({ releases }),
     ...createDefaultUserApiHandlers(),
   ];
 }

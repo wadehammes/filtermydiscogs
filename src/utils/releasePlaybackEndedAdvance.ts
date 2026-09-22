@@ -3,7 +3,6 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 
 export type PlaybackEndedAdvanceRefs = {
   isPlayingRef: RefObject<boolean>;
-  isPausedRef: RefObject<boolean>;
   queueRef: RefObject<PlaybackQueueItem[]>;
   extendQueueTailRef: RefObject<() => Promise<boolean>>;
   playNextRef: RefObject<() => void>;
@@ -11,7 +10,6 @@ export type PlaybackEndedAdvanceRefs = {
 
 export const createPlaybackEndedAdvanceHandler = ({
   isPlayingRef,
-  isPausedRef,
   queueRef,
   extendQueueTailRef,
   playNextRef,

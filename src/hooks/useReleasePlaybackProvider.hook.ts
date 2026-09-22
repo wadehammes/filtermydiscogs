@@ -417,7 +417,6 @@ export const useReleasePlaybackProvider = (): {
     () =>
       createPlaybackEndedAdvanceHandler({
         isPlayingRef,
-        isPausedRef,
         queueRef,
         extendQueueTailRef,
         playNextRef,
@@ -604,11 +603,7 @@ export const useReleasePlaybackProvider = (): {
         beginPlaybackVideoUiLoading();
       }
     },
-    [
-      activeVideoIdRef,
-      beginPlaybackVideoUiLoading,
-      resolveQueueItemEmbedVideoId,
-    ],
+    [beginPlaybackVideoUiLoading, resolveQueueItemEmbedVideoId],
   );
 
   const resetPlaybackSkipState = useCallback(() => {
