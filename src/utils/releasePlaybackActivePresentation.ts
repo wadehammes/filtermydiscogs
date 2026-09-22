@@ -75,20 +75,31 @@ export const PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS = 8000;
 export const resolveNeedsPlaybackVideoSwitch = ({
   preparedEmbedVideoId,
   activeVideoId,
+  replaySameTrack = false,
 }: {
   preparedEmbedVideoId: string | null;
   activeVideoId: string | null;
-}): boolean =>
-  preparedEmbedVideoId !== null && preparedEmbedVideoId !== activeVideoId;
+  replaySameTrack?: boolean;
+}): boolean => {
+  if (replaySameTrack && preparedEmbedVideoId !== null) {
+    return true;
+  }
+
+  return (
+    preparedEmbedVideoId !== null && preparedEmbedVideoId !== activeVideoId
+  );
+};
 
 export const shouldBeginPlaybackVideoUiLoading = ({
   hasQueueItem,
   preparedEmbedVideoId,
   activeVideoId,
+  replaySameTrack = false,
 }: {
   hasQueueItem: boolean;
   preparedEmbedVideoId: string | null;
   activeVideoId: string | null;
+  replaySameTrack?: boolean;
 }): boolean => {
   if (!hasQueueItem) {
     return true;
@@ -101,6 +112,7 @@ export const shouldBeginPlaybackVideoUiLoading = ({
   return resolveNeedsPlaybackVideoSwitch({
     preparedEmbedVideoId,
     activeVideoId,
+    replaySameTrack,
   });
 };
 

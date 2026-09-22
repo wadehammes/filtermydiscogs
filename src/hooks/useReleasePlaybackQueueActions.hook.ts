@@ -27,6 +27,7 @@ import {
   removeQueueItemAtIndex,
   reorderQueueItems,
 } from "src/utils/playbackQueue";
+import { isQueueItemReplayOfActiveSession } from "src/utils/playbackQueueReplay";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
 import { resetPlaybackSkipLogToast } from "src/utils/playbackSkippedTrackToast";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
@@ -86,6 +87,8 @@ interface QueueActionRefs {
   lastSyncedActiveVideoIdRef: RefObject<string | null>;
   activeVideoIdRef: RefObject<string | null>;
   embedVideoIdRef: RefObject<string | null>;
+  activeTrackPositionRef: RefObject<string | null>;
+  isReleasePreviewRef: RefObject<boolean>;
 }
 
 interface UseReleasePlaybackQueueActionsParams {
@@ -100,7 +103,10 @@ interface UseReleasePlaybackQueueActionsParams {
   setEmbedVideoId: (videoId: string | null) => void;
   clearPlayFromGestureRetries: () => void;
   syncEmbedToVideoId: (videoId: string) => void;
-  syncEmbedForQueueItem: (item: PlaybackQueueItem) => string | null;
+  syncEmbedForQueueItem: (
+    item: PlaybackQueueItem,
+    options?: { forceReload?: boolean },
+  ) => string | null;
   prefetchQueueItemEmbed: (item: PlaybackQueueItem) => void;
   setUpcomingQueue: (nextQueue: PlaybackQueueItem[]) => void;
   updateUpcomingQueue: (
@@ -162,6 +168,8 @@ export const useReleasePlaybackQueueActions = ({
     lastSyncedActiveVideoIdRef,
     activeVideoIdRef,
     embedVideoIdRef,
+    activeTrackPositionRef,
+    isReleasePreviewRef,
   } = refs;
 
   const findQueueItemResolutionIndex = useCallback(
@@ -223,9 +231,15 @@ export const useReleasePlaybackQueueActions = ({
         releaseRef.current,
         item.release,
       );
+      const replaySameTrack = isQueueItemReplayOfActiveSession(item, {
+        release: releaseRef.current,
+        activeTrackPosition: activeTrackPositionRef.current,
+        isReleasePreview: isReleasePreviewRef.current,
+        activeVideoId: activeVideoIdRef.current,
+      });
       const preparedEmbedVideoId = youtubeVideoId
         ? applyTargetEmbedVideoId(youtubeVideoId)
-        : syncEmbedForQueueItem(item);
+        : syncEmbedForQueueItem(item, { forceReload: replaySameTrack });
 
       if (!preparedEmbedVideoId) {
         prefetchQueueItemEmbed(item);
@@ -261,6 +275,7 @@ export const useReleasePlaybackQueueActions = ({
       const needsPlaybackVideoSwitch = resolveNeedsPlaybackVideoSwitch({
         preparedEmbedVideoId,
         activeVideoId: activeVideoIdRef.current,
+        replaySameTrack,
       });
       pendingPlayFromGestureRef.current =
         autoplay && !startPaused && needsPlaybackVideoSwitch;

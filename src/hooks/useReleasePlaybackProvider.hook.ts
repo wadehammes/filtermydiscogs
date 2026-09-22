@@ -52,6 +52,7 @@ import {
   PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
 } from "src/utils/playbackEmbedUnavailableSkip";
 import { buildCurrentQueueItem } from "src/utils/playbackQueue";
+import { isQueueItemReplayOfActiveSession } from "src/utils/playbackQueueReplay";
 import {
   getSessionRelease,
   initialPlaybackSessionState,
@@ -135,6 +136,8 @@ export const useReleasePlaybackProvider = (): {
     null,
   );
   const activeVideoIdRef = useRef<string | null>(null);
+  const activeTrackPositionRef = useRef<string | null>(null);
+  const isReleasePreviewRef = useRef(false);
   const hasAttemptedRestoreRef = useRef(false);
   const awaitingResumeGestureRef = useRef(false);
   const pendingPlayFromGestureRef = useRef(false);
@@ -301,6 +304,7 @@ export const useReleasePlaybackProvider = (): {
   activeVideoIdRef.current = activeVideoId;
 
   const isReleasePreview = previewVideo !== null;
+  isReleasePreviewRef.current = isReleasePreview;
 
   const activePlaybackTitle = resolveActivePlaybackTitle({
     isReleasePreview,
@@ -312,6 +316,7 @@ export const useReleasePlaybackProvider = (): {
     isReleasePreview,
     trackPosition: activeTrack?.position ?? null,
   });
+  activeTrackPositionRef.current = activeTrackPosition;
 
   const isMiniPlayerVisible = selectIsMiniPlayerVisible(session);
 
@@ -592,12 +597,21 @@ export const useReleasePlaybackProvider = (): {
       const preparedEmbedVideoId = item
         ? resolveQueueItemEmbedVideoId(item)
         : null;
+      const replaySameTrack =
+        item !== null &&
+        isQueueItemReplayOfActiveSession(item, {
+          release: releaseRef.current,
+          activeTrackPosition: activeTrackPositionRef.current,
+          isReleasePreview: isReleasePreviewRef.current,
+          activeVideoId: activeVideoIdRef.current,
+        });
 
       if (
         shouldBeginPlaybackVideoUiLoading({
           hasQueueItem: item != null,
           preparedEmbedVideoId,
           activeVideoId: activeVideoIdRef.current,
+          replaySameTrack,
         })
       ) {
         beginPlaybackVideoUiLoading();
@@ -675,6 +689,8 @@ export const useReleasePlaybackProvider = (): {
       lastSyncedActiveVideoIdRef,
       activeVideoIdRef,
       embedVideoIdRef,
+      activeTrackPositionRef,
+      isReleasePreviewRef,
     },
   });
 
