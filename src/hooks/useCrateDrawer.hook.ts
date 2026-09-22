@@ -16,7 +16,7 @@ function getServerSnapshot() {
   return false;
 }
 
-export function useCrateDrawer() {
+export const useCrateDrawer = () => {
   const isDesktop = useSyncExternalStore(
     subscribeToMediaQuery,
     getDesktopMatches,
@@ -49,4 +49,4 @@ export function useCrateDrawer() {
     closeDrawer,
     resetDrawer,
   };
-}
+};

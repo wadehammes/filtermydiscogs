@@ -1,6 +1,7 @@
 import type { DiscogsRelease } from "src/types";
 import type {
   CrateLayoutItem,
+  CrateLayoutPutRequest,
   CrateUpdatePayload,
   CrateWithCount,
 } from "src/types/crate.types";
@@ -18,6 +19,7 @@ export interface CrateState {
   isDrawerOpen: boolean;
   packedReleaseCount: number;
   isUpdatingCrate: boolean;
+  isUpdatingCrateLayout: boolean;
   isCreatingCrate: boolean;
   isDeletingCrate: boolean;
 }
@@ -51,6 +53,13 @@ export interface CrateActions {
     updates: Partial<CrateUpdatePayload>,
   ) => Promise<void>;
   deleteCrate: (crateId: string) => Promise<void>;
+  updateCrateLayout: (
+    crateId: string,
+    params: {
+      layout: CrateLayoutPutRequest;
+      optimisticLayoutItems: CrateLayoutItem[];
+    },
+  ) => void;
   toggleDrawer: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;

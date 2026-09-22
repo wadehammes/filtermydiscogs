@@ -10,10 +10,7 @@ import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/Co
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import { useAuth } from "src/context/auth.context";
-import {
-  FiltersActionTypes,
-  useMemoizedFilteredReleases,
-} from "src/context/filters.context";
+import { FiltersActionTypes } from "src/context/filters.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { ViewActionTypes } from "src/context/view.context";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
@@ -21,6 +18,7 @@ import {
   useAllReleases,
   useFiltersDispatch,
   useIsRandomMode,
+  useSortedFilteredReleases,
 } from "src/hooks/useFilterAtoms.hook";
 import { useGridDimensions } from "src/hooks/useGridDimensions.hook";
 import { useMosaicGenerator } from "src/hooks/useMosaicGenerator.hook";
@@ -75,7 +73,7 @@ export default function MosaicClient() {
   const [aspectRatio, setAspectRatio] =
     useState<keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS>("SQUARE");
 
-  const releasesToDisplay = useMemoizedFilteredReleases();
+  const releasesToDisplay = useSortedFilteredReleases();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     useLocalSelectedReleaseModal({
       collectionUsername: authState.username,

@@ -77,7 +77,9 @@ jest.mock("src/context/crate.context", () => {
       isDrawerOpen: false,
       packedReleaseCount: 0,
       isUpdatingCrate: false,
+      isUpdatingCrateLayout: false,
       isCreatingCrate: false,
+      isDeletingCrate: false,
     }),
     useCrateActions: () => ({
       addReleaseToCrate: mockAddReleaseToCrate,

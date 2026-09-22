@@ -35,6 +35,8 @@ mise bootstrap      # tools + pnpm install + Prisma generate
 mise run ci         # same quality gates as GitHub Actions
 ```
 
+**Zed:** open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies (workspace TypeScript 6 language service + CSS Modules **`composes`** hints). Reload after **`pnpm install`**.
+
 ### Discogs OAuth Setup
 
 1. Go to [Discogs Settings > Developers](https://www.discogs.com/settings/developers)
@@ -191,6 +193,15 @@ make release tag=v0.0.1
 5. Confirm Vercel **Production** deployed from **`main`**.
 
 If **`create-release`** failed on **Reset Main**, use [`platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets) ( **`RELEASE_PUSH_TOKEN`**, bypass list, release workflow checkout). Re-run only on a tag that includes any workflow fix. Break-glass: **`git push origin refs/tags/vX.Y.Z:main`** and **`gh release create vX.Y.Z --generate-notes`** if **`main`** or the GitHub Release was never updated.
+
+## Cursor (optional)
+
+Agent wiring for this repo (also documented in [`docs/handbook/platform.md` → Cursor](./docs/handbook/platform.md#cursor-agents)):
+
+- **Hooks** — [`.cursor/hooks.json`](./.cursor/hooks.json): handbook routing, convention guards, commit via [`scripts/git-commit.sh`](./scripts/git-commit.sh), session-end lint/tests.
+- **Rules / skills** — [`.cursor/rules/`](./.cursor/rules/), [`.cursor/skills/README.md`](./.cursor/skills/README.md) (task checklists; handbook stays canonical).
+- **Fallow MCP** — [`.cursor/mcp.json`](./.cursor/mcp.json); optional `pnpm fallow:health` (see **Development** above).
+Use **mise** so hooks resolve the same **pnpm** as your shell (`mise bootstrap`). Day-to-day editing is **Zed** (see **Setup**); Cursor is for agents only.
 
 ## Handbook
 

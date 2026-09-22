@@ -5,6 +5,7 @@
 !.cursor/hooks.json
 !.cursor/hooks/
 !.cursor/rules/
+!.cursor/skills/
 !.cursor/mcp.json
 .cursor/*.log
 .cursor/settings.local.json

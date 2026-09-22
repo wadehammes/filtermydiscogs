@@ -40,6 +40,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Test factories, Faker, `build()` / `buildList()` | [factories.md](factories.md) |
 | Jest setup, PO mocks, `TestProviders`, API route tests, TDD workflow | [conventions.md](conventions.md) (Testing) |
 | Agent / LLM workflow, keeping docs in sync | **[AGENTS.md](../../AGENTS.md)**, **[CLAUDE.md](../../CLAUDE.md)** |
+| Cursor hooks, rules, skills, MCP; Zed `.zed/settings.json` | [platform.md](platform.md) (Cursor (agents), TypeScript bullet) + [`.cursor/skills/README.md`](../../.cursor/skills/README.md) + [`.cursor/hooks/README.md`](../../.cursor/hooks/README.md) |
 | Where a file category lives under `src/` | [source-layout.md](source-layout.md) |
 
 ## Outside this folder

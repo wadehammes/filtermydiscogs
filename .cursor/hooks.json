@@ -19,6 +19,12 @@
         "matcher": "git commit",
         "timeout": 5,
         "failClosed": true
+      },
+      {
+        "command": ".cursor/hooks/block-destructive-git.sh",
+        "matcher": "git push|git reset|git clean",
+        "timeout": 5,
+        "failClosed": true
       }
     ],
     "preToolUse": [
@@ -104,6 +110,11 @@
       {
         "command": ".cursor/hooks/handbook-test-drift-check.sh",
         "timeout": 30,
+        "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/prisma-generate-nudge.sh",
+        "timeout": 10,
         "loop_limit": 1
       },
       {

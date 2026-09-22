@@ -33,8 +33,7 @@ import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
-import { useAuth } from "src/context/auth.context";
-import { useUpdateCrateLayoutMutation } from "src/hooks/mutations/useCrateMutations";
+import { useCrateActions, useCrateState } from "src/context/crate.context";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import {
   assignSequentialCrateLayoutSortOrders,
@@ -284,8 +283,8 @@ const CrateLayoutListComponent = ({
   bottomInsertMount,
 }: CrateLayoutListProps) => {
   "use memo";
-  const { state: authState } = useAuth();
-  const updateLayoutMutation = useUpdateCrateLayoutMutation(authState.userId);
+  const { updateCrateLayout } = useCrateActions();
+  const { isUpdatingCrateLayout } = useCrateState();
   const [localLayoutItems, setLocalLayoutItems] = useState(layoutItems);
   const [focusMarkerId, setFocusMarkerId] = useState<string | null>(null);
   const saveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -365,8 +364,7 @@ const CrateLayoutListComponent = ({
 
       saveDebounceRef.current = setTimeout(() => {
         saveDebounceRef.current = null;
-        updateLayoutMutation.mutate({
-          crateId,
+        updateCrateLayout(crateId, {
           layout: {
             items: crateLayoutItemsToPutRequest(normalizedItems),
           },
@@ -374,7 +372,7 @@ const CrateLayoutListComponent = ({
         });
       }, 300);
     },
-    [crateId, updateLayoutMutation],
+    [crateId, updateCrateLayout],
   );
 
   const handleDragEnd = useCallback(
@@ -485,7 +483,7 @@ const CrateLayoutListComponent = ({
     }),
   );
 
-  const isSavingLayout = updateLayoutMutation.isPending;
+  const isSavingLayout = isUpdatingCrateLayout;
   const useEdgeInsertMounts = Boolean(topInsertMount && bottomInsertMount);
 
   const topInsertZone = (

@@ -19,12 +19,15 @@ changed="$( { git diff --name-only HEAD; git ls-files --others --exclude-standar
 
 code_changed="$(printf '%s\n' "$changed" | grep -E '^src/.*\.(ts|tsx|css)$' || true)"
 docs_changed="$(printf '%s\n' "$changed" | grep -E '^docs/handbook/.*\.md$' || true)"
+skills_changed="$(printf '%s\n' "$changed" | grep -E '^\.cursor/skills/' || true)"
+handbook_skills_relevant="$(printf '%s\n' "$changed" | grep -E '^docs/handbook/(conventions|patterns|database|discogs|factories|components|platform|llms)\.md$' || true)"
 
 readme_relevant="$(printf '%s\n' "$changed" | grep -E '^src/app(/.*)?/page\.tsx$|^src/components/Login/|^src/constants/loginPageCopy\.registry\.ts$|^src/components/Login/loginFeatures\.constants\.ts$|^src/tests/utils/loginPageCopyLiteraryRules\.ts$|^mise\.toml$|^\.tool-versions$|^package\.json$|^docs/handbook/platform\.md$' || true)"
 readme_changed="$(printf '%s\n' "$changed" | grep -E '^README\.md$' || true)"
 
 needs_handbook=false
 needs_readme=false
+needs_skills=false
 
 if [ -n "$code_changed" ] && [ -z "$docs_changed" ]; then
   needs_handbook=true
@@ -34,7 +37,11 @@ if [ -n "$readme_relevant" ] && [ -z "$readme_changed" ]; then
   needs_readme=true
 fi
 
-if [ "$needs_handbook" = false ] && [ "$needs_readme" = false ]; then
+if [ -n "$handbook_skills_relevant" ] && [ -z "$skills_changed" ]; then
+  needs_skills=true
+fi
+
+if [ "$needs_handbook" = false ] && [ "$needs_readme" = false ] && [ "$needs_skills" = false ]; then
   exit 0
 fi
 
@@ -46,6 +53,10 @@ fi
 
 if [ "$needs_readme" = true ]; then
   sections+=("$(printf 'README: this session changed product/setup surfaces but not README.md. If Features, Pages, Usage, Setup, or Tech Stack are now wrong or incomplete, update the root README. If the public README is still accurate, say so.\n\nREADME-relevant files:\n%s' "$readme_relevant")")
+fi
+
+if [ "$needs_skills" = true ]; then
+  sections+=("$(printf 'Cursor skills: this session changed core handbook chapter(s) but no .cursor/skills/ files. If any skill checklist now contradicts the handbook, update the matching skill (index: .cursor/skills/README.md). If skills still only link/summarize correctly, say so.\n\nHandbook files:\n%s' "$handbook_skills_relevant")")
 fi
 
 reason="$(printf '%s\n\n' "${sections[@]}")"
