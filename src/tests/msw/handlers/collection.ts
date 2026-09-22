@@ -1,15 +1,13 @@
 import { HttpResponse, http } from "msw";
+import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { collectionValueFactory } from "src/tests/factories/CollectionValue.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import type { DiscogsRelease } from "src/types";
 
 export function createDefaultCollectionApiHandlers(options?: {
-  username?: string;
   releases?: DiscogsRelease[];
 }) {
   const releases = options?.releases ?? [];
-  const totalItems = releases.length;
-  const totalPages = 1;
 
   return [
     http.get("/api/collection", ({ request }) => {
@@ -20,19 +18,9 @@ export function createDefaultCollectionApiHandlers(options?: {
       );
       const page = Number.parseInt(url.searchParams.get("page") ?? "1", 10);
 
-      return HttpResponse.json({
-        releases: page === 1 ? releases : [],
-        pagination: {
-          pages: totalPages,
-          items: totalItems,
-          page,
-          per_page: perPage,
-          urls: {
-            next: "",
-            prev: "",
-          },
-        },
-      });
+      return HttpResponse.json(
+        collectionFactory.forReleasesPage(releases, { page, perPage }),
+      );
     }),
     http.get("/api/collection/fields", () =>
       HttpResponse.json(

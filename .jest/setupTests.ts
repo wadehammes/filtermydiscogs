@@ -1,3 +1,7 @@
+import { ensureResponseErrorPolyfill } from "./mswPolyfills";
+
+ensureResponseErrorPolyfill();
+
 import { afterAll, beforeAll, beforeEach } from "@jest/globals";
 import "@testing-library/jest-dom/jest-globals";
 import "./suppressActWarnings";

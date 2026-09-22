@@ -3,13 +3,14 @@ import { DISCOGS_OAUTH_TEST_ENV } from "./src/tests/discogsOAuthTestEnv";
 
 const port = 6767;
 const baseURL = `http://localhost:${port}`;
+const isCi = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  forbidOnly: isCi,
+  retries: isCi ? 1 : 0,
+  workers: isCi ? 4 : undefined,
   reporter: "list",
   use: {
     baseURL,
@@ -22,10 +23,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev",
+    command: "pnpm exec next dev -p 6767",
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCi,
     timeout: 120_000,
+    stdout: "ignore",
+    stderr: "ignore",
     env: {
       ...process.env,
       NODE_OPTIONS: "",

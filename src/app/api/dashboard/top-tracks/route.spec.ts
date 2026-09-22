@@ -7,6 +7,8 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { topUserTrackFactory } from "src/tests/factories/TopUserTrack.factory";
+import { topUserTracksResponseFactory } from "src/tests/factories/TopUserTracksResponse.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
 jest.mock("src/lib/user-track.server", () => ({
@@ -70,9 +72,9 @@ describe("GET /api/dashboard/top-tracks", () => {
   });
 
   it("returns most played and most listened lists for the authenticated user", async () => {
-    const payload = {
+    const payload = topUserTracksResponseFactory.build({
       most_played: [
-        {
+        topUserTrackFactory.build({
           track_key: "1:A1",
           instance_id: "1",
           track_title: "Track One",
@@ -82,10 +84,10 @@ describe("GET /api/dashboard/top-tracks", () => {
           release_thumb: null,
           play_count: 5,
           listen_count: 2,
-        },
+        }),
       ],
       most_listened: [],
-    };
+    });
     mockFetchTopUserTracks.mockResolvedValue(payload);
 
     const response = await GET(createRequest(5));

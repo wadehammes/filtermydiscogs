@@ -40,7 +40,14 @@ jobs:
         run: pnpm lint:css
       - name: Run Jest
         run: pnpm test:ci
-      - name: Run Playwright
-        run: pnpm test:e2e:ci
       - name: Run Knip
         run: pnpm knip:ci
+      - name: Cache Playwright browsers
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium --with-deps
+      - name: Run Playwright
+        run: pnpm test:e2e:run

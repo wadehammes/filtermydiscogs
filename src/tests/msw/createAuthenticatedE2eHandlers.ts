@@ -12,13 +12,12 @@ export function createAuthenticatedE2eHandlers(options?: {
   authStatus?: AuthStatus;
 }): RequestHandler[] {
   const authStatus = options?.authStatus ?? authStatusFactory.authenticated();
-  const username = authStatus.username ?? "testuser";
   const releases = buildE2eCollectionReleases();
 
   return [
     ...createDefaultAuthHandlers({ authStatus }),
     ...createDefaultCrateApiHandlers({ releases }),
-    ...createDefaultCollectionApiHandlers({ username, releases }),
+    ...createDefaultCollectionApiHandlers({ releases }),
     ...createDefaultDashboardApiHandlers({ releases }),
     ...createDefaultUserApiHandlers(),
   ];

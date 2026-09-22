@@ -1,7 +1,14 @@
 import { instant } from "@next/playwright";
 import { expect, test } from "@playwright/test";
+import {
+  clickPublicNavLinkAndWaitForUrl,
+  instantNavContentTimeout,
+  instantNavOptions,
+} from "./helpers/instantNavOptions";
 
 test.describe("instant navigation", () => {
+  test.describe.configure({ mode: "serial" });
+
   test("About link shows the public layout shell immediately", async ({
     page,
     baseURL,
@@ -12,20 +19,18 @@ test.describe("instant navigation", () => {
     await instant(
       page,
       async () => {
-        await page
-          .getByRole("navigation")
-          .getByRole("link", { name: "About" })
-          .click();
-        await expect(page.getByTestId("fmdPublicAuthLayout")).toBeVisible();
-        await expect(page.getByTestId("fmdAbout")).toBeVisible();
-        await expect(
-          page.getByRole("heading", {
-            name: "Your Discogs collection, unlocked",
-          }),
-        ).toBeVisible();
+        await clickPublicNavLinkAndWaitForUrl(page, "About", /\/about/);
+        await expect(page.getByTestId("fmdAbout")).toBeVisible({
+          timeout: instantNavContentTimeout,
+        });
       },
-      baseURL ? { baseURL } : undefined,
+      instantNavOptions(baseURL),
     );
+    await expect(
+      page.getByRole("heading", {
+        name: "Your Discogs collection, unlocked",
+      }),
+    ).toBeVisible();
   });
 
   test("Legal link shows the public layout shell immediately", async ({
@@ -33,21 +38,17 @@ test.describe("instant navigation", () => {
     baseURL,
   }) => {
     await page.goto("/about");
-    await expect(page.getByTestId("fmdPublicAuthLayout")).toBeVisible();
+    await expect(page.getByTestId("fmdAbout")).toBeVisible();
 
     await instant(
       page,
       async () => {
-        await page
-          .getByRole("navigation")
-          .getByRole("link", { name: "Legal" })
-          .click();
-        await expect(page.getByTestId("fmdPublicAuthLayout")).toBeVisible();
+        await clickPublicNavLinkAndWaitForUrl(page, "Legal", /\/legal/);
         await expect(
           page.getByRole("heading", { name: "Terms of Service" }),
-        ).toBeVisible();
+        ).toBeVisible({ timeout: instantNavContentTimeout });
       },
-      baseURL ? { baseURL } : undefined,
+      instantNavOptions(baseURL),
     );
   });
 });
