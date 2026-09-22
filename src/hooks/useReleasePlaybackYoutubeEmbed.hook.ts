@@ -212,7 +212,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   ]);
 
   const syncEmbedToVideoId = useCallback(
-    (videoId: string) => {
+    (videoId: string, options?: { forceReload?: boolean }) => {
       const isSameVideo = embedVideoIdRef.current === videoId;
       embedVideoIdRef.current = videoId;
       setEmbedVideoId(videoId);
@@ -221,7 +221,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
-      if (isSameVideo) {
+      if (isSameVideo && !options?.forceReload) {
         pendingPlayFromGestureRef.current = false;
         if (!isPausedRef.current) {
           markEmbedTrackSwitchGrace();
@@ -235,7 +235,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
         shouldPersistentIframeOwnEmbedLoad({
           isPlaybackEmbedMounted,
           hasRegisteredPlaybackIframe: playbackIframeRef.current !== null,
-        })
+        }) &&
+        !options?.forceReload
       ) {
         return;
       }
@@ -295,7 +296,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   );
 
   const syncEmbedForQueueItem = useCallback(
-    (item: PlaybackQueueItem) => {
+    (item: PlaybackQueueItem, options?: { forceReload?: boolean }) => {
       const videoId = resolveQueueItemEmbedVideoId(item);
 
       if (!videoId) {
@@ -303,7 +304,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       }
 
       lastSyncedActiveVideoIdRef.current = videoId;
-      syncEmbedToVideoId(videoId);
+      syncEmbedToVideoId(videoId, options);
       return videoId;
     },
     [

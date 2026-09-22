@@ -1371,6 +1371,56 @@ describe("ReleasePlaybackProvider", () => {
     expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
   });
 
+  it("playNext replays the active track when it is queued again in up next", async () => {
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+        rebuildAlbumQueue: false,
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "A1",
+        trackTitle: "Never Gonna Give You Up",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalled();
+  });
+
   it("resolves the next playback video id immediately when advancing the queue in a hidden tab", async () => {
     Object.defineProperty(document, "visibilityState", {
       configurable: true,

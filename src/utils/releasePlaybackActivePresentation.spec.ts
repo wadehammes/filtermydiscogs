@@ -52,6 +52,17 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe("abc12345678");
   });
 
+  it("shouldBeginPlaybackVideoUiLoading is true when the same upload replays the active track", () => {
+    expect(
+      shouldBeginPlaybackVideoUiLoading({
+        hasQueueItem: true,
+        preparedEmbedVideoId: "shared-id",
+        activeVideoId: "shared-id",
+        replaySameTrack: true,
+      }),
+    ).toBe(true);
+  });
+
   it("shouldBeginPlaybackVideoUiLoading is false for same-upload queue rows and true when the upload changes", () => {
     expect(
       shouldBeginPlaybackVideoUiLoading({
