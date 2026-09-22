@@ -1,28 +1,23 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import {
-  mockFetchError,
-  mockFetchSuccess,
-  resetFetchMock,
-} from "src/tests/mocks/mockFetchResponse";
+  expectLastFetchCalledWith,
+  expectLastFetchCalledWithBody,
+  mockFetchErrorOnce,
+  mockFetchJsonOnce,
+} from "src/tests/msw/mswFetchTestHelpers";
+import { setupMswInJest } from "src/tests/msw/setupMswInJest";
 import { clearReleaseRating, updateReleaseRating } from "./collection";
 
-global.fetch = jest.fn();
-const mockFetch = jest.mocked(fetch);
+setupMswInJest();
 
 describe("updateReleaseRating", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("updates a release rating", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess({
-        username: "testuser",
-        release_id: 249504,
-        rating: 5,
-      }),
-    );
+    mockFetchJsonOnce("put", "/api/collection/releases/249504/rating", {
+      username: "testuser",
+      release_id: 249504,
+      rating: 5,
+    });
 
     const result = await updateReleaseRating({
       username: "testuser",
@@ -35,7 +30,7 @@ describe("updateReleaseRating", () => {
       release_id: 249504,
       rating: 5,
     });
-    expect(mockFetch).toHaveBeenCalledWith(
+    await expectLastFetchCalledWithBody(
       "/api/collection/releases/249504/rating",
       {
         method: "PUT",
@@ -52,7 +47,7 @@ describe("updateReleaseRating", () => {
   });
 
   it("throws when the response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("put", "/api/collection/releases/249504/rating", 500);
 
     await expect(
       updateReleaseRating({
@@ -65,13 +60,11 @@ describe("updateReleaseRating", () => {
 });
 
 describe("clearReleaseRating", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("clears a release rating", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    mockFetchJsonOnce(
+      "delete",
+      "/api/collection/releases/249504/rating",
+      crateMutationSuccessFactory.build(),
     );
 
     const result = await clearReleaseRating({
@@ -80,7 +73,7 @@ describe("clearReleaseRating", () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(mockFetch).toHaveBeenCalledWith(
+    expectLastFetchCalledWith(
       "/api/collection/releases/249504/rating?username=testuser",
       {
         method: "DELETE",

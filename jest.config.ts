@@ -3,7 +3,10 @@ import nextJest from "next/jest.js";
 
 const customJestConfig: Config.InitialOptions = {
   moduleDirectories: ["node_modules", "<rootDir>"],
-  setupFiles: ["<rootDir>/.jest/setEnvVars.ts"],
+  setupFiles: [
+    "<rootDir>/.jest/setEnvVars.ts",
+    "<rootDir>/.jest/mswPolyfills.ts",
+  ],
   setupFilesAfterEnv: ["<rootDir>/.jest/setupTests.ts"],
   testEnvironment: "jest-environment-jsdom",
   testPathIgnorePatterns: [
@@ -12,7 +15,7 @@ const customJestConfig: Config.InitialOptions = {
     "<rootDir>/e2e/",
   ],
   transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|jotai|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape)",
+    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|jotai|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape|msw|@mswjs|rettime|until-async|outvariant|is-node-process|strict-event-emitter)",
   ],
   verbose: false,
   workerIdleMemoryLimit: "512MB",

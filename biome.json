@@ -6,6 +6,7 @@
       "**",
       "!**/*.svg",
       "!!**/node_modules",
+      "!!public/mockServiceWorker.js",
       "!!src/styles/global/prose-scope.css",
       "!!src/styles/global/theming.css"
     ]

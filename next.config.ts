@@ -133,6 +133,11 @@ const nextConfig: NextConfig = {
     "@tanstack/charts",
     "@tanstack/charts-scales",
     "@tanstack/react-charts",
+    "msw",
+    "@mswjs/interceptors",
+    "rettime",
+    "until-async",
+    "@open-draft/deferred-promise",
   ],
   logging: {
     fetches: {
