@@ -18,6 +18,38 @@ type FetchInitExpectation = {
   body?: string;
 };
 
+type MockFetchOnceBodyResponse =
+  | {
+      status?: number;
+      body: JsonBodyType;
+    }
+  | {
+      status: number;
+      body?: Record<string, unknown>;
+    };
+
+type MockFetchOnceResponse =
+  | MockFetchOnceBodyResponse
+  | {
+      empty: true;
+      status?: number;
+    }
+  | {
+      networkError: true;
+    };
+
+function isNetworkErrorResponse(
+  response: MockFetchOnceResponse,
+): response is { networkError: true } {
+  return "networkError" in response;
+}
+
+function isEmptyResponse(
+  response: MockFetchOnceResponse,
+): response is { empty: true; status?: number } {
+  return "empty" in response;
+}
+
 const httpByMethod = {
   get: http.get,
   post: http.post,
@@ -38,13 +70,41 @@ export function jsonRoundTrip<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+export function mockFetchOnce(
+  method: HttpMethod,
+  path: string,
+  response: MockFetchOnceResponse,
+) {
+  if (isNetworkErrorResponse(response)) {
+    registerOnce(method, path, () => new HttpResponse(null, { status: 500 }));
+    return;
+  }
+
+  if (isEmptyResponse(response)) {
+    registerOnce(
+      method,
+      path,
+      () => new HttpResponse(null, { status: response.status ?? 200 }),
+    );
+    return;
+  }
+
+  const status = response.status ?? 200;
+  const body =
+    "body" in response && response.body !== undefined
+      ? response.body
+      : ({} as JsonBodyType);
+
+  registerOnce(method, path, () => HttpResponse.json(body, { status }));
+}
+
 export function mockFetchJsonOnce(
   method: HttpMethod,
   path: string,
   body: JsonBodyType,
   status = 200,
 ) {
-  registerOnce(method, path, () => HttpResponse.json(body, { status }));
+  mockFetchOnce(method, path, { body, status });
 }
 
 export function mockFetchErrorOnce(
@@ -53,17 +113,15 @@ export function mockFetchErrorOnce(
   status: number,
   body: Record<string, unknown> = {},
 ) {
-  registerOnce(method, path, () => HttpResponse.json(body, { status }));
+  mockFetchOnce(method, path, { status, body });
 }
 
 export function mockFetchEmptyOnce(method: HttpMethod, path: string) {
-  registerOnce(method, path, () => new HttpResponse(null, { status: 200 }));
+  mockFetchOnce(method, path, { empty: true, status: 200 });
 }
 
 export function mockFetchNetworkErrorOnce(method: HttpMethod, path: string) {
-  registerOnce(method, path, () => {
-    throw new TypeError("Failed to fetch");
-  });
+  mockFetchOnce(method, path, { networkError: true });
 }
 
 function normalizeUrl(url: string): string {

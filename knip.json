@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/knip/schema.json",
-  "ignoreFiles": ["public/theme-init.js", "src/tests/msw/browser.ts"],
+  "ignoreFiles": ["public/theme-init.js"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {
     "src/types/**": ["exports", "types"],

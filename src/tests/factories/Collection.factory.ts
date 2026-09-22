@@ -1,7 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import type { DiscogsCollection, DiscogsPagination } from "src/types";
+import type {
+  DiscogsCollection,
+  DiscogsPagination,
+  DiscogsRelease,
+} from "src/types";
 import type { KeysMatch } from "src/types/KeysMatch";
 
 type CollectionFactoryOptions = {
@@ -62,6 +66,34 @@ class CollectionFactory extends BaseFactory<
 
   empty(attributes: Partial<DiscogsCollection> = {}): DiscogsCollection {
     return this.build({ releases: [], ...attributes }, { releaseCount: 0 });
+  }
+
+  forReleasesPage(
+    releases: DiscogsRelease[],
+    options?: {
+      page?: number;
+      perPage?: number;
+      totalPages?: number;
+    },
+  ): DiscogsCollection {
+    const page = options?.page ?? 1;
+    const perPage = options?.perPage ?? 100;
+    const totalPages = options?.totalPages ?? 1;
+    const totalItems = releases.length;
+
+    return {
+      releases: page === 1 ? releases : [],
+      pagination: {
+        pages: totalPages,
+        items: totalItems,
+        page,
+        per_page: perPage,
+        urls: {
+          next: "",
+          prev: "",
+        },
+      },
+    };
   }
 }
 

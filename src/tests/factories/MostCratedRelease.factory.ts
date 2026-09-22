@@ -40,11 +40,12 @@ class MostCratedReleaseFactory extends BaseFactory<
     release: DiscogsRelease,
     attributes: Partial<Omit<MostCratedRelease, "release">> = {},
   ): MostCratedRelease {
-    return this.build({
+    return {
       instance_id: String(release.instance_id),
+      crate_count: faker.number.int({ min: 2, max: 5 }),
       release,
       ...attributes,
-    });
+    };
   }
 }
 

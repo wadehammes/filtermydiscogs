@@ -7,7 +7,10 @@ const customJestConfig: Config.InitialOptions = {
     "<rootDir>/.jest/setEnvVars.ts",
     "<rootDir>/.jest/mswPolyfills.ts",
   ],
-  setupFilesAfterEnv: ["<rootDir>/.jest/setupTests.ts"],
+  setupFilesAfterEnv: [
+    "<rootDir>/.jest/setupTests.ts",
+    "<rootDir>/.jest/setupMswForApiSpecs.ts",
+  ],
   testEnvironment: "jest-environment-jsdom",
   testPathIgnorePatterns: [
     "<rootDir>/.next/",

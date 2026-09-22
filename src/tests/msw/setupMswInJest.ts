@@ -3,10 +3,16 @@ import fetchMock from "jest-fetch-mock";
 import { mswServer } from "src/tests/msw/server";
 
 let fetchRecorderInstalled = false;
+let lifecycleRegistered = false;
 
 const capturedRequests: Request[] = [];
 
 export function setupMswInJest() {
+  if (lifecycleRegistered) {
+    return;
+  }
+  lifecycleRegistered = true;
+
   beforeAll(() => {
     fetchMock.disableMocks();
     mswServer.listen({

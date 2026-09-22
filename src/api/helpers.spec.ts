@@ -19,7 +19,6 @@ import {
   mockFetchJsonOnce,
   mockFetchNetworkErrorOnce,
 } from "src/tests/msw/mswFetchTestHelpers";
-import { setupMswInJest } from "src/tests/msw/setupMswInJest";
 import { checkAuth, clearData, logout } from "./endpoints/auth";
 import { fetchBuildVersion } from "./endpoints/buildVersion";
 import { fetchDiscogsCollection } from "./endpoints/collection";
@@ -36,8 +35,6 @@ import {
   updateCrate,
 } from "./endpoints/crates";
 import { fetchDiscogsRelease, fetchDiscogsSearch } from "./endpoints/release";
-
-setupMswInJest();
 
 describe("fetchDiscogsCollection", () => {
   it("fetches collection successfully", async () => {
@@ -94,14 +91,6 @@ describe("fetchDiscogsCollection", () => {
 
   it("throws error on network failure", async () => {
     mockFetchNetworkErrorOnce("get", "/api/collection");
-
-    await expect(
-      fetchDiscogsCollection({ username: "testuser" }),
-    ).rejects.toThrow("HTTP error! status: 500");
-  });
-
-  it("throws generic error on non-Error rejection", async () => {
-    mockFetchErrorOnce("get", "/api/collection", 500);
 
     await expect(
       fetchDiscogsCollection({ username: "testuser" }),

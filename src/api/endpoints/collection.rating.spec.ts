@@ -6,10 +6,7 @@ import {
   mockFetchErrorOnce,
   mockFetchJsonOnce,
 } from "src/tests/msw/mswFetchTestHelpers";
-import { setupMswInJest } from "src/tests/msw/setupMswInJest";
 import { clearReleaseRating, updateReleaseRating } from "./collection";
-
-setupMswInJest();
 
 describe("updateReleaseRating", () => {
   it("updates a release rating", async () => {

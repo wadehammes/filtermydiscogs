@@ -13,8 +13,8 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 5. **`pnpm lint:ci`**
 6. **`pnpm lint:css`**
 7. **`pnpm test:ci`**
-8. **`pnpm test:e2e:ci`** (Playwright Chromium + public route / theme-init regressions)
-9. **`pnpm knip:ci`**
+8. **`pnpm knip:ci`**
+9. **Playwright** — cache **`~/.cache/ms-playwright`**, **`pnpm exec playwright install chromium --with-deps`**, then **`pnpm test:e2e:run`** (see [Playwright](#playwright-instant-navigation-tests))
 
 GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file).
 
@@ -129,7 +129,7 @@ Large or multi-theme work should land as a **stack** of dependent PRs into **`st
 | `mise install` | Install Node/pnpm from `.tool-versions`. |
 | `mise bootstrap` | Install tools, then run the **`bootstrap`** task (`pnpm install` + `pnpm db:generate`). |
 | `mise run bootstrap` | JS deps + Prisma generate only (tools already installed). |
-| `mise run ci` | Same gates as Actions: `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, `test:e2e:ci`, `knip:ci`. |
+| `mise run ci` | Same gates as Actions: `tsc:ci`, `lint:ci`, `lint:css`, `test:ci`, `knip:ci`, `test:e2e:ci` (install + test; Actions uses cached browsers + `test:e2e:run`). |
 
 `[env]` loads **`.env.local`** (redacted in mise output) for shells and tasks in this repo. Create that file from the root README before DB/OAuth work; a missing file is harmless.
 
@@ -140,6 +140,7 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | Script | Purpose |
 |--------|---------|
 | `pnpm dev` | Runs **`prisma generate`** first (`predev`), then Next dev on **port 6767** (Turbopack). |
+| `pnpm dev:e2e` | Next dev on **6767** without the Node inspector — used by Playwright **`webServer`** in CI ([`playwright.config.ts`](../../playwright.config.ts)). |
 | `pnpm dev:webpack` | Same as **`pnpm dev`** but **Webpack** — use when Turbopack dev hits “module factory is not available” on lazy chunks. |
 | `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
@@ -154,7 +155,8 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 | `pnpm db:*` | Prisma generate, migrate, push, studio (see [database.md](database.md)). |
 | `pnpm analyze` / `pnpm lighthouse` | Bundle and performance tooling. |
 | `pnpm test:e2e` / `pnpm test:e2e:install` | Playwright regression tests ([`e2e/`](../../e2e/)); run **`test:e2e:install`** once for Chromium locally. |
-| `pnpm test:e2e:ci` | CI/local gate: **`playwright install chromium --with-deps`** then **`playwright test`**. |
+| `pnpm test:e2e:run` | **`playwright test`** only (Actions after cached browser install). |
+| `pnpm test:e2e:ci` | Local / **`mise run ci`**: **`playwright install chromium --with-deps`** then **`playwright test`**. |
 
 Full list: [`package.json`](../../package.json).
 
@@ -283,9 +285,9 @@ Playwright runs in CI after Jest. Specs under [`e2e/`](../../e2e/):
 | [`authenticated-crates.spec.ts`](../../e2e/authenticated-crates.spec.ts) | **`/crates`** hub + **`/crates/crate-1`** detail table (MSW **`crate-1`** aligned with E2E collection) |
 | [`authenticated-mosaic.spec.ts`](../../e2e/authenticated-mosaic.spec.ts) | **`/mosaic`** grid, download control, and 3 cover tiles from the mocked collection |
 
-Authenticated browser specs extend Playwright with **`@msw/playwright`** ([`e2e/fixtures/msw.fixture.ts`](../../e2e/fixtures/msw.fixture.ts)): **`defineNetworkFixture`** routes **`fetch`** through shared MSW handlers from [`createAuthenticatedE2eHandlers`](../../src/tests/msw/createAuthenticatedE2eHandlers.ts), including a **three-release** collection from [`buildE2eCollectionReleases`](../../src/tests/msw/e2eCollectionData.ts) (**`placehold.co`** cover URLs match [`next.config.ts`](../../next.config.ts) **`images.remotePatterns`**), **`crate-1`** list/detail wired to those releases in [`handlers/crates.ts`](../../src/tests/msw/handlers/crates.ts), plus dashboard list endpoints ([`handlers/dashboard.ts`](../../src/tests/msw/handlers/dashboard.ts)) fed by [`buildE2eDashboardMostCrated`](../../src/tests/msw/e2eDashboardData.ts) / [`buildE2eDashboardTopTracks`](../../src/tests/msw/e2eDashboardData.ts) on the dashboard stack layer. **`onUnhandledRequest`** errors only for **`/api/*`**; [`installClearClientStorage`](../../e2e/helpers/clearClientStorage.ts) clears persisted collection cache before each test. Override per test with **`network.use(...)`** like **`setupServer`**. Dev dependency **`@msw/playwright`** — no service worker in the browser for these specs.
+Authenticated browser specs extend Playwright with **`@msw/playwright`** ([`e2e/fixtures/msw.fixture.ts`](../../e2e/fixtures/msw.fixture.ts)): **`defineNetworkFixture`** routes **`fetch`** through shared MSW handlers from [`createAuthenticatedE2eHandlers`](../../src/tests/msw/createAuthenticatedE2eHandlers.ts), including a **three-release** collection from [`buildE2eCollectionReleases`](../../src/tests/msw/e2eCollectionData.ts) (**`placehold.co`** cover URLs match [`next.config.ts`](../../next.config.ts) **`images.remotePatterns`**), **`crate-1`** list/detail wired to those releases in [`handlers/crates.ts`](../../src/tests/msw/handlers/crates.ts), plus dashboard list endpoints ([`handlers/dashboard.ts`](../../src/tests/msw/handlers/dashboard.ts)) fed by [`buildE2eDashboardMostCrated`](../../src/tests/msw/e2eDashboardData.ts) / [`buildE2eDashboardTopTracks`](../../src/tests/msw/e2eDashboardData.ts) on the dashboard stack layer. Shared assertions live in [`e2e/helpers/authenticatedExpectations.ts`](../../e2e/helpers/authenticatedExpectations.ts) (**`expectNotOnLogin`**, **`expectE2eCollectionLoaded`**); instant nav uses [`instantNavOptions`](../../e2e/helpers/instantNavOptions.ts). Label constants for MSW + specs: [`e2eSession.constants.ts`](../../src/tests/msw/e2eSession.constants.ts). **`onUnhandledRequest`** errors only for **`/api/*`**; [`installClearClientStorage`](../../e2e/helpers/clearClientStorage.ts) clears persisted collection cache before each test. Override per test with **`network.use(...)`** like **`setupServer`**. Dev dependency **`@msw/playwright`** — no service worker in the browser for these specs.
 
-Config: [`playwright.config.ts`](../../playwright.config.ts) (starts **`pnpm dev`** on port **6767** with **`NODE_OPTIONS`** cleared so the inspector port does not collide). The webServer injects placeholder **`DISCOGS_CONSUMER_*`** values from [`discogsOAuthTestEnv.ts`](../../src/tests/discogsOAuthTestEnv.ts) when unset (same as Jest [`.jest/setEnvVars.ts`](../../.jest/setEnvVars.ts)) so **`/api/auth/check`** can load without **`Discogs OAuth credentials not configured`** errors on public pages. Public-route e2e does **not** require real Discogs app credentials or **`DATABASE_URL`** — footer community stats skip when unset ([`getPublicCommunityStats`](../../src/lib/public-stats.server.ts)). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).
+Config: [`playwright.config.ts`](../../playwright.config.ts) — **`webServer`** runs **`pnpm exec next dev -p 6767`** (no inspector) with **`stdout`/`stderr`: **`ignore`** so Next dev cache-bypass and browser-console noise stay out of CI logs; in **CI**, **`workers: 4`**, **`retries: 1`**; locally **`reuseExistingServer`** reuses an existing dev server on **6767** if present. The webServer injects placeholder **`DISCOGS_CONSUMER_*`** values from [`discogsOAuthTestEnv.ts`](../../src/tests/discogsOAuthTestEnv.ts) when unset (same as Jest [`.jest/setEnvVars.ts`](../../.jest/setEnvVars.ts)) so **`/api/auth/check`** can load without **`Discogs OAuth credentials not configured`** errors on public pages. Public-route e2e does **not** require real Discogs app credentials or **`DATABASE_URL`** — footer community stats skip when unset ([`getPublicCommunityStats`](../../src/lib/public-stats.server.ts)). The testing API is available in development by default; production **`next start`** e2e requires **`experimental.exposeTestingApiInProductionBuild`** (preview/CI only — never enable on live production).
 
 Jest [`requiredPrimitiveSpecs.spec.ts`](../../src/tests/utils/requiredPrimitiveSpecs.spec.ts) fails if contract specs for shared primitives (filter controls, overlay stack, theme init) are removed.
 
@@ -316,7 +318,7 @@ Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`
 - **`src/`** path alias
 - SVG and CSS mocks under **`.jest/`**
 - Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`**, **`jotai`**, TanStack packages, **`d3-shape`**, and **`msw`** / **`@mswjs`** (see [`jest.config.ts`](../../jest.config.ts))
-- **MSW setup**: [`.jest/mswPolyfills.ts`](../../.jest/mswPolyfills.ts) in **`setupFiles`**; endpoint specs import **`setupMswInJest`** from [`src/tests/msw/setupMswInJest.ts`](../../src/tests/msw/setupMswInJest.ts); regenerated **[`public/mockServiceWorker.js`](../../public/mockServiceWorker.js)** is excluded from Biome ([`biome.json`](../../biome.json))
+- **MSW setup**: [`.jest/mswPolyfills.ts`](../../.jest/mswPolyfills.ts) in **`setupFiles`**; [`.jest/setupMswForApiSpecs.ts`](../../.jest/setupMswForApiSpecs.ts) in **`setupFilesAfterEnv`** registers MSW for **`src/api/helpers.spec.ts`** and **`src/api/endpoints/*.spec.ts`** only (route handler specs mock server deps, not **`fetch`**); regenerated **[`public/mockServiceWorker.js`](../../public/mockServiceWorker.js)** stays in repo for **`msw init`** / **`package.json`** **`msw.workerDirectory`** and is excluded from Biome ([`biome.json`](../../biome.json))
 - **`verbose: false`** by default (pass **`--verbose`** when debugging a single suite)
 - **`workerIdleMemoryLimit: "512MB"`** so parallel workers recycle before idle heap grows without bound
 - **`NODE_OPTIONS='--max-old-space-size=4096'`** on **`pnpm test`**, **`pnpm test:ci`**, and coverage. **`pnpm test:ci`** / **`test:ci:shard`** use parallel workers (**`--maxWorkers=50%`**). **`pnpm test`** / **`test:file`** / **`test:coverage`** keep **`--runInBand --detectOpenHandles`** for local leak debugging (slower full-suite run).

@@ -1,6 +1,11 @@
 import { mostCratedReleaseFactory } from "src/tests/factories/MostCratedRelease.factory";
 import { topUserTrackFactory } from "src/tests/factories/TopUserTrack.factory";
 import { topUserTracksResponseFactory } from "src/tests/factories/TopUserTracksResponse.factory";
+import {
+  E2E_MOST_CRATED_CRATE_COUNT,
+  E2E_TRACK_ONE,
+  E2E_TRACK_TWO,
+} from "src/tests/msw/e2eSession.constants";
 import type { DiscogsRelease } from "src/types";
 import type {
   MostCratedRelease,
@@ -11,14 +16,13 @@ export function buildE2eDashboardMostCrated(
   releases: DiscogsRelease[],
 ): MostCratedRelease[] {
   const release = releases[0];
-
   if (!release) {
     return [];
   }
 
   return [
     mostCratedReleaseFactory.fromRelease(release, {
-      crate_count: 2,
+      crate_count: E2E_MOST_CRATED_CRATE_COUNT,
     }),
   ];
 }
@@ -27,7 +31,6 @@ export function buildE2eDashboardTopTracks(
   releases: DiscogsRelease[],
 ): TopUserTracksResponse {
   const release = releases[0];
-
   if (!release) {
     return topUserTracksResponseFactory.empty();
   }
@@ -38,7 +41,7 @@ export function buildE2eDashboardTopTracks(
     most_played: [
       topUserTrackFactory.fromRelease(release, {
         track_key: `${instanceId}:A1`,
-        track_title: "E2E Track One",
+        track_title: E2E_TRACK_ONE,
         track_position: "A1",
         artist: "Test Artist",
         play_count: 4,
@@ -48,7 +51,7 @@ export function buildE2eDashboardTopTracks(
     most_listened: [
       topUserTrackFactory.fromRelease(release, {
         track_key: `${instanceId}:B1`,
-        track_title: "E2E Track Two",
+        track_title: E2E_TRACK_TWO,
         track_position: "B1",
         artist: "Test Artist",
         play_count: 1,

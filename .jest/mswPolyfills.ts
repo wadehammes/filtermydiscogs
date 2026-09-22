@@ -4,9 +4,19 @@ import {
   WritableStream,
 } from "node:stream/web";
 
-if (typeof Response !== "undefined" && typeof Response.error !== "function") {
+export function ensureResponseErrorPolyfill(): void {
+  if (typeof Response === "undefined") {
+    return;
+  }
+
+  if (typeof Response.error === "function") {
+    return;
+  }
+
   Response.error = () => new Response(null, { status: 0, statusText: "" });
 }
+
+ensureResponseErrorPolyfill();
 
 if (typeof globalThis.WritableStream === "undefined") {
   globalThis.WritableStream =
