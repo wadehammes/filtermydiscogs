@@ -17,7 +17,6 @@ describe("releasePlaybackEndedAdvance", () => {
 
     const handler = createPlaybackEndedAdvanceHandler({
       isPlayingRef: { current: false },
-      isPausedRef: { current: false },
       queueRef: { current: [queueRow()] },
       extendQueueTailRef: { current: extendQueueTail },
       playNextRef: { current: playNext },
@@ -34,7 +33,6 @@ describe("releasePlaybackEndedAdvance", () => {
 
     const handler = createPlaybackEndedAdvanceHandler({
       isPlayingRef: { current: true },
-      isPausedRef: { current: true },
       queueRef: { current: [queueRow()] },
       extendQueueTailRef: { current: jest.fn(async () => true) },
       playNextRef: { current: playNext },
@@ -51,7 +49,6 @@ describe("releasePlaybackEndedAdvance", () => {
 
     const handler = createPlaybackEndedAdvanceHandler({
       isPlayingRef: { current: true },
-      isPausedRef: { current: false },
       queueRef: { current: [queueRow()] },
       extendQueueTailRef: { current: extendQueueTail },
       playNextRef: { current: playNext },
@@ -79,7 +76,6 @@ describe("releasePlaybackEndedAdvance", () => {
 
     const handler = createPlaybackEndedAdvanceHandler({
       isPlayingRef: { current: true },
-      isPausedRef: { current: false },
       queueRef,
       extendQueueTailRef: { current: extendQueueTail },
       playNextRef: { current: playNext },
@@ -98,7 +94,6 @@ describe("releasePlaybackEndedAdvance", () => {
 
     const handler = createPlaybackEndedAdvanceHandler({
       isPlayingRef: { current: true },
-      isPausedRef: { current: false },
       queueRef: { current: [] },
       extendQueueTailRef: { current: jest.fn(async () => false) },
       playNextRef: { current: playNext },

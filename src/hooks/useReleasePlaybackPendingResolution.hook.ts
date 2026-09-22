@@ -72,18 +72,20 @@ export const useReleasePlaybackPendingResolution = ({
       return;
     }
 
+    if (allReleasesLength === 0) {
+      return;
+    }
+
     if (upcomingQueueLength > QUEUE_TAIL_EXTEND_THRESHOLD) {
       return;
     }
 
     maybeExtendQueueTail();
   }, [
-    activeTrackIndex,
     allReleasesLength,
     isPlaying,
     maybeExtendQueueTail,
     previewVideo,
-    tracks.length,
     upcomingQueueLength,
   ]);
 

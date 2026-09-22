@@ -132,6 +132,7 @@ export const useReleasePlaybackQueueActions = ({
     shouldRebuildAlbumQueueRef,
     similarQueueModeRef,
     similarQueueGenerationRef,
+    extendQueueWithSimilarReleasesRef,
     queueManuallyExtendedRef,
     similarQueueTailToastShownRef,
     similarQueueSuppressedAfterClearRef,
@@ -401,7 +402,7 @@ export const useReleasePlaybackQueueActions = ({
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
       const shouldEnableSimilarTail =
         !startPaused &&
-        refs.extendQueueWithSimilarReleasesRef.current &&
+        extendQueueWithSimilarReleasesRef.current &&
         (rebuildAlbumQueue || queueManuallyExtendedRef.current);
       similarQueueModeRef.current = createSimilarQueueMode(
         shouldEnableSimilarTail,
@@ -433,6 +434,7 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueGenerationRef,
       similarQueueModeRef,
       similarQueueSuppressedAfterClearRef,
+      extendQueueWithSimilarReleasesRef,
     ],
   );
 

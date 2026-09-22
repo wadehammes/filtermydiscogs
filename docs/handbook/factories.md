@@ -162,7 +162,7 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) | (helper, not a factory) | PO / hook tests that mock **`src/api/urls`** and mount authenticated **`TestProviders`** without custom crate data—uses **`defaultTestCrate()`** presets above (includes track stats) |
 | [`setupMswInJest`](../../src/tests/msw/setupMswInJest.ts) | (helper, not a factory) | **`src/api/helpers.spec.ts`** and **`src/api/endpoints/*.spec.ts`** — disables **`jest-fetch-mock`**, starts MSW **`setupServer`**, resets handlers each test |
 | [`mswFetchTestHelpers`](../../src/tests/msw/mswFetchTestHelpers.ts) | **`jsonRoundTrip`**, **`mockFetchJsonOnce`**, **`mockFetchErrorOnce`**, **`expectLastFetchCalledWith`** | Per-test MSW stubs and fetch URL/body assertions; use **`jsonRoundTrip`** when comparing factory **`Date`** fields after **`response.json()`** |
-| [`createDefaultCrateApiHandlers`](../../src/tests/msw/handlers/crates.ts) / [`createDefaultAuthHandlers`](../../src/tests/msw/handlers/auth.ts) / [`createDefaultCollectionApiHandlers`](../../src/tests/msw/handlers/collection.ts) / [`createDefaultUserApiHandlers`](../../src/tests/msw/handlers/user.ts) | MSW handler presets | Composed by [`createAuthenticatedE2eHandlers`](../../src/tests/msw/createAuthenticatedE2eHandlers.ts) with [`buildE2eCollectionReleases`](../../src/tests/msw/e2eCollectionData.ts) for Playwright (**`e2e/fixtures/msw.fixture.ts`**) |
+| [`createDefaultCrateApiHandlers`](../../src/tests/msw/handlers/crates.ts) / [`createDefaultAuthHandlers`](../../src/tests/msw/handlers/auth.ts) / [`createDefaultCollectionApiHandlers`](../../src/tests/msw/handlers/collection.ts) / [`createDefaultUserApiHandlers`](../../src/tests/msw/handlers/user.ts) / [`createDefaultDashboardApiHandlers`](../../src/tests/msw/handlers/dashboard.ts) | MSW handler presets | Composed by [`createAuthenticatedE2eHandlers`](../../src/tests/msw/createAuthenticatedE2eHandlers.ts) with [`buildE2eCollectionReleases`](../../src/tests/msw/e2eCollectionData.ts) for Playwright (**`e2e/fixtures/msw.fixture.ts`**) |
 | `createCrateResponseFactory` | `forCrate()`, `named()` | `createCrate` / `updateCrate` API response |
 | `crateMutationSuccessFactory` | `build()`, `sync()`, `clearPacked()` | Add/remove crate, sync, and clear-packed success payloads |
 | `userPreferencesFactory` | `defaults()`, `asApiResponse()`, `defaultsApiResponse()` | Account prefs mocks and `{ preferences }` API wrappers |
@@ -171,6 +171,10 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `verifiedDiscogsUserFactory` | `defaults()`, `asVerifiedResult()` | Verified user route / auth-request mocks |
 | `authenticatedDiscogsSessionFactory` | `forUser()` | Collection routes with OAuth tokens |
 | `collectionValueFactory` | `dashboardDefaults()` | Dashboard collection value mocks |
+| `mostCratedReleaseFactory` | `fromRelease()` | **`MostCratedRelease`** rows for dashboard / MSW most-crated mocks |
+| `topUserTrackFactory` | `fromRelease()` | **`TopUserTrack`** playback leaderboard rows |
+| `topUserTracksResponseFactory` | `empty()`, `build()` | **`GET /api/dashboard/top-tracks`** payload shape |
+| [`buildE2eDashboardMostCrated`](../../src/tests/msw/e2eDashboardData.ts) / [`buildE2eDashboardTopTracks`](../../src/tests/msw/e2eDashboardData.ts) | (E2E builders) | Playwright dashboard MSW; composes factories with stable E2E track titles |
 | `discogsIdentityFactory` | `forUser()` | Discogs identity API mocks |
 | `discogsSearchResponseFactory` | `empty()` | Search route empty results |
 | `adminUserLookupStatsFactory` | `forUsername()` | Admin user lookup route spec |
