@@ -1,15 +1,25 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
+import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
+import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsSearchResponseFactory } from "src/tests/factories/DiscogsSearchResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
-  mockFetchError,
-  mockFetchResponse,
-  mockFetchSuccess,
-  resetFetchMock,
-} from "src/tests/mocks/mockFetchResponse";
+  expectLastFetchCalledWith,
+  expectLastFetchCalledWithBody,
+  getLastFetchUrl,
+  jsonRoundTrip,
+  mockFetchEmptyOnce,
+  mockFetchErrorOnce,
+  mockFetchJsonOnce,
+  mockFetchNetworkErrorOnce,
+} from "src/tests/msw/mswFetchTestHelpers";
+import { setupMswInJest } from "src/tests/msw/setupMswInJest";
 import { checkAuth, clearData, logout } from "./endpoints/auth";
 import { fetchBuildVersion } from "./endpoints/buildVersion";
 import { fetchDiscogsCollection } from "./endpoints/collection";
@@ -27,21 +37,12 @@ import {
 } from "./endpoints/crates";
 import { fetchDiscogsRelease, fetchDiscogsSearch } from "./endpoints/release";
 
-global.fetch = jest.fn();
-const mockFetch = jest.mocked(fetch);
-
-const wrapCrateReleases = (
-  releases: ReturnType<typeof releaseFactory.buildList>,
-) => releases.map((release) => ({ release, found_at: null }));
+setupMswInJest();
 
 describe("fetchDiscogsCollection", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("fetches collection successfully", async () => {
     const mockCollection = collectionFactory.build();
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCollection));
+    mockFetchJsonOnce("get", "/api/collection", mockCollection);
 
     const result = await fetchDiscogsCollection({
       username: "testuser",
@@ -49,7 +50,7 @@ describe("fetchDiscogsCollection", () => {
     });
 
     expect(result).toEqual(mockCollection);
-    expect(mockFetch).toHaveBeenCalledWith(
+    expectLastFetchCalledWith(
       "/api/collection?page=1&per_page=100&sort=added&sort_order=desc&username=testuser",
       {
         method: "GET",
@@ -63,18 +64,15 @@ describe("fetchDiscogsCollection", () => {
 
   it("uses default page when not provided", async () => {
     const mockCollection = collectionFactory.build();
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCollection));
+    mockFetchJsonOnce("get", "/api/collection", mockCollection);
 
     await fetchDiscogsCollection({ username: "testuser" });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringMatching(/page=1.*per_page=100/),
-      expect.any(Object),
-    );
+    expect(getLastFetchUrl()).toMatch(/page=1.*per_page=100/);
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("get", "/api/collection", 500);
 
     await expect(
       fetchDiscogsCollection({ username: "testuser" }),
@@ -82,12 +80,10 @@ describe("fetchDiscogsCollection", () => {
   });
 
   it("uses API error message when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchError(502, {
-        error:
-          "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
-      }),
-    );
+    mockFetchErrorOnce("get", "/api/collection", 502, {
+      error:
+        "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
+    });
 
     await expect(
       fetchDiscogsCollection({ username: "testuser" }),
@@ -97,35 +93,33 @@ describe("fetchDiscogsCollection", () => {
   });
 
   it("throws error on network failure", async () => {
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    mockFetchNetworkErrorOnce("get", "/api/collection");
 
     await expect(
       fetchDiscogsCollection({ username: "testuser" }),
-    ).rejects.toThrow("Network error");
+    ).rejects.toThrow("HTTP error! status: 500");
   });
 
   it("throws generic error on non-Error rejection", async () => {
-    mockFetch.mockRejectedValueOnce("String error");
+    mockFetchErrorOnce("get", "/api/collection", 500);
 
     await expect(
       fetchDiscogsCollection({ username: "testuser" }),
-    ).rejects.toThrow("Failed to fetch collection");
+    ).rejects.toThrow("HTTP error! status: 500");
   });
 });
 
 describe("fetchDiscogsRelease", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("fetches release successfully", async () => {
-    const mockRelease = { id: "123", title: "Test Release" };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockRelease));
+    const mockRelease = discogsReleaseJsonFactory.forReleaseId(123, {
+      title: "Test Release",
+    });
+    mockFetchJsonOnce("get", "/api/release/123", mockRelease);
 
     const result = await fetchDiscogsRelease("123");
 
-    expect(result).toEqual(mockRelease);
-    expect(mockFetch).toHaveBeenCalledWith("/api/release/123", {
+    expect(result).toEqual(jsonRoundTrip(mockRelease));
+    expectLastFetchCalledWith("/api/release/123", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -135,11 +129,15 @@ describe("fetchDiscogsRelease", () => {
   });
 
   it("bypasses the HTTP cache when bypassCache is true", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ id: "123" }));
+    mockFetchJsonOnce(
+      "get",
+      "/api/release/123",
+      discogsReleaseJsonFactory.forReleaseId(123),
+    );
 
     await fetchDiscogsRelease("123", { bypassCache: true });
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/release/123?fresh=1", {
+    expectLastFetchCalledWith("/api/release/123?fresh=1", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -150,7 +148,7 @@ describe("fetchDiscogsRelease", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(404));
+    mockFetchErrorOnce("get", "/api/release/123", 404);
 
     await expect(fetchDiscogsRelease("123")).rejects.toThrow(
       "HTTP error! status: 404",
@@ -158,23 +156,18 @@ describe("fetchDiscogsRelease", () => {
   });
 
   it("throws error on network failure", async () => {
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    mockFetchNetworkErrorOnce("get", "/api/release/123");
 
-    await expect(fetchDiscogsRelease("123")).rejects.toThrow("Network error");
+    await expect(fetchDiscogsRelease("123")).rejects.toThrow(
+      "HTTP error! status: 500",
+    );
   });
 });
 
 describe("fetchDiscogsSearch", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("fetches search results successfully with all parameters", async () => {
-    const mockSearch = {
-      pagination: { pages: 1, items: 10 },
-      results: [],
-    };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockSearch));
+    const mockSearch = discogsSearchResponseFactory.build();
+    mockFetchJsonOnce("get", "/api/search", mockSearch);
 
     const result = await fetchDiscogsSearch(
       "test query",
@@ -187,39 +180,22 @@ describe("fetchDiscogsSearch", () => {
       "Electronic",
     );
 
-    expect(result).toEqual(mockSearch);
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("q=test+query"),
-      expect.objectContaining({
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-    );
+    expect(result).toEqual(jsonRoundTrip(mockSearch));
+    expect(getLastFetchUrl()).toContain("q=test");
   });
 
   it("uses default parameters when not provided", async () => {
-    const mockSearch = {
-      pagination: { pages: 1, items: 10 },
-      results: [],
-    };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockSearch));
+    const mockSearch = discogsSearchResponseFactory.build();
+    mockFetchJsonOnce("get", "/api/search", mockSearch);
 
     await fetchDiscogsSearch("test");
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("page=1&per_page=100&type=release"),
-      expect.any(Object),
-    );
+    expect(getLastFetchUrl()).toContain("page=1&per_page=100&type=release");
   });
 
   it("includes optional parameters when provided", async () => {
-    const mockSearch = {
-      pagination: { pages: 1, items: 10 },
-      results: [],
-    };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockSearch));
+    const mockSearch = discogsSearchResponseFactory.build();
+    mockFetchJsonOnce("get", "/api/search", mockSearch);
 
     await fetchDiscogsSearch(
       "test",
@@ -232,8 +208,7 @@ describe("fetchDiscogsSearch", () => {
       "Shoegaze",
     );
 
-    const callUrl = mockFetch.mock.calls[0]?.[0] as string;
-    expect(callUrl).toBeDefined();
+    const callUrl = getLastFetchUrl();
     expect(callUrl).toContain("format=LP");
     expect(callUrl).toContain("year=2020");
     expect(callUrl).toContain("genre=Rock");
@@ -241,7 +216,7 @@ describe("fetchDiscogsSearch", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(400));
+    mockFetchErrorOnce("get", "/api/search", 400);
 
     await expect(fetchDiscogsSearch("test")).rejects.toThrow(
       "HTTP error! status: 400",
@@ -250,28 +225,14 @@ describe("fetchDiscogsSearch", () => {
 });
 
 describe("fetchCrates", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("fetches crates successfully", async () => {
-    const mockCrates = {
-      data: crateFactory.buildList(3),
-      pagination: {
-        page: 1,
-        pageSize: 100,
-        total: 3,
-        totalPages: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      },
-    };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCrates));
+    const crates = crateWithCountFactory.buildList(3);
+    mockFetchJsonOnce("get", "/api/crates", { data: crates });
 
     const result = await fetchCrates();
 
-    expect(result).toEqual({ crates: mockCrates.data });
-    expect(mockFetch).toHaveBeenCalledWith("/api/crates?all=true", {
+    expect(result).toEqual({ crates: jsonRoundTrip(crates) });
+    expectLastFetchCalledWith("/api/crates?all=true", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -281,38 +242,26 @@ describe("fetchCrates", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(401));
+    mockFetchErrorOnce("get", "/api/crates", 401);
 
     await expect(fetchCrates()).rejects.toThrow("HTTP error! status: 401");
   });
 });
 
 describe("fetchCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("fetches crate successfully", async () => {
     const crateId = "crate-123";
-    const mockCrate = {
-      crate: crateFactory.build({ id: crateId }),
-      releases: wrapCrateReleases(releaseFactory.buildList(5)),
-      markers: [],
-      pagination: {
-        page: 1,
-        pageSize: 100,
-        total: 5,
-        totalPages: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      },
-    };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockCrate));
+    const crate = crateFactory.build({ id: crateId });
+    const mockCrate = crateWithReleasesResponseFactory.withReleases(
+      crate,
+      releaseFactory.buildList(5),
+    );
+    mockFetchJsonOnce("get", "/api/crates/:crateId", mockCrate);
 
     const result = await fetchCrate(crateId);
 
-    expect(result).toEqual(mockCrate);
-    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}?all=true`, {
+    expect(result).toEqual(jsonRoundTrip(mockCrate));
+    expectLastFetchCalledWith(`/api/crates/${crateId}?all=true`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -322,7 +271,7 @@ describe("fetchCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(404));
+    mockFetchErrorOnce("get", "/api/crates/:crateId", 404);
 
     await expect(fetchCrate("crate-123")).rejects.toThrow(
       "HTTP error! status: 404",
@@ -331,19 +280,19 @@ describe("fetchCrate", () => {
 });
 
 describe("createCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("creates crate successfully", async () => {
     const crateName = "My New Crate";
     const mockCrate = crateFactory.build({ name: crateName });
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ crate: mockCrate }));
+    mockFetchJsonOnce(
+      "post",
+      "/api/crates",
+      createCrateResponseFactory.forCrate(mockCrate),
+    );
 
     const result = await createCrate(crateName);
 
-    expect(result.crate).toEqual(mockCrate);
-    expect(mockFetch).toHaveBeenCalledWith("/api/crates", {
+    expect(result.crate).toEqual(jsonRoundTrip(mockCrate));
+    await expectLastFetchCalledWithBody("/api/crates", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -354,7 +303,7 @@ describe("createCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(400));
+    mockFetchErrorOnce("post", "/api/crates", 400);
 
     await expect(createCrate("Test")).rejects.toThrow(
       "HTTP error! status: 400",
@@ -363,20 +312,18 @@ describe("createCrate", () => {
 });
 
 describe("updateCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("updates crate successfully with name", async () => {
     const crateId = "crate-123";
     const updates = { name: "Updated Name" };
     const mockCrate = crateFactory.build({ id: crateId, name: updates.name });
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ crate: mockCrate }));
+    mockFetchJsonOnce("put", "/api/crates/:crateId", {
+      crate: mockCrate,
+    });
 
     const result = await updateCrate(crateId, updates);
 
-    expect(result.crate).toEqual(mockCrate);
-    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}`, {
+    expect(result.crate).toEqual(jsonRoundTrip(mockCrate));
+    await expectLastFetchCalledWithBody(`/api/crates/${crateId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -390,26 +337,21 @@ describe("updateCrate", () => {
     const crateId = "crate-123";
     const updates = { is_default: true };
     const mockCrate = crateFactory.build({ id: crateId, is_default: true });
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ crate: mockCrate }));
+    mockFetchJsonOnce("put", "/api/crates/:crateId", {
+      crate: mockCrate,
+    });
 
     const result = await updateCrate(crateId, updates);
 
-    expect(result.crate).toEqual(mockCrate);
-    expect(mockFetch).toHaveBeenCalledWith(
-      `/api/crates/${crateId}`,
-      expect.objectContaining({
-        body: JSON.stringify(updates),
-      }),
-    );
+    expect(result.crate).toEqual(jsonRoundTrip(mockCrate));
+    await expectLastFetchCalledWithBody(`/api/crates/${crateId}`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    });
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchResponse(undefined, {
-        ok: false,
-        status: 404,
-      }),
-    );
+    mockFetchErrorOnce("put", "/api/crates/:crateId", 404);
 
     await expect(updateCrate("crate-123", { name: "Test" })).rejects.toThrow(
       "HTTP error! status: 404",
@@ -418,24 +360,20 @@ describe("updateCrate", () => {
 });
 
 describe("deleteCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("deletes crate successfully", async () => {
     const crateId = "crate-123";
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(undefined));
+    mockFetchEmptyOnce("delete", "/api/crates/:crateId");
 
     await deleteCrate(crateId);
 
-    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}`, {
+    expectLastFetchCalledWith(`/api/crates/${crateId}`, {
       method: "DELETE",
       credentials: "include",
     });
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(404));
+    mockFetchErrorOnce("delete", "/api/crates/:crateId", 404);
 
     await expect(deleteCrate("crate-123")).rejects.toThrow(
       "HTTP error! status: 404",
@@ -444,21 +382,19 @@ describe("deleteCrate", () => {
 });
 
 describe("addReleaseToCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("adds release to crate successfully", async () => {
     const crateId = "crate-123";
     const release = releaseFactory.build();
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    mockFetchJsonOnce(
+      "post",
+      "/api/crates/:crateId/releases",
+      crateMutationSuccessFactory.build(),
     );
 
     const result = await addReleaseToCrate(crateId, release);
 
     expect(result).toEqual({ success: true });
-    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}/releases`, {
+    await expectLastFetchCalledWithBody(`/api/crates/${crateId}/releases`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -469,7 +405,7 @@ describe("addReleaseToCrate", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(400));
+    mockFetchErrorOnce("post", "/api/crates/:crateId/releases", 400);
 
     await expect(
       addReleaseToCrate("crate-123", releaseFactory.build()),
@@ -478,31 +414,30 @@ describe("addReleaseToCrate", () => {
 });
 
 describe("removeReleaseFromCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("removes release from crate successfully", async () => {
     const crateId = "crate-123";
     const releaseId = "release-456";
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    mockFetchJsonOnce(
+      "delete",
+      "/api/crates/:crateId/releases/:releaseId",
+      crateMutationSuccessFactory.build(),
     );
 
     const result = await removeReleaseFromCrate(crateId, releaseId);
 
     expect(result).toEqual({ success: true });
-    expect(mockFetch).toHaveBeenCalledWith(
-      `/api/crates/${crateId}/releases/${releaseId}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      },
-    );
+    expectLastFetchCalledWith(`/api/crates/${crateId}/releases/${releaseId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(404));
+    mockFetchErrorOnce(
+      "delete",
+      "/api/crates/:crateId/releases/:releaseId",
+      404,
+    );
 
     await expect(
       removeReleaseFromCrate("crate-123", "release-456"),
@@ -511,19 +446,13 @@ describe("removeReleaseFromCrate", () => {
 });
 
 describe("setReleasePackedInCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("updates packed status successfully", async () => {
     const crateId = "crate-123";
     const releaseId = "release-456";
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess({
-        success: true,
-        found_at: "2026-07-27T00:00:00.000Z",
-      }),
-    );
+    mockFetchJsonOnce("patch", "/api/crates/:crateId/releases/:releaseId", {
+      ...crateMutationSuccessFactory.build(),
+      found_at: "2026-07-27T00:00:00.000Z",
+    });
 
     const result = await setReleasePackedInCrate(crateId, releaseId, true);
 
@@ -531,7 +460,7 @@ describe("setReleasePackedInCrate", () => {
       success: true,
       found_at: "2026-07-27T00:00:00.000Z",
     });
-    expect(mockFetch).toHaveBeenCalledWith(
+    await expectLastFetchCalledWithBody(
       `/api/crates/${crateId}/releases/${releaseId}`,
       {
         method: "PATCH",
@@ -546,17 +475,12 @@ describe("setReleasePackedInCrate", () => {
 });
 
 describe("clearAllPackedInCrate", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("clears packed status successfully", async () => {
     const crateId = "crate-123";
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess({
-        success: true,
-        cleared_count: 2,
-      }),
+    mockFetchJsonOnce(
+      "patch",
+      "/api/crates/:crateId/releases",
+      crateMutationSuccessFactory.clearPacked(2),
     );
 
     const result = await clearAllPackedInCrate(crateId);
@@ -565,7 +489,7 @@ describe("clearAllPackedInCrate", () => {
       success: true,
       cleared_count: 2,
     });
-    expect(mockFetch).toHaveBeenCalledWith(`/api/crates/${crateId}/releases`, {
+    await expectLastFetchCalledWithBody(`/api/crates/${crateId}/releases`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -577,19 +501,15 @@ describe("clearAllPackedInCrate", () => {
 });
 
 describe("syncCrates", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("syncs crates successfully", async () => {
     const collectionInstanceIds = ["id1", "id2", "id3"];
-    const mockResponse = { success: true, removedCount: 2 };
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockResponse));
+    const mockResponse = crateMutationSuccessFactory.sync(2);
+    mockFetchJsonOnce("post", "/api/crates/sync", mockResponse);
 
     const result = await syncCrates(collectionInstanceIds);
 
     expect(result).toEqual(mockResponse);
-    expect(mockFetch).toHaveBeenCalledWith("/api/crates/sync", {
+    await expectLastFetchCalledWithBody("/api/crates/sync", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -600,7 +520,7 @@ describe("syncCrates", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("post", "/api/crates/sync", 500);
 
     await expect(syncCrates(["id1"])).rejects.toThrow(
       "HTTP error! status: 500",
@@ -609,21 +529,17 @@ describe("syncCrates", () => {
 });
 
 describe("checkAuth", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("returns auth status when authenticated", async () => {
     const mockAuth = authStatusFactory.authenticated({
       userId: "123456",
       username: "testuser",
     });
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
+    mockFetchJsonOnce("get", "/api/auth/check", mockAuth);
 
     const result = await checkAuth();
 
     expect(result).toEqual(mockAuth);
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/check", {
+    expectLastFetchCalledWith("/api/auth/check", {
       credentials: "include",
       headers: {
         Accept: "application/json",
@@ -635,7 +551,7 @@ describe("checkAuth", () => {
 
   it("returns auth status when not authenticated", async () => {
     const mockAuth = authStatusFactory.unauthenticated();
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess(mockAuth));
+    mockFetchJsonOnce("get", "/api/auth/check", mockAuth);
 
     const result = await checkAuth();
 
@@ -643,26 +559,26 @@ describe("checkAuth", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("get", "/api/auth/check", 500);
 
-    await expect(checkAuth()).rejects.toThrow("Fetch failed: 500 Error");
+    await expect(checkAuth()).rejects.toThrow(
+      "Fetch failed: 500 Internal Server Error",
+    );
   });
 });
 
 describe("clearData", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("clears data successfully", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    mockFetchJsonOnce(
+      "post",
+      "/api/auth/clear-data",
+      crateMutationSuccessFactory.build(),
     );
 
     const result = await clearData();
 
     expect(result).toEqual({ success: true });
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/clear-data", {
+    expectLastFetchCalledWith("/api/auth/clear-data", {
       credentials: "include",
       headers: {
         Accept: "application/json",
@@ -673,26 +589,26 @@ describe("clearData", () => {
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("post", "/api/auth/clear-data", 500);
 
-    await expect(clearData()).rejects.toThrow("Fetch failed: 500 Error");
+    await expect(clearData()).rejects.toThrow(
+      "Fetch failed: 500 Internal Server Error",
+    );
   });
 });
 
 describe("logout", () => {
-  beforeEach(() => {
-    resetFetchMock();
-  });
-
   it("logs out successfully", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    mockFetchJsonOnce(
+      "post",
+      "/api/auth/logout",
+      crateMutationSuccessFactory.build(),
     );
 
     const result = await logout();
 
     expect(result).toEqual({ success: true });
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/logout", {
+    expectLastFetchCalledWith("/api/auth/logout", {
       credentials: "include",
       headers: {
         Accept: "application/json",
@@ -703,45 +619,46 @@ describe("logout", () => {
   });
 
   it("revokes tokens when preserveTokens is false", async () => {
-    mockFetch.mockResolvedValueOnce(
-      mockFetchSuccess(crateMutationSuccessFactory.build()),
+    mockFetchJsonOnce(
+      "post",
+      "/api/auth/logout",
+      crateMutationSuccessFactory.build(),
     );
 
     await logout({ preserveTokens: false });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/auth/logout?preserve_tokens=false",
-      {
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        method: "POST",
+    expectLastFetchCalledWith("/api/auth/logout?preserve_tokens=false", {
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-    );
+      method: "POST",
+    });
   });
 
   it("throws error when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("post", "/api/auth/logout", 500);
 
-    await expect(logout()).rejects.toThrow("Fetch failed: 500 Error");
+    await expect(logout()).rejects.toThrow(
+      "Fetch failed: 500 Internal Server Error",
+    );
   });
 });
 
 describe("fetchBuildVersion", () => {
   it("returns the current build version", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({ version: "abc123" }));
+    mockFetchJsonOnce("get", "/api/build-version", { version: "abc123" });
 
     await expect(fetchBuildVersion()).resolves.toEqual({ version: "abc123" });
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/build-version", {
+    expectLastFetchCalledWith("/api/build-version", {
       cache: "no-store",
     });
   });
 
   it("throws when the response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchError(500));
+    mockFetchErrorOnce("get", "/api/build-version", 500);
 
     await expect(fetchBuildVersion()).rejects.toThrow(
       "HTTP error! status: 500",
@@ -749,7 +666,7 @@ describe("fetchBuildVersion", () => {
   });
 
   it("throws when the version field is missing", async () => {
-    mockFetch.mockResolvedValueOnce(mockFetchSuccess({}));
+    mockFetchJsonOnce("get", "/api/build-version", {});
 
     await expect(fetchBuildVersion()).rejects.toThrow(
       "Invalid build version response",

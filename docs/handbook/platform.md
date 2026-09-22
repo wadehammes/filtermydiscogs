@@ -205,7 +205,7 @@ Local values: **`.env.local`** (gitignored). See root [README.md](../../README.m
 - **`serverExternalPackages: ["sharp"]`**: keeps the image-proxy native module out of the bundler so Vercel can include **`@img/sharp-linux-*`** binaries.
 - **Security headers**: CSP (tighter in production), HSTS, frame options, etc. on `/`, `/api/*`, and static paths. Production CSP restricts **`connect-src`**, **`frame-src`**, and **`img-src`**; development keeps broader directives for local debugging. Playback embeds use **`youtube-nocookie.com`** — both **`*.youtube.com`** and **`*.youtube-nocookie.com`** must stay in **`frame-src`** / **`child-src`**. Landing **`LoginPreviewDemo`** (**`youtube-video-element`**) loads **`youtube.com/iframe_api`** on the page — keep **`*.youtube.com`** in **`script-src`** and **`connect-src`** (see [`next.config.ts`](../../next.config.ts)). Vercel preview **`script-src`** also allows **`vercel.live`** for the Live feedback widget.
 - **`productionBrowserSourceMaps`**: `false` (do not ship client source maps).
-- **`transpilePackages`**: **`@faker-js/faker`** (ESM-only), **`@tanstack/react-table`** / **`@tanstack/table-core`**, and **`@tanstack/charts`** / **`@tanstack/charts-scales`** / **`@tanstack/react-charts`** (ESM dashboard charts), plus **`d3-shape`** for pie layouts — required so Next/Jest can transpile them.
+- **`transpilePackages`**: **`@faker-js/faker`** (ESM-only), **`@tanstack/react-table`** / **`@tanstack/table-core`**, and **`@tanstack/charts`** / **`@tanstack/charts-scales`** / **`@tanstack/react-charts`** (ESM dashboard charts), plus **`d3-shape`** for pie layouts, and **`msw`** / **`@mswjs/interceptors`** / **`rettime`** / **`until-async`** / **`@open-draft/deferred-promise`** for Jest endpoint mocking — required so Next/Jest can transpile them.
 - **PostCSS**: [`postcss.config.cjs`](../../postcss.config.cjs) (not `.js`) — Turbopack 16.3 treats `postcss.config.js` as an async module and can fail with `__turbopack_context__.a is not a function` on large CSS builds; `.cjs` avoids the broken loader path.
 - **SVGR**: [`turbopack.rules`](../../next.config.ts) for SVG-as-React components in dev/build (Turbopack is the default; no **`webpack()`** hook). Type declarations for `*.svg` imports live in root [`cssprops.d.ts`](../../cssprops.d.ts) (included by [`tsconfig.json`](../../tsconfig.json)).
 - **`experimental.optimizePackageImports`**: tree-shaking for TanStack (**`@tanstack/react-charts`** on dashboard) and **`@dnd-kit/*`**.
@@ -310,14 +310,15 @@ Authenticated **collection** routes (`/api/collection`, `/api/collection/fields`
 - **`test-utils`** alias → [`src/tests/utils/test-utils.tsx`](../../src/tests/utils/test-utils.tsx)
 - **`src/`** path alias
 - SVG and CSS mocks under **`.jest/`**
-- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`**, **`jotai`**, **`@tanstack/react-table`** / **`@tanstack/table-core`**, **`@tanstack/charts`** packages, and **`d3-shape`** (see comments in config)
+- Custom **`transformIgnorePatterns`** for pnpm layout + **`@faker-js/faker`**, **`jotai`**, TanStack packages, **`d3-shape`**, and **`msw`** / **`@mswjs`** (see [`jest.config.ts`](../../jest.config.ts))
+- **MSW setup**: [`.jest/mswPolyfills.ts`](../../.jest/mswPolyfills.ts) in **`setupFiles`**; endpoint specs import **`setupMswInJest`** from [`src/tests/msw/setupMswInJest.ts`](../../src/tests/msw/setupMswInJest.ts); regenerated **[`public/mockServiceWorker.js`](../../public/mockServiceWorker.js)** is excluded from Biome ([`biome.json`](../../biome.json))
 - **`verbose: false`** by default (pass **`--verbose`** when debugging a single suite)
 - **`workerIdleMemoryLimit: "512MB"`** so parallel workers recycle before idle heap grows without bound
 - **`NODE_OPTIONS='--max-old-space-size=4096'`** on **`pnpm test`**, **`pnpm test:ci`**, and coverage. **`pnpm test:ci`** / **`test:ci:shard`** use parallel workers (**`--maxWorkers=50%`**). **`pnpm test`** / **`test:file`** / **`test:coverage`** keep **`--runInBand --detectOpenHandles`** for local leak debugging (slower full-suite run).
 - **Global setup memory**: [`.jest/setupTests.ts`](../../.jest/setupTests.ts) mocks **`HTMLElement.prototype.getBoundingClientRect`** once in **`beforeAll`** (not **`beforeEach`**). Per-test **`spyOn`** on prototypes stacked ~1.3k wrappers and OOM’d parallel runs; do not move shared prototype mocks back into **`beforeEach`** without **`restoreAllMocks`** / a non-stacking pattern (see **`setupMockMatchMedia`**).
 - **Local sharding (optional)**: **`pnpm test:ci:shard`** with **`JEST_SHARD=1/3`** … **`3/3`** splits ~274 suites across processes when debugging memory or comparing to CI. CI runs the full **`pnpm test:ci`** in one **Lint/Test** job. Do not pass **`--shard`** via **`pnpm test:ci -- …`** — pnpm inserts **`--`**, which Jest treats as end-of-options.
 
-Faker, Jotai, TanStack Table, and TanStack Charts transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
+Faker, Jotai, TanStack Table, TanStack Charts, and MSW transpilation depends on **`transpilePackages`** in `next.config.ts` **and** excluding those packages from the custom ignore pattern.
 
 ## Analytics
 
