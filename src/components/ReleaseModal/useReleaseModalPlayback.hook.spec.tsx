@@ -40,6 +40,30 @@ const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: RELEASE_ID,
 });
 
+const twoPlayableTrackVideos = [
+  {
+    description: "Side A",
+    duration: 212,
+    embed: true,
+    title: "Rick Astley - Never Gonna Give You Up",
+    uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+  },
+  {
+    description: "Side B",
+    duration: 210,
+    embed: true,
+    title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+    uri: "https://www.youtube.com/watch?v=abc12345678",
+  },
+] as const;
+
+const setupTwoPlayableTrackReleaseMock = () => {
+  setupFetchDiscogsReleaseMock(mockApi, {
+    ...releaseDetail,
+    videos: [...twoPlayableTrackVideos],
+  });
+};
+
 const otherReleaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: OTHER_RELEASE_ID,
   title: "Other Album",
@@ -547,6 +571,94 @@ describe("useReleaseModalPlayback", () => {
     });
   });
 
+  it("when preview is playing, unqueue on an upcoming preview row removes only that queue item", async () => {
+    setupFetchDiscogsReleaseMock(mockApi, {
+      ...releaseDetail,
+      tracklist: [
+        {
+          position: "A",
+          title: "Unknown Track",
+          duration: "3:32",
+          type_: "track",
+        },
+      ],
+      videos: [
+        {
+          description: "First upload",
+          duration: 330,
+          embed: true,
+          title: "Preview One",
+          uri: "https://www.youtube.com/watch?v=11111111111",
+        },
+        {
+          description: "Second upload",
+          duration: 320,
+          embed: true,
+          title: "Preview Two",
+          uri: "https://www.youtube.com/watch?v=22222222222",
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.releasePreviewTracks).toHaveLength(2);
+    });
+
+    const firstPreviewPosition =
+      result.current.modal.releasePreviewTracks[0]?.position ?? "";
+    const secondPreviewPosition =
+      result.current.modal.releasePreviewTracks[1]?.position ?? "";
+
+    act(() => {
+      result.current.modal.handlePreviewTrackSelect(firstPreviewPosition);
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isReleasePreview).toBe(true);
+      expect(result.current.modal.activePreviewTrackPosition).toBe(
+        firstPreviewPosition,
+      );
+    });
+
+    act(() => {
+      result.current.modal.handlePreviewTrackQueue(secondPreviewPosition);
+    });
+
+    await waitFor(() => {
+      expect(
+        result.current.modal.isPreviewTrackQueued(secondPreviewPosition),
+      ).toBe(true);
+      expect(result.current.playback.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.modal.handlePreviewTrackUnqueue(secondPreviewPosition);
+    });
+
+    expect(
+      result.current.modal.isPreviewTrackQueued(secondPreviewPosition),
+    ).toBe(false);
+    expect(
+      result.current.modal.isPreviewTrackQueued(firstPreviewPosition),
+    ).toBe(true);
+    expect(result.current.modal.activePreviewTrackPosition).toBe(
+      firstPreviewPosition,
+    );
+    expect(result.current.playback.queue).toHaveLength(0);
+    expect(result.current.playback.isReleasePreview).toBe(true);
+  });
+
   it("shows a success toast when adding a single track to the queue", async () => {
     const { result } = renderHook(
       () =>
@@ -571,25 +683,7 @@ describe("useReleaseModalPlayback", () => {
   });
 
   it("queues every playable album track from add-all", async () => {
-    setupFetchDiscogsReleaseMock(mockApi, {
-      ...releaseDetail,
-      videos: [
-        {
-          description: "Side A",
-          duration: 212,
-          embed: true,
-          title: "Rick Astley - Never Gonna Give You Up",
-          uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-        },
-        {
-          description: "Side B",
-          duration: 210,
-          embed: true,
-          title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
-          uri: "https://www.youtube.com/watch?v=abc12345678",
-        },
-      ],
-    });
+    setupTwoPlayableTrackReleaseMock();
 
     const { result } = renderHook(
       () => ({
@@ -625,5 +719,253 @@ describe("useReleaseModalPlayback", () => {
     expect(mockToastSuccess).toHaveBeenCalledWith("Added 2 tracks to queue", {
       position: "bottom-center",
     });
+  });
+
+  it("removes every queued playable album track from remove-all", async () => {
+    setupTwoPlayableTrackReleaseMock();
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleAddAllToQueue();
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.allPlayableTracksQueued).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleRemoveAllFromQueue();
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isMiniPlayerVisible).toBe(false);
+    });
+
+    expect(result.current.playback.queue).toHaveLength(0);
+    expect(result.current.modal.allPlayableTracksQueued).toBe(false);
+    expect(mockToastSuccess).toHaveBeenCalledWith(
+      "Removed 2 tracks from queue",
+      { position: "bottom-center" },
+    );
+  });
+
+  it("when add-all queued, unqueue on the active track is a no-op", async () => {
+    setupTwoPlayableTrackReleaseMock();
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleAddAllToQueue();
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.allPlayableTracksQueued).toBe(true);
+    });
+
+    const toastCallsBefore = mockToastSuccess.mock.calls.length;
+
+    act(() => {
+      result.current.modal.handleTrackUnqueue("A");
+    });
+
+    expect(result.current.modal.isTrackQueued("A")).toBe(true);
+    expect(result.current.modal.isTrackQueued("B")).toBe(true);
+    expect(result.current.playback.activeTrackPosition).toBe("A");
+    expect(result.current.playback.queue).toHaveLength(1);
+    expect(mockToastSuccess.mock.calls.length).toBe(toastCallsBefore);
+    expect(result.current.modal.isTrackUnqueueable("A")).toBe(false);
+    expect(result.current.modal.isTrackUnqueueable("B")).toBe(true);
+  });
+
+  it("when the active track is queued again, it is appended to up next", async () => {
+    setupTwoPlayableTrackReleaseMock();
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleTrackSelect("A");
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.activeTrackPosition).toBe("A");
+    });
+
+    act(() => {
+      result.current.modal.handleTrackQueue("A");
+    });
+
+    await waitFor(() => {
+      expect(
+        result.current.playback.queue.some(
+          (item) => item.trackPosition === "A",
+        ),
+      ).toBe(true);
+    });
+
+    expect(result.current.modal.isTrackUnqueueable("A")).toBe(true);
+  });
+
+  it("when add-all queued, unqueue on an upcoming track leaves the current track playing", async () => {
+    setupTwoPlayableTrackReleaseMock();
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleAddAllToQueue();
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.allPlayableTracksQueued).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleTrackUnqueue("B");
+    });
+
+    expect(result.current.modal.isTrackQueued("A")).toBe(true);
+    expect(result.current.modal.isTrackQueued("B")).toBe(false);
+    expect(result.current.playback.activeTrackPosition).toBe("A");
+    expect(result.current.playback.isMiniPlayerVisible).toBe(true);
+    expect(result.current.playback.queue).toHaveLength(0);
+  });
+
+  it("when add-all queued, remove-all clears playback including the active track", async () => {
+    setupTwoPlayableTrackReleaseMock();
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleAddAllToQueue();
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.allPlayableTracksQueued).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleRemoveAllFromQueue();
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isMiniPlayerVisible).toBe(false);
+    });
+
+    expect(result.current.modal.isTrackQueued("A")).toBe(false);
+    expect(result.current.modal.isTrackQueued("B")).toBe(false);
+    expect(result.current.playback.queue).toHaveLength(0);
+  });
+
+  it("removes a single upcoming album track while another track is playing", async () => {
+    setupTwoPlayableTrackReleaseMock();
+
+    const { result } = renderHook(
+      () => ({
+        modal: useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+        playback: useReleasePlayback(),
+      }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.modal.hasPlayableTracks).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleTrackSelect("A");
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.activeTrackPosition).toBe("A");
+    });
+
+    act(() => {
+      result.current.modal.handleTrackQueue("B");
+    });
+
+    await waitFor(() => {
+      expect(result.current.modal.isTrackQueued("B")).toBe(true);
+    });
+
+    act(() => {
+      result.current.modal.handleTrackUnqueue("B");
+    });
+
+    expect(result.current.modal.isTrackQueued("B")).toBe(false);
+    expect(result.current.modal.isTrackQueued("A")).toBe(true);
+    expect(result.current.playback.activeTrackPosition).toBe("A");
+    expect(result.current.playback.queue).toHaveLength(0);
+    expect(mockToastSuccess).toHaveBeenCalledWith(
+      "Removed 1 track from queue",
+      { position: "bottom-center" },
+    );
   });
 });

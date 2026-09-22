@@ -14,6 +14,7 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
   AddPreviewToQueueParams,
   AddToQueueParams,
+  RemoveAlbumTracksFromQueueParams,
   StartPlaybackParams,
   StartReleasePreviewParams,
 } from "src/types/releasePlaybackContext.types";
@@ -22,6 +23,7 @@ import {
   createPreviewQueueItem,
   createQueueItem,
   findQueueItemIndex,
+  isReleaseAlbumTrackQueueItem,
   removeQueueItemAtIndex,
   reorderQueueItems,
 } from "src/utils/playbackQueue";
@@ -49,6 +51,21 @@ export interface PlayQueueItemOptions {
   startPaused?: boolean;
   youtubeVideoId?: string;
 }
+
+const suppressSimilarQueueTailIfNeeded = (
+  removedItems: PlaybackQueueItem[],
+  similarQueueSuppressedAfterClearRef: RefObject<boolean>,
+  similarQueueModeRef: RefObject<SimilarQueueMode>,
+  similarQueueGenerationRef: RefObject<number>,
+) => {
+  if (!removedItems.some((item) => item.fromSimilarRelease === true)) {
+    return;
+  }
+
+  similarQueueSuppressedAfterClearRef.current = true;
+  similarQueueModeRef.current = createSimilarQueueMode(false);
+  similarQueueGenerationRef.current += 1;
+};
 
 interface QueueActionRefs {
   awaitingResumeGestureRef: RefObject<boolean>;
@@ -528,10 +545,13 @@ export const useReleasePlaybackQueueActions = ({
       const upcoming = queueRef.current;
       const removed = upcoming[index];
 
-      if (removed?.fromSimilarRelease === true) {
-        similarQueueSuppressedAfterClearRef.current = true;
-        similarQueueModeRef.current = createSimilarQueueMode(false);
-        similarQueueGenerationRef.current += 1;
+      if (removed) {
+        suppressSimilarQueueTailIfNeeded(
+          [removed],
+          similarQueueSuppressedAfterClearRef,
+          similarQueueModeRef,
+          similarQueueGenerationRef,
+        );
       }
 
       setUpcomingQueue(removeQueueItemAtIndex(upcoming, index));
@@ -542,6 +562,40 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueGenerationRef,
       similarQueueModeRef,
       similarQueueSuppressedAfterClearRef,
+    ],
+  );
+
+  const removeAlbumTracksFromQueue = useCallback(
+    ({ release, trackPositions }: RemoveAlbumTracksFromQueueParams) => {
+      const instanceId = String(release.instance_id);
+      const positionSet = new Set(trackPositions);
+
+      updateUpcomingQueue((previousQueue) => {
+        const removedItems: PlaybackQueueItem[] = [];
+        const nextQueue = previousQueue.filter((item) => {
+          if (!isReleaseAlbumTrackQueueItem(item, instanceId, positionSet)) {
+            return true;
+          }
+
+          removedItems.push(item);
+          return false;
+        });
+
+        suppressSimilarQueueTailIfNeeded(
+          removedItems,
+          similarQueueSuppressedAfterClearRef,
+          similarQueueModeRef,
+          similarQueueGenerationRef,
+        );
+
+        return nextQueue;
+      });
+    },
+    [
+      similarQueueGenerationRef,
+      similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
+      updateUpcomingQueue,
     ],
   );
 
@@ -558,6 +612,52 @@ export const useReleasePlaybackQueueActions = ({
     [queueRef, setUpcomingQueue],
   );
 
+  const stopPlayback = useCallback(
+    ({ resetSkipLogToast = true }: { resetSkipLogToast?: boolean } = {}) => {
+      resetUserTrackRecordingSession();
+      if (resetSkipLogToast) {
+        resetPlaybackSkipLogToast();
+      }
+      resetPlaybackSkipState?.();
+      pendingPlayFromGestureRef.current = false;
+      clearPlayFromGestureRetries();
+      shouldRebuildAlbumQueueRef.current = false;
+      similarQueueModeRef.current = createSimilarQueueMode(false);
+      similarQueueGenerationRef.current += 1;
+      similarQueueTailToastShownRef.current = false;
+      queueManuallyExtendedRef.current = false;
+      similarQueueSuppressedAfterClearRef.current = false;
+      dispatchSession({ type: "STOP" });
+      setShouldAutoplayEmbed(false);
+      setIsPlaybackEmbedMounted(false);
+      setPlaybackVideoTransitionTargetId(null);
+      clearPlaybackVideoUiLoading();
+      setEmbedVideoId(null);
+      embedVideoIdRef.current = null;
+      lastSyncedActiveVideoIdRef.current = null;
+      clearPersistedReleasePlayback();
+    },
+    [
+      clearPlayFromGestureRetries,
+      clearPlaybackVideoUiLoading,
+      dispatchSession,
+      embedVideoIdRef,
+      lastSyncedActiveVideoIdRef,
+      pendingPlayFromGestureRef,
+      queueManuallyExtendedRef,
+      similarQueueSuppressedAfterClearRef,
+      setEmbedVideoId,
+      setIsPlaybackEmbedMounted,
+      setPlaybackVideoTransitionTargetId,
+      setShouldAutoplayEmbed,
+      shouldRebuildAlbumQueueRef,
+      similarQueueGenerationRef,
+      similarQueueModeRef,
+      similarQueueTailToastShownRef,
+      resetPlaybackSkipState,
+    ],
+  );
+
   const playNext = useCallback(() => {
     const item = queueRef.current[0];
 
@@ -570,7 +670,7 @@ export const useReleasePlaybackQueueActions = ({
           return;
         }
 
-        clearPlaybackVideoUiLoading();
+        stopPlayback({ resetSkipLogToast: false });
       });
       return;
     }
@@ -587,6 +687,7 @@ export const useReleasePlaybackQueueActions = ({
     prepareQueueAdvancePlayback,
     queueRef,
     setUpcomingQueue,
+    stopPlayback,
   ]);
 
   const playPrevious = useCallback(() => {
@@ -620,47 +721,6 @@ export const useReleasePlaybackQueueActions = ({
   extendQueueTailRef.current = extendQueueTail;
   startPlaybackRef.current = startPlayback;
 
-  const stopPlayback = useCallback(() => {
-    resetUserTrackRecordingSession();
-    resetPlaybackSkipLogToast();
-    resetPlaybackSkipState?.();
-    pendingPlayFromGestureRef.current = false;
-    clearPlayFromGestureRetries();
-    shouldRebuildAlbumQueueRef.current = false;
-    similarQueueModeRef.current = createSimilarQueueMode(false);
-    similarQueueGenerationRef.current += 1;
-    similarQueueTailToastShownRef.current = false;
-    queueManuallyExtendedRef.current = false;
-    similarQueueSuppressedAfterClearRef.current = false;
-    dispatchSession({ type: "STOP" });
-    setShouldAutoplayEmbed(false);
-    setIsPlaybackEmbedMounted(false);
-    setPlaybackVideoTransitionTargetId(null);
-    clearPlaybackVideoUiLoading();
-    setEmbedVideoId(null);
-    embedVideoIdRef.current = null;
-    lastSyncedActiveVideoIdRef.current = null;
-    clearPersistedReleasePlayback();
-  }, [
-    clearPlayFromGestureRetries,
-    clearPlaybackVideoUiLoading,
-    dispatchSession,
-    embedVideoIdRef,
-    lastSyncedActiveVideoIdRef,
-    pendingPlayFromGestureRef,
-    queueManuallyExtendedRef,
-    similarQueueSuppressedAfterClearRef,
-    setEmbedVideoId,
-    setIsPlaybackEmbedMounted,
-    setPlaybackVideoTransitionTargetId,
-    setShouldAutoplayEmbed,
-    shouldRebuildAlbumQueueRef,
-    similarQueueGenerationRef,
-    similarQueueModeRef,
-    similarQueueTailToastShownRef,
-    resetPlaybackSkipState,
-  ]);
-
   const clearQueue = useCallback(() => {
     similarQueueSuppressedAfterClearRef.current = true;
     similarQueueModeRef.current = createSimilarQueueMode(false);
@@ -684,6 +744,7 @@ export const useReleasePlaybackQueueActions = ({
     addPreviewToQueue,
     playQueueAtIndex,
     removeFromQueue,
+    removeAlbumTracksFromQueue,
     reorderQueue,
     playNext,
     playPrevious,

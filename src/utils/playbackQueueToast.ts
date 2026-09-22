@@ -16,11 +16,20 @@ const queueToastOptions = () => ({
   position: getPlaybackQueueToastPosition(),
 });
 
+const playbackQueueTrackCountMessage = (
+  action: "added" | "removed",
+  trackCount: number,
+): string => {
+  const tracks = trackCount === 1 ? "1 track" : `${trackCount} tracks`;
+
+  return action === "added"
+    ? `Added ${tracks} to queue`
+    : `Removed ${tracks} from queue`;
+};
+
 export const showPlaybackQueueSuccessToast = (trackCount: number): void => {
   toast.success(
-    trackCount === 1
-      ? "Added 1 track to queue"
-      : `Added ${trackCount} tracks to queue`,
+    playbackQueueTrackCountMessage("added", trackCount),
     queueToastOptions(),
   );
 };
@@ -32,6 +41,13 @@ export const showPlaybackQueueNoTracksToast = (): void => {
 export const showPlaybackQueueAllQueuedToast = (): void => {
   toast.error(
     "All playable tracks are already in the queue",
+    queueToastOptions(),
+  );
+};
+
+export const showPlaybackQueueRemovedToast = (trackCount: number): void => {
+  toast.success(
+    playbackQueueTrackCountMessage("removed", trackCount),
     queueToastOptions(),
   );
 };

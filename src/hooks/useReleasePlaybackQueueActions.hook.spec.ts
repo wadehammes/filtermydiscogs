@@ -710,6 +710,36 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(similarQueueSuppressedAfterClearRef.current).toBe(true);
   });
 
+  it("removeAlbumTracksFromQueue drops matching album rows for one release", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const first = createQueueItem({
+      release,
+      trackPosition: "A",
+      trackTitle: "First",
+    });
+    const second = createQueueItem({
+      release,
+      trackPosition: "B",
+      trackTitle: "Second",
+    });
+    const otherReleaseItem = createQueueItem({
+      release: releaseFactory.withDisplayDefaults({ instance_id: "999" }),
+      trackPosition: "A1",
+      trackTitle: "Other",
+    });
+    const { result, updateUpcomingQueue, queueRef } = buildHarness({
+      sessionQueue: [first, second, otherReleaseItem],
+    });
+
+    result.current.removeAlbumTracksFromQueue({
+      release,
+      trackPositions: ["A", "B"],
+    });
+
+    expect(updateUpcomingQueue).toHaveBeenCalled();
+    expect(queueRef.current).toEqual([otherReleaseItem]);
+  });
+
   it("removeFromQueue drops the item at the requested index", () => {
     const first = createQueueItem({
       release: releaseFactory.withDisplayDefaults(),

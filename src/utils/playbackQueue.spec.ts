@@ -10,7 +10,9 @@ import {
   buildPlayableAlbumQueue,
   createPreviewQueueItem,
   createQueueItem,
+  filterQueueWithoutReleaseAlbumTracks,
   findQueueItemIndex,
+  getQueuedTrackPositionsForInstance,
   getQueueItemKey,
   isSameQueueItem,
   prependQueueItem,
@@ -43,6 +45,37 @@ describe("playbackQueue", () => {
       embed: true,
     },
   ];
+
+  it("filters upcoming album tracks for one release without touching preview rows", () => {
+    const previewItem = createPreviewQueueItem({
+      release,
+      video: {
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+        title: "Upload",
+        embed: true,
+      },
+    });
+    const albumItem = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const otherAlbumItem = createQueueItem({
+      release: otherRelease,
+      trackPosition: "A1",
+      trackTitle: "Other",
+    });
+    const queue = [albumItem, previewItem, otherAlbumItem];
+    const positionSet = new Set(["A1", "A2"]);
+
+    expect(
+      filterQueueWithoutReleaseAlbumTracks(
+        queue,
+        String(release.instance_id),
+        positionSet,
+      ),
+    ).toEqual([previewItem, otherAlbumItem]);
+  });
 
   it("creates stable queue item keys", () => {
     const item = createQueueItem({
@@ -223,6 +256,31 @@ describe("playbackQueue", () => {
 
     expect(findQueueItemIndex(queue, second)).toBe(1);
     expect(removeQueueItemAtIndex(queue, 0)).toEqual([second]);
+  });
+
+  it("collects queued track positions for one release instance", () => {
+    const first = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const second = createQueueItem({
+      release,
+      trackPosition: "A2",
+      trackTitle: "Second",
+    });
+    const other = createQueueItem({
+      release: otherRelease,
+      trackPosition: "B1",
+      trackTitle: "Other",
+    });
+
+    expect(
+      getQueuedTrackPositionsForInstance(
+        [first, second, other],
+        String(release.instance_id),
+      ),
+    ).toEqual(new Set(["A1", "A2"]));
   });
 
   it("reorders upcoming queue items", () => {

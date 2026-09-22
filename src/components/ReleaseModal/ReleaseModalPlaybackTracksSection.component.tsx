@@ -27,12 +27,17 @@ interface ReleaseModalPlaybackTracksSectionProps {
   fallbackSearchUrl: string;
   handleTrackSelect: (trackPosition: string) => void;
   handleTrackQueue: (trackPosition: string) => void;
+  handleTrackUnqueue: (trackPosition: string) => void;
   handleAddAllToQueue: () => void;
+  handleRemoveAllFromQueue: () => void;
   allPlayableTracksQueued: boolean;
   handlePreviewTrackSelect: (trackPosition: string) => void;
   handlePreviewTrackQueue: (trackPosition: string) => void;
+  handlePreviewTrackUnqueue: (trackPosition: string) => void;
   isTrackQueued: (trackPosition: string) => boolean;
+  isTrackUnqueueable: (trackPosition: string) => boolean;
   isPreviewTrackQueued: (trackPosition: string) => boolean;
+  isPreviewTrackUnqueueable: (trackPosition: string) => boolean;
   handleActiveTrackToggle: () => void;
   isPlayingThisReleaseInBar: boolean;
   isPlaybackPaused: boolean;
@@ -53,12 +58,17 @@ export const ReleaseModalPlaybackTracksSection = ({
   fallbackSearchUrl,
   handleTrackSelect,
   handleTrackQueue,
+  handleTrackUnqueue,
   handleAddAllToQueue,
+  handleRemoveAllFromQueue,
   allPlayableTracksQueued,
   handlePreviewTrackSelect,
   handlePreviewTrackQueue,
+  handlePreviewTrackUnqueue,
   isTrackQueued,
+  isTrackUnqueueable,
   isPreviewTrackQueued,
+  isPreviewTrackUnqueueable,
   handleActiveTrackToggle,
   isPlayingThisReleaseInBar,
   isPlaybackPaused,
@@ -91,6 +101,12 @@ export const ReleaseModalPlaybackTracksSection = ({
     [release.instance_id, trackStatsResponse?.stats, tracks],
   );
 
+  const releaseArtistNames = formatArtistNames(release);
+  const showAlbumBarPlayback =
+    hasPlayableTracks && isPlayingThisReleaseInBar && !isReleasePreviewPlaying;
+  const showPreviewBarPlayback =
+    isPlayingThisReleaseInBar && isReleasePreviewPlaying;
+
   return (
     <section
       className={classNames(styles.modalCard, styles.playbackSection)}
@@ -104,60 +120,49 @@ export const ReleaseModalPlaybackTracksSection = ({
       ) : null}
       <ReleaseTracklist
         tracks={tracks}
-        releaseArtistNames={formatArtistNames(release)}
+        releaseArtistNames={releaseArtistNames}
         activeTrackPosition={activeTrackPosition}
         reserveQueueColumn={reserveQueueColumn}
         {...definedProps({ trackStatsByPosition })}
-        showPlayingIndicatorOnActiveTrack={
-          hasPlayableTracks &&
-          isPlayingThisReleaseInBar &&
-          !isReleasePreviewPlaying
-        }
-        isPlaybackPaused={
-          hasPlayableTracks &&
-          isPlayingThisReleaseInBar &&
-          !isReleasePreviewPlaying
-            ? isPlaybackPaused
-            : false
-        }
+        showPlayingIndicatorOnActiveTrack={showAlbumBarPlayback}
+        isPlaybackPaused={showAlbumBarPlayback ? isPlaybackPaused : false}
         {...definedProps({
           isTrackPlayable: hasPlayableTracks ? isTrackPlayable : undefined,
           onTrackSelect: hasPlayableTracks ? handleTrackSelect : undefined,
           isTrackQueued: hasPlayableTracks ? isTrackQueued : undefined,
+          isTrackUnqueueable: hasPlayableTracks
+            ? isTrackUnqueueable
+            : undefined,
           onTrackQueue: hasPlayableTracks ? handleTrackQueue : undefined,
+          onTrackUnqueue: hasPlayableTracks ? handleTrackUnqueue : undefined,
           onAddAllToQueue: hasPlayableTracks ? handleAddAllToQueue : undefined,
-          addAllToQueueDisabled: hasPlayableTracks
+          onRemoveAllFromQueue: hasPlayableTracks
+            ? handleRemoveAllFromQueue
+            : undefined,
+          allPlayableTracksQueued: hasPlayableTracks
             ? allPlayableTracksQueued
             : undefined,
-          onActiveTrackToggle:
-            hasPlayableTracks &&
-            isPlayingThisReleaseInBar &&
-            !isReleasePreviewPlaying
-              ? handleActiveTrackToggle
-              : undefined,
+          onActiveTrackToggle: showAlbumBarPlayback
+            ? handleActiveTrackToggle
+            : undefined,
         })}
       />
       {releasePreviewVideos.length > 0 ? (
         <ReleasePlaybackPreview
           tracks={releasePreviewTracks}
-          releaseArtistNames={formatArtistNames(release)}
+          releaseArtistNames={releaseArtistNames}
           activeTrackPosition={activePreviewTrackPosition}
-          showPlayingIndicatorOnActiveTrack={
-            isPlayingThisReleaseInBar && isReleasePreviewPlaying
-          }
-          isPlaybackPaused={
-            isPlayingThisReleaseInBar && isReleasePreviewPlaying
-              ? isPlaybackPaused
-              : false
-          }
+          showPlayingIndicatorOnActiveTrack={showPreviewBarPlayback}
+          isPlaybackPaused={showPreviewBarPlayback ? isPlaybackPaused : false}
           isTrackQueued={isPreviewTrackQueued}
+          isTrackUnqueueable={isPreviewTrackUnqueueable}
           onTrackSelect={handlePreviewTrackSelect}
           onTrackQueue={handlePreviewTrackQueue}
+          onTrackUnqueue={handlePreviewTrackUnqueue}
           {...definedProps({
-            onActiveTrackToggle:
-              isPlayingThisReleaseInBar && isReleasePreviewPlaying
-                ? handleActiveTrackToggle
-                : undefined,
+            onActiveTrackToggle: showPreviewBarPlayback
+              ? handleActiveTrackToggle
+              : undefined,
           })}
         />
       ) : null}

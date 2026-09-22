@@ -82,6 +82,39 @@ export const findQueueItemIndex = (
   return queue.findIndex((queueItem) => getQueueItemKey(queueItem) === key);
 };
 
+export const getQueuedTrackPositionsForInstance = (
+  queue: PlaybackQueueItem[],
+  instanceId: string,
+): ReadonlySet<string> => {
+  const positions = new Set<string>();
+
+  for (const item of queue) {
+    if (item.instanceId === instanceId) {
+      positions.add(item.trackPosition);
+    }
+  }
+
+  return positions;
+};
+
+export const isReleaseAlbumTrackQueueItem = (
+  item: PlaybackQueueItem,
+  instanceId: string,
+  trackPositions: ReadonlySet<string>,
+): boolean =>
+  item.instanceId === instanceId &&
+  item.previewVideoUri === undefined &&
+  trackPositions.has(item.trackPosition);
+
+export const filterQueueWithoutReleaseAlbumTracks = (
+  queue: PlaybackQueueItem[],
+  instanceId: string,
+  trackPositions: ReadonlySet<string>,
+): PlaybackQueueItem[] =>
+  queue.filter(
+    (item) => !isReleaseAlbumTrackQueueItem(item, instanceId, trackPositions),
+  );
+
 export const appendQueueItem = (
   queue: PlaybackQueueItem[],
   item: PlaybackQueueItem,

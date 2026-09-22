@@ -246,8 +246,17 @@
 }
 
 .queueButtonQueued {
-  color: var(--link);
-  cursor: default;
+  color: var(--primary);
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:focus-visible:not(:disabled),
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+  }
 }
 
 .queueButtonIcon {

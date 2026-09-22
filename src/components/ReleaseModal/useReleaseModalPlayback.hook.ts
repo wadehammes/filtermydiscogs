@@ -88,18 +88,19 @@ export const useReleaseModalPlayback = ({
 
   const {
     isTrackQueued,
+    isTrackUnqueueable,
     isPreviewTrackQueued,
+    isPreviewTrackUnqueueable,
     allPlayableTracksQueued,
     handleAddAllToQueue,
+    handleRemoveAllFromQueue,
+    handleTrackUnqueue,
+    handlePreviewTrackUnqueue,
   } = useReleaseModalPlaybackQueue({
     release,
     tracks,
     playbackMatchIndex,
   });
-
-  const handleActiveTrackToggle = useCallback(() => {
-    playback.togglePlayback();
-  }, [playback.togglePlayback]);
 
   return {
     tracks,
@@ -118,13 +119,18 @@ export const useReleaseModalPlayback = ({
     handleTrackSelect,
     handleTrackQueue,
     handleAddAllToQueue,
+    handleRemoveAllFromQueue,
+    handleTrackUnqueue,
+    handlePreviewTrackUnqueue,
     allPlayableTracksQueued,
     handleReleasePreview,
     handlePreviewTrackSelect,
     handlePreviewTrackQueue,
     isTrackQueued,
+    isTrackUnqueueable,
     isPreviewTrackQueued,
-    handleActiveTrackToggle,
+    isPreviewTrackUnqueueable,
+    handleActiveTrackToggle: playback.togglePlayback,
     isPlayingThisReleaseInBar,
     isPlaybackPaused: playback.isPaused,
     isReleasePreviewPlaying:

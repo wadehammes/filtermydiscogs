@@ -209,6 +209,83 @@ describe("ReleaseTracklist", () => {
     expect(onTrackQueue).toHaveBeenCalledWith("B");
   });
 
+  it("calls onTrackUnqueue when the queued control is clicked", async () => {
+    const user = userEvent.setup();
+    const onTrackUnqueue = jest.fn();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onTrackUnqueue={onTrackUnqueue}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={(position) => position === "A"}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Remove Never Gonna Give You Up from queue",
+      }),
+    );
+
+    expect(onTrackUnqueue).toHaveBeenCalledWith("A");
+  });
+
+  it("shows a minus remove icon when queued and onTrackUnqueue is set", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onTrackUnqueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={(position) => position === "A"}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("fmdReleaseTrackQueueRemoveIcon"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdReleaseTrackQueueCheckIcon"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Remove Never Gonna Give You Up from queue",
+      }),
+    ).toHaveAttribute("title", "Remove from queue");
+  });
+
+  it("shows add to queue on the active row when it is not in up next", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition="A"
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onTrackUnqueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={() => false}
+      />,
+    );
+
+    expect(
+      screen.queryByTestId("fmdReleaseTrackQueueRemoveIcon"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Add Never Gonna Give You Up to queue",
+      }),
+    ).toBeEnabled();
+  });
+
   it("reserves queue column space on non-playable rows when requested", () => {
     const { container } = render(
       <ReleaseTracklist
@@ -272,7 +349,10 @@ describe("ReleaseTracklist", () => {
     expect(onAddAllToQueue).toHaveBeenCalledTimes(1);
   });
 
-  it("disables add-all when every playable track is already queued", () => {
+  it("renders remove-all toolbar when every playable track is queued", async () => {
+    const user = userEvent.setup();
+    const onRemoveAllFromQueue = jest.fn();
+
     render(
       <ReleaseTracklist
         tracks={tracks}
@@ -281,12 +361,23 @@ describe("ReleaseTracklist", () => {
         onTrackSelect={() => undefined}
         onTrackQueue={() => undefined}
         onAddAllToQueue={() => undefined}
-        addAllToQueueDisabled
+        onRemoveAllFromQueue={onRemoveAllFromQueue}
+        allPlayableTracksQueued
       />,
     );
 
+    const removeAllButton = screen.getByTestId(
+      "fmdReleaseTracklistRemoveAllButton",
+    );
+
+    expect(removeAllButton).toHaveTextContent("Remove all from queue");
+    expect(removeAllButton).toBeEnabled();
     expect(
-      screen.getByTestId("fmdReleaseTracklistAddAllButton"),
-    ).toBeDisabled();
+      screen.queryByTestId("fmdReleaseTracklistAddAllButton"),
+    ).not.toBeInTheDocument();
+
+    await user.click(removeAllButton);
+
+    expect(onRemoveAllFromQueue).toHaveBeenCalledTimes(1);
   });
 });
