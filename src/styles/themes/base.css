@@ -42,29 +42,50 @@
   );
 
   /* Typography */
-  --text-xxxs: 0.5rem;
-  --text-xxs: 0.625rem;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 3.25rem;
+  --font-size-sans-adjust: -0.0625rem;
+  --text-xxxs: calc(0.5rem + var(--font-size-sans-adjust));
+  --text-xxs: calc(0.625rem + var(--font-size-sans-adjust));
+  --text-xs: calc(0.75rem + var(--font-size-sans-adjust));
+  --text-sm: calc(0.875rem + var(--font-size-sans-adjust));
+  --text-base: calc(1rem + var(--font-size-sans-adjust));
+  --text-lg: calc(1.125rem + var(--font-size-sans-adjust));
+  --text-xl: calc(1.25rem + var(--font-size-sans-adjust));
+  --text-2xl: calc(1.5rem + var(--font-size-sans-adjust));
+  --text-3xl: calc(1.875rem + var(--font-size-sans-adjust));
+  --text-4xl: calc(3.25rem + var(--font-size-sans-adjust));
 
   /* Font families */
-  --font-family-sans: var(--font-assistant), sans-serif;
+  --font-family-sans: var(--font-dm-sans), sans-serif;
   --font-family-mono: var(--font-mono), ui-monospace, monospace;
   --font-family-body: var(--font-family-sans);
   --font-family-heading: var(--font-family-sans);
   --font-family-meta: var(--font-family-mono);
   --font-size-meta-nudge: 0.125rem;
-  --text-meta-xxs: calc(var(--text-xxs) - var(--font-size-meta-nudge));
-  --text-meta-xs: calc(var(--text-xs) - var(--font-size-meta-nudge));
-  --text-meta-sm: calc(var(--text-sm) - var(--font-size-meta-nudge));
-  --text-meta-base: calc(var(--text-base) - var(--font-size-meta-nudge));
-  --text-meta-lg: calc(var(--text-lg) - var(--font-size-meta-nudge));
+  --text-meta-xxs: calc(
+    var(--text-xxs) -
+    var(--font-size-meta-nudge) -
+    var(--font-size-sans-adjust)
+  );
+  --text-meta-xs: calc(
+    var(--text-xs) -
+    var(--font-size-meta-nudge) -
+    var(--font-size-sans-adjust)
+  );
+  --text-meta-sm: calc(
+    var(--text-sm) -
+    var(--font-size-meta-nudge) -
+    var(--font-size-sans-adjust)
+  );
+  --text-meta-base: calc(
+    var(--text-base) -
+    var(--font-size-meta-nudge) -
+    var(--font-size-sans-adjust)
+  );
+  --text-meta-lg: calc(
+    var(--text-lg) -
+    var(--font-size-meta-nudge) -
+    var(--font-size-sans-adjust)
+  );
   --letter-spacing-display: -0.03em;
   --letter-spacing-eyebrow: 0.075em;
   --letter-spacing-meta: 0.05em;
