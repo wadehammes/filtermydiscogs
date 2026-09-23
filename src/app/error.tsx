@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import styles from "src/styles/modules/error-boundary.module.css";
-import { isLocalDevHost } from "src/utils/isLocalDevHost";
+import { ErrorFallbackView } from "src/app/ErrorFallbackView";
 
 export default function RootError({
   error,
@@ -12,35 +10,13 @@ export default function RootError({
   reset: () => void;
   retry: () => void;
 }) {
-  const showErrorDetails = isLocalDevHost();
-
-  useEffect(() => {
-    if (showErrorDetails) {
-      console.error("Root error:", error);
-    }
-  }, [error, showErrorDetails]);
-
   return (
-    <div className={styles.shell}>
-      <div className={styles.container}>
-        <h1 className={styles.titleRoot}>Something went wrong!</h1>
-        <p className={styles.message}>
-          We encountered an unexpected error. Please try again.
-        </p>
-        {showErrorDetails ? (
-          <details className={styles.details}>
-            <summary>Error details (development only)</summary>
-            <pre className={styles.detailsContent}>{error.message}</pre>
-          </details>
-        ) : null}
-        <button
-          type="button"
-          className={styles.retryButton}
-          onClick={() => retry()}
-        >
-          Try again
-        </button>
-      </div>
-    </div>
+    <ErrorFallbackView
+      title="Something went wrong"
+      message="We hit an unexpected problem. Try again, or reload the page if it keeps happening."
+      error={error}
+      onRetry={() => retry()}
+      logLabel="Root error:"
+    />
   );
 }

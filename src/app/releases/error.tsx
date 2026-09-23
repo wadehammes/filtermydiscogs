@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import styles from "src/styles/modules/error-boundary.module.css";
-import { isLocalDevHost } from "src/utils/isLocalDevHost";
+import { ErrorFallbackView } from "src/app/ErrorFallbackView";
 
 export default function ReleasesError({
   error,
@@ -12,35 +10,14 @@ export default function ReleasesError({
   reset: () => void;
   retry: () => void;
 }) {
-  const showErrorDetails = isLocalDevHost();
-
-  useEffect(() => {
-    if (showErrorDetails) {
-      console.error("Releases page error:", error);
-    }
-  }, [error, showErrorDetails]);
-
   return (
-    <div className={styles.shell}>
-      <div className={styles.container}>
-        <h2 className={styles.title}>Failed to load releases</h2>
-        <p className={styles.message}>
-          We couldn't load your collection. Please try again.
-        </p>
-        {showErrorDetails ? (
-          <details className={styles.details}>
-            <summary>Error details (development only)</summary>
-            <pre className={styles.detailsContent}>{error.message}</pre>
-          </details>
-        ) : null}
-        <button
-          type="button"
-          className={styles.retryButton}
-          onClick={() => retry()}
-        >
-          Retry
-        </button>
-      </div>
-    </div>
+    <ErrorFallbackView
+      title="Failed to load releases"
+      message="We couldn't load your collection. Try again in a moment."
+      error={error}
+      onRetry={() => retry()}
+      logLabel="Releases page error:"
+      titleVariant="section"
+    />
   );
 }

@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
-import { Assistant, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Providers } from "src/components/Providers";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
@@ -13,11 +13,11 @@ import {
 
 import "src/styles/global.css";
 
-const assistant = Assistant({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "600", "700"],
   display: "swap",
-  variable: "--font-assistant",
+  variable: "--font-dm-sans",
   preload: true,
 });
 
@@ -65,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={classNames(assistant.variable, jetbrainsMono.variable)}
+      className={classNames(dmSans.variable, jetbrainsMono.variable)}
       suppressHydrationWarning
     >
       <head>

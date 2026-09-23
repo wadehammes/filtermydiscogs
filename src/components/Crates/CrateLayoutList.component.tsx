@@ -31,6 +31,8 @@ import {
 import { createPortal } from "react-dom";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
+import { ReleaseCardMeta } from "src/components/ReleaseCard/ReleaseCardMeta.component";
+import { ReleaseHeaderArtistLine } from "src/components/ReleaseCard/ReleaseHeaderLinks.component";
 import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { useCrateActions, useCrateState } from "src/context/crate.context";
@@ -53,11 +55,7 @@ import type {
   CrateLayoutReleaseItem,
 } from "src/types/crate.types";
 import { definedProps } from "src/utils/definedProps";
-import { getReleaseImageUrl } from "src/utils/helpers";
-import {
-  formatArtistNames,
-  formatReleaseMetaLine,
-} from "src/utils/releaseDisplay";
+import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./CrateLayoutList.module.css";
 import { CrateReleaseActions } from "./CrateReleaseActions.component";
 import listStyles from "./CrateReleaseList.module.css";
@@ -107,6 +105,11 @@ const SortableReleaseRow = ({
   const release = item.release;
   const { basic_information } = release;
   const instanceId = String(release.instance_id);
+  const { artists, labels, title, year } = basic_information;
+  const labelUrl = getResourceUrl({
+    resourceUrl: labels[0]?.resource_url,
+    type: "label",
+  });
   const sortableId = getCrateLayoutSortableId(item);
   const {
     attributes,
@@ -120,18 +123,19 @@ const SortableReleaseRow = ({
   const imageUrl = getReleaseImageUrl({
     thumb: basic_information.thumb,
     cover_image: basic_information.cover_image,
-    width: 80,
-    height: 80,
+    width: 112,
+    height: 112,
     preferCoverImage: true,
   });
 
-  const artist = formatArtistNames(release);
-  const meta = formatReleaseMetaLine({ release, includeCatno: false }) || null;
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
     useReleaseCardOpenHandler({
       release,
       onReleaseClick,
     });
+  const releaseOpenFocusProps = definedProps(
+    canOpen ? { onFocus: prefetchReleaseOpen } : {},
+  );
 
   return (
     <li
@@ -161,29 +165,49 @@ const SortableReleaseRow = ({
       >
         <GripVerticalIcon />
       </IconButton>
+      <div className={listStyles.identity}>
+        <button
+          type="button"
+          className={listStyles.identityCoverButton}
+          onClick={openRelease}
+          aria-label={`Open ${title}`}
+          {...releaseOpenFocusProps}
+        >
+          <span className={listStyles.cover}>
+            <Image
+              src={imageUrl}
+              alt=""
+              width={56}
+              height={56}
+              sizes="(width >= 1024px) 56px, 48px"
+            />
+          </span>
+        </button>
+        <div className={listStyles.identityText}>
+          <ReleaseHeaderArtistLine
+            artists={artists}
+            className={listStyles.identityArtist}
+            linkClassName={listStyles.identityMetaLink}
+          />
+          <button
+            type="button"
+            className={listStyles.identityTitle}
+            onClick={openRelease}
+            {...releaseOpenFocusProps}
+          >
+            {title}
+          </button>
+          <ReleaseCardMeta
+            labelName={labels[0]?.name}
+            labelUrl={labelUrl}
+            year={year}
+            metaClassName={listStyles.identityMeta}
+          />
+        </div>
+      </div>
       <div className={listStyles.noteSlot}>
         <ReleaseNotes release={release} variant="crate" />
       </div>
-      <button
-        type="button"
-        className={listStyles.identity}
-        onClick={openRelease}
-        aria-label={`Open ${basic_information.title}`}
-        {...definedProps(canOpen ? { onFocus: prefetchReleaseOpen } : {})}
-      >
-        <span className={listStyles.cover}>
-          <Image src={imageUrl} alt="" width={40} height={40} sizes="40px" />
-        </span>
-        <span className={listStyles.identityText}>
-          <span className={listStyles.identityArtist}>{artist}</span>
-          <span className={listStyles.identityTitle}>
-            {basic_information.title}
-          </span>
-          {meta ? (
-            <span className={listStyles.identityMeta}>{meta}</span>
-          ) : null}
-        </span>
-      </button>
       <div className={listStyles.actions}>
         <CrateReleaseActions
           packedEnabled={packedEnabled}
