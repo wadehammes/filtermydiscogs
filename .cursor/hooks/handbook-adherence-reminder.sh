@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# beforeSubmitPrompt: remind the agent to follow docs/handbook/ before acting.
+# Optional beforeSubmitPrompt reminder (disabled in hooks.json — redundant with AGENTS.md + always-on rule + sessionStart).
 
 source "$(dirname "$0")/_lib.sh"
 hook_input

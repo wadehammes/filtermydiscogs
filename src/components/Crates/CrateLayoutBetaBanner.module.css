@@ -1,0 +1,45 @@
+.banner {
+  background: color-mix(in srgb, var(--warning) 12%, var(--background));
+  border-bottom: 1px solid color-mix(in srgb, var(--warning) 40%, var(--border));
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+
+  @media (width >= 768px) {
+    padding-inline: var(--space-6);
+  }
+
+  @media (width >= 1280px) {
+    padding-inline: var(--space-10);
+  }
+}
+
+.text {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+  text-align: left;
+}
+
+.betaLabel {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.link {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+
+  &:hover {
+    color: color-mix(in srgb, var(--primary) 85%, var(--foreground));
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-ui);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}

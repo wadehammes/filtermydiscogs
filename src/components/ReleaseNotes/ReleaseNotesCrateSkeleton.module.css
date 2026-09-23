@@ -1,0 +1,42 @@
+.fieldStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.fieldGroup,
+.selectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.textareaBar,
+.selectLabel,
+.selectBar,
+.countBar {
+  border-radius: var(--radius-ui);
+}
+
+.selectLabel {
+  height: 0.875rem;
+  width: 4.5rem;
+}
+
+.selectBar {
+  height: var(--input-height);
+  width: 100%;
+}
+
+.textareaBar {
+  min-height: 4lh;
+  width: 100%;
+}
+
+.countBar {
+  align-self: flex-end;
+  height: 0.75rem;
+  width: 3.5rem;
+}

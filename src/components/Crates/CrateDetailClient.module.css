@@ -24,9 +24,10 @@
 }
 
 .detailMain {
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-direction: column;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   gap: var(--space-5);
   width: 100%;
 }
@@ -35,6 +36,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  grid-column: 1;
+  grid-row: 1;
   width: 100%;
 
   @media (width >= 1024px) {
@@ -47,7 +50,19 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  padding-inline-end: calc(2.25rem + var(--space-3));
   width: 100%;
+}
+
+.stickyCrateActionsMenu {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  height: fit-content;
+  place-self: start end;
+  position: sticky;
+  top: var(--space-4);
+  width: fit-content;
+  z-index: calc(var(--z-2-sticky) + 1);
 }
 
 .crateSelector {
@@ -88,6 +103,8 @@
   flex: 1;
   flex-direction: column;
   gap: var(--space-5);
+  grid-column: 1;
+  grid-row: 2;
   width: 100%;
 
   @media (width >= 1024px) {
@@ -153,7 +170,6 @@
 .releasesPanelBody {
   border-bottom-left-radius: calc(var(--radius-card) - 1px);
   border-bottom-right-radius: calc(var(--radius-card) - 1px);
-  overflow: hidden;
 
   &:first-child {
     border-top-left-radius: calc(var(--radius-card) - 1px);

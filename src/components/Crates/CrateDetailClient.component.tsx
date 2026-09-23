@@ -18,8 +18,10 @@ import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClic
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { countVisibleCrateReleases } from "src/lib/crate-layout";
+import { CrateDetailActionsMenu } from "./CrateDetailActionsMenu.component";
 import styles from "./CrateDetailClient.module.css";
 import { CrateDetailHeader } from "./CrateDetailHeader.component";
+import { CrateLayoutBetaBanner } from "./CrateLayoutBetaBanner.component";
 import { CrateLayoutList } from "./CrateLayoutList.component";
 
 interface CrateDetailClientProps {
@@ -88,6 +90,9 @@ const CrateDetailWorkspace = ({
   return (
     <div className={styles.detailMain}>
       <CrateDetailHeader />
+      {activeCrateId ? (
+        <CrateDetailActionsMenu className={styles.stickyCrateActionsMenu} />
+      ) : null}
 
       <div className={styles.workspace}>
         <aside className={styles.notesColumn}>
@@ -123,7 +128,7 @@ const CrateDetailWorkspace = ({
   );
 };
 
-function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
+const CrateDetailClientContent = ({ crateId }: CrateDetailClientProps) => {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { crates, isLoading, selectCrate, selectedReleases } = useCrate();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
@@ -147,6 +152,7 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
     <CollectionPlaybackPageShell
       currentPage="crates"
       hideFilters
+      subheader={<CrateLayoutBetaBanner />}
       overlays={
         <ReleaseModalLazyOverlay
           release={selectedRelease}
@@ -180,8 +186,10 @@ function CrateDetailClientContent({ crateId }: CrateDetailClientProps) {
       </main>
     </CollectionPlaybackPageShell>
   );
-}
+};
 
-export default function CrateDetailClient({ crateId }: CrateDetailClientProps) {
+const CrateDetailClient = ({ crateId }: CrateDetailClientProps) => {
   return <CrateDetailClientContent crateId={crateId} />;
-}
+};
+
+export default CrateDetailClient;

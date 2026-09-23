@@ -14,6 +14,7 @@ interface CollectionPlaybackPageShellProps {
   mainClassName?: string;
   overlays?: ReactNode;
   scrollElement?: HTMLElement | null;
+  subheader?: ReactNode;
 }
 
 export const CollectionPlaybackPageShell = ({
@@ -25,6 +26,7 @@ export const CollectionPlaybackPageShell = ({
   mainClassName,
   overlays,
   scrollElement,
+  subheader,
 }: CollectionPlaybackPageShellProps) => {
   const headerBarProps = definedProps({
     allReleasesLoaded,
@@ -42,11 +44,12 @@ export const CollectionPlaybackPageShell = ({
         scrollElement,
       })}
       header={<StickyHeaderBar {...headerBarProps} part="nav" />}
-      {...(hideFilters
-        ? {}
-        : {
-            subheader: <StickyHeaderBar {...headerBarProps} part="filters" />,
-          })}
+      subheader={
+        subheader ??
+        (hideFilters ? undefined : (
+          <StickyHeaderBar {...headerBarProps} part="filters" />
+        ))
+      }
     >
       {children}
     </PlaybackPageShell>

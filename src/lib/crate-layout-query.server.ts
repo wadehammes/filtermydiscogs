@@ -23,6 +23,7 @@ const crateReleaseLayoutSelect = {
   release_data: true,
   found_at: true,
   sort_order: true,
+  section_id: true,
 } satisfies Prisma.CrateReleaseSelect;
 
 const crateReleaseLegacySelect = {
@@ -71,10 +72,13 @@ export async function findCrateReleasesForLayout({
       },
     });
 
-    return legacyRows.map((row, index) => ({
-      ...row,
-      sort_order: (index + 1) * CRATE_LAYOUT_SORT_STEP,
-    }));
+    return legacyRows.map(
+      (row, index): CrateReleaseLayoutRow => ({
+        ...row,
+        sort_order: (index + 1) * CRATE_LAYOUT_SORT_STEP,
+        section_id: null,
+      }),
+    );
   }
 }
 
@@ -82,6 +86,8 @@ const crateMarkerSelect = {
   id: true,
   label: true,
   sort_order: true,
+  parent_id: true,
+  accent_key: true,
 } satisfies Prisma.CrateSetMarkerSelect;
 
 export type CrateSetMarkerLayoutRow = Prisma.CrateSetMarkerGetPayload<{

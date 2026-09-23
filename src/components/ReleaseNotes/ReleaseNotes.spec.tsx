@@ -88,6 +88,35 @@ describe("ReleaseNotes", () => {
     });
   });
 
+  it("shows a crate notes skeleton while collection fields are loading", () => {
+    po.mockApi.collectionFields.mockImplementation(() => new Promise(() => {}));
+
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "crate",
+    });
+
+    expect(
+      screen.getByTestId("fmdReleaseNotesCrateSkeleton"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "Notes" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders crate scratchpad fields after collection fields load", async () => {
+    po.renderReleaseNotes({
+      release: releaseFactory.forNotesEditor(12345, { notes: [] }),
+      variant: "crate",
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("textbox", { name: "Notes" }),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("keeps modal note fields editable while a save is in flight", async () => {
     const user = userEvent.setup();
     let resolveSave: ((value: { success: boolean }) => void) | undefined;

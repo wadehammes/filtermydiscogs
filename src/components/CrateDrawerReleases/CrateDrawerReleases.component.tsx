@@ -20,7 +20,6 @@ export const CrateDrawerReleases = () => {
     isPacked,
     layoutItems,
     onReleaseClick,
-    packedCount,
     packedEnabled,
     removeFromCrate,
     selectedReleases,
@@ -74,7 +73,7 @@ export const CrateDrawerReleases = () => {
   });
   const showAllPackedState =
     packedEnabled && visibleReleaseCount === 0 && selectedReleases.length > 0;
-  const showPackingToolbar = packedEnabled && packedCount > 0;
+  const showPackingToolbar = packedEnabled;
 
   return (
     <div className={styles.releasesSection}>

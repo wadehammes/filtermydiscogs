@@ -70,3 +70,49 @@ run_pnpm() {
   fi
 }
 
+# Map a changed repo-relative path to handbook chapter filenames (space-separated, unique).
+# Used by stop-hook drift checks and optional postToolUse nudges.
+handbook_chapters_for_path() {
+  local file="$1"
+  local chapters=()
+
+  case "$file" in
+    docs/handbook/*)
+      return 0
+      ;;
+    src/tests/factories/*)
+      chapters+=("factories.md")
+      ;;
+    src/components/Crates/* | src/lib/crate-layout* | src/lib/crate-section-layout*)
+      chapters+=("database.md" "source-layout.md" "conventions.md" "factories.md")
+      ;;
+    *.spec.ts | *.spec.tsx)
+      chapters+=("conventions.md")
+      ;;
+    *.module.css)
+      chapters+=("conventions.md")
+      ;;
+    src/app/api/*)
+      chapters+=("database.md" "patterns.md")
+      ;;
+    src/app/*)
+      chapters+=("patterns.md")
+      ;;
+    src/components/*)
+      chapters+=("components.md")
+      ;;
+    src/hooks/* | src/context/* | src/atoms/*)
+      chapters+=("patterns.md")
+      ;;
+    src/lib/* | prisma/*)
+      chapters+=("database.md")
+      ;;
+  esac
+
+  if [ "${#chapters[@]}" -eq 0 ]; then
+    chapters+=("conventions.md")
+  fi
+
+  printf '%s\n' "${chapters[@]}" | awk '!seen[$0]++' | tr '\n' ' '
+}
+

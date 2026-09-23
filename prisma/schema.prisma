@@ -86,8 +86,10 @@ model CrateRelease {
   added_at    DateTime @default(now())
   found_at    DateTime?
   sort_order  Int      @default(0)
+  section_id  String?
 
-  crate Crate @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
+  crate   Crate           @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
+  section CrateSetMarker? @relation("CrateReleaseSection", fields: [user_id, crate_id, section_id], references: [user_id, crate_id, id], onDelete: SetNull)
 
   @@id([user_id, crate_id, instance_id])
   @@index([user_id, crate_id])
@@ -104,10 +106,15 @@ model CrateSetMarker {
   id         String   @default(uuid())
   label      String
   sort_order Int
+  parent_id  String?
+  accent_key String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  crate Crate @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
+  crate    Crate            @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
+  parent   CrateSetMarker?  @relation("CrateSectionTree", fields: [user_id, crate_id, parent_id], references: [user_id, crate_id, id], onDelete: SetNull)
+  children CrateSetMarker[] @relation("CrateSectionTree")
+  releases CrateRelease[]   @relation("CrateReleaseSection")
 
   @@id([user_id, crate_id, id])
   @@index([user_id, crate_id, sort_order])

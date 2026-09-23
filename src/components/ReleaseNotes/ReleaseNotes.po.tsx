@@ -35,7 +35,7 @@ const mockToastSuccess = jest.mocked(toast.success);
 
 export type ReleaseNotesRenderProps = {
   release?: DiscogsRelease;
-  variant?: "inline" | "displayOnly" | "modal";
+  variant?: "inline" | "displayOnly" | "modal" | "crate";
   authenticated?: boolean;
   includeCollectionSync?: boolean;
 };

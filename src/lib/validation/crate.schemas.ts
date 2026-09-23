@@ -4,6 +4,7 @@ import {
   CRATE_NOTES_MAX_LENGTH,
   LEGACY_CRATE_MIGRATE_MAX,
 } from "src/constants/crate";
+import { CRATE_SECTION_ACCENT_KEYS } from "src/constants/crateSectionAccent";
 import type {
   CrateLayoutPutItem,
   CrateLayoutPutRequest,
@@ -139,6 +140,32 @@ const crateLayoutPutMarkerLabelField = z
       }),
   );
 
+const crateLayoutPutOptionalSectionIdField = z
+  .string()
+  .transform((value) => value.trim())
+  .pipe(z.string().min(1))
+  .nullable()
+  .optional();
+
+const crateLayoutPutOptionalParentIdField = z
+  .string()
+  .transform((value) => value.trim())
+  .pipe(z.string().min(1))
+  .nullable()
+  .optional();
+
+const crateLayoutPutOptionalAccentKeyField = z
+  .string()
+  .transform((value) => value.trim())
+  .pipe(z.enum(CRATE_SECTION_ACCENT_KEYS))
+  .nullable()
+  .optional();
+
+const crateLayoutPutMarkerFieldsSchema = z.object({
+  parent_id: crateLayoutPutOptionalParentIdField,
+  accent_key: crateLayoutPutOptionalAccentKeyField,
+});
+
 const crateLayoutPutReleaseItemSchema = z.object({
   kind: z.literal("release"),
   instance_id: z
@@ -149,29 +176,34 @@ const crateLayoutPutReleaseItemSchema = z.object({
         .string()
         .min(1, { message: "Release layout items require instance_id" }),
     ),
+  section_id: crateLayoutPutOptionalSectionIdField,
 });
 
-const crateLayoutPutMarkerWithoutIdSchema = z.object({
-  kind: z.literal("marker"),
-  label: crateLayoutPutMarkerLabelField,
-});
+const crateLayoutPutMarkerWithoutIdSchema = z
+  .object({
+    kind: z.literal("marker"),
+    label: crateLayoutPutMarkerLabelField,
+  })
+  .merge(crateLayoutPutMarkerFieldsSchema);
 
-const crateLayoutPutMarkerWithIdSchema = z.object({
-  kind: z.literal("marker"),
-  id: z
-    .string()
-    .transform((value) => value.trim())
-    .pipe(
-      z.string().min(1, {
-        message: "Marker id must be a non-empty string when provided",
-      }),
-    ),
-  label: crateLayoutPutMarkerLabelField,
-});
+const crateLayoutPutMarkerWithIdSchema = z
+  .object({
+    kind: z.literal("marker"),
+    id: z
+      .string()
+      .transform((value) => value.trim())
+      .pipe(
+        z.string().min(1, {
+          message: "Marker id must be a non-empty string when provided",
+        }),
+      ),
+    label: crateLayoutPutMarkerLabelField,
+  })
+  .merge(crateLayoutPutMarkerFieldsSchema);
 
 const crateLayoutPutMarkerItemSchema = z.union([
-  crateLayoutPutMarkerWithoutIdSchema,
   crateLayoutPutMarkerWithIdSchema,
+  crateLayoutPutMarkerWithoutIdSchema,
 ]);
 
 const crateLayoutPutItemSchema = z.union([

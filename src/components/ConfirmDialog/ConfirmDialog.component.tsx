@@ -1,3 +1,4 @@
+import { useId } from "react";
 import Button from "src/components/Button/Button.component";
 import { FormDialog } from "src/components/FormDialog/FormDialog.component";
 
@@ -24,6 +25,9 @@ export const ConfirmDialog = ({
   onCancel,
   isConfirming = false,
 }: ConfirmDialogProps) => {
+  const titleId = useId();
+  const descriptionId = useId();
+
   return (
     <FormDialog
       open={isOpen}
@@ -31,8 +35,8 @@ export const ConfirmDialog = ({
       testId="fmdConfirmDialog"
       title={title}
       description={message}
-      titleId="dialog-title"
-      descriptionId="dialog-message"
+      titleId={titleId}
+      descriptionId={descriptionId}
       footer={
         <>
           <Button

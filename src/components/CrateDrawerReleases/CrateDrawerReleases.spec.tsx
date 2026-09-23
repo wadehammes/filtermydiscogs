@@ -102,7 +102,7 @@ describe("CrateDrawerReleases", () => {
     expect(screen.queryByText("Peak hour")).not.toBeInTheDocument();
   });
 
-  it("does not show the hide filter when no items are packed", async () => {
+  it("shows the packing toolbar with zero progress when gig packing is enabled", async () => {
     mockApi.crate.mockResolvedValue(
       crateWithReleasesResponseFactory.withReleases(crateDrawerDefaultDetail, [
         crateDrawerReleasePacked,
@@ -118,12 +118,15 @@ describe("CrateDrawerReleases", () => {
       ).toBeInTheDocument();
     });
 
+    expect(screen.getByText("0 of 2 packed for gig")).toBeInTheDocument();
     expect(
-      screen.queryByRole("checkbox", {
+      screen.getByRole("checkbox", {
         name: /hide albums packed for your gig/i,
       }),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("Hide packed albums")).not.toBeInTheDocument();
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /clear all packed items/i }),
+    ).toBeDisabled();
   });
 
   it("shows the hide filter when at least one item is packed", async () => {

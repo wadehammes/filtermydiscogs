@@ -62,6 +62,7 @@ const buildSyncFindManyRows = (
     added_at: new Date("2026-01-01T00:00:00.000Z"),
     found_at: null,
     sort_order: 1000,
+    section_id: null,
   }));
 
 beforeAll(async () => {

@@ -1,59 +1,52 @@
-/**
- * In-memory per-user rate limiting for database operations.
- * Resets per serverless instance; pair with verified OAuth user IDs (see auth-request.ts).
- */
-
 interface RateLimitEntry {
   userId: number;
-  count: number;
+  readCount: number;
+  writeCount: number;
   resetAt: Date;
 }
 
 const rateLimitStore = new Map<number, RateLimitEntry>();
 
-/**
- * Rate limit configuration
- */
 const RATE_LIMIT_CONFIG = {
-  // Maximum number of database operations per window
   maxOperations: parseInt(process.env.DB_RATE_LIMIT_MAX || "100", 10),
-  // Time window in milliseconds (default: 1 minute)
   windowMs: parseInt(process.env.DB_RATE_LIMIT_WINDOW || "60000", 10),
-  // Maximum number of write operations per window
-  maxWrites: parseInt(process.env.DB_RATE_LIMIT_MAX_WRITES || "20", 10),
+  maxWrites: parseInt(process.env.DB_RATE_LIMIT_MAX_WRITES || "60", 10),
 };
 
-/**
- * Check if a user has exceeded rate limits
- */
+const cleanupExpiredEntries = (now: Date) => {
+  if (rateLimitStore.size <= 1000) {
+    return;
+  }
+
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (value.resetAt < now) {
+      rateLimitStore.delete(key);
+    }
+  }
+};
+
 export function checkRateLimit(
   userId: number,
   isWriteOperation = false,
 ): { allowed: boolean; remaining: number; resetAt: Date } {
   const now = new Date();
-  const entry = rateLimitStore.get(userId);
+  cleanupExpiredEntries(now);
 
-  // Clean up expired entries periodically
-  if (rateLimitStore.size > 1000) {
-    for (const [key, value] of rateLimitStore.entries()) {
-      if (value.resetAt < now) {
-        rateLimitStore.delete(key);
-      }
-    }
-  }
+  const maxOps = isWriteOperation
+    ? RATE_LIMIT_CONFIG.maxWrites
+    : RATE_LIMIT_CONFIG.maxOperations;
 
-  // If no entry exists or window has expired, create new entry
+  let entry = rateLimitStore.get(userId);
+
   if (!entry || entry.resetAt < now) {
     const resetAt = new Date(now.getTime() + RATE_LIMIT_CONFIG.windowMs);
-    const maxOps = isWriteOperation
-      ? RATE_LIMIT_CONFIG.maxWrites
-      : RATE_LIMIT_CONFIG.maxOperations;
-
-    rateLimitStore.set(userId, {
+    entry = {
       userId,
-      count: 1,
+      readCount: isWriteOperation ? 0 : 1,
+      writeCount: isWriteOperation ? 1 : 0,
       resetAt,
-    });
+    };
+    rateLimitStore.set(userId, entry);
 
     return {
       allowed: true,
@@ -62,12 +55,9 @@ export function checkRateLimit(
     };
   }
 
-  // Check if limit exceeded
-  const maxOps = isWriteOperation
-    ? RATE_LIMIT_CONFIG.maxWrites
-    : RATE_LIMIT_CONFIG.maxOperations;
+  const currentCount = isWriteOperation ? entry.writeCount : entry.readCount;
 
-  if (entry.count >= maxOps) {
+  if (currentCount >= maxOps) {
     return {
       allowed: false,
       remaining: 0,
@@ -75,13 +65,19 @@ export function checkRateLimit(
     };
   }
 
-  // Increment count
-  entry.count++;
+  if (isWriteOperation) {
+    entry.writeCount += 1;
+  } else {
+    entry.readCount += 1;
+  }
+
   rateLimitStore.set(userId, entry);
+
+  const nextCount = isWriteOperation ? entry.writeCount : entry.readCount;
 
   return {
     allowed: true,
-    remaining: maxOps - entry.count,
+    remaining: maxOps - nextCount,
     resetAt: entry.resetAt,
   };
 }

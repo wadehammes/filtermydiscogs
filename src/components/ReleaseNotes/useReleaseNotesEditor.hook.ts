@@ -3,15 +3,14 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "src/context/auth.context";
 import { useSaveReleaseNotesMutation } from "src/hooks/mutations/useCollectionMutations";
-import { useCollectionFieldsQuery } from "src/hooks/queries/useCollectionFieldsQuery";
 import type { DiscogsRelease } from "src/types";
 import {
-  buildCollectionFieldsMap,
   getEditableConditionFields,
   getReleaseNotesDisplay,
   isEditableCollectionField,
   parseReleaseId,
 } from "src/utils/releaseNotes";
+import { useReleaseNotesCollectionFields } from "./ReleaseNotesCollectionFields.context";
 
 export const useReleaseNotesEditor = (release: DiscogsRelease) => {
   const { state: authState } = useAuth();
@@ -19,17 +18,11 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const saveNotesMutation = useSaveReleaseNotesMutation({ username });
-
-  const { data: fieldsResponse, isPending: isFieldsLoading } =
-    useCollectionFieldsQuery({
-      username,
-      enabled: authState.isAuthenticated && !!username,
-    });
-
-  const fieldsById = useMemo(
-    () => buildCollectionFieldsMap(fieldsResponse?.fields ?? []),
-    [fieldsResponse?.fields],
-  );
+  const {
+    fields: collectionFields,
+    fieldsById,
+    isFieldsLoading,
+  } = useReleaseNotesCollectionFields();
 
   const displayedNotes = useMemo(
     () => getReleaseNotesDisplay({ release, fieldsById }),
@@ -42,16 +35,13 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
   );
 
   const editableFields = useMemo(
-    () =>
-      (fieldsResponse?.fields ?? []).filter((field) =>
-        isEditableCollectionField(field),
-      ),
-    [fieldsResponse?.fields],
+    () => collectionFields.filter((field) => isEditableCollectionField(field)),
+    [collectionFields],
   );
 
   const editableConditionFields = useMemo(
-    () => getEditableConditionFields(fieldsResponse?.fields ?? []),
-    [fieldsResponse?.fields],
+    () => getEditableConditionFields(collectionFields),
+    [collectionFields],
   );
 
   const canEdit =
@@ -115,12 +105,12 @@ export const useReleaseNotesEditor = (release: DiscogsRelease) => {
     editableFields,
     editableConditionFields,
     errorMessage,
-    fields: fieldsResponse?.fields ?? [],
+    fields: collectionFields,
     handleSave,
     cardDisplayedNotes,
     hasNotes: cardDisplayedNotes.length > 0,
     isDialogOpen,
-    isFieldsLoading: authState.isAuthenticated && !!username && isFieldsLoading,
+    isFieldsLoading,
     isSaving: saveNotesMutation.isPending,
     openDialog,
   };

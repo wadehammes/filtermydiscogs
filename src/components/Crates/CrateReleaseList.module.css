@@ -76,19 +76,20 @@
 }
 
 .cover {
-  border-radius: var(--radius-ui);
   flex-shrink: 0;
   overflow: hidden;
+  border-radius: var(--radius-ui);
 
   img {
     display: block;
     height: 3rem;
     object-fit: cover;
     width: 3rem;
+    border-radius: var(--radius-ui);
 
     @media (width >= 1024px) {
-      height: 3.5rem;
-      width: 3.5rem;
+      height: 5rem;
+      width: 5rem;
     }
   }
 }

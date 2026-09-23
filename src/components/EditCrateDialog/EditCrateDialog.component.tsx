@@ -142,8 +142,8 @@ export const EditCrateDialog = () => {
         </h3>
         <p className={styles.settingDescription}>
           Mark each album as packed once it&apos;s in the bag for your gig. Turn
-          this off to hide the checklist in this crate—your packed marks are
-          still saved.
+          this off to hide the checklist in this crate. Your packed marks stay
+          saved.
         </p>
         <FormDialog.CheckboxField
           label="Show gig packing checklist"

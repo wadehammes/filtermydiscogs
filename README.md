@@ -6,17 +6,17 @@ A web application to filter and explore your Discogs collection, including vinyl
 
 ## Features
 
-- **Discogs OAuth** — Secure login with your Discogs account
-- **Full collection browse** — Paginated sync across every format Discogs supports, with local cache for faster return visits
-- **Search & filters** — Search by title, artist, label, or notes; filter by genre/style, year, and format (with ANY / ALL / NONE match modes); save named filter views
-- **Sorting & views** — Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
-- **Release details** — In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
-- **In-app playback** — Preview tracks from a persistent mini player and queue while you browse; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
-- **Crates** — Multiple crates for gigs or themed lists; reorder releases, section markers, set notes, and optional gig-packing progress; share a crate publicly
-- **Collection insights** — Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
-- **Mosaic generator** — Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
-- **Settings** — Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, and clear stored data
-- **Responsive UI** — Desktop sidebar crates, mobile drawers, and touch-friendly filters
+- **Discogs OAuth**: Secure login with your Discogs account
+- **Full collection browse**: Paginated sync across every format Discogs supports, with local cache for faster return visits
+- **Search & filters**: Search by title, artist, label, or notes; filter by genre/style, year, and format (with ANY / ALL / NONE match modes); save named filter views
+- **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
+- **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
+- **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
+- **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link
+- **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
+- **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
+- **Settings**: Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, and clear stored data
+- **Responsive UI**: Desktop sidebar crates, mobile drawers, and touch-friendly filters
 
 ## Setup
 
@@ -198,7 +198,7 @@ If **`create-release`** failed on **Reset Main**, use [`platform.md` → Branchi
 
 Agent wiring for this repo (also documented in [`docs/handbook/platform.md` → Cursor](./docs/handbook/platform.md#cursor-agents)):
 
-- **Hooks** — [`.cursor/hooks.json`](./.cursor/hooks.json): handbook routing, convention guards, commit via [`scripts/git-commit.sh`](./scripts/git-commit.sh), session-end lint/tests.
+- **Hooks** — [`.cursor/hooks.json`](./.cursor/hooks.json): brief session handbook pointer, convention guards on edits, commit via [`scripts/git-commit.sh`](./scripts/git-commit.sh), optional session-end drift/lint/tests (see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
 - **Rules / skills** — [`.cursor/rules/`](./.cursor/rules/), [`.cursor/skills/README.md`](./.cursor/skills/README.md) (task checklists; handbook stays canonical).
 - **Fallow MCP** — [`.cursor/mcp.json`](./.cursor/mcp.json); optional `pnpm fallow:health` (see **Development** above).
 Use **mise** so hooks resolve the same **pnpm** as your shell (`mise bootstrap`). Day-to-day editing is **Zed** (see **Setup**); Cursor is for agents only.

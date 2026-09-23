@@ -28,8 +28,8 @@ interface CrateDrawerMobileProps {
 }
 
 const useShowPackingToolbar = () => {
-  const { packedCount, packedEnabled } = useCrateDrawerContext();
-  return packedEnabled && packedCount > 0;
+  const { packedEnabled } = useCrateDrawerContext();
+  return packedEnabled;
 };
 
 const CrateDrawerMobile = ({
