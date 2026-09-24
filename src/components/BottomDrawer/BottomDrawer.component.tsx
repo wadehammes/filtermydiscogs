@@ -12,6 +12,9 @@ import { ViewTransitionShell } from "src/components/ViewTransitionShell/ViewTran
 import { definedProps } from "src/utils/definedProps";
 import styles from "./BottomDrawer.module.css";
 
+const BottomDrawerBodyPortal = ({ children }: { children: ReactNode }) =>
+  createPortal(children, document.body);
+
 interface BottomDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -152,6 +155,8 @@ export const BottomDrawer = ({
   }
 
   return (
-    <BrowserOnly>{createPortal(drawerContent, document.body)}</BrowserOnly>
+    <BrowserOnly>
+      <BottomDrawerBodyPortal>{drawerContent}</BottomDrawerBodyPortal>
+    </BrowserOnly>
   );
 };

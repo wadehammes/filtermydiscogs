@@ -35,7 +35,7 @@
 .displayHeading {
   color: var(--foreground);
   font-family: var(--font-family-heading);
-  font-size: clamp(2.75rem, 7vw + 1rem, 5.75rem);
+  font-size: clamp(2.75rem, 7vw + 1rem, 4.75rem);
   font-weight: var(--font-bold);
   letter-spacing: var(--letter-spacing-display);
   line-height: 1.05;
