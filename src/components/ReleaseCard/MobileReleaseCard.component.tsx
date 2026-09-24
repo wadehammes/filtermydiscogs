@@ -127,7 +127,7 @@ const MobileReleaseCardComponent = ({
           <div className={styles.mainContent}>
             <ReleaseCardCatalog
               catno={catno}
-              className={metaStyles.catalogRowMobile}
+              className={metaStyles.catalogRow}
             />
             <div className={styles.releaseInfo}>
               <ReleaseCardTitle

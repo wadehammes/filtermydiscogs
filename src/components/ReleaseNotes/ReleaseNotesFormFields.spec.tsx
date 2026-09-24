@@ -5,6 +5,10 @@ import { ReleaseNotesFormFieldsPageObject } from "src/components/ReleaseNotes/Re
 import { COLLECTION_NOTE_MAX_LENGTH } from "src/constants/collection";
 import { RELEASE_NOTE_TOO_LONG_MESSAGE } from "src/lib/validation/releaseNotes.schemas";
 import { discogsCollectionFieldFactory } from "src/tests/factories/DiscogsCollectionField.factory";
+import {
+  expectPortaledPopupAttachedToBody,
+  openFilterSelect,
+} from "src/tests/filterControlTestHelpers";
 import { act, screen, waitFor } from "test-utils";
 
 let po: ReleaseNotesFormFieldsPageObject;
@@ -66,6 +70,19 @@ describe("ReleaseNotesFormFields", () => {
     expect(
       screen.queryByRole("textbox", { name: "Notes" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("portals the note field select listbox to document.body", async () => {
+    po.renderReleaseNotesFormFields({
+      textFields: [notesField, otherNotesField],
+      defaultValues: { "3": "Signed copy", "4": "Gift from a friend" },
+    });
+
+    await openFilterSelect("Note Field");
+
+    expectPortaledPopupAttachedToBody(
+      screen.getByRole("listbox", { name: "Note Field" }),
+    );
   });
 
   it("blurs the previous text field when switching the field picker", async () => {

@@ -67,3 +67,10 @@
 .mobileDrawerContentFlushTop {
   padding-top: 0;
 }
+
+.overlayStack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}

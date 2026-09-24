@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { SettingsClientPageObject } from "src/components/Settings/SettingsClient.po";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import {
+  expectPortaledPopupAttachedToBody,
+  openFilterSelect,
+} from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
@@ -79,6 +83,30 @@ describe("SettingsClient", () => {
 
     expect(screen.getByText("Theme")).toBeInTheDocument();
     expect(screen.getByText("Default view")).toBeInTheDocument();
+  });
+
+  it("portals the default view select listbox to document.body", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    po.renderSettingsClient();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Appearance Theme and default view",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Appearance" }),
+      ).toBeInTheDocument();
+    });
+
+    await openFilterSelect("Default view");
+
+    expectPortaledPopupAttachedToBody(
+      screen.getByRole("listbox", { name: "Default view" }),
+    );
   });
 
   it("enables analytics cookies in local storage", async () => {

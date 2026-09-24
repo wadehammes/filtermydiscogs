@@ -1,4 +1,4 @@
-import { Activity, useMemo, useState } from "react";
+import { Activity, useCallback, useMemo, useState } from "react";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
@@ -10,6 +10,7 @@ import Select from "src/components/Select/Select.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
+import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import styles from "./FiltersBar.module.css";
 
@@ -48,9 +49,11 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
     setIsFiltersDrawerOpen(true);
   };
 
-  const closeFiltersDrawer = () => {
+  const closeFiltersDrawer = useCallback(() => {
     setIsFiltersDrawerOpen(false);
-  };
+  }, []);
+
+  useCloseMobileDrawerOnDesktop(closeFiltersDrawer);
 
   const isDisabled = disabled || fetchingCollection || !collection || error;
 

@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { SelectPageObject } from "src/components/Select/Select.po";
 import { selectOptionFactory } from "src/tests/factories/SelectOption.factory";
 import {
   closeOpenFilterComboboxes,
+  expectFilterPopupAbovePlaybackDock,
+  FILTER_BAR_POPOVER_Z_INDEX,
+  openFilterSelect,
   selectMultiFilterOption,
   selectSingleFilterOption,
 } from "src/tests/filterControlTestHelpers";
@@ -404,5 +408,28 @@ describe("Select", () => {
     expect(
       container.querySelector('[aria-label="Clear Test Select"]'),
     ).not.toBeInTheDocument();
+  });
+
+  it("portals the listbox through OverlayStack above the playback dock", async () => {
+    const handleChange = jest.fn();
+
+    render(
+      <OverlayStack
+        escapeStackingContext
+        popoverZIndex={FILTER_BAR_POPOVER_Z_INDEX}
+      >
+        <Select
+          label="Stacked Select"
+          options={po.options}
+          onChange={handleChange}
+        />
+      </OverlayStack>,
+    );
+
+    await openFilterSelect("Stacked Select");
+
+    expectFilterPopupAbovePlaybackDock(
+      screen.getByRole("listbox", { name: "Stacked Select" }),
+    );
   });
 });

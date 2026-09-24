@@ -45,38 +45,38 @@ export const BottomDrawerPanel = ({
       [styles.drawerChrome]: chrome,
     })}
   >
-    {hasHeader ? (
-      <div
-        className={classNames(
-          chrome ? styles.headerChrome : styles.header,
-          headerClassName,
-        )}
-      >
-        <div className={styles.headerContent}>
-          {title ? (
-            <h2
-              className={chrome ? styles.titleChrome : styles.title}
-              {...definedProps({ id: titleId })}
-            >
-              {title}
-            </h2>
-          ) : null}
-          {headerContent}
-        </div>
-        {closePlacement === "header" ? (
-          <BottomDrawerCloseButton
-            placement="header"
-            ariaLabel={closeButtonAriaLabel}
-            onClose={onClose}
-          />
-        ) : null}
-      </div>
-    ) : null}
     <OverlayStack
       className={styles.overlayStack}
       escapeStackingContext
       popoverZIndex="calc(var(--z-10-bottom-drawer) + 1)"
     >
+      {hasHeader ? (
+        <div
+          className={classNames(
+            chrome ? styles.headerChrome : styles.header,
+            headerClassName,
+          )}
+        >
+          <div className={styles.headerContent}>
+            {title ? (
+              <h2
+                className={chrome ? styles.titleChrome : styles.title}
+                {...definedProps({ id: titleId })}
+              >
+                {title}
+              </h2>
+            ) : null}
+            {headerContent}
+          </div>
+          {closePlacement === "header" ? (
+            <BottomDrawerCloseButton
+              placement="header"
+              ariaLabel={closeButtonAriaLabel}
+              onClose={onClose}
+            />
+          ) : null}
+        </div>
+      ) : null}
       <div
         className={classNames(styles.content, contentClassName, {
           [styles.contentFlush]: chrome && contentFlush,

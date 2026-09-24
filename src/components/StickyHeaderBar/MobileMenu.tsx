@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { useAuth } from "src/context/auth.context";
@@ -6,6 +6,7 @@ import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { ViewActionTypes } from "src/context/view.context";
+import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import {
   useAppliedFilterCount,
   useFiltersDispatch,
@@ -46,6 +47,17 @@ export const MobileMenu = ({
   const viewDispatch = useViewDispatch();
   const isRandomMode = useIsRandomMode();
   const appliedFilterCount = useAppliedFilterCount();
+
+  const closeMenuDrawer = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const closeFiltersDrawer = useCallback(() => {
+    setIsFiltersDrawerOpen(false);
+  }, []);
+
+  useCloseMobileDrawerOnDesktop(closeMenuDrawer);
+  useCloseMobileDrawerOnDesktop(closeFiltersDrawer);
 
   const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isDisabled) {
@@ -111,7 +123,7 @@ export const MobileMenu = ({
 
       <BottomDrawer
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={closeMenuDrawer}
         chrome
         contentFlush
         title="Menu"
@@ -143,7 +155,7 @@ export const MobileMenu = ({
 
       <FiltersDrawer
         isOpen={isFiltersDrawerOpen}
-        onClose={() => setIsFiltersDrawerOpen(false)}
+        onClose={closeFiltersDrawer}
       />
     </>
   );

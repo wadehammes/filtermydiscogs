@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { CratesClientPageObject } from "src/components/Crates/CratesClient.po";
+import {
+  expectPortaledPopupAttachedToBody,
+  openFilterSelect,
+} from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
 let po: CratesClientPageObject;
@@ -55,5 +59,21 @@ describe("CrateDetailClient", () => {
     expect(
       screen.getByTestId("fmdCrateDetailHeaderActions"),
     ).toBeInTheDocument();
+  });
+
+  it("portals the crate selector listbox to document.body", async () => {
+    po.renderCrateDetail();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: /Select crate/i }),
+      ).toBeEnabled();
+    });
+
+    await openFilterSelect("Select crate");
+
+    expectPortaledPopupAttachedToBody(
+      screen.getByRole("listbox", { name: "Select crate" }),
+    );
   });
 });

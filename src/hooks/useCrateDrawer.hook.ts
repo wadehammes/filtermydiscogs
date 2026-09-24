@@ -1,4 +1,4 @@
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 function subscribeToMediaQuery(callback: () => void) {
   const mql = window.matchMedia("(min-width: 1024px)");
@@ -23,6 +23,11 @@ export const useCrateDrawer = () => {
     getServerSnapshot,
   );
   const [userToggled, setUserToggled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setUserToggled(null);
+  }, [isDesktop]);
+
   const isDrawerOpen = userToggled ?? isDesktop;
 
   const toggleDrawer = useCallback(() => {

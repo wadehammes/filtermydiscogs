@@ -2,11 +2,14 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { AutocompleteSelectPageObject } from "src/components/AutocompleteSelect/AutocompleteSelect.po";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import {
+  expectFilterPopupAbovePlaybackDock,
+  FILTER_BAR_POPOVER_Z_INDEX,
   openFilterCombobox,
   selectMultiFilterOption,
 } from "src/tests/filterControlTestHelpers";
-import { fireEvent, screen, waitFor } from "test-utils";
+import { fireEvent, render, screen, waitFor } from "test-utils";
 
 let po: AutocompleteSelectPageObject;
 
@@ -259,5 +262,27 @@ describe("AutocompleteSelect", () => {
 
     expect(handleChange).toHaveBeenCalledWith(["option2"]);
     expect(combobox).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("portals the combobox popup through OverlayStack above the playback dock", async () => {
+    render(
+      <OverlayStack
+        escapeStackingContext
+        popoverZIndex={FILTER_BAR_POPOVER_Z_INDEX}
+      >
+        <AutocompleteSelect
+          label="Stacked Autocomplete"
+          options={po.options}
+          onChange={jest.fn()}
+          multiple
+        />
+      </OverlayStack>,
+    );
+
+    await openFilterCombobox("Stacked Autocomplete");
+
+    expectFilterPopupAbovePlaybackDock(
+      screen.getByRole("dialog", { name: "Stacked Autocomplete" }),
+    );
   });
 });

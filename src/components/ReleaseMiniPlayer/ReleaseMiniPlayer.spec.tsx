@@ -16,6 +16,7 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import { expectReleaseCrateMenuAbovePlaybackDock } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
@@ -954,15 +955,7 @@ describe("ReleaseMiniPlayer", () => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
     });
 
-    const escapePortal = document.querySelector("[data-overlay-stack-escape]");
-
-    expect(escapePortal).toBeTruthy();
-    expect(escapePortal).toContainElement(
-      screen.getByTestId("fmdReleaseCrateMenu"),
-    );
-    expect(escapePortal).toHaveStyle({
-      zIndex: "calc(var(--z-9-playback-dock) + 1)",
-    });
+    expectReleaseCrateMenuAbovePlaybackDock();
   });
 
   it("adds the playing release to the active crate", async () => {
