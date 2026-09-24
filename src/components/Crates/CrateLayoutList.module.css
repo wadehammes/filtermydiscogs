@@ -1,7 +1,20 @@
+.layoutListTailInsertOverlay {
+  bottom: 0;
+  flex: none;
+  height: 0;
+  left: 0;
+  min-height: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  z-index: 1;
+}
+
 .layoutList {
   display: flex;
   flex-direction: column;
   gap: 0;
+  position: relative;
   width: 100%;
 }
 
@@ -407,14 +420,24 @@
   z-index: 3;
 }
 
-.insertZone:not(.insertZoneEdgeTop, .insertZoneEdgeBottom) {
+.insertZone:not(
+  .insertZoneEdgeTop,
+  .insertZoneEdgeBottom,
+  .layoutListTailInsertOverlay
+) {
   box-sizing: content-box;
   padding-block: calc(var(--space-2) / 2);
 }
 
 .insertZoneEdgeTop,
 .insertZoneEdgeBottom {
-  z-index: calc(var(--z-2-sticky) + 1);
+  z-index: 1;
+}
+
+.insertZone.layoutListTailInsertOverlay {
+  padding: 0;
+  position: absolute;
+  z-index: 1;
 }
 
 .insertZoneHitArea {
@@ -435,7 +458,7 @@
 .insertZoneEdgeTop .insertZoneHitArea {
   bottom: auto;
   top: 0;
-  transform: translateY(-50%);
+  transform: none;
 }
 
 .insertZoneEdgeBottom .insertZoneHitArea {
@@ -643,5 +666,10 @@
   pointer-events: none;
   position: fixed;
   transform: translateY(-1px);
+  transition:
+    opacity 80ms ease-out,
+    top 60ms linear,
+    left 60ms linear,
+    width 60ms linear;
   z-index: 1000;
 }
