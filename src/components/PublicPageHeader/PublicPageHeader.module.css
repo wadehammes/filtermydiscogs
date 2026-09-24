@@ -1,6 +1,6 @@
 .header {
   backdrop-filter: blur(0.75rem);
-  background: color-mix(in srgb, var(--card) 92%, transparent);
+  background: var(--background);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   padding: var(--space-3) var(--space-4);
   padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0));
