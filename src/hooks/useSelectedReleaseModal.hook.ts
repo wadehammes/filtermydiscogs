@@ -30,18 +30,47 @@ const prefetchReleaseForOpen = (
   queryClient: QueryClient,
   fallbackReleaseIndex: Map<string, DiscogsRelease>,
   instanceId: string,
+  options: { prefetchAuthenticatedModalChunk?: boolean } = {},
 ): void => {
+  const { prefetchAuthenticatedModalChunk = true } = options;
   const clickedRelease = fallbackReleaseIndex.get(instanceId);
 
   if (clickedRelease) {
-    prefetchReleaseOpenData(queryClient, clickedRelease);
+    prefetchReleaseOpenData(queryClient, clickedRelease, {
+      prefetchModalChunk: prefetchAuthenticatedModalChunk,
+    });
     return;
   }
 
-  prefetchReleaseModal();
+  if (prefetchAuthenticatedModalChunk) {
+    prefetchReleaseModal();
+  }
 };
 
-const useResolvedSelectedRelease = ({
+const useFallbackReleaseIndex = (fallbackReleases: DiscogsRelease[]) =>
+  useMemo(
+    () => buildReleaseIndexFromList(fallbackReleases ?? []),
+    [fallbackReleases],
+  );
+
+const useFallbackOnlySelectedRelease = (
+  fallbackReleases: DiscogsRelease[],
+  selectedReleaseId: string | null,
+) => {
+  const fallbackReleaseIndex = useFallbackReleaseIndex(fallbackReleases);
+
+  const selectedRelease = useMemo(() => {
+    if (!selectedReleaseId) {
+      return null;
+    }
+
+    return fallbackReleaseIndex.get(selectedReleaseId) ?? null;
+  }, [fallbackReleaseIndex, selectedReleaseId]);
+
+  return { fallbackReleaseIndex, selectedRelease };
+};
+
+const useCollectionBackedSelectedRelease = ({
   collectionUsername,
   fallbackReleases,
   selectedReleaseId,
@@ -54,10 +83,7 @@ const useResolvedSelectedRelease = ({
     enabled: !!collectionUsername,
   });
 
-  const fallbackReleaseIndex = useMemo(
-    () => buildReleaseIndexFromList(fallbackReleases ?? []),
-    [fallbackReleases],
-  );
+  const fallbackReleaseIndex = useFallbackReleaseIndex(fallbackReleases ?? []);
 
   const selectedRelease = useMemo(() => {
     if (!selectedReleaseId) {
@@ -72,7 +98,6 @@ const useResolvedSelectedRelease = ({
   return {
     fallbackReleaseIndex,
     selectedRelease,
-    selectedReleaseId,
   };
 };
 
@@ -115,10 +140,13 @@ const modalSyncReducer = (
   }
 };
 
-export const useSelectedReleaseModal = ({
-  collectionUsername = null,
-  fallbackReleases = [],
-}: UseSelectedReleaseModalParams = {}) => {
+const useUrlSyncedReleaseModal = ({
+  fallbackReleaseIndex,
+  prefetchAuthenticatedModalChunk,
+}: {
+  fallbackReleaseIndex: Map<string, DiscogsRelease>;
+  prefetchAuthenticatedModalChunk: boolean;
+}) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
@@ -148,12 +176,6 @@ export const useSelectedReleaseModal = ({
     }
   }, [selectedReleaseId]);
 
-  const { fallbackReleaseIndex, selectedRelease } = useResolvedSelectedRelease({
-    collectionUsername,
-    fallbackReleases,
-    selectedReleaseId,
-  });
-
   const buildUrl = useCallback(
     (instanceId: string | null) =>
       buildPathWithReleaseInstance({
@@ -166,7 +188,9 @@ export const useSelectedReleaseModal = ({
 
   const handleReleaseClick = useCallback(
     (instanceId: string) => {
-      prefetchReleaseForOpen(queryClient, fallbackReleaseIndex, instanceId);
+      prefetchReleaseForOpen(queryClient, fallbackReleaseIndex, instanceId, {
+        prefetchAuthenticatedModalChunk,
+      });
 
       dispatchModalSync({ type: "open", instanceId });
 
@@ -178,7 +202,14 @@ export const useSelectedReleaseModal = ({
 
       router.push(url, { scroll: false });
     },
-    [buildUrl, fallbackReleaseIndex, queryClient, router, selectedReleaseId],
+    [
+      buildUrl,
+      fallbackReleaseIndex,
+      prefetchAuthenticatedModalChunk,
+      queryClient,
+      router,
+      selectedReleaseId,
+    ],
   );
 
   const handleCloseModal = useCallback(() => {
@@ -199,10 +230,57 @@ export const useSelectedReleaseModal = ({
   }, [buildUrl, modalSync.optimisticId, router, urlInstanceId]);
 
   return {
-    selectedRelease,
     selectedReleaseId,
     handleReleaseClick,
     handleCloseModal,
+  };
+};
+
+export const useSelectedReleaseModal = ({
+  collectionUsername = null,
+  fallbackReleases = [],
+}: UseSelectedReleaseModalParams = {}) => {
+  const fallbackReleaseIndex = useFallbackReleaseIndex(fallbackReleases);
+
+  const urlModal = useUrlSyncedReleaseModal({
+    fallbackReleaseIndex,
+    prefetchAuthenticatedModalChunk: true,
+  });
+
+  const { selectedRelease } = useCollectionBackedSelectedRelease({
+    collectionUsername,
+    fallbackReleases,
+    selectedReleaseId: urlModal.selectedReleaseId,
+  });
+
+  return {
+    selectedRelease,
+    selectedReleaseId: urlModal.selectedReleaseId,
+    handleReleaseClick: urlModal.handleReleaseClick,
+    handleCloseModal: urlModal.handleCloseModal,
+  };
+};
+
+export const usePublicSelectedReleaseModal = ({
+  fallbackReleases = [],
+}: Pick<UseSelectedReleaseModalParams, "fallbackReleases"> = {}) => {
+  const fallbackReleaseIndex = useFallbackReleaseIndex(fallbackReleases);
+
+  const urlModal = useUrlSyncedReleaseModal({
+    fallbackReleaseIndex,
+    prefetchAuthenticatedModalChunk: false,
+  });
+
+  const { selectedRelease } = useFallbackOnlySelectedRelease(
+    fallbackReleases,
+    urlModal.selectedReleaseId,
+  );
+
+  return {
+    selectedRelease,
+    selectedReleaseId: urlModal.selectedReleaseId,
+    handleReleaseClick: urlModal.handleReleaseClick,
+    handleCloseModal: urlModal.handleCloseModal,
   };
 };
 
@@ -215,11 +293,12 @@ export const useLocalSelectedReleaseModal = ({
     null,
   );
 
-  const { fallbackReleaseIndex, selectedRelease } = useResolvedSelectedRelease({
-    collectionUsername,
-    fallbackReleases,
-    selectedReleaseId,
-  });
+  const { fallbackReleaseIndex, selectedRelease } =
+    useCollectionBackedSelectedRelease({
+      collectionUsername,
+      fallbackReleases,
+      selectedReleaseId,
+    });
 
   const handleReleaseClick = useCallback(
     (instanceId: string) => {

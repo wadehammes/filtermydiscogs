@@ -3,6 +3,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { api } from "src/api/urls";
 import {
   useLocalSelectedReleaseModal,
+  usePublicSelectedReleaseModal,
   useSelectedReleaseModal,
 } from "src/hooks/useSelectedReleaseModal.hook";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
@@ -440,6 +441,53 @@ describe("useSelectedReleaseModal", () => {
 
     const { result } = renderHookWithTestProviders(() =>
       useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    expect(result.current.selectedReleaseId).toBe("unknown");
+    expect(result.current.selectedRelease).toBeNull();
+    expect(mockApi.discogsCollection).not.toHaveBeenCalled();
+  });
+});
+
+describe("usePublicSelectedReleaseModal", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos(),
+    );
+    mockUsePathname.mockReturnValue("/crate/demo-crate-id");
+    applyUrl("/crate/demo-crate-id");
+  });
+
+  it("resolves the selected release from public crate fallback data only", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockPush = jest.fn();
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      usePublicSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    expect(result.current.selectedRelease?.instance_id).toBe(
+      releases[0]?.instance_id,
+    );
+    expect(mockApi.discogsCollection).not.toHaveBeenCalled();
+  });
+
+  it("ignores unknown instance ids without touching the collection API", () => {
+    const releases = releaseFactory.buildList(1);
+
+    applyUrl("/crate/demo-crate-id?instance=unknown");
+
+    const { result } = renderHookWithTestProviders(() =>
+      usePublicSelectedReleaseModal({ fallbackReleases: releases }),
     );
 
     expect(result.current.selectedReleaseId).toBe("unknown");

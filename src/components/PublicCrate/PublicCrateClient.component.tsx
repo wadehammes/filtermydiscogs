@@ -13,7 +13,7 @@ import { SITE_LEAD } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
-import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
+import { usePublicSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import type { DiscogsRelease } from "src/types";
 import { formatDate } from "src/utils/dateHelpers";
 import styles from "./PublicCrate.module.css";
@@ -78,7 +78,7 @@ const PublicCrateLoadedContent = ({
 }) => {
   const { login } = useAuth();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
-    useSelectedReleaseModal({ fallbackReleases: releases });
+    usePublicSelectedReleaseModal({ fallbackReleases: releases });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
