@@ -23,6 +23,7 @@ import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import {
   clearSessionAuthCookies,
   clearUrlParams,
+  getAuthUrlErrorMessage,
   hasAuthSuccessUrlParam,
   parseAuthUrlParams,
 } from "src/services/auth.service";
@@ -263,7 +264,7 @@ export const AuthProvider = ({
     if (errorStatus) {
       dispatch({
         type: AuthActionTypes.SetError,
-        payload: `Authentication failed: ${errorStatus}`,
+        payload: getAuthUrlErrorMessage(errorStatus),
       });
       clearUrlParams();
     }

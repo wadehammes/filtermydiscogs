@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import { useCallback, useRef } from "react";
 import {
   LOGIN_PREVIEW_VIDEO_ASPECT_RATIO,
@@ -12,7 +13,11 @@ import FMDIcon from "src/styles/icons/fmd-icon.svg";
 import YouTubeVideo from "youtube-video-element/react";
 import styles from "./LoginPreviewDemo.module.css";
 
-export const LoginPreviewDemo = () => {
+type LoginPreviewDemoProps = {
+  className?: string | undefined;
+};
+
+export const LoginPreviewDemo = ({ className }: LoginPreviewDemoProps) => {
   const previewPlayerRef = useRef<HTMLElement>(null);
 
   const requestHd1080 = useCallback(() => {
@@ -40,7 +45,10 @@ export const LoginPreviewDemo = () => {
   );
 
   return (
-    <div className={styles.demo} data-testid="fmdLoginPreviewDemo">
+    <div
+      className={classNames(styles.demo, className)}
+      data-testid="fmdLoginPreviewDemo"
+    >
       <div className={styles.frame}>
         <div className={styles.titleBar} aria-hidden="true">
           <span className={styles.trafficLight} />

@@ -1,19 +1,27 @@
 import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 
 export const LOGIN_PAGE_SITE_COPY = {
-  tagline: "Digging made easier.",
-  lead: "Search and filter releases, preview tracks in-app, build crates with sections and set notes, track gig packing when you need it, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
+  tagline: "Your Discogs collection, unlocked",
+  lead: "Discogs is where your collection lives. FilterMyDiscogs is the free app to dig through it: search, filter, queue tracks, pack crates, spot trends, and more.",
   description:
-    "A free Discogs companion. Search and filter your collection, preview tracks in-app, build crates with sections and set notes, track gig packing when you need it, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
+    "Discogs is where your collection lives. FilterMyDiscogs is the free app to dig through it: search, filter, queue tracks, pack crates, spot trends, and more.",
   previewAltSuffix:
     "app preview with release cards, filters, in-app playback, crate layout and packing tools, collection insights, and on-repeat track stats",
 } as const;
+
+export const LOGIN_DEMO_PUBLIC_CRATE_ID =
+  "ab65c378-fab9-42c0-96bb-c308d413cbbb" as const;
+
+export const LOGIN_DEMO_PUBLIC_CRATE_PATH =
+  `/crate/${LOGIN_DEMO_PUBLIC_CRATE_ID}` as const;
 
 export const LOGIN_PAGE_UI_COPY = {
   bottomCtaHeading: "Ready to connect your collection?",
   featuresSectionHeading: "What you can do",
   featuresSectionLede:
     "Four ways to get more from the records you already own.",
+  publicCrateLinkLabel: "Browse a shared crate",
+  publicCrateTeaserSuffix: " (no sign-in required).",
   termsPrivacyLink: "Terms & Privacy",
   finePrintFreePrefix: "Free to use (",
   finePrintSupportLink: "support is greatly appreciated",
@@ -66,6 +74,16 @@ export const getLoginPageCopyEntries = (
     {
       id: "ui.featuresSectionLede",
       text: LOGIN_PAGE_UI_COPY.featuresSectionLede,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.publicCrateLinkLabel",
+      text: LOGIN_PAGE_UI_COPY.publicCrateLinkLabel,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.publicCrateTeaserSuffix",
+      text: LOGIN_PAGE_UI_COPY.publicCrateTeaserSuffix,
       source: "loginPageCopy.registry",
     },
     {

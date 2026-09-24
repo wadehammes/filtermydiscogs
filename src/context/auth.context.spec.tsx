@@ -196,7 +196,25 @@ describe("AuthProvider", () => {
     await waitFor(() => {
       expect(result.current.state.isCheckingAuth).toBe(false);
       expect(result.current.state.error).toBe(
-        "Authentication failed: access_denied",
+        "Authentication failed. Try connecting again.",
+      );
+    });
+
+    expect(mockClearUrlParams).toHaveBeenCalled();
+  });
+
+  it("maps oauth_callback_failed URL errors to friendly copy", async () => {
+    mockCheckAuth.mockResolvedValue(authStatusFactory.unauthenticated());
+    mockParseAuthUrlParams.mockReturnValue(
+      authUrlParamsFactory.authError("oauth_callback_failed"),
+    );
+
+    const { result } = renderAuthHook();
+
+    await waitFor(() => {
+      expect(result.current.state.isCheckingAuth).toBe(false);
+      expect(result.current.state.error).toBe(
+        "Discogs sign-in did not complete. Try connecting again.",
       );
     });
 

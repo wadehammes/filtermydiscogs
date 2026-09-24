@@ -8,7 +8,7 @@ import {
   ABOUT_GITHUB_LINKS,
   ABOUT_SUPPORT_EMAIL,
 } from "src/constants/about.constants";
-import { SITE_NAME } from "src/constants/siteMetadata";
+import { SITE_LEAD, SITE_NAME, SITE_TAGLINE } from "src/constants/siteMetadata";
 import { SUPPORT_SECTION_ID } from "src/constants/supportProjectToast.constants";
 import { useHashScrollOnMount } from "src/hooks/useHashScrollOnMount.hook";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
@@ -30,15 +30,9 @@ export function AboutClient() {
           <div className={styles.introCopy} data-prose-flow>
             <div className={styles.introTitle}>
               <p className={typography.brandEyebrow}>About</p>
-              <h1 className={styles.tileHeading}>
-                Your Discogs collection, unlocked
-              </h1>
+              <h1 className={styles.tileHeading}>{SITE_TAGLINE}</h1>
             </div>
-            <p>
-              Discogs is where your collection lives. FilterMyDiscogs is the
-              free app I built to help you dig through it: search, filter, queue
-              tracks, pack crates, spot trends, and more.
-            </p>
+            <p>{SITE_LEAD}</p>
           </div>
           <p className={classNames(typography.metaCaption, styles.introFooter)}>
             <Link href="/legal" className={styles.link}>

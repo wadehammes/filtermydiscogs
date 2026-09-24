@@ -14,8 +14,16 @@ jest.mock("youtube-video-element/react", () => {
 });
 
 import { LoginPageObject } from "src/components/Login/Login.po";
+import {
+  LOGIN_DEMO_PUBLIC_CRATE_PATH,
+  LOGIN_PAGE_UI_COPY,
+} from "src/constants/loginPageCopy.registry";
 import { LOGIN_PREVIEW_VIDEO_URL } from "src/constants/loginPreviewMedia";
-import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
+import {
+  LOGIN_PREVIEW_ALT,
+  SITE_LEAD,
+  SITE_TAGLINE,
+} from "src/constants/siteMetadata";
 import { screen } from "test-utils";
 
 let po: LoginPageObject;
@@ -55,20 +63,23 @@ describe("Login", () => {
     po.renderLogin();
 
     expect(screen.getByTestId("fmdLoginPreviewDemo")).toBeInTheDocument();
-    expect(screen.getByLabelText("Filter My Discogs")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /Digging made easier\./,
-    );
     expect(
-      screen.getByText(
-        "Search and filter releases, preview tracks in-app, build crates with sections and set notes, track gig packing when you need it, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
-      ),
+      screen.getByRole("heading", {
+        level: 1,
+        name: new RegExp(SITE_TAGLINE),
+      }),
     ).toBeInTheDocument();
+    expect(screen.getByText(SITE_LEAD)).toBeInTheDocument();
     expect(screen.getByLabelText(LOGIN_PREVIEW_ALT)).toBeInTheDocument();
     expect(screen.getByTestId("mockYoutubeVideo")).toHaveAttribute(
       "data-src",
       LOGIN_PREVIEW_VIDEO_URL,
     );
+    expect(
+      screen.getByRole("link", {
+        name: LOGIN_PAGE_UI_COPY.publicCrateLinkLabel,
+      }),
+    ).toHaveAttribute("href", LOGIN_DEMO_PUBLIC_CRATE_PATH);
   });
 
   it("renders feature rows and footer links", () => {
