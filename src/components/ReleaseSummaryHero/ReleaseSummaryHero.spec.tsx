@@ -10,6 +10,7 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
+import { expectReleaseCrateMenuPortaledToBody } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
@@ -550,5 +551,26 @@ describe("ReleaseSummaryHero", () => {
     render(<ReleaseSummaryHero release={release} />);
 
     expect(screen.queryByTestId("fmdReleaseRatingPicker")).toBeNull();
+  });
+
+  it("portals the crate menu to document.body", async () => {
+    const release = releaseFactory.withResourceUrl(RELEASE_ID);
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<ReleaseSummaryHero release={release} />, {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    expectReleaseCrateMenuPortaledToBody();
   });
 });

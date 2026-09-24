@@ -60,6 +60,48 @@ export const expectFilterPopupAboveBottomDrawer = (popupNode: Element) => {
   expect(document.body.contains(escapedPortal)).toBe(true);
 };
 
+export const expectPortaledPopupAttachedToBody = (popupNode: Element) => {
+  expect(document.body.contains(popupNode)).toBe(true);
+};
+
+export const openFilterViewsMenu = async (
+  buttonName: string | RegExp = "Views and filter actions",
+) => {
+  const user = userEvent.setup({ pointerEventsCheck: 0 });
+  await user.click(screen.getByRole("button", { name: buttonName }));
+
+  await screen.findByRole("menuitem", {
+    hidden: true,
+    name: "Save current view…",
+  });
+
+  return user;
+};
+
+export const openReleaseCrateMenu = async () => {
+  const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+  await waitFor(() => {
+    expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+  });
+
+  await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+  await waitFor(() => {
+    expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+  });
+
+  return user;
+};
+
+export const expectReleaseCrateMenuPortaledToBody = () => {
+  expectPortaledPopupAttachedToBody(screen.getByTestId("fmdReleaseCrateMenu"));
+};
+
+export const expectReleaseCrateMenuAbovePlaybackDock = () => {
+  expectFilterPopupAbovePlaybackDock(screen.getByTestId("fmdReleaseCrateMenu"));
+};
+
 export const openFilterCombobox = async (name: string) => {
   const user = userEvent.setup({ pointerEventsCheck: 0 });
   const trigger = getFilterComboboxTrigger(name);

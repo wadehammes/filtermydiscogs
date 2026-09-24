@@ -8,6 +8,7 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
+import { expectReleaseCrateMenuPortaledToBody } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
@@ -179,5 +180,34 @@ describe("ReleaseSimilarReleaseItem", () => {
     await waitFor(() => {
       expect(mockApi.addReleaseToCrate).toHaveBeenCalled();
     });
+  });
+
+  it("portals the crate menu to document.body", async () => {
+    const similarRelease = releaseFactory.build({
+      instance_id: "similar-instance",
+      basic_information: {
+        ...releaseFactory.withStyles(["Techno"]).basic_information,
+        master_id: 200,
+        title: "Similar Album",
+      },
+    });
+
+    render(<ReleaseSimilarReleaseItem release={similarRelease} />, {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await userEvent
+      .setup({ pointerEventsCheck: 0 })
+      .click(screen.getByRole("button", { name: "Add to crates" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    expectReleaseCrateMenuPortaledToBody();
   });
 });

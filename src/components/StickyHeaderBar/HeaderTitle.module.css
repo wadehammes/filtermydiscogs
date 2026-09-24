@@ -14,11 +14,11 @@
 }
 
 .icon {
-  block-size: 1.75rem;
+  block-size: 2.125rem;
   flex-shrink: 0;
-  inline-size: 1.75rem;
+  inline-size: 2.125rem;
 
-  @media (width >= 481px) {
+  @media (width >= 1024px) {
     block-size: 2rem;
     inline-size: 2rem;
   }

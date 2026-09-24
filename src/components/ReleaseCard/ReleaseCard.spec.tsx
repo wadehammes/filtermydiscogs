@@ -4,6 +4,10 @@ import { ReleaseCardPageObject } from "src/components/ReleaseCard/ReleaseCard.po
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import {
+  expectReleaseCrateMenuPortaledToBody,
+  openReleaseCrateMenu,
+} from "src/tests/filterControlTestHelpers";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import {
   expectReleaseOpenPrefetchAfterHover,
@@ -572,5 +576,17 @@ describe("ReleaseCard", () => {
     await user.click(titleLink);
 
     expect(onReleaseClick).not.toHaveBeenCalled();
+  });
+
+  it("portals the crate menu to document.body", async () => {
+    po.renderReleaseCard({ release: releaseFactory.withEmptyNotes() });
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.crates).toHaveBeenCalled();
+    });
+
+    await openReleaseCrateMenu();
+
+    expectReleaseCrateMenuPortaledToBody();
   });
 });

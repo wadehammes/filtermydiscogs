@@ -2,6 +2,7 @@ import { Menu } from "@base-ui/react/menu";
 import { describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
+import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { render, screen } from "test-utils";
 
 describe("InlinePopoverMenu", () => {
@@ -23,6 +24,7 @@ describe("InlinePopoverMenu", () => {
 
     const popup = await screen.findByRole("menu");
     expect(popup.className).toMatch(/popupScroll/);
+    expectPortaledPopupAttachedToBody(popup);
     expect(screen.getByRole("menuitem", { name: "One" })).toBeInTheDocument();
   });
 });

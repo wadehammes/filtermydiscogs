@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { UserActionsPageObject } from "src/components/StickyHeaderBar/UserActions.po";
+import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
 let po: UserActionsPageObject;
@@ -54,6 +55,14 @@ describe("UserActions", () => {
     expect(
       screen.getByRole("menuitem", { name: "Logout" }),
     ).toBeInTheDocument();
+  });
+
+  it("portals the user menu to document.body", async () => {
+    po.renderUserActions({ variant: "desktop" });
+
+    await openUserMenu();
+
+    expectPortaledPopupAttachedToBody(screen.getByRole("menu"));
   });
 
   it("opens theme submenu with palette options", async () => {

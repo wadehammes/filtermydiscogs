@@ -3,11 +3,9 @@
 
   align-items: stretch;
   background: var(--card);
-  border: none;
+  border: var(--release-card-border-width) solid var(--release-card-stroke);
   border-radius: var(--radius-card);
-  box-shadow:
-    var(--shadow-sm),
-    inset 0 0 0 1px var(--release-card-stroke);
+  box-shadow: none;
   display: flex;
   flex-direction: row;
   height: 100%;
@@ -20,9 +18,7 @@
   scroll-margin-top: 15.625rem;
   text-align: left;
   text-decoration: none;
-  transition:
-    border-color var(--transition-bounce),
-    box-shadow var(--transition-bounce);
+  transition: border-color var(--transition-bounce);
   width: 100%;
 
   &.inCrate::after {
@@ -37,11 +33,7 @@
 
   @media (hover: hover) {
     &:hover {
-      box-shadow:
-        0 8px 20px -8px color-mix(in srgb, var(--background) 12%, transparent),
-        0 2px 6px -2px color-mix(in srgb, var(--background) 5%, transparent),
-        var(--shadow-md),
-        inset 0 0 0 1px var(--release-card-stroke-hover);
+      border-color: var(--release-card-stroke-hover);
       color: inherit;
       text-decoration: none;
     }
@@ -51,10 +43,8 @@
 .highlighted {
   --release-card-border-width: 2px;
 
-  border: none;
-  box-shadow:
-    var(--shadow-sm),
-    inset 0 0 0 2px var(--primary);
+  border: var(--release-card-border-width) solid var(--primary);
+  box-shadow: none;
   composes: theme-highlighted-surface from global;
   transform: scale(1.02);
 }
@@ -152,7 +142,7 @@
 .releaseInfo {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   min-width: 0;
   padding: 0;
 }

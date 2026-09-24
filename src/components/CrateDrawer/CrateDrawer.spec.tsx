@@ -6,6 +6,11 @@ import releasesClientStyles from "src/components/ReleasesClient/ReleasesClient.m
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import {
+  expectFilterPopupAboveBottomDrawer,
+  expectFilterPopupAbovePlaybackDock,
+  openFilterSelect,
+} from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import {
@@ -20,11 +25,27 @@ const mockApi = jest.mocked(api);
 
 const defaultCrates = crateWithCountFactory.defaultCrateSelectorCrates();
 
+const renderCrateDrawerInSidebar = (desktop: boolean) => {
+  setupMockMatchMedia({ desktop });
+
+  return render(
+    <div className={releasesClientStyles.sidebar}>
+      <CrateDrawer isOpen />
+    </div>,
+    {
+      wrapper: ({ children }) => (
+        <TestProviders authInitialState={testAuthenticatedAuthState}>
+          {children}
+        </TestProviders>
+      ),
+    },
+  );
+};
+
 describe("CrateDrawer", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    setupMockMatchMedia({ desktop: false });
 
     mockApiResponse(
       true,
@@ -48,18 +69,7 @@ describe("CrateDrawer", () => {
   });
 
   it("renders the mobile bottom drawer when open inside the releases sidebar shell", async () => {
-    render(
-      <div className={releasesClientStyles.sidebar}>
-        <CrateDrawer isOpen />
-      </div>,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders authInitialState={testAuthenticatedAuthState}>
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    renderCrateDrawerInSidebar(false);
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
@@ -77,18 +87,7 @@ describe("CrateDrawer", () => {
   });
 
   it("floats the close control outside the drawer header", async () => {
-    render(
-      <div className={releasesClientStyles.sidebar}>
-        <CrateDrawer isOpen />
-      </div>,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders authInitialState={testAuthenticatedAuthState}>
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    renderCrateDrawerInSidebar(false);
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
@@ -106,5 +105,47 @@ describe("CrateDrawer", () => {
     expect(drawer).toContainElement(closeButton);
     expect(closeButton.className).toContain("floatingShellClose");
     expect(screen.getByRole("button", { name: "New Crate" })).toBeVisible();
+  });
+
+  it("portals the crate selector listbox above the mobile bottom drawer", async () => {
+    renderCrateDrawerInSidebar(false);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
+      expect(
+        screen.getByRole("combobox", { name: /select crate/i }),
+      ).toBeVisible();
+    });
+
+    await openFilterSelect("Select crate");
+
+    const listbox = await screen.findByRole("listbox", {
+      name: "Select crate",
+      hidden: true,
+    });
+    expectFilterPopupAboveBottomDrawer(listbox);
+    expectFilterPopupAbovePlaybackDock(listbox);
+  });
+
+  it("portals the crate selector listbox above the desktop releases sidebar shell", async () => {
+    renderCrateDrawerInSidebar(true);
+
+    await waitFor(() => {
+      expect(
+        document.querySelector("[data-crate-drawer-desktop]"),
+      ).toBeTruthy();
+      expect(
+        screen.getByRole("combobox", { name: /select crate/i }),
+      ).toBeVisible();
+    });
+
+    await openFilterSelect("Select crate");
+
+    expectFilterPopupAbovePlaybackDock(
+      await screen.findByRole("listbox", {
+        name: "Select crate",
+        hidden: true,
+      }),
+    );
   });
 });

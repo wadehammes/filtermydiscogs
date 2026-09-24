@@ -4,6 +4,7 @@ import { api } from "src/api/urls";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
 import { setupCrateDrawerTests } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDetailActionsMenu } from "src/components/Crates/CrateDetailActionsMenu.component";
+import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -54,6 +55,16 @@ describe("CrateDetailActionsMenu", () => {
     expect(
       screen.getByRole("menuitem", { name: /Delete crate/ }),
     ).toBeInTheDocument();
+  });
+
+  it("portals the crate actions menu to document.body", async () => {
+    renderCrateDrawerTree(<CrateDetailActionsMenu />);
+
+    await openCrateActionsMenu();
+
+    expectPortaledPopupAttachedToBody(
+      screen.getByRole("menu", { name: "Crate actions" }),
+    );
   });
 
   it("opens edit crate dialog from the menu", async () => {

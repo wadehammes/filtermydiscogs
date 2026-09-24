@@ -9,6 +9,7 @@ import { CrateDrawerDialogs } from "src/components/CrateDrawerDialogs/CrateDrawe
 import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerFooter.component";
 import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { definedProps } from "src/utils/definedProps";
@@ -71,14 +72,20 @@ const CrateDrawerDesktop = ({ crateSelector }: CrateDrawerDesktopProps) => {
 
   return (
     <div className={styles.drawer} data-crate-drawer-desktop>
-      <div className={styles.header}>{crateSelector}</div>
-      <div
-        className={classNames(styles.content, {
-          [styles.contentFlushTop]: showPackingToolbar,
-        })}
+      <OverlayStack
+        className={styles.overlayStack}
+        escapeStackingContext
+        popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
       >
-        <CrateDrawerReleases />
-      </div>
+        <div className={styles.header}>{crateSelector}</div>
+        <div
+          className={classNames(styles.content, {
+            [styles.contentFlushTop]: showPackingToolbar,
+          })}
+        >
+          <CrateDrawerReleases />
+        </div>
+      </OverlayStack>
       <CrateDrawerFooter />
     </div>
   );

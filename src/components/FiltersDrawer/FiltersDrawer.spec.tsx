@@ -329,7 +329,7 @@ describe("FiltersDrawer", () => {
     ).toBeInTheDocument();
   });
 
-  it("portals combobox popups above the playback dock from the filters drawer", async () => {
+  it("portals combobox popups into the bottom drawer overlay stack", async () => {
     po.renderFiltersDrawer();
 
     await waitFor(() => {
@@ -338,21 +338,40 @@ describe("FiltersDrawer", () => {
       ).toBeEnabled();
     });
 
-    await openFilterCombobox("Genre & Style");
+    for (const name of [
+      "Genre & Style",
+      "Format Type",
+      "Release Year",
+    ] as const) {
+      await openFilterCombobox(name);
 
-    const popup = screen.getByRole("dialog", { name: "Genre & Style" });
-    expectFilterPopupAboveBottomDrawer(popup);
-    expectFilterPopupAbovePlaybackDock(popup);
+      const popup = screen.getByRole("dialog", { name });
+      expectFilterPopupAboveBottomDrawer(popup);
+      expectFilterPopupAbovePlaybackDock(popup);
+
+      await userEvent.setup({ pointerEventsCheck: 0 }).keyboard("{Escape}");
+    }
   });
 
   it("portals select popups into the bottom drawer overlay stack", async () => {
-    po.renderFiltersDrawer();
+    po.renderFiltersDrawer({
+      sessionFilters: {
+        selectedStyles: ["Rock"],
+        selectedYears: [],
+        selectedFormats: [],
+        selectedSort: SortValues.DateAddedNew,
+        styleOperator: "OR",
+        searchQuery: "",
+      },
+    });
 
-    await openFilterSelect("Sort by");
+    for (const name of ["Sort by", "Order", "Match"] as const) {
+      await openFilterSelect(name);
 
-    expectFilterPopupAboveBottomDrawer(
-      screen.getByRole("listbox", { name: "Sort by" }),
-    );
+      expectFilterPopupAboveBottomDrawer(screen.getByRole("listbox", { name }));
+
+      await userEvent.setup({ pointerEventsCheck: 0 }).keyboard("{Escape}");
+    }
   });
 
   it("portals the Views menu with scrollable popup chrome", async () => {

@@ -8,6 +8,8 @@ import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiM
 import { SeedCollectionFilters } from "src/tests/utils/seedCollectionFilters";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
+import type { PersistedFiltersState } from "src/types/filters.types";
+import { definedProps } from "src/utils/definedProps";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { StickyHeaderBar } from "./StickyHeaderBar.component";
@@ -25,6 +27,7 @@ export type StickyHeaderBarRenderProps = {
   currentPage?: string;
   part?: "all" | "nav" | "filters";
   releases?: DiscogsRelease[];
+  sessionFilters?: Partial<PersistedFiltersState>;
 };
 
 export class StickyHeaderBarPageObject extends BasePageObject {
@@ -48,10 +51,14 @@ export class StickyHeaderBarPageObject extends BasePageObject {
       currentPage = "releases",
       part = "all",
       releases = [releaseFactory.withDisplayDefaults()],
+      sessionFilters,
     } = overrides;
 
     return (
-      <SeedCollectionFilters releases={releases}>
+      <SeedCollectionFilters
+        releases={releases}
+        {...definedProps({ sessionFilters })}
+      >
         <StickyHeaderBar
           allReleasesLoaded={allReleasesLoaded}
           hideFilters={hideFilters}

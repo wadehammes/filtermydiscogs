@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { ReleaseListItemPageObject } from "src/components/ReleaseListItem/ReleaseListItem.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  expectReleaseCrateMenuPortaledToBody,
+  openReleaseCrateMenu,
+} from "src/tests/filterControlTestHelpers";
+import {
   expectReleaseOpenPrefetchAfterHover,
   setupReleaseOpenPrefetchHoverTimers,
   teardownReleaseOpenPrefetchHoverTimers,
@@ -190,5 +194,17 @@ describe("ReleaseListItem", () => {
     expect(
       screen.getByRole("link", { name: "View on Discogs" }),
     ).toHaveAttribute("href", "https://www.discogs.com/release/456");
+  });
+
+  it("portals the crate menu to document.body", async () => {
+    po.renderReleaseListItem({ release: releaseFactory.withEmptyNotes() });
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.crates).toHaveBeenCalled();
+    });
+
+    await openReleaseCrateMenu();
+
+    expectReleaseCrateMenuPortaledToBody();
   });
 });

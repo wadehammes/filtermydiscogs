@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { MobileReleaseCardPageObject } from "src/components/ReleaseCard/MobileReleaseCard.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  expectReleaseCrateMenuPortaledToBody,
+  openReleaseCrateMenu,
+} from "src/tests/filterControlTestHelpers";
+import {
   expectReleaseOpenPrefetchAfterHover,
   setupReleaseOpenPrefetchHoverTimers,
   teardownReleaseOpenPrefetchHoverTimers,
@@ -205,5 +209,17 @@ describe("MobileReleaseCard", () => {
     );
 
     expect(onReleaseClick).toHaveBeenCalledWith(String(release.instance_id));
+  });
+
+  it("portals the crate menu to document.body", async () => {
+    po.renderMobileReleaseCard({ release: releaseFactory.withEmptyNotes() });
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.crates).toHaveBeenCalled();
+    });
+
+    await openReleaseCrateMenu();
+
+    expectReleaseCrateMenuPortaledToBody();
   });
 });
