@@ -1,26 +1,58 @@
 .landing {
   display: flex;
   flex-direction: column;
-  gap: var(--space-16);
-  margin-inline: auto;
-  max-width: 72rem;
-  padding: var(--space-8) var(--space-4) var(--space-16);
-  width: min(100%, 72rem);
+  gap: var(--space-20);
+  padding: var(--space-6) var(--space-4) var(--space-16);
+  width: 100%;
 
   @media (width >= 768px) {
-    gap: var(--space-20);
-    padding: var(--space-10) var(--space-6) var(--space-24);
+    gap: var(--space-24);
+    padding: var(--space-12) var(--space-6) var(--space-24);
   }
+}
+
+.heroShell {
+  margin-inline: auto;
+  max-width: 90rem;
+  width: min(100%, 90rem);
 }
 
 .intro {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-10);
   width: 100%;
 
-  @media (width >= 768px) {
+  @media (width >= 1024px) {
+    align-items: start;
+    display: grid;
+    gap: var(--space-12);
+    grid-template-columns: minmax(0, 2.5fr) minmax(0, 3.5fr);
+  }
+}
+
+.heroPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+  width: 100%;
+
+  @media (width >= 1024px) {
     gap: var(--space-8);
+    grid-column: 1;
+    grid-row: 1;
+    padding-block-start: var(--space-2);
+  }
+}
+
+.heroMedia {
+  min-width: 0;
+  width: 100%;
+
+  @media (width >= 1024px) {
+    grid-column: 2;
+    grid-row: 1;
   }
 }
 
@@ -28,26 +60,52 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin: 0 auto;
-  padding-top: 1rem;
+  gap: var(--space-5);
+  margin-inline: auto;
+  max-width: min(100%, 36rem);
   text-align: center;
   width: 100%;
+
+  @media (width >= 1024px) {
+    align-items: flex-start;
+    gap: var(--space-6);
+    margin-inline: 0;
+    max-width: 40rem;
+    text-align: start;
+  }
 }
 
 .tagline {
-  margin-inline: auto;
-  max-width: min(100%, 60ch);
-  text-align: center;
-  width: 100%;
+  font-size: clamp(2.75rem, 7vw + 1rem, 4.75rem);
+  line-height: 1.08;
+  margin: 0;
   text-wrap: balance;
+  width: 100%;
 }
 
 .subtitle {
-  margin-inline: auto;
-  max-width: 80ch;
-  text-align: center;
+  color: var(--muted-foreground);
+  line-height: 1.55;
+  margin: 0;
   width: 100%;
+}
+
+.publicCrateTeaser {
+  line-height: 1.45;
+  margin: 0;
+  max-width: min(100%, 34rem);
+}
+
+.publicCrateLink {
+  color: var(--link);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: color var(--transition-normal);
+
+  &:hover {
+    color: var(--link-hover, var(--link));
+    text-decoration: underline;
+  }
 }
 
 .hero {
@@ -55,13 +113,22 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin: 0 auto;
-  max-width: 40rem;
+  margin-inline: auto;
+  max-width: min(100%, 36rem);
   text-align: center;
   width: 100%;
+
+  @media (width >= 1024px) {
+    align-items: flex-start;
+    margin-inline: 0;
+    max-width: 40rem;
+    text-align: start;
+  }
 }
 
 .finePrint {
+  line-height: 1.45;
+  max-width: min(100%, 34rem);
   text-wrap: balance;
 }
 
@@ -77,6 +144,19 @@
   }
 }
 
+.pageBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  margin-inline: auto;
+  max-width: 72rem;
+  width: min(100%, 72rem);
+
+  @media (width >= 768px) {
+    gap: var(--space-20);
+  }
+}
+
 .features {
   display: flex;
   flex-direction: column;
@@ -88,12 +168,53 @@
   }
 }
 
-.featuresIntro {
+.featuresLead {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-6);
+  width: 100%;
+
+  @media (width >= 768px) {
+    gap: var(--space-8);
+  }
+}
+
+.featuresSoundwaves {
+  block-size: 2rem;
+  color: color-mix(in srgb, var(--foreground) 14%, transparent);
+  display: block;
+  flex-shrink: 0;
+  inline-size: 100%;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(0 0 0 / 100%) 8%,
+    rgb(0 0 0 / 100%) 92%,
+    transparent 100%
+  );
+  opacity: 0.9;
+  width: 100%;
+
+  @media (width >= 768px) {
+    block-size: 2.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 0.35;
+  }
+}
+
+.featuresIntro {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
   margin-inline: auto;
   max-width: 42rem;
   text-align: center;
   width: 100%;
+
+  @media (width >= 768px) {
+    gap: var(--space-6);
+  }
 }

@@ -70,6 +70,18 @@ export const parseAuthUrlParams = (): {
   };
 };
 
+const AUTH_URL_ERROR_MESSAGES: Record<string, string> = {
+  oauth_callback_failed:
+    "Discogs sign-in did not complete. Try connecting again.",
+  oauth_callback_invalid:
+    "Discogs sign-in was interrupted or invalid. Try connecting again.",
+  oauth_init_failed: "Discogs sign-in could not start. Try again in a moment.",
+};
+
+export const getAuthUrlErrorMessage = (errorStatus: string): string =>
+  AUTH_URL_ERROR_MESSAGES[errorStatus] ??
+  "Authentication failed. Try connecting again.";
+
 export const hasAuthSuccessUrlParam = (): boolean =>
   parseAuthUrlParams().authStatus === "success";
 

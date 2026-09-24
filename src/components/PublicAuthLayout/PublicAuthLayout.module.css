@@ -18,6 +18,17 @@
   min-height: 0;
   width: 100%;
   border-bottom: 1px dashed var(--border-color);
+
+  --font-family-heading: var(--font-family-mono);
+
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    font-family: var(--font-family-mono);
+  }
 }
 
 .mainCentered {

@@ -8,14 +8,8 @@ import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
-import {
-  MARKETING_BROWSE_COLLECTION_BULLET,
-  MARKETING_COLLECTION_ANALYTICS_BULLET,
-  MARKETING_CRATE_ORGANIZE_BULLET,
-  MARKETING_CRATE_SHARE_BULLET,
-  MARKETING_MOSAIC_BULLET,
-} from "src/constants/marketingPublicCopy";
-import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
+import { PUBLIC_CRATE_MARKETING_BULLETS } from "src/constants/marketingPublicCopy";
+import { SITE_LEAD } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
@@ -49,31 +43,15 @@ const PublicMarketingFeatureList = ({
   );
 };
 
-const publicCrateAboutBullets: MarketingBullet[] = [
-  MARKETING_BROWSE_COLLECTION_BULLET,
-  MARKETING_CRATE_ORGANIZE_BULLET,
-  MARKETING_MOSAIC_BULLET,
-  MARKETING_CRATE_SHARE_BULLET,
-];
-
-const publicCrateLoadedBullets: MarketingBullet[] = [
-  MARKETING_COLLECTION_ANALYTICS_BULLET,
-  MARKETING_BROWSE_COLLECTION_BULLET,
-  MARKETING_CRATE_ORGANIZE_BULLET,
-  MARKETING_MOSAIC_BULLET,
-  MARKETING_CRATE_SHARE_BULLET,
-];
-
 const PublicCrateAboutSections = () => {
   return (
     <section className={styles.section}>
       <h2 className={styles.heading}>About FilterMyDiscogs</h2>
-      <p className={styles.text}>
-        FilterMyDisco.gs helps you search, organize, and explore your music
-        collection, including {COLLECTION_FORMATS_PHRASE}.
-      </p>
+      <p className={styles.text}>{SITE_LEAD}</p>
       <p className={styles.text}>Key features:</p>
-      <PublicMarketingFeatureList bullets={publicCrateAboutBullets} />
+      <PublicMarketingFeatureList
+        bullets={[...PUBLIC_CRATE_MARKETING_BULLETS]}
+      />
       <p className={styles.text}>
         <Link href="/about" className={styles.inlineLink}>
           Learn more about FilterMyDisco.gs
@@ -161,13 +139,10 @@ const PublicCrateLoadedContent = ({
             <div className={styles.twoColumnLayout}>
               <div className={styles.aboutContent}>
                 <h2 className={styles.heading}>About FilterMyDiscogs</h2>
-                <p className={styles.text}>
-                  FilterMyDisco.gs helps you search, organize, and explore your
-                  music collection.
-                </p>
+                <p className={styles.text}>{SITE_LEAD}</p>
                 <p className={styles.text}>Key features:</p>
                 <PublicMarketingFeatureList
-                  bullets={publicCrateLoadedBullets}
+                  bullets={[...PUBLIC_CRATE_MARKETING_BULLETS]}
                 />
                 <p className={styles.text}>
                   <Link href="/about" className={styles.inlineLink}>
