@@ -22,7 +22,7 @@ When adding a new **`AuthStatus`**, **`VerifiedUserResult`**, preferences wrappe
 
 ## Base class
 
-Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts) (same shape as rhythm-marketing):
+Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts):
 
 - **`build(attributes?, options?)`** — one instance; pass **`Partial<Type>`** overrides for fields the test cares about.
 - **`buildList(n, attributes?, options?)`** — array of `n` instances.

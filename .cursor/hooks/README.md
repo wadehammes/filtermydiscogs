@@ -1,19 +1,20 @@
 # Cursor hooks
 
-Project hooks that keep agent work aligned with `docs/handbook/`. Adapted from [rhythm-marketing `.claude/`](https://github.com/rhythmengineering/rhythm-marketing/tree/main/.claude) for Cursor's hook format.
+Project hooks that keep agent work aligned with `docs/handbook/`.
 
 Config: [`.cursor/hooks.json`](../hooks.json). Scripts: [`.cursor/hooks/`](./).
 
 Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `rules/`, `skills/`). Local/runtime Cursor state (`*.log`, `settings.local.json`, checkpoints, etc.) stays gitignored — [`.cursor/mcp.json`](../../.cursor/mcp.json) is committed. See root [`.gitignore`](../../.gitignore).
 
-## Event mapping (Claude → Cursor)
+## Cursor hook events
 
-| Claude | Cursor |
-|--------|--------|
-| `UserPromptSubmit` | `sessionStart` (brief handbook pointer once per session) |
-| `PreToolUse` | `preToolUse` (matchers: `Write`, `StrReplace`) |
-| `PostToolUse` | `postToolUse` |
-| `Stop` | `stop` (`followup_message` instead of `decision: block`) |
+| Event | Role in this repo |
+|-------|-------------------|
+| `sessionStart` | One-line handbook pointer (`session-handbook-routing.sh`) |
+| `preToolUse` | Blocking guardrails (CSS, factories, scaffold, query-hook mocks, …) |
+| `postToolUse` | Advisory checks (e.g. CSS nesting depth) |
+| `beforeShellExecution` | Git safety (destructive git, raw `git commit`) |
+| `stop` | Drift checks, targeted Jest, `pnpm lint:all` follow-ups |
 
 ## Hooks
 
@@ -50,10 +51,9 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | [`.cursor/rules/`](../rules/) | Glob rules: CSS modules, API routes, hook/component specs (+ always-on handbook rule). |
 | [`.zed/settings.json`](../../.zed/settings.json) | Zed: vtsls **`tsdk`** + CSS Modules **`composes`** custom data (team editor; not Cursor). |
 
-### Not ported
+### Optional scripts (not wired)
 
-- **`block-generated-types.sh`** — rhythm-marketing Contentful-specific (`src/contentful/types/`); not applicable here.
-- **Inline PreToolUse handbook reminder** — covered by always-on rule in `.cursor/rules/` + AGENTS.md; optional `beforeSubmitPrompt` script is disabled.
+- **Inline PreToolUse handbook reminder** — covered by always-on rule in `.cursor/rules/` + **AGENTS.md**; optional `beforeSubmitPrompt` script is disabled (`handbook-adherence-reminder.sh`, `handbook-sync-nudge.sh`).
 
 ## Requirements
 
