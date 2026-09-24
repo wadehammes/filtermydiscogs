@@ -10,7 +10,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 
 | Claude | Cursor |
 |--------|--------|
-| `UserPromptSubmit` | `sessionStart` (injects `llms.md` once per session) |
+| `UserPromptSubmit` | `sessionStart` (brief handbook pointer once per session) |
 | `PreToolUse` | `preToolUse` (matchers: `Write`, `StrReplace`) |
 | `PostToolUse` | `postToolUse` |
 | `Stop` | `stop` (`followup_message` instead of `decision: block`) |
@@ -19,8 +19,8 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 
 | Script | Event | What it does |
 |--------|-------|--------------|
-| `session-handbook-routing.sh` | `sessionStart` | Injects the handbook routing map (`llms.md`) into session context. |
-| `handbook-adherence-reminder.sh` | `beforeSubmitPrompt` | Brief handbook nudge on each user message (skips very short replies); routing detail is on `sessionStart`. |
+| `session-handbook-routing.sh` | `sessionStart` | One-line pointer to `docs/handbook/` and `llms.md` (does not inject the full routing table). |
+| `handbook-adherence-reminder.sh` | *(off)* | Per-prompt handbook nudge — **not wired** in `hooks.json` (redundant with AGENTS.md + always-on rule). Re-enable under `beforeSubmitPrompt` if needed. |
 | `block-co-authored-by-commit.sh` | `beforeShellExecution` (`git commit`) | Denies raw `git commit` (agents must use `scripts/git-commit.sh` or `git -c core.hooksPath=.githooks commit`) and blocks `Co-authored-by` in the command string. |
 | `block-destructive-git.sh` | `beforeShellExecution` (`git push`, `git reset`, `git clean`) | Denies force push to **`main`** / **`staging`**, **`git reset --hard`**, and **`git clean -f…`**. |
 | `block-added-comments.sh` | `preToolUse` | Denies edits that add code comments. |
@@ -31,9 +31,9 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `enforce-scaffold.sh` | `preToolUse` (`Write`) | Steers new components through `pnpm scaffold <Name>`. |
 | `block-barrel-files.sh` | `preToolUse` (`Write`) | Denies new `index.ts`/`index.tsx` barrels under `src/`. |
 | `enforce-factory-location.sh` | `preToolUse` (`Write`) | Denies `*.factory.ts` outside `src/tests/factories/`. |
-| `handbook-sync-nudge.sh` | `postToolUse` | Advisory reminder to update the matching handbook chapter, root **README**, and/or **`.cursor/skills/`** when handbook edits change workflows (skills stay thin; fix contradictions only). |
+| `handbook-sync-nudge.sh` | *(off)* | Per-edit docs/skills reminder — **not wired** in `hooks.json` (too noisy during coding). Script kept for optional re-enable. |
 | `check-css-nesting.sh` | `postToolUse` | Advisory when CSS nests selectors 4+ levels deep. |
-| `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update, product/setup surfaces changed without **README.md**, and/or core handbook chapters changed without **`.cursor/skills/`** review when checklists may be stale. |
+| `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update and/or product/setup surfaces changed without **README.md**. Suggests chapter filenames from changed paths; requires explicit verification or doc edits (see script). |
 | `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
 | `block-login-page-copy-violations.sh` | `preToolUse` | Denies login landing copy edits that add em dashes, embellishment, or banned inaccurate phrases. |
 | `block-query-hook-mocks.sh` | `preToolUse` | Denies specs under `src/hooks/queries/` or `src/hooks/mutations/`, and feature-test edits that mock those hooks instead of `src/api/urls`. |
@@ -53,7 +53,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 ### Not ported
 
 - **`block-generated-types.sh`** — rhythm-marketing Contentful-specific (`src/contentful/types/`); not applicable here.
-- **Inline PreToolUse handbook reminder** — covered by `sessionStart` routing + workspace rules in `.cursor/rules/`.
+- **Inline PreToolUse handbook reminder** — covered by always-on rule in `.cursor/rules/` + AGENTS.md; optional `beforeSubmitPrompt` script is disabled.
 
 ## Requirements
 

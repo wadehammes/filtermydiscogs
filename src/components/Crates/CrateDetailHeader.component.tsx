@@ -4,11 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { api } from "src/api/urls";
-import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { useAuth } from "src/context/auth.context";
 import { CrateQueryKeys } from "src/hooks/queries/querykeys.constants";
-import { CrateDetailActionsMenu } from "./CrateDetailActionsMenu.component";
 import styles from "./CrateDetailClient.module.css";
 
 export const CrateDetailHeader = () => {
@@ -17,7 +15,6 @@ export const CrateDetailHeader = () => {
   const {
     state: { userId },
   } = useAuth();
-  const { activeCrateId } = useCrateDrawerContext();
 
   const handleCrateNavigate = useCallback(
     async (nextCrateId: string) => {
@@ -41,8 +38,6 @@ export const CrateDetailHeader = () => {
           className={styles.crateSelector}
           onNavigate={handleCrateNavigate}
         />
-
-        {activeCrateId ? <CrateDetailActionsMenu /> : null}
       </div>
     </header>
   );

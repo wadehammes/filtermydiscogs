@@ -30,6 +30,7 @@ class CrateReleaseFactory extends BaseFactory<
       added_at: faker.date.past(),
       found_at: nullish([faker.date.recent()]),
       sort_order: faker.number.int({ min: 1000, max: 10_000 }),
+      section_id: null,
     } satisfies CrateRelease;
 
     const factoryBuilt: CrateRelease = {

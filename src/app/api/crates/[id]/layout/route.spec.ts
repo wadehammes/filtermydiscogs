@@ -240,4 +240,45 @@ describe("PUT /api/crates/[id]/layout", () => {
     });
     expect(mockTransaction).not.toHaveBeenCalled();
   });
+
+  it("accepts a layout payload that deletes all section markers", async () => {
+    (mockMarkerFindMany as jest.Mock).mockImplementation(() => {
+      markerFindManyCallCount += 1;
+
+      if (markerFindManyCallCount === 1) {
+        return Promise.resolve([
+          {
+            id: "marker-existing",
+            label: "Deep House",
+            sort_order: 500,
+            parent_id: null,
+            accent_key: "amber",
+          },
+        ]);
+      }
+
+      return Promise.resolve([]);
+    });
+
+    const response = await PUT(
+      createPutRequest({
+        items: [
+          { kind: "release", instance_id: "111", section_id: null },
+          { kind: "release", instance_id: "222", section_id: null },
+        ],
+      }),
+      { params: Promise.resolve({ id: CRATE_ID }) },
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ success: true });
+    expect(mockMarkerDeleteMany).toHaveBeenCalledWith({
+      where: {
+        user_id: USER_ID,
+        crate_id: CRATE_ID,
+      },
+    });
+    expect(mockMarkerUpsert).not.toHaveBeenCalled();
+    expect(mockTransaction).toHaveBeenCalled();
+  });
 });

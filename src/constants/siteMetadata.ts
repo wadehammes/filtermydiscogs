@@ -46,12 +46,12 @@ export const PAGE_DESCRIPTIONS = {
   mosaic:
     "Create cover-art mosaic grids from your collection or crates for social sharing.",
   crates:
-    "Review crate releases in a table, edit collection notes, and pack albums for your gig.",
+    "Open your crates to drag reorder, add sections, edit set notes, and track gig packing.",
   cratesDetail:
-    "Open a crate to review releases, edit collection notes, and pack for your gig.",
+    "Manage a crate layout with sections, set notes, gig packing, and optional public sharing.",
   settings:
     "Manage theme, sync preferences, and stored data for your FilterMyDiscogs account.",
-  about: `About FilterMyDiscogs: collection insights and on-repeat tracks, search and filters, crates with set notes and gig packing, in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
+  about: `About FilterMyDiscogs: collection insights and on-repeat tracks, search and filters, crates with drag reorder, sections, set notes, and gig packing, in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
   legal: "Terms of Service and Privacy Policy for FilterMyDiscogs.",
   admin: "Admin statistics and analytics dashboard.",
   crateFallback: "A shared crate on FilterMyDiscogs.",

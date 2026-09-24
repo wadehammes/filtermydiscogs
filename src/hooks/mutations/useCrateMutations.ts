@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { trackCrateLayoutUpdated } from "src/analytics/productAnalyticsEvents";
+import {
+  getRateLimitedRetryDelayMs,
+  isTransientRateLimitError,
+} from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import {
   CrateQueryKeys,
@@ -76,6 +80,22 @@ const getUpdateCrateErrorTitle = (updates: UpdateCrateRequest): string => {
 
   return "Failed to update crate";
 };
+
+const CRATE_WRITE_MUTATION_RETRY = (
+  failureCount: number,
+  error: Error,
+): boolean => {
+  if (failureCount >= 3) {
+    return false;
+  }
+
+  return isTransientRateLimitError(error);
+};
+
+const crateWriteMutationRetryDelay = (
+  attemptIndex: number,
+  error: Error,
+): number => getRateLimitedRetryDelayMs(error, attemptIndex);
 
 const showCrateMutationError = (title: string, error: Error) => {
   toast.error(title, { description: error.message });
@@ -751,6 +771,8 @@ export const useSetReleasePackedInCrateMutation = (userId: string | null) => {
     mutationFn: async ({ crateId, releaseId, found }) => {
       return api.setReleasePackedInCrate(crateId, releaseId, found);
     },
+    retry: CRATE_WRITE_MUTATION_RETRY,
+    retryDelay: crateWriteMutationRetryDelay,
     onMutate: async ({ crateId, releaseId, found }) => {
       await cancelCrateDetailQuery(queryClient, userId, crateId);
 
@@ -845,6 +867,8 @@ export const useUpdateCrateLayoutMutation = (userId: string | null) => {
     mutationFn: async ({ crateId, layout }) => {
       return api.updateCrateLayout(crateId, layout);
     },
+    retry: CRATE_WRITE_MUTATION_RETRY,
+    retryDelay: crateWriteMutationRetryDelay,
     onMutate: async ({ crateId, optimisticLayoutItems }) => {
       await cancelCrateDetailQuery(queryClient, userId, crateId);
 

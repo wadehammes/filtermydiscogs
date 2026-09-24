@@ -108,7 +108,7 @@ const ReleaseNotesTextFieldEditor = ({
         id={`note-field-${field.id}`}
         className={validatedFieldClass(
           styles.textarea,
-          modalInputStyles.field,
+          modalInputStyles.textarea,
           (fieldError || isFieldOverLimit) && styles.textareaInvalid,
         )}
         disabled={disabled}

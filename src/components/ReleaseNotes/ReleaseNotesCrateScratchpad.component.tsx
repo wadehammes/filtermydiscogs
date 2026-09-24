@@ -22,6 +22,7 @@ import {
   sortTextCollectionFields,
 } from "src/utils/releaseNotes";
 import styles from "./ReleaseNotes.module.css";
+import { ReleaseNotesCrateSkeleton } from "./ReleaseNotesCrateSkeleton.component";
 import formFieldStyles from "./ReleaseNotesFormFields.module.css";
 import { useReleaseNotesEditor } from "./useReleaseNotesEditor.hook";
 
@@ -391,6 +392,7 @@ export const ReleaseNotesCrateScratchpad = ({
     editableFields,
     errorMessage,
     handleSave,
+    isFieldsLoading,
   } = useReleaseNotesEditor(release);
 
   const savedValuesByFieldId = useMemo(() => {
@@ -406,6 +408,10 @@ export const ReleaseNotesCrateScratchpad = ({
       }),
     );
   }, [editableFields, release]);
+
+  if (isFieldsLoading) {
+    return <ReleaseNotesCrateSkeleton />;
+  }
 
   if (canEdit) {
     return (

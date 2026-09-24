@@ -1,7 +1,4 @@
-import {
-  CRATE_LAYOUT_SORT_STEP,
-  CRATE_TEMP_MARKER_PREFIX,
-} from "src/constants/crate";
+import { CRATE_LAYOUT_SORT_STEP } from "src/constants/crate";
 import type {
   CrateLayoutItem,
   CrateLayoutMarkerItem,
@@ -19,6 +16,122 @@ export const getCrateLayoutSortableId = (item: CrateLayoutItem): string => {
   return `marker:${item.id}`;
 };
 
+export const isCrateLayoutReleaseSortableId = (sortableId: string): boolean =>
+  sortableId.startsWith("release:");
+
+export const getCrateLayoutReleaseInstanceIdFromSortableId = (
+  sortableId: string,
+): string | null => {
+  if (!isCrateLayoutReleaseSortableId(sortableId)) {
+    return null;
+  }
+
+  return sortableId.slice("release:".length);
+};
+
+export const CRATE_LAYOUT_LIST_INSERT_DROP_PREFIX = "layout-insert:";
+
+export const getCrateLayoutListInsertDropId = (insertIndex: number): string =>
+  `${CRATE_LAYOUT_LIST_INSERT_DROP_PREFIX}${insertIndex}`;
+
+export const getCrateLayoutListInsertIndexFromDropId = (
+  overSortableId: string,
+): number | null => {
+  if (!overSortableId.startsWith(CRATE_LAYOUT_LIST_INSERT_DROP_PREFIX)) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(
+    overSortableId.slice(CRATE_LAYOUT_LIST_INSERT_DROP_PREFIX.length),
+    10,
+  );
+
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+};
+
+export const reorderCrateLayoutReleaseToVisibleInsertIndex = ({
+  items,
+  activeSortableId,
+  insertIndex,
+}: {
+  items: CrateLayoutItem[];
+  activeSortableId: string;
+  insertIndex: number;
+}): CrateLayoutItem[] => {
+  if (!isCrateLayoutReleaseSortableId(activeSortableId)) {
+    return items;
+  }
+
+  const oldIndex = getCrateLayoutSortableIndex({
+    items,
+    sortableId: activeSortableId,
+  });
+
+  if (oldIndex < 0) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  const [movedItem] = nextItems.splice(oldIndex, 1);
+
+  if (!movedItem) {
+    return items;
+  }
+
+  const clampedInsert = Math.max(0, Math.min(insertIndex, nextItems.length));
+  nextItems.splice(clampedInsert, 0, movedItem);
+
+  return nextItems;
+};
+
+export type CrateLayoutSortableIndexLookup = Readonly<{
+  indexBySortableId: ReadonlyMap<string, number>;
+  indexByMarkerId: ReadonlyMap<string, number>;
+  indexByInstanceId: ReadonlyMap<string, number>;
+  sortableIds: readonly string[];
+}>;
+
+export const getCrateLayoutSortableIndexLookup = (
+  items: CrateLayoutItem[],
+): CrateLayoutSortableIndexLookup => {
+  const indexBySortableId = new Map<string, number>();
+  const indexByMarkerId = new Map<string, number>();
+  const indexByInstanceId = new Map<string, number>();
+  const sortableIds: string[] = [];
+
+  for (const [index, item] of items.entries()) {
+    const sortableId = getCrateLayoutSortableId(item);
+    sortableIds.push(sortableId);
+    indexBySortableId.set(sortableId, index);
+
+    if (item.kind === "marker") {
+      indexByMarkerId.set(item.id, index);
+    } else {
+      indexByInstanceId.set(item.instance_id, index);
+    }
+  }
+
+  return { indexBySortableId, indexByMarkerId, indexByInstanceId, sortableIds };
+};
+
+export const getCrateLayoutSortableIndex = ({
+  items,
+  sortableId,
+  lookup,
+}: {
+  items: CrateLayoutItem[];
+  sortableId: string;
+  lookup?: CrateLayoutSortableIndexLookup;
+}): number => {
+  if (lookup) {
+    return lookup.indexBySortableId.get(sortableId) ?? -1;
+  }
+
+  return items.findIndex(
+    (item) => getCrateLayoutSortableId(item) === sortableId,
+  );
+};
+
 export const buildCrateLayout = ({
   releases,
   markers,
@@ -32,6 +145,7 @@ export const buildCrateLayout = ({
     sort_order: item.sort_order,
     release: item.release,
     found_at: item.found_at,
+    section_id: item.section_id ?? null,
   }));
 
   const markerItems: CrateLayoutMarkerItem[] = markers.map((marker) => ({
@@ -39,6 +153,8 @@ export const buildCrateLayout = ({
     id: marker.id,
     label: marker.label,
     sort_order: marker.sort_order,
+    parent_id: marker.parent_id ?? null,
+    accent_key: marker.accent_key ?? null,
   }));
 
   return [...releaseItems, ...markerItems].sort(
@@ -50,10 +166,12 @@ export const reorderCrateLayoutItems = ({
   items,
   activeId,
   overId,
+  insertBeforeOver = true,
 }: {
   items: CrateLayoutItem[];
   activeId: string;
   overId: string;
+  insertBeforeOver?: boolean;
 }): CrateLayoutItem[] => {
   if (activeId === overId) {
     return items;
@@ -76,9 +194,111 @@ export const reorderCrateLayoutItems = ({
     return items;
   }
 
-  nextItems.splice(newIndex, 0, movedItem);
+  const insertIndex = insertBeforeOver
+    ? oldIndex < newIndex
+      ? newIndex - 1
+      : newIndex
+    : oldIndex <= newIndex
+      ? newIndex
+      : newIndex + 1;
+
+  nextItems.splice(insertIndex, 0, movedItem);
 
   return nextItems;
+};
+
+export const resolveCrateLayoutInsertBeforeOverFromPointer = ({
+  overRect,
+  pointerY,
+}: {
+  overRect: { top: number; height: number };
+  pointerY?: number | null;
+}): boolean => {
+  if (pointerY == null || !Number.isFinite(pointerY)) {
+    return true;
+  }
+
+  return pointerY < overRect.top + overRect.height / 2;
+};
+
+export const getCrateLayoutDragPointerY = (event: {
+  activatorEvent: Event;
+  delta: { y: number };
+}): number | null => {
+  const { activatorEvent, delta } = event;
+
+  if (activatorEvent instanceof MouseEvent) {
+    return activatorEvent.clientY + delta.y;
+  }
+
+  if (activatorEvent instanceof TouchEvent) {
+    const touch = activatorEvent.touches[0] ?? activatorEvent.changedTouches[0];
+
+    if (touch) {
+      return touch.clientY + delta.y;
+    }
+  }
+
+  if ("clientY" in activatorEvent) {
+    const clientY = Number((activatorEvent as MouseEvent).clientY);
+
+    if (Number.isFinite(clientY)) {
+      return clientY + delta.y;
+    }
+  }
+
+  return null;
+};
+
+export const resolveCrateLayoutDropIndicator = ({
+  items,
+  activeSortableId,
+  overSortableId,
+  overRect,
+  sortableIndexLookup,
+  pointerY,
+}: {
+  items: CrateLayoutItem[];
+  activeSortableId: string;
+  overSortableId: string;
+  overRect: { top: number; left: number; width: number; height: number };
+  sortableIndexLookup?: CrateLayoutSortableIndexLookup;
+  pointerY?: number | null;
+}): { top: number; left: number; width: number } | null => {
+  if (activeSortableId === overSortableId) {
+    return null;
+  }
+
+  const activeIndex = sortableIndexLookup
+    ? getCrateLayoutSortableIndex({
+        items,
+        sortableId: activeSortableId,
+        lookup: sortableIndexLookup,
+      })
+    : getCrateLayoutSortableIndex({ items, sortableId: activeSortableId });
+  const overIndex = sortableIndexLookup
+    ? getCrateLayoutSortableIndex({
+        items,
+        sortableId: overSortableId,
+        lookup: sortableIndexLookup,
+      })
+    : getCrateLayoutSortableIndex({ items, sortableId: overSortableId });
+
+  if (activeIndex < 0 || overIndex < 0) {
+    return null;
+  }
+
+  const insertBeforeOver = resolveCrateLayoutInsertBeforeOverFromPointer({
+    overRect,
+    ...(pointerY !== undefined ? { pointerY } : {}),
+  });
+  const top = insertBeforeOver ? overRect.top : overRect.top + overRect.height;
+
+  return {
+    top,
+    left: overRect.left,
+    width: overRect.width,
+  };
 };
 
 export const crateLayoutItemsToPutRequest = (
@@ -89,20 +309,20 @@ export const crateLayoutItemsToPutRequest = (
       return {
         kind: "release" as const,
         instance_id: item.instance_id,
+        section_id: item.section_id,
       };
     }
 
-    if (item.id.startsWith(CRATE_TEMP_MARKER_PREFIX)) {
-      return {
-        kind: "marker" as const,
-        label: item.label,
-      };
-    }
+    const markerFields = {
+      parent_id: item.parent_id,
+      accent_key: item.accent_key,
+    };
 
     return {
       kind: "marker" as const,
       id: item.id,
       label: item.label,
+      ...markerFields,
     };
   });
 };
@@ -186,6 +406,7 @@ export const splitCrateLayoutItemsForCache = (
     release: item.release,
     found_at: item.found_at,
     sort_order: item.sort_order,
+    section_id: item.section_id,
   })),
   markers: items
     .filter((item): item is CrateLayoutMarkerItem => item.kind === "marker")
@@ -193,6 +414,8 @@ export const splitCrateLayoutItemsForCache = (
       id: item.id,
       label: item.label,
       sort_order: item.sort_order,
+      parent_id: item.parent_id,
+      accent_key: item.accent_key,
     })),
 });
 
@@ -208,7 +431,7 @@ export const mergeReorderedVisibleCrateLayout = ({
   const visibleIds = new Set(
     visibleItems.map((item) => getCrateLayoutSortableId(item)),
   );
-  const reorderedQueue = [...reorderedVisibleItems];
+  let reorderedIndex = 0;
 
   return fullItems.map((item) => {
     const itemId = getCrateLayoutSortableId(item);
@@ -216,7 +439,9 @@ export const mergeReorderedVisibleCrateLayout = ({
       return item;
     }
 
-    const nextItem = reorderedQueue.shift();
+    const nextItem = reorderedVisibleItems[reorderedIndex];
+    reorderedIndex += 1;
+
     return nextItem ?? item;
   });
 };

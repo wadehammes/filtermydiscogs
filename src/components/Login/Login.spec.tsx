@@ -61,7 +61,7 @@ describe("Login", () => {
     );
     expect(
       screen.getByText(
-        "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
+        "Search and filter releases, preview tracks in-app, build crates with sections and set notes, track gig packing when you need it, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(LOGIN_PREVIEW_ALT)).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe("Login", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Crate detail page with section markers, set notes, gig-packing checklist, and an organized release list",
+        name: "Crate page with drag reorder, section groups, set notes, and gig packing checklist",
       }),
     ).toBeInTheDocument();
     expect(

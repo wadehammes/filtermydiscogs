@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# postToolUse (Write|StrReplace): remind to update the matching handbook chapter
-# and/or root README when the edit touches product or setup surfaces.
+# Optional postToolUse docs-sync nudge (disabled in hooks.json — noisy on every edit; stop hook covers drift).
 
 source "$(dirname "$0")/_lib.sh"
 hook_input

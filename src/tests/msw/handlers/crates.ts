@@ -45,5 +45,20 @@ export function createDefaultCrateApiHandlers(options?: {
     http.get("/api/crates/membership/:instanceId", () =>
       HttpResponse.json(fixtures.membership),
     ),
+    http.put("/api/crates/:crateId/layout", async ({ params, request }) => {
+      const crateId = String(params.crateId);
+
+      if (crateId !== defaultCrate.id) {
+        return HttpResponse.json({ error: "Crate not found" }, { status: 404 });
+      }
+
+      await request.json().catch(() => null);
+
+      return HttpResponse.json({
+        success: true,
+        releases: crateDetail.releases,
+        markers: crateDetail.markers,
+      });
+    }),
   ];
 }

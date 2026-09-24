@@ -154,7 +154,11 @@ export function checkRateLimitWithResponse(
           "Retry-After": String(
             Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000),
           ),
-          "X-RateLimit-Limit": String(isWriteOperation ? 20 : 100),
+          "X-RateLimit-Limit": String(
+            isWriteOperation
+              ? parseInt(process.env.DB_RATE_LIMIT_MAX_WRITES || "60", 10)
+              : parseInt(process.env.DB_RATE_LIMIT_MAX || "100", 10),
+          ),
           "X-RateLimit-Remaining": "0",
           "X-RateLimit-Reset": rateLimit.resetAt.toISOString(),
         },

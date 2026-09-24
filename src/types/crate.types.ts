@@ -34,12 +34,15 @@ export interface CrateReleaseItem {
   release: DiscogsRelease;
   found_at: string | null;
   sort_order: number;
+  section_id?: string | null;
 }
 
 export interface CrateSetMarker {
   id: string;
   label: string;
   sort_order: number;
+  parent_id?: string | null;
+  accent_key?: string | null;
 }
 
 export interface CrateLayoutReleaseItem {
@@ -48,6 +51,7 @@ export interface CrateLayoutReleaseItem {
   sort_order: number;
   release: DiscogsRelease;
   found_at: string | null;
+  section_id: string | null;
 }
 
 export interface CrateLayoutMarkerItem {
@@ -55,17 +59,25 @@ export interface CrateLayoutMarkerItem {
   id: string;
   label: string;
   sort_order: number;
+  parent_id: string | null;
+  accent_key: string | null;
 }
 
 export type CrateLayoutItem = CrateLayoutReleaseItem | CrateLayoutMarkerItem;
 
+export type CrateLayoutPutMarkerFields = {
+  parent_id?: string | null;
+  accent_key?: string | null;
+};
+
 export type CrateLayoutPutMarkerItem =
-  | { kind: "marker"; id: string; label: string }
-  | { kind: "marker"; label: string };
+  | ({ kind: "marker"; id: string; label: string } & CrateLayoutPutMarkerFields)
+  | ({ kind: "marker"; label: string } & CrateLayoutPutMarkerFields);
 
 export type CrateLayoutPutReleaseItem = {
   kind: "release";
   instance_id: string;
+  section_id?: string | null;
 };
 
 export type CrateLayoutPutItem =

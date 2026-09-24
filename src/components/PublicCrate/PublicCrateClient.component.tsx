@@ -8,6 +8,13 @@ import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
+import {
+  MARKETING_BROWSE_COLLECTION_BULLET,
+  MARKETING_COLLECTION_ANALYTICS_BULLET,
+  MARKETING_CRATE_ORGANIZE_BULLET,
+  MARKETING_CRATE_SHARE_BULLET,
+  MARKETING_MOSAIC_BULLET,
+} from "src/constants/marketingPublicCopy";
 import { COLLECTION_FORMATS_PHRASE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
@@ -21,35 +28,52 @@ interface PublicCrateClientProps {
   crateId: string;
 }
 
-function PublicCrateAboutSections() {
+type MarketingBullet = {
+  label: string;
+  text: string;
+};
+
+const PublicMarketingFeatureList = ({
+  bullets,
+}: {
+  bullets: MarketingBullet[];
+}) => {
+  return (
+    <ul className={styles.list}>
+      {bullets.map((bullet) => (
+        <li key={bullet.label} className={styles.listItem}>
+          <strong>{bullet.label}</strong>: {bullet.text}
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+const publicCrateAboutBullets: MarketingBullet[] = [
+  MARKETING_BROWSE_COLLECTION_BULLET,
+  MARKETING_CRATE_ORGANIZE_BULLET,
+  MARKETING_MOSAIC_BULLET,
+  MARKETING_CRATE_SHARE_BULLET,
+];
+
+const publicCrateLoadedBullets: MarketingBullet[] = [
+  MARKETING_COLLECTION_ANALYTICS_BULLET,
+  MARKETING_BROWSE_COLLECTION_BULLET,
+  MARKETING_CRATE_ORGANIZE_BULLET,
+  MARKETING_MOSAIC_BULLET,
+  MARKETING_CRATE_SHARE_BULLET,
+];
+
+const PublicCrateAboutSections = () => {
   return (
     <section className={styles.section}>
       <h2 className={styles.heading}>About FilterMyDiscogs</h2>
       <p className={styles.text}>
-        FilterMyDisco.gs is a passion project to help you discover, organize,
-        and explore your music collection, including {COLLECTION_FORMATS_PHRASE}
-        .
+        FilterMyDisco.gs helps you search, organize, and explore your music
+        collection, including {COLLECTION_FORMATS_PHRASE}.
       </p>
       <p className={styles.text}>Key features:</p>
-      <ul className={styles.list}>
-        <li className={styles.listItem}>
-          <strong>Browse and filter your collection</strong>: rediscover your
-          favorite albums and artists
-        </li>
-        <li className={styles.listItem}>
-          <strong>Organize crates for gigs and sharing</strong>: reorder
-          releases, add section markers, write set notes, and track gig-packing
-          progress
-        </li>
-        <li className={styles.listItem}>
-          <strong>Generate mosaic grids</strong>: different formats and sizes;
-          perfect for social sharing
-        </li>
-        <li className={styles.listItem}>
-          <strong>Share public crates</strong>: make your crates public and
-          share them with others
-        </li>
-      </ul>
+      <PublicMarketingFeatureList bullets={publicCrateAboutBullets} />
       <p className={styles.text}>
         <Link href="/about" className={styles.inlineLink}>
           Learn more about FilterMyDisco.gs
@@ -57,9 +81,9 @@ function PublicCrateAboutSections() {
       </p>
     </section>
   );
-}
+};
 
-function PublicCrateLoadedContent({
+const PublicCrateLoadedContent = ({
   crate,
   releases,
   pagination,
@@ -73,7 +97,7 @@ function PublicCrateLoadedContent({
   pagination: NonNullable<
     ReturnType<typeof usePublicCrateQuery>["data"]
   >["pagination"];
-}) {
+}) => {
   const { login } = useAuth();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     useSelectedReleaseModal({ fallbackReleases: releases });
@@ -138,35 +162,13 @@ function PublicCrateLoadedContent({
               <div className={styles.aboutContent}>
                 <h2 className={styles.heading}>About FilterMyDiscogs</h2>
                 <p className={styles.text}>
-                  FilterMyDisco.gs is a passion project to help you better and
-                  more effectively discover, organize, and explore your
-                  collection.
+                  FilterMyDisco.gs helps you search, organize, and explore your
+                  music collection.
                 </p>
                 <p className={styles.text}>Key features:</p>
-                <ul className={styles.list}>
-                  <li className={styles.listItem}>
-                    <strong>Collection analytics</strong>: discover your
-                    collection milestones, style evolution over time, growth
-                    trends, and more with beautiful visualizations
-                  </li>
-                  <li className={styles.listItem}>
-                    <strong>Browse and filter your collection</strong>:
-                    rediscover your favorite albums and artists
-                  </li>
-                  <li className={styles.listItem}>
-                    <strong>Organize crates for gigs and sharing</strong>:
-                    reorder releases, add section markers, write set notes, and
-                    track gig-packing progress
-                  </li>
-                  <li className={styles.listItem}>
-                    <strong>Generate mosaic grids</strong>: different formats
-                    and sizes; perfect for social sharing
-                  </li>
-                  <li className={styles.listItem}>
-                    <strong>Share public crates</strong>: make your crates
-                    public and share them with others
-                  </li>
-                </ul>
+                <PublicMarketingFeatureList
+                  bullets={publicCrateLoadedBullets}
+                />
                 <p className={styles.text}>
                   <Link href="/about" className={styles.inlineLink}>
                     Learn more
@@ -204,9 +206,9 @@ function PublicCrateLoadedContent({
       />
     </>
   );
-}
+};
 
-function PublicCrateClientContent({ crateId }: PublicCrateClientProps) {
+const PublicCrateClientContent = ({ crateId }: PublicCrateClientProps) => {
   const { data, isLoading, isError, error } = usePublicCrateQuery({ crateId });
 
   const releases = useMemo(
@@ -262,8 +264,8 @@ function PublicCrateClientContent({ crateId }: PublicCrateClientProps) {
       pagination={pagination}
     />
   );
-}
+};
 
-export function PublicCrateClient({ crateId }: PublicCrateClientProps) {
+export const PublicCrateClient = ({ crateId }: PublicCrateClientProps) => {
   return <PublicCrateClientContent crateId={crateId} />;
-}
+};

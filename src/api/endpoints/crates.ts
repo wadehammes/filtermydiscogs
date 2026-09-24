@@ -1,3 +1,4 @@
+import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
 import type { DiscogsRelease } from "src/types";
 import type {
   Crate,
@@ -10,6 +11,19 @@ import type {
   PaginationInfo,
   ReleaseCrateMembershipResponse,
 } from "src/types/crate.types";
+
+const throwCrateApiError = async (response: Response): Promise<never> => {
+  const errorData = (await response.json().catch(() => ({}))) as {
+    error?: string;
+  };
+  const errorMessage =
+    errorData?.error || `HTTP error! status: ${response.status}`;
+  throw new ApiFetchError(
+    response.status,
+    errorMessage,
+    parseRetryAfterMs(response),
+  );
+};
 
 async function fetchAllCrates(): Promise<CratesResponse["crates"]> {
   const response = await fetch("/api/crates?all=true", {
@@ -271,10 +285,7 @@ export const updateCrateLayout = async (
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage =
-        errorData?.error || `HTTP error! status: ${response.status}`;
-      throw new Error(errorMessage);
+      await throwCrateApiError(response);
     }
 
     return response.json();
@@ -407,7 +418,7 @@ export const setReleasePackedInCrate = async (
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      await throwCrateApiError(response);
     }
 
     return response.json();

@@ -30,10 +30,10 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Crates",
     title: "Organize and share crates",
     description:
-      "Build crates for DJ gigs, themed lists, or long-term favorites. Reorder your set, add section markers, write set notes, and track gig-packing progress on the crate page. Make a crate public when you want someone else to explore your picks.",
+      "Build crates for DJ gigs, themed lists, or favorites. Drag to reorder, split the list with sections, add set notes, and track gig packing on the crate page. Share a public link when you want someone else to browse your picks.",
     imageBase: "crates",
     imageAlt:
-      "Crate detail page with section markers, set notes, gig-packing checklist, and an organized release list",
+      "Crate page with drag reorder, section groups, set notes, and gig packing checklist",
   },
   {
     eyebrow: "Mosaics",

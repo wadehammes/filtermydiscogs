@@ -151,6 +151,12 @@
   --z-8-toast: 1090;
   --z-9-playback-dock: 1070;
   --z-10-bottom-drawer: 1080;
+  --crate-section-accent-slate: #64748b;
+  --crate-section-accent-rose: #c45c7a;
+  --crate-section-accent-amber: #c2850a;
+  --crate-section-accent-teal: #0d9488;
+  --crate-section-accent-plum: #7c5c9e;
+  --crate-section-accent-forest: #3d6b4f;
 }
 
 /* Disable transitions during theme switching to prevent scroll jank */

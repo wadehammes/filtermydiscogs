@@ -48,6 +48,7 @@ const buildCrateReleaseRow = (release: DiscogsRelease, crateId: string) => ({
   added_at: new Date("2024-01-01T00:00:00.000Z"),
   found_at: null,
   sort_order: 0,
+  section_id: null,
 });
 
 const createRequest = (limit?: number) => {

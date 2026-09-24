@@ -13,7 +13,13 @@ import StarIcon from "src/styles/icons/star-thin.svg";
 import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
 import styles from "./CrateDetailActionsMenu.module.css";
 
-export const CrateDetailActionsMenu = () => {
+interface CrateDetailActionsMenuProps {
+  className?: string;
+}
+
+export const CrateDetailActionsMenu = ({
+  className,
+}: CrateDetailActionsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const {
     activeCrateId,
@@ -42,7 +48,10 @@ export const CrateDetailActionsMenu = () => {
   );
 
   return (
-    <div className={styles.menuRoot} data-testid="fmdCrateDetailHeaderActions">
+    <div
+      className={classNames(styles.menuRoot, className)}
+      data-testid="fmdCrateDetailHeaderActions"
+    >
       <Menu.Root open={isOpen} onOpenChange={setIsOpen} modal={false}>
         <Menu.Trigger
           render={(props) => (

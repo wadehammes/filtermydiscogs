@@ -14,11 +14,16 @@
   border-radius: var(--radius-ui);
   color: var(--foreground);
   font-family: inherit;
+  font-size: 16px;
   line-height: 1.4;
   min-height: 5rem;
   padding: var(--space-3);
   resize: vertical;
   width: 100%;
+
+  @media (width >= 768px) {
+    font-size: var(--text-sm);
+  }
 
   &:focus {
     border-color: var(--ring);

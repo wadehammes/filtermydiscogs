@@ -9,7 +9,10 @@ import {
   crateDrawerReleaseUnpacked,
   setupCrateDrawerTests,
 } from "src/components/CrateDrawer/crateDrawerTestSetup";
-import { CrateSetNotesScratchpad } from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
+import {
+  CRATE_SET_NOTES_PLACEHOLDER_DRAWER,
+  CrateSetNotesScratchpad,
+} from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
 import { CRATE_NOTES_MAX_LENGTH } from "src/constants/crate";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
@@ -56,7 +59,7 @@ describe("CrateSetNotesScratchpad", () => {
 
     const scratchpad = await screen.findByTestId("fmdCrateSetNotesScratchpad");
     const textarea = within(scratchpad).getByPlaceholderText(
-      "Add set notes for this gig",
+      CRATE_SET_NOTES_PLACEHOLDER_DRAWER,
     );
 
     await waitFor(() => {
@@ -84,7 +87,7 @@ describe("CrateSetNotesScratchpad", () => {
     renderScratchpad();
 
     const textarea = await screen.findByPlaceholderText(
-      "Add set notes for this gig",
+      CRATE_SET_NOTES_PLACEHOLDER_DRAWER,
     );
 
     await waitFor(() => {

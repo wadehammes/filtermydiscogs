@@ -14,6 +14,11 @@ import styles from "./CrateSetNotesScratchpad.module.css";
 
 export const CRATE_SET_NOTES_SCRATCHPAD_ID = "fmdCrateSetNotesScratchpad";
 
+export const CRATE_SET_NOTES_PLACEHOLDER_DRAWER = "Add set notes for this gig";
+
+export const CRATE_SET_NOTES_PLACEHOLDER_PANEL =
+  "Transitions, tempo, gear, or other reminders for this set (autosaves with this crate)";
+
 const SAVE_DEBOUNCE_MS = 700;
 
 type SaveState = "idle" | "pending" | "saved";
@@ -172,7 +177,11 @@ export const CrateSetNotesScratchpad = ({
         onBlur={handleBlur}
         onChange={handleChange}
         onFocus={handleFocus}
-        placeholder="Add set notes for this gig"
+        placeholder={
+          variant === "panel"
+            ? CRATE_SET_NOTES_PLACEHOLDER_PANEL
+            : CRATE_SET_NOTES_PLACEHOLDER_DRAWER
+        }
         rows={textareaRows}
         aria-label="Set notes"
         aria-describedby="crate-set-notes-length"

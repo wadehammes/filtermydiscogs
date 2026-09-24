@@ -136,9 +136,24 @@ describe("ConfirmDialog", () => {
   it("has correct aria attributes", () => {
     po.renderConfirmDialog();
     const dialog = screen.getByRole("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+    const describedBy = dialog.getAttribute("aria-describedby");
 
     expect(dialog).toHaveAttribute("aria-modal", "true");
-    expect(dialog).toHaveAttribute("aria-labelledby", "dialog-title");
-    expect(dialog).toHaveAttribute("aria-describedby", "dialog-message");
+    expect(labelledBy).toBeTruthy();
+    expect(describedBy).toBeTruthy();
+
+    if (!labelledBy) {
+      throw new Error("Expected dialog aria-labelledby");
+    }
+
+    if (!describedBy) {
+      throw new Error("Expected dialog aria-describedby");
+    }
+
+    expect(document.getElementById(labelledBy)).toHaveTextContent(
+      "Confirm Action",
+    );
+    expect(document.getElementById(describedBy)).toHaveTextContent(po.message);
   });
 });

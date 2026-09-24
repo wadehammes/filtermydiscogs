@@ -53,5 +53,11 @@ test.describe("authenticated crates (MSW)", () => {
     await expect(
       page.getByRole("button", { name: `Open ${E2E_ALBUM_THREE}` }),
     ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reorder" })).toHaveCount(3);
+    await expect(
+      page.getByRole("button", {
+        name: "Add section (splits the list here)",
+      }),
+    ).not.toHaveCount(0);
   });
 });

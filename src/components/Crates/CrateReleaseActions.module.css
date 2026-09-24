@@ -21,6 +21,14 @@
   }
 }
 
+:global([data-section-accent]) .action:not([aria-pressed="true"]) {
+  border-color: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 50%,
+    var(--border)
+  );
+}
+
 .removeAction {
   color: color-mix(in srgb, var(--destructive) 70%, var(--muted-foreground));
 

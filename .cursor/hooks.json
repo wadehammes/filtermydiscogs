@@ -7,12 +7,6 @@
         "timeout": 10
       }
     ],
-    "beforeSubmitPrompt": [
-      {
-        "command": ".cursor/hooks/handbook-adherence-reminder.sh",
-        "timeout": 5
-      }
-    ],
     "beforeShellExecution": [
       {
         "command": ".cursor/hooks/block-co-authored-by-commit.sh",
@@ -80,11 +74,6 @@
       }
     ],
     "postToolUse": [
-      {
-        "command": ".cursor/hooks/handbook-sync-nudge.sh",
-        "matcher": "Write|StrReplace",
-        "timeout": 10
-      },
       {
         "command": ".cursor/hooks/check-css-nesting.sh",
         "matcher": "Write|StrReplace",

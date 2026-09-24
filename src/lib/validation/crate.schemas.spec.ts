@@ -129,6 +129,66 @@ describe("parseCrateLayoutPutRequest", () => {
       error: `Marker label must be ${CRATE_MARKER_MAX_LENGTH} characters or less`,
     });
   });
+
+  it("when section fields are valid, accepts parent_id, accent_key, and section_id", () => {
+    expect(
+      parseCrateLayoutPutRequest({
+        items: [
+          {
+            kind: "marker",
+            id: "early-set",
+            label: "Early Set",
+            parent_id: null,
+            accent_key: "teal",
+          },
+          {
+            kind: "marker",
+            id: "deep-house",
+            label: "Deep House",
+            parent_id: "early-set",
+            accent_key: "amber",
+          },
+          { kind: "release", instance_id: "111", section_id: "deep-house" },
+        ],
+      }),
+    ).toEqual({
+      data: {
+        items: [
+          {
+            kind: "marker",
+            id: "early-set",
+            label: "Early Set",
+            parent_id: null,
+            accent_key: "teal",
+          },
+          {
+            kind: "marker",
+            id: "deep-house",
+            label: "Deep House",
+            parent_id: "early-set",
+            accent_key: "amber",
+          },
+          { kind: "release", instance_id: "111", section_id: "deep-house" },
+        ],
+      },
+    });
+  });
+
+  it("when accent_key is not in the palette, returns an error", () => {
+    expect(
+      parseCrateLayoutPutRequest({
+        items: [
+          {
+            kind: "marker",
+            label: "Deep House",
+            accent_key: "not-a-color",
+          },
+        ],
+      }),
+    ).toEqual({
+      error: "Invalid input",
+    });
+  });
 });
 
 describe("crateSyncBodySchema", () => {

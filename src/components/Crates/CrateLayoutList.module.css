@@ -1,4 +1,7 @@
 .layoutList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   width: 100%;
 }
 
@@ -15,8 +18,21 @@
     padding-top: 0;
   }
 
-  &:has(+ .insertZone + .layoutMarkerRow) {
-    border-bottom: none;
+  .sectionBody & {
+    border-bottom: 1px dotted var(--crate-section-inner-border-dashed);
+    margin-inline: 0;
+    padding-inline: var(--space-4);
+    width: 100%;
+
+    @media (width >= 1024px) {
+      margin-inline: 0;
+      padding-block: var(--space-3);
+      padding-inline: var(--space-4) var(--space-5);
+    }
+
+    &:not(:has(~ .layoutReleaseRow)) {
+      border-bottom: none;
+    }
   }
 
   &.releaseRowWithHandle {
@@ -41,33 +57,395 @@
     width: 100%;
 
     @media (width >= 1024px) {
-      padding-top: var(--space-2);
+      padding-top: var(--space-3);
       padding-inline: var(--space-6);
+    }
+
+    &:not(:has(+ .sectionGroup)) {
+      @media (width >= 1024px) {
+        padding-top: var(--space-3);
+        padding-inline: var(--space-6);
+      }
     }
   }
 }
 
 .layoutMarkerRow {
-  border-top: 1px solid var(--border);
+  border-top: none;
 }
 
-.insertZone {
+.sectionGroup {
+  --crate-section-nest-inset: var(--space-3);
+  --crate-section-inner-border: var(--border);
+  --crate-section-inner-border-dashed: var(--border);
+  --crate-section-inner-border-emphasis: var(--border);
+
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, transparent) 6%,
+    var(--background)
+  );
+  border: 1px solid var(--crate-section-inner-border);
+  border-radius: var(--radius-card);
+  list-style: none;
+  margin-bottom: var(--space-2);
+  margin-inline: var(--space-2);
+  margin-top: var(--space-2);
+
+  &:has(+ .insertZone:not(.insertZoneEdgeTop, .insertZoneEdgeBottom)) {
+    margin-bottom: 0;
+  }
+
+  & .layoutReleaseRow {
+    @media (width >= 1024px) {
+      padding-top: var(--space-3);
+      padding-inline: var(--space-5);
+    }
+
+    &.layoutReleaseRowPacked {
+      background: color-mix(
+        in srgb,
+        var(--crate-section-accent, var(--primary)) 20%,
+        var(--background)
+      );
+
+      @media (width >= 1024px) {
+        padding-top: var(--space-3);
+        padding-inline: var(--space-5);
+      }
+    }
+  }
+}
+
+.sectionGroup[data-section-accent] {
+  --crate-section-inner-border: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 50%,
+    var(--border)
+  );
+  --crate-section-inner-border-dashed: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 45%,
+    var(--border)
+  );
+  --crate-section-inner-border-emphasis: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 55%,
+    var(--border)
+  );
+}
+
+.sectionGroup
+  .layoutReleaseRow.layoutReleaseRowPacked
+  button[aria-pressed="true"] {
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 58%,
+    var(--foreground)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 58%,
+    var(--foreground)
+  );
+  color: var(--background);
+}
+
+.sectionGroup
+  .layoutReleaseRow.layoutReleaseRowPacked
+  button[aria-pressed="true"]:hover:not(:disabled) {
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 68%,
+    var(--foreground)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 68%,
+    var(--foreground)
+  );
+  color: var(--background);
+}
+
+.layoutReleaseRow:has(+ .sectionGroup),
+.layoutReleaseRow:has(+ .insertZone + .sectionGroup),
+.layoutReleaseRow:has(+ .insertZone + .layoutMarkerRow) {
+  border-bottom: none;
+}
+
+.sectionGroupNested {
+  border-radius: calc(var(--radius-card) - 4px);
+  margin: var(--crate-section-nest-inset);
+}
+
+.sectionBody > .sectionGroupNested {
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, transparent) 6%,
+    var(--background)
+  );
+  border: 1px solid var(--crate-section-inner-border);
+  overflow: hidden;
+}
+
+.sectionBody > .insertZoneSectionBodyTail {
+  margin-block: calc(var(--space-2) / -2);
+}
+
+.sectionHead {
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, transparent) 10%,
+    var(--card)
+  );
+  border-bottom: 1px solid var(--crate-section-inner-border);
+}
+
+.sectionGroup:has(> .sectionBody[data-section-empty]) > .sectionHead {
+  border-bottom: none;
+  border-radius: var(--radius-card);
+}
+
+.sectionGroup:has(> .sectionBody:not([data-section-empty])) > .sectionHead {
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.sectionGroupNested:has(> .sectionBody[data-section-empty]) > .sectionHead {
+  border-radius: max(
+    0px,
+    calc(var(--radius-card) - var(--crate-section-nest-inset))
+  );
+}
+
+.sectionGroupNested:has(> .sectionBody:not([data-section-empty]))
+  > .sectionHead {
+  border-radius: max(
+      0px,
+      calc(var(--radius-card) - var(--crate-section-nest-inset))
+    )
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset))) 0 0;
+}
+
+.sectionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   list-style: none;
   margin: 0;
-  margin-block: -0.625rem;
-  padding-block: 0.625rem;
+  padding: 0;
+  position: relative;
+
+  & > .layoutReleaseRow.layoutReleaseRowPacked:not(:has(~ .layoutReleaseRow)) {
+    border-radius: 0 0 var(--radius-card) var(--radius-card);
+  }
+}
+
+.sectionGroup .sectionBody .layoutReleaseRow textarea {
+  border-color: var(--crate-section-inner-border);
+  outline-color: var(--crate-section-inner-border-dashed);
+
+  &:focus {
+    border-color: color-mix(
+      in srgb,
+      var(--crate-section-accent, transparent) 40%,
+      var(--ring)
+    );
+    outline-color: color-mix(
+      in srgb,
+      var(--crate-section-accent, transparent) 40%,
+      var(--ring)
+    );
+  }
+}
+
+.sectionGroup
+  .sectionBody
+  .layoutReleaseRow
+  [data-testid="fmdSelect"]
+  [data-filter-control-trigger] {
+  border-color: var(--crate-section-inner-border);
+
+  &:hover:not(:disabled) {
+    border-color: var(--crate-section-inner-border-emphasis);
+  }
+
+  &:focus,
+  &:focus-visible,
+  &[data-popup-open] {
+    border-color: color-mix(
+      in srgb,
+      var(--crate-section-accent, transparent) 40%,
+      var(--ring)
+    );
+  }
+}
+
+.sectionBody > .insertZoneEmptySection {
+  margin-block: calc(var(--space-2) / -2);
+}
+
+.sectionBody > .insertZoneSectionMemberEnd {
+  border: 0;
+  box-sizing: border-box;
+  height: 0;
+  list-style: none;
+  margin: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  pointer-events: none;
+  visibility: hidden;
+  width: 100%;
+}
+
+.sectionBody > .insertZoneSectionMemberEnd.insertZoneEmptySectionDragging {
+  border: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  bottom: 0;
+  height: 3rem;
+  left: 0;
+  margin-block: 0;
+  min-height: 0;
+  overflow: visible;
+  pointer-events: auto;
+  position: absolute;
+  right: 0;
+  visibility: visible;
+  width: 100%;
+  z-index: 1;
+}
+
+.insertZoneSectionDropLabel {
+  color: var(--muted-foreground);
+  display: none;
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  padding: var(--space-3);
+  text-align: center;
+  width: 100%;
+}
+
+.sectionBody
+  > .insertZoneSectionMemberEnd.insertZoneEmptySectionActive
+  .insertZoneSectionDropLabel,
+.sectionBody
+  > .insertZoneEmptySection:not(
+    .insertZoneSectionMemberEnd
+  ).insertZoneEmptySectionDragging
+  .insertZoneSectionDropLabel {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 3rem;
+}
+
+.sectionGroupNested .sectionBody > .insertZoneSectionMemberEnd {
+  border-radius: 0 0
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+}
+
+.sectionBody > .insertZoneSectionMemberEnd.insertZoneEmptySectionActive {
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 12%,
+    var(--background)
+  );
+  border: 1px dashed var(--crate-section-inner-border-dashed);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+.sectionGroupNested
+  .sectionBody
+  > .insertZoneSectionMemberEnd.insertZoneEmptySectionActive {
+  border-radius: 0 0
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+}
+
+.sectionBody > .insertZoneEmptySectionDragging {
+  height: auto;
+  min-height: 3rem;
+  pointer-events: auto;
+}
+
+.sectionBody > .insertZoneEmptySectionActive {
+  background: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 12%,
+    var(--background)
+  );
+  border: 1px dashed var(--crate-section-inner-border-dashed);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+.sectionGroupNested .sectionBody > .insertZoneEmptySectionActive {
+  border-radius: 0 0
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+}
+
+.sectionGroupNested
+  > .sectionBody
+  > .layoutReleaseRow.layoutReleaseRowPacked:not(:has(~ .layoutReleaseRow)) {
+  border-radius: 0 0
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
+    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+}
+
+.insertZone,
+.insertZoneEdgeTop,
+.insertZoneEdgeBottom {
+  height: 0;
+  list-style: none;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  pointer-events: none;
   position: relative;
   width: 100%;
   z-index: 3;
 }
 
+.insertZone:not(.insertZoneEdgeTop, .insertZoneEdgeBottom) {
+  box-sizing: content-box;
+  padding-block: calc(var(--space-2) / 2);
+}
+
+.insertZoneEdgeTop,
+.insertZoneEdgeBottom {
+  z-index: calc(var(--z-2-sticky) + 1);
+}
+
 .insertZoneHitArea {
   align-items: center;
   display: flex;
-  inset: 0;
   justify-content: center;
   pointer-events: auto;
   position: absolute;
+}
+
+.insertZoneEdgeTop .insertZoneHitArea,
+.insertZoneEdgeBottom .insertZoneHitArea {
+  height: 1.5rem;
+  left: 0;
+  right: 0;
+}
+
+.insertZoneEdgeTop .insertZoneHitArea {
+  bottom: auto;
+  top: 0;
+  transform: translateY(-50%);
+}
+
+.insertZoneEdgeBottom .insertZoneHitArea {
+  bottom: 0;
+  top: auto;
+  transform: translateY(50%);
+}
+
+.insertZone:not(.insertZoneEdgeTop, .insertZoneEdgeBottom) .insertZoneHitArea {
+  inset: 0;
 }
 
 .insertButton {
@@ -115,50 +493,14 @@
   }
 }
 
-.insertZone:hover .insertButton,
-.insertZone:focus-within .insertButton {
+.insertZone:hover .insertButton {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
 }
 
-.insertZoneEdgeTop,
-.insertZoneEdgeBottom {
-  height: 0;
-  list-style: none;
-  margin: 0;
-  overflow: visible;
-  padding: 0;
-  pointer-events: none;
-  position: relative;
-  width: 100%;
-  z-index: calc(var(--z-2-sticky) + 1);
-}
-
-.insertZoneEdgeTop .insertZoneHitArea,
-.insertZoneEdgeBottom .insertZoneHitArea {
-  height: 1.5rem;
-  inset: auto;
-  left: 0;
-  pointer-events: auto;
-  position: absolute;
-  right: 0;
-}
-
-.insertZoneEdgeTop .insertZoneHitArea {
-  top: 0;
-  transform: translateY(-50%);
-}
-
-.insertZoneEdgeBottom .insertZoneHitArea {
-  bottom: 0;
-  transform: translateY(50%);
-}
-
 .insertZoneEdgeTop:hover .insertButton,
-.insertZoneEdgeTop:focus-within .insertButton,
-.insertZoneEdgeBottom:hover .insertButton,
-.insertZoneEdgeBottom:focus-within .insertButton {
+.insertZoneEdgeBottom:hover .insertButton {
   transform: scale(1);
 }
 
@@ -173,6 +515,12 @@
   height: 0.75rem;
   justify-content: center;
   width: 0.75rem;
+
+  & svg {
+    block-size: 100%;
+    display: block;
+    inline-size: 100%;
+  }
 }
 
 .dragHandle {
@@ -214,13 +562,86 @@
   }
 }
 
+.sectionGroup[data-section-accent] .dragHandle {
+  color: color-mix(
+    in srgb,
+    var(--crate-section-accent, var(--primary)) 50%,
+    var(--muted-foreground)
+  );
+}
+
+.sectionGroup[data-section-accent] .dragHandleIcon {
+  opacity: 0.75;
+}
+
 .releaseRowDragging {
-  opacity: 0.85;
+  opacity: 0;
   position: relative;
-  z-index: 2;
+  z-index: 0;
+}
+
+.releaseRowDragOverlay {
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  cursor: grabbing;
+  list-style: none;
+  width: min(100%, 48rem);
 }
 
 .releaseRowHandle {
   align-self: center;
   grid-area: handle;
+}
+
+.layoutList > .layoutReleaseRow:not(.layoutSectionMember, :has(+ .insertZone)) {
+  margin-bottom: var(--space-2);
+}
+
+.layoutList
+  > .layoutMarkerRow:not(
+    .layoutSectionHead,
+    .layoutSectionMember,
+    :has(+ .insertZone)
+  ) {
+  margin-bottom: var(--space-2);
+}
+
+.layoutList > .layoutReleaseRow:has(+ .insertZone),
+.layoutList
+  > .layoutMarkerRow:not(.layoutSectionHead, .layoutSectionMember):has(
+    + .insertZone
+  ) {
+  margin-bottom: 0;
+}
+
+.sectionBody
+  > .layoutReleaseRow:has(
+    ~ .insertZoneSectionMemberEnd.insertZoneEmptySectionActive
+  ) {
+  border-bottom: none;
+}
+
+.layoutList[data-crate-layout-dragging] .sectionBody {
+  overflow: hidden;
+}
+
+.layoutList[data-crate-layout-dragging] .sectionGroup .sectionHead {
+  position: relative;
+  z-index: 2;
+}
+
+.layoutList[data-crate-layout-dragging]
+  .layoutReleaseRow:not(.releaseRowDragging),
+.layoutList[data-crate-layout-dragging]
+  .layoutMarkerRow:not(.layoutMarkerRowDragging) {
+  transform: none !important;
+  transition: none !important;
+}
+
+.layoutDropIndicator {
+  background: var(--primary);
+  height: 2px;
+  pointer-events: none;
+  position: fixed;
+  transform: translateY(-1px);
+  z-index: 1000;
 }

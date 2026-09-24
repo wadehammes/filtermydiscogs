@@ -2,11 +2,11 @@ import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 
 export const LOGIN_PAGE_SITE_COPY = {
   tagline: "Digging made easier.",
-  lead: "Search and filter releases, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
+  lead: "Search and filter releases, preview tracks in-app, build crates with sections and set notes, track gig packing when you need it, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
   description:
-    "A free Discogs companion. Search and filter your collection, preview tracks in-app, build crates with set notes and gig packing, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
+    "A free Discogs companion. Search and filter your collection, preview tracks in-app, build crates with sections and set notes, track gig packing when you need it, explore dashboard insights and on-repeat tracks, and share cover-art mosaics.",
   previewAltSuffix:
-    "app preview with release cards, filters, in-app playback, crate tools, collection insights, and on-repeat track stats",
+    "app preview with release cards, filters, in-app playback, crate layout and packing tools, collection insights, and on-repeat track stats",
 } as const;
 
 export const LOGIN_PAGE_UI_COPY = {

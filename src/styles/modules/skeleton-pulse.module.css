@@ -15,5 +15,8 @@
 
 .pulsesurface {
   animation: pulse 1s ease-in-out infinite;
-  background: var(--muted);
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 7%, var(--muted)),
+    var(--muted)
+  );
 }

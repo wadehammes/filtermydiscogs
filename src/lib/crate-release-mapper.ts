@@ -1,11 +1,12 @@
 import type { CrateReleaseItem } from "src/types/crate.types";
 import type { DiscogsRelease } from "src/types/discogs-release.types";
 
-export function mapCrateReleaseRow(row: {
+export const mapCrateReleaseRow = (row: {
   release_data: unknown;
   found_at: Date | null;
   sort_order?: number;
-}): CrateReleaseItem {
+  section_id?: string | null;
+}): CrateReleaseItem => {
   const releaseData = row.release_data as DiscogsRelease;
 
   if (releaseData && typeof releaseData.instance_id !== "string") {
@@ -16,17 +17,22 @@ export function mapCrateReleaseRow(row: {
     release: releaseData,
     found_at: row.found_at?.toISOString() ?? null,
     sort_order: row.sort_order ?? 0,
+    section_id: row.section_id ?? null,
   };
-}
+};
 
-export function mapCrateSetMarkerRow(row: {
+export const mapCrateSetMarkerRow = (row: {
   id: string;
   label: string;
   sort_order?: number;
-}) {
+  parent_id?: string | null;
+  accent_key?: string | null;
+}) => {
   return {
     id: row.id,
     label: row.label,
     sort_order: row.sort_order ?? 0,
+    parent_id: row.parent_id ?? null,
+    accent_key: row.accent_key ?? null,
   };
-}
+};

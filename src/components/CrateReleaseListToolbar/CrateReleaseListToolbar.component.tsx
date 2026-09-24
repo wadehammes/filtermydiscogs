@@ -27,7 +27,7 @@ export const CrateReleaseListToolbar = ({
 
   const releaseCount = selectedReleases.length;
   const isBusy = isUpdatingCrate || isDeletingCrate;
-  const showToolbar = packedEnabled && packedCount > 0;
+  const showToolbar = packedEnabled;
 
   if (!showToolbar) {
     return null;
@@ -50,7 +50,7 @@ export const CrateReleaseListToolbar = ({
             type="button"
             className={textActionStyles.meta}
             onClick={() => setShowClearPackedDialog(true)}
-            disabled={isBusy}
+            disabled={isBusy || packedCount === 0}
             aria-label="Clear all packed items"
           >
             Clear packed

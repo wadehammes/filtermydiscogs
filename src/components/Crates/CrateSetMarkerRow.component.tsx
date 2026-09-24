@@ -12,6 +12,7 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import { CRATE_MARKER_MAX_LENGTH } from "src/constants/crate";
+import type { CrateSectionAccentKey } from "src/constants/crateSectionAccent";
 import {
   type CrateSetMarkerLabelValues,
   crateSetMarkerLabelSchema,
@@ -19,12 +20,14 @@ import {
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
 import type { CrateLayoutMarkerItem } from "src/types/crate.types";
+import { CrateSectionAccentPicker } from "./CrateSectionAccentPicker.component";
 import styles from "./CrateSetMarkerRow.module.css";
 
 interface CrateSetMarkerRowProps {
   marker: CrateLayoutMarkerItem;
   readOnly?: boolean;
   fullWidth?: boolean;
+  as?: "div" | "li";
   className?: string;
   autoFocus?: boolean;
   dragHandleAttributes?: DraggableAttributes;
@@ -34,6 +37,9 @@ interface CrateSetMarkerRowProps {
   isDragging?: boolean;
   onLabelChange?: (label: string) => void;
   onDelete?: () => void;
+  onAccentChange?: (accentKey: CrateSectionAccentKey | null) => void;
+  onAddSubsection?: () => void;
+  canAddSubsection?: boolean;
   inputRef?: RefObject<HTMLInputElement | null>;
 }
 
@@ -41,6 +47,7 @@ export const CrateSetMarkerRow = ({
   marker,
   readOnly = false,
   fullWidth = false,
+  as: Tag = "li",
   className,
   autoFocus = false,
   dragHandleAttributes,
@@ -50,6 +57,9 @@ export const CrateSetMarkerRow = ({
   isDragging = false,
   onLabelChange,
   onDelete,
+  onAccentChange,
+  onAddSubsection,
+  canAddSubsection = false,
   inputRef,
 }: CrateSetMarkerRowProps) => {
   const localInputRef = useRef<HTMLInputElement>(null);
@@ -125,7 +135,7 @@ export const CrateSetMarkerRow = ({
   }
 
   return (
-    <li
+    <Tag
       ref={setNodeRef}
       style={style}
       className={classNames(styles.markerRow, className, {
@@ -167,14 +177,36 @@ export const CrateSetMarkerRow = ({
         />
         <span className={styles.rule} aria-hidden="true" />
       </div>
-      <button
-        type="button"
-        className={styles.deleteButton}
-        aria-label={`Remove section ${marker.label}`}
-        onClick={onDelete}
-      >
-        <TrashOpenIcon className={styles.deleteIcon} aria-hidden="true" />
-      </button>
-    </li>
+      {canAddSubsection && onAddSubsection ? (
+        <div className={styles.markerTools}>
+          <button
+            type="button"
+            className={styles.subsectionButton}
+            onClick={onAddSubsection}
+          >
+            Add group
+          </button>
+        </div>
+      ) : null}
+      <div className={styles.markerActions}>
+        {onAccentChange ? (
+          <CrateSectionAccentPicker
+            value={marker.accent_key}
+            onChange={onAccentChange}
+          />
+        ) : null}
+        <button
+          type="button"
+          className={styles.deleteButton}
+          aria-label={`Remove section ${marker.label}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete?.();
+          }}
+        >
+          <TrashOpenIcon className={styles.deleteIcon} aria-hidden="true" />
+        </button>
+      </div>
+    </Tag>
   );
 };

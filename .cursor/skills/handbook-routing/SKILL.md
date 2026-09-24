@@ -16,6 +16,15 @@ Source of truth: **`docs/handbook/`**. Task map: **[`llms.md`](../../docs/handbo
 3. Reuse documented patterns — extend existing hooks/components; no parallel implementations.
 4. If behavior or conventions change → update the matching **`docs/handbook/*.md`** (and root **README** if Features/Pages/Setup/Tech Stack shift).
 
+## Post-work (before your final reply)
+
+When the session changed **`src/`** (especially production code, layout libs, or new test patterns):
+
+1. Open **`llms.md`** and the chapter(s) it maps for this area.
+2. **Edit handbook** in the same turn if anything documented is now wrong or missing.
+3. If you truly changed nothing doc-worthy, **name the section headings you checked** — not a bare “handbook still accurate.”
+4. Cursor **`stop`** runs [`.cursor/hooks/handbook-drift-check.sh`](../../.cursor/hooks/handbook-drift-check.sh) once when git shows `src/` changes without `docs/handbook/*.md` — treat that follow-up as mandatory completion, not optional.
+
 ## Substantive vs skip
 
 **Read chapters:** features, refactors, auth, Prisma, App Router handlers, CSS/layout, new test behavior.
@@ -25,4 +34,4 @@ Source of truth: **`docs/handbook/`**. Task map: **[`llms.md`](../../docs/handbo
 ## Agent entry points
 
 - **[AGENTS.md](../../AGENTS.md)** / **[CLAUDE.md](../../CLAUDE.md)** — align with handbook.
-- **Cursor** — session injects `llms.md`; always-on rule in [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc).
+- **Cursor** — sessionStart brief handbook pointer; always-on rule in [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc).

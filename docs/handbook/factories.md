@@ -121,6 +121,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`Collection.factory.ts`](../../src/tests/factories/Collection.factory.ts) | `collectionFactory` | `DiscogsCollection` |
 | [`Crate.factory.ts`](../../src/tests/factories/Crate.factory.ts) | `crateFactory` | Prisma `Crate` |
 | [`CrateRelease.factory.ts`](../../src/tests/factories/CrateRelease.factory.ts) | `crateReleaseFactory` | Prisma `CrateRelease` |
+| [`CrateLayoutItem.factory.ts`](../../src/tests/factories/CrateLayoutItem.factory.ts) | `crateLayoutItemFactory` | Owner **`CrateLayoutItem[]`** rows (`marker` / `release`) for layout + section DnD lib specs |
 | [`CrateWithCount.factory.ts`](../../src/tests/factories/CrateWithCount.factory.ts) | `crateWithCountFactory` | `Crate` + `releaseCount` (UI list shape) |
 | [`SelectOption.factory.ts`](../../src/tests/factories/SelectOption.factory.ts) | `selectOptionFactory` | Select dropdown option |
 | [`ReleaseNote.factory.ts`](../../src/tests/factories/ReleaseNote.factory.ts) | `releaseNoteFactory` | `ReleaseNote` |
@@ -153,6 +154,7 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `selectOptionFactory` | `defaultSelectOptions()` | Select PO default option list |
 | `crateWithCountFactory` | `defaultTestCrate()`, `fromCrate()`, `defaultCrateSelectorCrates()` | Crate list UI shapes and CrateSelector PO defaults |
 | `crateFactory` | `defaultTestCrate()`, `named()` | Default authenticated-user crate and named create flows |
+| `crateLayoutItemFactory` | `marker()`, `release()`, `list()` | **`CrateLayoutItem[]`** fixtures in [`crate-layout.spec.ts`](../../src/lib/crate-layout.spec.ts), [`crate-section-layout.spec.ts`](../../src/lib/crate-section-layout.spec.ts), [`crate-layout.edge-cases.spec.ts`](../../src/lib/crate-layout.edge-cases.spec.ts), [`crate-layout.server.spec.ts`](../../src/lib/crate-layout.server.spec.ts) (group-delete â†’ PUT pipeline), and [`CrateLayoutList.spec.tsx`](../../src/components/Crates/CrateLayoutList.spec.tsx) (section delete + layout DnD) |
 | `crateReleaseFactory` | `forInstance()` | Prisma crate release rows in route specs |
 | `cratesResponseFactory` | `empty()`, `withCrates()`, `withCrate()` | `fetchCrates` API response |
 | `crateWithReleasesResponseFactory` | `empty()`, `withReleases()` | `fetchCrate` API response |
