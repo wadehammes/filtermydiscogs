@@ -148,13 +148,15 @@
   }
 }
 
-.releasesPanelToolbarWrap {
-  position: relative;
-}
-
 .releasesPanelToolbar {
   border-top-left-radius: calc(var(--radius-card) - 1px);
   border-top-right-radius: calc(var(--radius-card) - 1px);
+}
+
+.releasesPanelToolbarWrap {
+  isolation: isolate;
+  position: relative;
+  z-index: calc(var(--z-2-sticky) + 1);
 }
 
 .releasesPanelEdgeInsertMount {
@@ -164,7 +166,7 @@
   pointer-events: none;
   position: absolute;
   right: 0;
-  z-index: calc(var(--z-2-sticky) + 1);
+  z-index: 1;
 }
 
 .releasesPanelBody {

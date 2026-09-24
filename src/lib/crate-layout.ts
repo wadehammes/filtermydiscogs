@@ -207,6 +207,42 @@ export const reorderCrateLayoutItems = ({
   return nextItems;
 };
 
+export const reorderCrateLayoutItemsArrayMove = ({
+  items,
+  activeId,
+  overId,
+}: {
+  items: CrateLayoutItem[];
+  activeId: string;
+  overId: string;
+}): CrateLayoutItem[] => {
+  if (activeId === overId) {
+    return items;
+  }
+
+  const oldIndex = items.findIndex(
+    (item) => getCrateLayoutSortableId(item) === activeId,
+  );
+  const newIndex = items.findIndex(
+    (item) => getCrateLayoutSortableId(item) === overId,
+  );
+
+  if (oldIndex < 0 || newIndex < 0) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  const [movedItem] = nextItems.splice(oldIndex, 1);
+
+  if (!movedItem) {
+    return items;
+  }
+
+  nextItems.splice(newIndex, 0, movedItem);
+
+  return nextItems;
+};
+
 export const resolveCrateLayoutInsertBeforeOverFromPointer = ({
   overRect,
   pointerY,

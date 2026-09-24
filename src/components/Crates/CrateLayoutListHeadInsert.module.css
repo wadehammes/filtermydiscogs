@@ -1,23 +1,33 @@
-.layoutListWithHeadInsertDrop {
-  padding-block-start: var(--space-2);
+.listTailInsertDropSlot {
+  height: 0;
+  list-style: none;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  z-index: 1;
 }
 
-.listHeadInsertDrop {
+.listTailInsertDrop {
   background: color-mix(in srgb, var(--primary) 6%, transparent);
   border: 2px dashed color-mix(in srgb, var(--primary) 35%, var(--border));
   border-radius: var(--radius-card);
+  bottom: 0;
   box-sizing: border-box;
   flex-shrink: 0;
   height: 3.5rem;
+  left: var(--space-4);
   list-style: none;
-  margin-inline: var(--space-4);
+  margin-inline: 0;
   overflow: visible;
   pointer-events: auto;
-  position: relative;
+  position: absolute;
+  right: var(--space-4);
   width: auto;
 
   @media (width >= 1024px) {
-    margin-inline: var(--space-5);
+    left: var(--space-5);
+    right: var(--space-5);
   }
 }
 

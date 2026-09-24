@@ -14,6 +14,7 @@ import {
   insertCrateLayoutMarkerBeforeVisibleIndex,
   mergeReorderedVisibleCrateLayout,
   reorderCrateLayoutItems,
+  reorderCrateLayoutItemsArrayMove,
   reorderCrateLayoutReleaseToVisibleInsertIndex,
   resolveCrateLayoutDropIndicator,
 } from "src/lib/crate-layout";
@@ -157,6 +158,22 @@ describe("crateLayout", () => {
       reordered.map((item) => item.kind === "release" && item.instance_id),
     ).toEqual(["2", "1"]);
     expect(reordered.map((item) => item.sort_order)).toEqual([2000, 1000]);
+  });
+
+  it("reorderCrateLayoutItemsArrayMove matches sortable arrayMove indices", () => {
+    const items: CrateLayoutItem[] = [
+      buildReleaseItem("1", 1000),
+      buildReleaseItem("2", 2000),
+      buildReleaseItem("3", 3000),
+    ];
+
+    expect(
+      reorderCrateLayoutItemsArrayMove({
+        items,
+        activeId: "release:1",
+        overId: "release:3",
+      }).map((item) => item.kind === "release" && item.instance_id),
+    ).toEqual(["2", "3", "1"]);
   });
 
   it("parses layout-insert drop ids and ignores invalid suffixes", () => {

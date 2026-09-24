@@ -10,6 +10,7 @@ import {
   DragOverlay,
   type DragStartEvent,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
   pointerWithin,
   useDroppable,
@@ -105,7 +106,9 @@ import { CrateReleaseActions } from "./CrateReleaseActions.component";
 import listStyles from "./CrateReleaseList.module.css";
 import { CrateSetMarkerRow } from "./CrateSetMarkerRow.component";
 
-const CRATE_LAYOUT_LIST_INSERT_DROP_MIN_HEIGHT = "3.5rem";
+const crateLayoutListMeasuring = {
+  droppable: { strategy: MeasuringStrategy.Always },
+} as const;
 
 const createCrateLayoutCollisionDetection = (
   sectionBlockSortableIdsByMarkerId: ReadonlyMap<string, ReadonlySet<string>>,
@@ -238,6 +241,8 @@ interface CrateLayoutInsertZoneProps {
   showAddButton?: boolean;
   dropLabel?: string;
   style?: CSSProperties;
+  overlayInsertSlot?: boolean;
+  overlayDropClassName?: string;
 }
 
 const CrateLayoutInsertZone = forwardRef<
@@ -257,6 +262,8 @@ const CrateLayoutInsertZone = forwardRef<
     showAddButton = true,
     dropLabel,
     style,
+    overlayInsertSlot = false,
+    overlayDropClassName,
   },
   ref,
 ) {
@@ -279,6 +286,31 @@ const CrateLayoutInsertZone = forwardRef<
     [ref, setNodeRef],
   );
 
+  const hitArea = (
+    <div
+      className={classNames(styles.insertZoneHitArea, {
+        [headInsertStyles.listHeadInsertHitArea]: !showAddButton,
+      })}
+    >
+      {showAddButton ? (
+        <IconButton
+          variant="plus"
+          className={styles.insertButton}
+          iconClassName={styles.insertButtonIcon}
+          disabled={disabled}
+          aria-label="Add section (splits the list here)"
+          onClick={() => onInsert(insertIndex)}
+        >
+          <PlusIcon />
+        </IconButton>
+      ) : dropLabel ? (
+        <span className={headInsertStyles.listHeadInsertDropLabel}>
+          {dropLabel}
+        </span>
+      ) : null}
+    </div>
+  );
+
   return (
     <Tag
       ref={setRefs}
@@ -288,29 +320,13 @@ const CrateLayoutInsertZone = forwardRef<
         [styles.insertZoneEdgeBottom]: variant === "edgeBottom",
       })}
       data-testid={testId ?? `fmdCrateLayoutInsertDrop-${insertIndex}`}
+      {...(overlayInsertSlot ? { "data-crate-layout-insert-overlay": "" } : {})}
     >
-      <div
-        className={classNames(styles.insertZoneHitArea, {
-          [headInsertStyles.listHeadInsertHitArea]: !showAddButton,
-        })}
-      >
-        {showAddButton ? (
-          <IconButton
-            variant="plus"
-            className={styles.insertButton}
-            iconClassName={styles.insertButtonIcon}
-            disabled={disabled}
-            aria-label="Add section (splits the list here)"
-            onClick={() => onInsert(insertIndex)}
-          >
-            <PlusIcon />
-          </IconButton>
-        ) : dropLabel ? (
-          <span className={headInsertStyles.listHeadInsertDropLabel}>
-            {dropLabel}
-          </span>
-        ) : null}
-      </div>
+      {overlayInsertSlot && overlayDropClassName ? (
+        <div className={overlayDropClassName}>{hitArea}</div>
+      ) : (
+        hitArea
+      )}
     </Tag>
   );
 });
@@ -987,16 +1003,31 @@ const CrateLayoutListComponent = ({
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       setActiveDragSortableId(String(event.active.id));
-      syncDropIndicator(null);
+
+      const rect =
+        event.active.rect.current.translated ??
+        event.active.rect.current.initial;
+
+      if (rect) {
+        syncDropIndicator({
+          top: rect.top + rect.height,
+          left: rect.left,
+          width: rect.width,
+        });
+      } else {
+        syncDropIndicator(null);
+      }
     },
     [syncDropIndicator],
   );
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
-      const { active, over } = event;
+      const { active, over, collisions } = event;
+      const overId = over?.id ?? collisions?.[0]?.id;
+      const overRect = over?.rect;
 
-      if (!over?.rect) {
+      if (overId == null || !overRect) {
         syncDropIndicator(null);
 
         return;
@@ -1007,8 +1038,8 @@ const CrateLayoutListComponent = ({
       const nextIndicator = resolveCrateLayoutDropIndicatorForDrag({
         items: visibleLayoutItems,
         activeSortableId: String(active.id),
-        overSortableId: String(over.id),
-        overRect: over.rect,
+        overSortableId: String(overId),
+        overRect,
         sortableIndexLookup: visibleSortableIndexLookup,
         sectionBlockSortableIdsByMarkerId,
         pointerY,
@@ -1210,7 +1241,7 @@ const CrateLayoutListComponent = ({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
+      activationConstraint: { distance: 4 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -1222,7 +1253,7 @@ const CrateLayoutListComponent = ({
   const isDraggingReleaseForInsert = Boolean(activeDragReleaseItem);
   const enableListInsertDropTargets =
     isDraggingReleaseForInsert && useEdgeInsertMounts;
-  const showListHeadInsertDropZone =
+  const showTopListInsertDropTarget =
     useEdgeInsertMounts &&
     enableListInsertDropTargets &&
     activeDragSortableIndex > 0;
@@ -1255,33 +1286,26 @@ const CrateLayoutListComponent = ({
       insertIndex={0}
       disabled={isSavingLayout}
       isDraggingRelease={
-        useEdgeInsertMounts ? false : enableListInsertDropTargets
+        useEdgeInsertMounts
+          ? showTopListInsertDropTarget
+          : enableListInsertDropTargets
       }
-      registerAsDropTarget={!useEdgeInsertMounts}
+      registerAsDropTarget={
+        useEdgeInsertMounts ? showTopListInsertDropTarget : true
+      }
       showAddButton={true}
       {...definedProps(
         useEdgeInsertMounts
-          ? { testId: "fmdCrateLayoutToolbarInsertDrop-0" }
+          ? {
+              testId: showTopListInsertDropTarget
+                ? "fmdCrateLayoutInsertDrop-0"
+                : "fmdCrateLayoutToolbarInsertDrop-0",
+            }
           : {},
       )}
       onInsert={handleAddSectionAt}
     />
   );
-
-  const listHeadInsertDropZone = showListHeadInsertDropZone ? (
-    <CrateLayoutInsertZone
-      as="li"
-      insertIndex={0}
-      disabled={isSavingLayout}
-      isDraggingRelease={true}
-      registerAsDropTarget={true}
-      showAddButton={false}
-      dropLabel="Drop release here"
-      className={headInsertStyles.listHeadInsertDrop}
-      style={{ minHeight: CRATE_LAYOUT_LIST_INSERT_DROP_MIN_HEIGHT }}
-      onInsert={handleAddSectionAt}
-    />
-  ) : null;
 
   const renderLayoutSegment = useCallback(
     function renderLayoutSegment(segment: CrateLayoutRenderSegment): ReactNode {
@@ -1388,8 +1412,12 @@ const CrateLayoutListComponent = ({
       registerAsDropTarget={true}
       showAddButton={false}
       dropLabel="Drop release here"
-      className={headInsertStyles.listHeadInsertDrop}
-      style={{ minHeight: CRATE_LAYOUT_LIST_INSERT_DROP_MIN_HEIGHT }}
+      overlayInsertSlot={true}
+      overlayDropClassName={headInsertStyles.listTailInsertDrop}
+      className={classNames(
+        headInsertStyles.listTailInsertDropSlot,
+        styles.layoutListTailInsertOverlay,
+      )}
       onInsert={handleAddSectionAt}
     />
   ) : null;
@@ -1450,6 +1478,7 @@ const CrateLayoutListComponent = ({
       <ReleaseNotesCollectionFieldsProvider>
         <DndContext
           sensors={sensors}
+          measuring={crateLayoutListMeasuring}
           collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
@@ -1467,19 +1496,13 @@ const CrateLayoutListComponent = ({
             strategy={verticalListSortingStrategy}
           >
             <ul
-              className={classNames(
-                listStyles.list,
-                styles.layoutList,
-                showListHeadInsertDropZone &&
-                  headInsertStyles.layoutListWithHeadInsertDrop,
-              )}
+              className={classNames(listStyles.list, styles.layoutList)}
               {...(activeDragSortableId
                 ? { "data-crate-layout-dragging": "" }
                 : {})}
               data-testid="fmdCrateReleasesTable"
             >
               {useEdgeInsertMounts ? null : topInsertZone}
-              {listHeadInsertDropZone}
               {layoutSegments.map((segment) => (
                 <Fragment key={getCrateLayoutRenderSegmentKey(segment)}>
                   {renderLayoutSegment(segment)}

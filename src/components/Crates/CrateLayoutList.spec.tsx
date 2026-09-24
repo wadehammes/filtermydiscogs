@@ -120,9 +120,10 @@ const mockCrateLayoutListRowBoundingRects = () => {
 
           if (
             sibling?.querySelector('button[aria-label="Reorder"]') ||
-            sibling
+            (sibling
               ?.getAttribute("data-testid")
-              ?.startsWith("fmdCrateLayoutInsertDrop-")
+              ?.startsWith("fmdCrateLayoutInsertDrop-") &&
+              !sibling.hasAttribute("data-crate-layout-insert-overlay"))
           ) {
             top += CRATE_LAYOUT_ROW_HEIGHT;
           }
@@ -150,7 +151,11 @@ const mockCrateLayoutListRowBoundingRects = () => {
         const headInsertDrop = list.querySelector(
           ':scope > li[data-testid="fmdCrateLayoutInsertDrop-0"]',
         );
-        const headInsertOffset = headInsertDrop ? CRATE_LAYOUT_ROW_HEIGHT : 0;
+        const headInsertOffset =
+          headInsertDrop &&
+          !headInsertDrop.hasAttribute("data-crate-layout-insert-overlay")
+            ? CRATE_LAYOUT_ROW_HEIGHT
+            : 0;
         const top =
           headInsertOffset +
           index * CRATE_LAYOUT_ROW_HEIGHT +
