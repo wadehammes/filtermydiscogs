@@ -3,7 +3,10 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { isProtectedAppRoute } from "src/constants/protectedRoutes";
+import {
+  isProtectedAppRoute,
+  isPublicCrateRoute,
+} from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 
 const AuthenticatedProviders = dynamic(
@@ -24,16 +27,18 @@ const AuthenticatedProvidersGateInner = ({
   const pathname = usePathname();
   const { state: authState } = useAuth();
   const onProtectedRoute = isProtectedAppRoute(pathname);
+  const onPublicCrateRoute = isPublicCrateRoute(pathname);
   const needsAuthenticatedShell =
     authState.isAuthenticated || (authState.isCheckingAuth && onProtectedRoute);
+  const needsPlaybackShell = needsAuthenticatedShell || onPublicCrateRoute;
 
   useEffect(() => {
-    if (needsAuthenticatedShell) {
+    if (needsPlaybackShell) {
       void import("src/components/AuthenticatedProviders");
     }
-  }, [needsAuthenticatedShell]);
+  }, [needsPlaybackShell]);
 
-  if (!needsAuthenticatedShell) {
+  if (!needsPlaybackShell) {
     return children;
   }
 

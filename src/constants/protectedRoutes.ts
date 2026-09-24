@@ -11,3 +11,6 @@ export const isProtectedAppRoute = (pathname: string): boolean =>
   PROTECTED_APP_ROUTE_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
+
+export const isPublicCrateRoute = (pathname: string): boolean =>
+  pathname.startsWith("/crate/") && pathname.length > "/crate/".length;
