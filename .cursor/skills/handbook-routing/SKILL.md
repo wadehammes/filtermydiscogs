@@ -33,5 +33,5 @@ When the session changed **`src/`** (especially production code, layout libs, or
 
 ## Agent entry points
 
-- **[AGENTS.md](../../AGENTS.md)** / **[CLAUDE.md](../../CLAUDE.md)** — align with handbook.
-- **Cursor** — sessionStart brief handbook pointer; always-on rule in [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc).
+- **[AGENTS.md](../../AGENTS.md)** — repo agent instructions; align with the handbook.
+- **Cursor** — sessionStart brief handbook pointer; always-on rule in [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc); task skills under [`.cursor/skills/`](../).

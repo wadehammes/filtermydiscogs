@@ -6,13 +6,12 @@ javascript:
           - public/**/*
           - .tool-versions
           - docs/**/*
-          - CLAUDE.md
+          - AGENTS.md
 
 documentation:
   - changed-files:
       - any-glob-to-any-file:
           - docs/**/*
-          - CLAUDE.md
           - AGENTS.md
           - README.md
 

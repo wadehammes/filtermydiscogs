@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for Cursor hooks (adapted from rhythm-marketing .claude hooks).
+# Shared helpers for Cursor hooks.
 
 hook_input() {
   INPUT="$(cat)"
