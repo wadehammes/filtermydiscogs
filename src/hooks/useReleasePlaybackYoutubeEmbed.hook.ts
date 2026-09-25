@@ -145,6 +145,13 @@ export const useReleasePlaybackYoutubeEmbed = ({
     const now = Date.now();
 
     if (
+      playbackVideoTransitionTargetIdRef.current !== null &&
+      isWithinEmbedTrackSwitchGrace(embedTrackSwitchGraceUntilRef.current, now)
+    ) {
+      return;
+    }
+
+    if (
       !shouldNotifyEmbedPlaybackEnded({
         lastEndedAtMs: lastEmbedPlaybackEndedAtRef.current,
         nowMs: now,
@@ -157,7 +164,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     lastEmbedPlaybackEndedAtRef.current = now;
     creditTrackListenOnEmbedEndedForActiveItem();
     onPlaybackEnded();
-  }, [onPlaybackEnded]);
+  }, [onPlaybackEnded, playbackVideoTransitionTargetIdRef]);
 
   const markEmbedTrackSwitchGrace = useCallback(() => {
     embedTrackSwitchGraceUntilRef.current = nextEmbedTrackSwitchGraceUntil({
@@ -737,5 +744,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
     notifyPlaybackIframeLoaded,
     notifyImperativeEmbedLoadStarted,
     resumePlaybackFromGesture,
+    markEmbedTrackSwitchGrace,
   };
 };

@@ -65,6 +65,7 @@ const buildHarness = ({
   const embedVideoIdRef = { current: null as string | null };
   const activeTrackPositionRef = { current: "A1" as string | null };
   const isReleasePreviewRef = { current: false };
+  const isPausedRef = { current: false };
   const setPlaybackVideoUiLoadingTargetId = jest.fn();
   const playNextRef = { current: () => {} };
   const extendQueueTailRef = {
@@ -73,6 +74,8 @@ const buildHarness = ({
   const startPlaybackRef = { current: () => {} };
 
   const clearPlaybackVideoUiLoading = jest.fn();
+  const beginPlaybackVideoUiLoading = jest.fn();
+  const markEmbedTrackSwitchGrace = jest.fn();
   const prepareQueueAdvancePlayback = jest.fn();
   const settleSameUploadQueueAdvance = jest.fn();
   const setUpcomingQueue = jest.fn((nextQueue: typeof sessionQueue) => {
@@ -92,6 +95,8 @@ const buildHarness = ({
       setPlaybackVideoTransitionTargetId: jest.fn(),
       setPlaybackVideoUiLoadingTargetId,
       clearPlaybackVideoUiLoading,
+      beginPlaybackVideoUiLoading,
+      markEmbedTrackSwitchGrace,
       prepareQueueAdvancePlayback,
       settleSameUploadQueueAdvance,
       setEmbedVideoId: jest.fn(),
@@ -122,6 +127,7 @@ const buildHarness = ({
         queueRef,
         playbackHistoryRef,
         isPlayingRef,
+        isPausedRef,
         releaseDetailIdRef,
         tracksRef,
         lastSyncedActiveVideoIdRef,
@@ -221,6 +227,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId,
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
         settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
@@ -259,6 +267,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef,
           playbackHistoryRef: { current: [] },
           isPlayingRef: { current: true },
+          isPausedRef: { current: false },
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: "te2jJncBVG4" },
@@ -298,6 +307,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
         settleSameUploadQueueAdvance,
         setEmbedVideoId: jest.fn(),
@@ -332,6 +343,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef,
           playbackHistoryRef: { current: [] },
           isPlayingRef: { current: true },
+          isPausedRef: { current: false },
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
@@ -371,6 +383,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId,
         setPlaybackVideoUiLoadingTargetId,
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
         settleSameUploadQueueAdvance,
         setEmbedVideoId: jest.fn(),
@@ -405,6 +419,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef,
           playbackHistoryRef: { current: [] },
           isPlayingRef: { current: true },
+          isPausedRef: { current: false },
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
@@ -450,6 +465,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
         settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
@@ -484,6 +501,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef,
           playbackHistoryRef: { current: [] },
           isPlayingRef: { current: true },
+          isPausedRef: { current: false },
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: "abc12345678" },
@@ -538,6 +556,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
         settleSameUploadQueueAdvance,
         setEmbedVideoId: jest.fn(),
@@ -568,6 +588,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef: { current: [] },
           playbackHistoryRef,
           isPlayingRef: { current: true },
+          isPausedRef: { current: false },
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
@@ -606,6 +627,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
         settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
@@ -636,6 +659,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef,
           playbackHistoryRef,
           isPlayingRef: { current: true },
+          isPausedRef: { current: false },
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: null },
@@ -672,6 +696,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
         settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
@@ -702,6 +728,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef: { current: [] },
           playbackHistoryRef: { current: [] },
           isPlayingRef: { current: false },
+          isPausedRef: { current: false },
           releaseDetailIdRef: {
             current: releaseFactory.withDisplayDefaults().basic_information.id,
           },
@@ -795,6 +822,7 @@ describe("useReleasePlaybackQueueActions", () => {
       current: [] as ReturnType<typeof discogsTrackFactory.build>[],
     };
     const isPlayingRef = { current: true };
+    const isPausedRef = { current: false };
 
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
@@ -804,6 +832,8 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
         settleSameUploadQueueAdvance: jest.fn(),
         setEmbedVideoId: jest.fn(),
@@ -834,6 +864,7 @@ describe("useReleasePlaybackQueueActions", () => {
           queueRef,
           playbackHistoryRef: { current: [] },
           isPlayingRef,
+          isPausedRef,
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef,
           lastSyncedActiveVideoIdRef: { current: null },
