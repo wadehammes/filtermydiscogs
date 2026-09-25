@@ -127,6 +127,29 @@ const dispatchYoutubePlayerState = ({
   );
 };
 
+const dispatchYoutubeInfoDelivery = ({
+  contentWindow,
+  info,
+}: {
+  contentWindow: Window;
+  info: {
+    playerState?: number;
+    currentTime?: number;
+    duration?: number;
+  };
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({
+        event: "infoDelivery",
+        info,
+      }),
+      origin: "https://www.youtube-nocookie.com",
+      source: contentWindow,
+    }),
+  );
+};
+
 const mockApi = jest.mocked(api);
 const preferencesApiError = new Error("Preferences API request failed");
 
@@ -717,6 +740,744 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(result.current.isPaused).toBe(false);
+  });
+
+  it("does not skip a new release track when embed playing confirms before the load delay elapses", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      result.current.togglePlayback();
+    });
+
+    expect(result.current.isPaused).toBe(true);
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(false);
+      expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+
+    expect(result.current.activeTrackPosition).toBe("1");
+    expect(result.current.release?.basic_information.id).toBe(SHORT_RELEASE_ID);
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("does not advance when a stale embed ended arrives after starting another release from pause", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("A1");
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      result.current.togglePlayback();
+    });
+
+    expect(result.current.isPaused).toBe(true);
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+      });
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(false);
+      expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.release?.basic_information.id).toBe(
+        SHORT_RELEASE_ID,
+      );
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    expect(result.current.activeTrackPosition).toBe("1");
+    expect(result.current.release?.basic_information.id).toBe(SHORT_RELEASE_ID);
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when embed pause UI left transport paused, starting another release plays without unavailable skip", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
+    });
+
+    expect(result.current.isPaused).toBe(true);
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+
+    expect(result.current.activeTrackPosition).toBe("1");
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when infoDelivery reports the prior upload at end during cross-release switch from pause, playback stays on the new track", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: { currentTime: 329, duration: 330, playerState: 2 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+    });
+
+    expect(result.current.release?.basic_information.id).toBe(SHORT_RELEASE_ID);
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when transport is paused on one track, starting another track on the same release switches without unavailable skip", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+    mockLoadAndPlayYoutubeVideo.mockClear();
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "B1",
+        youtubeVideoId: "abc12345678",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPaused).toBe(false);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("abc12345678");
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when cross-release switch from pause is confirmed, a later ended on the new track does not revert to the prior release", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackVideoLoading).toBe(false);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    expect(result.current.release?.basic_information.id).toBe(SHORT_RELEASE_ID);
+    expect(result.current.activeTrackPosition).toBe("1");
+
+    jest.useRealTimers();
+  });
+
+  it("when cross-release switch from pause runs while the tab is hidden, the embed watchdog does not skip the new track", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+      setDocumentVisibilityState("hidden");
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    setDocumentVisibilityState("visible");
+    jest.useRealTimers();
+  });
+
+  it("when another release is started from pause twice, playback stays on the last selected track", async () => {
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "B1",
+        youtubeVideoId: "abc12345678",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.release?.basic_information.id).toBe(RELEASE_ID);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    expect(result.current.activeTrackPosition).toBe("B1");
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+  });
+
+  it("when transport is paused, playQueueAtIndex on a cross-release row does not unavailable-skip", async () => {
+    jest.useFakeTimers();
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ autoPlayOnQueueAdd: false }),
+    );
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.autoPlayOnQueueAdd).toBe(false);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(2);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.playQueueAtIndex(1);
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: { currentTime: 329, duration: 330, playerState: 2 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.release?.basic_information.id).toBe(
+        SHORT_RELEASE_ID,
+      );
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when transport is paused, starting a release preview on another upload does not unavailable-skip", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+    const previewVideo = shortReleaseDetail.videos?.[0];
+
+    if (!previewVideo) {
+      throw new Error("expected short release preview video fixture");
+    }
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.startReleasePreview({
+        release: shortCollectionRelease,
+        video: previewVideo,
+      });
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: { currentTime: 329, duration: 330, playerState: 2 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.release?.basic_information.id).toBe(
+        SHORT_RELEASE_ID,
+      );
+      expect(result.current.isPaused).toBe(false);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when restore rehydrates a paused session, starting another release does not unavailable-skip", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+    setDocumentVisibilityState("visible");
+
+    writePersistedReleasePlayback({
+      instanceId: String(collectionRelease.instance_id),
+      trackPosition: "A1",
+    });
+
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("A1");
+    });
+
+    act(() => {
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.startPlayback({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        youtubeVideoId: "def98765432",
+      });
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: { currentTime: 329, duration: 330, playerState: 2 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("1");
+      expect(result.current.isPaused).toBe(false);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("def98765432");
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
   });
 
   it("keeps autoplaying the next track when the embed pauses during a visible track switch", async () => {

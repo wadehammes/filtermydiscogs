@@ -82,6 +82,7 @@ interface QueueActionRefs {
   queueRef: RefObject<PlaybackQueueItem[]>;
   playbackHistoryRef: RefObject<PlaybackQueueItem[]>;
   isPlayingRef: RefObject<boolean>;
+  isPausedRef: RefObject<boolean>;
   releaseDetailIdRef: RefObject<number | undefined>;
   tracksRef: RefObject<DiscogsTrack[]>;
   lastSyncedActiveVideoIdRef: RefObject<string | null>;
@@ -98,6 +99,8 @@ interface UseReleasePlaybackQueueActionsParams {
   setPlaybackVideoTransitionTargetId: (videoId: string | null) => void;
   setPlaybackVideoUiLoadingTargetId: (videoId: string | null) => void;
   clearPlaybackVideoUiLoading: () => void;
+  beginPlaybackVideoUiLoading: () => void;
+  markEmbedTrackSwitchGrace: () => void;
   prepareQueueAdvancePlayback: (item: PlaybackQueueItem | null) => void;
   settleSameUploadQueueAdvance: () => void;
   setEmbedVideoId: (videoId: string | null) => void;
@@ -130,6 +133,8 @@ export const useReleasePlaybackQueueActions = ({
   setPlaybackVideoTransitionTargetId,
   setPlaybackVideoUiLoadingTargetId,
   clearPlaybackVideoUiLoading,
+  beginPlaybackVideoUiLoading,
+  markEmbedTrackSwitchGrace,
   prepareQueueAdvancePlayback,
   settleSameUploadQueueAdvance,
   setEmbedVideoId,
@@ -163,6 +168,7 @@ export const useReleasePlaybackQueueActions = ({
     queueRef,
     playbackHistoryRef,
     isPlayingRef,
+    isPausedRef,
     releaseDetailIdRef,
     tracksRef,
     lastSyncedActiveVideoIdRef,
@@ -226,6 +232,10 @@ export const useReleasePlaybackQueueActions = ({
         youtubeVideoId,
       }: PlayQueueItemOptions = {},
     ) => {
+      if (autoplay && !startPaused) {
+        isPausedRef.current = false;
+      }
+
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
       const isSameRelease = isSameReleaseInstance(
         releaseRef.current,
@@ -277,15 +287,16 @@ export const useReleasePlaybackQueueActions = ({
         activeVideoId: activeVideoIdRef.current,
         replaySameTrack,
       });
+      const isVideoSwitchFromPriorUpload =
+        activeVideoIdRef.current !== null &&
+        preparedEmbedVideoId !== null &&
+        needsPlaybackVideoSwitch;
       pendingPlayFromGestureRef.current =
         autoplay && !startPaused && needsPlaybackVideoSwitch;
 
-      if (
-        autoplay &&
-        !startPaused &&
-        preparedEmbedVideoId &&
-        needsPlaybackVideoSwitch
-      ) {
+      if (autoplay && !startPaused && isVideoSwitchFromPriorUpload) {
+        markEmbedTrackSwitchGrace();
+        beginPlaybackVideoUiLoading();
         setPlaybackVideoUiLoadingTargetId(preparedEmbedVideoId);
         setPlaybackVideoTransitionTargetId(preparedEmbedVideoId);
       }
@@ -326,10 +337,13 @@ export const useReleasePlaybackQueueActions = ({
     [
       applyTargetEmbedVideoId,
       awaitingResumeGestureRef,
+      beginPlaybackVideoUiLoading,
       clearPlayFromGestureRetries,
       dispatchSession,
       findQueueItemResolutionIndex,
+      isPausedRef,
       lastSyncedActiveVideoIdRef,
+      markEmbedTrackSwitchGrace,
       pendingPlayFromGestureRef,
       prefetchQueueItemEmbed,
       releaseRef,
@@ -474,6 +488,8 @@ export const useReleasePlaybackQueueActions = ({
     ({ release: nextRelease, video }: StartReleasePreviewParams) => {
       const previewVideoId = parseYoutubeVideoId(video.uri);
 
+      isPausedRef.current = false;
+
       shouldRebuildAlbumQueueRef.current = false;
       similarQueueModeRef.current = createSimilarQueueMode(false);
       similarQueueGenerationRef.current += 1;
@@ -487,6 +503,23 @@ export const useReleasePlaybackQueueActions = ({
         applyTargetEmbedVideoId(previewVideoId);
       }
 
+      const needsPlaybackVideoSwitch = resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: previewVideoId,
+        activeVideoId: activeVideoIdRef.current,
+        replaySameTrack: false,
+      });
+      const isVideoSwitchFromPriorUpload =
+        activeVideoIdRef.current !== null &&
+        previewVideoId !== null &&
+        needsPlaybackVideoSwitch;
+
+      if (isVideoSwitchFromPriorUpload) {
+        markEmbedTrackSwitchGrace();
+        beginPlaybackVideoUiLoading();
+        setPlaybackVideoUiLoadingTargetId(previewVideoId);
+        setPlaybackVideoTransitionTargetId(previewVideoId);
+      }
+
       setShouldAutoplayEmbed(true);
       awaitingResumeGestureRef.current = false;
       pendingPlayFromGestureRef.current = true;
@@ -497,11 +530,17 @@ export const useReleasePlaybackQueueActions = ({
       );
     },
     [
+      activeVideoIdRef,
       applyTargetEmbedVideoId,
       awaitingResumeGestureRef,
+      beginPlaybackVideoUiLoading,
       dispatchSession,
+      isPausedRef,
+      markEmbedTrackSwitchGrace,
       pendingPlayFromGestureRef,
       releaseRef,
+      setPlaybackVideoTransitionTargetId,
+      setPlaybackVideoUiLoadingTargetId,
       setShouldAutoplayEmbed,
       shouldRebuildAlbumQueueRef,
       similarQueueGenerationRef,
