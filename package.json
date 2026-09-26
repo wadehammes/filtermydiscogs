@@ -119,7 +119,7 @@
     "jest-environment-jsdom": "^30.5.2",
     "jest-fetch-mock": "^4.2.0",
     "jest-location-mock": "^4.0.1",
-    "knip": "^6.37.0",
+    "knip": "^6.38.0",
     "lighthouse": "^13.5.0",
     "msw": "^2.15.0",
     "prisma": "^7.10.0",
