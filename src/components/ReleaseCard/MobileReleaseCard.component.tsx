@@ -9,7 +9,7 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
-import type { ReleaseCardProps } from "src/types";
+import type { ReleaseCardProps as BaseReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
@@ -25,6 +25,11 @@ import { ReleaseCardOverlayActions } from "./ReleaseCardOverlayActions.component
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
 import titleStyles from "./ReleaseCardTitle.module.css";
 
+type MobileReleaseCardProps = BaseReleaseCardProps & {
+  showOverlayActions?: boolean;
+  rootTestId?: string;
+};
+
 const MobileReleaseCardComponent = ({
   release,
   inActiveCrate = false,
@@ -33,7 +38,9 @@ const MobileReleaseCardComponent = ({
   onExitRandomMode,
   onReleaseClick,
   priority = false,
-}: ReleaseCardProps) => {
+  showOverlayActions = true,
+  rootTestId = "fmdMobileReleaseCard",
+}: MobileReleaseCardProps) => {
   "use memo";
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
@@ -73,6 +80,67 @@ const MobileReleaseCardComponent = ({
     onExitRandomMode,
   });
 
+  const formatPills =
+    releaseFormats && releaseFormats.length > 0
+      ? getReleaseFormatTags(releaseFormats).map((formatName) =>
+          showOverlayActions ? (
+            <button
+              key={formatName}
+              type="button"
+              className={classNames("pill", "pillFormat", styles.formatPill, {
+                pillSelected: selectedFormats.includes(formatName),
+              })}
+              onClick={(e) =>
+                handlePillClick({
+                  event: e,
+                  value: formatName,
+                  type: "format",
+                })
+              }
+              aria-label={`Filter by ${formatName} format`}
+            >
+              {formatName}
+            </button>
+          ) : (
+            <span
+              key={formatName}
+              className={classNames("pill", "pillFormat", styles.formatPill)}
+            >
+              {formatName}
+            </span>
+          ),
+        )
+      : null;
+
+  const genrePills = genreStyleTags.map((tag) =>
+    showOverlayActions ? (
+      <button
+        key={tag}
+        type="button"
+        className={classNames("pill", "pillStyle", styles.stylePill, {
+          pillSelected: selectedStyles.includes(tag),
+        })}
+        onClick={(e) =>
+          handlePillClick({
+            event: e,
+            value: tag,
+            type: "style",
+          })
+        }
+        aria-label={`Filter by ${tag}`}
+      >
+        {tag}
+      </button>
+    ) : (
+      <span
+        key={tag}
+        className={classNames("pill", "pillStyle", styles.stylePill)}
+      >
+        {tag}
+      </span>
+    ),
+  );
+
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
     useReleaseCardOpenHandler({
       release,
@@ -87,112 +155,67 @@ const MobileReleaseCardComponent = ({
       })
     : undefined;
 
-  return release ? (
-    <ReleaseNotesEditorProvider release={release}>
-      <div
-        className={classNames(styles.releaseCard, {
-          [styles.highlighted]: isHighlighted,
-          [styles.inCrate]: inActiveCrate,
-          [styles.randomMode]: isRandomMode,
-        })}
-        data-testid="fmdMobileReleaseCard"
-        {...definedProps(prefetchPointerProps ?? {})}
-      >
-        <div
-          className={styles.imageContainer}
-          {...definedProps(imageActivateProps ?? {})}
-        >
-          {thumbUrl && (
-            <Image
-              src={thumbUrl}
-              height={96}
-              width={96}
-              quality={85}
-              alt={release.basic_information.title}
-              {...(priority
-                ? { priority: true }
-                : { loading: "lazy" as const })}
-              className={styles.releaseImage}
-              style={{
-                maxWidth: "100%",
-                position: "relative",
-                zIndex: 2,
-                filter: "none",
-              }}
-              sizes="96px"
-            />
-          )}
-        </div>
-        <div className={styles.contentContainer}>
-          <div className={styles.mainContent}>
-            <ReleaseCardCatalog
-              catno={catno}
-              className={metaStyles.catalogRow}
-            />
-            <div className={styles.releaseInfo}>
-              <ReleaseCardTitle
-                artists={artists}
-                title={title}
-                releaseUrl={releaseUrl}
-                className={titleStyles.titleGroupMobile}
-              />
-              <ReleaseCardMeta
-                labelName={labels[0]?.name}
-                labelUrl={labelUrl}
-                year={year}
-                className={metaStyles.metaLineMobile}
-              />
-            </div>
-          </div>
-          <HorizontalScrollRow className={styles.genresContainer}>
-            {releaseFormats &&
-              releaseFormats.length > 0 &&
-              getReleaseFormatTags(releaseFormats).map((formatName) => (
-                <button
-                  key={formatName}
-                  type="button"
-                  className={classNames(
-                    "pill",
-                    "pillFormat",
-                    styles.formatPill,
-                    {
-                      pillSelected: selectedFormats.includes(formatName),
-                    },
-                  )}
-                  onClick={(e) =>
-                    handlePillClick({
-                      event: e,
-                      value: formatName,
-                      type: "format",
-                    })
-                  }
-                  aria-label={`Filter by ${formatName} format`}
-                >
-                  {formatName}
-                </button>
-              ))}
+  if (!release) {
+    return null;
+  }
 
-            {genreStyleTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                className={classNames("pill", "pillStyle", styles.stylePill, {
-                  pillSelected: selectedStyles.includes(tag),
-                })}
-                onClick={(e) =>
-                  handlePillClick({
-                    event: e,
-                    value: tag,
-                    type: "style",
-                  })
-                }
-                aria-label={`Filter by ${tag}`}
-              >
-                {tag}
-              </button>
-            ))}
-          </HorizontalScrollRow>
+  const cardShell = (
+    <div
+      className={classNames(styles.releaseCard, {
+        [styles.highlighted]: isHighlighted,
+        [styles.inCrate]: inActiveCrate,
+        [styles.randomMode]: isRandomMode,
+      })}
+      data-testid={rootTestId}
+      {...definedProps(prefetchPointerProps ?? {})}
+    >
+      <div
+        className={styles.imageContainer}
+        {...definedProps(imageActivateProps ?? {})}
+      >
+        {thumbUrl && (
+          <Image
+            src={thumbUrl}
+            height={96}
+            width={96}
+            quality={85}
+            alt={release.basic_information.title}
+            {...(priority ? { priority: true } : { loading: "lazy" as const })}
+            className={styles.releaseImage}
+            style={{
+              maxWidth: "100%",
+              position: "relative",
+              zIndex: 2,
+              filter: "none",
+            }}
+            sizes="96px"
+          />
+        )}
+      </div>
+      <div className={styles.contentContainer}>
+        <div className={styles.mainContent}>
+          <ReleaseCardCatalog catno={catno} className={metaStyles.catalogRow} />
+          <div className={styles.releaseInfo}>
+            <ReleaseCardTitle
+              artists={artists}
+              title={title}
+              releaseUrl={releaseUrl}
+              className={titleStyles.titleGroupMobile}
+            />
+            <ReleaseCardMeta
+              labelName={labels[0]?.name}
+              labelUrl={labelUrl}
+              year={year}
+              className={metaStyles.metaLineMobile}
+            />
+          </div>
         </div>
+        <HorizontalScrollRow className={styles.genresContainer}>
+          {formatPills}
+          {genrePills}
+        </HorizontalScrollRow>
+      </div>
+      {showOverlayActions ? (
         <div className={styles.actionButtonsContainer}>
           <ReleaseCardOverlayActions
             release={release}
@@ -204,9 +227,19 @@ const MobileReleaseCardComponent = ({
             })}
           />
         </div>
-      </div>
+      ) : null}
+    </div>
+  );
+
+  if (!showOverlayActions) {
+    return cardShell;
+  }
+
+  return (
+    <ReleaseNotesEditorProvider release={release}>
+      {cardShell}
     </ReleaseNotesEditorProvider>
-  ) : null;
+  );
 };
 
 export const MobileReleaseCard = memo(MobileReleaseCardComponent);

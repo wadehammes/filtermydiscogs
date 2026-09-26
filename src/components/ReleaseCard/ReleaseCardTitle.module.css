@@ -61,5 +61,18 @@
 }
 
 .titleGroupMobile .releaseTitle {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
   line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+
+  & > * {
+    display: inline;
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+  }
 }

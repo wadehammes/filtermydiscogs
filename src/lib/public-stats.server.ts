@@ -2,22 +2,36 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "src/lib/db";
 import type { PublicCommunityStats } from "src/types/public-stats.types";
 
+type PublicCommunityStatsRow = {
+  totalCrates: bigint;
+  totalPublicCrates: bigint;
+  totalReleases: bigint;
+  totalCollectors: bigint;
+};
+
 const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
-  const [totalCrates, totalPublicCrates, totalReleases, collectors] =
-    await Promise.all([
-      prisma.crate.count(),
-      prisma.crate.count({ where: { private: false } }),
-      prisma.crateRelease.count(),
-      prisma.crate.groupBy({
-        by: ["user_id"],
-      }),
-    ]);
+  const [row] = await prisma.$queryRaw<PublicCommunityStatsRow[]>`
+    SELECT
+      (SELECT COUNT(*)::bigint FROM "crates") AS "totalCrates",
+      (SELECT COUNT(*)::bigint FROM "crates" WHERE private = false) AS "totalPublicCrates",
+      (SELECT COUNT(*)::bigint FROM "crate_releases") AS "totalReleases",
+      (SELECT COUNT(DISTINCT user_id)::bigint FROM "crates") AS "totalCollectors"
+  `;
+
+  if (!row) {
+    return {
+      totalCollectors: 0,
+      totalCrates: 0,
+      totalPublicCrates: 0,
+      totalReleases: 0,
+    };
+  }
 
   return {
-    totalCollectors: collectors.length,
-    totalCrates,
-    totalPublicCrates,
-    totalReleases,
+    totalCollectors: Number(row.totalCollectors),
+    totalCrates: Number(row.totalCrates),
+    totalPublicCrates: Number(row.totalPublicCrates),
+    totalReleases: Number(row.totalReleases),
   };
 };
 

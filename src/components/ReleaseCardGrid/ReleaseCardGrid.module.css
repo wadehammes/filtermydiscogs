@@ -1,3 +1,34 @@
 .releasesGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  padding: 0;
   width: 100%;
+
+  @media (width >= 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+.cardSlot {
+  min-width: 0;
+}
+
+.mobileCard {
+  display: block;
+  min-width: 0;
+
+  @media (width >= 1024px) {
+    display: none;
+  }
+}
+
+.desktopCard {
+  display: none;
+  min-width: 0;
+
+  @media (width >= 1024px) {
+    display: block;
+  }
 }
