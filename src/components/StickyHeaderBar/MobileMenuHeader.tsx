@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import FilterIcon from "src/styles/icons/filter-thin.svg";
-import MenuIcon from "src/styles/icons/menu-thin.svg";
+import MenuIcon from "src/styles/icons/menu.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./MobileMenu.module.css";
 
