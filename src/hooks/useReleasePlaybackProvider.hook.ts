@@ -613,6 +613,7 @@ export const useReleasePlaybackProvider = (): {
           preparedEmbedVideoId,
           activeVideoId: activeVideoIdRef.current,
           replaySameTrack,
+          forceEmbedReload: replaySameTrack,
         })
       ) {
         beginPlaybackVideoUiLoading();

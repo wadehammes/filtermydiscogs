@@ -4,10 +4,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { PlaybackProvidersShell } from "src/components/PlaybackProvidersShell.component";
-import {
-  isProtectedAppRoute,
-  isPublicCrateRoute,
-} from "src/constants/protectedRoutes";
+import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 
 const AuthenticatedProvidersLazy = dynamic(
@@ -28,7 +25,6 @@ const AuthenticatedProvidersGateInner = ({
   const pathname = usePathname();
   const { state: authState } = useAuth();
   const onProtectedRoute = isProtectedAppRoute(pathname);
-  const onPublicCrateRoute = isPublicCrateRoute(pathname);
   const needsAuthenticatedShell =
     authState.isAuthenticated || (authState.isCheckingAuth && onProtectedRoute);
 
@@ -42,7 +38,7 @@ const AuthenticatedProvidersGateInner = ({
     return <AuthenticatedProvidersLazy>{children}</AuthenticatedProvidersLazy>;
   }
 
-  if (onPublicCrateRoute) {
+  if (!onProtectedRoute) {
     return <PlaybackProvidersShell>{children}</PlaybackProvidersShell>;
   }
 
