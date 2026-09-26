@@ -62,7 +62,7 @@ const stripCatalogAnnotations = (title: string): string =>
 const getMatchCoreTitle = (title: string): string =>
   normalizeTrackTitle(stripCatalogAnnotations(title));
 
-const hasRemixHint = (title: string): boolean => /\bremix\b/i.test(title);
+const hasRemixHint = (title: string): boolean => /\bremix\w*\b/i.test(title);
 
 const CORE_ONLY_VERSION_TOKENS = new Set([
   "acapella",
@@ -505,29 +505,29 @@ const scorePreparedTrackVideoMatch = (
   const matchedViaCoreOnly =
     (coreTokensMatch || coreOverlaps) && !(overlaps || tokensMatch);
 
-  if (matchedViaCoreOnly) {
-    const videoLabel = getVideoMatchLabel(video.video);
-    const trackRemix = hasRemixHint(track.track.title);
-    const videoRemix =
-      hasRemixHint(videoLabel) ||
-      hasRemixHint(extractVideoSongTitle(videoLabel));
+  const hasMatchSignal =
+    overlaps ||
+    tokensMatch ||
+    coreTokensMatch ||
+    coreOverlaps ||
+    genericPositionMatch;
 
-    if (
-      trackRemix !== videoRemix ||
-      coreOnlyBlockedByParenthetical(track.track.title, videoLabel)
-    ) {
-      return 0;
-    }
+  if (!hasMatchSignal) {
+    return 0;
+  }
+
+  const videoLabel = getVideoMatchLabel(video.video);
+  const trackRemix = hasRemixHint(track.track.title);
+  const videoRemix =
+    hasRemixHint(videoLabel) || hasRemixHint(extractVideoSongTitle(videoLabel));
+
+  if (trackRemix !== videoRemix) {
+    return 0;
   }
 
   if (
-    !(
-      overlaps ||
-      tokensMatch ||
-      coreTokensMatch ||
-      coreOverlaps ||
-      genericPositionMatch
-    )
+    matchedViaCoreOnly &&
+    coreOnlyBlockedByParenthetical(track.track.title, videoLabel)
   ) {
     return 0;
   }
