@@ -692,6 +692,44 @@ describe("findVideoForTrack", () => {
     ).toBe("Moratu - Ama 76 [VISAGE001]");
   });
 
+  it("does not match the original track to a remix video when both share the base title", () => {
+    const tracks = [
+      discogsTrackFactory.build({
+        position: "A1",
+        title: "Bass Persuades",
+        type_: "track",
+        duration: "3:22",
+      }),
+      discogsTrackFactory.build({
+        position: "B5",
+        title: "Bass Persuades Remixx",
+        type_: "track",
+        duration: "3:36",
+      }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=original1111",
+        title: "Miley Cyrus - Bass Persuades",
+        duration: 202,
+      }),
+      discogsVideoFactory.youtube({
+        uri: "https://www.youtube.com/watch?v=remix222222",
+        title: "Miley Cyrus - Bass Persuades Remixx",
+        duration: 216,
+      }),
+    ];
+
+    const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
+
+    expect(matchIndex.trackVideoByPosition.get("A1")?.uri).toContain(
+      "original1111",
+    );
+    expect(matchIndex.trackVideoByPosition.get("B5")?.uri).toContain(
+      "remix222222",
+    );
+  });
+
   it("matches remix tracks when the video title includes remix", () => {
     const tracks = [
       discogsTrackFactory.build({
