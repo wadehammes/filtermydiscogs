@@ -442,6 +442,85 @@ describe("useReleasePlaybackQueueActions", () => {
     );
   });
 
+  it("startPlayback with an explicit youtubeVideoId settles same-upload replay without force reload", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const sharedVideoId = "abc12345678";
+    const syncEmbedForQueueItem =
+      jest.fn<
+        (
+          item: ReturnType<typeof createQueueItem>,
+          options?: { forceReload?: boolean },
+        ) => string | null
+      >();
+    const settleSameUploadQueueAdvance = jest.fn();
+    const beginPlaybackVideoUiLoading = jest.fn();
+    const syncEmbedToVideoId = jest.fn<(videoId: string) => void>();
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        clearPlaybackVideoUiLoading: jest.fn(),
+        beginPlaybackVideoUiLoading,
+        markEmbedTrackSwitchGrace: jest.fn(),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance,
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId,
+        syncEmbedForQueueItem,
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
+          releaseRef: { current: release },
+          queueRef: { current: [] },
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: true },
+          isPausedRef: { current: false },
+          releaseDetailIdRef: { current: release.basic_information.id },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          activeVideoIdRef: { current: sharedVideoId },
+          embedVideoIdRef: { current: sharedVideoId },
+          activeTrackPositionRef: { current: "A1" },
+          isReleasePreviewRef: { current: false },
+        },
+      }),
+    );
+
+    result.current.startPlayback({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Replay",
+      youtubeVideoId: sharedVideoId,
+    });
+
+    expect(syncEmbedForQueueItem).not.toHaveBeenCalled();
+    expect(syncEmbedToVideoId).toHaveBeenCalledWith(sharedVideoId);
+    expect(settleSameUploadQueueAdvance).toHaveBeenCalledTimes(1);
+    expect(beginPlaybackVideoUiLoading).not.toHaveBeenCalled();
+  });
+
   it("playNext passes forceReload to syncEmbedForQueueItem when repeating the active track", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({

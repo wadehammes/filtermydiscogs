@@ -24,7 +24,10 @@ import {
 } from "src/tests/utils/testProviders";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
-import { PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS } from "src/utils/playbackEmbedStartWatchdog";
+import {
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+} from "src/utils/playbackEmbedStartWatchdog";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
@@ -1841,6 +1844,80 @@ describe("ReleasePlaybackProvider", () => {
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
+    jest.useRealTimers();
+  });
+
+  it("waits for the slow-network watchdog delay before unavailable skip", async () => {
+    jest.useFakeTimers();
+    const navigatorWithConnection = navigator as Navigator & {
+      connection?: { effectiveType?: string };
+    };
+    const originalConnection = navigatorWithConnection.connection;
+
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: { effectiveType: "2g" },
+    });
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS -
+          PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+      );
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: originalConnection,
+    });
     jest.useRealTimers();
   });
 

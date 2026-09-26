@@ -44,7 +44,7 @@ import {
 } from "src/types/userPreferences.types";
 import {
   createEmbedPlaybackStartWatchdog,
-  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+  resolvePlaybackEmbedUnavailableWatchdogMs,
   shouldArmPlaybackEmbedStartWatchdog,
 } from "src/utils/playbackEmbedStartWatchdog";
 import {
@@ -179,7 +179,7 @@ export const useReleasePlaybackProvider = (): {
   const clearPlaybackVideoUiLoadingRef = useRef<() => void>(() => undefined);
   const embedStartWatchdogRef = useRef(
     createEmbedPlaybackStartWatchdog({
-      delayMs: PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+      resolveDelayMs: resolvePlaybackEmbedUnavailableWatchdogMs,
       schedule: (callback, delayMs) => window.setTimeout(callback, delayMs),
       cancel: (timeoutId) => {
         window.clearTimeout(timeoutId);
