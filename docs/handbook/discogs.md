@@ -123,7 +123,7 @@ Full release metadata (tracklist, community videos) is **not** included in colle
 |-----------|-----------|-------------|
 | Read release detail | `GET /api/release/{releaseId}` | `GET /releases/{release_id}` |
 
-Authenticated sessions use the user's OAuth tokens. Visitors without Discogs cookies get the same release payload via application (consumer) credentials so public crate pages can open the release modal and mini player.
+Authenticated sessions use the user's OAuth tokens. Visitors without Discogs cookies — and browsers that still hold OAuth token cookies after logout (**`discogs_session`** cleared, tokens preserved for quick re-login) — get the same release payload via application (consumer) credentials so public crate pages can open the release modal and mini player.
 
 Client helper: **`api.discogsRelease`** in [`src/api/urls.ts`](../../src/api/urls.ts). React Query: **`useDiscogsReleaseQuery`** ([`src/hooks/queries/useDiscogsReleaseQuery.ts`](../../src/hooks/queries/useDiscogsReleaseQuery.ts)) with **`DiscogsReleaseQueryKeys`**.
 

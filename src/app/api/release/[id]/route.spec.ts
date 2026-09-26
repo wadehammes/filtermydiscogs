@@ -132,6 +132,37 @@ describe("GET /api/release/[id]", () => {
     expect(response.headers.get("Cache-Control")).toBe("private, no-store");
   });
 
+  it("falls back to consumer credentials when OAuth tokens exist without an active session", async () => {
+    const makeAuthenticatedRequest = jest.spyOn(
+      discogsOAuthService,
+      "makeAuthenticatedRequest",
+    );
+    const makeConsumerRequest = jest
+      .spyOn(discogsOAuthService, "makeConsumerRequest")
+      .mockResolvedValue(releaseDetail);
+
+    const response = await GET(
+      createRequest(RELEASE_ID, {
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      }),
+      {
+        params: Promise.resolve({ id: RELEASE_ID }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(releaseDetail);
+    expect(makeConsumerRequest).toHaveBeenCalledWith(
+      `https://api.discogs.com/releases/${RELEASE_ID}`,
+      "GET",
+    );
+    expect(makeAuthenticatedRequest).not.toHaveBeenCalled();
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, max-age=3600, stale-while-revalidate=7200",
+    );
+  });
+
   it("returns release detail from Discogs for visitors without OAuth cookies", async () => {
     jest
       .spyOn(discogsOAuthService, "makeConsumerRequest")

@@ -27,19 +27,18 @@ export async function POST(request: NextRequest) {
       "discogs_access_token_secret",
     )?.value;
 
+    let useAuthenticatedSession = false;
+
     if (accessToken && accessTokenSecret) {
       const verified = await getReadOnlyVerifiedUserFromRequest(request);
-      if ("error" in verified) {
-        return verified.error;
-      }
+      useAuthenticatedSession = !("error" in verified);
     }
 
     const uniqueIds = [...new Set(parsedBody.data.ids)];
     const releases: Record<string, DiscogsReleaseDetail> = {};
-    const cacheControl =
-      accessToken && accessTokenSecret
-        ? AUTHENTICATED_RELEASE_CACHE
-        : PUBLIC_RELEASE_CACHE;
+    const cacheControl = useAuthenticatedSession
+      ? AUTHENTICATED_RELEASE_CACHE
+      : PUBLIC_RELEASE_CACHE;
 
     for (const releaseId of uniqueIds) {
       if (!isValidReleaseId(releaseId)) {
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
       const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
 
       try {
-        if (accessToken && accessTokenSecret) {
+        if (useAuthenticatedSession && accessToken && accessTokenSecret) {
           releases[releaseId] =
             (await discogsOAuthService.makeAuthenticatedRequest(
               releaseUrl,
