@@ -183,7 +183,7 @@ Authenticated crate handlers return **`privateRouteJson`** / **`createErrorRespo
 
 ## Public community stats
 
-Aggregate crate totals for the public footer (crates, public crates, saved releases, distinct collectors) are loaded server-side via [`src/lib/public-stats.server.ts`](../../src/lib/public-stats.server.ts), cached for five minutes with `unstable_cache`. No auth required; if the database is unavailable the stats block is omitted.
+Aggregate crate totals for the public footer (crates, public crates, saved releases, distinct collectors) are loaded server-side via [`src/lib/public-stats.server.ts`](../../src/lib/public-stats.server.ts): one **`$queryRaw`** round trip against Postgres table names from Prisma **`@@map`** — **`"crates"`** and **`"crate_releases"`** (not model names **`Crate`** / **`CrateRelease`**), cached for five minutes with `unstable_cache`. No auth required; if the database is unavailable the stats block is omitted.
 
 ## Public crates
 

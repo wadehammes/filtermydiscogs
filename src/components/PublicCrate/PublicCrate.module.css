@@ -1,5 +1,7 @@
 .container {
   background: var(--background);
+  min-width: 0;
+  overflow-x: clip;
   padding: var(--space-12) var(--space-4);
   width: 100%;
 
@@ -13,6 +15,7 @@
   line-height: 1.6;
   margin: 0 auto;
   max-width: 90rem;
+  min-width: 0;
   width: 100%;
 }
 
@@ -80,22 +83,23 @@
 
 .aboutSection {
   border-top: 1px dashed var(--border);
-  margin-top: var(--space-16);
-  padding-top: var(--space-8);
+  padding-top: var(--space-16);
 
   @media (width >= 768px) {
-    margin-top: var(--space-20);
-    padding-top: var(--space-12);
+    padding-top: var(--space-20);
   }
 }
 
 .twoColumnLayout {
+  align-items: stretch;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--space-4);
+  min-width: 0;
+  width: 100%;
 
   @media (width >= 1024px) {
+    align-items: flex-start;
     flex-direction: row;
     gap: 8rem;
   }
@@ -103,29 +107,38 @@
 
 .aboutContent {
   flex: 2.5;
+  min-width: 0;
+  width: 100%;
 }
 
 .loginModule {
   align-items: flex-start;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  justify-content: flex-start;
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--primary) 10%, var(--card)),
     color-mix(in srgb, var(--primary) 5%, var(--card))
   );
   border: 2px solid var(--primary);
-  padding: var(--space-6) var(--space-8);
   border-radius: var(--radius-card);
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: flex-start;
+  min-width: 0;
+  padding: var(--space-6) var(--space-4);
+  width: 100%;
+
+  @media (width >= 768px) {
+    padding: var(--space-6) var(--space-8);
+  }
 }
 
 .loginButtonContainer {
   align-items: center;
   display: flex;
   justify-content: center;
-  margin: var(--space-4) 0;
   width: 100%;
 }
 
@@ -137,7 +150,6 @@
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin-bottom: 0;
-  margin-top: var(--space-4);
   text-align: center;
   width: 100%;
 }

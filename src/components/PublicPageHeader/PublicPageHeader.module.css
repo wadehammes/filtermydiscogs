@@ -22,15 +22,15 @@
 .headerContent {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--space-3);
   justify-content: space-between;
   margin: 0 auto;
   max-width: 90rem;
+  min-width: 0;
   width: 100%;
 
   @media (width >= 768px) {
-    flex-wrap: nowrap;
     gap: var(--space-4);
   }
 }
@@ -41,9 +41,9 @@
   display: flex;
   flex-shrink: 0;
   gap: var(--space-2);
+  min-width: 0;
   text-decoration: none;
   transition: color var(--transition-normal);
-  white-space: nowrap;
 
   &:hover {
     color: var(--link);
@@ -61,32 +61,66 @@
   }
 }
 
-.navBar {
+.desktopNav {
   align-items: center;
-  display: flex;
+  display: none;
   flex: 1 1 auto;
-  flex-wrap: wrap;
-  gap: var(--nav-bar-gap);
-  justify-content: center;
+  flex-wrap: nowrap;
+  gap: var(--nav-bar-gap-lg);
+  justify-content: flex-end;
   min-width: 0;
 
   @media (width >= 768px) {
-    flex-wrap: nowrap;
-    gap: var(--nav-bar-gap-lg);
-    justify-content: flex-end;
+    display: flex;
   }
+}
+
+.mobileControls {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+
+  @media (width >= 768px) {
+    display: none;
+  }
+}
+
+.menuButton {
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  height: var(--touch-target-min);
+  justify-content: center;
+  padding: 0;
+  transition: color var(--transition-normal);
+  width: var(--touch-target-min);
+
+  &:hover {
+    color: var(--link);
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-ui);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.menuIcon {
+  block-size: 1.75rem;
+  inline-size: 1.75rem;
 }
 
 .linkGroup {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--nav-link-gap);
-  justify-content: center;
-
-  @media (width >= 768px) {
-    gap: var(--nav-link-gap-lg);
-  }
+  flex-wrap: nowrap;
+  gap: var(--nav-link-gap-lg);
 }
 
 .navLink {
@@ -132,15 +166,18 @@
   color: var(--muted-foreground);
   display: inline-flex;
   flex-shrink: 0;
+  height: var(--touch-target-min);
   justify-content: center;
   text-decoration: none;
   transition: color var(--transition-normal);
+  width: var(--touch-target-min);
 
   &:hover {
     color: var(--foreground);
   }
 
   &:focus-visible {
+    border-radius: var(--radius-ui);
     outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
@@ -155,4 +192,91 @@
 .socialIcon {
   block-size: 1.125rem;
   inline-size: 1.125rem;
+}
+
+.menuDrawerHeader {
+  padding: var(--space-2) var(--space-3);
+}
+
+.menuBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-1) var(--space-3) var(--space-4);
+}
+
+.menuNav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.menuItem {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--nav-link-font-family);
+  font-size: var(--text-base);
+  font-weight: var(--nav-link-font-weight);
+  gap: var(--space-2);
+  letter-spacing: var(--nav-link-letter-spacing);
+  line-height: var(--nav-link-line-height);
+  margin: 0;
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  text-decoration: none;
+  transition: var(--transition-normal);
+  width: 100%;
+
+  &:hover {
+    background: var(--muted);
+  }
+}
+
+.menuItemActive {
+  background: color-mix(in srgb, var(--primary) 15%, var(--background));
+  color: var(--link);
+  font-weight: var(--font-semibold);
+}
+
+.menuItemLogin {
+  color: var(--link);
+  font-weight: var(--font-semibold);
+}
+
+.menuFooter {
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+}
+
+.menuFooterLink {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  transition: color var(--transition-normal);
+
+  &:hover {
+    color: var(--foreground);
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-ui);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
