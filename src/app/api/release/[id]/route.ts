@@ -41,12 +41,14 @@ export async function GET(
     const fresh = request.nextUrl.searchParams.get("fresh") === "1";
     const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
 
+    let useAuthenticatedSession = false;
+
     if (accessToken && accessTokenSecret) {
       const verified = await getReadOnlyVerifiedUserFromRequest(request);
-      if ("error" in verified) {
-        return verified.error;
-      }
+      useAuthenticatedSession = !("error" in verified);
+    }
 
+    if (useAuthenticatedSession && accessToken && accessTokenSecret) {
       const release = await discogsOAuthService.makeAuthenticatedRequest(
         releaseUrl,
         "GET",
