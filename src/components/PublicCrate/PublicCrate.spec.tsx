@@ -6,6 +6,7 @@ import {
   PublicCratePageObject,
 } from "src/components/PublicCrate/PublicCrate.po";
 import { PublicCrateClient } from "src/components/PublicCrate/PublicCrateClient.component";
+import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
@@ -133,6 +134,68 @@ describe("PublicCrateClient", () => {
     expect(
       screen.queryByTestId("fmdAuthenticatedProvidersDynamic"),
     ).not.toBeInTheDocument();
+  });
+
+  it("keeps loaded crate visible after auth check clears user-scoped queries", async () => {
+    const crate = crateFactory.build({
+      id: po.crateId,
+      name: "Unfiltered 003",
+      private: false,
+    });
+    const releases = releaseFactory.buildList(1);
+    const payload = crateWithReleasesResponseFactory.withReleases(
+      crate,
+      releases,
+      {
+        pagination: buildPublicCratePagination(releases.length),
+      },
+    );
+
+    let resolveAuth!: (
+      value: ReturnType<typeof authStatusFactory.unauthenticated>,
+    ) => void;
+    mockApi.checkAuth.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveAuth = resolve;
+      }),
+    );
+    mockApi.publicCrate.mockResolvedValueOnce(payload);
+
+    po.setPathname(`/crate/${po.crateId}`);
+
+    render(
+      <AuthenticatedProvidersGate>
+        <PublicCrateClient crateId={po.crateId} />
+      </AuthenticatedProvidersGate>,
+      {
+        wrapper: ({ children }) => (
+          <TestProviders
+            skipInitialAuthCheck={false}
+            includeCollectionSync={false}
+          >
+            {children}
+          </TestProviders>
+        ),
+      },
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Unfiltered 003" }),
+      ).toBeInTheDocument();
+    });
+
+    resolveAuth(authStatusFactory.unauthenticated());
+
+    await waitFor(() => {
+      expect(mockApi.checkAuth).toHaveBeenCalled();
+    });
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Unfiltered 003" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Loading crate...")).not.toBeInTheDocument();
+    expect(mockApi.publicCrate).toHaveBeenCalledTimes(1);
   });
 
   it("shows a not-found state when the public crate API fails", async () => {
