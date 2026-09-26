@@ -130,4 +130,39 @@ describe("POST /api/release/batch", () => {
       "public, max-age=3600, stale-while-revalidate=7200",
     );
   });
+
+  it("falls back to consumer credentials when OAuth tokens exist without an active session", async () => {
+    const makeAuthenticatedRequest = jest.spyOn(
+      discogsOAuthService,
+      "makeAuthenticatedRequest",
+    );
+    jest
+      .spyOn(discogsOAuthService, "makeConsumerRequest")
+      .mockResolvedValue(releaseDetail);
+
+    const response = await POST(
+      createPostRequest(
+        { ids: [RELEASE_ID] },
+        {
+          discogs_access_token: accessToken,
+          discogs_access_token_secret: accessTokenSecret,
+        },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      releases: {
+        [RELEASE_ID]: releaseDetail,
+      },
+    });
+    expect(discogsOAuthService.makeConsumerRequest).toHaveBeenCalledWith(
+      `https://api.discogs.com/releases/${RELEASE_ID}`,
+      "GET",
+    );
+    expect(makeAuthenticatedRequest).not.toHaveBeenCalled();
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, max-age=3600, stale-while-revalidate=7200",
+    );
+  });
 });

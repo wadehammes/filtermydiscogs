@@ -64,6 +64,18 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(true);
   });
 
+  it("shouldBeginPlaybackVideoUiLoading is false when the same upload replays without force reload", () => {
+    expect(
+      shouldBeginPlaybackVideoUiLoading({
+        hasQueueItem: true,
+        preparedEmbedVideoId: "shared-id",
+        activeVideoId: "shared-id",
+        replaySameTrack: true,
+        forceEmbedReload: false,
+      }),
+    ).toBe(false);
+  });
+
   it("shouldBeginPlaybackVideoUiLoading is false for same-upload queue rows and true when the upload changes", () => {
     expect(
       shouldBeginPlaybackVideoUiLoading({
