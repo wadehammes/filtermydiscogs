@@ -32,6 +32,16 @@ describe("AuthenticatedProvidersGate", () => {
     po = new AuthenticatedProvidersGatePageObject();
   });
 
+  it("mounts the static playback shell on logged-out public routes including home", () => {
+    po.renderAuthenticatedProvidersGate({ pathname: "/" });
+
+    expect(screen.getByTestId(po.playbackShellTestId)).toBeInTheDocument();
+    expect(
+      screen.queryByTestId(po.authenticatedDynamicTestId),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
+  });
+
   it("mounts the static playback shell on logged-out public crate routes", () => {
     po.renderAuthenticatedProvidersGate({
       pathname: "/crate/ab65c378-fab9-42c0-96bb-c308d413cbbb",
@@ -44,8 +54,8 @@ describe("AuthenticatedProvidersGate", () => {
     expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
   });
 
-  it("passes children through without playback on other logged-out routes", () => {
-    po.renderAuthenticatedProvidersGate({ pathname: "/" });
+  it("passes children through without playback on logged-out protected routes", () => {
+    po.renderAuthenticatedProvidersGate({ pathname: "/releases" });
 
     expect(
       screen.queryByTestId(po.playbackShellTestId),

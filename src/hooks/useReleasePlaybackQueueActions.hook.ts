@@ -247,6 +247,7 @@ export const useReleasePlaybackQueueActions = ({
         isReleasePreview: isReleasePreviewRef.current,
         activeVideoId: activeVideoIdRef.current,
       });
+      const forceEmbedReload = !youtubeVideoId && replaySameTrack;
       const preparedEmbedVideoId = youtubeVideoId
         ? applyTargetEmbedVideoId(youtubeVideoId)
         : syncEmbedForQueueItem(item, { forceReload: replaySameTrack });
@@ -286,6 +287,7 @@ export const useReleasePlaybackQueueActions = ({
         preparedEmbedVideoId,
         activeVideoId: activeVideoIdRef.current,
         replaySameTrack,
+        forceEmbedReload,
       });
       const isVideoSwitchFromPriorUpload =
         activeVideoIdRef.current !== null &&

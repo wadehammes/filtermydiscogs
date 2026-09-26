@@ -52,13 +52,14 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe("abc12345678");
   });
 
-  it("shouldBeginPlaybackVideoUiLoading is true when the same upload replays the active track", () => {
+  it("shouldBeginPlaybackVideoUiLoading is true when the same upload replays the active track with force reload", () => {
     expect(
       shouldBeginPlaybackVideoUiLoading({
         hasQueueItem: true,
         preparedEmbedVideoId: "shared-id",
         activeVideoId: "shared-id",
         replaySameTrack: true,
+        forceEmbedReload: true,
       }),
     ).toBe(true);
   });
@@ -112,6 +113,25 @@ describe("releasePlaybackActivePresentation", () => {
         transitionTargetVideoId: null,
       }),
     ).toBe(false);
+  });
+
+  it("resolveNeedsPlaybackVideoSwitch is false when replaying the active track on the same upload without force reload", () => {
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
+        replaySameTrack: true,
+        forceEmbedReload: false,
+      }),
+    ).toBe(false);
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
+        replaySameTrack: true,
+        forceEmbedReload: true,
+      }),
+    ).toBe(true);
   });
 
   it("resolveNeedsPlaybackVideoSwitch is true when the prepared upload differs from the active upload", () => {

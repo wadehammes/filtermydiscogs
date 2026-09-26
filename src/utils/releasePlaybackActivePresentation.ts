@@ -76,11 +76,22 @@ export const resolveNeedsPlaybackVideoSwitch = ({
   preparedEmbedVideoId,
   activeVideoId,
   replaySameTrack = false,
+  forceEmbedReload = false,
 }: {
   preparedEmbedVideoId: string | null;
   activeVideoId: string | null;
   replaySameTrack?: boolean;
+  forceEmbedReload?: boolean;
 }): boolean => {
+  if (
+    !forceEmbedReload &&
+    replaySameTrack &&
+    preparedEmbedVideoId !== null &&
+    preparedEmbedVideoId === activeVideoId
+  ) {
+    return false;
+  }
+
   if (replaySameTrack && preparedEmbedVideoId !== null) {
     return true;
   }
@@ -95,11 +106,13 @@ export const shouldBeginPlaybackVideoUiLoading = ({
   preparedEmbedVideoId,
   activeVideoId,
   replaySameTrack = false,
+  forceEmbedReload = false,
 }: {
   hasQueueItem: boolean;
   preparedEmbedVideoId: string | null;
   activeVideoId: string | null;
   replaySameTrack?: boolean;
+  forceEmbedReload?: boolean;
 }): boolean => {
   if (!hasQueueItem) {
     return true;
@@ -113,6 +126,7 @@ export const shouldBeginPlaybackVideoUiLoading = ({
     preparedEmbedVideoId,
     activeVideoId,
     replaySameTrack,
+    forceEmbedReload,
   });
 };
 
