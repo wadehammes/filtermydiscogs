@@ -184,14 +184,14 @@ const PublicCrateLoadedContent = ({
 };
 
 const PublicCrateClientContent = ({ crateId }: PublicCrateClientProps) => {
-  const { data, isPending, isError, error } = usePublicCrateQuery({ crateId });
+  const { data, isLoading, isError, error } = usePublicCrateQuery({ crateId });
 
   const releases = useMemo(
     () => data?.releases.map((item) => item.release) ?? [],
     [data?.releases],
   );
 
-  if (isPending && !data) {
+  if (isLoading) {
     return (
       <div className={styles.container}>
         <div className={styles.content}>

@@ -1,11 +1,21 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
+import {
+  AuthQueryKeys,
+  BuildVersionQueryKeys,
+  PublicCrateQueryKeys,
+} from "src/hooks/queries/querykeys.constants";
 
-/** Remove cached user data but keep the auth session query (avoids post-login redirect flicker). */
+const PRESERVED_QUERY_ROOTS = new Set<string>([
+  AuthQueryKeys.all()[0],
+  PublicCrateQueryKeys.byId("")[0],
+  BuildVersionQueryKeys.all()[0],
+]);
+
+const isPreservedQueryKey = (queryKey: readonly unknown[]): boolean =>
+  typeof queryKey[0] === "string" && PRESERVED_QUERY_ROOTS.has(queryKey[0]);
+
 export function clearUserScopedQueries(queryClient: QueryClient): void {
-  const authKey = AuthQueryKeys.all()[0];
-
   queryClient.removeQueries({
-    predicate: (query) => query.queryKey[0] !== authKey,
+    predicate: (query) => !isPreservedQueryKey(query.queryKey),
   });
 }
