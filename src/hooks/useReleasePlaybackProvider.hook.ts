@@ -74,7 +74,9 @@ import {
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
+import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
+import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
 import { recordTrackPlayFromQueueItem } from "src/utils/userTrackRecording";
 
@@ -186,6 +188,8 @@ export const useReleasePlaybackProvider = (): {
       },
     }),
   );
+  const recoverPlaybackAfterTabVisibleRef = useRef<(() => void) | null>(null);
+  const embedWatchdogAfterTabVisibleTimeoutRef = useRef<number | null>(null);
   const embedUnavailableSkipHandlerRef = useRef(
     createPlaybackEmbedUnavailableSkipHandler({
       appendSkip: appendPlaybackSkipAndSchedule,
@@ -449,6 +453,7 @@ export const useReleasePlaybackProvider = (): {
     notifyPlaybackIframeLoaded,
     notifyImperativeEmbedLoadStarted,
     resumePlaybackFromGesture,
+    recoverPlaybackAfterTabVisible,
     markEmbedTrackSwitchGrace,
   } = useReleasePlaybackYoutubeEmbed({
     queryClient,
@@ -492,6 +497,7 @@ export const useReleasePlaybackProvider = (): {
   });
 
   clearPlayFromGestureRetriesRef.current = clearPlayFromGestureRetries;
+  recoverPlaybackAfterTabVisibleRef.current = recoverPlaybackAfterTabVisible;
 
   const advanceQueueAfterSkip = useCallback(() => {
     playNextRef.current();
@@ -528,25 +534,60 @@ export const useReleasePlaybackProvider = (): {
   }, [runEmbedUnavailableSkipIfUnconfirmed]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        embedStartWatchdogRef.current.disarm();
+    const clearEmbedWatchdogAfterTabVisibleTimeout = () => {
+      if (embedWatchdogAfterTabVisibleTimeoutRef.current === null) {
         return;
       }
 
-      if (
-        isPlayingRef.current &&
-        !isPausedRef.current &&
-        !embedPlaybackConfirmedRef.current
-      ) {
-        armEmbedStartWatchdog();
+      window.clearTimeout(embedWatchdogAfterTabVisibleTimeoutRef.current);
+      embedWatchdogAfterTabVisibleTimeoutRef.current = null;
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        embedStartWatchdogRef.current.disarm();
+        clearEmbedWatchdogAfterTabVisibleTimeout();
+        return;
       }
+
+      recoverPlaybackAfterTabVisibleRef.current?.();
+
+      if (
+        !shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery({
+          visibilityState: document.visibilityState,
+          isPlaying: isPlayingRef.current,
+          isPaused: isPausedRef.current,
+          embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+        })
+      ) {
+        return;
+      }
+
+      clearEmbedWatchdogAfterTabVisibleTimeout();
+      embedWatchdogAfterTabVisibleTimeoutRef.current = window.setTimeout(() => {
+        embedWatchdogAfterTabVisibleTimeoutRef.current = null;
+
+        if (document.visibilityState !== "visible") {
+          return;
+        }
+
+        if (embedPlaybackConfirmedRef.current) {
+          return;
+        }
+
+        if (!isPlayingRef.current || isPausedRef.current) {
+          return;
+        }
+
+        armEmbedStartWatchdog();
+      }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearEmbedWatchdogAfterTabVisibleTimeout();
     };
   }, [armEmbedStartWatchdog]);
 

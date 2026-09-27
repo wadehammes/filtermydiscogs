@@ -2414,10 +2414,84 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       setDocumentVisibilityState("visible");
       document.dispatchEvent(new Event("visibilitychange"));
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
 
-    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+    expect(result.current.activeTrackPosition).toBe("B1");
+
+    setDocumentVisibilityState("visible");
+    jest.useRealTimers();
+  });
+
+  it("advances in a hidden tab after PiP closes without falsely skipping when the tab refocuses", async () => {
+    jest.useFakeTimers();
+    setDocumentVisibilityState("hidden");
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 0,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
+    });
+
+    expect(result.current.isPaused).toBe(false);
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      setDocumentVisibilityState("visible");
+      document.dispatchEvent(new Event("visibilitychange"));
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+    expect(result.current.activeTrackPosition).toBe("B1");
+    expect(result.current.isPaused).toBe(false);
 
     setDocumentVisibilityState("visible");
     jest.useRealTimers();

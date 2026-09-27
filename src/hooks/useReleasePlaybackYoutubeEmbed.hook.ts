@@ -37,6 +37,7 @@ import {
   nextEmbedTrackSwitchGraceUntil,
   shouldNotifyEmbedPlaybackEnded,
 } from "src/utils/releasePlaybackEmbedTiming";
+import { shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden } from "src/utils/releasePlaybackHiddenTabTransport";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
 import { creditTrackListenOnEmbedEndedForActiveItem } from "src/utils/userTrackRecording";
 import {
@@ -375,6 +376,25 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
+        if (
+          shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden({
+            visibilityState: document.visibilityState,
+            isWithinTrackSwitchGrace: isWithinTrackSwitchGrace(),
+            isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+            hasPlaybackVideoTransitionTarget:
+              playbackVideoTransitionTargetIdRef.current !== null,
+          })
+        ) {
+          if (isWithinTrackSwitchGrace()) {
+            postYoutubePlayerCommand({
+              iframe: playbackIframeRef.current,
+              command: "playVideo",
+            });
+          }
+
+          return;
+        }
+
         if (isWithinTrackSwitchGrace()) {
           postYoutubePlayerCommand({
             iframe: playbackIframeRef.current,
@@ -744,6 +764,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     notifyPlaybackIframeLoaded,
     notifyImperativeEmbedLoadStarted,
     resumePlaybackFromGesture,
+    recoverPlaybackAfterTabVisible,
     markEmbedTrackSwitchGrace,
   };
 };
