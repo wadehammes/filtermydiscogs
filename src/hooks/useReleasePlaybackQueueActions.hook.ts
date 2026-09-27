@@ -280,6 +280,7 @@ export const useReleasePlaybackQueueActions = ({
           pendingPreviewVideoUri: item.previewVideoUri ?? null,
         },
       });
+      isPlayingRef.current = true;
 
       setShouldAutoplayEmbed(autoplay && !startPaused);
       awaitingResumeGestureRef.current = startPaused;
@@ -499,6 +500,7 @@ export const useReleasePlaybackQueueActions = ({
         type: "START_RELEASE_PREVIEW",
         params: { release: nextRelease, video },
       });
+      isPlayingRef.current = true;
       releaseRef.current = nextRelease;
 
       if (previewVideoId) {
@@ -683,6 +685,7 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueTailToastShownRef.current = false;
       queueManuallyExtendedRef.current = false;
       similarQueueSuppressedAfterClearRef.current = false;
+      isPlayingRef.current = false;
       dispatchSession({ type: "STOP" });
       setShouldAutoplayEmbed(false);
       setIsPlaybackEmbedMounted(false);
@@ -698,6 +701,7 @@ export const useReleasePlaybackQueueActions = ({
       clearPlaybackVideoUiLoading,
       dispatchSession,
       embedVideoIdRef,
+      isPlayingRef,
       lastSyncedActiveVideoIdRef,
       pendingPlayFromGestureRef,
       queueManuallyExtendedRef,

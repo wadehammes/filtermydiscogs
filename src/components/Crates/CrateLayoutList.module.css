@@ -11,16 +11,31 @@
 }
 
 .layoutList {
+  --crate-layout-drag-handle-width: 1.5rem;
+  --crate-layout-loose-row-margin-inline: var(--space-4);
+  --crate-layout-section-group-margin-inline: var(--space-4);
+  --crate-layout-row-padding-block: var(--space-3);
+  --crate-layout-row-padding-inline: var(--space-4);
+
   display: flex;
   flex-direction: column;
   gap: 0;
   position: relative;
   width: 100%;
+
+  @media (width >= 1024px) {
+    --crate-layout-loose-row-margin-inline: var(--space-5);
+    --crate-layout-section-group-margin-inline: calc(
+      var(--crate-layout-loose-row-margin-inline) -
+      1px
+    );
+    --crate-layout-row-padding-inline: var(--space-5);
+  }
 }
 
 .layoutReleaseRow {
   border-bottom: 1px dotted var(--border);
-  margin-inline: var(--space-4);
+  margin-inline: var(--crate-layout-loose-row-margin-inline);
   width: auto;
 
   &:last-child {
@@ -34,14 +49,7 @@
   .sectionBody & {
     border-bottom: 1px dotted var(--crate-section-inner-border-dashed);
     margin-inline: 0;
-    padding-inline: var(--space-4);
     width: 100%;
-
-    @media (width >= 1024px) {
-      margin-inline: 0;
-      padding-block: var(--space-3);
-      padding-inline: var(--space-4) var(--space-5);
-    }
 
     &:not(:has(~ .layoutReleaseRow)) {
       border-bottom: none;
@@ -60,10 +68,6 @@
     }
   }
 
-  @media (width >= 1024px) {
-    margin-inline: var(--space-5);
-  }
-
   &.layoutReleaseRowPacked {
     background: color-mix(in srgb, var(--primary) 6%, var(--background));
     margin-inline: 0;
@@ -71,7 +75,7 @@
 
     @media (width >= 1024px) {
       padding-top: var(--space-3);
-      padding-inline: var(--space-6);
+      padding-inline: var(--crate-layout-row-padding-inline);
     }
 
     &:not(:has(+ .sectionGroup)) {
@@ -102,7 +106,7 @@
   border-radius: var(--radius-card);
   list-style: none;
   margin-bottom: var(--space-2);
-  margin-inline: var(--space-2);
+  margin-inline: var(--crate-layout-section-group-margin-inline);
   margin-top: var(--space-2);
 
   &:has(+ .insertZone:not(.insertZoneEdgeTop, .insertZoneEdgeBottom)) {
@@ -110,22 +114,12 @@
   }
 
   & .layoutReleaseRow {
-    @media (width >= 1024px) {
-      padding-top: var(--space-3);
-      padding-inline: var(--space-5);
-    }
-
     &.layoutReleaseRowPacked {
       background: color-mix(
         in srgb,
         var(--crate-section-accent, var(--primary)) 20%,
         var(--background)
       );
-
-      @media (width >= 1024px) {
-        padding-top: var(--space-3);
-        padding-inline: var(--space-5);
-      }
     }
   }
 }
@@ -559,7 +553,7 @@
   justify-content: center;
   padding: 0;
   touch-action: none;
-  width: 1.5rem;
+  width: var(--crate-layout-drag-handle-width);
 
   &:active {
     cursor: grabbing;

@@ -32,13 +32,11 @@ export const CrateDetailHeader = () => {
 
   return (
     <header className={styles.masthead}>
-      <div className={styles.mastheadControls}>
-        <CrateSelector
-          allowCreate={false}
-          className={styles.crateSelector}
-          onNavigate={handleCrateNavigate}
-        />
-      </div>
+      <CrateSelector
+        allowCreate={false}
+        className={styles.crateSelector}
+        onNavigate={handleCrateNavigate}
+      />
     </header>
   );
 };

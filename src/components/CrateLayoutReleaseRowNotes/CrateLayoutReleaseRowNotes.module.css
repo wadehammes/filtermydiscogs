@@ -1,0 +1,25 @@
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  width: 100%;
+}
+
+.toggle {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-normal);
+  line-height: 1.25;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.toggle[data-panel-open] {
+  color: var(--foreground);
+}
+
+.panel {
+  min-width: 0;
+  width: 100%;
+}

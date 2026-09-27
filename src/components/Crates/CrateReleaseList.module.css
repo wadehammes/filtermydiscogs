@@ -8,6 +8,8 @@
 }
 
 .row {
+  --crate-layout-drag-handle-width: 1.5rem;
+
   display: grid;
   gap: var(--space-3);
   grid-template-areas:
@@ -21,7 +23,8 @@
     gap: var(--space-4) var(--space-5);
     grid-template-areas: "notes identity actions";
     grid-template-columns: minmax(0, 1.75fr) minmax(13rem, 1fr) auto;
-    padding: var(--space-3) var(--space-1);
+    padding-block: var(--crate-layout-row-padding-block, var(--space-3));
+    padding-inline: var(--crate-layout-row-padding-inline, var(--space-4));
   }
 }
 
@@ -40,6 +43,13 @@
 .noteSlot {
   grid-area: notes;
   min-width: 0;
+
+  @media (width < 1024px) {
+    padding-inline-start: calc(
+      var(--crate-layout-drag-handle-width) +
+      var(--space-3)
+    );
+  }
 }
 
 .identity {

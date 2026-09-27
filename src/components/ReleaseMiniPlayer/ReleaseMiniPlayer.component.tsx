@@ -49,6 +49,7 @@ export const ReleaseMiniPlayer = ({
     playPrevious,
     togglePlayback,
     queue,
+    resumePlaybackFromGesture,
   } = useReleasePlayback();
   const isMobileLayout = useMediaQuery("(max-width: 768px)");
   const filtersDrawerOpen = useFiltersDrawerOpen();
@@ -64,8 +65,10 @@ export const ReleaseMiniPlayer = ({
       isMiniPlayerVisible,
       isPlaybackReady,
       shouldAutoplayEmbed,
+      isPlaying,
       filtersDrawerOpen,
       crateDrawerOpen,
+      resumePlaybackFromGesture,
     });
 
   const showVideoLoading = isPlaybackVideoLoading && isVideoPanelExpanded;
