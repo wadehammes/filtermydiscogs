@@ -70,7 +70,7 @@ Plain functions with typed props—no `React.FC` in new code—and explicit cond
 
 ### Large components and state
 
-- **Extract state into a custom hook** when a component accumulates several `useState` / `useEffect` calls and derived values. Colocate **`useMyFeatureState.ts`** (or similar) in the component folder; return one object of state and handlers; keep the `.component.tsx` file focused on composition and JSX.
+- **Extract state into a custom hook** when a component accumulates several `useState` / `useEffect` calls and derived values. Colocate **`useMyFeatureState.ts`** (or similar) in the component folder; return one object of state and handlers; keep the `.component.tsx` file focused on composition and JSX. Example: **[`useReleaseMiniPlayerVideoPanelState.hook.ts`](../../src/components/ReleaseMiniPlayer/useReleaseMiniPlayerVideoPanelState.hook.ts)** (video panel expand/collapse + autoplay gesture resume) consumed by **[`ReleaseMiniPlayer`](../../src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component.tsx)**.
 
 ## Formatting and linting
 
@@ -308,7 +308,7 @@ Use this for every **`src/hooks/*.hook.spec.ts(x)`** and when splitting logic ou
 |------|------|
 | **1. Red** | Add **`it`** for the outcome (effect fired, state updated, **`api.*`** called, storage written)—run the file and confirm failure **before** editing the hook. |
 | **2. Data** | Build releases, tracks, collection rows, and API JSON with **factories** ([`discogsTrackFactory`](../../src/tests/factories/DiscogsTrack.factory.ts), [`releaseFactory`](../../src/tests/factories/Release.factory.ts), [`discogsReleaseJsonFactory.withTracklistAndVideos()`](../../src/tests/factories/DiscogsReleaseJson.factory.ts), [`collectionFactory`](../../src/tests/factories/Collection.factory.ts), …). Presets beat repeated `.build({ … })` blocks. |
-| **3. Structure** | **One** top-level **`describe`** per spec file for hook specs (**`src/hooks/*.hook.spec.ts(x)`**) and for colocated util specs that back extracted hook logic (**`src/utils/*.spec.ts`**, e.g. [`releasePlaybackEmbedLoadOwnership.spec.ts`](../../src/utils/releasePlaybackEmbedLoadOwnership.spec.ts)). **Do not** nest **`describe("when …")`** / **`describe("edge cases")`**—fold those into **`it("when …, …")`** or **`it("myFn …")`** names and module-level helpers. |
+| **3. Structure** | **One** top-level **`describe`** per spec file for hook specs (**`src/hooks/*.hook.spec.ts(x)`** and colocated **`src/components/**/use*.hook.spec.ts`**) and for colocated util specs that back extracted hook logic (**`src/utils/*.spec.ts`**, e.g. [`releasePlaybackEmbedLoadOwnership.spec.ts`](../../src/utils/releasePlaybackEmbedLoadOwnership.spec.ts)). **Do not** nest **`describe("when …")`** / **`describe("edge cases")`**—fold those into **`it("when …, …")`** or **`it("myFn …")`** names and module-level helpers (e.g. **`renderVideoPanelState`** + **`it.each`** in [`useReleaseMiniPlayerVideoPanelState.hook.spec.ts`](../../src/components/ReleaseMiniPlayer/useReleaseMiniPlayerVideoPanelState.hook.spec.ts)). |
 | **4. Mocks** | Mock **`src/api/urls`** (or route-level fetch helpers), not **`src/hooks/queries/*`**. Prefer real pure utils (e.g. [`similarReleaseQueue`](../../src/utils/similarReleaseQueue.ts)) with API stubs over mocking the util the hook imports. |
 | **5. Green** | Minimal hook change; refactor with suite still green. |
 

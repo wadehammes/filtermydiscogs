@@ -145,6 +145,35 @@ export const useReleaseModalPlaybackQueue = ({
       return;
     }
 
+    const canAppendToActivePlayback = playback.isPlaying;
+
+    if (!canAppendToActivePlayback) {
+      const firstTrack = tracksToQueue[0];
+
+      if (!firstTrack) {
+        return;
+      }
+
+      playback.startPlayback({
+        release,
+        trackPosition: firstTrack.position,
+        trackTitle: firstTrack.title,
+        ...(playback.autoPlayOnQueueAdd ? {} : { startPaused: true }),
+        rebuildAlbumQueue: false,
+      });
+
+      for (const track of tracksToQueue.slice(1)) {
+        playback.addToQueue({
+          release,
+          trackPosition: track.position,
+          trackTitle: track.title,
+        });
+      }
+
+      showPlaybackQueueSuccessToast(tracksToQueue.length);
+      return;
+    }
+
     for (const track of tracksToQueue) {
       playback.addToQueue({
         release,
@@ -156,6 +185,7 @@ export const useReleaseModalPlaybackQueue = ({
     showPlaybackQueueSuccessToast(tracksToQueue.length);
   }, [
     playback.autoPlayOnQueueAdd,
+    playback.isPlaying,
     isTrackQueued,
     playback.addToQueue,
     playback.isMiniPlayerVisible,

@@ -5,7 +5,7 @@
   gap: var(--space-2);
 
   @media (width >= 1024px) {
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
 }
 

@@ -254,6 +254,60 @@ describe("ReleaseMiniPlayer", () => {
     );
   });
 
+  it("auto-expands the dock video panel when the first add to an empty queue starts autoplay playback", async () => {
+    localStorage.clear();
+    markPlaybackVideoIntroSeen();
+    setupMockMatchMedia({ desktop: false });
+    document.body.setAttribute("data-crate-drawer-open", "true");
+
+    const EmptyQueueAdd = () => {
+      const { addToQueue } = useReleasePlayback();
+
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            addToQueue({
+              release: collectionRelease,
+              trackPosition: "A",
+              trackTitle: "Never Gonna Give You Up",
+            });
+          }}
+        >
+          Add to empty queue
+        </button>
+      );
+    };
+
+    const user = userEvent.setup();
+
+    render(<EmptyQueueAdd />, { wrapper: createWrapper() });
+
+    await act(async () => {
+      await user.click(
+        screen.getByRole("button", { name: "Add to empty queue" }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
+
+    expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
+      "data-variant",
+      "visible",
+    );
+
+    document.body.removeAttribute("data-crate-drawer-open");
+  });
+
   it("expands and collapses the video panel without changing the embed src", async () => {
     const user = userEvent.setup();
 

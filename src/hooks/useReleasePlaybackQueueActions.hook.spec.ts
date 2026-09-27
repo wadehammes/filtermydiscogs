@@ -865,6 +865,26 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(readPersistedReleasePlayback()).toBeNull();
   });
 
+  it("addToQueue auto-starts playback when tryAutoStartOnEmptyQueue succeeds", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const { result, dispatchSession } = buildHarness({
+      tryAutoStartOnEmptyQueue: (start) => {
+        start();
+        return true;
+      },
+    });
+
+    result.current.addToQueue({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Track A1",
+    });
+
+    expect(dispatchSession).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "PLAY_QUEUE_ITEM" }),
+    );
+  });
+
   it("addToQueue appends a manual queue item when auto-start does not run", () => {
     const release = releaseFactory.withDisplayDefaults();
     const { result, queueRef, updateUpcomingQueue } = buildHarness({

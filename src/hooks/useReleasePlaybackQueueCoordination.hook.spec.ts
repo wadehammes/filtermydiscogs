@@ -127,6 +127,24 @@ describe("useReleasePlaybackQueueCoordination", () => {
     expect(start).toHaveBeenCalledTimes(1);
   });
 
+  it("does not auto-start when transport is active on an empty queue", () => {
+    const start = jest.fn();
+    const harness = buildHarness({ isPlaying: true });
+    harness.releaseRef.current = releaseFactory.withDisplayDefaults();
+
+    expect(harness.result.current.tryAutoStartOnEmptyQueue(start)).toBe(false);
+    expect(start).not.toHaveBeenCalled();
+  });
+
+  it("auto-starts when a release is loaded but transport is inactive", () => {
+    const start = jest.fn();
+    const harness = buildHarness({ isPlaying: false });
+    harness.releaseRef.current = releaseFactory.withDisplayDefaults();
+
+    expect(harness.result.current.tryAutoStartOnEmptyQueue(start)).toBe(true);
+    expect(start).toHaveBeenCalledTimes(1);
+  });
+
   it("syncs session queue into the queue ref when the session queue changes", () => {
     const release = releaseFactory.withDisplayDefaults();
     const firstItem = createQueueItem({

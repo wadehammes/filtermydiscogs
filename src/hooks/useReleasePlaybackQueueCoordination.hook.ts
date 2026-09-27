@@ -160,6 +160,7 @@ export const useReleasePlaybackQueueCoordination = ({
         shouldAutoStartPlaybackOnQueueAdd({
           autoPlayOnQueueAdd: autoPlayOnQueueAddRef.current,
           hasActiveRelease: releaseRef.current !== null,
+          isTransportActive: isPlayingRef.current,
           queueLength: queueRef.current.length,
         })
       ) {
@@ -169,7 +170,7 @@ export const useReleasePlaybackQueueCoordination = ({
 
       return false;
     },
-    [autoPlayOnQueueAddRef, queueRef, releaseRef],
+    [autoPlayOnQueueAddRef, isPlayingRef, queueRef, releaseRef],
   );
 
   return {

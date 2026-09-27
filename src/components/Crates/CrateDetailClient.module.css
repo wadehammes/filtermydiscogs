@@ -25,48 +25,57 @@
 
 .detailMain {
   display: grid;
-  flex: 1;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
   gap: var(--space-5);
-  width: 100%;
-}
-
-.masthead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  grid-column: 1;
-  grid-row: 1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  min-width: 0;
   width: 100%;
 
   @media (width >= 1024px) {
-    gap: var(--space-4);
+    flex: 1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
   }
 }
 
-.mastheadControls {
+.mastheadRow {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  padding-inline-end: calc(2.25rem + var(--space-3));
+  flex-direction: row;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
   width: 100%;
+
+  @media (width >= 1024px) {
+    padding-inline-end: calc(var(--input-height) + var(--space-3));
+  }
 }
 
-.stickyCrateActionsMenu {
-  grid-column: 1;
-  grid-row: 1 / -1;
-  height: fit-content;
-  place-self: start end;
-  position: sticky;
-  top: var(--space-4);
-  width: fit-content;
+.masthead {
+  flex: 1;
+  min-width: 0;
+}
+
+.crateDetailActionsMenu {
+  align-self: center;
+  flex-shrink: 0;
+  grid-column: 2;
+  grid-row: 1;
+  isolation: isolate;
   z-index: calc(var(--z-2-sticky) + 1);
+
+  @media (width >= 1024px) {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    place-self: start end;
+    position: sticky;
+    top: var(--space-4);
+  }
 }
 
 .crateSelector {
-  flex: 1 1 min(100%, 18rem);
+  flex: 1;
   max-width: 100%;
   min-width: 0;
 
@@ -75,13 +84,7 @@
     width: 100%;
   }
 
-  @media (width >= 768px) {
-    flex: 1 1 22rem;
-    max-width: min(100%, 28rem);
-    width: auto;
-  }
-
-  @media (width >= 1280px) {
+  @media (width >= 1024px) {
     max-width: min(100%, 34rem);
   }
 }
@@ -100,28 +103,29 @@
 
 .workspace {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: var(--space-5);
-  grid-column: 1;
+  grid-column: 1 / -1;
   grid-row: 2;
+  min-width: 0;
   width: 100%;
 
   @media (width >= 1024px) {
     align-items: start;
+    flex: 1;
     flex-direction: row;
     gap: var(--space-8);
+    grid-column: 1;
   }
 }
 
 .releasesColumn {
-  flex: 1;
   min-width: 0;
-  order: 2;
   width: 100%;
 
   @media (width >= 1024px) {
-    order: 1;
+    flex: 2;
+    width: auto;
   }
 }
 
@@ -180,15 +184,14 @@
 }
 
 .notesColumn {
-  order: 1;
+  min-width: 0;
   width: 100%;
 
   @media (width >= 1024px) {
-    flex: 0 0 min(100%, 36rem);
-    max-width: 40rem;
-    order: 2;
+    flex: 1;
     position: sticky;
     top: calc(var(--sticky-header-height) + var(--space-4));
+    width: auto;
   }
 }
 

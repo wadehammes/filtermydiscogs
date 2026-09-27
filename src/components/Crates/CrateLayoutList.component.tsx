@@ -40,13 +40,13 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
+import { CrateLayoutReleaseRowNotes } from "src/components/CrateLayoutReleaseRowNotes/CrateLayoutReleaseRowNotes.component";
 import {
   CrateLayoutReleaseRowContent,
   crateLayoutReleaseRowClassName,
 } from "src/components/Crates/CrateLayoutReleaseRowContent.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
-import { ReleaseNotes } from "src/components/ReleaseNotes/ReleaseNotes.component";
 import { ReleaseNotesCollectionFieldsProvider } from "src/components/ReleaseNotes/ReleaseNotesCollectionFields.context";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import {
@@ -54,6 +54,8 @@ import {
   type CrateSectionAccentKey,
 } from "src/constants/crateSectionAccent";
 import { useCrateActions, useCrateState } from "src/context/crate.context";
+import { DESKTOP_LAYOUT_MEDIA_QUERY } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import {
   assignSequentialCrateLayoutSortOrders,
@@ -345,6 +347,7 @@ interface CrateLayoutListProps {
 }
 
 interface SortableReleaseRowProps {
+  isDesktopLayout: boolean;
   item: CrateLayoutReleaseItem;
   packedEnabled: boolean;
   packed: boolean;
@@ -388,6 +391,7 @@ const CrateLayoutReleaseDragPreview = ({
 );
 
 const SortableReleaseRow = memo(function SortableReleaseRow({
+  isDesktopLayout,
   item,
   packedEnabled,
   packed,
@@ -457,7 +461,12 @@ const SortableReleaseRow = memo(function SortableReleaseRow({
             <GripVerticalIcon />
           </IconButton>
         }
-        noteSlot={<ReleaseNotes release={release} variant="crate" />}
+        noteSlot={
+          <CrateLayoutReleaseRowNotes
+            isDesktopLayout={isDesktopLayout}
+            release={release}
+          />
+        }
         actions={
           <CrateReleaseActions
             packedEnabled={packedEnabled}
@@ -779,6 +788,7 @@ const CrateLayoutListComponent = ({
   bottomInsertMount,
 }: CrateLayoutListProps) => {
   "use memo";
+  const isDesktopLayout = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY);
   const { updateCrateLayout } = useCrateActions();
   const { isPendingCrate, isUpdatingCrateLayout } = useCrateState();
   const [localLayoutItems, setLocalLayoutItems] = useState(layoutItems);
@@ -1313,6 +1323,7 @@ const CrateLayoutListComponent = ({
         return (
           <>
             <SortableReleaseRow
+              isDesktopLayout={isDesktopLayout}
               item={segment.item}
               packedEnabled={packedEnabled}
               packed={
@@ -1369,6 +1380,7 @@ const CrateLayoutListComponent = ({
       handleMarkerDelete,
       handleMarkerLabelChange,
       activeDragReleaseItem,
+      isDesktopLayout,
       isDraggingSectionMarker,
       isPacked,
       isSavingLayout,

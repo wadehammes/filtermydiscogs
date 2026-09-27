@@ -11,6 +11,7 @@ import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/Disc
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
@@ -281,6 +282,30 @@ describe("CrateLayoutList", () => {
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
       apiError,
     );
+  });
+
+  it("on mobile, collapses release notes behind a per-row accordion until expanded", async () => {
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup();
+
+    renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate: jest.fn(),
+      onReleaseClick: jest.fn(),
+    });
+
+    expect(screen.queryByTestId("fmdReleaseNotes")).toBeNull();
+
+    await user.click(
+      screen.getByRole("button", { name: "+ Add Release Notes" }),
+    );
+
+    expect(screen.getByTestId("fmdReleaseNotes")).toBeInTheDocument();
   });
 
   it("prefetches release detail when a row action is hovered", async () => {

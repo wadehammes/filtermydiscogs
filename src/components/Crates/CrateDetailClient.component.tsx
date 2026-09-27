@@ -89,18 +89,14 @@ const CrateDetailWorkspace = ({
 
   return (
     <div className={styles.detailMain}>
-      <CrateDetailHeader />
+      <div className={styles.mastheadRow}>
+        <CrateDetailHeader />
+      </div>
       {activeCrateId ? (
-        <CrateDetailActionsMenu className={styles.stickyCrateActionsMenu} />
+        <CrateDetailActionsMenu className={styles.crateDetailActionsMenu} />
       ) : null}
 
       <div className={styles.workspace}>
-        <aside className={styles.notesColumn}>
-          <div className={styles.notesPanel}>
-            <CrateSetNotesScratchpad variant="panel" />
-          </div>
-        </aside>
-
         <div className={styles.releasesColumn}>
           <div className={styles.releasesPanel}>
             <div className={styles.releasesPanelToolbarWrap}>
@@ -121,6 +117,12 @@ const CrateDetailWorkspace = ({
             />
           </div>
         </div>
+
+        <aside className={styles.notesColumn}>
+          <div className={styles.notesPanel}>
+            <CrateSetNotesScratchpad variant="panel" />
+          </div>
+        </aside>
       </div>
 
       <CrateDrawerDialogs />

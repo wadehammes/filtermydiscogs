@@ -1,7 +1,6 @@
 .menuRoot {
   flex-shrink: 0;
   isolation: isolate;
-  margin-inline-start: auto;
   position: relative;
   z-index: var(--z-6-popover);
 }
@@ -9,15 +8,21 @@
 .menuTrigger {
   align-items: center;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--input);
   border-radius: var(--radius-ui);
+  box-sizing: border-box;
   color: var(--foreground);
   cursor: pointer;
   display: inline-flex;
-  height: 2.25rem;
+  height: var(--touch-target-min);
   justify-content: center;
   padding: 0;
-  width: 2.25rem;
+  width: var(--touch-target-min);
+
+  @media (width >= 768px) {
+    height: var(--input-height);
+    width: var(--input-height);
+  }
 
   &:focus-visible {
     outline: 2px solid var(--ring);

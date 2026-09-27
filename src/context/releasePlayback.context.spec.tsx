@@ -3694,6 +3694,44 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.canPlayNext).toBe(false);
   });
 
+  it("queues without losing transport when adding after clearQueue while playback stays active", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.clearQueue();
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.canPlayNext).toBe(true);
+    });
+
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.activeTrackPosition).toBe("A1");
+    expect(result.current.queue).toHaveLength(1);
+  });
+
   it("clears the queue when playback stops", async () => {
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),
