@@ -1,9 +1,27 @@
-import { createHash } from "node:crypto";
-
 export interface CachedDiscogsIdentity {
   userId: number;
   username: string;
   verifiedAt: number;
+}
+
+interface IdentityCacheKeyParams {
+  accessToken: string;
+  accessTokenSecret: string;
+}
+
+interface GetCachedIdentityParams {
+  cacheKey: string;
+  allowStale?: boolean;
+}
+
+interface SetCachedIdentityParams {
+  cacheKey: string;
+  identity: { userId: number; username: string };
+}
+
+interface SetInFlightIdentityRequestParams {
+  cacheKey: string;
+  request: Promise<CachedDiscogsIdentity>;
 }
 
 const IDENTITY_CACHE_TTL_MS = Number.parseInt(
@@ -21,19 +39,18 @@ const inFlightIdentityRequests = new Map<
   Promise<CachedDiscogsIdentity>
 >();
 
-export function getIdentityCacheKey(
-  accessToken: string,
-  accessTokenSecret: string,
-): string {
-  return createHash("sha256")
-    .update(`${accessToken}:${accessTokenSecret}`)
-    .digest("hex");
-}
+const IDENTITY_CACHE_KEY_SEP = "\u0001";
 
-export function getCachedIdentity(
-  cacheKey: string,
+export const getIdentityCacheKey = ({
+  accessToken,
+  accessTokenSecret,
+}: IdentityCacheKeyParams): string =>
+  `${accessToken}${IDENTITY_CACHE_KEY_SEP}${accessTokenSecret}`;
+
+export const getCachedIdentity = ({
+  cacheKey,
   allowStale = false,
-): CachedDiscogsIdentity | null {
+}: GetCachedIdentityParams): CachedDiscogsIdentity | null => {
   const entry = identityCache.get(cacheKey);
   if (!entry) {
     return null;
@@ -53,12 +70,12 @@ export function getCachedIdentity(
   }
 
   return null;
-}
+};
 
-export function setCachedIdentity(
-  cacheKey: string,
-  identity: { userId: number; username: string },
-): CachedDiscogsIdentity {
+export const setCachedIdentity = ({
+  cacheKey,
+  identity,
+}: SetCachedIdentityParams): CachedDiscogsIdentity => {
   const entry: CachedDiscogsIdentity = {
     userId: identity.userId,
     username: identity.username,
@@ -67,30 +84,29 @@ export function setCachedIdentity(
   identityCache.set(cacheKey, entry);
   pruneIdentityCache();
   return entry;
-}
+};
 
-export function clearCachedIdentity(cacheKey: string): void {
+export const clearCachedIdentity = (cacheKey: string): void => {
   identityCache.delete(cacheKey);
   inFlightIdentityRequests.delete(cacheKey);
-}
+};
 
-export function getInFlightIdentityRequest(
+export const getInFlightIdentityRequest = (
   cacheKey: string,
-): Promise<CachedDiscogsIdentity> | undefined {
-  return inFlightIdentityRequests.get(cacheKey);
-}
+): Promise<CachedDiscogsIdentity> | undefined =>
+  inFlightIdentityRequests.get(cacheKey);
 
-export function setInFlightIdentityRequest(
-  cacheKey: string,
-  request: Promise<CachedDiscogsIdentity>,
-): void {
+export const setInFlightIdentityRequest = ({
+  cacheKey,
+  request,
+}: SetInFlightIdentityRequestParams): void => {
   inFlightIdentityRequests.set(cacheKey, request);
   request.finally(() => {
     inFlightIdentityRequests.delete(cacheKey);
   });
-}
+};
 
-function pruneIdentityCache(): void {
+const pruneIdentityCache = (): void => {
   if (identityCache.size <= 1000) {
     return;
   }
@@ -101,4 +117,4 @@ function pruneIdentityCache(): void {
       identityCache.delete(key);
     }
   }
-}
+};

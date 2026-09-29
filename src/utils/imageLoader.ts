@@ -1,4 +1,5 @@
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
+import { buildDiscogsImageProxySearchParams } from "src/lib/discogs-image-proxy-url";
 
 interface ImageLoadOptions {
   url: string;
@@ -178,7 +179,23 @@ function loadSingleImage(
     };
 
     // Use optimized proxy URL
-    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(url)}&w=${cellSize}&h=${cellSize}&q=${imageQuality}&f=${imageFormat}`;
+    const proxyParams = buildDiscogsImageProxySearchParams({
+      discogsImageUrl: url,
+    });
+    if (!proxyParams) {
+      resolve({
+        success: false,
+        error: "Invalid image URL",
+      });
+      return;
+    }
+
+    proxyParams.set("w", String(cellSize));
+    proxyParams.set("h", String(cellSize));
+    proxyParams.set("q", String(imageQuality));
+    proxyParams.set("f", imageFormat);
+
+    const proxyUrl = `/api/image-proxy?${proxyParams.toString()}`;
     img.crossOrigin = "anonymous";
     img.src = proxyUrl;
   });

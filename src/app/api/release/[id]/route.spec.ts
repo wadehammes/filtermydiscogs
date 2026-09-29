@@ -14,7 +14,7 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 const RELEASE_ID = "249504";
 const accessToken = "access-token";
 const accessTokenSecret = "access-secret";
-const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
+const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
 
 const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: Number(RELEASE_ID),

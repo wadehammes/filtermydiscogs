@@ -30,7 +30,7 @@ function createRequest(cookies: Record<string, string>): NextRequest {
 describe("auth-request", () => {
   const accessToken = "access-token";
   const accessTokenSecret = "access-secret";
-  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
+  const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
 
   beforeEach(() => {
     jest.restoreAllMocks();
@@ -146,9 +146,9 @@ describe("auth-request", () => {
 
     it("reuses stale verified identity for read-only routes without calling Discogs", async () => {
       const getIdentity = jest.spyOn(discogsOAuthService, "getIdentity");
-      const entry = setCachedIdentity(cacheKey, {
-        userId: 42,
-        username: "cached-user",
+      const entry = setCachedIdentity({
+        cacheKey,
+        identity: { userId: 42, username: "cached-user" },
       });
       entry.verifiedAt = Date.now() - 400_000;
 
@@ -208,7 +208,7 @@ describe("auth-request", () => {
 
       await getVerifiedUserFromRequest(request, { allowStale: true });
 
-      expect(getCachedIdentity(cacheKey, true)).toBeNull();
+      expect(getCachedIdentity({ cacheKey, allowStale: true })).toBeNull();
     });
 
     it("still calls Discogs identity for write routes when cache is cold", async () => {
