@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { updateCollectionNoteBodySchema } from "src/lib/validation/collection.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -56,40 +57,14 @@ export async function POST(
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("updateCollectionNote error:", error);
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Failed to update collection note";
-    const upstreamStatus =
-      error instanceof Error
-        ? (error as Error & { status?: number }).status
-        : undefined;
+    const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
+      error,
+      fallbackMessage: "Failed to update collection note",
+    });
 
-    let status =
-      upstreamStatus ??
-      (errorMessage.toLowerCase().includes("too many requests") ? 429 : 500);
-
-    if (
-      upstreamStatus !== undefined &&
-      upstreamStatus >= 500 &&
-      upstreamStatus < 600
-    ) {
-      status = 502;
-    }
-
-    const clientError =
-      status === 429
-        ? "Rate limit exceeded. Please try again in a moment."
-        : errorMessage || "Failed to update collection note";
-
-    return NextResponse.json(
-      {
-        error: clientError,
-        ...(process.env.NODE_ENV === "development"
-          ? { details: errorMessage }
-          : {}),
-      },
-      { status },
-    );
+    return NextResponse.json(body, {
+      status,
+      ...(rateLimitInit ?? {}),
+    });
   }
 }

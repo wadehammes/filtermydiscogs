@@ -1,6 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
   discogsReleaseQueryOptions,
   useDiscogsReleaseQuery,
@@ -19,7 +18,7 @@ export const useReleaseModalReleaseDetailQuery = ({
 
   const {
     data: releaseDetail,
-    isLoading: isReleaseDetailLoading,
+    isPending: isReleaseDetailPending,
     isError,
     refetch,
   } = useDiscogsReleaseQuery({
@@ -32,15 +31,13 @@ export const useReleaseModalReleaseDetailQuery = ({
       return;
     }
 
-    const releaseQueryKey = DiscogsReleaseQueryKeys.byId(releaseIdString);
+    const releaseQuery = discogsReleaseQueryOptions(releaseIdString);
 
     const ensureReleaseDetail = () => {
-      void queryClient
-        .ensureQueryData(discogsReleaseQueryOptions(releaseIdString))
-        .catch(() => undefined);
+      void queryClient.ensureQueryData(releaseQuery).catch(() => undefined);
     };
 
-    if (queryClient.getQueryData(releaseQueryKey) === undefined) {
+    if (queryClient.getQueryData(releaseQuery.queryKey) === undefined) {
       ensureReleaseDetail();
     }
 
@@ -52,8 +49,8 @@ export const useReleaseModalReleaseDetailQuery = ({
       const [removedKeyPrefix, removedReleaseId] = event.query.queryKey;
 
       if (
-        removedKeyPrefix === releaseQueryKey[0] &&
-        removedReleaseId === releaseQueryKey[1]
+        removedKeyPrefix === releaseQuery.queryKey[0] &&
+        removedReleaseId === releaseQuery.queryKey[1]
       ) {
         ensureReleaseDetail();
       }
@@ -64,7 +61,7 @@ export const useReleaseModalReleaseDetailQuery = ({
     enabled &&
     !isError &&
     releaseDetail === undefined &&
-    isReleaseDetailLoading;
+    isReleaseDetailPending;
 
   return {
     releaseDetail,

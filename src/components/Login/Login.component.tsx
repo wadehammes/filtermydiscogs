@@ -23,7 +23,13 @@ import { LOGIN_FEATURES } from "./loginFeatures.constants";
 
 export const Login = () => {
   const { state, login } = useAuth();
-  const { isLoading, error, isAuthenticated, reconnectUsername } = state;
+  const {
+    isLoading,
+    error,
+    isAuthenticated,
+    isCheckingAuth,
+    reconnectUsername,
+  } = state;
   const router = useRouter();
 
   const connect = () => login();
@@ -35,8 +41,18 @@ export const Login = () => {
     }
   }, [isAuthenticated, router]);
 
+  if (isAuthenticated) {
+    return (
+      <div className={styles.landing} data-testid="fmdLogin" aria-busy="true" />
+    );
+  }
+
   return (
-    <div className={styles.landing} data-testid="fmdLogin">
+    <div
+      className={styles.landing}
+      data-testid="fmdLogin"
+      aria-busy={isCheckingAuth}
+    >
       <div className={styles.heroShell}>
         <div className={styles.intro}>
           <div className={styles.heroPanel}>

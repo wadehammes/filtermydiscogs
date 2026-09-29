@@ -8,11 +8,9 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
-import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { resolveQueueItemYoutubeVideoId } from "src/utils/playbackQueue";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
@@ -276,8 +274,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return null;
       }
 
-      const cached = queryClient.getQueryData<DiscogsReleaseDetail>(
-        DiscogsReleaseQueryKeys.byId(String(itemReleaseId)),
+      const cached = queryClient.getQueryData(
+        discogsReleaseQueryOptions(String(itemReleaseId)).queryKey,
       );
 
       if (
@@ -353,7 +351,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
           lastSyncedActiveVideoIdRef.current = videoId;
           syncEmbedToVideoId(videoId);
-        });
+        })
+        .catch(() => undefined);
     },
     [
       embedVideoIdRef,

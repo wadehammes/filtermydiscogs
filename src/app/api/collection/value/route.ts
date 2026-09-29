@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requireReadOnlyDiscogsUser } from "src/lib/auth-request";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
@@ -67,9 +68,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(
-      { error: "Failed to fetch collection value" },
-      { status: 500 },
-    );
+    const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
+      error,
+      fallbackMessage: "Failed to fetch collection value",
+    });
+
+    return NextResponse.json(body, {
+      status,
+      ...(rateLimitInit ?? {}),
+    });
   }
 }

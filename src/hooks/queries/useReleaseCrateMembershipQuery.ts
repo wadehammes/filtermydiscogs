@@ -1,10 +1,10 @@
 import {
   type QueryClient,
-  type UseQueryOptions,
+  queryOptions,
   useQuery,
 } from "@tanstack/react-query";
 import { api } from "src/api/urls";
-import type { ReleaseCrateMembershipResponse } from "src/types/crate.types";
+import { isQueryKeyFetching } from "src/utils/queryPrefetchIfIdle";
 import { ReleaseCrateMembershipQueryKeys } from "./querykeys.constants";
 
 export const RELEASE_CRATE_MEMBERSHIP_STALE_MS = 60 * 1000;
@@ -19,10 +19,10 @@ export interface UseReleaseCrateMembershipQueryParams {
 export const releaseCrateMembershipQueryOptions = (
   userId: string | null,
   instanceId: string | null,
-): UseQueryOptions<ReleaseCrateMembershipResponse> => {
+) => {
   const normalizedInstanceId = instanceId ? String(instanceId) : null;
 
-  return {
+  return queryOptions({
     queryKey: ReleaseCrateMembershipQueryKeys.byUserAndInstance(
       userId,
       normalizedInstanceId,
@@ -33,7 +33,7 @@ export const releaseCrateMembershipQueryOptions = (
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
-  };
+  });
 };
 
 export const prefetchReleaseCrateMembership = (
@@ -48,9 +48,8 @@ export const prefetchReleaseCrateMembership = (
   }
 
   const options = releaseCrateMembershipQueryOptions(userId, instanceId);
-  const state = queryClient.getQueryState(options.queryKey);
 
-  if (state?.fetchStatus === "fetching") {
+  if (isQueryKeyFetching(queryClient, options.queryKey)) {
     return Promise.resolve();
   }
 
@@ -68,7 +67,7 @@ export const useReleaseCrateMembershipQuery = ({
   const normalizedInstanceId = instanceId ? String(instanceId) : null;
   const options = releaseCrateMembershipQueryOptions(userId, instanceId);
 
-  return useQuery<ReleaseCrateMembershipResponse>({
+  return useQuery({
     ...options,
     enabled: enabled && Boolean(userId && normalizedInstanceId),
   });

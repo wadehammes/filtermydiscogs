@@ -1,4 +1,5 @@
 import {
+  infiniteQueryOptions,
   type QueryClient,
   useInfiniteQuery,
   useQueryClient,
@@ -100,13 +101,11 @@ async function fetchCollectionPageWithBootstrapSkip({
   return collection;
 }
 
-export const useDiscogsCollectionQuery = ({
-  username,
-  enabled = false,
-}: UseDiscogsCollectionQueryParams) => {
-  const queryClient = useQueryClient();
-
-  return useInfiniteQuery({
+export const discogsCollectionInfiniteQueryOptions = (
+  username: string,
+  queryClient: QueryClient,
+) =>
+  infiniteQueryOptions({
     queryKey: DiscogsCollectionQueryKeys.byUsername(username),
     queryFn: ({ pageParam }) =>
       fetchCollectionPageWithBootstrapSkip({
@@ -119,7 +118,6 @@ export const useDiscogsCollectionQuery = ({
       allPages: DiscogsCollection[],
     ) => getNextCollectionPageParam({ lastPage, allPages }),
     initialPageParam: getInitialCollectionPageParam(username),
-    enabled: enabled && !!username,
     staleTime: COLLECTION_CACHE_STALE_MS,
     gcTime: COLLECTION_CACHE_STALE_MS,
     retry: (failureCount, error) =>
@@ -130,5 +128,16 @@ export const useDiscogsCollectionQuery = ({
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+  });
+
+export const useDiscogsCollectionQuery = ({
+  username,
+  enabled = false,
+}: UseDiscogsCollectionQueryParams) => {
+  const queryClient = useQueryClient();
+
+  return useInfiniteQuery({
+    ...discogsCollectionInfiniteQueryOptions(username, queryClient),
+    enabled: enabled && !!username,
   });
 };

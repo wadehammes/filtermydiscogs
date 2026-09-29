@@ -14,6 +14,8 @@ Handbook: [conventions.md → React Query](../../docs/handbook/conventions.md#re
 - **Reads:** `src/hooks/queries/` — one file per query (e.g. `useDiscogsCollectionQuery.ts`).
 - **Writes:** `src/hooks/mutations/` — e.g. `useCrateMutations.ts`.
 - **Keys:** [`querykeys.constants.ts`](../../src/hooks/queries/querykeys.constants.ts) — use factories everywhere you invalidate/set.
+- **Shared options:** Export **`*QueryOptions`** with **`queryOptions()`** / **`infiniteQueryOptions()`** when hooks share cache with prefetch/fetch/mutations; use **`.queryKey`** for typed cache access.
+- **Invalidation tags:** **`mutation.meta.invalidates`** + global **`MutationCache`** in **`Providers.tsx`** for simple refetch-after-write (track stats); not for optimistic crate/collection mutations.
 
 ## Hook file rules
 

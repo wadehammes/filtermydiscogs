@@ -8,10 +8,8 @@ import {
   trackReleaseRatingSaved,
 } from "src/analytics/productAnalyticsEvents";
 import { api } from "src/api/urls";
-import {
-  DiscogsCollectionQueryKeys,
-  DiscogsReleaseQueryKeys,
-} from "src/hooks/queries/querykeys.constants";
+import { discogsCollectionInfiniteQueryOptions } from "src/hooks/queries/useDiscogsCollectionQuery";
+import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type {
   DiscogsCollection,
   DiscogsRelease,
@@ -36,13 +34,15 @@ import {
 } from "src/utils/releaseNotes";
 
 interface ReleaseRatingMutationContext {
-  collectionQueryKey: ReturnType<typeof DiscogsCollectionQueryKeys.byUsername>;
+  collectionQueryKey: ReturnType<
+    typeof discogsCollectionInfiniteQueryOptions
+  >["queryKey"];
   previousQueryData:
     | InfiniteData<DiscogsCollection, CollectionPageParam>
     | undefined;
   previousRating: number;
   previousReleaseDetail: DiscogsReleaseDetail | undefined;
-  releaseQueryKey: ReturnType<typeof DiscogsReleaseQueryKeys.byId>;
+  releaseQueryKey: ReturnType<typeof discogsReleaseQueryOptions>["queryKey"];
 }
 
 export interface SaveReleaseRatingVariables {
@@ -60,7 +60,10 @@ export const useSaveReleaseRatingMutation = ({
   username,
 }: UseSaveReleaseRatingMutationParams) => {
   const queryClient = useQueryClient();
-  const collectionQueryKey = DiscogsCollectionQueryKeys.byUsername(username);
+  const collectionQueryKey = discogsCollectionInfiniteQueryOptions(
+    username,
+    queryClient,
+  ).queryKey;
 
   return useMutation<
     void,
@@ -83,7 +86,9 @@ export const useSaveReleaseRatingMutation = ({
     onMutate: ({ releaseId, nextRating }) => {
       void queryClient.cancelQueries({ queryKey: collectionQueryKey });
 
-      const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
+      const releaseQueryKey = discogsReleaseQueryOptions(
+        String(releaseId),
+      ).queryKey;
       const previousQueryData =
         queryClient.getQueryData<
           InfiniteData<DiscogsCollection, CollectionPageParam>
@@ -94,8 +99,7 @@ export const useSaveReleaseRatingMutation = ({
           .find((entry) => parseReleaseId(entry) === releaseId)?.rating ?? 0;
       const previousRating =
         typeof previousRatingRaw === "number" ? previousRatingRaw : 0;
-      const previousReleaseDetail =
-        queryClient.getQueryData<DiscogsReleaseDetail>(releaseQueryKey);
+      const previousReleaseDetail = queryClient.getQueryData(releaseQueryKey);
 
       queryClient.setQueryData<
         InfiniteData<DiscogsCollection, CollectionPageParam>
@@ -148,9 +152,9 @@ export const useSaveReleaseRatingMutation = ({
 
       const releaseId = String(variables.releaseId);
       const releaseQueryKey =
-        context?.releaseQueryKey ?? DiscogsReleaseQueryKeys.byId(releaseId);
-      const optimisticDetail =
-        queryClient.getQueryData<DiscogsReleaseDetail>(releaseQueryKey);
+        context?.releaseQueryKey ??
+        discogsReleaseQueryOptions(releaseId).queryKey;
+      const optimisticDetail = queryClient.getQueryData(releaseQueryKey);
       const fetchedDetail = await api
         .discogsRelease(releaseId, { bypassCache: true })
         .catch(() => null);
@@ -176,7 +180,9 @@ export const useSaveReleaseRatingMutation = ({
 };
 
 interface ReleaseNotesMutationContext {
-  collectionQueryKey: ReturnType<typeof DiscogsCollectionQueryKeys.byUsername>;
+  collectionQueryKey: ReturnType<
+    typeof discogsCollectionInfiniteQueryOptions
+  >["queryKey"];
   previousQueryData:
     | InfiniteData<DiscogsCollection, CollectionPageParam>
     | undefined;
@@ -196,7 +202,10 @@ export const useSaveReleaseNotesMutation = ({
   username,
 }: UseSaveReleaseNotesMutationParams) => {
   const queryClient = useQueryClient();
-  const collectionQueryKey = DiscogsCollectionQueryKeys.byUsername(username);
+  const collectionQueryKey = discogsCollectionInfiniteQueryOptions(
+    username,
+    queryClient,
+  ).queryKey;
 
   return useMutation<
     void,

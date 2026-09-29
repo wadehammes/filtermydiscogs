@@ -1,7 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { DiscogsReleaseQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
+import {
+  isQueryKeyFetching,
+  runQueryPrefetchFireAndForget,
+} from "src/utils/queryPrefetchIfIdle";
 import { parseReleaseId } from "src/utils/releaseNotes";
 
 export const prefetchDiscogsReleaseQuery = (
@@ -13,16 +16,15 @@ export const prefetchDiscogsReleaseQuery = (
     return;
   }
 
-  const releaseQueryKey = DiscogsReleaseQueryKeys.byId(String(releaseId));
-  const queryState = queryClient.getQueryState(releaseQueryKey);
+  const releaseQuery = discogsReleaseQueryOptions(String(releaseId));
 
-  if (queryState?.fetchStatus === "fetching") {
+  if (isQueryKeyFetching(queryClient, releaseQuery.queryKey)) {
     return;
   }
 
-  if (queryClient.getQueryData(releaseQueryKey) === undefined) {
-    void queryClient.prefetchQuery(
-      discogsReleaseQueryOptions(String(releaseId)),
+  if (queryClient.getQueryData(releaseQuery.queryKey) === undefined) {
+    runQueryPrefetchFireAndForget(() =>
+      queryClient.prefetchQuery(releaseQuery),
     );
   }
 };

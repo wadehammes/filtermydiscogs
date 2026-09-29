@@ -85,18 +85,28 @@ export const getAuthUrlErrorMessage = (errorStatus: string): string =>
 export const hasAuthSuccessUrlParam = (): boolean =>
   parseAuthUrlParams().authStatus === "success";
 
+const unauthenticatedAuthStatus = (): AuthStatus => ({
+  isAuthenticated: false,
+  username: null,
+  userId: null,
+  avatarUrl: null,
+  reconnectUsername: null,
+  rateLimited: false,
+  showSupportProjectToast: false,
+});
+
 export const checkAuthStatus = async (): Promise<AuthStatus> => {
   try {
     return normalizeAuthStatus(await api.checkAuth());
-  } catch (_error) {
-    return {
-      isAuthenticated: false,
-      username: null,
-      userId: null,
-      avatarUrl: null,
-      reconnectUsername: null,
-      rateLimited: false,
-      showSupportProjectToast: false,
-    };
+  } catch (_firstError) {
+    if (getUsernameFromCookies()) {
+      try {
+        return normalizeAuthStatus(await api.checkAuth());
+      } catch (_retryError) {
+        return unauthenticatedAuthStatus();
+      }
+    }
+
+    return unauthenticatedAuthStatus();
   }
 };

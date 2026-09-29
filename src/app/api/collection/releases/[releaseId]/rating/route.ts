@@ -1,44 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requireAuthenticatedDiscogsUser } from "src/lib/auth-request";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { updateReleaseRatingBodySchema } from "src/lib/validation/collection.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
-const mapUpstreamError = (error: unknown, fallbackMessage: string) => {
-  const errorMessage = error instanceof Error ? error.message : fallbackMessage;
-  const upstreamStatus =
-    error instanceof Error
-      ? (error as Error & { status?: number }).status
-      : undefined;
+const jsonDiscogsProxyError = (error: unknown, fallbackMessage: string) => {
+  const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
+    error,
+    fallbackMessage,
+  });
 
-  let status =
-    upstreamStatus ??
-    (errorMessage.toLowerCase().includes("too many requests") ? 429 : 500);
-
-  if (
-    upstreamStatus !== undefined &&
-    upstreamStatus >= 500 &&
-    upstreamStatus < 600
-  ) {
-    status = 502;
-  }
-
-  const clientError =
-    status === 429
-      ? "Rate limit exceeded. Please try again in a moment."
-      : errorMessage || fallbackMessage;
-
-  return NextResponse.json(
-    {
-      error: clientError,
-      ...(process.env.NODE_ENV === "development"
-        ? { details: errorMessage }
-        : {}),
-    },
-    { status },
-  );
+  return NextResponse.json(body, {
+    status,
+    ...(rateLimitInit ?? {}),
+  });
 };
 
 export async function PUT(
@@ -83,7 +61,7 @@ export async function PUT(
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("updateReleaseRating route error:", error);
-    return mapUpstreamError(error, "Failed to update release rating");
+    return jsonDiscogsProxyError(error, "Failed to update release rating");
   }
 }
 
@@ -133,6 +111,6 @@ export async function DELETE(
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("deleteReleaseRating route error:", error);
-    return mapUpstreamError(error, "Failed to clear release rating");
+    return jsonDiscogsProxyError(error, "Failed to clear release rating");
   }
 }

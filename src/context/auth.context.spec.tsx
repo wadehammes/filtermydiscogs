@@ -299,6 +299,47 @@ describe("AuthProvider", () => {
     }
   });
 
+  it("keeps isCheckingAuth true while revalidating when a username cookie is present", async () => {
+    mockGetUsernameFromCookies.mockReturnValue("cacheduser");
+
+    let resolveCheck: (value: AuthStatus) => void = () => {};
+    const pendingCheck = new Promise<AuthStatus>((resolve) => {
+      resolveCheck = resolve;
+    });
+
+    queryClient.setQueryData(AuthQueryKeys.all(), {
+      isAuthenticated: false,
+      username: null,
+      userId: null,
+      avatarUrl: null,
+      reconnectUsername: null,
+      rateLimited: false,
+      showSupportProjectToast: false,
+    });
+
+    mockCheckAuth.mockReturnValueOnce(pendingCheck);
+
+    const { result } = renderAuthHook();
+
+    await waitFor(() => {
+      expect(result.current.state.isCheckingAuth).toBe(true);
+    });
+
+    await act(async () => {
+      resolveCheck(
+        authStatusFactory.authenticated({
+          username: "cacheduser",
+          userId: "999",
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(result.current.state.isAuthenticated).toBe(true);
+      expect(result.current.state.isCheckingAuth).toBe(false);
+    });
+  });
+
   it("clears isCheckingAuth once the initial auth query is ready while refetch continues", async () => {
     let resolveCheck: (value: AuthStatus) => void = () => {};
     const pendingCheck = new Promise<AuthStatus>((resolve) => {
