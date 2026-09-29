@@ -494,19 +494,14 @@ class DiscogsOAuthService {
   ): Promise<DiscogsCollectionFieldsResponse> {
     const url = `https://api.discogs.com/users/${username}/collection/fields`;
 
-    try {
-      const result = await this.makeAuthenticatedRequest(
-        url,
-        "GET",
-        oauthToken,
-        oauthTokenSecret,
-      );
+    const result = await this.makeAuthenticatedRequest(
+      url,
+      "GET",
+      oauthToken,
+      oauthTokenSecret,
+    );
 
-      return result as DiscogsCollectionFieldsResponse;
-    } catch (error) {
-      console.error("getCollectionFields error:", error);
-      throw error;
-    }
+    return result as DiscogsCollectionFieldsResponse;
   }
 
   async updateCollectionInstanceField({

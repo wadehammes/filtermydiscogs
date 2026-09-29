@@ -207,7 +207,41 @@ describe("GET /api/release/[id]", () => {
     });
   });
 
-  it("returns 500 when Discogs request fails", async () => {
+  it("returns 502 when Discogs returns an upstream 5xx", async () => {
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
+    const upstreamError = new Error("Internal Server Error") as Error & {
+      status: number;
+    };
+    upstreamError.status = 500;
+    jest
+      .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
+      .mockRejectedValue(upstreamError);
+
+    const response = await GET(
+      createRequest(RELEASE_ID, authenticatedCookies),
+      {
+        params: Promise.resolve({ id: RELEASE_ID }),
+      },
+    );
+
+    expect(response.status).toBe(502);
+    await expect(response.json()).resolves.toMatchObject({
+      error:
+        "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
+    });
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it("returns 500 when Discogs request fails without an upstream status", async () => {
     const consoleSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import {
+  buildDiscogsProxyErrorPayload,
   discogsThrottleQueueResponseInit,
   isDiscogsThrottleQueueError,
 } from "src/lib/discogs-api-error";
@@ -84,9 +85,14 @@ export async function GET(
       );
     }
     console.error("Release API error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch release" },
-      { status: 500 },
-    );
+    const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
+      error,
+      fallbackMessage: "Failed to fetch release",
+    });
+
+    return NextResponse.json(body, {
+      status,
+      ...(rateLimitInit ?? {}),
+    });
   }
 }

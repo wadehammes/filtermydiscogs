@@ -8,8 +8,12 @@ import { api } from "src/api/urls";
 import {
   CrateQueryKeys,
   CratesQueryKeys,
-  ReleaseCrateMembershipQueryKeys,
 } from "src/hooks/queries/querykeys.constants";
+import {
+  crateQueryOptions,
+  cratesQueryOptions,
+} from "src/hooks/queries/useCratesQuery";
+import { releaseCrateMembershipQueryOptions } from "src/hooks/queries/useReleaseCrateMembershipQuery";
 import {
   getPrependCrateLayoutSortOrder,
   splitCrateLayoutItemsForCache,
@@ -36,7 +40,7 @@ interface CreateCrateRequest {
   name: string;
 }
 
-interface UpdateCrateRequest extends Partial<CrateUpdatePayload> {}
+type UpdateCrateRequest = Partial<CrateUpdatePayload>;
 
 interface CrateMutationResponse {
   crate: CrateUpdatePayload & {
@@ -139,12 +143,10 @@ const getCrateQuerySnapshots = (
   crateId?: string,
 ) => {
   const previousCrateData = crateId
-    ? queryClient.getQueryData<CrateWithReleasesResponse>(
-        CrateQueryKeys.byUserAndId(userId, crateId),
-      )
+    ? queryClient.getQueryData(crateQueryOptions(userId, crateId).queryKey)
     : undefined;
-  const previousCratesData = queryClient.getQueryData<CratesResponse>(
-    CratesQueryKeys.byUserId(userId),
+  const previousCratesData = queryClient.getQueryData(
+    cratesQueryOptions(userId).queryKey,
   );
   return { previousCrateData, previousCratesData };
 };
@@ -157,13 +159,13 @@ const rollbackOptimisticUpdate = (
 ) => {
   if (context?.previousCrateData && crateId) {
     queryClient.setQueryData(
-      CrateQueryKeys.byUserAndId(userId, crateId),
+      crateQueryOptions(userId, crateId).queryKey,
       context.previousCrateData,
     );
   }
   if (context?.previousCratesData) {
     queryClient.setQueryData(
-      CratesQueryKeys.byUserId(userId),
+      cratesQueryOptions(userId).queryKey,
       context.previousCratesData,
     );
   }
@@ -174,8 +176,8 @@ const applyClearPackedToCrateCache = (
   userId: string | null,
   crateId: string,
 ) => {
-  queryClient.setQueryData<CrateWithReleasesResponse>(
-    CrateQueryKeys.byUserAndId(userId, crateId),
+  queryClient.setQueryData(
+    crateQueryOptions(userId, crateId).queryKey,
     (old) => {
       if (!old) return old;
 
@@ -197,8 +199,8 @@ const applyFoundAtToCrateRelease = (
   releaseId: string,
   foundAt: string | null,
 ) => {
-  queryClient.setQueryData<CrateWithReleasesResponse>(
-    CrateQueryKeys.byUserAndId(userId, crateId),
+  queryClient.setQueryData(
+    crateQueryOptions(userId, crateId).queryKey,
     (old) => {
       if (!old) return old;
 
@@ -250,8 +252,8 @@ const mergeCrateDetailCache = (
   crateId: string,
   crateUpdates: Partial<CrateMutationResponse["crate"]>,
 ) => {
-  queryClient.setQueryData<CrateWithReleasesResponse>(
-    CrateQueryKeys.byUserAndId(userId, crateId),
+  queryClient.setQueryData(
+    crateQueryOptions(userId, crateId).queryKey,
     (old) => {
       if (!old) return old;
 
@@ -274,27 +276,24 @@ export const useCreateCrateMutation = (userId: string | null) => {
       return api.createCrate(data.name);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
-        (old) => {
-          if (!old) {
-            return {
-              crates: [
-                {
-                  ...data.crate,
-                  releaseCount: 0,
-                } as CrateWithCount,
-              ],
-            };
-          }
+      queryClient.setQueryData(cratesQueryOptions(userId).queryKey, (old) => {
+        if (!old) {
           return {
             crates: [
-              ...old.crates,
-              { ...data.crate, releaseCount: 0 } as CrateWithCount,
+              {
+                ...data.crate,
+                releaseCount: 0,
+              } as CrateWithCount,
             ],
           };
-        },
-      );
+        }
+        return {
+          crates: [
+            ...old.crates,
+            { ...data.crate, releaseCount: 0 } as CrateWithCount,
+          ],
+        };
+      });
     },
     onError: (error) => {
       showCrateMutationError("Failed to create crate", error);
@@ -322,25 +321,21 @@ export const useUpdateCrateMutation = (userId: string | null) => {
         queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
       });
 
-      const previousCrates = queryClient.getQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
+      const previousCrates = queryClient.getQueryData(
+        cratesQueryOptions(userId).queryKey,
       );
-      const previousCrateData =
-        queryClient.getQueryData<CrateWithReleasesResponse>(
-          CrateQueryKeys.byUserAndId(userId, crateId),
-        );
+      const previousCrateData = queryClient.getQueryData(
+        crateQueryOptions(userId, crateId).queryKey,
+      );
 
       if (previousCrates) {
-        queryClient.setQueryData<CratesResponse>(
-          CratesQueryKeys.byUserId(userId),
-          {
-            crates: applyCratesListUpdate({
-              crates: previousCrates.crates,
-              crateId,
-              updates,
-            }),
-          },
-        );
+        queryClient.setQueryData(cratesQueryOptions(userId).queryKey, {
+          crates: applyCratesListUpdate({
+            crates: previousCrates.crates,
+            crateId,
+            updates,
+          }),
+        });
       }
 
       mergeCrateDetailCache(queryClient, userId, crateId, updates);
@@ -355,21 +350,18 @@ export const useUpdateCrateMutation = (userId: string | null) => {
       );
     },
     onSuccess: (data, variables) => {
-      queryClient.setQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
-        (old) => {
-          if (!old) return old;
+      queryClient.setQueryData(cratesQueryOptions(userId).queryKey, (old) => {
+        if (!old) return old;
 
-          return {
-            crates: applyCratesListUpdate({
-              crates: old.crates,
-              crateId: variables.crateId,
-              updates: variables.updates,
-              serverCrate: data.crate,
-            }),
-          };
-        },
-      );
+        return {
+          crates: applyCratesListUpdate({
+            crates: old.crates,
+            crateId: variables.crateId,
+            updates: variables.updates,
+            serverCrate: data.crate,
+          }),
+        };
+      });
 
       mergeCrateDetailCache(queryClient, userId, variables.crateId, data.crate);
     },
@@ -384,26 +376,19 @@ export const useDeleteCrateMutation = (userId: string | null) => {
       return api.deleteCrate(crateId);
     },
     onMutate: async (crateId) => {
-      queryClient.setQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
-        (old) => {
-          if (!old) return old;
-          return {
-            crates: old.crates.filter((crate) => crate.id !== crateId),
-          };
-        },
-      );
+      queryClient.setQueryData(cratesQueryOptions(userId).queryKey, (old) => {
+        if (!old) return old;
+        return {
+          crates: old.crates.filter((crate) => crate.id !== crateId),
+        };
+      });
 
       queryClient.removeQueries({
         queryKey: CrateQueryKeys.byUserAndId(userId, crateId),
       });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       invalidateCrateQueries(queryClient, userId);
-      await queryClient.refetchQueries({
-        queryKey: CratesQueryKeys.byUserId(userId),
-        exact: false,
-      });
     },
     onError: async (error) => {
       showCrateMutationError("Failed to delete crate", error);
@@ -524,9 +509,8 @@ const applyAddReleaseToCrateCache = ({
     instance_id: String(release.instance_id),
   };
   const releaseId = normalizedRelease.instance_id;
-  const crateDetailKey = CrateQueryKeys.byUserAndId(userId, crateId);
-  const existingDetail =
-    queryClient.getQueryData<CrateWithReleasesResponse>(crateDetailKey);
+  const crateDetailKey = crateQueryOptions(userId, crateId).queryKey;
+  const existingDetail = queryClient.getQueryData(crateDetailKey);
 
   if (
     existingDetail?.releases.some(
@@ -536,30 +520,27 @@ const applyAddReleaseToCrateCache = ({
     return;
   }
 
-  queryClient.setQueryData<CratesResponse>(
-    CratesQueryKeys.byUserId(userId),
-    (old) => {
-      if (!old) return old;
-      return {
-        crates: old.crates.map((crate) => {
-          if (crate.id === crateId) {
-            return {
-              ...crate,
-              releaseCount: (crate.releaseCount ?? 0) + 1,
-            };
-          }
-          return crate;
-        }),
-      };
-    },
-  );
+  queryClient.setQueryData(cratesQueryOptions(userId).queryKey, (old) => {
+    if (!old) return old;
+    return {
+      crates: old.crates.map((crate) => {
+        if (crate.id === crateId) {
+          return {
+            ...crate,
+            releaseCount: (crate.releaseCount ?? 0) + 1,
+          };
+        }
+        return crate;
+      }),
+    };
+  });
 
   if (!existingDetail) {
     void queryClient.invalidateQueries({ queryKey: crateDetailKey });
     return;
   }
 
-  queryClient.setQueryData<CrateWithReleasesResponse>(crateDetailKey, (old) => {
+  queryClient.setQueryData(crateDetailKey, (old) => {
     if (!old) {
       return old;
     }
@@ -594,9 +575,8 @@ const applyRemoveReleaseFromCrateCache = ({
   crateId: string;
   releaseId: string;
 }) => {
-  const crateDetailKey = CrateQueryKeys.byUserAndId(userId, crateId);
-  const existingDetail =
-    queryClient.getQueryData<CrateWithReleasesResponse>(crateDetailKey);
+  const crateDetailKey = crateQueryOptions(userId, crateId).queryKey;
+  const existingDetail = queryClient.getQueryData(crateDetailKey);
   const normalizedReleaseId = String(releaseId);
   const wasInDetail =
     existingDetail?.releases.some(
@@ -607,30 +587,27 @@ const applyRemoveReleaseFromCrateCache = ({
     return;
   }
 
-  queryClient.setQueryData<CratesResponse>(
-    CratesQueryKeys.byUserId(userId),
-    (old) => {
-      if (!old) return old;
-      return {
-        crates: old.crates.map((crate) => {
-          if (crate.id === crateId) {
-            return {
-              ...crate,
-              releaseCount: Math.max((crate.releaseCount ?? 0) - 1, 0),
-            };
-          }
-          return crate;
-        }),
-      };
-    },
-  );
+  queryClient.setQueryData(cratesQueryOptions(userId).queryKey, (old) => {
+    if (!old) return old;
+    return {
+      crates: old.crates.map((crate) => {
+        if (crate.id === crateId) {
+          return {
+            ...crate,
+            releaseCount: Math.max((crate.releaseCount ?? 0) - 1, 0),
+          };
+        }
+        return crate;
+      }),
+    };
+  });
 
   if (!existingDetail) {
     void queryClient.invalidateQueries({ queryKey: crateDetailKey });
     return;
   }
 
-  queryClient.setQueryData<CrateWithReleasesResponse>(crateDetailKey, (old) => {
+  queryClient.setQueryData(crateDetailKey, (old) => {
     if (!old) return old;
     return {
       ...old,
@@ -660,10 +637,11 @@ export const useSetReleaseCrateMembershipMutation = (userId: string | null) => {
     onMutate: async ({ crateIds, release }) => {
       const releaseId = String(release.instance_id);
       const targetSet = new Set(crateIds);
-      const previousMembership =
-        queryClient.getQueryData<ReleaseCrateMembershipResponse>(
-          ReleaseCrateMembershipQueryKeys.byUserAndInstance(userId, releaseId),
-        );
+      const membershipQueryKey = releaseCrateMembershipQueryOptions(
+        userId,
+        releaseId,
+      ).queryKey;
+      const previousMembership = queryClient.getQueryData(membershipQueryKey);
       const currentIds = new Set(previousMembership?.crateIds ?? []);
       const affectedCrateIds = new Set([...currentIds, ...targetSet]);
       const previousCrateSnapshots: SetReleaseCrateMembershipContext["previousCrateSnapshots"] =
@@ -671,12 +649,12 @@ export const useSetReleaseCrateMembershipMutation = (userId: string | null) => {
 
       for (const crateId of affectedCrateIds) {
         previousCrateSnapshots[crateId] = queryClient.getQueryData(
-          CrateQueryKeys.byUserAndId(userId, crateId),
+          crateQueryOptions(userId, crateId).queryKey,
         );
       }
 
-      const previousCratesData = queryClient.getQueryData<CratesResponse>(
-        CratesQueryKeys.byUserId(userId),
+      const previousCratesData = queryClient.getQueryData(
+        cratesQueryOptions(userId).queryKey,
       );
 
       setReleaseCrateMembershipCache({
@@ -716,10 +694,10 @@ export const useSetReleaseCrateMembershipMutation = (userId: string | null) => {
     onError: (_error, variables, context) => {
       if (context?.previousMembership !== undefined) {
         queryClient.setQueryData(
-          ReleaseCrateMembershipQueryKeys.byUserAndInstance(
+          releaseCrateMembershipQueryOptions(
             userId,
             String(variables.release.instance_id),
-          ),
+          ).queryKey,
           context.previousMembership,
         );
       }
@@ -729,7 +707,7 @@ export const useSetReleaseCrateMembershipMutation = (userId: string | null) => {
       )) {
         if (snapshot) {
           queryClient.setQueryData(
-            CrateQueryKeys.byUserAndId(userId, crateId),
+            crateQueryOptions(userId, crateId).queryKey,
             snapshot,
           );
         }
@@ -737,7 +715,7 @@ export const useSetReleaseCrateMembershipMutation = (userId: string | null) => {
 
       if (context?.previousCratesData) {
         queryClient.setQueryData(
-          CratesQueryKeys.byUserId(userId),
+          cratesQueryOptions(userId).queryKey,
           context.previousCratesData,
         );
       }
@@ -838,9 +816,6 @@ export const useClearAllPackedInCrateMutation = (userId: string | null) => {
       rollbackOptimisticUpdate(queryClient, userId, context, variables.crateId);
       showCrateMutationError("Failed to clear packed items", error);
     },
-    onSuccess: (_data, { crateId }) => {
-      applyClearPackedToCrateCache(queryClient, userId, crateId);
-    },
   });
 };
 
@@ -878,8 +853,8 @@ export const useUpdateCrateLayoutMutation = (userId: string | null) => {
         crateId,
       );
 
-      queryClient.setQueryData<CrateWithReleasesResponse>(
-        CrateQueryKeys.byUserAndId(userId, crateId),
+      queryClient.setQueryData(
+        crateQueryOptions(userId, crateId).queryKey,
         (old) => {
           if (!old) return old;
 
@@ -903,8 +878,8 @@ export const useUpdateCrateLayoutMutation = (userId: string | null) => {
     },
     onSuccess: (data, { crateId }) => {
       trackCrateLayoutUpdated(crateId);
-      queryClient.setQueryData<CrateWithReleasesResponse>(
-        CrateQueryKeys.byUserAndId(userId, crateId),
+      queryClient.setQueryData(
+        crateQueryOptions(userId, crateId).queryKey,
         (old) => {
           if (!old) return old;
 

@@ -30,7 +30,7 @@ export function isTransientRateLimitError(
 ): error is ApiFetchError {
   return (
     error instanceof ApiFetchError &&
-    (error.status === 503 || error.status === 429)
+    (error.status === 502 || error.status === 503 || error.status === 429)
   );
 }
 

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requireReadOnlyDiscogsUser } from "src/lib/auth-request";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
@@ -42,38 +43,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("getCollectionFields error:", error);
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch collection fields";
-    const upstreamStatus =
-      error instanceof Error
-        ? (error as Error & { status?: number }).status
-        : undefined;
+    const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
+      error,
+      fallbackMessage: "Failed to fetch collection fields",
+    });
 
-    let status =
-      upstreamStatus ??
-      (errorMessage.toLowerCase().includes("too many requests") ? 429 : 500);
-
-    if (
-      upstreamStatus !== undefined &&
-      upstreamStatus >= 500 &&
-      upstreamStatus < 600
-    ) {
-      status = 502;
-    }
-
-    return NextResponse.json(
-      {
-        error:
-          status === 429
-            ? "Rate limit exceeded. Please try again in a moment."
-            : "Failed to fetch collection fields",
-        ...(process.env.NODE_ENV === "development"
-          ? { details: errorMessage }
-          : {}),
-      },
-      { status },
-    );
+    return NextResponse.json(body, {
+      status,
+      ...(rateLimitInit ?? {}),
+    });
   }
 }

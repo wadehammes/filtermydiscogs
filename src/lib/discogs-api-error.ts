@@ -9,19 +9,20 @@ export { isDiscogsThrottleQueueError };
 
 export const DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS = 60;
 
-export function asDiscogsApiError(error: unknown): DiscogsApiError | null {
+export const asDiscogsApiError = (error: unknown): DiscogsApiError | null => {
   if (!(error instanceof Error)) {
     return null;
   }
 
   return error as DiscogsApiError;
-}
+};
 
-export function getDiscogsApiErrorStatus(error: unknown): number | undefined {
-  return asDiscogsApiError(error)?.status;
-}
+export const getDiscogsApiErrorStatus = (error: unknown): number | undefined =>
+  asDiscogsApiError(error)?.status;
 
-export function getDiscogsRateLimitRetryAfterSeconds(error: unknown): number {
+export const getDiscogsRateLimitRetryAfterSeconds = (
+  error: unknown,
+): number => {
   const retryAfterSeconds = asDiscogsApiError(error)?.retryAfterSeconds;
   if (
     typeof retryAfterSeconds === "number" &&
@@ -32,22 +33,91 @@ export function getDiscogsRateLimitRetryAfterSeconds(error: unknown): number {
   }
 
   return DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS;
-}
+};
 
-export function discogsRateLimitResponseInit(error: unknown): {
+export const discogsRateLimitResponseInit = (
+  error: unknown,
+): {
   headers: { "Retry-After": string };
-} {
-  return {
-    headers: {
-      "Retry-After": String(getDiscogsRateLimitRetryAfterSeconds(error)),
-    },
-  };
+} => ({
+  headers: {
+    "Retry-After": String(getDiscogsRateLimitRetryAfterSeconds(error)),
+  },
+});
+
+export const DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE =
+  "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.";
+
+const DISCOGS_RATE_LIMIT_MESSAGE =
+  "Rate limit exceeded. Please try again in a moment.";
+
+export const mapDiscogsUpstreamToProxyStatus = (
+  upstreamStatus: number | undefined,
+  errorMessage: string,
+): number => {
+  if (
+    upstreamStatus !== undefined &&
+    upstreamStatus >= 500 &&
+    upstreamStatus < 600
+  ) {
+    return 502;
+  }
+
+  if (upstreamStatus !== undefined) {
+    return upstreamStatus;
+  }
+
+  if (errorMessage.toLowerCase().includes("too many requests")) {
+    return 429;
+  }
+
+  return 500;
+};
+
+export interface BuildDiscogsProxyErrorPayloadParams {
+  error: unknown;
+  fallbackMessage: string;
 }
 
-export function discogsThrottleQueueResponseInit(error: unknown): {
+export const buildDiscogsProxyErrorPayload = ({
+  error,
+  fallbackMessage,
+}: BuildDiscogsProxyErrorPayloadParams): {
+  body: { details?: string; error: string };
+  status: number;
+  rateLimitInit?: ReturnType<typeof discogsRateLimitResponseInit>;
+} => {
+  const errorMessage = error instanceof Error ? error.message : fallbackMessage;
+  const upstreamStatus = getDiscogsApiErrorStatus(error);
+  const status = mapDiscogsUpstreamToProxyStatus(upstreamStatus, errorMessage);
+
+  let message = fallbackMessage;
+  if (status === 429) {
+    message = DISCOGS_RATE_LIMIT_MESSAGE;
+  } else if (status === 502) {
+    message = DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE;
+  }
+
+  const body: { details?: string; error: string } = { error: message };
+  if (process.env.NODE_ENV === "development") {
+    body.details = errorMessage;
+  }
+
+  return {
+    body,
+    status,
+    ...(status === 429
+      ? { rateLimitInit: discogsRateLimitResponseInit(error) }
+      : {}),
+  };
+};
+
+export const discogsThrottleQueueResponseInit = (
+  error: unknown,
+): {
   status: 503;
   headers: { "Retry-After": string };
-} {
+} => {
   const retryAfterSeconds = isDiscogsThrottleQueueError(error)
     ? error.retryAfterSeconds
     : 5;
@@ -58,4 +128,4 @@ export function discogsThrottleQueueResponseInit(error: unknown): {
       "Retry-After": String(retryAfterSeconds),
     },
   };
-}
+};

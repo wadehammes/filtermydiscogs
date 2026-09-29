@@ -24,6 +24,7 @@ import {
   clearSessionAuthCookies,
   clearUrlParams,
   getAuthUrlErrorMessage,
+  getUsernameFromCookies,
   hasAuthSuccessUrlParam,
   parseAuthUrlParams,
 } from "src/services/auth.service";
@@ -153,14 +154,25 @@ export const AuthProvider = ({
   );
   const [hasCompletedAuthCheck, setHasCompletedAuthCheck] =
     useState(skipInitialAuthCheck);
+  const [hasUsernameDisplayCookie, setHasUsernameDisplayCookie] =
+    useState(false);
 
   const {
     data: authData,
     isPending,
+    isFetching,
     refetch,
   } = useAuthQuery({
     enabled: !skipInitialAuthCheck,
   });
+
+  useEffect(() => {
+    if (skipInitialAuthCheck || !isFetching) {
+      return;
+    }
+
+    setHasUsernameDisplayCookie(Boolean(getUsernameFromCookies()));
+  }, [isFetching, skipInitialAuthCheck]);
   const logoutMutation = useLogoutMutation();
 
   useEffect(() => {
@@ -198,13 +210,18 @@ export const AuthProvider = ({
         : (authData?.reconnectUsername ?? null),
       rateLimited: authData?.rateLimited ?? false,
       isCheckingAuth:
-        isCompletingOAuth || !hasCompletedAuthCheck || (isPending && !authData),
+        isCompletingOAuth ||
+        !hasCompletedAuthCheck ||
+        (isPending && !authData) ||
+        (isFetching && hasUsernameDisplayCookie && !authData?.isAuthenticated),
     };
   }, [
     authData,
     hasCompletedAuthCheck,
+    hasUsernameDisplayCookie,
     initialStateOverride,
     isCompletingOAuth,
+    isFetching,
     isPending,
     skipInitialAuthCheck,
   ]);

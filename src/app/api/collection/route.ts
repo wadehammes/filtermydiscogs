@@ -1,10 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
 import { requireReadOnlyDiscogsUser } from "src/lib/auth-request";
-import {
-  discogsRateLimitResponseInit,
-  getDiscogsApiErrorStatus,
-} from "src/lib/discogs-api-error";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
@@ -119,38 +116,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     rethrowNextInternalError(error);
     console.error("getCollection error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to fetch collection";
-    const upstreamStatus = getDiscogsApiErrorStatus(error);
-
-    let status =
-      upstreamStatus ??
-      (errorMessage.toLowerCase().includes("too many requests") ? 429 : 500);
-
-    if (
-      upstreamStatus !== undefined &&
-      upstreamStatus >= 500 &&
-      upstreamStatus < 600
-    ) {
-      status = 502;
-    }
-
-    let message = "Failed to fetch collection";
-    if (status === 429) {
-      message = "Rate limit exceeded. Please try again in a moment.";
-    } else if (status === 502 || upstreamStatus === 500) {
-      message =
-        "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.";
-    }
-
-    const body: { details?: string; error: string } = { error: message };
-    if (process.env.NODE_ENV === "development") {
-      body.details = errorMessage;
-    }
+    const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
+      error,
+      fallbackMessage: "Failed to fetch collection",
+    });
 
     return NextResponse.json(body, {
       status,
-      ...(status === 429 ? discogsRateLimitResponseInit(error) : {}),
+      ...(rateLimitInit ?? {}),
     });
   }
 }

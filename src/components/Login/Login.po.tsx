@@ -17,6 +17,7 @@ jest.mock("src/components/Page/PageFooter.server", () => ({
 
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
+import type { AuthState } from "src/context/auth.context";
 import {
   BasePageObject,
   type BasePageObjectProps,
@@ -33,11 +34,15 @@ export class LoginPageObject extends BasePageObject {
     super(props);
   }
 
-  renderLogin(): RenderResult {
+  renderLogin(authInitialState?: AuthState): RenderResult {
     return render(
       <PublicAuthLayout currentPage="home" footer={<PageFooter />}>
         <Login />
       </PublicAuthLayout>,
+      {
+        skipInitialAuthCheck: true,
+        ...(authInitialState !== undefined ? { authInitialState } : {}),
+      },
     );
   }
 }

@@ -209,6 +209,14 @@ describe("CrateProvider", () => {
   });
 
   it("selects crate", async () => {
+    const mockCrates = [
+      crateWithCountFactory.build({ id: "crate-1", is_default: false }),
+      crateWithCountFactory.build({ id: "crate-2", is_default: true }),
+    ];
+    mockApi.crates.mockResolvedValue(
+      cratesResponseFactory.withCrates(mockCrates),
+    );
+
     const { result } = renderCrateHook();
 
     await waitFor(() => {

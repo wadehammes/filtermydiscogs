@@ -24,6 +24,7 @@ import {
   SITE_LEAD,
   SITE_TAGLINE,
 } from "src/constants/siteMetadata";
+import { testUnauthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { screen } from "test-utils";
 
 let po: LoginPageObject;
@@ -36,6 +37,18 @@ describe("Login", () => {
   it("renders the public auth layout shell", () => {
     po.renderLogin();
     expect(screen.getByTestId(po.layoutTestId)).toBeInTheDocument();
+  });
+
+  it("keeps the landing visible while the session is checked", () => {
+    po.renderLogin({
+      ...testUnauthenticatedAuthState,
+      isCheckingAuth: true,
+    });
+
+    expect(screen.getByTestId(po.testId)).toHaveAttribute("aria-busy", "true");
+    expect(
+      screen.getAllByRole("button", { name: "Connect with Discogs" }),
+    ).toHaveLength(2);
   });
 
   it("renders the login landing content", () => {
