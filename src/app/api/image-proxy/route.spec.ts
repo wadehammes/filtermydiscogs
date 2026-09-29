@@ -113,6 +113,20 @@ describe("GET /api/image-proxy", () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({ error: "Invalid image source" });
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for a Discogs lookalike hostname without fetching", async () => {
+    const response = await GET(
+      createRequest(
+        `url=${encodeURIComponent("https://i.discogs.com.evil.com/x.jpg")}`,
+      ),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Invalid image source" });
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it("returns 429 when rate limited", async () => {
@@ -162,6 +176,24 @@ describe("GET /api/image-proxy", () => {
 
     expect(response.status).toBe(413);
     expect(body).toEqual({ error: "Image file too large" });
+  });
+
+  it("accepts cdn and path query params", async () => {
+    jest.mocked(global.fetch).mockResolvedValue(createFetchResponse());
+
+    const response = await GET(
+      createRequest("cdn=i&path=%2Fexample-cover.jpeg&w=200&h=200&q=80"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://i.discogs.com/example-cover.jpeg",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "User-Agent": expect.stringContaining("FilterMyDiscogs"),
+        }),
+      }),
+    );
   });
 
   it("returns optimized JPEG with cache headers on success", async () => {

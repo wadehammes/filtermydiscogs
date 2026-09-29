@@ -173,15 +173,15 @@ export function primeVerifiedIdentityCache(
   accessTokenSecret: string,
   identity: VerifiedDiscogsUser,
 ): void {
-  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
-  setCachedIdentity(cacheKey, identity);
+  const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
+  setCachedIdentity({ cacheKey, identity });
 }
 
 export function clearVerifiedIdentityCache(
   accessToken: string,
   accessTokenSecret: string,
 ): void {
-  clearCachedIdentity(getIdentityCacheKey(accessToken, accessTokenSecret));
+  clearCachedIdentity(getIdentityCacheKey({ accessToken, accessTokenSecret }));
 }
 
 async function fetchVerifiedIdentity(
@@ -189,8 +189,8 @@ async function fetchVerifiedIdentity(
   accessTokenSecret: string,
   allowStale = false,
 ): Promise<VerifiedDiscogsUser> {
-  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
-  const cached = getCachedIdentity(cacheKey, allowStale);
+  const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
+  const cached = getCachedIdentity({ cacheKey, allowStale });
   if (cached) {
     return {
       userId: cached.userId,
@@ -213,13 +213,16 @@ async function fetchVerifiedIdentity(
       accessTokenSecret,
     );
 
-    return setCachedIdentity(cacheKey, {
-      userId: identity.id,
-      username: identity.username,
+    return setCachedIdentity({
+      cacheKey,
+      identity: {
+        userId: identity.id,
+        username: identity.username,
+      },
     });
   })();
 
-  setInFlightIdentityRequest(cacheKey, requestPromise);
+  setInFlightIdentityRequest({ cacheKey, request: requestPromise });
 
   const identity = await requestPromise;
   return {
@@ -244,8 +247,8 @@ async function getVerifiedUserFromOAuthCookies(
     };
   }
 
-  const cacheKey = getIdentityCacheKey(accessToken, accessTokenSecret);
-  const cached = getCachedIdentity(cacheKey, allowStale);
+  const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
+  const cached = getCachedIdentity({ cacheKey, allowStale });
   if (cached) {
     return {
       user: {
@@ -273,7 +276,7 @@ async function getVerifiedUserFromOAuthCookies(
     const status = (error as Error & { status?: number }).status;
 
     if (status === 429) {
-      const stale = getCachedIdentity(cacheKey, true);
+      const stale = getCachedIdentity({ cacheKey, allowStale: true });
       if (stale) {
         return {
           user: {

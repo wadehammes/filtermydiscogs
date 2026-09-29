@@ -3,6 +3,10 @@ on:
   pull_request:
     branches:
       - staging
+
+permissions:
+  contents: read
+
 jobs:
   ci:
     name: Lint/Test

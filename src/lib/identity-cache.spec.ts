@@ -12,16 +12,34 @@ import {
 describe("identity-cache", () => {
   const token = "access-token";
   const secret = "access-secret";
-  const cacheKey = getIdentityCacheKey(token, secret);
+  const cacheKey = getIdentityCacheKey({
+    accessToken: token,
+    accessTokenSecret: secret,
+  });
+
+  it("derives a stable cache key from the OAuth token pair", () => {
+    expect(
+      getIdentityCacheKey({ accessToken: token, accessTokenSecret: secret }),
+    ).toBe(cacheKey);
+    expect(
+      getIdentityCacheKey({
+        accessToken: "other-token",
+        accessTokenSecret: secret,
+      }),
+    ).not.toBe(cacheKey);
+  });
 
   afterEach(() => {
     clearCachedIdentity(cacheKey);
   });
 
   it("returns fresh cached identity within TTL", () => {
-    setCachedIdentity(cacheKey, { userId: 42, username: "crate-digger" });
+    setCachedIdentity({
+      cacheKey,
+      identity: { userId: 42, username: "crate-digger" },
+    });
 
-    expect(getCachedIdentity(cacheKey)).toEqual({
+    expect(getCachedIdentity({ cacheKey })).toEqual({
       userId: 42,
       username: "crate-digger",
       verifiedAt: expect.any(Number),
@@ -29,14 +47,16 @@ describe("identity-cache", () => {
   });
 
   it("returns stale cached identity when allowed", () => {
-    const entry = setCachedIdentity(cacheKey, {
-      userId: 42,
-      username: "crate-digger",
+    const entry = setCachedIdentity({
+      cacheKey,
+      identity: { userId: 42, username: "crate-digger" },
     });
     entry.verifiedAt = Date.now() - 400_000;
 
-    expect(getCachedIdentity(cacheKey)).toBeNull();
-    expect(getCachedIdentity(cacheKey, true)?.username).toBe("crate-digger");
+    expect(getCachedIdentity({ cacheKey })).toBeNull();
+    expect(getCachedIdentity({ cacheKey, allowStale: true })?.username).toBe(
+      "crate-digger",
+    );
   });
 
   it("deduplicates in-flight identity requests by cache key", async () => {
@@ -45,7 +65,7 @@ describe("identity-cache", () => {
       resolveRequest = resolve;
     });
 
-    setInFlightIdentityRequest(cacheKey, request);
+    setInFlightIdentityRequest({ cacheKey, request });
 
     expect(getInFlightIdentityRequest(cacheKey)).toBe(request);
 

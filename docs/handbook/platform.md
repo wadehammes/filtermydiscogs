@@ -16,7 +16,7 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 8. **`pnpm knip:ci`**
 9. **Playwright** — cache **`~/.cache/ms-playwright`**, **`pnpm exec playwright install chromium --with-deps`**, then **`pnpm test:e2e:run`** (see [Playwright](#playwright-instant-navigation-tests))
 
-GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file).
+GitHub Actions are **pinned to commit SHAs** with version comments (see workflow file). **`ci.yml`** sets workflow **`permissions: contents: read`** (least privilege for checkout and tests only).
 
 Run the same locally before pushing when possible — with [mise](https://mise.jdx.dev/), prefer **`mise run ci`**.
 

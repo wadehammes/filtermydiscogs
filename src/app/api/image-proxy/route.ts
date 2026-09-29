@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import {
+  fetchDiscogsCdnImage,
+  MAX_DISCOGS_IMAGE_URL_LENGTH,
+  resolveImageProxyFetchTarget,
+} from "src/lib/discogs-image-proxy-url";
+import {
   checkIpRateLimit,
   IMAGE_PROXY_RATE_LIMIT_CONFIG,
 } from "src/lib/ip-rate-limit";
@@ -19,44 +24,35 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const imageUrl = searchParams.get("url");
+  const fetchTarget = resolveImageProxyFetchTarget(searchParams);
 
-  if (!imageUrl) {
-    return NextResponse.json({ error: "Missing image URL" }, { status: 400 });
-  }
+  if (!fetchTarget) {
+    const urlParam = searchParams.get("url");
+    if (urlParam && urlParam.length > MAX_DISCOGS_IMAGE_URL_LENGTH) {
+      return NextResponse.json(
+        { error: "Image URL too long" },
+        { status: 400 },
+      );
+    }
 
-  // Validate URL length to prevent extremely long URLs
-  if (imageUrl.length > 2048) {
-    return NextResponse.json({ error: "Image URL too long" }, { status: 400 });
+    if (!(urlParam || searchParams.get("path"))) {
+      return NextResponse.json({ error: "Missing image URL" }, { status: 400 });
+    }
+
+    return NextResponse.json(
+      { error: "Invalid image source" },
+      { status: 400 },
+    );
   }
 
   try {
-    // Validate image URL domain
-    if (
-      !(
-        imageUrl.startsWith("https://i.discogs.com/") ||
-        imageUrl.startsWith("https://img.discogs.com/")
-      )
-    ) {
-      return NextResponse.json(
-        { error: "Invalid image source" },
-        { status: 400 },
-      );
-    }
-
-    // Validate URL format
-    try {
-      new URL(imageUrl);
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid URL format" },
-        { status: 400 },
-      );
-    }
-
-    const response = await fetch(imageUrl, {
-      headers: {
-        "User-Agent": "FilterMyDiscogs/1.0 (https://filtermydiscogs.com)",
+    const response = await fetchDiscogsCdnImage({
+      cdn: fetchTarget.cdn,
+      path: fetchTarget.path,
+      init: {
+        headers: {
+          "User-Agent": "FilterMyDiscogs/1.0 (https://filtermydiscogs.com)",
+        },
       },
     });
 
