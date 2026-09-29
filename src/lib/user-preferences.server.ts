@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { JsonValue } from "src/lib/db";
 import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
@@ -34,17 +34,19 @@ export const defaultUserPreferences = (): UserPreferences => ({
   filterViews: [],
 });
 
-const isJsonObject = (value: Prisma.JsonValue): value is Prisma.JsonObject =>
+type JsonObject = { [key: string]: JsonValue };
+
+const isJsonObject = (value: JsonValue): value is JsonObject =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 export { isValidStoredTheme };
 
 export const isValidStoredViewPatch = (
-  value: Prisma.JsonValue | StoredViewState,
+  value: JsonValue | StoredViewState,
 ): value is StoredViewState =>
   isJsonObject(value) && isValidViewState(value as ViewState);
 
-const parseViewPreference = (value: Prisma.JsonValue): StoredViewState => {
+const parseViewPreference = (value: JsonValue): StoredViewState => {
   if (!isValidStoredViewPatch(value)) {
     return defaultViewPreference;
   }
@@ -53,12 +55,12 @@ const parseViewPreference = (value: Prisma.JsonValue): StoredViewState => {
 };
 
 const parseBooleanField = (
-  value: Prisma.JsonValue | undefined,
+  value: JsonValue | undefined,
   fallback: boolean,
 ): boolean => (typeof value === "boolean" ? value : fallback);
 
 const parseThemeField = (
-  value: Prisma.JsonValue | undefined,
+  value: JsonValue | undefined,
   fallback: StoredTheme,
 ): StoredTheme => {
   if (value === undefined) {
@@ -69,7 +71,7 @@ const parseThemeField = (
 };
 
 export const parseUserPreferences = (
-  storedPreferences: Prisma.JsonValue | UserPreferencesJson,
+  storedPreferences: JsonValue | UserPreferencesJson,
 ): UserPreferences => {
   if (!isJsonObject(storedPreferences)) {
     return defaultUserPreferences();

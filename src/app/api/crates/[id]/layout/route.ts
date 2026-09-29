@@ -17,7 +17,7 @@ import {
   mapCrateReleaseRow,
   mapCrateSetMarkerRow,
 } from "src/lib/crate-release-mapper";
-import { prisma } from "src/lib/db";
+import { db, orm } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { parseCrateLayoutPutRequest } from "src/lib/validation/crate.schemas";
 
@@ -53,15 +53,9 @@ export async function PUT(
       return privateRouteJson({ error: parsedRequest.error }, { status: 400 });
     }
 
-    const crate = await prisma.crate.findUnique({
-      where: {
-        user_id_id: {
-          user_id: userIdNum,
-          id: crateId,
-        },
-      },
-      select: { id: true },
-    });
+    const crate = await orm.Crates.where({ userId: userIdNum, id: crateId })
+      .select("id")
+      .first();
 
     if (!crate) {
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
@@ -78,17 +72,12 @@ export async function PUT(
     }
 
     const layoutWhere = {
-      user_id: userIdNum,
-      crate_id: crateId,
+      userId: userIdNum,
+      crateId,
     };
 
     const [crateReleases, existingMarkers] = await Promise.all([
-      prisma.crateRelease.findMany({
-        where: layoutWhere,
-        select: {
-          instance_id: true,
-        },
-      }),
+      orm.CrateReleases.where(layoutWhere).select("instanceId").all(),
       findCrateSetMarkersForLayout({
         where: layoutWhere,
       }),
@@ -96,7 +85,7 @@ export async function PUT(
 
     const layoutUpdate = buildCrateLayoutUpdate({
       items: parsedRequest.data.items,
-      crateInstanceIds: new Set(crateReleases.map((row) => row.instance_id)),
+      crateInstanceIds: new Set(crateReleases.map((row) => row.instanceId)),
       existingMarkerIds: new Set(existingMarkers.map((row) => row.id)),
     });
 
@@ -104,7 +93,7 @@ export async function PUT(
       return privateRouteJson({ error: layoutUpdate.error }, { status: 400 });
     }
 
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await applyCrateLayoutUpdate({
         tx,
         userId: userIdNum,

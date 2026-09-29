@@ -1,6 +1,6 @@
 import { cacheLife } from "next/cache";
 import { isValidCrateId } from "src/lib/crate-id";
-import { prisma } from "src/lib/db";
+import { countRows, orm } from "src/lib/db";
 import {
   findPublicCrateById,
   findPublicCrateSummaryById,
@@ -13,12 +13,11 @@ async function listRecentPublicCrateIds(limit: number): Promise<string[]> {
   "use cache";
   cacheLife({ revalidate: 300 });
 
-  const crates = await prisma.crate.findMany({
-    where: { private: false },
-    select: { id: true },
-    orderBy: { updated_at: "desc" },
-    take: limit,
-  });
+  const crates = await orm.Crates.where({ private: false })
+    .select("id")
+    .orderBy((crate) => crate.updatedAt.desc())
+    .limit(limit)
+    .all();
 
   return crates.map((crate) => crate.id);
 }
@@ -66,12 +65,13 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
       return null;
     }
 
-    const total = await prisma.crateRelease.count({
-      where: {
-        crate_id: crate.id,
-        user_id: crate.user_id,
-      },
-    });
+    const total = await countRows(
+      orm.CrateReleases.where({
+        crateId: crate.id,
+        userId: crate.userId,
+      }),
+    );
+
     return {
       crate: { name: crate.name, username: crate.username },
       pagination: { total },

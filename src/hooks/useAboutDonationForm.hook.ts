@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { createDonateCheckoutSession } from "src/api/endpoints/donate";
@@ -13,6 +12,7 @@ import {
   donateCheckoutFormSchema,
   parseCustomDonationDollarsToCents,
 } from "src/lib/validation/donate.schemas";
+import { zodFormResolver } from "src/lib/validation/zodFormResolver";
 import { toast } from "src/utils/toast";
 
 export const useAboutDonationForm = () => {
@@ -25,7 +25,7 @@ export const useAboutDonationForm = () => {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<DonateCheckoutFormValues>({
-    resolver: zodResolver(donateCheckoutFormSchema),
+    resolver: zodFormResolver(donateCheckoutFormSchema),
     defaultValues: {
       amountCents: DONATION_PRESET_AMOUNTS_CENTS[0],
       customAmountDollars: "",

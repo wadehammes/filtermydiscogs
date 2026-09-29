@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import type { Prisma } from "@prisma/client";
 import {
   CRATE_LAYOUT_SORT_STEP,
   CRATE_TEMP_MARKER_PREFIX,
@@ -9,6 +8,7 @@ import {
   resolveCrateLayoutSectionIds,
   validateCrateLayoutSectionStructure,
 } from "src/lib/crate-section-layout";
+import { type DbTransaction, ormTimestamp } from "src/lib/db";
 import type {
   CrateLayoutItem,
   CrateLayoutPutItem,
@@ -166,61 +166,53 @@ export const applyCrateLayoutUpdate = async ({
   crateId,
   update,
 }: {
-  tx: Prisma.TransactionClient;
+  tx: DbTransaction;
   userId: number;
   crateId: string;
   update: ParsedCrateLayoutUpdate;
 }) => {
+  const txOrm = tx.orm.public;
+
   for (const releaseOrder of update.releaseOrders) {
-    await tx.crateRelease.update({
-      where: {
-        user_id_crate_id_instance_id: {
-          user_id: userId,
-          crate_id: crateId,
-          instance_id: releaseOrder.instance_id,
-        },
-      },
-      data: {
-        sort_order: releaseOrder.sort_order,
-        section_id: releaseOrder.section_id,
-      },
+    await txOrm.CrateReleases.where({
+      userId,
+      crateId,
+      instanceId: releaseOrder.instance_id,
+    }).update({
+      sortOrder: releaseOrder.sort_order,
+      sectionId: releaseOrder.section_id,
     });
   }
 
-  await tx.crateSetMarker.deleteMany({
-    where: {
-      user_id: userId,
-      crate_id: crateId,
-      ...(update.markerIdsToKeep.length > 0
-        ? { id: { notIn: update.markerIdsToKeep } }
-        : {}),
-    },
-  });
+  let markerDeleteQuery = txOrm.CrateSetMarkers.where({ userId, crateId });
+  if (update.markerIdsToKeep.length > 0) {
+    markerDeleteQuery = markerDeleteQuery.where((m) =>
+      m.id.notIn(update.markerIdsToKeep),
+    );
+  }
+  await markerDeleteQuery.deleteAndCount();
 
   for (const marker of update.markersToUpsert) {
-    await tx.crateSetMarker.upsert({
-      where: {
-        user_id_crate_id_id: {
-          user_id: userId,
-          crate_id: crateId,
-          id: marker.id,
-        },
-      },
+    const now = ormTimestamp(new Date());
+    await txOrm.CrateSetMarkers.upsert({
       create: {
-        user_id: userId,
-        crate_id: crateId,
+        userId,
+        crateId,
         id: marker.id,
         label: marker.label,
-        sort_order: marker.sort_order,
-        parent_id: marker.parent_id,
-        accent_key: marker.accent_key,
+        sortOrder: marker.sort_order,
+        parentId: marker.parent_id,
+        accentKey: marker.accent_key,
+        updatedAt: now,
       },
       update: {
         label: marker.label,
-        sort_order: marker.sort_order,
-        parent_id: marker.parent_id,
-        accent_key: marker.accent_key,
+        sortOrder: marker.sort_order,
+        parentId: marker.parent_id,
+        accentKey: marker.accent_key,
+        updatedAt: now,
       },
+      conflictOn: { userId, crateId, id: marker.id },
     });
   }
 };
@@ -232,22 +224,22 @@ export const getPrependCrateLayoutSortOrderForCrate = async ({
 }: {
   userId: number;
   crateId: string;
-  tx: Prisma.TransactionClient;
+  tx: DbTransaction;
 }): Promise<number> => {
+  const txOrm = tx.orm.public;
+
   const [releaseAgg, markerAgg] = await Promise.all([
-    tx.crateRelease.aggregate({
-      where: { user_id: userId, crate_id: crateId },
-      _min: { sort_order: true },
-    }),
-    tx.crateSetMarker.aggregate({
-      where: { user_id: userId, crate_id: crateId },
-      _min: { sort_order: true },
-    }),
+    txOrm.CrateReleases.where({ userId, crateId }).aggregate((agg) => ({
+      minSortOrder: agg.min("sortOrder"),
+    })),
+    txOrm.CrateSetMarkers.where({ userId, crateId }).aggregate((agg) => ({
+      minSortOrder: agg.min("sortOrder"),
+    })),
   ]);
 
   const existingSortOrders = [
-    releaseAgg._min.sort_order,
-    markerAgg._min.sort_order,
+    releaseAgg.minSortOrder,
+    markerAgg.minSortOrder,
   ].filter((sortOrder): sortOrder is number => sortOrder != null);
 
   return getPrependCrateLayoutSortOrder(existingSortOrders);
