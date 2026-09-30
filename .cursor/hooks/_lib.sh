@@ -80,6 +80,24 @@ handbook_chapters_for_path() {
     docs/handbook/*)
       return 0
       ;;
+    .jest/*)
+      chapters+=("conventions.md" "platform.md")
+      ;;
+    jest.config.ts | jest.config.js | jest.config.mjs)
+      chapters+=("platform.md" "conventions.md")
+      ;;
+    e2e/*)
+      chapters+=("platform.md" "conventions.md")
+      ;;
+    playwright.config.ts)
+      chapters+=("platform.md")
+      ;;
+    next.config.ts | next.config.js | next.config.mjs)
+      chapters+=("platform.md")
+      ;;
+    src/tests/msw/*)
+      chapters+=("conventions.md" "platform.md" "factories.md")
+      ;;
     src/tests/factories/*)
       chapters+=("factories.md")
       ;;

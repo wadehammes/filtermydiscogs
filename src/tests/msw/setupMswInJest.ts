@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach } from "@jest/globals";
 import fetchMock from "jest-fetch-mock";
 import { mswServer } from "src/tests/msw/server";
+import { patchFetchForRelativeUrls } from "../../../.jest/patchFetchForRelativeUrls";
 
 let fetchRecorderInstalled = false;
 let lifecycleRegistered = false;
@@ -15,13 +16,24 @@ export function setupMswInJest() {
 
   beforeAll(() => {
     fetchMock.disableMocks();
+    patchFetchForRelativeUrls();
     mswServer.listen({
-      onUnhandledRequest: "error",
+      onUnhandledFrame: "error",
     });
 
     if (!fetchRecorderInstalled) {
-      mswServer.events.on("request:start", ({ request }) => {
-        capturedRequests.push(request.clone());
+      mswServer.events.on("request:start", (event) => {
+        const request = event.request;
+        try {
+          capturedRequests.push(request.clone());
+        } catch {
+          capturedRequests.push(
+            new Request(request.url, {
+              method: request.method,
+              headers: request.headers,
+            }),
+          );
+        }
       });
       fetchRecorderInstalled = true;
     }

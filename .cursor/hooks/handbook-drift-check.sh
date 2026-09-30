@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# stop: if the session changed code under src/ but touched no handbook chapter,
+# stop: if the session changed src/ or test infra but touched no handbook chapter,
 # and/or changed product/setup surfaces without README.md, follow up once.
 # loop_count prevents repeat loops.
 
@@ -19,7 +19,7 @@ root="$(printf '%s' "$input" | jq -r '.cwd // empty')"
 
 changed="$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } 2>/dev/null || true)"
 
-code_changed="$(printf '%s\n' "$changed" | grep -E '^src/.*\.(ts|tsx|css)$' || true)"
+code_changed="$(printf '%s\n' "$changed" | grep -E '^src/.*\.(ts|tsx|css)$|^\.jest/|^jest\.config\.(ts|js|mjs)$|^e2e/.*\.(ts|tsx)$|^playwright\.config\.ts$|^next\.config\.(ts|js|mjs)$' || true)"
 docs_changed="$(printf '%s\n' "$changed" | grep -E '^docs/handbook/.*\.md$' || true)"
 
 readme_relevant="$(printf '%s\n' "$changed" | grep -E '^src/app(/.*)?/page\.tsx$|^src/components/Login/|^src/constants/loginPageCopy\.registry\.ts$|^src/components/Login/loginFeatures\.constants\.ts$|^src/tests/utils/loginPageCopyLiteraryRules\.ts$|^mise\.toml$|^\.tool-versions$|^package\.json$|^docs/handbook/platform\.md$' || true)"

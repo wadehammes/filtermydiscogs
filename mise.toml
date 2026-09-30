@@ -18,7 +18,20 @@ run = [
   "pnpm tsc:ci",
   "pnpm lint:ci",
   "pnpm lint:css",
+  "pnpm handbook:check",
   "pnpm test:ci",
   "pnpm knip:ci",
   "pnpm test:e2e:ci",
+]
+
+[tasks.lint-all]
+description = "Biome (changed vs staging), Stylelint fix, tsc:ci, Knip"
+run = "pnpm lint:all"
+
+[tasks.pr-prep]
+description = "Pre-PR: lint:all, handbook sync vs staging, Fallow audit (changed files)"
+run = [
+  "pnpm lint:all",
+  "pnpm handbook:check",
+  "pnpm fallow:audit",
 ]

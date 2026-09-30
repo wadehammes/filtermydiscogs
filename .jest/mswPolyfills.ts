@@ -3,6 +3,12 @@ import {
   TransformStream,
   WritableStream,
 } from "node:stream/web";
+import { setImmediate as nodeSetImmediate } from "node:timers";
+import { patchFetchForRelativeUrls } from "./patchFetchForRelativeUrls";
+
+if (typeof globalThis.setImmediate === "undefined") {
+  globalThis.setImmediate = nodeSetImmediate as typeof setImmediate;
+}
 
 export function ensureResponseErrorPolyfill(): void {
   if (typeof Response === "undefined") {
@@ -57,3 +63,5 @@ if (typeof globalThis.BroadcastChannel === "undefined") {
   globalThis.BroadcastChannel =
     BroadcastChannelPolyfill as typeof globalThis.BroadcastChannel;
 }
+
+patchFetchForRelativeUrls();
