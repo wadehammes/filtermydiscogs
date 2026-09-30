@@ -7,6 +7,7 @@ import { ReleaseSimilarSidebar } from "src/components/ReleaseSimilarSidebar/Rele
 import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
 import { ReleaseSummaryHeroToolbar } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component";
 import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
+import { DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { definedProps } from "src/utils/definedProps";
 import type { ReleaseModalProps } from "./ReleaseModal.types";
@@ -24,7 +25,7 @@ export const ReleaseModal = ({
     useSimilarReleasesInCollection(release, isOpen);
   const showSimilarSection =
     canHaveSimilar && (isSimilarLoading || similarReleases.length > 0);
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isDesktop = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY);
   const showAsideSimilar = showSimilarSection && isDesktop;
   const showInlineSimilar = showSimilarSection && !isDesktop;
 

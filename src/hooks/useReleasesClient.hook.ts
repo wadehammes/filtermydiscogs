@@ -27,6 +27,7 @@ import {
   useStyleOperator,
   useYearOperator,
 } from "src/hooks/useFilterAtoms.hook";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleasesDisplay } from "src/hooks/useReleasesDisplay.hook";
 import {
@@ -71,7 +72,7 @@ export const useReleasesClient = ({
   const styleOperator = useStyleOperator();
   const formatOperator = useFormatOperator();
   const yearOperator = useYearOperator();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
 
   const { isLoading, hasNextPage, isFetchingNextPage } =
     useCollectionLoadState();

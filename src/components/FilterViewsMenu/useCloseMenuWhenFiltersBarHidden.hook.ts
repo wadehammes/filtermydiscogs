@@ -1,7 +1,6 @@
 import { useEffect } from "react";
+import { DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-
-export const FILTERS_BAR_MEDIA_QUERY = "(min-width: 1024px)";
 
 export const useCloseMenuWhenFiltersBarHidden = ({
   variant,
@@ -12,7 +11,7 @@ export const useCloseMenuWhenFiltersBarHidden = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const isFiltersBarVisible = useMediaQuery(FILTERS_BAR_MEDIA_QUERY);
+  const isFiltersBarVisible = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY);
 
   useEffect(() => {
     if (variant === "bar" && !isFiltersBarVisible && isOpen) {

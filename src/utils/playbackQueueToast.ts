@@ -1,13 +1,13 @@
 import { type ToastPosition, toast } from "src/utils/toast";
 
-const PLAYBACK_QUEUE_TOAST_MOBILE_QUERY = "(max-width: 768px)";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 
 export const getPlaybackQueueToastPosition = (): ToastPosition => {
   if (typeof window === "undefined") {
     return "bottom-center";
   }
 
-  return window.matchMedia(PLAYBACK_QUEUE_TOAST_MOBILE_QUERY).matches
+  return window.matchMedia(COMPACT_LAYOUT_MEDIA_QUERY).matches
     ? "top-center"
     : "bottom-center";
 };

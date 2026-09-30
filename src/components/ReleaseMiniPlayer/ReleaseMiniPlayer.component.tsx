@@ -12,6 +12,7 @@ import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import { definedProps } from "src/utils/definedProps";
@@ -51,7 +52,7 @@ export const ReleaseMiniPlayer = ({
     queue,
     resumePlaybackFromGesture,
   } = useReleasePlayback();
-  const isMobileLayout = useMediaQuery("(max-width: 768px)");
+  const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
   const filtersDrawerOpen = useFiltersDrawerOpen();
   const crateDrawerOpen = useCrateDrawerOpen();
   const [isQueueOpen, setIsQueueOpen] = useState(false);

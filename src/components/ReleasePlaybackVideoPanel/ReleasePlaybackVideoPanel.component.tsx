@@ -8,6 +8,7 @@ import {
   ReleasePlaybackVideoPanelResizeHandle,
 } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanelResizeHandle.component";
 import { useDraggablePanel } from "src/hooks/useDraggablePanel.hook";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { VIDEO_PANEL_LAYOUT_STORAGE_KEY } from "src/utils/videoPanelLayoutStorage";
 import styles from "./ReleasePlaybackVideoPanel.module.css";
@@ -25,7 +26,7 @@ export const ReleasePlaybackVideoPanel = ({
   onClose,
   children,
 }: ReleasePlaybackVideoPanelProps) => {
-  const isMobileLayout = useMediaQuery("(max-width: 768px)");
+  const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
   const {
     panelRef,
     position,
