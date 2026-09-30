@@ -4,14 +4,20 @@
   grid-template-columns: 1fr;
   padding: 0 var(--space-4) var(--space-4);
   width: 100%;
+}
 
-  @media (width > 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+@container releases-main (min-width: 620px) {
+  .releasesGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+    &[data-fixed-lanes] {
+      grid-template-columns: repeat(var(--grid-lane-count), minmax(0, 20rem));
+    }
   }
 
-  &[data-fixed-lanes] {
-    @media (width > 768px) {
-      grid-template-columns: repeat(var(--grid-lane-count), minmax(0, 20rem));
+  .releaseItem {
+    &:only-child {
+      max-width: 20rem;
     }
   }
 }
@@ -21,12 +27,6 @@
   overflow: visible;
   scroll-margin-top: var(--space-4);
   width: 100%;
-
-  @media (width > 768px) {
-    &:only-child {
-      max-width: 20rem;
-    }
-  }
 }
 
 .loadingContainer {

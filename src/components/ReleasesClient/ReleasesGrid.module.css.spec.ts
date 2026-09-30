@@ -8,18 +8,19 @@ const CSS_PATH = join(
 );
 
 describe("ReleasesGrid.module.css", () => {
-  it("uses responsive auto-fill grid columns on desktop", () => {
+  it("uses container queries on the releases main column for multi-column grid", () => {
     const css = readFileSync(CSS_PATH, "utf8");
 
+    expect(css).toContain("@container releases-main (min-width: 620px)");
     expect(css).toContain(
-      "grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))",
+      "grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))",
     );
     expect(css).toContain("&[data-fixed-lanes]");
     expect(css).toContain("var(--grid-lane-count)");
     expect(css).toContain("minmax(0, 20rem)");
   });
 
-  it("caps a lone grid item width on desktop", () => {
+  it("caps a lone grid item width when the main column is wide enough", () => {
     const css = readFileSync(CSS_PATH, "utf8");
 
     expect(css).toContain("&:only-child");
