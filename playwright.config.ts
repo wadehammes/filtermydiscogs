@@ -33,10 +33,7 @@ export default defineConfig({
       name: "tablet",
       use: {
         ...devices["Desktop Chrome"],
-        viewport: {
-          width: 834,
-          height: RESPONSIVE_VIEWPORT_PRESETS.tabletPortrait.height,
-        },
+        viewport: RESPONSIVE_VIEWPORT_PRESETS.tabletPortrait,
       },
     },
   ],
