@@ -292,7 +292,7 @@ Before you touch production code for a new behavior, regression fix, or extracte
 
 | Layer | Spec location | Notes |
 |-------|---------------|--------|
-| Pure util / helper | `src/utils/*.spec.ts` | No mocks; run the real function. |
+| Pure util / helper | `src/utils/*.spec.ts` | No mocks; run the real function. One flat **`describe`** per file (e.g. [`milestones.spec.ts`](../../src/utils/milestones.spec.ts) — module helpers + **`releaseFactory`** overrides for deterministic **`date_added`** / **`instance_id`**). |
 | Route / auth path helpers; layout query constants | `src/constants/*.spec.ts` | One flat **`describe`**; pathname predicates (e.g. [`protectedRoutes.spec.ts`](../../src/constants/protectedRoutes.spec.ts)) or layout contracts (e.g. [`layoutMediaQueries.spec.ts`](../../src/constants/layoutMediaQueries.spec.ts) — **`layoutMatchesMediaQueryAtWidth`**, preset widths vs **`LAYOUT_BREAKPOINT_*`**). |
 | Crate layout / section lib | `src/lib/crate-layout*.spec.ts`, `src/lib/crate-section-layout.spec.ts`, `src/lib/crate-layout.server.spec.ts` | One flat **`describe`** per file; use **`crateLayoutItemFactory`** ([factories.md](factories.md)); edge regressions in **`crate-layout.edge-cases.spec.ts`** (e.g. **`layout-insert:0`** with no groups); PUT payload parsing in **`buildCrateLayoutUpdate`** via **`crate-layout.server.spec.ts`**; edge-mount top insert DnD in **`CrateLayoutList.spec.tsx`**. |
 | API route / server | `src/app/api/**/route.spec.ts` | Assert status, JSON shape, auth. |

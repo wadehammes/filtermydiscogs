@@ -54,6 +54,20 @@ export const sortMilestonesChronologically = (
     (a, b) => getMilestoneSortTimestamp(a) - getMilestoneSortTimestamp(b),
   );
 
+export const compareDiscogsReleasesByDateAdded = (
+  a: DiscogsRelease,
+  b: DiscogsRelease,
+): number => {
+  const timeA = new Date(a.date_added).getTime();
+  const timeB = new Date(b.date_added).getTime();
+
+  if (timeA !== timeB) {
+    return timeA - timeB;
+  }
+
+  return String(a.instance_id).localeCompare(String(b.instance_id));
+};
+
 export function calculateMilestones(
   releases: DiscogsRelease[],
 ): CollectionMilestone[] {
@@ -63,10 +77,7 @@ export function calculateMilestones(
 
   const milestones: CollectionMilestone[] = [];
 
-  const sortedByDate = [...releases].sort(
-    (a, b) =>
-      new Date(a.date_added).getTime() - new Date(b.date_added).getTime(),
-  );
+  const sortedByDate = [...releases].sort(compareDiscogsReleasesByDateAdded);
 
   const firstRelease = sortedByDate[0];
   if (firstRelease) {
