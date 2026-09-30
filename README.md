@@ -32,7 +32,8 @@ With mise:
 ```bash
 mise trust          # once per clone, if prompted
 mise bootstrap      # tools + pnpm install + Prisma generate
-mise run ci         # same quality gates as GitHub Actions
+mise run ci         # same quality gates as GitHub Actions (incl. handbook sync vs staging)
+mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + fallow:audit
 ```
 
 **Zed:** open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies (workspace TypeScript 6 language service + CSS Modules **`composes`** hints). Reload after **`pnpm install`**.
@@ -132,7 +133,7 @@ The app will be available at `http://localhost:6767`.
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod
-- **Tooling**: pnpm, mise, Biome, Stylelint, Jest + Testing Library, Playwright, Knip
+- **Tooling**: pnpm, mise, Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library + MSW 3, Playwright, Knip
 - **Analytics**: Google Tag Manager (consent-aware)
 
 ## Development
@@ -141,7 +142,13 @@ The app will be available at `http://localhost:6767`.
 pnpm dev              # http://localhost:6767 (Turbopack)
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
-mise run ci           # tsc + lint + CSS lint + Jest + Playwright + knip (matches Actions)
+mise run ci           # matches Actions: tsc, lint, CSS lint, handbook sync, Jest, Knip, Playwright
+mise run pr-prep      # lint:all + handbook:check + fallow:audit (before opening a PR)
+mise run lint-all     # pnpm lint:all
+
+pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip
+pnpm handbook:check   # fail if src/ or test infra changed without docs/handbook/*.md
+
 pnpm test             # Jest (--runInBand --detectOpenHandles; CI uses parallel workers via pnpm test:ci)
 pnpm test:file        # Jest watch for one file
 pnpm test:e2e         # Playwright (run pnpm test:e2e:install once)

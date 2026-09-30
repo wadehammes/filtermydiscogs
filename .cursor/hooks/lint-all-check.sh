@@ -19,7 +19,7 @@ changed="$( {
   git ls-files --others --exclude-standard 2>/dev/null
 } | sort -u)"
 
-meaningful_changed="$(printf '%s\n' "$changed" | grep -E '^src/.*\.(ts|tsx|css)$|^prisma/|^package\.json$|^pnpm-lock\.yaml$|^next\.config\.(ts|js|mjs)$' || true)"
+meaningful_changed="$(printf '%s\n' "$changed" | grep -E '^src/.*\.(ts|tsx|css)$|^\.jest/|^jest\.config\.(ts|js|mjs)$|^e2e/.*\.(ts|tsx)$|^playwright\.config\.ts$|^prisma/|^package\.json$|^pnpm-lock\.yaml$|^next\.config\.(ts|js|mjs)$' || true)"
 
 if [ -z "$meaningful_changed" ]; then
   exit 0

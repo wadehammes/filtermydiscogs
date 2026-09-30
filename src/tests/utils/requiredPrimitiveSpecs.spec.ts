@@ -10,6 +10,7 @@ const REQUIRED_PRIMITIVE_SPECS = [
   "src/components/ReleasesClient/ReleasesGrid.module.css.spec.ts",
   "src/utils/themeAppearance.spec.ts",
   "src/utils/themeInitGeneration.spec.ts",
+  "src/tests/utils/mswInfraContract.spec.ts",
 ] as const;
 
 describe("requiredPrimitiveSpecs", () => {

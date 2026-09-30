@@ -134,10 +134,15 @@ const nextConfig: NextConfig = {
     "@tanstack/charts-scales",
     "@tanstack/react-charts",
     "msw",
+    "tough-cookie",
+    "headers-polyfill",
+    "cookie",
+    "@msw/url",
     "@mswjs/interceptors",
     "rettime",
     "until-async",
     "@open-draft/deferred-promise",
+    "@open-draft/until",
   ],
   logging: {
     fetches: {

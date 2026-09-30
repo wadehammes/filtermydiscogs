@@ -34,7 +34,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | `enforce-factory-location.sh` | `preToolUse` (`Write`) | Denies `*.factory.ts` outside `src/tests/factories/`. |
 | `handbook-sync-nudge.sh` | *(off)* | Per-edit docs/skills reminder — **not wired** in `hooks.json` (too noisy during coding). Script kept for optional re-enable. |
 | `check-css-nesting.sh` | `postToolUse` | Advisory when CSS nests selectors 4+ levels deep. |
-| `handbook-drift-check.sh` | `stop` | One follow-up if `src/` changed without a handbook update and/or product/setup surfaces changed without **README.md**. Suggests chapter filenames from changed paths; requires explicit verification or doc edits (see script). |
+| `handbook-drift-check.sh` | `stop` | One follow-up if **`src/`** or test infra ( **`.jest/`**, **`jest.config.ts`**, **`e2e/`**, **`playwright.config.ts`**, **`next.config.ts`**) changed without a handbook update and/or product/setup surfaces changed without **README.md**. Suggests chapter filenames from changed paths; requires explicit verification or doc edits (see script). CI mirror: [`scripts/handbook-sync-check.sh`](../../scripts/handbook-sync-check.sh). |
 | `terms-and-privacy-drift-check.sh` | `stop` | One follow-up if storage/data-management code changed without an About/Legal update. |
 | `block-login-page-copy-violations.sh` | `preToolUse` | Denies login landing copy edits that add em dashes, embellishment, or banned inaccurate phrases. |
 | `block-query-hook-mocks.sh` | `preToolUse` | Denies specs under `src/hooks/queries/` or `src/hooks/mutations/`, and feature-test edits that mock those hooks instead of `src/api/urls`. |
@@ -48,7 +48,7 @@ Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `
 | Path | Role |
 |------|------|
 | [`.cursor/skills/README.md`](../skills/README.md) | Task skills index (handbook routing, API, tests, factories, feature verticals, `st`, Fallow). |
-| [`.cursor/rules/`](../rules/) | Glob rules: CSS modules, API routes, hook/component specs (+ always-on handbook rule). |
+| [`.cursor/rules/`](../rules/) | Glob rules: CSS modules, API routes, hook/component specs, MSW/Jest infra (+ always-on handbook rule). |
 | [`.zed/settings.json`](../../.zed/settings.json) | Zed: vtsls **`tsdk`** + CSS Modules **`composes`** custom data (team editor; not Cursor). |
 
 ### Optional scripts (not wired)

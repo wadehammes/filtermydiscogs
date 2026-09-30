@@ -1,6 +1,7 @@
 import { defineNetworkFixture, type NetworkFixture } from "@msw/playwright";
 import { test as base, expect } from "@playwright/test";
-import type { RequestHandler } from "msw";
+import type { RequestHandler, UnhandledFrameHandle } from "msw";
+import { HttpNetworkFrame } from "msw/experimental";
 import { createAuthenticatedE2eHandlers } from "src/tests/msw/createAuthenticatedE2eHandlers";
 import { installClearClientStorage } from "../helpers/clearClientStorage";
 
@@ -9,15 +10,19 @@ type MswFixtures = {
   network: NetworkFixture;
 };
 
-function onUnhandledApiRequest(request: Request, print: { error: () => void }) {
-  const { pathname } = new URL(request.url);
+const onUnhandledApiFrame: UnhandledFrameHandle = ({ frame, defaults }) => {
+  if (!(frame instanceof HttpNetworkFrame)) {
+    return;
+  }
+
+  const { pathname } = new URL(frame.data.request.url);
 
   if (!pathname.startsWith("/api/")) {
     return;
   }
 
-  print.error();
-}
+  defaults.error();
+};
 
 export const test = base.extend<MswFixtures>({
   context: async ({ context }, use) => {
@@ -30,7 +35,7 @@ export const test = base.extend<MswFixtures>({
       const network = defineNetworkFixture({
         context,
         handlers,
-        onUnhandledRequest: onUnhandledApiRequest,
+        onUnhandledFrame: onUnhandledApiFrame,
       });
 
       await network.enable();

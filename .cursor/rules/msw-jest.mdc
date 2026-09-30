@@ -1,0 +1,17 @@
+---
+description: MSW 3, Jest env, and Playwright network fixture conventions
+globs: "src/tests/msw/**,.jest/**,e2e/fixtures/**,jest.config.ts"
+alwaysApply: false
+---
+
+# MSW and Jest / Playwright test infra
+
+Read [conventions.md → Jest notes (MSW)](../../docs/handbook/conventions.md) and [platform.md → Jest / Playwright](../../docs/handbook/platform.md).
+
+- **MSW 3 API:** **`server.listen({ onUnhandledFrame: 'error' })`** in Jest — not **`onUnhandledRequest`**. Playwright **`defineNetworkFixture`** uses **`onUnhandledFrame`** ([`e2e/fixtures/msw.fixture.ts`](../../e2e/fixtures/msw.fixture.ts)).
+- **Jest environment:** **`jest-fixed-jsdom`** in [`jest.config.ts`](../../jest.config.ts) — not plain **`jest-environment-jsdom`** (MSW 3 needs Node **`fetch`** / **`Response`** streams).
+- **Relative `/api/*` URLs:** [`.jest/patchFetchForRelativeUrls.ts`](../../.jest/patchFetchForRelativeUrls.ts) + [`.jest/mswPolyfills.ts`](../../.jest/mswPolyfills.ts).
+- **ESM deps:** add new MSW-related packages to **`transpilePackages`** in [`next.config.ts`](../../next.config.ts) and Jest **`transformIgnorePatterns`** ([`jest.config.ts`](../../jest.config.ts)).
+- **Scope:** MSW mocks **`fetch`** only in **`src/api/helpers.spec.ts`** and **`src/api/endpoints/*.spec.ts`**; UI specs mock **`api.*`**. E2E uses shared handlers from **`src/tests/msw/handlers/`**.
+- **Worker file:** regenerate with **`pnpm exec msw init public/`** when upgrading MSW major versions.
+- **Contract:** keep [`mswInfraContract.spec.ts`](../../src/tests/utils/mswInfraContract.spec.ts) green; update handbook in the same PR when infra behavior changes.

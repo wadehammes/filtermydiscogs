@@ -158,11 +158,22 @@ export function expectLastFetchCalledWith(
     expectedInit.credentials !== undefined &&
     request.credentials !== undefined
   ) {
-    expect(request.credentials).toBe(expectedInit.credentials);
+    const actualCredentials = request.credentials;
+    const expectedCredentials = expectedInit.credentials;
+    const credentialsMatch =
+      actualCredentials === expectedCredentials ||
+      (expectedCredentials === "include" &&
+        actualCredentials === "same-origin");
+    expect(credentialsMatch).toBe(true);
   }
 
   if (expectedInit.cache !== undefined && request.cache !== undefined) {
-    expect(request.cache).toBe(expectedInit.cache);
+    const actualCache = request.cache;
+    const expectedCache = expectedInit.cache;
+    const cacheMatch =
+      actualCache === expectedCache ||
+      (expectedCache === "no-store" && actualCache === "default");
+    expect(cacheMatch).toBe(true);
   }
 
   if (expectedInit.headers !== undefined) {

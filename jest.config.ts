@@ -8,17 +8,18 @@ const customJestConfig: Config.InitialOptions = {
     "<rootDir>/.jest/mswPolyfills.ts",
   ],
   setupFilesAfterEnv: [
+    "<rootDir>/.jest/patchFetchForRelativeUrls.ts",
     "<rootDir>/.jest/setupTests.ts",
     "<rootDir>/.jest/setupMswForApiSpecs.ts",
   ],
-  testEnvironment: "jest-environment-jsdom",
+  testEnvironment: "jest-fixed-jsdom",
   testPathIgnorePatterns: [
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
     "<rootDir>/e2e/",
   ],
   transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|jotai|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape|msw|@mswjs|rettime|until-async|outvariant|is-node-process|strict-event-emitter)",
+    "<rootDir>/node_modules/(?!\\.pnpm/)(?!jest-dom|@svgr|@faker-js/faker|jotai|@tanstack/react-table|@tanstack/table-core|@tanstack/charts|@tanstack/charts-scales|@tanstack/react-charts|d3-shape|msw|@msw|@mswjs|rettime|until-async|outvariant|is-node-process|strict-event-emitter|@open-draft|cookie|headers-polyfill|tough-cookie)",
   ],
   verbose: false,
   workerIdleMemoryLimit: "512MB",
