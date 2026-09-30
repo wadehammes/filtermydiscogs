@@ -13,6 +13,8 @@
 
 .modalWide {
   height: auto;
+  max-height: inherit;
+  min-height: 0;
 
   @media (width >= 1024px) {
     --scroll-modal-max-width: 68rem;

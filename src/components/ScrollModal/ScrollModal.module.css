@@ -29,16 +29,17 @@
 :global([data-playback-overlay-portal]) .modal {
   flex: 0 0 auto;
   max-height: min(
-    90svh,
-    calc(var(--release-modal-available-height, 100dvh) - var(--space-8))
+    calc(100% - var(--space-8)),
+    calc(var(--release-modal-available-height, 100%) - var(--space-8))
   );
   max-width: 100%;
+  min-height: 0;
   width: 100%;
 
   @media (width >= 1024px) {
     max-height: min(
-      90dvh,
-      calc(var(--release-modal-available-height, 100dvh) - var(--space-8))
+      calc(100% - var(--space-8)),
+      calc(var(--release-modal-available-height, 100%) - var(--space-8))
     );
     max-width: min(
       calc(100% - var(--scroll-modal-horizontal-inset, var(--space-8))),
