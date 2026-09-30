@@ -6,6 +6,7 @@
 @import url("./global/prose-scope.css") layer(utilities);
 @import url("./global/form-validation.css") layer(utilities);
 @import url("./global/view-transitions.css") layer(utilities);
+@import url("./global/playback-dock.css") layer(utilities);
 
 .typography-h1 {
   font-family: inherit;
