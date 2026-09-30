@@ -9,6 +9,7 @@ import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/Play
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import { Spinner } from "src/components/Spinner/Spinner.component";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
@@ -51,7 +52,7 @@ export const ReleaseMiniPlayer = ({
     queue,
     resumePlaybackFromGesture,
   } = useReleasePlayback();
-  const isMobileLayout = useMediaQuery("(max-width: 768px)");
+  const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
   const filtersDrawerOpen = useFiltersDrawerOpen();
   const crateDrawerOpen = useCrateDrawerOpen();
   const [isQueueOpen, setIsQueueOpen] = useState(false);

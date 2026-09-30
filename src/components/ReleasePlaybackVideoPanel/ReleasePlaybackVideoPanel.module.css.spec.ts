@@ -53,6 +53,9 @@ describe("playback-dock.css", () => {
     const css = readFileSync(PLAYBACK_DOCK_CSS_PATH, "utf8");
 
     expect(css).toContain("--release-video-panel-inset-right: var(--space-5)");
+    expect(css).toContain(
+      "--release-modal-viewport-inset-bottom: var(--release-mini-player-bar-offset)",
+    );
     expect(css).not.toContain('[data-crate-sidebar-open="true"]');
   });
 });

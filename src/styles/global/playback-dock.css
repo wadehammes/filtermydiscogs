@@ -1,5 +1,23 @@
+:root {
+  --release-modal-viewport-inset-top: 0px;
+  --release-modal-viewport-inset-bottom: 0px;
+  --available-height: 100dvh;
+  --release-modal-available-height: calc(
+    100dvh -
+    var(--release-modal-viewport-inset-top) -
+    var(--release-modal-viewport-inset-bottom)
+  );
+}
+
 html:has([data-global-playback-dock]) {
+  --release-modal-viewport-inset-bottom: var(--release-mini-player-bar-offset);
   --release-video-panel-inset-right: var(--space-5);
+  --available-height: calc(
+    100dvh -
+    var(--release-modal-viewport-inset-top) -
+    var(--release-modal-viewport-inset-bottom)
+  );
+  --release-modal-available-height: var(--available-height);
 }
 
 html:has([data-global-playback-dock]),

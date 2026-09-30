@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
+import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DistributionData } from "src/types/dashboard.types";
 import { useChartColors } from "src/utils/chartColors";
@@ -22,7 +23,7 @@ export const ArtistLabelCharts = ({
   labelDistribution,
 }: ArtistLabelChartsProps) => {
   const colors = useChartColors();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
+  const isMobile = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
 
   const artistBarData = useMemo(
     () => withBarColors(artistDistribution, colors),

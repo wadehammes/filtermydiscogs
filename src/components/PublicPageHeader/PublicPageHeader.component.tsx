@@ -4,6 +4,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
+import { TABLET_UP_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { SITE_NAME, SITE_WORDMARK } from "src/constants/siteMetadata";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
@@ -26,7 +27,7 @@ const PUBLIC_NAV_ITEMS = [
   { page: "legal", href: "/legal", label: "Legal" },
 ] as const;
 
-const PUBLIC_DESKTOP_NAV_MEDIA_QUERY = "(min-width: 768px)";
+const PUBLIC_DESKTOP_NAV_MEDIA_QUERY = TABLET_UP_MEDIA_QUERY;
 
 const getNavLinkClassName = ({
   currentPage,

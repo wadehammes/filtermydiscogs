@@ -1,7 +1,8 @@
 import { useEffect } from "react";
+import { DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 
-export const DESKTOP_LAYOUT_MEDIA_QUERY = "(min-width: 1024px)";
+export { DESKTOP_LAYOUT_MEDIA_QUERY };
 
 export const useCloseMobileDrawerOnDesktop = (onClose: () => void) => {
   const isDesktop = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY, false);
