@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { RESPONSIVE_VIEWPORT_PRESETS } from "./src/constants/layoutMediaQueries";
 import { DISCOGS_OAUTH_TEST_ENV } from "./src/tests/discogsOAuthTestEnv";
 
 const port = 6767;
@@ -20,6 +21,23 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "phone",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: RESPONSIVE_VIEWPORT_PRESETS.phonePortrait,
+      },
+    },
+    {
+      name: "tablet",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: {
+          width: 834,
+          height: RESPONSIVE_VIEWPORT_PRESETS.tabletPortrait.height,
+        },
+      },
     },
   ],
   webServer: {
