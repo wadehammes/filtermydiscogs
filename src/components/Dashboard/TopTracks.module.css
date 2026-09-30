@@ -70,7 +70,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  max-height: 24rem;
+  max-height: min(24rem, calc(var(--available-height, 100dvh) * 0.45));
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;

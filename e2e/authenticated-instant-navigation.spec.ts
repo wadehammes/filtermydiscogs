@@ -4,6 +4,7 @@ import {
   e2eDashboardHeroCountLabel,
 } from "src/tests/msw/e2eSession.constants";
 import { expect, test } from "./fixtures/msw.fixture";
+import { clickAppNavLink } from "./helpers/appNavigation";
 import { expectE2eCollectionLoaded } from "./helpers/authenticatedExpectations";
 import { instantNavOptions } from "./helpers/instantNavOptions";
 
@@ -19,10 +20,7 @@ test.describe("authenticated instant navigation (MSW)", () => {
     await instant(
       page,
       async () => {
-        await page
-          .getByRole("navigation", { name: "App" })
-          .getByRole("link", { name: "Dashboard" })
-          .click();
+        await clickAppNavLink(page, "Dashboard");
         await expect(page).toHaveURL(/\/dashboard/);
         await expect(page.getByTestId("fmdDashboardHero")).toBeVisible();
         await expect(
@@ -50,10 +48,7 @@ test.describe("authenticated instant navigation (MSW)", () => {
     await instant(
       page,
       async () => {
-        await page
-          .getByRole("navigation", { name: "App" })
-          .getByRole("link", { name: "Releases" })
-          .click();
+        await clickAppNavLink(page, "Releases");
         await expect(page).toHaveURL(/\/releases/);
         await expectE2eCollectionLoaded(page);
       },
