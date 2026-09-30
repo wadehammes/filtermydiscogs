@@ -10,6 +10,7 @@ import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerF
 import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
 import { CrateSelector } from "src/components/CrateSelector/CrateSelector.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
+import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useCrate } from "src/context/crate.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { definedProps } from "src/utils/definedProps";
@@ -97,7 +98,7 @@ export const CrateDrawer = ({
   aboveMiniPlayer = false,
 }: CrateDrawerProps) => {
   const { toggleDrawer } = useCrate();
-  const isMobile = useMediaQuery("(max-width: 1023px)");
+  const isMobile = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
 
   const crateSelector = (
     <CrateSelector className={classNames(styles.headerCrateSelector)} />

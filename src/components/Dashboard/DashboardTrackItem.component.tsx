@@ -87,9 +87,8 @@ export function DashboardTrackItem({
   const displayCoverUrl = resolveTrackCoverUrl(coverUrl, track.release_thumb);
 
   const artistMeta =
-    artists && artists.length > 0 ? (
-      <>
-        {artists.map((artist, index) => {
+    artists && artists.length > 0
+      ? artists.map((artist, index) => {
           const artistUrl = getResourceUrl({
             resourceUrl: artist.resource_url,
             type: "artist",
@@ -112,11 +111,10 @@ export function DashboardTrackItem({
               {index < artists.length - 1 && ", "}
             </span>
           );
-        })}
-      </>
-    ) : track.artist?.trim() ? (
-      track.artist.trim()
-    ) : null;
+        })
+      : track.artist?.trim()
+        ? track.artist.trim()
+        : null;
 
   const hasLabelOrYear = Boolean(primaryLabel) || year > 0;
   const hasFallbackAlbumMeta =

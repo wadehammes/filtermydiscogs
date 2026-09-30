@@ -7,6 +7,7 @@ import {
 } from "react";
 import { trackViewModeChanged } from "src/analytics/productAnalyticsEvents";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { ViewActionTypes } from "src/context/view.context";
@@ -71,7 +72,7 @@ export const useReleasesClient = ({
   const styleOperator = useStyleOperator();
   const formatOperator = useFormatOperator();
   const yearOperator = useYearOperator();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
 
   const { isLoading, hasNextPage, isFetchingNextPage } =
     useCollectionLoadState();

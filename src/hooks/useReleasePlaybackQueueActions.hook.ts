@@ -358,6 +358,9 @@ export const useReleasePlaybackQueueActions = ({
       setShouldAutoplayEmbed,
       shouldRebuildAlbumQueueRef,
       syncEmbedForQueueItem,
+      activeTrackPositionRef.current,
+      isReleasePreviewRef.current,
+      isPlayingRef,
     ],
   );
 
@@ -549,6 +552,7 @@ export const useReleasePlaybackQueueActions = ({
       shouldRebuildAlbumQueueRef,
       similarQueueGenerationRef,
       similarQueueModeRef,
+      isPlayingRef,
     ],
   );
 
@@ -739,7 +743,6 @@ export const useReleasePlaybackQueueActions = ({
     setUpcomingQueue(queueRef.current.slice(1));
     playQueueItem(item, { autoplay: true });
   }, [
-    clearPlaybackVideoUiLoading,
     extendQueueTail,
     maybePushCurrentToHistory,
     playNextRef,

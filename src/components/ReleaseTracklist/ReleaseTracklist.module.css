@@ -63,8 +63,8 @@
   overflow-y: auto;
   padding: 0;
 
-  @media (width >= 768px) and (height > 768px) {
-    max-height: 500px;
+  @media (width >= 768px) {
+    max-height: min(31.25rem, calc(var(--available-height, 100dvh) - 12rem));
   }
 }
 
