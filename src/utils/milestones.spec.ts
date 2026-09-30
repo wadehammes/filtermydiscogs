@@ -1,10 +1,28 @@
 import { describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import type { DiscogsRelease } from "src/types";
 import {
+  type CollectionMilestone,
   calculateMilestones,
   getMilestoneSortTimestamp,
   sortMilestonesChronologically,
 } from "src/utils/milestones";
+
+const buildReleasesByAcquisitionOrder = (count: number): DiscogsRelease[] =>
+  releaseFactory
+    .buildList(count, {}, { artistCount: 1 })
+    .map((release, index) => ({
+      ...release,
+      instance_id: `release-${String(index).padStart(4, "0")}`,
+      date_added: new Date(Date.UTC(2015, 0, 1 + index)).toISOString(),
+    }));
+
+const milestoneReleaseId = (
+  milestones: CollectionMilestone[],
+  label: string,
+): string | undefined =>
+  milestones.find((milestone) => milestone.label === label)?.release
+    ?.instance_id;
 
 describe("milestones", () => {
   it("sorts milestones chronologically by add date", () => {
@@ -58,5 +76,72 @@ describe("milestones", () => {
     expect(
       sorted.findIndex((milestone) => milestone.label === "1000th Release"),
     ).toBeGreaterThan(oldestIndex);
+  });
+
+  it("keeps nth-release milestones stable when instance_id is numeric at runtime", () => {
+    const sameDay = "2019-06-15T12:00:00.000Z";
+    const releases = releaseFactory.buildList(15, {}, { artistCount: 1 }).map(
+      (release, index) =>
+        ({
+          ...release,
+          date_added: sameDay,
+          instance_id: 1000 + index,
+        }) as unknown as DiscogsRelease,
+    );
+
+    const milestones = calculateMilestones([...releases].reverse());
+
+    expect(String(milestoneReleaseId(milestones, "10th Release"))).toBe("1009");
+  });
+
+  it("keeps nth-release milestones stable regardless of release array order", () => {
+    const sameDay = "2019-06-15T12:00:00.000Z";
+    const releases = releaseFactory
+      .buildList(50, {}, { artistCount: 1 })
+      .map((release, index) => ({
+        ...release,
+        date_added: sameDay,
+        instance_id: `instance-${String(index).padStart(3, "0")}`,
+      }));
+
+    const forward = calculateMilestones(releases);
+    const backward = calculateMilestones([...releases].reverse());
+
+    expect(milestoneReleaseId(forward, "10th Release")).toBe("instance-009");
+    expect(milestoneReleaseId(backward, "10th Release")).toBe("instance-009");
+    expect(milestoneReleaseId(forward, "25th Release")).toBe("instance-024");
+    expect(milestoneReleaseId(backward, "25th Release")).toBe("instance-024");
+  });
+
+  it("keeps acquisition-order milestones when appending newer releases", () => {
+    const baseCount = 120;
+    const baseReleases = buildReleasesByAcquisitionOrder(baseCount);
+    const before = calculateMilestones(baseReleases);
+
+    const appended = [
+      ...baseReleases,
+      ...buildReleasesByAcquisitionOrder(30).map((release, index) => ({
+        ...release,
+        instance_id: `appended-${String(index).padStart(4, "0")}`,
+        date_added: new Date(Date.UTC(2024, 5, 1 + index)).toISOString(),
+      })),
+    ];
+    const after = calculateMilestones(appended);
+
+    const ordinalLabels = [
+      "First release added",
+      "10th Release",
+      "25th Release",
+      "50th Release",
+      "100th Release",
+    ] as const;
+
+    for (const label of ordinalLabels) {
+      const expectedId =
+        label === "First release added"
+          ? "release-0000"
+          : milestoneReleaseId(before, label);
+      expect(milestoneReleaseId(after, label)).toBe(expectedId);
+    }
   });
 });
