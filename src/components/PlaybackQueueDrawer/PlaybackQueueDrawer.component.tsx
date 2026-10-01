@@ -21,6 +21,7 @@ import Image from "next/image";
 import { memo, useCallback, useMemo } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
+import { PLAYBACK_QUEUE_LIST_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useReleasePlaybackQueue } from "src/context/releasePlayback.context";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
@@ -53,6 +54,7 @@ const SortableQueueItem = memo(function SortableQueueItem({
   const {
     attributes,
     listeners,
+    setActivatorNodeRef,
     setNodeRef,
     transform,
     transition,
@@ -80,6 +82,7 @@ const SortableQueueItem = memo(function SortableQueueItem({
     >
       <div className={styles.queueItem}>
         <IconButton
+          ref={setActivatorNodeRef}
           variant="skip"
           className={styles.dragHandle}
           iconClassName={styles.dragHandleIcon}
@@ -213,7 +216,12 @@ export const PlaybackQueueDrawer = ({
       }
     >
       {queue.length === 0 ? (
-        <p className={styles.emptyMessage} data-testid="fmdPlaybackQueueEmpty">
+        <p
+          className={styles.emptyMessage}
+          data-testid="fmdPlaybackQueueEmpty"
+          role="status"
+          aria-label="Queue is empty. Hover a track and choose Add to queue."
+        >
           Queue is empty. Hover a track and choose Add to queue.
         </p>
       ) : (
@@ -226,7 +234,11 @@ export const PlaybackQueueDrawer = ({
             items={sortableIds}
             strategy={verticalListSortingStrategy}
           >
-            <ol className={styles.queueList} data-testid="fmdPlaybackQueueList">
+            <ol
+              className={styles.queueList}
+              data-testid="fmdPlaybackQueueList"
+              aria-label={PLAYBACK_QUEUE_LIST_LABEL}
+            >
               {queue.map((item, index) => (
                 <SortableQueueItem
                   key={getQueueItemKey(item)}

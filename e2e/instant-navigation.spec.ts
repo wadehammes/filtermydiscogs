@@ -1,5 +1,6 @@
 import { instant } from "@next/playwright";
 import { expect, test } from "@playwright/test";
+import { ABOUT_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import {
   clickPublicNavLinkAndWaitForUrl,
   instantNavContentTimeout,
@@ -14,13 +15,15 @@ test.describe("instant navigation", () => {
     baseURL,
   }) => {
     await page.goto("/");
-    await expect(page.getByTestId("fmdLogin")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Sign in" })).toBeVisible();
 
     await instant(
       page,
       async () => {
         await clickPublicNavLinkAndWaitForUrl(page, "About", /\/about/);
-        await expect(page.getByTestId("fmdAbout")).toBeVisible({
+        await expect(
+          page.getByRole("main", { name: ABOUT_PAGE_MAIN_LABEL }),
+        ).toBeVisible({
           timeout: instantNavContentTimeout,
         });
       },
@@ -38,7 +41,9 @@ test.describe("instant navigation", () => {
     baseURL,
   }) => {
     await page.goto("/about");
-    await expect(page.getByTestId("fmdAbout")).toBeVisible();
+    await expect(
+      page.getByRole("main", { name: ABOUT_PAGE_MAIN_LABEL }),
+    ).toBeVisible();
 
     await instant(
       page,

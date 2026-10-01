@@ -104,7 +104,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
             cell: ({ row }) => (
               <ReleasesTableArtistTitleCell
                 release={row.original}
-                imagePriority={row.index === 0}
+                imagePriority={row.index < 4}
                 onReleaseClick={onReleaseClick}
               />
             ),
@@ -323,6 +323,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
           <table
             key={releasesTableMountKey}
             className={styles.table}
+            aria-label="Collection releases"
             style={{ minWidth: table.getTotalSize() }}
           >
             <thead className={styles.thead}>

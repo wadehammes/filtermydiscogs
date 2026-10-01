@@ -1,3 +1,7 @@
+.menuHost {
+  position: relative;
+}
+
 .menuRoot {
   align-items: center;
   display: flex;
@@ -5,6 +9,10 @@
   justify-content: center;
   position: relative;
   z-index: 1;
+}
+
+.menuPositioner {
+  z-index: var(--z-6-popover);
 }
 
 .menuPopup {

@@ -94,8 +94,20 @@ export const openReleaseCrateMenu = async () => {
   return user;
 };
 
-export const expectReleaseCrateMenuPortaledToBody = () => {
-  expectPortaledPopupAttachedToBody(screen.getByTestId("fmdReleaseCrateMenu"));
+export const expectReleaseCrateMenuInlineWithTrigger = () => {
+  const menu = screen.getByTestId("fmdReleaseCrateMenu");
+  const host = screen.getByTestId("fmdReleaseCrateMenuHost");
+
+  expect(host.contains(menu)).toBe(true);
+  expect(menu.closest("[data-overlay-stack-portal]")).toBeNull();
+};
+
+export const expectReleaseCrateMenuPortaledOutOfHost = () => {
+  const menu = screen.getByTestId("fmdReleaseCrateMenu");
+  const host = screen.getByTestId("fmdReleaseCrateMenuHost");
+
+  expect(host.contains(menu)).toBe(false);
+  expect(document.body.contains(menu)).toBe(true);
 };
 
 export const expectReleaseCrateMenuAbovePlaybackDock = () => {

@@ -5,6 +5,9 @@ import {
   E2E_ALBUM_ONE,
   E2E_ALBUM_THREE,
   E2E_ALBUM_TWO,
+  E2E_DISCOGS_RELEASE_ID_ONE,
+  E2E_DISCOGS_RELEASE_ID_THREE,
+  E2E_DISCOGS_RELEASE_ID_TWO,
 } from "src/tests/msw/e2eSession.constants";
 import type { DiscogsRelease } from "src/types";
 
@@ -14,6 +17,7 @@ const E2E_THUMB_IMAGE = "https://placehold.co/150x150/png";
 function e2eRelease(
   title: string,
   instanceId: string,
+  discogsReleaseId: number,
   dateAdded: string,
   styles: string[],
 ): DiscogsRelease {
@@ -23,6 +27,7 @@ function e2eRelease(
     rating: 4,
     notes: [],
     basic_information: basicInformationFactory.build({
+      id: discogsReleaseId,
       title,
       year: 2020,
       styles,
@@ -31,7 +36,8 @@ function e2eRelease(
       labels: [],
       thumb: E2E_THUMB_IMAGE,
       cover_image: E2E_COVER_IMAGE,
-      resource_url: `https://api.discogs.com/releases/${instanceId}`,
+      resource_url: `https://api.discogs.com/releases/${discogsReleaseId}`,
+      uri: `https://www.discogs.com/release/${discogsReleaseId}`,
     }),
   });
 }
@@ -43,8 +49,26 @@ export function buildE2eCollectionReleases(): DiscogsRelease[] {
   const twoYearsAgo = new Date(now.getFullYear() - 2, 2, 10).toISOString();
 
   return [
-    e2eRelease(E2E_ALBUM_ONE, "e2e-release-1", thisYear, ["Indie Rock"]),
-    e2eRelease(E2E_ALBUM_TWO, "e2e-release-2", lastYear, ["Electronic"]),
-    e2eRelease(E2E_ALBUM_THREE, "e2e-release-3", twoYearsAgo, ["Jazz"]),
+    e2eRelease(
+      E2E_ALBUM_ONE,
+      "e2e-release-1",
+      E2E_DISCOGS_RELEASE_ID_ONE,
+      thisYear,
+      ["Indie Rock"],
+    ),
+    e2eRelease(
+      E2E_ALBUM_TWO,
+      "e2e-release-2",
+      E2E_DISCOGS_RELEASE_ID_TWO,
+      lastYear,
+      ["Electronic"],
+    ),
+    e2eRelease(
+      E2E_ALBUM_THREE,
+      "e2e-release-3",
+      E2E_DISCOGS_RELEASE_ID_THREE,
+      twoYearsAgo,
+      ["Jazz"],
+    ),
   ];
 }

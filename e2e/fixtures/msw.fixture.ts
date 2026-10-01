@@ -10,14 +10,28 @@ type MswFixtures = {
   network: NetworkFixture;
 };
 
+const isFilterMyDiscogsApiRequest = (requestUrl: string): boolean => {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(requestUrl);
+  } catch {
+    return false;
+  }
+
+  if (!parsed.pathname.startsWith("/api/")) {
+    return false;
+  }
+
+  return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+};
+
 const onUnhandledApiFrame: UnhandledFrameHandle = ({ frame, defaults }) => {
   if (!(frame instanceof HttpNetworkFrame)) {
     return;
   }
 
-  const { pathname } = new URL(frame.data.request.url);
-
-  if (!pathname.startsWith("/api/")) {
+  if (!isFilterMyDiscogsApiRequest(frame.data.request.url)) {
     return;
   }
 

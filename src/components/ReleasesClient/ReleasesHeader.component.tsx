@@ -71,17 +71,24 @@ export const ReleasesHeader = ({
             <span>Loading releases...</span>
           </span>
         ) : (
-          <>Showing {releaseCount} releases</>
+          <p
+            role="status"
+            aria-live="polite"
+            className={styles.releaseCount}
+            aria-label={`Showing ${releaseCount} releases`}
+          >
+            Showing {releaseCount} releases
+          </p>
         )}
         {showLoadingMore ? (
-          <span className={styles.loadingIcon}>
+          <span className={styles.loadingIcon} role="status" aria-live="polite">
             <Spinner size="xs" aria-label="Loading more" />
             <span>Loading more...</span>
           </span>
         ) : null}
         {!isCollectionLoading && showAllLoadedMessage ? (
-          <span className={styles.loadingIcon}>
-            <CheckThinIcon />
+          <span className={styles.loadingIcon} role="status" aria-live="polite">
+            <CheckThinIcon aria-hidden />
             <span>All releases loaded</span>
           </span>
         ) : null}

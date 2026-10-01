@@ -29,6 +29,7 @@ interface ReleaseCrateMenuProps {
   triggerStyle?: "icon" | "text";
   actionClass: (active?: boolean) => string;
   slotClass?: string;
+  portaled?: boolean;
 }
 
 export const ReleaseCrateMenu = ({
@@ -38,10 +39,15 @@ export const ReleaseCrateMenu = ({
   triggerStyle = "icon",
   actionClass,
   slotClass = "",
+  portaled: portaledProp,
 }: ReleaseCrateMenuProps) => {
   const isVertical = layout === "vertical";
+  const portaled = portaledProp ?? isVertical;
   const queryClient = useQueryClient();
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const [menuHostElement, setMenuHostElement] = useState<HTMLElement | null>(
+    null,
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const {
@@ -172,7 +178,12 @@ export const ReleaseCrateMenu = ({
 
   return (
     <>
-      <div className={wrapperClass}>
+      <div
+        ref={setMenuHostElement}
+        className={classNames(wrapperClass, styles.menuHost)}
+        data-release-crate-menu-host
+        data-testid="fmdReleaseCrateMenuHost"
+      >
         <Menu.Root open={isOpen} onOpenChange={handleOpenChange} modal={false}>
           <Menu.Trigger
             ref={triggerRef}
@@ -219,8 +230,12 @@ export const ReleaseCrateMenu = ({
           <InlinePopoverMenu.Panel
             align="end"
             popupClassName={styles.menuPopup}
+            portaled={portaled}
+            portalContainer={portaled ? null : menuHostElement}
+            positionerClassName={styles.menuPositioner}
             side={isVertical ? "left" : "bottom"}
             testId="fmdReleaseCrateMenu"
+            useOverlayStack={portaled}
           >
             <ReleaseCrateMenuPanelContent
               inActiveCrate={inActiveCrate}

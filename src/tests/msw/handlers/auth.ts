@@ -6,15 +6,21 @@ import { mutationSuccessFactory } from "src/tests/factories/MutationSuccess.fact
 export function createDefaultAuthHandlers(options?: {
   authStatus?: AuthStatus;
 }) {
-  const authStatus = options?.authStatus ?? authStatusFactory.unauthenticated();
+  let authStatus = options?.authStatus ?? authStatusFactory.unauthenticated();
+
+  const signOut = () => {
+    authStatus = authStatusFactory.unauthenticated();
+  };
 
   return [
     http.get("/api/auth/check", () => HttpResponse.json(authStatus)),
-    http.post("/api/auth/logout", () =>
-      HttpResponse.json(mutationSuccessFactory.build()),
-    ),
-    http.post("/api/auth/clear-data", () =>
-      HttpResponse.json(mutationSuccessFactory.build()),
-    ),
+    http.post("/api/auth/logout", () => {
+      signOut();
+      return HttpResponse.json(mutationSuccessFactory.build());
+    }),
+    http.post("/api/auth/clear-data", () => {
+      signOut();
+      return HttpResponse.json(mutationSuccessFactory.build());
+    }),
   ];
 }

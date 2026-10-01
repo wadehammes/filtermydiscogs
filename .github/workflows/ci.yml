@@ -8,8 +8,8 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: Lint/Test
+  unit:
+    name: Unit gates
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,6 +50,32 @@ jobs:
         run: pnpm test:ci
       - name: Run Knip
         run: pnpm knip:ci
+
+  e2e-smoke:
+    name: E2E smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        name: Checkout code
+      - name: Setup PNPM
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          package_json_file: package.json
+      - name: Read Node.js version from .tool-versions
+        id: get_node_version
+        run: |
+          echo "node_version=$(awk '/nodejs/ {print $2}' .tool-versions)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ steps.get_node_version.outputs.node_version }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
       - name: Cache Playwright browsers
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
         with:
@@ -57,5 +83,11 @@ jobs:
           key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Playwright Chromium
         run: pnpm exec playwright install chromium --with-deps
-      - name: Run Playwright
-        run: pnpm test:e2e:run
+      - name: Build for Playwright
+        run: pnpm build:e2e
+        env:
+          CI: "true"
+      - name: Run Playwright smoke
+        run: pnpm test:e2e:smoke
+        env:
+          CI: "true"

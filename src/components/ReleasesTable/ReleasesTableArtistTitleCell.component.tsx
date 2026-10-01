@@ -59,7 +59,7 @@ export const ReleasesTableArtistTitleCell = ({
           quality={85}
           alt=""
           {...(imagePriority
-            ? { priority: true }
+            ? { priority: true, loading: "eager" as const }
             : { loading: "lazy" as const })}
           sizes="40px"
         />

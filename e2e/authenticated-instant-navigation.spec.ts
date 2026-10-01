@@ -22,7 +22,12 @@ test.describe("authenticated instant navigation (MSW)", () => {
       async () => {
         await clickAppNavLink(page, "Dashboard");
         await expect(page).toHaveURL(/\/dashboard/);
-        await expect(page.getByTestId("fmdDashboardHero")).toBeVisible();
+        await expect(
+          page.getByRole("heading", {
+            level: 1,
+            name: e2eDashboardCollectionHeading(),
+          }),
+        ).toBeVisible();
         await expect(
           page.getByRole("heading", {
             level: 1,
@@ -39,11 +44,9 @@ test.describe("authenticated instant navigation (MSW)", () => {
     baseURL,
   }) => {
     await page.goto("/dashboard");
-    await expect(page.getByTestId("fmdDashboardHeroCount")).toHaveAttribute(
-      "aria-label",
-      e2eDashboardHeroCountLabel(),
-      { timeout: 30_000 },
-    );
+    await expect(
+      page.getByRole("status", { name: e2eDashboardHeroCountLabel() }),
+    ).toBeVisible({ timeout: 30_000 });
 
     await instant(
       page,

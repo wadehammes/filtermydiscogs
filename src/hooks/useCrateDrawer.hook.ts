@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 
 function subscribeToMediaQuery(callback: () => void) {
@@ -24,8 +30,14 @@ export const useCrateDrawer = () => {
     getServerSnapshot,
   );
   const [userToggled, setUserToggled] = useState<boolean | null>(null);
+  const previousIsDesktopRef = useRef(isDesktop);
 
   useEffect(() => {
+    if (previousIsDesktopRef.current === isDesktop) {
+      return;
+    }
+
+    previousIsDesktopRef.current = isDesktop;
     setUserToggled(null);
   }, [isDesktop]);
 

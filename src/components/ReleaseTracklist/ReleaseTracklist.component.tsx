@@ -4,6 +4,7 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import classNames from "classnames";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
+import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
@@ -80,6 +81,7 @@ export const ReleaseTracklist = ({
             [styles.tracklistNoPosition]: hideTrackPosition,
           })}
           data-testid="fmdReleaseTracklist"
+          aria-label={RELEASE_TRACKLIST_LABEL}
         >
           {tracks.map((track) => {
             const canPlayTrack =
@@ -158,6 +160,7 @@ export const ReleaseTracklist = ({
 
                       onTrackSelect?.(track.position);
                     }}
+                    aria-label={`Play ${track.title}`}
                     {...definedProps({
                       "aria-current": isActive ? ("true" as const) : undefined,
                     })}

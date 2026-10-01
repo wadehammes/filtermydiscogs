@@ -9,6 +9,7 @@ import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/Play
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import { Spinner } from "src/components/Spinner/Spinner.component";
+import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
@@ -150,6 +151,7 @@ export const ReleaseMiniPlayer = ({
   const crateToggleButton = (
     <ReleaseCrateMenu
       release={release}
+      portaled
       triggerVariant="custom"
       actionClass={(active) =>
         classNames(styles.controlButton, styles.crateButton, {
@@ -174,7 +176,7 @@ export const ReleaseMiniPlayer = ({
           {...(isQueueOpen &&
             isVideoPanelExpanded && { "data-queue-over-video": true })}
           {...(showVideoLoading && { "data-playback-video-loading": true })}
-          aria-label="Now playing"
+          aria-label={NOW_PLAYING_REGION_LABEL}
         >
           {isPlaying && playbackVideoId ? (
             <ReleasePlaybackVideoPanel

@@ -8,6 +8,7 @@ import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import styles from "./ReleaseCard.module.css";
 import { ReleaseCardContent } from "./ReleaseCardContent.component";
 import { ReleaseCardImage } from "./ReleaseCardImage.component";
+import { ReleaseCardOverlayActions } from "./ReleaseCardOverlayActions.component";
 
 const ReleaseCardComponent = ({
   release,
@@ -54,16 +55,29 @@ const ReleaseCardComponent = ({
         data-testid="fmdReleaseCard"
         {...definedProps(prefetchPointerProps ?? {})}
       >
-        <ReleaseCardImage
-          release={release}
-          thumbUrl={thumbUrl}
-          releaseUrl={releaseUrl}
-          priority={priority}
-          {...definedProps({
-            onReleaseOpen: canOpen ? openRelease : undefined,
-            onReleasePrefetch: canOpen ? prefetchReleaseOpen : undefined,
-          })}
-        />
+        <div className={styles.coverSection}>
+          <ReleaseCardImage
+            release={release}
+            thumbUrl={thumbUrl}
+            priority={priority}
+            {...definedProps({
+              onReleaseOpen: canOpen ? openRelease : undefined,
+              onReleasePrefetch: canOpen ? prefetchReleaseOpen : undefined,
+            })}
+          />
+          <div
+            className={styles.actionButtonsContainer}
+            data-testid="fmdReleaseCardActionsBar"
+          >
+            <ReleaseCardOverlayActions
+              release={release}
+              releaseUrl={releaseUrl}
+              {...definedProps({
+                onReleaseOpen: canOpen ? openRelease : undefined,
+              })}
+            />
+          </div>
+        </div>
         <ReleaseCardContent
           release={release}
           releaseUrl={releaseUrl}

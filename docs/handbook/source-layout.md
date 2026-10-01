@@ -8,7 +8,7 @@ Quick map of **`src/`** and related top-level folders.
 | [`src/components/`](../../src/components/) | Feature UI (Dashboard, ReleaseCard, StickyHeaderBar, …). |
 | [`src/atoms/`](../../src/atoms/) | Jotai atoms: filters, view mode, shared `JotaiProvider`. |
 | [`src/context/`](../../src/context/) | Auth, collection, crate, theme providers; filters/view scope markers (state in Jotai). |
-| [`src/constants/`](../../src/constants/) | Topic constants (`sortValues.ts`, mosaic sizes, [`siteMetadata.ts`](../../src/constants/siteMetadata.ts)) alongside root [`constants.ts`](../../src/constants.ts). |
+| [`src/constants/`](../../src/constants/) | Topic constants (`sortValues.ts`, mosaic sizes, [`siteMetadata.ts`](../../src/constants/siteMetadata.ts), shared accessible names in [`accessibilityLabels.constants.ts`](../../src/constants/accessibilityLabels.constants.ts) for product **`main`** / region labels and Playwright **`getByRole`**) alongside root [`constants.ts`](../../src/constants.ts). |
 | [`src/services/`](../../src/services/) | Discogs OAuth service, client auth/cookie helpers. |
 | [`src/api/`](../../src/api/) | Browser-side fetch layer — **`api`** in [`urls.ts`](../../src/api/urls.ts), implementations in [`endpoints/`](../../src/api/endpoints/), utilities in [`helpers.ts`](../../src/api/helpers.ts). |
 | [`src/hooks/`](../../src/hooks/) | Custom hooks; React Query reads under `hooks/queries/`, writes under `hooks/mutations/`. |

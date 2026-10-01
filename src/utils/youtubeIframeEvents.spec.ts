@@ -12,9 +12,28 @@ import {
 } from "./youtubeIframeEvents";
 
 describe("isYoutubeEmbedOrigin", () => {
+  const originalMockFlag = process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+
+  afterEach(() => {
+    if (originalMockFlag === undefined) {
+      delete process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+    } else {
+      process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED = originalMockFlag;
+    }
+  });
+
   it("accepts YouTube embed origins", () => {
     expect(isYoutubeEmbedOrigin("https://www.youtube-nocookie.com")).toBe(true);
     expect(isYoutubeEmbedOrigin("https://www.youtube.com")).toBe(true);
+  });
+
+  it("accepts the app origin when the E2E mock embed flag is set", () => {
+    process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED = "1";
+
+    expect(isYoutubeEmbedOrigin(window.location.origin)).toBe(true);
+    expect(isYoutubeEmbedOrigin("https://www.youtube-nocookie.com")).toBe(
+      false,
+    );
   });
 
   it("rejects other origins", () => {

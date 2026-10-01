@@ -103,10 +103,21 @@ export const CrateHubCard = ({ crate }: CrateHubCardProps) => {
           <div className={styles.nameRow}>
             <h2 className={styles.name}>{crate.name}</h2>
             {crate.is_default ? (
-              <span className={styles.defaultBadge}>Default</span>
+              <span
+                className={styles.defaultBadge}
+                role="status"
+                aria-label="Default"
+              >
+                Default
+              </span>
             ) : null}
           </div>
-          <p className={styles.meta}>
+          <p
+            className={styles.meta}
+            role="status"
+            aria-live="polite"
+            aria-label={`${releaseCount} release${releaseCount === 1 ? "" : "s"}`}
+          >
             {releaseCount} release{releaseCount === 1 ? "" : "s"}
           </p>
         </div>

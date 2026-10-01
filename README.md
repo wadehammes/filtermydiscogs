@@ -32,7 +32,8 @@ With mise:
 ```bash
 mise trust          # once per clone, if prompted
 mise bootstrap      # tools + pnpm install + Prisma generate
-mise run ci         # same quality gates as GitHub Actions (incl. handbook sync vs staging)
+mise run ci         # PR CI: unit gates + Playwright smoke (build:e2e; handbook sync vs staging)
+mise run ci-full    # unit gates + full Playwright (build:e2e; ~25 viewport skips is normal)
 mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + fallow:audit
 ```
 
@@ -142,7 +143,8 @@ The app will be available at `http://localhost:6767`.
 pnpm dev              # http://localhost:6767 (Turbopack)
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
-mise run ci           # matches Actions: tsc, lint, CSS lint, handbook sync, Jest, Knip, Playwright
+mise run ci           # PR CI: tsc, lint, CSS lint, handbook sync, Jest, Knip, Playwright smoke (build:e2e + next start)
+mise run ci-full      # above + full Playwright (build:e2e + next start; ~25 viewport skips is normal)
 mise run pr-prep      # lint:all + handbook:check + fallow:audit (before opening a PR)
 mise run lint-all     # pnpm lint:all
 
@@ -151,7 +153,9 @@ pnpm handbook:check   # fail if src/ or test infra changed without docs/handbook
 
 pnpm test             # Jest (--runInBand --detectOpenHandles; CI uses parallel workers via pnpm test:ci)
 pnpm test:file        # Jest watch for one file
-pnpm test:e2e         # Playwright (run pnpm test:e2e:install once)
+pnpm test:e2e         # Playwright full suite against next dev (run pnpm test:e2e:install once)
+pnpm build:e2e        # production build for Playwright in CI (mock YouTube embed + test OAuth env; DB optional)
+pnpm test:e2e:smoke   # PR smoke subset locally (chromium only; e2e/smokeSpecs.constants.ts). CI: build:e2e then this with CI=1 (next start)
 pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
 
 pnpm lint             # Biome check
@@ -179,16 +183,16 @@ pnpm db:studio        # Prisma Studio
 
 | Branch | Purpose |
 |--------|---------|
-| **`staging`** | Default trunk — open PRs here; [CI](.github/workflows/ci.yml) runs on PRs to **`staging`**. |
+| **`staging`** | Default trunk — open PRs here; [CI](.github/workflows/ci.yml) (unit + Playwright smoke) on PRs; [E2E full](.github/workflows/e2e-full.yml) on push. |
 | **`main`** | Production only — updated automatically when you cut a release tag; do **not** push or PR here. |
 
 **Vercel:** point **Production** at **`main`**, previews/staging at **`staging`**.
 
-GitHub **rulesets** enforce this on the repo (**`staging`**: PR + **`Lint/Test`**; **`main`**: release automation only; **`v*`** tags: maintainers). Policy and API commands: [`docs/handbook/platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets). JSON sources: [`.github/rulesets/`](.github/rulesets/).
+GitHub **rulesets** enforce this on the repo (**`staging`**: PR + **`Unit gates`** / **`E2E smoke`**; **`main`**: release automation only; **`v*`** tags: maintainers). Policy and API commands: [`docs/handbook/platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets). JSON sources: [`.github/rulesets/`](.github/rulesets/).
 
 ### Release checklist
 
-1. Merge your work into **`staging`** and confirm **`Lint/Test`** is green.
+1. Merge your work into **`staging`** and confirm PR **`Unit gates`** + **`E2E smoke`** are green; after merge, confirm **`E2E full`** on the push to **`staging`**.
 2. Check out **`staging`** and pull latest.
 3. Tag and push from **`staging`** (tag name must start with **`v`**). Requires **`vercel login`** (or **`VERCEL_TOKEN`**) and **Member+** on the Vercel team **`worldwadeweb`**; with **`gh`** installed, the Makefile watches **`create-release`** until it finishes.
 
