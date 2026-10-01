@@ -9,12 +9,6 @@ export const LOGIN_PAGE_SITE_COPY = {
     "app preview with release cards, filters, in-app playback, crate layout and packing tools, collection insights, and on-repeat track stats",
 } as const;
 
-export const LOGIN_DEMO_PUBLIC_CRATE_ID =
-  "ab65c378-fab9-42c0-96bb-c308d413cbbb" as const;
-
-export const LOGIN_DEMO_PUBLIC_CRATE_PATH =
-  `/crate/${LOGIN_DEMO_PUBLIC_CRATE_ID}` as const;
-
 export const LOGIN_PAGE_UI_COPY = {
   bottomCtaHeading: "Ready to connect your collection?",
   featuresSectionHeading: "What you can do",

@@ -10,10 +10,8 @@ import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConne
 import { LoginFeatureRow } from "src/components/LoginFeatureRow/LoginFeatureRow.component";
 import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/LoginSwitchAccountLink.component";
 import { SIGN_IN_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
-import {
-  LOGIN_DEMO_PUBLIC_CRATE_PATH,
-  LOGIN_PAGE_UI_COPY,
-} from "src/constants/loginPageCopy.registry";
+import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
+import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/publicCrate.constants";
 import { SITE_LEAD, SITE_NAME, SITE_TAGLINE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import accessibilityStyles from "src/styles/modules/accessibility.module.css";
