@@ -13,7 +13,19 @@ run = [
 ]
 
 [tasks.ci]
-description = "Run the same quality gates as GitHub Actions CI"
+description = "Same gates as PR CI (unit job + Playwright smoke)"
+run = [
+  "pnpm tsc:ci",
+  "pnpm lint:ci",
+  "pnpm lint:css",
+  "pnpm handbook:check",
+  "pnpm test:ci",
+  "pnpm knip:ci",
+  "pnpm test:e2e:smoke:ci",
+]
+
+[tasks.ci-full]
+description = "Unit gates plus full Playwright (all specs and viewports; matches push to staging)"
 run = [
   "pnpm tsc:ci",
   "pnpm lint:ci",

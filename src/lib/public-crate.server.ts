@@ -1,4 +1,5 @@
 import { cacheLife } from "next/cache";
+import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/loginPageCopy.registry";
 import { isValidCrateId } from "src/lib/crate-id";
 import { prisma } from "src/lib/db";
 import {
@@ -8,6 +9,10 @@ import {
 
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
 export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
+
+const publicCrateStaticParamFallbackIds = (): string[] => [
+  LOGIN_DEMO_PUBLIC_CRATE_ID,
+];
 
 async function listRecentPublicCrateIds(limit: number): Promise<string[]> {
   "use cache";
@@ -27,14 +32,15 @@ export async function getPublicCrateIdsForStaticGeneration(
   limit = PUBLIC_CRATE_STATIC_PARAMS_LIMIT,
 ): Promise<string[]> {
   if (!process.env.DATABASE_URL) {
-    return [];
+    return publicCrateStaticParamFallbackIds();
   }
 
   try {
-    return await listRecentPublicCrateIds(limit);
+    const ids = await listRecentPublicCrateIds(limit);
+    return ids.length > 0 ? ids : publicCrateStaticParamFallbackIds();
   } catch (error) {
     console.error("Failed to list public crates for static generation:", error);
-    return [];
+    return publicCrateStaticParamFallbackIds();
   }
 }
 
@@ -49,7 +55,7 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
   return findPublicCrateSummaryById(crateId);
 }
 
-export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
+async function getPublicCrateMetadataForPageCached(crateId: string): Promise<{
   crate: { name: string; username: string | null };
   pagination: { total: number };
 } | null> {
@@ -83,4 +89,15 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
     );
     return null;
   }
+}
+
+export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
+  crate: { name: string; username: string | null };
+  pagination: { total: number };
+} | null> {
+  if (!process.env.DATABASE_URL) {
+    return null;
+  }
+
+  return getPublicCrateMetadataForPageCached(crateId);
 }

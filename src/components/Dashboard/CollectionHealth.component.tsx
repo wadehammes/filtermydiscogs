@@ -61,7 +61,7 @@ export function CollectionHealth({
       {!hideHeading && <h2>Collection Health</h2>}
 
       <div className={styles.healthGrid}>
-        <div className={styles.healthCard}>
+        <fieldset className={styles.healthCard} aria-label="Exact Duplicates">
           <div className={styles.healthLabel}>Exact Duplicates</div>
           <div className={styles.healthValue}>{health.duplicateCount}</div>
           <div className={styles.healthDescription}>
@@ -76,9 +76,12 @@ export function CollectionHealth({
               Show details
             </button>
           )}
-        </div>
+        </fieldset>
 
-        <div className={styles.healthCard}>
+        <fieldset
+          className={styles.healthCard}
+          aria-label="Potential Duplicates"
+        >
           <div className={styles.healthLabel}>Potential Duplicates</div>
           <div className={styles.healthValue}>{health.potentialDuplicates}</div>
           <div className={styles.healthDescription}>
@@ -93,9 +96,9 @@ export function CollectionHealth({
               Show details
             </button>
           )}
-        </div>
+        </fieldset>
 
-        <div className={styles.healthCard}>
+        <fieldset className={styles.healthCard} aria-label="Unrated Releases">
           <div className={styles.healthLabel}>Unrated Releases</div>
           <div className={styles.healthValue}>
             {health.releasesWithoutRating}
@@ -113,7 +116,7 @@ export function CollectionHealth({
               Go rate your releases
             </a>
           )}
-        </div>
+        </fieldset>
       </div>
 
       <DuplicatesDetailModal

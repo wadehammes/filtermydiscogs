@@ -8,6 +8,7 @@ import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
+import { PUBLIC_SHARED_CRATE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { PUBLIC_CRATE_MARKETING_BULLETS } from "src/constants/marketingPublicCopy";
 import { SITE_LEAD } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
@@ -243,8 +244,11 @@ const PublicCrateClientContent = ({ crateId }: PublicCrateClientProps) => {
 
 export const PublicCrateClient = ({ crateId }: PublicCrateClientProps) => {
   return (
-    <div data-testid="fmdPublicCrate">
+    <main
+      data-testid="fmdPublicCrate"
+      aria-label={PUBLIC_SHARED_CRATE_MAIN_LABEL}
+    >
       <PublicCrateClientContent crateId={crateId} />
-    </div>
+    </main>
   );
 };

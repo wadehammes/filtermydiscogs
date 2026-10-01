@@ -86,7 +86,10 @@ const ReleasesGridComponent = ({
         const inActiveCrate = activeCrateInstanceIds.has(
           String(release.instance_id),
         );
-        const imagePriority = index === 0;
+        const aboveFoldImageLimit = isMobile
+          ? 1
+          : Math.min(releasesToShow.length, 4);
+        const imagePriority = index < aboveFoldImageLimit;
 
         return (
           <div

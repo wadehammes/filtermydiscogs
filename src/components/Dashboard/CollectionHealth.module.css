@@ -29,9 +29,12 @@
 
 .healthCard {
   composes: card from "../../styles/modules/dashboard-card.module.css";
+  border: none;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  margin: 0;
+  min-inline-size: 0;
   padding: var(--space-4);
 }
 

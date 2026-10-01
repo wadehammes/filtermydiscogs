@@ -1,3 +1,5 @@
+import { isE2eMockYoutubeEmbedEnabled } from "src/constants/e2ePlayback.constants";
+
 export const YOUTUBE_PLAYER_STATE_ENDED = 0;
 export const YOUTUBE_PLAYER_STATE_PLAYING = 1;
 export const YOUTUBE_PLAYER_STATE_PAUSED = 2;
@@ -19,8 +21,13 @@ const YOUTUBE_EMBED_ORIGINS = new Set([
   "https://www.youtube-nocookie.com",
 ]);
 
-export const isYoutubeEmbedOrigin = (origin: string): boolean =>
-  YOUTUBE_EMBED_ORIGINS.has(origin);
+export const isYoutubeEmbedOrigin = (origin: string): boolean => {
+  if (isE2eMockYoutubeEmbedEnabled() && typeof window !== "undefined") {
+    return origin === window.location.origin;
+  }
+
+  return YOUTUBE_EMBED_ORIGINS.has(origin);
+};
 
 const parseYoutubeErrorCode = (info: unknown): number | null => {
   if (typeof info === "number" && Number.isFinite(info)) {

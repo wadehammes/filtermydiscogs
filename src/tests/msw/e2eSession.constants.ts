@@ -1,5 +1,8 @@
 export const E2E_AUTH_USERNAME = "testuser";
 export const E2E_COLLECTION_RELEASE_COUNT = 3;
+export const E2E_DISCOGS_RELEASE_ID_ONE = 900_001;
+export const E2E_DISCOGS_RELEASE_ID_TWO = 900_002;
+export const E2E_DISCOGS_RELEASE_ID_THREE = 900_003;
 export const E2E_ALBUM_ONE = "E2E Album One";
 export const E2E_ALBUM_TWO = "E2E Album Two";
 export const E2E_ALBUM_THREE = "E2E Album Three";

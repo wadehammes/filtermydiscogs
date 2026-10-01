@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { PageFooter } from "src/components/Page/PageFooter.server";
-import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { PublicCrateClient } from "src/components/PublicCrate/PublicCrateClient.component";
 import {
@@ -119,26 +117,16 @@ export async function generateMetadata({
   };
 }
 
-async function PublicCratePageContent({
+export default async function PublicCratePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
 
-  return <PublicCrateClient crateId={id} />;
-}
-
-export default function PublicCratePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
   return (
-    <PublicAuthLayout footer={<PageFooter />}>
-      <Suspense fallback={<PageLoader />}>
-        <PublicCratePageContent params={params} />
-      </Suspense>
+    <PublicAuthLayout footer={<PageFooter />} omitMainLandmark>
+      <PublicCrateClient crateId={id} />
     </PublicAuthLayout>
   );
 }

@@ -6,6 +6,7 @@ import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
+import { DASHBOARD_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
@@ -112,7 +113,11 @@ function DashboardClientContent() {
           />
         }
       >
-        <div className={styles.container} data-testid="fmdDashboardClient">
+        <main
+          className={styles.container}
+          data-testid="fmdDashboardClient"
+          aria-label={DASHBOARD_PAGE_MAIN_LABEL}
+        >
           {!(collectionLoading || analytics) && (
             <EmptyState
               variant="page"
@@ -232,7 +237,7 @@ function DashboardClientContent() {
               </div>
             </div>
           )}
-        </div>
+        </main>
       </CollectionPlaybackPageShell>
     </Page>
   );

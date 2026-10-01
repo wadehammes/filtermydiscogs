@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { ReleaseListItemPageObject } from "src/components/ReleaseListItem/ReleaseListItem.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
-  expectReleaseCrateMenuPortaledToBody,
+  expectReleaseCrateMenuInlineWithTrigger,
   openReleaseCrateMenu,
 } from "src/tests/filterControlTestHelpers";
 import {
@@ -205,6 +205,6 @@ describe("ReleaseListItem", () => {
 
     await openReleaseCrateMenu();
 
-    expectReleaseCrateMenuPortaledToBody();
+    expectReleaseCrateMenuInlineWithTrigger();
   });
 });

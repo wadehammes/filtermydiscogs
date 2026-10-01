@@ -8,6 +8,7 @@ import MosaicItem from "src/components/MosaicClient/MosaicItem.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
+import { MOSAIC_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import { useAuth } from "src/context/auth.context";
 import { FiltersActionTypes } from "src/context/filters.context";
@@ -132,10 +133,18 @@ export default function MosaicClient() {
           />
         }
       >
-        <div className={styles.container}>
+        <main className={styles.container} aria-label={MOSAIC_PAGE_MAIN_LABEL}>
           <div className={styles.header}>
-            <h1>Album Mosaic</h1>
-            <p>
+            <h1 id="mosaic-page-title">Album Mosaic</h1>
+            <p
+              role="status"
+              aria-live="polite"
+              aria-label={
+                releasesToDisplay.length === allReleases.length
+                  ? `Showing all ${releasesToDisplay.length} releases from your collection`
+                  : `Showing ${releasesToDisplay.length} filtered releases from your collection`
+              }
+            >
               {releasesToDisplay.length === allReleases.length
                 ? `Showing all ${releasesToDisplay.length} releases from your collection`
                 : `Showing ${releasesToDisplay.length} filtered releases from your collection`}
@@ -177,7 +186,7 @@ export default function MosaicClient() {
 
             <canvas ref={canvasRef} style={{ display: "none" }} />
           </div>
-        </div>
+        </main>
       </CollectionPlaybackPageShell>
     </Page>
   );

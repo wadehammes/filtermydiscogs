@@ -9,6 +9,7 @@ import { LoginBottomCta } from "src/components/LoginBottomCta/LoginBottomCta.com
 import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
 import { LoginFeatureRow } from "src/components/LoginFeatureRow/LoginFeatureRow.component";
 import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/LoginSwitchAccountLink.component";
+import { SIGN_IN_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import {
   LOGIN_DEMO_PUBLIC_CRATE_PATH,
   LOGIN_PAGE_UI_COPY,
@@ -48,9 +49,10 @@ export const Login = () => {
   }
 
   return (
-    <div
+    <section
       className={styles.landing}
       data-testid="fmdLogin"
+      aria-label={SIGN_IN_REGION_LABEL}
       aria-busy={isCheckingAuth}
     >
       <div className={styles.heroShell}>
@@ -190,6 +192,6 @@ export const Login = () => {
           onConnectDifferentAccount={connectDifferentAccount}
         />
       </div>
-    </div>
+    </section>
   );
 };

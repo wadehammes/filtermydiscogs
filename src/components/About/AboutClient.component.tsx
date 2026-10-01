@@ -8,6 +8,7 @@ import {
   ABOUT_GITHUB_LINKS,
   ABOUT_SUPPORT_EMAIL,
 } from "src/constants/about.constants";
+import { ABOUT_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { SITE_LEAD, SITE_NAME, SITE_TAGLINE } from "src/constants/siteMetadata";
 import { SUPPORT_SECTION_ID } from "src/constants/supportProjectToast.constants";
 import { useHashScrollOnMount } from "src/hooks/useHashScrollOnMount.hook";
@@ -21,7 +22,11 @@ export function AboutClient() {
   useHashScrollOnMount(SUPPORT_SECTION_ID);
 
   return (
-    <div className={styles.page} data-testid="fmdAbout">
+    <main
+      className={styles.page}
+      data-testid="fmdAbout"
+      aria-label={ABOUT_PAGE_MAIN_LABEL}
+    >
       <div className={styles.bento}>
         <header className={classNames(styles.tile, styles.tileIntro)}>
           <div className={styles.introBrand}>
@@ -130,6 +135,6 @@ export function AboutClient() {
           <AboutClearDataSection />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

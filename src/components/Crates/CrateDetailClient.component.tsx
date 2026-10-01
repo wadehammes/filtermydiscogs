@@ -13,6 +13,7 @@ import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
+import { CRATE_DETAIL_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
@@ -163,7 +164,11 @@ const CrateDetailClientContent = ({ crateId }: CrateDetailClientProps) => {
         />
       }
     >
-      <main className={styles.page} data-testid="fmdCrateDetailClient">
+      <main
+        className={styles.page}
+        data-testid="fmdCrateDetailClient"
+        aria-label={CRATE_DETAIL_MAIN_LABEL}
+      >
         <div className={styles.container}>
           {isLoading ? (
             <div className={styles.loadingState}>

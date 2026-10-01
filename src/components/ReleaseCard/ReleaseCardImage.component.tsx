@@ -3,13 +3,11 @@ import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./ReleaseCard.module.css";
-import { ReleaseCardOverlayActions } from "./ReleaseCardOverlayActions.component";
 import { releaseCardImageContainerStyle } from "./releaseCardImageContainerStyle";
 
 interface ReleaseCardImageProps {
   release: DiscogsRelease;
   thumbUrl: string | null;
-  releaseUrl: string | null;
   onReleaseOpen?: () => void;
   onReleasePrefetch?: () => void;
   priority?: boolean;
@@ -18,7 +16,6 @@ interface ReleaseCardImageProps {
 export const ReleaseCardImage = ({
   release,
   thumbUrl,
-  releaseUrl,
   onReleaseOpen,
   onReleasePrefetch,
   priority = false,
@@ -45,7 +42,9 @@ export const ReleaseCardImage = ({
             width={200}
             quality={85}
             alt={release.basic_information.title}
-            {...(priority ? { priority: true } : { loading: "lazy" as const })}
+            {...(priority
+              ? { priority: true, loading: "eager" as const }
+              : { loading: "lazy" as const })}
             style={{
               position: "relative",
               zIndex: 2,
@@ -54,13 +53,6 @@ export const ReleaseCardImage = ({
             sizes="200px"
           />
         ) : null}
-      </div>
-      <div className={styles.actionButtonsContainer}>
-        <ReleaseCardOverlayActions
-          release={release}
-          releaseUrl={releaseUrl}
-          {...definedProps({ onReleaseOpen })}
-        />
       </div>
     </div>
   );

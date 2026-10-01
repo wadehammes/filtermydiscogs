@@ -6,8 +6,9 @@ import { createDefaultAuthHandlers } from "src/tests/msw/handlers/auth";
 import { createDefaultCollectionApiHandlers } from "src/tests/msw/handlers/collection";
 import { createDefaultCrateApiHandlers } from "src/tests/msw/handlers/crates";
 import { createDefaultDashboardApiHandlers } from "src/tests/msw/handlers/dashboard";
+import { createDefaultReleaseApiHandlers } from "src/tests/msw/handlers/release";
+import { createDefaultTrackApiHandlers } from "src/tests/msw/handlers/tracks";
 import { createDefaultUserApiHandlers } from "src/tests/msw/handlers/user";
-
 export function createAuthenticatedE2eHandlers(options?: {
   authStatus?: AuthStatus;
 }): RequestHandler[] {
@@ -19,6 +20,8 @@ export function createAuthenticatedE2eHandlers(options?: {
     ...createDefaultCrateApiHandlers({ releases }),
     ...createDefaultCollectionApiHandlers({ releases }),
     ...createDefaultDashboardApiHandlers({ releases }),
+    ...createDefaultReleaseApiHandlers(),
     ...createDefaultUserApiHandlers(),
+    ...createDefaultTrackApiHandlers(),
   ];
 }

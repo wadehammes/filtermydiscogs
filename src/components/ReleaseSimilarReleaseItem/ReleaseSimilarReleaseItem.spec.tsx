@@ -8,7 +8,7 @@ import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithR
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
-import { expectReleaseCrateMenuPortaledToBody } from "src/tests/filterControlTestHelpers";
+import { expectReleaseCrateMenuPortaledOutOfHost } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
@@ -208,6 +208,6 @@ describe("ReleaseSimilarReleaseItem", () => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
     });
 
-    expectReleaseCrateMenuPortaledToBody();
+    expectReleaseCrateMenuPortaledOutOfHost();
   });
 });

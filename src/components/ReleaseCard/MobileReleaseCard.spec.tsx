@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MobileReleaseCardPageObject } from "src/components/ReleaseCard/MobileReleaseCard.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
-  expectReleaseCrateMenuPortaledToBody,
+  expectReleaseCrateMenuPortaledOutOfHost,
   openReleaseCrateMenu,
 } from "src/tests/filterControlTestHelpers";
 import {
@@ -220,6 +220,6 @@ describe("MobileReleaseCard", () => {
 
     await openReleaseCrateMenu();
 
-    expectReleaseCrateMenuPortaledToBody();
+    expectReleaseCrateMenuPortaledOutOfHost();
   });
 });

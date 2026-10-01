@@ -32,8 +32,7 @@
   }
 
   @media (hover: hover) {
-    &:hover,
-    &:has([data-popup-open]) {
+    &:hover {
       box-shadow:
         0 12px 28px -10px color-mix(in srgb, var(--background) 14%, transparent),
         0 4px 10px -4px color-mix(in srgb, var(--background) 6%, transparent),
@@ -65,9 +64,14 @@
   transform: scale(1.02);
 }
 
+.coverSection {
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+}
+
 .imageShell {
   overflow: hidden;
-  position: relative;
 }
 
 .imageContainer {
@@ -314,6 +318,7 @@
 .crateActionSlot {
   align-items: stretch;
   display: flex;
+  position: relative;
 }
 
 .stylesContainer,

@@ -48,6 +48,7 @@ import {
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { ReleaseNotesCollectionFieldsProvider } from "src/components/ReleaseNotes/ReleaseNotesCollectionFields.context";
+import { CRATE_RELEASES_LIST_LABEL } from "src/constants/accessibilityLabels.constants";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import {
   CRATE_SECTION_MAX_DEPTH,
@@ -1513,6 +1514,7 @@ const CrateLayoutListComponent = ({
                 ? { "data-crate-layout-dragging": "" }
                 : {})}
               data-testid="fmdCrateReleasesTable"
+              aria-label={CRATE_RELEASES_LIST_LABEL}
             >
               {useEdgeInsertMounts ? null : topInsertZone}
               {layoutSegments.map((segment) => (

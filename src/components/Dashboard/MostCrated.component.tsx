@@ -79,9 +79,15 @@ export function MostCrated({
               release={item.release}
               {...definedProps({ onReleaseClick })}
             >
-              <div className={styles.crateCount}>
-                <span className={styles.countNumber}>{item.crate_count}</span>
-                <span className={styles.countLabel}>
+              <div
+                className={styles.crateCount}
+                role="status"
+                aria-label={`${item.crate_count} ${item.crate_count === 1 ? "crate" : "crates"}`}
+              >
+                <span className={styles.countNumber} aria-hidden="true">
+                  {item.crate_count}
+                </span>
+                <span className={styles.countLabel} aria-hidden="true">
                   {item.crate_count === 1 ? "crate" : "crates"}
                 </span>
               </div>

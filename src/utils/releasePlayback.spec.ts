@@ -943,6 +943,24 @@ describe("buildYoutubeSearchUrl", () => {
 });
 
 describe("buildYoutubeEmbedUrl", () => {
+  const originalMockFlag = process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+
+  afterEach(() => {
+    if (originalMockFlag === undefined) {
+      delete process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+    } else {
+      process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED = originalMockFlag;
+    }
+  });
+
+  it("builds a local mock embed URL when E2E mock flag is set", () => {
+    process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED = "1";
+
+    expect(buildYoutubeEmbedUrl({ videoId: "te2jJncBVG4" })).toBe(
+      "/e2e/youtube-embed-mock.html?controls=1&disablekb=0&enablejsapi=1&fs=1&playsinline=1&rel=0&videoId=te2jJncBVG4",
+    );
+  });
+
   it("builds a nocookie embed URL with player API params", () => {
     expect(buildYoutubeEmbedUrl({ videoId: "te2jJncBVG4" })).toBe(
       "https://www.youtube-nocookie.com/embed/te2jJncBVG4?controls=1&disablekb=0&enablejsapi=1&fs=1&playsinline=1&rel=0",

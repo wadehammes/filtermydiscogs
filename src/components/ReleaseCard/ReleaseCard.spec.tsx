@@ -5,7 +5,7 @@ import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factor
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
-  expectReleaseCrateMenuPortaledToBody,
+  expectReleaseCrateMenuInlineWithTrigger,
   openReleaseCrateMenu,
 } from "src/tests/filterControlTestHelpers";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
@@ -587,6 +587,6 @@ describe("ReleaseCard", () => {
 
     await openReleaseCrateMenu();
 
-    expectReleaseCrateMenuPortaledToBody();
+    expectReleaseCrateMenuInlineWithTrigger();
   });
 });

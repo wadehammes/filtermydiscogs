@@ -180,7 +180,9 @@ const MobileReleaseCardComponent = ({
             width={96}
             quality={85}
             alt={release.basic_information.title}
-            {...(priority ? { priority: true } : { loading: "lazy" as const })}
+            {...(priority
+              ? { priority: true, loading: "eager" as const }
+              : { loading: "lazy" as const })}
             className={styles.releaseImage}
             style={{
               maxWidth: "100%",

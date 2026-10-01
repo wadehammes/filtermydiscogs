@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>E2E YouTube embed mock</title>
+  </head>
+  <body>
+    <script>
+      const YOUTUBE_PLAYER_STATE_PLAYING = 1;
+
+      const post = (payload) => {
+        window.parent.postMessage(JSON.stringify(payload), "*");
+      };
+
+      const emitPlaying = () => {
+        post({
+          event: "infoDelivery",
+          info: {
+            playerState: YOUTUBE_PLAYER_STATE_PLAYING,
+            currentTime: 1,
+            duration: 212,
+          },
+        });
+        post({ event: "onStateChange", info: YOUTUBE_PLAYER_STATE_PLAYING });
+      };
+
+      let playbackStarted = false;
+
+      const startPlaybackSignals = () => {
+        if (playbackStarted) {
+          emitPlaying();
+          return;
+        }
+
+        playbackStarted = true;
+        post({ event: "onReady" });
+        emitPlaying();
+        window.setInterval(emitPlaying, 350);
+      };
+
+      window.addEventListener("message", (event) => {
+        if (typeof event.data !== "string") {
+          return;
+        }
+
+        let data;
+
+        try {
+          data = JSON.parse(event.data);
+        } catch {
+          return;
+        }
+
+        if (data.event === "listening") {
+          startPlaybackSignals();
+          return;
+        }
+
+        if (data.event !== "command") {
+          return;
+        }
+
+        const syncCommands = [
+          "playVideo",
+          "pauseVideo",
+          "loadVideoById",
+          "getPlayerState",
+          "getCurrentTime",
+          "getDuration",
+        ];
+
+        if (syncCommands.includes(data.func)) {
+          window.setTimeout(startPlaybackSignals, 10);
+        }
+      });
+
+      window.setTimeout(startPlaybackSignals, 800);
+    </script>
+  </body>
+</html>

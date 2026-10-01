@@ -9,6 +9,7 @@ import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
+import { RELEASES_WORKSPACE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
@@ -36,7 +37,7 @@ const ReleasesClientContent = () => {
   const crateName = activeCrate?.name;
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
 
-  const setMainContentNode = useCallback((node: HTMLDivElement | null) => {
+  const setMainContentNode = useCallback((node: HTMLElement | null) => {
     setScrollRoot(node);
   }, []);
 
@@ -106,6 +107,7 @@ const ReleasesClientContent = () => {
               <button
                 type="button"
                 className={styles.crateFab}
+                data-testid="fmdReleaseCrateFab"
                 onClick={toggleDrawer}
                 aria-label={`${isDrawerOpen ? "Close" : "Open"} crate with ${selectedReleases.length} items`}
               >
@@ -141,10 +143,11 @@ const ReleasesClientContent = () => {
           data-releases-workspace
         >
           <div className={styles.workspaceRow}>
-            <div
+            <main
               ref={setMainContentNode}
               className={styles.mainContent}
               data-releases-scroll-root
+              aria-label={RELEASES_WORKSPACE_MAIN_LABEL}
             >
               {hasReleases || !allReleasesLoaded ? (
                 <ReleasesHeader
@@ -192,7 +195,7 @@ const ReleasesClientContent = () => {
                 isFetchingNextPage={isFetchingNextPage}
                 infiniteScrollRef={infiniteScrollRef}
               />
-            </div>
+            </main>
 
             <div className={styles.sidebar}>
               <Activity mode={isDrawerOpen ? "visible" : "hidden"}>

@@ -1,3 +1,7 @@
+import {
+  E2E_MOCK_YOUTUBE_EMBED_PATH,
+  isE2eMockYoutubeEmbedEnabled,
+} from "src/constants/e2ePlayback.constants";
 import type {
   DiscogsTrack,
   DiscogsVideo,
@@ -1151,6 +1155,11 @@ export const buildYoutubeEmbedUrl = ({
 
   if (origin) {
     params.set("origin", origin);
+  }
+
+  if (isE2eMockYoutubeEmbedEnabled()) {
+    params.set("videoId", videoId);
+    return `${E2E_MOCK_YOUTUBE_EMBED_PATH}?${params.toString()}`;
   }
 
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;

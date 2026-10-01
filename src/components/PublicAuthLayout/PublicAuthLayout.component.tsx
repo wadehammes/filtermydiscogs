@@ -12,6 +12,7 @@ type PublicAuthLayoutProps = {
   currentPage?: "home" | "about" | "legal";
   footer?: ReactNode;
   header?: ReactNode;
+  omitMainLandmark?: boolean;
 };
 
 export const PublicAuthLayout = ({
@@ -21,7 +22,10 @@ export const PublicAuthLayout = ({
   currentPage = "home",
   footer,
   header,
+  omitMainLandmark = false,
 }: PublicAuthLayoutProps) => {
+  const MainTag = omitMainLandmark ? "div" : "main";
+
   return (
     <div className={styles.container} data-testid="fmdPublicAuthLayout">
       {header ?? (
@@ -30,13 +34,13 @@ export const PublicAuthLayout = ({
           {...(authenticatedNavPage ? { authenticatedNavPage } : {})}
         />
       )}
-      <main
+      <MainTag
         className={classNames(styles.main, {
           [styles.mainCentered]: centerMain,
         })}
       >
         {children}
-      </main>
+      </MainTag>
       {footer}
     </div>
   );

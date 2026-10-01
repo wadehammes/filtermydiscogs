@@ -157,6 +157,7 @@ export function DashboardTrackItem({
                 textActionStyles.inheritlink,
                 styles.trackHeadButton,
               )}
+              aria-label={trackHead}
               onClick={openRelease}
             >
               {trackHead}

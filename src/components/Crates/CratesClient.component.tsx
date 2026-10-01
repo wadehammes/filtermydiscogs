@@ -20,18 +20,29 @@ export default function CratesClient() {
   return (
     <Page>
       <CollectionPlaybackPageShell currentPage="crates" hideFilters>
-        <main className={styles.page} data-testid="fmdCratesClient">
+        <main
+          className={styles.page}
+          data-testid="fmdCratesClient"
+          aria-labelledby="crates-page-title"
+        >
           <div className={styles.container}>
             <header className={styles.pageHeader}>
               <div className={styles.titleGroup}>
-                <h1 className={styles.title}>Crates</h1>
+                <h1 id="crates-page-title" className={styles.title}>
+                  Crates
+                </h1>
                 <p className={styles.subtitle}>
                   Open a crate to review releases, edit collection notes, and
                   pack for your gig.
                 </p>
               </div>
               {!isLoading && crates.length > 0 ? (
-                <p className={styles.headerMeta}>
+                <p
+                  className={styles.headerMeta}
+                  role="status"
+                  aria-live="polite"
+                  aria-label={`${crates.length} crate${crates.length === 1 ? "" : "s"}`}
+                >
                   {crates.length} crate
                   {crates.length === 1 ? "" : "s"}
                 </p>

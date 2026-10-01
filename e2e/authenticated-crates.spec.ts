@@ -1,4 +1,9 @@
 import {
+  CRATE_ACTIONS_TOOLBAR_LABEL,
+  CRATE_DETAIL_MAIN_LABEL,
+  CRATE_RELEASES_LIST_LABEL,
+} from "src/constants/accessibilityLabels.constants";
+import {
   E2E_ALBUM_ONE,
   E2E_ALBUM_THREE,
   E2E_ALBUM_TWO,
@@ -15,20 +20,19 @@ test.describe("authenticated crates (MSW)", () => {
 
     await expect(page).toHaveURL(/\/crates$/);
     await expectNotOnLogin(page);
-    await expect(page.getByTestId("fmdCratesClient")).toBeVisible({
+    await expect(page.getByRole("main", { name: "Crates" })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Crates" }),
-    ).toBeVisible();
-    await expect(page.getByText("1 crate")).toBeVisible();
+    await expect(page.getByRole("status", { name: "1 crate" })).toBeVisible();
     await expect(
       page.getByRole("link", { name: new RegExp(E2E_DEFAULT_CRATE_NAME, "i") }),
     ).toHaveAttribute("href", `/crates/${E2E_DEFAULT_CRATE_ID}`);
     await expect(
-      page.getByText(`${E2E_COLLECTION_RELEASE_COUNT} releases`),
+      page.getByRole("status", {
+        name: `${E2E_COLLECTION_RELEASE_COUNT} releases`,
+      }),
     ).toBeVisible();
-    await expect(page.getByText("Default")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Default" })).toBeVisible();
   });
 
   test("renders crate detail workspace with E2E releases", async ({ page }) => {
@@ -36,11 +40,17 @@ test.describe("authenticated crates (MSW)", () => {
 
     await expect(page).toHaveURL(new RegExp(`/crates/${E2E_DEFAULT_CRATE_ID}`));
     await expectNotOnLogin(page);
-    await expect(page.getByTestId("fmdCrateDetailClient")).toBeVisible({
+    await expect(
+      page.getByRole("main", { name: CRATE_DETAIL_MAIN_LABEL }),
+    ).toBeVisible({
       timeout: 30_000,
     });
-    await expect(page.getByTestId("fmdCrateReleasesTable")).toBeVisible();
-    await expect(page.getByTestId("fmdCrateDetailHeaderActions")).toBeVisible();
+    await expect(
+      page.getByRole("list", { name: CRATE_RELEASES_LIST_LABEL }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: CRATE_ACTIONS_TOOLBAR_LABEL }),
+    ).toBeVisible();
     await expect(
       page.getByRole("combobox", { name: "Select crate" }),
     ).toContainText(E2E_DEFAULT_CRATE_NAME);

@@ -81,14 +81,21 @@ export function DashboardHero({
     <header className={styles.hero} data-testid="fmdDashboardHero">
       <div className={styles.intro}>
         <p className={styles.eyebrow}>{story.heroEyebrow}</p>
-        <h1 className={styles.title}>{story.heroTitle}</h1>
+        <h1 id="dashboard-page-title" className={styles.title}>
+          {story.heroTitle}
+        </h1>
 
         <div className={styles.countBlock}>
-          <div className={styles.countRow}>
+          <div
+            className={styles.countRow}
+            role="status"
+            aria-label={String(stats.totalReleases)}
+          >
             <TickerNumber
               active
               className={styles.count}
               data-testid="fmdDashboardHeroCount"
+              aria-hidden="true"
               value={stats.totalReleases}
             />
             <span className={styles.countLabel}>records</span>
@@ -118,7 +125,10 @@ export function DashboardHero({
       {showMetrics && (
         <aside aria-label="Collection snapshot" className={styles.metricsPanel}>
           <dl className={styles.metricsList}>
-            <div className={styles.metricItem}>
+            <fieldset
+              className={styles.metricItem}
+              aria-label="Estimated value"
+            >
               <dt className={styles.metricLabel}>Estimated value</dt>
               <dd className={styles.metricValue}>
                 {isLoadingValue ? (
@@ -137,9 +147,9 @@ export function DashboardHero({
                   {formatCurrency(collectionValue.maximum)}
                 </dd>
               )}
-            </div>
+            </fieldset>
 
-            <div className={styles.metricItem}>
+            <fieldset className={styles.metricItem} aria-label="Average rating">
               <dt className={styles.metricLabel}>Average rating</dt>
               <dd className={styles.metricValue}>
                 {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "—"}
@@ -147,7 +157,7 @@ export function DashboardHero({
               {stats.averageRating > 0 && (
                 <dd className={styles.metricMeta}>out of 5</dd>
               )}
-            </div>
+            </fieldset>
           </dl>
         </aside>
       )}

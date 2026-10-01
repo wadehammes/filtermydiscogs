@@ -31,6 +31,8 @@ export type InlinePopoverMenuPanelProps = {
   alignOffset?: number;
   positionMethod?: MenuPositionerProps["positionMethod"];
   useOverlayStack?: boolean;
+  portaled?: boolean;
+  portalContainer?: HTMLElement | null;
 };
 
 const InlinePopoverMenuPanel = ({
@@ -45,13 +47,16 @@ const InlinePopoverMenuPanel = ({
   side = variant === "submenu" ? undefined : "bottom",
   sideOffset = variant === "submenu" ? 4 : 8,
   alignOffset,
-  positionMethod = "fixed",
+  positionMethod = "absolute",
   useOverlayStack = true,
+  portaled = true,
+  portalContainer = null,
 }: InlinePopoverMenuPanelProps) => {
   const overlayContainer = usePortaledOverlayContainer();
   const positionerStyle = useOverlayStackPositionerStyle();
-  const container =
-    containerProp ?? (useOverlayStack ? overlayContainer : undefined);
+  const container = portaled
+    ? (containerProp ?? (useOverlayStack ? overlayContainer : undefined))
+    : (portalContainer ?? undefined);
 
   return (
     <Menu.Portal {...definedProps({ container })}>

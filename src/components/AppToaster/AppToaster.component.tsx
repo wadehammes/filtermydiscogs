@@ -35,10 +35,14 @@ function ToastViewportList({ position }: { position: ToastViewportPosition }) {
               <CheckThinIcon className={styles.successIcon} aria-hidden />
             ) : null);
 
+          const toastLiveRole = toastItem.type === "error" ? "alert" : "status";
+
           return (
             <Toast.Root
               key={toastItem.id}
               toast={toastItem}
+              role={toastLiveRole}
+              aria-live={toastItem.type === "error" ? "assertive" : "polite"}
               className={classNames(
                 styles.root,
                 "fmd-toast",
