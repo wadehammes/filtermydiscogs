@@ -188,6 +188,28 @@ describe("useReleasePlaybackSessionPersistence", () => {
     });
   });
 
+  it("useRestorePlaybackSessionFromStorage passes a persisted youtubeVideoId into startPlayback", () => {
+    const release = releaseFactory.withDisplayDefaults();
+
+    writePersistedReleasePlayback({
+      instanceId: String(release.instance_id),
+      trackPosition: "A1",
+      youtubeVideoId: "overrid1234",
+    });
+
+    const { startPlaybackRef } = buildRestoreHarness({
+      allReleases: [release],
+    });
+
+    expect(startPlaybackRef.current).toHaveBeenCalledWith({
+      release,
+      trackPosition: "A1",
+      startPaused: true,
+      rebuildAlbumQueue: false,
+      youtubeVideoId: "overrid1234",
+    });
+  });
+
   it("useRestorePlaybackSessionFromStorage clears stale persisted playback when the release never appears in the collection", () => {
     writePersistedReleasePlayback({
       instanceId: "missing-instance",

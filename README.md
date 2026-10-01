@@ -11,7 +11,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Search & filters**: Search by title, artist, label, or notes; filter by genre/style, year, and format (with ANY / ALL / NONE match modes); save named filter views
 - **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
-- **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
+- **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; set or change a **YouTube link per track** on your collection copy when Discogs has no embed or you want a different upload; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
 - **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link
 - **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
 - **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
@@ -106,7 +106,7 @@ The app will be available at `http://localhost:6767`.
 ## Usage
 
 1. Click **Connect with Discogs** on the home page and authorize the app
-2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, and preview tracks
+2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, preview tracks, and set per-track YouTube links from the track menu when needed
 3. Stage picks in the crate drawer, then manage full crates under **Crates** (reorder, sections, packing, public share)
 4. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 5. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu

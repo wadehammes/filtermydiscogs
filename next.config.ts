@@ -51,7 +51,7 @@ const ContentSecurityPolicy = `
   script-src ${scriptSrc.join(" ")};
   child-src ${youtubeFrameSrc.join(" ")} *.google.com;
   style-src 'self' 'unsafe-inline' *.googleapis.com *.google.com *.googletagmanager.com;
-  img-src 'self' blob: data: https://i.discogs.com https://img.discogs.com https://placehold.co;
+  img-src 'self' blob: data: https://i.discogs.com https://img.discogs.com https://i.ytimg.com https://placehold.co;
   object-src 'none';
   media-src 'self';
   connect-src ${connectSrc.join(" ")};
@@ -176,6 +176,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "i.discogs.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+        pathname: "/vi/**",
       },
     ],
     formats: ["image/webp", "image/avif"],

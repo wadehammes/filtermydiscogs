@@ -19,6 +19,7 @@ export interface AddToQueueParams {
   release: DiscogsRelease;
   trackPosition: string;
   trackTitle: string;
+  youtubeVideoId?: string;
 }
 
 export interface AddPreviewToQueueParams {

@@ -20,6 +20,7 @@ interface UseReleasePlaybackQueueCoordinationParams {
   autoPlayOnQueueAddRef: RefObject<boolean>;
   dispatchSession: Dispatch<PlaybackSessionAction>;
   embedVideoIdRef: RefObject<string | null>;
+  activeVideoIdRef: RefObject<string | null>;
   isPlayingRef: RefObject<boolean>;
   lastSyncedActiveVideoIdRef: RefObject<string | null>;
   previewVideoRef: RefObject<DiscogsVideo | null>;
@@ -36,6 +37,7 @@ export const useReleasePlaybackQueueCoordination = ({
   autoPlayOnQueueAddRef,
   dispatchSession,
   embedVideoIdRef,
+  activeVideoIdRef,
   isPlayingRef,
   lastSyncedActiveVideoIdRef,
   previewVideoRef,
@@ -64,13 +66,21 @@ export const useReleasePlaybackQueueCoordination = ({
       return;
     }
 
+    const youtubeVideoId =
+      embedVideoIdRef.current?.trim() ||
+      activeVideoIdRef.current?.trim() ||
+      undefined;
+
     writePersistedReleasePlayback({
       instanceId: String(currentRelease.instance_id),
       trackPosition,
       queue: queueRef.current.map(toPersistedQueueItem),
+      ...(youtubeVideoId ? { youtubeVideoId } : {}),
     });
   }, [
     activeTrackIndexRef,
+    activeVideoIdRef,
+    embedVideoIdRef,
     isPlayingRef,
     previewVideoRef,
     queueRef,

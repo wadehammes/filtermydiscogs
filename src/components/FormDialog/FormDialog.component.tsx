@@ -22,6 +22,9 @@ export type FormDialogProps = {
   titleId?: string;
   descriptionId?: string;
   titleClassName?: string;
+  headerClassName?: string;
+  descriptionClassName?: string;
+  contentClassName?: string;
   panelClassName?: string;
   panelWidth?: "sm" | "md";
   backdropVariant?: AppDialogProps["backdropVariant"];
@@ -39,6 +42,9 @@ const FormDialogRoot = ({
   titleId: titleIdProp,
   descriptionId: descriptionIdProp,
   titleClassName,
+  headerClassName,
+  descriptionClassName,
+  contentClassName,
   panelClassName,
   panelWidth = "sm",
   backdropVariant,
@@ -66,8 +72,8 @@ const FormDialogRoot = ({
         ariaDescribedBy: description ? descriptionId : undefined,
       })}
     >
-      <div className={styles.content}>
-        <header className={styles.header}>
+      <div className={classNames(styles.content, contentClassName)}>
+        <header className={classNames(styles.header, headerClassName)}>
           {headerAddon ? (
             <div className={styles.titleRow}>
               <Dialog.Title
@@ -89,7 +95,7 @@ const FormDialogRoot = ({
           {description ? (
             <Dialog.Description
               id={descriptionId}
-              className={styles.description}
+              className={classNames(styles.description, descriptionClassName)}
             >
               {description}
             </Dialog.Description>

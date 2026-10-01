@@ -1,5 +1,8 @@
 import { prisma } from "src/lib/db";
-import type { UserTrackRecordBody } from "src/lib/validation/userTrack.schemas";
+import type {
+  UserTrackRecordBody,
+  UserTrackYoutubeOverrideBody,
+} from "src/lib/validation/userTrack.schemas";
 import type { DiscogsRelease } from "src/types";
 import type {
   TopUserTrack,
@@ -10,7 +13,19 @@ const userTrackWhere = (userId: number, trackKey: string) => ({
   user_id_track_key: { user_id: userId, track_key: trackKey },
 });
 
-const metadataFromRecordBody = (body: UserTrackRecordBody, now: Date) => ({
+const metadataFromTrackFields = (
+  body: Pick<
+    UserTrackRecordBody,
+    | "track_title"
+    | "track_position"
+    | "instance_id"
+    | "artist"
+    | "release_title"
+  > & {
+    youtube_id?: string | null | undefined;
+  },
+  now: Date,
+) => ({
   track_title: body.track_title,
   track_position: body.track_position,
   instance_id: body.instance_id,
@@ -27,7 +42,7 @@ export const recordUserTrackEvent = async (
   body: UserTrackRecordBody,
 ): Promise<void> => {
   const now = new Date();
-  const sharedData = metadataFromRecordBody(body, now);
+  const sharedData = metadataFromTrackFields(body, now);
   const where = userTrackWhere(userId, body.track_key);
 
   if (body.event === "play") {
@@ -70,10 +85,38 @@ export const recordUserTrackEvent = async (
   });
 };
 
+export type UserTrackStatsRow = {
+  play_count: number;
+  listen_count: number;
+  youtube_id: string | null;
+};
+
+export const saveUserTrackYoutubeOverride = async (
+  userId: number,
+  body: UserTrackYoutubeOverrideBody,
+): Promise<void> => {
+  const now = new Date();
+  const sharedData = metadataFromTrackFields(body, now);
+  const where = userTrackWhere(userId, body.track_key);
+
+  await prisma.userTrack.upsert({
+    where,
+    create: {
+      user_id: userId,
+      track_key: body.track_key,
+      ...sharedData,
+      play_count: 0,
+      listen_count: 0,
+      first_played_at: now,
+    },
+    update: sharedData,
+  });
+};
+
 export const fetchUserTrackStats = async (
   userId: number,
   trackKeys: string[],
-): Promise<Record<string, { play_count: number; listen_count: number }>> => {
+): Promise<Record<string, UserTrackStatsRow>> => {
   if (trackKeys.length === 0) {
     return {};
   }
@@ -87,20 +130,21 @@ export const fetchUserTrackStats = async (
       track_key: true,
       play_count: true,
       listen_count: true,
+      youtube_id: true,
     },
   });
 
-  const stats: Record<string, { play_count: number; listen_count: number }> =
-    {};
+  const stats: Record<string, UserTrackStatsRow> = {};
 
   for (const key of trackKeys) {
-    stats[key] = { play_count: 0, listen_count: 0 };
+    stats[key] = { play_count: 0, listen_count: 0, youtube_id: null };
   }
 
   for (const row of rows) {
     stats[row.track_key] = {
       play_count: row.play_count,
       listen_count: row.listen_count,
+      youtube_id: row.youtube_id,
     };
   }
 

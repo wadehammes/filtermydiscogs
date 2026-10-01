@@ -1,0 +1,29 @@
+.preview {
+  aspect-ratio: 16 / 9;
+  background: var(--background);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-ui);
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  width: 8.5rem;
+}
+
+.previewReady {
+  border-style: solid;
+}
+
+.previewImage {
+  display: block;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.previewImageVisible {
+  opacity: 1;
+  position: relative;
+}

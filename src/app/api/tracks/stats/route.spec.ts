@@ -55,8 +55,8 @@ describe("/api/tracks/stats", () => {
     });
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
     mockFetchUserTrackStats.mockResolvedValue({
-      "1:A": { play_count: 2, listen_count: 1 },
-      "1:B": { play_count: 0, listen_count: 0 },
+      "1:A": { play_count: 2, listen_count: 1, youtube_id: null },
+      "1:B": { play_count: 0, listen_count: 0, youtube_id: null },
     });
   });
 
@@ -74,8 +74,8 @@ describe("/api/tracks/stats", () => {
       ["1:A", "1:B"],
     );
     expect(json.stats).toEqual({
-      "1:A": { play_count: 2, listen_count: 1 },
-      "1:B": { play_count: 0, listen_count: 0 },
+      "1:A": { play_count: 2, listen_count: 1, youtube_id: null },
+      "1:B": { play_count: 0, listen_count: 0, youtube_id: null },
     });
   });
 });

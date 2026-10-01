@@ -14,6 +14,7 @@ import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { usePlaybackTrackYoutubeOverrides } from "src/hooks/usePlaybackTrackYoutubeOverrides.hook";
 import { useReleasePlaybackPendingResolution } from "src/hooks/useReleasePlaybackPendingResolution.hook";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
 import { useReleasePlaybackQueueCoordination } from "src/hooks/useReleasePlaybackQueueCoordination.hook";
@@ -71,6 +72,7 @@ import {
   resolveActiveVideoId,
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
+  resolvePresentationActiveVideoId,
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
@@ -78,6 +80,11 @@ import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlayback
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
+import {
+  isAwaitingTrackStatsForYoutubeOverride,
+  mergeTrackStatsFromQueryCache,
+} from "src/utils/trackStatsQueryCache";
+import { buildTrackKey } from "src/utils/userTrack";
 import { recordTrackPlayFromQueueItem } from "src/utils/userTrackRecording";
 
 export const useReleasePlaybackProvider = (): {
@@ -238,6 +245,7 @@ export const useReleasePlaybackProvider = (): {
     autoPlayOnQueueAddRef,
     dispatchSession,
     embedVideoIdRef,
+    activeVideoIdRef,
     isPlayingRef,
     lastSyncedActiveVideoIdRef,
     previewVideoRef,
@@ -304,23 +312,108 @@ export const useReleasePlaybackProvider = (): {
     [activeTrack, playbackMatchIndex, previewVideo, videos],
   );
 
-  const activeVideoId = resolveActiveVideoId(activeVideo);
-  activeVideoIdRef.current = activeVideoId;
-
   const isReleasePreview = previewVideo !== null;
   isReleasePreviewRef.current = isReleasePreview;
-
-  const activePlaybackTitle = resolveActivePlaybackTitle({
-    isReleasePreview,
-    previewTitle: activeVideo?.title ?? null,
-    trackTitle: activeTrack?.title ?? null,
-  });
 
   const activeTrackPosition = resolveActiveTrackPosition({
     isReleasePreview,
     trackPosition: activeTrack?.position ?? null,
   });
   activeTrackPositionRef.current = activeTrackPosition;
+
+  const playbackYoutubeOverrideTrackKeys = useMemo(() => {
+    if (!(release && activeTrackPosition)) {
+      return [] as string[];
+    }
+
+    return [buildTrackKey(release.instance_id, activeTrackPosition)];
+  }, [activeTrackPosition, release]);
+
+  const userYoutubeOverrides = usePlaybackTrackYoutubeOverrides({
+    userId: authState.userId,
+    queue: session.queue,
+    additionalTrackKeys: playbackYoutubeOverrideTrackKeys,
+  });
+  const userYoutubeOverridesRef = useRef(userYoutubeOverrides);
+  userYoutubeOverridesRef.current = userYoutubeOverrides;
+
+  const matchedActiveVideoId = resolveActiveVideoId(activeVideo);
+  const matchedActiveVideoIdRef = useRef<string | null>(null);
+  matchedActiveVideoIdRef.current = matchedActiveVideoId;
+
+  const activeVideoId = useMemo(
+    () =>
+      resolvePresentationActiveVideoId(
+        matchedActiveVideoId,
+        release && activeTrack
+          ? userYoutubeOverrides.get(
+              buildTrackKey(release.instance_id, activeTrack.position),
+            )
+          : undefined,
+        embedVideoId,
+      ),
+    [
+      activeTrack,
+      embedVideoId,
+      matchedActiveVideoId,
+      release,
+      userYoutubeOverrides,
+    ],
+  );
+  activeVideoIdRef.current = activeVideoId;
+
+  const activeTrackStats = useMemo(
+    () => mergeTrackStatsFromQueryCache(queryClient, authState.userId),
+    [authState.userId, queryClient, userYoutubeOverrides],
+  );
+
+  const activeTrackKey =
+    release && activeTrack
+      ? buildTrackKey(release.instance_id, activeTrack.position)
+      : null;
+
+  const activeTrackResolvedOverrideId =
+    activeTrackKey != null
+      ? userYoutubeOverrides.get(activeTrackKey)?.trim()
+      : undefined;
+
+  const activeTrackAwaitingStatsOverride = useMemo(
+    () =>
+      isAwaitingTrackStatsForYoutubeOverride({
+        isPlaying,
+        userId: authState.userId,
+        trackKey: activeTrackKey,
+        resolvedOverrideId: activeTrackResolvedOverrideId,
+        stats: activeTrackStats,
+      }),
+    [
+      activeTrackKey,
+      activeTrackResolvedOverrideId,
+      activeTrackStats,
+      authState.userId,
+      isPlaying,
+    ],
+  );
+
+  const activeTrackAwaitingStatsOverrideRef = useRef(
+    activeTrackAwaitingStatsOverride,
+  );
+  activeTrackAwaitingStatsOverrideRef.current =
+    activeTrackAwaitingStatsOverride;
+
+  const activeTrackHasYoutubeOverride = useMemo(() => {
+    if (activeTrackResolvedOverrideId) {
+      return true;
+    }
+
+    return activeTrackAwaitingStatsOverride;
+  }, [activeTrackAwaitingStatsOverride, activeTrackResolvedOverrideId]);
+
+  const activePlaybackTitle = resolveActivePlaybackTitle({
+    isReleasePreview,
+    previewTitle: activeVideo?.title ?? null,
+    trackTitle: activeTrack?.title ?? null,
+  });
 
   const isMiniPlayerVisible = selectIsMiniPlayerVisible(session);
 
@@ -480,6 +573,7 @@ export const useReleasePlaybackProvider = (): {
     isPlaybackReady,
     isPlaybackEmbedMounted,
     activeVideoId,
+    matchedActiveVideoId,
     pendingTrackPosition,
     pendingPreviewVideoUri,
     releaseId,
@@ -494,6 +588,7 @@ export const useReleasePlaybackProvider = (): {
     onEmbedTransportPaused: () => {
       embedStartWatchdogRef.current.disarm();
     },
+    userYoutubeOverridesRef,
   });
 
   clearPlayFromGestureRetriesRef.current = clearPlayFromGestureRetries;
@@ -615,7 +710,14 @@ export const useReleasePlaybackProvider = (): {
       embedWatchdogVideoIdRef.current = resolvedVideoId;
       embedPlaybackConfirmedRef.current = false;
 
-      if (!isPausedRef.current) {
+      const deferWatchdogForPendingOverrideStats =
+        activeTrackAwaitingStatsOverrideRef.current &&
+        matchedActiveVideoIdRef.current === null;
+
+      if (
+        !(isPausedRef.current || deferWatchdogForPendingOverrideStats) &&
+        resolvedVideoId?.trim()
+      ) {
         armEmbedStartWatchdog();
       }
     },
@@ -769,6 +871,7 @@ export const useReleasePlaybackProvider = (): {
     shouldRebuildAlbumQueueRef,
     tracks,
     videos,
+    activeTrackHasYoutubeOverride,
   });
 
   const togglePlaybackBase = useReleasePlaybackTransportToggle({

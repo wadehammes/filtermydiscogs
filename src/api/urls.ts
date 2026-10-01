@@ -36,12 +36,17 @@ import {
   fetchDiscogsReleaseBatch,
   fetchDiscogsSearch,
 } from "src/api/endpoints/release";
-import { fetchTrackStats, recordTrackEvent } from "src/api/endpoints/tracks";
+import {
+  fetchTrackStats,
+  recordTrackEvent,
+  saveTrackYoutubeOverride,
+} from "src/api/endpoints/tracks";
 import {
   fetchUserPreferences,
   updateUserPreferences,
 } from "src/api/endpoints/userPreferences";
 import { dismissSupportProjectToast } from "src/api/endpoints/userSupportToast";
+import { fetchYoutubeOembed } from "src/api/endpoints/youtube";
 
 export const api = {
   addReleaseToCrate,
@@ -75,6 +80,8 @@ export const api = {
   syncCrates,
   recordTrackEvent,
   fetchTrackStats,
+  fetchYoutubeOembed,
+  saveTrackYoutubeOverride,
   updateCollectionNote,
   updateCrate,
   updateCrateLayout,

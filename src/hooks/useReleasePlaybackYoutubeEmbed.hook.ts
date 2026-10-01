@@ -12,7 +12,10 @@ import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQ
 import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
-import { resolveQueueItemYoutubeVideoId } from "src/utils/playbackQueue";
+import {
+  getQueueItemKey,
+  resolveQueueItemYoutubeVideoId,
+} from "src/utils/playbackQueue";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
 import {
   loadAndPlayYoutubeVideo,
@@ -82,6 +85,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   isPlaybackReady: boolean;
   isPlaybackEmbedMounted: boolean;
   activeVideoId: string | null;
+  matchedActiveVideoId: string | null;
   pendingTrackPosition: string | null;
   pendingPreviewVideoUri: string | null;
   releaseId: number | null;
@@ -94,6 +98,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
   onEmbedPlaybackConfirmed?: () => void;
   onEmbedTransportPaused?: () => void;
+  userYoutubeOverridesRef: RefObject<Map<string, string>>;
 }
 
 export const useReleasePlaybackYoutubeEmbed = ({
@@ -105,6 +110,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   isPlaybackReady,
   isPlaybackEmbedMounted,
   activeVideoId,
+  matchedActiveVideoId,
   pendingTrackPosition,
   pendingPreviewVideoUri,
   releaseId,
@@ -117,6 +123,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   onYoutubeEmbedPlaybackError,
   onEmbedPlaybackConfirmed,
   onEmbedTransportPaused,
+  userYoutubeOverridesRef,
 }: UseReleasePlaybackYoutubeEmbedParams) => {
   const {
     playbackIframeRef,
@@ -292,13 +299,17 @@ export const useReleasePlaybackYoutubeEmbed = ({
         cachedReleaseDetail: cached,
       });
 
+      const userYoutubeIdOverride =
+        userYoutubeOverridesRef.current.get(getQueueItemKey(item)) ?? null;
+
       return resolveQueueItemYoutubeVideoId({
         item,
         tracks,
         videos,
+        userYoutubeIdOverride,
       });
     },
-    [queryClient, releaseRef, tracksRef, videosRef],
+    [queryClient, releaseRef, tracksRef, userYoutubeOverridesRef, videosRef],
   );
 
   const syncEmbedForQueueItem = useCallback(
@@ -335,10 +346,14 @@ export const useReleasePlaybackYoutubeEmbed = ({
             return;
           }
 
+          const userYoutubeIdOverride =
+            userYoutubeOverridesRef.current.get(getQueueItemKey(item)) ?? null;
+
           const videoId = resolveQueueItemYoutubeVideoId({
             item,
             tracks: flattenTracklist(detail.tracklist ?? []),
             videos: detail.videos ?? [],
+            userYoutubeIdOverride,
           });
 
           if (
@@ -360,6 +375,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       queryClient,
       releaseRef,
       syncEmbedToVideoId,
+      userYoutubeOverridesRef,
     ],
   );
 
@@ -549,6 +565,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
     syncEmbedPlaybackState,
   ]);
 
+  const previousActiveVideoIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (
       !(activeVideoId && isPlaying) ||
@@ -586,6 +604,42 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playbackVideoTransitionTargetIdRef,
     releaseDetailId,
     releaseId,
+  ]);
+
+  useEffect(() => {
+    const previousActiveVideoId = previousActiveVideoIdRef.current;
+    previousActiveVideoIdRef.current = activeVideoId;
+
+    if (
+      !(activeVideoId && isPlaying) ||
+      isPaused ||
+      pendingTrackPosition ||
+      pendingPreviewVideoUri
+    ) {
+      return;
+    }
+
+    if (
+      previousActiveVideoId !== null ||
+      pendingPlayFromGestureRef.current ||
+      matchedActiveVideoId !== null
+    ) {
+      return;
+    }
+
+    pendingPlayFromGestureRef.current = true;
+    markEmbedTrackSwitchGrace();
+    schedulePlayFromGestureAttempts();
+  }, [
+    activeVideoId,
+    isPaused,
+    isPlaying,
+    markEmbedTrackSwitchGrace,
+    matchedActiveVideoId,
+    pendingPlayFromGestureRef,
+    pendingPreviewVideoUri,
+    pendingTrackPosition,
+    schedulePlayFromGestureAttempts,
   ]);
 
   useEffect(() => {

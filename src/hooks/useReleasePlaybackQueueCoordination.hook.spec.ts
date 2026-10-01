@@ -37,6 +37,7 @@ describe("useReleasePlaybackQueueCoordination", () => {
     const previewVideoRef = { current: null };
     const autoPlayOnQueueAddRef = { current: true };
     const embedVideoIdRef = { current: null as string | null };
+    const activeVideoIdRef = { current: null as string | null };
     const lastSyncedActiveVideoIdRef = { current: null as string | null };
     const setEmbedVideoId = jest.fn();
     const setShouldAutoplayEmbed = jest.fn();
@@ -47,6 +48,7 @@ describe("useReleasePlaybackQueueCoordination", () => {
           autoPlayOnQueueAddRef,
           dispatchSession,
           embedVideoIdRef,
+          activeVideoIdRef,
           isPlayingRef,
           lastSyncedActiveVideoIdRef,
           previewVideoRef,
@@ -71,6 +73,7 @@ describe("useReleasePlaybackQueueCoordination", () => {
       setEmbedVideoId,
       setShouldAutoplayEmbed,
       embedVideoIdRef,
+      activeVideoIdRef,
       lastSyncedActiveVideoIdRef,
     };
   };
@@ -115,6 +118,22 @@ describe("useReleasePlaybackQueueCoordination", () => {
           trackTitle: "Track B1",
         },
       ],
+    });
+  });
+
+  it("persists youtubeVideoId from the active or embed video id while playing", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const harness = buildHarness({ isPlaying: true });
+    harness.releaseRef.current = release;
+    harness.activeVideoIdRef.current = "overrid1234";
+
+    harness.result.current.persistPlaybackSession();
+
+    expect(readPersistedReleasePlayback()).toEqual({
+      instanceId: String(release.instance_id),
+      trackPosition: "A1",
+      youtubeVideoId: "overrid1234",
+      queue: [],
     });
   });
 

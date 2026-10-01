@@ -17,17 +17,20 @@ import {
   parseYoutubeVideoId,
   type ReleasePlaybackMatchIndex,
 } from "src/utils/releasePlayback";
+import { isTrackPositionPlayableWithOverrides } from "src/utils/trackPlaybackYoutube";
 
 interface UseReleaseModalPlaybackQueueParams {
   release: DiscogsRelease;
   tracks: DiscogsTrack[];
   playbackMatchIndex: ReleasePlaybackMatchIndex;
+  userYoutubeIdByPosition: Readonly<Record<string, string>>;
 }
 
 export const useReleaseModalPlaybackQueue = ({
   release,
   tracks,
   playbackMatchIndex,
+  userYoutubeIdByPosition,
 }: UseReleaseModalPlaybackQueueParams) => {
   const playback = useReleasePlayback();
   const releaseInstanceId = String(release.instance_id);
@@ -96,9 +99,13 @@ export const useReleaseModalPlaybackQueue = ({
   const playableTracks = useMemo(
     () =>
       tracks.filter((track) =>
-        playbackMatchIndex.trackVideoByPosition.has(track.position),
+        isTrackPositionPlayableWithOverrides({
+          trackPosition: track.position,
+          playbackMatchIndex,
+          userYoutubeIdByPosition,
+        }),
       ),
-    [playbackMatchIndex, tracks],
+    [playbackMatchIndex, tracks, userYoutubeIdByPosition],
   );
 
   const allPlayableTracksQueued = useMemo(

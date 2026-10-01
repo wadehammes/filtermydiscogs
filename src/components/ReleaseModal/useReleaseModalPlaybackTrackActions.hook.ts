@@ -5,10 +5,9 @@ import type { DiscogsTrack } from "src/types/discogs-release-detail.types";
 import { showPlaybackQueueSuccessToast } from "src/utils/playbackQueueToast";
 import {
   findPreviewVideoForTrackPosition,
-  parseYoutubeVideoId,
   type ReleasePlaybackMatchIndex,
-  resolvePlayableTrackAtPosition,
 } from "src/utils/releasePlayback";
+import { resolveTrackPlaybackYoutubeVideoId } from "src/utils/trackPlaybackYoutube";
 
 interface UseReleaseModalPlaybackTrackActionsParams {
   release: DiscogsRelease;
@@ -16,6 +15,7 @@ interface UseReleaseModalPlaybackTrackActionsParams {
   playbackMatchIndex: ReleasePlaybackMatchIndex;
   releasePreviewVideos: DiscogsVideo[];
   setSelectedTrackPosition: (position: string | null) => void;
+  userYoutubeIdByPosition: Readonly<Record<string, string>>;
 }
 
 export const useReleaseModalPlaybackTrackActions = ({
@@ -24,61 +24,87 @@ export const useReleaseModalPlaybackTrackActions = ({
   playbackMatchIndex,
   releasePreviewVideos,
   setSelectedTrackPosition,
+  userYoutubeIdByPosition,
 }: UseReleaseModalPlaybackTrackActionsParams) => {
   const playback = useReleasePlayback();
 
-  const handleTrackSelect = useCallback(
-    (trackPosition: string) => {
-      const resolved = resolvePlayableTrackAtPosition({
-        trackPosition,
-        tracks,
-        playbackMatchIndex,
-      });
+  const startAlbumTrackWithYoutubeVideoId = useCallback(
+    (trackPosition: string, youtubeVideoId: string) => {
+      const track = tracks.find((row) => row.position === trackPosition);
 
-      if (!resolved) {
+      if (!track) {
         return;
       }
 
       setSelectedTrackPosition(trackPosition);
 
-      const youtubeVideoId = parseYoutubeVideoId(resolved.matchedVideo.uri);
-
       playback.startPlayback({
         release,
         trackPosition,
-        trackTitle: resolved.track.title,
-        ...(youtubeVideoId ? { youtubeVideoId } : {}),
+        trackTitle: track.title,
+        youtubeVideoId,
       });
     },
+    [playback.startPlayback, release, setSelectedTrackPosition, tracks],
+  );
+
+  const handleTrackSelect = useCallback(
+    (trackPosition: string) => {
+      const youtubeVideoId = resolveTrackPlaybackYoutubeVideoId({
+        trackPosition,
+        tracks,
+        playbackMatchIndex,
+        userYoutubeIdByPosition,
+      });
+
+      if (!youtubeVideoId) {
+        return;
+      }
+
+      startAlbumTrackWithYoutubeVideoId(trackPosition, youtubeVideoId);
+    },
     [
-      playback.startPlayback,
       playbackMatchIndex,
-      release,
-      setSelectedTrackPosition,
+      startAlbumTrackWithYoutubeVideoId,
       tracks,
+      userYoutubeIdByPosition,
     ],
   );
 
   const handleTrackQueue = useCallback(
     (trackPosition: string) => {
-      const resolved = resolvePlayableTrackAtPosition({
+      const youtubeVideoId = resolveTrackPlaybackYoutubeVideoId({
         trackPosition,
         tracks,
         playbackMatchIndex,
+        userYoutubeIdByPosition,
       });
 
-      if (!resolved) {
+      if (!youtubeVideoId) {
+        return;
+      }
+
+      const track = tracks.find((row) => row.position === trackPosition);
+
+      if (!track) {
         return;
       }
 
       playback.addToQueue({
         release,
         trackPosition,
-        trackTitle: resolved.track.title,
+        trackTitle: track.title,
+        youtubeVideoId,
       });
       showPlaybackQueueSuccessToast(1);
     },
-    [playback.addToQueue, playbackMatchIndex, release, tracks],
+    [
+      playback.addToQueue,
+      playbackMatchIndex,
+      release,
+      tracks,
+      userYoutubeIdByPosition,
+    ],
   );
 
   const handleReleasePreview = useCallback(
@@ -124,6 +150,7 @@ export const useReleaseModalPlaybackTrackActions = ({
 
   return {
     handleTrackSelect,
+    startAlbumTrackWithYoutubeVideoId,
     handleTrackQueue,
     handleReleasePreview,
     handlePreviewTrackSelect,

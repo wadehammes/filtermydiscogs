@@ -296,11 +296,19 @@ export const resolveQueueItemYoutubeVideoId = ({
   item,
   tracks,
   videos,
+  userYoutubeIdOverride,
 }: {
   item: PlaybackQueueItem;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
+  userYoutubeIdOverride?: string | null;
 }): string | null => {
+  const override = userYoutubeIdOverride?.trim();
+
+  if (override) {
+    return override;
+  }
+
   if (item.previewVideoUri) {
     return parseYoutubeVideoId(item.previewVideoUri);
   }

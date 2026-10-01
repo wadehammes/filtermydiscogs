@@ -23,18 +23,21 @@ export const shouldClearTransportForMissingVideo = ({
   embedVideoId,
   isReleasePreview,
   isReleaseDetailSynced,
+  activeTrackHasYoutubeOverride = false,
 }: {
   tracksLength: number;
   activeVideoId: string | null;
   embedVideoId: string | null;
   isReleasePreview: boolean;
   isReleaseDetailSynced: boolean;
+  activeTrackHasYoutubeOverride?: boolean;
 }): boolean =>
   isReleaseDetailSynced &&
   tracksLength > 0 &&
   activeVideoId === null &&
   embedVideoId === null &&
-  !isReleasePreview;
+  !isReleasePreview &&
+  !activeTrackHasYoutubeOverride;
 
 export const shouldResetActiveTrackIndex = ({
   tracksLength,

@@ -83,6 +83,12 @@ export const UserPreferencesQueryKeys = {
     [...UserPreferencesQueryKeys.all(), userId] as const,
 };
 
+export const YoutubeOembedQueryKeys = {
+  all: () => ["youtubeOembed"] as const,
+  byVideoId: (videoId: string) =>
+    [...YoutubeOembedQueryKeys.all(), videoId] as const,
+};
+
 export const TrackStatsQueryKeys = {
   all: () => ["trackStats"] as const,
   byUserId: (userId: string | number | null) =>
