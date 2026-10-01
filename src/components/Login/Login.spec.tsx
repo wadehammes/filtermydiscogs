@@ -14,11 +14,9 @@ jest.mock("youtube-video-element/react", () => {
 });
 
 import { LoginPageObject } from "src/components/Login/Login.po";
-import {
-  LOGIN_DEMO_PUBLIC_CRATE_PATH,
-  LOGIN_PAGE_UI_COPY,
-} from "src/constants/loginPageCopy.registry";
+import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import { LOGIN_PREVIEW_VIDEO_URL } from "src/constants/loginPreviewMedia";
+import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/publicCrate.constants";
 import {
   LOGIN_PREVIEW_ALT,
   SITE_LEAD,

@@ -1,5 +1,6 @@
 import { cacheLife } from "next/cache";
-import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/loginPageCopy.registry";
+import { isE2eMockYoutubeEmbedEnabled } from "src/constants/e2ePlayback.constants";
+import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants";
 import { isValidCrateId } from "src/lib/crate-id";
 import { prisma } from "src/lib/db";
 import {
@@ -10,9 +11,8 @@ import {
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
 export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
 
-const publicCrateStaticParamFallbackIds = (): string[] => [
-  LOGIN_DEMO_PUBLIC_CRATE_ID,
-];
+const publicCrateStaticParamFallbackIds = (): string[] =>
+  isE2eMockYoutubeEmbedEnabled() ? [LOGIN_DEMO_PUBLIC_CRATE_ID] : [];
 
 async function listRecentPublicCrateIds(limit: number): Promise<string[]> {
   "use cache";
@@ -55,7 +55,7 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
   return findPublicCrateSummaryById(crateId);
 }
 
-async function getPublicCrateMetadataForPageCached(crateId: string): Promise<{
+export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
   crate: { name: string; username: string | null };
   pagination: { total: number };
 } | null> {
@@ -89,15 +89,4 @@ async function getPublicCrateMetadataForPageCached(crateId: string): Promise<{
     );
     return null;
   }
-}
-
-export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
-  crate: { name: string; username: string | null };
-  pagination: { total: number };
-} | null> {
-  if (!process.env.DATABASE_URL) {
-    return null;
-  }
-
-  return getPublicCrateMetadataForPageCached(crateId);
 }

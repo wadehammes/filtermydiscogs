@@ -1,5 +1,5 @@
 import { HttpResponse, http } from "msw";
-import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/loginPageCopy.registry";
+import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { buildE2eCollectionReleases } from "src/tests/msw/e2eCollectionData";
 import { E2E_AUTH_USERNAME } from "src/tests/msw/e2eSession.constants";

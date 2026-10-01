@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { PUBLIC_SHARED_CRATE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
-import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/loginPageCopy.registry";
+import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/publicCrate.constants";
 
 export const PUBLIC_DEMO_CRATE_TITLE = "E2E Public Demo Crate";
 
