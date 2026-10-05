@@ -90,7 +90,7 @@
     "react-hook-form": "^7.89.0",
     "react-intersection-observer": "^11.0.1",
     "sharp": "^0.35.5",
-    "stripe": "^22.6.2",
+    "stripe": "^23.0.0",
     "usehooks-ts": "^3.1.1",
     "youtube-video-element": "^1.9.0",
     "zod": "^4.6.5"
