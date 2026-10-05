@@ -126,7 +126,7 @@
     "jest-location-mock": "^4.0.1",
     "knip": "^6.38.0",
     "lighthouse": "^13.5.0",
-    "msw": "^3.0.0",
+    "msw": "^3.0.1",
     "prisma": "^7.10.0",
     "prisma-json-types-generator": "^5.1.1",
     "stylelint": "^17.15.0",
