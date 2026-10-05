@@ -102,7 +102,7 @@
     "@jest/types": "^30.5.1",
     "@msw/playwright": "^0.7.0",
     "@next/bundle-analyzer": "^16.3.7",
-    "@next/playwright": "16.3.7",
+    "@next/playwright": "16.3.8",
     "@playwright/test": "1.63.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
