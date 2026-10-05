@@ -129,7 +129,7 @@
     "msw": "^3.0.0",
     "prisma": "^7.10.0",
     "prisma-json-types-generator": "^5.1.1",
-    "stylelint": "^17.15.0",
+    "stylelint": "^17.16.0",
     "stylelint-config-css-modules": "^4.6.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-value-no-unknown-custom-properties": "^6.1.1",
