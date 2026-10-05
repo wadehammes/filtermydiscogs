@@ -124,7 +124,7 @@
     "jest-fetch-mock": "^4.2.0",
     "jest-fixed-jsdom": "0.0.11",
     "jest-location-mock": "^4.0.1",
-    "knip": "^6.38.0",
+    "knip": "^6.39.0",
     "lighthouse": "^13.5.0",
     "msw": "^3.0.0",
     "prisma": "^7.10.0",
