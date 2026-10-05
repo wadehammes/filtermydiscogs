@@ -30,7 +30,7 @@ minimumReleaseAgeExclude:
   - fallow-type-aware@3.26.0
   - fallow@3.26.0
 catalog:
-  pg: ^8.23.0
+  pg: ^8.23.1
   '@types/pg': 8.23.1
 overrides:
   svgo: '>=3.3.3'
