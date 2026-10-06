@@ -10,10 +10,10 @@ import {
   lineY,
 } from "@tanstack/charts";
 import { polar, radialArc } from "@tanstack/charts/polar";
+import { scaleBand } from "@tanstack/charts/scales/band";
+import { scaleLinear } from "@tanstack/charts/scales/linear";
+import { scalePoint } from "@tanstack/charts/scales/point";
 import { tooltip } from "@tanstack/charts/tooltip";
-import { scaleBand } from "@tanstack/charts-scales/band";
-import { scaleLinear } from "@tanstack/charts-scales/linear";
-import { scalePoint } from "@tanstack/charts-scales/point";
 import { curveMonotoneX, type PieArcDatum, pie } from "d3-shape";
 import type {
   DistributionData,

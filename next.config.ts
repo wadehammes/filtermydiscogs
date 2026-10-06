@@ -131,8 +131,6 @@ const nextConfig: NextConfig = {
     "@tanstack/react-table",
     "@tanstack/table-core",
     "@tanstack/charts",
-    "@tanstack/charts-scales",
-    "@tanstack/react-charts",
     "msw",
     "tough-cookie",
     "headers-polyfill",
@@ -190,7 +188,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "@tanstack/react-query",
       "@tanstack/react-table",
-      "@tanstack/react-charts",
+      "@tanstack/charts",
       "@dnd-kit/core",
       "@dnd-kit/sortable",
       "@dnd-kit/utilities",
