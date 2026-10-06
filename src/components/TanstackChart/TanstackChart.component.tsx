@@ -6,7 +6,7 @@ import {
   type ChartTooltipBodyRenderContext,
   RendererChart,
   type RendererChartProps,
-} from "@tanstack/react-charts/tooltip";
+} from "@tanstack/charts/react/tooltip";
 import classNames from "classnames";
 import {
   useCallback,
