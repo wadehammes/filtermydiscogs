@@ -4,6 +4,13 @@ import { e2eReleaseCards } from "./authenticatedExpectations";
 export const releaseCardByAlbum = (page: Page, albumTitle: string) =>
   e2eReleaseCards(page).filter({ hasText: albumTitle });
 
+export const releaseTableRowByAlbum = (page: Page, albumTitle: string) =>
+  page
+    .getByRole("table", { name: "Collection releases" })
+    .locator("tbody tr")
+    .filter({ hasText: albumTitle })
+    .first();
+
 export const openReleaseCrateMenuOnCard = async (card: Locator) => {
   const trigger = card.getByTestId("fmdReleaseCrateMenuTrigger");
   await expect(trigger).toBeEnabled();
@@ -23,6 +30,20 @@ export const expectCrateMenuInlineOnCard = async (card: Locator) => {
     .getByTestId("fmdReleaseCrateMenuHost")
     .getByTestId("fmdReleaseCrateMenu");
   await expect(menu).toBeVisible();
+};
+
+export const openReleaseCrateMenuOnTableRow = async (row: Locator) => {
+  const trigger = row.getByTestId("fmdReleaseCrateMenuTrigger");
+  await expect(trigger).toBeEnabled();
+  await trigger.click();
+  const menu = row.page().getByTestId("fmdReleaseCrateMenu");
+  await expect(menu).toBeVisible();
+  return menu;
+};
+
+export const expectCrateMenuPortaledOutsideTableRow = async (row: Locator) => {
+  await expect(row.getByTestId("fmdReleaseCrateMenu")).toHaveCount(0);
+  await expect(row.page().getByTestId("fmdReleaseCrateMenu")).toBeVisible();
 };
 
 export const scrollReleasesCollection = async (

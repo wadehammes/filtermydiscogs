@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { ReleasesTablePageObject } from "src/components/ReleasesTable/ReleasesTable.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  expectReleaseCrateMenuPortaledOutOfHost,
+  openReleaseCrateMenu,
+} from "src/tests/filterControlTestHelpers";
+import {
   expectReleaseOpenPrefetchAfterHover,
   setupReleaseOpenPrefetchHoverTimers,
   teardownReleaseOpenPrefetchHoverTimers,
@@ -75,6 +79,16 @@ describe("ReleasesTable", () => {
     } finally {
       teardownReleaseOpenPrefetchHoverTimers();
     }
+  });
+
+  it("portals the crate menu outside the clipped table cell", async () => {
+    po.renderReleasesTable({
+      releases: [releaseFactory.withDisplayDefaults()],
+    });
+
+    await openReleaseCrateMenu();
+
+    expectReleaseCrateMenuPortaledOutOfHost();
   });
 
   it("calls onReleaseClick when the cover image is clicked", async () => {
