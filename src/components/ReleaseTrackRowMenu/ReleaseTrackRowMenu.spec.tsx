@@ -130,9 +130,29 @@ describe("ReleaseTrackRowMenu", () => {
   it("renders nothing when there are no menu actions", () => {
     po.renderReleaseTrackRowMenu({
       canAddToQueue: false,
+      releaseHasQueueActions: false,
+      omitOnAddToQueue: true,
     });
 
     expect(screen.queryByTestId(po.testId)).toBeNull();
+  });
+
+  it("shows a disabled Add to queue when the release has queue actions but the row cannot queue", async () => {
+    const user = userEvent.setup();
+
+    po.renderReleaseTrackRowMenu({
+      canAddToQueue: false,
+      releaseHasQueueActions: true,
+      omitOnAddToQueue: true,
+    });
+
+    await user.click(screen.getByTestId("fmdReleaseTrackRowMenuTrigger"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitem", { name: "Add to queue" }),
+      ).toHaveAttribute("aria-disabled", "true");
+    });
   });
 
   it("portals the menu panel to document.body when useMenuOverlayStack is enabled", async () => {

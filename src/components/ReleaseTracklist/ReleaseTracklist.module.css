@@ -102,10 +102,6 @@
 
 .trackItemMenuHover {
   @media (hover: hover) {
-    .trackRowMenu:not(:has([data-popup-open]), :has(:focus-visible)) {
-      opacity: 0.55;
-    }
-
     &:hover,
     &:has(.trackRowMenu [data-popup-open]) {
       .trackRowMenu {
@@ -153,9 +149,11 @@
   color: var(--primary);
 }
 
-.queueSlotRestMuted {
-  color: var(--muted-foreground);
-  opacity: 0.55;
+.queueButtonSpacer {
+  display: block;
+  flex-shrink: 0;
+  height: 1.75rem;
+  width: 1.75rem;
 }
 
 .trackRowMenu {
@@ -173,12 +171,12 @@
     z-index: 1;
   }
 
-  @media (hover: hover) {
-    .trackRowMenu:not(:has([data-popup-open]), :has(:focus-visible)) {
-      opacity: 0;
-      pointer-events: none;
-    }
+  .trackRowMenu:not(:has([data-popup-open]), :has(:focus-visible)) {
+    opacity: 0;
+    pointer-events: none;
+  }
 
+  @media (hover: hover) {
     &:hover,
     &:has(.trackRowMenu [data-popup-open]) {
       .trackRowMenu {

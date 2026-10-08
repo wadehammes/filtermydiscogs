@@ -76,10 +76,8 @@ export const ReleaseModalPlaybackTracksSection = ({
   isReleasePreviewPlaying,
   releaseArtistNames,
 }: ReleaseModalPlaybackTracksSectionProps) => {
-  const reserveQueueColumn =
-    hasTracklistPlayback ||
-    releasePreviewVideos.length > 0 ||
-    onEditTrackYoutube !== undefined;
+  const reserveQueueColumn = true;
+  const showMainTracklistQueue = hasTracklistPlayback;
 
   const showAlbumBarPlayback =
     hasTracklistPlayback &&
@@ -109,25 +107,28 @@ export const ReleaseModalPlaybackTracksSection = ({
         releaseArtistNames={releaseArtistNames}
         activeTrackPosition={activeTrackPosition}
         reserveQueueColumn={reserveQueueColumn}
+        alwaysShowTrackRowMenu
         {...definedProps({ trackStatsByPosition })}
         showPlayingIndicatorOnActiveTrack={showAlbumBarPlayback}
         isPlaybackPaused={showAlbumBarPlayback ? isPlaybackPaused : false}
         {...definedProps({
-          isTrackPlayable: hasTracklistPlayback ? isTrackPlayable : undefined,
-          onTrackSelect: hasTracklistPlayback ? handleTrackSelect : undefined,
-          isTrackQueued: hasTracklistPlayback ? isTrackQueued : undefined,
-          isTrackUnqueueable: hasTracklistPlayback
+          isTrackPlayable: showMainTracklistQueue ? isTrackPlayable : undefined,
+          onTrackSelect: showMainTracklistQueue ? handleTrackSelect : undefined,
+          isTrackQueued: showMainTracklistQueue ? isTrackQueued : undefined,
+          isTrackUnqueueable: showMainTracklistQueue
             ? isTrackUnqueueable
             : undefined,
-          onTrackQueue: hasTracklistPlayback ? handleTrackQueue : undefined,
-          onTrackUnqueue: hasTracklistPlayback ? handleTrackUnqueue : undefined,
-          onAddAllToQueue: hasTracklistPlayback
+          onTrackQueue: showMainTracklistQueue ? handleTrackQueue : undefined,
+          onTrackUnqueue: showMainTracklistQueue
+            ? handleTrackUnqueue
+            : undefined,
+          onAddAllToQueue: showMainTracklistQueue
             ? handleAddAllToQueue
             : undefined,
-          onRemoveAllFromQueue: hasTracklistPlayback
+          onRemoveAllFromQueue: showMainTracklistQueue
             ? handleRemoveAllFromQueue
             : undefined,
-          allPlayableTracksQueued: hasTracklistPlayback
+          allPlayableTracksQueued: showMainTracklistQueue
             ? allPlayableTracksQueued
             : undefined,
           onActiveTrackToggle: showAlbumBarPlayback

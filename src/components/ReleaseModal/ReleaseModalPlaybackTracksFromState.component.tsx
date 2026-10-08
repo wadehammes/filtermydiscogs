@@ -64,7 +64,7 @@ export const ReleaseModalPlaybackTracksFromState = ({
   } = playback;
 
   const releaseArtistNames = formatArtistNames(release);
-  const canEditTrackYoutube = authState.isAuthenticated;
+  const canEditTrackYoutube = authState.userId != null;
 
   return (
     <>

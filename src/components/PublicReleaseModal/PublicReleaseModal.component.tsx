@@ -28,6 +28,7 @@ export const PublicReleaseModal = ({
       isOpen={isOpen}
       onClose={onClose}
       testId="fmdPublicReleaseModal"
+      escapeStackingContext
       header={
         <div className={classNames(styles.heroSection)}>
           <PublicReleaseSummaryHero

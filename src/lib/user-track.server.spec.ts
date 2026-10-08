@@ -96,6 +96,38 @@ describe("recordUserTrackEvent", () => {
 });
 
 describe("saveUserTrackYoutubeOverride", () => {
+  it("creates a user_tracks row with zero play and listen counts when saving an override for a track without a Discogs embed", async () => {
+    const body = {
+      track_key: "modal-release-instance:A2",
+      track_title: "Modal Track Two",
+      track_position: "A2",
+      instance_id: "modal-release-instance",
+      youtube_id: "dQw4w9WgXcQ",
+      artist: "Rick Astley",
+      release_title: "Other Album",
+    };
+
+    await saveUserTrackYoutubeOverride(USER_ID, body);
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          user_id_track_key: {
+            user_id: USER_ID,
+            track_key: "modal-release-instance:A2",
+          },
+        },
+        create: expect.objectContaining({
+          track_key: "modal-release-instance:A2",
+          track_position: "A2",
+          play_count: 0,
+          listen_count: 0,
+          youtube_id: "dQw4w9WgXcQ",
+        }),
+      }),
+    );
+  });
+
   it("upserts metadata and youtube_id without incrementing play or listen counts", async () => {
     const body = {
       track_key: "1:A",

@@ -45,6 +45,7 @@ export const ReleaseModal = ({
       isOpen={isOpen}
       onClose={onClose}
       testId="fmdReleaseModal"
+      escapeStackingContext
       panelClassName={showSimilarSection ? styles.modalWide : undefined}
       contentClassName={showAsideSimilar ? styles.modalMain : undefined}
       aside={

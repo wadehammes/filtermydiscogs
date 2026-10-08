@@ -11,7 +11,10 @@ import {
   type ReleaseTrackRowMenuProps,
 } from "./ReleaseTrackRowMenu.component";
 
-export type ReleaseTrackRowMenuRenderProps = Partial<ReleaseTrackRowMenuProps>;
+export type ReleaseTrackRowMenuRenderProps =
+  Partial<ReleaseTrackRowMenuProps> & {
+    omitOnAddToQueue?: boolean;
+  };
 
 const defaultProps = {
   trackTitle: "Test track",
@@ -21,6 +24,7 @@ const defaultProps = {
   hasUserYoutubeOverride: false,
   hasDefaultYoutubeEmbed: false,
   onAddToQueue: () => undefined,
+  releaseHasQueueActions: true,
   useMenuOverlayStack: false,
 } satisfies ReleaseTrackRowMenuProps;
 
@@ -34,7 +38,12 @@ export class ReleaseTrackRowMenuPageObject extends BasePageObject {
   private ReleaseTrackRowMenuElement(
     overrides: ReleaseTrackRowMenuRenderProps = {},
   ): ReactElement {
-    const props = { ...defaultProps, ...overrides };
+    const { omitOnAddToQueue, ...rest } = overrides;
+    let props: ReleaseTrackRowMenuProps = { ...defaultProps, ...rest };
+    if (omitOnAddToQueue) {
+      const { onAddToQueue: _removed, ...withoutAdd } = props;
+      props = withoutAdd;
+    }
 
     return (
       <OverlayStack>

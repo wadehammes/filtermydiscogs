@@ -23,6 +23,7 @@ interface AppDialogProps {
   ariaDescribedBy?: string;
   panelClassName?: string;
   backdropVariant?: AppDialogBackdropVariant;
+  escapeStackingContext?: boolean;
 }
 
 const backdropClassByVariant = (
@@ -53,6 +54,7 @@ export const AppDialog = ({
   ariaDescribedBy,
   panelClassName,
   backdropVariant = "default",
+  escapeStackingContext = false,
 }: AppDialogProps) => {
   usePlaybackPageScrollLock(open);
   const overlayPortal = usePlaybackPageOverlayPortal();
@@ -109,6 +111,7 @@ export const AppDialog = ({
         >
           <div ref={contentRef} tabIndex={-1} className={styles.popupFocusRoot}>
             <OverlayStack
+              escapeStackingContext={escapeStackingContext}
               className={styles.popupOverlayStack}
               popoverZIndex="var(--z-7-tooltip)"
             >
