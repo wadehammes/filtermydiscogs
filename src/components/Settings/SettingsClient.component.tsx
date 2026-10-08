@@ -9,13 +9,14 @@ import {
   viewDispatchAtom,
   viewStateAtom,
 } from "src/atoms/view.atoms";
+import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.component";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
 import { useAuth } from "src/context/auth.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
-import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
+import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
@@ -46,9 +47,6 @@ import {
 const isSettingsSectionId = (value: string): value is SettingsSectionId =>
   SETTINGS_SECTIONS.some((section) => section.id === value);
 
-const CLEAR_DATA_MESSAGE =
-  "This will log you out, clear all authentication tokens, delete all your stored crates and in-app playback stats (per-track play and listen counts), remove product analytics events linked to your account, and remove all saved preferences and cached data, including your analytics cookie choice. You will need to authorize the app again to continue using Filter My Discogs.";
-
 const COMPLETE_LOGOUT_MESSAGE =
   "This signs you out and revokes stored OAuth tokens on this browser. Your crates and local preferences stay saved—you can sign in again with Discogs when you are ready.";
 
@@ -66,7 +64,13 @@ const showPreferencesSaveErrorToast = () => {
 export default function SettingsClient() {
   const { logout, state: authState } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
-  const { clearAllUserData, isClearing } = useClearAllUserData();
+  const {
+    closeClearDataDialog,
+    handleConfirmClear,
+    isClearDataDialogOpen,
+    isClearing,
+    openClearDataDialog,
+  } = useConfirmClearAllUserData();
   const [activeSection, setActiveSection] = useState<SettingsSectionId>(
     DEFAULT_SETTINGS_SECTION,
   );
@@ -79,7 +83,6 @@ export default function SettingsClient() {
       setActiveSection(section);
     }
   }, [searchParams]);
-  const [showClearDataDialog, setShowClearDataDialog] = useState(false);
   const [showCompleteLogoutDialog, setShowCompleteLogoutDialog] =
     useState(false);
   const {
@@ -236,7 +239,7 @@ export default function SettingsClient() {
         return (
           <SettingsDataPanel
             isClearing={isClearing}
-            onClearData={() => setShowClearDataDialog(true)}
+            onClearData={openClearDataDialog}
           />
         );
       default:
@@ -341,21 +344,12 @@ export default function SettingsClient() {
         isConfirming={isSyncing}
       />
 
-      <ConfirmDialog
-        isOpen={showClearDataDialog}
-        title="Clear all stored data"
-        message={CLEAR_DATA_MESSAGE}
-        confirmLabel={isClearing ? "Clearing..." : "Clear data"}
-        cancelLabel="Cancel"
-        variant="danger"
+      <ClearAllDataConfirmDialog
+        isOpen={isClearDataDialogOpen}
+        onClose={closeClearDataDialog}
         onConfirm={() => {
-          void clearAllUserData()
-            .then(() => setShowClearDataDialog(false))
-            .catch(() => {
-              toast.error("Failed to clear all data. Please try again.");
-            });
+          void handleConfirmClear();
         }}
-        onCancel={() => setShowClearDataDialog(false)}
         isConfirming={isClearing}
       />
     </>

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { SettingsClientPageObject } from "src/components/Settings/SettingsClient.po";
+import { CLEAR_ALL_DATA_CONFIRM_PHRASE } from "src/constants/clearData.constants";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import {
@@ -59,8 +60,11 @@ describe("SettingsClient", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "Clear all stored data" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/delete all stored crates/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/delete all your stored crates/i),
+      screen.getByRole("textbox", {
+        name: /type delete my account to confirm/i,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -129,6 +133,39 @@ describe("SettingsClient", () => {
 
     expect(localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY)).toBe("granted");
     expect(checkbox).toBeChecked();
+  });
+
+  it("clears stored data only after typing the confirm phrase", async () => {
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    await user.click(
+      screen.getByRole("button", { name: "Data Stored app data" }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Clear all stored data" }),
+    );
+
+    const dialog = screen.getByRole("dialog");
+    const confirmButton = within(dialog).getByRole("button", {
+      name: "Clear all data",
+    });
+    expect(confirmButton).toBeDisabled();
+
+    await user.type(
+      within(dialog).getByRole("textbox", {
+        name: /type delete my account to confirm/i,
+      }),
+      CLEAR_ALL_DATA_CONFIRM_PHRASE,
+    );
+    expect(confirmButton).toBeEnabled();
+
+    await user.click(confirmButton);
+
+    await waitFor(() => {
+      expect(po.mockApi.clearData).toHaveBeenCalled();
+    });
   });
 
   it("shows analytics consent in the clear-data dialog message", async () => {
