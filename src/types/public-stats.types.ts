@@ -3,4 +3,6 @@ export type PublicCommunityStats = {
   totalCrates: number;
   totalPublicCrates: number;
   totalReleases: number;
+  totalTrackPlays: number;
+  totalTracksSaved: number;
 };

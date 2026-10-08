@@ -185,7 +185,7 @@ Authenticated crate handlers return **`privateRouteJson`** / **`createErrorRespo
 
 ## Public community stats
 
-Aggregate crate totals for the public footer (crates, public crates, saved releases, distinct collectors) are loaded server-side via [`src/lib/public-stats.server.ts`](../../src/lib/public-stats.server.ts): one **`$queryRaw`** round trip against Postgres table names from Prisma **`@@map`** — **`"crates"`** and **`"crate_releases"`** (not model names **`Crate`** / **`CrateRelease`**), cached for five minutes with `unstable_cache`. No auth required; if the database is unavailable the stats block is omitted.
+Aggregate community totals for the public footer (six metrics in a 3×2 grid at tablet+, display order: collectors → crate/release totals → track totals) are loaded server-side via [`src/lib/public-stats.server.ts`](../../src/lib/public-stats.server.ts): one **`$queryRaw`** round trip against Postgres table names from Prisma **`@@map`** — **`"crates"`**, **`"crate_releases"`**, and **`"user_tracks"`** — cached for five minutes with `unstable_cache`. **`totalTracksSaved`** counts **`user_tracks`** rows where **`youtube_id IS NOT NULL`**; **`totalTrackPlays`** is **`SUM(play_count)`** on **`user_tracks`**; **`totalCollectors`** is distinct **`user_id`** on **`crates`**. No auth required; if the database is unavailable the stats block is omitted.
 
 ## Public crates
 
