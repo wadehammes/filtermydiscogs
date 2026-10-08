@@ -14,10 +14,17 @@ import {
 import {
   expectCrateMenuInlineOnCard,
   expectCrateMenuPortaledOutsideCard,
+  expectCrateMenuPortaledOutsideTableRow,
   openReleaseCrateMenuOnCard,
+  openReleaseCrateMenuOnTableRow,
   releaseCardByAlbum,
+  releaseTableRowByAlbum,
   scrollReleasesCollection,
 } from "./helpers/releaseCrateMenu";
+import {
+  expectListTableVisible,
+  switchCollectionView,
+} from "./helpers/releasesCollection";
 import { gotoReleasesWorkspace } from "./helpers/releasesWorkspace";
 import { isDesktopAppNavViewport } from "./helpers/viewportLayout";
 
@@ -131,6 +138,35 @@ test.describe("authenticated releases crate menu (MSW)", () => {
       await scrollReleasesCollection(page, 320);
       await expect(page.getByTestId("fmdReleaseCrateMenu")).toBeVisible();
       await expectCrateMenuInlineOnCard(card);
+    });
+
+    test("desktop list table portals the crate menu outside the clipped cell", async ({
+      page,
+    }) => {
+      await switchCollectionView(page, "list");
+      await expectListTableVisible(page);
+
+      const row = releaseTableRowByAlbum(page, E2E_ALBUM_ONE);
+      await openReleaseCrateMenuOnTableRow(row);
+      await expectCrateMenuPortaledOutsideTableRow(row);
+      await expect(
+        page.getByRole("menuitemcheckbox", { name: E2E_DEFAULT_CRATE_NAME }),
+      ).toBeVisible();
+    });
+
+    test("desktop list table keeps the portaled crate menu visible while scrolling", async ({
+      page,
+    }) => {
+      await switchCollectionView(page, "list");
+      await expectListTableVisible(page);
+
+      const row = releaseTableRowByAlbum(page, E2E_ALBUM_ONE);
+      await openReleaseCrateMenuOnTableRow(row);
+      await expectCrateMenuPortaledOutsideTableRow(row);
+
+      await scrollReleasesCollection(page, 320);
+      await expect(page.getByTestId("fmdReleaseCrateMenu")).toBeVisible();
+      await expectCrateMenuPortaledOutsideTableRow(row);
     });
   });
 });

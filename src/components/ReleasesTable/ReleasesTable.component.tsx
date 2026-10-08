@@ -84,6 +84,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   <ReleaseCrateMenu
                     release={release}
                     triggerVariant="custom"
+                    portaled
                     actionClass={(active) =>
                       classNames(styles.crateTrigger, {
                         [styles.crateTriggerActive]: active,

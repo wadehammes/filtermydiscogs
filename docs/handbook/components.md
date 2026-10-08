@@ -171,7 +171,7 @@ Card view renders via [`ReleasesGrid.module.css`](../../src/components/ReleasesC
 |-------------|-----------------|
 | [`ReleaseCardOverlayActions`](../../src/components/ReleaseCard/ReleaseCardOverlayActions.component.tsx) | Default **`triggerVariant="card"`**; **`layout="vertical"`** on mobile card column |
 | [`ReleaseListItem`](../../src/components/ReleaseListItem/ReleaseListItem.component.tsx) | **`triggerVariant="custom"`** + **`triggerStyle="text"`**; row **`.inCrate`** from **`useCrateState().activeCrateInstanceIds`** |
-| [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) | First column — compact icon trigger (**`triggerVariant="custom"`**, **`.crateTrigger`**) |
+| [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) | First column — compact icon trigger (**`triggerVariant="custom"`**, **`portaled`**, **`.crateTrigger`**) so the menu escapes **`.dataCell`** **`overflow: hidden`** |
 | [`ReleaseMiniPlayer`](../../src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component.tsx) | Circular transport-bar control (**`triggerVariant="custom"`**, **`.controlButton`**) |
 | [`ReleaseSummaryHeroToolbar`](../../src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component.tsx) / [`ReleaseSummaryHero`](../../src/components/ReleaseSummaryHero/ReleaseSummaryHero.component.tsx) | **`ModalToolbar`** **`.actionButton`** / **`.actionButtonActive`** |
 | [`ReleaseSimilarReleaseItem`](../../src/components/ReleaseSimilarReleaseItem/ReleaseSimilarReleaseItem.component.tsx) | Vertical **`overlayAction`** stack (modal similar sidebar) |
