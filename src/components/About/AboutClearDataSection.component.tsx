@@ -3,14 +3,21 @@
 import classNames from "classnames";
 import Link from "next/link";
 import Button from "src/components/Button/Button.component";
+import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.component";
 import { ABOUT_DATA_DELETION_ITEMS } from "src/constants/about.constants";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import typography from "src/styles/modules/typography.module.css";
 import styles from "./About.module.css";
 
 export const AboutClearDataSection = () => {
-  const { confirmClearAllUserData, isAuthenticated, isClearing } =
-    useConfirmClearAllUserData();
+  const {
+    closeClearDataDialog,
+    handleConfirmClear,
+    isAuthenticated,
+    isClearDataDialogOpen,
+    isClearing,
+    openClearDataDialog,
+  } = useConfirmClearAllUserData();
 
   return (
     <section
@@ -38,12 +45,20 @@ export const AboutClearDataSection = () => {
         <Button
           variant="danger"
           size="md"
-          onPress={confirmClearAllUserData}
+          onPress={openClearDataDialog}
           disabled={isClearing || !isAuthenticated}
           aria-label="Clear all data"
         >
           {isClearing ? "Clearing..." : "Clear All Data"}
         </Button>
+        <ClearAllDataConfirmDialog
+          isOpen={isClearDataDialogOpen}
+          onClose={closeClearDataDialog}
+          onConfirm={() => {
+            void handleConfirmClear();
+          }}
+          isConfirming={isClearing}
+        />
         <div className={styles.clearDataMeta}>
           {!isAuthenticated && (
             <p className={styles.clearDataNote}>

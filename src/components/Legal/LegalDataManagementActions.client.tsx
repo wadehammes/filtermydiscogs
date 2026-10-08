@@ -1,12 +1,19 @@
 "use client";
 
 import Button from "src/components/Button/Button.component";
+import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.component";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import styles from "./Legal.module.css";
 
 export function LegalDataManagementActions() {
-  const { confirmClearAllUserData, isAuthenticated, isClearing } =
-    useConfirmClearAllUserData();
+  const {
+    closeClearDataDialog,
+    handleConfirmClear,
+    isAuthenticated,
+    isClearDataDialogOpen,
+    isClearing,
+    openClearDataDialog,
+  } = useConfirmClearAllUserData();
 
   return (
     <>
@@ -14,7 +21,7 @@ export function LegalDataManagementActions() {
         <Button
           variant="danger"
           size="md"
-          onPress={confirmClearAllUserData}
+          onPress={openClearDataDialog}
           disabled={isClearing || !isAuthenticated}
           aria-label="Clear all data"
         >
@@ -26,6 +33,14 @@ export function LegalDataManagementActions() {
           You must be logged in to clear data.
         </p>
       )}
+      <ClearAllDataConfirmDialog
+        isOpen={isClearDataDialogOpen}
+        onClose={closeClearDataDialog}
+        onConfirm={() => {
+          void handleConfirmClear();
+        }}
+        isConfirming={isClearing}
+      />
     </>
   );
 }

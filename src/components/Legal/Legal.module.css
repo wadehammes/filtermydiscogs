@@ -4,6 +4,28 @@
   width: 100%;
 }
 
+.dataManagementPanel {
+  background: color-mix(in srgb, var(--destructive) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--destructive) 28%, var(--border));
+
+  & h2 {
+    color: color-mix(in srgb, var(--destructive) 88%, var(--foreground));
+  }
+
+  & ul {
+    border-top: 1px solid
+      color-mix(in srgb, var(--destructive) 18%, var(--border));
+    padding-block-start: var(--space-4);
+  }
+
+  & [data-prose-actions] {
+    border-top: 1px solid
+      color-mix(in srgb, var(--destructive) 18%, var(--border));
+    margin-block-start: var(--space-2);
+    padding-block-start: var(--space-4);
+  }
+}
+
 .inlineLink {
   color: var(--link);
   text-decoration: none;
@@ -19,7 +41,7 @@
   align-items: center;
   display: flex;
   justify-content: center;
-  margin-block-start: var(--space-6);
+  margin-block-start: 0;
 }
 
 .clearDataNote {

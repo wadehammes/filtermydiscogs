@@ -1,10 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-import {
-  CLEAR_ALL_DATA_CONFIRM_MESSAGE,
-  CLEAR_ALL_DATA_ERROR_MESSAGE,
-} from "src/constants/clearData.constants";
+import { useCallback, useState } from "react";
+import { CLEAR_ALL_DATA_ERROR_MESSAGE } from "src/constants/clearData.constants";
 import { useAuth } from "src/context/auth.context";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import { toast } from "src/utils/toast";
@@ -12,14 +9,23 @@ import { toast } from "src/utils/toast";
 export const useConfirmClearAllUserData = () => {
   const { state: authState } = useAuth();
   const { clearAllUserData, isClearing } = useClearAllUserData();
+  const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
 
-  const confirmClearAllUserData = useCallback(async () => {
-    if (!confirm(CLEAR_ALL_DATA_CONFIRM_MESSAGE)) {
+  const openClearDataDialog = useCallback(() => {
+    setIsClearDataDialogOpen(true);
+  }, []);
+
+  const closeClearDataDialog = useCallback(() => {
+    if (isClearing) {
       return;
     }
+    setIsClearDataDialogOpen(false);
+  }, [isClearing]);
 
+  const handleConfirmClear = useCallback(async () => {
     try {
       await clearAllUserData();
+      setIsClearDataDialogOpen(false);
     } catch (error) {
       console.error("Error clearing data:", error);
       toast.error(CLEAR_ALL_DATA_ERROR_MESSAGE);
@@ -27,8 +33,11 @@ export const useConfirmClearAllUserData = () => {
   }, [clearAllUserData]);
 
   return {
-    confirmClearAllUserData,
-    isClearing,
+    closeClearDataDialog,
+    handleConfirmClear,
     isAuthenticated: authState.isAuthenticated,
+    isClearDataDialogOpen,
+    isClearing,
+    openClearDataDialog,
   };
 };
