@@ -5,11 +5,15 @@ import {
   buildTrackKey,
   buildUserTrackFieldsFromQueueItem,
   buildUserTrackFieldsFromRelease,
+  buildYoutubeThumbnailUrl,
   formatTopUserTrackHeadLabel,
   formatUserTrackListenLabel,
   formatUserTrackListenTooltip,
   formatUserTrackStatsLabel,
   mapTrackStatsByPosition,
+  mapUserYoutubeIdsByPosition,
+  normalizeTrackStatsKeys,
+  normalizeYoutubeVideoInput,
 } from "src/utils/userTrack";
 
 describe("userTrack utils", () => {
@@ -77,6 +81,66 @@ describe("userTrack utils", () => {
     ).toBe(
       "A listen is 30+ seconds in a row, or the full track. Skipping early does not count.",
     );
+  });
+
+  it("buildYoutubeThumbnailUrl points at YouTube hqdefault art for a video id", () => {
+    expect(buildYoutubeThumbnailUrl("dQw4w9WgXcQ")).toBe(
+      "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+    );
+    expect(buildYoutubeThumbnailUrl('"><img')).toBeNull();
+  });
+
+  it("normalizeYoutubeVideoInput accepts bare ids and watch URLs", () => {
+    expect(normalizeYoutubeVideoInput("dQw4w9WgXcQ")).toBe("dQw4w9WgXcQ");
+    expect(
+      normalizeYoutubeVideoInput("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+    ).toBe("dQw4w9WgXcQ");
+    expect(normalizeYoutubeVideoInput("not-a-link")).toBeNull();
+  });
+
+  it("mapUserYoutubeIdsByPosition maps stored youtube_id values by track position", () => {
+    expect(
+      mapUserYoutubeIdsByPosition(
+        "42",
+        [{ position: "A1" }, { position: "B1" }],
+        {
+          "42:A1": {
+            play_count: 0,
+            listen_count: 0,
+            youtube_id: "abc12345678",
+          },
+          "42:B1": { play_count: 1, listen_count: 0, youtube_id: null },
+        },
+      ),
+    ).toEqual({ A1: "abc12345678" });
+  });
+
+  it("mapUserYoutubeIdsByPosition trims stored youtube_id values", () => {
+    expect(
+      mapUserYoutubeIdsByPosition("42", [{ position: "A1" }], {
+        "42:A1": {
+          play_count: 0,
+          listen_count: 0,
+          youtube_id: "  abc12345678  ",
+        },
+      }),
+    ).toEqual({ A1: "abc12345678" });
+  });
+
+  it("normalizeTrackStatsKeys dedupes and caps keys for stats API", () => {
+    const keys = Array.from({ length: 101 }, (_, index) => `key-${index}`);
+
+    expect(normalizeTrackStatsKeys(["a", "a", "b"])).toEqual(["a", "b"]);
+    expect(normalizeTrackStatsKeys(keys)).toHaveLength(100);
+  });
+
+  it("normalizeTrackStatsKeys keeps prioritized keys when capping", () => {
+    expect(
+      normalizeTrackStatsKeys(["a", "b", "c", "d"], {
+        max: 3,
+        prioritizeKeys: ["d"],
+      }),
+    ).toEqual(["d", "a", "b"]);
   });
 
   it("mapTrackStatsByPosition keys rows by track position", () => {

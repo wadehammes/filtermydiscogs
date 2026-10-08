@@ -16,10 +16,12 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import { userTrackStatsResponseFactory } from "src/tests/factories/UserTrackStatsResponse.factory";
 import { expectReleaseCrateMenuAbovePlaybackDock } from "src/tests/filterControlTestHelpers";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import { setupDefaultTrackStatsApiMock } from "src/tests/mocks/setupDefaultTrackStatsApiMock";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
   TestProviders,
@@ -140,6 +142,7 @@ describe("ReleaseMiniPlayer", () => {
       new Error("Preferences API request failed"),
     );
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
+    setupDefaultTrackStatsApiMock(mockApi);
     mockApiResponse(
       true,
       mockApi.addReleaseToCrate,
@@ -165,6 +168,45 @@ describe("ReleaseMiniPlayer", () => {
 
     await waitFor(() => {
       expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
+    });
+  });
+
+  it("shows the video toggle when playback relies on a user YouTube override and the release has no Discogs videos", async () => {
+    const overrideVideoId = "abc12345678";
+    const trackKey = `${INSTANCE_ID}:A`;
+
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      discogsReleaseJsonFactory.withTracklistAndVideos({
+        id: RELEASE_ID,
+        videos: [],
+      }),
+    );
+    mockApiResponse(
+      true,
+      mockApi.fetchTrackStats,
+      userTrackStatsResponseFactory.build({
+        stats: {
+          [trackKey]: {
+            play_count: 0,
+            listen_count: 0,
+            youtube_id: overrideVideoId,
+          },
+        },
+      }),
+      new Error("Track stats API request failed"),
+    );
+
+    const user = userEvent.setup();
+
+    render(<PlaybackStarter />, { wrapper: createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Show video|Hide video/ }),
+      ).toBeInTheDocument();
     });
   });
 

@@ -143,6 +143,9 @@ export const useRestorePlaybackSessionFromStorage = ({
         trackPosition: persisted.trackPosition,
         startPaused: true,
         rebuildAlbumQueue: false,
+        ...(persisted.youtubeVideoId
+          ? { youtubeVideoId: persisted.youtubeVideoId }
+          : {}),
       });
       return;
     }

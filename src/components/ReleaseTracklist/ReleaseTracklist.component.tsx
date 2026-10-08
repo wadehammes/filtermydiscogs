@@ -4,6 +4,7 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import classNames from "classnames";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
+import { ReleaseTrackRowMenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenu.component";
 import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
@@ -39,6 +40,8 @@ interface ReleaseTracklistProps {
   onRemoveAllFromQueue?: () => void;
   allPlayableTracksQueued?: boolean;
   onActiveTrackToggle?: () => void;
+  onEditTrackYoutube?: (position: string) => void;
+  hasUserYoutubeOverride?: (position: string) => boolean;
 }
 
 export const ReleaseTracklist = ({
@@ -61,9 +64,13 @@ export const ReleaseTracklist = ({
   allPlayableTracksQueued = false,
   onActiveTrackToggle,
   trackStatsByPosition,
+  onEditTrackYoutube,
+  hasUserYoutubeOverride,
 }: ReleaseTracklistProps) => {
   const hasSelectableTracks = onTrackSelect !== undefined;
   const showQueueColumn = onTrackQueue !== undefined || reserveQueueColumn;
+  const showTrackActionsColumn =
+    onEditTrackYoutube !== undefined || showQueueColumn;
 
   if (tracks.length === 0) {
     return (
@@ -104,6 +111,26 @@ export const ReleaseTracklist = ({
               (!isQueued || (isActive && !canUnqueue));
             const showQueueControl =
               canPlayTrack && (onTrackQueue !== undefined || canUnqueue);
+            const hasOverride =
+              hasUserYoutubeOverride?.(track.position) ?? false;
+            const hasDefaultYoutubeEmbed =
+              (isTrackPlayable?.(track.position) ?? false) && !hasOverride;
+            const showTrackRowMenu =
+              showTrackActionsColumn &&
+              (onEditTrackYoutube !== undefined ||
+                (showQueueControl &&
+                  (onTrackQueue !== undefined || canUnqueue)));
+            const showQueuedAtRest = showQueueControl && isQueued;
+            const showQueueActionsSlot =
+              showTrackActionsColumn &&
+              (showTrackRowMenu ||
+                showQueuedAtRest ||
+                (reserveQueueColumn && showQueueColumn));
+            const showMutedQueueAtRest =
+              showQueueActionsSlot &&
+              !showQueuedAtRest &&
+              !hasOverride &&
+              !showTrackRowMenu;
             const trackCreditsLine = formatTrackCreditsLine({
               track,
               releaseArtistNames,
@@ -146,7 +173,13 @@ export const ReleaseTracklist = ({
                 className={classNames(styles.trackItem, {
                   [styles.trackItemActive]: isActive,
                   [styles.trackItemStatic]: !canPlayTrack,
+                  [styles.trackItemMenuHover]: showTrackRowMenu,
+                  [styles.trackItemQueuedAtRest]:
+                    showQueuedAtRest && showTrackRowMenu,
                 })}
+                {...(showQueuedAtRest && showTrackRowMenu
+                  ? { "data-track-queued-at-rest": "" }
+                  : {})}
               >
                 {canPlayTrack ? (
                   <button
@@ -184,57 +217,71 @@ export const ReleaseTracklist = ({
                       {track.duration}
                     </span>
                   ) : null}
-                  {showQueueColumn ? (
-                    showQueueControl ? (
-                      isQueued && canUnqueue ? (
-                        <IconButton
-                          variant="minus"
+                  {showQueueActionsSlot ? (
+                    <div className={styles.queueActionsSlot}>
+                      {showQueuedAtRest ? (
+                        <span
                           className={classNames(
-                            styles.queueButton,
-                            styles.queueButtonQueued,
+                            styles.queueSlotRest,
+                            styles.queueSlotRestQueued,
                           )}
-                          iconClassName={styles.queueButtonIcon}
-                          onClick={() => {
-                            onTrackUnqueue(track.position);
-                          }}
-                          aria-label={`Remove ${track.title} from queue`}
-                          title="Remove from queue"
-                          data-testid="fmdReleaseTrackQueueButton"
+                          role="status"
+                          aria-label="In queue"
+                          title="In queue"
+                          data-testid="fmdReleaseTrackQueueStatus"
                         >
-                          <span data-testid="fmdReleaseTrackQueueRemoveIcon">
-                            <MinusIcon />
-                          </span>
-                        </IconButton>
-                      ) : (
-                        <IconButton
-                          variant="queue"
-                          className={classNames(styles.queueButton, {
-                            [styles.queueButtonQueued]:
-                              isQueued && !canAddToQueue,
-                          })}
-                          iconClassName={styles.queueButtonIcon}
-                          onClick={() => {
-                            onTrackQueue?.(track.position);
-                          }}
-                          disabled={!canAddToQueue}
-                          aria-label={
-                            canAddToQueue
-                              ? `Add ${track.title} to queue`
-                              : `${track.title} is already in the queue`
-                          }
-                          title={canAddToQueue ? "Add to queue" : "In queue"}
-                          data-testid="fmdReleaseTrackQueueButton"
-                        >
-                          {canAddToQueue ? (
-                            <ListPlusThinIcon />
+                          {canUnqueue ? (
+                            <span data-testid="fmdReleaseTrackQueueRemoveIcon">
+                              <MinusIcon />
+                            </span>
                           ) : (
-                            <CheckThinIcon />
+                            <CheckThinIcon data-testid="fmdReleaseTrackQueueCheckIcon" />
                           )}
-                        </IconButton>
-                      )
-                    ) : (
-                      <span className={styles.queueButtonSpacer} aria-hidden />
-                    )
+                        </span>
+                      ) : showMutedQueueAtRest ? (
+                        <span
+                          className={classNames(
+                            styles.queueSlotRest,
+                            styles.queueSlotRestMuted,
+                          )}
+                          aria-hidden
+                          data-testid="fmdReleaseTrackQueueIdleIcon"
+                        >
+                          <ListPlusThinIcon />
+                        </span>
+                      ) : null}
+                      {showTrackRowMenu ? (
+                        <ReleaseTrackRowMenu
+                          className={styles.trackRowMenu}
+                          trackTitle={track.title}
+                          triggerClassName={styles.queueButton}
+                          canAddToQueue={canAddToQueue}
+                          canUnqueue={canUnqueue}
+                          isQueued={isQueued}
+                          hasUserYoutubeOverride={hasOverride}
+                          hasDefaultYoutubeEmbed={hasDefaultYoutubeEmbed}
+                          {...definedProps({
+                            onAddToQueue:
+                              showQueueControl && onTrackQueue
+                                ? () => {
+                                    onTrackQueue(track.position);
+                                  }
+                                : undefined,
+                            onRemoveFromQueue:
+                              showQueueControl && onTrackUnqueue
+                                ? () => {
+                                    onTrackUnqueue(track.position);
+                                  }
+                                : undefined,
+                            onEditYoutube: onEditTrackYoutube
+                              ? () => {
+                                  onEditTrackYoutube(track.position);
+                                }
+                              : undefined,
+                          })}
+                        />
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               </li>

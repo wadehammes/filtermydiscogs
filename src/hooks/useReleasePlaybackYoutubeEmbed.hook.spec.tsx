@@ -57,6 +57,7 @@ const buildHarness = ({
   const releaseRef = { current: release };
   const tracksRef = { current: [] as never[] };
   const videosRef = { current: [] as never[] };
+  const userYoutubeOverridesRef = { current: new Map<string, string>() };
   const setEmbedVideoId = jest.fn();
   const setShouldAutoplayEmbed = jest.fn();
   const setIsPlaybackEmbedMounted = jest.fn();
@@ -95,6 +96,7 @@ const buildHarness = ({
         isPlaybackReady: true,
         isPlaybackEmbedMounted,
         activeVideoId: null,
+        matchedActiveVideoId: null,
         pendingTrackPosition: null,
         pendingPreviewVideoUri: null,
         releaseId: release.basic_information.id ?? null,
@@ -104,6 +106,7 @@ const buildHarness = ({
         setIsPlaybackEmbedMounted,
         clearPlaybackVideoUiLoading,
         onPlaybackEnded,
+        userYoutubeOverridesRef,
         ...definedProps({
           onYoutubeEmbedPlaybackError,
           onEmbedPlaybackConfirmed,

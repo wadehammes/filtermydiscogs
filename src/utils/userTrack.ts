@@ -6,13 +6,51 @@ import { formatArtistNames } from "src/utils/releaseDisplay";
 import {
   findTrackIndexByPosition,
   flattenTracklist,
+  parseYoutubeVideoId,
 } from "src/utils/releasePlayback";
 
 export const TRACK_LISTEN_MIN_MS = 30_000;
 
+export const USER_TRACK_STATS_KEYS_MAX = 100;
+
+export type NormalizeTrackStatsKeysOptions = {
+  max?: number;
+  prioritizeKeys?: readonly string[];
+};
+
+export const normalizeTrackStatsKeys = (
+  trackKeys: readonly string[],
+  options?: number | NormalizeTrackStatsKeysOptions,
+): string[] => {
+  const max =
+    typeof options === "number"
+      ? options
+      : (options?.max ?? USER_TRACK_STATS_KEYS_MAX);
+  const prioritizeKeys =
+    typeof options === "object" ? options?.prioritizeKeys : undefined;
+  const unique = [...new Set(trackKeys)];
+
+  if (unique.length <= max) {
+    return unique;
+  }
+
+  if (!prioritizeKeys?.length) {
+    return unique.slice(0, max);
+  }
+
+  const priority = new Set(prioritizeKeys);
+  const ordered = [
+    ...unique.filter((key) => priority.has(key)),
+    ...unique.filter((key) => !priority.has(key)),
+  ];
+
+  return ordered.slice(0, max);
+};
+
 export type UserTrackStatCounts = {
   play_count: number;
   listen_count: number;
+  youtube_id?: string | null;
 };
 
 export interface UserTrackRecordFields {
@@ -168,6 +206,53 @@ export const formatUserTrackListenTooltip = (
   const listenLabel = stats.listen_count === 1 ? "listen" : "listens";
 
   return `${stats.play_count} ${playLabel}, ${stats.listen_count} ${listenLabel}. ${listenRule}`;
+};
+
+const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
+
+export const buildYoutubeThumbnailUrl = (videoId: string): string | null => {
+  if (!YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) {
+    return null;
+  }
+
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+};
+
+export const normalizeYoutubeVideoInput = (input: string): string | null => {
+  const trimmed = input.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  return parseYoutubeVideoId(trimmed);
+};
+
+export const mapUserYoutubeIdsByPosition = (
+  instanceId: string | number,
+  tracks: readonly { position: string }[],
+  stats: Record<string, UserTrackStatCounts> | undefined,
+): Record<string, string> => {
+  if (!stats) {
+    return {};
+  }
+
+  const byPosition: Record<string, string> = {};
+
+  for (const track of tracks) {
+    const youtubeId =
+      stats[buildTrackKey(instanceId, track.position)]?.youtube_id?.trim();
+
+    if (youtubeId) {
+      byPosition[track.position] = youtubeId;
+    }
+  }
+
+  return byPosition;
 };
 
 export const mapTrackStatsByPosition = (

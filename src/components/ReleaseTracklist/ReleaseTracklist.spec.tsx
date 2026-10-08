@@ -2,9 +2,26 @@ import { describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
 import type { DiscogsTrack } from "src/types";
-import { render, screen } from "test-utils";
+import { render, screen, waitFor } from "test-utils";
 
 const releaseArtistNames = "Rick Astley";
+
+const openTrackActionsMenu = async (
+  user: ReturnType<typeof userEvent.setup>,
+  trackTitle: string,
+) => {
+  const row = screen.getByText(trackTitle).closest("li");
+  expect(row).toBeTruthy();
+  await user.hover(row as HTMLElement);
+  await user.click(
+    screen.getByRole("button", { name: `Actions for ${trackTitle}` }),
+  );
+  await waitFor(() => {
+    expect(
+      screen.getByTestId("fmdReleaseTrackRowMenuPanel"),
+    ).toBeInTheDocument();
+  });
+};
 
 const tracks: DiscogsTrack[] = [
   {
@@ -49,6 +66,25 @@ describe("ReleaseTracklist", () => {
     );
 
     expect(onTrackSelect).toHaveBeenCalledWith("B");
+  });
+
+  it("shows the track actions menu on static rows when YouTube override is enabled", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onEditTrackYoutube={() => undefined}
+      />,
+    );
+
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+
+    expect(
+      screen.getByRole("menuitem", { name: "Add YouTube URL" }),
+    ).toBeInTheDocument();
   });
 
   it("renders static track rows when playback is unavailable", async () => {
@@ -202,9 +238,8 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    const queueButtons = screen.getAllByTestId("fmdReleaseTrackQueueButton");
-
-    await user.click(queueButtons[1] as HTMLButtonElement);
+    await openTrackActionsMenu(user, "Never Gonna Give You Up (Instrumental)");
+    await user.click(screen.getByRole("menuitem", { name: "Add to queue" }));
 
     expect(onTrackQueue).toHaveBeenCalledWith("B");
   });
@@ -226,16 +261,15 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
     await user.click(
-      screen.getByRole("button", {
-        name: "Remove Never Gonna Give You Up from queue",
-      }),
+      screen.getByRole("menuitem", { name: "Remove from queue" }),
     );
 
     expect(onTrackUnqueue).toHaveBeenCalledWith("A");
   });
 
-  it("shows a minus remove icon when queued and onTrackUnqueue is set", () => {
+  it("shows a queue status icon on queued rows without opening the menu", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
@@ -250,19 +284,14 @@ describe("ReleaseTracklist", () => {
     );
 
     expect(
-      screen.getByTestId("fmdReleaseTrackQueueRemoveIcon"),
+      screen.getByTestId("fmdReleaseTrackQueueStatus"),
     ).toBeInTheDocument();
     expect(
-      screen.queryByTestId("fmdReleaseTrackQueueCheckIcon"),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", {
-        name: "Remove Never Gonna Give You Up from queue",
-      }),
-    ).toHaveAttribute("title", "Remove from queue");
+      screen.getByTestId("fmdReleaseTrackQueueRemoveIcon"),
+    ).toBeInTheDocument();
   });
 
-  it("shows add to queue on the active row when it is not in up next", () => {
+  it("shows a check queue status when queued but not removable from up next", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
@@ -277,17 +306,87 @@ describe("ReleaseTracklist", () => {
     );
 
     expect(
-      screen.queryByTestId("fmdReleaseTrackQueueRemoveIcon"),
+      screen.getByTestId("fmdReleaseTrackQueueCheckIcon"),
+    ).toBeInTheDocument();
+  });
+
+  it("when a track is queued with the row menu, layers the queue check above the menu trigger at rest", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={() => false}
+      />,
+    );
+
+    const row = screen.getByText("Never Gonna Give You Up").closest("li");
+    expect(row).toHaveAttribute("data-track-queued-at-rest", "");
+    expect(
+      screen.getByTestId("fmdReleaseTrackQueueCheckIcon"),
+    ).toBeInTheDocument();
+    expect(
+      row?.querySelector('[data-testid="fmdReleaseTrackRowMenuTrigger"]'),
+    ).toBeTruthy();
+  });
+
+  it("shows Remove from queue in the menu when queued and onTrackUnqueue is set", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onTrackUnqueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={(position) => position === "A"}
+      />,
+    );
+
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+
+    expect(
+      screen.getByRole("menuitem", { name: "Remove from queue" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: "In queue" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows add to queue on the active row when it is not in up next", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition="A"
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onTrackUnqueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={() => false}
+      />,
+    );
+
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Remove from queue" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", {
-        name: "Add Never Gonna Give You Up to queue",
-      }),
-    ).toBeEnabled();
+      screen.getByRole("menuitem", { name: "Add to queue" }),
+    ).not.toHaveAttribute("aria-disabled", "true");
   });
 
   it("reserves queue column space on non-playable rows when requested", () => {
-    const { container } = render(
+    render(
       <ReleaseTracklist
         tracks={tracks}
         releaseArtistNames={releaseArtistNames}
@@ -299,13 +398,53 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    expect(screen.queryByTestId("fmdReleaseTrackQueueButton")).toBeNull();
-    expect(
-      container.querySelectorAll('[class*="queueButtonSpacer"]'),
-    ).toHaveLength(tracks.length);
+    expect(screen.queryByTestId("fmdReleaseTrackRowMenuTrigger")).toBeNull();
+    expect(screen.getAllByTestId("fmdReleaseTrackQueueIdleIcon")).toHaveLength(
+      tracks.length,
+    );
   });
 
-  it("disables the add-to-queue control when the track is already queued", () => {
+  it("when a row has a user YouTube override, shows the row menu trigger instead of the idle queue icon", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        isTrackPlayable={() => false}
+        reserveQueueColumn
+        onTrackSelect={() => undefined}
+        onEditTrackYoutube={() => undefined}
+        hasUserYoutubeOverride={(position) => position === "A"}
+      />,
+    );
+
+    expect(screen.queryByTestId("fmdReleaseTrackQueueIdleIcon")).toBeNull();
+    expect(screen.getAllByTestId("fmdReleaseTrackRowMenuTrigger")).toHaveLength(
+      tracks.length,
+    );
+  });
+
+  it("when the row menu is available, shows the actions trigger instead of the decorative idle queue icon", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        isTrackQueued={() => false}
+      />,
+    );
+
+    expect(screen.queryByTestId("fmdReleaseTrackQueueIdleIcon")).toBeNull();
+    expect(screen.getAllByTestId("fmdReleaseTrackRowMenuTrigger")).toHaveLength(
+      tracks.length,
+    );
+  });
+
+  it("shows In queue in the menu when the track is already queued", async () => {
+    const user = userEvent.setup();
+
     render(
       <ReleaseTracklist
         tracks={tracks}
@@ -317,11 +456,56 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+
+    expect(screen.getByRole("menuitem", { name: "In queue" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+  });
+
+  it("shows Use different video on playable rows that rely on a Discogs embed", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        isTrackPlayable={() => true}
+        onEditTrackYoutube={() => undefined}
+        hasUserYoutubeOverride={() => false}
+      />,
+    );
+
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+
     expect(
-      screen.getByRole("button", {
-        name: "Never Gonna Give You Up is already in the queue",
-      }),
-    ).toBeDisabled();
+      screen.getByRole("menuitem", { name: "Use different video" }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the YouTube override flow from the track menu", async () => {
+    const user = userEvent.setup();
+    const onEditTrackYoutube = jest.fn();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        isTrackPlayable={() => false}
+        reserveQueueColumn
+        onTrackSelect={() => undefined}
+        onEditTrackYoutube={onEditTrackYoutube}
+        hasUserYoutubeOverride={() => false}
+      />,
+    );
+
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await user.click(screen.getByRole("menuitem", { name: "Add YouTube URL" }));
+
+    expect(onEditTrackYoutube).toHaveBeenCalledWith("A");
   });
 
   it("renders an add-all toolbar and calls onAddAllToQueue", async () => {

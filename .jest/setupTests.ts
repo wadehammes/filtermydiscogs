@@ -75,21 +75,31 @@ jest.mock("usehooks-ts", () => ({
 
 jest.mock("next/image", () => ({
   __esModule: true,
-  default: (props: {
+  default: ({
+    src,
+    alt,
+    className,
+    fill: _fill,
+    sizes: _sizes,
+    priority: _priority,
+    quality: _quality,
+    ...imgProps
+  }: {
     src: string;
     alt: string;
-    width?: number;
-    height?: number;
-    priority?: boolean;
     className?: string;
+    fill?: boolean;
+    sizes?: string;
+    priority?: boolean;
+    quality?: number;
     [key: string]: unknown;
-  }) => {
-    return React.createElement("img", {
-      src: props.src,
-      alt: props.alt,
-      className: props.className,
-    });
-  },
+  }) =>
+    React.createElement("img", {
+      src,
+      alt,
+      className,
+      ...imgProps,
+    }),
 }));
 
 const originalWarn = console.warn;

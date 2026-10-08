@@ -100,6 +100,95 @@
   }
 }
 
+.trackItemMenuHover {
+  @media (hover: hover) {
+    .trackRowMenu:not(:has([data-popup-open]), :has(:focus-visible)) {
+      opacity: 0.55;
+    }
+
+    &:hover,
+    &:has(.trackRowMenu [data-popup-open]) {
+      .trackRowMenu {
+        opacity: 1;
+      }
+    }
+
+    &:has(.trackRowMenu [data-popup-open]) {
+      background: var(--muted);
+    }
+
+    &:hover .queueSlotRest,
+    &:has(.trackRowMenu [data-popup-open]) .queueSlotRest {
+      opacity: 0;
+    }
+  }
+}
+
+.queueActionsSlot {
+  flex-shrink: 0;
+  height: 1.75rem;
+  position: relative;
+  width: 1.75rem;
+}
+
+.queueSlotRest {
+  align-items: center;
+  display: inline-flex;
+  height: 100%;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity var(--transition-normal);
+  width: 100%;
+
+  svg {
+    display: block;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.queueSlotRestQueued {
+  color: var(--primary);
+}
+
+.queueSlotRestMuted {
+  color: var(--muted-foreground);
+  opacity: 0.55;
+}
+
+.trackRowMenu {
+  position: relative;
+  transition: opacity var(--transition-normal);
+  z-index: 1;
+}
+
+.trackItemQueuedAtRest {
+  .queueSlotRest {
+    z-index: 2;
+  }
+
+  .trackRowMenu {
+    z-index: 1;
+  }
+
+  @media (hover: hover) {
+    .trackRowMenu:not(:has([data-popup-open]), :has(:focus-visible)) {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &:hover,
+    &:has(.trackRowMenu [data-popup-open]) {
+      .trackRowMenu {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+  }
+}
+
 .trackMainStatic {
   align-items: center;
   color: inherit;
@@ -231,8 +320,15 @@
   justify-content: center;
   transition:
     background-color var(--transition-normal),
-    color var(--transition-normal);
+    color var(--transition-normal),
+    opacity var(--transition-normal);
   width: 1.75rem;
+
+  svg {
+    display: block;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
@@ -243,30 +339,4 @@
     background: color-mix(in srgb, var(--foreground) 8%, transparent);
     color: var(--foreground);
   }
-}
-
-.queueButtonQueued {
-  color: var(--primary);
-
-  &:disabled {
-    cursor: default;
-  }
-
-  &:focus-visible:not(:disabled),
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--primary) 12%, transparent);
-    color: var(--primary);
-  }
-}
-
-.queueButtonIcon {
-  display: block;
-  height: 0.875rem;
-  width: 0.875rem;
-}
-
-.queueButtonSpacer {
-  flex-shrink: 0;
-  height: 1.75rem;
-  width: 1.75rem;
 }

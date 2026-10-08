@@ -41,6 +41,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   shouldRebuildAlbumQueueRef: RefObject<boolean>;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
+  activeTrackHasYoutubeOverride: boolean;
 }
 
 export const useReleasePlaybackPendingResolution = ({
@@ -66,6 +67,7 @@ export const useReleasePlaybackPendingResolution = ({
   shouldRebuildAlbumQueueRef,
   tracks,
   videos,
+  activeTrackHasYoutubeOverride,
 }: UseReleasePlaybackPendingResolutionParams): void => {
   useEffect(() => {
     if (!isPlaying || previewVideo !== null) {
@@ -189,6 +191,7 @@ export const useReleasePlaybackPendingResolution = ({
         embedVideoId,
         isReleasePreview,
         isReleaseDetailSynced,
+        activeTrackHasYoutubeOverride,
       })
     ) {
       return;
@@ -197,6 +200,7 @@ export const useReleasePlaybackPendingResolution = ({
     dispatchSession({ type: "SET_TRANSPORT_OFF" });
     clearPersistedReleasePlayback();
   }, [
+    activeTrackHasYoutubeOverride,
     activeVideoId,
     dispatchSession,
     embedVideoId,

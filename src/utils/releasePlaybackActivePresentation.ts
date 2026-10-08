@@ -38,6 +38,26 @@ export const resolveActiveVideoId = (
   activeVideo: DiscogsVideo | null,
 ): string | null => (activeVideo ? parseYoutubeVideoId(activeVideo.uri) : null);
 
+export const resolvePresentationActiveVideoId = (
+  activeVideoId: string | null,
+  userOverrideVideoId: string | null | undefined,
+  embedVideoId: string | null = null,
+): string | null => {
+  const trimmedOverride = userOverrideVideoId?.trim();
+
+  if (trimmedOverride) {
+    return trimmedOverride;
+  }
+
+  if (activeVideoId) {
+    return activeVideoId;
+  }
+
+  const trimmedEmbed = embedVideoId?.trim();
+
+  return trimmedEmbed || null;
+};
+
 export const resolveIsPlaybackReady = ({
   isPlaying,
   playbackVideoId,

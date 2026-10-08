@@ -23,6 +23,7 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultTrackStatsApiMock } from "src/tests/mocks/setupDefaultTrackStatsApiMock";
 import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
@@ -164,6 +165,8 @@ export class ReleaseCardPageObject extends BasePageObject {
       ),
       apiError,
     );
+
+    setupDefaultTrackStatsApiMock(this.mockApiHelpers);
   }
 
   private activeCrateReleaseIds = new Set<string>();

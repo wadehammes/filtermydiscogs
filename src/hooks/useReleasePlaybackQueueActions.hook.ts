@@ -465,6 +465,7 @@ export const useReleasePlaybackQueueActions = ({
         instanceId: String(nextRelease.instance_id),
         trackPosition,
         queue: nextQueue.map(toPersistedQueueItem),
+        ...(youtubeVideoId ? { youtubeVideoId } : {}),
       });
       trackPlaybackStarted(nextRelease.instance_id);
       playQueueItem(item, {
@@ -557,7 +558,12 @@ export const useReleasePlaybackQueueActions = ({
   );
 
   const addToQueue = useCallback(
-    ({ release: nextRelease, trackPosition, trackTitle }: AddToQueueParams) => {
+    ({
+      release: nextRelease,
+      trackPosition,
+      trackTitle,
+      youtubeVideoId,
+    }: AddToQueueParams) => {
       if (
         tryAutoStartOnEmptyQueue(() => {
           startPlayback({
@@ -565,6 +571,7 @@ export const useReleasePlaybackQueueActions = ({
             trackPosition,
             trackTitle,
             rebuildAlbumQueue: false,
+            ...(youtubeVideoId ? { youtubeVideoId } : {}),
           });
         })
       ) {

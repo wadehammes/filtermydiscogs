@@ -1,27 +1,26 @@
 "use client";
 
 import classNames from "classnames";
-import { useMemo } from "react";
 import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "src/components/ReleasePlaybackFallback/ReleasePlaybackFallback.component";
 import { ReleasePlaybackPreview } from "src/components/ReleasePlaybackPreview/ReleasePlaybackPreview.component";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
-import { useAuth } from "src/context/auth.context";
-import { useTrackStatsQuery } from "src/hooks/queries/useTrackStatsQuery";
-import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
+import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import { definedProps } from "src/utils/definedProps";
-import { formatArtistNames } from "src/utils/releaseDisplay";
-import { buildTrackKey, mapTrackStatsByPosition } from "src/utils/userTrack";
+import type { UserTrackStatCounts } from "src/utils/userTrack";
 
 interface ReleaseModalPlaybackTracksSectionProps {
-  release: DiscogsRelease;
+  releaseArtistNames: string;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
   hasEmbeddableVideo: boolean;
-  hasPlayableTracks: boolean;
+  hasTracklistPlayback: boolean;
   releasePreviewVideos: DiscogsVideo[];
   releasePreviewTracks: DiscogsTrack[];
   isTrackPlayable: (trackPosition: string) => boolean;
+  trackStatsByPosition?: Record<string, UserTrackStatCounts>;
+  userYoutubeIdByPosition: Readonly<Record<string, string>>;
+  onEditTrackYoutube?: (trackPosition: string) => void;
   activeTrackPosition: string | null;
   activePreviewTrackPosition: string | null;
   fallbackSearchUrl: string;
@@ -45,14 +44,16 @@ interface ReleaseModalPlaybackTracksSectionProps {
 }
 
 export const ReleaseModalPlaybackTracksSection = ({
-  release,
   tracks,
   videos,
   hasEmbeddableVideo,
-  hasPlayableTracks,
+  hasTracklistPlayback,
   releasePreviewVideos,
   releasePreviewTracks,
   isTrackPlayable,
+  trackStatsByPosition,
+  userYoutubeIdByPosition,
+  onEditTrackYoutube,
   activeTrackPosition,
   activePreviewTrackPosition,
   fallbackSearchUrl,
@@ -73,46 +74,31 @@ export const ReleaseModalPlaybackTracksSection = ({
   isPlayingThisReleaseInBar,
   isPlaybackPaused,
   isReleasePreviewPlaying,
+  releaseArtistNames,
 }: ReleaseModalPlaybackTracksSectionProps) => {
-  const { state: authState } = useAuth();
   const reserveQueueColumn =
-    hasPlayableTracks || releasePreviewVideos.length > 0;
+    hasTracklistPlayback ||
+    releasePreviewVideos.length > 0 ||
+    onEditTrackYoutube !== undefined;
 
-  const trackKeys = useMemo(
-    () =>
-      tracks.map((track) => buildTrackKey(release.instance_id, track.position)),
-    [release.instance_id, tracks],
-  );
-
-  const { data: trackStatsResponse } = useTrackStatsQuery({
-    userId: authState.userId,
-    trackKeys,
-    enabled:
-      authState.isAuthenticated && hasPlayableTracks && tracks.length > 0,
-  });
-
-  const trackStatsByPosition = useMemo(
-    () =>
-      mapTrackStatsByPosition(
-        release.instance_id,
-        tracks,
-        trackStatsResponse?.stats,
-      ),
-    [release.instance_id, trackStatsResponse?.stats, tracks],
-  );
-
-  const releaseArtistNames = formatArtistNames(release);
   const showAlbumBarPlayback =
-    hasPlayableTracks && isPlayingThisReleaseInBar && !isReleasePreviewPlaying;
+    hasTracklistPlayback &&
+    isPlayingThisReleaseInBar &&
+    !isReleasePreviewPlaying;
   const showPreviewBarPlayback =
     isPlayingThisReleaseInBar && isReleasePreviewPlaying;
+
+  const hasUserYoutubeOverride = (trackPosition: string) =>
+    Boolean(userYoutubeIdByPosition[trackPosition]);
+  const hasUserYoutubeOverrideOnRelease =
+    Object.keys(userYoutubeIdByPosition).length > 0;
 
   return (
     <section
       className={classNames(styles.modalCard, styles.playbackSection)}
       aria-label="Tracks"
     >
-      {!hasEmbeddableVideo ? (
+      {!(hasEmbeddableVideo || hasUserYoutubeOverrideOnRelease) ? (
         <ReleasePlaybackFallback
           fallbackSearchUrl={fallbackSearchUrl}
           videos={videos}
@@ -127,23 +113,29 @@ export const ReleaseModalPlaybackTracksSection = ({
         showPlayingIndicatorOnActiveTrack={showAlbumBarPlayback}
         isPlaybackPaused={showAlbumBarPlayback ? isPlaybackPaused : false}
         {...definedProps({
-          isTrackPlayable: hasPlayableTracks ? isTrackPlayable : undefined,
-          onTrackSelect: hasPlayableTracks ? handleTrackSelect : undefined,
-          isTrackQueued: hasPlayableTracks ? isTrackQueued : undefined,
-          isTrackUnqueueable: hasPlayableTracks
+          isTrackPlayable: hasTracklistPlayback ? isTrackPlayable : undefined,
+          onTrackSelect: hasTracklistPlayback ? handleTrackSelect : undefined,
+          isTrackQueued: hasTracklistPlayback ? isTrackQueued : undefined,
+          isTrackUnqueueable: hasTracklistPlayback
             ? isTrackUnqueueable
             : undefined,
-          onTrackQueue: hasPlayableTracks ? handleTrackQueue : undefined,
-          onTrackUnqueue: hasPlayableTracks ? handleTrackUnqueue : undefined,
-          onAddAllToQueue: hasPlayableTracks ? handleAddAllToQueue : undefined,
-          onRemoveAllFromQueue: hasPlayableTracks
+          onTrackQueue: hasTracklistPlayback ? handleTrackQueue : undefined,
+          onTrackUnqueue: hasTracklistPlayback ? handleTrackUnqueue : undefined,
+          onAddAllToQueue: hasTracklistPlayback
+            ? handleAddAllToQueue
+            : undefined,
+          onRemoveAllFromQueue: hasTracklistPlayback
             ? handleRemoveAllFromQueue
             : undefined,
-          allPlayableTracksQueued: hasPlayableTracks
+          allPlayableTracksQueued: hasTracklistPlayback
             ? allPlayableTracksQueued
             : undefined,
           onActiveTrackToggle: showAlbumBarPlayback
             ? handleActiveTrackToggle
+            : undefined,
+          onEditTrackYoutube,
+          hasUserYoutubeOverride: onEditTrackYoutube
+            ? hasUserYoutubeOverride
             : undefined,
         })}
       />

@@ -16,6 +16,7 @@ jest.mock("src/lib/db", () => ({
 type DbModule = typeof import("src/lib/db");
 
 let recordUserTrackEvent: typeof import("src/lib/user-track.server")["recordUserTrackEvent"];
+let saveUserTrackYoutubeOverride: typeof import("src/lib/user-track.server")["saveUserTrackYoutubeOverride"];
 let fetchUserTrackStats: typeof import("src/lib/user-track.server")["fetchUserTrackStats"];
 let fetchTopUserTracks: typeof import("src/lib/user-track.server")["fetchTopUserTracks"];
 let mockUpsert: jest.MockedFunction<DbModule["prisma"]["userTrack"]["upsert"]>;
@@ -39,6 +40,7 @@ beforeEach(async () => {
   ]);
 
   recordUserTrackEvent = serverModule.recordUserTrackEvent;
+  saveUserTrackYoutubeOverride = serverModule.saveUserTrackYoutubeOverride;
   fetchUserTrackStats = serverModule.fetchUserTrackStats;
   fetchTopUserTracks = serverModule.fetchTopUserTracks;
   mockUpsert = jest.mocked(db.prisma.userTrack.upsert);
@@ -93,6 +95,59 @@ describe("recordUserTrackEvent", () => {
   });
 });
 
+describe("saveUserTrackYoutubeOverride", () => {
+  it("upserts metadata and youtube_id without incrementing play or listen counts", async () => {
+    const body = {
+      track_key: "1:A",
+      track_title: "Track",
+      track_position: "A",
+      instance_id: "1",
+      youtube_id: "dQw4w9WgXcQ",
+    };
+
+    await saveUserTrackYoutubeOverride(USER_ID, body);
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          youtube_id: "dQw4w9WgXcQ",
+        }),
+        create: expect.objectContaining({
+          play_count: 0,
+          listen_count: 0,
+          youtube_id: "dQw4w9WgXcQ",
+        }),
+      }),
+    );
+    expect(mockUpsert.mock.calls[0]?.[0]?.update).not.toHaveProperty(
+      "play_count",
+    );
+  });
+
+  it("clears youtube_id when override is removed", async () => {
+    const body = {
+      track_key: "1:A",
+      track_title: "Track",
+      track_position: "A",
+      instance_id: "1",
+      youtube_id: null,
+    };
+
+    await saveUserTrackYoutubeOverride(USER_ID, body);
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          youtube_id: null,
+        }),
+        create: expect.objectContaining({
+          youtube_id: null,
+        }),
+      }),
+    );
+  });
+});
+
 describe("fetchUserTrackStats", () => {
   it("returns zeroed stats for missing keys and merges found rows", async () => {
     mockFindMany.mockResolvedValue([
@@ -100,6 +155,7 @@ describe("fetchUserTrackStats", () => {
         track_key: "1:A",
         play_count: 3,
         listen_count: 2,
+        youtube_id: "dQw4w9WgXcQ",
       },
     ] as Awaited<ReturnType<DbModule["prisma"]["userTrack"]["findMany"]>>);
 
@@ -111,11 +167,12 @@ describe("fetchUserTrackStats", () => {
         track_key: true,
         play_count: true,
         listen_count: true,
+        youtube_id: true,
       },
     });
     expect(stats).toEqual({
-      "1:A": { play_count: 3, listen_count: 2 },
-      "1:B": { play_count: 0, listen_count: 0 },
+      "1:A": { play_count: 3, listen_count: 2, youtube_id: "dQw4w9WgXcQ" },
+      "1:B": { play_count: 0, listen_count: 0, youtube_id: null },
     });
   });
 

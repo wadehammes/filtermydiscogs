@@ -72,6 +72,19 @@ describe("releasePlaybackPendingResolution", () => {
       ).toBe(false);
     });
 
+    it("does not clear transport while a user YouTube override is known for the active track", () => {
+      expect(
+        shouldClearTransportForMissingVideo({
+          tracksLength: 3,
+          activeVideoId: null,
+          embedVideoId: null,
+          isReleasePreview: false,
+          isReleaseDetailSynced: true,
+          activeTrackHasYoutubeOverride: true,
+        }),
+      ).toBe(false);
+    });
+
     it("waits for release detail sync and keeps transport when the embed already has a video", () => {
       expect(
         shouldClearTransportForMissingVideo({

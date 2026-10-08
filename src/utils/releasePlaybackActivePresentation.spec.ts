@@ -11,11 +11,32 @@ import {
   resolveIsPlaybackReady,
   resolveNeedsPlaybackVideoSwitch,
   resolvePlaybackVideoId,
+  resolvePresentationActiveVideoId,
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
 
 describe("releasePlaybackActivePresentation", () => {
+  it("resolvePresentationActiveVideoId prefers a user override over the matched Discogs video id", () => {
+    expect(resolvePresentationActiveVideoId("discogs-id", "override-id")).toBe(
+      "override-id",
+    );
+    expect(resolvePresentationActiveVideoId("discogs-id", "  ")).toBe(
+      "discogs-id",
+    );
+    expect(resolvePresentationActiveVideoId(null, null)).toBeNull();
+  });
+
+  it("resolvePresentationActiveVideoId falls back to embedVideoId when restore or startPlayback supplied an explicit embed id", () => {
+    expect(
+      resolvePresentationActiveVideoId(null, null, "persisted-embed-id"),
+    ).toBe("persisted-embed-id");
+    expect(resolvePresentationActiveVideoId(null, undefined, "  ")).toBeNull();
+    expect(
+      resolvePresentationActiveVideoId("discogs-id", "override-id", "embed-id"),
+    ).toBe("override-id");
+  });
+
   it("resolveIsPlaybackReady is ready when transport is active and a playback video id is resolved", () => {
     expect(
       resolveIsPlaybackReady({

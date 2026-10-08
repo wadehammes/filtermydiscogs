@@ -1,0 +1,68 @@
+.dialogContent {
+  gap: var(--space-4);
+}
+
+.dialogHeader {
+  gap: var(--space-1);
+}
+
+.dialogTitle {
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.dialogDescription {
+  font-size: var(--text-meta-sm);
+  line-height: 1.35;
+}
+
+.dialogTrack {
+  color: var(--foreground);
+  font-weight: var(--font-medium);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.youtubePreviewRow {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-3);
+}
+
+.youtubePreviewMeta {
+  flex: 1;
+  min-width: 0;
+  padding-top: var(--space-1);
+}
+
+.input {
+  background: var(--background);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-ui);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  height: var(--input-height);
+  padding: 0 var(--space-3);
+  width: 100%;
+
+  &:focus-visible {
+    border-color: var(--link);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.error {
+  color: var(--destructive);
+  font-size: var(--text-meta-sm);
+  margin: 0;
+}

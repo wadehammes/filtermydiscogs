@@ -1,0 +1,59 @@
+.menuRoot {
+  flex-shrink: 0;
+  isolation: isolate;
+  position: relative;
+}
+
+.menuTrigger {
+  transition:
+    background-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    color var(--transition-normal),
+    opacity var(--transition-normal);
+}
+
+.menuTrigger[data-popup-open] {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--foreground);
+  opacity: 1;
+}
+
+.menuTriggerQueued {
+  color: var(--primary);
+}
+
+.menuTriggerQueued[data-popup-open] {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+
+.menuTriggerIcon {
+  display: block;
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.menuPopup {
+  composes: popupwide from "../../styles/modules/inline-popover-menu.module.css";
+  min-width: 12.5rem;
+}
+
+.menuItemIcon {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  svg {
+    display: block;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.menuItemLabel {
+  line-height: 1.25;
+}

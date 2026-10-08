@@ -13,6 +13,7 @@ export interface PersistedQueueItem {
 export interface PersistedReleasePlayback {
   instanceId: string;
   trackPosition: string;
+  youtubeVideoId?: string;
   queue?: PersistedQueueItem[];
 }
 
@@ -51,6 +52,14 @@ const isPersistedReleasePlayback = (
     candidate.instanceId.length === 0 ||
     typeof candidate.trackPosition !== "string" ||
     candidate.trackPosition.length === 0
+  ) {
+    return false;
+  }
+
+  if (
+    candidate.youtubeVideoId !== undefined &&
+    (typeof candidate.youtubeVideoId !== "string" ||
+      candidate.youtubeVideoId.trim().length === 0)
   ) {
     return false;
   }

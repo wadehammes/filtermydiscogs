@@ -25,6 +25,20 @@ describe("releasePlaybackStorage", () => {
     });
   });
 
+  it("writes and reads an optional youtubeVideoId for restore", () => {
+    writePersistedReleasePlayback({
+      instanceId: "instance-123",
+      trackPosition: "A2",
+      youtubeVideoId: "overrid1234",
+    });
+
+    expect(readPersistedReleasePlayback()).toEqual({
+      instanceId: "instance-123",
+      trackPosition: "A2",
+      youtubeVideoId: "overrid1234",
+    });
+  });
+
   it("writes and reads the upcoming queue", () => {
     const release = releaseFactory.build();
     const queueItem = createQueueItem({
@@ -54,6 +68,19 @@ describe("releasePlaybackStorage", () => {
 
   it("returns null for invalid stored payloads", () => {
     localStorage.setItem("filtermydiscogs_release_playback", "{ invalid");
+
+    expect(readPersistedReleasePlayback()).toBeNull();
+  });
+
+  it("returns null when youtubeVideoId is present but empty", () => {
+    localStorage.setItem(
+      "filtermydiscogs_release_playback",
+      JSON.stringify({
+        instanceId: "instance-123",
+        trackPosition: "A2",
+        youtubeVideoId: "   ",
+      }),
+    );
 
     expect(readPersistedReleasePlayback()).toBeNull();
   });

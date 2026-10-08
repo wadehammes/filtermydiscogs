@@ -56,6 +56,7 @@ describe("useReleasePlaybackPendingResolution", () => {
         shouldRebuildAlbumQueueRef,
         tracks: [track],
         videos: [],
+        activeTrackHasYoutubeOverride: false,
       };
 
     const params = { ...defaults, ...overrides };
@@ -111,6 +112,7 @@ describe("useReleasePlaybackPendingResolution", () => {
             discogsTrackFactory.build({ position: "A1", type_: "track" }),
           ],
           videos: [],
+          activeTrackHasYoutubeOverride: false,
         }),
       { initialProps: { upcomingQueueLength: 0 } },
     );
@@ -151,6 +153,7 @@ describe("useReleasePlaybackPendingResolution", () => {
             discogsTrackFactory.build({ position: "A1", type_: "track" }),
           ],
           videos: [],
+          activeTrackHasYoutubeOverride: false,
         }),
       { initialProps: { allReleasesLength: 0 } },
     );
@@ -206,6 +209,7 @@ describe("useReleasePlaybackPendingResolution", () => {
         shouldRebuildAlbumQueueRef,
         tracks: [track],
         videos: [],
+        activeTrackHasYoutubeOverride: false,
       }),
     );
 
@@ -249,6 +253,76 @@ describe("useReleasePlaybackPendingResolution", () => {
     });
 
     expect(abortUnresolvedPlayback).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not clear transport while the active track has a pending or resolved user YouTube override", () => {
+    const { dispatchSession } = buildHarness({
+      isPlaying: true,
+      isLoading: false,
+      pendingTrackPosition: null,
+      pendingPreviewVideoUri: null,
+      activeVideoId: null,
+      embedVideoId: null,
+      activeTrackHasYoutubeOverride: true,
+    });
+
+    expect(dispatchSession).not.toHaveBeenCalledWith({
+      type: "SET_TRANSPORT_OFF",
+    });
+  });
+
+  it("clears transport once override resolution confirms there is no youtube id for the active track", () => {
+    writePersistedReleasePlayback({
+      instanceId: "1",
+      trackPosition: "A1",
+    });
+
+    const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
+    const track = discogsTrackFactory.build({ position: "A1", type_: "track" });
+    const release = releaseFactory.withDisplayDefaults({ id: RELEASE_ID });
+
+    const { rerender } = renderHook(
+      ({
+        activeTrackHasYoutubeOverride,
+      }: {
+        activeTrackHasYoutubeOverride: boolean;
+      }) =>
+        useReleasePlaybackPendingResolution({
+          abortUnresolvedPlayback: jest.fn(),
+          activeTrackIndex: 0,
+          activeVideoId: null,
+          awaitingResumeGestureRef: { current: false },
+          dispatchSession,
+          embedVideoId: null,
+          isLoading: false,
+          isPlaying: true,
+          isReleasePreview: false,
+          maybeExtendQueueTail: jest.fn(),
+          upcomingQueueLength: 0,
+          allReleasesLength: 1,
+          pendingPreviewVideoUri: null,
+          pendingTrackPosition: null,
+          previewVideo: null,
+          release,
+          releaseDetailId: RELEASE_ID,
+          releaseId: RELEASE_ID,
+          setUpcomingQueue: jest.fn(),
+          shouldRebuildAlbumQueueRef: { current: false },
+          tracks: [track],
+          videos: [],
+          activeTrackHasYoutubeOverride,
+        }),
+      { initialProps: { activeTrackHasYoutubeOverride: true } },
+    );
+
+    expect(dispatchSession).not.toHaveBeenCalledWith({
+      type: "SET_TRANSPORT_OFF",
+    });
+
+    rerender({ activeTrackHasYoutubeOverride: false });
+
+    expect(dispatchSession).toHaveBeenCalledWith({ type: "SET_TRANSPORT_OFF" });
+    expect(readPersistedReleasePlayback()).toBeNull();
   });
 
   it("clears transport and persisted session when album playback has no youtube match", () => {
