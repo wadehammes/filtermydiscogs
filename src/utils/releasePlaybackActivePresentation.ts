@@ -49,13 +49,13 @@ export const resolvePresentationActiveVideoId = (
     return trimmedOverride;
   }
 
-  if (activeVideoId) {
-    return activeVideoId;
-  }
-
   const trimmedEmbed = embedVideoId?.trim();
 
-  return trimmedEmbed || null;
+  if (trimmedEmbed) {
+    return trimmedEmbed;
+  }
+
+  return activeVideoId;
 };
 
 export const resolveIsPlaybackReady = ({

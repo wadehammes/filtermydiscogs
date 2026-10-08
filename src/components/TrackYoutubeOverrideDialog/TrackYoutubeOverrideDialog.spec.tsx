@@ -33,6 +33,7 @@ const target = {
   instanceId: "101",
   artist: "Artist",
   releaseTitle: "Album",
+  discogsReleaseId: 249504,
   initialYoutubeId: null,
 };
 
@@ -44,6 +45,23 @@ describe("TrackYoutubeOverrideDialog", () => {
       title: "Never Gonna Give You Up",
       authorName: "Rick Astley",
     });
+  });
+
+  it("links to the Discogs release video upload page for community sharing", () => {
+    render(
+      <TrackYoutubeOverrideDialog
+        open
+        target={target}
+        onClose={() => undefined}
+      />,
+    );
+
+    const link = screen.getByRole("link", { name: "add the video on Discogs" });
+    expect(link).toHaveAttribute(
+      "href",
+      "https://www.discogs.com/release/249504/videos/update",
+    );
+    expect(link).toHaveAttribute("target", "_blank");
   });
 
   it("uses an add title when the track has no Discogs embed or saved link", () => {
@@ -58,6 +76,19 @@ describe("TrackYoutubeOverrideDialog", () => {
     expect(
       screen.getByRole("heading", { name: "Add a YouTube video" }),
     ).toBeInTheDocument();
+  });
+
+  it("shows artist, album, and track in the dialog description", () => {
+    render(
+      <TrackYoutubeOverrideDialog
+        open
+        target={target}
+        onClose={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Artist · Album")).toBeInTheDocument();
+    expect(screen.getByText("A2 · Second")).toBeInTheDocument();
   });
 
   it("shows the preview for initialPreviewVideoId when the field is still empty", async () => {

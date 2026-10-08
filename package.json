@@ -20,7 +20,7 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
     "lint:all": "pnpm lint:check && pnpm lint:css:fix && pnpm tsc:ci && pnpm knip:ci",
-    "handbook:check": "bash scripts/handbook-sync-check.sh origin/staging",
+    "handbook:check": "bash scripts/handbook-sync-check.sh origin/staging && bash scripts/spec-pair-check.sh origin/staging",
     "format": "biome format src",
     "format:fix": "biome format --write src",
     "test": "pnpm test:scripts && NODE_OPTIONS='--max-old-space-size=4096' jest --runInBand --detectOpenHandles",

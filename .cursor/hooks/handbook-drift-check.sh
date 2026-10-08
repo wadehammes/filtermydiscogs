@@ -36,7 +36,14 @@ if [ -n "$readme_relevant" ] && [ -z "$readme_changed" ]; then
   needs_readme=true
 fi
 
-if [ "$needs_handbook" = false ] && [ "$needs_readme" = false ]; then
+spec_pair_touched="$(printf '%s\n' "$code_changed" | grep -E '^src/utils/(releasePlayback|playback|trackStatsQueryCache|trackPlaybackYoutube|resolveQueueItemEmbedTracksVideos|syncPlaybackSessionRefs)|^src/hooks/useReleasePlayback|^src/hooks/usePlaybackTrack|^src/context/releasePlayback\.context\.tsx$' || true)"
+spec_pair_updated="$(printf '%s\n' "$changed" | grep -E '\.spec\.(ts|tsx)$' || true)"
+needs_spec_pair=false
+if [ -n "$spec_pair_touched" ] && [ -z "$spec_pair_updated" ]; then
+  needs_spec_pair=true
+fi
+
+if [ "$needs_handbook" = false ] && [ "$needs_readme" = false ] && [ "$needs_spec_pair" = false ]; then
   exit 0
 fi
 
@@ -58,6 +65,15 @@ EOF
 fi
 
 sections=()
+
+if [ "$needs_spec_pair" = true ]; then
+  sections+=("$(printf '%s\n' \
+    'Spec pairing (TDD): this session changed playback/queue/track-stats production code but no *.spec.ts(x) in the working tree.' \
+    'Add or extend a failing spec before finishing (see docs/handbook/conventions.md → Test-driven development). CI: scripts/spec-pair-check.sh.' \
+    '' \
+    'Playback-related files:' \
+    "$spec_pair_touched")")
+fi
 
 if [ "$needs_handbook" = true ]; then
   sections+=("$(printf '%s\n' \

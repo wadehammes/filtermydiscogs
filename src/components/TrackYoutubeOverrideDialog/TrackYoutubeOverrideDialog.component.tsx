@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useId, useMemo } from "react";
+import Link from "next/link";
+import { type MouseEvent, useEffect, useId, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { FormDialog } from "src/components/FormDialog/FormDialog.component";
@@ -11,6 +12,7 @@ import {
   trackYoutubeOverrideFormSchema,
 } from "src/lib/validation/userTrack.schemas";
 import { definedProps } from "src/utils/definedProps";
+import { getDiscogsReleaseVideosUpdateUrl } from "src/utils/discogsReleaseUrls";
 import { normalizeYoutubeVideoInput } from "src/utils/userTrack";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./TrackYoutubeOverrideDialog.module.css";
@@ -19,6 +21,10 @@ import { TrackYoutubeOverrideVideoMeta } from "./TrackYoutubeOverrideVideoMeta.c
 
 const TRACK_YOUTUBE_OVERRIDE_FORM_ID = "fmdTrackYoutubeOverrideForm";
 
+const stopLinkPropagation = (event: MouseEvent<HTMLAnchorElement>) => {
+  event.stopPropagation();
+};
+
 export type TrackYoutubeOverrideTarget = {
   trackKey: string;
   trackPosition: string;
@@ -26,6 +32,7 @@ export type TrackYoutubeOverrideTarget = {
   instanceId: string;
   artist?: string;
   releaseTitle?: string;
+  discogsReleaseId?: number | null;
   initialYoutubeId?: string | null;
   hasDefaultYoutubeEmbed?: boolean;
   initialPreviewVideoId?: string | null;
@@ -84,6 +91,16 @@ export const TrackYoutubeOverrideDialog = ({
     return title || position;
   }, [target]);
 
+  const releaseLine = useMemo(() => {
+    if (!target) {
+      return "";
+    }
+
+    return [target.artist?.trim(), target.releaseTitle?.trim()]
+      .filter((part): part is string => Boolean(part))
+      .join(" · ");
+  }, [target]);
+
   const buildMutationBody = (youtubeId: string | null) => {
     if (!target) {
       return null;
@@ -122,6 +139,9 @@ export const TrackYoutubeOverrideDialog = ({
       ? (target.initialPreviewVideoId ?? null)
       : null);
   const youtubeInputError = formState.errors.youtubeInput?.message;
+  const discogsVideosUpdateUrl = getDiscogsReleaseVideosUpdateUrl(
+    target.discogsReleaseId,
+  );
 
   const handleSave = handleSubmit((values) => {
     const trimmed = values.youtubeInput.trim();
@@ -169,10 +189,12 @@ export const TrackYoutubeOverrideDialog = ({
       testId="fmdTrackYoutubeOverrideDialog"
       title={dialogTitle}
       description={
-        <>
-          <span className={styles.dialogTrack}>{trackHead}</span> Playback on
-          your collection copy only.
-        </>
+        <div className={styles.dialogContext}>
+          {releaseLine ? (
+            <p className={styles.dialogRelease}>{releaseLine}</p>
+          ) : null}
+          {trackHead ? <p className={styles.dialogTrack}>{trackHead}</p> : null}
+        </div>
       }
       titleId={`${inputId}-title`}
       descriptionId={`${inputId}-description`}
@@ -240,6 +262,22 @@ export const TrackYoutubeOverrideDialog = ({
         {youtubeInputError ? (
           <p className={styles.error} role="alert">
             {youtubeInputError}
+          </p>
+        ) : null}
+        {discogsVideosUpdateUrl ? (
+          <p className={styles.communityNote}>
+            This link is saved on your collection copy only. To share playback
+            with the wider Discogs community,{" "}
+            <Link
+              className={styles.communityNoteLink}
+              href={discogsVideosUpdateUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+              onClick={stopLinkPropagation}
+            >
+              add the video on Discogs
+            </Link>
+            .
           </p>
         ) : null}
       </form>

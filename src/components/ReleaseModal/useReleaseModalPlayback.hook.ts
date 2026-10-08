@@ -168,6 +168,7 @@ export const useReleaseModalPlayback = ({
         instanceId: String(release.instance_id),
         artist: formatArtistNames(release),
         releaseTitle: release.basic_information.title,
+        discogsReleaseId: release.basic_information.id ?? null,
         initialYoutubeId: hasUserOverride ? savedYoutubeId : null,
         hasDefaultYoutubeEmbed,
         initialPreviewVideoId,
