@@ -427,6 +427,113 @@ describe("ReleasePlaybackProvider", () => {
     expect(mockApi.fetchTrackStats).toHaveBeenCalled();
   });
 
+  it("when the queue grows during user override playback, keeps the override video id and does not unavailable-skip", async () => {
+    jest.useFakeTimers();
+    setupCollectionAndShortReleaseApiMock();
+
+    const overrideVideoId = "overrid1234";
+    const trackKey = `${collectionRelease.instance_id}:A1`;
+    const queuedTrackKey = `${shortCollectionRelease.instance_id}:1`;
+
+    const initialStats = userTrackStatsResponseFactory.build({
+      stats: {
+        [trackKey]: {
+          play_count: 0,
+          listen_count: 0,
+          youtube_id: overrideVideoId,
+        },
+      },
+    });
+
+    let resolveExpandedFetch!: (
+      value: ReturnType<typeof userTrackStatsResponseFactory.build>,
+    ) => void;
+    const expandedFetchPromise = new Promise<
+      ReturnType<typeof userTrackStatsResponseFactory.build>
+    >((resolve) => {
+      resolveExpandedFetch = resolve;
+    });
+
+    mockApi.fetchTrackStats.mockImplementation((keys: string[]) => {
+      if (keys.length === 1 && keys[0] === trackKey) {
+        return Promise.resolve(initialStats);
+      }
+
+      return expandedFetchPromise;
+    });
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+        rebuildAlbumQueue: false,
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.activeVideoId).toBe(overrideVideoId);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow: iframe.contentWindow as Window,
+        playerState: 1,
+      });
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    await waitFor(() => {
+      expect(mockApi.fetchTrackStats.mock.calls.length).toBeGreaterThan(1);
+      expect(result.current.activeVideoId).toBe(overrideVideoId);
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveExpandedFetch(
+        userTrackStatsResponseFactory.build({
+          stats: {
+            [trackKey]: {
+              play_count: 0,
+              listen_count: 0,
+              youtube_id: overrideVideoId,
+            },
+            [queuedTrackKey]: {
+              play_count: 0,
+              listen_count: 0,
+              youtube_id: null,
+            },
+          },
+        }),
+      );
+    });
+
+    jest.useRealTimers();
+  });
+
   it("advances the queue when the YouTube embed reports playback ended", async () => {
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;

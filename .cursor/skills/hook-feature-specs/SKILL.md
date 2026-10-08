@@ -12,8 +12,9 @@ Canonical rules: [conventions.md → Non-negotiables](../../docs/handbook/conven
 ## Non-negotiables
 
 1. **TDD** — Failing spec first; confirm red with `pnpm test -- <spec>` before production code.
-2. **Factories** — [`src/tests/factories/`](../../src/tests/factories/); no hand-rolled domain objects.
-3. **One flat `describe`** per hook spec — no nested `describe`; put scenarios in `it("when …, …")` names.
+2. **Pure logic before hooks** — Branching, cache merge, or map-building in a feature hook belongs in a **colocated `src/utils/*.ts` helper** with **`src/utils/*.spec.ts`**. Red the **util spec** first, green the helper, then wire the hook (thin `useMemo` / subscription only). Do **not** patch hook bodies first—see [`trackStatsQueryCache.ts`](../../src/utils/trackStatsQueryCache.ts) + [`resolvePlaybackTrackYoutubeOverrides`](../../src/utils/trackStatsQueryCache.ts) for playback override resolution.
+3. **Factories** — [`src/tests/factories/`](../../src/tests/factories/); no hand-rolled domain objects.
+4. **One flat `describe`** per hook spec — no nested `describe`; put scenarios in `it("when …, …")` names.
 
 ## Mocks
 

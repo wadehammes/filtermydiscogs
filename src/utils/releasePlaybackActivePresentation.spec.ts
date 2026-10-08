@@ -37,6 +37,18 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe("override-id");
   });
 
+  it("resolvePresentationActiveVideoId prefers embedVideoId over matched Discogs when the override map entry is temporarily missing", () => {
+    expect(
+      resolvePresentationActiveVideoId("te2jJncBVG4", undefined, "overrid1234"),
+    ).toBe("overrid1234");
+  });
+
+  it("resolvePresentationActiveVideoId uses matched Discogs id when embed is not set yet", () => {
+    expect(resolvePresentationActiveVideoId("te2jJncBVG4", null, null)).toBe(
+      "te2jJncBVG4",
+    );
+  });
+
   it("resolveIsPlaybackReady is ready when transport is active and a playback video id is resolved", () => {
     expect(
       resolveIsPlaybackReady({

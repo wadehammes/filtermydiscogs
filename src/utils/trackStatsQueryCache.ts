@@ -36,6 +36,92 @@ export const trackStatsCacheIncludesKeys = (
 ): boolean =>
   trackKeys.length > 0 && trackKeys.every((trackKey) => trackKey in stats);
 
+export const resolveTrackStatsForPlaybackOverrides = ({
+  cacheSatisfiesKeys,
+  cachedStats,
+  fetchedStats,
+}: {
+  cacheSatisfiesKeys: boolean;
+  cachedStats: Record<string, UserTrackStatCounts>;
+  fetchedStats: Record<string, UserTrackStatCounts> | undefined;
+}): Record<string, UserTrackStatCounts> | undefined => {
+  if (cacheSatisfiesKeys) {
+    return cachedStats;
+  }
+
+  return fetchedStats ?? cachedStats;
+};
+
+export const buildYoutubeOverridesMapFromTrackStats = (
+  stats: Record<string, UserTrackStatCounts> | undefined,
+): Map<string, string> => {
+  const overrides = new Map<string, string>();
+
+  if (!stats) {
+    return overrides;
+  }
+
+  for (const [trackKey, row] of Object.entries(stats)) {
+    const youtubeId = row.youtube_id?.trim();
+
+    if (youtubeId) {
+      overrides.set(trackKey, youtubeId);
+    }
+  }
+
+  return overrides;
+};
+
+export const resolvePlaybackTrackYoutubeOverrides = ({
+  cacheSatisfiesKeys,
+  cachedStats,
+  fetchedStats,
+}: {
+  cacheSatisfiesKeys: boolean;
+  cachedStats: Record<string, UserTrackStatCounts>;
+  fetchedStats: Record<string, UserTrackStatCounts> | undefined;
+}): Map<string, string> =>
+  buildYoutubeOverridesMapFromTrackStats(
+    resolveTrackStatsForPlaybackOverrides({
+      cacheSatisfiesKeys,
+      cachedStats,
+      fetchedStats,
+    }),
+  );
+
+export const resolveActiveTrackHasYoutubeOverride = ({
+  resolvedOverrideId,
+  isAwaitingStatsOverride,
+  embedVideoId,
+  matchedVideoId,
+}: {
+  resolvedOverrideId: string | null | undefined;
+  isAwaitingStatsOverride: boolean;
+  embedVideoId: string | null;
+  matchedVideoId: string | null;
+}): boolean => {
+  if (resolvedOverrideId?.trim()) {
+    return true;
+  }
+
+  if (isAwaitingStatsOverride) {
+    return true;
+  }
+
+  const trimmedEmbed = embedVideoId?.trim();
+  const trimmedMatch = matchedVideoId?.trim();
+
+  if (!trimmedEmbed) {
+    return false;
+  }
+
+  if (!trimmedMatch) {
+    return true;
+  }
+
+  return trimmedEmbed !== trimmedMatch;
+};
+
 export const isAwaitingTrackStatsForYoutubeOverride = ({
   isPlaying,
   userId,

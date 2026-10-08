@@ -83,6 +83,7 @@ import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
 import {
   isAwaitingTrackStatsForYoutubeOverride,
   mergeTrackStatsFromQueryCache,
+  resolveActiveTrackHasYoutubeOverride,
 } from "src/utils/trackStatsQueryCache";
 import { buildTrackKey } from "src/utils/userTrack";
 import { recordTrackPlayFromQueueItem } from "src/utils/userTrackRecording";
@@ -364,7 +365,7 @@ export const useReleasePlaybackProvider = (): {
 
   const activeTrackStats = useMemo(
     () => mergeTrackStatsFromQueryCache(queryClient, authState.userId),
-    [authState.userId, queryClient, userYoutubeOverrides],
+    [authState.userId, queryClient],
   );
 
   const activeTrackKey =
@@ -401,13 +402,21 @@ export const useReleasePlaybackProvider = (): {
   activeTrackAwaitingStatsOverrideRef.current =
     activeTrackAwaitingStatsOverride;
 
-  const activeTrackHasYoutubeOverride = useMemo(() => {
-    if (activeTrackResolvedOverrideId) {
-      return true;
-    }
-
-    return activeTrackAwaitingStatsOverride;
-  }, [activeTrackAwaitingStatsOverride, activeTrackResolvedOverrideId]);
+  const activeTrackHasYoutubeOverride = useMemo(
+    () =>
+      resolveActiveTrackHasYoutubeOverride({
+        resolvedOverrideId: activeTrackResolvedOverrideId,
+        isAwaitingStatsOverride: activeTrackAwaitingStatsOverride,
+        embedVideoId,
+        matchedVideoId: matchedActiveVideoId,
+      }),
+    [
+      activeTrackAwaitingStatsOverride,
+      activeTrackResolvedOverrideId,
+      embedVideoId,
+      matchedActiveVideoId,
+    ],
+  );
 
   const activePlaybackTitle = resolveActivePlaybackTitle({
     isReleasePreview,

@@ -46,6 +46,8 @@ jobs:
         run: git fetch origin staging:refs/remotes/origin/staging
       - name: Handbook sync vs staging
         run: bash scripts/handbook-sync-check.sh origin/staging
+      - name: Spec pair vs staging
+        run: bash scripts/spec-pair-check.sh origin/staging
       - name: Run Jest
         run: pnpm test:ci
       - name: Run Knip

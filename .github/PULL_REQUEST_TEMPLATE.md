@@ -16,7 +16,7 @@ How does this PR solve it? Link handbook chapters if behavior or conventions shi
 ## Checks
 
 - [ ] **`pnpm lint:all`** (or **`mise run pr-prep`** before push)
-- [ ] **`pnpm handbook:check`** when changing **`src/`** or test infra ( **`.jest/`**, **`jest.config.ts`**, **`e2e/`**, **`next.config.ts`**)
+- [ ] **`pnpm handbook:check`** when changing **`src/`** or test infra (handbook sync + playback/util/hook **spec pairing** vs **`origin/staging`**)
 - [ ] Tests added/updated for new behavior (TDD where applicable)
 
 ## Screenshots / video

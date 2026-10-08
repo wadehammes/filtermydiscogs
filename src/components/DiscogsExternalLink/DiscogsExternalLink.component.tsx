@@ -27,6 +27,7 @@ export function getDiscogsReleaseUrl(release: DiscogsRelease): string | null {
   return getResourceUrl({
     resourceUrl: release.basic_information.resource_url,
     type: "release",
+    id: release.basic_information.id,
   });
 }
 

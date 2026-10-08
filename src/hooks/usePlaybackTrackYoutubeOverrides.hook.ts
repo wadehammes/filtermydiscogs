@@ -7,6 +7,7 @@ import { getQueueItemKey } from "src/utils/playbackQueue";
 import {
   buildTrackStatsOverridesSnapshot,
   mergeTrackStatsFromQueryCache,
+  resolvePlaybackTrackYoutubeOverrides,
   trackStatsCacheIncludesKeys,
 } from "src/utils/trackStatsQueryCache";
 import { normalizeTrackStatsKeys } from "src/utils/userTrack";
@@ -93,22 +94,13 @@ export const usePlaybackTrackYoutubeOverrides = ({
     enabled: userId != null && trackKeys.length > 0 && !cacheSatisfiesKeys,
   });
 
-  return useMemo(() => {
-    const overrides = new Map<string, string>();
-    const stats = cacheSatisfiesKeys ? cachedStats : data?.stats;
-
-    if (!stats) {
-      return overrides;
-    }
-
-    for (const [trackKey, row] of Object.entries(stats)) {
-      const youtubeId = row.youtube_id?.trim();
-
-      if (youtubeId) {
-        overrides.set(trackKey, youtubeId);
-      }
-    }
-
-    return overrides;
-  }, [cacheSatisfiesKeys, cachedStats, data?.stats]);
+  return useMemo(
+    () =>
+      resolvePlaybackTrackYoutubeOverrides({
+        cacheSatisfiesKeys,
+        cachedStats,
+        fetchedStats: data?.stats,
+      }),
+    [cacheSatisfiesKeys, cachedStats, data?.stats],
+  );
 };

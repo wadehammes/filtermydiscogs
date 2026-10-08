@@ -3,7 +3,7 @@
 }
 
 .dialogHeader {
-  gap: var(--space-1);
+  gap: var(--space-4);
 }
 
 .dialogTitle {
@@ -16,9 +16,29 @@
   line-height: 1.35;
 }
 
+.dialogContext {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.dialogRelease {
+  color: var(--foreground);
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .dialogTrack {
   color: var(--foreground);
   font-weight: var(--font-medium);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fieldGroup {
@@ -65,4 +85,28 @@
   color: var(--destructive);
   font-size: var(--text-meta-sm);
   margin: 0;
+}
+
+.communityNote {
+  color: var(--muted-foreground);
+  font-size: var(--text-meta-sm);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.communityNoteLink {
+  color: var(--link);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--link-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }

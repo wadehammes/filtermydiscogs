@@ -8,7 +8,7 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 
 | Job | Steps |
 |-----|--------|
-| **Unit gates** | Checkout, **`pnpm install`**, **`pnpm tsc:ci`**, **`pnpm lint:ci`**, **`pnpm lint:css`**, **`bash scripts/handbook-sync-check.sh origin/staging`**, **`pnpm test:ci`**, **`pnpm knip:ci`** |
+| **Unit gates** | Checkout, **`pnpm install`**, **`pnpm tsc:ci`**, **`pnpm lint:ci`**, **`pnpm lint:css`**, **`bash scripts/handbook-sync-check.sh origin/staging`**, **`bash scripts/spec-pair-check.sh origin/staging`**, **`pnpm test:ci`**, **`pnpm knip:ci`** |
 | **E2E smoke** | Checkout, **`pnpm install`**, cached Playwright Chromium, **`pnpm build:e2e`**, **`pnpm test:e2e:smoke`** — **`E2E_SMOKE=1`** runs only the specs listed in [`e2e/smokeSpecs.constants.ts`](../../e2e/smokeSpecs.constants.ts) on the **chromium** project against **`next start`** (see [Playwright](#playwright-instant-navigation-tests)) |
 
 Pushes to **`staging`** also run [`.github/workflows/e2e-full.yml`](../../.github/workflows/e2e-full.yml): **`pnpm build:e2e`**, then full **`pnpm test:e2e:run`** (every spec × **chromium**, **phone**, **tablet**).
@@ -16,6 +16,15 @@ Pushes to **`staging`** also run [`.github/workflows/e2e-full.yml`](../../.githu
 GitHub Actions are **pinned to commit SHAs** with version comments (see workflow files). Workflows set **`permissions: contents: read`** (least privilege for checkout and tests only).
 
 Run the same locally before pushing when possible — with [mise](https://mise.jdx.dev/), prefer **`mise run ci`** (unit + smoke). Before merging playback/responsive work, run **`mise run ci-full`** or wait for **E2E full** on **`staging`**. For a lighter pre-PR pass: **`mise run pr-prep`** (**`pnpm lint:all`**, **`pnpm handbook:check`**, **`pnpm fallow:audit`**).
+
+### Handbook sync and spec pairing
+
+| Script | When it fails |
+|--------|----------------|
+| [`scripts/handbook-sync-check.sh`](../../scripts/handbook-sync-check.sh) | **`src/`** or test infra changed vs base without any **`docs/handbook/*.md`** in the same diff |
+| [`scripts/spec-pair-check.sh`](../../scripts/spec-pair-check.sh) | Gated production files changed without a paired **`*.spec.ts(x)`** in the same diff — colocated util specs, hooks with existing hook specs, **`useReleasePlaybackProvider`** (accepts **`releasePlayback.context.spec.tsx`** or related util specs), **`releasePlayback.context.tsx`**, and playback **`src/utils/*`** modules even when a spec file is new |
+
+Both run via **`pnpm handbook:check`**. Playback/queue/track-stats work is never TDD-exempt ([conventions.md → Test-driven development](conventions.md#test-driven-development-tdd)).
 
 ## Branching and GitHub rulesets
 
@@ -367,7 +376,7 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 | Fallow MCP | [`.cursor/mcp.json`](../../.cursor/mcp.json) — wire-up under [Fallow vs Knip](#fallow-vs-knip) |
 | Zed (human editor) | [`.zed/settings.json`](../../.zed/settings.json) — vtsls **`tsdk`**, CSS **`composes`** custom data |
 
-**`sessionStart`** adds a one-line handbook pointer (full task map stays in **`llms.md`** — not injected each session). Per-prompt and per-edit handbook/skills nudges are **off** in [`.cursor/hooks.json`](../../.cursor/hooks.json); **`AGENTS.md`** and the always-on [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc) rule still apply. **`preToolUse`** / **`postToolUse`** enforce conventions (CSS, scaffold/factory placement, no comments/barrels). **`beforeShellExecution`** requires [`scripts/git-commit.sh`](../../scripts/git-commit.sh) for commits and blocks destructive git ([`block-destructive-git.sh`](../../.cursor/hooks/block-destructive-git.sh)). **Stop** hooks may follow up once on handbook/README drift ([`handbook-drift-check.sh`](../../.cursor/hooks/handbook-drift-check.sh) — **`src/`**, **`.jest/`**, **`jest.config.ts`**, **`e2e/`**, **`playwright.config.ts`**, **`next.config.ts`**; suggests **`docs/handbook/*.md`** chapters from changed paths; agents must update docs or cite verified section headings), targeted Jest checks, **`prisma/schema.prisma`** → **`pnpm db:generate`** ([`prisma-generate-nudge.sh`](../../.cursor/hooks/prisma-generate-nudge.sh)), or **`pnpm lint:all`** ([`lint-all-check.sh`](../../.cursor/hooks/lint-all-check.sh)) when meaningful source changed. CI runs the same handbook path rules via [`scripts/handbook-sync-check.sh`](../../scripts/handbook-sync-check.sh). Hooks resolve **`pnpm`** through **mise** ([`run_pnpm`](../../.cursor/hooks/_lib.sh)). Requires `jq`, **mise** (or **`pnpm`** on `PATH`), and executable hook scripts.
+**`sessionStart`** adds a one-line handbook pointer (full task map stays in **`llms.md`** — not injected each session). Per-prompt and per-edit handbook/skills nudges are **off** in [`.cursor/hooks.json`](../../.cursor/hooks.json); **`AGENTS.md`** and the always-on [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc) rule still apply. **`preToolUse`** / **`postToolUse`** enforce conventions (CSS, scaffold/factory placement, no comments/barrels). **`beforeShellExecution`** requires [`scripts/git-commit.sh`](../../scripts/git-commit.sh) for commits and blocks destructive git ([`block-destructive-git.sh`](../../.cursor/hooks/block-destructive-git.sh)). **Stop** hooks may follow up once on handbook/README drift ([`handbook-drift-check.sh`](../../.cursor/hooks/handbook-drift-check.sh) — **`src/`**, **`.jest/`**, **`jest.config.ts`**, **`e2e/`**, **`playwright.config.ts`**, **`next.config.ts`**; suggests **`docs/handbook/*.md`** chapters from changed paths; agents must update docs or cite verified section headings), targeted Jest checks, **`prisma/schema.prisma`** → **`pnpm db:generate`** ([`prisma-generate-nudge.sh`](../../.cursor/hooks/prisma-generate-nudge.sh)), or **`pnpm lint:all`** ([`lint-all-check.sh`](../../.cursor/hooks/lint-all-check.sh)) when meaningful source changed. CI runs [`scripts/handbook-sync-check.sh`](../../scripts/handbook-sync-check.sh) and [`scripts/spec-pair-check.sh`](../../scripts/spec-pair-check.sh) via **`pnpm handbook:check`**. The **stop** hook also nudges when playback production files changed locally without any spec file in the working tree. Hooks resolve **`pnpm`** through **mise** ([`run_pnpm`](../../.cursor/hooks/_lib.sh)). Requires `jq`, **mise** (or **`pnpm`** on `PATH`), and executable hook scripts.
 
 ## Releases
 

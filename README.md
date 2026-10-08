@@ -149,7 +149,7 @@ mise run pr-prep      # lint:all + handbook:check + fallow:audit (before opening
 mise run lint-all     # pnpm lint:all
 
 pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip
-pnpm handbook:check   # fail if src/ or test infra changed without docs/handbook/*.md
+pnpm handbook:check   # handbook sync + spec-pair (TDD) vs origin/staging
 
 pnpm test             # Jest (--runInBand --detectOpenHandles; CI uses parallel workers via pnpm test:ci)
 pnpm test:file        # Jest watch for one file
