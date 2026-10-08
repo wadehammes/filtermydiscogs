@@ -11,6 +11,11 @@ type PageFooterFunProps = {
 
 const STAT_ITEMS = [
   {
+    key: "collectors",
+    label: "Collectors",
+    getValue: (stats: PublicCommunityStats) => stats.totalCollectors,
+  },
+  {
     key: "crates",
     label: "Crates created",
     getValue: (stats: PublicCommunityStats) => stats.totalCrates,
@@ -22,13 +27,18 @@ const STAT_ITEMS = [
   },
   {
     key: "releases",
-    label: "Releases saved",
+    label: "Releases in crates",
     getValue: (stats: PublicCommunityStats) => stats.totalReleases,
   },
   {
-    key: "collectors",
-    label: "Collectors",
-    getValue: (stats: PublicCommunityStats) => stats.totalCollectors,
+    key: "tracksSaved",
+    label: "Tracks saved",
+    getValue: (stats: PublicCommunityStats) => stats.totalTracksSaved,
+  },
+  {
+    key: "trackPlays",
+    label: "Track plays",
+    getValue: (stats: PublicCommunityStats) => stats.totalTrackPlays,
   },
 ] as const;
 
