@@ -148,7 +148,7 @@ First time in a clone: `mise trust` if prompted, then `mise bootstrap`.
 |--------|---------|
 | `pnpm dev` | Runs **`prisma generate`** first (`predev`), then Next dev on **port 6767** (Turbopack). |
 | `pnpm dev:e2e` | Next dev on **6767** without the Node inspector — used by Playwright **`webServer`** in CI ([`playwright.config.ts`](../../playwright.config.ts)). |
-| `pnpm dev:webpack` | Same as **`pnpm dev`** but **Webpack** — use when Turbopack dev hits “module factory is not available” on lazy chunks. |
+| `pnpm dev:webpack` | Same as **`pnpm dev`** but **Webpack** — use when Turbopack dev hits “module factory is not available” on lazy chunks or **`next/font/google`** resolution errors (see [patterns.md → Metadata and OG images](patterns.md#metadata-and-og-images)). |
 | `pnpm build` | `db:generate` + production build (Turbopack; default in Next.js 16.3). Root [`global-error.tsx`](../../src/app/global-error.tsx) stays provider-free so `/_global-error` prerender succeeds. |
 | `pnpm start` | Serve production build on port 6767. |
 | `pnpm tsc:ci` | `db:generate` + strict TypeScript (`tsc --strict`). |

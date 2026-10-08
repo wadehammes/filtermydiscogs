@@ -385,7 +385,72 @@ describe("ReleaseTracklist", () => {
     ).not.toHaveAttribute("aria-disabled", "true");
   });
 
-  it("reserves queue column space on non-playable rows when requested", () => {
+  it("when alwaysShowTrackRowMenu is set, every row has an actions menu trigger", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        alwaysShowTrackRowMenu
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onEditTrackYoutube={() => undefined}
+      />,
+    );
+
+    expect(screen.getAllByTestId("fmdReleaseTrackRowMenuTrigger")).toHaveLength(
+      tracks.length,
+    );
+  });
+
+  it("when alwaysShowTrackRowMenu is set, shows the minus queue indicator on removable queued rows", () => {
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition="A"
+        alwaysShowTrackRowMenu
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        onTrackUnqueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={(position) => position === "A"}
+        onEditTrackYoutube={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("fmdReleaseTrackQueueRemoveIcon"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Never Gonna Give You Up").closest("li"),
+    ).toHaveAttribute("data-track-queued-at-rest", "");
+  });
+
+  it("when a queued row is hovered, opens the actions menu from the menu trigger", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ReleaseTracklist
+        tracks={tracks}
+        releaseArtistNames={releaseArtistNames}
+        activeTrackPosition={null}
+        onTrackSelect={() => undefined}
+        onTrackQueue={() => undefined}
+        isTrackQueued={(position) => position === "A"}
+        isTrackUnqueueable={() => false}
+      />,
+    );
+
+    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+
+    expect(screen.getByRole("menuitem", { name: "In queue" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+  });
+
+  it("shows the row menu on non-playable rows when alwaysShowTrackRowMenu is set", () => {
     render(
       <ReleaseTracklist
         tracks={tracks}
@@ -393,13 +458,15 @@ describe("ReleaseTracklist", () => {
         activeTrackPosition={null}
         isTrackPlayable={() => false}
         reserveQueueColumn
+        alwaysShowTrackRowMenu
         onTrackSelect={() => undefined}
         onTrackQueue={() => undefined}
+        onEditTrackYoutube={() => undefined}
       />,
     );
 
-    expect(screen.queryByTestId("fmdReleaseTrackRowMenuTrigger")).toBeNull();
-    expect(screen.getAllByTestId("fmdReleaseTrackQueueIdleIcon")).toHaveLength(
+    expect(screen.queryByTestId("fmdReleaseTrackQueueIdleIcon")).toBeNull();
+    expect(screen.getAllByTestId("fmdReleaseTrackRowMenuTrigger")).toHaveLength(
       tracks.length,
     );
   });

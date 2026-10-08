@@ -15,7 +15,6 @@ import "src/styles/global.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
   display: "swap",
   variable: "--font-dm-sans",
   preload: true,
@@ -23,7 +22,6 @@ const dmSans = DM_Sans({
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
   display: "swap",
   variable: "--font-mono",
   preload: false,

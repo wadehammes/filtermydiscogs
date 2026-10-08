@@ -58,6 +58,36 @@ describe("/api/tracks/youtube", () => {
     mockSaveOverride.mockResolvedValue(undefined);
   });
 
+  it("saves a user YouTube override for a track without a Discogs embed", async () => {
+    const request = new NextRequest("http://localhost/api/tracks/youtube", {
+      method: "PATCH",
+      body: JSON.stringify({
+        track_key: "modal-release-instance:A2",
+        track_title: "Modal Track Two",
+        track_position: "A2",
+        instance_id: "modal-release-instance",
+        youtube_id: "dQw4w9WgXcQ",
+        artist: "Rick Astley",
+        release_title: "Other Album",
+      }),
+    });
+
+    const response = await PATCH(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mockSaveOverride).toHaveBeenCalledWith(verifiedUser.user.userId, {
+      track_key: "modal-release-instance:A2",
+      track_title: "Modal Track Two",
+      track_position: "A2",
+      instance_id: "modal-release-instance",
+      youtube_id: "dQw4w9WgXcQ",
+      artist: "Rick Astley",
+      release_title: "Other Album",
+    });
+    expect(json).toEqual({ ok: true });
+  });
+
   it("saves a user YouTube override for a track", async () => {
     const request = new NextRequest("http://localhost/api/tracks/youtube", {
       method: "PATCH",

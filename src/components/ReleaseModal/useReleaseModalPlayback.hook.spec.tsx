@@ -16,6 +16,8 @@ import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
+import { formatArtistNames } from "src/utils/releaseDisplay";
+import { buildTrackKey } from "src/utils/userTrack";
 import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -106,6 +108,7 @@ const otherCollectionRelease = releaseFactory.withDisplayDefaults({
     id: OTHER_RELEASE_ID,
     title: "Other Album",
     resource_url: `https://api.discogs.com/releases/${OTHER_RELEASE_ID}`,
+    artists: [{ name: "Modal Artist" }],
   }),
 });
 
@@ -189,6 +192,80 @@ describe("useReleaseModalPlayback", () => {
       "A1",
       "A2",
     ]);
+  });
+
+  it("when opening YouTube override on a track without a Discogs embed, exposes an override target with the persisted track key and no default embed", async () => {
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      [String(OTHER_RELEASE_ID)]: otherReleaseDetail,
+    });
+
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: otherCollectionRelease,
+          isOpen: true,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.tracks.map((track) => track.position)).toEqual([
+        "A1",
+        "A2",
+      ]);
+    });
+
+    expect(result.current.isTrackPlayable("A2")).toBe(false);
+    expect(result.current.isTrackPlayable("A1")).toBe(true);
+
+    act(() => {
+      result.current.openTrackYoutubeOverride("A2");
+    });
+
+    expect(result.current.youtubeOverrideTarget).toEqual({
+      trackKey: buildTrackKey(otherCollectionRelease.instance_id, "A2"),
+      trackPosition: "A2",
+      trackTitle: "Modal Track Two",
+      instanceId: String(otherCollectionRelease.instance_id),
+      artist: formatArtistNames(otherCollectionRelease),
+      releaseTitle: "Other Album",
+      discogsReleaseId: OTHER_RELEASE_ID,
+      initialYoutubeId: null,
+      hasDefaultYoutubeEmbed: false,
+      initialPreviewVideoId: null,
+    });
+  });
+
+  it("when opening YouTube override on a track with a Discogs embed and no saved link, marks hasDefaultYoutubeEmbed on the target", async () => {
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      [String(OTHER_RELEASE_ID)]: otherReleaseDetail,
+    });
+
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: otherCollectionRelease,
+          isOpen: true,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isTrackPlayable("A1")).toBe(true);
+    });
+
+    act(() => {
+      result.current.openTrackYoutubeOverride("A1");
+    });
+
+    expect(result.current.youtubeOverrideTarget).toMatchObject({
+      trackPosition: "A1",
+      hasDefaultYoutubeEmbed: true,
+      initialYoutubeId: null,
+    });
+    expect(
+      result.current.youtubeOverrideTarget?.initialPreviewVideoId,
+    ).toBeTruthy();
   });
 
   it("does not show loading after clear queue, stop playback, and reopening the modal", async () => {

@@ -25,6 +25,7 @@ export type ReleaseTrackRowMenuProps = {
   onRemoveFromQueue?: () => void;
   onEditYoutube?: () => void;
   useMenuOverlayStack?: boolean;
+  releaseHasQueueActions?: boolean;
 };
 
 export const ReleaseTrackRowMenu = ({
@@ -40,6 +41,7 @@ export const ReleaseTrackRowMenu = ({
   onRemoveFromQueue,
   onEditYoutube,
   useMenuOverlayStack = true,
+  releaseHasQueueActions = false,
 }: ReleaseTrackRowMenuProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -54,10 +56,20 @@ export const ReleaseTrackRowMenu = ({
   const showAddToQueue = onAddToQueue !== undefined && canAddToQueue;
   const showRemoveFromQueue = onRemoveFromQueue !== undefined && canUnqueue;
   const showInQueueDisabled =
-    isQueued && !canAddToQueue && !canUnqueue && onAddToQueue !== undefined;
+    isQueued && !canAddToQueue && !canUnqueue && releaseHasQueueActions;
+  const showAddToQueueUnavailable =
+    releaseHasQueueActions &&
+    !canAddToQueue &&
+    !isQueued &&
+    !canUnqueue &&
+    onAddToQueue === undefined;
   const showYoutube = onEditYoutube !== undefined;
   const hasItems =
-    showAddToQueue || showRemoveFromQueue || showInQueueDisabled || showYoutube;
+    showAddToQueue ||
+    showRemoveFromQueue ||
+    showInQueueDisabled ||
+    showAddToQueueUnavailable ||
+    showYoutube;
 
   if (!hasItems) {
     return null;
@@ -141,6 +153,14 @@ export const ReleaseTrackRowMenu = ({
                   <CheckThinIcon />
                 </span>
                 <span className={styles.menuItemLabel}>In queue</span>
+              </InlinePopoverMenu.Item>
+            ) : null}
+            {showAddToQueueUnavailable ? (
+              <InlinePopoverMenu.Item disabled>
+                <span className={styles.menuItemIcon} aria-hidden>
+                  <ListPlusThinIcon />
+                </span>
+                <span className={styles.menuItemLabel}>Add to queue</span>
               </InlinePopoverMenu.Item>
             ) : null}
             {showYoutube ? (

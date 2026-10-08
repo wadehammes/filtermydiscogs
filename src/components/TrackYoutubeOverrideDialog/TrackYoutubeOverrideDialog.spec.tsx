@@ -26,7 +26,7 @@ const getPreviewThumbnail = (preview: HTMLElement): HTMLImageElement => {
   return thumbnail;
 };
 
-const target = {
+const unplayableTrackTarget = {
   trackKey: "101:A2",
   trackPosition: "A2",
   trackTitle: "Second",
@@ -35,6 +35,8 @@ const target = {
   releaseTitle: "Album",
   discogsReleaseId: 249504,
   initialYoutubeId: null,
+  hasDefaultYoutubeEmbed: false,
+  initialPreviewVideoId: null,
 };
 
 describe("TrackYoutubeOverrideDialog", () => {
@@ -51,7 +53,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={() => undefined}
       />,
     );
@@ -68,7 +70,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={() => undefined}
       />,
     );
@@ -82,7 +84,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={() => undefined}
       />,
     );
@@ -95,7 +97,10 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={{ ...target, initialPreviewVideoId: "dQw4w9WgXcQ" }}
+        target={{
+          ...unplayableTrackTarget,
+          initialPreviewVideoId: "dQw4w9WgXcQ",
+        }}
         onClose={() => undefined}
       />,
     );
@@ -116,7 +121,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={() => undefined}
       />,
     );
@@ -144,7 +149,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={() => undefined}
       />,
     );
@@ -184,7 +189,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={() => undefined}
       />,
     );
@@ -209,7 +214,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={{ ...target, hasDefaultYoutubeEmbed: true }}
+        target={{ ...unplayableTrackTarget, hasDefaultYoutubeEmbed: true }}
         onClose={() => undefined}
       />,
     );
@@ -229,7 +234,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={target}
+        target={unplayableTrackTarget}
         onClose={onClose}
         onSaved={onSaved}
       />,
@@ -265,7 +270,10 @@ describe("TrackYoutubeOverrideDialog", () => {
     render(
       <TrackYoutubeOverrideDialog
         open
-        target={{ ...target, initialYoutubeId: "dQw4w9WgXcQ" }}
+        target={{
+          ...unplayableTrackTarget,
+          initialYoutubeId: "dQw4w9WgXcQ",
+        }}
         onClose={onClose}
         onSaved={onSaved}
       />,
