@@ -32,6 +32,7 @@ import {
 } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
 import { useReleasePlaybackTransportToggle } from "src/hooks/useReleasePlaybackTransportToggle.hook";
 import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYoutubeEmbed.hook";
+import type { PlaybackSkipSentryContext } from "src/lib/sentry/reportPlaybackSkip";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
@@ -43,6 +44,7 @@ import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
 } from "src/types/userPreferences.types";
+import { definedProps } from "src/utils/definedProps";
 import {
   classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
@@ -81,6 +83,7 @@ import {
 import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
+import { resolvePlaybackSkipSentryDetails } from "src/utils/resolvePlaybackSkipSentryDetails";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
 import {
   isAwaitingTrackStatsForYoutubeOverride,
@@ -200,6 +203,9 @@ export const useReleasePlaybackProvider = (): {
   );
   const recoverPlaybackAfterTabVisibleRef = useRef<(() => void) | null>(null);
   const embedWatchdogAfterTabVisibleTimeoutRef = useRef<number | null>(null);
+  const resolveSkipContextRef = useRef<() => PlaybackSkipSentryContext>(
+    () => ({}),
+  );
   const embedUnavailableSkipHandlerRef = useRef(
     createPlaybackEmbedUnavailableSkipHandler({
       appendSkip: appendPlaybackSkipAndSchedule,
@@ -210,13 +216,7 @@ export const useReleasePlaybackProvider = (): {
           activeTrackIndex: activeTrackIndexRef.current,
           previewVideo: previewVideoRef.current,
         }),
-      resolveSkipContext: () => ({
-        videoId: embedWatchdogVideoIdRef.current ?? embedVideoIdRef.current,
-        watchdogMs: resolvePlaybackEmbedUnavailableWatchdogMs(),
-        connectionQuality: classifyNetworkConnectionQuality(
-          getNavigatorNetworkInformation(),
-        ),
-      }),
+      resolveSkipContext: () => resolveSkipContextRef.current(),
       isSkipAllowed: () => isPlayingRef.current && !isPausedRef.current,
       onBeforeSkip: () => {
         embedStartWatchdogRef.current.disarm();
@@ -410,6 +410,37 @@ export const useReleasePlaybackProvider = (): {
   );
   activeTrackAwaitingStatsOverrideRef.current =
     activeTrackAwaitingStatsOverride;
+
+  resolveSkipContextRef.current = () => {
+    const activeRelease = releaseRef.current;
+    const activeTracks = tracksRef.current;
+    const activeIndex = activeTrackIndexRef.current;
+    const activeTrackForSkip = activeTracks[activeIndex];
+    const trackPosition = activeTrackForSkip?.position?.trim() ?? "";
+    const trackKey =
+      activeRelease && trackPosition
+        ? buildTrackKey(activeRelease.instance_id, trackPosition)
+        : undefined;
+
+    return resolvePlaybackSkipSentryDetails(
+      definedProps({
+        release: activeRelease,
+        tracks: activeTracks,
+        activeTrackIndex: activeIndex,
+        previewVideo: previewVideoRef.current,
+        youtubeVideoId:
+          embedWatchdogVideoIdRef.current ?? embedVideoIdRef.current,
+        userYoutubeOverrideId: trackKey
+          ? userYoutubeOverridesRef.current.get(trackKey)?.trim()
+          : undefined,
+        discogsMatchedYoutubeId: matchedActiveVideoIdRef.current,
+        watchdogMs: resolvePlaybackEmbedUnavailableWatchdogMs(),
+        connectionQuality: classifyNetworkConnectionQuality(
+          getNavigatorNetworkInformation(),
+        ),
+      }),
+    );
+  };
 
   const activeTrackHasYoutubeOverride = useMemo(
     () =>

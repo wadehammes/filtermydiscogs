@@ -1,14 +1,16 @@
 import type { SeverityLevel } from "@sentry/core";
+import {
+  buildPlaybackSkipSentryMessage,
+  buildPlaybackSkipSentryTags,
+  type PlaybackSkipSentryDetails,
+} from "src/lib/sentry/buildPlaybackSkipSentryEvent";
 import { captureAppMessage } from "src/lib/sentry/captureAppMessage.client";
+import { definedProps } from "src/utils/definedProps";
 import { PLAYBACK_EMBED_UNAVAILABLE_FALLBACK } from "src/utils/playbackEmbedUnavailableSkip";
 
 export type PlaybackSkipSource = "watchdog" | "youtube";
 
-export type PlaybackSkipSentryContext = {
-  videoId?: string | null;
-  watchdogMs?: number;
-  connectionQuality?: string;
-};
+export type PlaybackSkipSentryContext = PlaybackSkipSentryDetails;
 
 export const resolvePlaybackSkipSource = (
   errorCode: number,
@@ -49,16 +51,30 @@ export const reportPlaybackSkipToSentry = ({
   const source = resolvePlaybackSkipSource(errorCode);
   const level = resolvePlaybackSkipSentryLevel(source);
 
-  captureAppMessage(`Playback skip: ${reason}`, {
+  const message = buildPlaybackSkipSentryMessage(
+    definedProps({
+      source,
+      reason,
+      trackLabel,
+      details: context,
+    }),
+  );
+
+  captureAppMessage(message, {
     level,
-    fingerprint: ["playback-skip", source, String(errorCode)],
-    tags: {
-      "playback.skip_source": source,
-      "playback.youtube_error_code": String(errorCode),
-    },
+    fingerprint: [
+      "playback-skip",
+      source,
+      context?.trackKey ?? trackLabel,
+      String(errorCode),
+    ],
+    tags: buildPlaybackSkipSentryTags(
+      definedProps({ source, errorCode, details: context }),
+    ),
     extra: {
       trackLabel,
       reason,
+      skipSource: source,
       ...context,
     },
   });

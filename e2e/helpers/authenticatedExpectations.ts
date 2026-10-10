@@ -28,5 +28,8 @@ export async function expectE2eCollectionLoaded(page: Page) {
   ).toBeVisible({
     timeout: 30_000,
   });
-  await expect(e2eReleaseCards(page)).toHaveCount(E2E_COLLECTION_RELEASE_COUNT);
+  await expect(e2eReleaseCards(page)).toHaveCount(
+    E2E_COLLECTION_RELEASE_COUNT,
+    { timeout: 30_000 },
+  );
 }

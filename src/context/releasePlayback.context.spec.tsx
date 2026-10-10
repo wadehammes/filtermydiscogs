@@ -2177,7 +2177,17 @@ describe("ReleasePlaybackProvider", () => {
     expect(mockReportPlaybackSkipToSentry).toHaveBeenCalledWith(
       expect.objectContaining({
         errorCode: -1,
-        context: expect.objectContaining({ connectionQuality: "slow" }),
+        context: expect.objectContaining({
+          connectionQuality: "slow",
+          releaseId: RELEASE_ID,
+          releaseTitle: "Never Gonna Give You Up",
+          instanceId: collectionRelease.instance_id,
+          trackPosition: "B1",
+          trackTitle: "Never Gonna Give You Up (Instrumental)",
+          trackKey: `${collectionRelease.instance_id}:B1`,
+          watchdogMs: PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+          youtubeVideoId: "abc12345678",
+        }),
       }),
     );
 

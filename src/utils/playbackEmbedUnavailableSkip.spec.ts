@@ -73,7 +73,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
       reportSkip,
       resolveSkipDisplay: () => ({ trackLabel: "A1 Track" }),
       resolveSkipContext: () => ({
-        videoId: "yt123",
+        youtubeVideoId: "yt123",
         watchdogMs: 5000,
         connectionQuality: "fast",
       }),
@@ -87,7 +87,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
       trackLabel: "A1 Track",
       reason: "Cannot play in embedded player",
       context: {
-        videoId: "yt123",
+        youtubeVideoId: "yt123",
         watchdogMs: 5000,
         connectionQuality: "fast",
       },
