@@ -13,10 +13,7 @@ jest.mock("src/lib/user-track.server", () => ({
   saveUserTrackYoutubeOverride: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  createErrorResponse: jest.fn(),
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/tracks/youtube/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");

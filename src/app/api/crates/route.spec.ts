@@ -26,64 +26,7 @@ jest.mock("src/lib/crate-preview.server", () => ({
   fetchCratePreviewThumbs: jest.fn(async () => new Map()),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-  auditDatabaseOperation: jest.fn(),
-  createErrorResponse: jest.fn((error: unknown) =>
-    NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    ),
-  ),
-  getPaginationParams: (request: NextRequest) => {
-    const searchParams = request.nextUrl.searchParams;
-    const all = searchParams.get("all") === "true";
-
-    if (all) {
-      return {
-        skip: 0,
-        take: 500,
-        page: 1,
-        pageSize: 500,
-        all: true,
-      };
-    }
-
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const pageSize = Math.min(
-      100,
-      Math.max(1, parseInt(searchParams.get("pageSize") || "50", 10)),
-    );
-
-    return {
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      page,
-      pageSize,
-      all: false,
-    };
-  },
-  createPaginatedResponse: <T>(
-    data: T[],
-    total: number,
-    page: number,
-    pageSize: number,
-  ) => {
-    const totalPages = Math.ceil(total / pageSize);
-
-    return NextResponse.json({
-      data,
-      pagination: {
-        page,
-        pageSize,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-      },
-    });
-  },
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/crates/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");

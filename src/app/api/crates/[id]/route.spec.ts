@@ -32,31 +32,7 @@ jest.mock("src/lib/db", () => ({
   },
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-  auditDatabaseOperation: jest.fn(),
-  createErrorResponse: jest.fn((error: unknown) =>
-    NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    ),
-  ),
-  getPaginationParams: (request: NextRequest) => {
-    const searchParams = request.nextUrl.searchParams;
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const pageSize = Math.min(
-      100,
-      Math.max(1, parseInt(searchParams.get("pageSize") || "50", 10)),
-    );
-
-    return {
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      page,
-      pageSize,
-    };
-  },
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/crates/[id]/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");

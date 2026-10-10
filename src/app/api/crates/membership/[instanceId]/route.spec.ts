@@ -31,16 +31,7 @@ jest.mock("src/lib/release-data-validation", () => ({
   validateReleaseDataForStorage: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-  createErrorResponse: jest.fn((error: unknown) =>
-    NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    ),
-  ),
-  auditDatabaseOperation: jest.fn(),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule =
   typeof import("src/app/api/crates/membership/[instanceId]/route");

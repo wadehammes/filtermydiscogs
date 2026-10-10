@@ -43,7 +43,8 @@
     ".jest/setupTests.ts",
     ".jest/setEnvVars.ts",
     "src/tests/mocks/mockCanvas.mock.ts",
-    "src/tests/mocks/mockNextRouter.mock.ts"
+    "src/tests/mocks/mockNextRouter.mock.ts",
+    "src/lib/__mocks__/api-helpers.ts"
   ],
   "overrides": [
     {

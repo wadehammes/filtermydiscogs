@@ -135,6 +135,7 @@ model ProductAnalyticsEvent {
   @@index([event, created_at])
   @@index([page_path, created_at])
   @@index([created_at])
+  @@index([user_id])
   @@map("product_analytics_events")
 }
 

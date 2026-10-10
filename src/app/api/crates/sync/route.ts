@@ -4,7 +4,11 @@ import {
   createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
-import { prisma } from "src/lib/db";
+import {
+  computeCrateSyncDeletionPercentage,
+  deleteCrateReleasesByInstanceIds,
+  fetchCrateSyncOrphanState,
+} from "src/lib/crate-sync.server";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { crateSyncBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -44,47 +48,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const MAX_RELEASES_TO_CHECK = 10000;
-    const allCrateReleases = await prisma.crateRelease.findMany({
-      where: { user_id: userIdNum },
-      select: { instance_id: true },
-      take: MAX_RELEASES_TO_CHECK,
-    });
-
-    const normalizedCollectionIds = collectionInstanceIds.map((id) =>
-      String(id),
-    );
-    const collectionInstanceIdSet = new Set(normalizedCollectionIds);
-
-    const orphanedReleases = allCrateReleases.filter(
-      (r: { instance_id: string }) => {
-        const normalizedCrateId = String(r.instance_id);
-        return !collectionInstanceIdSet.has(normalizedCrateId);
-      },
+    const collectionInstanceIdSet = new Set(
+      collectionInstanceIds.map((id) => String(id)),
     );
 
-    if (orphanedReleases.length === 0) {
+    const { totalRowCount, orphanedRowCount, orphanedInstanceIds } =
+      await fetchCrateSyncOrphanState(userIdNum, collectionInstanceIdSet);
+
+    if (orphanedRowCount === 0) {
       return privateRouteJson({
         success: true,
         removedCount: 0,
       });
     }
 
-    const totalCrateReleases = allCrateReleases.length;
-    const deletionPercentage =
-      (orphanedReleases.length / totalCrateReleases) * 100;
+    const deletionPercentage = computeCrateSyncDeletionPercentage({
+      totalRowCount,
+      orphanedRowCount,
+    });
+    const deletionPercentageLabel = Number(deletionPercentage.toFixed(1));
     const MAX_DELETION_PERCENTAGE = 50;
 
     if (deletionPercentage > MAX_DELETION_PERCENTAGE && !force) {
       console.error(
-        `SYNC BLOCKED: Attempting to delete ${orphanedReleases.length} of ${totalCrateReleases} releases (${deletionPercentage.toFixed(1)}%). This seems unsafe.`,
+        `SYNC BLOCKED: Attempting to delete ${orphanedRowCount} of ${totalRowCount} releases (${deletionPercentageLabel}%). This seems unsafe.`,
       );
       return privateRouteJson(
         {
-          error: `Sync blocked: Would delete ${deletionPercentage.toFixed(1)}% of releases (${orphanedReleases.length} of ${totalCrateReleases}). This seems unsafe. Use force=true to override.`,
+          error: `Sync blocked: Would delete ${deletionPercentageLabel}% of releases (${orphanedRowCount} of ${totalRowCount}). This seems unsafe. Use force=true to override.`,
           blockedReason: "deletion_cap_blocked",
-          orphanedCount: orphanedReleases.length,
-          totalCount: totalCrateReleases,
+          orphanedCount: orphanedRowCount,
+          totalCount: totalRowCount,
           percentage: deletionPercentage,
           maxAllowed: MAX_DELETION_PERCENTAGE,
         },
@@ -100,36 +94,21 @@ export async function POST(request: NextRequest) {
         JSON.stringify({
           event: "crate_sync_force_override",
           userId: userIdNum,
-          orphanedCount: orphanedReleases.length,
-          totalCount: totalCrateReleases,
-          deletionPercentage: Number(deletionPercentage.toFixed(1)),
+          orphanedCount: orphanedRowCount,
+          totalCount: totalRowCount,
+          deletionPercentage: deletionPercentageLabel,
         }),
       );
     }
 
     console.log(
-      `[CRATE_SYNC] User ${userIdNum}: Removing ${orphanedReleases.length} orphaned releases (${deletionPercentage.toFixed(1)}% of ${totalCrateReleases} total)`,
+      `[CRATE_SYNC] User ${userIdNum}: Removing ${orphanedRowCount} orphaned releases (${deletionPercentageLabel}% of ${totalRowCount} total)`,
     );
 
-    const instanceIds = orphanedReleases.map(
-      (r: { instance_id: string }) => r.instance_id,
+    const totalDeleted = await deleteCrateReleasesByInstanceIds(
+      userIdNum,
+      orphanedInstanceIds,
     );
-
-    const BATCH_SIZE = 1000;
-    let totalDeleted = 0;
-
-    for (let i = 0; i < instanceIds.length; i += BATCH_SIZE) {
-      const batch = instanceIds.slice(i, i + BATCH_SIZE);
-      const result = await prisma.crateRelease.deleteMany({
-        where: {
-          user_id: userIdNum,
-          instance_id: {
-            in: batch,
-          },
-        },
-      });
-      totalDeleted += result.count;
-    }
 
     auditDatabaseOperation(
       userIdNum,
@@ -139,7 +118,7 @@ export async function POST(request: NextRequest) {
       {
         removedCount: totalDeleted,
         operation: usedForceOverride ? "sync_force_override" : "sync",
-        deletionPercentage: Number(deletionPercentage.toFixed(1)),
+        deletionPercentage: deletionPercentageLabel,
       },
     );
 

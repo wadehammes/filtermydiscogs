@@ -15,13 +15,7 @@ jest.mock("src/lib/user-track.server", () => ({
   fetchTopUserTracks: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-  sanitizeError: jest.fn((error: unknown) => ({
-    status: error instanceof Error ? 500 : 500,
-  })),
-  rethrowNextInternalError: jest.fn(),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/dashboard/top-tracks/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");

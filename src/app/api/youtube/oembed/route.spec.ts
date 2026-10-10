@@ -13,10 +13,7 @@ jest.mock("src/lib/youtube-oembed.server", () => ({
   fetchYoutubeOembedMetadata: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  createErrorResponse: jest.fn(),
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/youtube/oembed/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");

@@ -22,12 +22,7 @@ jest.mock("src/lib/user-track.server", () => ({
   recordUserTrackEvent: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-  createErrorResponse: jest.fn((_error: unknown, message: string) =>
-    NextResponse.json({ error: message }, { status: 500 }),
-  ),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/tracks/record/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
