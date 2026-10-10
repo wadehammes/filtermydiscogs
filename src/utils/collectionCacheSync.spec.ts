@@ -14,6 +14,7 @@ import {
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import {
   clearPersistedCollectionCaches,
+  readPersistedCollectionCache,
   writePersistedCollectionCache,
 } from "src/utils/collectionCacheStorage";
 import {
@@ -113,6 +114,55 @@ describe("collectionCacheSync", () => {
       page: 1,
       perPage: COLLECTION_PAGE_SIZE,
     });
+  });
+
+  it("patches cached basic_information when page-1 validation sees Discogs metadata changes", async () => {
+    const queryClient = createTestQueryClient();
+    const release = releaseFactory.withDisplayDefaults({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.withDisplayDefaults().basic_information,
+        formats: [{ name: "CDr", descriptions: ["Album"] }],
+      },
+    });
+    const page = collectionFactory.build(
+      {},
+      { releaseCount: 1, totalItems: 1, totalPages: 1 },
+    );
+    page.releases = [release];
+    const cached = {
+      pages: [page],
+      pageParams: [COLLECTION_FULL_PAGE_PARAM],
+      totalItems: 1,
+      fetchedAt: Date.now(),
+    };
+
+    await writePersistedCollectionCache("testuser", cached);
+
+    const validationPage = collectionFactory.build(
+      {},
+      { releaseCount: 1, totalItems: 1, totalPages: 1 },
+    );
+    validationPage.releases = [
+      {
+        ...release,
+        basic_information: {
+          ...release.basic_information,
+          formats: [{ name: "Vinyl", descriptions: ['12"', "LP"] }],
+        },
+      },
+    ];
+    mockFetchDiscogsCollection.mockResolvedValue(validationPage);
+
+    await expect(
+      validatePersistedCollectionCache(queryClient, "testuser", cached),
+    ).resolves.toBe(true);
+
+    const stored = await readPersistedCollectionCache("testuser");
+
+    expect(stored?.pages[0]?.releases[0]?.basic_information.formats).toEqual([
+      { name: "Vinyl", descriptions: ['12"', "LP"] },
+    ]);
   });
 
   it("treats validation as failed when the count check times out", async () => {
@@ -251,9 +301,7 @@ describe("collectionCacheSync", () => {
       [COLLECTION_FULL_PAGE_PARAM],
     );
 
-    const stored = await import("src/utils/collectionCacheStorage").then(
-      (module) => module.readPersistedCollectionCache("testuser"),
-    );
+    const stored = await readPersistedCollectionCache("testuser");
 
     expect(stored?.totalItems).toBe(2200);
     expect(stored?.pages).toHaveLength(1);
@@ -275,9 +323,7 @@ describe("collectionCacheSync", () => {
       [COLLECTION_FULL_PAGE_PARAM],
     );
 
-    const stored = await import("src/utils/collectionCacheStorage").then(
-      (module) => module.readPersistedCollectionCache("testuser"),
-    );
+    const stored = await readPersistedCollectionCache("testuser");
 
     expect(stored).toBeNull();
   });
@@ -299,9 +345,7 @@ describe("collectionCacheSync", () => {
 
     await patchPersistedCollectionReleaseRating("testuser", 249504, 5);
 
-    const stored = await import("src/utils/collectionCacheStorage").then(
-      (module) => module.readPersistedCollectionCache("testuser"),
-    );
+    const stored = await readPersistedCollectionCache("testuser");
 
     expect(stored?.pages[0]?.releases[0]?.rating).toBe(5);
   });
