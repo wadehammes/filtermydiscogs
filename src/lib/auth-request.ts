@@ -10,6 +10,7 @@ import {
   setInFlightIdentityRequest,
 } from "src/lib/identity-cache";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { reportApiRouteFailure } from "src/lib/sentry/reportApiRouteFailure";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export interface VerifiedDiscogsUser {
@@ -290,6 +291,9 @@ async function getVerifiedUserFromOAuthCookies(
     }
 
     console.error("OAuth identity verification failed:", error);
+    reportApiRouteFailure("auth/oauth-identity", error, {
+      status: status ?? 500,
+    });
     return {
       error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
     };

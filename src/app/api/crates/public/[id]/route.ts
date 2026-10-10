@@ -2,8 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { CRATE_DETAIL_ALL_MAX } from "src/constants/crate";
 import {
   getPaginationParams,
-  rethrowNextInternalError,
-  sanitizeError,
+  logSanitizedApiRouteFailure,
 } from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
 import { isValidCrateId } from "src/lib/crate-id";
@@ -124,9 +123,11 @@ export async function GET(
       },
     );
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Error fetching public crate:", error);
-    const sanitized = sanitizeError(error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/crates/public/[id]",
+      error,
+      "Error fetching public crate:",
+    );
     return NextResponse.json(
       { error: sanitized.message },
       { status: sanitized.status },

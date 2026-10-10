@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react";
-import { trackCrateSyncManual } from "src/analytics/productAnalyticsEvents";
+import {
+  trackCrateSyncBlockedFromError,
+  trackCrateSyncManual,
+} from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import { useSyncCratesMutation } from "src/hooks/mutations/useCrateMutations";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
@@ -74,9 +77,10 @@ export const useCrateCollectionSync = () => {
           }
         },
         onError: (error) => {
-          toast.error(
-            `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-          );
+          trackCrateSyncBlockedFromError(error);
+          const message =
+            error instanceof Error ? error.message : "Unknown error";
+          toast.error(`Sync failed: ${message}`);
         },
       },
     );

@@ -75,8 +75,7 @@ export async function PATCH(
       cleared_count: result.count,
     });
   } catch (error) {
-    console.error("Error clearing crate release packed status:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/[id]/releases" });
   }
 }
 
@@ -117,8 +116,7 @@ export async function POST(
     let body: unknown;
     try {
       body = await request.json();
-    } catch (error) {
-      console.error("Failed to parse request body:", error);
+    } catch (_error) {
       return privateRouteJson(
         { error: "Invalid request body" },
         { status: 400 },
@@ -183,7 +181,6 @@ export async function POST(
 
     return privateRouteJson({ success: true }, { status: 201 });
   } catch (error) {
-    console.error("Error adding release to crate:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/[id]/releases" });
   }
 }

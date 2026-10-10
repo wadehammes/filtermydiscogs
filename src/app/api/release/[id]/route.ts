@@ -84,7 +84,6 @@ export async function GET(
         discogsThrottleQueueResponseInit(error),
       );
     }
-    console.error("Release API error:", error);
     const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
       error,
       fallbackMessage: "Failed to fetch release",

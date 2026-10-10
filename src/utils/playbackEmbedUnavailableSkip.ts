@@ -1,3 +1,7 @@
+import {
+  type PlaybackSkipSentryContext,
+  reportPlaybackSkipToSentry,
+} from "src/lib/sentry/reportPlaybackSkip";
 import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import {
   playbackSkipLogDedupeKey,
@@ -19,13 +23,22 @@ export const resolvePlaybackEmbedUnavailableReason = (
 export const createPlaybackEmbedUnavailableSkipHandler = ({
   appendSkip,
   resolveSkipDisplay,
+  resolveSkipContext,
   isSkipAllowed,
   onBeforeSkip,
+  reportSkip = reportPlaybackSkipToSentry,
 }: {
   appendSkip: (entry: PlaybackSkipLogEntry, onSkip: () => void) => void;
   resolveSkipDisplay: () => Pick<PlaybackSkipLogEntry, "trackLabel">;
+  resolveSkipContext?: () => PlaybackSkipSentryContext;
   isSkipAllowed: () => boolean;
   onBeforeSkip?: () => void;
+  reportSkip?: (payload: {
+    errorCode: number;
+    trackLabel: string;
+    reason: string;
+    context?: PlaybackSkipSentryContext;
+  }) => void;
 }) => {
   let lastDedupeKey: string | null = null;
 
@@ -45,6 +58,15 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
 
       lastDedupeKey = dedupeKey;
       onBeforeSkip?.();
+
+      const skipContext = resolveSkipContext?.();
+
+      reportSkip({
+        errorCode,
+        trackLabel: display.trackLabel,
+        reason,
+        ...(skipContext ? { context: skipContext } : {}),
+      });
 
       appendSkip({ ...display, reason }, () => {
         lastDedupeKey = null;

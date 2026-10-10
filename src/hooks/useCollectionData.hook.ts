@@ -7,6 +7,8 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { trackDiscogsUpstreamRateLimited } from "src/analytics/productAnalyticsEvents";
+import { ApiFetchError } from "src/api/apiFetchError";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -49,6 +51,7 @@ export const useCollectionData = ({
   const syncMutation = useSyncCratesMutation(authState.userId);
   const { mutate: syncCrates, isPending: isSyncPending } = syncMutation;
   const autoSyncRef = useRef(false);
+  const collectionRateLimitTrackedRef = useRef(false);
 
   const filtersDispatch = useSetAtom(filtersDispatchAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
@@ -93,6 +96,7 @@ export const useCollectionData = ({
 
     lastCollectionRef.current = null;
     autoSyncRef.current = false;
+    collectionRateLimitTrackedRef.current = false;
     setCollectionFiltersActive(false);
 
     if (previousUsername) {
@@ -196,6 +200,20 @@ export const useCollectionData = ({
     isCollectionFullyLoaded,
     username,
   ]);
+
+  useEffect(() => {
+    if (
+      !isError ||
+      collectionRateLimitTrackedRef.current ||
+      !(queryError instanceof ApiFetchError) ||
+      queryError.status !== 429
+    ) {
+      return;
+    }
+
+    collectionRateLimitTrackedRef.current = true;
+    trackDiscogsUpstreamRateLimited("collection");
+  }, [isError, queryError]);
 
   useLayoutEffect(() => {
     if (!queryEnabled) {

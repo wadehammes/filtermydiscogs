@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
   getDisplayIdentityFromCookies,
   getStoredReconnectUsername,
@@ -7,7 +8,6 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteJson } from "src/lib/private-route-response";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import {
   consumeSupportProjectToastPending,
   touchUserLastSeen,
@@ -105,8 +105,7 @@ export async function GET(request: NextRequest) {
       showSupportProjectToast,
     });
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Auth check error:", error);
+    logSanitizedApiRouteFailure("/api/auth/check", error, "Auth check error:");
     return authCheckResponse({ isAuthenticated: false });
   }
 }

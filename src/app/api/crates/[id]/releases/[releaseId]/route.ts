@@ -30,8 +30,7 @@ export async function PATCH(
     let body: unknown;
     try {
       body = await request.json();
-    } catch (error) {
-      console.error("Failed to parse request body:", error);
+    } catch (_error) {
       return privateRouteJson(
         { error: "Invalid request body" },
         { status: 400 },
@@ -106,8 +105,9 @@ export async function PATCH(
       throw error;
     }
   } catch (error) {
-    console.error("Error updating crate release found status:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, {
+      route: "/api/crates/[id]/releases/[releaseId]",
+    });
   }
 }
 
@@ -175,7 +175,8 @@ export async function DELETE(
 
     return privateRouteJson({ success: true });
   } catch (error) {
-    console.error("Error removing release from crate:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, {
+      route: "/api/crates/[id]/releases/[releaseId]",
+    });
   }
 }

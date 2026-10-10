@@ -38,6 +38,7 @@ import {
 import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import { buildCrateLayout } from "src/lib/crate-layout";
+import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
 import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import type { DiscogsRelease } from "src/types";
 import type {
@@ -177,6 +178,11 @@ export const useCrateProvider = (): {
 
     if (hasOwnershipMismatch) {
       console.error("Crate ownership mismatch detected; clearing session.");
+      reportClientFailure(
+        "crate",
+        new Error("Crate ownership mismatch detected"),
+        { expectedUserId },
+      );
       clearUserScopedQueries(queryClient);
       void logout();
     }

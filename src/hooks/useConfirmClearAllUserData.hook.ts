@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { CLEAR_ALL_DATA_ERROR_MESSAGE } from "src/constants/clearData.constants";
 import { useAuth } from "src/context/auth.context";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
+import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
 import { toast } from "src/utils/toast";
 
 export const useConfirmClearAllUserData = () => {
@@ -28,6 +29,7 @@ export const useConfirmClearAllUserData = () => {
       setIsClearDataDialogOpen(false);
     } catch (error) {
       console.error("Error clearing data:", error);
+      reportClientFailure("account", error, { action: "clear_all_data" });
       toast.error(CLEAR_ALL_DATA_ERROR_MESSAGE);
     }
   }, [clearAllUserData]);

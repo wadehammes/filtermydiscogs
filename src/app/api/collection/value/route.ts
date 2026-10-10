@@ -59,7 +59,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("Collection value API error:", error);
 
     if (process.env.NODE_ENV === "development") {
       console.error("Collection value error details:", {

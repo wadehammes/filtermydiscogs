@@ -41,8 +41,9 @@ export async function GET(
       crateIds: rows.map((row) => row.crate_id),
     });
   } catch (error) {
-    console.error("Error fetching release crate membership:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, {
+      route: "/api/crates/membership/[instanceId]",
+    });
   }
 }
 
@@ -174,7 +175,8 @@ export async function PUT(
       crateIds: targetCrateIds,
     });
   } catch (error) {
-    console.error("Error updating release crate membership:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, {
+      route: "/api/crates/membership/[instanceId]",
+    });
   }
 }

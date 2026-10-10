@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
 import styles from "src/styles/modules/error-boundary.module.css";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
 
@@ -28,6 +29,8 @@ export const ErrorFallbackView = ({
     if (showErrorDetails) {
       console.error(logLabel, error);
     }
+
+    reportClientFailure("error_boundary", error, { logLabel });
   }, [error, logLabel, showErrorDetails]);
 
   return (

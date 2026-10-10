@@ -145,8 +145,7 @@ export async function GET(request: NextRequest) {
       all ? total : pageSize,
     );
   } catch (error) {
-    console.error("Error fetching crates:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates" });
   }
 }
 
@@ -206,7 +205,6 @@ export async function POST(request: NextRequest) {
 
     return privateRouteJson({ crate: newCrate }, { status: 201 });
   } catch (error) {
-    console.error("Error creating crate:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates" });
   }
 }

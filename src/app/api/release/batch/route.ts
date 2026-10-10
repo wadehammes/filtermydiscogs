@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { releaseBatchBodySchema } from "src/lib/validation/release.schemas";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
@@ -74,11 +74,14 @@ export async function POST(request: NextRequest) {
       },
     );
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Release batch API error:", error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/release/batch",
+      error,
+      "Release batch API error:",
+    );
     return NextResponse.json(
       { error: "Failed to fetch releases" },
-      { status: 500 },
+      { status: sanitized.status },
     );
   }
 }

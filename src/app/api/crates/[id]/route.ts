@@ -108,8 +108,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching crate:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/[id]" });
   }
 }
 
@@ -260,8 +259,7 @@ export async function PUT(
 
     return privateRouteJson({ crate: updatedCrate });
   } catch (error) {
-    console.error("Error updating crate:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/[id]" });
   }
 }
 
@@ -322,7 +320,6 @@ export async function DELETE(
 
     return privateRouteJson({ success: true });
   } catch (error) {
-    console.error("Error deleting crate:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/[id]" });
   }
 }

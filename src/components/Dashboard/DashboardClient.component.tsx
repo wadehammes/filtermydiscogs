@@ -16,6 +16,9 @@ import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
+import { getErrorHttpStatus } from "src/lib/sentry/getErrorHttpStatus";
+import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
+import { shouldReportHttpFailure } from "src/lib/sentry/shouldReportHttpFailure";
 import { buildDashboardStory } from "src/utils/dashboardStory";
 import { isLocalDevHost } from "src/utils/isLocalDevHost";
 import { CollectionHealth } from "./CollectionHealth.component";
@@ -78,9 +81,22 @@ function DashboardClientContent() {
   }, [analytics, allReleases, authState.username]);
 
   useEffect(() => {
-    if (valueError && isLocalDevHost()) {
+    if (!valueError) {
+      return;
+    }
+
+    const httpStatus = getErrorHttpStatus(valueError);
+    if (httpStatus !== undefined && shouldReportHttpFailure(httpStatus)) {
+      return;
+    }
+
+    if (isLocalDevHost()) {
       console.error("Collection value error:", valueError);
     }
+
+    reportClientFailure("dashboard", valueError, {
+      segment: "collection_value",
+    });
   }, [valueError]);
 
   if (shouldRedirectHome) {

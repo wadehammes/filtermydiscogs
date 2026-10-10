@@ -63,6 +63,38 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
     expect(appendSkip).toHaveBeenCalledTimes(1);
   });
 
+  it("reports skip to monitoring before showing the toast", () => {
+    const appendSkip = jest.fn();
+    const reportSkip = jest.fn();
+    const playNext = jest.fn();
+
+    const handler = createPlaybackEmbedUnavailableSkipHandler({
+      appendSkip,
+      reportSkip,
+      resolveSkipDisplay: () => ({ trackLabel: "A1 Track" }),
+      resolveSkipContext: () => ({
+        videoId: "yt123",
+        watchdogMs: 5000,
+        connectionQuality: "fast",
+      }),
+      isSkipAllowed: () => true,
+    });
+
+    handler.handleFailure(101, playNext);
+
+    expect(reportSkip).toHaveBeenCalledWith({
+      errorCode: 101,
+      trackLabel: "A1 Track",
+      reason: "Cannot play in embedded player",
+      context: {
+        videoId: "yt123",
+        watchdogMs: 5000,
+        connectionQuality: "fast",
+      },
+    });
+    expect(appendSkip).toHaveBeenCalledTimes(1);
+  });
+
   it("uses fallback copy when onError never arrives", () => {
     const appendSkip = jest.fn();
     const playNext = jest.fn();

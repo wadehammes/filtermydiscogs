@@ -115,7 +115,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("getCollection error:", error);
     const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
       error,
       fallbackMessage: "Failed to fetch collection",
