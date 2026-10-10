@@ -48,6 +48,56 @@ export const findCollectionReleaseByInstanceId = (
   return null;
 };
 
+const collectionReleaseBasicInformationSignature = (
+  release: DiscogsRelease,
+): string => JSON.stringify(release.basic_information);
+
+export const mergeLiveCollectionPageBasicInformationIntoPages = (
+  cachedPages: DiscogsCollection[],
+  livePage: DiscogsCollection,
+): { pages: DiscogsCollection[]; updated: boolean } => {
+  const liveByInstance = buildReleaseIndexFromList(livePage.releases);
+  const cachedByInstance = buildCollectionReleaseIndex(cachedPages);
+
+  for (const live of livePage.releases) {
+    const cached = cachedByInstance.get(String(live.instance_id));
+    if (!cached) {
+      continue;
+    }
+
+    if (
+      collectionReleaseBasicInformationSignature(cached) !==
+      collectionReleaseBasicInformationSignature(live)
+    ) {
+      const pages = cachedPages.map((page) => ({
+        ...page,
+        releases: page.releases.map((release) => {
+          const liveRelease = liveByInstance.get(String(release.instance_id));
+          if (!liveRelease) {
+            return release;
+          }
+
+          if (
+            collectionReleaseBasicInformationSignature(release) ===
+            collectionReleaseBasicInformationSignature(liveRelease)
+          ) {
+            return release;
+          }
+
+          return {
+            ...release,
+            basic_information: liveRelease.basic_information,
+          };
+        }),
+      }));
+
+      return { pages, updated: true };
+    }
+  }
+
+  return { pages: cachedPages, updated: false };
+};
+
 export const patchCollectionPagesReleaseByInstanceId = (
   pages: DiscogsCollection[],
   instanceId: string,

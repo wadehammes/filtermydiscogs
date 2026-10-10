@@ -14,7 +14,10 @@ import {
 } from "src/utils/collectionCacheStorage";
 import { persistCollectionItemCount } from "src/utils/collectionItemCountStorage";
 import type { CollectionPageParam } from "src/utils/collectionPagination";
-import { patchCollectionPagesReleaseByInstanceId } from "src/utils/collectionReleaseLookup";
+import {
+  mergeLiveCollectionPageBasicInformationIntoPages,
+  patchCollectionPagesReleaseByInstanceId,
+} from "src/utils/collectionReleaseLookup";
 import { parseReleaseId } from "src/utils/releaseNotes";
 
 const cacheLoadPromises = new Map<
@@ -107,11 +110,22 @@ export async function validatePersistedCollectionCache(
       }),
     );
 
+    persistCollectionItemCount(username, page.pagination.items);
+
     if (page.pagination.items === cached.totalItems) {
+      const { pages, updated } =
+        mergeLiveCollectionPageBasicInformationIntoPages(cached.pages, page);
+
+      if (updated) {
+        cached.pages = pages;
+        await writePersistedCollectionCache(username, {
+          ...cached,
+          fetchedAt: Date.now(),
+        });
+      }
+
       return true;
     }
-
-    persistCollectionItemCount(username, page.pagination.items);
   } catch {
     return false;
   }
