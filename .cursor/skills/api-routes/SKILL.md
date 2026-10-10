@@ -16,7 +16,7 @@ Deep dive: [database.md → API routes](../../docs/handbook/database.md), [disco
 3. **Body** — Zod in [`src/lib/validation/`](../../src/lib/validation/) + [`parseRequestBody`](../../src/lib/validation/parseRequestBody.ts); extend schemas, no ad-hoc parsing.
 4. **JSON** — Private session responses: **`privateRouteJson`** / **`createErrorResponse`** — not bare `NextResponse.json` on authenticated routes.
 5. **Cache Components** — Do **not** add `export const dynamic = "force-dynamic"` only for cookies.
-6. **Tests** — Co-locate **`route.spec.ts`**; mock Prisma/services; assert status, JSON, auth failures.
+6. **Tests** — Co-locate **`route.spec.ts`**; mock Prisma/services; **`jest.mock("src/lib/api-helpers")`** (manual mock [`src/lib/__mocks__/api-helpers.ts`](../../src/lib/__mocks__/api-helpers.ts)); assert status, JSON, auth failures.
 
 ## References
 

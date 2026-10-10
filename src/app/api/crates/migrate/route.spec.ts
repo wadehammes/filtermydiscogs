@@ -31,16 +31,7 @@ jest.mock("src/lib/crate-layout.server", () => ({
   getPrependCrateLayoutSortOrderForCrate: jest.fn(async () => 1000),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-  auditDatabaseOperation: jest.fn(),
-  createErrorResponse: jest.fn((error: unknown) =>
-    NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    ),
-  ),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/crates/migrate/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");

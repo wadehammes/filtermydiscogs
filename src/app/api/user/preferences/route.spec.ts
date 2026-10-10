@@ -19,9 +19,7 @@ jest.mock("src/lib/db", () => ({
   },
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/user/preferences/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
@@ -133,7 +131,6 @@ describe("/api/user/preferences", () => {
         username: USERNAME,
         preferences: expect.objectContaining({ theme: "dark" }),
       },
-      select: { preferences: true },
     });
     await expect(response.json()).resolves.toEqual({
       preferences: {

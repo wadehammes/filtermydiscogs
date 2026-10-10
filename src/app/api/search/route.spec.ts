@@ -14,15 +14,7 @@ jest.mock("src/lib/auth-request", () => ({
   getReadOnlyVerifiedUserFromRequest: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  rethrowNextInternalError: jest.fn(),
-  createErrorResponse: jest.fn((error: unknown) =>
-    NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    ),
-  ),
-}));
+jest.mock("src/lib/api-helpers");
 
 jest.mock("src/services/discogs-oauth.service", () => ({
   discogsOAuthService: {

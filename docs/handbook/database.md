@@ -99,6 +99,8 @@ First-party product analytics when the visitor opts in (same consent gate as GTM
 | `user_id` | Discogs user ID when signed in; nullable for anonymous page views |
 | `created_at` | Insert timestamp |
 
+Indexed on **`user_id`** for **`POST /api/auth/clear-data`** deletes and other per-user maintenance.
+
 Ingest: **`POST /api/usage/events`** ([`PRODUCT_ANALYTICS_INGEST_PATH`](../../src/types/productAnalytics.types.ts), handler [`src/app/api/usage/events/route.ts`](../../src/app/api/usage/events/route.ts), logic [`product-analytics.server.ts`](../../src/lib/product-analytics.server.ts)). Batches capped at **`PRODUCT_ANALYTICS_MAX_BATCH_SIZE`** (20) in [`productAnalytics.types.ts`](../../src/types/productAnalytics.types.ts); client queue uses the same limit ([`productAnalyticsClient.ts`](../../src/analytics/productAnalyticsClient.ts)). Cleared on **`POST /api/auth/clear-data`** for the authenticated **`user_id`**. Raw rows are kept for **90 days**; older detail is rolled up then deleted (see **`ProductAnalyticsDailyRollup`**).
 
 ### `ProductAnalyticsDailyRollup`
@@ -160,13 +162,13 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 | `/api/crates/membership/[instanceId]` | PUT | Set crate membership for a release in one request (`{ crateIds, release }`) |
 | `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers). Pass **`?all=true`** for a single full payload (up to **`CRATE_DETAIL_ALL_MAX`**) |
 | `/api/crates/migrate` | POST | Bulk import legacy localStorage releases into the user's default crate (`{ releases }`, max **`LEGACY_CRATE_MIGRATE_MAX`**) |
-| `/api/crates/sync` | POST | Sync local crate state with server; **400** responses include **`blockedReason`** (`collection_too_small` \| `deletion_cap_blocked`) when sync is refused; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata) |
+| `/api/crates/sync` | POST | Sync local crate state with server; orphan detection scans **all** crate-release rows via **`count`** + **`groupBy instance_id`** ([`crate-sync.server.ts`](../../src/lib/crate-sync.server.ts)) — no row cap; **400** responses include **`blockedReason`** (`collection_too_small` \| `deletion_cap_blocked`) when sync is refused; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata) |
 | `/api/tracks/record` | POST | Record **`play`** or **`listen`** for a track (`userTrackRecordBodySchema`) |
 | `/api/tracks/stats` | GET | Batch stats for **`?keys=`** (comma-separated **`track_key`**) |
 | `/api/tracks/youtube` | PATCH | Per-track YouTube embed override (**`userTrackYoutubeOverrideBodySchema`**) |
 | `/api/youtube/oembed` | GET | YouTube oEmbed title + channel for **`?video_id=`** (verified session; query Zod in [`youtube.schemas.ts`](../../src/lib/validation/youtube.schemas.ts); server fetch [`fetchYoutubeOembedMetadata`](../../src/lib/youtube-oembed.server.ts); **`404`** when oEmbed has no row). Powers **`TrackYoutubeOverrideVideoMeta`** via **`useYoutubeOembedQuery`**. Co-located [`route.spec.ts`](../../src/app/api/youtube/oembed/route.spec.ts) mocks **`fetchYoutubeOembedMetadata`**. |
 | `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
-| `/api/dashboard/most-crated` | GET | Aggregated stats |
+| `/api/dashboard/most-crated` | GET | Releases in multiple crates for the signed-in user — **`groupBy (instance_id, crate_id)`** + one **`release_data`** sample per instance ([`dashboard-most-crated.server.ts`](../../src/lib/dashboard-most-crated.server.ts)) |
 | `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, **account preferences** (filter persistence, analytics consent, themes, default view, saved filter views), and **feature usage** from **`product_analytics_daily_rollups`** + recent raw events) |
 | `/api/admin/users/[username]` | GET | Admin-only lookup for a Discogs username: account metadata, preferences summary, crate totals, activity, analytics counts, and recent crates |
 | `/api/usage/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** when signed in) |

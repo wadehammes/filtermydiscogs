@@ -13,9 +13,7 @@ jest.mock("src/lib/user-track.server", () => ({
   fetchUserTrackStats: jest.fn(),
 }));
 
-jest.mock("src/lib/api-helpers", () => ({
-  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
-}));
+jest.mock("src/lib/api-helpers");
 
 type RouteModule = typeof import("src/app/api/tracks/stats/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
