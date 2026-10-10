@@ -1,4 +1,4 @@
-import { prisma } from "src/lib/db";
+import { orm, ormTimestamp } from "src/lib/db";
 import type {
   UserTrackRecordBody,
   UserTrackYoutubeOverrideBody,
@@ -9,11 +9,7 @@ import type {
   TopUserTracksResponse,
 } from "src/types/dashboard.types";
 
-const userTrackWhere = (userId: number, trackKey: string) => ({
-  user_id_track_key: { user_id: userId, track_key: trackKey },
-});
-
-const metadataFromTrackFields = (
+const metadataFromRecordBody = (
   body: Pick<
     UserTrackRecordBody,
     | "track_title"
@@ -26,15 +22,15 @@ const metadataFromTrackFields = (
   },
   now: Date,
 ) => ({
-  track_title: body.track_title,
-  track_position: body.track_position,
-  instance_id: body.instance_id,
-  ...(body.youtube_id !== undefined ? { youtube_id: body.youtube_id } : {}),
+  trackTitle: body.track_title,
+  trackPosition: body.track_position,
+  instanceId: body.instance_id,
+  ...(body.youtube_id !== undefined ? { youtubeId: body.youtube_id } : {}),
   ...(body.artist !== undefined ? { artist: body.artist } : {}),
   ...(body.release_title !== undefined
-    ? { release_title: body.release_title }
+    ? { releaseTitle: body.release_title }
     : {}),
-  updated_at: now,
+  updatedAt: ormTimestamp(now),
 });
 
 export const recordUserTrackEvent = async (
@@ -42,46 +38,49 @@ export const recordUserTrackEvent = async (
   body: UserTrackRecordBody,
 ): Promise<void> => {
   const now = new Date();
-  const sharedData = metadataFromTrackFields(body, now);
-  const where = userTrackWhere(userId, body.track_key);
+  const sharedData = metadataFromRecordBody(body, now);
+  const where = { userId, trackKey: body.track_key };
+  const existing = await orm.UserTracks.where(where).first();
 
   if (body.event === "play") {
-    await prisma.userTrack.upsert({
-      where,
-      create: {
-        user_id: userId,
-        track_key: body.track_key,
+    if (existing) {
+      await orm.UserTracks.where(where).update({
         ...sharedData,
-        play_count: 1,
-        listen_count: 0,
-        last_played_at: now,
-        first_played_at: now,
-      },
-      update: {
-        ...sharedData,
-        play_count: { increment: 1 },
-        last_played_at: now,
-      },
+        playCount: existing.playCount + 1,
+        lastPlayedAt: ormTimestamp(now),
+      });
+      return;
+    }
+
+    await orm.UserTracks.create({
+      userId,
+      trackKey: body.track_key,
+      ...sharedData,
+      playCount: 1,
+      listenCount: 0,
+      lastPlayedAt: ormTimestamp(now),
+      firstPlayedAt: ormTimestamp(now),
     });
     return;
   }
 
-  await prisma.userTrack.upsert({
-    where,
-    create: {
-      user_id: userId,
-      track_key: body.track_key,
+  if (existing) {
+    await orm.UserTracks.where(where).update({
       ...sharedData,
-      play_count: 0,
-      listen_count: 1,
-      last_listened_at: now,
-      first_played_at: now,
-    },
-    update: {
-      ...sharedData,
-      listen_count: { increment: 1 },
-      last_listened_at: now,
-    },
+      listenCount: existing.listenCount + 1,
+      lastListenedAt: ormTimestamp(now),
+    });
+    return;
+  }
+
+  await orm.UserTracks.create({
+    userId,
+    trackKey: body.track_key,
+    ...sharedData,
+    playCount: 0,
+    listenCount: 1,
+    lastListenedAt: ormTimestamp(now),
+    firstPlayedAt: ormTimestamp(now),
   });
 };
 
@@ -96,20 +95,19 @@ export const saveUserTrackYoutubeOverride = async (
   body: UserTrackYoutubeOverrideBody,
 ): Promise<void> => {
   const now = new Date();
-  const sharedData = metadataFromTrackFields(body, now);
-  const where = userTrackWhere(userId, body.track_key);
+  const sharedData = metadataFromRecordBody(body, now);
 
-  await prisma.userTrack.upsert({
-    where,
+  await orm.UserTracks.upsert({
     create: {
-      user_id: userId,
-      track_key: body.track_key,
+      userId,
+      trackKey: body.track_key,
       ...sharedData,
-      play_count: 0,
-      listen_count: 0,
-      first_played_at: now,
+      playCount: 0,
+      listenCount: 0,
+      firstPlayedAt: ormTimestamp(now),
     },
     update: sharedData,
+    conflictOn: { userId, trackKey: body.track_key },
   });
 };
 
@@ -121,18 +119,10 @@ export const fetchUserTrackStats = async (
     return {};
   }
 
-  const rows = await prisma.userTrack.findMany({
-    where: {
-      user_id: userId,
-      track_key: { in: trackKeys },
-    },
-    select: {
-      track_key: true,
-      play_count: true,
-      listen_count: true,
-      youtube_id: true,
-    },
-  });
+  const rows = await orm.UserTracks.where({ userId })
+    .where((track) => track.trackKey.in(trackKeys))
+    .select("trackKey", "playCount", "listenCount", "youtubeId")
+    .all();
 
   const stats: Record<string, UserTrackStatsRow> = {};
 
@@ -141,28 +131,48 @@ export const fetchUserTrackStats = async (
   }
 
   for (const row of rows) {
-    stats[row.track_key] = {
-      play_count: row.play_count,
-      listen_count: row.listen_count,
-      youtube_id: row.youtube_id,
+    stats[row.trackKey] = {
+      play_count: row.playCount,
+      listen_count: row.listenCount,
+      youtube_id: row.youtubeId,
     };
   }
 
   return stats;
 };
 
-const topUserTrackSelect = {
-  track_key: true,
-  instance_id: true,
-  track_title: true,
-  track_position: true,
-  artist: true,
-  release_title: true,
-  play_count: true,
-  listen_count: true,
-} as const;
-
 type TopUserTrackRow = Omit<TopUserTrack, "release_thumb">;
+
+const mapTopUserTrackRow = (row: {
+  trackKey: string;
+  instanceId: string;
+  trackTitle: string;
+  trackPosition: string;
+  artist: string | null;
+  releaseTitle: string | null;
+  playCount: number;
+  listenCount: number;
+}): TopUserTrackRow => ({
+  track_key: row.trackKey,
+  instance_id: row.instanceId,
+  track_title: row.trackTitle,
+  track_position: row.trackPosition,
+  artist: row.artist,
+  release_title: row.releaseTitle,
+  play_count: row.playCount,
+  listen_count: row.listenCount,
+});
+
+const topUserTrackSelect = [
+  "trackKey",
+  "instanceId",
+  "trackTitle",
+  "trackPosition",
+  "artist",
+  "releaseTitle",
+  "playCount",
+  "listenCount",
+] as const;
 
 const thumbUrlFromReleaseData = (releaseData: unknown): string | null => {
   const release = releaseData as DiscogsRelease;
@@ -185,26 +195,20 @@ const loadThumbByInstanceId = async (
     return thumbByInstanceId;
   }
 
-  const crateRows = await prisma.crateRelease.findMany({
-    where: {
-      user_id: userId,
-      instance_id: { in: instanceIds },
-    },
-    select: {
-      instance_id: true,
-      release_data: true,
-    },
-  });
+  const crateRows = await orm.CrateReleases.where({ userId })
+    .where((release) => release.instanceId.in(instanceIds))
+    .select("instanceId", "releaseData")
+    .all();
 
   for (const row of crateRows) {
-    if (thumbByInstanceId.has(row.instance_id)) {
+    if (thumbByInstanceId.has(row.instanceId)) {
       continue;
     }
 
-    const thumb = thumbUrlFromReleaseData(row.release_data);
+    const thumb = thumbUrlFromReleaseData(row.releaseData);
 
     if (thumb) {
-      thumbByInstanceId.set(row.instance_id, thumb);
+      thumbByInstanceId.set(row.instanceId, thumb);
     }
   }
 
@@ -225,29 +229,37 @@ export const fetchTopUserTracks = async (
   limit: number,
 ): Promise<TopUserTracksResponse> => {
   const [mostPlayed, mostListened] = await Promise.all([
-    prisma.userTrack.findMany({
-      where: { user_id: userId, play_count: { gt: 0 } },
-      orderBy: [{ play_count: "desc" }, { last_played_at: "desc" }],
-      take: limit,
-      select: topUserTrackSelect,
-    }),
-    prisma.userTrack.findMany({
-      where: { user_id: userId, listen_count: { gt: 0 } },
-      orderBy: [{ listen_count: "desc" }, { last_listened_at: "desc" }],
-      take: limit,
-      select: topUserTrackSelect,
-    }),
+    orm.UserTracks.where({ userId })
+      .where((track) => track.playCount.gt(0))
+      .orderBy((track) => track.playCount.desc())
+      .orderBy((track) => track.lastPlayedAt.desc())
+      .limit(limit)
+      .select(...topUserTrackSelect)
+      .all(),
+    orm.UserTracks.where({ userId })
+      .where((track) => track.listenCount.gt(0))
+      .orderBy((track) => track.listenCount.desc())
+      .orderBy((track) => track.lastListenedAt.desc())
+      .limit(limit)
+      .select(...topUserTrackSelect)
+      .all(),
   ]);
 
   const instanceIds = [
     ...new Set(
-      [...mostPlayed, ...mostListened].map((track) => track.instance_id),
+      [...mostPlayed, ...mostListened].map((track) => track.instanceId),
     ),
   ];
   const thumbByInstanceId = await loadThumbByInstanceId(userId, instanceIds);
 
   return {
-    most_played: withReleaseThumbs(mostPlayed, thumbByInstanceId),
-    most_listened: withReleaseThumbs(mostListened, thumbByInstanceId),
+    most_played: withReleaseThumbs(
+      mostPlayed.map(mapTopUserTrackRow),
+      thumbByInstanceId,
+    ),
+    most_listened: withReleaseThumbs(
+      mostListened.map(mapTopUserTrackRow),
+      thumbByInstanceId,
+    ),
   };
 };

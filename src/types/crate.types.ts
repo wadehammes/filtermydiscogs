@@ -1,7 +1,17 @@
-import type { Crate as PrismaCrate } from "@prisma/client";
 import type { DiscogsRelease } from "./discogs-release.types";
 
-export type Crate = PrismaCrate;
+export type Crate = {
+  user_id: number;
+  id: string;
+  name: string;
+  username: string | null;
+  is_default: boolean;
+  private: boolean;
+  packed_enabled: boolean;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
+};
 
 export type CrateUpdatePayload = Pick<
   Crate,

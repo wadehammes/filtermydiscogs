@@ -1,13 +1,23 @@
-import { describe, expect, it } from "@jest/globals";
+import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import {
   assignSequentialCrateLayoutSortOrders,
   crateLayoutItemsToPutRequest,
 } from "src/lib/crate-layout";
-import { buildCrateLayoutUpdate } from "src/lib/crate-layout.server";
 import { reparentCrateLayoutMarkersAfterDelete } from "src/lib/crate-section-layout";
 import { crateLayoutItemFactory as layout } from "src/tests/factories/CrateLayoutItem.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
 import type { CrateLayoutPutItem } from "src/types/crate.types";
+
+const dbMock = createDbModuleMock();
+
+jest.mock("src/lib/db", () => dbMock);
+
+let buildCrateLayoutUpdate: typeof import("src/lib/crate-layout.server")["buildCrateLayoutUpdate"];
+
+beforeAll(async () => {
+  ({ buildCrateLayoutUpdate } = await import("src/lib/crate-layout.server"));
+});
 
 const crateInstanceIds = new Set(["111", "222", "333"]);
 

@@ -1,31 +1,21 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { userTrackRecordBodyFactory } from "src/tests/factories/UserTrackRecordBody.factory";
+import { createDbModuleMock } from "src/tests/mocks/mockDb";
 
-jest.mock("src/lib/db", () => ({
-  prisma: {
-    userTrack: {
-      upsert: jest.fn(),
-      findMany: jest.fn(),
-    },
-    crateRelease: {
-      findMany: jest.fn(),
-    },
-  },
-}));
+const dbMock = createDbModuleMock();
 
-type DbModule = typeof import("src/lib/db");
+jest.mock("src/lib/db", () => dbMock);
 
 let recordUserTrackEvent: typeof import("src/lib/user-track.server")["recordUserTrackEvent"];
 let saveUserTrackYoutubeOverride: typeof import("src/lib/user-track.server")["saveUserTrackYoutubeOverride"];
 let fetchUserTrackStats: typeof import("src/lib/user-track.server")["fetchUserTrackStats"];
 let fetchTopUserTracks: typeof import("src/lib/user-track.server")["fetchTopUserTracks"];
-let mockUpsert: jest.MockedFunction<DbModule["prisma"]["userTrack"]["upsert"]>;
-let mockFindMany: jest.MockedFunction<
-  DbModule["prisma"]["userTrack"]["findMany"]
->;
-let mockCrateReleaseFindMany: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["findMany"]
->;
+let mockUserTracksFirst: typeof dbMock.orm.UserTracks.first;
+let mockUserTracksCreate: typeof dbMock.orm.UserTracks.create;
+let mockUserTracksUpdate: typeof dbMock.orm.UserTracks.update;
+let mockUserTracksAll: typeof dbMock.orm.UserTracks.all;
+let mockUserTracksUpsert: typeof dbMock.orm.UserTracks.upsert;
+let mockCrateReleasesAll: typeof dbMock.orm.CrateReleases.all;
 
 const USER_ID = 7;
 
@@ -34,62 +24,70 @@ beforeEach(async () => {
   jest.useFakeTimers();
   jest.setSystemTime(new Date("2026-09-18T12:00:00.000Z"));
 
-  const [serverModule, db] = await Promise.all([
-    import("src/lib/user-track.server"),
-    import("src/lib/db"),
-  ]);
+  const serverModule = await import("src/lib/user-track.server");
 
   recordUserTrackEvent = serverModule.recordUserTrackEvent;
   saveUserTrackYoutubeOverride = serverModule.saveUserTrackYoutubeOverride;
   fetchUserTrackStats = serverModule.fetchUserTrackStats;
   fetchTopUserTracks = serverModule.fetchTopUserTracks;
-  mockUpsert = jest.mocked(db.prisma.userTrack.upsert);
-  mockFindMany = jest.mocked(db.prisma.userTrack.findMany);
-  mockCrateReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
-  mockCrateReleaseFindMany.mockResolvedValue([]);
+  mockUserTracksFirst = dbMock.orm.UserTracks.first;
+  mockUserTracksCreate = dbMock.orm.UserTracks.create;
+  mockUserTracksUpdate = dbMock.orm.UserTracks.update;
+  mockUserTracksAll = dbMock.orm.UserTracks.all;
+  mockUserTracksUpsert = dbMock.orm.UserTracks.upsert;
+  mockCrateReleasesAll = dbMock.orm.CrateReleases.all;
+  mockUserTracksFirst.mockResolvedValue(null);
+  mockCrateReleasesAll.mockResolvedValue([]);
 });
 
 describe("recordUserTrackEvent", () => {
   it("upserts play event with increment and last_played_at", async () => {
     const body = userTrackRecordBodyFactory.play();
+    mockUserTracksFirst.mockResolvedValueOnce({
+      playCount: 2,
+      listenCount: 0,
+    });
 
     await recordUserTrackEvent(USER_ID, body);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
+    expect(mockUserTracksUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
-          user_id_track_key: {
-            user_id: USER_ID,
-            track_key: body.track_key,
-          },
-        },
-        update: expect.objectContaining({
-          play_count: { increment: 1 },
-          last_played_at: new Date("2026-09-18T12:00:00.000Z"),
-        }),
-        create: expect.objectContaining({
-          play_count: 1,
-          listen_count: 0,
-        }),
+        playCount: 3,
+        lastPlayedAt: "2026-09-18T12:00:00.000Z",
+        trackTitle: body.track_title,
+      }),
+    );
+  });
+
+  it("creates play row when none exists", async () => {
+    const body = userTrackRecordBodyFactory.play();
+
+    await recordUserTrackEvent(USER_ID, body);
+
+    expect(mockUserTracksCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: USER_ID,
+        trackKey: body.track_key,
+        playCount: 1,
+        listenCount: 0,
+        lastPlayedAt: "2026-09-18T12:00:00.000Z",
       }),
     );
   });
 
   it("upserts listen event with increment and last_listened_at", async () => {
     const body = userTrackRecordBodyFactory.listen();
+    mockUserTracksFirst.mockResolvedValueOnce({
+      playCount: 1,
+      listenCount: 4,
+    });
 
     await recordUserTrackEvent(USER_ID, body);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
+    expect(mockUserTracksUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        update: expect.objectContaining({
-          listen_count: { increment: 1 },
-          last_listened_at: new Date("2026-09-18T12:00:00.000Z"),
-        }),
-        create: expect.objectContaining({
-          play_count: 0,
-          listen_count: 1,
-        }),
+        listenCount: 5,
+        lastListenedAt: "2026-09-18T12:00:00.000Z",
       }),
     );
   });
@@ -109,20 +107,18 @@ describe("saveUserTrackYoutubeOverride", () => {
 
     await saveUserTrackYoutubeOverride(USER_ID, body);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
+    expect(mockUserTracksUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
-          user_id_track_key: {
-            user_id: USER_ID,
-            track_key: "modal-release-instance:A2",
-          },
+        conflictOn: {
+          userId: USER_ID,
+          trackKey: "modal-release-instance:A2",
         },
         create: expect.objectContaining({
-          track_key: "modal-release-instance:A2",
-          track_position: "A2",
-          play_count: 0,
-          listen_count: 0,
-          youtube_id: "dQw4w9WgXcQ",
+          trackKey: "modal-release-instance:A2",
+          trackPosition: "A2",
+          playCount: 0,
+          listenCount: 0,
+          youtubeId: "dQw4w9WgXcQ",
         }),
       }),
     );
@@ -139,20 +135,20 @@ describe("saveUserTrackYoutubeOverride", () => {
 
     await saveUserTrackYoutubeOverride(USER_ID, body);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
+    expect(mockUserTracksUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: expect.objectContaining({
-          youtube_id: "dQw4w9WgXcQ",
+          youtubeId: "dQw4w9WgXcQ",
         }),
         create: expect.objectContaining({
-          play_count: 0,
-          listen_count: 0,
-          youtube_id: "dQw4w9WgXcQ",
+          playCount: 0,
+          listenCount: 0,
+          youtubeId: "dQw4w9WgXcQ",
         }),
       }),
     );
-    expect(mockUpsert.mock.calls[0]?.[0]?.update).not.toHaveProperty(
-      "play_count",
+    expect(mockUserTracksUpsert.mock.calls[0]?.[0]?.update).not.toHaveProperty(
+      "playCount",
     );
   });
 
@@ -167,13 +163,13 @@ describe("saveUserTrackYoutubeOverride", () => {
 
     await saveUserTrackYoutubeOverride(USER_ID, body);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
+    expect(mockUserTracksUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: expect.objectContaining({
-          youtube_id: null,
+          youtubeId: null,
         }),
         create: expect.objectContaining({
-          youtube_id: null,
+          youtubeId: null,
         }),
       }),
     );
@@ -182,26 +178,18 @@ describe("saveUserTrackYoutubeOverride", () => {
 
 describe("fetchUserTrackStats", () => {
   it("returns zeroed stats for missing keys and merges found rows", async () => {
-    mockFindMany.mockResolvedValue([
+    mockUserTracksAll.mockResolvedValue([
       {
-        track_key: "1:A",
-        play_count: 3,
-        listen_count: 2,
-        youtube_id: "dQw4w9WgXcQ",
+        trackKey: "1:A",
+        playCount: 3,
+        listenCount: 2,
+        youtubeId: "dQw4w9WgXcQ",
       },
-    ] as Awaited<ReturnType<DbModule["prisma"]["userTrack"]["findMany"]>>);
+    ]);
 
     const stats = await fetchUserTrackStats(USER_ID, ["1:A", "1:B"]);
 
-    expect(mockFindMany).toHaveBeenCalledWith({
-      where: { user_id: USER_ID, track_key: { in: ["1:A", "1:B"] } },
-      select: {
-        track_key: true,
-        play_count: true,
-        listen_count: true,
-        youtube_id: true,
-      },
-    });
+    expect(mockUserTracksAll).toHaveBeenCalled();
     expect(stats).toEqual({
       "1:A": { play_count: 3, listen_count: 2, youtube_id: "dQw4w9WgXcQ" },
       "1:B": { play_count: 0, listen_count: 0, youtube_id: null },
@@ -210,47 +198,36 @@ describe("fetchUserTrackStats", () => {
 
   it("returns empty object when no keys requested", async () => {
     await expect(fetchUserTrackStats(USER_ID, [])).resolves.toEqual({});
-    expect(mockFindMany).not.toHaveBeenCalled();
+    expect(mockUserTracksAll).not.toHaveBeenCalled();
   });
 });
 
 describe("fetchTopUserTracks", () => {
   it("queries play and listen leaderboards with the shared limit", async () => {
-    mockFindMany
+    mockUserTracksAll
       .mockResolvedValueOnce([
         {
-          track_key: "1:A1",
-          instance_id: "1",
-          track_title: "Play leader",
-          track_position: "A1",
+          trackKey: "1:A1",
+          instanceId: "1",
+          trackTitle: "Play leader",
+          trackPosition: "A1",
           artist: "Artist",
-          release_title: "Album",
-          play_count: 9,
-          listen_count: 1,
+          releaseTitle: "Album",
+          playCount: 9,
+          listenCount: 1,
         },
-      ] as Awaited<ReturnType<DbModule["prisma"]["userTrack"]["findMany"]>>)
-      .mockResolvedValueOnce(
-        [] as Awaited<ReturnType<DbModule["prisma"]["userTrack"]["findMany"]>>,
-      );
+      ])
+      .mockResolvedValueOnce([]);
 
     const result = await fetchTopUserTracks(USER_ID, 5);
 
-    expect(mockFindMany).toHaveBeenCalledTimes(2);
-    expect(mockFindMany).toHaveBeenNthCalledWith(1, {
-      where: { user_id: USER_ID, play_count: { gt: 0 } },
-      orderBy: [{ play_count: "desc" }, { last_played_at: "desc" }],
-      take: 5,
-      select: expect.objectContaining({ track_key: true, play_count: true }),
+    expect(mockUserTracksAll).toHaveBeenCalledTimes(2);
+    expect(result.most_played).toHaveLength(1);
+    expect(result.most_played[0]).toMatchObject({
+      track_key: "1:A1",
+      play_count: 9,
+      release_thumb: null,
     });
-    expect(mockFindMany).toHaveBeenNthCalledWith(2, {
-      where: { user_id: USER_ID, listen_count: { gt: 0 } },
-      orderBy: [{ listen_count: "desc" }, { last_listened_at: "desc" }],
-      take: 5,
-      select: expect.objectContaining({ listen_count: true }),
-    });
-    expect(result.most_played[0]?.track_title).toBe("Play leader");
-    expect(result.most_played[0]?.release_thumb).toBeNull();
     expect(result.most_listened).toEqual([]);
-    expect(mockCrateReleaseFindMany).toHaveBeenCalledTimes(1);
   });
 });

@@ -41,6 +41,7 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   loadAndPlayYoutubeVideo: jest.fn(),
   loadYoutubeVideoById: jest.fn(),
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
+  requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
 const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);

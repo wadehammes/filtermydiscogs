@@ -7,7 +7,7 @@ Map of FilterMyDisco.gs: technologies, top-level folders, and how Discogs collec
 - **Framework**: **Next.js 16** with the **App Router**. Routes and layouts live under [`src/app/`](../../src/app/).
 - **UI**: React 19, TypeScript.
 - **Auth & data source**: **Discogs OAuth 1.0a** and the Discogs REST API via [`src/services/discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts).
-- **Persistence**: **Prisma 7** + **Vercel Postgres** for user crates and saved releases ([`prisma/schema.prisma`](../../prisma/schema.prisma), datasource URL in [`prisma.config.ts`](../../prisma.config.ts)).
+- **Persistence**: **Prisma 8 RC** + **Vercel Postgres** for user crates and saved releases ([`src/prisma/contract.prisma`](../../src/prisma/contract.prisma), [`prisma.config.ts`](../../prisma.config.ts), client [`src/lib/db.ts`](../../src/lib/db.ts)).
 - **Client state**:
   - **Jotai** — filters, view mode, and derived release lists ([`src/atoms/`](../../src/atoms/)); components subscribe via [`useFilterAtoms.hook.ts`](../../src/hooks/useFilterAtoms.hook.ts) and [`useViewAtoms.hook.ts`](../../src/hooks/useViewAtoms.hook.ts).
   - **React Context** — auth and collection pagination (**useReducer**); crate drawer/selection (**React Query** + local state); theme (**useState**). [`FiltersProvider`](../../src/context/filters.context.tsx) and [`ViewProvider`](../../src/context/view.context.tsx) are scope markers over Jotai, not duplicate state.
@@ -123,6 +123,6 @@ Factories (`src/tests/factories/`), test providers, shared mocks.
 - **[`biome.json`](../../biome.json)** — lint and format rules.
 - **[`knip.json`](../../knip.json)** — CI unused export/file detection.
 - **[`.fallowrc.jsonc`](../../.fallowrc.jsonc)** — optional Fallow config (agent/ad-hoc analysis; mirrors Knip ignores where practical). See [platform.md](platform.md).
-- **[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)** — PR checks into `staging`: parallel **Unit gates** (`tsc:ci`, `lint:ci`, `lint:css`, handbook sync, `test:ci`, `knip:ci`) and **E2E smoke** (`build:e2e`, `test:e2e:smoke`); full Playwright on push via **`e2e-full.yml`**.
+- **[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)** — PR checks into `staging`: parallel **Unit gates** (`tsc:ci` includes `contract:emit`, `lint:ci`, `lint:css`, handbook sync, `test:ci`, `knip:ci`) and **E2E smoke** (`build:e2e`, `test:e2e:smoke`); full Playwright on push via **`e2e-full.yml`**.
 
 Branching and releases are described in the root [README.md](../../README.md).

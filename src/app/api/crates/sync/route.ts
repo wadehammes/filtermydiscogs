@@ -4,7 +4,7 @@ import {
   createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
-import { prisma } from "src/lib/db";
+import { orm } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { crateSyncBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -44,23 +44,22 @@ export async function POST(request: NextRequest) {
     }
 
     const MAX_RELEASES_TO_CHECK = 10000;
-    const allCrateReleases = await prisma.crateRelease.findMany({
-      where: { user_id: userIdNum },
-      select: { instance_id: true },
-      take: MAX_RELEASES_TO_CHECK,
-    });
+    const allCrateReleases = await orm.CrateReleases.where({
+      userId: userIdNum,
+    })
+      .select("instanceId")
+      .limit(MAX_RELEASES_TO_CHECK)
+      .all();
 
     const normalizedCollectionIds = collectionInstanceIds.map((id) =>
       String(id),
     );
     const collectionInstanceIdSet = new Set(normalizedCollectionIds);
 
-    const orphanedReleases = allCrateReleases.filter(
-      (r: { instance_id: string }) => {
-        const normalizedCrateId = String(r.instance_id);
-        return !collectionInstanceIdSet.has(normalizedCrateId);
-      },
-    );
+    const orphanedReleases = allCrateReleases.filter((r) => {
+      const normalizedCrateId = String(r.instanceId);
+      return !collectionInstanceIdSet.has(normalizedCrateId);
+    });
 
     if (orphanedReleases.length === 0) {
       return privateRouteJson({
@@ -109,24 +108,17 @@ export async function POST(request: NextRequest) {
       `[CRATE_SYNC] User ${userIdNum}: Removing ${orphanedReleases.length} orphaned releases (${deletionPercentage.toFixed(1)}% of ${totalCrateReleases} total)`,
     );
 
-    const instanceIds = orphanedReleases.map(
-      (r: { instance_id: string }) => r.instance_id,
-    );
+    const instanceIds = orphanedReleases.map((r) => r.instanceId);
 
     const BATCH_SIZE = 1000;
     let totalDeleted = 0;
 
     for (let i = 0; i < instanceIds.length; i += BATCH_SIZE) {
       const batch = instanceIds.slice(i, i + BATCH_SIZE);
-      const result = await prisma.crateRelease.deleteMany({
-        where: {
-          user_id: userIdNum,
-          instance_id: {
-            in: batch,
-          },
-        },
-      });
-      totalDeleted += result.count;
+      const deleted = await orm.CrateReleases.where({ userId: userIdNum })
+        .where((r) => r.instanceId.in(batch))
+        .deleteAndCount();
+      totalDeleted += deleted;
     }
 
     auditDatabaseOperation(
