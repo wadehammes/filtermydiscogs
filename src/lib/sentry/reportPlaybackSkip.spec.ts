@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { buildPlaybackSkipSentryMessage } from "src/lib/sentry/buildPlaybackSkipSentryEvent";
 import {
   getPlaybackSkipSentryReportCountForTests,
   reportPlaybackSkipToSentry,
@@ -21,6 +22,41 @@ describe("reportPlaybackSkipToSentry", () => {
     }
 
     expect(getPlaybackSkipSentryReportCountForTests()).toBe(15);
+  });
+
+  it("builds a readable Sentry message with track, release, and youtube id", () => {
+    expect(
+      buildPlaybackSkipSentryMessage({
+        source: "watchdog",
+        reason: "Private, removed, blocked, or still loading",
+        trackLabel: "fallback label",
+        details: {
+          connectionQuality: "slow",
+          trackPosition: "A1",
+          trackTitle: "Intro",
+          artist: "Artist",
+          releaseTitle: "Album",
+          youtubeVideoId: "dQw4w9WgXcQ",
+        },
+      }),
+    ).toBe(
+      "Embed load watchdog (slow network) — A1 · Intro — Artist · Album — yt:dQw4w9WgXcQ",
+    );
+
+    expect(
+      buildPlaybackSkipSentryMessage({
+        source: "youtube",
+        reason: "Cannot play in embedded player",
+        trackLabel: "A1 Intro - Artist, Album",
+        details: {
+          trackPosition: "B2",
+          trackTitle: "Deep cut",
+          userYoutubeOverrideId: "override11",
+        },
+      }),
+    ).toBe(
+      "YouTube embed error — B2 · Deep cut — Cannot play in embedded player — yt:override11",
+    );
   });
 
   it("classifies watchdog vs YouTube error codes", () => {
