@@ -38,6 +38,9 @@ const connectSrc = isProduction
       "*.youtube.com",
       "https://www.discogs.com",
       "https://api.discogs.com",
+      "*.ingest.sentry.io",
+      "*.ingest.us.sentry.io",
+      "*.ingest.eu.sentry.io",
     ]
   : ["*"];
 
