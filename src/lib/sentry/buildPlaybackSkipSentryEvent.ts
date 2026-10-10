@@ -23,19 +23,49 @@ export const resolvePlaybackSkipHeadline = (
 ): string => {
   if (source === "watchdog") {
     if (connectionQuality === "slow") {
-      return "Embed load watchdog (slow network)";
+      return "Embed Load Watchdog (Slow Network)";
     }
 
-    return "Embed load watchdog";
+    return "Embed Load Watchdog";
   }
 
-  return "YouTube embed error";
+  return "YouTube Embed Error";
 };
+
+const resolvePlaybackSkipYoutubeId = (
+  details?: PlaybackSkipSentryDetails,
+): string | null =>
+  details?.youtubeVideoId?.trim() ||
+  details?.userYoutubeOverrideId?.trim() ||
+  details?.discogsMatchedYoutubeId?.trim() ||
+  null;
+
+const resolvePlaybackSkipTrackDetailLine = (
+  details: PlaybackSkipSentryDetails | undefined,
+  trackLabel: string,
+): string => {
+  if (details?.trackPosition && details?.trackTitle) {
+    return `${details.trackPosition} · ${details.trackTitle}`;
+  }
+
+  if (details?.previewVideoTitle?.trim()) {
+    return details.previewVideoTitle.trim();
+  }
+
+  return trackLabel;
+};
+
+const resolvePlaybackSkipReleaseLine = (
+  details?: PlaybackSkipSentryDetails,
+): string =>
+  [details?.artist, details?.releaseTitle]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(" · ");
 
 export const buildPlaybackSkipSentryMessage = ({
   source,
   reason,
-  trackLabel,
   details,
 }: {
   source: PlaybackSkipSource;
@@ -48,29 +78,26 @@ export const buildPlaybackSkipSentryMessage = ({
     details?.connectionQuality,
   );
 
-  const trackLine =
-    details?.trackPosition && details?.trackTitle
-      ? `${details.trackPosition} · ${details.trackTitle}`
-      : details?.previewVideoTitle?.trim() || trackLabel;
+  return `${headline} - ${reason}`;
+};
 
-  const releaseLine = [details?.artist, details?.releaseTitle]
-    .map((part) => part?.trim())
-    .filter(Boolean)
-    .join(" · ");
+export const buildPlaybackSkipSentryDetailLine = ({
+  trackLabel,
+  details,
+}: {
+  source: PlaybackSkipSource;
+  reason: string;
+  trackLabel: string;
+  details?: PlaybackSkipSentryDetails;
+}): string => {
+  const segments = [resolvePlaybackSkipTrackDetailLine(details, trackLabel)];
 
-  const youtubeId =
-    details?.youtubeVideoId?.trim() ||
-    details?.userYoutubeOverrideId?.trim() ||
-    details?.discogsMatchedYoutubeId?.trim() ||
-    null;
-
-  const segments = [headline, trackLine];
+  const releaseLine = resolvePlaybackSkipReleaseLine(details);
   if (releaseLine) {
     segments.push(releaseLine);
   }
-  if (source === "youtube") {
-    segments.push(reason);
-  }
+
+  const youtubeId = resolvePlaybackSkipYoutubeId(details);
   if (youtubeId) {
     segments.push(`yt:${youtubeId}`);
   }
@@ -104,10 +131,7 @@ export const buildPlaybackSkipSentryTags = ({
   if (details?.trackKey) {
     tags["playback.track_key"] = details.trackKey;
   }
-  const youtubeId =
-    details?.youtubeVideoId?.trim() ||
-    details?.userYoutubeOverrideId?.trim() ||
-    details?.discogsMatchedYoutubeId?.trim();
+  const youtubeId = resolvePlaybackSkipYoutubeId(details);
   if (youtubeId) {
     tags["playback.youtube_video_id"] = youtubeId;
   }
