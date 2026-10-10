@@ -2102,6 +2102,70 @@ describe("ReleasePlaybackProvider", () => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
 
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("re-arms the embed watchdog while video UI loading before unavailable skip", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
     jest.useRealTimers();

@@ -22,14 +22,28 @@ export const e2eReleaseCards = (page: Page): Locator =>
     '[data-testid="fmdReleaseCard"], [data-testid="fmdMobileReleaseCard"]',
   );
 
+const switchToCardViewButton = (page: Page) =>
+  page.getByRole("button", { name: "Switch to card view" });
+
 export async function expectE2eCollectionLoaded(page: Page) {
   await expect(
     page.getByRole("status", { name: e2eCollectionSummaryLabel() }),
   ).toBeVisible({
     timeout: 30_000,
   });
-  await expect(e2eReleaseCards(page)).toHaveCount(
-    E2E_COLLECTION_RELEASE_COUNT,
-    { timeout: 30_000 },
-  );
+
+  await expect(async () => {
+    let cardCount = await e2eReleaseCards(page).count();
+    if (cardCount === E2E_COLLECTION_RELEASE_COUNT) {
+      return;
+    }
+
+    const switchToCard = switchToCardViewButton(page);
+    if (await switchToCard.isVisible()) {
+      await switchToCard.click();
+      cardCount = await e2eReleaseCards(page).count();
+    }
+
+    expect(cardCount).toBe(E2E_COLLECTION_RELEASE_COUNT);
+  }).toPass({ timeout: 30_000 });
 }

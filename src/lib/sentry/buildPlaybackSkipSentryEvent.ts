@@ -78,7 +78,13 @@ export const buildPlaybackSkipSentryMessage = ({
     details?.connectionQuality,
   );
 
-  return `${headline} - ${reason}`;
+  const segments = [`${headline} - ${reason}`];
+  const youtubeId = resolvePlaybackSkipYoutubeId(details);
+  if (youtubeId) {
+    segments.push(`yt:${youtubeId}`);
+  }
+
+  return segments.join(" - ");
 };
 
 export const buildPlaybackSkipSentryDetailLine = ({
