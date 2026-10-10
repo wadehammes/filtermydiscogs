@@ -70,6 +70,7 @@ export interface ReleasePlaybackYoutubeEmbedRefs {
   playbackVideoTransitionTargetIdRef: RefObject<string | null>;
   playbackVideoUiLoadingTargetVideoIdRef: RefObject<string | null>;
   playbackVideoUiLoadingEmbedLoadStartedAtMsRef: RefObject<number | null>;
+  embedWatchdogVideoIdRef: RefObject<string | null>;
   playFromGestureRetryTimeoutsRef: RefObject<number[]>;
   releaseRef: RefObject<import("src/types").DiscogsRelease | null>;
   tracksRef: RefObject<DiscogsTrack[]>;
@@ -137,6 +138,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playbackVideoTransitionTargetIdRef,
     playbackVideoUiLoadingTargetVideoIdRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+    embedWatchdogVideoIdRef,
     playFromGestureRetryTimeoutsRef,
     releaseRef,
     tracksRef,
@@ -448,14 +450,20 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
           const loadingTarget = playbackVideoUiLoadingTargetVideoIdRef.current;
 
-          if (
-            !doesPlaybackVideoUiLoadingTargetMatch({
+          const loadingTargetMatchesSession =
+            doesPlaybackVideoUiLoadingTargetMatch({
               loadingTargetVideoId: loadingTarget,
               activeVideoId: activeVideoIdRef.current,
               embedVideoId: embedVideoIdRef.current,
               transitionTargetVideoId:
                 playbackVideoTransitionTargetIdRef.current,
-            })
+            });
+          const loadingTargetMatchesWatchdogEmbed =
+            embedWatchdogVideoIdRef.current !== null &&
+            embedVideoIdRef.current === embedWatchdogVideoIdRef.current;
+
+          if (
+            !(loadingTargetMatchesSession || loadingTargetMatchesWatchdogEmbed)
           ) {
             return;
           }
@@ -509,6 +517,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       playbackVideoTransitionTargetIdRef,
       playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
       playbackVideoUiLoadingTargetVideoIdRef,
+      embedWatchdogVideoIdRef,
     ],
   );
 

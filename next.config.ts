@@ -61,7 +61,7 @@ const ContentSecurityPolicy = `
   connect-src ${connectSrc.join(" ")};
   frame-src ${frameSrc.join(" ")};
   font-src 'self' data: fonts.gstatic.com;
-  worker-src 'self' *.vercel.app;
+  worker-src 'self' blob: *.vercel.app;
   manifest-src 'self' *.vercel.app;
 `;
 

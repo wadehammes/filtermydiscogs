@@ -36,6 +36,55 @@ export const resolveSentryEnvironment = (): string =>
   process.env.NODE_ENV ??
   "development";
 
+const parseSentrySampleRate = (
+  sampleRateEnv: string | undefined,
+  fallback: number,
+): number => {
+  if (sampleRateEnv === undefined || sampleRateEnv.trim() === "") {
+    return fallback;
+  }
+
+  const parsedSampleRate = Number(sampleRateEnv);
+  if (
+    !Number.isFinite(parsedSampleRate) ||
+    parsedSampleRate < 0 ||
+    parsedSampleRate > 1
+  ) {
+    return fallback;
+  }
+
+  return parsedSampleRate;
+};
+
+export const resolveSentryReplaySessionSampleRate = (): number => {
+  if (!resolveSentryEnabled()) {
+    return 0;
+  }
+
+  const sessionSampleRateEnv =
+    process.env.NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE;
+  if (sessionSampleRateEnv !== undefined) {
+    return parseSentrySampleRate(sessionSampleRateEnv, 0.1);
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    return 1;
+  }
+
+  return 0.1;
+};
+
+export const resolveSentryReplayOnErrorSampleRate = (): number => {
+  if (!resolveSentryEnabled()) {
+    return 0;
+  }
+
+  return parseSentrySampleRate(
+    process.env.NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE,
+    1,
+  );
+};
+
 export const resolveSentryRelease = (): string | undefined => {
   const release =
     process.env.SENTRY_RELEASE ??

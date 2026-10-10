@@ -10,13 +10,16 @@ import {
   classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
   getNavigatorNetworkInformation,
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MOBILE_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MODERATE_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+  resolvePlaybackEmbedUnavailableWatchdogDelayMs,
   resolvePlaybackEmbedUnavailableWatchdogMs,
   resolvePlaybackEmbedUnavailableWatchdogMsForQuality,
   shouldArmPlaybackEmbedStartWatchdog,
+  shouldRearmEmbedStartWatchdogBeforeUnavailableSkip,
 } from "src/utils/playbackEmbedStartWatchdog";
 
 describe("shouldArmPlaybackEmbedStartWatchdog", () => {
@@ -257,5 +260,60 @@ describe("createEmbedPlaybackStartWatchdog", () => {
         PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
     );
     expect(onTimeout).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("resolvePlaybackEmbedUnavailableWatchdogDelayMs", () => {
+  it("adds a post-skip bonus within the leniency window", () => {
+    const nowMs = 20_000;
+    const baseDelayMs = PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS;
+
+    expect(
+      resolvePlaybackEmbedUnavailableWatchdogDelayMs({
+        nowMs,
+        lastUnavailableSkipAtMs: null,
+        baseDelayMs,
+      }),
+    ).toBe(baseDelayMs);
+
+    expect(
+      resolvePlaybackEmbedUnavailableWatchdogDelayMs({
+        nowMs,
+        lastUnavailableSkipAtMs: nowMs - 1_000,
+        baseDelayMs,
+      }),
+    ).toBe(
+      baseDelayMs + PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS,
+    );
+
+    expect(
+      resolvePlaybackEmbedUnavailableWatchdogDelayMs({
+        nowMs,
+        lastUnavailableSkipAtMs: nowMs - 120_000,
+        baseDelayMs,
+      }),
+    ).toBe(baseDelayMs);
+  });
+});
+
+describe("shouldRearmEmbedStartWatchdogBeforeUnavailableSkip", () => {
+  it("allows one re-arm while the watchdog embed is still loading", () => {
+    expect(
+      shouldRearmEmbedStartWatchdogBeforeUnavailableSkip({
+        isPlaybackVideoUiLoading: true,
+        watchdogVideoId: "abc",
+        embedVideoId: "abc",
+        rearmCount: 0,
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldRearmEmbedStartWatchdogBeforeUnavailableSkip({
+        isPlaybackVideoUiLoading: true,
+        watchdogVideoId: "abc",
+        embedVideoId: "abc",
+        rearmCount: 1,
+      }),
+    ).toBe(false);
   });
 });

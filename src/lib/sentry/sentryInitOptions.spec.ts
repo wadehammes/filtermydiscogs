@@ -3,6 +3,8 @@ import {
   resolveSentryBrowserTunnel,
   resolveSentryDsn,
   resolveSentryEnabled,
+  resolveSentryReplayOnErrorSampleRate,
+  resolveSentryReplaySessionSampleRate,
 } from "src/lib/sentry/sentryInitOptions";
 
 describe("sentryInitOptions", () => {
@@ -74,5 +76,37 @@ describe("sentryInitOptions", () => {
     expect(buildBrowserSentryInitOptions().tunnel).toBe(
       "/monitoring?o=4512232195883008&p=4512232199618560&r=us",
     );
+  });
+
+  it("defaults replay sample rates to 10% sessions and 100% on error in production", () => {
+    const env = process.env as Record<string, string | undefined>;
+
+    env.NEXT_PUBLIC_SENTRY_DSN = "https://example@o1.ingest.sentry.io/1";
+    env.NODE_ENV = "production";
+
+    expect(resolveSentryReplaySessionSampleRate()).toBe(0.1);
+    expect(resolveSentryReplayOnErrorSampleRate()).toBe(1);
+  });
+
+  it("uses full session replay sampling in development when Sentry dev is enabled", () => {
+    const env = process.env as Record<string, string | undefined>;
+
+    env.NEXT_PUBLIC_SENTRY_DSN = "https://example@o1.ingest.sentry.io/1";
+    env.NODE_ENV = "development";
+    env.SENTRY_ENABLE_DEV = "1";
+
+    expect(resolveSentryReplaySessionSampleRate()).toBe(1);
+  });
+
+  it("reads replay sample rates from NEXT_PUBLIC env overrides", () => {
+    const env = process.env as Record<string, string | undefined>;
+
+    env.NEXT_PUBLIC_SENTRY_DSN = "https://example@o1.ingest.sentry.io/1";
+    env.NODE_ENV = "production";
+    env.NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE = "0.25";
+    env.NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE = "0.5";
+
+    expect(resolveSentryReplaySessionSampleRate()).toBe(0.25);
+    expect(resolveSentryReplayOnErrorSampleRate()).toBe(0.5);
   });
 });

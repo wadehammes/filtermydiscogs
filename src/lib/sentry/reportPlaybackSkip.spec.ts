@@ -42,7 +42,7 @@ describe("reportPlaybackSkipToSentry", () => {
     };
 
     expect(buildPlaybackSkipSentryMessage(shared)).toBe(
-      "YouTube Embed Error - Cannot play in embedded player",
+      "YouTube Embed Error - Cannot play in embedded player - yt:D28Y_SmFtbQ",
     );
 
     expect(buildPlaybackSkipSentryDetailLine(shared)).toBe(
@@ -64,7 +64,7 @@ describe("reportPlaybackSkipToSentry", () => {
         },
       }),
     ).toBe(
-      "Embed Load Watchdog (Slow Network) - Private, removed, blocked, or still loading",
+      "Embed Load Watchdog (Slow Network) - Private, removed, blocked, or still loading - yt:dQw4w9WgXcQ",
     );
 
     expect(

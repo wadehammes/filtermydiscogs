@@ -6,6 +6,12 @@ export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MODERATE_MS = 12000;
 
 export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS = 18000;
 
+export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS = 5000;
+
+export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_WINDOW_MS = 60_000;
+
+export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS = 1;
+
 export type PlaybackEmbedConnectionQuality =
   | "slow"
   | "moderate"
@@ -117,6 +123,48 @@ export const resolvePlaybackEmbedUnavailableWatchdogMs = (): number => {
     isCoarsePointer,
   );
 };
+
+export const resolvePlaybackEmbedUnavailableWatchdogDelayMs = ({
+  nowMs,
+  lastUnavailableSkipAtMs,
+  baseDelayMs = resolvePlaybackEmbedUnavailableWatchdogMs(),
+}: {
+  nowMs: number;
+  lastUnavailableSkipAtMs: number | null;
+  baseDelayMs?: number;
+}): number => {
+  if (lastUnavailableSkipAtMs === null) {
+    return baseDelayMs;
+  }
+
+  const elapsedSinceSkip = nowMs - lastUnavailableSkipAtMs;
+  if (
+    elapsedSinceSkip < 0 ||
+    elapsedSinceSkip > PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_WINDOW_MS
+  ) {
+    return baseDelayMs;
+  }
+
+  return baseDelayMs + PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS;
+};
+
+export const shouldRearmEmbedStartWatchdogBeforeUnavailableSkip = ({
+  isPlaybackVideoUiLoading,
+  watchdogVideoId,
+  embedVideoId,
+  rearmCount,
+  maxRearms = PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS,
+}: {
+  isPlaybackVideoUiLoading: boolean;
+  watchdogVideoId: string | null;
+  embedVideoId: string | null;
+  rearmCount: number;
+  maxRearms?: number;
+}): boolean =>
+  isPlaybackVideoUiLoading &&
+  watchdogVideoId !== null &&
+  embedVideoId === watchdogVideoId &&
+  rearmCount < maxRearms;
 
 export const shouldArmPlaybackEmbedStartWatchdog = (
   visibilityState: DocumentVisibilityState,

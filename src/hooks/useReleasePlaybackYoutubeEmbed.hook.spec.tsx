@@ -52,6 +52,7 @@ const buildHarness = ({
   const playbackVideoUiLoadingEmbedLoadStartedAtMsRef = {
     current: null as number | null,
   };
+  const embedWatchdogVideoIdRef = { current: null as string | null };
   const pendingPlayFromGestureRef = { current: false };
   const playFromGestureRetryTimeoutsRef = { current: [] as number[] };
   const releaseRef = { current: release };
@@ -86,6 +87,7 @@ const buildHarness = ({
           playbackVideoTransitionTargetIdRef,
           playbackVideoUiLoadingTargetVideoIdRef,
           playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+          embedWatchdogVideoIdRef,
           playFromGestureRetryTimeoutsRef,
           releaseRef,
           tracksRef,
@@ -119,6 +121,7 @@ const buildHarness = ({
     activeVideoIdRef,
     clearPlaybackVideoUiLoading,
     embedVideoIdRef,
+    embedWatchdogVideoIdRef,
     isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
     playbackIframeRef,
@@ -262,6 +265,41 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
 
     expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
+  });
+
+  it("clears video UI loading on PLAYING when embed video id matches the watchdog video but not the loading target", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      activeVideoIdRef,
+      clearPlaybackVideoUiLoading,
+      embedVideoIdRef,
+      embedWatchdogVideoIdRef,
+      isPlaybackVideoUiLoadingRef,
+      playbackIframeRef,
+      playbackVideoUiLoadingTargetVideoIdRef,
+      result,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    playbackVideoUiLoadingTargetVideoIdRef.current = "stale-target-id";
+    embedWatchdogVideoIdRef.current = "next-video-id";
+    activeVideoIdRef.current = "prev-video-id";
+    embedVideoIdRef.current = "next-video-id";
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
   it("clears video UI loading on PLAYING when embed video id matches the loading target before activeVideoId catches up", () => {
