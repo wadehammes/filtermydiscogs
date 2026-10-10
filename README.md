@@ -75,6 +75,12 @@ CRON_SECRET=generate_a_long_random_secret_for_vercel_cron
 
 # Stripe (optional, About page donations)
 STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
+
+# Sentry (optional, error monitoring — see docs/handbook/platform.md)
+# NEXT_PUBLIC_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+# SENTRY_ORG=your-org
+# SENTRY_PROJECT=filtermydiscogs
+# SENTRY_AUTH_TOKEN=your_build_auth_token
 ```
 
 Full variable list: [`docs/handbook/platform.md`](./docs/handbook/platform.md).
@@ -136,6 +142,7 @@ The app will be available at `http://localhost:6767`.
 - **Forms**: React Hook Form + Zod
 - **Tooling**: pnpm, mise, Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library + MSW 3, Playwright, Knip
 - **Analytics**: Google Tag Manager (consent-aware)
+- **Error monitoring**: Sentry ([`@sentry/nextjs`](./package.json); optional via env — see Setup)
 
 ## Development
 

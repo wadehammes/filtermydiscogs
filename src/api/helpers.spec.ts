@@ -515,6 +515,21 @@ describe("syncCrates", () => {
       "HTTP error! status: 500",
     );
   });
+
+  it("throws CrateSyncError with blocked reason for unsafe sync responses", async () => {
+    mockFetchErrorOnce("post", "/api/crates/sync", 400, {
+      error:
+        "Collection appears incomplete (3 items). Sync requires at least 10 items.",
+      collectionSize: 3,
+      minRequired: 10,
+    });
+
+    await expect(syncCrates(["id1"])).rejects.toMatchObject({
+      name: "CrateSyncError",
+      status: 400,
+      blockedReason: "collection_too_small",
+    });
+  });
 });
 
 describe("checkAuth", () => {

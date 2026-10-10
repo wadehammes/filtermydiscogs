@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
   clearDiscogsSessionCookie,
   clearReconnectUsernameCookie,
@@ -48,7 +49,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("Error clearing crate data for user:", error);
+    logSanitizedApiRouteFailure(
+      "/api/auth/clear-data",
+      error,
+      "Error clearing crate data for user:",
+    );
     return privateRouteJson(
       { error: "Failed to clear stored data" },
       { status: 500 },

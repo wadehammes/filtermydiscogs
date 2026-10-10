@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
   fetchDiscogsCdnImage,
   MAX_DISCOGS_IMAGE_URL_LENGTH,
@@ -9,7 +10,6 @@ import {
   checkIpRateLimit,
   IMAGE_PROXY_RATE_LIMIT_CONFIG,
 } from "src/lib/ip-rate-limit";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 // Maximum dimensions and file size limits to prevent DoS
 const MAX_IMAGE_DIMENSION = 5000;
@@ -200,11 +200,14 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Error proxying image:", error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/image-proxy",
+      error,
+      "Error proxying image:",
+    );
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: sanitized.status },
     );
   }
 }

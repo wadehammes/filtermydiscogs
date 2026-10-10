@@ -6,15 +6,36 @@ import {
 import { privateRouteJson } from "src/lib/private-route-response";
 import { getPublicCrateMetadataForPage } from "src/lib/public-crate.server";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
+import { logApiRouteFailure } from "src/lib/sentry/logApiRouteFailure";
+import { reportApiRouteFailure } from "src/lib/sentry/reportApiRouteFailure";
 import { auditLog } from "./db-audit";
 import { checkRateLimit } from "./rate-limit";
 
 export { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 export type { VerifiedDiscogsUser };
 
-export const createErrorResponse = (error: unknown): NextResponse => {
+export const logSanitizedApiRouteFailure = (
+  route: string,
+  error: unknown,
+  logMessage?: string,
+) => {
   rethrowNextInternalError(error);
   const sanitized = sanitizeError(error);
+  logApiRouteFailure(route, error, logMessage, { status: sanitized.status });
+  return sanitized;
+};
+
+export const createErrorResponse = (
+  error: unknown,
+  options?: { route?: string },
+): NextResponse => {
+  rethrowNextInternalError(error);
+  const sanitized = sanitizeError(error);
+
+  reportApiRouteFailure(options?.route ?? "api", error, {
+    status: sanitized.status,
+    ...(sanitized.code ? { extra: { code: sanitized.code } } : {}),
+  });
 
   return privateRouteJson(
     { error: sanitized.message },

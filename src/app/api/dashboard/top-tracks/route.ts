@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   getVerifiedUserFromRequestWithRateLimit,
-  rethrowNextInternalError,
-  sanitizeError,
+  logSanitizedApiRouteFailure,
 } from "src/lib/api-helpers";
 import { fetchTopUserTracks } from "src/lib/user-track.server";
 
@@ -23,14 +22,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(tracks);
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Error fetching top user tracks:", error);
-
-    const sanitized = sanitizeError(error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/dashboard/top-tracks",
+      error,
+      "Error fetching top user tracks:",
+    );
 
     return NextResponse.json(
       { error: "Failed to fetch top tracks" },
-      { status: sanitized.status || 500 },
+      { status: sanitized.status },
     );
   }
 }

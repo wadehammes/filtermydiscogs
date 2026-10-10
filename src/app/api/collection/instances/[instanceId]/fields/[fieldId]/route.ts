@@ -56,7 +56,6 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("updateCollectionNote error:", error);
     const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
       error,
       fallbackMessage: "Failed to update collection note",

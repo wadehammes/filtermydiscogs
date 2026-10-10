@@ -4,6 +4,7 @@ import {
   trackMosaicError,
 } from "src/analytics/productAnalyticsEvents";
 import { calculateOptimalGrid, MOSAIC_CONSTANTS } from "src/constants/mosaic";
+import { reportMosaicFailureToSentry } from "src/lib/sentry/reportMosaicFailure";
 import type { DiscogsRelease } from "src/types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import {
@@ -364,7 +365,6 @@ export function useMosaicGenerator({
     } catch (error) {
       console.error("Error generating mosaic:", error);
 
-      // Set comprehensive error state
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
       setState((prev) => ({
@@ -373,8 +373,13 @@ export function useMosaicGenerator({
         isGenerating: false,
       }));
 
-      // Track error analytics
       trackMosaicError(errorMessage);
+      reportMosaicFailureToSentry(error, {
+        releaseCount: releases.length,
+        imageFormat,
+        imageQuality,
+        aspectRatio,
+      });
     } finally {
       setState((prev) => ({
         ...prev,

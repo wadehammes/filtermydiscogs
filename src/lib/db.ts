@@ -1,6 +1,9 @@
+import "server-only";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool, type PoolConfig } from "pg";
+import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -125,6 +128,12 @@ function initializePrismaClient(): PrismaClient {
 
     pool.on("error", (err) => {
       console.error("[DB] Pool error:", err);
+      reportInfrastructureFailure(
+        "database",
+        err,
+        { source: "pool" },
+        { throttleKey: "db-pool-error", throttleMs: 60_000 },
+      );
     });
 
     pool.on("acquire", () => {
@@ -190,6 +199,9 @@ function initializePrismaClient(): PrismaClient {
 
   performHealthCheck().catch((error) => {
     console.error("[DB] Initial health check failed:", error);
+    reportInfrastructureFailure("database", error, {
+      source: "initial_health_check",
+    });
   });
 
   globalForPrisma.prisma = prismaInstance;
@@ -208,6 +220,9 @@ function getPrismaClient(): PrismaClient {
     return initializePrismaClient();
   } catch (error) {
     console.error("Failed to initialize Prisma Client:", error);
+    reportInfrastructureFailure("database", error, {
+      source: "prisma_init",
+    });
     throw createPrismaInitializationError(error);
   }
 }

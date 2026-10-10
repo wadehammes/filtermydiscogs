@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   getVerifiedUserFromRequestWithRateLimit,
-  rethrowNextInternalError,
-  sanitizeError,
+  logSanitizedApiRouteFailure,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 import type { DiscogsRelease } from "src/types";
@@ -104,8 +103,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ releases: mostCratedReleases });
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Error fetching most crated releases:", error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/dashboard/most-crated",
+      error,
+      "Error fetching most crated releases:",
+    );
 
     // Log more details in development
     if (process.env.NODE_ENV === "development") {
@@ -116,11 +118,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const sanitized = sanitizeError(error);
-
     return NextResponse.json(
       { error: "Failed to fetch most crated releases" },
-      { status: sanitized.status || 500 },
+      { status: sanitized.status },
     );
   }
 }

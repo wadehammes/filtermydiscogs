@@ -7,6 +7,7 @@ import {
   COLLECTION_FIRST_PAGE_SIZE,
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
+import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { useCollectionContext } from "src/context/collection.context";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { resetCollectionCacheReady } from "src/hooks/useCollectionCacheReady.hook";
@@ -371,6 +372,37 @@ describe("useCollectionData", () => {
     });
 
     expect(invalidateSpy).not.toHaveBeenCalled();
+  });
+
+  it("tracks discogsRateLimited once when collection fetch exhausts retries on 429", async () => {
+    window.dataLayer = [];
+    localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "granted");
+    mockFetchDiscogsCollection.mockRejectedValue(
+      new ApiFetchError(429, "Rate limited", 0),
+    );
+
+    renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+      },
+      { includeCollectionSync: false },
+    );
+
+    await waitFor(() => {
+      expect(
+        window.dataLayer?.filter((item) => item.event === "discogsRateLimited"),
+      ).toHaveLength(1);
+    });
+
+    expect(window.dataLayer?.[0]).toMatchObject({
+      event: "discogsRateLimited",
+      category: "discogs",
+      label: "collection",
+      value: "429",
+    });
   });
 
   it("rechecks auth and retries the collection fetch after a 401", async () => {

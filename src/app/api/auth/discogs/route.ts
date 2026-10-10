@@ -1,4 +1,5 @@
 import type { NextRequest, NextResponse } from "next/server";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
   clearDiscogsSessionCookie,
   clearReconnectUsernameCookie,
@@ -7,7 +8,6 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -73,8 +73,11 @@ export async function GET(request: NextRequest) {
             username: identity.username,
           });
         } catch (error) {
-          rethrowNextInternalError(error);
-          console.error("Failed to upsert user on token reuse login:", error);
+          logSanitizedApiRouteFailure(
+            "/api/auth/discogs",
+            error,
+            "Failed to upsert user on token reuse login:",
+          );
         }
 
         return response;
@@ -125,8 +128,11 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("OAuth initiation error:", error);
+    logSanitizedApiRouteFailure(
+      "/api/auth/discogs",
+      error,
+      "OAuth initiation error:",
+    );
     return privateRouteRedirect(
       new URL("/?error=oauth_init_failed", request.url),
     );

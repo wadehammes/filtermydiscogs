@@ -28,6 +28,6 @@ export const PATCH = async (request: NextRequest) => {
     await saveUserTrackYoutubeOverride(verified.user.userId, parsedBody.data);
     return privateRouteJson({ ok: true });
   } catch (error) {
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/tracks/youtube" });
   }
 };

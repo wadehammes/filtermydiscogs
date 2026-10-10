@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "src/lib/db";
 import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
+import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import type {
   AdminStats,
   AdminStatsDailyCountPoint,
@@ -514,6 +515,9 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     `,
     fetchAdminFeatureUsageStats().catch((error) => {
       console.error("Admin feature usage stats error:", error);
+      reportInfrastructureFailure("admin_stats", error, {
+        segment: "feature_usage",
+      });
       return emptyFeatureUsage();
     }),
     fetchAdminAccountPreferencesStats(),

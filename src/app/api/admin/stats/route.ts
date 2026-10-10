@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("Admin stats error:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/admin/stats" });
   }
 }

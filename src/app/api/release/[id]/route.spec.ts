@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { GET } from "src/app/api/release/[id]/route";
 import { DISCOGS_SESSION_COOKIE } from "src/lib/auth-request";
-import { DiscogsThrottleQueueError } from "src/lib/discogs-request-throttle";
+import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 import {
   clearCachedIdentity,
   getIdentityCacheKey,
@@ -208,10 +208,6 @@ describe("GET /api/release/[id]", () => {
   });
 
   it("returns 502 when Discogs returns an upstream 5xx", async () => {
-    const consoleSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
     jest
       .spyOn(discogsOAuthService, "getIdentity")
       .mockResolvedValue(
@@ -237,15 +233,9 @@ describe("GET /api/release/[id]", () => {
       error:
         "Discogs returned an error (their servers may be overloaded or temporarily down). Try again in a few minutes.",
     });
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 
   it("returns 500 when Discogs request fails without an upstream status", async () => {
-    const consoleSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
     jest
       .spyOn(discogsOAuthService, "getIdentity")
       .mockResolvedValue(
@@ -266,7 +256,5 @@ describe("GET /api/release/[id]", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Failed to fetch release",
     });
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 });

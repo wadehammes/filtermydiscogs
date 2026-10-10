@@ -11,6 +11,10 @@ import type {
   PaginationInfo,
   ReleaseCrateMembershipResponse,
 } from "src/types/crate.types";
+import {
+  CrateSyncError,
+  inferCrateSyncBlockedReason,
+} from "src/utils/crateSyncError";
 
 const throwCrateApiError = async (response: Response): Promise<never> => {
   const errorData = (await response.json().catch(() => ({}))) as {
@@ -470,7 +474,19 @@ export const syncCrates = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const body: unknown = await response.json().catch(() => ({}));
+      const message =
+        body &&
+        typeof body === "object" &&
+        "error" in body &&
+        typeof (body as { error: unknown }).error === "string"
+          ? (body as { error: string }).error
+          : `HTTP error! status: ${response.status}`;
+
+      const blockedReason =
+        response.status === 400 ? inferCrateSyncBlockedReason(body) : undefined;
+
+      throw new CrateSyncError(message, response.status, blockedReason);
     }
 
     return response.json();

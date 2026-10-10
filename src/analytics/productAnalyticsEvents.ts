@@ -1,4 +1,8 @@
 import { trackEvent } from "src/analytics/analytics";
+import {
+  type CrateSyncBlockedReason,
+  CrateSyncError,
+} from "src/utils/crateSyncError";
 
 const trackProductEvent = (
   event: string,
@@ -207,6 +211,38 @@ export const trackCrateSyncManual = (removedCount: number) => {
     category: "crate",
     label: "Manual crate sync",
     value: String(removedCount),
+  });
+};
+
+export const trackCrateSyncBlocked = (
+  reason: "collection_too_small" | "deletion_cap_blocked" | "unknown",
+  detail: string,
+) => {
+  trackProductEvent("crateSyncBlocked", {
+    category: "crate",
+    label: reason,
+    value: detail,
+  });
+};
+
+export const trackCrateSyncBlockedFromError = (error: unknown) => {
+  if (!(error instanceof CrateSyncError) || error.status !== 400) {
+    return;
+  }
+
+  const reason: CrateSyncBlockedReason | "unknown" =
+    error.blockedReason ?? "unknown";
+
+  trackCrateSyncBlocked(reason, error.message.slice(0, 240));
+};
+
+export const trackDiscogsUpstreamRateLimited = (
+  source: "collection" | "release" | "search",
+) => {
+  trackProductEvent("discogsRateLimited", {
+    category: "discogs",
+    label: source,
+    value: "429",
   });
 };
 

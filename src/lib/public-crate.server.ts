@@ -7,6 +7,7 @@ import {
   findPublicCrateById,
   findPublicCrateSummaryById,
 } from "src/lib/public-crate-query.server";
+import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
 export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
@@ -40,6 +41,9 @@ export async function getPublicCrateIdsForStaticGeneration(
     return ids.length > 0 ? ids : publicCrateStaticParamFallbackIds();
   } catch (error) {
     console.error("Failed to list public crates for static generation:", error);
+    reportInfrastructureFailure("public_crate", error, {
+      operation: "static_generation_ids",
+    });
     return publicCrateStaticParamFallbackIds();
   }
 }
@@ -87,6 +91,10 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
       `Failed to load public crate metadata for ${crateId}:`,
       error,
     );
+    reportInfrastructureFailure("public_crate", error, {
+      operation: "metadata_for_page",
+      crateId,
+    });
     return null;
   }
 }

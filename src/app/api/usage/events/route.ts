@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
 import {
   ANALYTICS_EVENTS_RATE_LIMIT_CONFIG,
@@ -8,7 +9,6 @@ import {
   insertProductAnalyticsEvents,
   validateProductAnalyticsBatch,
 } from "src/lib/product-analytics.server";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 const parseAnalyticsEventsBody = async (
   request: NextRequest,
@@ -61,11 +61,14 @@ export async function POST(request: NextRequest) {
   try {
     await insertProductAnalyticsEvents(validation.events, userId);
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Product analytics ingest error:", error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/usage/events",
+      error,
+      "Product analytics ingest error:",
+    );
     return NextResponse.json(
       { error: "Failed to store analytics events" },
-      { status: 500 },
+      { status: sanitized.status },
     );
   }
 

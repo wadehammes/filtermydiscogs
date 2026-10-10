@@ -25,6 +25,6 @@ export const POST = async (request: NextRequest) => {
     await recordUserTrackEvent(verified.user.userId, parsedBody.data);
     return privateRouteJson({ ok: true });
   } catch (error) {
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/tracks/record" });
   }
 };

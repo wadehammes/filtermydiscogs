@@ -8,6 +8,7 @@ import {
   DONATION_PRESET_AMOUNTS_CENTS,
   isDonationPresetAmount,
 } from "src/constants/donate.constants";
+import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
 import {
   type DonateCheckoutFormValues,
   donateCheckoutFormSchema,
@@ -59,6 +60,7 @@ export const useAboutDonationForm = () => {
       window.location.assign(url);
     } catch (error) {
       console.error("Error starting donation checkout:", error);
+      reportClientFailure("donation", error);
       toast.error("Could not start checkout. Please try again.");
       reset();
     }

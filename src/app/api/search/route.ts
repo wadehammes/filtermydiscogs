@@ -141,7 +141,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("Search API error:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/search" });
   }
 }

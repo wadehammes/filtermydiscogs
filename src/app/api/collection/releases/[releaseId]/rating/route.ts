@@ -60,7 +60,6 @@ export async function PUT(
     return NextResponse.json(result);
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("updateReleaseRating route error:", error);
     return jsonDiscogsProxyError(error, "Failed to update release rating");
   }
 }
@@ -110,7 +109,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     rethrowNextInternalError(error);
-    console.error("deleteReleaseRating route error:", error);
     return jsonDiscogsProxyError(error, "Failed to clear release rating");
   }
 }

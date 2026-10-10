@@ -40,8 +40,7 @@ export async function PUT(
     let body: unknown;
     try {
       body = await request.json();
-    } catch (error) {
-      console.error("Failed to parse request body:", error);
+    } catch (_error) {
       return privateRouteJson(
         { error: "Invalid request body" },
         { status: 400 },
@@ -133,7 +132,6 @@ export async function PUT(
       markers: markers.map(mapCrateSetMarkerRow),
     });
   } catch (error) {
-    console.error("Error updating crate layout:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/[id]/layout" });
   }
 }

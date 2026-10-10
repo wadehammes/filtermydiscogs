@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import type { InfiniteData } from "@tanstack/react-query";
+import { trackEvent } from "src/analytics/analytics";
 import { api } from "src/api/urls";
 import { COLLECTION_FIRST_PAGE_SIZE } from "src/constants/collection";
+import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
@@ -11,6 +13,7 @@ import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import type { DiscogsCollection } from "src/types";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
+import { CrateSyncError } from "src/utils/crateSyncError";
 import { toast } from "src/utils/toast";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
@@ -38,6 +41,7 @@ const mockApi = jest.mocked(api);
 const mockSyncCrates = jest.mocked(api.syncCrates);
 const mockToastSuccess = jest.mocked(toast.success);
 const mockToastError = jest.mocked(toast.error);
+const mockTrackEvent = jest.mocked(trackEvent);
 
 const buildLoadedCollection = () => {
   const page = collectionFactory.build(
@@ -66,6 +70,7 @@ const seedLoadedCollectionQuery = (
 describe("useCrateCollectionSync", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, "granted");
     setupDefaultCrateApiMocks(mockApi);
     mockSyncCrates.mockResolvedValue(crateMutationSuccessFactory.sync(0));
   });
@@ -155,5 +160,87 @@ describe("useCrateCollectionSync", () => {
     });
 
     expect(mockSyncCrates).not.toHaveBeenCalled();
+  });
+
+  it("tracks crateSyncBlocked and shows the API message when sync is refused", async () => {
+    mockSyncCrates.mockRejectedValue(
+      new CrateSyncError(
+        "Collection appears incomplete (3 items). Sync requires at least 10 items.",
+        400,
+        "collection_too_small",
+      ),
+    );
+
+    const queryClient = createTestQueryClient();
+    seedLoadedCollectionQuery(queryClient);
+
+    const { result } = renderHookWithTestProviders(
+      () => useCrateCollectionSync(),
+      {
+        authInitialState: testAuthenticatedAuthState,
+        queryClient,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isCollectionLoading).toBe(false);
+    });
+
+    act(() => {
+      result.current.openSyncDialog();
+      result.current.confirmSync();
+    });
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        "crateSyncBlocked",
+        expect.objectContaining({
+          category: "crate",
+          label: "collection_too_small",
+          value:
+            "Collection appears incomplete (3 items). Sync requires at least 10 items.",
+        }),
+      );
+    });
+
+    expect(mockToastError).toHaveBeenCalledWith(
+      "Sync failed: Collection appears incomplete (3 items). Sync requires at least 10 items.",
+    );
+  });
+
+  it("does not track crateSyncBlocked for non-blocked sync failures", async () => {
+    mockSyncCrates.mockRejectedValue(new Error("Server error"));
+
+    const queryClient = createTestQueryClient();
+    seedLoadedCollectionQuery(queryClient);
+
+    const { result } = renderHookWithTestProviders(
+      () => useCrateCollectionSync(),
+      {
+        authInitialState: testAuthenticatedAuthState,
+        queryClient,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isCollectionLoading).toBe(false);
+    });
+
+    act(() => {
+      result.current.confirmSync();
+    });
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith(
+        expect.stringMatching(/Sync failed: Server error/),
+      );
+    });
+
+    expect(mockTrackEvent).not.toHaveBeenCalledWith(
+      "crateSyncBlocked",
+      expect.anything(),
+    );
   });
 });

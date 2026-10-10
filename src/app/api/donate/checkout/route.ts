@@ -4,8 +4,8 @@ import {
   getDonateCheckoutUrls,
   getDonateRequestSiteUrl,
 } from "src/constants/donate.constants";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { checkIpRateLimit } from "src/lib/ip-rate-limit";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { getStripeClient } from "src/lib/stripe.server";
 import { donateCheckoutBodySchema } from "src/lib/validation/donate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -63,11 +63,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Stripe checkout error:", error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/donate/checkout",
+      error,
+      "Stripe checkout error:",
+    );
     return NextResponse.json(
       { error: "Failed to start checkout" },
-      { status: 500 },
+      { status: sanitized.status },
     );
   }
 }

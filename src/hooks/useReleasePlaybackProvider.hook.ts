@@ -44,7 +44,9 @@ import {
   DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
 } from "src/types/userPreferences.types";
 import {
+  classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
+  getNavigatorNetworkInformation,
   resolvePlaybackEmbedUnavailableWatchdogMs,
   shouldArmPlaybackEmbedStartWatchdog,
 } from "src/utils/playbackEmbedStartWatchdog";
@@ -208,6 +210,13 @@ export const useReleasePlaybackProvider = (): {
           activeTrackIndex: activeTrackIndexRef.current,
           previewVideo: previewVideoRef.current,
         }),
+      resolveSkipContext: () => ({
+        videoId: embedWatchdogVideoIdRef.current ?? embedVideoIdRef.current,
+        watchdogMs: resolvePlaybackEmbedUnavailableWatchdogMs(),
+        connectionQuality: classifyNetworkConnectionQuality(
+          getNavigatorNetworkInformation(),
+        ),
+      }),
       isSkipAllowed: () => isPlayingRef.current && !isPausedRef.current,
       onBeforeSkip: () => {
         embedStartWatchdogRef.current.disarm();

@@ -189,12 +189,14 @@ export const TrackYoutubeOverrideDialog = ({
       testId="fmdTrackYoutubeOverrideDialog"
       title={dialogTitle}
       description={
-        <div className={styles.dialogContext}>
+        <>
           {releaseLine ? (
-            <p className={styles.dialogRelease}>{releaseLine}</p>
+            <span className={styles.dialogRelease}>{releaseLine}</span>
           ) : null}
-          {trackHead ? <p className={styles.dialogTrack}>{trackHead}</p> : null}
-        </div>
+          {trackHead ? (
+            <span className={styles.dialogTrack}>{trackHead}</span>
+          ) : null}
+        </>
       }
       titleId={`${inputId}-title`}
       descriptionId={`${inputId}-description`}

@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { verifyAdminFromRequest } from "src/lib/admin-helpers";
 import { getAdminUserLookup } from "src/lib/admin-user-lookup.server";
+import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
 export async function GET(
   request: NextRequest,
@@ -44,11 +44,14 @@ export async function GET(
       },
     });
   } catch (error) {
-    rethrowNextInternalError(error);
-    console.error("Admin user lookup error:", error);
+    const sanitized = logSanitizedApiRouteFailure(
+      "/api/admin/users/[username]",
+      error,
+      "Admin user lookup error:",
+    );
     return NextResponse.json(
       { error: "Failed to look up user" },
-      { status: 500 },
+      { status: sanitized.status },
     );
   }
 }

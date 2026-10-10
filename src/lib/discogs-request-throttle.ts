@@ -3,25 +3,10 @@ import {
   computeDiscogsRateLimitWaitMs,
   getDiscogsRateLimitSnapshot,
 } from "src/lib/discogs-rate-limit";
+import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 
 const DEFAULT_MIN_INTERVAL_MS = 1000;
 const DEFAULT_QUEUE_WAIT_TIMEOUT_MS = 30_000;
-export const DISCOGS_THROTTLE_QUEUE_RETRY_AFTER_SECONDS = 5;
-
-export class DiscogsThrottleQueueError extends Error {
-  readonly retryAfterSeconds = DISCOGS_THROTTLE_QUEUE_RETRY_AFTER_SECONDS;
-
-  constructor() {
-    super("Discogs throttle queue timed out");
-    this.name = "DiscogsThrottleQueueError";
-  }
-}
-
-export function isDiscogsThrottleQueueError(
-  error: unknown,
-): error is DiscogsThrottleQueueError {
-  return error instanceof DiscogsThrottleQueueError;
-}
 
 const throttleContext = new AsyncLocalStorage<true>();
 

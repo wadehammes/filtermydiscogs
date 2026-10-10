@@ -10,6 +10,7 @@ import {
   useReleasePlaybackIframeActions,
 } from "src/context/releasePlayback.context";
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
+import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
@@ -63,6 +64,13 @@ jest.mock("src/utils/playbackSkippedTrackToast", () => ({
   resetPlaybackSkipLogToast: jest.fn(),
   PLAYBACK_SKIPPED_TRACKS_TOAST_ID: "playback-skipped-tracks",
 }));
+jest.mock("src/lib/sentry/reportPlaybackSkip", () => ({
+  reportPlaybackSkipToSentry: jest.fn(),
+  resolvePlaybackSkipSource: (errorCode: number) =>
+    errorCode === -1 ? "watchdog" : "youtube",
+  resolvePlaybackSkipSentryLevel: (source: string) =>
+    source === "watchdog" ? "warning" : "info",
+}));
 
 const actualSimilarReleaseQueue = jest.requireActual<
   typeof import("src/utils/similarReleaseQueue")
@@ -81,6 +89,7 @@ const mockRefreshYoutubeEmbedPlayerLayout = jest.mocked(
 const mockAppendPlaybackSkipAndSchedule = jest.mocked(
   appendPlaybackSkipAndSchedule,
 );
+const mockReportPlaybackSkipToSentry = jest.mocked(reportPlaybackSkipToSentry);
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
   Object.defineProperty(document, "visibilityState", {
@@ -2164,6 +2173,13 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    expect(mockReportPlaybackSkipToSentry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorCode: -1,
+        context: expect.objectContaining({ connectionQuality: "slow" }),
+      }),
+    );
 
     Object.defineProperty(navigator, "connection", {
       configurable: true,

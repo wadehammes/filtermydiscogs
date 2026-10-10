@@ -136,7 +136,6 @@ export async function POST(request: NextRequest) {
       skippedCount,
     });
   } catch (error) {
-    console.error("Error migrating legacy crate releases:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/migrate" });
   }
 }

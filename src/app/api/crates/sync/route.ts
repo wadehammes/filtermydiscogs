@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       return privateRouteJson(
         {
           error: `Collection appears incomplete (${collectionInstanceIds.length} items). Sync requires at least ${MIN_COLLECTION_SIZE} items.`,
+          blockedReason: "collection_too_small",
           collectionSize: collectionInstanceIds.length,
           minRequired: MIN_COLLECTION_SIZE,
         },
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       return privateRouteJson(
         {
           error: `Sync blocked: Would delete ${deletionPercentage.toFixed(1)}% of releases (${orphanedReleases.length} of ${totalCrateReleases}). This seems unsafe. Use force=true to override.`,
+          blockedReason: "deletion_cap_blocked",
           orphanedCount: orphanedReleases.length,
           totalCount: totalCrateReleases,
           percentage: deletionPercentage,
@@ -146,7 +148,6 @@ export async function POST(request: NextRequest) {
       removedCount: totalDeleted,
     });
   } catch (error) {
-    console.error("Error syncing crates:", error);
-    return createErrorResponse(error);
+    return createErrorResponse(error, { route: "/api/crates/sync" });
   }
 }
