@@ -1,5 +1,6 @@
 import type { SeverityLevel } from "@sentry/core";
 import {
+  buildPlaybackSkipSentryDetailLine,
   buildPlaybackSkipSentryMessage,
   buildPlaybackSkipSentryTags,
   type PlaybackSkipSentryDetails,
@@ -51,14 +52,15 @@ export const reportPlaybackSkipToSentry = ({
   const source = resolvePlaybackSkipSource(errorCode);
   const level = resolvePlaybackSkipSentryLevel(source);
 
-  const message = buildPlaybackSkipSentryMessage(
-    definedProps({
-      source,
-      reason,
-      trackLabel,
-      details: context,
-    }),
-  );
+  const eventInput = definedProps({
+    source,
+    reason,
+    trackLabel,
+    details: context,
+  });
+
+  const message = buildPlaybackSkipSentryMessage(eventInput);
+  const detailLine = buildPlaybackSkipSentryDetailLine(eventInput);
 
   captureAppMessage(message, {
     level,
@@ -72,6 +74,7 @@ export const reportPlaybackSkipToSentry = ({
       definedProps({ source, errorCode, details: context }),
     ),
     extra: {
+      detailLine,
       trackLabel,
       reason,
       skipSource: source,
