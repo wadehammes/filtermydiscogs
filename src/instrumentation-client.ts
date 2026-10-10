@@ -1,3 +1,4 @@
+import { captureRouterTransitionStart } from "@sentry/nextjs";
 import * as Sentry from "@sentry/react";
 import { buildBrowserSentryInitOptions } from "src/lib/sentry/sentryInitOptions";
 import { buildSentryReplayClientOptions } from "src/lib/sentry/sentryReplay.client";
@@ -13,3 +14,5 @@ Sentry.init({
 
 installViewTransitionDocumentGuard();
 installViewTransitionRecoverableErrorFilter();
+
+export const onRouterTransitionStart = captureRouterTransitionStart;
