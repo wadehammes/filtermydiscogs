@@ -1,4 +1,6 @@
 import {
+  buildBrowserSentryInitOptions,
+  resolveSentryBrowserTunnel,
   resolveSentryDsn,
   resolveSentryEnabled,
 } from "src/lib/sentry/sentryInitOptions";
@@ -60,5 +62,17 @@ describe("sentryInitOptions", () => {
     env.NODE_ENV = "production";
 
     expect(resolveSentryEnabled()).toBe(true);
+  });
+
+  it("builds the browser tunnel path for Sentry SaaS DSNs", () => {
+    process.env.NEXT_PUBLIC_SENTRY_DSN =
+      "https://key@o4512232195883008.ingest.us.sentry.io/4512232199618560";
+
+    expect(resolveSentryBrowserTunnel()).toBe(
+      "/monitoring?o=4512232195883008&p=4512232199618560&r=us",
+    );
+    expect(buildBrowserSentryInitOptions().tunnel).toBe(
+      "/monitoring?o=4512232195883008&p=4512232199618560&r=us",
+    );
   });
 });
