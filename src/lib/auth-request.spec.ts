@@ -8,6 +8,7 @@ import {
   getDisplayIdentityFromCookies,
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
+  isDiscogsVerificationUnavailable,
   requireAuthenticatedDiscogsUser,
 } from "./auth-request";
 import {
@@ -144,6 +145,58 @@ describe("auth-request", () => {
       expect("user" in result).toBe(false);
     });
 
+    it("returns 502 instead of unauthorized when Discogs is down", async () => {
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockRejectedValue(
+          Object.assign(new Error("Discogs API error: 502"), { status: 502 }),
+        );
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await getVerifiedUserFromRequest(request);
+
+      expect("error" in result).toBe(true);
+      if ("error" in result) {
+        expect(result.error.status).toBe(502);
+      }
+    });
+
+    it("reuses a stale cached identity for this token pair when Discogs is down", async () => {
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockRejectedValue(
+          Object.assign(new Error("Discogs API error: 503"), { status: 503 }),
+        );
+      const entry = setCachedIdentity({
+        cacheKey,
+        identity: verifiedDiscogsUserFactory.build({
+          userId: 42,
+          username: "cached-user",
+        }),
+      });
+      entry.verifiedAt = Date.now() - 400_000;
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await getVerifiedUserFromRequest(request);
+
+      expect(result).toEqual(
+        verifiedDiscogsUserFactory.asVerifiedResult({
+          userId: 42,
+          username: "cached-user",
+        }),
+      );
+    });
+
     it("reuses stale verified identity for read-only routes without calling Discogs", async () => {
       const getIdentity = jest.spyOn(discogsOAuthService, "getIdentity");
       const entry = setCachedIdentity({
@@ -236,6 +289,22 @@ describe("auth-request", () => {
       );
     });
   });
+
+  it.each([
+    [502, true],
+    [503, true],
+    [401, false],
+    [403, false],
+  ])(
+    "isDiscogsVerificationUnavailable treats status %i as unavailable: %s",
+    (status, expected) => {
+      expect(
+        isDiscogsVerificationUnavailable(
+          NextResponse.json({ error: "x" }, { status }),
+        ),
+      ).toBe(expected);
+    },
+  );
 
   describe("requireAuthenticatedDiscogsUser", () => {
     it("returns 403 when the requested username does not match verified identity", async () => {

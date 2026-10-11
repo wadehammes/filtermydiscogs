@@ -18,6 +18,13 @@ function discogsApiUserAgent(): string {
   );
 }
 
+const MAX_PLAIN_TEXT_ERROR_MESSAGE_LENGTH = 200;
+
+const isShortPlainTextErrorBody = (text: string): boolean =>
+  text.length > 0 &&
+  text.length <= MAX_PLAIN_TEXT_ERROR_MESSAGE_LENGTH &&
+  !text.startsWith("<");
+
 interface OAuthHeaders {
   Authorization: string;
 }
@@ -182,88 +189,84 @@ class DiscogsOAuthService {
     additionalData: AuthenticatedRequestData;
     options: { skipThrottle?: boolean };
   }): Promise<unknown> {
-    try {
-      const oauthHeaders = this.getOAuthHeaders(
-        requestUrl,
-        method,
-        oauthToken,
-        oauthTokenSecret,
-        additionalData,
-      );
+    const oauthHeaders = this.getOAuthHeaders(
+      requestUrl,
+      method,
+      oauthToken,
+      oauthTokenSecret,
+      additionalData,
+    );
 
-      const headers: Record<string, string> = {
-        "User-Agent": discogsApiUserAgent(),
-        ...oauthHeaders,
-      };
-      if (method !== "GET") {
-        headers["Content-Type"] = "application/json";
-      }
+    const headers: Record<string, string> = {
+      "User-Agent": discogsApiUserAgent(),
+      ...oauthHeaders,
+    };
+    if (method !== "GET") {
+      headers["Content-Type"] = "application/json";
+    }
 
-      const fetchOptions: FetchOptions = {
-        method,
-        headers,
-      };
+    const fetchOptions: FetchOptions = {
+      method,
+      headers,
+    };
 
-      if (
-        (method === "POST" || method === "PUT") &&
-        Object.keys(additionalData).length > 0
-      ) {
-        fetchOptions.body = JSON.stringify(additionalData);
-      }
+    if (
+      (method === "POST" || method === "PUT") &&
+      Object.keys(additionalData).length > 0
+    ) {
+      fetchOptions.body = JSON.stringify(additionalData);
+    }
 
-      const runFetch = () => discogsFetch(requestUrl, fetchOptions);
-      const response = options.skipThrottle
-        ? await runFetch()
-        : await runThrottledDiscogsRequest(runFetch);
-      recordDiscogsRateLimitHeaders(response.headers);
+    const runFetch = () => discogsFetch(requestUrl, fetchOptions);
+    const response = options.skipThrottle
+      ? await runFetch()
+      : await runThrottledDiscogsRequest(runFetch);
+    recordDiscogsRateLimitHeaders(response.headers);
 
-      if (!response.ok) {
-        const bodyText = await response.text();
-        const bodyPreview = bodyText.slice(0, 2000);
-        console.error("Discogs API non-OK response:", {
-          body: bodyPreview,
-          status: response.status,
-          url: requestUrl,
-        });
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        try {
-          const errorData = JSON.parse(bodyText) as {
-            error?: unknown;
-            message?: unknown;
-          };
-          if (typeof errorData.message === "string") {
-            errorMessage = errorData.message;
-          } else if (typeof errorData.error === "string") {
-            errorMessage = errorData.error;
-          } else if (bodyPreview.length > 0) {
-            errorMessage = bodyPreview;
-          }
-        } catch {
-          errorMessage = bodyPreview || response.statusText || errorMessage;
-        }
-        const error = new Error(errorMessage) as DiscogsApiError;
-        error.status = response.status;
-        const retryAfterMs = parseRetryAfterMs(response);
-        if (retryAfterMs !== undefined) {
-          error.retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
-        }
-        throw error;
-      }
-
-      if (response.status === 204 || response.status === 205) {
-        return null;
-      }
-
+    if (!response.ok) {
       const bodyText = await response.text();
-      if (!bodyText.trim()) {
-        return null;
+      const bodyPreview = bodyText.slice(0, 2000);
+      console.error("Discogs API non-OK response:", {
+        body: bodyPreview,
+        status: response.status,
+        url: requestUrl,
+      });
+      let errorMessage = `Discogs API error: ${response.status}`;
+      try {
+        const errorData = JSON.parse(bodyText) as {
+          error?: unknown;
+          message?: unknown;
+        };
+        if (typeof errorData.message === "string") {
+          errorMessage = errorData.message;
+        } else if (typeof errorData.error === "string") {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        const plainText = bodyText.trim();
+        if (isShortPlainTextErrorBody(plainText)) {
+          errorMessage = plainText;
+        }
       }
-
-      return JSON.parse(bodyText) as unknown;
-    } catch (error) {
-      console.error("OAuth request failed:", error);
+      const error = new Error(errorMessage) as DiscogsApiError;
+      error.status = response.status;
+      const retryAfterMs = parseRetryAfterMs(response);
+      if (retryAfterMs !== undefined) {
+        error.retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
+      }
       throw error;
     }
+
+    if (response.status === 204 || response.status === 205) {
+      return null;
+    }
+
+    const bodyText = await response.text();
+    if (!bodyText.trim()) {
+      return null;
+    }
+
+    return JSON.parse(bodyText) as unknown;
   }
 
   async getRequestToken(callbackUrl?: string): Promise<DiscogsTokens> {

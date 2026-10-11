@@ -21,6 +21,7 @@ class AuthStatusFactory extends BaseFactory<
       avatarUrl: nullish(["https://i.discogs.com/avatar-example.jpeg", null]),
       reconnectUsername: nullish([faker.internet.username()]),
       rateLimited: faker.datatype.boolean(),
+      discogsUnavailable: false,
       showSupportProjectToast: faker.datatype.boolean(),
     } satisfies AuthStatus;
 
@@ -35,6 +36,14 @@ class AuthStatusFactory extends BaseFactory<
     return factoryBuilt;
   }
 
+  discogsOutage(attributes: Partial<AuthStatus> = {}): AuthStatus {
+    return this.authenticated({
+      rateLimited: true,
+      discogsUnavailable: true,
+      ...attributes,
+    });
+  }
+
   authenticated(attributes: Partial<AuthStatus> = {}): AuthStatus {
     return this.build({
       isAuthenticated: true,
@@ -43,6 +52,7 @@ class AuthStatusFactory extends BaseFactory<
       avatarUrl: null,
       reconnectUsername: null,
       rateLimited: false,
+      discogsUnavailable: false,
       showSupportProjectToast: false,
       ...attributes,
     });
@@ -56,6 +66,7 @@ class AuthStatusFactory extends BaseFactory<
       avatarUrl: null,
       reconnectUsername: null,
       rateLimited: false,
+      discogsUnavailable: false,
       showSupportProjectToast: false,
       ...attributes,
     });

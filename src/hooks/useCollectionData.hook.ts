@@ -8,7 +8,10 @@ import {
   useRef,
 } from "react";
 import { trackDiscogsUpstreamRateLimited } from "src/analytics/productAnalyticsEvents";
-import { ApiFetchError } from "src/api/apiFetchError";
+import {
+  ApiFetchError,
+  isDiscogsUpstreamOutageApiError,
+} from "src/api/apiFetchError";
 import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
@@ -46,13 +49,16 @@ export const useCollectionData = ({
 }: UseCollectionDataParams) => {
   const queryClient = useQueryClient();
   const { state: authState } = useAuth();
-  const { dispatchFetchingCollection, dispatchCollection, dispatchError } =
-    useCollectionContext();
+  const {
+    dispatchFetchingCollection,
+    dispatchCollection,
+    dispatchError,
+    dispatchDiscogsUpstreamOutage,
+  } = useCollectionContext();
   const syncMutation = useSyncCratesMutation(authState.userId);
   const { mutate: syncCrates, isPending: isSyncPending } = syncMutation;
   const autoSyncRef = useRef(false);
   const collectionRateLimitTrackedRef = useRef(false);
-
   const filtersDispatch = useSetAtom(filtersDispatchAtom);
   const setCollectionFiltersActive = useSetAtom(collectionFiltersActiveAtom);
   const lastCollectionRef = useRef<DiscogsCollection | null>(null);
@@ -218,6 +224,7 @@ export const useCollectionData = ({
   useLayoutEffect(() => {
     if (!queryEnabled) {
       dispatchFetchingCollection(false);
+      dispatchDiscogsUpstreamOutage(false);
       setCollectionFiltersActive(false);
       lastCollectionRef.current = null;
       filtersDispatch({
@@ -229,6 +236,9 @@ export const useCollectionData = ({
 
     if (isError) {
       dispatchFetchingCollection(false);
+      dispatchDiscogsUpstreamOutage(
+        isDiscogsUpstreamOutageApiError(queryError),
+      );
       dispatchError(queryError?.message || ERROR_FETCHING);
       return;
     }
@@ -248,6 +258,7 @@ export const useCollectionData = ({
 
       if (isCollectionFullyLoaded) {
         dispatchFetchingCollection(false);
+        dispatchDiscogsUpstreamOutage(false);
         dispatchError(null);
         setCollectionFiltersActive(true);
       } else {
@@ -271,6 +282,7 @@ export const useCollectionData = ({
     queryError,
     dispatchCollection,
     dispatchFetchingCollection,
+    dispatchDiscogsUpstreamOutage,
     dispatchError,
     filtersDispatch,
     setCollectionFiltersActive,

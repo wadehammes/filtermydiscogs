@@ -15,6 +15,7 @@ import {
   useCollectionData,
   useCollectionLoadState,
 } from "src/hooks/useCollectionData.hook";
+import { DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE } from "src/lib/discogs-api-error";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
@@ -403,6 +404,52 @@ describe("useCollectionData", () => {
       label: "collection",
       value: "429",
     });
+  });
+
+  it("marks collection context when fetch exhausts retries on Discogs 502", async () => {
+    mockFetchDiscogsCollection.mockRejectedValue(
+      new ApiFetchError(502, DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE, 0),
+    );
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useCollectionContext().state;
+      },
+      { includeCollectionSync: false },
+    );
+
+    await waitFor(() => {
+      expect(result.current.discogsUpstreamOutage).toBe(true);
+    });
+  });
+
+  it("does not mark collection upstream outage for a 401 collection error", async () => {
+    mockFetchDiscogsCollection.mockRejectedValueOnce(
+      new ApiFetchError(401, "Not authenticated"),
+    );
+    mockCheckAuth.mockResolvedValueOnce(authStatusFactory.unauthenticated());
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return useCollectionContext().state;
+      },
+      { includeCollectionSync: false },
+    );
+
+    await waitFor(() => {
+      expect(result.current.error).toBeTruthy();
+    });
+    expect(result.current.discogsUpstreamOutage).toBe(false);
   });
 
   it("rechecks auth and retries the collection fetch after a 401", async () => {

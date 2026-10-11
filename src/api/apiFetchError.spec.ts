@@ -1,7 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
-import { parseRetryAfterMs } from "src/api/apiFetchError";
+import {
+  ApiFetchError,
+  isDiscogsUpstreamOutageApiError,
+  parseRetryAfterMs,
+} from "src/api/apiFetchError";
 
-describe("parseRetryAfterMs", () => {
+describe("apiFetchError", () => {
   it("parses Retry-After seconds", () => {
     const response = new Response(null, {
       headers: { "Retry-After": "60" },
@@ -18,5 +22,15 @@ describe("parseRetryAfterMs", () => {
     expect(
       parseRetryAfterMs({ headers: undefined } as unknown as Response),
     ).toBeUndefined();
+  });
+
+  it("isDiscogsUpstreamOutageApiError is true only for ApiFetchError with status 502", () => {
+    expect(
+      isDiscogsUpstreamOutageApiError(new ApiFetchError(502, "Unavailable")),
+    ).toBe(true);
+    expect(
+      isDiscogsUpstreamOutageApiError(new ApiFetchError(503, "Rate limited")),
+    ).toBe(false);
+    expect(isDiscogsUpstreamOutageApiError(new Error("network"))).toBe(false);
   });
 });

@@ -4,6 +4,7 @@ import {
   clearDiscogsSessionCookie,
   clearReconnectUsernameCookie,
   getVerifiedUserFromStoredTokens,
+  isDiscogsVerificationUnavailable,
   syncIdentityCookies,
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
@@ -83,7 +84,7 @@ export async function GET(request: NextRequest) {
         return response;
       }
 
-      if (verified.error.status === 503) {
+      if (isDiscogsVerificationUnavailable(verified.error)) {
         return privateRouteRedirect(new URL("/releases", request.url));
       }
 

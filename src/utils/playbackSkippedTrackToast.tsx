@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { getPlaybackQueueToastPosition } from "src/utils/playbackQueueToast";
+import { showPersistentQueueAreaErrorToast } from "src/utils/playbackQueueToast";
 import {
   formatPlaybackSkipLogTitle,
   type PlaybackSkipLogEntry,
@@ -104,17 +104,12 @@ export const createPlaybackSkipLogToast = ({
 
 const playbackSkipLogToast = createPlaybackSkipLogToast({
   showToast: ({ title, description, onClose }) => {
-    toast.error(title, {
+    showPersistentQueueAreaErrorToast({
       id: PLAYBACK_SKIPPED_TRACKS_TOAST_ID,
-      duration: Number.POSITIVE_INFINITY,
-      position: getPlaybackQueueToastPosition(),
+      title,
       description,
-      showClose: true,
       onClose,
-      classNames: {
-        toast: "fmd-playback-skip-log-toast",
-        description: "fmd-toast-description",
-      },
+      toastClassName: "fmd-playback-skip-log-toast",
     });
   },
   dismissToast: (id) => {

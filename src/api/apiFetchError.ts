@@ -34,6 +34,11 @@ export function isTransientRateLimitError(
   );
 }
 
+export const isDiscogsUpstreamOutageApiError = (
+  error: unknown,
+): error is ApiFetchError =>
+  error instanceof ApiFetchError && error.status === 502;
+
 export function getRateLimitedRetryDelayMs(
   error: unknown,
   attemptIndex: number,

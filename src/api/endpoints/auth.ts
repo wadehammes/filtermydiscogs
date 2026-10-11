@@ -7,6 +7,7 @@ export const checkAuth = async (): Promise<{
   avatarUrl: string | null;
   reconnectUsername: string | null;
   rateLimited?: boolean;
+  discogsUnavailable?: boolean;
   showSupportProjectToast?: boolean;
 }> => {
   try {

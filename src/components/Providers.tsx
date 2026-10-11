@@ -15,6 +15,7 @@ import { CollectionCachePrepGate } from "src/components/CollectionCachePrepGate/
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
 import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/DeploymentUpdateToast.component";
+import { DiscogsOutageToast } from "src/components/DiscogsOutageToast/DiscogsOutageToast.component";
 import { DonationSuccessToast } from "src/components/DonationSuccessToast/DonationSuccessToast.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
@@ -103,6 +104,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                           <AuthCheckingToast />
                           <CollectionLoadingToast />
                           <DeploymentUpdateToast />
+                          <DiscogsOutageToast />
                           <SupportProjectToast />
                         </AnalyticsShell>
                       </AuthenticatedProvidersGate>
