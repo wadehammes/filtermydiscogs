@@ -208,7 +208,7 @@ Wire-up: **`pnpm exec fallow agent install --harness cursor --without hooks --wi
 | `DB_RATE_LIMIT_MAX` / `DB_RATE_LIMIT_WINDOW` / `DB_RATE_LIMIT_MAX_WRITES` | Per-user verified-OAuth limit for authenticated data routes via [`checkRateLimit`](../../src/lib/rate-limit.ts) (default **100** reads / **60** writes per **60s**, separate counters) |
 | `STRIPE_API_KEY` | Stripe secret key for **`POST /api/donate/checkout`** (About page donations). When unset, the donate buttons return **503**. Use test keys locally; set the live secret in production. |
 | `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | Sentry project DSN (server may use **`SENTRY_DSN`**; browser needs **`NEXT_PUBLIC_SENTRY_DSN`** — often the same value). When unset, Sentry stays disabled. |
-| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Build-time source map upload to Sentry ([`withSentryConfig`](../../next.config.ts)). Optional locally; set in Vercel for symbolicated production stack traces. |
+| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Build-time source map upload to Sentry ([`withSentryConfig`](../../next.config.ts)). Optional locally; set in Vercel for symbolicated production stack traces. Use **`SENTRY_ORG=filtermydiscogs`** and **`SENTRY_PROJECT=javascript-nextjs`** (Next.js project slug in Sentry — not the repo name). |
 | `SENTRY_ENABLE_DEV` | Set to **`1`** to send Sentry events from local **`next dev`** (default off). |
 | `NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE` / `NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE` | Optional Session Replay sampling (**`0`–`1`**). Defaults: **10%** sessions + **100%** on error in production; **100%** sessions when **`SENTRY_ENABLE_DEV=1`** in development. Wired in [`sentryReplay.client.ts`](../../src/lib/sentry/sentryReplay.client.ts) (**`replayIntegration`**, **`maskAllText`**, **`blockAllMedia`**). |
 | `SENTRY_ENVIRONMENT` / `SENTRY_RELEASE` | Optional overrides; otherwise **`VERCEL_ENV`** / **`NEXT_PUBLIC_APP_BUILD_VERSION`**. |
@@ -373,7 +373,7 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 
 ## Error monitoring (Sentry)
 
-[`@sentry/nextjs`](../../package.json) captures unhandled client and server errors when a DSN is configured. Init is shared via [`sentryInitOptions.ts`](../../src/lib/sentry/sentryInitOptions.ts): disabled in Jest, **`build:e2e`** (**`NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED=1`**), and local dev unless **`SENTRY_ENABLE_DEV=1`**. **`sendDefaultPii`** is off; view-transition interruption noise is dropped in **`beforeSend`**.
+[`@sentry/nextjs`](../../package.json) captures unhandled client and server errors when a DSN is configured. Init is shared via [`sentryInitOptions.ts`](../../src/lib/sentry/sentryInitOptions.ts): disabled in Jest, **`build:e2e`** (**`NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED=1`**), and local dev unless **`SENTRY_ENABLE_DEV=1`**. **`sendDefaultPii`** is off; **`sentryBeforeSend`** ([`sentryInitOptions.ts`](../../src/lib/sentry/sentryInitOptions.ts) + [`sentryBeforeSendEvent.ts`](../../src/lib/sentry/sentryBeforeSendEvent.ts)) drops view-transition interruption noise and normalizes **playback skip** messages (stable fingerprint **`playback-skip/{source}/{reason}`**, no minified SDK **`Module.T`** stack grouping).
 
 | Surface | Location |
 |---------|----------|
@@ -383,11 +383,46 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 | Primitives | Client: [`withAppCaptureScope.client`](../../src/lib/sentry/withAppCaptureScope.client.ts), [`captureAppError.client`](../../src/lib/sentry/captureAppError.client.ts), [`reportTaggedAppError.client`](../../src/lib/sentry/reportTaggedAppError.client.ts) (**`@sentry/react`** — avoids pulling Node Sentry into browser bundles). Server: matching **`.server`** modules (**`server-only`**, **`@sentry/nextjs`**). Shared: [`shouldCaptureTaggedAppError`](../../src/lib/sentry/shouldCaptureTaggedAppError.ts), [`shouldReportHttpFailure`](../../src/lib/sentry/shouldReportHttpFailure.ts) (**only HTTP ≥ 500**; all **4xx** skipped; no status → skip for API logs) |
 | App Router API **500s** | [`createErrorResponse`](../../src/lib/api-helpers.ts) (optional **`route`** tag), [`logSanitizedApiRouteFailure`](../../src/lib/api-helpers.ts) when the handler needs a custom **`NextResponse.json`** body, [`buildDiscogsProxyErrorPayload`](../../src/lib/discogs-api-error.ts), [`logApiRouteFailure`](../../src/lib/sentry/logApiRouteFailure.ts) |
 | OAuth identity | [`auth-request.ts`](../../src/lib/auth-request.ts) → **`reportApiRouteFailure`** (`auth/oauth-identity`, upstream Discogs status on **5xx** — returned to callers as **502**, not **401** — or **500** when verification fails without an HTTP status). Non-JSON Discogs error bodies (HTML outage pages) become **`Discogs API error: {status}`** in [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) so Sentry titles stay stable |
-| Playback skip | [`createPlaybackEmbedUnavailableSkipHandler`](../../src/utils/playbackEmbedUnavailableSkip.ts) → [`reportPlaybackSkipToSentry`](../../src/lib/sentry/reportPlaybackSkip.ts) via [`buildPlaybackSkipSentryEvent`](../../src/lib/sentry/buildPlaybackSkipSentryEvent.ts) + [`resolvePlaybackSkipSentryDetails`](../../src/utils/resolvePlaybackSkipSentryDetails.ts) — **`captureMessage`** **`YouTube Embed Error - {reason} - yt:{id}`** when a video id is known (watchdog: **`Embed Load Watchdog … - {reason}`** + optional **`yt:`**); **`extra.detailLine`** is track/release/**`yt:`** only (no headline/reason) + tags; session cap **15** |
+| Playback skip | [`createPlaybackEmbedUnavailableSkipHandler`](../../src/utils/playbackEmbedUnavailableSkip.ts) → [`reportPlaybackSkipToSentry`](../../src/lib/sentry/reportPlaybackSkip.ts) via [`buildPlaybackSkipSentryEvent`](../../src/lib/sentry/buildPlaybackSkipSentryEvent.ts) + [`resolvePlaybackSkipSentryDetails`](../../src/utils/resolvePlaybackSkipSentryDetails.ts) — **`captureMessage`** **`YouTube Embed Error - {reason} - yt:{id}`** when a video id is known (watchdog: **`Embed Load Watchdog … - {reason}`** + optional **`yt:`**); fingerprint **`playback-skip` + source + reason** (not per-track); **`extra.detailLine`** is track/release/**`yt:`** only (no headline/reason) + tags; session cap **15** |
 | Client product failures | [`reportClientFailure`](../../src/lib/sentry/reportClientFailure.ts) — mosaic ([`reportMosaicFailureToSentry`](../../src/lib/sentry/reportMosaicFailure.ts)), donation, clear data, crate ownership; dashboard collection value only when the error is not an API **5xx** already reported by the Discogs proxy |
 | Server-side infra | [`reportInfrastructureFailure`](../../src/lib/sentry/reportInfrastructureFailure.ts) — DB pool (throttled **60s**), init health check, admin stats, public crate SSR |
 
 Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.config.ts)) so ad blockers and CSP rarely block ingest. Product analytics consent (**GTM** / **`trackEvent`**) is separate — Sentry is operational error reporting, not marketing analytics.
+
+### Sentry runbook
+
+**Org / project:** [filtermydiscogs](https://filtermydiscogs.sentry.io) · **`javascript-nextjs`**. Issue dashboard: [Issues (javascript-nextjs)](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs).
+
+**Vercel env (production + preview):**
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` | Ingest (browser + server) |
+| `SENTRY_ORG` | `filtermydiscogs` — source map upload |
+| `SENTRY_PROJECT` | `javascript-nextjs` — source map upload |
+| `SENTRY_AUTH_TOKEN` | CI/build upload token (never commit) |
+| `SENTRY_ENVIRONMENT` | Optional; defaults to **`VERCEL_ENV`** |
+| `SENTRY_RELEASE` | Optional; defaults to **`NEXT_PUBLIC_APP_BUILD_VERSION`** / **`VERCEL_GIT_COMMIT_SHA`** |
+
+**Close issues from GitHub:** In the PR description or squash commit message, include **`Fixes JAVASCRIPT-NEXTJS-<letter>`** (short id from the issue URL). Requires the [GitHub integration](https://docs.sentry.io/product/integrations/source-code-mgmt/github/) with “resolve in Sentry when a PR is merged” enabled.
+
+**Agent triage (Cursor):** [`.cursor/mcp.json`](../../.cursor/mcp.json) uses project-scoped Sentry MCP — **`https://mcp.sentry.dev/mcp/filtermydiscogs/javascript-nextjs`**. Use **`search_issues`**, **`get_sentry_resource`**, **`find_dropped_events`**, and **`update_issue`** (resolve / ignore with a reason). Re-run **`find_dropped_events`** when charts look flat or quota is suspected.
+
+**Weekly triage checklist:**
+
+1. **`is:unresolved`** on **`javascript-nextjs`** — assign, fix, or **`Fixes …`** via PR.
+2. **Regressions / new issues** since last release — filter **`release:`** to the latest production SHA or tag.
+3. **Ignored noise** — confirm still expected; delete stale ignores after grouping fixes ship.
+4. **Playback skip** — filter tag **`playback.skip_source`**; expect grouped titles from the message, not **`Module.T`** (legacy ignores can stay archived).
+5. **Discogs upstream** — **`auth/oauth-identity`** / HTML bodies should title **`Discogs API error: {status}`** after outage hardening; use **`Fixes JAVASCRIPT-NEXTJS-D`** on the auth/outage PR.
+
+**Suggested alert rules (configure in Sentry UI):**
+
+- New issue · **`environment:production`** · notify email/Slack.
+- Issue frequency · **`level:error`** · **`environment:production`** · threshold above baseline.
+- Regression · any issue that was resolved and becomes unresolved again.
+
+**Snapshot (2026-03-11):** No unresolved issues. **JAVASCRIPT-NEXTJS-D** (Discogs HTML on OAuth identity) — **resolved**. Eleven ignored **`Module.T`** issues are **playback embed skip** reports (watchdog / YouTube), not third-party extension noise — superseded by fingerprint + **`beforeSend`** normalization above. **JAVASCRIPT-NEXTJS-1** (`updateFrom` in Sentry’s own extension script) — ignore unless it recurs.
 
 ## Cursor (agents)
 
@@ -398,7 +433,7 @@ Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.conf
 | Glob rules | [`.cursor/rules/css-modules.mdc`](../../.cursor/rules/css-modules.mdc), [`api-routes.mdc`](../../.cursor/rules/api-routes.mdc), [`hook-specs.mdc`](../../.cursor/rules/hook-specs.mdc), [`msw-jest.mdc`](../../.cursor/rules/msw-jest.mdc) |
 | Project skills | [`.cursor/skills/README.md`](../../.cursor/skills/README.md) — routing, TS/React, tests, API, Prisma, React Query, filters, overlays, crates, playback, OAuth, stacked PRs, Fallow |
 | Fallow MCP | [`.cursor/mcp.json`](../../.cursor/mcp.json) — wire-up under [Fallow vs Knip](#fallow-vs-knip) |
-| Sentry MCP | [`.cursor/mcp.json`](../../.cursor/mcp.json) — HTTP **`https://mcp.sentry.dev/mcp`** (OAuth on first use). Prefer a project-scoped URL **`https://mcp.sentry.dev/mcp/{orgSlug}/{projectSlug}`** (same slugs as **`SENTRY_ORG`** / **`SENTRY_PROJECT`**) so tools default to this app; optional **`?experimental=1`**. [Sentry MCP docs](https://mcp.sentry.dev/). |
+| Sentry MCP | [`.cursor/mcp.json`](../../.cursor/mcp.json) — **`https://mcp.sentry.dev/mcp/filtermydiscogs/javascript-nextjs`** (OAuth on first use). Same slugs as **`SENTRY_ORG`** / **`SENTRY_PROJECT`**. [Sentry MCP docs](https://mcp.sentry.dev/). Runbook: [Sentry runbook](#sentry-runbook). |
 | Zed (human editor) | [`.zed/settings.json`](../../.zed/settings.json) — vtsls **`tsdk`**, CSS **`composes`** custom data |
 
 **`sessionStart`** adds a one-line handbook pointer (full task map stays in **`llms.md`** — not injected each session). Per-prompt and per-edit handbook/skills nudges are **off** in [`.cursor/hooks.json`](../../.cursor/hooks.json); **`AGENTS.md`** and the always-on [`.cursor/rules/filtermydiscogs-handbook.mdc`](../../.cursor/rules/filtermydiscogs-handbook.mdc) rule still apply. **`preToolUse`** / **`postToolUse`** enforce conventions (CSS, scaffold/factory placement, no comments/barrels). **`beforeShellExecution`** requires [`scripts/git-commit.sh`](../../scripts/git-commit.sh) for commits and blocks destructive git ([`block-destructive-git.sh`](../../.cursor/hooks/block-destructive-git.sh)). **Stop** hooks may follow up once on handbook/README drift ([`handbook-drift-check.sh`](../../.cursor/hooks/handbook-drift-check.sh) — **`src/`**, **`.jest/`**, **`jest.config.ts`**, **`e2e/`**, **`playwright.config.ts`**, **`next.config.ts`**; suggests **`docs/handbook/*.md`** chapters from changed paths; agents must update docs or cite verified section headings), targeted Jest checks, **`prisma/schema.prisma`** → **`pnpm db:generate`** ([`prisma-generate-nudge.sh`](../../.cursor/hooks/prisma-generate-nudge.sh)), or **`pnpm lint:all`** ([`lint-all-check.sh`](../../.cursor/hooks/lint-all-check.sh)) when meaningful source changed. CI runs [`scripts/handbook-sync-check.sh`](../../scripts/handbook-sync-check.sh) and [`scripts/spec-pair-check.sh`](../../scripts/spec-pair-check.sh) via **`pnpm handbook:check`**. The **stop** hook also nudges when playback production files changed locally without any spec file in the working tree. Hooks resolve **`pnpm`** through **mise** ([`run_pnpm`](../../.cursor/hooks/_lib.sh)). Requires `jq`, **mise** (or **`pnpm`** on `PATH`), and executable hook scripts.

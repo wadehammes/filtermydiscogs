@@ -79,8 +79,8 @@ STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 
 # Sentry (optional, error monitoring — see docs/handbook/platform.md)
 # NEXT_PUBLIC_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
-# SENTRY_ORG=your-org
-# SENTRY_PROJECT=filtermydiscogs
+# SENTRY_ORG=filtermydiscogs
+# SENTRY_PROJECT=javascript-nextjs
 # SENTRY_AUTH_TOKEN=your_build_auth_token
 ```
 

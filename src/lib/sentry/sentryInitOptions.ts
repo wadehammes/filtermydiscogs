@@ -1,4 +1,5 @@
 import { dsnFromString, type ErrorEvent, type EventHint } from "@sentry/core";
+import { normalizeSentryErrorEvent } from "src/lib/sentry/sentryBeforeSendEvent";
 import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
 
 export const SENTRY_TUNNEL_PATH = "/monitoring";
@@ -102,7 +103,7 @@ export const sentryBeforeSend = (
     return null;
   }
 
-  return event;
+  return normalizeSentryErrorEvent(event);
 };
 
 export const resolveSentryBrowserTunnel = (): string | undefined => {
