@@ -5,7 +5,7 @@
       "args": ["exec", "fallow-mcp"]
     },
     "sentry": {
-      "url": "https://mcp.sentry.dev/mcp"
+      "url": "https://mcp.sentry.dev/mcp/filtermydiscogs/javascript-nextjs"
     }
   }
 }

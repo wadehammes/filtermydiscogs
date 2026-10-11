@@ -64,12 +64,7 @@ export const reportPlaybackSkipToSentry = ({
 
   captureAppMessage(message, {
     level,
-    fingerprint: [
-      "playback-skip",
-      source,
-      context?.trackKey ?? trackLabel,
-      String(errorCode),
-    ],
+    fingerprint: ["playback-skip", source, reason],
     tags: buildPlaybackSkipSentryTags(
       definedProps({ source, errorCode, details: context }),
     ),
