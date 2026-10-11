@@ -13,6 +13,7 @@ export {
   DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
   discogsRateLimitResponseInit,
   discogsThrottleQueueResponseInit,
+  getDiscogsApiErrorStatus,
   getDiscogsRateLimitRetryAfterSeconds,
   isDiscogsThrottleQueueError,
   mapDiscogsUpstreamToProxyStatus,

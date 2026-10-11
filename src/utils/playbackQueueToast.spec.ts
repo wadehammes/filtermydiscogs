@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import {
   getPlaybackQueueToastPosition,
+  showPersistentQueueAreaErrorToast,
   showPlaybackQueueRemovedToast,
   showSimilarQueueTailToast,
 } from "src/utils/playbackQueueToast";
@@ -15,6 +16,7 @@ jest.mock("src/utils/toast", () => ({
 }));
 
 const mockToastSuccess = jest.mocked(toast.success);
+const mockToastError = jest.mocked(toast.error);
 
 describe("playbackQueueToast", () => {
   beforeEach(() => {
@@ -50,6 +52,27 @@ describe("playbackQueueToast", () => {
     expect(mockToastSuccess).toHaveBeenCalledWith(
       "Added a related track from your collection to Up next.",
       expect.objectContaining({ position: expect.any(String) }),
+    );
+  });
+
+  it("showPersistentQueueAreaErrorToast shows a persistent error toast with a stable id", () => {
+    setupMockMatchMedia({ desktop: true });
+
+    showPersistentQueueAreaErrorToast({
+      id: "test-persistent-error",
+      title: "Upstream unavailable",
+      description: "Try again later",
+    });
+
+    expect(mockToastError).toHaveBeenCalledWith(
+      "Upstream unavailable",
+      expect.objectContaining({
+        id: "test-persistent-error",
+        position: "bottom-center",
+        duration: Number.POSITIVE_INFINITY,
+        showClose: true,
+        description: "Try again later",
+      }),
     );
   });
 });

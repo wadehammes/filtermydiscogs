@@ -1,6 +1,10 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { type AuthStatus, checkAuthStatus } from "src/services/auth.service";
+import {
+  authCheckRefetchIntervalMs,
+  authCheckRefetchOnWindowFocus,
+} from "src/utils/authQueryPolling";
 
 const AUTH_STALE_MS = 5 * 60 * 1000;
 const AUTH_GC_MS = 10 * 60 * 1000;
@@ -14,9 +18,9 @@ export const authQueryOptions = () =>
     retry: false,
     refetchOnMount: "always",
     refetchOnReconnect: false,
-    refetchOnWindowFocus: (query) => query.state.data?.rateLimited === true,
-    refetchInterval: (query) =>
-      query.state.data?.rateLimited === true ? 60_000 : false,
+    refetchOnWindowFocus: (query) =>
+      authCheckRefetchOnWindowFocus(query.state.data),
+    refetchInterval: (query) => authCheckRefetchIntervalMs(query.state.data),
   });
 
 export interface UseAuthQueryParams {

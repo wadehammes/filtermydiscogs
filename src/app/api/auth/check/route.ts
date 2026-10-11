@@ -5,6 +5,8 @@ import {
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
   getVerifiedUserFromStoredTokens,
+  isDiscogsOutageAuthCheckStatus,
+  isDiscogsVerificationUnavailable,
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteJson } from "src/lib/private-route-response";
@@ -20,6 +22,7 @@ type AuthCheckPayload = {
   userId: string | null;
   avatarUrl: string | null;
   rateLimited: boolean;
+  discogsUnavailable: boolean;
   reconnectUsername: string | null;
   showSupportProjectToast: boolean;
 };
@@ -29,6 +32,7 @@ const AUTH_CHECK_DEFAULTS = {
   userId: null,
   avatarUrl: null,
   rateLimited: false,
+  discogsUnavailable: false,
   reconnectUsername: null,
   showSupportProjectToast: false,
 } satisfies Omit<AuthCheckPayload, "isAuthenticated">;
@@ -67,7 +71,7 @@ export async function GET(request: NextRequest) {
     const verified = await getVerifiedUserFromRequest(request);
 
     if ("error" in verified) {
-      if (verified.error.status === 503) {
+      if (isDiscogsVerificationUnavailable(verified.error)) {
         const displayIdentity = getDisplayIdentityFromCookies(request);
 
         return authCheckResponse(
@@ -76,6 +80,9 @@ export async function GET(request: NextRequest) {
             username: displayIdentity?.username ?? null,
             userId: displayIdentity ? String(displayIdentity.userId) : null,
             rateLimited: true,
+            discogsUnavailable: isDiscogsOutageAuthCheckStatus(
+              verified.error.status,
+            ),
           },
           {
             headers: { "Retry-After": "60" },

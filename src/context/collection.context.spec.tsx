@@ -16,6 +16,7 @@ describe("CollectionReducer", () => {
     collection: null,
     fetchingCollection: true,
     error: null,
+    discogsUpstreamOutage: false,
   };
 
   it("sets collection", () => {
@@ -64,6 +65,16 @@ describe("CollectionReducer", () => {
     expect(result.error).toBe("Error message");
   });
 
+  it("sets discogs upstream outage flag", () => {
+    const action = {
+      type: CollectionActionTypes.SetDiscogsUpstreamOutage,
+      payload: true,
+    } as const;
+    const result = CollectionReducer(initialState, action);
+
+    expect(result.discogsUpstreamOutage).toBe(true);
+  });
+
   it("resets state", () => {
     const modifiedState = {
       ...initialState,
@@ -107,6 +118,7 @@ describe("CollectionContextProvider", () => {
     expect(result.current.state.collection).toBeNull();
     expect(result.current.state.fetchingCollection).toBe(true);
     expect(result.current.state.error).toBeNull();
+    expect(result.current.state.discogsUpstreamOutage).toBe(false);
   });
 
   it("dispatches collection", () => {

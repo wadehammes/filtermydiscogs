@@ -8,6 +8,7 @@ export interface AuthStatus {
   avatarUrl: string | null;
   reconnectUsername: string | null;
   rateLimited: boolean;
+  discogsUnavailable: boolean;
   showSupportProjectToast: boolean;
 }
 
@@ -18,6 +19,7 @@ export const normalizeAuthStatus = (data: {
   avatarUrl?: string | null;
   reconnectUsername?: string | null;
   rateLimited?: boolean;
+  discogsUnavailable?: boolean;
   showSupportProjectToast?: boolean;
 }): AuthStatus => ({
   isAuthenticated: data.isAuthenticated,
@@ -26,6 +28,7 @@ export const normalizeAuthStatus = (data: {
   avatarUrl: data.avatarUrl || null,
   reconnectUsername: data.reconnectUsername || null,
   rateLimited: data.rateLimited === true,
+  discogsUnavailable: data.discogsUnavailable === true,
   showSupportProjectToast: data.showSupportProjectToast === true,
 });
 
@@ -92,6 +95,7 @@ const unauthenticatedAuthStatus = (): AuthStatus => ({
   avatarUrl: null,
   reconnectUsername: null,
   rateLimited: false,
+  discogsUnavailable: false,
   showSupportProjectToast: false,
 });
 

@@ -17,6 +17,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
 - **Settings**: Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, and clear stored data
 - **Responsive UI**: Desktop sidebar crates, mobile drawers, and touch-friendly filters
+- **Discogs outage notice**: When Discogs is down you stay signed in, see a notice with a link to [Discogs status](https://status.discogs.com), and your collection loads once Discogs is back
 
 ## Setup
 
@@ -218,7 +219,7 @@ Agent wiring for this repo (also documented in [`docs/handbook/platform.md` → 
 
 - **Hooks** — [`.cursor/hooks.json`](./.cursor/hooks.json): brief session handbook pointer, convention guards on edits, commit via [`scripts/git-commit.sh`](./scripts/git-commit.sh), optional session-end drift/lint/tests (see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
 - **Rules / skills** — [`.cursor/rules/`](./.cursor/rules/), [`.cursor/skills/README.md`](./.cursor/skills/README.md) (task checklists; handbook stays canonical).
-- **Fallow MCP** — [`.cursor/mcp.json`](./.cursor/mcp.json); optional `pnpm fallow:health` (see **Development** above).
+- **MCP (Cursor)** — [`.cursor/mcp.json`](./.cursor/mcp.json): **Fallow** (local `pnpm exec fallow-mcp`; optional `pnpm fallow:health`) and **Sentry** ([`https://mcp.sentry.dev/mcp`](https://mcp.sentry.dev/) — OAuth; project-scoped URL recommended — see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
 Use **mise** so hooks resolve the same **pnpm** as your shell (`mise bootstrap`). Day-to-day editing is **Zed** (see **Setup**); Cursor is for agents only.
 
 ## Handbook

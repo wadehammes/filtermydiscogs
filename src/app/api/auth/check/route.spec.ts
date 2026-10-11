@@ -7,14 +7,25 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS,
+  DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
+} from "src/lib/discogs-api-error";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
-jest.mock("src/lib/auth-request", () => ({
-  getVerifiedUserFromRequest: jest.fn(),
-  getDisplayIdentityFromCookies: jest.fn(),
-  getStoredReconnectUsername: jest.fn(),
-  getVerifiedUserFromStoredTokens: jest.fn(),
-}));
+jest.mock("src/lib/auth-request", () => {
+  const actual = jest.requireActual<typeof import("src/lib/auth-request")>(
+    "src/lib/auth-request",
+  );
+
+  return {
+    ...actual,
+    getVerifiedUserFromRequest: jest.fn(),
+    getDisplayIdentityFromCookies: jest.fn(),
+    getStoredReconnectUsername: jest.fn(),
+    getVerifiedUserFromStoredTokens: jest.fn(),
+  };
+});
 
 jest.mock("src/lib/user.server", () => ({
   consumeSupportProjectToastPending: jest.fn(),
@@ -57,8 +68,15 @@ const createRequest = () => new NextRequest("http://localhost/api/auth/check");
 
 const createRateLimitError = () =>
   NextResponse.json(
-    { error: "Discogs rate limit exceeded. Please try again shortly." },
-    { status: 503, headers: { "Retry-After": "60" } },
+    {
+      error: "Discogs rate limit exceeded. Please try again shortly.",
+    },
+    {
+      status: 503,
+      headers: {
+        "Retry-After": String(DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS),
+      },
+    },
   );
 
 beforeAll(async () => {
@@ -128,6 +146,7 @@ describe("GET /api/auth/check", () => {
       userId: "42",
       avatarUrl: "https://i.discogs.com/avatar.jpeg",
       rateLimited: false,
+      discogsUnavailable: false,
       reconnectUsername: null,
       showSupportProjectToast: true,
     });
@@ -154,6 +173,37 @@ describe("GET /api/auth/check", () => {
       userId: "42",
       avatarUrl: null,
       rateLimited: true,
+      discogsUnavailable: false,
+      reconnectUsername: null,
+      showSupportProjectToast: false,
+    });
+  });
+
+  it("keeps the cookie-based identity signed in when Discogs is down", async () => {
+    mockGetVerifiedUserFromRequest.mockResolvedValue({
+      error: NextResponse.json(
+        { error: DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE },
+        { status: 502 },
+      ),
+    });
+    mockGetDisplayIdentityFromCookies.mockReturnValue(
+      verifiedDiscogsUserFactory.build({
+        userId: 42,
+        username: "crate-digger",
+      }),
+    );
+
+    const response = await GET(createRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockGetVerifiedUserFromStoredTokens).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({
+      isAuthenticated: true,
+      username: "crate-digger",
+      userId: "42",
+      avatarUrl: null,
+      rateLimited: true,
+      discogsUnavailable: true,
       reconnectUsername: null,
       showSupportProjectToast: false,
     });
@@ -177,6 +227,7 @@ describe("GET /api/auth/check", () => {
       userId: null,
       avatarUrl: null,
       rateLimited: false,
+      discogsUnavailable: false,
       reconnectUsername: null,
       showSupportProjectToast: false,
     });
@@ -203,6 +254,7 @@ describe("GET /api/auth/check", () => {
       userId: null,
       avatarUrl: null,
       rateLimited: false,
+      discogsUnavailable: false,
       reconnectUsername: "crate-digger",
       showSupportProjectToast: false,
     });
@@ -223,6 +275,7 @@ describe("GET /api/auth/check", () => {
       userId: null,
       avatarUrl: null,
       rateLimited: false,
+      discogsUnavailable: false,
       reconnectUsername: "saved-account",
       showSupportProjectToast: false,
     });

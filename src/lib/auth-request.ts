@@ -1,5 +1,9 @@
 import type { NextRequest, NextResponse } from "next/server";
-import { DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS } from "src/lib/discogs-api-error";
+import {
+  DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS,
+  DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
+  getDiscogsApiErrorStatus,
+} from "src/lib/discogs-api-error";
 import {
   type CachedDiscogsIdentity,
   clearCachedIdentity,
@@ -75,6 +79,20 @@ function getDiscogsRateLimitResponse(): NextResponse {
     },
   );
 }
+
+function getDiscogsUnavailableResponse(): NextResponse {
+  return privateRouteJson(
+    { error: DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE },
+    { status: 502 },
+  );
+}
+
+export const isDiscogsVerificationUnavailable = (error: {
+  status: number;
+}): boolean => error.status === 502 || error.status === 503;
+
+export const isDiscogsOutageAuthCheckStatus = (status: number): boolean =>
+  status === 502;
 
 export function getDisplayIdentityFromCookies(
   request: NextRequest,
@@ -274,9 +292,11 @@ async function getVerifiedUserFromOAuthCookies(
     );
     return { user };
   } catch (error) {
-    const status = (error as Error & { status?: number }).status;
+    const status = getDiscogsApiErrorStatus(error);
+    const isRateLimited = status === 429;
+    const isUpstreamUnavailable = status !== undefined && status >= 500;
 
-    if (status === 429) {
+    if (isRateLimited || isUpstreamUnavailable) {
       const stale = getCachedIdentity({ cacheKey, allowStale: true });
       if (stale) {
         return {
@@ -286,7 +306,9 @@ async function getVerifiedUserFromOAuthCookies(
           },
         };
       }
+    }
 
+    if (isRateLimited) {
       return { error: getDiscogsRateLimitResponse() };
     }
 
@@ -294,6 +316,11 @@ async function getVerifiedUserFromOAuthCookies(
     reportApiRouteFailure("auth/oauth-identity", error, {
       status: status ?? 500,
     });
+
+    if (isUpstreamUnavailable) {
+      return { error: getDiscogsUnavailableResponse() };
+    }
+
     return {
       error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
     };

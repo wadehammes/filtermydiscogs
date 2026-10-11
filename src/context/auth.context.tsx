@@ -49,6 +49,7 @@ export interface AuthState {
   isLoading: boolean;
   isLoggingOut: boolean;
   rateLimited: boolean;
+  discogsUnavailable: boolean;
   error: string | null;
 }
 
@@ -116,6 +117,7 @@ const unauthenticatedSession: Pick<
   | "avatarUrl"
   | "reconnectUsername"
   | "rateLimited"
+  | "discogsUnavailable"
   | "isCheckingAuth"
 > = {
   isAuthenticated: false,
@@ -124,6 +126,7 @@ const unauthenticatedSession: Pick<
   avatarUrl: null,
   reconnectUsername: null,
   rateLimited: false,
+  discogsUnavailable: false,
   isCheckingAuth: false,
 };
 
@@ -192,6 +195,7 @@ export const AuthProvider = ({
         avatarUrl: initialStateOverride.avatarUrl,
         reconnectUsername: initialStateOverride.reconnectUsername,
         rateLimited: initialStateOverride.rateLimited,
+        discogsUnavailable: initialStateOverride.discogsUnavailable,
         isCheckingAuth: initialStateOverride.isCheckingAuth,
       };
     }
@@ -209,6 +213,7 @@ export const AuthProvider = ({
         ? null
         : (authData?.reconnectUsername ?? null),
       rateLimited: authData?.rateLimited ?? false,
+      discogsUnavailable: authData?.discogsUnavailable ?? false,
       isCheckingAuth:
         isCompletingOAuth ||
         !hasCompletedAuthCheck ||
@@ -336,6 +341,7 @@ export const AuthProvider = ({
         userId: null,
         avatarUrl: null,
         rateLimited: false,
+        discogsUnavailable: false,
         reconnectUsername,
         showSupportProjectToast: false,
       });

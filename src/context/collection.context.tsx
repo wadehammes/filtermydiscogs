@@ -15,6 +15,7 @@ export enum CollectionActionTypes {
   SetCollection = "SET_COLLECTION",
   SetFetchingCollection = "SET_FETCHING_COLLECTION",
   SetError = "SET_ERROR",
+  SetDiscogsUpstreamOutage = "SET_DISCOGS_UPSTREAM_OUTAGE",
   ResetState = "RESET_STATE",
 }
 
@@ -26,6 +27,7 @@ export interface CollectionStateStore {
   collection: DiscogsCollection | null;
   fetchingCollection: boolean;
   error: string | null;
+  discogsUpstreamOutage: boolean;
 }
 
 export type CollectionActions =
@@ -40,6 +42,10 @@ export type CollectionActions =
   | {
       type: CollectionActionTypes.SetError;
       payload: string | null;
+    }
+  | {
+      type: CollectionActionTypes.SetDiscogsUpstreamOutage;
+      payload: boolean;
     }
   | {
       type: CollectionActionTypes.ResetState;
@@ -70,6 +76,15 @@ export const CollectionReducer = (
         ...state,
         error: action.payload,
       };
+    case CollectionActionTypes.SetDiscogsUpstreamOutage:
+      if (state.discogsUpstreamOutage === action.payload) {
+        return state;
+      }
+
+      return {
+        ...state,
+        discogsUpstreamOutage: action.payload,
+      };
     case CollectionActionTypes.ResetState:
       return {
         ...state,
@@ -84,6 +99,7 @@ const initialState: CollectionStateStore = {
   collection: null,
   fetchingCollection: true,
   error: null,
+  discogsUpstreamOutage: false,
 };
 
 export interface CollectionProviderProps {
@@ -91,6 +107,7 @@ export interface CollectionProviderProps {
   dispatchCollection: (collection: DiscogsCollection) => void;
   dispatchFetchingCollection: (fetching: boolean) => void;
   dispatchError: (error: string | null) => void;
+  dispatchDiscogsUpstreamOutage: (outage: boolean) => void;
   dispatchResetState: () => void;
 }
 
@@ -139,6 +156,13 @@ export const CollectionContextProvider = ({
     });
   }, []);
 
+  const dispatchDiscogsUpstreamOutage = useCallback((outage: boolean) => {
+    dispatch({
+      type: CollectionActionTypes.SetDiscogsUpstreamOutage,
+      payload: outage,
+    });
+  }, []);
+
   const dispatchResetState = useCallback(() => {
     resetCollectionState({ router });
     dispatch({ type: CollectionActionTypes.ResetState, payload: initialState });
@@ -152,6 +176,7 @@ export const CollectionContextProvider = ({
         dispatchFetchingCollection,
         dispatchCollection,
         dispatchError,
+        dispatchDiscogsUpstreamOutage,
       }}
     >
       {children}

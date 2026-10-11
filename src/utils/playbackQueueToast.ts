@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
+import { ACTION_TOAST_CLASS_NAMES } from "src/utils/actionToast";
 import { type ToastPosition, toast } from "src/utils/toast";
 
 export const getPlaybackQueueToastPosition = (): ToastPosition => {
@@ -14,6 +16,35 @@ export const getPlaybackQueueToastPosition = (): ToastPosition => {
 const queueToastOptions = () => ({
   position: getPlaybackQueueToastPosition(),
 });
+
+export const showPersistentQueueAreaErrorToast = ({
+  id,
+  title,
+  description,
+  toastClassName,
+  onClose,
+  showClose = true,
+}: {
+  id: string;
+  title: string;
+  description: ReactNode;
+  toastClassName?: string;
+  onClose?: () => void;
+  showClose?: boolean;
+}) => {
+  toast.error(title, {
+    id,
+    duration: Number.POSITIVE_INFINITY,
+    position: getPlaybackQueueToastPosition(),
+    description,
+    showClose,
+    ...(onClose !== undefined ? { onClose } : {}),
+    classNames: {
+      toast: toastClassName ?? ACTION_TOAST_CLASS_NAMES.toast,
+      description: ACTION_TOAST_CLASS_NAMES.description,
+    },
+  });
+};
 
 const playbackQueueTrackCountMessage = (
   action: "added" | "removed",

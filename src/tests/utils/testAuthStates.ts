@@ -10,6 +10,7 @@ export const testUnauthenticatedAuthState: AuthState = {
   isLoading: false,
   isLoggingOut: false,
   rateLimited: false,
+  discogsUnavailable: false,
   error: null,
 };
 
@@ -23,5 +24,6 @@ export const testAuthenticatedAuthState: AuthState = {
   isLoading: false,
   isLoggingOut: false,
   rateLimited: false,
+  discogsUnavailable: false,
   error: null,
 };
