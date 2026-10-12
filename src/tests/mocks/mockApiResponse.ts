@@ -5,6 +5,10 @@ interface MockableEndpoint<TResolved, TRejected> {
   mockRejectedValueOnce(value: TRejected): unknown;
 }
 
+interface PendingMockableEndpoint<TResolved> {
+  mockImplementation(fn: () => Promise<TResolved>): unknown;
+}
+
 export const mockApiResponse = <TResolved, TRejected = unknown>(
   responseResult: boolean | boolean[],
   mockApiEndpoint: MockableEndpoint<TResolved, TRejected>,
@@ -29,4 +33,21 @@ export const mockApiResponse = <TResolved, TRejected = unknown>(
       mockApiEndpoint.mockRejectedValueOnce(rejectedResponse);
     }
   });
+};
+
+export const mockPendingApiResponse = <TResolved>(
+  mockApiEndpoint: PendingMockableEndpoint<TResolved>,
+): ((value: TResolved) => void) => {
+  let resolve!: (value: TResolved) => void;
+
+  mockApiEndpoint.mockImplementation(
+    () =>
+      new Promise<TResolved>((res) => {
+        resolve = res;
+      }),
+  );
+
+  return (value: TResolved) => {
+    resolve(value);
+  };
 };

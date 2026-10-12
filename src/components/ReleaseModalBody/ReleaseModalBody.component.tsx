@@ -28,7 +28,7 @@ export const ReleaseModalBody = ({
   onReleaseClick,
 }: ReleaseModalBodyProps) => {
   const playback = useReleaseModalPlayback({ release, isOpen });
-  const { isLoading, isError, refetch } = playback;
+  const { isLoading, isError, releaseDetailError, refetch } = playback;
 
   return (
     <ReleaseNotesEditorProvider
@@ -37,7 +37,10 @@ export const ReleaseModalBody = ({
     >
       <div className={styles.body} data-testid="fmdReleaseModalBody">
         {isError ? (
-          <ReleaseModalPlaybackLoadError onRetry={() => refetch()} />
+          <ReleaseModalPlaybackLoadError
+            error={releaseDetailError}
+            onRetry={() => refetch()}
+          />
         ) : null}
 
         <div className={styles.modalContent}>

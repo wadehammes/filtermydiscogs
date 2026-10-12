@@ -17,7 +17,7 @@ export const PublicReleaseModalBody = ({
   isOpen,
 }: PublicReleaseModalBodyProps) => {
   const playback = useReleaseModalPlayback({ release, isOpen });
-  const { isLoading, isError, refetch } = playback;
+  const { isLoading, isError, releaseDetailError, refetch } = playback;
 
   return (
     <div className={styles.body} data-testid="fmdPublicReleaseModalBody">
@@ -29,7 +29,10 @@ export const PublicReleaseModalBody = ({
       ) : null}
 
       {isError ? (
-        <ReleaseModalPlaybackLoadError onRetry={() => refetch()} />
+        <ReleaseModalPlaybackLoadError
+          error={releaseDetailError}
+          onRetry={() => refetch()}
+        />
       ) : null}
 
       <ReleaseModalPlaybackTracksFromState
