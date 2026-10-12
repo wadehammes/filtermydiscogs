@@ -1738,6 +1738,51 @@ describe("ReleasePlaybackProvider", () => {
     jest.useRealTimers();
   });
 
+  it("when restore same-video sync runs while paused, resuming still arms the embed watchdog", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    writePersistedReleasePlayback({
+      instanceId: String(collectionRelease.instance_id),
+      trackPosition: "A1",
+    });
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.isPaused).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      result.current.notifyPlaybackVideoPresentationReady();
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
   it("arms the embed watchdog after resume when embed load started while paused", async () => {
     jest.useFakeTimers();
 

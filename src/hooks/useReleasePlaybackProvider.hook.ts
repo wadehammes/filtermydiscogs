@@ -804,6 +804,11 @@ export const useReleasePlaybackProvider = (): {
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
     notifyImperativeEmbedLoadStarted();
     clearPlaybackVideoUiLoading();
+
+    if (awaitingResumeGestureRef.current || isPausedRef.current) {
+      return;
+    }
+
     confirmEmbedPlayback();
   }, [
     clearPlaybackVideoUiLoading,
@@ -980,6 +985,13 @@ export const useReleasePlaybackProvider = (): {
             activeVideoIdRef.current ?? embedVideoIdRef.current,
           );
         }
+      }
+
+      if (
+        embedWatchdogVideoIdRef.current === null &&
+        embedVideoIdRef.current?.trim()
+      ) {
+        embedWatchdogVideoIdRef.current = embedVideoIdRef.current;
       }
 
       if (!embedPlaybackConfirmedRef.current) {

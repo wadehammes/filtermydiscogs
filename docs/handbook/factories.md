@@ -144,6 +144,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain type�
 | [`DiscogsTrack.factory.ts`](../../src/tests/factories/DiscogsTrack.factory.ts) | `discogsTrackFactory` | `DiscogsTrack` (release tracklist rows) |
 | [`DiscogsVideo.factory.ts`](../../src/tests/factories/DiscogsVideo.factory.ts) | `discogsVideoFactory` | `DiscogsVideo` (release video links) |
 | [`TrackYoutubeOverrideTarget.factory.ts`](../../src/tests/factories/TrackYoutubeOverrideTarget.factory.ts) | `trackYoutubeOverrideTargetFactory` | `TrackYoutubeOverrideTarget` for [`TrackYoutubeOverrideDialog`](../../src/components/TrackYoutubeOverrideDialog/TrackYoutubeOverrideDialog.component.tsx) specs |
+| [`PlaybackSkipLogEntry.factory.ts`](../../src/tests/factories/PlaybackSkipLogEntry.factory.ts) | `playbackSkipLogEntryFactory` | **`PlaybackSkipLogEntry`** skip toast / report dialog / Sentry skip specs |
 
 ### Preset methods
 
@@ -189,6 +190,7 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `discogsTrackFactory` | `untitled()` | Tracklist rows; **`Untitled`** + **`type_: "track"`** for generic-title playback matching |
 | `discogsVideoFactory` | `youtube()`, `nonYoutube()` | Embeddable YouTube links vs Discogs (non-YouTube) URIs |
 | `trackYoutubeOverrideTargetFactory` | `unplayable()`, `fromReleaseTrack({ release, trackPosition, … })` | Dialog spec (**`unplayable()`**); modal playback hook expected override targets (**`fromReleaseTrack`**) |
+| `playbackSkipLogEntryFactory` | `embedDisabledReport()`, `privateOrRemovedOnYoutube()`, `embedUnavailableFallback()`, `watchdogFallbackReport()` | Skip toast, **`PlaybackSkipReportDialog`**, embed-unavailable handler, and Sentry skip capture specs — override **`trackLabel`** / **`reason`** in specs that assert copy |
 | `discogsCollectionFieldFactory` | `notesField()` | Notes field for release-notes editor tests |
 | `discogsCollectionFieldsResponseFactory` | `forReleaseNotes()` | Collection fields API for notes editor |
 | `collectionFactory` | `empty()`, `forReleasesPage()` | Empty collection pages; MSW **`/api/collection`** pagination aligned with client helpers |

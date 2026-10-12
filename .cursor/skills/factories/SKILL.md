@@ -23,6 +23,7 @@ Full guide: [factories.md](../../docs/handbook/factories.md). Non-negotiable wit
 | Release / collection row | `releaseFactory`, `collectionFactory` |
 | Discogs API JSON | `discogsReleaseJsonFactory`, `discogsTrackFactory` |
 | Track YouTube override dialog | `trackYoutubeOverrideTargetFactory` (`unplayable()`) |
+| Playback skip toast / report | `playbackSkipLogEntryFactory` (`embedDisabledReport()`, …) |
 | Auth / prefs | `authStatusFactory`, `userPreferencesFactory`, `verifiedDiscogsUserFactory` |
 | Crates | crate factories under [`src/tests/factories/`](../../src/tests/factories/) |
 

@@ -10,6 +10,7 @@ import {
   type CreateCrateFormValues,
   createCrateFormSchema,
 } from "src/lib/validation/crate.schemas";
+import modalFormFieldStyles from "src/styles/modules/modal-form-field.module.css";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./CreateCrateDialog.module.css";
@@ -114,7 +115,7 @@ export const CreateCrateDialog = ({
             id={nameInputId}
             type="text"
             className={validatedFieldClass(
-              styles.input,
+              modalFormFieldStyles.input,
               modalInputStyles.field,
             )}
             maxLength={CRATE_NAME_MAX_LENGTH}

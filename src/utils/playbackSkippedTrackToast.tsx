@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { reportUserPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
+import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import { definedProps } from "src/utils/definedProps";
 import { showPersistentQueueAreaErrorToast } from "src/utils/playbackQueueToast";
@@ -11,6 +12,10 @@ import {
   type PlaybackSkipLogEntry,
   playbackSkipLogEntryKey,
 } from "src/utils/playbackSkippedTrackLog";
+import {
+  openPlaybackSkipReportDialog,
+  registerPlaybackSkipUserReportComplete,
+} from "src/utils/playbackSkipUserReportDialogBridge";
 import { toast } from "src/utils/toast";
 
 export const PLAYBACK_SKIPPED_TRACKS_TOAST_ID = "playback-skipped-tracks";
@@ -65,10 +70,7 @@ const formatSkipLogDescription = (
   onUserReport: (entry: PlaybackSkipLogEntry) => void,
 ): ReactNode => {
   if (entries.length === 1) {
-    const entry = entries[0];
-    if (!entry) {
-      return null;
-    }
+    const entry = entries[0]!;
 
     return (
       <div className="fmd-playback-skip-log">
@@ -107,7 +109,10 @@ type ShowToastParams = {
   onClose: () => void;
 };
 
-const defaultSubmitSkipUserReport = (entry: PlaybackSkipLogEntry) => {
+const defaultSubmitSkipUserReport = (
+  entry: PlaybackSkipLogEntry,
+  userReport: PlaybackSkipUserReportFormValues,
+) => {
   reportUserPlaybackSkipToSentry(
     definedProps({
       errorCode: entry.errorCode,
@@ -115,17 +120,27 @@ const defaultSubmitSkipUserReport = (entry: PlaybackSkipLogEntry) => {
       reason: entry.reason,
       context: entry.context,
     }),
+    userReport,
   );
+};
+
+const defaultRequestSkipUserReport = (entry: PlaybackSkipLogEntry) => {
+  openPlaybackSkipReportDialog(entry);
 };
 
 export const createPlaybackSkipLogToast = ({
   showToast,
   dismissToast,
   submitSkipUserReport = defaultSubmitSkipUserReport,
+  requestSkipUserReport = defaultRequestSkipUserReport,
 }: {
   showToast: (params: ShowToastParams) => void;
   dismissToast: (id: string) => void;
-  submitSkipUserReport?: (entry: PlaybackSkipLogEntry) => void;
+  submitSkipUserReport?: (
+    entry: PlaybackSkipLogEntry,
+    userReport: PlaybackSkipUserReportFormValues,
+  ) => void;
+  requestSkipUserReport?: (entry: PlaybackSkipLogEntry) => void;
 }) => {
   let entries: PlaybackSkipLogEntry[] = [];
   let lastOnClose: () => void = () => undefined;
@@ -134,13 +149,16 @@ export const createPlaybackSkipLogToast = ({
     lastOnClose = onClose;
     showToast({
       title: formatPlaybackSkipLogTitle(entries.length),
-      description: formatSkipLogDescription(entries, handleUserReport),
+      description: formatSkipLogDescription(entries, requestSkipUserReport),
       onClose,
     });
   };
 
-  const handleUserReport = (reportedEntry: PlaybackSkipLogEntry) => {
-    submitSkipUserReport(reportedEntry);
+  const completeUserReport = (
+    reportedEntry: PlaybackSkipLogEntry,
+    userReport: PlaybackSkipUserReportFormValues,
+  ) => {
+    submitSkipUserReport(reportedEntry, userReport);
     const reportedKey = playbackSkipLogEntryKey(reportedEntry);
     entries = entries.map((entry) =>
       playbackSkipLogEntryKey(entry) === reportedKey
@@ -151,6 +169,7 @@ export const createPlaybackSkipLogToast = ({
   };
 
   return {
+    completeUserReport,
     appendAndScheduleSkip: (
       entry: PlaybackSkipLogEntry,
       onSkip: () => void,
@@ -184,6 +203,10 @@ const playbackSkipLogToast = createPlaybackSkipLogToast({
   dismissToast: (id) => {
     toast.dismiss(id);
   },
+});
+
+registerPlaybackSkipUserReportComplete((entry, userReport) => {
+  playbackSkipLogToast.completeUserReport(entry, userReport);
 });
 
 export const appendPlaybackSkipAndSchedule = (

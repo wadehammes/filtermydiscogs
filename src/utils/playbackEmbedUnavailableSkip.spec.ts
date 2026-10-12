@@ -1,4 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
+import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
 import {
   createPlaybackEmbedUnavailableSkipHandler,
   PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
@@ -22,11 +23,13 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
     handler.handleFailure(PLAYBACK_EMBED_UNAVAILABLE_FALLBACK, playNext);
 
     expect(appendSkip).toHaveBeenCalledTimes(1);
-    expect(appendSkip.mock.calls[0]?.[0]).toEqual({
-      trackLabel: "A1 Track - Artist, Album",
-      reason: "Private or removed on YouTube",
-      errorCode: 100,
-    });
+    expect(appendSkip.mock.calls[0]?.[0]).toEqual(
+      playbackSkipLogEntryFactory.privateOrRemovedOnYoutube({
+        trackLabel: "A1 Track - Artist, Album",
+        context: undefined,
+        userReportSent: undefined,
+      }),
+    );
 
     const onSkip = appendSkip.mock.calls[0]?.[1] as (() => void) | undefined;
     onSkip?.();
@@ -83,27 +86,18 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
 
     handler.handleFailure(101, playNext);
 
-    expect(reportSkip).toHaveBeenCalledWith({
-      errorCode: 101,
+    const expectedSkip = playbackSkipLogEntryFactory.embedDisabledReport({
       trackLabel: "A1 Track",
-      reason: "Cannot play in embedded player",
       context: {
         youtubeVideoId: "yt123",
         watchdogMs: 5000,
         connectionQuality: "fast",
       },
     });
+
+    expect(reportSkip).toHaveBeenCalledWith(expectedSkip);
     expect(appendSkip).toHaveBeenCalledTimes(1);
-    expect(appendSkip.mock.calls[0]?.[0]).toEqual({
-      trackLabel: "A1 Track",
-      reason: "Cannot play in embedded player",
-      errorCode: 101,
-      context: {
-        youtubeVideoId: "yt123",
-        watchdogMs: 5000,
-        connectionQuality: "fast",
-      },
-    });
+    expect(appendSkip.mock.calls[0]?.[0]).toEqual(expectedSkip);
   });
 
   it("uses fallback copy when onError never arrives", () => {
@@ -121,10 +115,12 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
     handler.handleFailure(PLAYBACK_EMBED_UNAVAILABLE_FALLBACK, playNext);
 
     expect(appendSkip).toHaveBeenCalledTimes(1);
-    expect(appendSkip.mock.calls[0]?.[0]).toEqual({
-      trackLabel: "A1 Track - Artist, Album",
-      reason: "Private, removed, blocked, or still loading",
-      errorCode: PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
-    });
+    expect(appendSkip.mock.calls[0]?.[0]).toEqual(
+      playbackSkipLogEntryFactory.embedUnavailableFallback({
+        trackLabel: "A1 Track - Artist, Album",
+        context: undefined,
+        userReportSent: undefined,
+      }),
+    );
   });
 });

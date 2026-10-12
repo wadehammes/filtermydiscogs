@@ -1,3 +1,4 @@
+import type { ErrorEvent } from "@sentry/core";
 import {
   buildBrowserSentryInitOptions,
   resolveSentryBrowserTunnel,
@@ -5,6 +6,7 @@ import {
   resolveSentryEnabled,
   resolveSentryReplayOnErrorSampleRate,
   resolveSentryReplaySessionSampleRate,
+  sentryBeforeSend,
 } from "src/lib/sentry/sentryInitOptions";
 
 describe("sentryInitOptions", () => {
@@ -96,6 +98,18 @@ describe("sentryInitOptions", () => {
     env.SENTRY_ENABLE_DEV = "1";
 
     expect(resolveSentryReplaySessionSampleRate()).toBe(1);
+  });
+
+  it("when GTM YouTube integration throws getDuration, beforeSend drops the event", () => {
+    const error = new TypeError("a.getDuration is not a function");
+    error.stack = [
+      "TypeError: a.getDuration is not a function",
+      "    at f (https://www.googletagmanager.com/gtag/js?id=GTM-NCP5CSG:908:224)",
+    ].join("\n");
+
+    const event = { message: error.message } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
   });
 
   it("reads replay sample rates from NEXT_PUBLIC env overrides", () => {

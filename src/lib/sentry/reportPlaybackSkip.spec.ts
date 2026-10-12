@@ -5,6 +5,7 @@ import {
   reportUserPlaybackSkipToSentry,
   resetPlaybackSkipSentryReportCountForTests,
 } from "src/lib/sentry/reportPlaybackSkip";
+import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
 
 describe("reportPlaybackSkipToSentry", () => {
   beforeEach(() => {
@@ -13,11 +14,13 @@ describe("reportPlaybackSkipToSentry", () => {
 
   it("caps Sentry playback skip reports per session", () => {
     for (let index = 0; index < 20; index += 1) {
-      reportPlaybackSkipToSentry({
-        errorCode: 101,
-        trackLabel: `Track ${index}`,
-        reason: "Unavailable",
-      });
+      reportPlaybackSkipToSentry(
+        playbackSkipLogEntryFactory.build({
+          trackLabel: `Track ${index}`,
+          reason: "Unavailable",
+          context: undefined,
+        }),
+      );
     }
 
     expect(getPlaybackSkipSentryReportCountForTests()).toBe(15);
@@ -25,19 +28,22 @@ describe("reportPlaybackSkipToSentry", () => {
 
   it("when user report, bypasses the session cap counter", () => {
     for (let index = 0; index < 20; index += 1) {
-      reportPlaybackSkipToSentry({
-        errorCode: 101,
-        trackLabel: `Track ${index}`,
-        reason: "Unavailable",
-      });
+      reportPlaybackSkipToSentry(
+        playbackSkipLogEntryFactory.build({
+          trackLabel: `Track ${index}`,
+          reason: "Unavailable",
+          context: undefined,
+        }),
+      );
     }
 
-    reportUserPlaybackSkipToSentry({
-      errorCode: 101,
-      trackLabel: "A1 False skip",
-      reason: "Cannot play in embedded player",
-      context: { trackKey: "inst-a1", youtubeVideoId: "abc123" },
-    });
+    reportUserPlaybackSkipToSentry(
+      playbackSkipLogEntryFactory.embedDisabledReport({
+        trackLabel: "A1 False skip",
+        context: { trackKey: "inst-a1", youtubeVideoId: "abc123" },
+      }),
+      { category: "wrong_video" },
+    );
 
     expect(getPlaybackSkipSentryReportCountForTests()).toBe(15);
   });

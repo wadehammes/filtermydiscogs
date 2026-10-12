@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   formatPlaybackSkipLogTitle,
@@ -49,22 +50,22 @@ describe("playbackSkippedTrackLog", () => {
 
   it("when trackKey is present, playbackSkipLogEntryKey uses trackKey and errorCode", () => {
     expect(
-      playbackSkipLogEntryKey({
-        errorCode: 101,
-        trackLabel: "A1 Track - Artist, Album",
-        reason: "Cannot play in embedded player",
-        context: { trackKey: "inst-a1" },
-      }),
+      playbackSkipLogEntryKey(
+        playbackSkipLogEntryFactory.embedDisabledReport({
+          context: { trackKey: "inst-a1" },
+        }),
+      ),
     ).toBe("inst-a1:101");
   });
 
   it("when trackKey is absent, playbackSkipLogEntryKey uses errorCode trackLabel and reason", () => {
     expect(
-      playbackSkipLogEntryKey({
-        errorCode: 100,
-        trackLabel: "B2 Labyrinth - Various, HDZ 06",
-        reason: "Private or removed on YouTube",
-      }),
+      playbackSkipLogEntryKey(
+        playbackSkipLogEntryFactory.privateOrRemovedOnYoutube({
+          trackLabel: "B2 Labyrinth - Various, HDZ 06",
+          context: undefined,
+        }),
+      ),
     ).toBe("100:B2 Labyrinth - Various, HDZ 06:Private or removed on YouTube");
   });
 

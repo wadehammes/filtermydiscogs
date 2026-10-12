@@ -21,6 +21,8 @@ export type UserActionsRenderProps = {
   variant?: "mobile" | "desktop";
   showMosaic?: boolean;
   showUsername?: boolean;
+  showSubmitBugReport?: boolean;
+  onSubmitBugReport?: () => void;
 };
 
 export class UserActionsPageObject extends BasePageObject {
