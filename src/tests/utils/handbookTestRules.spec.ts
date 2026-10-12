@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   collectHandbookTestViolations,
   formatHandbookTestViolations,
+  isComponentSpecFile,
   isFeatureTestFile,
   isHandbookTestRulesAllowlisted,
   validateFeatureTestSource,
@@ -71,6 +72,112 @@ describe("handbookTestRules", () => {
         line: 1,
       }),
     ]);
+  });
+
+  it("identifies component spec files excluding hook specs", () => {
+    expect(
+      isComponentSpecFile(
+        "src/components/ReleaseSummaryHero/ReleaseSummaryHero.spec.tsx",
+      ),
+    ).toBe(true);
+    expect(
+      isComponentSpecFile("src/hooks/useCollectionData.hook.spec.ts"),
+    ).toBe(false);
+    expect(
+      isComponentSpecFile(
+        "src/components/FiltersDrawer/useFiltersDrawer.hook.spec.tsx",
+      ),
+    ).toBe(false);
+  });
+
+  it("flags mockApiResponse imports in component specs", () => {
+    const violations = validateFeatureTestSource(
+      "src/components/Example/Example.spec.tsx",
+      `import { mockApiResponse } from "src/tests/mocks/mockApiResponse";\n`,
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        rule: "component-spec-mock-api-response-import",
+        line: 1,
+      }),
+    ]);
+  });
+
+  it("flags setupFetchDiscogsReleaseMock imports in component specs", () => {
+    const violations = validateFeatureTestSource(
+      "src/components/Example/Example.spec.tsx",
+      `import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";\n`,
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        rule: "component-spec-setup-fetch-discogs-release-mock-import",
+        line: 1,
+      }),
+    ]);
+  });
+
+  it("flags inline DiscogsVideo embed literals in feature tests", () => {
+    const violations = validateFeatureTestSource(
+      "src/context/releasePlayback.context.spec.tsx",
+      `const videos = [{ embed: true, uri: "https://youtube.com/watch?v=abc", title: "X" }];\n`,
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        rule: "inline-discogs-video-embed",
+        line: 1,
+      }),
+    ]);
+  });
+
+  it("flags inline DiscogsTrack type literals outside discogsTrackFactory.build", () => {
+    const violations = validateFeatureTestSource(
+      "src/hooks/example.hook.spec.ts",
+      `const track = { position: "A1", title: "X", type_: "track" };\n`,
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        rule: "inline-discogs-track-type",
+        line: 1,
+      }),
+    ]);
+  });
+
+  it("allows type_: track inside discogsTrackFactory.build", () => {
+    expect(
+      validateFeatureTestSource(
+        "src/utils/releasePlayback.spec.ts",
+        `const track = discogsTrackFactory.build({\n  position: "A",\n  type_: "track",\n});\n`,
+      ),
+    ).toEqual([]);
+  });
+
+  it("allows youtube uri overrides inside discogsVideoFactory.build", () => {
+    expect(
+      validateFeatureTestSource(
+        "src/utils/releasePlaybackPendingResolution.spec.ts",
+        `const video = discogsVideoFactory.build({\n  uri: "https://youtube.com/watch?v=abc",\n});\n`,
+      ),
+    ).toEqual([]);
+  });
+
+  it("allows mockApiResponse imports in page objects and hook specs", () => {
+    expect(
+      validateFeatureTestSource(
+        "src/components/Example/Example.po.tsx",
+        `import { mockApiResponse } from "src/tests/mocks/mockApiResponse";\n`,
+      ),
+    ).toEqual([]);
+
+    expect(
+      validateFeatureTestSource(
+        "src/hooks/useCollectionData.hook.spec.ts",
+        `import { mockApiResponse } from "src/tests/mocks/mockApiResponse";\n`,
+      ),
+    ).toEqual([]);
   });
 
   it("flags jest.mocked query hooks imported from src/hooks/queries", () => {

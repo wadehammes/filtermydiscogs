@@ -45,17 +45,32 @@ export class FilterViewsMenuPageObject extends BasePageObject {
     localStorage.clear();
     setupMockMatchMedia({ desktop: true });
     setupDefaultCrateApiMocks(this.mockApi);
+    this.mockDefaultUserPreferences();
+    mockApiResponse(
+      true,
+      this.mockApi.updateUserPreferences,
+      userPreferencesFactory.defaultsApiResponse(),
+      new Error("Preferences update failed"),
+    );
+  }
+
+  mockDefaultUserPreferences(): void {
     mockApiResponse(
       true,
       this.mockApi.userPreferences,
       userPreferencesFactory.defaultsApiResponse(),
       new Error("Preferences request failed"),
     );
+  }
+
+  mockUserPreferences(
+    preferences: ReturnType<typeof userPreferencesFactory.asApiResponse>,
+  ): void {
     mockApiResponse(
       true,
-      this.mockApi.updateUserPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      new Error("Preferences update failed"),
+      this.mockApi.userPreferences,
+      preferences,
+      new Error("Preferences request failed"),
     );
   }
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import type { Dispatch } from "react";
 import { useReleasePlaybackQueueCoordination } from "src/hooks/useReleasePlaybackQueueCoordination.hook";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsRelease } from "src/types";
 import { createQueueItem } from "src/utils/playbackQueue";
@@ -23,12 +24,12 @@ describe("useReleasePlaybackQueueCoordination", () => {
   } = {}) => {
     const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
     const release = releaseFactory.withDisplayDefaults();
-    const activeTrack = {
+    const activeTrack = discogsTrackFactory.build({
       position: "A1",
       title: "Track A1",
       type_: "track",
       duration: "3:00",
-    };
+    });
     const releaseRef = { current: release as DiscogsRelease | null };
     const queueRef = { current: sessionQueue };
     const isPlayingRef = { current: isPlaying };

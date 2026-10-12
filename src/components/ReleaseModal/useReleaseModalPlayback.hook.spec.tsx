@@ -6,9 +6,13 @@ import {
   ReleasePlaybackProvider,
   useReleasePlayback,
 } from "src/context/releasePlayback.context";
+import { artistFactory } from "src/tests/factories/Artist.factory";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { trackYoutubeOverrideTargetFactory } from "src/tests/factories/TrackYoutubeOverrideTarget.factory";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
@@ -16,8 +20,6 @@ import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
-import { formatArtistNames } from "src/utils/releaseDisplay";
-import { buildTrackKey } from "src/utils/userTrack";
 import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -42,27 +44,23 @@ const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: RELEASE_ID,
 });
 
-const twoPlayableTrackVideos = [
-  {
-    description: "Side A",
-    duration: 212,
-    embed: true,
-    title: "Rick Astley - Never Gonna Give You Up",
-    uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-  },
-  {
-    description: "Side B",
-    duration: 210,
-    embed: true,
-    title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
-    uri: "https://www.youtube.com/watch?v=abc12345678",
-  },
-] as const;
-
 const setupTwoPlayableTrackReleaseMock = () => {
   setupFetchDiscogsReleaseMock(mockApi, {
     ...releaseDetail,
-    videos: [...twoPlayableTrackVideos],
+    videos: [
+      discogsVideoFactory.youtube({
+        description: "Rick Astley - Never Gonna Give You Up",
+        duration: 330,
+        title: "Rick Astley - Never Gonna Give You Up",
+        uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+      }),
+      discogsVideoFactory.youtube({
+        description: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+        duration: 330,
+        title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
+        uri: "https://www.youtube.com/watch?v=abc12345678",
+      }),
+    ],
   });
 };
 
@@ -70,27 +68,26 @@ const otherReleaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: OTHER_RELEASE_ID,
   title: "Other Album",
   tracklist: [
-    {
+    discogsTrackFactory.build({
       position: "A1",
       title: "Modal Track One",
       duration: "4:00",
       type_: "track",
-    },
-    {
+    }),
+    discogsTrackFactory.build({
       position: "A2",
       title: "Modal Track Two",
       duration: "3:45",
       type_: "track",
-    },
+    }),
   ],
   videos: [
-    {
+    discogsVideoFactory.youtube({
       description: "Modal Track One",
       duration: 240,
-      embed: true,
       title: "Modal Track One",
       uri: "https://www.youtube.com/watch?v=modalTrackOne1",
-    },
+    }),
   ],
 });
 
@@ -108,7 +105,7 @@ const otherCollectionRelease = releaseFactory.withDisplayDefaults({
     id: OTHER_RELEASE_ID,
     title: "Other Album",
     resource_url: `https://api.discogs.com/releases/${OTHER_RELEASE_ID}`,
-    artists: [{ name: "Modal Artist" }],
+    artists: [artistFactory.build({ name: "Modal Artist" })],
   }),
 });
 
@@ -222,18 +219,14 @@ describe("useReleaseModalPlayback", () => {
       result.current.openTrackYoutubeOverride("A2");
     });
 
-    expect(result.current.youtubeOverrideTarget).toEqual({
-      trackKey: buildTrackKey(otherCollectionRelease.instance_id, "A2"),
-      trackPosition: "A2",
-      trackTitle: "Modal Track Two",
-      instanceId: String(otherCollectionRelease.instance_id),
-      artist: formatArtistNames(otherCollectionRelease),
-      releaseTitle: "Other Album",
-      discogsReleaseId: OTHER_RELEASE_ID,
-      initialYoutubeId: null,
-      hasDefaultYoutubeEmbed: false,
-      initialPreviewVideoId: null,
-    });
+    expect(result.current.youtubeOverrideTarget).toEqual(
+      trackYoutubeOverrideTargetFactory.fromReleaseTrack({
+        release: otherCollectionRelease,
+        trackPosition: "A2",
+        trackTitle: "Modal Track Two",
+        discogsReleaseId: OTHER_RELEASE_ID,
+      }),
+    );
   });
 
   it("when opening YouTube override on a track with a Discogs embed and no saved link, marks hasDefaultYoutubeEmbed on the target", async () => {
@@ -258,11 +251,18 @@ describe("useReleaseModalPlayback", () => {
       result.current.openTrackYoutubeOverride("A1");
     });
 
-    expect(result.current.youtubeOverrideTarget).toMatchObject({
-      trackPosition: "A1",
-      hasDefaultYoutubeEmbed: true,
-      initialYoutubeId: null,
-    });
+    const { initialPreviewVideoId: _preview, ...expectedOverrideTarget } =
+      trackYoutubeOverrideTargetFactory.fromReleaseTrack({
+        release: otherCollectionRelease,
+        trackPosition: "A1",
+        trackTitle: "Modal Track One",
+        discogsReleaseId: OTHER_RELEASE_ID,
+        hasDefaultYoutubeEmbed: true,
+      });
+
+    expect(result.current.youtubeOverrideTarget).toMatchObject(
+      expectedOverrideTarget,
+    );
     expect(
       result.current.youtubeOverrideTarget?.initialPreviewVideoId,
     ).toBeTruthy();
@@ -547,21 +547,20 @@ describe("useReleaseModalPlayback", () => {
     setupFetchDiscogsReleaseMock(mockApi, {
       ...releaseDetail,
       tracklist: [
-        {
+        discogsTrackFactory.build({
           position: "A",
           title: "Unknown Track",
           duration: "3:32",
           type_: "track",
-        },
+        }),
       ],
       videos: [
-        {
+        discogsVideoFactory.youtube({
           description: "Full album upload",
           duration: 330,
-          embed: true,
           title: "Full Album Upload",
           uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-        },
+        }),
       ],
     });
 
@@ -602,21 +601,20 @@ describe("useReleaseModalPlayback", () => {
     setupFetchDiscogsReleaseMock(mockApi, {
       ...releaseDetail,
       tracklist: [
-        {
+        discogsTrackFactory.build({
           position: "A",
           title: "Unknown Track",
           duration: "3:32",
           type_: "track",
-        },
+        }),
       ],
       videos: [
-        {
+        discogsVideoFactory.youtube({
           description: "Full album upload",
           duration: 330,
-          embed: true,
           title: "Full Album Upload",
           uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-        },
+        }),
       ],
     });
 
@@ -652,28 +650,26 @@ describe("useReleaseModalPlayback", () => {
     setupFetchDiscogsReleaseMock(mockApi, {
       ...releaseDetail,
       tracklist: [
-        {
+        discogsTrackFactory.build({
           position: "A",
           title: "Unknown Track",
           duration: "3:32",
           type_: "track",
-        },
+        }),
       ],
       videos: [
-        {
+        discogsVideoFactory.youtube({
           description: "First upload",
           duration: 330,
-          embed: true,
           title: "Preview One",
           uri: "https://www.youtube.com/watch?v=11111111111",
-        },
-        {
+        }),
+        discogsVideoFactory.youtube({
           description: "Second upload",
           duration: 320,
-          embed: true,
           title: "Preview Two",
           uri: "https://www.youtube.com/watch?v=22222222222",
-        },
+        }),
       ],
     });
 

@@ -1,3 +1,5 @@
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type {
   DiscogsTrack,
@@ -28,32 +30,41 @@ describe("playbackQueue", () => {
   const otherRelease = releaseFactory.build({ instance_id: "202" });
 
   const tracks: DiscogsTrack[] = [
-    { position: "A1", title: "First", type_: "track" },
-    { position: "A2", title: "Second", type_: "track" },
-    { position: "B1", title: "Third", type_: "track" },
+    discogsTrackFactory.build({
+      position: "A1",
+      title: "First",
+      type_: "track",
+    }),
+    discogsTrackFactory.build({
+      position: "A2",
+      title: "Second",
+      type_: "track",
+    }),
+    discogsTrackFactory.build({
+      position: "B1",
+      title: "Third",
+      type_: "track",
+    }),
   ];
 
   const videos: DiscogsVideo[] = [
-    {
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "First",
-      embed: true,
-    },
-    {
+    }),
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=def98765432",
       title: "Second",
-      embed: true,
-    },
+    }),
   ];
 
   it("filters upcoming album tracks for one release without touching preview rows", () => {
     const previewItem = createPreviewQueueItem({
       release,
-      video: {
+      video: discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Upload",
-        embed: true,
-      },
+      }),
     });
     const albumItem = createQueueItem({
       release,
@@ -96,11 +107,10 @@ describe("playbackQueue", () => {
   it("creates preview queue items with synthetic positions", () => {
     const item = createPreviewQueueItem({
       release,
-      video: {
+      video: discogsVideoFactory.youtube({
         uri: "https://www.youtube.com/watch?v=abc12345678",
         title: "Full Album Upload",
-        embed: true,
-      },
+      }),
     });
 
     expect(item.previewVideoUri).toBe(

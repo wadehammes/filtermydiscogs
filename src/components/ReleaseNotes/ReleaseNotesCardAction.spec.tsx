@@ -1,45 +1,18 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
-import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
+import { ReleaseNotesCardActionPageObject } from "src/components/ReleaseNotes/ReleaseNotesCardAction.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
-import { render, screen, waitFor } from "test-utils";
-import { ReleaseNotesCardAction } from "./ReleaseNotesCardAction.component";
-import { ReleaseNotesEditorProvider } from "./ReleaseNotesEditor.context";
+import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/urls");
-
-const mockApi = jest.mocked(api);
+let po: ReleaseNotesCardActionPageObject;
 
 describe("ReleaseNotesCardAction", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    setupDefaultCrateApiMocks(mockApi);
-
-    mockApiResponse(
-      true,
-      mockApi.collectionFields,
-      discogsCollectionFieldsResponseFactory.forReleaseNotes(),
-      new Error("Failed to fetch collection fields"),
-    );
+    po = new ReleaseNotesCardActionPageObject();
   });
 
-  const renderAction = (release = releaseFactory.withEmptyNotes()) =>
-    render(
-      <ReleaseNotesEditorProvider release={release}>
-        <ReleaseNotesCardAction />
-      </ReleaseNotesEditorProvider>,
-      {
-        authInitialState: testAuthenticatedAuthState,
-        includeCollectionSync: false,
-      },
-    );
-
   it("does not show a notes indicator when the release has no notes", async () => {
-    renderAction();
+    po.renderReleaseNotesCardAction();
 
     await waitFor(() => {
       expect(
@@ -57,7 +30,7 @@ describe("ReleaseNotesCardAction", () => {
       { field_id: 3, value: "Signed copy" },
     ]);
 
-    renderAction(release);
+    po.renderReleaseNotesCardAction(release);
 
     await waitFor(() => {
       expect(
@@ -71,7 +44,7 @@ describe("ReleaseNotesCardAction", () => {
   it("opens the note edit dialog when clicked", async () => {
     const user = userEvent.setup();
 
-    renderAction();
+    po.renderReleaseNotesCardAction();
 
     await waitFor(() => {
       expect(

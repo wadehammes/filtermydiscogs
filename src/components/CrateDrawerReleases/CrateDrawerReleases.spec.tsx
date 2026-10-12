@@ -1,22 +1,15 @@
-import { describe, expect, it } from "@jest/globals";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
-import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
 import {
   crateDrawerDefaultDetail,
   crateDrawerPackedAt,
-  crateDrawerPartiallyPackedResponse,
   crateDrawerReleasePacked,
   crateDrawerReleaseUnpacked,
-  setupCrateDrawerTests,
 } from "src/components/CrateDrawer/crateDrawerTestSetup";
-import { CrateDrawerReleases } from "src/components/CrateDrawerReleases/CrateDrawerReleases.component";
+import { CrateDrawerReleasesPageObject } from "src/components/CrateDrawerReleases/CrateDrawerReleases.po";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
-import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
-import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
   expectReleaseOpenPrefetchAfterHover,
   setupReleaseOpenPrefetchHoverTimers,
@@ -24,26 +17,21 @@ import {
 } from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/urls");
-
-const mockApi = jest.mocked(api);
+let po: CrateDrawerReleasesPageObject;
 
 describe("CrateDrawerReleases", () => {
   beforeEach(() => {
-    setupCrateDrawerTests(mockApi);
+    po = new CrateDrawerReleasesPageObject();
   });
 
   it("prefetches release detail when a drawer row action is hovered", async () => {
     const onReleaseClick = jest.fn();
     const user = setupReleaseOpenPrefetchHoverTimers();
 
-    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
-    setupFetchDiscogsReleaseMock(
-      mockApi,
-      discogsReleaseJsonFactory.withTracklistAndVideos({ id: 249504 }),
-    );
+    po.mockPartiallyPackedCrate();
+    po.mockReleaseOpenPrefetch();
 
-    renderCrateDrawerTree(<CrateDrawerReleases />, { onReleaseClick });
+    po.renderCrateDrawerReleases({ onReleaseClick });
 
     try {
       await waitFor(() => {
@@ -56,7 +44,7 @@ describe("CrateDrawerReleases", () => {
         hoverTarget: screen.getByRole("button", {
           name: `Remove ${crateDrawerReleaseUnpacked.basic_information.title} from crate`,
         }),
-        mockDiscogsRelease: mockApi.discogsRelease,
+        mockDiscogsRelease: po.mockApi.discogsRelease,
         user,
       });
     } finally {
@@ -65,7 +53,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("lists staged releases in layout order without section markers", async () => {
-    mockApi.crate.mockResolvedValue(
+    po.mockCrateResolved(
       crateWithReleasesResponseFactory.withReleaseItems(
         crateDrawerDefaultDetail,
         [
@@ -91,7 +79,7 @@ describe("CrateDrawerReleases", () => {
       ),
     );
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(
@@ -103,14 +91,14 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows the packing toolbar with zero progress when gig packing is enabled", async () => {
-    mockApi.crate.mockResolvedValue(
+    po.mockCrateResolved(
       crateWithReleasesResponseFactory.withReleases(crateDrawerDefaultDetail, [
         crateDrawerReleasePacked,
         crateDrawerReleaseUnpacked,
       ]),
     );
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(
@@ -130,9 +118,9 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows the hide filter when at least one item is packed", async () => {
-    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    po.mockPartiallyPackedCrate();
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(screen.getByText("1 of 2 packed for gig")).toBeInTheDocument();
@@ -147,9 +135,9 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows Clear packed in the packing toolbar when items are packed", async () => {
-    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+    po.mockPartiallyPackedCrate();
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(
@@ -159,14 +147,12 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("clears all packed items when Clear packed is confirmed", async () => {
-    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
-    mockApi.clearAllPackedInCrate.mockResolvedValue(
-      crateMutationSuccessFactory.clearPacked(1),
-    );
+    po.mockPartiallyPackedCrate();
+    po.mockClearAllPackedSuccess();
 
     const user = userEvent.setup();
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(
@@ -180,19 +166,19 @@ describe("CrateDrawerReleases", () => {
     await user.click(screen.getByRole("button", { name: /^clear marks$/i }));
 
     await waitFor(() => {
-      expect(mockApi.clearAllPackedInCrate).toHaveBeenCalledWith("crate-1");
+      expect(po.mockApi.clearAllPackedInCrate).toHaveBeenCalledWith("crate-1");
     });
   });
 
   it("shows staging guidance when the crate is empty", async () => {
-    mockApi.crate.mockResolvedValue(
+    po.mockCrateResolved(
       crateWithReleasesResponseFactory.withReleases(
         crateDrawerDefaultDetail,
         [],
       ),
     );
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdEmptyState")).toBeInTheDocument();
@@ -201,7 +187,7 @@ describe("CrateDrawerReleases", () => {
   });
 
   it("shows an empty state when every album is packed and hidden", async () => {
-    mockApi.crate.mockResolvedValue(
+    po.mockCrateResolved(
       crateWithReleasesResponseFactory.withReleaseItems(
         crateDrawerDefaultDetail,
         [
@@ -216,7 +202,7 @@ describe("CrateDrawerReleases", () => {
 
     const user = userEvent.setup();
 
-    renderCrateDrawerTree(<CrateDrawerReleases />);
+    po.renderCrateDrawerReleases();
 
     await waitFor(() => {
       expect(screen.getByText("1 of 1 packed for gig")).toBeInTheDocument();

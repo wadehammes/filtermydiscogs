@@ -44,10 +44,25 @@ export class FiltersDrawerPageObject extends BasePageObject {
   setupMocks() {
     jest.clearAllMocks();
     setupDefaultCrateApiMocks(this.mockApi);
+    this.mockDefaultUserPreferences();
+  }
+
+  mockDefaultUserPreferences(): void {
     mockApiResponse(
       true,
       this.mockApi.userPreferences,
       userPreferencesFactory.defaultsApiResponse(),
+      new Error("Preferences request failed"),
+    );
+  }
+
+  mockUserPreferences(
+    preferences: ReturnType<typeof userPreferencesFactory.asApiResponse>,
+  ): void {
+    mockApiResponse(
+      true,
+      this.mockApi.userPreferences,
+      preferences,
       new Error("Preferences request failed"),
     );
   }

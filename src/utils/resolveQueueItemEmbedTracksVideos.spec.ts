@@ -1,5 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
@@ -7,8 +9,19 @@ import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmb
 describe("resolveQueueItemEmbedTracksVideos", () => {
   it("reuses in-memory tracklist when the queue item matches the active release", () => {
     const release = releaseFactory.build();
-    const tracks = [{ position: "A", title: "Track", type_: "track" as const }];
-    const videos = [{ uri: "https://youtube.com/watch?v=abc", title: "Vid" }];
+    const tracks = [
+      discogsTrackFactory.build({
+        position: "A",
+        title: "Track",
+        type_: "track",
+      }),
+    ];
+    const videos = [
+      discogsVideoFactory.youtube({
+        uri: "https://youtube.com/watch?v=abc",
+        title: "Vid",
+      }),
+    ];
 
     expect(
       resolveQueueItemEmbedTracksVideos({

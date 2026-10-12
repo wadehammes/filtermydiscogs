@@ -143,6 +143,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`DiscogsReleaseJson.factory.ts`](../../src/tests/factories/DiscogsReleaseJson.factory.ts) | `discogsReleaseJsonFactory` | `DiscogsReleaseJson` |
 | [`DiscogsTrack.factory.ts`](../../src/tests/factories/DiscogsTrack.factory.ts) | `discogsTrackFactory` | `DiscogsTrack` (release tracklist rows) |
 | [`DiscogsVideo.factory.ts`](../../src/tests/factories/DiscogsVideo.factory.ts) | `discogsVideoFactory` | `DiscogsVideo` (release video links) |
+| [`TrackYoutubeOverrideTarget.factory.ts`](../../src/tests/factories/TrackYoutubeOverrideTarget.factory.ts) | `trackYoutubeOverrideTargetFactory` | `TrackYoutubeOverrideTarget` for [`TrackYoutubeOverrideDialog`](../../src/components/TrackYoutubeOverrideDialog/TrackYoutubeOverrideDialog.component.tsx) specs |
 
 ### Preset methods
 
@@ -187,6 +188,7 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `discogsReleaseJsonFactory` | `forReleaseId()`, `withTracklistAndVideos()` | `api.discogsRelease` URI payload; detail shape with factory-built tracks/videos |
 | `discogsTrackFactory` | `untitled()` | Tracklist rows; **`Untitled`** + **`type_: "track"`** for generic-title playback matching |
 | `discogsVideoFactory` | `youtube()`, `nonYoutube()` | Embeddable YouTube links vs Discogs (non-YouTube) URIs |
+| `trackYoutubeOverrideTargetFactory` | `unplayable()`, `fromReleaseTrack({ release, trackPosition, â€¦ })` | Dialog spec (**`unplayable()`**); modal playback hook expected override targets (**`fromReleaseTrack`**) |
 | `discogsCollectionFieldFactory` | `notesField()` | Notes field for release-notes editor tests |
 | `discogsCollectionFieldsResponseFactory` | `forReleaseNotes()` | Collection fields API for notes editor |
 | `collectionFactory` | `empty()`, `forReleasesPage()` | Empty collection pages; MSW **`/api/collection`** pagination aligned with client helpers |

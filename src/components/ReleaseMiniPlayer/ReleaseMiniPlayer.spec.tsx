@@ -1,87 +1,30 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import type { ReactNode } from "react";
-import { api } from "src/api/urls";
-import { ReleaseMiniPlayer } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.component";
 import {
-  ReleasePlaybackProvider,
-  useReleasePlayback,
-} from "src/context/releasePlayback.context";
+  RELEASE_MINI_PLAYER_INSTANCE_ID,
+  ReleaseMiniPlayerPageObject,
+} from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayer.po";
+import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
-import { crateFactory } from "src/tests/factories/Crate.factory";
-import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
-import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
-import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
-import { userTrackStatsResponseFactory } from "src/tests/factories/UserTrackStatsResponse.factory";
 import { expectReleaseCrateMenuAbovePlaybackDock } from "src/tests/filterControlTestHelpers";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
-import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { setupDefaultTrackStatsApiMock } from "src/tests/mocks/setupDefaultTrackStatsApiMock";
-import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
-import {
-  TestProviders,
-  testAuthenticatedAuthState,
-} from "src/tests/utils/testProviders";
-import { definedProps } from "src/utils/definedProps";
 import {
   markPlaybackVideoIntroSeen,
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
 } from "src/utils/playbackVideoIntroStorage";
-import { loadAndPlayYoutubeVideo } from "src/utils/releasePlayback";
 import { act, render, screen, waitFor } from "test-utils";
 
-jest.mock("src/api/urls");
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-}));
+const INSTANCE_ID = RELEASE_MINI_PLAYER_INSTANCE_ID;
 
-const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
-
-const mockApi = jest.mocked(api);
-
-const RELEASE_ID = 249504;
-
-const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
-  id: RELEASE_ID,
-  videos: [
-    {
-      description: "Rick Astley - Never Gonna Give You Up",
-      duration: 330,
-      embed: true,
-      title: "Rick Astley - Never Gonna Give You Up",
-      uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-    },
-    {
-      description: "Rick Astley - Never Gonna Give You Up (Instrumental)",
-      duration: 330,
-      embed: true,
-      title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
-      uri: "https://www.youtube.com/watch?v=abc12345678",
-    },
-  ],
-});
-
-const INSTANCE_ID = "instance-249504";
-
-const collectionRelease = releaseFactory.withDisplayDefaults({
-  instance_id: INSTANCE_ID,
-  basic_information: basicInformationFactory.build({
-    id: RELEASE_ID,
-    title: "Never Gonna Give You Up",
-    resource_url: `https://api.discogs.com/releases/${RELEASE_ID}`,
-  }),
-});
+let po: ReleaseMiniPlayerPageObject;
 
 const PlaybackStarter = () => {
   const { startPlayback } = useReleasePlayback();
+  const collectionRelease = po.collectionRelease;
 
   return (
     <button
@@ -95,23 +38,6 @@ const PlaybackStarter = () => {
   );
 };
 
-const createWrapper = (onReleaseClick?: (instanceId: string) => void) => {
-  return ({ children }: { children: ReactNode }) => (
-    <TestProviders
-      authInitialState={testAuthenticatedAuthState}
-      includeCollectionSync={false}
-    >
-      <ReleasePlaybackProvider>
-        {children}
-        <ReleaseMiniPlayer {...definedProps({ onReleaseClick })} />
-      </ReleasePlaybackProvider>
-    </TestProviders>
-  );
-};
-
-const defaultCrate = crateFactory.defaultTestCrate();
-const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
-
 const startPlaybackAndWaitForPlayer = async (
   user: ReturnType<typeof userEvent.setup>,
 ) => {
@@ -124,47 +50,17 @@ const startPlaybackAndWaitForPlayer = async (
   });
 
   await waitFor(() => {
-    expect(mockApi.discogsRelease).toHaveBeenCalled();
+    expect(po.mockApi.discogsRelease).toHaveBeenCalled();
   });
 };
 
 describe("ReleaseMiniPlayer", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    localStorage.clear();
-    markPlaybackVideoIntroSeen();
-    setupMockMatchMedia({ desktop: true });
-    setupDefaultCrateApiMocks(mockApi);
-    mockApiResponse(
-      true,
-      mockApi.userPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      new Error("Preferences API request failed"),
-    );
-    setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
-    setupDefaultTrackStatsApiMock(mockApi);
-    mockApiResponse(
-      true,
-      mockApi.addReleaseToCrate,
-      crateMutationSuccessFactory.build(),
-      new Error("Crate API request failed"),
-    );
-    mockApiResponse(
-      true,
-      mockApi.removeReleaseFromCrate,
-      crateMutationSuccessFactory.build(),
-      new Error("Crate API request failed"),
-    );
-    mockApiResponse(
-      true,
-      mockApi.releaseCrateMembership,
-      releaseCrateMembershipResponseFactory.build(),
-      new Error("Crate API request failed"),
-    );
+    po = new ReleaseMiniPlayerPageObject();
   });
 
   it("is hidden until playback starts", async () => {
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await waitFor(() => {
       expect(screen.queryByTestId("fmdReleaseMiniPlayer")).toBeNull();
@@ -175,31 +71,12 @@ describe("ReleaseMiniPlayer", () => {
     const overrideVideoId = "abc12345678";
     const trackKey = `${INSTANCE_ID}:A`;
 
-    setupFetchDiscogsReleaseMock(
-      mockApi,
-      discogsReleaseJsonFactory.withTracklistAndVideos({
-        id: RELEASE_ID,
-        videos: [],
-      }),
-    );
-    mockApiResponse(
-      true,
-      mockApi.fetchTrackStats,
-      userTrackStatsResponseFactory.build({
-        stats: {
-          [trackKey]: {
-            play_count: 0,
-            listen_count: 0,
-            youtube_id: overrideVideoId,
-          },
-        },
-      }),
-      new Error("Track stats API request failed"),
-    );
+    po.mockDiscogsReleaseWithoutVideos();
+    po.mockTrackStatsForOverride(trackKey, overrideVideoId);
 
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -213,7 +90,7 @@ describe("ReleaseMiniPlayer", () => {
   it("renders the dock and visible iframe when autoplay playback is active", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -232,7 +109,7 @@ describe("ReleaseMiniPlayer", () => {
     localStorage.clear();
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -256,7 +133,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -279,7 +156,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -310,7 +187,7 @@ describe("ReleaseMiniPlayer", () => {
           type="button"
           onClick={() => {
             addToQueue({
-              release: collectionRelease,
+              release: po.collectionRelease,
               trackPosition: "A",
               trackTitle: "Never Gonna Give You Up",
             });
@@ -323,7 +200,7 @@ describe("ReleaseMiniPlayer", () => {
 
     const user = userEvent.setup();
 
-    render(<EmptyQueueAdd />, { wrapper: createWrapper() });
+    render(<EmptyQueueAdd />, { wrapper: po.createWrapper() });
 
     await act(async () => {
       await user.click(
@@ -353,7 +230,7 @@ describe("ReleaseMiniPlayer", () => {
   it("expands and collapses the video panel without changing the embed src", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -397,7 +274,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -429,7 +306,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -464,7 +341,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -493,7 +370,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -522,7 +399,7 @@ describe("ReleaseMiniPlayer", () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -550,7 +427,7 @@ describe("ReleaseMiniPlayer", () => {
   it("loads the next video via postMessage when advancing tracks with the panel visible", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -566,7 +443,7 @@ describe("ReleaseMiniPlayer", () => {
       ).not.toBeDisabled();
     });
 
-    mockLoadAndPlayYoutubeVideo.mockClear();
+    po.mockLoadAndPlayYoutubeVideo.mockClear();
 
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
@@ -578,7 +455,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     await waitFor(() => {
-      expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
+      expect(po.mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
         expect.objectContaining({
           iframe,
           videoId: "abc12345678",
@@ -598,7 +475,7 @@ describe("ReleaseMiniPlayer", () => {
   it("loads the next video via postMessage when advancing tracks with the panel hidden", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -626,7 +503,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
-    expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
+    expect(po.mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
       expect.objectContaining({
         iframe,
         videoId: "abc12345678",
@@ -637,7 +514,7 @@ describe("ReleaseMiniPlayer", () => {
   it("shows the video panel without reloading the embed src after advancing while hidden", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -684,7 +561,7 @@ describe("ReleaseMiniPlayer", () => {
 
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -741,7 +618,7 @@ describe("ReleaseMiniPlayer", () => {
   it("keeps the video panel open when advancing tracks", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -779,7 +656,7 @@ describe("ReleaseMiniPlayer", () => {
   it("advances to the next track from the dock controls", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -801,7 +678,7 @@ describe("ReleaseMiniPlayer", () => {
   it("returns to the previous track from the dock controls", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -838,25 +715,24 @@ describe("ReleaseMiniPlayer", () => {
       }),
     });
 
-    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+    po.mockFetchDiscogsRelease(po.releaseDetail, {
       "100002": discogsReleaseJsonFactory.withTracklistAndVideos({
         id: 100002,
         tracklist: [
-          {
+          discogsTrackFactory.build({
             position: "1",
             title: "Short A",
             duration: "2:00",
             type_: "track",
-          },
+          }),
         ],
         videos: [
-          {
+          discogsVideoFactory.youtube({
             description: "Short A",
             duration: 120,
-            embed: true,
             title: "Short A",
             uri: "https://www.youtube.com/watch?v=def98765432",
-          },
+          }),
         ],
       }),
     });
@@ -869,7 +745,10 @@ describe("ReleaseMiniPlayer", () => {
           <button
             type="button"
             onClick={() => {
-              startPlayback({ release: collectionRelease, trackPosition: "A" });
+              startPlayback({
+                release: po.collectionRelease,
+                trackPosition: "A",
+              });
             }}
           >
             Start playback
@@ -893,7 +772,7 @@ describe("ReleaseMiniPlayer", () => {
 
     const user = userEvent.setup();
 
-    render(<QueueAndPlaybackControls />, { wrapper: createWrapper() });
+    render(<QueueAndPlaybackControls />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -926,7 +805,7 @@ describe("ReleaseMiniPlayer", () => {
   it("keeps the dock visible when playback is paused", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -947,7 +826,7 @@ describe("ReleaseMiniPlayer", () => {
             type="button"
             onClick={() => {
               startPlayback({
-                release: collectionRelease,
+                release: po.collectionRelease,
                 trackPosition: "A",
               });
             }}
@@ -963,7 +842,7 @@ describe("ReleaseMiniPlayer", () => {
 
     const user = userEvent.setup();
 
-    render(<SessionEnder />, { wrapper: createWrapper() });
+    render(<SessionEnder />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -976,7 +855,7 @@ describe("ReleaseMiniPlayer", () => {
   it("toggles play and pause from the dock controls", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -994,7 +873,7 @@ describe("ReleaseMiniPlayer", () => {
     const onReleaseClick = jest.fn();
 
     render(<PlaybackStarter />, {
-      wrapper: createWrapper(onReleaseClick),
+      wrapper: po.createWrapper(onReleaseClick),
     });
 
     await startPlaybackAndWaitForPlayer(user);
@@ -1009,7 +888,7 @@ describe("ReleaseMiniPlayer", () => {
   it("stacks the playback queue above the expanded video panel", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -1041,7 +920,7 @@ describe("ReleaseMiniPlayer", () => {
   it("portals the crate menu above the playback dock", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -1057,7 +936,7 @@ describe("ReleaseMiniPlayer", () => {
   it("adds the playing release to the active crate", async () => {
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -1069,36 +948,21 @@ describe("ReleaseMiniPlayer", () => {
 
     await user.click(
       screen.getByRole("menuitemcheckbox", {
-        name: new RegExp(defaultCrateWithCount.name, "i"),
+        name: new RegExp(po.defaultCrateWithCount.name, "i"),
       }),
     );
 
     await waitFor(() => {
-      expect(mockApi.addReleaseToCrate).toHaveBeenCalled();
+      expect(po.mockApi.addReleaseToCrate).toHaveBeenCalled();
     });
   });
 
   it("removes the playing release from the active crate", async () => {
-    mockApiResponse(
-      true,
-      mockApi.crate,
-      crateWithReleasesResponseFactory.withReleases(defaultCrate, [
-        collectionRelease,
-      ]),
-      new Error("Crate API request failed"),
-    );
-    mockApiResponse(
-      true,
-      mockApi.releaseCrateMembership,
-      releaseCrateMembershipResponseFactory.build({
-        crateIds: [defaultCrateWithCount.id],
-      }),
-      new Error("Crate API request failed"),
-    );
+    po.mockReleaseAlreadyInCrate(po.collectionRelease);
 
     const user = userEvent.setup();
 
-    render(<PlaybackStarter />, { wrapper: createWrapper() });
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -1116,12 +980,12 @@ describe("ReleaseMiniPlayer", () => {
 
     await user.click(
       screen.getByRole("menuitemcheckbox", {
-        name: new RegExp(defaultCrateWithCount.name, "i"),
+        name: new RegExp(po.defaultCrateWithCount.name, "i"),
       }),
     );
 
     await waitFor(() => {
-      expect(mockApi.removeReleaseFromCrate).toHaveBeenCalled();
+      expect(po.mockApi.removeReleaseFromCrate).toHaveBeenCalled();
     });
   });
 });

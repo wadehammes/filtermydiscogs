@@ -1,6 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
+import { artistFactory } from "src/tests/factories/Artist.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import type { DiscogsTrack } from "src/types";
 import { render, screen, waitFor } from "test-utils";
 
@@ -24,18 +26,18 @@ const openTrackActionsMenu = async (
 };
 
 const tracks: DiscogsTrack[] = [
-  {
+  discogsTrackFactory.build({
     position: "A",
     title: "Never Gonna Give You Up",
     duration: "3:32",
     type_: "track",
-  },
-  {
+  }),
+  discogsTrackFactory.build({
     position: "B",
     title: "Never Gonna Give You Up (Instrumental)",
     duration: "3:30",
     type_: "track",
-  },
+  }),
 ];
 
 describe("ReleaseTracklist", () => {
@@ -195,12 +197,13 @@ describe("ReleaseTracklist", () => {
     render(
       <ReleaseTracklist
         tracks={[
-          {
+          discogsTrackFactory.build({
             position: "A1",
             title: "First Song",
             type_: "track",
-            artists: [{ name: "Guest Artist" }],
-          },
+            artists: [artistFactory.build({ name: "Guest Artist" })],
+            extraartists: [],
+          }),
         ]}
         releaseArtistNames="Various"
         activeTrackPosition={null}

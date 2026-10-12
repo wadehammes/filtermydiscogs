@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createQueueItem } from "src/utils/playbackQueue";
 import {
@@ -88,7 +89,10 @@ describe("playbackSessionReducer", () => {
   });
 
   it("reduceStartReleasePreviewSession seeds preview playback", () => {
-    const video = { uri: "https://www.youtube.com/watch?v=abc", title: "Clip" };
+    const video = discogsVideoFactory.youtube({
+      uri: "https://www.youtube.com/watch?v=abc",
+      title: "Clip",
+    });
     const next = reduceStartReleasePreviewSession(initialPlaybackSessionState, {
       release,
       video,

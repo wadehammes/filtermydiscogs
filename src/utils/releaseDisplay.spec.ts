@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsTrack } from "src/types";
 import {
@@ -64,11 +65,13 @@ describe("formatTrackExtraartists", () => {
 });
 
 describe("formatTrackCreditsLine", () => {
-  const baseTrack: DiscogsTrack = {
+  const baseTrack: DiscogsTrack = discogsTrackFactory.build({
     position: "1",
     title: "Example Track",
     type_: "track",
-  };
+    artists: undefined,
+    extraartists: undefined,
+  });
 
   it("shows track artists on Various Artists releases", () => {
     expect(

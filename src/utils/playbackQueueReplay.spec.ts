@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   createPreviewQueueItem,
@@ -65,13 +66,12 @@ describe("playbackQueueReplay", () => {
     const videoUri = "https://www.youtube.com/watch?v=abcd1234567";
     const item = createPreviewQueueItem({
       release,
-      video: {
+      video: discogsVideoFactory.youtube({
         description: "Preview",
         duration: 120,
-        embed: true,
         title: "Preview upload",
         uri: videoUri,
-      },
+      }),
     });
 
     expect(

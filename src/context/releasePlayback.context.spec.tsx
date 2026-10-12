@@ -14,6 +14,8 @@ import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { userTrackStatsResponseFactory } from "src/tests/factories/UserTrackStatsResponse.factory";
@@ -182,34 +184,32 @@ const RELEASE_ID = 249504;
 const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: RELEASE_ID,
   tracklist: [
-    {
+    discogsTrackFactory.build({
       position: "A1",
       title: "Never Gonna Give You Up",
       duration: "3:32",
       type_: "track",
-    },
-    {
+    }),
+    discogsTrackFactory.build({
       position: "B1",
       title: "Never Gonna Give You Up (Instrumental)",
       duration: "3:30",
       type_: "track",
-    },
+    }),
   ],
   videos: [
-    {
+    discogsVideoFactory.youtube({
       description: "Rick Astley - Never Gonna Give You Up",
       duration: 330,
-      embed: true,
       title: "Rick Astley - Never Gonna Give You Up",
       uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-    },
-    {
+    }),
+    discogsVideoFactory.youtube({
       description: "Rick Astley - Never Gonna Give You Up (Instrumental)",
       duration: 330,
-      embed: true,
       title: "Rick Astley - Never Gonna Give You Up (Instrumental)",
       uri: "https://www.youtube.com/watch?v=abc12345678",
-    },
+    }),
   ],
 });
 
@@ -226,21 +226,20 @@ const SHORT_RELEASE_ID = 100002;
 const shortReleaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
   id: SHORT_RELEASE_ID,
   tracklist: [
-    {
+    discogsTrackFactory.build({
       position: "1",
       title: "Short A",
       duration: "2:00",
       type_: "track",
-    },
+    }),
   ],
   videos: [
-    {
+    discogsVideoFactory.youtube({
       description: "Short A",
       duration: 120,
-      embed: true,
       title: "Short A",
       uri: "https://www.youtube.com/watch?v=def98765432",
-    },
+    }),
   ],
 });
 
@@ -256,21 +255,20 @@ const similarHouseReleaseDetail =
   discogsReleaseJsonFactory.withTracklistAndVideos({
     id: 100002,
     tracklist: [
-      {
+      discogsTrackFactory.build({
         position: "A1",
         title: "Similar Track",
         duration: "4:00",
         type_: "track",
-      },
+      }),
     ],
     videos: [
-      {
+      discogsVideoFactory.youtube({
         description: "Similar Track",
         duration: 240,
-        embed: true,
         title: "Similar Track",
         uri: "https://www.youtube.com/watch?v=similar12345",
-      },
+      }),
     ],
   });
 
@@ -1839,12 +1837,12 @@ describe("ReleasePlaybackProvider", () => {
         id: RELEASE_ID,
         videos: [],
         tracklist: [
-          {
+          discogsTrackFactory.build({
             position: "A1",
             title: "Override Track",
             duration: "3:32",
             type_: "track",
-          },
+          }),
         ],
       },
     );
@@ -3031,20 +3029,21 @@ describe("ReleasePlaybackProvider", () => {
     const longTracklistRelease =
       discogsReleaseJsonFactory.withTracklistAndVideos({
         id: 100001,
-        tracklist: Array.from({ length: 10 }, (_, index) => ({
-          position: String(index + 1),
-          title: `Track ${index + 1}`,
-          duration: "3:00",
-          type_: "track" as const,
-        })),
+        tracklist: Array.from({ length: 10 }, (_, index) =>
+          discogsTrackFactory.build({
+            position: String(index + 1),
+            title: `Track ${index + 1}`,
+            duration: "3:00",
+            type_: "track",
+          }),
+        ),
         videos: [
-          {
+          discogsVideoFactory.youtube({
             description: "Track video",
             duration: 180,
-            embed: true,
             title: "Track 1",
             uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
-          },
+          }),
         ],
       });
 
@@ -3060,33 +3059,32 @@ describe("ReleasePlaybackProvider", () => {
       "100002": discogsReleaseJsonFactory.withTracklistAndVideos({
         id: 100002,
         tracklist: [
-          {
+          discogsTrackFactory.build({
             position: "1",
             title: "Short A",
             duration: "2:00",
             type_: "track",
-          },
-          {
+          }),
+          discogsTrackFactory.build({
             position: "2",
             title: "Short B",
             duration: "2:30",
             type_: "track",
-          },
-          {
+          }),
+          discogsTrackFactory.build({
             position: "3",
             title: "Short C",
             duration: "3:00",
             type_: "track",
-          },
+          }),
         ],
         videos: [
-          {
+          discogsVideoFactory.youtube({
             description: "Short C",
             duration: 180,
-            embed: true,
             title: "Short C",
             uri: "https://www.youtube.com/watch?v=xyz98765432",
-          },
+          }),
         ],
       }),
     });
@@ -3255,12 +3253,12 @@ describe("ReleasePlaybackProvider", () => {
         id: RELEASE_ID,
         videos: [],
         tracklist: [
-          {
+          discogsTrackFactory.build({
             position: "A1",
             title: "Override Track",
             duration: "3:32",
             type_: "track",
-          },
+          }),
         ],
       },
     );
@@ -3306,12 +3304,12 @@ describe("ReleasePlaybackProvider", () => {
         id: RELEASE_ID,
         videos: [],
         tracklist: [
-          {
+          discogsTrackFactory.build({
             position: "A1",
             title: "Override Track",
             duration: "3:32",
             type_: "track",
-          },
+          }),
         ],
       },
     );

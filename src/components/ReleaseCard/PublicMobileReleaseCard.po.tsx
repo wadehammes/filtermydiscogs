@@ -1,13 +1,11 @@
-import {
-  BasePageObject,
-  type BasePageObjectProps,
-} from "src/tests/BasePageObject.po";
+import { PublicMobileReleaseCard } from "src/components/ReleaseCard/PublicMobileReleaseCard.component";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { ReleaseOpenPrefetchPageObject } from "src/tests/ReleaseOpenPrefetchPageObject.po";
 import type { DiscogsRelease, ReleaseCardProps } from "src/types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
-import { PublicMobileReleaseCard } from "./PublicMobileReleaseCard.component";
 
+jest.mock("src/api/urls");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
@@ -18,14 +16,9 @@ export type PublicMobileReleaseCardRenderProps = Partial<
   release?: DiscogsRelease;
 };
 
-export class PublicMobileReleaseCardPageObject extends BasePageObject {
+export class PublicMobileReleaseCardPageObject extends ReleaseOpenPrefetchPageObject {
   public testId = "fmdPublicMobileReleaseCard";
   public onReleaseClick = jest.fn();
-
-  constructor(props: BasePageObjectProps = {}) {
-    super(props);
-    jest.resetAllMocks();
-  }
 
   private publicMobileReleaseCardElement(
     overrides: PublicMobileReleaseCardRenderProps = {},
@@ -46,6 +39,7 @@ export class PublicMobileReleaseCardPageObject extends BasePageObject {
   ): RenderResult {
     return render(this.publicMobileReleaseCardElement(overrides), {
       includeCrate: false,
+      includeCollectionSync: false,
     });
   }
 }
