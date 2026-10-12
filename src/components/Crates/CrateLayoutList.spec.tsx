@@ -1,35 +1,26 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import type React from "react";
-import { useState } from "react";
-import { api } from "src/api/urls";
-import { CrateLayoutList } from "src/components/Crates/CrateLayoutList.component";
-import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
+import {
+  CrateLayoutListPageObject,
+  crateLayoutListDefaultItems,
+  crateLayoutListLayoutRelease,
+} from "src/components/Crates/CrateLayoutList.po";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import { crateLayoutItemFactory } from "src/tests/factories/CrateLayoutItem.factory";
-import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
-import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
-import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
   expectReleaseOpenPrefetchAfterHover,
   setupReleaseOpenPrefetchHoverTimers,
   teardownReleaseOpenPrefetchHoverTimers,
 } from "src/tests/utils/expectReleaseOpenPrefetchOnHover";
-import {
-  TestProviders,
-  testAuthenticatedAuthState,
-} from "src/tests/utils/testProviders";
 import type { CrateLayoutItem } from "src/types/crate.types";
-import { render, screen, waitFor } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/urls");
+let po: CrateLayoutListPageObject;
 
-const mockApi = jest.mocked(api);
-const apiError = new Error("API request failed");
+const layoutRelease = crateLayoutListLayoutRelease;
+const layoutItems = crateLayoutListDefaultItems;
 
 const CRATE_LAYOUT_ROW_HEIGHT = 72;
 
@@ -184,111 +175,16 @@ const mockCrateLayoutListRowBoundingRects = () => {
   };
 };
 
-const layoutRelease = releaseFactory.withTitle("Layout Row Album", 249504, {
-  instance_id: "layout-row-instance",
-});
-
-const layoutItems: CrateLayoutItem[] = [
-  {
-    kind: "release",
-    instance_id: "layout-row-instance",
-    sort_order: 1000,
-    section_id: null,
-    release: layoutRelease,
-    found_at: null,
-  },
-];
-
-const crateLayoutListTestWrapper = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => (
-  <TestProviders
-    authInitialState={testAuthenticatedAuthState}
-    includeCollectionSync={false}
-  >
-    {children}
-  </TestProviders>
-);
-
-const renderCrateLayoutList = (
-  props: React.ComponentProps<typeof CrateLayoutList>,
-) =>
-  render(<CrateLayoutList {...props} />, {
-    wrapper: crateLayoutListTestWrapper,
-  });
-
-const renderCrateLayoutWithEdgeInserts = (
-  layoutItems: CrateLayoutItem[],
-  props: Partial<React.ComponentProps<typeof CrateLayoutList>> = {},
-) => {
-  const CrateLayoutWithEdgeInserts = () => {
-    const [topInsertMount, setTopInsertMount] = useState<HTMLElement | null>(
-      null,
-    );
-    const [bottomInsertMount, setBottomInsertMount] =
-      useState<HTMLElement | null>(null);
-
-    return (
-      <>
-        <div
-          ref={setTopInsertMount}
-          data-testid="fmdCrateLayoutTopInsertMount"
-        />
-        <CrateLayoutList
-          crateId="crate-1"
-          layoutItems={layoutItems}
-          hidePackedItems={false}
-          packedEnabled={false}
-          isPacked={() => false}
-          setPacked={jest.fn()}
-          removeFromCrate={jest.fn()}
-          onReleaseClick={jest.fn()}
-          topInsertMount={topInsertMount}
-          bottomInsertMount={bottomInsertMount}
-          {...props}
-        />
-        <div
-          ref={setBottomInsertMount}
-          data-testid="fmdCrateLayoutBottomInsertMount"
-        />
-      </>
-    );
-  };
-
-  return render(<CrateLayoutWithEdgeInserts />, {
-    wrapper: crateLayoutListTestWrapper,
-  });
-};
-
 describe("CrateLayoutList", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    setupDefaultCrateApiMocks(mockApi);
-    setupFetchDiscogsReleaseMock(
-      mockApi,
-      discogsReleaseJsonFactory.withTracklistAndVideos({ id: 249504 }),
-    );
-    mockApiResponse(
-      true,
-      mockApi.discogsRelease,
-      discogsReleaseJsonFactory.withTracklistAndVideos({ id: 249504 }),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.collectionFields,
-      discogsCollectionFieldsResponseFactory.forReleaseNotes(),
-      apiError,
-    );
+    po = new CrateLayoutListPageObject();
   });
 
   it("on mobile, collapses release notes behind a per-row accordion until expanded", async () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
-    renderCrateLayoutList({
+    po.renderCrateLayoutList({
       crateId: "crate-1",
       layoutItems,
       hidePackedItems: false,
@@ -312,35 +208,23 @@ describe("CrateLayoutList", () => {
     const onReleaseClick = jest.fn();
     const user = setupReleaseOpenPrefetchHoverTimers();
 
-    render(
-      <CrateLayoutList
-        crateId="crate-1"
-        layoutItems={layoutItems}
-        hidePackedItems={false}
-        packedEnabled={false}
-        isPacked={() => false}
-        setPacked={jest.fn()}
-        removeFromCrate={jest.fn()}
-        onReleaseClick={onReleaseClick}
-      />,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders
-            authInitialState={testAuthenticatedAuthState}
-            includeCollectionSync={false}
-          >
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    po.renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate: jest.fn(),
+      onReleaseClick,
+    });
 
     try {
       await expectReleaseOpenPrefetchAfterHover({
         hoverTarget: screen.getByRole("button", {
           name: `Remove ${layoutRelease.basic_information.title} from crate`,
         }),
-        mockDiscogsRelease: mockApi.discogsRelease,
+        mockDiscogsRelease: po.mockApi.discogsRelease,
         user,
       });
     } finally {
@@ -352,28 +236,16 @@ describe("CrateLayoutList", () => {
     const removeFromCrate = jest.fn();
     const user = userEvent.setup();
 
-    render(
-      <CrateLayoutList
-        crateId="crate-1"
-        layoutItems={layoutItems}
-        hidePackedItems={false}
-        packedEnabled={false}
-        isPacked={() => false}
-        setPacked={jest.fn()}
-        removeFromCrate={removeFromCrate}
-        onReleaseClick={jest.fn()}
-      />,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders
-            authInitialState={testAuthenticatedAuthState}
-            includeCollectionSync={false}
-          >
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    po.renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate,
+      onReleaseClick: jest.fn(),
+    });
 
     await user.click(
       screen.getByRole("button", {
@@ -398,28 +270,16 @@ describe("CrateLayoutList", () => {
     const removeFromCrate = jest.fn();
     const user = userEvent.setup();
 
-    render(
-      <CrateLayoutList
-        crateId="crate-1"
-        layoutItems={layoutItems}
-        hidePackedItems={false}
-        packedEnabled={false}
-        isPacked={() => false}
-        setPacked={jest.fn()}
-        removeFromCrate={removeFromCrate}
-        onReleaseClick={jest.fn()}
-      />,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders
-            authInitialState={testAuthenticatedAuthState}
-            includeCollectionSync={false}
-          >
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    po.renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate,
+      onReleaseClick: jest.fn(),
+    });
 
     await user.click(
       screen.getByRole("button", {
@@ -442,7 +302,7 @@ describe("CrateLayoutList", () => {
       }),
     ]);
 
-    renderCrateLayoutList({
+    po.renderCrateLayoutList({
       crateId: "crate-1",
       layoutItems: sectionLayout,
       hidePackedItems: false,
@@ -477,45 +337,7 @@ describe("CrateLayoutList", () => {
       }),
     ]);
 
-    const CrateLayoutOnDetailShell = () => {
-      const [topInsertMount, setTopInsertMount] = useState<HTMLElement | null>(
-        null,
-      );
-      const [bottomInsertMount, setBottomInsertMount] =
-        useState<HTMLElement | null>(null);
-
-      return (
-        <TestProviders
-          authInitialState={testAuthenticatedAuthState}
-          includeCollectionSync={false}
-        >
-          <CollectionPlaybackPageShell currentPage="crates" hideFilters>
-            <div
-              ref={setTopInsertMount}
-              data-testid="fmdCrateLayoutTopInsertMount"
-            />
-            <CrateLayoutList
-              crateId="crate-1"
-              layoutItems={sectionLayout}
-              hidePackedItems={false}
-              packedEnabled={false}
-              isPacked={() => false}
-              setPacked={jest.fn()}
-              removeFromCrate={jest.fn()}
-              onReleaseClick={jest.fn()}
-              topInsertMount={topInsertMount}
-              bottomInsertMount={bottomInsertMount}
-            />
-            <div
-              ref={setBottomInsertMount}
-              data-testid="fmdCrateLayoutBottomInsertMount"
-            />
-          </CollectionPlaybackPageShell>
-        </TestProviders>
-      );
-    };
-
-    render(<CrateLayoutOnDetailShell />);
+    po.renderCrateLayoutOnDetailShell(sectionLayout);
 
     await user.click(
       screen.getByRole("button", { name: "Remove section Opening set" }),
@@ -545,7 +367,7 @@ describe("CrateLayoutList", () => {
       }),
     ]);
 
-    renderCrateLayoutList({
+    po.renderCrateLayoutList({
       crateId: "crate-1",
       layoutItems: tempSectionLayout,
       hidePackedItems: false,
@@ -571,7 +393,7 @@ describe("CrateLayoutList", () => {
   it("when the user adds the first section then clicks remove, opens the confirm dialog before removing", async () => {
     const user = userEvent.setup();
 
-    renderCrateLayoutList({
+    po.renderCrateLayoutList({
       crateId: "crate-1",
       layoutItems,
       hidePackedItems: false,
@@ -618,7 +440,7 @@ describe("CrateLayoutList", () => {
       }),
     ]);
 
-    renderCrateLayoutList({
+    po.renderCrateLayoutList({
       crateId: "crate-1",
       layoutItems: tempSectionLayout,
       hidePackedItems: false,
@@ -648,7 +470,7 @@ describe("CrateLayoutList", () => {
       }),
     ]);
 
-    renderCrateLayoutList({
+    po.renderCrateLayoutList({
       crateId: "crate-1",
       layoutItems: sectionLayout,
       hidePackedItems: false,
@@ -713,37 +535,19 @@ describe("CrateLayoutList", () => {
       },
     ];
 
-    setupFetchDiscogsReleaseMock(
-      mockApi,
-      discogsReleaseJsonFactory.withTracklistAndVideos({ id: 101 }),
-    );
-    setupFetchDiscogsReleaseMock(
-      mockApi,
-      discogsReleaseJsonFactory.withTracklistAndVideos({ id: 102 }),
-    );
+    po.mockDiscogsReleaseForId(101);
+    po.mockDiscogsReleaseForId(102);
 
-    render(
-      <CrateLayoutList
-        crateId="crate-1"
-        layoutItems={nestedSectionLayout}
-        hidePackedItems={false}
-        packedEnabled={false}
-        isPacked={() => false}
-        setPacked={jest.fn()}
-        removeFromCrate={jest.fn()}
-        onReleaseClick={jest.fn()}
-      />,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders
-            authInitialState={testAuthenticatedAuthState}
-            includeCollectionSync={false}
-          >
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    po.renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems: nestedSectionLayout,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate: jest.fn(),
+      onReleaseClick: jest.fn(),
+    });
 
     expect(screen.getByText("Parent Member One")).toBeInTheDocument();
     expect(screen.getByText("Parent Member Two")).toBeInTheDocument();
@@ -781,28 +585,16 @@ describe("CrateLayoutList", () => {
       },
     ];
 
-    render(
-      <CrateLayoutList
-        crateId="crate-1"
-        layoutItems={sectionLayout}
-        hidePackedItems={false}
-        packedEnabled={false}
-        isPacked={() => false}
-        setPacked={jest.fn()}
-        removeFromCrate={jest.fn()}
-        onReleaseClick={jest.fn()}
-      />,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders
-            authInitialState={testAuthenticatedAuthState}
-            includeCollectionSync={false}
-          >
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    po.renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems: sectionLayout,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate: jest.fn(),
+      onReleaseClick: jest.fn(),
+    });
 
     expect(
       screen.getAllByRole("button", {
@@ -835,28 +627,16 @@ describe("CrateLayoutList", () => {
       },
     ];
 
-    render(
-      <CrateLayoutList
-        crateId="crate-1"
-        layoutItems={loosePairLayout}
-        hidePackedItems={false}
-        packedEnabled={false}
-        isPacked={() => false}
-        setPacked={jest.fn()}
-        removeFromCrate={jest.fn()}
-        onReleaseClick={jest.fn()}
-      />,
-      {
-        wrapper: ({ children }) => (
-          <TestProviders
-            authInitialState={testAuthenticatedAuthState}
-            includeCollectionSync={false}
-          >
-            {children}
-          </TestProviders>
-        ),
-      },
-    );
+    po.renderCrateLayoutList({
+      crateId: "crate-1",
+      layoutItems: loosePairLayout,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      setPacked: jest.fn(),
+      removeFromCrate: jest.fn(),
+      onReleaseClick: jest.fn(),
+    });
 
     expect(
       screen.getAllByRole("button", {
@@ -898,28 +678,16 @@ describe("CrateLayoutList", () => {
         },
       ];
 
-      render(
-        <CrateLayoutList
-          crateId="crate-1"
-          layoutItems={dragLayout}
-          hidePackedItems={false}
-          packedEnabled={false}
-          isPacked={() => false}
-          setPacked={jest.fn()}
-          removeFromCrate={jest.fn()}
-          onReleaseClick={jest.fn()}
-        />,
-        {
-          wrapper: ({ children }) => (
-            <TestProviders
-              authInitialState={testAuthenticatedAuthState}
-              includeCollectionSync={false}
-            >
-              {children}
-            </TestProviders>
-          ),
-        },
-      );
+      po.renderCrateLayoutList({
+        crateId: "crate-1",
+        layoutItems: dragLayout,
+        hidePackedItems: false,
+        packedEnabled: false,
+        isPacked: () => false,
+        setPacked: jest.fn(),
+        removeFromCrate: jest.fn(),
+        onReleaseClick: jest.fn(),
+      });
 
       const handles = screen.getAllByRole("button", { name: "Reorder" });
       const firstHandle = handles[0];
@@ -995,7 +763,7 @@ describe("CrateLayoutList", () => {
         },
       ];
 
-      renderCrateLayoutWithEdgeInserts(dragLayout);
+      po.renderCrateLayoutWithEdgeInserts(dragLayout);
 
       const handles = screen.getAllByRole("button", { name: "Reorder" });
       const secondHandle = handles[1];
@@ -1062,7 +830,7 @@ describe("CrateLayoutList", () => {
         },
       ];
 
-      renderCrateLayoutWithEdgeInserts(dragLayout);
+      po.renderCrateLayoutWithEdgeInserts(dragLayout);
 
       const firstHandle = screen.getAllByRole("button", {
         name: "Reorder",
@@ -1122,7 +890,7 @@ describe("CrateLayoutList", () => {
         },
       ];
 
-      renderCrateLayoutWithEdgeInserts(dragLayout);
+      po.renderCrateLayoutWithEdgeInserts(dragLayout);
 
       const handles = screen.getAllByRole("button", { name: "Reorder" });
       const firstHandle = handles[0];
@@ -1200,7 +968,7 @@ describe("CrateLayoutList", () => {
         },
       ];
 
-      renderCrateLayoutWithEdgeInserts(dragLayout);
+      po.renderCrateLayoutWithEdgeInserts(dragLayout);
 
       const handles = screen.getAllByRole("button", { name: "Reorder" });
       const thirdHandle = handles[2];
@@ -1266,7 +1034,7 @@ describe("CrateLayoutList", () => {
         },
       ];
 
-      renderCrateLayoutList({
+      po.renderCrateLayoutList({
         crateId: "crate-1",
         layoutItems: dragLayout,
         hidePackedItems: false,

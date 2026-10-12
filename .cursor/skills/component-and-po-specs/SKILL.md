@@ -18,7 +18,7 @@ Handbook: [conventions.md → Testing](../../docs/handbook/conventions.md#testin
 
 ## Specs
 
-- Import PO first; assert with **`screen`** / **`userEvent`**.
+- Import PO first; assert with **`screen`** / **`userEvent`**. POs extending **`ReleaseOpenPrefetchPageObject`**: declare **`jest.mock("src/api/urls")`** in the leaf **`.po.tsx`** after imports (see conventions — import sort breaks base-PO-only mocks).
 - **`TestProviders`** for UI; minimal provider tree for single-context specs (see conventions).
 - Mock **`src/api/urls`** — not query hooks. Use [`setupDefaultCrateApiMocks`](../../src/tests/mocks/setupDefaultCrateApiMocks.ts) when `CrateProvider` mounts.
 - MSW: endpoint/client specs only ([`.jest/setupMswForApiSpecs.ts`](../../.jest/setupMswForApiSpecs.ts)); feature UI still mocks **`api.*`**.

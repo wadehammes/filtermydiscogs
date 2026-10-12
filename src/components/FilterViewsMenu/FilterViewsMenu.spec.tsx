@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { FilterViewsMenuPageObject } from "src/components/FilterViewsMenu/FilterViewsMenu.po";
 import iconButtonStyles from "src/styles/modules/icon-button.module.css";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
@@ -44,13 +43,10 @@ describe("FilterViewsMenu", () => {
     };
     const savedView = createFilterView("Deep Acid", deepAcidFilters);
 
-    mockApiResponse(
-      true,
-      po.mockApi.userPreferences,
+    po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
-      new Error("Preferences request failed"),
     );
 
     po.renderFilterViewsMenu({

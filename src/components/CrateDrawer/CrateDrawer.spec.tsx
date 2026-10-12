@@ -1,75 +1,22 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
-import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
-import releasesClientStyles from "src/components/ReleasesClient/ReleasesClient.module.css";
-import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
-import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
-import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
+import { CrateDrawerPageObject } from "src/components/CrateDrawer/CrateDrawer.po";
 import {
   expectFilterPopupAboveBottomDrawer,
   expectFilterPopupAbovePlaybackDock,
   openFilterSelect,
 } from "src/tests/filterControlTestHelpers";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
-import {
-  TestProviders,
-  testAuthenticatedAuthState,
-} from "src/tests/utils/testProviders";
-import { render, screen, waitFor } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
-jest.mock("src/api/urls");
-
-const mockApi = jest.mocked(api);
-
-const defaultCrates = crateWithCountFactory.defaultCrateSelectorCrates();
-
-const renderCrateDrawerInSidebar = (desktop: boolean) => {
-  setupMockMatchMedia({ desktop });
-
-  return render(
-    <div className={releasesClientStyles.sidebar}>
-      <CrateDrawer isOpen />
-    </div>,
-    {
-      wrapper: ({ children }) => (
-        <TestProviders authInitialState={testAuthenticatedAuthState}>
-          {children}
-        </TestProviders>
-      ),
-    },
-  );
-};
+let po: CrateDrawerPageObject;
 
 describe("CrateDrawer", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    localStorage.clear();
-
-    mockApiResponse(
-      true,
-      mockApi.crates,
-      cratesResponseFactory.withCrates(defaultCrates),
-      new Error("Crate API request failed"),
-    );
-
-    mockApi.crate.mockImplementation(async (crateId: string) => {
-      const crate = defaultCrates.find((entry) => entry.id === crateId);
-      if (!crate) {
-        throw new Error(`Crate not found: ${crateId}`);
-      }
-
-      const { releaseCount: _releaseCount, ...crateWithoutCount } = crate;
-      return crateWithReleasesResponseFactory.withReleases(
-        crateWithoutCount,
-        [],
-      );
-    });
+    po = new CrateDrawerPageObject();
   });
 
   it("renders the mobile bottom drawer when open inside the releases sidebar shell", async () => {
-    renderCrateDrawerInSidebar(false);
+    po.renderCrateDrawerInSidebar(false);
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
@@ -87,7 +34,7 @@ describe("CrateDrawer", () => {
   });
 
   it("floats the close control outside the drawer header", async () => {
-    renderCrateDrawerInSidebar(false);
+    po.renderCrateDrawerInSidebar(false);
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
@@ -108,7 +55,7 @@ describe("CrateDrawer", () => {
   });
 
   it("portals the crate selector listbox above the mobile bottom drawer", async () => {
-    renderCrateDrawerInSidebar(false);
+    po.renderCrateDrawerInSidebar(false);
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdBottomDrawer")).toBeVisible();
@@ -128,7 +75,7 @@ describe("CrateDrawer", () => {
   });
 
   it("portals the crate selector listbox above the desktop releases sidebar shell", async () => {
-    renderCrateDrawerInSidebar(true);
+    po.renderCrateDrawerInSidebar(true);
 
     await waitFor(() => {
       expect(

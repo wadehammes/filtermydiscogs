@@ -1,3 +1,4 @@
+import { artistFactory } from "src/tests/factories/Artist.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
@@ -22,7 +23,7 @@ function buildE2eReleaseDetail(
   return discogsReleaseJsonFactory.withTracklistAndVideos({
     id,
     title,
-    artists: [{ name: "Test Artist" }],
+    artists: [artistFactory.build({ name: "Test Artist" })],
     tracklist: [
       discogsTrackFactory.build({
         position: "A",

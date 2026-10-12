@@ -1,4 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type {
   DiscogsTrack,
@@ -17,15 +19,22 @@ import { resolveTrackPlaybackYoutubeVideoId } from "src/utils/trackPlaybackYoutu
 describe("trackPlaybackYoutube", () => {
   const release = releaseFactory.build({ instance_id: "101" });
   const tracks: DiscogsTrack[] = [
-    { position: "A1", title: "First", type_: "track" },
-    { position: "A2", title: "Second", type_: "track" },
+    discogsTrackFactory.build({
+      position: "A1",
+      title: "First",
+      type_: "track",
+    }),
+    discogsTrackFactory.build({
+      position: "A2",
+      title: "Second",
+      type_: "track",
+    }),
   ];
   const videos: DiscogsVideo[] = [
-    {
+    discogsVideoFactory.youtube({
       uri: "https://www.youtube.com/watch?v=abc12345678",
       title: "First",
-      embed: true,
-    },
+    }),
   ];
   const matchIndex = buildReleasePlaybackMatchIndex(tracks, videos);
 

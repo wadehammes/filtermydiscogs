@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   createPreviewQueueItem,
@@ -20,13 +21,12 @@ describe("releasePlaybackQueueWarmup", () => {
       }),
       createPreviewQueueItem({
         release,
-        video: {
+        video: discogsVideoFactory.youtube({
           description: "Preview",
           duration: 120,
-          embed: true,
           title: "Two",
           uri: "https://www.youtube.com/watch?v=preview12345",
-        },
+        }),
       }),
       createQueueItem({
         release,

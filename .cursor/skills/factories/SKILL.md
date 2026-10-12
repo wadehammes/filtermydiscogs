@@ -13,6 +13,7 @@ Full guide: [factories.md](../../docs/handbook/factories.md). Non-negotiable wit
 
 - Import by path: `src/tests/factories/Release.factory` — **no barrel `index.ts`**.
 - **`factory.build({ … })`** — override only fields the test names; use **presets** (`authenticated()`, `empty()`, …) before copying literals.
+- **Nested release detail:** **`discogsVideoFactory.youtube({ … })`**, **`discogsTrackFactory.build({ … })`** — CI **`handbookTestRules`** rejects inline **`embed: true`** / **`type_: "track"`** / bare YouTube **`uri:`** in specs and POs.
 - New typed mock shape → add/extend a factory in the same PR.
 
 ## Common factories
@@ -21,6 +22,7 @@ Full guide: [factories.md](../../docs/handbook/factories.md). Non-negotiable wit
 |------|---------|
 | Release / collection row | `releaseFactory`, `collectionFactory` |
 | Discogs API JSON | `discogsReleaseJsonFactory`, `discogsTrackFactory` |
+| Track YouTube override dialog | `trackYoutubeOverrideTargetFactory` (`unplayable()`) |
 | Auth / prefs | `authStatusFactory`, `userPreferencesFactory`, `verifiedDiscogsUserFactory` |
 | Crates | crate factories under [`src/tests/factories/`](../../src/tests/factories/) |
 

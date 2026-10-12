@@ -8,7 +8,6 @@ import {
   expectPortaledPopupAttachedToBody,
   openFilterSelect,
 } from "src/tests/filterControlTestHelpers";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor, within } from "test-utils";
@@ -193,17 +192,12 @@ describe("SettingsClient", () => {
       selectedStyles: ["Techno"],
     });
 
-    mockApiResponse(
-      true,
-      po.mockApi.userPreferences,
+    po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [technoView],
       }),
-      new Error("Preferences request failed"),
     );
-    mockApiResponse(
-      true,
-      po.mockApi.updateUserPreferences,
+    po.mockUpdateUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [
           {
@@ -212,7 +206,6 @@ describe("SettingsClient", () => {
           },
         ],
       }),
-      new Error("Preferences update failed"),
     );
 
     const user = userEvent.setup();

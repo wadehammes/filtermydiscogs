@@ -55,6 +55,64 @@ const MUTATION_HOOK_MOCK_LINE_RULES = [
   },
 ] as const;
 
+const NESTED_FACTORY_LOOKBACK_LINES = 12;
+
+const DISCOGS_VIDEO_FACTORY_CONTEXT =
+  /discogsVideoFactory\.(youtube|nonYoutube|build)\s*\(/;
+
+const DISCOGS_TRACK_FACTORY_CONTEXT =
+  /discogsTrackFactory\.(build|untitled)\s*\(/;
+
+const INLINE_DISCOGS_VIDEO_EMBED_PATTERN = /embed:\s*true/;
+
+const INLINE_DISCOGS_TRACK_TYPE_PATTERN = /type_:\s*"track"/;
+
+const INLINE_DISCOGS_VIDEO_URI_PATTERN =
+  /^\s+uri:\s*["']https?:\/\/[^"']*youtube[^"']*watch\?v=/i;
+
+const INLINE_DISCOGS_VIDEO_EMBED_MESSAGE =
+  "Do not use inline DiscogsVideo objects (embed: true). Use discogsVideoFactory.youtube({ … }) or discogsVideoFactory.build({ … }). See docs/handbook/conventions.md (Test data and factories → Nested release detail rows).";
+
+const INLINE_DISCOGS_TRACK_TYPE_MESSAGE =
+  'Do not use inline DiscogsTrack objects (type_: "track"). Use discogsTrackFactory.build({ … }) or discogsTrackFactory.untitled({ … }). See docs/handbook/conventions.md (Test data and factories → Nested release detail rows).';
+
+const INLINE_DISCOGS_VIDEO_URI_MESSAGE =
+  "Do not set inline YouTube uri: on DiscogsVideo literals. Use discogsVideoFactory.youtube({ uri: … }). See docs/handbook/conventions.md (Test data and factories → Nested release detail rows).";
+
+const recentLinesIncludePattern = (
+  lines: string[],
+  lineIndex: number,
+  pattern: RegExp,
+): boolean => {
+  const start = Math.max(0, lineIndex - NESTED_FACTORY_LOOKBACK_LINES);
+  return (
+    lines
+      .slice(start, lineIndex + 1)
+      .join("\n")
+      .match(pattern) !== null
+  );
+};
+
+const COMPONENT_SPEC_FORBIDDEN_IMPORT_RULES = [
+  {
+    rule: "component-spec-mock-api-response-import",
+    pattern: /from\s+["']src\/tests\/mocks\/mockApiResponse["']/,
+    message:
+      "Component specs must not import mockApiResponse or mockPendingApiResponse. Wire api.* mocks in the co-located *.po.tsx page object. See docs/handbook/conventions.md (Page object pattern).",
+  },
+  {
+    rule: "component-spec-setup-fetch-discogs-release-mock-import",
+    pattern: /from\s+["']src\/tests\/mocks\/setupFetchDiscogsReleaseMock["']/,
+    message:
+      "Component specs must not import setupFetchDiscogsReleaseMock. Use a page object mock* method or setupReleaseOpenPrefetchApiMocks via ReleaseOpenPrefetchPageObject. See docs/handbook/conventions.md (Page object pattern).",
+  },
+] as const;
+
+export const isComponentSpecFile = (relativePath: string): boolean =>
+  relativePath.startsWith("src/components/") &&
+  relativePath.endsWith(".spec.tsx") &&
+  !relativePath.endsWith(".hook.spec.tsx");
+
 const jestMockedQueryHookPattern =
   /jest\.mocked\s*\(\s*use[A-Z][a-zA-Z0-9]*Query\s*\)/;
 
@@ -127,8 +185,65 @@ export const validateFeatureTestSource = (
   const importsQueryHook = QUERY_HOOK_IMPORT_PATTERN.test(source);
   const importsMutationHook = MUTATION_HOOK_IMPORT_PATTERN.test(source);
   const violations: HandbookTestViolation[] = [...pathViolations];
+  const isComponentSpec = isComponentSpecFile(filePath);
+  const lines = source.split("\n");
 
-  for (const [index, line] of source.split("\n").entries()) {
+  for (const [index, line] of lines.entries()) {
+    if (INLINE_DISCOGS_VIDEO_EMBED_PATTERN.test(line)) {
+      violations.push({
+        filePath,
+        line: index + 1,
+        rule: "inline-discogs-video-embed",
+        message: INLINE_DISCOGS_VIDEO_EMBED_MESSAGE,
+        excerpt: line.trim(),
+      });
+    }
+
+    if (
+      INLINE_DISCOGS_TRACK_TYPE_PATTERN.test(line) &&
+      !line.includes("discogsTrackFactory") &&
+      !recentLinesIncludePattern(lines, index, DISCOGS_TRACK_FACTORY_CONTEXT)
+    ) {
+      violations.push({
+        filePath,
+        line: index + 1,
+        rule: "inline-discogs-track-type",
+        message: INLINE_DISCOGS_TRACK_TYPE_MESSAGE,
+        excerpt: line.trim(),
+      });
+    }
+
+    if (
+      INLINE_DISCOGS_VIDEO_URI_PATTERN.test(line) &&
+      !recentLinesIncludePattern(lines, index, DISCOGS_VIDEO_FACTORY_CONTEXT)
+    ) {
+      violations.push({
+        filePath,
+        line: index + 1,
+        rule: "inline-discogs-video-uri",
+        message: INLINE_DISCOGS_VIDEO_URI_MESSAGE,
+        excerpt: line.trim(),
+      });
+    }
+
+    if (isComponentSpec) {
+      for (const {
+        rule,
+        pattern,
+        message,
+      } of COMPONENT_SPEC_FORBIDDEN_IMPORT_RULES) {
+        if (pattern.test(line)) {
+          violations.push({
+            filePath,
+            line: index + 1,
+            rule,
+            message,
+            excerpt: line.trim(),
+          });
+        }
+      }
+    }
+
     for (const { rule, pattern, message } of QUERY_HOOK_MOCK_LINE_RULES) {
       if (pattern.test(line)) {
         violations.push({

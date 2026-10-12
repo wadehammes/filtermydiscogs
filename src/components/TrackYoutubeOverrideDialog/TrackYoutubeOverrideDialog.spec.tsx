@@ -1,20 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
-import { TrackYoutubeOverrideDialog } from "src/components/TrackYoutubeOverrideDialog/TrackYoutubeOverrideDialog.component";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { fireEvent, render, screen, waitFor } from "test-utils";
+import { TrackYoutubeOverrideDialogPageObject } from "src/components/TrackYoutubeOverrideDialog/TrackYoutubeOverrideDialog.po";
+import { trackYoutubeOverrideTargetFactory } from "src/tests/factories/TrackYoutubeOverrideTarget.factory";
+import { fireEvent, screen, waitFor } from "test-utils";
 
-jest.mock("src/api/urls", () => ({
-  api: {
-    fetchYoutubeOembed: jest.fn(),
-    saveTrackYoutubeOverride: jest.fn(),
-  },
-}));
-
-const mockFetchYoutubeOembed = jest.mocked(api.fetchYoutubeOembed);
-const mockSaveTrackYoutubeOverride = jest.mocked(api.saveTrackYoutubeOverride);
-const apiError = new Error("save failed");
+const unplayableTrackTarget = trackYoutubeOverrideTargetFactory.unplayable();
 
 const getPreviewThumbnail = (preview: HTMLElement): HTMLImageElement => {
   const thumbnail = preview.querySelector("img");
@@ -26,37 +16,15 @@ const getPreviewThumbnail = (preview: HTMLElement): HTMLImageElement => {
   return thumbnail;
 };
 
-const unplayableTrackTarget = {
-  trackKey: "101:A2",
-  trackPosition: "A2",
-  trackTitle: "Second",
-  instanceId: "101",
-  artist: "Artist",
-  releaseTitle: "Album",
-  discogsReleaseId: 249504,
-  initialYoutubeId: null,
-  hasDefaultYoutubeEmbed: false,
-  initialPreviewVideoId: null,
-};
+let po: TrackYoutubeOverrideDialogPageObject;
 
 describe("TrackYoutubeOverrideDialog", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockApiResponse(true, mockSaveTrackYoutubeOverride, { ok: true }, apiError);
-    mockFetchYoutubeOembed.mockResolvedValue({
-      title: "Never Gonna Give You Up",
-      authorName: "Rick Astley",
-    });
+    po = new TrackYoutubeOverrideDialogPageObject();
   });
 
   it("links to the Discogs release video upload page for community sharing", () => {
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({ target: unplayableTrackTarget });
 
     const link = screen.getByRole("link", { name: "add the video on Discogs" });
     expect(link).toHaveAttribute(
@@ -67,13 +35,7 @@ describe("TrackYoutubeOverrideDialog", () => {
   });
 
   it("uses an add title when the track has no Discogs embed or saved link", () => {
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({ target: unplayableTrackTarget });
 
     expect(
       screen.getByRole("heading", { name: "Add a YouTube video" }),
@@ -81,29 +43,19 @@ describe("TrackYoutubeOverrideDialog", () => {
   });
 
   it("shows artist, album, and track in the dialog description", () => {
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({ target: unplayableTrackTarget });
 
     expect(screen.getByText("Artist · Album")).toBeInTheDocument();
     expect(screen.getByText("A2 · Second")).toBeInTheDocument();
   });
 
   it("shows the preview for initialPreviewVideoId when the field is still empty", async () => {
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={{
-          ...unplayableTrackTarget,
-          initialPreviewVideoId: "dQw4w9WgXcQ",
-        }}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({
+      target: {
+        ...unplayableTrackTarget,
+        initialPreviewVideoId: "dQw4w9WgXcQ",
+      },
+    });
 
     const preview = screen.getByTestId("fmdTrackYoutubeOverridePreview");
     expect(preview).toHaveAttribute("data-preview-state", "pending");
@@ -118,13 +70,7 @@ describe("TrackYoutubeOverrideDialog", () => {
   it("shows YouTube title and channel when the preview video id resolves", async () => {
     const user = userEvent.setup();
 
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({ target: unplayableTrackTarget });
 
     await user.type(
       screen.getByLabelText("YouTube URL or video ID"),
@@ -132,7 +78,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     );
 
     await waitFor(() => {
-      expect(mockFetchYoutubeOembed).toHaveBeenCalledWith("dQw4w9WgXcQ");
+      expect(po.mockFetchYoutubeOembed).toHaveBeenCalledWith("dQw4w9WgXcQ");
     });
 
     expect(
@@ -146,13 +92,7 @@ describe("TrackYoutubeOverrideDialog", () => {
   it("shows a dashed preview placeholder until a valid video id is entered", async () => {
     const user = userEvent.setup();
 
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({ target: unplayableTrackTarget });
 
     const preview = screen.getByTestId("fmdTrackYoutubeOverridePreview");
     expect(preview).toHaveAttribute("data-preview-state", "empty");
@@ -186,13 +126,7 @@ describe("TrackYoutubeOverrideDialog", () => {
   it("keeps the dashed placeholder when the thumbnail fails to load", async () => {
     const user = userEvent.setup();
 
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({ target: unplayableTrackTarget });
 
     await user.type(
       screen.getByLabelText("YouTube URL or video ID"),
@@ -211,13 +145,9 @@ describe("TrackYoutubeOverrideDialog", () => {
   });
 
   it("uses a replace title when the track already has a Discogs embed", () => {
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={{ ...unplayableTrackTarget, hasDefaultYoutubeEmbed: true }}
-        onClose={() => undefined}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({
+      target: { ...unplayableTrackTarget, hasDefaultYoutubeEmbed: true },
+    });
 
     expect(
       screen.getByRole("heading", {
@@ -231,14 +161,11 @@ describe("TrackYoutubeOverrideDialog", () => {
     const onClose = jest.fn();
     const onSaved = jest.fn();
 
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={unplayableTrackTarget}
-        onClose={onClose}
-        onSaved={onSaved}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({
+      target: unplayableTrackTarget,
+      onClose,
+      onSaved,
+    });
 
     await user.type(
       screen.getByLabelText("YouTube URL or video ID"),
@@ -247,7 +174,7 @@ describe("TrackYoutubeOverrideDialog", () => {
     await user.click(screen.getByRole("button", { name: "Save link" }));
 
     await waitFor(() => {
-      expect(mockSaveTrackYoutubeOverride).toHaveBeenCalledWith({
+      expect(po.mockSaveTrackYoutubeOverride).toHaveBeenCalledWith({
         track_key: "101:A2",
         track_position: "A2",
         track_title: "Second",
@@ -267,24 +194,21 @@ describe("TrackYoutubeOverrideDialog", () => {
     const onClose = jest.fn();
     const onSaved = jest.fn();
 
-    render(
-      <TrackYoutubeOverrideDialog
-        open
-        target={{
-          ...unplayableTrackTarget,
-          initialYoutubeId: "dQw4w9WgXcQ",
-        }}
-        onClose={onClose}
-        onSaved={onSaved}
-      />,
-    );
+    po.renderTrackYoutubeOverrideDialog({
+      target: {
+        ...unplayableTrackTarget,
+        initialYoutubeId: "dQw4w9WgXcQ",
+      },
+      onClose,
+      onSaved,
+    });
 
     const input = screen.getByLabelText("YouTube URL or video ID");
     await user.clear(input);
     await user.click(screen.getByRole("button", { name: "Remove link" }));
 
     await waitFor(() => {
-      expect(mockSaveTrackYoutubeOverride).toHaveBeenCalledWith({
+      expect(po.mockSaveTrackYoutubeOverride).toHaveBeenCalledWith({
         track_key: "101:A2",
         track_position: "A2",
         track_title: "Second",

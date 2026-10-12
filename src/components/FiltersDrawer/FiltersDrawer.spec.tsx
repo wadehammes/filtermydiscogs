@@ -11,7 +11,6 @@ import {
   openFilterSelect,
   selectMultiFilterOption,
 } from "src/tests/filterControlTestHelpers";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import {
   defaultPersistedFilters,
   FILTERS_STORAGE_KEY,
@@ -143,13 +142,10 @@ describe("FiltersDrawer", () => {
     };
     const savedView = createFilterView("Techno", technoFilters);
 
-    mockApiResponse(
-      true,
-      po.mockApi.userPreferences,
+    po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
-      new Error("Preferences request failed"),
     );
 
     const user = userEvent.setup();
@@ -183,13 +179,10 @@ describe("FiltersDrawer", () => {
     };
     const savedView = createFilterView("Techno", technoFilters);
 
-    mockApiResponse(
-      true,
-      po.mockApi.userPreferences,
+    po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
-      new Error("Preferences request failed"),
     );
 
     const user = userEvent.setup();
@@ -222,13 +215,10 @@ describe("FiltersDrawer", () => {
     };
     const savedView = createFilterView("Techno", technoFilters);
 
-    mockApiResponse(
-      true,
-      po.mockApi.userPreferences,
+    po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
-      new Error("Preferences request failed"),
     );
 
     const user = userEvent.setup();
@@ -262,13 +252,10 @@ describe("FiltersDrawer", () => {
       selectedStyles: ["Techno"],
     });
 
-    mockApiResponse(
-      true,
-      po.mockApi.userPreferences,
+    po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
         filterViews: [savedView],
       }),
-      new Error("Preferences request failed"),
     );
 
     const user = userEvent.setup();

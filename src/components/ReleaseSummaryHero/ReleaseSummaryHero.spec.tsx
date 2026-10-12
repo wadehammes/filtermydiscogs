@@ -1,97 +1,21 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { api } from "src/api/urls";
-import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
-import { crateFactory } from "src/tests/factories/Crate.factory";
-import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
-import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
-import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
-import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import {
+  RELEASE_SUMMARY_HERO_RELEASE_ID,
+  ReleaseSummaryHeroPageObject,
+} from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.po";
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { expectReleaseCrateMenuInlineWithTrigger } from "src/tests/filterControlTestHelpers";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
-import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
-import { render, screen, waitFor } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
-const mockUseMediaQuery = jest.fn(() => false);
+const RELEASE_ID = RELEASE_SUMMARY_HERO_RELEASE_ID;
 
-const mockApi = jest.mocked(api);
-const apiError = new Error("API request failed");
-const RELEASE_ID = 249504;
-
-const communityReleaseDetail = (count: number) =>
-  discogsReleaseJsonFactory.withTracklistAndVideos({
-    id: RELEASE_ID,
-    community: {
-      rating: {
-        average: 5,
-        count,
-      },
-    },
-  });
-const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
-const defaultCrate = crateFactory.defaultTestCrate();
-
-jest.mock("src/hooks/useMediaQuery.hook", () => ({
-  useMediaQuery: () => mockUseMediaQuery(),
-}));
-
-jest.mock("src/api/urls");
-
-jest.mock("src/hooks/useFilterAtoms.hook", () => ({
-  useSelectedFormats: () => [],
-  useSelectedStyles: () => [],
-  useFiltersDispatch: () => jest.fn(),
-  useAllReleases: () => [],
-}));
-
-jest.mock("src/hooks/usePillClickHandler.hook", () => ({
-  usePillClickHandler: () => jest.fn(),
-}));
-
-const setupReleaseDetailMock = (
-  attributes: Parameters<
-    typeof discogsReleaseJsonFactory.withTracklistAndVideos
-  >[0] = {},
-) => {
-  mockApiResponse(
-    true,
-    mockApi.discogsRelease,
-    discogsReleaseJsonFactory.withTracklistAndVideos({
-      id: RELEASE_ID,
-      ...attributes,
-    }),
-    apiError,
-  );
-};
+let po: ReleaseSummaryHeroPageObject;
 
 describe("ReleaseSummaryHero", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseMediaQuery.mockReturnValue(false);
-    setupDefaultCrateApiMocks(mockApi);
-    mockApiResponse(
-      true,
-      mockApi.addReleaseToCrate,
-      crateMutationSuccessFactory.build(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.removeReleaseFromCrate,
-      crateMutationSuccessFactory.build(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.releaseCrateMembership,
-      releaseCrateMembershipResponseFactory.build(),
-      apiError,
-    );
-    setupReleaseDetailMock();
+    po = new ReleaseSummaryHeroPageObject();
   });
 
   it("exports shared modal toolbar classes for hero actions", async () => {
@@ -107,9 +31,7 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID);
     const user = userEvent.setup();
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    po.renderReleaseSummaryHero({ release });
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
@@ -124,19 +46,19 @@ describe("ReleaseSummaryHero", () => {
     await waitFor(() => {
       expect(
         screen.getByRole("menuitemcheckbox", {
-          name: new RegExp(defaultCrateWithCount.name, "i"),
+          name: new RegExp(po.defaultCrateWithCount.name, "i"),
         }),
       ).toBeInTheDocument();
     });
 
     await user.click(
       screen.getByRole("menuitemcheckbox", {
-        name: new RegExp(defaultCrateWithCount.name, "i"),
+        name: new RegExp(po.defaultCrateWithCount.name, "i"),
       }),
     );
 
     await waitFor(() => {
-      expect(mockApi.addReleaseToCrate).toHaveBeenCalled();
+      expect(po.mockApi.addReleaseToCrate).toHaveBeenCalled();
     });
   });
 
@@ -144,24 +66,9 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID);
     const user = userEvent.setup();
 
-    mockApiResponse(
-      true,
-      mockApi.crate,
-      crateWithReleasesResponseFactory.withReleases(defaultCrate, [release]),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.releaseCrateMembership,
-      releaseCrateMembershipResponseFactory.build({
-        crateIds: [defaultCrateWithCount.id],
-      }),
-      apiError,
-    );
+    po.mockReleaseAlreadyInCrate(release);
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    po.renderReleaseSummaryHero({ release });
 
     await waitFor(() => {
       expect(
@@ -178,20 +85,20 @@ describe("ReleaseSummaryHero", () => {
     await waitFor(() => {
       expect(
         screen.getByRole("menuitemcheckbox", {
-          name: new RegExp(defaultCrateWithCount.name, "i"),
+          name: new RegExp(po.defaultCrateWithCount.name, "i"),
         }),
       ).toBeInTheDocument();
     });
 
     await user.click(
       screen.getByRole("menuitemcheckbox", {
-        name: new RegExp(defaultCrateWithCount.name, "i"),
+        name: new RegExp(po.defaultCrateWithCount.name, "i"),
       }),
     );
 
     await waitFor(() => {
-      expect(mockApi.removeReleaseFromCrate).toHaveBeenCalledWith(
-        defaultCrateWithCount.id,
+      expect(po.mockApi.removeReleaseFromCrate).toHaveBeenCalledWith(
+        po.defaultCrateWithCount.id,
         String(release.instance_id),
       );
     });
@@ -210,7 +117,7 @@ describe("ReleaseSummaryHero", () => {
       throw new Error("Expected release to include at least one artist");
     }
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     const artistLink = screen.getByRole("link", { name: artist.name });
     expect(artistLink).toHaveAttribute(
@@ -239,7 +146,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     const artistLink = screen.getByRole("link", { name: "Test Artist" });
     expect(artistLink).toHaveAttribute(
@@ -262,7 +169,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     const labelLink = screen.getByRole("link", {
       name: "Dualtone Music Group",
@@ -278,7 +185,7 @@ describe("ReleaseSummaryHero", () => {
   });
 
   it("shows catalog metadata and community rating on separate lines", async () => {
-    setupReleaseDetailMock({
+    po.mockReleaseDetail({
       community: {
         rating: {
           average: 3.42,
@@ -296,7 +203,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     expect(screen.getByText("Test Label")).toBeInTheDocument();
     expect(screen.getByText("ABC-123")).toBeInTheDocument();
@@ -322,7 +229,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     expect(
       screen.getByRole("button", { name: "Filter by Vinyl format" }),
@@ -339,7 +246,7 @@ describe("ReleaseSummaryHero", () => {
   });
 
   it("shows the community average without a personal rating", async () => {
-    setupReleaseDetailMock({
+    po.mockReleaseDetail({
       community: {
         rating: {
           average: 4.19,
@@ -356,7 +263,7 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     expect(screen.queryByText(/You \d\/5/)).toBeNull();
 
@@ -377,40 +284,28 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    mockApi.discogsCollection.mockImplementation(() => new Promise(() => {}));
-    mockApiResponse(
-      true,
-      mockApi.updateReleaseRating,
-      {
-        username: "testuser",
-        release_id: RELEASE_ID,
-        rating: 5,
-      },
-      apiError,
-    );
+    po.mockDiscogsCollectionPending();
+    po.mockUpdateReleaseRating(5);
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-      includeCollectionSync: true,
-    });
+    po.renderReleaseSummaryHero({ release, includeCollectionSync: true });
 
     await waitFor(() => {
-      expect(mockApi.discogsCollection).toHaveBeenCalled();
+      expect(po.mockApi.discogsCollection).toHaveBeenCalled();
     });
 
-    const collectionFetchCount = mockApi.discogsCollection.mock.calls.length;
+    const collectionFetchCount = po.mockApi.discogsCollection.mock.calls.length;
 
     await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
 
     await waitFor(() => {
-      expect(mockApi.updateReleaseRating).toHaveBeenCalledWith({
+      expect(po.mockApi.updateReleaseRating).toHaveBeenCalledWith({
         username: "testuser",
         releaseId: RELEASE_ID,
         rating: 5,
       });
     });
 
-    expect(mockApi.discogsCollection.mock.calls.length).toBe(
+    expect(po.mockApi.discogsCollection.mock.calls.length).toBe(
       collectionFetchCount,
     );
   });
@@ -418,9 +313,7 @@ describe("ReleaseSummaryHero", () => {
   it("updates community after save with bypassCache refetch and keeps optimistic count when Discogs is stale", async () => {
     const user = userEvent.setup();
 
-    mockApi.discogsRelease.mockImplementation(() =>
-      Promise.resolve(communityReleaseDetail(4)),
-    );
+    po.mockDiscogsReleaseImplementation(po.communityReleaseDetail(4));
 
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 3,
@@ -430,21 +323,9 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    mockApiResponse(
-      true,
-      mockApi.updateReleaseRating,
-      {
-        username: "testuser",
-        release_id: RELEASE_ID,
-        rating: 5,
-      },
-      apiError,
-    );
+    po.mockUpdateReleaseRating(5);
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-      includeCollectionSync: true,
-    });
+    po.renderReleaseSummaryHero({ release, includeCollectionSync: true });
 
     await waitFor(() => {
       expect(screen.getByText(/5\.00 \(4\)/)).toBeInTheDocument();
@@ -456,7 +337,7 @@ describe("ReleaseSummaryHero", () => {
       expect(screen.getByText(/5\.00 \(5\)/)).toBeInTheDocument();
     });
 
-    expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID), {
+    expect(po.mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID), {
       bypassCache: true,
     });
   });
@@ -471,31 +352,19 @@ describe("ReleaseSummaryHero", () => {
       },
     });
 
-    mockApi.discogsCollection.mockImplementation(() => new Promise(() => {}));
-    mockApiResponse(
-      true,
-      mockApi.updateReleaseRating,
-      {
-        username: "testuser",
-        release_id: RELEASE_ID,
-        rating: 5,
-      },
-      apiError,
-    );
+    po.mockDiscogsCollectionPending();
+    po.mockUpdateReleaseRating(5);
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-      includeCollectionSync: true,
-    });
+    po.renderReleaseSummaryHero({ release, includeCollectionSync: true });
 
     await waitFor(() => {
-      expect(mockApi.discogsCollection).toHaveBeenCalled();
+      expect(po.mockApi.discogsCollection).toHaveBeenCalled();
     });
 
     await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
 
     await waitFor(() => {
-      expect(mockApi.updateReleaseRating).toHaveBeenCalledWith({
+      expect(po.mockApi.updateReleaseRating).toHaveBeenCalledWith({
         username: "testuser",
         releaseId: RELEASE_ID,
         rating: 5,
@@ -511,20 +380,9 @@ describe("ReleaseSummaryHero", () => {
         id: RELEASE_ID,
       },
     });
-    mockApiResponse(
-      true,
-      mockApi.updateReleaseRating,
-      {
-        username: "testuser",
-        release_id: RELEASE_ID,
-        rating: 5,
-      },
-      apiError,
-    );
+    po.mockUpdateReleaseRating(5);
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    po.renderReleaseSummaryHero({ release });
 
     expect(screen.getByTestId("fmdReleaseRatingPicker")).toBeInTheDocument();
     expect(
@@ -535,7 +393,7 @@ describe("ReleaseSummaryHero", () => {
     await user.click(screen.getByRole("radio", { name: "Rate 5 out of 5" }));
 
     await waitFor(() => {
-      expect(mockApi.updateReleaseRating).toHaveBeenCalledWith({
+      expect(po.mockApi.updateReleaseRating).toHaveBeenCalledWith({
         username: "testuser",
         releaseId: RELEASE_ID,
         rating: 5,
@@ -548,7 +406,7 @@ describe("ReleaseSummaryHero", () => {
       rating: 3,
     });
 
-    render(<ReleaseSummaryHero release={release} />);
+    po.renderReleaseSummaryHero({ release, authenticated: false });
 
     expect(screen.queryByTestId("fmdReleaseRatingPicker")).toBeNull();
   });
@@ -557,9 +415,7 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID);
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
-    render(<ReleaseSummaryHero release={release} />, {
-      authInitialState: testAuthenticatedAuthState,
-    });
+    po.renderReleaseSummaryHero({ release });
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();

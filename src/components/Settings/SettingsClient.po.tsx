@@ -58,18 +58,8 @@ export class SettingsClientPageObject extends BasePageObject {
     mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
 
     setupDefaultCrateApiMocks(this.mockApi);
-    mockApiResponse(
-      true,
-      this.mockApi.userPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      this.mockApi.updateUserPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      apiError,
-    );
+    this.mockDefaultUserPreferences();
+    this.mockDefaultUpdateUserPreferences();
     mockApiResponse(
       true,
       this.mockApi.discogsCollection,
@@ -86,6 +76,41 @@ export class SettingsClientPageObject extends BasePageObject {
       crateMutationSuccessFactory.build(),
     );
     this.mockApi.logout.mockResolvedValue(crateMutationSuccessFactory.build());
+  }
+
+  mockDefaultUserPreferences(): void {
+    mockApiResponse(
+      true,
+      this.mockApi.userPreferences,
+      userPreferencesFactory.defaultsApiResponse(),
+      apiError,
+    );
+  }
+
+  mockUserPreferences(
+    preferences: ReturnType<typeof userPreferencesFactory.asApiResponse>,
+  ): void {
+    mockApiResponse(true, this.mockApi.userPreferences, preferences, apiError);
+  }
+
+  mockDefaultUpdateUserPreferences(): void {
+    mockApiResponse(
+      true,
+      this.mockApi.updateUserPreferences,
+      userPreferencesFactory.defaultsApiResponse(),
+      apiError,
+    );
+  }
+
+  mockUpdateUserPreferences(
+    preferences: ReturnType<typeof userPreferencesFactory.asApiResponse>,
+  ): void {
+    mockApiResponse(
+      true,
+      this.mockApi.updateUserPreferences,
+      preferences,
+      apiError,
+    );
   }
 
   renderSettingsClient(): RenderResult {

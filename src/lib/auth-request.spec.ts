@@ -146,6 +146,10 @@ describe("auth-request", () => {
     });
 
     it("returns 502 instead of unauthorized when Discogs is down", async () => {
+      const consoleError = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       jest
         .spyOn(discogsOAuthService, "getIdentity")
         .mockRejectedValue(
@@ -164,6 +168,11 @@ describe("auth-request", () => {
       if ("error" in result) {
         expect(result.error.status).toBe(502);
       }
+
+      expect(consoleError).toHaveBeenCalledWith(
+        "OAuth identity verification failed:",
+        expect.objectContaining({ status: 502 }),
+      );
     });
 
     it("reuses a stale cached identity for this token pair when Discogs is down", async () => {
