@@ -2,7 +2,6 @@ import classNames from "classnames";
 import Link from "next/link";
 import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
-import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
 import styles from "./MobileMenu.module.css";
 
 interface MobileMenuDrawerFooterProps {
@@ -38,9 +37,6 @@ export function MobileMenuDrawerFooter({
           className={styles.menuItem}
           onClick={onSupportClick}
         >
-          <span className={styles.menuItemIcon} aria-hidden>
-            <HeartThinIcon className={styles.supportNavIcon} />
-          </span>
           {SUPPORT_PROJECT_NAV_LABEL}
         </SupportProjectNavLink>
         <button

@@ -17,6 +17,7 @@ describe("sentryInitOptions", () => {
     delete process.env.SENTRY_DSN;
     delete process.env.NEXT_PUBLIC_SENTRY_DSN;
     delete process.env.SENTRY_ENABLE_DEV;
+    delete process.env.NEXT_PUBLIC_SENTRY_ENABLE_DEV;
     delete process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
   });
 
@@ -55,6 +56,11 @@ describe("sentryInitOptions", () => {
     expect(resolveSentryEnabled()).toBe(false);
 
     env.SENTRY_ENABLE_DEV = "1";
+
+    expect(resolveSentryEnabled()).toBe(true);
+
+    env.SENTRY_ENABLE_DEV = undefined;
+    env.NEXT_PUBLIC_SENTRY_ENABLE_DEV = "1";
 
     expect(resolveSentryEnabled()).toBe(true);
   });

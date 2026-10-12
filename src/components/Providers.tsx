@@ -20,6 +20,7 @@ import { DonationSuccessToast } from "src/components/DonationSuccessToast/Donati
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
+import { SentryUserFeedbackDialogHost } from "src/components/SentryUserFeedbackDialog/SentryUserFeedbackDialog.component";
 import { SupportProjectToast } from "src/components/SupportProjectToast/SupportProjectToast.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
@@ -106,6 +107,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                           <DeploymentUpdateToast />
                           <DiscogsOutageToast />
                           <SupportProjectToast />
+                          <SentryUserFeedbackDialogHost />
                         </AnalyticsShell>
                       </AuthenticatedProvidersGate>
                     </CrateProvider>

@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ComponentProps, MouseEvent } from "react";
-import {
-  SUPPORT_PROJECT_ABOUT_PATH,
-  SUPPORT_PROJECT_NAV_ARIA_LABEL,
-} from "src/constants/supportProjectToast.constants";
+import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
 import {
   navigateToPathHash,
   splitPathHashHref,
@@ -43,12 +40,7 @@ export const SupportProjectNavLink = ({
   };
 
   return (
-    <Link
-      href={SUPPORT_PROJECT_ABOUT_PATH}
-      aria-label={SUPPORT_PROJECT_NAV_ARIA_LABEL}
-      onClick={handleClick}
-      {...props}
-    >
+    <Link href={SUPPORT_PROJECT_ABOUT_PATH} onClick={handleClick} {...props}>
       {children}
     </Link>
   );

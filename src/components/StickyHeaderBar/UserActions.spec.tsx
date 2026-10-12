@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { UserActionsPageObject } from "src/components/StickyHeaderBar/UserActions.po";
 import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
+import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
@@ -51,7 +52,7 @@ describe("UserActions", () => {
       "/about",
     );
     expect(
-      screen.getByRole("menuitem", { name: "Support the project" }),
+      screen.getByRole("menuitem", { name: SUPPORT_PROJECT_NAV_LABEL }),
     ).toHaveAttribute("href", "/about#support");
     expect(
       screen.getByRole("menuitem", { name: "Logout" }),

@@ -162,6 +162,10 @@ const nextConfig: NextConfig = {
       process.env.VERCEL_DEPLOYMENT_ID ??
       "development",
     NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? "development",
+    NEXT_PUBLIC_SENTRY_ENABLE_DEV:
+      process.env.NEXT_PUBLIC_SENTRY_ENABLE_DEV ??
+      process.env.SENTRY_ENABLE_DEV ??
+      "",
   },
   images: {
     localPatterns: [

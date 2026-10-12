@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
-const getFeedback = jest.fn();
+const openSentryUserFeedbackDialog = jest.fn();
 const resolveSentryEnabled = jest.fn<() => boolean>();
 
-jest.mock("@sentry/react", () => ({
-  getFeedback,
+jest.mock("src/utils/sentryUserFeedbackDialogBridge", () => ({
+  openSentryUserFeedbackDialog,
 }));
 
 jest.mock("src/lib/sentry/sentryInitOptions", () => ({
@@ -17,34 +17,24 @@ describe("openSentryUserFeedback", () => {
     resolveSentryEnabled.mockReturnValue(true);
   });
 
-  it("when Sentry is disabled, does not open the feedback form", async () => {
+  it("when Sentry is disabled, does not open the dialog", async () => {
     resolveSentryEnabled.mockReturnValue(false);
     const { openSentryUserFeedback } = await import(
       "src/lib/sentry/openSentryUserFeedback.client"
     );
 
-    await openSentryUserFeedback();
+    openSentryUserFeedback();
 
-    expect(getFeedback).not.toHaveBeenCalled();
+    expect(openSentryUserFeedbackDialog).not.toHaveBeenCalled();
   });
 
-  it("when feedback is available, opens the Sentry form", async () => {
-    const open = jest.fn();
-    const appendToDom = jest.fn();
-    getFeedback.mockReturnValue({
-      createForm: jest.fn(async () => ({
-        appendToDom,
-        open,
-      })),
-    });
-
+  it("when Sentry is enabled, opens the app feedback dialog", async () => {
     const { openSentryUserFeedback } = await import(
       "src/lib/sentry/openSentryUserFeedback.client"
     );
 
-    await openSentryUserFeedback();
+    openSentryUserFeedback();
 
-    expect(appendToDom).toHaveBeenCalledTimes(1);
-    expect(open).toHaveBeenCalledTimes(1);
+    expect(openSentryUserFeedbackDialog).toHaveBeenCalledTimes(1);
   });
 });
