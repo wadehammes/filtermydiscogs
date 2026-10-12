@@ -32,7 +32,7 @@ import {
 } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
 import { useReleasePlaybackTransportToggle } from "src/hooks/useReleasePlaybackTransportToggle.hook";
 import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYoutubeEmbed.hook";
-import type { PlaybackSkipSentryContext } from "src/lib/sentry/reportPlaybackSkip";
+import type { PlaybackSkipSentryDetails } from "src/lib/sentry/buildPlaybackSkipSentryEvent";
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
@@ -217,7 +217,7 @@ export const useReleasePlaybackProvider = (): {
   );
   const recoverPlaybackAfterTabVisibleRef = useRef<(() => void) | null>(null);
   const embedWatchdogAfterTabVisibleTimeoutRef = useRef<number | null>(null);
-  const resolveSkipContextRef = useRef<() => PlaybackSkipSentryContext>(
+  const resolveSkipContextRef = useRef<() => PlaybackSkipSentryDetails>(
     () => ({}),
   );
   const embedUnavailableSkipHandlerRef = useRef(

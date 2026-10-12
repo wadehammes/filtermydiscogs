@@ -1,4 +1,4 @@
-import type { PlaybackSkipSource } from "src/lib/sentry/reportPlaybackSkip";
+import type { PlaybackSkipSource } from "src/lib/sentry/playbackSkipSentrySource";
 
 export type PlaybackSkipSentryDetails = {
   artist?: string;

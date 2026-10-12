@@ -1,10 +1,14 @@
+import type { PlaybackSkipSentryDetails } from "src/lib/sentry/buildPlaybackSkipSentryEvent";
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import type { DiscogsTrack } from "src/types/discogs-release-detail.types";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 
 export type PlaybackSkipLogEntry = {
-  trackLabel: string;
+  errorCode: number;
   reason: string;
+  context?: PlaybackSkipSentryDetails;
+  trackLabel: string;
+  userReportSent?: boolean;
 };
 
 export const YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE = 100;
@@ -37,6 +41,20 @@ export const resolveYoutubeEmbedErrorReason = (errorCode: number): string => {
 export const playbackSkipLogDedupeKey = (
   entry: Pick<PlaybackSkipLogEntry, "trackLabel">,
 ): string => entry.trackLabel;
+
+export const playbackSkipLogEntryKey = (
+  entry: Pick<
+    PlaybackSkipLogEntry,
+    "trackLabel" | "reason" | "errorCode" | "context"
+  >,
+): string => {
+  const trackKey = entry.context?.trackKey?.trim();
+  if (trackKey) {
+    return `${trackKey}:${entry.errorCode}`;
+  }
+
+  return `${entry.errorCode}:${entry.trackLabel}:${entry.reason}`;
+};
 
 export const formatPlaybackSkipLogTitle = (entryCount: number): string => {
   if (entryCount <= 1) {

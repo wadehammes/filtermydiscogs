@@ -7,8 +7,11 @@ import {
   jest,
 } from "@jest/globals";
 import { createElement, Fragment, type ReactNode } from "react";
-import { createPlaybackSkipLogToast } from "src/utils/playbackSkippedTrackToast";
-import { render, screen } from "test-utils";
+import {
+  createPlaybackSkipLogToast,
+  PLAYBACK_SKIP_USER_REPORT_TITLE,
+} from "src/utils/playbackSkippedTrackToast";
+import { fireEvent, render, screen } from "test-utils";
 
 type ShowToastParams = {
   title: string;
@@ -37,6 +40,7 @@ describe("createPlaybackSkipLogToast", () => {
 
     toast.appendAndScheduleSkip(
       {
+        errorCode: 100,
         trackLabel: "A1 Track - Artist, Album",
         reason: "Private or removed",
       },
@@ -56,6 +60,7 @@ describe("createPlaybackSkipLogToast", () => {
 
     toast.appendAndScheduleSkip(
       {
+        errorCode: 100,
         trackLabel: "A2 Howler - Various, HDZ 06",
         reason: "Private or removed",
       },
@@ -78,11 +83,11 @@ describe("createPlaybackSkipLogToast", () => {
     });
 
     toast.appendAndScheduleSkip(
-      { trackLabel: "First", reason: "Private or removed" },
+      { errorCode: 100, trackLabel: "First", reason: "Private or removed" },
       onSkip,
     );
     toast.appendAndScheduleSkip(
-      { trackLabel: "Second", reason: "Cannot embed" },
+      { errorCode: 101, trackLabel: "Second", reason: "Cannot embed" },
       onSkip,
     );
 
@@ -102,16 +107,79 @@ describe("createPlaybackSkipLogToast", () => {
     });
 
     toast.appendAndScheduleSkip(
-      { trackLabel: "First", reason: "Private or removed" },
+      { errorCode: 100, trackLabel: "First", reason: "Private or removed" },
       onSkip,
     );
     toast.appendAndScheduleSkip(
-      { trackLabel: "Second", reason: "Cannot embed" },
+      { errorCode: 101, trackLabel: "Second", reason: "Cannot embed" },
       onSkip,
     );
 
     expect(showToast).toHaveBeenCalledTimes(2);
     expect(onSkip).toHaveBeenCalledTimes(2);
+  });
+
+  it("renders a report control for each skipped track", () => {
+    const onSkip = jest.fn();
+    const toast = createPlaybackSkipLogToast({
+      showToast,
+      dismissToast,
+    });
+
+    toast.appendAndScheduleSkip(
+      {
+        errorCode: -1,
+        trackLabel: "A1 Track - Artist, Album",
+        reason: "Private, removed, blocked, or still loading",
+        context: { trackKey: "inst-a1", youtubeVideoId: "vid1" },
+      },
+      onSkip,
+    );
+
+    const description = showToast.mock.calls[0]?.[0]?.description;
+    render(createElement(Fragment, null, description));
+
+    expect(
+      screen.getByRole("button", { name: "Report skip error" }),
+    ).toHaveAttribute("title", PLAYBACK_SKIP_USER_REPORT_TITLE);
+  });
+
+  it("when Report is clicked, sends to Sentry and shows Sent", () => {
+    const submitSkipUserReport = jest.fn();
+    const onSkip = jest.fn();
+    const toast = createPlaybackSkipLogToast({
+      showToast,
+      dismissToast,
+      submitSkipUserReport,
+    });
+
+    toast.appendAndScheduleSkip(
+      {
+        errorCode: 101,
+        trackLabel: "A1 Track - Artist, Album",
+        reason: "Cannot play in embedded player",
+        context: { trackKey: "inst-a1", youtubeVideoId: "vid1" },
+      },
+      onSkip,
+    );
+
+    const initialDescription = showToast.mock.calls[0]?.[0]?.description;
+    render(createElement(Fragment, null, initialDescription));
+
+    fireEvent.click(screen.getByRole("button", { name: "Report skip error" }));
+
+    expect(submitSkipUserReport).toHaveBeenCalledTimes(1);
+    expect(submitSkipUserReport).toHaveBeenCalledWith({
+      errorCode: 101,
+      trackLabel: "A1 Track - Artist, Album",
+      reason: "Cannot play in embedded player",
+      context: { trackKey: "inst-a1", youtubeVideoId: "vid1" },
+    });
+
+    const updatedDescription = showToast.mock.calls[1]?.[0]?.description;
+    render(createElement(Fragment, null, updatedDescription));
+
+    expect(screen.getByRole("button", { name: "Sent" })).toBeDisabled();
   });
 
   it("reset dismisses the toast without advancing again", () => {
@@ -122,7 +190,7 @@ describe("createPlaybackSkipLogToast", () => {
     });
 
     toast.appendAndScheduleSkip(
-      { trackLabel: "Track", reason: "Private or removed" },
+      { errorCode: 100, trackLabel: "Track", reason: "Private or removed" },
       onSkip,
     );
     toast.reset();

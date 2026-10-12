@@ -1,7 +1,7 @@
-import {
-  type PlaybackSkipSentryContext,
-  reportPlaybackSkipToSentry,
-} from "src/lib/sentry/reportPlaybackSkip";
+import type { PlaybackSkipCapturePayload } from "src/lib/sentry/buildPlaybackSkipCaptureOptions";
+import type { PlaybackSkipSentryDetails } from "src/lib/sentry/buildPlaybackSkipSentryEvent";
+import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
+import { definedProps } from "src/utils/definedProps";
 import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import {
   playbackSkipLogDedupeKey,
@@ -30,15 +30,10 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
 }: {
   appendSkip: (entry: PlaybackSkipLogEntry, onSkip: () => void) => void;
   resolveSkipDisplay: () => Pick<PlaybackSkipLogEntry, "trackLabel">;
-  resolveSkipContext?: () => PlaybackSkipSentryContext;
+  resolveSkipContext?: () => PlaybackSkipSentryDetails;
   isSkipAllowed: () => boolean;
   onBeforeSkip?: () => void;
-  reportSkip?: (payload: {
-    errorCode: number;
-    trackLabel: string;
-    reason: string;
-    context?: PlaybackSkipSentryContext;
-  }) => void;
+  reportSkip?: (payload: PlaybackSkipCapturePayload) => void;
 }) => {
   let lastDedupeKey: string | null = null;
 
@@ -61,17 +56,27 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
 
       const skipContext = resolveSkipContext?.();
 
-      reportSkip({
-        errorCode,
-        trackLabel: display.trackLabel,
-        reason,
-        ...(skipContext ? { context: skipContext } : {}),
-      });
+      reportSkip(
+        definedProps({
+          errorCode,
+          trackLabel: display.trackLabel,
+          reason,
+          context: skipContext,
+        }),
+      );
 
-      appendSkip({ ...display, reason }, () => {
-        lastDedupeKey = null;
-        playNext();
-      });
+      appendSkip(
+        definedProps({
+          ...display,
+          reason,
+          errorCode,
+          context: skipContext,
+        }),
+        () => {
+          lastDedupeKey = null;
+          playNext();
+        },
+      );
     },
     resetDedupe: () => {
       lastDedupeKey = null;
