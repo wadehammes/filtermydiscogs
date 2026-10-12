@@ -132,7 +132,7 @@ The app will be available at `http://localhost:6767`.
 | `/dashboard` | Collection analytics |
 | `/mosaic` | Cover-art mosaic grid (click tiles for release details; export download) |
 | `/settings` | Theme, sync, data preferences |
-| `/about` | About, support, clear data |
+| `/about` | About, optional donations (Stripe), clear data |
 | `/legal` | Terms of Service and Privacy Policy |
 | `/admin` | Admin stats (requires `ADMIN_USER_ID`) |
 

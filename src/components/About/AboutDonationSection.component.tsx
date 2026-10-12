@@ -7,6 +7,7 @@ import {
   DONATION_MIN_DOLLARS,
   DONATION_PRESET_AMOUNTS_CENTS,
 } from "src/constants/donate.constants";
+import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAboutDonationForm } from "src/hooks/useAboutDonationForm.hook";
 import typography from "src/styles/modules/typography.module.css";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
@@ -42,17 +43,17 @@ export const AboutDonationSection = () => {
             styles.donationEyebrow,
           )}
         >
-          Support
+          {SUPPORT_PROJECT_NAV_LABEL}
         </p>
         <h2
           id="about-support"
           className={classNames(styles.tileHeading, styles.donationHeading)}
         >
-          Keep this project free
+          Help keep FilterMyDiscogs free
         </h2>
         <p className={styles.tileBody}>
-          If FilterMyDiscogs has made your collection easier to actually use,
-          consider chipping in. Every contribution helps keep the app free and
+          If this app has made your collection easier to actually use, consider
+          a one-time donation. Every contribution helps cover hosting and keeps
           the roadmap moving.
         </p>
       </div>

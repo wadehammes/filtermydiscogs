@@ -82,6 +82,11 @@ export function LegalPageContent() {
               features or subscriptions), I&apos;ll explain the change before it
               applies to you.
             </li>
+            <li>
+              Optional one-time donations on the About page are processed by
+              Stripe. I do not store your card details; Stripe handles payment
+              under its own terms.
+            </li>
           </ul>
         </section>
 
@@ -144,6 +149,22 @@ export function LegalPageContent() {
               usage events in Postgres (for example page path, event name, and
               interaction label). When you&apos;re signed in, events may include
               your account ID. I use this to improve the app, not to sell data.
+            </li>
+            <li>
+              <strong>Error monitoring:</strong> To diagnose bugs, the app may
+              send error reports and limited performance data to Sentry when
+              something fails in your browser or on the server. This is
+              operational monitoring, not marketing analytics, and is separate
+              from the optional analytics choice above.
+            </li>
+            <li>
+              <strong>Session replay (Sentry):</strong> On a sample of visits
+              (about 10% in production, and when an error is captured), Sentry
+              may record a short replay of how you used the app. On-screen text
+              and form fields are masked, and images and video are not recorded.
+              Replays help me see what led to a problem. If you use Submit bug
+              report in the account menu, your feedback may include a replay
+              from your session along with any screenshot you attach.
             </li>
           </ul>
           <h3>What I Do With It</h3>
@@ -220,6 +241,23 @@ export function LegalPageContent() {
             <li>
               Cover images are proxied for performance and cached briefly; they
               are not permanently stored on my servers.
+            </li>
+            <li>
+              When error monitoring is enabled, Sentry processes error reports,
+              performance traces, session replays, and optional bug-report
+              submissions (including screenshots you choose to attach).{" "}
+              <a
+                href="https://sentry.io/privacy/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Sentry&apos;s privacy policy
+              </a>{" "}
+              applies.
+            </li>
+            <li>
+              One-time donations use Stripe; Stripe&apos;s terms and privacy
+              policy apply to checkout.
             </li>
           </ul>
         </section>

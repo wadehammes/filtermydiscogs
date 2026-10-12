@@ -266,7 +266,7 @@ Cache Components prerender static shells. Client hooks that depend on request-ti
 
 Do not re-add **`export const instant = false`** on the root layout to paper over missing Suspense boundaries — fix the hook site instead. When pathname is only needed on user interaction, prefer **`window.location.pathname`** in the handler (see **`SupportProjectToast`** / **`SupportProjectNavLink`**) over **`usePathname`** at render.
 
-Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/components/Legal/LegalPageContent.server.tsx) (Terms, Privacy, and data-management lists); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/components/Legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
+Public legal copy lives in the server component [`LegalPageContent.server.tsx`](../../src/components/Legal/LegalPageContent.server.tsx) (Terms, Privacy—including optional donations, Sentry error monitoring, and Session Replay—and data-management lists); auth-only **Clear All Data** UI is in [`LegalDataManagementActions.client.tsx`](../../src/components/Legal/LegalDataManagementActions.client.tsx) inside **`<Suspense>`** so the instant shell can prerender the policy text.
 
 ### Cached helpers (prerender-safe)
 
@@ -387,7 +387,7 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 | Client product failures | [`reportClientFailure`](../../src/lib/sentry/reportClientFailure.ts) — mosaic ([`reportMosaicFailureToSentry`](../../src/lib/sentry/reportMosaicFailure.ts)), donation, clear data, crate ownership; dashboard collection value only when the error is not an API **5xx** already reported by the Discogs proxy |
 | Server-side infra | [`reportInfrastructureFailure`](../../src/lib/sentry/reportInfrastructureFailure.ts) — DB pool (throttled **60s**), init health check, admin stats, public crate SSR |
 
-Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.config.ts)) so ad blockers and CSP rarely block ingest. Product analytics consent (**GTM** / **`trackEvent`**) is separate — Sentry is operational error reporting, not marketing analytics.
+Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.config.ts)) so ad blockers and CSP rarely block ingest. Product analytics consent (**GTM** / **`trackEvent`**) is separate — Sentry is operational error reporting, not marketing analytics. User-facing disclosure for Session Replay and bug-report attachments is in the Privacy Policy on **`/legal`** ([`LegalPageContent.server.tsx`](../../src/components/Legal/LegalPageContent.server.tsx)).
 
 ### Sentry runbook
 
