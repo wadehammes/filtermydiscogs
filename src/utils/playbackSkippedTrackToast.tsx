@@ -1,34 +1,71 @@
+"use client";
+
+import classNames from "classnames";
 import type { ReactNode } from "react";
+import { reportUserPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
+import textActionStyles from "src/styles/modules/text-action.module.css";
+import { definedProps } from "src/utils/definedProps";
 import { showPersistentQueueAreaErrorToast } from "src/utils/playbackQueueToast";
 import {
   formatPlaybackSkipLogTitle,
   type PlaybackSkipLogEntry,
+  playbackSkipLogEntryKey,
 } from "src/utils/playbackSkippedTrackLog";
 import { toast } from "src/utils/toast";
 
 export const PLAYBACK_SKIPPED_TRACKS_TOAST_ID = "playback-skipped-tracks";
 
-export type { PlaybackSkipLogEntry };
+export const PLAYBACK_SKIP_USER_REPORT_TITLE =
+  "Send this skip to error monitoring so we can investigate.";
+
+export const PLAYBACK_SKIP_USER_REPORT_SENT_TITLE = "Report already sent.";
 
 const PlaybackSkipLogEntryContent = ({
   entry,
+  onUserReport,
 }: {
   entry: PlaybackSkipLogEntry;
+  onUserReport: (entry: PlaybackSkipLogEntry) => void;
 }) => {
   return (
-    <>
+    <div className="fmd-playback-skip-log-entry">
       <span className="fmd-playback-skip-log-track">{entry.trackLabel}</span>
-      <span className="fmd-playback-skip-log-reason">{entry.reason}</span>
-    </>
+      <div className="fmd-playback-skip-log-reason-row">
+        <span className="fmd-playback-skip-log-reason">{entry.reason}</span>
+        <button
+          className={classNames(
+            textActionStyles.base,
+            "fmd-playback-skip-log-report",
+          )}
+          disabled={entry.userReportSent}
+          onClick={() => {
+            onUserReport(entry);
+          }}
+          title={
+            entry.userReportSent
+              ? PLAYBACK_SKIP_USER_REPORT_SENT_TITLE
+              : PLAYBACK_SKIP_USER_REPORT_TITLE
+          }
+          type="button"
+          {...definedProps({
+            "aria-label": entry.userReportSent
+              ? undefined
+              : "Report skip error",
+          })}
+        >
+          {entry.userReportSent ? "Sent" : "Report"}
+        </button>
+      </div>
+    </div>
   );
 };
 
 const formatSkipLogDescription = (
   entries: PlaybackSkipLogEntry[],
+  onUserReport: (entry: PlaybackSkipLogEntry) => void,
 ): ReactNode => {
   if (entries.length === 1) {
     const entry = entries[0];
-
     if (!entry) {
       return null;
     }
@@ -36,7 +73,10 @@ const formatSkipLogDescription = (
     return (
       <div className="fmd-playback-skip-log">
         <div className="fmd-playback-skip-log-single">
-          <PlaybackSkipLogEntryContent entry={entry} />
+          <PlaybackSkipLogEntryContent
+            entry={entry}
+            onUserReport={onUserReport}
+          />
         </div>
       </div>
     );
@@ -45,12 +85,15 @@ const formatSkipLogDescription = (
   return (
     <div className="fmd-playback-skip-log">
       <ul className="fmd-playback-skip-log-list">
-        {entries.map((entry, index) => (
+        {entries.map((entry) => (
           <li
-            key={`${index}-${entry.trackLabel}-${entry.reason}`}
+            key={playbackSkipLogEntryKey(entry)}
             className="fmd-playback-skip-log-item"
           >
-            <PlaybackSkipLogEntryContent entry={entry} />
+            <PlaybackSkipLogEntryContent
+              entry={entry}
+              onUserReport={onUserReport}
+            />
           </li>
         ))}
       </ul>
@@ -64,21 +107,47 @@ type ShowToastParams = {
   onClose: () => void;
 };
 
+const defaultSubmitSkipUserReport = (entry: PlaybackSkipLogEntry) => {
+  reportUserPlaybackSkipToSentry(
+    definedProps({
+      errorCode: entry.errorCode,
+      trackLabel: entry.trackLabel,
+      reason: entry.reason,
+      context: entry.context,
+    }),
+  );
+};
+
 export const createPlaybackSkipLogToast = ({
   showToast,
   dismissToast,
+  submitSkipUserReport = defaultSubmitSkipUserReport,
 }: {
   showToast: (params: ShowToastParams) => void;
   dismissToast: (id: string) => void;
+  submitSkipUserReport?: (entry: PlaybackSkipLogEntry) => void;
 }) => {
   let entries: PlaybackSkipLogEntry[] = [];
+  let lastOnClose: () => void = () => undefined;
 
   const refreshToast = (onClose: () => void) => {
+    lastOnClose = onClose;
     showToast({
       title: formatPlaybackSkipLogTitle(entries.length),
-      description: formatSkipLogDescription(entries),
+      description: formatSkipLogDescription(entries, handleUserReport),
       onClose,
     });
+  };
+
+  const handleUserReport = (reportedEntry: PlaybackSkipLogEntry) => {
+    submitSkipUserReport(reportedEntry);
+    const reportedKey = playbackSkipLogEntryKey(reportedEntry);
+    entries = entries.map((entry) =>
+      playbackSkipLogEntryKey(entry) === reportedKey
+        ? { ...entry, userReportSent: true }
+        : entry,
+    );
+    refreshToast(lastOnClose);
   };
 
   return {

@@ -25,6 +25,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
     expect(appendSkip.mock.calls[0]?.[0]).toEqual({
       trackLabel: "A1 Track - Artist, Album",
       reason: "Private or removed on YouTube",
+      errorCode: 100,
     });
 
     const onSkip = appendSkip.mock.calls[0]?.[1] as (() => void) | undefined;
@@ -93,6 +94,16 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
       },
     });
     expect(appendSkip).toHaveBeenCalledTimes(1);
+    expect(appendSkip.mock.calls[0]?.[0]).toEqual({
+      trackLabel: "A1 Track",
+      reason: "Cannot play in embedded player",
+      errorCode: 101,
+      context: {
+        youtubeVideoId: "yt123",
+        watchdogMs: 5000,
+        connectionQuality: "fast",
+      },
+    });
   });
 
   it("uses fallback copy when onError never arrives", () => {
@@ -113,6 +124,7 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
     expect(appendSkip.mock.calls[0]?.[0]).toEqual({
       trackLabel: "A1 Track - Artist, Album",
       reason: "Private, removed, blocked, or still loading",
+      errorCode: PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
     });
   });
 });

@@ -2253,6 +2253,17 @@ describe("ReleasePlaybackProvider", () => {
       }),
     );
 
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorCode: -1,
+        context: expect.objectContaining({
+          trackKey: `${collectionRelease.instance_id}:B1`,
+          youtubeVideoId: "abc12345678",
+        }),
+      }),
+      expect.any(Function),
+    );
+
     Object.defineProperty(navigator, "connection", {
       configurable: true,
       value: originalConnection,
