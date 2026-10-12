@@ -88,6 +88,15 @@
   text-align: center;
 }
 
+.errorTitle {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+  text-wrap: balance;
+}
+
 .loadingMessage,
 .errorMessage,
 .noPreviewMessage {

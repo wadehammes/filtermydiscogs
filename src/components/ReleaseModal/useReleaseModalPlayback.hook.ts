@@ -45,7 +45,7 @@ export const useReleaseModalPlayback = ({
   const releaseIdString = releaseId !== null ? String(releaseId) : "";
   const queryEnabled = isOpen && releaseId !== null;
 
-  const { releaseDetail, isLoading, isError, refetch } =
+  const { releaseDetail, isLoading, isError, releaseDetailError, refetch } =
     useReleaseModalReleaseDetailQuery({
       releaseIdString,
       enabled: queryEnabled,
@@ -247,6 +247,7 @@ export const useReleaseModalPlayback = ({
     fallbackSearchUrl,
     isLoading,
     isError,
+    releaseDetailError,
     refetch,
     handleTrackSelect,
     startAlbumTrackWithYoutubeVideoId,

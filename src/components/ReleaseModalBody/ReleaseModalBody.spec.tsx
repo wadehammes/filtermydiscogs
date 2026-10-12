@@ -4,7 +4,6 @@ import { ReleaseModalBodyPageObject } from "src/components/ReleaseModalBody/Rele
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import { act, screen, waitFor } from "test-utils";
 
 let po: ReleaseModalBodyPageObject;
@@ -15,17 +14,7 @@ describe("ReleaseModalBody tracklist loading", () => {
   });
 
   it("shows the tracklist skeleton during the first fetch, then the tracklist", async () => {
-    const releaseDetail = discogsReleaseJsonFactory.withTracklistAndVideos({
-      id: 249504,
-    });
-    let resolveFetch!: (value: typeof releaseDetail) => void;
-
-    po.mockApi.discogsRelease.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveFetch = resolve;
-        }),
-    );
+    const resolveFetch = po.mockPendingDiscogsRelease();
 
     po.renderReleaseModalBody();
 
@@ -35,7 +24,7 @@ describe("ReleaseModalBody tracklist loading", () => {
     expect(screen.queryByTestId("fmdReleaseTracklist")).not.toBeInTheDocument();
 
     await act(async () => {
-      resolveFetch(releaseDetail);
+      resolveFetch();
     });
 
     await waitFor(() => {
@@ -76,6 +65,19 @@ describe("ReleaseModalBody tracklist loading", () => {
     expect(screen.queryByTestId("fmdReleaseTracklist")).not.toBeInTheDocument();
     expect(po.mockApi.discogsRelease).not.toHaveBeenCalled();
   });
+
+  it("shows the load error state when release detail fetch fails", async () => {
+    po.mockDiscogsReleaseFetchError(500, "Server error");
+
+    po.renderReleaseModalBody();
+
+    expect(
+      await screen.findByTestId("fmdReleaseModalDetailLoadError"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Could not load track listing for this release."),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("ReleaseModalBody modal notes", () => {
@@ -85,8 +87,6 @@ describe("ReleaseModalBody modal notes", () => {
 
   it("remounts the notes editor when switching releases so save UI does not stick", async () => {
     const user = userEvent.setup();
-    let resolveSave: ((value: { success: boolean }) => void) | undefined;
-
     const releaseA = releaseFactory.forNotesEditor(12345, {
       instance_id: "body-notes-a",
       notes: [],
@@ -96,8 +96,7 @@ describe("ReleaseModalBody modal notes", () => {
       notes: [{ field_id: 3, value: "Other release note" }],
     });
 
-    setupFetchDiscogsReleaseMock(
-      po.mockApi,
+    po.mockDiscogsReleaseById(
       discogsReleaseJsonFactory.withTracklistAndVideos({ id: 12345 }),
       {
         "67890": discogsReleaseJsonFactory.withTracklistAndVideos({
@@ -107,12 +106,7 @@ describe("ReleaseModalBody modal notes", () => {
       },
     );
 
-    po.mockApi.updateCollectionNote.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveSave = resolve;
-        }),
-    );
+    const resolveSave = po.mockPendingUpdateCollectionNote();
 
     const view = po.renderReleaseModalBody({ release: releaseA });
 
@@ -132,7 +126,7 @@ describe("ReleaseModalBody modal notes", () => {
     });
     expect(screen.queryByText("Saving…")).not.toBeInTheDocument();
 
-    resolveSave?.(crateMutationSuccessFactory.build());
+    resolveSave(crateMutationSuccessFactory.build());
 
     expect(screen.queryByText("Saving…")).not.toBeInTheDocument();
   });

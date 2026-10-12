@@ -12,7 +12,7 @@ Handbook: [conventions.md → Testing](../../docs/handbook/conventions.md#testin
 ## Page objects (`*.po.tsx`)
 
 - Extend [`BasePageObject`](../../src/tests/BasePageObject.po.tsx); **`testId = "fmd<ComponentName>"`** matches component root.
-- **Mocks + render helpers only** — no `screen.getBy*`, no assertions, no `waitFor` in POs.
+- **Mocks + render helpers only** — no `screen.getBy*`, no assertions, no `waitFor` in POs. All **`api.*`** wiring lives here (**`setupMocks()`**, **`mockApiResponse`**, **`mockPendingApiResponse`**, shared setup helpers)—never in **`.spec.tsx`** (non-negotiable **#6** in conventions).
 - Defaults on JSX, then **`{...overrides}`** — no conditional spread per optional prop.
 - Private **`*Element(overrides)`** shared by `render*` / `rerender*`.
 

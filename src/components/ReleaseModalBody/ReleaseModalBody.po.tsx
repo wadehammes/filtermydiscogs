@@ -1,3 +1,4 @@
+import { ApiFetchError } from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
@@ -8,10 +9,15 @@ import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/Disc
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  mockApiResponse,
+  mockPendingApiResponse,
+} from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
+import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { ReleaseModalBody } from "./ReleaseModalBody.component";
@@ -38,6 +44,44 @@ export class ReleaseModalBodyPageObject extends BasePageObject {
   constructor(props: BasePageObjectProps = {}) {
     super(props);
     this.setupMocks();
+  }
+
+  defaultReleaseDetail(): DiscogsReleaseDetail {
+    return discogsReleaseJsonFactory.withTracklistAndVideos({ id: RELEASE_ID });
+  }
+
+  mockPendingDiscogsRelease(): (releaseDetail?: DiscogsReleaseDetail) => void {
+    const resolve = mockPendingApiResponse(mockApi.discogsRelease);
+
+    return (releaseDetail = this.defaultReleaseDetail()) => {
+      resolve(releaseDetail);
+    };
+  }
+
+  mockDiscogsReleaseFetchError(status: number, message?: string): void {
+    mockApiResponse(
+      false,
+      mockApi.discogsRelease,
+      this.defaultReleaseDetail(),
+      new ApiFetchError(status, message),
+    );
+  }
+
+  mockDiscogsReleaseById(
+    defaultReleaseDetail: DiscogsReleaseDetail,
+    releaseDetailsById: Record<string, DiscogsReleaseDetail> = {},
+  ): void {
+    setupFetchDiscogsReleaseMock(
+      mockApi,
+      defaultReleaseDetail,
+      releaseDetailsById,
+    );
+  }
+
+  mockPendingUpdateCollectionNote(): (
+    value: Awaited<ReturnType<typeof mockApi.updateCollectionNote>>,
+  ) => void {
+    return mockPendingApiResponse(mockApi.updateCollectionNote);
   }
 
   setupMocks() {

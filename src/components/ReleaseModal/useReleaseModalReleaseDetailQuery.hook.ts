@@ -20,6 +20,7 @@ export const useReleaseModalReleaseDetailQuery = ({
     data: releaseDetail,
     isPending: isReleaseDetailPending,
     isError,
+    error: releaseDetailError,
     refetch,
   } = useDiscogsReleaseQuery({
     releaseId: releaseIdString,
@@ -67,6 +68,7 @@ export const useReleaseModalReleaseDetailQuery = ({
     releaseDetail,
     isLoading,
     isError,
+    releaseDetailError,
     refetch,
   };
 };
