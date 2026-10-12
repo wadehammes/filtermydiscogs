@@ -8,6 +8,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const isProduction = process.env.NODE_ENV === "production";
 const isVercelPreview = process.env.VERCEL_ENV === "preview";
+const uploadSentrySourcemaps = Boolean(process.env.SENTRY_AUTH_TOKEN);
 
 // https://securityheaders.com
 const scriptSrc = isProduction
@@ -123,7 +124,7 @@ const nextConfig: NextConfig = {
     compilationMode: "annotation",
   },
   reactStrictMode: true,
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps: uploadSentrySourcemaps,
   poweredByHeader: false,
   compress: true,
   // Native module — must stay external so Vercel traces linux sharp binaries.
@@ -260,7 +261,8 @@ const sentryBuildOptions = {
   tunnelRoute: "/monitoring",
   widenClientFileUpload: true,
   sourcemaps: {
-    disable: !process.env.SENTRY_AUTH_TOKEN,
+    disable: !uploadSentrySourcemaps,
+    deleteSourcemapsAfterUpload: true,
   },
   ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
   ...(process.env.SENTRY_PROJECT
