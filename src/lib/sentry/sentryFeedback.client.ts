@@ -1,7 +1,7 @@
 "use client";
 
 import { feedbackIntegration } from "@sentry/react";
-import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
+import { SENTRY_USER_FEEDBACK_SOURCE_TAG } from "src/constants/sentryUserFeedbackForm.constants";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 
 export const buildSentryFeedbackClientOptions = ():
@@ -17,11 +17,9 @@ export const buildSentryFeedbackClientOptions = ():
     integrations: [
       feedbackIntegration({
         autoInject: false,
-        colorScheme: "system",
-        formTitle: SUBMIT_BUG_REPORT_NAV_LABEL,
-        submitButtonLabel: "Send bug report",
+        enableScreenshot: true,
         tags: {
-          feedback_source: "user_menu",
+          feedback_source: SENTRY_USER_FEEDBACK_SOURCE_TAG,
         },
       }),
     ],

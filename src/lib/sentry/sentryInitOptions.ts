@@ -8,6 +8,10 @@ export const SENTRY_TUNNEL_PATH = "/monitoring";
 export const resolveSentryDsn = (): string | undefined =>
   process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN;
 
+export const resolveSentryDevEnabled = (): boolean =>
+  process.env.SENTRY_ENABLE_DEV === "1" ||
+  process.env.NEXT_PUBLIC_SENTRY_ENABLE_DEV === "1";
+
 export const resolveSentryEnabled = (): boolean => {
   if (!resolveSentryDsn()?.trim()) {
     return false;
@@ -21,10 +25,7 @@ export const resolveSentryEnabled = (): boolean => {
     return false;
   }
 
-  if (
-    process.env.NODE_ENV === "development" &&
-    process.env.SENTRY_ENABLE_DEV !== "1"
-  ) {
+  if (process.env.NODE_ENV === "development" && !resolveSentryDevEnabled()) {
     return false;
   }
 

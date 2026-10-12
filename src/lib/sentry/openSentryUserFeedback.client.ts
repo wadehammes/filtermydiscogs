@@ -1,19 +1,12 @@
 "use client";
 
-import { getFeedback } from "@sentry/react";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
+import { openSentryUserFeedbackDialog } from "src/utils/sentryUserFeedbackDialogBridge";
 
-export const openSentryUserFeedback = async (): Promise<void> => {
+export const openSentryUserFeedback = (): void => {
   if (!resolveSentryEnabled()) {
     return;
   }
 
-  const feedback = getFeedback();
-  if (!feedback) {
-    return;
-  }
-
-  const form = await feedback.createForm();
-  form.appendToDom();
-  form.open();
+  openSentryUserFeedbackDialog();
 };

@@ -13,7 +13,6 @@ import { useAuth } from "src/context/auth.context";
 import { openSentryUserFeedback } from "src/lib/sentry/openSentryUserFeedback.client";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
-import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
 import { buildDiscogsAvatarProxyUrl } from "src/utils/discogsAvatarUrl";
 import styles from "./UserActions.module.css";
 
@@ -146,7 +145,6 @@ export const UserActions = ({
                 }
                 className={inlinePopoverMenuStyles.item}
               >
-                <HeartThinIcon className={styles.supportNavIcon} />
                 {SUPPORT_PROJECT_NAV_LABEL}
               </Menu.LinkItem>
             </InlinePopoverMenu.List>

@@ -126,12 +126,6 @@
   }
 }
 
-.supportNavIcon {
-  block-size: 0.875rem;
-  flex-shrink: 0;
-  inline-size: 0.875rem;
-}
-
 .mosaicLink {
   align-items: center;
   background: var(--card);
