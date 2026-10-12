@@ -1,5 +1,6 @@
 import { dsnFromString, type ErrorEvent, type EventHint } from "@sentry/core";
 import { normalizeSentryErrorEvent } from "src/lib/sentry/sentryBeforeSendEvent";
+import { isGoogleTagManagerYoutubeIntegrationError } from "src/utils/sentryThirdPartyIntegrationErrors";
 import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
 
 export const SENTRY_TUNNEL_PATH = "/monitoring";
@@ -100,6 +101,10 @@ export const sentryBeforeSend = (
   hint: EventHint,
 ): ErrorEvent | null => {
   if (isViewTransitionInterruptionError(hint.originalException)) {
+    return null;
+  }
+
+  if (isGoogleTagManagerYoutubeIntegrationError(hint.originalException)) {
     return null;
   }
 

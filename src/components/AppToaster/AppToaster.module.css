@@ -533,8 +533,14 @@
   }
 
   & :global(.fmd-toast-description) {
+    min-width: 0;
     font-size: var(--text-meta-sm);
     line-height: 1.45;
+  }
+
+  & :global(.fmd-playback-skip-log) {
+    min-width: 0;
+    width: 100%;
   }
 
   & :global(.fmd-playback-skip-log-single) {
@@ -558,13 +564,21 @@
     min-width: 0;
   }
 
+  & :global(.fmd-playback-skip-log-item) {
+    min-width: 0;
+  }
+
   & :global(.fmd-playback-skip-log-track) {
     display: block;
+    min-width: 0;
+    overflow: hidden;
     color: var(--foreground);
     font-size: var(--text-meta-sm);
     font-weight: var(--font-medium);
     line-height: 1.35;
-    text-wrap: pretty;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
   }
 
   & :global(.fmd-playback-skip-log-reason-row) {

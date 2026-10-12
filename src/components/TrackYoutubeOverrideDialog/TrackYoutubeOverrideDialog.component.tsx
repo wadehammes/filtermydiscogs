@@ -11,6 +11,8 @@ import {
   type TrackYoutubeOverrideFormValues,
   trackYoutubeOverrideFormSchema,
 } from "src/lib/validation/userTrack.schemas";
+import modalFormFieldStyles from "src/styles/modules/modal-form-field.module.css";
+import modalInputStyles from "src/styles/modules/modal-input.module.css";
 import { definedProps } from "src/utils/definedProps";
 import { getDiscogsReleaseVideosUpdateUrl } from "src/utils/discogsReleaseUrls";
 import { normalizeYoutubeVideoInput } from "src/utils/userTrack";
@@ -241,7 +243,10 @@ export const TrackYoutubeOverrideDialog = ({
           <input
             data-1p-ignore
             id={`${inputId}-youtube`}
-            className={validatedFieldClass(styles.input)}
+            className={validatedFieldClass(
+              modalFormFieldStyles.input,
+              modalInputStyles.field,
+            )}
             type="text"
             placeholder="https://www.youtube.com/watch?v=…"
             autoComplete="off"

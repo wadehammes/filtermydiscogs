@@ -7,8 +7,11 @@ import {
 } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
+import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAuth } from "src/context/auth.context";
+import { openSentryUserFeedback } from "src/lib/sentry/openSentryUserFeedback.client";
+import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import { HeartThinIcon } from "src/styles/icons/HeartThinIcon.component";
 import { buildDiscogsAvatarProxyUrl } from "src/utils/discogsAvatarUrl";
@@ -18,16 +21,26 @@ interface UserActionsProps {
   variant?: "mobile" | "desktop";
   showMosaic?: boolean;
   showUsername?: boolean;
+  showSubmitBugReport?: boolean;
+  onSubmitBugReport?: () => void;
 }
 
 export const UserActions = ({
   variant = "desktop",
   showMosaic = true,
   showUsername = true,
+  showSubmitBugReport: showSubmitBugReportProp,
+  onSubmitBugReport: onSubmitBugReportProp,
 }: UserActionsProps) => {
   const { logout, state: authState } = useAuth();
   const { username, avatarUrl } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const showSubmitBugReport = showSubmitBugReportProp ?? resolveSentryEnabled();
+  const handleSubmitBugReport =
+    onSubmitBugReportProp ??
+    (() => {
+      void openSentryUserFeedback();
+    });
 
   const handleLogout = useCallback(async () => {
     setIsDropdownOpen(false);
@@ -112,6 +125,17 @@ export const UserActions = ({
               >
                 About
               </Menu.LinkItem>
+              {showSubmitBugReport ? (
+                <Menu.Item
+                  className={inlinePopoverMenuStyles.item}
+                  onClick={() => {
+                    handleMenuNavigation();
+                    handleSubmitBugReport();
+                  }}
+                >
+                  {SUBMIT_BUG_REPORT_NAV_LABEL}
+                </Menu.Item>
+              ) : null}
               <Menu.LinkItem
                 closeOnClick
                 render={

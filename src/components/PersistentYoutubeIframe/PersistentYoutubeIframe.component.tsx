@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { imperativelySyncPersistentYoutubeIframeToVideoId } from "src/components/PersistentYoutubeIframe/persistentYoutubeIframeVideoSwitch";
+import { GTM_YOUTUBE_IFRAME_INSPECTED_ATTR } from "src/constants/analytics";
 import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
 import { definedProps } from "src/utils/definedProps";
 import {
@@ -20,6 +21,8 @@ interface PersistentYoutubeIframeProps {
   deferVideoLoad?: boolean;
   variant?: "hidden" | "visible";
 }
+
+export const PERSISTENT_YOUTUBE_IFRAME_ID = "fmdPersistentYoutubeEmbed";
 
 const buildEmbedUrlForVideo = (videoId: string, autoplay: boolean): string => {
   const origin =
@@ -132,9 +135,11 @@ export const PersistentYoutubeIframe = ({
   return (
     <iframe
       ref={setIframeRef}
+      id={PERSISTENT_YOUTUBE_IFRAME_ID}
       onLoad={handleIframeLoad}
       src={embedUrl}
       title={videoTitle}
+      {...{ [GTM_YOUTUBE_IFRAME_INSPECTED_ATTR]: "true" }}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowFullScreen
       className={classNames({

@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
+import {
+  PERSISTENT_YOUTUBE_IFRAME_ID,
+  PersistentYoutubeIframe,
+} from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
+import { GTM_YOUTUBE_IFRAME_INSPECTED_ATTR } from "src/constants/analytics";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 import {
   TestProviders,
@@ -73,6 +77,10 @@ describe("PersistentYoutubeIframe", () => {
       />,
       { wrapper: createWrapper() },
     );
+
+    const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
+    expect(iframe).toHaveAttribute("id", PERSISTENT_YOUTUBE_IFRAME_ID);
+    expect(iframe).toHaveAttribute(GTM_YOUTUBE_IFRAME_INSPECTED_ATTR, "true");
 
     expect(mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith({
       iframe: expect.any(HTMLIFrameElement),

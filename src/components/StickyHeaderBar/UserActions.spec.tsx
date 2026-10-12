@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { UserActionsPageObject } from "src/components/StickyHeaderBar/UserActions.po";
+import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
 import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
@@ -63,6 +64,23 @@ describe("UserActions", () => {
     await openUserMenu();
 
     expectPortaledPopupAttachedToBody(screen.getByRole("menu"));
+  });
+
+  it("when Submit bug report is shown, opens user feedback", async () => {
+    const onSubmitBugReport = jest.fn();
+    po.renderUserActions({
+      variant: "desktop",
+      showSubmitBugReport: true,
+      onSubmitBugReport,
+    });
+
+    const user = await openUserMenu();
+
+    await user.click(
+      screen.getByRole("menuitem", { name: SUBMIT_BUG_REPORT_NAV_LABEL }),
+    );
+
+    expect(onSubmitBugReport).toHaveBeenCalledTimes(1);
   });
 
   it("opens theme submenu with palette options", async () => {

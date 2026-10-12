@@ -9,6 +9,7 @@ import {
   resolvePlaybackSkipSentryLevel,
   resolvePlaybackSkipSource,
 } from "src/lib/sentry/playbackSkipSentrySource";
+import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import { definedProps } from "src/utils/definedProps";
 
 export type PlaybackSkipCapturePayload = {
@@ -18,9 +19,14 @@ export type PlaybackSkipCapturePayload = {
   context?: PlaybackSkipSentryDetails;
 };
 
+export type BuildPlaybackSkipCaptureOptionsParams = {
+  userReported: boolean;
+  userReport?: PlaybackSkipUserReportFormValues;
+};
+
 export const buildPlaybackSkipCaptureOptions = (
   { errorCode, trackLabel, reason, context }: PlaybackSkipCapturePayload,
-  { userReported }: { userReported: boolean },
+  { userReported, userReport }: BuildPlaybackSkipCaptureOptionsParams,
 ): {
   extra: Record<string, unknown>;
   fingerprint: string[];
@@ -50,6 +56,7 @@ export const buildPlaybackSkipCaptureOptions = (
     ? [
         "playback-skip",
         "user-report",
+        userReport?.category ?? "unknown",
         source,
         reason,
         context?.trackKey?.trim() || trackLabel,
@@ -61,6 +68,9 @@ export const buildPlaybackSkipCaptureOptions = (
   );
   if (userReported) {
     tags["playback.user_report"] = "true";
+    if (userReport?.category) {
+      tags["playback.user_report_category"] = userReport.category;
+    }
   }
 
   return {
@@ -68,13 +78,15 @@ export const buildPlaybackSkipCaptureOptions = (
     message,
     fingerprint,
     tags,
-    extra: {
+    extra: definedProps({
       detailLine,
       trackLabel,
       reason,
       skipSource: source,
       userReported,
+      userReportCategory: userReport?.category,
+      userNote: userReport?.note,
       ...context,
-    },
+    }),
   };
 };

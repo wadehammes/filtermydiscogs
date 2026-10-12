@@ -1,8 +1,10 @@
 import {
+  type BuildPlaybackSkipCaptureOptionsParams,
   buildPlaybackSkipCaptureOptions,
   type PlaybackSkipCapturePayload,
 } from "src/lib/sentry/buildPlaybackSkipCaptureOptions";
 import { captureAppMessage } from "src/lib/sentry/captureAppMessage.client";
+import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 
 const MAX_PLAYBACK_SKIP_SENTRY_REPORTS = 15;
 let playbackSkipSentryReportCount = 0;
@@ -16,9 +18,9 @@ export const getPlaybackSkipSentryReportCountForTests = () =>
 
 const capturePlaybackSkipReport = (
   payload: PlaybackSkipCapturePayload,
-  { userReported }: { userReported: boolean },
+  captureParams: BuildPlaybackSkipCaptureOptionsParams,
 ) => {
-  const options = buildPlaybackSkipCaptureOptions(payload, { userReported });
+  const options = buildPlaybackSkipCaptureOptions(payload, captureParams);
   captureAppMessage(options.message, {
     level: options.level,
     fingerprint: options.fingerprint,
@@ -29,23 +31,21 @@ const capturePlaybackSkipReport = (
 
 export const reportPlaybackSkipToSentry = (
   payload: PlaybackSkipCapturePayload,
-  options?: { userReport?: boolean },
 ) => {
-  const userReported = options?.userReport === true;
-
-  if (!userReported) {
-    if (playbackSkipSentryReportCount >= MAX_PLAYBACK_SKIP_SENTRY_REPORTS) {
-      return;
-    }
-
-    playbackSkipSentryReportCount += 1;
+  if (playbackSkipSentryReportCount >= MAX_PLAYBACK_SKIP_SENTRY_REPORTS) {
+    return;
   }
 
-  capturePlaybackSkipReport(payload, { userReported });
+  playbackSkipSentryReportCount += 1;
+  capturePlaybackSkipReport(payload, { userReported: false });
 };
 
 export const reportUserPlaybackSkipToSentry = (
   payload: PlaybackSkipCapturePayload,
+  userReport: PlaybackSkipUserReportFormValues,
 ) => {
-  reportPlaybackSkipToSentry(payload, { userReport: true });
+  capturePlaybackSkipReport(payload, {
+    userReported: true,
+    userReport,
+  });
 };
