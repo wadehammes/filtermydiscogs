@@ -21,6 +21,7 @@ import { AuthQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
 import { clearUserScopedQueries } from "src/lib/user-scoped-queries";
 import {
+  type AuthStatus,
   clearSessionAuthCookies,
   clearUrlParams,
   getAuthUrlErrorMessage,
@@ -266,6 +267,9 @@ export const AuthProvider = ({
 
     if (authStatus === "success") {
       setIsCompletingOAuth(true);
+      const previousAuth = queryClient.getQueryData<AuthStatus>(
+        AuthQueryKeys.all(),
+      );
       void refetch()
         .then((result) => {
           const data = result.data;
@@ -273,7 +277,17 @@ export const AuthProvider = ({
             if (data.userId) {
               trackLoginCompleted(data.userId);
             }
-            clearUserScopedQueries(queryClient);
+            const previousUserId = previousAuth?.isAuthenticated
+              ? (previousAuth.userId ?? null)
+              : null;
+            const nextUserId = data.userId ?? null;
+            if (
+              previousUserId != null &&
+              nextUserId != null &&
+              previousUserId !== nextUserId
+            ) {
+              clearUserScopedQueries(queryClient);
+            }
           }
           clearUrlParams();
         })

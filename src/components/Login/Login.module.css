@@ -181,12 +181,24 @@
   }
 }
 
+@keyframes featuresSoundwavesDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-4%, 0, 0);
+  }
+}
+
 .featuresSoundwaves {
+  animation: featuresSoundwavesDrift 28s ease-in-out infinite alternate;
   block-size: 2rem;
   color: color-mix(in srgb, var(--foreground) 14%, transparent);
   display: block;
   flex-shrink: 0;
-  inline-size: 100%;
+  inline-size: 105%;
+  margin-inline-start: -2.5%;
   mask-image: linear-gradient(
     90deg,
     transparent 0%,
@@ -195,14 +207,19 @@
     transparent 100%
   );
   opacity: 0.9;
-  width: 100%;
+  width: 105%;
 
   @media (width >= 768px) {
     block-size: 2.25rem;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    inline-size: 100%;
+    margin-inline-start: 0;
     opacity: 0.35;
+    transform: none;
+    width: 100%;
   }
 }
 

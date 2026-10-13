@@ -181,8 +181,25 @@ describe("AuthProvider", () => {
     expect(result.current.state.userId).toBe("123");
     expect(result.current.state.isCheckingAuth).toBe(false);
     expect(mockClearUrlParams).toHaveBeenCalled();
-    expect(removeQueriesSpy).toHaveBeenCalled();
+    expect(removeQueriesSpy).not.toHaveBeenCalled();
     expect(clearSpy).not.toHaveBeenCalled();
+  });
+
+  it("clears user-scoped queries when OAuth completes as a different user", async () => {
+    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.authSuccess());
+    queryClient.setQueryData(
+      AuthQueryKeys.all(),
+      authStatusFactory.authenticated({ userId: "user-a" }),
+    );
+    mockCheckAuth.mockResolvedValue(
+      authStatusFactory.authenticated({ userId: "user-b" }),
+    );
+
+    renderAuthHook();
+
+    await waitFor(() => {
+      expect(removeQueriesSpy).toHaveBeenCalled();
+    });
   });
 
   it("handles auth error from URL params", async () => {

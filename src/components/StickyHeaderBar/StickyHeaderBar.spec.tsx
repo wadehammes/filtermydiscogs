@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { useLayoutEffect } from "react";
 import { StickyHeaderBarPageObject } from "src/components/StickyHeaderBar/StickyHeaderBar.po";
 import { SortValues } from "src/constants/sortValues";
+import { useCollectionContext } from "src/context/collection.context";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   expectFilterPopupAbovePlaybackDock,
@@ -8,7 +10,9 @@ import {
   openFilterSelect,
   openFilterViewsMenu,
 } from "src/tests/filterControlTestHelpers";
-import { screen, waitFor } from "test-utils";
+import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { render, screen, waitFor } from "test-utils";
+import { StickyHeaderBar } from "./StickyHeaderBar.component";
 
 let po: StickyHeaderBarPageObject;
 
@@ -46,6 +50,36 @@ describe("StickyHeaderBar", () => {
 
   it("renders the filters skeleton while releases are still loading", () => {
     po.renderStickyHeaderBar({ allReleasesLoaded: false });
+
+    expect(screen.getByTestId(po.filtersSkeletonTestId)).toBeInTheDocument();
+    expect(screen.queryByTestId(po.searchBarTestId)).not.toBeInTheDocument();
+  });
+
+  it("renders the filters skeleton when pages are loaded but collection metadata is still fetching", () => {
+    const FetchingCollectionHarness = ({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) => {
+      const { dispatchFetchingCollection } = useCollectionContext();
+
+      useLayoutEffect(() => {
+        dispatchFetchingCollection(true);
+      }, [dispatchFetchingCollection]);
+
+      return children;
+    };
+
+    render(
+      <FetchingCollectionHarness>
+        <StickyHeaderBar
+          allReleasesLoaded
+          part="filters"
+          currentPage="releases"
+        />
+      </FetchingCollectionHarness>,
+      { authInitialState: testAuthenticatedAuthState },
+    );
 
     expect(screen.getByTestId(po.filtersSkeletonTestId)).toBeInTheDocument();
     expect(screen.queryByTestId(po.searchBarTestId)).not.toBeInTheDocument();

@@ -1,7 +1,7 @@
 "use client";
 
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
+import { ReleasesPageLoading } from "src/components/ReleasesClient/ReleasesPageLoading.component";
 
 export default function ReleasesLoadingPage() {
-  return <AppPageLoading currentPage="releases" />;
+  return <ReleasesPageLoading />;
 }
