@@ -13,7 +13,7 @@ const openTrackActionsMenu = async (
   trackTitle: string,
 ) => {
   const row = screen.getByText(trackTitle).closest("li");
-  expect(row).toBeTruthy();
+  expect(row).not.toBeNull();
   await user.hover(row as HTMLElement);
   await user.click(
     screen.getByRole("button", { name: `Actions for ${trackTitle}` }),
@@ -173,7 +173,7 @@ describe("ReleaseTracklist", () => {
     const activeTrackButton = screen
       .getByTestId("fmdPlayingIndicator")
       .closest("button");
-    expect(activeTrackButton).toBeTruthy();
+    expect(activeTrackButton).not.toBeNull();
     await user.click(activeTrackButton as HTMLButtonElement);
 
     expect(onActiveTrackToggle).toHaveBeenCalledTimes(1);
@@ -333,7 +333,7 @@ describe("ReleaseTracklist", () => {
     ).toBeInTheDocument();
     expect(
       row?.querySelector('[data-testid="fmdReleaseTrackRowMenuTrigger"]'),
-    ).toBeTruthy();
+    ).not.toBeNull();
   });
 
   it("shows Remove from queue in the menu when queued and onTrackUnqueue is set", async () => {

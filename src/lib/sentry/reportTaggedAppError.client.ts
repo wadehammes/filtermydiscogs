@@ -18,5 +18,7 @@ export const reportTaggedAppError = (
   captureAppError(error, {
     tags,
     ...(options?.extra ? { extra: options.extra } : {}),
+    ...(options?.level ? { level: options.level } : {}),
+    ...(options?.fingerprint ? { fingerprint: options.fingerprint } : {}),
   });
 };

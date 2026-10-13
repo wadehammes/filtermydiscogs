@@ -15,6 +15,7 @@ import {
 } from "src/lib/identity-cache";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { reportApiRouteFailure } from "src/lib/sentry/reportApiRouteFailure";
+import { applySentryUserFromVerifiedDiscogsUser } from "src/lib/sentry/syncSentryUser.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
 export interface VerifiedDiscogsUser {
@@ -327,6 +328,16 @@ async function getVerifiedUserFromOAuthCookies(
   }
 }
 
+const attachSentryUserToVerifiedResult = (
+  result: VerifiedUserResult,
+): VerifiedUserResult => {
+  if ("user" in result) {
+    applySentryUserFromVerifiedDiscogsUser(result.user);
+  }
+
+  return result;
+};
+
 export async function getVerifiedUserFromRequest(
   request: NextRequest,
   options: VerifiedUserOptions = {},
@@ -337,13 +348,17 @@ export async function getVerifiedUserFromRequest(
     };
   }
 
-  return getVerifiedUserFromOAuthCookies(request, options);
+  return attachSentryUserToVerifiedResult(
+    await getVerifiedUserFromOAuthCookies(request, options),
+  );
 }
 
 export async function getVerifiedUserFromStoredTokens(
   request: NextRequest,
 ): Promise<VerifiedUserResult> {
-  return getVerifiedUserFromOAuthCookies(request);
+  return attachSentryUserToVerifiedResult(
+    await getVerifiedUserFromOAuthCookies(request),
+  );
 }
 
 export async function getOptionalVerifiedUserFromRequest(

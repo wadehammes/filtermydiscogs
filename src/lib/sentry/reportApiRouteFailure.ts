@@ -1,7 +1,13 @@
 import "server-only";
 
 import { reportTaggedAppError } from "src/lib/sentry/reportTaggedAppError.server";
+import { sentryUserVisibleTag } from "src/lib/sentry/sentryUserVisibleTag";
 import { shouldReportHttpFailure } from "src/lib/sentry/shouldReportHttpFailure";
+
+const sentryHttpStatusCapture = (status: number) => ({
+  tags: { httpStatus: String(status) },
+  extra: { httpStatus: status },
+});
 
 export const reportApiRouteFailure = (
   route: string,
@@ -15,17 +21,22 @@ export const reportApiRouteFailure = (
     return;
   }
 
+  const httpStatusCapture =
+    context?.status !== undefined
+      ? sentryHttpStatusCapture(context.status)
+      : undefined;
+
   reportTaggedAppError(
     {
       "api.route": route,
+      ...sentryUserVisibleTag(false),
+      ...httpStatusCapture?.tags,
     },
     error,
     {
       extra: {
         ...context?.extra,
-        ...(context?.status !== undefined
-          ? { httpStatus: context.status }
-          : {}),
+        ...httpStatusCapture?.extra,
       },
     },
   );

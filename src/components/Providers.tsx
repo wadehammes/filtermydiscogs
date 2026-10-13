@@ -30,6 +30,7 @@ import { FiltersProvider } from "src/context/filters.context";
 import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
+import { useSentryUserSync } from "src/hooks/useSentryUserSync.hook";
 import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
 
 interface ProvidersProps {
@@ -43,6 +44,11 @@ const LogoutOverlayWrapper = () => {
 
 const UserPreferencesSync = () => {
   useUserPreferencesSync();
+  return null;
+};
+
+const SentryUserSync = () => {
+  useSentryUserSync();
   return null;
 };
 
@@ -91,6 +97,7 @@ export const Providers = ({ children }: ProvidersProps) => {
       <JotaiProvider>
         <ThemeProvider>
           <AuthProvider>
+            <SentryUserSync />
             <CollectionContextProvider>
               <FiltersProvider>
                 <ViewProvider>

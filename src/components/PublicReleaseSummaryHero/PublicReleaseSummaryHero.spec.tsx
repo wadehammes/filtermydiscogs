@@ -19,7 +19,6 @@ describe("PublicReleaseSummaryHero", () => {
   it("renders format and genre/style pills as static labels", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         formats: [{ name: "Vinyl", qty: "1" }],
         genres: ["Electronic"],
         styles: ["House"],
@@ -51,7 +50,6 @@ describe("PublicReleaseSummaryHero", () => {
   it("renders View on Discogs in the toolbar when resource_url is present", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         resource_url: "https://api.discogs.com/releases/249504",
       },
     });

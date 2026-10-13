@@ -5,6 +5,7 @@ export abstract class BaseFactory<
   FactoryType,
   Options extends object,
   FactoryModel = unknown,
+  AttributeOverrides = FactoryOverrides<FactoryType>,
 > {
   constructor(
     private FactoryModel?: new (typeInstance: FactoryType) => FactoryModel,
@@ -15,22 +16,22 @@ export abstract class BaseFactory<
   }
 
   public abstract build(
-    attributes?: FactoryOverrides<FactoryType>,
+    attributes?: AttributeOverrides,
     options?: Options,
   ): FactoryType;
 
   public buildList(
     quantity: number,
-    attributes?: FactoryOverrides<FactoryType>,
+    attributes?: AttributeOverrides,
     options?: Options,
   ) {
     return Array.from({ length: quantity }).map(() => {
-      return this.build(attributes ?? {}, options);
+      return this.build(attributes, options);
     });
   }
 
   public buildModel(
-    attributes?: FactoryOverrides<FactoryType>,
+    attributes?: AttributeOverrides,
     options?: Options,
   ): FactoryModel {
     if (!this.FactoryModel) {

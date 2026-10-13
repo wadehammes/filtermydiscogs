@@ -375,7 +375,7 @@ describe("FiltersDrawer", () => {
       name: "Save current view…",
     });
     const popup = saveItem.closest('[role="menu"]');
-    expect(popup).toBeTruthy();
+    expect(popup).not.toBeNull();
     expect((popup as HTMLElement).className).toMatch(/popupScroll/);
     expect((popup as HTMLElement).className).toMatch(/drawerMenuPopup/);
 
@@ -422,7 +422,6 @@ describe("FiltersDrawer", () => {
       releases: [
         releaseFactory.withStyles(["Techno"], {
           basic_information: {
-            ...releaseFactory.withDisplayDefaults().basic_information,
             formats: [
               { name: "Vinyl", descriptions: ['12"', "Test Pressing"] },
             ],
@@ -430,7 +429,6 @@ describe("FiltersDrawer", () => {
         }),
         releaseFactory.withStyles(["House"], {
           basic_information: {
-            ...releaseFactory.withDisplayDefaults().basic_information,
             formats: [{ name: "Vinyl", descriptions: ['12"', "White Label"] }],
           },
         }),

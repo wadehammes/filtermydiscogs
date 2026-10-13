@@ -81,6 +81,7 @@ STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 # NEXT_PUBLIC_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
 # SENTRY_ENABLE_DEV=1               # local next dev (mirrored to browser via next.config env)
 # NEXT_PUBLIC_SENTRY_ENABLE_DEV=1   # optional override if you do not use SENTRY_ENABLE_DEV
+# SENTRY_ENVIRONMENT=development    # recommended locally so Sentry is not tagged preview from Vercel env
 # SENTRY_ORG=filtermydiscogs
 # SENTRY_PROJECT=javascript-nextjs
 # SENTRY_AUTH_TOKEN=your_build_auth_token

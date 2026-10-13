@@ -7,7 +7,6 @@ describe("ReleaseSummaryHeroToolbar", () => {
   it("renders View on Discogs when the release has a Discogs URL", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         resource_url: "https://api.discogs.com/releases/12345",
       },
     });

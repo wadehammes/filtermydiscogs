@@ -23,19 +23,17 @@ const mockApi = jest.mocked(api);
 const playableReleaseDetail =
   discogsReleaseJsonFactory.withTracklistAndVideos();
 
-const catalogSourceRelease = releaseFactory.build({
+const catalogSourceRelease = releaseFactory.withStyles(["Techno", "Ambient"], {
   instance_id: "similar-queue-source",
   basic_information: {
-    ...releaseFactory.withStyles(["Techno"]).basic_information,
     id: 880_001,
     genres: ["Electronic"],
     master_id: 100,
   },
 });
-const catalogSimilarRelease = releaseFactory.build({
+const catalogSimilarRelease = releaseFactory.withStyles(["Techno", "House"], {
   instance_id: "similar-queue-match",
   basic_information: {
-    ...releaseFactory.withStyles(["Techno", "House"]).basic_information,
     id: 880_002,
     master_id: 200,
   },

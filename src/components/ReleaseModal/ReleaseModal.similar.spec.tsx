@@ -9,18 +9,17 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { screen, waitFor, within } from "test-utils";
 
 const buildSimilarReleasesFixture = () => {
-  const sourceRelease = releaseFactory.build({
+  const sourceRelease = releaseFactory.withStyles(["Techno", "Ambient"], {
     instance_id: "source-instance",
     basic_information: {
-      ...releaseFactory.withStyles(["Techno", "Ambient"]).basic_information,
+      genres: ["Electronic"],
       master_id: 100,
       title: "Source Album",
     },
   });
-  const similarRelease = releaseFactory.build({
+  const similarRelease = releaseFactory.withStyles(["Techno", "House"], {
     instance_id: "similar-instance",
     basic_information: {
-      ...releaseFactory.withStyles(["Techno", "House"]).basic_information,
       master_id: 200,
       title: "Similar Album",
     },
@@ -84,7 +83,7 @@ describe("ReleaseModal similar sidebar", () => {
     expect(
       notesSection.compareDocumentPosition(similarSection) &
         Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    ).not.toBe(0);
   });
 
   it("renders similar releases in the desktop aside column", async () => {
@@ -107,7 +106,7 @@ describe("ReleaseModal similar sidebar", () => {
     expect(dialog.className).toMatch(/modalWide/);
     expect(
       dialog.querySelector('[class*="splitContent"][class*="modalMain"]'),
-    ).toBeTruthy();
+    ).not.toBeNull();
   });
 
   it("shows crate-style loading in the sidebar until the collection has fully loaded", async () => {

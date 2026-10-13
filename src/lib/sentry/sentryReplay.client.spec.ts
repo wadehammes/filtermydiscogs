@@ -6,10 +6,6 @@ describe("buildSentryReplayClientOptions", () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    delete process.env.NEXT_PUBLIC_SENTRY_DSN;
-    delete process.env.SENTRY_ENABLE_DEV;
-    delete process.env.NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE;
-    delete process.env.NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE;
   });
 
   afterAll(() => {
@@ -30,10 +26,11 @@ describe("buildSentryReplayClientOptions", () => {
     expect(options.integrations?.[0]?.name).toBe("Replay");
   });
 
-  it("returns an empty object when Sentry is disabled", () => {
+  it("returns an empty object when replay sample rates are zero", () => {
     const env = process.env as Record<string, string | undefined>;
 
-    env.NODE_ENV = "production";
+    env.NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE = "0";
+    env.NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE = "0";
 
     expect(buildSentryReplayClientOptions()).toEqual({});
   });

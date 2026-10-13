@@ -93,7 +93,6 @@ describe("ReleaseSimilarReleaseItem", () => {
     const similarRelease = releaseFactory.build({
       instance_id: "similar-instance",
       basic_information: {
-        ...releaseFactory.withStyles(["Techno", "House"]).basic_information,
         master_id: 200,
         title: "Similar Album",
       },
@@ -122,7 +121,6 @@ describe("ReleaseSimilarReleaseItem", () => {
     const similarRelease = releaseFactory.build({
       instance_id: "similar-instance",
       basic_information: {
-        ...releaseFactory.withStyles(["Techno"]).basic_information,
         master_id: 200,
         title: "Similar Album",
       },

@@ -53,13 +53,11 @@ describe("useFilterHandlers", () => {
     const releases = [
       releaseFactory.withDisplayDefaults({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           year: 1984,
         },
       }),
       releaseFactory.withDisplayDefaults({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           year: 1999,
         },
       }),

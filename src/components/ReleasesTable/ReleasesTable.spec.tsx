@@ -41,7 +41,6 @@ describe("ReleasesTable", () => {
       releases: [
         releaseFactory.withDisplayDefaults({
           basic_information: {
-            ...releaseFactory.withDisplayDefaults().basic_information,
             labels: [{ id: 1, name: "Test Label", catno: "ABC-123" }],
           },
         }),

@@ -140,8 +140,8 @@ describe("ConfirmDialog", () => {
     const describedBy = dialog.getAttribute("aria-describedby");
 
     expect(dialog).toHaveAttribute("aria-modal", "true");
-    expect(labelledBy).toBeTruthy();
-    expect(describedBy).toBeTruthy();
+    expect(labelledBy).toEqual(expect.any(String));
+    expect(describedBy).toEqual(expect.any(String));
 
     if (!labelledBy) {
       throw new Error("Expected dialog aria-labelledby");

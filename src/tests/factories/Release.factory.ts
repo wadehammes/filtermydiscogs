@@ -5,7 +5,18 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { formatFactory } from "src/tests/factories/Format.factory";
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseNoteFactory } from "src/tests/factories/ReleaseNote.factory";
-import type { DiscogsRelease, ReleaseNote } from "src/types";
+import type {
+  DiscogsBasicInformation,
+  DiscogsRelease,
+  ReleaseNote,
+} from "src/types";
+
+export type ReleaseFactoryAttributes = Omit<
+  Partial<DiscogsRelease>,
+  "basic_information"
+> & {
+  basic_information?: Partial<DiscogsBasicInformation>;
+};
 
 type ReleaseFactoryOptions = {
   artistCount?: number;
@@ -16,10 +27,12 @@ type ReleaseFactoryOptions = {
 
 class ReleaseFactory extends BaseFactory<
   DiscogsRelease,
-  ReleaseFactoryOptions
+  ReleaseFactoryOptions,
+  unknown,
+  ReleaseFactoryAttributes
 > {
   build(
-    attributes?: Partial<DiscogsRelease>,
+    attributes?: ReleaseFactoryAttributes,
     options?: ReleaseFactoryOptions,
   ): DiscogsRelease {
     const instance = {
@@ -30,32 +43,51 @@ class ReleaseFactory extends BaseFactory<
       notes: releaseNoteFactory.buildList(faker.number.int({ min: 0, max: 2 })),
     } satisfies DiscogsRelease;
 
+    const {
+      basic_information: basicInformationOverrides,
+      ...releaseOverrides
+    } = attributes ?? {};
+
     const factoryBuilt: DiscogsRelease = {
       ...instance,
-      ...(attributes ?? {}),
+      ...releaseOverrides,
+      ...(basicInformationOverrides !== undefined
+        ? {
+            basic_information: basicInformationFactory.build(
+              basicInformationOverrides,
+              options,
+            ),
+          }
+        : {}),
     };
 
     return factoryBuilt;
   }
 
   withDisplayDefaults(
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
+    const {
+      basic_information: basicInformationOverrides,
+      ...releaseOverrides
+    } = attributes;
+
     return this.build({
+      notes: [],
+      ...releaseOverrides,
       basic_information: basicInformationFactory.build({
         title: "Test Album",
         artists: [artistFactory.build({ name: "Test Artist" })],
         year: 2020,
         labels: [labelFactory.build({ name: "Test Label" })],
+        ...(basicInformationOverrides ?? {}),
       }),
-      notes: [],
-      ...attributes,
     });
   }
 
   withDateAdded(
     dateAdded: string,
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
     return this.build({
       date_added: dateAdded,
@@ -66,17 +98,25 @@ class ReleaseFactory extends BaseFactory<
 
   withStyles(
     styles: string[],
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
+    const {
+      basic_information: basicInformationOverrides,
+      ...releaseOverrides
+    } = attributes;
+
     return this.build({
-      basic_information: basicInformationFactory.build({ styles }),
-      ...attributes,
+      ...releaseOverrides,
+      basic_information: basicInformationFactory.build({
+        styles,
+        ...(basicInformationOverrides ?? {}),
+      }),
     });
   }
 
   withNamedFormats(
     formatNames: string[],
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
     return this.build({
       basic_information: basicInformationFactory.build({
@@ -88,34 +128,46 @@ class ReleaseFactory extends BaseFactory<
 
   withResourceUrl(
     releaseId: number | string,
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
+    const {
+      basic_information: basicInformationOverrides,
+      ...releaseOverrides
+    } = attributes;
+
     return this.build({
+      ...releaseOverrides,
       basic_information: basicInformationFactory.build({
         resource_url: `https://api.discogs.com/releases/${releaseId}`,
+        ...(basicInformationOverrides ?? {}),
       }),
-      ...attributes,
     });
   }
 
   withTitle(
     title: string,
     releaseId: number | string,
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
+    const {
+      basic_information: basicInformationOverrides,
+      ...releaseOverrides
+    } = attributes;
+
     return this.build({
+      ...releaseOverrides,
       basic_information: basicInformationFactory.build({
         title,
         resource_url: `https://api.discogs.com/releases/${releaseId}`,
+        ...(basicInformationOverrides ?? {}),
       }),
-      ...attributes,
     });
   }
 
   withCoverImage(
     coverImage: string,
     thumb: string,
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
     return this.build({
       basic_information: basicInformationFactory.build({
@@ -128,7 +180,7 @@ class ReleaseFactory extends BaseFactory<
 
   withThumbOnly(
     thumb: string,
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
     return this.build({
       basic_information: basicInformationFactory.build({
@@ -141,7 +193,7 @@ class ReleaseFactory extends BaseFactory<
 
   withNotes(
     notes: ReleaseNote[],
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
     return this.build({
       notes,
@@ -158,14 +210,19 @@ class ReleaseFactory extends BaseFactory<
 
   forNotesEditor(
     releaseId = 12345,
-    attributes: Partial<DiscogsRelease> = {},
+    attributes: ReleaseFactoryAttributes = {},
   ): DiscogsRelease {
+    const {
+      basic_information: basicInformationOverrides,
+      ...releaseOverrides
+    } = attributes;
+
     return this.withResourceUrl(releaseId, {
+      ...releaseOverrides,
       basic_information: basicInformationFactory.build({
         id: releaseId,
-        resource_url: `https://api.discogs.com/releases/${releaseId}`,
+        ...(basicInformationOverrides ?? {}),
       }),
-      ...attributes,
     });
   }
 }

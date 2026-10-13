@@ -1,40 +1,57 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-
-const openSentryUserFeedbackDialog = jest.fn();
-const resolveSentryEnabled = jest.fn<() => boolean>();
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
+import type { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
+import { getMockedExport } from "src/tests/mocks/getMockedExport";
+import type { openSentryUserFeedbackDialog } from "src/utils/sentryUserFeedbackDialogBridge";
 
 jest.mock("src/utils/sentryUserFeedbackDialogBridge", () => ({
-  openSentryUserFeedbackDialog,
+  openSentryUserFeedbackDialog: jest.fn(),
 }));
 
 jest.mock("src/lib/sentry/sentryInitOptions", () => ({
-  resolveSentryEnabled,
+  resolveSentryEnabled: jest.fn(),
 }));
 
+const mockOpenSentryUserFeedbackDialog = getMockedExport<
+  typeof openSentryUserFeedbackDialog
+>("src/utils/sentryUserFeedbackDialogBridge", "openSentryUserFeedbackDialog");
+
+const mockResolveSentryEnabled = getMockedExport<typeof resolveSentryEnabled>(
+  "src/lib/sentry/sentryInitOptions",
+  "resolveSentryEnabled",
+);
+
 describe("openSentryUserFeedback", () => {
+  let openSentryUserFeedback: typeof import("src/lib/sentry/openSentryUserFeedback.client").openSentryUserFeedback;
+
+  beforeAll(async () => {
+    ({ openSentryUserFeedback } = await import(
+      "src/lib/sentry/openSentryUserFeedback.client"
+    ));
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    resolveSentryEnabled.mockReturnValue(true);
+    mockResolveSentryEnabled.mockReturnValue(true);
   });
 
-  it("when Sentry is disabled, does not open the dialog", async () => {
-    resolveSentryEnabled.mockReturnValue(false);
-    const { openSentryUserFeedback } = await import(
-      "src/lib/sentry/openSentryUserFeedback.client"
-    );
+  it("when Sentry is disabled, does not open the dialog", () => {
+    mockResolveSentryEnabled.mockReturnValue(false);
 
     openSentryUserFeedback();
 
-    expect(openSentryUserFeedbackDialog).not.toHaveBeenCalled();
+    expect(mockOpenSentryUserFeedbackDialog).not.toHaveBeenCalled();
   });
 
-  it("when Sentry is enabled, opens the app feedback dialog", async () => {
-    const { openSentryUserFeedback } = await import(
-      "src/lib/sentry/openSentryUserFeedback.client"
-    );
-
+  it("when Sentry is enabled, opens the app feedback dialog", () => {
     openSentryUserFeedback();
 
-    expect(openSentryUserFeedbackDialog).toHaveBeenCalledTimes(1);
+    expect(mockOpenSentryUserFeedbackDialog).toHaveBeenCalledTimes(1);
   });
 });

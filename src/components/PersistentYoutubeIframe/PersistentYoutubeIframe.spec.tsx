@@ -8,10 +8,15 @@ import {
 } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { GTM_YOUTUBE_IFRAME_INSPECTED_ATTR } from "src/constants/analytics";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
+import { getMockedExport } from "src/tests/mocks/getMockedExport";
 import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
+import type {
+  loadAndPlayYoutubeVideo,
+  refreshYoutubeEmbedPlayerLayout,
+} from "src/utils/postYoutubePlayerCommand";
 import { render, screen } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -22,12 +27,12 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
-const mockLoadAndPlayYoutubeVideo = jest.requireMock<{
-  loadAndPlayYoutubeVideo: jest.Mock;
-}>("src/utils/postYoutubePlayerCommand").loadAndPlayYoutubeVideo;
-const mockRefreshYoutubeEmbedPlayerLayout = jest.requireMock<{
-  refreshYoutubeEmbedPlayerLayout: jest.Mock;
-}>("src/utils/postYoutubePlayerCommand").refreshYoutubeEmbedPlayerLayout;
+const mockLoadAndPlayYoutubeVideo = getMockedExport<
+  typeof loadAndPlayYoutubeVideo
+>("src/utils/postYoutubePlayerCommand", "loadAndPlayYoutubeVideo");
+const mockRefreshYoutubeEmbedPlayerLayout = getMockedExport<
+  typeof refreshYoutubeEmbedPlayerLayout
+>("src/utils/postYoutubePlayerCommand", "refreshYoutubeEmbedPlayerLayout");
 
 const createWrapper = () => {
   return ({ children }: { children: ReactNode }) => (

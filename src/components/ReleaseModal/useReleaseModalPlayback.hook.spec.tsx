@@ -263,9 +263,9 @@ describe("useReleaseModalPlayback", () => {
     expect(result.current.youtubeOverrideTarget).toMatchObject(
       expectedOverrideTarget,
     );
-    expect(
-      result.current.youtubeOverrideTarget?.initialPreviewVideoId,
-    ).toBeTruthy();
+    expect(result.current.youtubeOverrideTarget?.initialPreviewVideoId).toEqual(
+      expect.any(String),
+    );
   });
 
   it("does not show loading after clear queue, stop playback, and reopening the modal", async () => {

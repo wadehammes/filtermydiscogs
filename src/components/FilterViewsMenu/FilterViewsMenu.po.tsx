@@ -81,7 +81,6 @@ export class FilterViewsMenuPageObject extends BasePageObject {
     const releases = [
       releaseFactory.withStyles(["Rock"], {
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           year: 1999,
           formats: [{ name: "Vinyl", descriptions: ["LP"] }],
         },

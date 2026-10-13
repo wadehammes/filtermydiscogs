@@ -1,6 +1,8 @@
 import "server-only";
 
 import { reportTaggedAppError } from "src/lib/sentry/reportTaggedAppError.server";
+import { sentryUserVisibleTag } from "src/lib/sentry/sentryUserVisibleTag";
+import { shouldCaptureInfrastructureFailure } from "src/lib/sentry/shouldCaptureInfrastructureFailure";
 
 export type InfrastructureFailureArea =
   | "database"
@@ -20,6 +22,10 @@ export const reportInfrastructureFailure = (
   extra?: Record<string, unknown>,
   options?: ReportInfrastructureFailureOptions,
 ) => {
+  if (!shouldCaptureInfrastructureFailure(area, error, extra)) {
+    return;
+  }
+
   const throttleKey = options?.throttleKey;
   const throttleMs = options?.throttleMs;
   if (throttleKey && throttleMs) {
@@ -34,6 +40,7 @@ export const reportInfrastructureFailure = (
   reportTaggedAppError(
     {
       "infrastructure.area": area,
+      ...sentryUserVisibleTag(false),
     },
     error,
     extra ? { extra } : undefined,

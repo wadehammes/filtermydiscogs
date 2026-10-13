@@ -9,6 +9,7 @@ import {
   resolvePlaybackSkipSentryLevel,
   resolvePlaybackSkipSource,
 } from "src/lib/sentry/playbackSkipSentrySource";
+import { sentryUserVisibleTag } from "src/lib/sentry/sentryUserVisibleTag";
 import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import { definedProps } from "src/utils/definedProps";
 
@@ -63,9 +64,12 @@ export const buildPlaybackSkipCaptureOptions = (
       ]
     : ["playback-skip", source, reason];
 
-  const tags = buildPlaybackSkipSentryTags(
-    definedProps({ source, errorCode, details: context }),
-  );
+  const tags = {
+    ...buildPlaybackSkipSentryTags(
+      definedProps({ source, errorCode, details: context }),
+    ),
+    ...sentryUserVisibleTag(true),
+  };
   if (userReported) {
     tags["playback.user_report"] = "true";
     if (userReport?.category) {

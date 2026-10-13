@@ -101,7 +101,6 @@ describe("calculateFormatTagDistribution", () => {
     const releases = [
       releaseFactory.build({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           formats: [
             {
               name: "Vinyl",
@@ -112,7 +111,6 @@ describe("calculateFormatTagDistribution", () => {
       }),
       releaseFactory.build({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           formats: [
             {
               name: "Vinyl",
@@ -137,19 +135,16 @@ describe("calculateFormatMixSummary", () => {
     const releases = [
       releaseFactory.build({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           formats: [{ name: "Vinyl", descriptions: ["LP"] }],
         },
       }),
       releaseFactory.build({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           formats: [{ name: "Vinyl", descriptions: ["LP"] }],
         },
       }),
       releaseFactory.build({
         basic_information: {
-          ...releaseFactory.withDisplayDefaults().basic_information,
           formats: [{ name: "CD" }],
         },
       }),

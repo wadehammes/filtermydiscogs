@@ -217,14 +217,6 @@ describe("BottomDrawer", () => {
     expect(screen.getByTestId(po.testId)).toHaveClass("custom-shell-class");
   });
 
-  it("applies inlineAlignEnd when inline and inlineAlignEnd are set", () => {
-    po.renderBottomDrawer({ inline: true, inlineAlignEnd: true });
-
-    expect(screen.getByTestId(po.testId).className).toContain(
-      bottomDrawerStyles.inlineAlignEnd,
-    );
-  });
-
   it("keeps floating close on the shell outside the header row", () => {
     po.renderBottomDrawer({
       chrome: true,

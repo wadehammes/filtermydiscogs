@@ -26,7 +26,6 @@ describe("releaseNotes", () => {
     const release = releaseFactory.build({
       id: 99999,
       basic_information: {
-        ...releaseFactory.build().basic_information,
         id: 12345,
         resource_url: "https://api.discogs.com/releases/12345",
       },

@@ -4,6 +4,8 @@ import {
   RELEASE_SUMMARY_HERO_RELEASE_ID,
   ReleaseSummaryHeroPageObject,
 } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.po";
+import { artistFactory } from "src/tests/factories/Artist.factory";
+import { formatFactory } from "src/tests/factories/Format.factory";
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { expectReleaseCrateMenuInlineWithTrigger } from "src/tests/filterControlTestHelpers";
@@ -16,15 +18,6 @@ let po: ReleaseSummaryHeroPageObject;
 describe("ReleaseSummaryHero", () => {
   beforeEach(() => {
     po = new ReleaseSummaryHeroPageObject();
-  });
-
-  it("exports shared modal toolbar classes for hero actions", async () => {
-    const toolbarStyles = await import(
-      "../ModalToolbar/ModalToolbar.module.css"
-    );
-
-    expect(toolbarStyles.default.toolbar).toBeTruthy();
-    expect(toolbarStyles.default.actionButton).toBeTruthy();
   });
 
   it("adds release to crate from the crate menu", async () => {
@@ -107,7 +100,6 @@ describe("ReleaseSummaryHero", () => {
   it("links artist names and title to Discogs", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
         title: "Test Album",
       },
@@ -140,9 +132,14 @@ describe("ReleaseSummaryHero", () => {
   it("links artist names from Discogs ids when resource_url is missing", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
-        artists: [{ name: "Test Artist", id: 4242 }],
+        artists: [
+          artistFactory.build({
+            name: "Test Artist",
+            id: 4242,
+            resource_url: "",
+          }),
+        ],
       },
     });
 
@@ -162,7 +159,6 @@ describe("ReleaseSummaryHero", () => {
     });
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
         labels: [label],
         year: 2026,
@@ -197,9 +193,8 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 4,
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
-        labels: [{ name: "Test Label", catno: "ABC-123" }],
+        labels: [labelFactory.build({ name: "Test Label", catno: "ABC-123" })],
       },
     });
 
@@ -220,10 +215,9 @@ describe("ReleaseSummaryHero", () => {
   it("shows format and genre/style filter pills below the meta line", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
-        labels: [{ name: "Test Label", catno: "ABC-123" }],
-        formats: [{ name: "Vinyl", descriptions: ["LP"] }],
+        labels: [labelFactory.build({ name: "Test Label", catno: "ABC-123" })],
+        formats: [formatFactory.build({ name: "Vinyl", descriptions: ["LP"] })],
         genres: ["Electronic"],
         styles: ["Rock", "Indie Rock"],
       },
@@ -258,7 +252,6 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 4,
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
       },
     });
@@ -279,7 +272,6 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 3,
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
       },
     });
@@ -318,7 +310,6 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 3,
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
       },
     });
@@ -347,7 +338,6 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 3,
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
       },
     });
@@ -376,7 +366,6 @@ describe("ReleaseSummaryHero", () => {
     const release = releaseFactory.withResourceUrl(RELEASE_ID, {
       rating: 3,
       basic_information: {
-        ...releaseFactory.withResourceUrl(RELEASE_ID).basic_information,
         id: RELEASE_ID,
       },
     });

@@ -53,7 +53,7 @@ describe("ReleasesClient", () => {
     const scrollRoot = document.querySelector("[data-releases-scroll-root]");
     const sentinel = screen.getByTestId("fmdReleasesLoadingTrigger");
 
-    expect(scrollRoot).toBeTruthy();
+    expect(scrollRoot).not.toBeNull();
     await waitFor(() => {
       expect(intersectionObserver.getLastObserverRoot()).toBe(scrollRoot);
     });

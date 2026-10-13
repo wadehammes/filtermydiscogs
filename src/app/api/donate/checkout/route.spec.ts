@@ -151,6 +151,6 @@ describe("POST /api/donate/checkout", () => {
     const body = await response.json();
 
     expect(response.status).toBe(400);
-    expect(body.error).toBeTruthy();
+    expect(body.error).toEqual(expect.any(String));
   });
 });

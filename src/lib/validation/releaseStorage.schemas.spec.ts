@@ -26,14 +26,11 @@ describe("crateReleaseStorageSchema", () => {
   });
 
   it("rejects releases without basic_information title", () => {
-    const release = releaseFactory.build();
-    const invalidRelease = {
-      ...release,
+    const invalidRelease = releaseFactory.build({
       basic_information: {
-        ...release.basic_information,
         title: "   ",
       },
-    };
+    });
 
     const result = crateReleaseStorageSchema.safeParse(invalidRelease);
 
@@ -48,7 +45,6 @@ describe("crateReleaseStorageSchema", () => {
   it("rejects oversized payloads", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         title: "a".repeat(MAX_RELEASE_DATA_BYTES),
       },
     });

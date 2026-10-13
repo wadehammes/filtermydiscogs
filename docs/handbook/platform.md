@@ -381,11 +381,12 @@ Manual follow-up (out of repo): configure **Google Consent Mode v2** in the GTM 
 | Client bootstrap | [`src/instrumentation-client.ts`](../../src/instrumentation-client.ts) — **`@sentry/react`** via [`buildSentryClientInitOptions.client.ts`](../../src/lib/sentry/buildSentryClientInitOptions.client.ts) (**[`buildBrowserSentryInitOptions`](../../src/lib/sentry/sentryInitOptions.ts)**, Session Replay [`buildSentryReplayClientOptions`](../../src/lib/sentry/sentryReplay.client.ts), User Feedback [`buildSentryFeedbackClientOptions`](../../src/lib/sentry/sentryFeedback.client.ts) with **`autoInject: false`**); **`tunnel`** → **`SENTRY_TUNNEL_PATH`**, same as **`tunnelRoute`**) so CSP **`connect-src 'self'`** covers ingest; CSP **`worker-src`** includes **`blob:`** for the replay worker (alongside view-transition guards). Exports **`onRouterTransitionStart`** (**`captureRouterTransitionStart`** from **`@sentry/nextjs`**) for App Router navigation tracing. Signed-in header user menu **Submit bug report** → [`openSentryUserFeedback`](../../src/lib/sentry/openSentryUserFeedback.client.ts) → app [`SentryUserFeedbackDialog`](../../src/components/SentryUserFeedbackDialog/SentryUserFeedbackDialog.component.tsx) (**`captureFeedback`** + optional screenshot **`attachments`** via [`captureSentryFeedbackScreenshot`](../../src/lib/sentry/captureSentryFeedbackScreenshot.client.ts) / image upload — [bring your own widget](https://docs.sentry.io/platforms/javascript/guides/nextjs/user-feedback/configuration/#bring-your-own-widget); **`feedbackIntegration`** with **`autoInject: false`**, **`enableScreenshot: true`**); host in [`Providers`](../../src/components/Providers.tsx) (**`AnalyticsShell`**, inside **`AuthProvider`** for Discogs username prefill); hidden when Sentry is disabled (Jest, local dev without dev enable flags, e2e mock embed). |
 | Error boundaries | [`ErrorFallbackView`](../../src/app/ErrorFallbackView.tsx) → **`reportClientFailure`** (`client.domain=error_boundary`) |
 | Primitives | Client: [`withAppCaptureScope.client`](../../src/lib/sentry/withAppCaptureScope.client.ts), [`captureAppError.client`](../../src/lib/sentry/captureAppError.client.ts), [`reportTaggedAppError.client`](../../src/lib/sentry/reportTaggedAppError.client.ts) (**`@sentry/react`** — avoids pulling Node Sentry into browser bundles). Server: matching **`.server`** modules (**`server-only`**, **`@sentry/nextjs`**). Shared: [`shouldCaptureTaggedAppError`](../../src/lib/sentry/shouldCaptureTaggedAppError.ts), [`shouldReportHttpFailure`](../../src/lib/sentry/shouldReportHttpFailure.ts) (**only HTTP ≥ 500**; all **4xx** skipped; no status → skip for API logs) |
-| App Router API **500s** | [`createErrorResponse`](../../src/lib/api-helpers.ts) (optional **`route`** tag), [`logSanitizedApiRouteFailure`](../../src/lib/api-helpers.ts) when the handler needs a custom **`NextResponse.json`** body, [`buildDiscogsProxyErrorPayload`](../../src/lib/discogs-api-error.ts), [`logApiRouteFailure`](../../src/lib/sentry/logApiRouteFailure.ts) |
+| App Router API **500s** | [`createErrorResponse`](../../src/lib/api-helpers.ts) (optional **`route`** tag) → [`reportApiRouteFailure`](../../src/lib/sentry/reportApiRouteFailure.ts) tags **`api.route`**, **`httpStatus`**, **`user.visible:false`**, and **`extra.httpStatus`**; same for [`logSanitizedApiRouteFailure`](../../src/lib/api-helpers.ts), [`buildDiscogsProxyErrorPayload`](../../src/lib/discogs-api-error.ts), [`logApiRouteFailure`](../../src/lib/sentry/logApiRouteFailure.ts) |
 | OAuth identity | [`auth-request.ts`](../../src/lib/auth-request.ts) → **`reportApiRouteFailure`** (`auth/oauth-identity`, upstream Discogs status on **5xx** — returned to callers as **502**, not **401** — or **500** when verification fails without an HTTP status). Non-JSON Discogs error bodies (HTML outage pages) become **`Discogs API error: {status}`** in [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) so Sentry titles stay stable |
 | Playback skip | [`createPlaybackEmbedUnavailableSkipHandler`](../../src/utils/playbackEmbedUnavailableSkip.ts) → [`reportPlaybackSkipToSentry`](../../src/lib/sentry/reportPlaybackSkip.ts) via [`buildPlaybackSkipSentryEvent`](../../src/lib/sentry/buildPlaybackSkipSentryEvent.ts) + [`resolvePlaybackSkipSentryDetails`](../../src/utils/resolvePlaybackSkipSentryDetails.ts) — **`captureMessage`** **`YouTube Embed Error - {reason} - yt:{id}`** when a video id is known (watchdog: **`Embed Load Watchdog … - {reason}`** + optional **`yt:`**); fingerprint **`playback-skip` + source + reason** (not per-track); **`extra.detailLine`** is track/release/**`yt:`** only (no headline/reason) + tags; session cap **15**. Skip toast **Report** → [`PlaybackSkipReportDialog`](../../src/components/PlaybackSkipReportDialog/PlaybackSkipReportDialog.component.tsx) → [`reportUserPlaybackSkipToSentry`](../../src/lib/sentry/reportPlaybackSkip.ts) (no cap; tags **`playback.user_report`** + **`playback.user_report_category`**; fingerprint **`user-report` + category + …**; optional **`extra.userNote`**) |
-| Client product failures | [`reportClientFailure`](../../src/lib/sentry/reportClientFailure.ts) — mosaic ([`reportMosaicFailureToSentry`](../../src/lib/sentry/reportMosaicFailure.ts)), donation, clear data, crate ownership; dashboard collection value only when the error is not an API **5xx** already reported by the Discogs proxy |
-| Server-side infra | [`reportInfrastructureFailure`](../../src/lib/sentry/reportInfrastructureFailure.ts) — DB pool (throttled **60s**), init health check, admin stats, public crate SSR |
+| Client product failures | [`reportClientFailure`](../../src/lib/sentry/reportClientFailure.ts) — tags **`user.visible`** per domain (toast/boundary/mosaic **`true`**, dashboard value segment **`false`**); mosaic via [`reportMosaicFailureToSentry`](../../src/lib/sentry/reportMosaicFailure.ts) → **`client.domain:mosaic`**, warning level, fingerprint **`client-mosaic-failure`**; donation, clear data, crate ownership; dashboard collection value only when the error is not an API **5xx** already reported by the Discogs proxy |
+| User identity | [`Providers`](../../src/components/Providers.tsx) **`SentryUserSync`** (inline) → [`useSentryUserSync`](../../src/hooks/useSentryUserSync.hook.ts) → **`syncSentryUser.client`** after **`AuthProvider`** resolves session; server **`applySentryUserFromVerifiedDiscogsUser`** via [`attachSentryUserToVerifiedResult`](../../src/lib/auth-request.ts) on **`getVerifiedUserFromRequest`** and **`getVerifiedUserFromStoredTokens`**. Sentry **`user.id`** = Discogs user id string, **`username`** = Discogs username — no OAuth tokens. Both paths honor **`resolveSentryEnabled()`**. |
+| Server-side infra | [`reportInfrastructureFailure`](../../src/lib/sentry/reportInfrastructureFailure.ts) — DB pool (throttled **60s**), init health check, admin stats, public crate SSR. Transient pool codes (**`ECONNRESET`**, etc.) are **not** reported outside **`environment:production`** ([`shouldCaptureInfrastructureFailure`](../../src/lib/sentry/shouldCaptureInfrastructureFailure.ts)). **`resolveSentryEnvironment`** reads **`SENTRY_ENVIRONMENT`**, then **`NEXT_PUBLIC_VERCEL_ENV`**, then **`VERCEL_ENV`**, then **`NODE_ENV`** — specs that set **`VERCEL_ENV=production`** for production-only capture must **`delete`** **`SENTRY_ENVIRONMENT`** and **`NEXT_PUBLIC_VERCEL_ENV`** so the assertion is not overridden ([`shouldCaptureInfrastructureFailure.spec.ts`](../../src/lib/sentry/shouldCaptureInfrastructureFailure.spec.ts)). |
 
 Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.config.ts)) so ad blockers and CSP rarely block ingest. Product analytics consent (**GTM** / **`trackEvent`**) is separate — Sentry is operational error reporting, not marketing analytics. User-facing disclosure for Session Replay and bug-report attachments is in the Privacy Policy on **`/legal`** ([`LegalPageContent.server.tsx`](../../src/components/Legal/LegalPageContent.server.tsx)).
 
@@ -401,8 +402,57 @@ Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.conf
 | `SENTRY_ORG` | `filtermydiscogs` — source map upload |
 | `SENTRY_PROJECT` | `javascript-nextjs` — source map upload |
 | `SENTRY_AUTH_TOKEN` | CI/build upload token (never commit) |
-| `SENTRY_ENVIRONMENT` | Optional; defaults to **`VERCEL_ENV`** |
+| `SENTRY_ENVIRONMENT` | Optional; defaults to **`VERCEL_ENV`**. For local **`next dev`**, set **`SENTRY_ENVIRONMENT=development`** in **`.env.local`** when using pulled Vercel env so preview-tagged events do not mix with production triage. |
 | `SENTRY_RELEASE` | Optional; defaults to **`NEXT_PUBLIC_APP_BUILD_VERSION`** / **`VERCEL_GIT_COMMIT_SHA`** |
+
+**Saved issue searches (bookmark in Sentry):**
+
+| View | Query |
+|------|--------|
+| Production backlog | [`is:unresolved environment:production`](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs&query=is%3Aunresolved+environment%3Aproduction) |
+| User-visible (tagged) | [`is:unresolved environment:production user.visible:true`](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs&query=is%3Aunresolved+environment%3Aproduction+user.visible%3Atrue) |
+| User-visible crashes | [`is:unresolved environment:production client.domain:error_boundary`](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs&query=is%3Aunresolved+environment%3Aproduction+client.domain%3Aerror_boundary) |
+| API **5xx** | [`is:unresolved environment:production tags[api.route]:*`](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs&query=is%3Aunresolved+environment%3Aproduction+tags%5Bapi.route%5D%3A*) |
+| Playback embed skips | [`tags[playback.skip_source]:*`](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs&query=tags%5Bplayback.skip_source%5D%3A*) |
+| Bug reports | [`issue.category:feedback`](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs&query=issue.category%3Afeedback) |
+
+**Is this fatal? (decision tree)**
+
+Start on a **production** issue (`environment:production`). Local/preview events are for debugging only unless you are reproducing.
+
+```mermaid
+flowchart TD
+  A[Open issue event] --> B{Session Replay attached?}
+  B -->|Yes| C[Watch last ~30s: retry screen, toast, or normal use?]
+  B -->|No| D[Read tags on the event]
+  C --> E{user.visible:true?}
+  D --> E
+  E -->|Yes| F[User saw UI feedback — toast, inline error, skip toast, or ErrorFallbackView]
+  E -->|No| G{client.domain:error_boundary?}
+  G -->|Yes| F
+  G -->|No| H{api.route or infrastructure.area?}
+  H -->|api.route + httpStatus ≥ 500| I[Server returned 5xx JSON — check replay / RQ toast; tag user.visible is false on server capture]
+  H -->|infrastructure pool| J[Often transient — check Users count and matching api.route 503s]
+  H -->|Other| K[Read client.domain and playback.* tags]
+  F --> L{Many users or rising graph?}
+  I --> L
+  J --> L
+  K --> L
+  L -->|Yes| M[Treat as production-impacting — fix or mitigate]
+  L -->|Single event / one user| N[Resolve or ignore with reason if replay looks benign]
+```
+
+**Tag cheat sheet (set in code):**
+
+| Tag | Meaning |
+|-----|---------|
+| **`user.visible:true`** | Toast, inline panel error, playback skip toast, mosaic error state, or **`ErrorFallbackView`** (retry screen). |
+| **`user.visible:false`** | Server **`createErrorResponse`** / **`reportApiRouteFailure`** captures, infra (**`reportInfrastructureFailure`**), dashboard collection-value segment (API already reported or silent widget). |
+| **`httpStatus`** (tag + **`extra.httpStatus`**) | Sanitized status from **`createErrorResponse`** / **`logSanitizedApiRouteFailure`** on **5xx** only. |
+| **`client.domain`** | Client product surface (`error_boundary`, `donation`, …). |
+| **`api.route`** | App Router handler path (e.g. **`/api/crates/[id]`**). |
+
+**Frequency last:** one event on localhost/preview ≠ production fire. **`user.visible:true`** + multiple users in **`environment:production`** = highest priority.
 
 **Close issues from GitHub:** In the PR description or squash commit message, include **`Fixes JAVASCRIPT-NEXTJS-<letter>`** (short id from the issue URL). Requires the [GitHub integration](https://docs.sentry.io/product/integrations/source-code-mgmt/github/) with “resolve in Sentry when a PR is merged” enabled.
 
@@ -416,11 +466,13 @@ Browser events use the **`/monitoring`** tunnel ([`tunnelRoute`](../../next.conf
 4. **Playback skip** — filter tag **`playback.skip_source`**; expect grouped titles from the message, not **`Module.T`** (legacy ignores can stay archived).
 5. **Discogs upstream** — **`auth/oauth-identity`** / HTML bodies should title **`Discogs API error: {status}`** after outage hardening; use **`Fixes JAVASCRIPT-NEXTJS-D`** on the auth/outage PR.
 
-**Suggested alert rules (configure in Sentry UI):**
+**Suggested alert rules (Alerts → Create Alert → Issues):**
 
-- New issue · **`environment:production`** · notify email/Slack.
-- Issue frequency · **`level:error`** · **`environment:production`** · threshold above baseline.
-- Regression · any issue that was resolved and becomes unresolved again.
+1. **New production issue** — When: *A new issue is created* · Filter: **`environment:production`** · Action: email or Slack · Name: `FMD production — new issue`.
+2. **Production regression** — When: *The issue changes state from resolved to unresolved* · Filter: **`environment:production`** · Action: same channel · Name: `FMD production — regression`.
+3. **Optional spike** — When: *Issue frequency* · Filter: **`environment:production`**, **`level:error`** · Threshold: e.g. **> 10 events in 1 hour** for the alert set · Tune after a week of baseline.
+
+Wire Slack in **Settings → Integrations → Slack** so alerts land in a low-noise channel; keep preview/dev out of alert filters.
 
 **Snapshot (2026-10-12):** **JAVASCRIPT-NEXTJS-H** (GTM YouTube **`getDuration`** on playback embed) — fix via **`beforeSend`** drop + GTM inspected attr on **`PersistentYoutubeIframe`**; close with **`Fixes JAVASCRIPT-NEXTJS-H`**. **JAVASCRIPT-NEXTJS-D** (Discogs HTML on OAuth identity) — **resolved**. Legacy ignored **`Module.T`** issues are **playback embed skip** reports — superseded by fingerprint + **`beforeSend`** normalization. **JAVASCRIPT-NEXTJS-1** (`updateFrom` in Sentry’s own extension script) — ignore unless it recurs.
 

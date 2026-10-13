@@ -7,7 +7,6 @@ const REQUIRED_PRIMITIVE_SPECS = [
   "src/components/AutocompleteSelect/AutocompleteSelect.spec.tsx",
   "src/components/OverlayStack/OverlayStack.spec.tsx",
   "src/components/InlinePopoverMenu/InlinePopoverMenu.spec.tsx",
-  "src/components/ReleasesClient/ReleasesGrid.module.css.spec.ts",
   "src/utils/themeAppearance.spec.ts",
   "src/utils/themeInitGeneration.spec.ts",
   "src/tests/utils/mswInfraContract.spec.ts",
