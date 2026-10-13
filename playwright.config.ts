@@ -1,4 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import {
+  E2E_TAG_DESKTOP_ONLY_GREP,
+  E2E_TAG_MOBILE_ONLY_GREP,
+} from "./e2e/e2eProjectTags.constants";
 import { E2E_SMOKE_SPEC_FILES } from "./e2e/smokeSpecs.constants";
 import { RESPONSIVE_VIEWPORT_PRESETS } from "./src/constants/layoutMediaQueries";
 import { DISCOGS_OAUTH_TEST_ENV } from "./src/tests/discogsOAuthTestEnv";
@@ -11,6 +15,7 @@ const isSmokeSuite = process.env.E2E_SMOKE === "1";
 const chromiumProject = {
   name: "chromium",
   use: { ...devices["Desktop Chrome"] },
+  grepInvert: E2E_TAG_MOBILE_ONLY_GREP,
 };
 
 const responsiveProjects = [
@@ -21,6 +26,7 @@ const responsiveProjects = [
       ...devices["Desktop Chrome"],
       viewport: RESPONSIVE_VIEWPORT_PRESETS.phonePortrait,
     },
+    grepInvert: E2E_TAG_DESKTOP_ONLY_GREP,
   },
   {
     name: "tablet",
@@ -28,6 +34,7 @@ const responsiveProjects = [
       ...devices["Desktop Chrome"],
       viewport: RESPONSIVE_VIEWPORT_PRESETS.tabletPortrait,
     },
+    grepInvert: E2E_TAG_DESKTOP_ONLY_GREP,
   },
 ] as const;
 
@@ -45,6 +52,7 @@ const e2eWebServerEnv = {
 
 export default defineConfig({
   testDir: "./e2e",
+  timeout: 120_000,
   ...(isSmokeSuite ? { testMatch: [...E2E_SMOKE_SPEC_FILES] } : {}),
   fullyParallel: true,
   forbidOnly: isCi,

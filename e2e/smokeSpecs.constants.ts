@@ -7,4 +7,7 @@ export const E2E_SMOKE_SPEC_FILES = [
   "authenticated-releases.spec.ts",
   "authenticated-release-modal.spec.ts",
   "authenticated-release-playback.spec.ts",
+  "authenticated-embed-watchdog.spec.ts",
+  "authenticated-dashboard.spec.ts",
+  "authenticated-settings.spec.ts",
 ] as const;

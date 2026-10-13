@@ -27,6 +27,16 @@ describe("mswInfraContract", () => {
     expect(fixture).not.toMatch(/onUnhandledRequest\s*:/);
   });
 
+  it("builds authenticated Playwright MSW handlers per test (stateful auth)", () => {
+    const fixture = readRepoFile("e2e/fixtures/msw.fixture.ts");
+    expect(fixture).not.toMatch(
+      /handlers:\s*\[createAuthenticatedE2eHandlers\(\)/,
+    );
+    expect(fixture).toMatch(
+      /handlers:\s*async\s*\([^)]*\)\s*=>\s*\{[\s\S]*createAuthenticatedE2eHandlers\(\)/,
+    );
+  });
+
   it("patches relative fetch URLs for Node fetch in Jest", () => {
     expect(readRepoFile(".jest/patchFetchForRelativeUrls.ts")).toContain(
       "patchFetchForRelativeUrls",

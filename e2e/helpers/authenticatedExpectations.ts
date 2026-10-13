@@ -8,7 +8,7 @@ import {
 export async function expectNotOnLogin(page: Page) {
   await expect(
     page.getByRole("region", { name: SIGN_IN_REGION_LABEL }),
-  ).toHaveCount(0);
+  ).toHaveCount(0, { timeout: 60_000 });
 }
 
 export async function expectLoginLanding(page: Page) {

@@ -17,6 +17,7 @@ const e2eTrackTitle = (albumTitle: string) => `${albumTitle} (E2E Track A)`;
 function buildE2eReleaseDetail(
   id: number,
   title: string,
+  youtubeVideoId = "te2jJncBVG4",
 ): DiscogsReleaseDetail {
   const trackTitle = e2eTrackTitle(title);
 
@@ -37,10 +38,18 @@ function buildE2eReleaseDetail(
         description: trackTitle,
         duration: 212,
         title: trackTitle,
-        uri: "https://www.youtube.com/watch?v=te2jJncBVG4",
+        uri: `https://www.youtube.com/watch?v=${youtubeVideoId}`,
       }),
     ],
   });
+}
+
+export function buildE2eReleaseDetailWithYoutubeVideoId(
+  id: number,
+  title: string,
+  youtubeVideoId: string,
+): DiscogsReleaseDetail {
+  return buildE2eReleaseDetail(id, title, youtubeVideoId);
 }
 
 export function buildE2eReleaseDetailByDiscogsId(): Map<

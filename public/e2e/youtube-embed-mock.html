@@ -7,6 +7,11 @@
   <body>
     <script>
       const YOUTUBE_PLAYER_STATE_PLAYING = 1;
+      const YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE = 100;
+
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode") || "normal";
+      const delayMs = Number(params.get("delayMs") || "800");
 
       const post = (payload) => {
         window.parent.postMessage(JSON.stringify(payload), "*");
@@ -24,9 +29,25 @@
         post({ event: "onStateChange", info: YOUTUBE_PLAYER_STATE_PLAYING });
       };
 
+      const emitError = () => {
+        post({
+          event: "onError",
+          info: YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE,
+        });
+      };
+
       let playbackStarted = false;
 
       const startPlaybackSignals = () => {
+        if (mode === "silent") {
+          return;
+        }
+
+        if (mode === "error") {
+          emitError();
+          return;
+        }
+
         if (playbackStarted) {
           emitPlaying();
           return;
@@ -34,8 +55,13 @@
 
         playbackStarted = true;
         post({ event: "onReady" });
-        emitPlaying();
-        window.setInterval(emitPlaying, 350);
+
+        const emitAfterDelay = () => {
+          emitPlaying();
+          window.setInterval(emitPlaying, 350);
+        };
+
+        window.setTimeout(emitAfterDelay, Math.max(0, delayMs));
       };
 
       window.addEventListener("message", (event) => {
@@ -74,7 +100,9 @@
         }
       });
 
-      window.setTimeout(startPlaybackSignals, 800);
+      if (mode === "normal" || mode === "delayed") {
+        window.setTimeout(startPlaybackSignals, delayMs);
+      }
     </script>
   </body>
 </html>

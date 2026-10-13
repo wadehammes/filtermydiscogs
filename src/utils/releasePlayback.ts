@@ -1,3 +1,4 @@
+import { appendE2eEmbedMockQueryParams } from "src/constants/e2eEmbedMock.constants";
 import {
   E2E_MOCK_YOUTUBE_EMBED_PATH,
   isE2eMockYoutubeEmbedEnabled,
@@ -1159,6 +1160,7 @@ export const buildYoutubeEmbedUrl = ({
 
   if (isE2eMockYoutubeEmbedEnabled()) {
     params.set("videoId", videoId);
+    appendE2eEmbedMockQueryParams(params, videoId);
     return `${E2E_MOCK_YOUTUBE_EMBED_PATH}?${params.toString()}`;
   }
 

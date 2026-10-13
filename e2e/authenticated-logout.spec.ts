@@ -1,4 +1,5 @@
 import { CLEAR_ALL_DATA_CONFIRM_PHRASE } from "src/constants/clearData.constants";
+import { E2E_TAG_DESKTOP_ONLY } from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import {
   expectLoginLanding,
@@ -6,15 +7,11 @@ import {
 } from "./helpers/authenticatedExpectations";
 import { gotoReleasesWorkspace } from "./helpers/releasesWorkspace";
 import { logoutFromUserMenu } from "./helpers/userMenu";
-import { isDesktopAppNavViewport } from "./helpers/viewportLayout";
 
 test.describe("authenticated logout and clear data (MSW)", () => {
-  test("user menu logout returns to the landing page", async ({ page }) => {
-    test.skip(
-      !isDesktopAppNavViewport(page.viewportSize()),
-      "desktop user menu exposes username trigger",
-    );
-
+  test("user menu logout returns to the landing page", {
+    tag: E2E_TAG_DESKTOP_ONLY,
+  }, async ({ page }) => {
     await gotoReleasesWorkspace(page);
     await expectNotOnLogin(page);
     await logoutFromUserMenu(page);
