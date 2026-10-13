@@ -8,6 +8,9 @@ describe("ReleasesPageLoading", () => {
 
     expect(screen.getByTestId("fmdReleasesSkeleton")).toBeInTheDocument();
     expect(screen.getByTestId("fmdFiltersBarSkeleton")).toBeInTheDocument();
-    expect(screen.queryByText("Loading releases...")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: "Collection view mode" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Loading releases...")).toBeInTheDocument();
   });
 });
