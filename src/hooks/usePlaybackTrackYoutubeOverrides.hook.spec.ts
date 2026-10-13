@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { QueryClient } from "@tanstack/react-query";
+import { act } from "@testing-library/react";
 import type { UserTrackStatsResponse } from "src/api/endpoints/tracks";
 import { api } from "src/api/urls";
 import { TrackStatsQueryKeys } from "src/hooks/queries/querykeys.constants";
@@ -60,6 +61,64 @@ describe("usePlaybackTrackYoutubeOverrides", () => {
     });
 
     expect(mockApi.fetchTrackStats).not.toHaveBeenCalled();
+  });
+
+  it("when user-scoped track stats are cleared from the cache, still resolves overrides after the microtask", async () => {
+    const release = releaseFactory.build();
+    const queueItem = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Track A1",
+    });
+    const trackKey = `${release.instance_id}:A1`;
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    queryClient.setQueryData<UserTrackStatsResponse>(
+      TrackStatsQueryKeys.byUserAndKeys(USER_ID, trackKey),
+      {
+        stats: {
+          [trackKey]: {
+            play_count: 0,
+            listen_count: 0,
+            youtube_id: "dQw4w9WgXcQ",
+          },
+        },
+      },
+    );
+
+    mockApi.fetchTrackStats.mockResolvedValue({
+      stats: {
+        [trackKey]: {
+          play_count: 0,
+          listen_count: 0,
+          youtube_id: "refetch1234",
+        },
+      },
+    });
+
+    const { result } = renderFeatureHook(
+      ({ userId }: { userId: number | null }) =>
+        usePlaybackTrackYoutubeOverrides({
+          userId,
+          queue: [queueItem],
+        }),
+      { queryClient, initialProps: { userId: USER_ID } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.get(trackKey)).toBe("dQw4w9WgXcQ");
+    });
+
+    await act(async () => {
+      queryClient.removeQueries({ queryKey: TrackStatsQueryKeys.all() });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(result.current.get(trackKey)).toBe("refetch1234");
+    });
   });
 
   it("fetches stats for additional track keys when the active track is not in the queue", async () => {

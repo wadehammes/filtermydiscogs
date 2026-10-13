@@ -44,8 +44,9 @@ export const usePlaybackTrackYoutubeOverrides = ({
   const subscribeToTrackStatsCache = useCallback(
     (onStoreChange: () => void) => {
       const cache = queryClient.getQueryCache();
+      let cancelled = false;
 
-      return cache.subscribe((event) => {
+      const unsubscribe = cache.subscribe((event) => {
         if (
           event.type !== "updated" &&
           event.type !== "added" &&
@@ -58,8 +59,17 @@ export const usePlaybackTrackYoutubeOverrides = ({
           return;
         }
 
-        onStoreChange();
+        queueMicrotask(() => {
+          if (!cancelled) {
+            onStoreChange();
+          }
+        });
       });
+
+      return () => {
+        cancelled = true;
+        unsubscribe();
+      };
     },
     [queryClient],
   );
