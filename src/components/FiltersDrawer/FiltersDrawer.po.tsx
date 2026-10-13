@@ -74,7 +74,6 @@ export class FiltersDrawerPageObject extends BasePageObject {
       releases = [
         releaseFactory.withStyles(["Rock"], {
           basic_information: {
-            ...releaseFactory.withDisplayDefaults().basic_information,
             year: 1999,
             formats: [{ name: "Vinyl", descriptions: ["LP"] }],
           },

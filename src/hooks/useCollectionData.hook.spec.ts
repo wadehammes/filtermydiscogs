@@ -447,7 +447,7 @@ describe("useCollectionData", () => {
     );
 
     await waitFor(() => {
-      expect(result.current.error).toBeTruthy();
+      expect(result.current.error).not.toBeNull();
     });
     expect(result.current.discogsUpstreamOutage).toBe(false);
   });
@@ -537,7 +537,7 @@ describe("useCollectionData", () => {
     );
 
     await waitFor(() => {
-      expect(result.current.error).toBeTruthy();
+      expect(result.current.error).not.toBeNull();
     });
 
     expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(1);

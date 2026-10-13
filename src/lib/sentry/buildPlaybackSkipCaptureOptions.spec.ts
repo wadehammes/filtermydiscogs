@@ -25,6 +25,7 @@ describe("buildPlaybackSkipCaptureOptions", () => {
       "Private, removed, blocked, or still loading",
       "inst-a1",
     ]);
+    expect(options.tags["user.visible"]).toBe("true");
     expect(options.tags["playback.user_report"]).toBe("true");
     expect(options.tags["playback.user_report_category"]).toBe(
       "plays_on_youtube_not_here",

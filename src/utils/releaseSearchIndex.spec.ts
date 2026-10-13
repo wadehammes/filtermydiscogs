@@ -56,13 +56,15 @@ describe("releaseSearchIndex", () => {
     });
     buildReleaseSearchIndex([release]);
 
-    const updatedRelease = {
-      ...release,
+    const updatedRelease = releaseFactory.build({
+      instance_id: release.instance_id,
+      date_added: release.date_added,
+      rating: release.rating,
+      notes: release.notes,
       basic_information: {
-        ...release.basic_information,
         title: "Updated Title",
       },
-    };
+    });
 
     syncReleaseSearchIndex([release], [updatedRelease]);
 

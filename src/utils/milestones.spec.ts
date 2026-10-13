@@ -57,7 +57,6 @@ describe("milestones", () => {
     releases[999] = releaseFactory.build({
       date_added: "2025-09-01T12:00:00",
       basic_information: {
-        ...releaseFactory.build().basic_information,
         year: 1973,
       },
     });

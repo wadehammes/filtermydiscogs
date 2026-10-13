@@ -1,18 +1,19 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  AUTH_ROUTE_RATE_LIMIT_CONFIG,
+  checkIpRateLimit,
+  getIpRateLimitResponse,
+} from "src/lib/ip-rate-limit";
 
 describe("ip-rate-limit", () => {
-  it("returns 429 when the IP limit is exceeded", async () => {
+  beforeEach(() => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
+  });
 
-    const {
-      AUTH_ROUTE_RATE_LIMIT_CONFIG,
-      checkIpRateLimit,
-      getIpRateLimitResponse,
-    } = await import("src/lib/ip-rate-limit");
-
+  it("returns 429 when the IP limit is exceeded", () => {
     const ip = `203.0.113.${Date.now() % 200}`;
     const request = new NextRequest("http://localhost/api/auth/check", {
       headers: { "x-forwarded-for": ip },

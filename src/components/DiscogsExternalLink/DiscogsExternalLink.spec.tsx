@@ -54,7 +54,6 @@ describe("DiscogsReleaseExternalLink", () => {
   it("returns null when the release has no Discogs URL", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         resource_url: "",
       },
     });
@@ -69,7 +68,6 @@ describe("DiscogsReleaseExternalLink", () => {
   it("builds release URLs from resource_url", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         resource_url: "https://api.discogs.com/releases/12345",
       },
     });

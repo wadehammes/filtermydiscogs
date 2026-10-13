@@ -24,7 +24,7 @@ When adding a new **`AuthStatus`**, **`VerifiedUserResult`**, preferences wrappe
 
 Every factory extends [`BaseFactory`](../../src/tests/factories/BaseFactory.ts):
 
-- **`build(attributes?, options?)`** — one instance; pass **`Partial<Type>`** overrides for fields the test cares about.
+- **`build(attributes?, options?)`** — one instance; pass **`Partial<Type>`** overrides for fields the test cares about ( **`releaseFactory`** uses **`ReleaseFactoryAttributes`** — see [`Release.factory.ts`](../../src/tests/factories/Release.factory.ts)).
 - **`buildList(n, attributes?, options?)`** — array of `n` instances.
 - **`buildModel`** — optional when a domain class wraps the built type.
 
@@ -83,6 +83,14 @@ basic_information: basicInformationFactory.build(),
 formats: formatFactory.buildList(2),
 releases: releaseFactory.buildList(10),
 ```
+
+### `releaseFactory` overrides
+
+- **`releaseFactory.build()`** and presets (**`withStyles`**, **`withResourceUrl`**, **`withDisplayDefaults`**, …) take **`ReleaseFactoryAttributes`**: release-level fields are partial, and nested **`basic_information`** is **`Partial<DiscogsBasicInformation>`** merged through **`basicInformationFactory.build()`**. Plain **`Partial<DiscogsRelease>`** is wrong for TypeScript—when **`basic_information`** is present it would require every BI field.
+- Do **not** spread **`...release.basic_information`** or **`...releaseFactory.withStyles([…]).basic_information`** in specs. Override with **`releaseFactory.withStyles(styles, { basic_information: { … } })`**, **`basicInformationFactory.build({ … })`**, or a file-local helper that calls **`basicInformationFactory.build`** (see [`similarReleases.spec.ts`](../../src/utils/similarReleases.spec.ts)).
+- **`formatFactory`**: when **`expect(…).toEqual`** on **`formats`**, reuse the same **`formatFactory.build()`** instance in the fixture and the assertion so Faker fields (**`qty`**, etc.) match ([`collectionCacheSync.spec.ts`](../../src/utils/collectionCacheSync.spec.ts), [`collectionReleaseLookup.spec.ts`](../../src/utils/collectionReleaseLookup.spec.ts)).
+- **`artistFactory`** always sets **`resource_url`**. Specs that assert Discogs header links from **artist `id`** when the API URL is absent must pass **`resource_url: ""`** on **`artistFactory.build({ … })`** — [`getResourceUrl`](../../src/utils/helpers.ts) parses the id from **`resource_url`** first ([`ReleaseSummaryHero.spec.tsx`](../../src/components/ReleaseSummaryHero/ReleaseSummaryHero.spec.tsx)).
+- **`getSimilarReleases`** (modal sidebar, playback similar-queue tail): partial BI alone leaves random Faker **styles**—use **`withStyles`** (or explicit shared tags) so candidates overlap the source ([`ReleaseModal.similar.spec.tsx`](../../src/components/ReleaseModal/ReleaseModal.similar.spec.tsx), [`useReleasePlaybackSimilarQueue.hook.spec.tsx`](../../src/hooks/useReleasePlaybackSimilarQueue.hook.spec.tsx)).
 
 ### Enum-like unions
 

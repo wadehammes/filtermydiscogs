@@ -20,7 +20,7 @@ describe("FormDialog", () => {
     );
 
     const dialog = screen.getByTestId("fmdFormDialog");
-    expect(dialog.querySelector('[class*="content"]')).toBeTruthy();
+    expect(dialog.querySelector('[class*="content"]')).not.toBeNull();
     expect(
       screen.getByRole("heading", { name: "New crate" }),
     ).toBeInTheDocument();

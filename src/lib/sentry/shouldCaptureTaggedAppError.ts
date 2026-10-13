@@ -1,10 +1,13 @@
+import type { SeverityLevel } from "@sentry/core";
 import { getErrorHttpStatus } from "src/lib/sentry/getErrorHttpStatus";
 import { shouldReportHttpFailure } from "src/lib/sentry/shouldReportHttpFailure";
 
 export type CaptureTaggedAppErrorOptions = {
   extra?: Record<string, unknown>;
-  httpStatus?: number;
+  fingerprint?: string[];
   gateHttpStatusFromError?: boolean;
+  httpStatus?: number;
+  level?: SeverityLevel;
 };
 
 export const shouldCaptureTaggedAppError = (

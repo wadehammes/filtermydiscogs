@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { formatFactory } from "src/tests/factories/Format.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   buildReleaseIndexFromList,
@@ -60,8 +61,9 @@ describe("collectionReleaseLookup", () => {
     const cachedRelease = releaseFactory.withDisplayDefaults({
       instance_id: "9001",
       basic_information: {
-        ...releaseFactory.withDisplayDefaults().basic_information,
-        formats: [{ name: "CDr", descriptions: ["Album"] }],
+        formats: [
+          formatFactory.build({ name: "CDr", descriptions: ["Album"] }),
+        ],
       },
     });
     const cachedPages = [
@@ -70,16 +72,22 @@ describe("collectionReleaseLookup", () => {
         { page: 1, totalPages: 1, releaseCount: 1 },
       ),
     ];
+    const liveVinylFormat = formatFactory.build({
+      name: "Vinyl",
+      descriptions: ['12"', "LP"],
+    });
     const livePage = collectionFactory.build(
       {
         releases: [
-          {
-            ...cachedRelease,
+          releaseFactory.withDisplayDefaults({
+            instance_id: cachedRelease.instance_id,
+            rating: cachedRelease.rating,
+            date_added: cachedRelease.date_added,
+            notes: cachedRelease.notes,
             basic_information: {
-              ...cachedRelease.basic_information,
-              formats: [{ name: "Vinyl", descriptions: ['12"', "LP"] }],
+              formats: [liveVinylFormat],
             },
-          },
+          }),
         ],
       },
       { page: 1, totalPages: 1, releaseCount: 1 },
@@ -92,7 +100,7 @@ describe("collectionReleaseLookup", () => {
 
     expect(result.updated).toBe(true);
     expect(result.pages[0]?.releases[0]?.basic_information.formats).toEqual([
-      { name: "Vinyl", descriptions: ['12"', "LP"] },
+      liveVinylFormat,
     ]);
     expect(result.pages[0]?.releases[0]?.rating).toBe(cachedRelease.rating);
   });
@@ -135,7 +143,6 @@ describe("collectionReleaseLookup", () => {
           releaseFactory.withDisplayDefaults({
             instance_id: "live-only",
             basic_information: {
-              ...releaseFactory.withDisplayDefaults().basic_information,
               title: "Different Title",
             },
           }),

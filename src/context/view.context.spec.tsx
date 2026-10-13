@@ -127,7 +127,7 @@ describe("ViewProvider", () => {
     });
 
     const saved = localStorage.getItem("filtermydiscogs_view_state");
-    expect(saved).toBeTruthy();
+    expect(saved).not.toBeNull();
     if (saved) {
       const parsed = JSON.parse(saved);
       expect(parsed.currentView).toBe("list");

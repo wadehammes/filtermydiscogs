@@ -183,7 +183,7 @@ describe("AutocompleteSelect", () => {
       name: "Test Autocomplete",
     });
     const pillsRow = trigger.querySelector(".scroll");
-    expect(pillsRow).toBeTruthy();
+    expect(pillsRow).not.toBeNull();
     await user.click(pillsRow as Element);
 
     await waitFor(() => {
@@ -204,7 +204,7 @@ describe("AutocompleteSelect", () => {
       name: "Test Autocomplete",
     });
     const pillsRow = trigger.querySelector(".scroll");
-    expect(pillsRow).toBeTruthy();
+    expect(pillsRow).not.toBeNull();
     await user.click(pillsRow as Element);
 
     await waitFor(() => {

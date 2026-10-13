@@ -80,7 +80,7 @@ describe("CrateDrawer", () => {
     await waitFor(() => {
       expect(
         document.querySelector("[data-crate-drawer-desktop]"),
-      ).toBeTruthy();
+      ).not.toBeNull();
       expect(
         screen.getByRole("combobox", { name: /select crate/i }),
       ).toBeVisible();

@@ -128,7 +128,6 @@ describe("formatReleaseHeroMetaLine", () => {
     const release = releaseFactory.build({
       rating: 5,
       basic_information: {
-        ...releaseFactory.build().basic_information,
         labels: [{ name: "P.O.D CROSS", catno: "PODCROSS 005" }],
         year: 2019,
       },

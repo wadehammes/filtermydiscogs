@@ -28,7 +28,6 @@ describe("validateReleaseDataForStorage", () => {
   it("strips non-Discogs image URLs", () => {
     const release = releaseFactory.build({
       basic_information: {
-        ...releaseFactory.build().basic_information,
         thumb: "https://evil.example/thumb.jpg",
         cover_image: "https://i.discogs.com/safe.jpg",
       },

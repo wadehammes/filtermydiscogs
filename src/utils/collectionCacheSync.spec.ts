@@ -6,6 +6,7 @@ import {
 } from "src/constants/collection";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
+import { formatFactory } from "src/tests/factories/Format.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   installMockIndexedDb,
@@ -96,7 +97,7 @@ describe("collectionCacheSync", () => {
       queryClient.getQueryData(
         DiscogsCollectionQueryKeys.byUsername("testuser"),
       ),
-    ).toBeTruthy();
+    ).not.toBeUndefined();
   });
 
   it("validates a cache entry when Discogs total items still match", async () => {
@@ -121,8 +122,9 @@ describe("collectionCacheSync", () => {
     const release = releaseFactory.withDisplayDefaults({
       instance_id: "9001",
       basic_information: {
-        ...releaseFactory.withDisplayDefaults().basic_information,
-        formats: [{ name: "CDr", descriptions: ["Album"] }],
+        formats: [
+          formatFactory.build({ name: "CDr", descriptions: ["Album"] }),
+        ],
       },
     });
     const page = collectionFactory.build(
@@ -143,14 +145,20 @@ describe("collectionCacheSync", () => {
       {},
       { releaseCount: 1, totalItems: 1, totalPages: 1 },
     );
+    const liveVinylFormat = formatFactory.build({
+      name: "Vinyl",
+      descriptions: ['12"', "LP"],
+    });
     validationPage.releases = [
-      {
-        ...release,
+      releaseFactory.withDisplayDefaults({
+        instance_id: release.instance_id,
+        rating: release.rating,
+        date_added: release.date_added,
+        notes: release.notes,
         basic_information: {
-          ...release.basic_information,
-          formats: [{ name: "Vinyl", descriptions: ['12"', "LP"] }],
+          formats: [liveVinylFormat],
         },
-      },
+      }),
     ];
     mockFetchDiscogsCollection.mockResolvedValue(validationPage);
 
@@ -161,7 +169,7 @@ describe("collectionCacheSync", () => {
     const stored = await readPersistedCollectionCache("testuser");
 
     expect(stored?.pages[0]?.releases[0]?.basic_information.formats).toEqual([
-      { name: "Vinyl", descriptions: ['12"', "LP"] },
+      liveVinylFormat,
     ]);
   });
 
@@ -242,7 +250,7 @@ describe("collectionCacheSync", () => {
       queryClient.getQueryData(
         DiscogsCollectionQueryKeys.byUsername("testuser"),
       ),
-    ).toBeTruthy();
+    ).not.toBeUndefined();
   });
 
   it("re-hydrates React Query after user-scoped queries are cleared", async () => {
@@ -267,7 +275,7 @@ describe("collectionCacheSync", () => {
       queryClient.getQueryData(
         DiscogsCollectionQueryKeys.byUsername("testuser"),
       ),
-    ).toBeTruthy();
+    ).not.toBeUndefined();
     expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(2);
   });
 
