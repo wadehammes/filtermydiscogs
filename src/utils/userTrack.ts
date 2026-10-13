@@ -8,6 +8,7 @@ import {
   flattenTracklist,
   parseYoutubeVideoId,
 } from "src/utils/releasePlayback";
+import { isValidYoutubeVideoId } from "src/utils/youtubeVideoId";
 
 export const TRACK_LISTEN_MIN_MS = 30_000;
 
@@ -208,10 +209,8 @@ export const formatUserTrackListenTooltip = (
   return `${stats.play_count} ${playLabel}, ${stats.listen_count} ${listenLabel}. ${listenRule}`;
 };
 
-const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
-
 export const buildYoutubeThumbnailUrl = (videoId: string): string | null => {
-  if (!YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) {
+  if (!isValidYoutubeVideoId(videoId)) {
     return null;
   }
 
@@ -225,7 +224,7 @@ export const normalizeYoutubeVideoInput = (input: string): string | null => {
     return null;
   }
 
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+  if (isValidYoutubeVideoId(trimmed)) {
     return trimmed;
   }
 

@@ -1,4 +1,7 @@
-import { isE2eMockYoutubeEmbedEnabled } from "src/constants/e2ePlayback.constants";
+import {
+  E2E_MOCK_YOUTUBE_EMBED_PATH,
+  isE2eMockYoutubeEmbedEnabled,
+} from "src/constants/e2ePlayback.constants";
 
 export const YOUTUBE_PLAYER_STATE_ENDED = 0;
 export const YOUTUBE_PLAYER_STATE_PLAYING = 1;
@@ -21,9 +24,23 @@ const YOUTUBE_EMBED_ORIGINS = new Set([
   "https://www.youtube-nocookie.com",
 ]);
 
+const pageHasLocalE2eMockYoutubeEmbed = (): boolean => {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return Boolean(
+    document.querySelector(`iframe[src*="${E2E_MOCK_YOUTUBE_EMBED_PATH}"]`),
+  );
+};
+
 export const isYoutubeEmbedOrigin = (origin: string): boolean => {
   if (isE2eMockYoutubeEmbedEnabled() && typeof window !== "undefined") {
     return origin === window.location.origin;
+  }
+
+  if (typeof window !== "undefined" && origin === window.location.origin) {
+    return pageHasLocalE2eMockYoutubeEmbed();
   }
 
   return YOUTUBE_EMBED_ORIGINS.has(origin);

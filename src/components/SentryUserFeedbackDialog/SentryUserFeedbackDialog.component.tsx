@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Attachment } from "@sentry/core";
+import Image from "next/image";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
@@ -55,10 +56,13 @@ const SentryUserFeedbackScreenshotSection = ({
   if (screenshotPreviewUrl) {
     return (
       <figure className={styles.screenshotPreview}>
-        <img
+        <Image
           alt="Screenshot preview"
           className={styles.screenshotImage}
+          height={480}
           src={screenshotPreviewUrl}
+          unoptimized
+          width={640}
         />
         <figcaption>
           <Button

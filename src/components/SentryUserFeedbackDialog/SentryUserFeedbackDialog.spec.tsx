@@ -96,6 +96,10 @@ describe("SentryUserFeedbackDialog", () => {
       expect(onCaptureScreenshot).toHaveBeenCalledTimes(1);
     });
 
+    expect(
+      screen.getByRole("img", { name: "Screenshot preview" }),
+    ).toBeInTheDocument();
+
     await user.type(screen.getByLabelText("What went wrong?"), "Layout bug");
     await user.click(screen.getByRole("button", { name: "Send bug report" }));
 

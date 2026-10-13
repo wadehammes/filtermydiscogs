@@ -7,6 +7,7 @@ import { AdminMetricTable } from "src/components/AdminDashboard/AdminMetricTable
 import { AdminPreferenceBreakdownPanel } from "src/components/AdminDashboard/AdminPreferenceBreakdownPanel.component";
 import { AdminUserLookupPanel } from "src/components/AdminDashboard/AdminUserLookupPanel.component";
 import { ReturningUsersChart } from "src/components/AdminDashboard/ReturningUsersChart.component";
+import { AdminYoutubeEmbedTestPanel } from "src/components/AdminYoutubeEmbedTestPanel/AdminYoutubeEmbedTestPanel.component";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
 import dashboardStyles from "src/components/Dashboard/DashboardClient.module.css";
 import { DashboardSection } from "src/components/Dashboard/DashboardSection.component";
@@ -595,6 +596,8 @@ export default function AdminDashboardClient() {
               </DashboardSection>
 
               <AdminUserLookupPanel />
+
+              <AdminYoutubeEmbedTestPanel />
             </div>
           )}
         </div>

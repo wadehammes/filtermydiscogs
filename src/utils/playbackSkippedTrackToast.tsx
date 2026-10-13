@@ -26,6 +26,18 @@ export const PLAYBACK_SKIP_USER_REPORT_TITLE =
 
 export const PLAYBACK_SKIP_USER_REPORT_SENT_TITLE = "Report already sent.";
 
+export const resolvePlaybackSkipLogSingleEntry = (
+  entries: readonly PlaybackSkipLogEntry[],
+): PlaybackSkipLogEntry | null => {
+  if (entries.length !== 1) {
+    return null;
+  }
+
+  const [entry] = entries;
+
+  return entry === undefined ? null : entry;
+};
+
 const PlaybackSkipLogEntryContent = ({
   entry,
   onUserReport,
@@ -70,19 +82,23 @@ const formatSkipLogDescription = (
   entries: PlaybackSkipLogEntry[],
   onUserReport: (entry: PlaybackSkipLogEntry) => void,
 ): ReactNode => {
-  if (entries.length === 1) {
-    const entry = entries[0]!;
+  const singleEntry = resolvePlaybackSkipLogSingleEntry(entries);
 
+  if (singleEntry !== null) {
     return (
       <div className="fmd-playback-skip-log">
         <div className="fmd-playback-skip-log-single">
           <PlaybackSkipLogEntryContent
-            entry={entry}
+            entry={singleEntry}
             onUserReport={onUserReport}
           />
         </div>
       </div>
     );
+  }
+
+  if (entries.length <= 1) {
+    return null;
   }
 
   return (

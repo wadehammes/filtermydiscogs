@@ -174,6 +174,30 @@ const dispatchYoutubePlayerError = ({
   );
 };
 
+const dispatchYoutubeInfoDelivery = ({
+  contentWindow,
+  currentTime,
+  playerState,
+}: {
+  contentWindow: Window;
+  currentTime?: number;
+  playerState?: number;
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({
+        event: "infoDelivery",
+        info: {
+          ...(currentTime !== undefined && { currentTime }),
+          ...(playerState !== undefined && { playerState }),
+        },
+      }),
+      origin: "https://www.youtube.com",
+      source: contentWindow,
+    }),
+  );
+};
+
 describe("useReleasePlaybackYoutubeEmbed", () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -262,6 +286,55 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     const { playbackIframeRef } = buildHarness({ onYoutubeEmbedPlaybackError });
     playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
 
+    dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
+
+    expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
+  });
+
+  it("ignores non-terminal onError during track-switch grace while video UI loading", () => {
+    const onYoutubeEmbedPlaybackError = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { isPlaybackVideoUiLoadingRef, playbackIframeRef, result } =
+      buildHarness({
+        onYoutubeEmbedPlaybackError,
+      });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+
+    result.current.notifyImperativeEmbedLoadStarted();
+    dispatchYoutubePlayerError({ contentWindow, errorCode: 5 });
+
+    expect(onYoutubeEmbedPlaybackError).not.toHaveBeenCalled();
+  });
+
+  it("forwards terminal onError during track-switch grace while video UI loading", () => {
+    const onYoutubeEmbedPlaybackError = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { isPlaybackVideoUiLoadingRef, playbackIframeRef, result } =
+      buildHarness({
+        onYoutubeEmbedPlaybackError,
+      });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+
+    result.current.notifyImperativeEmbedLoadStarted();
+    dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
+
+    expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
+  });
+
+  it("forwards onError during track-switch grace when upload switch UI is not active", () => {
+    const onYoutubeEmbedPlaybackError = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { playbackIframeRef, result } = buildHarness({
+      onYoutubeEmbedPlaybackError,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+
+    result.current.notifyImperativeEmbedLoadStarted();
     dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
 
     expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
@@ -414,6 +487,33 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
       playerState: 1,
       event: "infoDelivery",
     });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
+  });
+
+  it("confirms playback from infoDelivery currentTime without onStateChange PLAYING", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      clearPlaybackVideoUiLoading,
+      isPlaybackVideoUiLoadingRef,
+      playbackIframeRef,
+      result,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    dispatchYoutubeInfoDelivery({ contentWindow, currentTime: 0.25 });
 
     expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
     expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();

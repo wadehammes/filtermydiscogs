@@ -5,12 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { imperativelySyncPersistentYoutubeIframeToVideoId } from "src/components/PersistentYoutubeIframe/persistentYoutubeIframeVideoSwitch";
 import { GTM_YOUTUBE_IFRAME_INSPECTED_ATTR } from "src/constants/analytics";
 import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
-import { definedProps } from "src/utils/definedProps";
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
 } from "src/utils/postYoutubePlayerCommand";
-import { buildYoutubeEmbedUrl } from "src/utils/releasePlayback";
+import { buildClientYoutubeEmbedUrl } from "src/utils/releasePlayback";
 import { enableYoutubeIframeListening } from "src/utils/youtubeIframeEvents";
 import styles from "./PersistentYoutubeIframe.module.css";
 
@@ -23,17 +22,6 @@ interface PersistentYoutubeIframeProps {
 }
 
 export const PERSISTENT_YOUTUBE_IFRAME_ID = "fmdPersistentYoutubeEmbed";
-
-const buildEmbedUrlForVideo = (videoId: string, autoplay: boolean): string => {
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : undefined;
-
-  return buildYoutubeEmbedUrl({
-    videoId,
-    autoplay,
-    ...definedProps({ origin }),
-  });
-};
 
 export const PersistentYoutubeIframe = ({
   videoId,
@@ -58,7 +46,9 @@ export const PersistentYoutubeIframe = ({
   const previousVariantRef = useRef(variant);
 
   const embedUrl = useMemo(
-    () => buildEmbedUrlForVideo(bootstrapVideoId, autoplay),
+    () =>
+      buildClientYoutubeEmbedUrl({ videoId: bootstrapVideoId, autoplay }) ??
+      "about:blank",
     [autoplay, bootstrapVideoId],
   );
 

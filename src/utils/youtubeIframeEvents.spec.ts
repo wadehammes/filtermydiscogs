@@ -1,4 +1,5 @@
-import { describe, expect, it } from "@jest/globals";
+import { afterEach, describe, expect, it } from "@jest/globals";
+import { E2E_MOCK_YOUTUBE_EMBED_PATH } from "src/constants/e2ePlayback.constants";
 import {
   enableYoutubeIframeListening,
   isYoutubeEmbedAtOrPastEnd,
@@ -34,6 +35,18 @@ describe("isYoutubeEmbedOrigin", () => {
     expect(isYoutubeEmbedOrigin("https://www.youtube-nocookie.com")).toBe(
       false,
     );
+  });
+
+  it("accepts the app origin when a local E2E mock iframe is on the page", () => {
+    delete process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+
+    const iframe = document.createElement("iframe");
+    iframe.src = `${E2E_MOCK_YOUTUBE_EMBED_PATH}?mode=silent`;
+    document.body.appendChild(iframe);
+
+    expect(isYoutubeEmbedOrigin(window.location.origin)).toBe(true);
+
+    iframe.remove();
   });
 
   it("rejects other origins", () => {

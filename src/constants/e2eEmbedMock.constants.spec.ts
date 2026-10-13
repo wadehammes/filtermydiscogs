@@ -3,6 +3,7 @@ import {
   appendE2eEmbedMockQueryParams,
   E2E_EMBED_MOCK_DELAYED_PLAYING_MS,
   E2E_EMBED_MOCK_VIDEO_IDS,
+  isE2eHarnessMockVideoId,
   resolveE2eEmbedMockModeForVideoId,
 } from "src/constants/e2eEmbedMock.constants";
 
@@ -21,6 +22,17 @@ describe("e2eEmbedMock.constants", () => {
       resolveE2eEmbedMockModeForVideoId(E2E_EMBED_MOCK_VIDEO_IDS.error),
     ).toBe("error");
     expect(resolveE2eEmbedMockModeForVideoId("unknownVideo1")).toBeNull();
+  });
+
+  it("isE2eHarnessMockVideoId is true for silent delayed and error ids only", () => {
+    expect(isE2eHarnessMockVideoId(E2E_EMBED_MOCK_VIDEO_IDS.normal)).toBe(
+      false,
+    );
+    expect(isE2eHarnessMockVideoId(E2E_EMBED_MOCK_VIDEO_IDS.silent)).toBe(true);
+    expect(isE2eHarnessMockVideoId(E2E_EMBED_MOCK_VIDEO_IDS.delayed)).toBe(
+      true,
+    );
+    expect(isE2eHarnessMockVideoId(E2E_EMBED_MOCK_VIDEO_IDS.error)).toBe(true);
   });
 
   it("appendE2eEmbedMockQueryParams adds mode and delay for harness video ids", () => {
