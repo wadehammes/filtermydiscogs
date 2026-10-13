@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import { render, screen } from "test-utils";
 import filtersBarStyles from "./FiltersBar.module.css";
 import { FiltersBarSkeleton } from "./FiltersBarSkeleton.component";
@@ -43,7 +44,7 @@ describe("FiltersBarSkeleton", () => {
     expect(genreTrigger).toHaveClass(styles.styleFilterPrimaryShell);
     expect(
       genreTrigger?.querySelector(`.${styles.placeholderLineWide}`),
-    ).toBeInTheDocument();
+    ).toHaveClass(skeletonPulseStyles.pulsesurface);
     expect(
       genreTrigger?.querySelector(`.${styles.chevron}`),
     ).toBeInTheDocument();

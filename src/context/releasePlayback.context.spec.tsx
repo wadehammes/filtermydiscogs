@@ -1830,9 +1830,8 @@ describe("ReleasePlaybackProvider", () => {
   it("does not re-arm the embed watchdog after playback is confirmed for the same video load", async () => {
     jest.useFakeTimers();
 
-    const iframe = {
-      contentWindow: { postMessage: jest.fn() },
-    } as unknown as HTMLIFrameElement;
+    const contentWindow = { postMessage: jest.fn() } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
 
     const { result } = renderHook(
       () => ({
@@ -1858,6 +1857,11 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
       result.current.notifyPlaybackVideoPresentationReady();
     });
 
@@ -2003,6 +2007,51 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.notifyPlaybackVideoLoadStarted();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("presentation ready alone does not confirm embed playback so the watchdog can skip", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(
+      () => ({
+        ...useReleasePlayback(),
+        ...useReleasePlaybackIframeActions(),
+      }),
+      {
+        wrapper: createWrapper([collectionRelease]),
+      },
+    );
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      result.current.notifyPlaybackVideoPresentationReady();
     });
 
     act(() => {

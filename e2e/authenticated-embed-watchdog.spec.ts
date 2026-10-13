@@ -60,7 +60,7 @@ test.describe("authenticated embed watchdog harness (MSW + mock iframe)", () => 
     await expectE2ePersistentEmbedSrcMatches(page, /mode=silent/);
   });
 
-  test.fixme("silent mock matches watchdog unavailable skip after embed load (blocked by presentation-ready confirm without PLAYING — follow-up product PR)", async ({
+  test("silent mock matches watchdog unavailable skip after embed load", async ({
     page,
     network,
   }) => {

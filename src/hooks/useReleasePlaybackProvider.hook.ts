@@ -809,6 +809,10 @@ export const useReleasePlaybackProvider = (): {
       return;
     }
 
+    if (!embedPlaybackConfirmedRef.current) {
+      return;
+    }
+
     confirmEmbedPlayback();
   }, [
     clearPlaybackVideoUiLoading,
