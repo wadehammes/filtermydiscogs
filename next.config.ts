@@ -48,7 +48,13 @@ const connectSrc = isProduction
 const youtubeFrameSrc = ["*.youtube.com", "*.youtube-nocookie.com"];
 
 const frameSrc = isProduction
-  ? ["'self'", ...youtubeFrameSrc, "*.google.com", "*.googletagmanager.com"]
+  ? [
+      "'self'",
+      ...youtubeFrameSrc,
+      "*.google.com",
+      "*.googletagmanager.com",
+      ...(isVercelPreview ? ["vercel.live"] : []),
+    ]
   : ["*"];
 
 const ContentSecurityPolicy = `

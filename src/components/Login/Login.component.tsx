@@ -154,7 +154,7 @@ export const Login = () => {
                 vectorEffect="non-scaling-stroke"
               />
               <path
-                d="M0 20 C80 12 160 28 240 20 S400 12 480 20 560 28 640 20 720 12 800 20 880 28 960 20 1040 12 1120 20 1200 28"
+                d="M0 20 C80 12 160 28 240 20 S400 12 480 20 S560 28 640 20 S720 12 800 20 S880 28 960 20 S1040 12 1120 20 L 1200 28"
                 fill="none"
                 opacity="0.35"
                 stroke="currentColor"

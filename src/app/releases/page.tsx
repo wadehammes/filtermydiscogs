@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import ReleasesClient from "src/components/ReleasesClient/ReleasesClient.component";
+import { ReleasesPageLoading } from "src/components/ReleasesClient/ReleasesPageLoading.component";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
   getMetadataSiteUrl,
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function ReleasesPage() {
   return (
-    <Suspense fallback={<AppPageLoading currentPage="releases" />}>
+    <Suspense fallback={<ReleasesPageLoading />}>
       <ReleasesClient />
     </Suspense>
   );

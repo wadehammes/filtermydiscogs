@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import { Activity, useCallback, useState } from "react";
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
 import { CrateDrawerLazy } from "src/components/CrateDrawer/CrateDrawerLazy.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
@@ -21,6 +20,7 @@ import { LoadingTrigger } from "./LoadingTrigger.component";
 import styles from "./ReleasesClient.module.css";
 import { ReleasesGrid } from "./ReleasesGrid.component";
 import { ReleasesHeader } from "./ReleasesHeader.component";
+import { ReleasesPageLoading } from "./ReleasesPageLoading.component";
 import { ReleasesSkeleton } from "./ReleasesSkeleton.component";
 
 const ReleasesClientContent = () => {
@@ -75,7 +75,7 @@ const ReleasesClientContent = () => {
   }
 
   if (isCheckingAuth) {
-    return <AppPageLoading currentPage="releases" />;
+    return <ReleasesPageLoading />;
   }
 
   if (hasError) {

@@ -78,7 +78,7 @@
   flex: 1 1 auto;
   height: 100%;
   justify-content: space-between;
-  min-height: 0;
+  min-height: var(--input-height);
   min-width: 0;
   overflow: hidden;
   padding: var(--space-2) var(--space-3);
@@ -114,7 +114,7 @@
 .placeholderLineWide {
   flex: 1;
   max-width: 9rem;
-  min-width: 0;
+  min-width: 3rem;
 }
 
 .chevron {

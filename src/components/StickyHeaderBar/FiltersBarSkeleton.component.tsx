@@ -14,125 +14,139 @@ export function FiltersBarSkeleton() {
       className={filtersBarStyles.filtersBar}
       data-testid="fmdFiltersBarSkeleton"
     >
-      <div className={filtersBarStyles.desktopFilters}>
-        <div
-          className={styles.viewsShell}
-          data-testid="fmdFilterViewsMenu"
-          aria-hidden
-        >
-          <span
-            className={classNames(styles.viewsIcon, skeletonPulseStyles.pulse)}
-          >
-            <BookmarkIcon />
-          </span>
-          <div className={classNames(styles.viewsLine, pulseSurface)} />
-          <span className={styles.chevron}>
-            <ChevronIcon />
-          </span>
-        </div>
-        <div className={styles.searchShell} aria-hidden>
-          <span className={styles.searchIcon}>
-            <SearchIcon />
-          </span>
+      <div className={filtersBarStyles.desktopFiltersStack}>
+        <div className={filtersBarStyles.desktopFilters}>
           <div
-            className={classNames(styles.placeholderLineWide, pulseSurface)}
-          />
-        </div>
-        <div className={filtersBarStyles.styleFilterGroup}>
-          <div data-testid="fmdAutocompleteSelect" aria-hidden>
-            <div
-              className={styles.styleFilterPrimaryShell}
-              data-filter-control-trigger
-              aria-hidden
+            className={styles.viewsShell}
+            data-testid="fmdFilterViewsMenu"
+            aria-hidden
+          >
+            <span
+              className={classNames(
+                styles.viewsIcon,
+                skeletonPulseStyles.pulse,
+              )}
             >
+              <BookmarkIcon />
+            </span>
+            <div className={classNames(styles.viewsLine, pulseSurface)} />
+            <span className={styles.chevron}>
+              <ChevronIcon />
+            </span>
+          </div>
+          <div className={styles.searchShell} aria-hidden>
+            <span className={styles.searchIcon}>
+              <SearchIcon />
+            </span>
+            <div
+              className={classNames(styles.placeholderLineWide, pulseSurface)}
+            />
+          </div>
+          <div className={filtersBarStyles.styleFilterGroup}>
+            <div data-testid="fmdAutocompleteSelect" aria-hidden>
               <div
-                className={classNames(styles.placeholderLineWide, pulseSurface)}
-              />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
+                className={styles.styleFilterPrimaryShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(
+                    styles.placeholderLineWide,
+                    pulseSurface,
+                  )}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
+            </div>
+            <div data-testid="fmdSelect" aria-hidden>
+              <div
+                className={styles.operatorShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(styles.placeholderLine, pulseSurface)}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
             </div>
           </div>
-          <div data-testid="fmdSelect" aria-hidden>
-            <div
-              className={styles.operatorShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
+          <div className={filtersBarStyles.styleFilterGroup}>
+            <div data-testid="fmdAutocompleteSelect" aria-hidden>
               <div
-                className={classNames(styles.placeholderLine, pulseSurface)}
-              />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
+                className={styles.styleFilterPrimaryShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(
+                    styles.placeholderLineWide,
+                    pulseSurface,
+                  )}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
+            </div>
+            <div data-testid="fmdSelect" aria-hidden>
+              <div
+                className={styles.operatorShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(styles.placeholderLine, pulseSurface)}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className={filtersBarStyles.styleFilterGroup}>
-          <div data-testid="fmdAutocompleteSelect" aria-hidden>
-            <div
-              className={styles.styleFilterPrimaryShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
+          <div className={filtersBarStyles.styleFilterGroup}>
+            <div data-testid="fmdAutocompleteSelect" aria-hidden>
               <div
-                className={classNames(styles.placeholderLineWide, pulseSurface)}
-              />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
+                className={styles.styleFilterPrimaryShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(
+                    styles.placeholderLineWide,
+                    pulseSurface,
+                  )}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
+            </div>
+            <div data-testid="fmdSelect" aria-hidden>
+              <div
+                className={styles.operatorShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(styles.placeholderLine, pulseSurface)}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
             </div>
           </div>
-          <div data-testid="fmdSelect" aria-hidden>
-            <div
-              className={styles.operatorShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
-              <div
-                className={classNames(styles.placeholderLine, pulseSurface)}
-              />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
-            </div>
+          <div className={styles.selectShell} aria-hidden>
+            <div className={classNames(styles.placeholderLine, pulseSurface)} />
+            <span className={styles.chevron}>
+              <ChevronIcon />
+            </span>
           </div>
-        </div>
-        <div className={filtersBarStyles.styleFilterGroup}>
-          <div data-testid="fmdAutocompleteSelect" aria-hidden>
-            <div
-              className={styles.styleFilterPrimaryShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
-              <div
-                className={classNames(styles.placeholderLineWide, pulseSurface)}
-              />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
-            </div>
-          </div>
-          <div data-testid="fmdSelect" aria-hidden>
-            <div
-              className={styles.operatorShell}
-              data-filter-control-trigger
-              aria-hidden
-            >
-              <div
-                className={classNames(styles.placeholderLine, pulseSurface)}
-              />
-              <span className={styles.chevron}>
-                <ChevronIcon />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={styles.selectShell} aria-hidden>
-          <div className={classNames(styles.placeholderLine, pulseSurface)} />
-          <span className={styles.chevron}>
-            <ChevronIcon />
-          </span>
         </div>
       </div>
     </div>
