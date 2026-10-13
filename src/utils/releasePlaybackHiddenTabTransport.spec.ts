@@ -1,8 +1,44 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery,
+  shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace,
   shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden,
 } from "src/utils/releasePlaybackHiddenTabTransport";
+
+describe("shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace", () => {
+  it("ignores non-terminal onError during grace while video UI loading", () => {
+    expect(
+      shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
+        errorCode: 5,
+        isWithinTrackSwitchGrace: true,
+        isPlaybackVideoUiLoading: true,
+        hasPlaybackVideoTransitionTarget: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("forwards terminal skip onError during grace even while video UI loading", () => {
+    expect(
+      shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
+        errorCode: 100,
+        isWithinTrackSwitchGrace: true,
+        isPlaybackVideoUiLoading: true,
+        hasPlaybackVideoTransitionTarget: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("forwards onError during grace when neither loading nor transition is active", () => {
+    expect(
+      shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
+        errorCode: 5,
+        isWithinTrackSwitchGrace: true,
+        isPlaybackVideoUiLoading: false,
+        hasPlaybackVideoTransitionTarget: false,
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden", () => {
   it("ignores embed pause while hidden during a queue advance transition", () => {

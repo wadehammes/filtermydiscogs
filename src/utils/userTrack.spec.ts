@@ -96,6 +96,7 @@ describe("userTrack utils", () => {
       normalizeYoutubeVideoInput("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
     ).toBe("dQw4w9WgXcQ");
     expect(normalizeYoutubeVideoInput("not-a-link")).toBeNull();
+    expect(normalizeYoutubeVideoInput("ten-char!!")).toBeNull();
   });
 
   it("mapUserYoutubeIdsByPosition maps stored youtube_id values by track position", () => {

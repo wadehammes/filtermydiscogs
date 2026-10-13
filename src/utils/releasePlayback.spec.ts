@@ -3,6 +3,7 @@ import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import type { DiscogsTrack } from "src/types/discogs-release-detail.types";
 import {
+  buildClientYoutubeEmbedUrl,
   buildReleasePlaybackMatchIndex,
   buildYoutubeEmbedUrl,
   buildYoutubeSearchUrl,
@@ -997,6 +998,29 @@ describe("buildYoutubeEmbedUrl", () => {
       }),
     ).toBe(
       "https://www.youtube-nocookie.com/embed/te2jJncBVG4?controls=1&disablekb=0&enablejsapi=1&fs=1&playsinline=1&rel=0&origin=http%3A%2F%2Flocalhost%3A6767",
+    );
+  });
+
+  it("returns null for invalid video ids", () => {
+    expect(buildYoutubeEmbedUrl({ videoId: "not-valid-id" })).toBeNull();
+  });
+
+  it("serves harness mock embed urls for reserved silent ids without the global mock flag", () => {
+    delete process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+
+    expect(buildYoutubeEmbedUrl({ videoId: "e2eSilent01" })).toContain(
+      "/e2e/youtube-embed-mock.html",
+    );
+    expect(buildYoutubeEmbedUrl({ videoId: "e2eSilent01" })).toContain(
+      "mode=silent",
+    );
+  });
+});
+
+describe("buildClientYoutubeEmbedUrl", () => {
+  it("adds window origin when building a client embed URL", () => {
+    expect(buildClientYoutubeEmbedUrl({ videoId: "te2jJncBVG4" })).toContain(
+      "origin=",
     );
   });
 });

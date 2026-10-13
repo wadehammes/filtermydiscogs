@@ -20,6 +20,12 @@ export const resolveE2eEmbedMockModeForVideoId = (
   videoId: string,
 ): E2eEmbedMockMode | null => VIDEO_ID_TO_MODE[videoId] ?? null;
 
+export const isE2eHarnessMockVideoId = (videoId: string): boolean => {
+  const mode = resolveE2eEmbedMockModeForVideoId(videoId);
+
+  return mode !== null && mode !== "normal";
+};
+
 export const appendE2eEmbedMockQueryParams = (
   params: URLSearchParams,
   videoId: string,

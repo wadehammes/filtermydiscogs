@@ -8,6 +8,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 |------------------|------------|
 | Stack, folders, Discogs → UI data flow | [architecture.md](architecture.md) |
 | TypeScript / React / Biome / Stylelint / CSS / tests / TDD | [conventions.md](conventions.md) |
+| React Hook Form + Zod form schemas (`zodResolver`, no `z.coerce` on fields) | [conventions.md](conventions.md) ([RHF + Zod typing (non-negotiable)](conventions.md#react-hook-form--zod-typing-non-negotiable), [Non-negotiables §7](conventions.md#non-negotiables-substantive-work-and-agents)) |
 | Hook specs (TDD, factories, no nested `describe`) | [conventions.md](conventions.md) ([Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents), [Hook checklist](conventions.md#hook-and-feature-spec-checklist)) + [factories.md](factories.md) |
 | CSS Modules nesting, mobile-first breakpoints, modern CSS | [conventions.md](conventions.md) (CSS and styling) |
 | Responsive phases, layout `matchMedia` constants, viewport presets | [conventions.md](conventions.md) (Mobile-first breakpoints) + [`layoutMediaQueries.ts`](../../src/constants/layoutMediaQueries.ts) |

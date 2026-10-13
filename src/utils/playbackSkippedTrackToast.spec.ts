@@ -8,9 +8,11 @@ import {
 } from "@jest/globals";
 import { createElement, Fragment, type ReactNode } from "react";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
+import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import {
   createPlaybackSkipLogToast,
   PLAYBACK_SKIP_USER_REPORT_TITLE,
+  resolvePlaybackSkipLogSingleEntry,
 } from "src/utils/playbackSkippedTrackToast";
 import { fireEvent, render, screen } from "test-utils";
 
@@ -30,6 +32,29 @@ describe("createPlaybackSkipLogToast", () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it("when resolvePlaybackSkipLogSingleEntry has one entry, returns that row", () => {
+    const entry = playbackSkipLogEntryFactory.privateOrRemovedOnYoutube();
+
+    expect(resolvePlaybackSkipLogSingleEntry([entry])).toBe(entry);
+  });
+
+  it("when resolvePlaybackSkipLogSingleEntry has an empty single slot, returns null", () => {
+    const sparseEntry = new Array<PlaybackSkipLogEntry>(1);
+
+    expect(resolvePlaybackSkipLogSingleEntry(sparseEntry)).toBeNull();
+  });
+
+  it("when resolvePlaybackSkipLogSingleEntry has multiple entries, returns null", () => {
+    expect(
+      resolvePlaybackSkipLogSingleEntry([
+        playbackSkipLogEntryFactory.privateOrRemovedOnYoutube(),
+        playbackSkipLogEntryFactory.privateOrRemovedOnYoutube({
+          trackLabel: "B1 Other - Artist, Album",
+        }),
+      ]),
+    ).toBeNull();
   });
 
   it("shows a persistent toast and advances the queue immediately", () => {

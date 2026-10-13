@@ -12,6 +12,8 @@ import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQ
 import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import { definedProps } from "src/utils/definedProps";
+import { shouldConfirmEmbedPlaybackFromInfoDelivery } from "src/utils/embedPlaybackInfoDeliveryConfirm";
 import {
   getQueueItemKey,
   resolveQueueItemYoutubeVideoId,
@@ -38,7 +40,10 @@ import {
   nextEmbedTrackSwitchGraceUntil,
   shouldNotifyEmbedPlaybackEnded,
 } from "src/utils/releasePlaybackEmbedTiming";
-import { shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden } from "src/utils/releasePlaybackHiddenTabTransport";
+import {
+  shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace,
+  shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden,
+} from "src/utils/releasePlaybackHiddenTabTransport";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
 import { creditTrackListenOnEmbedEndedForActiveItem } from "src/utils/userTrackRecording";
 import {
@@ -146,6 +151,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   } = refs;
 
   const embedTrackSwitchGraceUntilRef = useRef(0);
+  const lastInfoDeliveryCurrentTimeRef = useRef<number | undefined>(undefined);
   const embedLoadStateSyncTimeoutRef = useRef<number | null>(null);
   const lastEmbedPlaybackEndedAtRef = useRef(0);
 
@@ -187,6 +193,12 @@ export const useReleasePlaybackYoutubeEmbed = ({
       Date.now(),
     );
   }, []);
+
+  const completeEmbedPlaybackHandshake = useCallback(() => {
+    pendingPlayFromGestureRef.current = false;
+    embedTrackSwitchGraceUntilRef.current = 0;
+    onEmbedPlaybackConfirmed?.();
+  }, [onEmbedPlaybackConfirmed, pendingPlayFromGestureRef]);
 
   const {
     attemptPlayFromGesture,
@@ -393,6 +405,14 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
+        if (isWithinTrackSwitchGrace()) {
+          postYoutubePlayerCommand({
+            iframe: playbackIframeRef.current,
+            command: "playVideo",
+          });
+          return;
+        }
+
         if (
           shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden({
             visibilityState: document.visibilityState,
@@ -402,21 +422,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
               playbackVideoTransitionTargetIdRef.current !== null,
           })
         ) {
-          if (isWithinTrackSwitchGrace()) {
-            postYoutubePlayerCommand({
-              iframe: playbackIframeRef.current,
-              command: "playVideo",
-            });
-          }
-
-          return;
-        }
-
-        if (isWithinTrackSwitchGrace()) {
-          postYoutubePlayerCommand({
-            iframe: playbackIframeRef.current,
-            command: "playVideo",
-          });
           return;
         }
 
@@ -480,9 +485,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
           clearPlaybackVideoUiLoading();
         }
 
-        pendingPlayFromGestureRef.current = false;
-        embedTrackSwitchGraceUntilRef.current = 0;
-        onEmbedPlaybackConfirmed?.();
+        completeEmbedPlaybackHandshake();
 
         return;
       }
@@ -509,11 +512,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
       onEmbedTransportPaused,
       activeVideoIdRef,
       clearPlaybackVideoUiLoading,
+      completeEmbedPlaybackHandshake,
       embedVideoIdRef,
       isPlaybackVideoUiLoadingRef,
       pendingPlayFromGestureRef,
       playbackIframeRef,
-      onEmbedPlaybackConfirmed,
       playbackVideoTransitionTargetIdRef,
       playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
       playbackVideoUiLoadingTargetVideoIdRef,
@@ -692,15 +695,54 @@ export const useReleasePlaybackYoutubeEmbed = ({
       const embedErrorCode = parseYoutubePlayerErrorFromMessage(event.data);
 
       if (embedErrorCode !== null) {
+        if (
+          shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
+            errorCode: embedErrorCode,
+            isWithinTrackSwitchGrace: isWithinTrackSwitchGrace(),
+            isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+            hasPlaybackVideoTransitionTarget:
+              playbackVideoTransitionTargetIdRef.current !== null,
+          })
+        ) {
+          return;
+        }
+
         onYoutubeEmbedPlaybackError?.(embedErrorCode);
         return;
       }
 
       const infoDelivery = parseYoutubeInfoDelivery(event.data);
 
-      if (infoDelivery && isYoutubeEmbedAtOrPastEnd(infoDelivery)) {
-        notifyEmbedPlaybackEnded();
-        return;
+      if (infoDelivery) {
+        if (isYoutubeEmbedAtOrPastEnd(infoDelivery)) {
+          notifyEmbedPlaybackEnded();
+          return;
+        }
+
+        const previousCurrentTime = lastInfoDeliveryCurrentTimeRef.current;
+
+        if (infoDelivery.currentTime !== undefined) {
+          lastInfoDeliveryCurrentTimeRef.current = infoDelivery.currentTime;
+        }
+
+        if (
+          shouldConfirmEmbedPlaybackFromInfoDelivery({
+            info: infoDelivery,
+            ...definedProps({ previousCurrentTime }),
+            embedLoadStartedAtMs:
+              playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+            nowMs: Date.now(),
+            isPlaying: isPlayingRef.current,
+            isPaused: isPausedRef.current,
+          })
+        ) {
+          if (isPlaybackVideoUiLoadingRef.current) {
+            clearPlaybackVideoUiLoading();
+          }
+
+          completeEmbedPlaybackHandshake();
+          return;
+        }
       }
 
       const playerState =
@@ -721,10 +763,18 @@ export const useReleasePlaybackYoutubeEmbed = ({
       window.removeEventListener("message", handleMessage);
     };
   }, [
+    clearPlaybackVideoUiLoading,
+    completeEmbedPlaybackHandshake,
     handleYoutubeEmbedPlayerState,
+    isWithinTrackSwitchGrace,
     notifyEmbedPlaybackEnded,
     onYoutubeEmbedPlaybackError,
     playbackIframeRef,
+    playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+    isPausedRef,
+    isPlayingRef,
+    isPlaybackVideoUiLoadingRef,
+    playbackVideoTransitionTargetIdRef,
   ]);
 
   const resumePlaybackFromGesture = useCallback(() => {
@@ -742,6 +792,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
   const notifyImperativeEmbedLoadStarted = useCallback(() => {
     markEmbedTrackSwitchGrace();
+    lastInfoDeliveryCurrentTimeRef.current = undefined;
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = Date.now();
     schedulePlayFromGestureAttempts();
     clearEmbedLoadStateSyncTimeout();

@@ -1,7 +1,7 @@
 import { appendE2eEmbedMockQueryParams } from "src/constants/e2eEmbedMock.constants";
 import {
   E2E_MOCK_YOUTUBE_EMBED_PATH,
-  isE2eMockYoutubeEmbedEnabled,
+  shouldUseE2eMockYoutubeEmbedForVideo,
 } from "src/constants/e2ePlayback.constants";
 import type {
   DiscogsTrack,
@@ -9,6 +9,10 @@ import type {
 } from "src/types/discogs-release-detail.types";
 import { definedProps } from "src/utils/definedProps";
 import { tokensAreWithinEditDistanceOne } from "src/utils/releasePlaybackEditDistance";
+import {
+  buildYoutubeNocookieEmbedPathUrl,
+  isValidYoutubeVideoId,
+} from "src/utils/youtubeVideoId";
 
 const YOUTUBE_ID_PATTERN =
   /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
@@ -1140,7 +1144,11 @@ export const buildYoutubeEmbedUrl = ({
   videoId: string;
   autoplay?: boolean;
   origin?: string;
-}): string => {
+}): string | null => {
+  if (!isValidYoutubeVideoId(videoId)) {
+    return null;
+  }
+
   const params = new URLSearchParams({
     controls: "1",
     disablekb: "0",
@@ -1158,13 +1166,30 @@ export const buildYoutubeEmbedUrl = ({
     params.set("origin", origin);
   }
 
-  if (isE2eMockYoutubeEmbedEnabled()) {
+  if (shouldUseE2eMockYoutubeEmbedForVideo(videoId)) {
     params.set("videoId", videoId);
     appendE2eEmbedMockQueryParams(params, videoId);
     return `${E2E_MOCK_YOUTUBE_EMBED_PATH}?${params.toString()}`;
   }
 
-  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+  return buildYoutubeNocookieEmbedPathUrl(videoId, params);
+};
+
+export const buildClientYoutubeEmbedUrl = ({
+  videoId,
+  autoplay = false,
+}: {
+  videoId: string;
+  autoplay?: boolean;
+}): string | null => {
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : undefined;
+
+  return buildYoutubeEmbedUrl({
+    videoId,
+    autoplay,
+    ...definedProps({ origin }),
+  });
 };
 
 export const PLAY_FROM_GESTURE_RETRY_DELAYS_MS = [
