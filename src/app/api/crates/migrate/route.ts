@@ -5,12 +5,13 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
-import { type Prisma, prisma } from "src/lib/db";
+import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { crateLegacyMigrateBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import type { DiscogsRelease } from "src/types";
+import { toPrismaInputJsonValue } from "src/utils/toPrismaJsonValue";
 
 export async function POST(request: NextRequest) {
   try {
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
             user_id: userIdNum,
             crate_id: defaultCrate.id,
             instance_id: release.instance_id,
-            release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
+            release_data: toPrismaInputJsonValue(normalizedRelease),
             sort_order: sortOrder,
           },
         });

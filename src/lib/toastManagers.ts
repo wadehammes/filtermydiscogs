@@ -14,6 +14,7 @@ export type FmdToastData = {
   icon?: ReactNode;
   action?: ReactNode;
   cancel?: ReactNode;
+  headerAction?: ReactNode;
   showClose?: boolean;
   classNames?: FmdToastClassNames;
 };

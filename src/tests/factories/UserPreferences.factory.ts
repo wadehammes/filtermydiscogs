@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import type { Prisma } from "@prisma/client";
 import { SortValues } from "src/constants/sortValues";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type {
@@ -11,9 +12,15 @@ import {
   type StoredViewState,
   USER_PREFERENCES_VERSION,
   type UserPreferences,
+  type UserPreferencesJson,
 } from "src/types/userPreferences.types";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { STORED_THEMES } from "src/utils/themeAppearance";
+import { toPrismaJsonValue } from "src/utils/toPrismaJsonValue";
+
+export type UserPreferencesSelectRow = Prisma.UserGetPayload<{
+  select: { preferences: true };
+}>;
 
 type PersistedFiltersFactoryOptions = Record<string, never>;
 
@@ -132,6 +139,22 @@ class UserPreferencesFactory extends BaseFactory<
 
   defaultsApiResponse(): { preferences: UserPreferences } {
     return { preferences: this.defaults() };
+  }
+
+  asPrismaFindUniqueRow(
+    attributes?: Partial<UserPreferences>,
+  ): UserPreferencesSelectRow {
+    return {
+      preferences: toPrismaJsonValue(
+        this.build(attributes),
+      ) as UserPreferencesJson,
+    };
+  }
+
+  asPrismaFindUniqueDefaultsRow(): UserPreferencesSelectRow {
+    return {
+      preferences: toPrismaJsonValue(this.defaults()) as UserPreferencesJson,
+    };
   }
 }
 

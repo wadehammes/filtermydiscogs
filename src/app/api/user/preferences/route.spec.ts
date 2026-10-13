@@ -7,8 +7,11 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { prismaUserFactory } from "src/tests/factories/User.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import type { UserPreferencesJson } from "src/types/userPreferences.types";
+import { toPrismaJsonValue } from "src/utils/toPrismaJsonValue";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -68,15 +71,21 @@ describe("/api/user/preferences", () => {
       return new NextResponse(JSON.stringify(body), init);
     });
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockFindUnique.mockResolvedValue({
-      preferences: defaultPreferences,
-    } as Awaited<ReturnType<DbModule["prisma"]["user"]["findUnique"]>>);
-    mockUpsert.mockResolvedValue({
-      preferences: {
-        ...defaultPreferences,
-        theme: "dark",
-      },
-    } as Awaited<ReturnType<DbModule["prisma"]["user"]["upsert"]>>);
+    mockFindUnique.mockResolvedValue(
+      userPreferencesFactory.asPrismaFindUniqueDefaultsRow() as Awaited<
+        ReturnType<DbModule["prisma"]["user"]["findUnique"]>
+      >,
+    );
+    mockUpsert.mockResolvedValue(
+      prismaUserFactory.build({
+        discogs_user_id: USER_ID,
+        username: USERNAME,
+        preferences: toPrismaJsonValue({
+          ...defaultPreferences,
+          theme: "dark",
+        }) as UserPreferencesJson,
+      }),
+    );
   });
 
   it("GET returns stored preferences without writing", async () => {

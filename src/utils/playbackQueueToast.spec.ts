@@ -75,4 +75,21 @@ describe("playbackQueueToast", () => {
       }),
     );
   });
+
+  it("showPersistentQueueAreaErrorToast forwards headerAction when provided", () => {
+    setupMockMatchMedia({ desktop: true });
+    const headerAction = "help-trigger";
+
+    showPersistentQueueAreaErrorToast({
+      id: "skip-toast",
+      title: "Skipped unavailable track",
+      description: "details",
+      headerAction,
+    });
+
+    expect(mockToastError).toHaveBeenCalledWith(
+      "Skipped unavailable track",
+      expect.objectContaining({ headerAction }),
+    );
+  });
 });

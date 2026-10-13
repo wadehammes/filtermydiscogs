@@ -1,6 +1,7 @@
 "use client";
 
 import { GlobalPlaybackDock } from "src/components/GlobalPlaybackDock/GlobalPlaybackDock.component";
+import { PlaybackSkipHelpDialogHost } from "src/components/PlaybackSkipHelpDialog/PlaybackSkipHelpDialog.component";
 import { PlaybackSkipReportDialogHost } from "src/components/PlaybackSkipReportDialog/PlaybackSkipReportDialog.component";
 import { ReleasePlaybackProvider } from "src/context/releasePlayback.context";
 
@@ -14,6 +15,7 @@ export const PlaybackProvidersShell = ({
   <ReleasePlaybackProvider>
     {children}
     <GlobalPlaybackDock />
+    <PlaybackSkipHelpDialogHost />
     <PlaybackSkipReportDialogHost />
   </ReleasePlaybackProvider>
 );

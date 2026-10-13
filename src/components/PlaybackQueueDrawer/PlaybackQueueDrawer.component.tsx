@@ -27,7 +27,7 @@ import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { getReleaseImageUrl } from "src/utils/helpers";
-import { getQueueItemKey } from "src/utils/playbackQueue";
+import { getQueueItemListId } from "src/utils/playbackQueue";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./PlaybackQueueDrawer.module.css";
 
@@ -40,6 +40,7 @@ interface PlaybackQueueDrawerProps {
 interface SortableQueueItemProps {
   index: number;
   item: PlaybackQueueItem;
+  listId: string;
   onPlay: (index: number) => void;
   onRemove: (index: number) => void;
 }
@@ -47,10 +48,11 @@ interface SortableQueueItemProps {
 const SortableQueueItem = memo(function SortableQueueItem({
   index,
   item,
+  listId,
   onPlay,
   onRemove,
 }: SortableQueueItemProps) {
-  const sortableId = getQueueItemKey(item);
+  const sortableId = listId;
   const {
     attributes,
     listeners,
@@ -142,7 +144,7 @@ export const PlaybackQueueDrawer = ({
     useReleasePlaybackQueue();
 
   const sortableIds = useMemo(
-    () => queue.map((item) => getQueueItemKey(item)),
+    () => queue.map((item, index) => getQueueItemListId(item, index)),
     [queue],
   );
 
@@ -163,12 +165,8 @@ export const PlaybackQueueDrawer = ({
         return;
       }
 
-      const fromIndex = queue.findIndex(
-        (item) => getQueueItemKey(item) === active.id,
-      );
-      const toIndex = queue.findIndex(
-        (item) => getQueueItemKey(item) === over.id,
-      );
+      const fromIndex = sortableIds.indexOf(String(active.id));
+      const toIndex = sortableIds.indexOf(String(over.id));
 
       if (fromIndex < 0 || toIndex < 0) {
         return;
@@ -176,7 +174,7 @@ export const PlaybackQueueDrawer = ({
 
       reorderQueue(fromIndex, toIndex);
     },
-    [queue, reorderQueue],
+    [reorderQueue, sortableIds],
   );
 
   return (
@@ -239,15 +237,20 @@ export const PlaybackQueueDrawer = ({
               data-testid="fmdPlaybackQueueList"
               aria-label={PLAYBACK_QUEUE_LIST_LABEL}
             >
-              {queue.map((item, index) => (
-                <SortableQueueItem
-                  key={getQueueItemKey(item)}
-                  index={index}
-                  item={item}
-                  onPlay={playQueueAtIndex}
-                  onRemove={removeFromQueue}
-                />
-              ))}
+              {queue.map((item, index) => {
+                const listId = getQueueItemListId(item, index);
+
+                return (
+                  <SortableQueueItem
+                    key={listId}
+                    listId={listId}
+                    index={index}
+                    item={item}
+                    onPlay={playQueueAtIndex}
+                    onRemove={removeFromQueue}
+                  />
+                );
+              })}
             </ol>
           </SortableContext>
         </DndContext>

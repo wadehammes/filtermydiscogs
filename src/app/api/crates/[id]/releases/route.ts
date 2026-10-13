@@ -5,11 +5,12 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
-import { type Prisma, prisma } from "src/lib/db";
+import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { clearCrateFoundBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
+import { toPrismaInputJsonValue } from "src/utils/toPrismaJsonValue";
 
 /**
  * Clear packed status for all releases in a crate
@@ -168,7 +169,7 @@ export async function POST(
           user_id: userIdNum,
           crate_id: id,
           instance_id: instanceId,
-          release_data: normalizedRelease as unknown as Prisma.InputJsonValue,
+          release_data: toPrismaInputJsonValue(normalizedRelease),
           sort_order: sortOrder,
         },
       });

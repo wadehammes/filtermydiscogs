@@ -16,6 +16,7 @@ import {
   findQueueItemIndex,
   getQueuedTrackPositionsForInstance,
   getQueueItemKey,
+  getQueueItemListId,
   isSameQueueItem,
   prependQueueItem,
   removeQueueItemAtIndex,
@@ -96,6 +97,8 @@ describe("playbackQueue", () => {
     });
 
     expect(getQueueItemKey(item)).toBe("101:A1");
+    expect(getQueueItemListId(item, 0)).toBe("101:A1#0");
+    expect(getQueueItemListId(item, 1)).toBe("101:A1#1");
     expect(
       isSameQueueItem(item, {
         instanceId: "101",

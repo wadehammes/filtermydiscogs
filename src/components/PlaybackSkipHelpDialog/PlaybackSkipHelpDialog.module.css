@@ -1,0 +1,49 @@
+.intro {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.reason {
+  color: var(--foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.detail {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.45;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.reportNote {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.45;
+  margin: 0;
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--border);
+  text-wrap: pretty;
+}

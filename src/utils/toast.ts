@@ -15,6 +15,7 @@ export interface ToastOptions {
   position?: ToastPosition;
   action?: ReactNode;
   cancel?: ReactNode;
+  headerAction?: ReactNode;
   icon?: ReactNode;
   showClose?: boolean;
   onClose?: () => void;
@@ -63,6 +64,9 @@ const addToast = (
       ...(options.icon !== undefined ? { icon: options.icon } : {}),
       ...(options.action !== undefined ? { action: options.action } : {}),
       ...(options.cancel !== undefined ? { cancel: options.cancel } : {}),
+      ...(options.headerAction !== undefined
+        ? { headerAction: options.headerAction }
+        : {}),
       ...(options.showClose !== undefined
         ? { showClose: options.showClose }
         : {}),
