@@ -15,6 +15,11 @@ export const getQueueItemKey = (
   item: Pick<PlaybackQueueItem, "instanceId" | "trackPosition">,
 ): string => `${item.instanceId}:${item.trackPosition}`;
 
+export const getQueueItemListId = (
+  item: Pick<PlaybackQueueItem, "instanceId" | "trackPosition">,
+  index: number,
+): string => `${getQueueItemKey(item)}#${index}`;
+
 export const isSameQueueItem = (
   left: Pick<PlaybackQueueItem, "instanceId" | "trackPosition">,
   right: Pick<PlaybackQueueItem, "instanceId" | "trackPosition">,

@@ -128,7 +128,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`Release.factory.ts`](../../src/tests/factories/Release.factory.ts) | `releaseFactory` | `DiscogsRelease` |
 | [`Collection.factory.ts`](../../src/tests/factories/Collection.factory.ts) | `collectionFactory` | `DiscogsCollection` |
 | [`Crate.factory.ts`](../../src/tests/factories/Crate.factory.ts) | `crateFactory` | Prisma `Crate` |
-| [`CrateRelease.factory.ts`](../../src/tests/factories/CrateRelease.factory.ts) | `crateReleaseFactory` | Prisma `CrateRelease` |
+| [`CrateRelease.factory.ts`](../../src/tests/factories/CrateRelease.factory.ts) | `crateReleaseFactory` | Prisma `CrateRelease` â€” **`release_data`** via [`toPrismaJsonValue`](../../src/utils/toPrismaJsonValue.ts); **`fromDiscogsRelease(release, â€¦)`** for route/API mocks |
 | [`CrateLayoutItem.factory.ts`](../../src/tests/factories/CrateLayoutItem.factory.ts) | `crateLayoutItemFactory` | Owner **`CrateLayoutItem[]`** rows (`marker` / `release`) for layout + section DnD lib specs |
 | [`CrateWithCount.factory.ts`](../../src/tests/factories/CrateWithCount.factory.ts) | `crateWithCountFactory` | `Crate` + `releaseCount` (UI list shape) |
 | [`SelectOption.factory.ts`](../../src/tests/factories/SelectOption.factory.ts) | `selectOptionFactory` | Select dropdown option |
@@ -147,7 +147,8 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`DiscogsIdentity.factory.ts`](../../src/tests/factories/DiscogsIdentity.factory.ts) | `discogsIdentityFactory` | Discogs OAuth identity API shape |
 | [`DiscogsSearchResponse.factory.ts`](../../src/tests/factories/DiscogsSearchResponse.factory.ts) | `discogsSearchResponseFactory` | `DiscogsSearchResponse` |
 | [`AdminUserLookupStats.factory.ts`](../../src/tests/factories/AdminUserLookupStats.factory.ts) | `adminUserLookupStatsFactory` | Admin user lookup DTO |
-| [`UserPreferences.factory.ts`](../../src/tests/factories/UserPreferences.factory.ts) | `userPreferencesFactory`, `persistedFiltersFactory` | `UserPreferences`, `PersistedFiltersState` (uses [`SortValues`](../../src/constants/sortValues.ts)) |
+| [`User.factory.ts`](../../src/tests/factories/User.factory.ts) | `prismaUserFactory` | Prisma `User` â€” **`preferences`** via [`toPrismaJsonValue`](../../src/utils/toPrismaJsonValue.ts) |
+| [`UserPreferences.factory.ts`](../../src/tests/factories/UserPreferences.factory.ts) | `userPreferencesFactory`, `persistedFiltersFactory` | `UserPreferences`, `PersistedFiltersState`; **`asPrismaFindUniqueRow()`** / **`asPrismaFindUniqueDefaultsRow()`** for `findUnique({ select: { preferences: true } })` mocks |
 | [`DiscogsReleaseJson.factory.ts`](../../src/tests/factories/DiscogsReleaseJson.factory.ts) | `discogsReleaseJsonFactory` | `DiscogsReleaseJson` |
 | [`DiscogsTrack.factory.ts`](../../src/tests/factories/DiscogsTrack.factory.ts) | `discogsTrackFactory` | `DiscogsTrack` (release tracklist rows) |
 | [`DiscogsVideo.factory.ts`](../../src/tests/factories/DiscogsVideo.factory.ts) | `discogsVideoFactory` | `DiscogsVideo` (release video links) |

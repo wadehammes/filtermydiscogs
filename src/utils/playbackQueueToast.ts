@@ -24,6 +24,7 @@ export const showPersistentQueueAreaErrorToast = ({
   toastClassName,
   onClose,
   showClose = true,
+  headerAction,
 }: {
   id: string;
   title: string;
@@ -31,6 +32,7 @@ export const showPersistentQueueAreaErrorToast = ({
   toastClassName?: string;
   onClose?: () => void;
   showClose?: boolean;
+  headerAction?: ReactNode;
 }) => {
   toast.error(title, {
     id,
@@ -38,6 +40,7 @@ export const showPersistentQueueAreaErrorToast = ({
     position: getPlaybackQueueToastPosition(),
     description,
     showClose,
+    ...(headerAction !== undefined ? { headerAction } : {}),
     ...(onClose !== undefined ? { onClose } : {}),
     classNames: {
       toast: toastClassName ?? ACTION_TOAST_CLASS_NAMES.toast,

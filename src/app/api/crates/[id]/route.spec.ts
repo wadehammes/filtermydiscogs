@@ -8,6 +8,7 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
+import { crateReleaseFactory } from "src/tests/factories/CrateRelease.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 
@@ -130,12 +131,11 @@ describe("GET /api/crates/[id]", () => {
     mockFindUnique.mockResolvedValue(defaultCrate);
     mockReleaseCount.mockResolvedValue(1);
     mockReleaseFindMany.mockResolvedValue([
-      {
-        release_data: releaseFactory.withDisplayDefaults(),
-        found_at: null,
-        sort_order: 1000,
-      },
-    ] as Awaited<ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>>);
+      crateReleaseFactory.fromDiscogsRelease(
+        releaseFactory.withDisplayDefaults(),
+        { found_at: null, sort_order: 1000 },
+      ),
+    ]);
     mockMarkerFindMany.mockResolvedValue([]);
   });
 

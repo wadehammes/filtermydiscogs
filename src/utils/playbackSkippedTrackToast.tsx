@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import type { ReactNode } from "react";
+import { PlaybackSkipHelpToastTrigger } from "src/components/PlaybackSkipHelpDialog/PlaybackSkipHelpDialog.component";
 import { reportUserPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import textActionStyles from "src/styles/modules/text-action.module.css";
@@ -87,9 +88,9 @@ const formatSkipLogDescription = (
   return (
     <div className="fmd-playback-skip-log">
       <ul className="fmd-playback-skip-log-list">
-        {entries.map((entry) => (
+        {entries.map((entry, index) => (
           <li
-            key={playbackSkipLogEntryKey(entry)}
+            key={`${playbackSkipLogEntryKey(entry)}#${index}`}
             className="fmd-playback-skip-log-item"
           >
             <PlaybackSkipLogEntryContent
@@ -198,6 +199,7 @@ const playbackSkipLogToast = createPlaybackSkipLogToast({
       description,
       onClose,
       toastClassName: "fmd-playback-skip-log-toast",
+      headerAction: <PlaybackSkipHelpToastTrigger />,
     });
   },
   dismissToast: (id) => {

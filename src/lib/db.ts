@@ -256,5 +256,3 @@ export function getPoolMetrics() {
     waitingCount: pool.waitingCount,
   };
 }
-
-export type { Prisma } from "@prisma/client";

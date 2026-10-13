@@ -103,16 +103,28 @@ function ToastViewportList({ position }: { position: ToastViewportPosition }) {
                   ) : null}
                 </div>
               ) : null}
-              {toastItem.data?.showClose ? (
-                <Toast.Close
-                  className={classNames(
-                    styles.toastClose,
-                    classNamesConfig?.close,
-                  )}
-                  aria-label="Dismiss notification"
-                >
-                  <XIcon className={styles.toastCloseIcon} aria-hidden />
-                </Toast.Close>
+              {toastItem.data?.headerAction || toastItem.data?.showClose ? (
+                <div className={styles.toastHeaderActions}>
+                  {toastItem.data?.headerAction ? (
+                    <div className={styles.toastHeaderActionSlot}>
+                      {toastItem.data.headerAction}
+                    </div>
+                  ) : null}
+                  {toastItem.data?.showClose ? (
+                    <Toast.Close
+                      className={classNames(
+                        styles.toastHeaderButton,
+                        classNamesConfig?.close,
+                      )}
+                      aria-label="Dismiss notification"
+                    >
+                      <XIcon
+                        className={styles.toastHeaderButtonIcon}
+                        aria-hidden
+                      />
+                    </Toast.Close>
+                  ) : null}
+                </div>
               ) : null}
               {toastItem.actionProps ? (
                 <Toast.Action {...toastItem.actionProps} />
