@@ -4,13 +4,13 @@ import {
   E2E_ALBUM_TWO,
   E2E_DEFAULT_CRATE_NAME,
 } from "src/tests/msw/e2eSession.constants";
+import {
+  E2E_TAG_DESKTOP_ONLY,
+  E2E_TAG_MOBILE_ONLY,
+} from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import { expectAppNavLinkReachable } from "./helpers/appNavigation";
-import {
-  e2eReleaseCards,
-  expectE2eCollectionLoaded,
-  expectNotOnLogin,
-} from "./helpers/authenticatedExpectations";
+import { e2eReleaseCards } from "./helpers/authenticatedExpectations";
 import {
   expectCrateMenuInlineOnCard,
   expectCrateMenuPortaledOutsideCard,
@@ -32,12 +32,8 @@ test.describe("authenticated releases (MSW)", () => {
   test("renders releases workspace after collection loads", async ({
     page,
   }) => {
-    await page.goto("/releases");
-
-    await expect(page).toHaveURL(/\/releases/);
-    await expectNotOnLogin(page);
+    await gotoReleasesWorkspace(page);
     await expectAppNavLinkReachable(page, "Releases");
-    await expectE2eCollectionLoaded(page);
     if (isDesktopAppNavViewport(page.viewportSize())) {
       await expect(
         page.getByRole("group", { name: "Collection view mode" }),
@@ -78,12 +74,8 @@ test.describe("authenticated releases crate menu (MSW)", () => {
     ).toBeVisible();
   });
 
-  test.describe("mobile layout", () => {
+  test.describe("mobile layout", { tag: E2E_TAG_MOBILE_ONLY }, () => {
     test.beforeEach(async ({ page }) => {
-      test.skip(
-        isDesktopAppNavViewport(page.viewportSize()),
-        "mobile list-card layout only",
-      );
       await gotoReleasesWorkspace(page);
     });
 
@@ -119,12 +111,8 @@ test.describe("authenticated releases crate menu (MSW)", () => {
     });
   });
 
-  test.describe("desktop layout", () => {
+  test.describe("desktop layout", { tag: E2E_TAG_DESKTOP_ONLY }, () => {
     test.beforeEach(async ({ page }) => {
-      test.skip(
-        !isDesktopAppNavViewport(page.viewportSize()),
-        "desktop grid layout only",
-      );
       await gotoReleasesWorkspace(page);
     });
 

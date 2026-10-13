@@ -1,15 +1,12 @@
+import { E2E_TAG_MOBILE_ONLY } from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import { clickAppNavLink } from "./helpers/appNavigation";
 import { expectNotOnLogin } from "./helpers/authenticatedExpectations";
-import { isDesktopAppNavViewport } from "./helpers/viewportLayout";
 
 test.describe("authenticated app navigation (MSW)", () => {
-  test("mobile menu reaches mosaic and crates", async ({ page }) => {
-    test.skip(
-      isDesktopAppNavViewport(page.viewportSize()),
-      "mobile menu navigation",
-    );
-
+  test("mobile menu reaches mosaic and crates", {
+    tag: E2E_TAG_MOBILE_ONLY,
+  }, async ({ page }) => {
     await page.goto("/releases");
     await expectNotOnLogin(page);
 

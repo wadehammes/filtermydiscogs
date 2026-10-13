@@ -43,7 +43,9 @@ export const test = base.extend<MswFixtures>({
     await installClearClientStorage(context);
     await use(context);
   },
-  handlers: [createAuthenticatedE2eHandlers(), { option: true }],
+  handlers: async ({ context: _context }, use) => {
+    await use(createAuthenticatedE2eHandlers());
+  },
   network: [
     async ({ context, handlers }, use) => {
       const network = defineNetworkFixture({

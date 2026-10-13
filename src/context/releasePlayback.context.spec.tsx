@@ -1976,7 +1976,7 @@ describe("ReleasePlaybackProvider", () => {
     jest.useRealTimers();
   });
 
-  it("schedules unavailable skip toast when embed load starts but playback never confirms", async () => {
+  it("silent embed contract: watchdog unavailable skip when the iframe never posts player messages (pairs with E2E mock mode=silent)", async () => {
     jest.useFakeTimers();
 
     const iframe = {

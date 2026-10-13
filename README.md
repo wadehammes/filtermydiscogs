@@ -34,7 +34,7 @@ With mise:
 mise trust          # once per clone, if prompted
 mise bootstrap      # tools + pnpm install + Prisma generate
 mise run ci         # PR CI: unit gates + Playwright smoke (build:e2e; handbook sync vs staging)
-mise run ci-full    # unit gates + full Playwright (build:e2e; ~25 viewport skips is normal)
+mise run ci-full    # unit gates + full Playwright (build:e2e; phone/tablet/desktop projects)
 mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + fallow:audit
 ```
 
@@ -155,7 +155,7 @@ pnpm dev              # http://localhost:6767 (Turbopack)
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
 mise run ci           # PR CI: tsc, lint, CSS lint, handbook sync, Jest, Knip, Playwright smoke (build:e2e + next start)
-mise run ci-full      # above + full Playwright (build:e2e + next start; ~25 viewport skips is normal)
+mise run ci-full      # above + full Playwright (build:e2e + next start; phone/tablet/desktop projects)
 mise run pr-prep      # lint:all + handbook:check + fallow:audit (before opening a PR)
 mise run lint-all     # pnpm lint:all
 

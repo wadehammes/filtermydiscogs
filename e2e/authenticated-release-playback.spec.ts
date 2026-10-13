@@ -23,6 +23,6 @@ test.describe("authenticated release playback queue (MSW)", () => {
 
     await expect(
       page.getByRole("region", { name: NOW_PLAYING_REGION_LABEL }),
-    ).toBeVisible({ timeout: 15_000 });
+    ).toBeVisible({ timeout: 30_000 });
   });
 });

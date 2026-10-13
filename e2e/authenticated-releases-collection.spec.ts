@@ -3,6 +3,10 @@ import {
   E2E_ALBUM_THREE,
   E2E_ALBUM_TWO,
 } from "src/tests/msw/e2eSession.constants";
+import {
+  E2E_TAG_DESKTOP_ONLY,
+  E2E_TAG_MOBILE_ONLY,
+} from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import { e2eReleaseCards } from "./helpers/authenticatedExpectations";
 import { selectGenreStyleFilter } from "./helpers/filtersBar";
@@ -16,19 +20,15 @@ import {
   switchCollectionView,
 } from "./helpers/releasesCollection";
 import { gotoReleasesWorkspace } from "./helpers/releasesWorkspace";
-import { isDesktopAppNavViewport } from "./helpers/viewportLayout";
 
 test.describe("authenticated releases collection interactions (MSW)", () => {
   test.beforeEach(async ({ page }) => {
     await gotoReleasesWorkspace(page);
   });
 
-  test("desktop search narrows the visible release count", async ({ page }) => {
-    test.skip(
-      !isDesktopAppNavViewport(page.viewportSize()),
-      "desktop filters bar exposes search without opening the drawer",
-    );
-
+  test("desktop search narrows the visible release count", {
+    tag: E2E_TAG_DESKTOP_ONLY,
+  }, async ({ page }) => {
     await expectDefaultE2eCollectionSummary(page);
     await searchReleasesCollection(page, E2E_ALBUM_ONE);
     await expectShowingReleaseCount(page, 1);
@@ -40,14 +40,9 @@ test.describe("authenticated releases collection interactions (MSW)", () => {
     ).toHaveCount(0);
   });
 
-  test("mobile genre filter in the filters drawer narrows the collection", async ({
-    page,
-  }) => {
-    test.skip(
-      isDesktopAppNavViewport(page.viewportSize()),
-      "mobile filters drawer",
-    );
-
+  test("mobile genre filter in the filters drawer narrows the collection", {
+    tag: E2E_TAG_MOBILE_ONLY,
+  }, async ({ page }) => {
     await expectDefaultE2eCollectionSummary(page);
     await page.getByRole("button", { name: "Open filters" }).click();
     await expect(page.getByRole("dialog", { name: "Filters" })).toBeVisible();
@@ -59,14 +54,9 @@ test.describe("authenticated releases collection interactions (MSW)", () => {
     ).toBeVisible();
   });
 
-  test("mobile search in the filters drawer narrows the visible release count", async ({
-    page,
-  }) => {
-    test.skip(
-      isDesktopAppNavViewport(page.viewportSize()),
-      "mobile filters drawer",
-    );
-
+  test("mobile search in the filters drawer narrows the visible release count", {
+    tag: E2E_TAG_MOBILE_ONLY,
+  }, async ({ page }) => {
     await expectDefaultE2eCollectionSummary(page);
     await searchReleasesCollection(page, E2E_ALBUM_TWO);
     await expectShowingReleaseCount(page, 1);
@@ -76,12 +66,9 @@ test.describe("authenticated releases collection interactions (MSW)", () => {
     await closeMobileFiltersDrawer(page);
   });
 
-  test("desktop genre filter narrows the collection", async ({ page }) => {
-    test.skip(
-      !isDesktopAppNavViewport(page.viewportSize()),
-      "desktop filters bar",
-    );
-
+  test("desktop genre filter narrows the collection", {
+    tag: E2E_TAG_DESKTOP_ONLY,
+  }, async ({ page }) => {
     await expectDefaultE2eCollectionSummary(page);
     await selectGenreStyleFilter(page, "Indie Rock");
     await expectShowingReleaseCount(page, 1);
@@ -93,14 +80,9 @@ test.describe("authenticated releases collection interactions (MSW)", () => {
     ).toHaveCount(0);
   });
 
-  test("view toggle switches between card grid and list table", async ({
-    page,
-  }) => {
-    test.skip(
-      !isDesktopAppNavViewport(page.viewportSize()),
-      "list view is desktop-only (compact layout resets list → card)",
-    );
-
+  test("view toggle switches between card grid and list table", {
+    tag: E2E_TAG_DESKTOP_ONLY,
+  }, async ({ page }) => {
     await expectCardGridVisible(page);
     await switchCollectionView(page, "list");
     await expectListTableVisible(page);

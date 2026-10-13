@@ -961,6 +961,20 @@ describe("buildYoutubeEmbedUrl", () => {
     );
   });
 
+  it("adds embed mock mode query params for reserved harness video ids", () => {
+    process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED = "1";
+
+    expect(buildYoutubeEmbedUrl({ videoId: "e2eSilent01" })).toContain(
+      "mode=silent",
+    );
+    expect(buildYoutubeEmbedUrl({ videoId: "e2eDelay000" })).toContain(
+      "mode=delayed",
+    );
+    expect(buildYoutubeEmbedUrl({ videoId: "e2eDelay000" })).toContain(
+      "delayMs=7200",
+    );
+  });
+
   it("builds a nocookie embed URL with player API params", () => {
     expect(buildYoutubeEmbedUrl({ videoId: "te2jJncBVG4" })).toBe(
       "https://www.youtube-nocookie.com/embed/te2jJncBVG4?controls=1&disablekb=0&enablejsapi=1&fs=1&playsinline=1&rel=0",

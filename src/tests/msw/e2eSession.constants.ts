@@ -16,10 +16,6 @@ export function e2eCollectionSummaryLabel(): string {
   return `Showing ${E2E_COLLECTION_RELEASE_COUNT} releases`;
 }
 
-export function e2eMosaicCollectionSummaryLabel(): string {
-  return `Showing all ${E2E_COLLECTION_RELEASE_COUNT} releases from your collection`;
-}
-
 export function e2eDashboardCollectionHeading(): string {
   return `${E2E_AUTH_USERNAME}'s collection`;
 }
