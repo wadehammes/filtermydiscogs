@@ -19,6 +19,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Responsive UI**: Desktop sidebar crates, mobile drawers, and touch-friendly filters; fast route transitions on authenticated pages (Next.js instant navigation)
 - **Discogs outage notice**: When Discogs is down you stay signed in, see a notice with a link to [Discogs status](https://status.discogs.com), and your collection loads once Discogs is back
 - **Deploy refresh**: In production, a toast prompts you to reload when a newer app version is available
+- **Core Web Vitals**: With analytics consent, field CWV metrics flow to GTM as `webVital` events (Next.js `useReportWebVitals`)
 
 ## Setup
 

@@ -269,3 +269,26 @@ export const trackPageView = (pathname: string, label: string) => {
     value: pathname,
   });
 };
+
+type WebVitalMetric = {
+  id: string;
+  name: string;
+  value: number;
+  rating?: string;
+};
+
+const formatWebVitalValue = (name: string, value: number): string => {
+  if (name === "CLS") {
+    return String(Math.round(value * 1000) / 1000);
+  }
+
+  return String(Math.round(value));
+};
+
+export const trackWebVital = (metric: WebVitalMetric) => {
+  trackProductEvent("webVital", {
+    category: "performance",
+    label: metric.name,
+    value: `${formatWebVitalValue(metric.name, metric.value)}|${metric.rating ?? "none"}|${metric.id}`,
+  });
+};

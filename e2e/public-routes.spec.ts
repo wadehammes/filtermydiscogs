@@ -10,6 +10,16 @@ test.describe("public routes", () => {
     await expectLoginLanding(page);
   });
 
+  test("unknown URLs render the not-found page", async ({ page }) => {
+    const response = await page.goto("/no-such-route-for-e2e");
+
+    expect(response?.status()).toBe(404);
+    await expect(
+      page.getByRole("heading", { name: "Page not found" }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Go home" })).toBeVisible();
+  });
+
   test("about page renders the bento layout", async ({ page }) => {
     await page.goto("/about");
 
