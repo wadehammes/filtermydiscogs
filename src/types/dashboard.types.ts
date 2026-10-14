@@ -146,6 +146,12 @@ export interface AdminStatsCrateFeatures {
   packedReleases: number;
 }
 
+export interface AdminStatsPlaylistsOverview {
+  totalPlaylists: number;
+  totalPlaylistTracks: number;
+  usersWithPlaylists: number;
+}
+
 export interface AdminStatsRecentActivityPeriod {
   newUsers: number;
   newCrates: number;
@@ -222,6 +228,7 @@ export interface AdminStatsAccountPreferences {
   };
   themes: AdminStatsPreferenceBreakdownRow[];
   defaultViews: AdminStatsPreferenceBreakdownRow[];
+  defaultSidePanels: AdminStatsPreferenceBreakdownRow[];
   savedViews: AdminStatsSavedViews;
 }
 
@@ -252,6 +259,7 @@ export interface AdminStats {
     totalCrates: number;
     totalReleases: number;
     crateFeatures: AdminStatsCrateFeatures;
+    playlists: AdminStatsPlaylistsOverview;
   };
   engagement: AdminStatsEngagement;
   accountPreferences: AdminStatsAccountPreferences;

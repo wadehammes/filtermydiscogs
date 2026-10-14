@@ -12,11 +12,12 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
 - **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; set or change a **YouTube link per track** on your collection copy when Discogs has no embed or you want a different upload; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
-- **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link
+- **Playlists** (progressive rollout): Save cross-release track lists; manage, reorder, and play from the Releases side panel (Crates | Playlists toggle when enabled); mix with the queue by adding tracks from release tracklists
+- **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link — same Releases side panel as playlists
 - **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
 - **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
-- **Settings**: Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, analytics consent, and clear stored data
-- **Responsive UI**: Desktop sidebar crates, mobile drawers, and touch-friendly filters; fast route transitions on authenticated pages (Next.js instant navigation)
+- **Settings**: Theme (light / dark / system), default Releases side panel (crates or playlists), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, analytics consent, and clear stored data
+- **Responsive UI**: Desktop sidebar for crates/playlists on Releases, mobile drawers, and touch-friendly filters; fast route transitions on authenticated pages (Next.js instant navigation)
 - **Discogs outage notice**: When Discogs is down you stay signed in, see a notice with a link to [Discogs status](https://status.discogs.com), and your collection loads once Discogs is back
 - **Deploy refresh**: In production, a toast prompts you to reload when a newer app version is available
 - **Core Web Vitals**: With analytics consent, field CWV metrics flow to GTM as `webVital` events (Next.js `useReportWebVitals`)
@@ -87,9 +88,16 @@ STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 # SENTRY_ORG=filtermydiscogs
 # SENTRY_PROJECT=javascript-nextjs
 # SENTRY_AUTH_TOKEN=your_build_auth_token
+
+# Playlists (optional — force on/off locally without the Vercel adapter)
+# PLAYLISTS_FEATURE_OVERRIDE=1
+
+# Vercel Flags SDK (optional — pull Development env for dashboard flag state in next dev;
+# Production/Preview rollout and per-user allowlists use the Vercel Flags UI — Discogs username or user id)
+# FLAGS=...
 ```
 
-Full variable list: [`docs/handbook/platform.md`](./docs/handbook/platform.md).
+Full variable list (including Vercel feature flags): [`docs/handbook/platform.md`](./docs/handbook/platform.md).
 
 ### Database Setup
 
@@ -119,16 +127,17 @@ The app will be available at `http://localhost:6767`.
 
 1. Click **Connect with Discogs** on the home page and authorize the app
 2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, preview tracks, and set per-track YouTube links from the track menu when needed
-3. Stage picks in the crate drawer, then manage full crates under **Crates** (reorder, sections, packing, public share)
-4. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
-5. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
+3. On **Releases**, use the side panel — **Crates** always; **Playlists** when your deployment has them enabled — stage picks in the crate drawer, or create playlists and add tracks from a release tracklist menu
+4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); play or edit playlist tracks from the playlists panel on Releases
+5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
+6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
 
 ## Pages
 
 | Path | Purpose |
 |------|---------|
 | `/` | Public landing / login |
-| `/releases` | Browse, filter, sort collection; crate drawer |
+| `/releases` | Browse, filter, sort collection; crates/playlists side panel |
 | `/crates` | Crate hub (your crates) |
 | `/crates/[id]` | Owner crate workspace |
 | `/crate/[id]` | Public shared crate (no login) |
@@ -143,7 +152,8 @@ The app will be available at `http://localhost:6767`.
 
 - **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript 7
 - **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, youtube-video-element (landing demo)
-- **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
+- **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback, feature flags)
+- **Feature flags**: [Flags SDK](https://flags-sdk.dev) + Vercel (`flags`, `@flags-sdk/vercel`; definitions in [`flags.ts`](./flags.ts)) — e.g. progressive **playlists** rollout and per-user allowlists (Discogs **username** / **user id** via Vercel dashboard rules; details in [platform.md → Feature flags](./docs/handbook/platform.md#feature-flags-vercel))
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 24 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
@@ -171,7 +181,7 @@ pnpm test:file        # Jest watch for one file
 pnpm test:e2e         # full Playwright suite (auto-installs Chromium if missing; reuses :6767 if running)
 pnpm test:e2e:smoke   # smoke list only (E2E_SMOKE=1; chromium)
 pnpm test:e2e:install # download Chromium only (test:e2e runs this when browsers are missing)
-pnpm build:e2e        # prod build with mock YouTube embed + test OAuth env (CI E2E; DB optional)
+pnpm build:e2e        # prod build for CI E2E: mock YouTube embed, test OAuth, playlists flag override (DB optional)
 pnpm test:e2e:smoke:ci  # PR-parity smoke: build:e2e + chromium smoke list
 pnpm test:e2e:ci      # full E2E matrix (matches push to staging)
 pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
@@ -205,7 +215,7 @@ pnpm db:studio        # Prisma Studio
 | E2E smoke (PR) | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`build:e2e`](./package.json) then chromium specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
 | E2E full | `pnpm test:e2e:ci` or `mise run ci-full` | Every spec × desktop, phone, and tablet (push to **`staging`**) |
 
-Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog and embed mock details: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests).
+Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. The Playwright **`webServer`** and **`build:e2e`** set server env so gated UI (e.g. playlists) matches production flag wiring without calling Vercel Flags. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog, embed mock, and flag overrides: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests) and [Feature flags](./docs/handbook/platform.md#feature-flags-vercel).
 
 Test data conventions (factories, TDD, E2E MSW): [`docs/handbook/factories.md`](./docs/handbook/factories.md), [`docs/handbook/conventions.md`](./docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents).
 
@@ -257,7 +267,7 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 - **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then skim [patterns.md](./docs/handbook/patterns.md).
 - **Agents / task routing:** [llms.md](./docs/handbook/llms.md).
 - **Discogs OAuth or API:** [discogs.md](./docs/handbook/discogs.md).
-- **Crates or database:** [database.md](./docs/handbook/database.md).
+- **Crates, playlists, or database:** [database.md](./docs/handbook/database.md).
 - **Test factories / Faker data:** [factories.md](./docs/handbook/factories.md).
 - **Adding or changing UI:** [components.md](./docs/handbook/components.md) and [conventions.md](./docs/handbook/conventions.md).
 - **Filters, Jotai atoms, contexts, React Query:** [patterns.md](./docs/handbook/patterns.md).

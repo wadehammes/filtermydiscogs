@@ -60,6 +60,37 @@ describe("useCrateDrawer", () => {
     expect(result.current.isDrawerOpen).toBe(true);
   });
 
+  it("applySidePanelDefault sets panel and restores viewport drawer default", () => {
+    setupMockMatchMedia({ desktop: true });
+
+    const { result } = renderHook(() => useCrateDrawer());
+
+    act(() => {
+      result.current.selectSidePanel("playlists");
+    });
+    expect(result.current.sidePanel).toBe("playlists");
+
+    act(() => {
+      result.current.applySidePanelDefault("crates");
+    });
+
+    expect(result.current.sidePanel).toBe("crates");
+    expect(result.current.isDrawerOpen).toBe(true);
+  });
+
+  it("selectSidePanel switches panel and opens the drawer", () => {
+    setupMockMatchMedia({ desktop: false });
+
+    const { result } = renderHook(() => useCrateDrawer());
+
+    act(() => {
+      result.current.selectSidePanel("playlists");
+    });
+
+    expect(result.current.sidePanel).toBe("playlists");
+    expect(result.current.isDrawerOpen).toBe(true);
+  });
+
   it("closes mobile drawer state after resize to desktop when drawer was open", () => {
     const media = setupResponsiveDesktopMatchMedia(false);
     const { result } = renderHook(() => useCrateDrawer());

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "src/lib/db";
 import type {
+  UserTrackMetadataBody,
   UserTrackRecordBody,
   UserTrackYoutubeOverrideBody,
 } from "src/lib/validation/userTrack.schemas";
@@ -100,6 +101,13 @@ export type UserTrackStatsRow = {
 export const saveUserTrackYoutubeOverride = async (
   userId: number,
   body: UserTrackYoutubeOverrideBody,
+): Promise<void> => {
+  await ensureUserTrackMetadata(userId, body);
+};
+
+export const ensureUserTrackMetadata = async (
+  userId: number,
+  body: UserTrackMetadataBody | UserTrackYoutubeOverrideBody,
 ): Promise<void> => {
   const now = new Date();
   const sharedData = metadataFromTrackFields(body, now);

@@ -98,6 +98,10 @@ class UserPreferencesFactory extends BaseFactory<
       persistFilters: faker.helpers.arrayElement([true, false]),
       autoPlayOnQueueAdd: faker.helpers.arrayElement([true, false]),
       extendQueueWithSimilarReleases: faker.helpers.arrayElement([true, false]),
+      defaultCollectionSidePanel: faker.helpers.arrayElement([
+        "crates",
+        "playlists",
+      ] as const),
       theme,
       view,
       filters: persistedFiltersFactory.build(),
@@ -124,6 +128,7 @@ class UserPreferencesFactory extends BaseFactory<
       persistFilters: true,
       autoPlayOnQueueAdd: true,
       extendQueueWithSimilarReleases: false,
+      defaultCollectionSidePanel: "crates",
       theme: "system",
       view: { currentView: "card", previousView: "card" },
       filters: persistedFiltersFactory.empty(),

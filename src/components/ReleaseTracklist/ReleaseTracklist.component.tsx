@@ -6,6 +6,8 @@ import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
 import { ReleaseTrackRowMenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenu.component";
 import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
+import { useFeatureFlag } from "src/context/featureFlags.context";
+import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
@@ -41,6 +43,9 @@ interface ReleaseTracklistProps {
   allPlayableTracksQueued?: boolean;
   onActiveTrackToggle?: () => void;
   onEditTrackYoutube?: (position: string) => void;
+  getPlaylistTrackMetadata?: (
+    position: string,
+  ) => UserTrackMetadataBody | undefined;
   hasUserYoutubeOverride?: (position: string) => boolean;
   alwaysShowTrackRowMenu?: boolean;
 }
@@ -66,14 +71,19 @@ export const ReleaseTracklist = ({
   onActiveTrackToggle,
   trackStatsByPosition,
   onEditTrackYoutube,
+  getPlaylistTrackMetadata,
   hasUserYoutubeOverride,
   alwaysShowTrackRowMenu = false,
 }: ReleaseTracklistProps) => {
+  const playlistsEnabled = useFeatureFlag("playlists");
   const hasSelectableTracks = onTrackSelect !== undefined;
   const hasQueueAdd = onTrackQueue !== undefined;
   const hasQueueRemove = onTrackUnqueue !== undefined;
   const hasYoutubeEdit = onEditTrackYoutube !== undefined;
-  const hasAnyRowMenuAction = hasYoutubeEdit || hasQueueAdd || hasQueueRemove;
+  const hasPlaylistAdd =
+    playlistsEnabled && getPlaylistTrackMetadata !== undefined;
+  const hasAnyRowMenuAction =
+    hasYoutubeEdit || hasQueueAdd || hasQueueRemove || hasPlaylistAdd;
   const showTrackActionsColumn =
     alwaysShowTrackRowMenu ||
     hasYoutubeEdit ||
@@ -265,6 +275,9 @@ export const ReleaseTracklist = ({
                               ? () => {
                                   onEditTrackYoutube(track.position);
                                 }
+                              : undefined,
+                            playlistPickerMetadata: getPlaylistTrackMetadata
+                              ? getPlaylistTrackMetadata(track.position)
                               : undefined,
                           })}
                         />

@@ -16,8 +16,10 @@
 }
 
 :global([data-releases-workspace]) .drawer {
+  flex: 1;
   height: 100%;
   max-height: none;
+  min-height: 0;
   position: static;
   top: auto;
 }
@@ -47,7 +49,8 @@
   overflow-y: auto;
 
   @media (width >= 1024px) {
-    padding: var(--space-4);
+    padding-block: var(--space-4) 0;
+    padding-inline: var(--space-4);
   }
 }
 

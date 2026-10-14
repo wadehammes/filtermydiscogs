@@ -1,3 +1,5 @@
+"use client";
+
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
@@ -49,7 +51,7 @@ const CrateDrawerMobile = ({
       chrome
       closeButtonPlacement="floating"
       closeButtonAriaLabel="Close crate drawer"
-      dataAttribute="data-crate-drawer-open"
+      dataAttribute="data-collection-side-panel-open"
       contentClassName={
         showPackingToolbar ? styles.mobileDrawerContentFlushTop : undefined
       }

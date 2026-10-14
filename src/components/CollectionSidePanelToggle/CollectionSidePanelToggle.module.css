@@ -1,0 +1,15 @@
+.wrapper {
+  align-items: center;
+  display: flex;
+}
+
+.segmentIcon {
+  display: flex;
+  height: 1rem;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}

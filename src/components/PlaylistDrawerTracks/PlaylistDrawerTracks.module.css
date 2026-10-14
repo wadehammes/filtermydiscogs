@@ -1,0 +1,43 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+
+  &:has(.emptyState, .loadingState) {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+.loadingState {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.emptyState {
+  flex: 1;
+  min-height: 0;
+}
+
+.trackList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  @media (width >= 1024px) {
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+  }
+}
+
+.trackRowDragging {
+  opacity: 0.85;
+  position: relative;
+  z-index: 1;
+}

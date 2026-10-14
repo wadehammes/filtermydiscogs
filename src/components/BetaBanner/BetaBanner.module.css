@@ -1,0 +1,13 @@
+.text {
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+.betaLabel {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}

@@ -1,5 +1,6 @@
 import { definedProps } from "src/utils/definedProps";
 import {
+  YOUTUBE_PLAYER_STATE_PAUSED,
   YOUTUBE_PLAYER_STATE_PLAYING,
   type YoutubeInfoDelivery,
 } from "src/utils/youtubeIframeEvents";
@@ -69,6 +70,10 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
   lastInfoDeliveryCurrentTime?: number;
 }): boolean => {
   if (!transportSessionActive || transportPaused) {
+    return false;
+  }
+
+  if (playerState === YOUTUBE_PLAYER_STATE_PAUSED) {
     return false;
   }
 

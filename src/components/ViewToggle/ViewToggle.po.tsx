@@ -11,8 +11,6 @@ export type ViewToggleRenderProps = {
   currentView?: ViewMode;
   onViewChange?: (view: ViewMode) => void;
   onRandomClick?: () => void;
-  onCratesClick?: () => void;
-  isCratesOpen?: boolean;
   className?: string;
 };
 
@@ -20,7 +18,6 @@ export class ViewTogglePageObject extends BasePageObject {
   public testId = "fmdViewToggle";
   public onViewChange = jest.fn();
   public onRandomClick = jest.fn();
-  public onCratesClick = jest.fn();
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);

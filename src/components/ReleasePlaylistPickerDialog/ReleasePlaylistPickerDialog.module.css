@@ -1,0 +1,66 @@
+.submenuPopup {
+  composes: popupcompact from "../../styles/modules/inline-popover-menu.module.css";
+  min-width: 14rem;
+}
+
+.menuHeading {
+  padding-inline: var(--space-3);
+}
+
+.menuFooter {
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+.playlistItemLabel {
+  font-weight: var(--font-medium);
+  min-width: 0;
+  overflow: hidden;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.createItem {
+  gap: var(--space-2);
+}
+
+.createIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.submenuTrigger {
+  gap: var(--space-2);
+}
+
+.submenuTriggerIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 0.875rem;
+  justify-content: center;
+  width: 0.875rem;
+}
+
+.submenuLabel {
+  flex: 1;
+  text-align: start;
+}
+
+.submenuChevron {
+  flex-shrink: 0;
+  height: var(--space-4);
+  width: var(--space-4);
+}

@@ -116,71 +116,12 @@ describe("ViewToggle", () => {
     expect(po.onViewChange).not.toHaveBeenCalled();
   });
 
-  it("does not show crates button when onCratesClick is not provided", () => {
+  it("does not show a crates control in the view toggle", () => {
     po.renderViewToggle();
 
     expect(
       screen.queryByRole("button", { name: /crates/i }),
     ).not.toBeInTheDocument();
-  });
-
-  it("shows crates button when onCratesClick is provided", () => {
-    po.renderViewToggle({ onCratesClick: po.onCratesClick });
-
-    expect(
-      screen.getByRole("button", { name: "Open crates" }),
-    ).toBeInTheDocument();
-  });
-
-  it("calls onCratesClick when crates button is clicked", async () => {
-    const user = userEvent.setup();
-    po.renderViewToggle({ onCratesClick: po.onCratesClick });
-
-    const cratesButton = screen.getByRole("button", { name: "Open crates" });
-    await user.click(cratesButton);
-
-    expect(po.onCratesClick).toHaveBeenCalled();
-  });
-
-  it("does not scroll to top when the crates button is clicked", async () => {
-    const user = userEvent.setup();
-    const scrollToSpy = po.mockScrollTo();
-    po.renderViewToggle({ onCratesClick: po.onCratesClick });
-
-    await user.click(screen.getByRole("button", { name: "Open crates" }));
-
-    expect(scrollToSpy).not.toHaveBeenCalled();
-  });
-
-  it("highlights crates button when isCratesOpen is true", () => {
-    po.renderViewToggle({
-      onCratesClick: po.onCratesClick,
-      isCratesOpen: true,
-    });
-
-    const cratesButton = screen.getByRole("button", { name: "Close crates" });
-    expect(cratesButton.className).toContain("active");
-    expect(cratesButton).toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("updates crates button aria-label based on isCratesOpen", () => {
-    const { rerender } = po.renderViewToggle({
-      onCratesClick: po.onCratesClick,
-      isCratesOpen: false,
-    });
-
-    expect(
-      screen.getByRole("button", { name: "Open crates" }),
-    ).toBeInTheDocument();
-
-    po.rerenderViewToggle(rerender, {
-      onCratesClick: po.onCratesClick,
-      isCratesOpen: true,
-    });
-
-    expect(
-      screen.getByRole("button", { name: "Close crates" }),
-    ).toBeInTheDocument();
   });
 
   it("applies custom className", () => {

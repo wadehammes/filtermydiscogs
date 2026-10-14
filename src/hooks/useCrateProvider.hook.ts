@@ -1,7 +1,14 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   trackCrateCleared,
   trackCrateCreated,
@@ -16,6 +23,7 @@ import {
 } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import type { CrateActions, CrateState } from "src/context/crate.context.types";
+import { useFeatureFlag } from "src/context/featureFlags.context";
 import {
   useAddReleaseToCrateMutation,
   useClearAllPackedInCrateMutation,
@@ -35,6 +43,7 @@ import {
   useCrateQuery,
   useCratesQuery,
 } from "src/hooks/queries/useCratesQuery";
+import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useCrateDrawer } from "src/hooks/useCrateDrawer.hook";
 import { useCrateMigration } from "src/hooks/useCrateMigration.hook";
 import { buildCrateLayout } from "src/lib/crate-layout";
@@ -63,18 +72,32 @@ export const useCrateProvider = (): {
   const queryClient = useQueryClient();
   const [activeCrateId, setActiveCrateId] = useState<string | null>(null);
   const prevUserIdRef = useRef<string | null>(userId);
+  const sidePanelDefaultAppliedKeyRef = useRef<string | null>(null);
   const mismatchRefetchKeyRef = useRef<string | null>(null);
   const {
     isDrawerOpen,
     isDesktop,
+    sidePanel,
     toggleDrawer,
     openDrawer,
+    openPlaylistsDrawer,
     closeDrawer,
     resetDrawer,
+    applySidePanelDefault,
+    selectSidePanel,
   } = useCrateDrawer();
 
   const canLoadCrates =
     isAuthenticated && !!userId && !rateLimited && !isCheckingAuth;
+
+  const playlistsEnabled = useFeatureFlag("playlists");
+  const { data: userPreferences, isPending: isUserPreferencesPending } =
+    useUserPreferencesQuery({
+      userId,
+      enabled: canLoadCrates,
+    });
+
+  const isSidePanelDefaultPending = canLoadCrates && isUserPreferencesPending;
 
   const {
     data: cratesData,
@@ -136,6 +159,7 @@ export const useCrateProvider = (): {
     }
 
     setActiveCrateId(null);
+    sidePanelDefaultAppliedKeyRef.current = null;
 
     if (!previousUserId && userId) {
       mismatchRefetchKeyRef.current = null;
@@ -161,6 +185,26 @@ export const useCrateProvider = (): {
 
     prevUserIdRef.current = userId;
   }, [userId, queryClient, closeDrawer, resetDrawer]);
+
+  useLayoutEffect(() => {
+    if (!(userId && userPreferences)) {
+      return;
+    }
+
+    const preferredPanel = userPreferences.defaultCollectionSidePanel;
+    const panelToApply =
+      preferredPanel === "playlists" && !playlistsEnabled
+        ? "crates"
+        : preferredPanel;
+    const applyKey = `${userId}:${playlistsEnabled}:${preferredPanel}:${panelToApply}`;
+
+    if (sidePanelDefaultAppliedKeyRef.current === applyKey) {
+      return;
+    }
+
+    applySidePanelDefault(panelToApply);
+    sidePanelDefaultAppliedKeyRef.current = applyKey;
+  }, [applySidePanelDefault, playlistsEnabled, userId, userPreferences]);
 
   useEffect(() => {
     if (!userId || crates.length === 0) {
@@ -551,6 +595,8 @@ export const useCrateProvider = (): {
       isLoadingCrate,
       isFetchingCrate,
       isDrawerOpen,
+      sidePanel,
+      isSidePanelDefaultPending,
       packedReleaseCount,
       isUpdatingCrate: updateCrateMutation.isPending,
       isUpdatingCrateLayout: updateCrateLayoutMutation.isPending,
@@ -568,6 +614,8 @@ export const useCrateProvider = (): {
       isLoadingCrate,
       isFetchingCrate,
       isDrawerOpen,
+      sidePanel,
+      isSidePanelDefaultPending,
       packedReleaseCount,
       updateCrateMutation.isPending,
       updateCrateLayoutMutation.isPending,
@@ -595,7 +643,9 @@ export const useCrateProvider = (): {
       deleteCrate,
       toggleDrawer,
       openDrawer,
+      openPlaylistsDrawer,
       closeDrawer,
+      selectSidePanel,
     }),
     [
       addToCrate,
@@ -615,7 +665,9 @@ export const useCrateProvider = (): {
       deleteCrate,
       toggleDrawer,
       openDrawer,
+      openPlaylistsDrawer,
       closeDrawer,
+      selectSidePanel,
     ],
   );
 

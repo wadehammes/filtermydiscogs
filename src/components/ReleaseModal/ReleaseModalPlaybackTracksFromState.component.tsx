@@ -1,11 +1,13 @@
 "use client";
 
+import { useCallback } from "react";
 import { ReleaseModalPlaybackTracksSection } from "src/components/ReleaseModal/ReleaseModalPlaybackTracksSection.component";
 import type { ReleaseModalPlaybackState } from "src/components/ReleaseModal/useReleaseModalPlayback.hook";
 import { TrackYoutubeOverrideDialog } from "src/components/TrackYoutubeOverrideDialog/TrackYoutubeOverrideDialog.component";
 import { useAuth } from "src/context/auth.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import type { DiscogsRelease } from "src/types";
+import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody";
 import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import { isSameReleaseInstance } from "src/utils/releaseNotes";
@@ -22,6 +24,45 @@ export const ReleaseModalPlaybackTracksFromState = ({
   const { state: authState } = useAuth();
   const barPlayback = useReleasePlayback();
   const { isLoading, isError } = playback;
+  const releaseArtistNames = formatArtistNames(release);
+  const releaseTitle = release.basic_information.title;
+
+  const getPlaylistTrackMetadata = useCallback(
+    (trackPosition: string) => {
+      if (!authState.userId) {
+        return undefined;
+      }
+
+      const track = playback.tracks.find(
+        (row) => row.position === trackPosition,
+      );
+
+      if (!track) {
+        return undefined;
+      }
+
+      const youtubeId = playback.userYoutubeIdByPosition[trackPosition];
+
+      return buildUserTrackMetadataBody({
+        release,
+        trackPosition,
+        trackTitle: track.title,
+        artist: releaseArtistNames,
+        releaseTitle,
+        ...definedProps({
+          youtubeId: youtubeId ? youtubeId : undefined,
+        }),
+      });
+    },
+    [
+      authState.userId,
+      playback.tracks,
+      playback.userYoutubeIdByPosition,
+      release,
+      releaseArtistNames,
+      releaseTitle,
+    ],
+  );
 
   if (isLoading || isError) {
     return null;
@@ -63,8 +104,8 @@ export const ReleaseModalPlaybackTracksFromState = ({
     isReleasePreviewPlaying,
   } = playback;
 
-  const releaseArtistNames = formatArtistNames(release);
   const canEditTrackYoutube = authState.userId != null;
+  const canAddToPlaylist = authState.userId != null;
 
   return (
     <>
@@ -81,6 +122,7 @@ export const ReleaseModalPlaybackTracksFromState = ({
         {...(canEditTrackYoutube
           ? { onEditTrackYoutube: openTrackYoutubeOverride }
           : {})}
+        {...(canAddToPlaylist ? { getPlaylistTrackMetadata } : {})}
         activeTrackPosition={activeTrackPosition}
         activePreviewTrackPosition={activePreviewTrackPosition}
         fallbackSearchUrl={fallbackSearchUrl}

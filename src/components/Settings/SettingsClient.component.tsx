@@ -15,6 +15,7 @@ import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
 import { useAuth } from "src/context/auth.context";
+import { useFeatureFlag } from "src/context/featureFlags.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
@@ -22,7 +23,9 @@ import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.h
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useCurrentView } from "src/hooks/useViewAtoms.hook";
 import {
+  type CollectionSidePanelPreference,
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  DEFAULT_COLLECTION_SIDE_PANEL,
   DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
   type StoredViewState,
 } from "src/types/userPreferences.types";
@@ -101,6 +104,7 @@ export default function SettingsClient() {
     });
   const { persistPreferences, isPending: isPreferencesSaving } =
     usePersistUserPreferences();
+  const playlistsFeatureEnabled = useFeatureFlag("playlists");
   const dispatchView = useSetAtom(viewDispatchAtom);
   const store = useStore();
   const currentView = useCurrentView();
@@ -157,6 +161,18 @@ export default function SettingsClient() {
     });
   };
 
+  const handleDefaultCollectionSidePanelChange = (
+    panel: CollectionSidePanelPreference,
+  ) => {
+    persistPreferences(
+      { defaultCollectionSidePanel: panel },
+      {
+        onSuccess: showPreferencesSavedToast,
+        onError: showPreferencesSaveErrorToast,
+      },
+    );
+  };
+
   const handleViewChange = (view: "card" | "list") => {
     dispatchView({
       type: ViewActionTypes.SetView,
@@ -192,9 +208,17 @@ export default function SettingsClient() {
         return (
           <SettingsAppearancePanel
             settingsViewValue={settingsViewValue}
+            defaultCollectionSidePanel={
+              preferences?.defaultCollectionSidePanel ??
+              DEFAULT_COLLECTION_SIDE_PANEL
+            }
+            playlistsFeatureEnabled={playlistsFeatureEnabled}
             isPreferencesLoading={isPreferencesLoading}
             isPreferencesSaving={isPreferencesSaving}
             onViewChange={handleViewChange}
+            onDefaultCollectionSidePanelChange={
+              handleDefaultCollectionSidePanelChange
+            }
             onThemePersisted={showPreferencesSavedToast}
             onThemePersistError={showPreferencesSaveErrorToast}
           />

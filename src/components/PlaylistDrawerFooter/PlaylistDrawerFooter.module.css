@@ -1,0 +1,50 @@
+.footer {
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+
+  @media (width >= 1024px) {
+    border-top: 1px solid var(--border);
+    padding-block: var(--space-3);
+    padding-inline: var(--space-4);
+  }
+}
+
+.footerSegmented {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.footerSegment {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-2);
+}
+
+.footerSegmentIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.playSegment {
+  flex: 1;
+}
+
+.deleteSegment {
+  color: color-mix(in srgb, var(--destructive) 70%, var(--muted-foreground));
+}

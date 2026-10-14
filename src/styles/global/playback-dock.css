@@ -54,7 +54,10 @@ html:has([data-global-playback-dock]),
   @media (width >= 768px) {
     --release-mini-player-control-size: 2rem;
     --release-mini-player-bar-height: calc(
-      var(--release-mini-player-cover-size) +
+      max(
+        var(--release-mini-player-cover-size),
+        var(--release-mini-player-control-size)
+      ) +
       var(--space-2) *
       2 +
       1px
@@ -101,7 +104,10 @@ body:has([data-filters-drawer-open="true"]):not(
 [data-playback-dock-spacer] {
   block-size: var(--release-mini-player-stack-offset, 0);
   flex-shrink: 0;
-  min-block-size: 0;
+  min-block-size: var(
+    --release-mini-player-bar-offset,
+    calc(3.25rem + 1px + env(safe-area-inset-bottom, 0px))
+  );
   pointer-events: none;
   transition: block-size var(--transition-normal);
   width: 100%;

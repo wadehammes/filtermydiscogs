@@ -1,8 +1,8 @@
 .releasesHeader {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+  flex-wrap: nowrap;
+  gap: var(--space-2);
   justify-content: space-between;
   margin-bottom: var(--space-1);
   padding: var(--space-3) var(--space-4);
@@ -13,6 +13,11 @@
 
   @media (width > 768px) {
     padding: var(--space-4);
+  }
+
+  @media (width >= 1024px) {
+    flex-wrap: wrap;
+    gap: var(--space-3);
   }
 
   &.stuck {
@@ -28,7 +33,13 @@
     font-family: var(--font-family-meta);
     font-size: var(--text-meta-sm);
     gap: var(--space-2);
+    flex: 1;
     margin: 0;
+    min-width: 0;
+
+    @media (width >= 1024px) {
+      flex: initial;
+    }
   }
 
   .releaseCount {
@@ -51,7 +62,15 @@
   }
 }
 
-.viewToggleMobile {
+.headerControls {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.viewToggleDesktop {
   display: none;
 
   @media (width >= 1024px) {

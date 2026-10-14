@@ -28,6 +28,18 @@ export const userTrackRecordBodySchema = z.object({
 
 export type UserTrackRecordBody = z.infer<typeof userTrackRecordBodySchema>;
 
+export const userTrackMetadataBodySchema = z.object({
+  track_key: z.string().min(1).max(512),
+  track_title: z.string().min(1).max(500),
+  track_position: z.string().min(1).max(128),
+  instance_id: z.string().min(1).max(64),
+  youtube_id: youtubeIdSchema.optional(),
+  artist: z.string().max(500).optional(),
+  release_title: z.string().max(500).optional(),
+});
+
+export type UserTrackMetadataBody = z.infer<typeof userTrackMetadataBodySchema>;
+
 export const userTrackYoutubeOverrideBodySchema = z.object({
   track_key: z.string().min(1).max(512),
   track_title: z.string().min(1).max(500),

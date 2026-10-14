@@ -5,6 +5,7 @@ import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
 import { ReleasePlaybackFallback } from "src/components/ReleasePlaybackFallback/ReleasePlaybackFallback.component";
 import { ReleasePlaybackPreview } from "src/components/ReleasePlaybackPreview/ReleasePlaybackPreview.component";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
+import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import type { UserTrackStatCounts } from "src/utils/userTrack";
@@ -21,6 +22,9 @@ interface ReleaseModalPlaybackTracksSectionProps {
   trackStatsByPosition?: Record<string, UserTrackStatCounts>;
   userYoutubeIdByPosition: Readonly<Record<string, string>>;
   onEditTrackYoutube?: (trackPosition: string) => void;
+  getPlaylistTrackMetadata?: (
+    trackPosition: string,
+  ) => UserTrackMetadataBody | undefined;
   activeTrackPosition: string | null;
   activePreviewTrackPosition: string | null;
   fallbackSearchUrl: string;
@@ -54,6 +58,7 @@ export const ReleaseModalPlaybackTracksSection = ({
   trackStatsByPosition,
   userYoutubeIdByPosition,
   onEditTrackYoutube,
+  getPlaylistTrackMetadata,
   activeTrackPosition,
   activePreviewTrackPosition,
   fallbackSearchUrl,
@@ -135,6 +140,7 @@ export const ReleaseModalPlaybackTracksSection = ({
             ? handleActiveTrackToggle
             : undefined,
           onEditTrackYoutube,
+          getPlaylistTrackMetadata,
           hasUserYoutubeOverride: onEditTrackYoutube
             ? hasUserYoutubeOverride
             : undefined,

@@ -1,3 +1,4 @@
+import type { CollectionSidePanelMode } from "src/hooks/useCrateDrawer.hook";
 import type { DiscogsRelease } from "src/types";
 import type {
   CrateLayoutItem,
@@ -17,6 +18,8 @@ export interface CrateState {
   isLoadingCrate: boolean;
   isFetchingCrate: boolean;
   isDrawerOpen: boolean;
+  sidePanel: CollectionSidePanelMode;
+  isSidePanelDefaultPending: boolean;
   packedReleaseCount: number;
   isUpdatingCrate: boolean;
   isUpdatingCrateLayout: boolean;
@@ -62,7 +65,9 @@ export interface CrateActions {
   ) => void;
   toggleDrawer: () => void;
   openDrawer: () => void;
+  openPlaylistsDrawer: () => void;
   closeDrawer: () => void;
+  selectSidePanel: (panel: CollectionSidePanelMode) => void;
 }
 
 export type CrateContextType = CrateState & CrateActions;

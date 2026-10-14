@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminDashboardClient from "src/components/AdminDashboard/AdminDashboardClient.component";
 import { verifyAdminFromCookies } from "src/lib/admin-helpers";
+import { getPlaylistsFeatureEnabled } from "src/lib/playlistsFeature.server";
 
 export async function AdminDashboardGate() {
   await io();
@@ -14,5 +15,7 @@ export async function AdminDashboardGate() {
     redirect("/");
   }
 
-  return <AdminDashboardClient />;
+  const playlistsFeatureEnabled = await getPlaylistsFeatureEnabled();
+
+  return <AdminDashboardClient deployment={{ playlistsFeatureEnabled }} />;
 }

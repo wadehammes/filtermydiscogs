@@ -14,6 +14,7 @@ import {
   resetFilterPersistenceCache,
 } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
+import { clearAllLastPlayedPlaylistIds } from "src/utils/lastPlayedPlaylistStorage";
 import { clearPlaybackVideoIntroSeen } from "src/utils/playbackVideoIntroStorage";
 import { clearPersistedReleasePlayback } from "src/utils/releasePlaybackStorage";
 
@@ -35,5 +36,6 @@ export const clearClientStoredData = (): void => {
   void clearPersistedCollectionCaches();
   clearPersistedReleasePlayback();
   clearPlaybackVideoIntroSeen();
+  clearAllLastPlayedPlaylistIds();
   clearAnalyticsConsentChoice();
 };

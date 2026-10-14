@@ -48,6 +48,11 @@ type SetMarkerOverviewRow = WindowCountRow & {
   total: number;
 };
 
+type PlaylistOverviewRow = {
+  total_playlists: number;
+  users_with_playlists: number;
+};
+
 type AccountPreferencesBreakdownRow = {
   key: string;
   count: number;
@@ -317,6 +322,7 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
     analyticsRows,
     themeRows,
     viewRows,
+    sidePanelRows,
     savedViewsOverviewRows,
     savedViewsBreakdownRows,
   ] = await Promise.all([
@@ -359,6 +365,18 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
         GROUP BY 1
         ORDER BY count DESC, key ASC
       `,
+    prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
+        SELECT
+          CASE
+            WHEN preferences->>'defaultCollectionSidePanel' = 'playlists'
+            THEN 'playlists'
+            ELSE 'crates'
+          END AS key,
+          COUNT(*)::int AS count
+        FROM users
+        GROUP BY 1
+        ORDER BY count DESC, key ASC
+      `,
     prisma.$queryRaw<AccountPreferencesSavedViewsOverviewRow[]>`
         SELECT
           COUNT(*) FILTER (WHERE ${savedViewCountSql} > 0)::int AS users_with_saved_views,
@@ -391,6 +409,7 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
     analyticsConsent: mapAnalyticsConsentCounts(analyticsRows),
     themes: themeRows,
     defaultViews: viewRows,
+    defaultSidePanels: sidePanelRows,
     savedViews: {
       usersWithSavedViews: savedViewsOverview?.users_with_saved_views ?? 0,
       totalSavedViews: savedViewsOverview?.total_saved_views ?? 0,
@@ -410,6 +429,8 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     cratesOverview,
     releasesOverview,
     setMarkersOverview,
+    playlistsOverview,
+    totalPlaylistTracks,
     topUsersByCrates,
     topUsersByReleases,
     userGrowth,
@@ -457,6 +478,13 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         COUNT(*) FILTER (WHERE created_at >= ${thirtyDaysAgo})::int AS last_30d
       FROM crate_set_markers
     `,
+    prisma.$queryRaw<PlaylistOverviewRow[]>`
+      SELECT
+        COUNT(*)::int AS total_playlists,
+        COUNT(DISTINCT user_id)::int AS users_with_playlists
+      FROM playlists
+    `,
+    prisma.playlistTrack.count(),
     prisma.$queryRaw<TopUserRow[]>`
       SELECT
         c.user_id,
@@ -535,8 +563,9 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
   const crates = cratesOverview[0];
   const releases = releasesOverview[0];
   const setMarkers = setMarkersOverview[0];
+  const playlists = playlistsOverview[0];
 
-  if (!(users && crates && releases && setMarkers)) {
+  if (!(users && crates && releases && setMarkers && playlists)) {
     throw new Error("Failed to load admin overview stats");
   }
 
@@ -559,6 +588,11 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         cratesWithNotes: crates.crates_with_notes,
         totalSetMarkers: setMarkers.total,
         packedReleases: releases.packed_total,
+      },
+      playlists: {
+        totalPlaylists: playlists.total_playlists,
+        totalPlaylistTracks,
+        usersWithPlaylists: playlists.users_with_playlists,
       },
     },
     engagement,

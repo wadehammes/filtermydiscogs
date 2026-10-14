@@ -5,7 +5,6 @@ import {
   SegmentedControl,
   segmentedStyles,
 } from "src/components/SegmentedControl/SegmentedControl.component";
-import CratesIcon from "src/styles/icons/crates-thin.svg";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import GridIcon from "src/styles/icons/grid-thin.svg";
 import TableIcon from "src/styles/icons/table-thin.svg";
@@ -19,8 +18,6 @@ export interface ViewToggleProps {
   currentView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   onRandomClick?: () => void;
-  onCratesClick?: () => void;
-  isCratesOpen?: boolean;
   className?: string;
 }
 
@@ -28,8 +25,6 @@ export const ViewToggle = ({
   currentView,
   onViewChange,
   onRandomClick,
-  onCratesClick,
-  isCratesOpen,
   className = "",
 }: ViewToggleProps) => {
   return (
@@ -99,21 +94,6 @@ export const ViewToggle = ({
         >
           <DiceIcon />
         </IconButton>
-        {onCratesClick ? (
-          <IconButton
-            className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active]: isCratesOpen,
-            })}
-            iconClassName={styles.segmentIcon}
-            label="Crates"
-            onClick={onCratesClick}
-            aria-label={isCratesOpen ? "Close crates" : "Open crates"}
-            title={isCratesOpen ? "Close crates" : "View your crates"}
-            aria-pressed={isCratesOpen}
-          >
-            <CratesIcon />
-          </IconButton>
-        ) : null}
       </SegmentedControl>
     </div>
   );

@@ -1015,6 +1015,14 @@ describe("buildYoutubeEmbedUrl", () => {
       "mode=silent",
     );
   });
+
+  it("serves harness mock embed urls for the normal e2e video id without the global mock flag", () => {
+    delete process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
+
+    expect(buildYoutubeEmbedUrl({ videoId: "e2eNorm0001" })).toBe(
+      "/e2e/youtube-embed-mock.html?controls=1&disablekb=0&enablejsapi=1&fs=1&playsinline=1&rel=0&videoId=e2eNorm0001",
+    );
+  });
 });
 
 describe("buildClientYoutubeEmbedUrl", () => {

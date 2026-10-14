@@ -12,7 +12,10 @@ import {
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
 } from "src/utils/releasePlaybackEmbedConfirm";
-import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
+import {
+  YOUTUBE_PLAYER_STATE_PAUSED,
+  YOUTUBE_PLAYER_STATE_PLAYING,
+} from "src/utils/youtubeIframeEvents";
 
 describe("releasePlaybackEmbedConfirm", () => {
   it("exports resolveEmbedPlaybackIntentActive locally but not embed confirm signal types re-exported from playbackEmbedSession", () => {
@@ -161,6 +164,20 @@ describe("releasePlaybackEmbedConfirm", () => {
         videoUiLoadingCycleStartedAtMs: 200,
       }),
     ).toBe(200);
+  });
+
+  it("shouldConfirmEmbedPlaybackFromAudibleEmbed rejects PAUSED even when currentTime is positive", () => {
+    expect(
+      shouldConfirmEmbedPlaybackFromAudibleEmbed({
+        gateStartedAtMs: null,
+        nowMs: 9000,
+        isPlaying: true,
+        isPaused: false,
+        playerState: YOUTUBE_PLAYER_STATE_PAUSED,
+        infoDeliveryCurrentTime: 1.2,
+        lastInfoDeliveryCurrentTime: 1.2,
+      }),
+    ).toBe(false);
   });
 
   it("shouldConfirmEmbedPlaybackFromAudibleEmbed accepts PLAYING after the confirm gate", () => {

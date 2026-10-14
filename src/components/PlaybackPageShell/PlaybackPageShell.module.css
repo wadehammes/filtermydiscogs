@@ -8,8 +8,15 @@
 }
 
 .shellViewport {
+  flex: 1;
   height: 100dvh;
   max-height: 100dvh;
+  min-height: 0;
+}
+
+:global(.pageContent) > .shell.shellViewport {
+  height: 100%;
+  max-height: 100%;
 }
 
 .headerSlot {

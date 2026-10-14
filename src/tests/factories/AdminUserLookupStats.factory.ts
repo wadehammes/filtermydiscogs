@@ -27,6 +27,10 @@ class AdminUserLookupStatsFactory extends BaseFactory<
       preferences: {
         theme: faker.helpers.arrayElement(["system", "dark", "light"]),
         defaultView: faker.helpers.arrayElement(["card", "list"]),
+        defaultCollectionSidePanel: faker.helpers.arrayElement([
+          "crates",
+          "playlists",
+        ] as const),
         persistFilters: faker.datatype.boolean(),
         analyticsConsent: faker.helpers.arrayElement([
           "enabled",
@@ -43,10 +47,13 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         cratesWithNotes: faker.number.int({ min: 0, max: 5 }),
         setMarkers: faker.number.int({ min: 0, max: 20 }),
         packedReleases: faker.number.int({ min: 0, max: 50 }),
+        playlists: faker.number.int({ min: 0, max: 5 }),
+        playlistTracks: faker.number.int({ min: 0, max: 50 }),
       },
       activity: {
         lastCrateUpdateAt: null,
         lastReleaseAddedAt: null,
+        lastPlaylistUpdateAt: null,
         releasesAddedLast7Days: faker.number.int({ min: 0, max: 10 }),
         releasesAddedLast30Days: faker.number.int({ min: 0, max: 30 }),
       },
@@ -93,6 +100,7 @@ class AdminUserLookupStatsFactory extends BaseFactory<
       preferences: {
         theme: "dark",
         defaultView: "card",
+        defaultCollectionSidePanel: "crates",
         persistFilters: true,
         analyticsConsent: "unset",
         savedViewsCount: 0,
@@ -105,10 +113,13 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         cratesWithNotes: 0,
         setMarkers: 0,
         packedReleases: 0,
+        playlists: 0,
+        playlistTracks: 0,
       },
       activity: {
         lastCrateUpdateAt: null,
         lastReleaseAddedAt: null,
+        lastPlaylistUpdateAt: null,
         releasesAddedLast7Days: 0,
         releasesAddedLast30Days: 0,
       },

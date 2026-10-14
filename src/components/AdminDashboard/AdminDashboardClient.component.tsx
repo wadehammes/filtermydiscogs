@@ -46,6 +46,17 @@ const SAVED_VIEW_COUNT_LABELS: Record<string, string> = {
   "6+": "6+ views",
 };
 
+const DEFAULT_SIDE_PANEL_LABELS: Record<string, string> = {
+  crates: "Crates",
+  playlists: "Playlists",
+};
+
+interface AdminDashboardClientProps {
+  deployment: {
+    playlistsFeatureEnabled: boolean;
+  };
+}
+
 const formatPercent = (
   value: number,
   total: number,
@@ -227,7 +238,9 @@ const renderFeatureUsageTable = (
   />
 );
 
-export default function AdminDashboardClient() {
+export default function AdminDashboardClient({
+  deployment,
+}: AdminDashboardClientProps) {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const { data: stats, isLoading, error } = useAdminStatsQuery();
 
@@ -477,8 +490,59 @@ export default function AdminDashboardClient() {
                       title="Default view"
                       totalUsers={stats.overview.totalUsers}
                     />
+                    <AdminPreferenceBreakdownPanel
+                      labelForKey={(key) =>
+                        DEFAULT_SIDE_PANEL_LABELS[key] ?? key
+                      }
+                      rows={stats.accountPreferences.defaultSidePanels}
+                      title="Default collection side panel"
+                      totalUsers={stats.overview.totalUsers}
+                    />
                   </div>
                 </div>
+              </DashboardSection>
+
+              <DashboardSection
+                lede="Saved playlists, rollout flag state on this deployment, and Vercel targeting hints."
+                title="Playlists"
+              >
+                <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 4 }}>
+                  <StatCard
+                    label="Playlists feature (this deployment)"
+                    subtext="Vercel playlists flag + local overrides"
+                    value={deployment.playlistsFeatureEnabled ? "On" : "Off"}
+                  />
+                  <StatCard
+                    label="Total playlists"
+                    value={formatCommunityStatValue(
+                      stats.overview.playlists.totalPlaylists,
+                    )}
+                  />
+                  <StatCard
+                    label="Playlist tracks saved"
+                    value={formatCommunityStatValue(
+                      stats.overview.playlists.totalPlaylistTracks,
+                    )}
+                  />
+                  <StatCard
+                    label="Users with playlists"
+                    subtext={formatPercent(
+                      stats.overview.playlists.usersWithPlaylists,
+                      stats.overview.totalUsers,
+                      "of users",
+                    )}
+                    value={formatCommunityStatValue(
+                      stats.overview.playlists.usersWithPlaylists,
+                    )}
+                  />
+                </StatsGrid>
+                <p className={styles.panelMeta}>
+                  Vercel Flags user targeting: match on{" "}
+                  <code>user.username</code> (lowercase Discogs handle),{" "}
+                  <code>user.discogsUserId</code>, or <code>user.id</code>{" "}
+                  (Discogs user ID string). User lookup below shows username and
+                  Discogs user ID for allowlist rules.
+                </p>
               </DashboardSection>
 
               <DashboardSection

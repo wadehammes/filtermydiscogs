@@ -65,7 +65,7 @@
   align-self: center;
   background: transparent;
   border: none;
-  color: var(--muted-foreground);
+  color: color-mix(in srgb, var(--foreground) 62%, var(--muted-foreground));
   cursor: grab;
   display: inline-flex;
   flex-shrink: 0;
@@ -90,8 +90,15 @@
   display: block;
   flex-shrink: 0;
   height: 1.125rem;
-  opacity: 0.55;
   width: 1.125rem;
+}
+
+.queueItemActive .dragHandle {
+  color: color-mix(in srgb, var(--foreground) 78%, var(--primary));
+}
+
+.dragHandle:hover:not(:disabled) {
+  color: var(--foreground);
 }
 
 .queuePlayButton {

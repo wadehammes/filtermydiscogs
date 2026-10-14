@@ -1,0 +1,21 @@
+.menuHost {
+  position: relative;
+}
+
+.menuRoot {
+  align-items: center;
+  display: flex;
+  isolation: isolate;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.menuPopup {
+  composes: popupcompact from "../../styles/modules/inline-popover-menu.module.css";
+  min-width: 12rem;
+}
+
+.menuHeading {
+  padding-inline: var(--space-3);
+}

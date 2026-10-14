@@ -21,7 +21,7 @@ interface ScrollFadeState {
   bottom: boolean;
 }
 
-interface ReleaseCrateMenuPanelContentProps {
+export interface ReleaseCrateMenuPanelContentProps {
   inActiveCrate: boolean;
   activeCrate: CrateRow | null;
   otherCrates: CrateRow[];
@@ -36,6 +36,7 @@ interface ReleaseCrateMenuPanelContentProps {
   onCheckedChange: (crateId: string, checked: boolean) => void;
   onToggleAllCrates: () => void;
   onOpenCreateDialog: () => void;
+  showTopHeading?: boolean;
 }
 
 export const ReleaseCrateMenuPanelContent = ({
@@ -53,11 +54,14 @@ export const ReleaseCrateMenuPanelContent = ({
   onCheckedChange,
   onToggleAllCrates,
   onOpenCreateDialog,
+  showTopHeading = true,
 }: ReleaseCrateMenuPanelContentProps) => (
   <>
-    <p className={styles.menuHeading}>
-      {inActiveCrate ? "Manage crates" : "Add to crates"}
-    </p>
+    {showTopHeading ? (
+      <p className={styles.menuHeading}>
+        {inActiveCrate ? "Manage crates" : "Add to crates"}
+      </p>
+    ) : null}
     {activeCrate ? (
       <div className={styles.menuSection}>
         <ReleaseCrateMenuCheckboxItem

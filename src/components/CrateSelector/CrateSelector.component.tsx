@@ -7,6 +7,7 @@ import { Spinner } from "src/components/Spinner/Spinner.component";
 import { useCrate } from "src/context/crate.context";
 import type { CreateCrateFormValues } from "src/lib/validation/crate.schemas";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
+import { sortByDisplayName } from "src/utils/compareByDisplayName";
 import styles from "./CrateSelector.module.css";
 
 interface CrateSelectorProps {
@@ -57,7 +58,7 @@ export const CrateSelector = ({
 
   const options = useMemo(
     () =>
-      crates.map((crate) => {
+      sortByDisplayName(crates, (crate) => crate.name).map((crate) => {
         const releaseCount = crate.releaseCount ?? 0;
         return {
           value: crate.id,

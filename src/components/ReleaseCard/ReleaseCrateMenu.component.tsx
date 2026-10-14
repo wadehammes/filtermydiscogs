@@ -1,20 +1,14 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
-import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import type { MouseEvent } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { CreateCrateDialog } from "src/components/CreateCrateDialog/CreateCrateDialog.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import { ReleaseCrateMenuPanelContent } from "src/components/ReleaseCard/ReleaseCrateMenuPanelContent.component";
-import { useReleaseCrateMenuDerivedState } from "src/components/ReleaseCard/useReleaseCrateMenuDerivedState.hook";
-import { useAuth } from "src/context/auth.context";
-import { useCrateActions, useCrateState } from "src/context/crate.context";
-import { prefetchReleaseCrateMembership } from "src/hooks/queries/useReleaseCrateMembershipQuery";
-import { useScrollEdgeFade } from "src/hooks/useScrollEdgeFade.hook";
-import type { CreateCrateFormValues } from "src/lib/validation/crate.schemas";
+import { useReleaseCrateMenuController } from "src/hooks/useReleaseCrateMenuController.hook";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
@@ -44,65 +38,28 @@ export const ReleaseCrateMenu = ({
 }: ReleaseCrateMenuProps) => {
   const isVertical = layout === "vertical";
   const portaled = portaledProp ?? isVertical;
-  const queryClient = useQueryClient();
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const [menuHostElement, setMenuHostElement] = useState<HTMLElement | null>(
     null,
   );
   const [isOpen, setIsOpen] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const closeMenu = useCallback(() => {
+    setIsOpen(false);
+  }, []);
   const {
-    state: { userId },
-  } = useAuth();
-  const {
-    crates,
-    activeCrateId,
-    activeCrateInstanceIds,
     isLoading,
-    isUpdatingCrate,
-    isCreatingCrate,
-  } = useCrateState();
-  const {
-    addReleaseToCrate,
-    removeReleaseFromCrate,
-    setReleaseCrateMembership,
-    createCrate,
-  } = useCrateActions();
-  const isCrateActionPending = isCreatingCrate || isUpdatingCrate;
-
-  const {
-    instanceId,
-    memberCrateIds,
-    inActiveCrate,
-    activeCrate,
-    otherCrates,
-    isInAllCrates,
-    showToggleAllAction,
-  } = useReleaseCrateMenuDerivedState({
-    release,
-    userId,
-    isOpen,
-    crates,
-    activeCrateId,
-    activeCrateInstanceIds,
-  });
-
-  const {
-    scrollRef: crateListScrollRef,
-    fade: crateListScrollFade,
-    onScroll: updateCrateListScrollFade,
-  } = useScrollEdgeFade<HTMLDivElement>({
-    enabled: isOpen && otherCrates.length > 0,
-  });
+    isCrateActionPending,
+    showCreateDialog,
+    closeCreateDialog,
+    prefetchMembership,
+    handleCreateCrate,
+    panelContentProps,
+  } = useReleaseCrateMenuController(release, isOpen, closeMenu);
+  const { inActiveCrate } = panelContentProps;
 
   const handleTriggerClick = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
   };
-
-  const prefetchMembership = useCallback(() => {
-    void prefetchReleaseCrateMembership(queryClient, { userId, instanceId });
-  }, [instanceId, queryClient, userId]);
 
   const prefetchMembershipOnHover = useCallback(() => {
     if (!shouldRunReleaseCrateMembershipHoverPrefetch()) {
@@ -111,66 +68,6 @@ export const ReleaseCrateMenu = ({
 
     prefetchMembership();
   }, [prefetchMembership]);
-
-  const handleOpenChange = useCallback((open: boolean) => {
-    setIsOpen(open);
-  }, []);
-
-  const handleCheckedChange = useCallback(
-    (crateId: string, checked: boolean) => {
-      if (checked) {
-        addReleaseToCrate(crateId, release, {
-          openDrawer: crateId === activeCrateId,
-        });
-        return;
-      }
-
-      removeReleaseFromCrate(crateId, instanceId);
-    },
-    [
-      activeCrateId,
-      addReleaseToCrate,
-      instanceId,
-      release,
-      removeReleaseFromCrate,
-    ],
-  );
-
-  const handleToggleAllCrates = useCallback(() => {
-    const targetCrateIds = isInAllCrates ? [] : crates.map((crate) => crate.id);
-
-    setReleaseCrateMembership(targetCrateIds, release, {
-      openDrawer:
-        !isInAllCrates &&
-        activeCrateId !== null &&
-        targetCrateIds.includes(activeCrateId),
-    });
-  }, [
-    activeCrateId,
-    crates,
-    isInAllCrates,
-    release,
-    setReleaseCrateMembership,
-  ]);
-
-  const handleOpenCreateDialog = useCallback(() => {
-    setIsOpen(false);
-    setShowCreateDialog(true);
-  }, []);
-
-  const handleCreateCrate = useCallback(
-    async ({ name, setAsDefault }: CreateCrateFormValues) => {
-      const crateId = await createCrate(name, { setAsDefault });
-
-      if (!crateId) {
-        return;
-      }
-
-      addReleaseToCrate(crateId, release, { openDrawer: true });
-      setShowCreateDialog(false);
-    },
-    [addReleaseToCrate, createCrate, release],
-  );
 
   const triggerLabel = inActiveCrate ? "Manage crates" : "Add to crates";
   const triggerText = inActiveCrate ? "− Remove from Crate" : "+ Add to Crate";
@@ -193,9 +90,8 @@ export const ReleaseCrateMenu = ({
         data-release-crate-menu-host
         data-testid="fmdReleaseCrateMenuHost"
       >
-        <Menu.Root open={isOpen} onOpenChange={handleOpenChange} modal={false}>
+        <Menu.Root open={isOpen} onOpenChange={setIsOpen} modal={false}>
           <Menu.Trigger
-            ref={triggerRef}
             render={(props) =>
               triggerStyle === "text" ? (
                 <button
@@ -246,22 +142,7 @@ export const ReleaseCrateMenu = ({
             testId="fmdReleaseCrateMenu"
             useOverlayStack={portaled}
           >
-            <ReleaseCrateMenuPanelContent
-              inActiveCrate={inActiveCrate}
-              activeCrate={activeCrate}
-              otherCrates={otherCrates}
-              cratesCount={crates.length}
-              memberCrateIds={memberCrateIds}
-              showToggleAllAction={showToggleAllAction}
-              isInAllCrates={isInAllCrates}
-              isCrateActionPending={isCrateActionPending}
-              crateListScrollRef={crateListScrollRef}
-              crateListScrollFade={crateListScrollFade}
-              updateCrateListScrollFade={updateCrateListScrollFade}
-              onCheckedChange={handleCheckedChange}
-              onToggleAllCrates={handleToggleAllCrates}
-              onOpenCreateDialog={handleOpenCreateDialog}
-            />
+            <ReleaseCrateMenuPanelContent {...panelContentProps} />
           </InlinePopoverMenu.Panel>
         </Menu.Root>
         {showTooltip ? (
@@ -271,9 +152,7 @@ export const ReleaseCrateMenu = ({
       <CreateCrateDialog
         isOpen={showCreateDialog}
         isSubmitting={isCrateActionPending}
-        onClose={() => {
-          setShowCreateDialog(false);
-        }}
+        onClose={closeCreateDialog}
         onCreate={handleCreateCrate}
       />
     </>

@@ -5,6 +5,11 @@ import classNames from "classnames";
 import { useCallback, useRef } from "react";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
+import {
+  ReleasePlaylistPickerSubmenuPanel,
+  ReleasePlaylistPickerSubmenuTrigger,
+} from "src/components/ReleasePlaylistPickerDialog/ReleasePlaylistPickerDialog.component";
+import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import MenuIcon from "src/styles/icons/menu-thin.svg";
@@ -24,6 +29,7 @@ export type ReleaseTrackRowMenuProps = {
   onAddToQueue?: () => void;
   onRemoveFromQueue?: () => void;
   onEditYoutube?: () => void;
+  playlistPickerMetadata?: UserTrackMetadataBody;
   useMenuOverlayStack?: boolean;
   releaseHasQueueActions?: boolean;
 };
@@ -40,6 +46,7 @@ export const ReleaseTrackRowMenu = ({
   onAddToQueue,
   onRemoveFromQueue,
   onEditYoutube,
+  playlistPickerMetadata,
   useMenuOverlayStack = true,
   releaseHasQueueActions = false,
 }: ReleaseTrackRowMenuProps) => {
@@ -64,12 +71,14 @@ export const ReleaseTrackRowMenu = ({
     !canUnqueue &&
     onAddToQueue === undefined;
   const showYoutube = onEditYoutube !== undefined;
+  const showAddToPlaylist = playlistPickerMetadata !== undefined;
   const hasItems =
     showAddToQueue ||
     showRemoveFromQueue ||
     showInQueueDisabled ||
     showAddToQueueUnavailable ||
-    showYoutube;
+    showYoutube ||
+    showAddToPlaylist;
 
   if (!hasItems) {
     return null;
@@ -162,6 +171,16 @@ export const ReleaseTrackRowMenu = ({
                 </span>
                 <span className={styles.menuItemLabel}>Add to queue</span>
               </InlinePopoverMenu.Item>
+            ) : null}
+            {showAddToPlaylist && playlistPickerMetadata ? (
+              <Menu.SubmenuRoot>
+                <ReleasePlaylistPickerSubmenuTrigger trackTitle={trackTitle} />
+                <ReleasePlaylistPickerSubmenuPanel
+                  metadata={playlistPickerMetadata}
+                  trackTitle={trackTitle}
+                  useOverlayStack={useMenuOverlayStack}
+                />
+              </Menu.SubmenuRoot>
             ) : null}
             {showYoutube ? (
               <InlinePopoverMenu.Item

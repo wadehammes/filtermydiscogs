@@ -177,7 +177,7 @@ describe("ReleaseMiniPlayer", () => {
     localStorage.clear();
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: false });
-    document.body.setAttribute("data-crate-drawer-open", "true");
+    document.body.setAttribute("data-collection-side-panel-open", "true");
 
     const EmptyQueueAdd = () => {
       const { addToQueue } = useReleasePlayback();
@@ -224,7 +224,7 @@ describe("ReleaseMiniPlayer", () => {
       "visible",
     );
 
-    document.body.removeAttribute("data-crate-drawer-open");
+    document.body.removeAttribute("data-collection-side-panel-open");
   });
 
   it("expands and collapses the video panel without changing the embed src", async () => {
@@ -354,7 +354,7 @@ describe("ReleaseMiniPlayer", () => {
 
     document.body.insertAdjacentHTML(
       "beforeend",
-      '<div data-crate-drawer-open="true"></div>',
+      '<div data-collection-side-panel-open="true"></div>',
     );
 
     await waitFor(() => {
@@ -363,7 +363,7 @@ describe("ReleaseMiniPlayer", () => {
       );
     });
 
-    document.querySelector("[data-crate-drawer-open]")?.remove();
+    document.querySelector("[data-collection-side-panel-open]")?.remove();
   });
 
   it("collapses the mobile video panel when the filters drawer opens", async () => {
@@ -918,13 +918,21 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("portals the crate menu above the playback dock", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+    await user.click(screen.getByRole("button", { name: "Add to" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseAddToMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitem", { name: /Add to crates|Manage crates/i }),
+    );
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
@@ -934,13 +942,21 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("adds the playing release to the active crate", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await user.click(screen.getByRole("button", { name: "Add to crates" }));
+    await user.click(screen.getByRole("button", { name: "Add to" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseAddToMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitem", { name: /Add to crates|Manage crates/i }),
+    );
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
@@ -960,19 +976,28 @@ describe("ReleaseMiniPlayer", () => {
   it("removes the playing release from the active crate", async () => {
     po.mockReleaseAlreadyInCrate(po.collectionRelease);
 
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Manage crates" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add to" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
     });
 
-    await user.click(screen.getByRole("button", { name: "Manage crates" }));
+    await user.click(screen.getByRole("button", { name: "Add to" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseAddToMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitem", { name: /Add to crates|Manage crates/i }),
+    );
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();

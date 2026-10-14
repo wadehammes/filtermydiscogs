@@ -10,7 +10,7 @@ import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.compon
 import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAuth } from "src/context/auth.context";
-import { openSentryUserFeedback } from "src/lib/sentry/openSentryUserFeedback.client";
+import { runSubmitBugReport } from "src/lib/sentry/runSubmitBugReport.client";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 import Chevron from "src/styles/icons/chevron-right-thin.svg";
 import { buildDiscogsAvatarProxyUrl } from "src/utils/discogsAvatarUrl";
@@ -35,11 +35,6 @@ export const UserActions = ({
   const { username, avatarUrl } = authState;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const showSubmitBugReport = showSubmitBugReportProp ?? resolveSentryEnabled();
-  const handleSubmitBugReport =
-    onSubmitBugReportProp ??
-    (() => {
-      void openSentryUserFeedback();
-    });
 
   const handleLogout = useCallback(async () => {
     setIsDropdownOpen(false);
@@ -129,7 +124,7 @@ export const UserActions = ({
                   className={inlinePopoverMenuStyles.item}
                   onClick={() => {
                     handleMenuNavigation();
-                    handleSubmitBugReport();
+                    runSubmitBugReport(onSubmitBugReportProp);
                   }}
                 >
                   {SUBMIT_BUG_REPORT_NAV_LABEL}

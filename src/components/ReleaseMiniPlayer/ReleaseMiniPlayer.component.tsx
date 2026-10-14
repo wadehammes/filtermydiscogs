@@ -6,16 +6,18 @@ import { Activity, type ReactNode, useEffect, useState } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
-import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
+import { ReleaseMiniPlayerAddToMenu } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayerAddToMenu.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
+import { useAuth } from "src/context/auth.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
+import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { formatArtistNames } from "src/utils/releaseDisplay";
@@ -32,10 +34,14 @@ export const ReleaseMiniPlayer = ({
   onReleaseClick,
 }: ReleaseMiniPlayerProps) => {
   "use memo";
+  const { state: authState } = useAuth();
   const {
     release,
+    activeTrackPosition,
     activePlaybackTitle,
+    isReleasePreview,
     playbackVideoId,
+    embedVideoId,
     isPaused,
     isPlaying,
     isPlaybackReady,
@@ -148,11 +154,28 @@ export const ReleaseMiniPlayer = ({
       </ReleaseMiniPlayerMarquee>
     );
 
-  const crateToggleButton = (
-    <ReleaseCrateMenu
+  const playlistMetadata =
+    authState.userId &&
+    !isReleasePreview &&
+    activeTrackPosition &&
+    activePlaybackTitle
+      ? buildUserTrackMetadataBody({
+          release,
+          trackPosition: activeTrackPosition,
+          trackTitle: activePlaybackTitle,
+          artist: artistNames,
+          releaseTitle: release.basic_information.title,
+          ...definedProps({
+            youtubeId: embedVideoId ?? playbackVideoId,
+          }),
+        })
+      : undefined;
+
+  const addToMenu = (
+    <ReleaseMiniPlayerAddToMenu
       release={release}
-      portaled
-      triggerVariant="custom"
+      trackTitle={activePlaybackTitle ?? "Track"}
+      {...definedProps({ playlistMetadata })}
       actionClass={(active) =>
         classNames(styles.controlButton, styles.crateButton, {
           [styles.crateButtonActive]: active,
@@ -222,7 +245,7 @@ export const ReleaseMiniPlayer = ({
           <div className={styles.miniPlayerBar}>
             <div className={styles.releaseArea}>
               <div className={styles.metaRow}>
-                {!isMobileLayout ? crateToggleButton : null}
+                {!isMobileLayout ? addToMenu : null}
                 {onReleaseClick ? (
                   <button
                     type="button"
@@ -245,7 +268,7 @@ export const ReleaseMiniPlayer = ({
             </div>
             <ReleaseMiniPlayerTransportControls
               isMobileLayout={isMobileLayout}
-              crateToggleButton={crateToggleButton}
+              crateToggleButton={addToMenu}
               isQueueOpen={isQueueOpen}
               queueButtonAriaLabel={queueButtonAriaLabel}
               {...(queueButtonAddon !== undefined ? { queueButtonAddon } : {})}

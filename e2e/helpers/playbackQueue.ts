@@ -97,6 +97,8 @@ export const reorderQueueDrawerItem = async (
     .getByRole("listitem")
     .filter({ hasText: overTrackTitle });
 
+  await expect(dragHandle).toBeVisible({ timeout: 15_000 });
+  await expect(dropTarget).toBeVisible({ timeout: 15_000 });
   await dragHandle.scrollIntoViewIfNeeded();
   await dropTarget.scrollIntoViewIfNeeded();
 

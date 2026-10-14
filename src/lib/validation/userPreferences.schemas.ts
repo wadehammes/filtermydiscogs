@@ -17,6 +17,11 @@ export const userPreferencesPatchSchema = z
         error: "extendQueueWithSimilarReleases must be a boolean",
       })
       .optional(),
+    defaultCollectionSidePanel: z
+      .enum(["crates", "playlists"], {
+        error: "defaultCollectionSidePanel must be crates or playlists",
+      })
+      .optional(),
     theme: z
       .string()
       .optional()
@@ -55,6 +60,7 @@ export const userPreferencesPatchSchema = z
       patch.persistFilters !== undefined ||
       patch.autoPlayOnQueueAdd !== undefined ||
       patch.extendQueueWithSimilarReleases !== undefined ||
+      patch.defaultCollectionSidePanel !== undefined ||
       patch.theme !== undefined ||
       patch.view !== undefined ||
       patch.filters !== undefined ||

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useReleaseCrateMembershipQuery } from "src/hooks/queries/useReleaseCrateMembershipQuery";
 import type { DiscogsRelease } from "src/types";
+import { sortByDisplayName } from "src/utils/compareByDisplayName";
 import { buildReleaseCrateMenuMemberIds } from "src/utils/releaseCrateMenuMemberIds";
 
 interface UseReleaseCrateMenuDerivedStateParams {
@@ -46,7 +47,11 @@ export const useReleaseCrateMenuDerivedState = ({
     [activeCrateId, crates],
   );
   const otherCrates = useMemo(
-    () => crates.filter((crate) => crate.id !== activeCrateId),
+    () =>
+      sortByDisplayName(
+        crates.filter((crate) => crate.id !== activeCrateId),
+        (crate) => crate.name,
+      ),
     [activeCrateId, crates],
   );
   const isInAllCrates = useMemo(
