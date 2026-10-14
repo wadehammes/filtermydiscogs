@@ -28,6 +28,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   isLoading: boolean;
   isPlaying: boolean;
   isReleasePreview: boolean;
+  extendQueueWithSimilarReleases: boolean;
   maybeExtendQueueTail: () => void;
   upcomingQueueLength: number;
   allReleasesLength: number;
@@ -54,6 +55,7 @@ export const useReleasePlaybackPendingResolution = ({
   isLoading,
   isPlaying,
   isReleasePreview,
+  extendQueueWithSimilarReleases,
   maybeExtendQueueTail,
   upcomingQueueLength,
   allReleasesLength,
@@ -85,6 +87,7 @@ export const useReleasePlaybackPendingResolution = ({
     maybeExtendQueueTail();
   }, [
     allReleasesLength,
+    extendQueueWithSimilarReleases,
     isPlaying,
     maybeExtendQueueTail,
     previewVideo,

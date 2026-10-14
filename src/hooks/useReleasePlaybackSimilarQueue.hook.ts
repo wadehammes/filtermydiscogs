@@ -46,6 +46,8 @@ interface SimilarQueueRefs {
   similarQueueSuppressedAfterClearRef: RefObject<boolean>;
 }
 
+export type SimilarQueueFetchLifecyclePhase = "start" | "end";
+
 interface UseReleasePlaybackSimilarQueueParams {
   queryClient: QueryClient;
   allReleases: DiscogsRelease[];
@@ -53,6 +55,9 @@ interface UseReleasePlaybackSimilarQueueParams {
     updater: (previousQueue: PlaybackQueueItem[]) => PlaybackQueueItem[],
   ) => void;
   refs: SimilarQueueRefs;
+  onSimilarQueueFetchLifecycle?: (
+    phase: SimilarQueueFetchLifecyclePhase,
+  ) => void;
 }
 
 export const useReleasePlaybackSimilarQueue = ({
@@ -60,6 +65,7 @@ export const useReleasePlaybackSimilarQueue = ({
   allReleases,
   updateUpcomingQueue,
   refs,
+  onSimilarQueueFetchLifecycle,
 }: UseReleasePlaybackSimilarQueueParams) => {
   const {
     queueRef,
@@ -145,6 +151,7 @@ export const useReleasePlaybackSimilarQueue = ({
       }
 
       similarQueueFetchInFlightRef.current = true;
+      onSimilarQueueFetchLifecycle?.("start");
       setIsSimilarQueueLoading(true);
 
       const queueSnapshot = existingQueue ?? queueRef.current;
@@ -196,10 +203,12 @@ export const useReleasePlaybackSimilarQueue = ({
       } finally {
         similarQueueFetchInFlightRef.current = false;
         setIsSimilarQueueLoading(false);
+        onSimilarQueueFetchLifecycle?.("end");
       }
     },
     [
       fetchSimilarQueueItems,
+      onSimilarQueueFetchLifecycle,
       queueRef,
       similarQueueFetchInFlightRef,
       similarQueueGenerationRef,
