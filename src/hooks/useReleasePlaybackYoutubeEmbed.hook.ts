@@ -19,6 +19,7 @@ import {
   resolveQueueItemYoutubeVideoId,
 } from "src/utils/playbackQueue";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
+import { shouldHoldConfirmedEmbedDuringSimilarQueueFetch } from "src/utils/playbackSimilarQueueEmbedGuard";
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
@@ -76,6 +77,8 @@ export interface ReleasePlaybackYoutubeEmbedRefs {
   playbackVideoUiLoadingTargetVideoIdRef: RefObject<string | null>;
   playbackVideoUiLoadingEmbedLoadStartedAtMsRef: RefObject<number | null>;
   embedWatchdogVideoIdRef: RefObject<string | null>;
+  embedPlaybackConfirmedRef: RefObject<boolean>;
+  similarQueueFetchInFlightRef: RefObject<boolean>;
   playFromGestureRetryTimeoutsRef: RefObject<number[]>;
   releaseRef: RefObject<import("src/types").DiscogsRelease | null>;
   tracksRef: RefObject<DiscogsTrack[]>;
@@ -144,6 +147,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playbackVideoUiLoadingTargetVideoIdRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
     embedWatchdogVideoIdRef,
+    embedPlaybackConfirmedRef,
+    similarQueueFetchInFlightRef,
     playFromGestureRetryTimeoutsRef,
     releaseRef,
     tracksRef,
@@ -588,6 +593,15 @@ export const useReleasePlaybackYoutubeEmbed = ({
       Number(releaseDetailId) !== Number(releaseId) ||
       playbackVideoTransitionTargetIdRef.current !== null ||
       isWithinTrackSwitchGrace()
+    ) {
+      return;
+    }
+
+    if (
+      shouldHoldConfirmedEmbedDuringSimilarQueueFetch({
+        similarQueueFetchInFlight: similarQueueFetchInFlightRef.current,
+        embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+      })
     ) {
       return;
     }

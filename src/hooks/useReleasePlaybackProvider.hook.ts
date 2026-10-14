@@ -27,6 +27,7 @@ import {
 } from "src/hooks/useReleasePlaybackSessionPersistence.hook";
 import {
   createSimilarQueueMode,
+  type SimilarQueueFetchLifecyclePhase,
   type SimilarQueueMode,
   useReleasePlaybackSimilarQueue,
 } from "src/hooks/useReleasePlaybackSimilarQueue.hook";
@@ -68,6 +69,11 @@ import {
   selectIsPaused,
   selectIsPlaying,
 } from "src/utils/playbackSessionState";
+import {
+  shouldIgnoreConfirmedEmbedLoadStarted,
+  shouldRearmEmbedWatchdogAfterSimilarQueueFetchEnd,
+  shouldSuppressEmbedLoadStartedDuringSimilarQueueFetch,
+} from "src/utils/playbackSimilarQueueEmbedGuard";
 import { resolvePlaybackSkipLogDisplay } from "src/utils/playbackSkippedTrackLog";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
@@ -290,11 +296,39 @@ export const useReleasePlaybackProvider = (): {
     persistPlaybackSession,
   });
 
+  const handleSimilarQueueFetchLifecycle = useCallback(
+    (phase: SimilarQueueFetchLifecyclePhase) => {
+      if (phase === "start") {
+        embedStartWatchdogRef.current.disarm();
+        return;
+      }
+
+      const videoId =
+        embedWatchdogVideoIdRef.current ?? embedVideoIdRef.current;
+
+      if (
+        !shouldRearmEmbedWatchdogAfterSimilarQueueFetchEnd({
+          embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+          isPaused: isPausedRef.current,
+          isPlaying: isPlayingRef.current,
+          isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+          videoId,
+        })
+      ) {
+        return;
+      }
+
+      armEmbedStartWatchdogRef.current();
+    },
+    [],
+  );
+
   const { extendQueueTail, maybeExtendQueueTail, isSimilarQueueLoading } =
     useReleasePlaybackSimilarQueue({
       queryClient,
       allReleases,
       updateUpcomingQueue,
+      onSimilarQueueFetchLifecycle: handleSimilarQueueFetchLifecycle,
       refs: {
         queueRef,
         previewVideoRef,
@@ -631,6 +665,8 @@ export const useReleasePlaybackProvider = (): {
       playbackVideoUiLoadingTargetVideoIdRef,
       playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
       embedWatchdogVideoIdRef,
+      embedPlaybackConfirmedRef,
+      similarQueueFetchInFlightRef,
       playFromGestureRetryTimeoutsRef,
       releaseRef,
       tracksRef,
@@ -771,17 +807,30 @@ export const useReleasePlaybackProvider = (): {
 
   const notifyPlaybackVideoLoadStarted = useCallback(
     (videoId?: string) => {
-      notifyImperativeEmbedLoadStarted();
-
       const resolvedVideoId = videoId ?? embedVideoIdRef.current;
 
       if (
-        embedPlaybackConfirmedRef.current &&
-        resolvedVideoId !== null &&
-        resolvedVideoId === embedWatchdogVideoIdRef.current
+        shouldSuppressEmbedLoadStartedDuringSimilarQueueFetch({
+          similarQueueFetchInFlight: similarQueueFetchInFlightRef.current,
+          embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+          resolvedVideoId,
+          watchdogVideoId: embedWatchdogVideoIdRef.current,
+        })
       ) {
         return;
       }
+
+      if (
+        shouldIgnoreConfirmedEmbedLoadStarted({
+          embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+          resolvedVideoId,
+          watchdogVideoId: embedWatchdogVideoIdRef.current,
+        })
+      ) {
+        return;
+      }
+
+      notifyImperativeEmbedLoadStarted();
 
       embedWatchdogVideoIdRef.current = resolvedVideoId;
       embedPlaybackConfirmedRef.current = false;
@@ -944,6 +993,7 @@ export const useReleasePlaybackProvider = (): {
     isLoading,
     isPlaying,
     isReleasePreview,
+    extendQueueWithSimilarReleases,
     maybeExtendQueueTail,
     upcomingQueueLength: queue.length,
     allReleasesLength: allReleases.length,

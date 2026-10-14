@@ -3768,6 +3768,215 @@ describe("ReleasePlaybackProvider", () => {
     });
   });
 
+  it("does not unavailable-skip confirmed playback while similar queue tail is loading", async () => {
+    jest.useFakeTimers();
+    setDocumentVisibilityState("visible");
+
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
+
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: SHORT_RELEASE_ID,
+        title: "Short EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 100,
+        resource_url: `https://api.discogs.com/releases/${SHORT_RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100003,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 200,
+        resource_url: "https://api.discogs.com/releases/100003",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, shortReleaseDetail, {
+      "100003": { ...similarHouseReleaseDetail, id: 100003 },
+    });
+
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(
+      () => new Promise(() => undefined),
+    );
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(
+      () => ({
+        playback: useReleasePlayback(),
+        iframeActions: useReleasePlaybackIframeActions(),
+      }),
+      {
+        wrapper: createWrapper([sourceRelease, similarRelease]),
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.playback.extendQueueWithSimilarReleases).toBe(true);
+    });
+
+    act(() => {
+      result.current.playback.startPlayback({
+        release: sourceRelease,
+        trackPosition: "1",
+      });
+      result.current.iframeActions.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isQueueBuilding).toBe(true);
+      expect(mockFetchPlayableQueuesForSimilarReleases).toHaveBeenCalled();
+    });
+
+    act(() => {
+      result.current.iframeActions.notifyPlaybackVideoLoadStarted(
+        "def98765432",
+      );
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.iframeActions.notifyPlaybackVideoLoadStarted(
+        "similar12345",
+      );
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("does not unavailable-skip after similar tail fetch ends when embed playback is confirmed", async () => {
+    jest.useFakeTimers();
+    setDocumentVisibilityState("visible");
+
+    mockUserPreferencesResponse(
+      userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),
+    );
+
+    const sourceRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: SHORT_RELEASE_ID,
+        title: "Short EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 100,
+        resource_url: `https://api.discogs.com/releases/${SHORT_RELEASE_ID}`,
+      }),
+    });
+    const similarRelease = releaseFactory.withDisplayDefaults({
+      basic_information: basicInformationFactory.build({
+        id: 100003,
+        title: "Similar House EP",
+        genres: ["Electronic"],
+        styles: ["House"],
+        master_id: 200,
+        resource_url: "https://api.discogs.com/releases/100003",
+      }),
+    });
+
+    setupFetchDiscogsReleaseMock(mockApi, shortReleaseDetail, {
+      "100003": { ...similarHouseReleaseDetail, id: 100003 },
+    });
+
+    let resolveSimilarFetch: (value: PlaybackQueueItem[][]) => void = () => {
+      undefined;
+    };
+
+    mockFetchPlayableQueuesForSimilarReleases.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSimilarFetch = resolve;
+        }),
+    );
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(
+      () => ({
+        playback: useReleasePlayback(),
+        iframeActions: useReleasePlaybackIframeActions(),
+      }),
+      {
+        wrapper: createWrapper([sourceRelease, similarRelease]),
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.playback.extendQueueWithSimilarReleases).toBe(true);
+    });
+
+    act(() => {
+      result.current.playback.startPlayback({
+        release: sourceRelease,
+        trackPosition: "1",
+      });
+      result.current.iframeActions.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isQueueBuilding).toBe(true);
+    });
+
+    act(() => {
+      result.current.iframeActions.notifyPlaybackVideoLoadStarted(
+        "def98765432",
+      );
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      resolveSimilarFetch([
+        [
+          createQueueItem({
+            release: similarRelease,
+            trackPosition: "A1",
+            trackTitle: "Similar Track",
+          }),
+        ],
+      ]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isQueueBuilding).toBe(false);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
   it("appends one similar track when the queue runs low and the preference is enabled", async () => {
     mockUserPreferencesResponse(
       userPreferencesFactory.build({ extendQueueWithSimilarReleases: true }),

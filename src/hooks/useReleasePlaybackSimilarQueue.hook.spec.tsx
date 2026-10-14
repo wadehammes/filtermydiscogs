@@ -13,6 +13,7 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { renderHook, waitFor } from "test-utils";
 
@@ -45,6 +46,7 @@ const buildHarness = (
     similarQueueMode?: ReturnType<typeof createSimilarQueueMode>;
     previewVideo?: DiscogsVideo | null;
     similarQueueSuppressedAfterClear?: boolean;
+    onSimilarQueueFetchLifecycle?: (phase: "start" | "end") => void;
   } = {},
 ) => {
   const queryClient = createTestQueryClient();
@@ -103,6 +105,9 @@ const buildHarness = (
         queryClient,
         allReleases: [sourceRelease, similarRelease],
         updateUpcomingQueue,
+        ...definedProps({
+          onSimilarQueueFetchLifecycle: overrides.onSimilarQueueFetchLifecycle,
+        }),
         refs: {
           queueRef,
           previewVideoRef,
@@ -202,6 +207,21 @@ describe("useReleasePlaybackSimilarQueue", () => {
     await waitFor(() => {
       expect(updateUpcomingQueue).toHaveBeenCalled();
     });
+  });
+
+  it("notifies fetch lifecycle start and end while extending the queue tail", async () => {
+    const onSimilarQueueFetchLifecycle = jest.fn();
+    const { result } = buildHarness({
+      similarQueueMode: { enabled: true },
+      onSimilarQueueFetchLifecycle,
+    });
+
+    await expect(result.current.extendQueueTail()).resolves.toBe(true);
+
+    expect(onSimilarQueueFetchLifecycle.mock.calls).toEqual([
+      ["start"],
+      ["end"],
+    ]);
   });
 
   it("does not stack another similar track while one is already in up next", () => {

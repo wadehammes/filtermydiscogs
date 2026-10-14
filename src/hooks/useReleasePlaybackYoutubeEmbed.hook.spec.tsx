@@ -53,6 +53,8 @@ const buildHarness = ({
     current: null as number | null,
   };
   const embedWatchdogVideoIdRef = { current: null as string | null };
+  const embedPlaybackConfirmedRef = { current: false };
+  const similarQueueFetchInFlightRef = { current: false };
   const pendingPlayFromGestureRef = { current: false };
   const playFromGestureRetryTimeoutsRef = { current: [] as number[] };
   const releaseRef = { current: release };
@@ -88,6 +90,8 @@ const buildHarness = ({
           playbackVideoUiLoadingTargetVideoIdRef,
           playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
           embedWatchdogVideoIdRef,
+          embedPlaybackConfirmedRef,
+          similarQueueFetchInFlightRef,
           playFromGestureRetryTimeoutsRef,
           releaseRef,
           tracksRef,
@@ -530,5 +534,87 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(setEmbedVideoId).toHaveBeenCalledWith("embed-video-id");
     expect(pendingPlayFromGestureRef.current).toBe(false);
+  });
+
+  it("does not sync activeVideoId to embedVideoId during similar queue fetch when embed playback is confirmed", () => {
+    const queryClient = createTestQueryClient();
+    const release = releaseFactory.withDisplayDefaults();
+    const releaseId = release.basic_information.id ?? 1;
+    const setEmbedVideoId = jest.fn();
+    const embedVideoIdRef = { current: "video-a" };
+    const lastSyncedActiveVideoIdRef = { current: null as string | null };
+    const embedPlaybackConfirmedRef = { current: true };
+    const similarQueueFetchInFlightRef = { current: true };
+    const playbackIframeRef = { current: null as HTMLIFrameElement | null };
+    const isPlayingRef = { current: true };
+    const isPausedRef = { current: false };
+    const activeVideoIdRef = { current: "video-a" as string | null };
+    const onPlaybackEnded = jest.fn();
+    const dispatchSession = jest.fn();
+    const userYoutubeOverridesRef = { current: new Map<string, string>() };
+    const releaseRef = { current: release };
+    const tracksRef = { current: [] as never[] };
+    const videosRef = { current: [] as never[] };
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { rerender } = renderHook(
+      ({ activeVideoId }: { activeVideoId: string | null }) =>
+        useReleasePlaybackYoutubeEmbed({
+          queryClient,
+          dispatchSession,
+          refs: {
+            playbackIframeRef,
+            embedVideoIdRef,
+            lastSyncedActiveVideoIdRef,
+            isPlayingRef,
+            isPausedRef,
+            activeVideoIdRef,
+            isPlaybackVideoUiLoadingRef: { current: false },
+            pendingPlayFromGestureRef: { current: false },
+            playbackVideoTransitionTargetIdRef: { current: null },
+            playbackVideoUiLoadingTargetVideoIdRef: { current: null },
+            playbackVideoUiLoadingEmbedLoadStartedAtMsRef: { current: null },
+            embedWatchdogVideoIdRef: { current: "video-a" },
+            embedPlaybackConfirmedRef,
+            similarQueueFetchInFlightRef,
+            playFromGestureRetryTimeoutsRef: { current: [] as number[] },
+            releaseRef,
+            tracksRef,
+            videosRef,
+          },
+          isPlaying: true,
+          isPaused: false,
+          isPlaybackReady: true,
+          isPlaybackEmbedMounted: false,
+          activeVideoId,
+          matchedActiveVideoId: activeVideoId,
+          pendingTrackPosition: null,
+          pendingPreviewVideoUri: null,
+          releaseId,
+          releaseDetailId: releaseId,
+          setEmbedVideoId,
+          setShouldAutoplayEmbed: jest.fn(),
+          setIsPlaybackEmbedMounted: jest.fn(),
+          clearPlaybackVideoUiLoading: jest.fn(),
+          onPlaybackEnded,
+          userYoutubeOverridesRef,
+        }),
+      {
+        wrapper,
+        initialProps: { activeVideoId: "video-a" as string | null },
+      },
+    );
+
+    setEmbedVideoId.mockClear();
+    rerender({ activeVideoId: "video-b" });
+    expect(setEmbedVideoId).not.toHaveBeenCalled();
+
+    similarQueueFetchInFlightRef.current = false;
+    embedPlaybackConfirmedRef.current = false;
+    rerender({ activeVideoId: "video-b" });
+    expect(setEmbedVideoId).toHaveBeenCalledWith("video-b");
   });
 });
