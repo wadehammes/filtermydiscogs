@@ -1,16 +1,9 @@
 import type { NetworkFixture } from "@msw/playwright";
 import { expect, type Page } from "@playwright/test";
-import { HttpResponse, http } from "msw";
 import { E2E_EMBED_MOCK_DELAYED_PLAYING_MS } from "src/constants/e2eEmbedMock.constants";
-import {
-  buildE2eReleaseDetailByDiscogsId,
-  buildE2eReleaseDetailWithYoutubeVideoId,
-  e2eTrackTitle,
-} from "src/tests/msw/e2eReleaseDetailData";
-import {
-  E2E_ALBUM_ONE,
-  E2E_DISCOGS_RELEASE_ID_ONE,
-} from "src/tests/msw/e2eSession.constants";
+import { e2eTrackTitle } from "src/tests/msw/e2eReleaseDetailData";
+import { createE2eReleaseByIdHandler } from "src/tests/msw/e2eReleaseHandlers";
+import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 import {
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS,
@@ -61,36 +54,10 @@ export const expectE2ePersistentEmbedSrcMatches = async (
 export const stubE2eReleaseDetailWithYoutubeVideoId = (
   network: NetworkFixture,
   youtubeVideoId: string,
-) => {
-  const defaultDetails = buildE2eReleaseDetailByDiscogsId();
-
-  return network.use(
-    http.get("/api/release/:id", ({ params }) => {
-      const releaseId = String(params.id);
-
-      if (releaseId === String(E2E_DISCOGS_RELEASE_ID_ONE)) {
-        return HttpResponse.json(
-          buildE2eReleaseDetailWithYoutubeVideoId(
-            E2E_DISCOGS_RELEASE_ID_ONE,
-            E2E_ALBUM_ONE,
-            youtubeVideoId,
-          ),
-        );
-      }
-
-      const detail = defaultDetails.get(releaseId);
-
-      if (!detail) {
-        return HttpResponse.json(
-          { error: "Release not found" },
-          { status: 404 },
-        );
-      }
-
-      return HttpResponse.json(detail);
-    }),
+) =>
+  network.use(
+    createE2eReleaseByIdHandler({ albumOneYoutubeVideoId: youtubeVideoId }),
   );
-};
 
 export const startE2eAlbumOneTrackPlayback = async (page: Page) => {
   await gotoReleasesWorkspace(page);
