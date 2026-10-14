@@ -19,6 +19,7 @@ import { DiscogsOutageToast } from "src/components/DiscogsOutageToast/DiscogsOut
 import { DonationSuccessToast } from "src/components/DonationSuccessToast/DonationSuccessToast.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
+import { WebVitalsReporter } from "src/components/GoogleTagManagerLoader/WebVitalsReporter.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
 import { SentryUserFeedbackDialogHost } from "src/components/SentryUserFeedbackDialog/SentryUserFeedbackDialog.component";
 import { SupportProjectToast } from "src/components/SupportProjectToast/SupportProjectToast.component";
@@ -57,6 +58,7 @@ const AnalyticsShell = ({ children }: { children: React.ReactNode }) => (
     <UserPreferencesSync />
     <GoogleTagManagerLoader />
     <AnalyticsPageViewTracker />
+    <WebVitalsReporter />
     {children}
     <CookieConsentBanner />
   </AnalyticsConsentProvider>

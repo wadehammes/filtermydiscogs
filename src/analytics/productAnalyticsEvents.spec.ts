@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import {
   trackCrateSyncBlockedFromError,
   trackDiscogsUpstreamRateLimited,
+  trackWebVital,
 } from "src/analytics/productAnalyticsEvents";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { CrateSyncError } from "src/utils/crateSyncError";
@@ -62,6 +63,22 @@ describe("productAnalyticsEvents", () => {
       category: "discogs",
       label: "collection",
       value: "429",
+    });
+  });
+
+  it("emits webVital with rounded value and rating for Core Web Vitals", () => {
+    trackWebVital({
+      id: "v3-1234567890",
+      name: "LCP",
+      value: 1234.6,
+      rating: "good",
+    });
+
+    expect(window.dataLayer?.[0]).toMatchObject({
+      event: "webVital",
+      category: "performance",
+      label: "LCP",
+      value: "1235|good|v3-1234567890",
     });
   });
 });
