@@ -78,7 +78,7 @@ CRON_SECRET=generate_a_long_random_secret_for_vercel_cron
 # Stripe (optional, About page donations)
 STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 
-# Sentry (optional, error monitoring — see docs/handbook/platform.md)
+# Sentry (optional — Session Replay, bug reports, /monitoring tunnel; see docs/handbook/platform.md)
 # NEXT_PUBLIC_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
 # SENTRY_ENABLE_DEV=1               # local next dev (mirrored to browser via next.config env)
 # NEXT_PUBLIC_SENTRY_ENABLE_DEV=1   # optional override if you do not use SENTRY_ENABLE_DEV
@@ -147,7 +147,7 @@ The app will be available at `http://localhost:6767`.
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 24 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
 - **Analytics**: Google Tag Manager (consent-aware)
-- **Error monitoring**: Sentry ([`@sentry/nextjs`](./package.json); optional via env — see Setup)
+- **Error monitoring**: Sentry 11 ([`@sentry/nextjs`](./package.json); optional via env — Session Replay, in-app bug report, **`/monitoring`** tunnel). Production **`pnpm build`** applies SDK **`bundleSizeOptimizations`** in [`next.config.ts`](./next.config.ts) (see [platform.md → Error monitoring](./docs/handbook/platform.md#error-monitoring-sentry)).
 
 Deeper stack and folder map: [`docs/handbook/architecture.md`](./docs/handbook/architecture.md).
 
@@ -187,7 +187,7 @@ pnpm fallow:health    # optional — project health score (see AGENTS.md; fallow
 # Stacked PRs (optional): gh extension install github/gh-stack; source ~/.gh-stack.zsh — see docs/handbook/platform.md
 
 pnpm build && pnpm start
-pnpm analyze          # bundle analyzer (webpack build)
+pnpm analyze          # bundle analyzer (ANALYZE=true, webpack build — e.g. after Sentry bundleSizeOptimizations changes)
 pnpm scaffold         # new component scaffold
 
 pnpm db:generate      # Prisma Client

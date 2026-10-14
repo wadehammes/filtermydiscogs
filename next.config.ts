@@ -270,6 +270,11 @@ const sentryBuildOptions = {
   silent: !process.env.CI,
   tunnelRoute: "/monitoring",
   widenClientFileUpload: true,
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeReplayIframe: true,
+    excludeReplayShadowDom: true,
+  },
   sourcemaps: {
     disable: !uploadSentrySourcemaps,
     deleteSourcemapsAfterUpload: true,
