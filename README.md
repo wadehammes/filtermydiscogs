@@ -15,9 +15,10 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link
 - **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
 - **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
-- **Settings**: Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, and clear stored data
-- **Responsive UI**: Desktop sidebar crates, mobile drawers, and touch-friendly filters
+- **Settings**: Theme (light / dark / system), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, analytics consent, and clear stored data
+- **Responsive UI**: Desktop sidebar crates, mobile drawers, and touch-friendly filters; fast route transitions on authenticated pages (Next.js instant navigation)
 - **Discogs outage notice**: When Discogs is down you stay signed in, see a notice with a link to [Discogs status](https://status.discogs.com), and your collection loads once Discogs is back
+- **Deploy refresh**: In production, a toast prompts you to reload when a newer app version is available
 
 ## Setup
 
@@ -33,8 +34,8 @@ With mise:
 ```bash
 mise trust          # once per clone, if prompted
 mise bootstrap      # tools + pnpm install + Prisma generate
-mise run ci         # PR CI: unit gates + Playwright smoke (build:e2e; handbook sync vs staging)
-mise run ci-full    # unit gates + full Playwright (build:e2e; phone/tablet/desktop projects)
+mise run ci         # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e)
+mise run ci-full    # same unit gates + full Playwright (all specs × desktop/phone/tablet)
 mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + fallow:audit
 ```
 
@@ -139,14 +140,16 @@ The app will be available at `http://localhost:6767`.
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
+- **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript 7
 - **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, youtube-video-element (landing demo)
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
-- **Forms**: React Hook Form + Zod
-- **Tooling**: pnpm, mise, Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library + MSW 3, Playwright, Knip
+- **Forms**: React Hook Form + Zod 4
+- **Tooling**: pnpm 12, mise (Node 24 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
 - **Analytics**: Google Tag Manager (consent-aware)
 - **Error monitoring**: Sentry ([`@sentry/nextjs`](./package.json); optional via env — see Setup)
+
+Deeper stack and folder map: [`docs/handbook/architecture.md`](./docs/handbook/architecture.md).
 
 ## Development
 
@@ -154,19 +157,22 @@ The app will be available at `http://localhost:6767`.
 pnpm dev              # http://localhost:6767 (Turbopack)
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
-mise run ci           # PR CI: tsc, lint, CSS lint, handbook sync, Jest, Knip, Playwright smoke (build:e2e + next start)
-mise run ci-full      # above + full Playwright (build:e2e + next start; phone/tablet/desktop projects)
+mise run ci           # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e + next start)
+mise run ci-full      # same unit gates + full Playwright (all specs; phone/tablet/desktop)
 mise run pr-prep      # lint:all + handbook:check + fallow:audit (before opening a PR)
 mise run lint-all     # pnpm lint:all
 
 pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip
 pnpm handbook:check   # handbook sync + spec-pair (TDD) vs origin/staging
 
-pnpm test             # Jest (--runInBand --detectOpenHandles; CI uses parallel workers via pnpm test:ci)
+pnpm test             # Jest (--runInBand --detectOpenHandles; CI: pnpm test:ci)
 pnpm test:file        # Jest watch for one file
-pnpm test:e2e         # Playwright full suite against next dev (run pnpm test:e2e:install once)
-pnpm build:e2e        # production build for Playwright in CI (mock YouTube embed + test OAuth env; DB optional)
-pnpm test:e2e:smoke   # PR smoke subset locally (chromium only; e2e/smokeSpecs.constants.ts). CI: build:e2e then this with CI=1 (next start)
+pnpm test:e2e:install # once: Playwright Chromium
+pnpm build:e2e        # prod build with mock YouTube embed + test OAuth env (CI E2E; DB optional)
+pnpm test:e2e:smoke:ci  # PR-parity smoke: build:e2e + chromium smoke list
+pnpm test:e2e:ci      # full E2E matrix (matches push to staging)
+pnpm test:e2e         # full suite locally (reuses server on :6767 if running; see Testing below)
+pnpm test:e2e:smoke   # smoke list only (set E2E_SMOKE=1; chromium)
 pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
 
 pnpm lint             # Biome check
@@ -189,6 +195,18 @@ pnpm db:migrate       # migrate dev
 pnpm db:push          # push schema (prototype)
 pnpm db:studio        # Prisma Studio
 ```
+
+### Testing
+
+| Layer | Command | What it runs |
+|-------|---------|----------------|
+| Unit / integration | `pnpm test` / `pnpm test:ci` | Jest; API client specs use MSW ([`.jest/setupMswForApiSpecs.ts`](./.jest/setupMswForApiSpecs.ts)) |
+| E2E smoke (PR) | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`build:e2e`](./package.json) then chromium specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
+| E2E full | `pnpm test:e2e:ci` or `mise run ci-full` | Every spec × desktop, phone, and tablet (push to **`staging`**) |
+
+Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog and embed mock details: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests).
+
+Test data conventions (factories, TDD, E2E MSW): [`docs/handbook/factories.md`](./docs/handbook/factories.md), [`docs/handbook/conventions.md`](./docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents).
 
 ## Branches and production
 
@@ -236,6 +254,7 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 **Suggested reading order**
 
 - **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then skim [patterns.md](./docs/handbook/patterns.md).
+- **Agents / task routing:** [llms.md](./docs/handbook/llms.md).
 - **Discogs OAuth or API:** [discogs.md](./docs/handbook/discogs.md).
 - **Crates or database:** [database.md](./docs/handbook/database.md).
 - **Test factories / Faker data:** [factories.md](./docs/handbook/factories.md).
