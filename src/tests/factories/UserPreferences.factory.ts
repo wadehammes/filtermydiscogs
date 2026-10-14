@@ -141,6 +141,13 @@ class UserPreferencesFactory extends BaseFactory<
     return { preferences: this.defaults() };
   }
 
+  extendSimilarQueueDefaultsApiResponse(): { preferences: UserPreferences } {
+    return this.asApiResponse({
+      ...this.defaults(),
+      extendQueueWithSimilarReleases: true,
+    });
+  }
+
   asPrismaFindUniqueRow(
     attributes?: Partial<UserPreferences>,
   ): UserPreferencesSelectRow {

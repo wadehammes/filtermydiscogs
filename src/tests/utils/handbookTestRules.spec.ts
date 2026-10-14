@@ -3,7 +3,9 @@ import {
   collectHandbookTestViolations,
   formatHandbookTestViolations,
   isComponentSpecFile,
+  isE2eHandbookScannedFile,
   isFeatureTestFile,
+  isHandbookScannedTestFile,
   isHandbookTestRulesAllowlisted,
   validateFeatureTestSource,
 } from "src/tests/utils/handbookTestRules";
@@ -19,6 +21,14 @@ describe("handbookTestRules", () => {
     expect(isFeatureTestFile("src/tests/utils/handbookTestRules.ts")).toBe(
       false,
     );
+    expect(
+      isE2eHandbookScannedFile("e2e/helpers/similarQueuePlayback.ts"),
+    ).toBe(true);
+    expect(
+      isHandbookScannedTestFile(
+        "e2e/authenticated-similar-queue-playback.spec.ts",
+      ),
+    ).toBe(true);
 
     expect(
       isHandbookTestRulesAllowlisted(

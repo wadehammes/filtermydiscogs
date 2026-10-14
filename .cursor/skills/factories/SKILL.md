@@ -2,7 +2,7 @@
 name: factories
 description: >-
   Test data from src/tests/factories — build(), presets, no inline domain objects.
-  Use in specs, POs, and route tests.
+  Use in specs, POs, route tests, and e2e/helpers MSW stubs (via src/tests/msw builders).
 ---
 
 # Factories
@@ -24,7 +24,8 @@ Full guide: [factories.md](../../docs/handbook/factories.md). Non-negotiable wit
 | Discogs API JSON | `discogsReleaseJsonFactory`, `discogsTrackFactory` |
 | Track YouTube override dialog | `trackYoutubeOverrideTargetFactory` (`unplayable()`) |
 | Playback skip toast / report | `playbackSkipLogEntryFactory` (`embedDisabledReport()`, …) |
-| Auth / prefs | `authStatusFactory`, `userPreferencesFactory`, `verifiedDiscogsUserFactory` |
+| Auth / prefs | `authStatusFactory`, `userPreferencesFactory` (`extendSimilarQueueDefaultsApiResponse()` for similar-queue E2E), `verifiedDiscogsUserFactory` |
+| Playwright MSW | `buildE2eCollectionReleases`, `createE2eReleaseByIdHandler`, `createE2eCollectionPageHandler` in `src/tests/msw/` |
 | Crates | crate factories under [`src/tests/factories/`](../../src/tests/factories/) |
 
 ## Exceptions (inline OK)

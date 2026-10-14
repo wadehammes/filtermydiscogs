@@ -122,31 +122,43 @@ const jestMockedMutationHookPattern =
 export const isFeatureTestFile = (relativePath: string): boolean =>
   FEATURE_TEST_SUFFIXES.some((suffix) => relativePath.endsWith(suffix));
 
+export const isE2eHandbookScannedFile = (relativePath: string): boolean =>
+  relativePath.startsWith("e2e/helpers/") && relativePath.endsWith(".ts");
+
+export const isHandbookScannedTestFile = (relativePath: string): boolean =>
+  isFeatureTestFile(relativePath) ||
+  isE2eHandbookScannedFile(relativePath) ||
+  (relativePath.startsWith("e2e/") && relativePath.endsWith(".spec.ts"));
+
 export const isHandbookTestRulesAllowlisted = (relativePath: string): boolean =>
   HANDBOOK_TEST_RULES_ALLOWLIST.some((pattern) => pattern.test(relativePath));
 
-const listFeatureTestFiles = (rootDir: string): string[] => {
+const listHandbookScannedTestFiles = (rootDir: string): string[] => {
   const files: string[] = [];
 
-  const walk = (directory: string) => {
+  const walk = (directory: string, relativeRoot: string) => {
     for (const entry of readdirSync(directory)) {
       const absolutePath = join(directory, entry);
       const stats = statSync(absolutePath);
 
       if (stats.isDirectory()) {
-        walk(absolutePath);
+        walk(absolutePath, relativeRoot);
         continue;
       }
 
-      const relativePath = relative(rootDir, absolutePath).replace(/\\/g, "/");
+      const relativePath = relative(relativeRoot, absolutePath).replace(
+        /\\/g,
+        "/",
+      );
 
-      if (isFeatureTestFile(relativePath)) {
+      if (isHandbookScannedTestFile(relativePath)) {
         files.push(relativePath);
       }
     }
   };
 
-  walk(join(rootDir, "src"));
+  walk(join(rootDir, "src"), rootDir);
+  walk(join(rootDir, "e2e"), rootDir);
   return files.sort();
 };
 
@@ -297,7 +309,7 @@ export const validateFeatureTestSource = (
 export const collectHandbookTestViolations = (
   rootDir: string,
 ): HandbookTestViolation[] =>
-  listFeatureTestFiles(rootDir).flatMap((filePath) => {
+  listHandbookScannedTestFiles(rootDir).flatMap((filePath) => {
     const source = readFileSync(join(rootDir, filePath), "utf8");
     return validateFeatureTestSource(filePath, source);
   });
