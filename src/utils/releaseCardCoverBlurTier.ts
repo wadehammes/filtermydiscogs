@@ -1,9 +1,8 @@
+import { RELEASE_CARD_COVER_BLUR_SESSION_KEY } from "src/constants/storageKeys";
+
 export type ReleaseCardCoverBlurTier = "always" | "hover-only";
 
 export const RELEASE_CARD_COVER_BLUR_ATTR = "data-release-card-cover-blur";
-
-export const RELEASE_CARD_COVER_BLUR_SESSION_KEY =
-  "fmd:release-card-cover-blur-tier";
 
 const BENCHMARK_CANVAS_PX = 160;
 const BENCHMARK_BLUR_PX = 24;
@@ -31,7 +30,7 @@ export const measureReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
     const canvas = document.createElement("canvas");
     canvas.width = BENCHMARK_CANVAS_PX;
     canvas.height = BENCHMARK_CANVAS_PX;
-    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const context = canvas.getContext("2d");
     if (!context) {
       return "hover-only";
     }
@@ -60,6 +59,12 @@ export const applyReleaseCardCoverBlurTierToDocument = (
     return;
   }
 
+  if (
+    document.documentElement.getAttribute(RELEASE_CARD_COVER_BLUR_ATTR) === tier
+  ) {
+    return;
+  }
+
   document.documentElement.setAttribute(RELEASE_CARD_COVER_BLUR_ATTR, tier);
 };
 
@@ -68,18 +73,24 @@ export const resolveReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
     return "hover-only";
   }
 
+  let cached: string | null = null;
   try {
-    const cached = sessionStorage.getItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY);
-    if (isCachedTier(cached)) {
-      return cached;
-    }
-  } catch {}
+    cached = sessionStorage.getItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY);
+  } catch {
+    cached = null;
+  }
+
+  if (isCachedTier(cached)) {
+    return cached;
+  }
 
   const tier = measureReleaseCardCoverBlurTier();
 
   try {
     sessionStorage.setItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY, tier);
-  } catch {}
+  } catch {
+    return tier;
+  }
 
   return tier;
 };
