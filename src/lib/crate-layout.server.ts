@@ -31,6 +31,25 @@ export type ParsedCrateLayoutUpdate = {
   markerIdsToKeep: string[];
 };
 
+type ClearCrateLayoutMarkerReferencesBeforeDeleteParams = {
+  tx: Prisma.TransactionClient;
+  userId: number;
+  crateId: string;
+  markerIdsToKeep: string[];
+};
+
+type ApplyCrateLayoutUpdateParams = {
+  tx: Prisma.TransactionClient;
+  userId: number;
+  crateId: string;
+  update: ParsedCrateLayoutUpdate;
+};
+
+const nullableFkFilterForRemovedMarkers = (
+  markerIdsToKeep: string[],
+): { notIn: string[] } | { not: null } =>
+  markerIdsToKeep.length > 0 ? { notIn: markerIdsToKeep } : { not: null };
+
 const layoutReleaseStub = (
   instanceId: string,
   sortOrder: number,
@@ -160,32 +179,64 @@ export const buildCrateLayoutUpdate = ({
   };
 };
 
+export const clearCrateLayoutMarkerReferencesBeforeDelete = async ({
+  tx,
+  userId,
+  crateId,
+  markerIdsToKeep,
+}: ClearCrateLayoutMarkerReferencesBeforeDeleteParams) => {
+  const removedMarkerFkFilter =
+    nullableFkFilterForRemovedMarkers(markerIdsToKeep);
+
+  await tx.crateRelease.updateMany({
+    where: {
+      user_id: userId,
+      crate_id: crateId,
+      section_id: removedMarkerFkFilter,
+    },
+    data: { section_id: null },
+  });
+
+  await tx.crateSetMarker.updateMany({
+    where: {
+      user_id: userId,
+      crate_id: crateId,
+      parent_id: removedMarkerFkFilter,
+    },
+    data: { parent_id: null },
+  });
+};
+
 export const applyCrateLayoutUpdate = async ({
   tx,
   userId,
   crateId,
   update,
-}: {
-  tx: Prisma.TransactionClient;
-  userId: number;
-  crateId: string;
-  update: ParsedCrateLayoutUpdate;
-}) => {
-  for (const releaseOrder of update.releaseOrders) {
-    await tx.crateRelease.update({
-      where: {
-        user_id_crate_id_instance_id: {
-          user_id: userId,
-          crate_id: crateId,
-          instance_id: releaseOrder.instance_id,
+}: ApplyCrateLayoutUpdateParams) => {
+  await Promise.all(
+    update.releaseOrders.map((releaseOrder) =>
+      tx.crateRelease.update({
+        where: {
+          user_id_crate_id_instance_id: {
+            user_id: userId,
+            crate_id: crateId,
+            instance_id: releaseOrder.instance_id,
+          },
         },
-      },
-      data: {
-        sort_order: releaseOrder.sort_order,
-        section_id: releaseOrder.section_id,
-      },
-    });
-  }
+        data: {
+          sort_order: releaseOrder.sort_order,
+          section_id: releaseOrder.section_id,
+        },
+      }),
+    ),
+  );
+
+  await clearCrateLayoutMarkerReferencesBeforeDelete({
+    tx,
+    userId,
+    crateId,
+    markerIdsToKeep: update.markerIdsToKeep,
+  });
 
   await tx.crateSetMarker.deleteMany({
     where: {
@@ -197,32 +248,34 @@ export const applyCrateLayoutUpdate = async ({
     },
   });
 
-  for (const marker of update.markersToUpsert) {
-    await tx.crateSetMarker.upsert({
-      where: {
-        user_id_crate_id_id: {
+  await Promise.all(
+    update.markersToUpsert.map((marker) =>
+      tx.crateSetMarker.upsert({
+        where: {
+          user_id_crate_id_id: {
+            user_id: userId,
+            crate_id: crateId,
+            id: marker.id,
+          },
+        },
+        create: {
           user_id: userId,
           crate_id: crateId,
           id: marker.id,
+          label: marker.label,
+          sort_order: marker.sort_order,
+          parent_id: marker.parent_id,
+          accent_key: marker.accent_key,
         },
-      },
-      create: {
-        user_id: userId,
-        crate_id: crateId,
-        id: marker.id,
-        label: marker.label,
-        sort_order: marker.sort_order,
-        parent_id: marker.parent_id,
-        accent_key: marker.accent_key,
-      },
-      update: {
-        label: marker.label,
-        sort_order: marker.sort_order,
-        parent_id: marker.parent_id,
-        accent_key: marker.accent_key,
-      },
-    });
-  }
+        update: {
+          label: marker.label,
+          sort_order: marker.sort_order,
+          parent_id: marker.parent_id,
+          accent_key: marker.accent_key,
+        },
+      }),
+    ),
+  );
 };
 
 export const getPrependCrateLayoutSortOrderForCrate = async ({

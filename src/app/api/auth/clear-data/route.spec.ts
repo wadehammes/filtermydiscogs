@@ -8,7 +8,10 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { runPrismaTransactionWith } from "src/tests/mocks/runPrismaTransactionWith";
 import { suppressConsoleError } from "src/tests/utils/suppressConsoleError";
+
+const mockTransaction = jest.fn();
 
 jest.mock("src/lib/auth-request", () => ({
   getVerifiedUserFromRequest: jest.fn(),
@@ -24,6 +27,7 @@ jest.mock("src/lib/db", () => ({
     user: {
       delete: jest.fn(),
     },
+    $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
 }));
 
@@ -81,13 +85,22 @@ describe("POST /api/auth/clear-data", () => {
     mockDeleteUser.mockResolvedValue(
       {} as Awaited<ReturnType<DbModule["prisma"]["user"]["delete"]>>,
     );
+    runPrismaTransactionWith(mockTransaction, {
+      productAnalyticsEvent: {
+        deleteMany: mockDeleteAnalyticsEvents,
+      },
+      user: {
+        delete: mockDeleteUser,
+      },
+    });
   });
 
-  it("deletes analytics events and the user row and clears auth cookies", async () => {
+  it("deletes analytics events and the user row in one transaction and clears auth cookies", async () => {
     const response = await POST(createPostRequest());
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ success: true });
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
     expect(mockDeleteAnalyticsEvents).toHaveBeenCalledWith({
       where: { user_id: 42 },
     });
@@ -106,6 +119,7 @@ describe("POST /api/auth/clear-data", () => {
     const response = await POST(createPostRequest());
 
     expect(response.status).toBe(401);
+    expect(mockTransaction).not.toHaveBeenCalled();
     expect(mockDeleteAnalyticsEvents).not.toHaveBeenCalled();
     expect(mockDeleteUser).not.toHaveBeenCalled();
   });

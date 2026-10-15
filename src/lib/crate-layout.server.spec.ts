@@ -1,18 +1,141 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import {
   assignSequentialCrateLayoutSortOrders,
   crateLayoutItemsToPutRequest,
 } from "src/lib/crate-layout";
-import { buildCrateLayoutUpdate } from "src/lib/crate-layout.server";
+import {
+  applyCrateLayoutUpdate,
+  buildCrateLayoutUpdate,
+  clearCrateLayoutMarkerReferencesBeforeDelete,
+} from "src/lib/crate-layout.server";
 import { reparentCrateLayoutMarkersAfterDelete } from "src/lib/crate-section-layout";
 import { crateLayoutItemFactory as layout } from "src/tests/factories/CrateLayoutItem.factory";
 import type { CrateLayoutPutItem } from "src/types/crate.types";
 
 const crateInstanceIds = new Set(["111", "222", "333"]);
 
-describe("buildCrateLayoutUpdate", () => {
-  it("when nested markers and accents are valid, persists section metadata on markers and releases", () => {
+const createMarkerReferenceClearMocks = () => {
+  const releaseUpdateMany = jest.fn((_args: unknown) =>
+    Promise.resolve({ count: 0 }),
+  );
+  const markerUpdateMany = jest.fn((_args: unknown) =>
+    Promise.resolve({ count: 0 }),
+  );
+
+  return {
+    releaseUpdateMany,
+    markerUpdateMany,
+    tx: {
+      crateRelease: { updateMany: releaseUpdateMany },
+      crateSetMarker: { updateMany: markerUpdateMany },
+    } as never,
+  };
+};
+
+describe("crateLayoutServer", () => {
+  it.each([
+    {
+      label: "some markers are kept",
+      markerIdsToKeep: ["nested"],
+      fkFilter: { notIn: ["nested"] },
+    },
+    {
+      label: "no markers are kept",
+      markerIdsToKeep: [] as string[],
+      fkFilter: { not: null },
+    },
+  ])(
+    "clearCrateLayoutMarkerReferencesBeforeDelete when $label, clears dangling section_id and parent_id",
+    async ({ markerIdsToKeep, fkFilter }) => {
+      const { tx, releaseUpdateMany, markerUpdateMany } =
+        createMarkerReferenceClearMocks();
+
+      await clearCrateLayoutMarkerReferencesBeforeDelete({
+        tx,
+        userId: 1,
+        crateId: "crate-a",
+        markerIdsToKeep,
+      });
+
+      expect(releaseUpdateMany).toHaveBeenCalledWith({
+        where: {
+          user_id: 1,
+          crate_id: "crate-a",
+          section_id: fkFilter,
+        },
+        data: { section_id: null },
+      });
+      expect(markerUpdateMany).toHaveBeenCalledWith({
+        where: {
+          user_id: 1,
+          crate_id: "crate-a",
+          parent_id: fkFilter,
+        },
+        data: { parent_id: null },
+      });
+    },
+  );
+
+  it("applyCrateLayoutUpdate when markers are removed, clears dangling references before deleteMany", async () => {
+    const releaseUpdate = jest.fn((_args: unknown) => Promise.resolve({}));
+    const releaseUpdateMany = jest.fn((_args: unknown) =>
+      Promise.resolve({ count: 0 }),
+    );
+    const markerUpdateMany = jest.fn((_args: unknown) =>
+      Promise.resolve({ count: 0 }),
+    );
+    const markerDeleteMany = jest.fn((_args: unknown) =>
+      Promise.resolve({ count: 1 }),
+    );
+    const markerUpsert = jest.fn((_args: unknown) => Promise.resolve({}));
+
+    await applyCrateLayoutUpdate({
+      tx: {
+        crateRelease: { update: releaseUpdate, updateMany: releaseUpdateMany },
+        crateSetMarker: {
+          updateMany: markerUpdateMany,
+          deleteMany: markerDeleteMany,
+          upsert: markerUpsert,
+        },
+      } as never,
+      userId: 1,
+      crateId: "crate-a",
+      update: {
+        releaseOrders: [
+          { instance_id: "111", sort_order: 1000, section_id: null },
+        ],
+        markersToUpsert: [],
+        markerIdsToKeep: [],
+      },
+    });
+
+    expect(releaseUpdate).toHaveBeenCalled();
+    expect(markerUpdateMany).toHaveBeenCalledWith({
+      where: {
+        user_id: 1,
+        crate_id: "crate-a",
+        parent_id: { not: null },
+      },
+      data: { parent_id: null },
+    });
+    expect(markerDeleteMany).toHaveBeenCalledWith({
+      where: {
+        user_id: 1,
+        crate_id: "crate-a",
+      },
+    });
+    const markerReferenceClearOrder =
+      markerUpdateMany.mock.invocationCallOrder[0];
+    const markerDeleteOrder = markerDeleteMany.mock.invocationCallOrder[0];
+    expect(markerReferenceClearOrder).toEqual(expect.any(Number));
+    expect(markerDeleteOrder).toEqual(expect.any(Number));
+    expect(markerReferenceClearOrder as number).toBeLessThan(
+      markerDeleteOrder as number,
+    );
+  });
+
+  it("buildCrateLayoutUpdate when nested markers and accents are valid, persists section metadata on markers and releases", () => {
     const items: CrateLayoutPutItem[] = [
       { kind: "release", instance_id: "333", section_id: null },
       {
@@ -67,7 +190,7 @@ describe("buildCrateLayoutUpdate", () => {
     });
   });
 
-  it("when a temp marker id is new, accepts the marker and keeps release section membership", () => {
+  it("buildCrateLayoutUpdate when a temp marker id is new, accepts the marker and keeps release section membership", () => {
     const tempMarkerId = `${CRATE_TEMP_MARKER_PREFIX}abc`;
     const items: CrateLayoutPutItem[] = [
       {
@@ -97,7 +220,7 @@ describe("buildCrateLayoutUpdate", () => {
     ).toBe(true);
   });
 
-  it("when releases reference a deleted section id, clears invalid membership", () => {
+  it("buildCrateLayoutUpdate when releases reference a deleted section id, clears invalid membership", () => {
     const items: CrateLayoutPutItem[] = [
       {
         kind: "marker",
@@ -126,7 +249,7 @@ describe("buildCrateLayoutUpdate", () => {
     ]);
   });
 
-  it("when the last section marker is removed from the layout payload, accepts the save and clears marker rows", () => {
+  it("buildCrateLayoutUpdate when the last section marker is removed from the layout payload, accepts the save and clears marker rows", () => {
     const result = buildCrateLayoutUpdate({
       items: [
         { kind: "release", instance_id: "111", section_id: null },
@@ -150,7 +273,7 @@ describe("buildCrateLayoutUpdate", () => {
     });
   });
 
-  it("when one of two section markers is removed from the payload, keeps the remaining marker", () => {
+  it("buildCrateLayoutUpdate when one of two section markers is removed from the payload, keeps the remaining marker", () => {
     const result = buildCrateLayoutUpdate({
       items: [
         {
@@ -184,7 +307,7 @@ describe("buildCrateLayoutUpdate", () => {
     });
   });
 
-  it("when group delete reparent leaves no markers, the layout save payload is accepted", () => {
+  it("buildCrateLayoutUpdate when group delete reparent leaves no markers, the layout save payload is accepted", () => {
     const reparented = reparentCrateLayoutMarkersAfterDelete({
       items: layout.list([
         layout.marker("group", 1000),
@@ -215,7 +338,7 @@ describe("buildCrateLayoutUpdate", () => {
     });
   });
 
-  it("when a parent section with a nested subgroup is deleted, the save payload keeps the promoted subgroup marker", () => {
+  it("buildCrateLayoutUpdate when a parent section with a nested subgroup is deleted, the save payload keeps the promoted subgroup marker", () => {
     const reparented = reparentCrateLayoutMarkersAfterDelete({
       items: layout.list([
         layout.marker("parent", 1000),
@@ -254,7 +377,7 @@ describe("buildCrateLayoutUpdate", () => {
     });
   });
 
-  it("when a child marker appears before its parent, returns an error", () => {
+  it("buildCrateLayoutUpdate when a child marker appears before its parent, returns an error", () => {
     const result = buildCrateLayoutUpdate({
       items: [
         {
