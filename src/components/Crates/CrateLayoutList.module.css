@@ -485,8 +485,7 @@
     opacity var(--transition-fast),
     transform var(--transition-fast),
     color var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color var(--transition-fast);
   width: 1.5rem;
   z-index: 1;
 

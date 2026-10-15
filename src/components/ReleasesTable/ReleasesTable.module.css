@@ -279,7 +279,7 @@
   flex-shrink: 0;
   overflow: hidden;
   padding: 0;
-  transition: all var(--transition-normal);
+  transition: transform var(--transition-normal);
 
   &:hover {
     box-shadow: var(--shadow-md);

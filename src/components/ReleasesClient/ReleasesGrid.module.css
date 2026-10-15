@@ -78,7 +78,11 @@
   gap: var(--space-2);
   justify-content: center;
   padding: var(--space-3) var(--space-4);
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
   width: 100%;
 
   &:hover {

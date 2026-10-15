@@ -8,9 +8,7 @@
   padding: var(--space-3) var(--space-4);
   position: sticky;
   top: 0;
-  transition:
-    background-color var(--transition-normal),
-    backdrop-filter var(--transition-normal);
+  transition: background-color var(--transition-normal);
   z-index: var(--z-2-sticky);
 
   @media (width > 768px) {

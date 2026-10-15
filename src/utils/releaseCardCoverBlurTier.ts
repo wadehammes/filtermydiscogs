@@ -9,7 +9,9 @@ const BENCHMARK_CANVAS_PX = 160;
 const BENCHMARK_BLUR_PX = 24;
 const BENCHMARK_BUDGET_MS = 10;
 
-const isCachedTier = (value: string | null): value is ReleaseCardCoverBlurTier =>
+const isCachedTier = (
+  value: string | null,
+): value is ReleaseCardCoverBlurTier =>
   value === "always" || value === "hover-only";
 
 export const measureReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
