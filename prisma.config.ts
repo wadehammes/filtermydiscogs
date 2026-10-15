@@ -1,4 +1,5 @@
 import { defineConfig } from "prisma/config";
+import { readMainDatabaseUrlFromEnv } from "./src/lib/databaseUrlEnv";
 
 const appendConnectTimeout = (url: string): string => {
   try {
@@ -11,11 +12,6 @@ const appendConnectTimeout = (url: string): string => {
     return url;
   }
 };
-
-const readMainDatabaseUrlFromEnv = (): string | undefined =>
-  process.env.DIRECT_URL ??
-  process.env.POSTGRES_URL ??
-  process.env.DATABASE_URL;
 
 const resolveMigrateDatabaseUrl = (): string => {
   const url = readMainDatabaseUrlFromEnv();

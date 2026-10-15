@@ -10,7 +10,9 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
-function validateAndSanitizeConnectionString(connectionString: string): string {
+const validateAndSanitizeConnectionString = (
+  connectionString: string,
+): string => {
   const url = new URL(connectionString);
 
   const sslMode = url.searchParams.get("sslmode");
@@ -29,9 +31,11 @@ function validateAndSanitizeConnectionString(connectionString: string): string {
   url.searchParams.set("pool_timeout", "10");
 
   return url.toString();
-}
+};
 
-function sanitizeConnectionStringForLogging(connectionString: string): string {
+const sanitizeConnectionStringForLogging = (
+  connectionString: string,
+): string => {
   try {
     const url = new URL(connectionString);
     if (url.password) {
@@ -44,9 +48,9 @@ function sanitizeConnectionStringForLogging(connectionString: string): string {
   } catch {
     return "***";
   }
-}
+};
 
-function getPoolConfig(connectionString: string): PoolConfig {
+const getPoolConfig = (connectionString: string): PoolConfig => {
   const isProduction = process.env.NODE_ENV === "production";
   const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
@@ -81,7 +85,7 @@ function getPoolConfig(connectionString: string): PoolConfig {
       10,
     ),
   };
-}
+};
 
 const PRISMA_MODEL_DELEGATES = [
   "user",
@@ -96,7 +100,7 @@ const PRISMA_MODEL_DELEGATES = [
 const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
   PRISMA_MODEL_DELEGATES.every((delegate) => delegate in client);
 
-function createPrismaInitializationError(error: unknown): Error {
+const createPrismaInitializationError = (error: unknown): Error => {
   const sanitizedError =
     error instanceof Error
       ? error.message.replace(/DATABASE_URL[^;]*/gi, "DATABASE_URL=***")
@@ -105,9 +109,9 @@ function createPrismaInitializationError(error: unknown): Error {
   return new Error(
     `Prisma Client not initialized: ${sanitizedError}. Please run 'pnpm db:generate' and ensure DATABASE_URL is set.`,
   );
-}
+};
 
-function initializePrismaClient(): PrismaClient {
+const initializePrismaClient = (): PrismaClient => {
   const rawConnectionString = process.env.DATABASE_URL;
   if (!rawConnectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
@@ -186,24 +190,25 @@ function initializePrismaClient(): PrismaClient {
   let healthCheckAttempts = 0;
   const maxHealthCheckAttempts = 3;
 
-  async function performHealthCheck(): Promise<void> {
+  const performHealthCheck = async (): Promise<void> => {
     try {
       await prismaInstance.$queryRaw`SELECT 1`;
       healthCheckAttempts = 0;
     } catch (error) {
-      healthCheckAttempts++;
+      healthCheckAttempts += 1;
       if (healthCheckAttempts < maxHealthCheckAttempts) {
         const backoffDelay = 2 ** healthCheckAttempts * 1000;
         console.warn(
           `[DB] Health check failed (attempt ${healthCheckAttempts}/${maxHealthCheckAttempts}). Retrying in ${backoffDelay}ms...`,
         );
         await new Promise((resolve) => setTimeout(resolve, backoffDelay));
-        return performHealthCheck();
+        await performHealthCheck();
+        return;
       }
       console.error("[DB] Health check failed after max attempts");
       throw error;
     }
-  }
+  };
 
   performHealthCheck().catch((error) => {
     console.error("[DB] Initial health check failed:", error);
@@ -214,9 +219,9 @@ function initializePrismaClient(): PrismaClient {
 
   globalForPrisma.prisma = prismaInstance;
   return prismaInstance;
-}
+};
 
-function getPrismaClient(): PrismaClient {
+const getPrismaClient = (): PrismaClient => {
   if (
     globalForPrisma.prisma &&
     isCachedPrismaClientCurrent(globalForPrisma.prisma)
@@ -233,7 +238,7 @@ function getPrismaClient(): PrismaClient {
     });
     throw createPrismaInitializationError(error);
   }
-}
+};
 
 export const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop, receiver) {
@@ -252,7 +257,7 @@ export const prisma = new Proxy({} as PrismaClient, {
   },
 });
 
-export function getPoolMetrics() {
+export const getPoolMetrics = () => {
   const pool = globalForPrisma.pool;
   if (!pool) {
     return null;
@@ -263,4 +268,4 @@ export function getPoolMetrics() {
     idleCount: pool.idleCount,
     waitingCount: pool.waitingCount,
   };
-}
+};

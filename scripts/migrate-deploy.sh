@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Apply pending migrations during CI/Vercel builds.
 # Retries transient P1001 errors from Prisma Postgres cold starts / build-network blips.
+# Migrate URL precedence (DIRECT_URL → POSTGRES_URL → DATABASE_URL) must stay aligned with
+# readMainDatabaseUrlFromEnv in src/lib/databaseUrlEnv.ts (used by prisma.config.ts).
 set -euo pipefail
 
 resolve_migrate_url() {

@@ -131,6 +131,8 @@ pnpm db:generate       # regenerate client (also runs on build/postinstall)
 pnpm db:diff:migrations # migrations folder vs schema (needs shadow DB; see below)
 ```
 
+**Migrate / CLI database URL precedence:** **`DIRECT_URL`**, then **`POSTGRES_URL`**, then **`DATABASE_URL`** — shared by [`prisma.config.ts`](../../prisma.config.ts), [`scripts/migrate-deploy.sh`](../../scripts/migrate-deploy.sh) (build/CI **`migrate deploy`**), and [`readMainDatabaseUrlFromEnv`](../../src/lib/databaseUrlEnv.ts) (`MIGRATE_DATABASE_URL_ENV_KEYS`). Runtime app queries use **`DATABASE_URL`** only via [`db.ts`](../../src/lib/db.ts).
+
 **Shadow database (`SHADOW_DATABASE_URL`):** Used by **`prisma migrate dev`** and **`pnpm db:diff:migrations`** to apply migrations into a disposable database for drift checks. Set **`SHADOW_DATABASE_URL`** in **`.env.local`** when **`DATABASE_URL`** is remote (e.g. Prisma Postgres / staging pull). For **localhost** URLs, [`prisma.config.ts`](../../prisma.config.ts) auto-derives **`{database}_shadow`** when **`SHADOW_DATABASE_URL`** is unset — create that empty database locally first. Never point shadow at production or shared staging data.
 
 Vercel exposes **`DATABASE_URL`** per deployment target: **Preview/Development** share the non-prod Postgres (use this for local work against staging); **Production** is separate. There is no fourth “staging” env in Vercel—the **`staging`** git branch deploys to **Preview**.
