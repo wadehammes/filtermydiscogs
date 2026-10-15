@@ -38,7 +38,9 @@
   min-height: 0;
   padding: 0;
   text-decoration: none;
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
   width: 100%;
 
   &:focus-visible {

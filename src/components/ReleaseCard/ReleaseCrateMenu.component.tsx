@@ -99,9 +99,21 @@ export const ReleaseCrateMenu = ({
     event.stopPropagation();
   };
 
+  const lastHoverPrefetchAtRef = useRef(0);
+
   const prefetchMembership = useCallback(() => {
     void prefetchReleaseCrateMembership(queryClient, { userId, instanceId });
   }, [instanceId, queryClient, userId]);
+
+  const prefetchMembershipOnHover = useCallback(() => {
+    const now = Date.now();
+    if (now - lastHoverPrefetchAtRef.current < 400) {
+      return;
+    }
+
+    lastHoverPrefetchAtRef.current = now;
+    prefetchMembership();
+  }, [prefetchMembership]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -200,7 +212,7 @@ export const ReleaseCrateMenu = ({
                   onClick={handleTriggerClick}
                   onFocus={prefetchMembership}
                   onPointerDown={prefetchMembership}
-                  onPointerEnter={prefetchMembership}
+                  onPointerEnter={prefetchMembershipOnHover}
                   data-testid="fmdReleaseCrateMenuTrigger"
                 >
                   {triggerText}
@@ -219,7 +231,7 @@ export const ReleaseCrateMenu = ({
                   onClick={handleTriggerClick}
                   onFocus={prefetchMembership}
                   onPointerDown={prefetchMembership}
-                  onPointerEnter={prefetchMembership}
+                  onPointerEnter={prefetchMembershipOnHover}
                   data-testid="fmdReleaseCrateMenuTrigger"
                 >
                   {inActiveCrate ? <MinusIcon /> : <PlusIcon />}

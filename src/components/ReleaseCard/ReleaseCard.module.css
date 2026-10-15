@@ -20,10 +20,7 @@
   scroll-margin-top: 15.625rem;
   text-align: left;
   text-decoration: none;
-  transition:
-    border-color var(--transition-bounce),
-    box-shadow var(--transition-bounce),
-    transform var(--transition-bounce);
+  transition: transform var(--transition-bounce);
   width: 100%;
 
   &.inCrate {
@@ -34,13 +31,16 @@
   @media (hover: hover) {
     &:hover {
       box-shadow:
-        0 12px 28px -10px color-mix(in srgb, var(--background) 14%, transparent),
-        0 4px 10px -4px color-mix(in srgb, var(--background) 6%, transparent),
         var(--shadow-lg),
         inset 0 0 0 1px var(--release-card-stroke-hover);
       color: inherit;
       text-decoration: none;
-      transform: scale(1.01);
+      transform: translateY(-2px);
+    }
+
+    &:hover .imageContainer::before,
+    &:focus-within .imageContainer::before {
+      filter: blur(1.5rem);
     }
   }
 }
@@ -61,7 +61,6 @@
     ),
     inset 0 0 0 2px var(--primary);
   composes: theme-highlighted-surface from global;
-  transform: scale(1.02);
 }
 
 .coverSection {
@@ -107,10 +106,6 @@
     top: -2rem;
     width: calc(100% + 4rem);
     z-index: 0;
-
-    @media (hover: hover) {
-      filter: blur(1.5rem);
-    }
   }
 
   > img[src],
