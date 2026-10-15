@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect } from "react";
 import {
+  applyReleaseCardCoverBlurFromSession,
   applyReleaseCardCoverBlurTierToDocument,
   readCachedReleaseCardCoverBlurTier,
   scheduleReleaseCardCoverBlurTierMeasure,
@@ -9,8 +10,7 @@ import {
 
 export const useReleaseCardCoverBlurTierSync = (): void => {
   useLayoutEffect(() => {
-    const cached = readCachedReleaseCardCoverBlurTier();
-    applyReleaseCardCoverBlurTierToDocument(cached ?? "hover-only");
+    applyReleaseCardCoverBlurFromSession();
   }, []);
 
   useEffect(() => {
@@ -18,8 +18,8 @@ export const useReleaseCardCoverBlurTierSync = (): void => {
       return undefined;
     }
 
-    return scheduleReleaseCardCoverBlurTierMeasure((tier) => {
-      applyReleaseCardCoverBlurTierToDocument(tier);
-    });
+    return scheduleReleaseCardCoverBlurTierMeasure(
+      applyReleaseCardCoverBlurTierToDocument,
+    );
   }, []);
 };

@@ -1,8 +1,9 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { RELEASE_CARD_COVER_BLUR_SESSION_KEY } from "../src/constants/storageKeys.ts";
-
-const RELEASE_CARD_COVER_BLUR_ATTR = "data-release-card-cover-blur";
+import {
+  RELEASE_CARD_COVER_BLUR_ATTR,
+  RELEASE_CARD_COVER_BLUR_SESSION_KEY,
+} from "../src/constants/storageKeys.ts";
 
 const initSource = `(() => {
   try {

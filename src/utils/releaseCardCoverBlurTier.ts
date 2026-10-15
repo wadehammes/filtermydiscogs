@@ -1,15 +1,18 @@
-import { RELEASE_CARD_COVER_BLUR_SESSION_KEY } from "src/constants/storageKeys";
+import {
+  RELEASE_CARD_COVER_BLUR_ATTR,
+  RELEASE_CARD_COVER_BLUR_SESSION_KEY,
+} from "src/constants/storageKeys";
 
 export type ReleaseCardCoverBlurTier = "always" | "hover-only";
 
-export const RELEASE_CARD_COVER_BLUR_ATTR = "data-release-card-cover-blur";
+export { RELEASE_CARD_COVER_BLUR_ATTR };
 
 export const RELEASE_CARD_COVER_BLUR_BENCHMARK_BUDGET_MS = 10;
 
 const BENCHMARK_CANVAS_PX = 160;
 const BENCHMARK_BLUR_PX = 24;
 
-const isCachedTier = (
+export const isReleaseCardCoverBlurTier = (
   value: string | null,
 ): value is ReleaseCardCoverBlurTier =>
   value === "always" || value === "hover-only";
@@ -81,13 +84,18 @@ export const readCachedReleaseCardCoverBlurTier =
       const cached = sessionStorage.getItem(
         RELEASE_CARD_COVER_BLUR_SESSION_KEY,
       );
-      return isCachedTier(cached) ? cached : null;
+      return isReleaseCardCoverBlurTier(cached) ? cached : null;
     } catch {
       return null;
     }
   };
 
-export const measureAndCacheReleaseCardCoverBlurTier =
+export const applyReleaseCardCoverBlurFromSession = (): void => {
+  const cached = readCachedReleaseCardCoverBlurTier();
+  applyReleaseCardCoverBlurTierToDocument(cached ?? "hover-only");
+};
+
+const measureAndCacheReleaseCardCoverBlurTier =
   (): ReleaseCardCoverBlurTier => {
     const tier = measureReleaseCardCoverBlurTier();
 
@@ -99,13 +107,6 @@ export const measureAndCacheReleaseCardCoverBlurTier =
 
     return tier;
   };
-
-export const resolveReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
-  return (
-    readCachedReleaseCardCoverBlurTier() ??
-    measureAndCacheReleaseCardCoverBlurTier()
-  );
-};
 
 export const scheduleReleaseCardCoverBlurTierMeasure = (
   onTier: (tier: ReleaseCardCoverBlurTier) => void,

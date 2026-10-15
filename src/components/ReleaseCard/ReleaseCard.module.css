@@ -42,12 +42,6 @@
     &:focus-within .imageContainer::before {
       filter: blur(1.5rem);
     }
-
-    :global(html[data-release-card-cover-blur="always"])
-      &
-      .imageContainer::before {
-      filter: blur(1.5rem);
-    }
   }
 }
 
@@ -116,6 +110,10 @@
     @media (prefers-reduced-motion: reduce) {
       filter: none;
     }
+  }
+
+  :global(html[data-release-card-cover-blur="always"]) .releaseCard &::before {
+    filter: blur(1.5rem);
   }
 
   > img[src],

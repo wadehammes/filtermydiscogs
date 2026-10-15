@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { RELEASE_CARD_COVER_BLUR_SESSION_KEY } from "src/constants/storageKeys";
 import {
+  RELEASE_CARD_COVER_BLUR_ATTR,
+  RELEASE_CARD_COVER_BLUR_SESSION_KEY,
+} from "src/constants/storageKeys";
+import {
+  applyReleaseCardCoverBlurFromSession,
   applyReleaseCardCoverBlurTierToDocument,
   measureReleaseCardCoverBlurTier,
-  RELEASE_CARD_COVER_BLUR_ATTR,
   readCachedReleaseCardCoverBlurTier,
-  resolveReleaseCardCoverBlurTier,
   scheduleReleaseCardCoverBlurTierMeasure,
 } from "src/utils/releaseCardCoverBlurTier";
 
@@ -76,11 +78,16 @@ describe("releaseCardCoverBlurTier", () => {
     expect(measureReleaseCardCoverBlurTier()).toBe("hover-only");
   });
 
-  it("when session storage holds a tier, read and resolve return the cached value", () => {
+  it("when session storage holds a tier, read and apply from session use the cached value", () => {
     sessionStorage.setItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY, "always");
 
     expect(readCachedReleaseCardCoverBlurTier()).toBe("always");
-    expect(resolveReleaseCardCoverBlurTier()).toBe("always");
+
+    applyReleaseCardCoverBlurFromSession();
+
+    expect(
+      document.documentElement.getAttribute(RELEASE_CARD_COVER_BLUR_ATTR),
+    ).toBe("always");
   });
 
   it("when idle measure runs, invokes the callback with the measured tier", () => {
@@ -103,6 +110,7 @@ describe("releaseCardCoverBlurTier", () => {
     } as IdleDeadline);
 
     expect(onTier).toHaveBeenCalledWith("always");
+    expect(readCachedReleaseCardCoverBlurTier()).toBe("always");
   });
 
   it("when apply receives the current tier, does not rewrite the document attribute", () => {

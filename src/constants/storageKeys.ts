@@ -16,3 +16,4 @@ export const COLLECTION_CACHE_DB_NAME = "filtermydiscogs";
 export const COLLECTION_CACHE_STORE_NAME = "collection_cache";
 export const RELEASE_CARD_COVER_BLUR_SESSION_KEY =
   "fmd:release-card-cover-blur-tier";
+export const RELEASE_CARD_COVER_BLUR_ATTR = "data-release-card-cover-blur";
