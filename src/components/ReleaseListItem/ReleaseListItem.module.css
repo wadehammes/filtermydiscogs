@@ -7,15 +7,19 @@
   flex-direction: column;
   gap: var(--space-4);
   overflow: hidden;
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 
   @media (width >= 768px) {
     flex-direction: row;
   }
 
-  &:hover {
-    border-color: var(--link);
-    box-shadow: var(--shadow-sm);
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--link);
+      box-shadow: var(--shadow-sm);
+    }
   }
 
   &.inCrate {

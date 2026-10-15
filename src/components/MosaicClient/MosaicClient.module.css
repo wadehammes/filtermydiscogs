@@ -122,7 +122,9 @@
   cursor: pointer;
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
-  transition: var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 
   &:focus {
     border-color: var(--link);
@@ -146,7 +148,7 @@
   cursor: pointer;
   height: 0.375rem;
   outline: none;
-  transition: var(--transition-fast);
+  transition: background-color var(--transition-fast);
   width: 7.5rem;
 
   &::-webkit-slider-thumb {
@@ -155,7 +157,9 @@
     border-radius: var(--radius-full);
     cursor: pointer;
     height: var(--space-5);
-    transition: var(--transition-fast);
+    transition:
+      background-color var(--transition-fast),
+      transform var(--transition-fast);
     width: var(--space-5);
   }
 
@@ -165,7 +169,9 @@
     border-radius: var(--radius-full);
     cursor: pointer;
     height: var(--space-5);
-    transition: var(--transition-fast);
+    transition:
+      background-color var(--transition-fast),
+      transform var(--transition-fast);
     width: var(--space-5);
   }
 
@@ -267,7 +273,7 @@
   overflow: hidden;
   padding: 0;
   position: relative;
-  transition: var(--transition-fast);
+  transition: transform var(--transition-fast);
   width: 100%;
 
   &:hover {
@@ -281,7 +287,7 @@
   display: block;
   height: 100%;
   object-fit: cover;
-  transition: var(--transition-fast);
+  transition: filter var(--transition-fast);
   width: 100%;
 
   .mosaicItem:hover & {

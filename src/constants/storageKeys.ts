@@ -14,3 +14,6 @@ export const COLLECTION_ITEM_COUNTS_STORAGE_KEY =
   "filtermydiscogs_collection_item_counts";
 export const COLLECTION_CACHE_DB_NAME = "filtermydiscogs";
 export const COLLECTION_CACHE_STORE_NAME = "collection_cache";
+export const RELEASE_CARD_COVER_BLUR_SESSION_KEY =
+  "fmd:release-card-cover-blur-tier";
+export const RELEASE_CARD_COVER_BLUR_ATTR = "data-release-card-cover-blur";

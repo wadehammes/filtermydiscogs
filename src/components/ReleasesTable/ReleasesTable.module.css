@@ -198,9 +198,7 @@
   display: block;
   overflow: hidden;
   padding: 0;
-  transition:
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal);
+  transition: transform var(--transition-normal);
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -281,7 +279,7 @@
   flex-shrink: 0;
   overflow: hidden;
   padding: 0;
-  transition: all var(--transition-normal);
+  transition: transform var(--transition-normal);
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -403,8 +401,7 @@
   padding: var(--space-4);
   transition:
     background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color var(--transition-fast);
 
   &:hover {
     border-color: var(--link);

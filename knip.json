@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/knip/schema.json",
-  "ignoreFiles": ["public/theme-init.js"],
+  "ignoreFiles": [
+    "public/theme-init.js",
+    "public/release-card-cover-blur-init.js"
+  ],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {
     "src/types/**": ["exports", "types"],

@@ -42,7 +42,9 @@
   line-height: var(--nav-link-line-height);
   padding: var(--space-2) var(--space-4);
   text-decoration: none;
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 
   .containerVertical & {

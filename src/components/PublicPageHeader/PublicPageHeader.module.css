@@ -232,7 +232,7 @@
   padding: var(--space-2) var(--space-3);
   text-align: left;
   text-decoration: none;
-  transition: var(--transition-normal);
+  transition: background-color var(--transition-normal);
   width: 100%;
 
   &:hover {

@@ -153,7 +153,9 @@
   padding: 0;
   pointer-events: auto;
   text-align: center;
-  transition: all var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
   vertical-align: middle;
   width: var(--space-4);
   transform: translateY(-1px);

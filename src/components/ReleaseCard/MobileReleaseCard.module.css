@@ -46,7 +46,6 @@
   border: var(--release-card-border-width) solid var(--primary);
   box-shadow: none;
   composes: theme-highlighted-surface from global;
-  transform: scale(1.02);
 }
 
 .imageContainer {

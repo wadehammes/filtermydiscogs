@@ -19,6 +19,7 @@ import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
+import { shouldRunReleaseCrateMembershipHoverPrefetch } from "src/utils/releaseCrateMembershipHoverPrefetch";
 import cardStyles from "./ReleaseCard.module.css";
 import styles from "./ReleaseCrateMenu.module.css";
 
@@ -102,6 +103,14 @@ export const ReleaseCrateMenu = ({
   const prefetchMembership = useCallback(() => {
     void prefetchReleaseCrateMembership(queryClient, { userId, instanceId });
   }, [instanceId, queryClient, userId]);
+
+  const prefetchMembershipOnHover = useCallback(() => {
+    if (!shouldRunReleaseCrateMembershipHoverPrefetch()) {
+      return;
+    }
+
+    prefetchMembership();
+  }, [prefetchMembership]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -200,7 +209,7 @@ export const ReleaseCrateMenu = ({
                   onClick={handleTriggerClick}
                   onFocus={prefetchMembership}
                   onPointerDown={prefetchMembership}
-                  onPointerEnter={prefetchMembership}
+                  onPointerEnter={prefetchMembershipOnHover}
                   data-testid="fmdReleaseCrateMenuTrigger"
                 >
                   {triggerText}
@@ -219,7 +228,7 @@ export const ReleaseCrateMenu = ({
                   onClick={handleTriggerClick}
                   onFocus={prefetchMembership}
                   onPointerDown={prefetchMembership}
-                  onPointerEnter={prefetchMembership}
+                  onPointerEnter={prefetchMembershipOnHover}
                   data-testid="fmdReleaseCrateMenuTrigger"
                 >
                   {inActiveCrate ? <MinusIcon /> : <PlusIcon />}
