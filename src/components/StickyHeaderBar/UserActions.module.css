@@ -142,7 +142,10 @@
   line-height: 1;
   padding: var(--space-2) var(--space-3);
   text-decoration: none;
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 
   &:hover {

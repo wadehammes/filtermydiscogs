@@ -188,7 +188,7 @@
   gap: var(--space-2);
   min-width: 0;
   padding: var(--space-3);
-  transition: var(--transition-fast);
+  transition: border-color var(--transition-fast);
   width: 100%;
 
   &:hover {

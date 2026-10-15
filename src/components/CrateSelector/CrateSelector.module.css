@@ -32,7 +32,10 @@
   height: var(--touch-target-min);
   justify-content: center;
   padding: 0;
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
   width: var(--touch-target-min);
 
   @media (width >= 768px) {

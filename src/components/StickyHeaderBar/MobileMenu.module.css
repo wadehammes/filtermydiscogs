@@ -19,7 +19,7 @@
   height: var(--button-height-sm);
   justify-content: center;
   padding: 0;
-  transition: var(--transition-normal);
+  transition: color var(--transition-normal);
   width: var(--button-height-sm);
 
   &:hover {
@@ -126,7 +126,7 @@
   padding: var(--space-1) var(--space-2);
   text-align: left;
   text-decoration: none;
-  transition: var(--transition-normal);
+  transition: background-color var(--transition-normal);
   width: 100%;
 
   &:hover {

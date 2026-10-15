@@ -4,7 +4,9 @@ import {
   applyReleaseCardCoverBlurTierToDocument,
   measureReleaseCardCoverBlurTier,
   RELEASE_CARD_COVER_BLUR_ATTR,
+  readCachedReleaseCardCoverBlurTier,
   resolveReleaseCardCoverBlurTier,
+  scheduleReleaseCardCoverBlurTierMeasure,
 } from "src/utils/releaseCardCoverBlurTier";
 
 const mockMatchMedia = (matchesForQuery: (query: string) => boolean) => {
@@ -74,10 +76,33 @@ describe("releaseCardCoverBlurTier", () => {
     expect(measureReleaseCardCoverBlurTier()).toBe("hover-only");
   });
 
-  it("when session storage holds a tier, resolve returns the cached value", () => {
+  it("when session storage holds a tier, read and resolve return the cached value", () => {
     sessionStorage.setItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY, "always");
 
+    expect(readCachedReleaseCardCoverBlurTier()).toBe("always");
     expect(resolveReleaseCardCoverBlurTier()).toBe("always");
+  });
+
+  it("when idle measure runs, invokes the callback with the measured tier", () => {
+    mockMatchMedia(() => false);
+    mockCanvasBenchmark(4);
+
+    let idleCallback: IdleRequestCallback | undefined;
+    window.requestIdleCallback = jest.fn((cb: IdleRequestCallback) => {
+      idleCallback = cb;
+      return 1;
+    }) as typeof window.requestIdleCallback;
+    window.cancelIdleCallback = jest.fn();
+
+    const onTier = jest.fn();
+    scheduleReleaseCardCoverBlurTierMeasure(onTier);
+
+    idleCallback?.({
+      didTimeout: false,
+      timeRemaining: () => 50,
+    } as IdleDeadline);
+
+    expect(onTier).toHaveBeenCalledWith("always");
   });
 
   it("when apply receives the current tier, does not rewrite the document attribute", () => {

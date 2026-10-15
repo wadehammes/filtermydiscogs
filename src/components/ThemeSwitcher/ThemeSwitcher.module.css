@@ -13,7 +13,9 @@
   justify-content: center;
   min-height: var(--button-height-sm);
   padding: 0 var(--space-2);
-  transition: all var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
   white-space: nowrap;
 
   &:hover {
@@ -44,7 +46,9 @@
   gap: var(--space-2);
   justify-content: center;
   padding: var(--space-3);
-  transition: var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
   width: 100%;
 
   &:hover {

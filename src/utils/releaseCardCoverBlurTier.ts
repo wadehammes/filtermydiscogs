@@ -4,9 +4,10 @@ export type ReleaseCardCoverBlurTier = "always" | "hover-only";
 
 export const RELEASE_CARD_COVER_BLUR_ATTR = "data-release-card-cover-blur";
 
+export const RELEASE_CARD_COVER_BLUR_BENCHMARK_BUDGET_MS = 10;
+
 const BENCHMARK_CANVAS_PX = 160;
 const BENCHMARK_BLUR_PX = 24;
-const BENCHMARK_BUDGET_MS = 10;
 
 const isCachedTier = (
   value: string | null,
@@ -46,7 +47,9 @@ export const measureReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
     context.filter = "none";
     const elapsedMs = performance.now() - startedAt;
 
-    return elapsedMs <= BENCHMARK_BUDGET_MS ? "always" : "hover-only";
+    return elapsedMs <= RELEASE_CARD_COVER_BLUR_BENCHMARK_BUDGET_MS
+      ? "always"
+      : "hover-only";
   } catch {
     return "hover-only";
   }
@@ -68,29 +71,58 @@ export const applyReleaseCardCoverBlurTierToDocument = (
   document.documentElement.setAttribute(RELEASE_CARD_COVER_BLUR_ATTR, tier);
 };
 
-export const resolveReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
-  if (typeof window === "undefined") {
-    return "hover-only";
-  }
+export const readCachedReleaseCardCoverBlurTier =
+  (): ReleaseCardCoverBlurTier | null => {
+    if (typeof window === "undefined") {
+      return null;
+    }
 
-  let cached: string | null = null;
-  try {
-    cached = sessionStorage.getItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY);
-  } catch {
-    cached = null;
-  }
+    try {
+      const cached = sessionStorage.getItem(
+        RELEASE_CARD_COVER_BLUR_SESSION_KEY,
+      );
+      return isCachedTier(cached) ? cached : null;
+    } catch {
+      return null;
+    }
+  };
 
-  if (isCachedTier(cached)) {
-    return cached;
-  }
+export const measureAndCacheReleaseCardCoverBlurTier =
+  (): ReleaseCardCoverBlurTier => {
+    const tier = measureReleaseCardCoverBlurTier();
 
-  const tier = measureReleaseCardCoverBlurTier();
+    try {
+      sessionStorage.setItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY, tier);
+    } catch {
+      return tier;
+    }
 
-  try {
-    sessionStorage.setItem(RELEASE_CARD_COVER_BLUR_SESSION_KEY, tier);
-  } catch {
     return tier;
+  };
+
+export const resolveReleaseCardCoverBlurTier = (): ReleaseCardCoverBlurTier => {
+  return (
+    readCachedReleaseCardCoverBlurTier() ??
+    measureAndCacheReleaseCardCoverBlurTier()
+  );
+};
+
+export const scheduleReleaseCardCoverBlurTierMeasure = (
+  onTier: (tier: ReleaseCardCoverBlurTier) => void,
+): (() => void) => {
+  const run = () => {
+    onTier(measureAndCacheReleaseCardCoverBlurTier());
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    const idleId = window.requestIdleCallback(run, { timeout: 2000 });
+    return () => {
+      window.cancelIdleCallback(idleId);
+    };
   }
 
-  return tier;
+  const timeoutId = window.setTimeout(run, 0);
+  return () => {
+    window.clearTimeout(timeoutId);
+  };
 };

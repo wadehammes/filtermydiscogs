@@ -68,6 +68,7 @@ export default function RootLayout({
     >
       <head>
         <script src="/theme-init.js" />
+        <script src="/release-card-cover-blur-init.js" />
       </head>
       <body suppressHydrationWarning>
         <div className="appRoot">

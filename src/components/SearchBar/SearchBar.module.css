@@ -116,7 +116,9 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  transition: all var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
   width: var(--space-6);
 
   @media (width >= 768px) {

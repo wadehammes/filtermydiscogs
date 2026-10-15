@@ -1,14 +1,25 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import {
   applyReleaseCardCoverBlurTierToDocument,
-  resolveReleaseCardCoverBlurTier,
+  readCachedReleaseCardCoverBlurTier,
+  scheduleReleaseCardCoverBlurTierMeasure,
 } from "src/utils/releaseCardCoverBlurTier";
 
 export const useReleaseCardCoverBlurTierSync = (): void => {
   useLayoutEffect(() => {
-    const tier = resolveReleaseCardCoverBlurTier();
-    applyReleaseCardCoverBlurTierToDocument(tier);
+    const cached = readCachedReleaseCardCoverBlurTier();
+    applyReleaseCardCoverBlurTierToDocument(cached ?? "hover-only");
+  }, []);
+
+  useEffect(() => {
+    if (readCachedReleaseCardCoverBlurTier() !== null) {
+      return undefined;
+    }
+
+    return scheduleReleaseCardCoverBlurTierMeasure((tier) => {
+      applyReleaseCardCoverBlurTierToDocument(tier);
+    });
   }, []);
 };

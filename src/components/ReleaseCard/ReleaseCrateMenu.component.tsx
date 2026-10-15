@@ -19,6 +19,7 @@ import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
+import { shouldRunReleaseCrateMembershipHoverPrefetch } from "src/utils/releaseCrateMembershipHoverPrefetch";
 import cardStyles from "./ReleaseCard.module.css";
 import styles from "./ReleaseCrateMenu.module.css";
 
@@ -99,19 +100,15 @@ export const ReleaseCrateMenu = ({
     event.stopPropagation();
   };
 
-  const lastHoverPrefetchAtRef = useRef(0);
-
   const prefetchMembership = useCallback(() => {
     void prefetchReleaseCrateMembership(queryClient, { userId, instanceId });
   }, [instanceId, queryClient, userId]);
 
   const prefetchMembershipOnHover = useCallback(() => {
-    const now = Date.now();
-    if (now - lastHoverPrefetchAtRef.current < 400) {
+    if (!shouldRunReleaseCrateMembershipHoverPrefetch()) {
       return;
     }
 
-    lastHoverPrefetchAtRef.current = now;
     prefetchMembership();
   }, [prefetchMembership]);
 
