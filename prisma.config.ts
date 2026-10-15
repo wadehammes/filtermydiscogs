@@ -12,11 +12,13 @@ const appendConnectTimeout = (url: string): string => {
   }
 };
 
+const readMainDatabaseUrlFromEnv = (): string | undefined =>
+  process.env.DIRECT_URL ??
+  process.env.POSTGRES_URL ??
+  process.env.DATABASE_URL;
+
 const resolveMigrateDatabaseUrl = (): string => {
-  const url =
-    process.env.DIRECT_URL ??
-    process.env.POSTGRES_URL ??
-    process.env.DATABASE_URL;
+  const url = readMainDatabaseUrlFromEnv();
   if (!url) {
     return "";
   }
@@ -30,10 +32,7 @@ const resolveShadowDatabaseUrl = (): string | undefined => {
     return appendConnectTimeout(explicit);
   }
 
-  const main =
-    process.env.DIRECT_URL ??
-    process.env.POSTGRES_URL ??
-    process.env.DATABASE_URL;
+  const main = readMainDatabaseUrlFromEnv();
   if (!main) {
     return undefined;
   }

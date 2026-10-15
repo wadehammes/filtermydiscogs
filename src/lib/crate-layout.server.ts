@@ -31,19 +31,24 @@ export type ParsedCrateLayoutUpdate = {
   markerIdsToKeep: string[];
 };
 
-export type ClearCrateLayoutMarkerReferencesBeforeDeleteParams = {
+type ClearCrateLayoutMarkerReferencesBeforeDeleteParams = {
   tx: Prisma.TransactionClient;
   userId: number;
   crateId: string;
   markerIdsToKeep: string[];
 };
 
-export type ApplyCrateLayoutUpdateParams = {
+type ApplyCrateLayoutUpdateParams = {
   tx: Prisma.TransactionClient;
   userId: number;
   crateId: string;
   update: ParsedCrateLayoutUpdate;
 };
+
+const nullableFkFilterForRemovedMarkers = (
+  markerIdsToKeep: string[],
+): { notIn: string[] } | { not: null } =>
+  markerIdsToKeep.length > 0 ? { notIn: markerIdsToKeep } : { not: null };
 
 const layoutReleaseStub = (
   instanceId: string,
@@ -180,26 +185,23 @@ export const clearCrateLayoutMarkerReferencesBeforeDelete = async ({
   crateId,
   markerIdsToKeep,
 }: ClearCrateLayoutMarkerReferencesBeforeDeleteParams) => {
-  const sectionIdFilter =
-    markerIdsToKeep.length > 0 ? { notIn: markerIdsToKeep } : { not: null };
+  const removedMarkerFkFilter =
+    nullableFkFilterForRemovedMarkers(markerIdsToKeep);
 
   await tx.crateRelease.updateMany({
     where: {
       user_id: userId,
       crate_id: crateId,
-      section_id: sectionIdFilter,
+      section_id: removedMarkerFkFilter,
     },
     data: { section_id: null },
   });
-
-  const parentIdFilter =
-    markerIdsToKeep.length > 0 ? { notIn: markerIdsToKeep } : { not: null };
 
   await tx.crateSetMarker.updateMany({
     where: {
       user_id: userId,
       crate_id: crateId,
-      parent_id: parentIdFilter,
+      parent_id: removedMarkerFkFilter,
     },
     data: { parent_id: null },
   });

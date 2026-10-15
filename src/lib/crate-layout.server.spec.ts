@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 import { CRATE_TEMP_MARKER_PREFIX } from "src/constants/crate";
 import {
   assignSequentialCrateLayoutSortOrders,
@@ -15,78 +15,67 @@ import type { CrateLayoutPutItem } from "src/types/crate.types";
 
 const crateInstanceIds = new Set(["111", "222", "333"]);
 
+const createMarkerReferenceClearMocks = () => {
+  const releaseUpdateMany = jest.fn((_args: unknown) =>
+    Promise.resolve({ count: 0 }),
+  );
+  const markerUpdateMany = jest.fn((_args: unknown) =>
+    Promise.resolve({ count: 0 }),
+  );
+
+  return {
+    releaseUpdateMany,
+    markerUpdateMany,
+    tx: {
+      crateRelease: { updateMany: releaseUpdateMany },
+      crateSetMarker: { updateMany: markerUpdateMany },
+    } as never,
+  };
+};
+
 describe("crateLayoutServer", () => {
-  it("clearCrateLayoutMarkerReferencesBeforeDelete when some markers are kept, clears release section_id and child parent_id pointing at removed markers", async () => {
-    const releaseUpdateMany = jest.fn((_args: unknown) =>
-      Promise.resolve({ count: 1 }),
-    );
-    const markerUpdateMany = jest.fn((_args: unknown) =>
-      Promise.resolve({ count: 1 }),
-    );
-
-    await clearCrateLayoutMarkerReferencesBeforeDelete({
-      tx: {
-        crateRelease: { updateMany: releaseUpdateMany },
-        crateSetMarker: { updateMany: markerUpdateMany },
-      } as never,
-      userId: 1,
-      crateId: "crate-a",
+  it.each([
+    {
+      label: "some markers are kept",
       markerIdsToKeep: ["nested"],
-    });
+      fkFilter: { notIn: ["nested"] },
+    },
+    {
+      label: "no markers are kept",
+      markerIdsToKeep: [] as string[],
+      fkFilter: { not: null },
+    },
+  ])(
+    "clearCrateLayoutMarkerReferencesBeforeDelete when $label, clears dangling section_id and parent_id",
+    async ({ markerIdsToKeep, fkFilter }) => {
+      const { tx, releaseUpdateMany, markerUpdateMany } =
+        createMarkerReferenceClearMocks();
 
-    expect(releaseUpdateMany).toHaveBeenCalledWith({
-      where: {
-        user_id: 1,
-        crate_id: "crate-a",
-        section_id: { notIn: ["nested"] },
-      },
-      data: { section_id: null },
-    });
-    expect(markerUpdateMany).toHaveBeenCalledWith({
-      where: {
-        user_id: 1,
-        crate_id: "crate-a",
-        parent_id: { notIn: ["nested"] },
-      },
-      data: { parent_id: null },
-    });
-  });
+      await clearCrateLayoutMarkerReferencesBeforeDelete({
+        tx,
+        userId: 1,
+        crateId: "crate-a",
+        markerIdsToKeep,
+      });
 
-  it("clearCrateLayoutMarkerReferencesBeforeDelete when no markers are kept, clears every section_id and parent_id on the crate", async () => {
-    const releaseUpdateMany = jest.fn((_args: unknown) =>
-      Promise.resolve({ count: 0 }),
-    );
-    const markerUpdateMany = jest.fn((_args: unknown) =>
-      Promise.resolve({ count: 0 }),
-    );
-
-    await clearCrateLayoutMarkerReferencesBeforeDelete({
-      tx: {
-        crateRelease: { updateMany: releaseUpdateMany },
-        crateSetMarker: { updateMany: markerUpdateMany },
-      } as never,
-      userId: 1,
-      crateId: "crate-a",
-      markerIdsToKeep: [],
-    });
-
-    expect(releaseUpdateMany).toHaveBeenCalledWith({
-      where: {
-        user_id: 1,
-        crate_id: "crate-a",
-        section_id: { not: null },
-      },
-      data: { section_id: null },
-    });
-    expect(markerUpdateMany).toHaveBeenCalledWith({
-      where: {
-        user_id: 1,
-        crate_id: "crate-a",
-        parent_id: { not: null },
-      },
-      data: { parent_id: null },
-    });
-  });
+      expect(releaseUpdateMany).toHaveBeenCalledWith({
+        where: {
+          user_id: 1,
+          crate_id: "crate-a",
+          section_id: fkFilter,
+        },
+        data: { section_id: null },
+      });
+      expect(markerUpdateMany).toHaveBeenCalledWith({
+        where: {
+          user_id: 1,
+          crate_id: "crate-a",
+          parent_id: fkFilter,
+        },
+        data: { parent_id: null },
+      });
+    },
+  );
 
   it("applyCrateLayoutUpdate when markers are removed, clears dangling references before deleteMany", async () => {
     const releaseUpdate = jest.fn((_args: unknown) => Promise.resolve({}));
@@ -121,9 +110,29 @@ describe("crateLayoutServer", () => {
       },
     });
 
-    expect(markerUpdateMany).toHaveBeenCalled();
-    expect(markerDeleteMany).toHaveBeenCalled();
     expect(releaseUpdate).toHaveBeenCalled();
+    expect(markerUpdateMany).toHaveBeenCalledWith({
+      where: {
+        user_id: 1,
+        crate_id: "crate-a",
+        parent_id: { not: null },
+      },
+      data: { parent_id: null },
+    });
+    expect(markerDeleteMany).toHaveBeenCalledWith({
+      where: {
+        user_id: 1,
+        crate_id: "crate-a",
+      },
+    });
+    const markerReferenceClearOrder =
+      markerUpdateMany.mock.invocationCallOrder[0];
+    const markerDeleteOrder = markerDeleteMany.mock.invocationCallOrder[0];
+    expect(markerReferenceClearOrder).toEqual(expect.any(Number));
+    expect(markerDeleteOrder).toEqual(expect.any(Number));
+    expect(markerReferenceClearOrder as number).toBeLessThan(
+      markerDeleteOrder as number,
+    );
   });
 
   it("buildCrateLayoutUpdate when nested markers and accents are valid, persists section metadata on markers and releases", () => {
