@@ -31,6 +31,7 @@ import { FiltersProvider } from "src/context/filters.context";
 import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
+import { useReleaseCardCoverBlurTierSync } from "src/hooks/useReleaseCardCoverBlurTierSync.hook";
 import { useSentryUserSync } from "src/hooks/useSentryUserSync.hook";
 import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
 
@@ -50,6 +51,11 @@ const UserPreferencesSync = () => {
 
 const SentryUserSync = () => {
   useSentryUserSync();
+  return null;
+};
+
+const ReleaseCardCoverBlurTierSync = () => {
+  useReleaseCardCoverBlurTierSync();
   return null;
 };
 
@@ -98,6 +104,7 @@ export const Providers = ({ children }: ProvidersProps) => {
     <QueryClientProvider client={queryClient}>
       <JotaiProvider>
         <ThemeProvider>
+          <ReleaseCardCoverBlurTierSync />
           <AuthProvider>
             <SentryUserSync />
             <CollectionContextProvider>
