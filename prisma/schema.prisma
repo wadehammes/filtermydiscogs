@@ -89,7 +89,7 @@ model CrateRelease {
   section_id  String?
 
   crate   Crate           @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
-  section CrateSetMarker? @relation("CrateReleaseSection", fields: [user_id, crate_id, section_id], references: [user_id, crate_id, id], onDelete: SetNull)
+  section CrateSetMarker? @relation("CrateReleaseSection", fields: [user_id, crate_id, section_id], references: [user_id, crate_id, id], onDelete: Restrict)
 
   @@id([user_id, crate_id, instance_id])
   @@index([user_id, crate_id])
@@ -112,7 +112,7 @@ model CrateSetMarker {
   updated_at DateTime @updatedAt
 
   crate    Crate            @relation(fields: [user_id, crate_id], references: [user_id, id], onDelete: Cascade)
-  parent   CrateSetMarker?  @relation("CrateSectionTree", fields: [user_id, crate_id, parent_id], references: [user_id, crate_id, id], onDelete: SetNull)
+  parent   CrateSetMarker?  @relation("CrateSectionTree", fields: [user_id, crate_id, parent_id], references: [user_id, crate_id, id], onDelete: Restrict)
   children CrateSetMarker[] @relation("CrateSectionTree")
   releases CrateRelease[]   @relation("CrateReleaseSection")
 

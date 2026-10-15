@@ -159,8 +159,14 @@ describe("PUT /api/crates/[id]/layout", () => {
       const tx = {
         crateRelease: {
           update: mockReleaseUpdate,
+          updateMany: jest.fn((_args: unknown) =>
+            Promise.resolve({ count: 0 }),
+          ),
         },
         crateSetMarker: {
+          updateMany: jest.fn((_args: unknown) =>
+            Promise.resolve({ count: 0 }),
+          ),
           deleteMany: mockMarkerDeleteMany,
           upsert: mockMarkerUpsert,
         },

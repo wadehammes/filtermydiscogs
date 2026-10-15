@@ -31,6 +31,20 @@ export type ParsedCrateLayoutUpdate = {
   markerIdsToKeep: string[];
 };
 
+export type ClearCrateLayoutMarkerReferencesBeforeDeleteParams = {
+  tx: Prisma.TransactionClient;
+  userId: number;
+  crateId: string;
+  markerIdsToKeep: string[];
+};
+
+export type ApplyCrateLayoutUpdateParams = {
+  tx: Prisma.TransactionClient;
+  userId: number;
+  crateId: string;
+  update: ParsedCrateLayoutUpdate;
+};
+
 const layoutReleaseStub = (
   instanceId: string,
   sortOrder: number,
@@ -160,17 +174,43 @@ export const buildCrateLayoutUpdate = ({
   };
 };
 
+export const clearCrateLayoutMarkerReferencesBeforeDelete = async ({
+  tx,
+  userId,
+  crateId,
+  markerIdsToKeep,
+}: ClearCrateLayoutMarkerReferencesBeforeDeleteParams) => {
+  const sectionIdFilter =
+    markerIdsToKeep.length > 0 ? { notIn: markerIdsToKeep } : { not: null };
+
+  await tx.crateRelease.updateMany({
+    where: {
+      user_id: userId,
+      crate_id: crateId,
+      section_id: sectionIdFilter,
+    },
+    data: { section_id: null },
+  });
+
+  const parentIdFilter =
+    markerIdsToKeep.length > 0 ? { notIn: markerIdsToKeep } : { not: null };
+
+  await tx.crateSetMarker.updateMany({
+    where: {
+      user_id: userId,
+      crate_id: crateId,
+      parent_id: parentIdFilter,
+    },
+    data: { parent_id: null },
+  });
+};
+
 export const applyCrateLayoutUpdate = async ({
   tx,
   userId,
   crateId,
   update,
-}: {
-  tx: Prisma.TransactionClient;
-  userId: number;
-  crateId: string;
-  update: ParsedCrateLayoutUpdate;
-}) => {
+}: ApplyCrateLayoutUpdateParams) => {
   for (const releaseOrder of update.releaseOrders) {
     await tx.crateRelease.update({
       where: {
@@ -186,6 +226,13 @@ export const applyCrateLayoutUpdate = async ({
       },
     });
   }
+
+  await clearCrateLayoutMarkerReferencesBeforeDelete({
+    tx,
+    userId,
+    crateId,
+    markerIdsToKeep: update.markerIdsToKeep,
+  });
 
   await tx.crateSetMarker.deleteMany({
     where: {

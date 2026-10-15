@@ -83,10 +83,18 @@ function getPoolConfig(connectionString: string): PoolConfig {
   };
 }
 
+const PRISMA_MODEL_DELEGATES = [
+  "user",
+  "userTrack",
+  "crate",
+  "crateRelease",
+  "crateSetMarker",
+  "productAnalyticsEvent",
+  "productAnalyticsDailyRollup",
+] as const;
+
 const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>
-  "crateSetMarker" in client &&
-  "productAnalyticsEvent" in client &&
-  "productAnalyticsDailyRollup" in client;
+  PRISMA_MODEL_DELEGATES.every((delegate) => delegate in client);
 
 function createPrismaInitializationError(error: unknown): Error {
   const sanitizedError =

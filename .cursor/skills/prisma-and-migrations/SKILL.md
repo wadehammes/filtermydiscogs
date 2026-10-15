@@ -26,6 +26,7 @@ Session stop hook nudges **`db:generate`** when schema changed. CI/build run gen
 | Prototype push | `pnpm db:push` (sparingly) |
 | Staging DB env | `pnpm db:pull:staging` then `pnpm db:migrate:staging` |
 | Studio | `pnpm db:studio` |
+| Migrations vs schema | `pnpm db:diff:migrations` (requires **`SHADOW_DATABASE_URL`** or localhost **`{db}_shadow`**) |
 
 Generated client is **not committed** — run generate after pull.
 
