@@ -46,6 +46,7 @@ import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
   PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+  PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import {
   readPersistedReleasePlayback,
@@ -103,6 +104,21 @@ const advanceEmbedWatchdogSyncProbeRecheck = () => {
   act(() => {
     jest.advanceTimersByTime(EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS);
   });
+};
+
+const resolveFirstSessionEmbedWatchdogArmMs = () =>
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS +
+  PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS;
+
+const resolveFirstSessionEmbedWatchdogArmMsForSlow = () =>
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS +
+  PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS;
+
+const advanceFirstSessionEmbedWatchdogFire = () => {
+  act(() => {
+    jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMs());
+  });
+  advanceEmbedWatchdogSyncProbeRecheck();
 };
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
@@ -1787,7 +1803,10 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS +
+          PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
+      );
     });
     advanceEmbedWatchdogSyncProbeRecheck();
 
@@ -1831,10 +1850,7 @@ describe("ReleasePlaybackProvider", () => {
       result.current.togglePlayback();
     });
 
-    act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
-    });
-    advanceEmbedWatchdogSyncProbeRecheck();
+    advanceFirstSessionEmbedWatchdogFire();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2028,7 +2044,7 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       jest.advanceTimersByTime(
-        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+        resolveFirstSessionEmbedWatchdogArmMs() -
           EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
       );
     });
@@ -2122,17 +2138,14 @@ describe("ReleasePlaybackProvider", () => {
       result.current.notifyPlaybackVideoLoadStarted();
     });
 
-    act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
-    });
-    advanceEmbedWatchdogSyncProbeRecheck();
+    advanceFirstSessionEmbedWatchdogFire();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
     jest.useRealTimers();
   });
 
-  it("presentation ready alone does not confirm embed playback so the watchdog can skip", async () => {
+  it("when presentation is ready while transport is playing, confirms embed playback so the watchdog does not skip", async () => {
     jest.useFakeTimers();
 
     const iframe = {
@@ -2170,6 +2183,54 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("extends the first embed watchdog arm by initial presentation grace before unavailable skip", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
+      );
     });
     advanceEmbedWatchdogSyncProbeRecheck();
 
@@ -2306,15 +2367,12 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPlaybackVideoLoading).toBe(true);
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMs());
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
-    act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
-    });
-    advanceEmbedWatchdogSyncProbeRecheck();
+    advanceFirstSessionEmbedWatchdogFire();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2366,13 +2424,13 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMsForSlow());
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMsForSlow());
     });
     advanceEmbedWatchdogSyncProbeRecheck();
 
@@ -2486,15 +2544,12 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMs());
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
-    act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
-    });
-    advanceEmbedWatchdogSyncProbeRecheck();
+    advanceFirstSessionEmbedWatchdogFire();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2554,13 +2609,13 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMsForSlow());
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMsForSlow());
     });
     advanceEmbedWatchdogSyncProbeRecheck();
 

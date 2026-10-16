@@ -1,7 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+  PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
   resolveEmbedPlaybackConfirmGateStartedAtMs,
+  resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace,
   shouldAcceptEmbedPlayingConfirmation,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
@@ -130,5 +132,21 @@ describe("releasePlaybackEmbedConfirm", () => {
         lastInfoDeliveryCurrentTime: 3.2,
       }),
     ).toBe(true);
+  });
+
+  it("resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace adds grace only while initial presentation is pending", () => {
+    expect(
+      resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace({
+        baseDelayMs: 5000,
+        initialPresentationGracePending: true,
+      }),
+    ).toBe(5000 + PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS);
+
+    expect(
+      resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace({
+        baseDelayMs: 5000,
+        initialPresentationGracePending: false,
+      }),
+    ).toBe(5000);
   });
 });
