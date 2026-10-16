@@ -90,8 +90,6 @@ export const resolvePlaybackVideoId = ({
   return activeVideoId ?? embedVideoId;
 };
 
-export const PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS = 8000;
-
 export const resolveNeedsPlaybackVideoSwitch = ({
   preparedEmbedVideoId,
   activeVideoId,
@@ -148,6 +146,37 @@ export const shouldBeginPlaybackVideoUiLoading = ({
     replaySameTrack,
     forceEmbedReload,
   });
+};
+
+export const isEmbedAlignedForLoadingPlaybackConfirm = ({
+  loadingTargetVideoId,
+  activeVideoId,
+  embedVideoId,
+  transitionTargetVideoId,
+  watchdogVideoId,
+}: {
+  loadingTargetVideoId: string | null;
+  activeVideoId: string | null;
+  embedVideoId: string | null;
+  transitionTargetVideoId: string | null;
+  watchdogVideoId: string | null;
+}): boolean => {
+  if (
+    doesPlaybackVideoUiLoadingTargetMatch({
+      loadingTargetVideoId: loadingTargetVideoId,
+      activeVideoId,
+      embedVideoId,
+      transitionTargetVideoId,
+    })
+  ) {
+    return true;
+  }
+
+  return (
+    watchdogVideoId !== null &&
+    embedVideoId !== null &&
+    embedVideoId === watchdogVideoId
+  );
 };
 
 export const doesPlaybackVideoUiLoadingTargetMatch = ({

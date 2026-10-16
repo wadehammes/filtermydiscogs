@@ -96,22 +96,26 @@ export function runThrottledDiscogsRequest<T>(
   );
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let queueWaitError: DiscogsThrottleQueueError | undefined;
 
   return (async () => {
-    try {
-      await Promise.race([
-        slotAcquired,
-        new Promise<never>((_resolve, reject) => {
-          timeoutId = setTimeout(() => {
-            abandoned = true;
-            reject(new DiscogsThrottleQueueError());
-          }, queueWaitTimeoutMs);
-        }),
-      ]);
-    } finally {
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
-      }
+    await Promise.race([
+      slotAcquired,
+      new Promise<void>((resolve) => {
+        timeoutId = setTimeout(() => {
+          abandoned = true;
+          queueWaitError = new DiscogsThrottleQueueError();
+          resolve();
+        }, queueWaitTimeoutMs);
+      }),
+    ]);
+
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+
+    if (queueWaitError) {
+      throw queueWaitError;
     }
 
     return scheduled as Promise<T>;

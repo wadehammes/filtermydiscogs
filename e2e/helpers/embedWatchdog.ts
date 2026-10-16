@@ -6,9 +6,9 @@ import { createE2eReleaseByIdHandler } from "src/tests/msw/e2eReleaseHandlers";
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 import {
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS,
-  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+  resolvePlaybackVideoUiLoadingTimeoutMsForArmMs,
 } from "src/utils/playbackEmbedStartWatchdog";
 import {
   closeReleaseModal,
@@ -26,8 +26,9 @@ export const e2eWatchdogMinDelayBeforePlayingMs = () =>
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS + 500;
 
 export const e2eWatchdogNoSkipWaitMs = () =>
-  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS *
-    (1 + PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS) +
+  resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
+    PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+  ) +
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS +
   2000;
 
@@ -35,8 +36,9 @@ export const e2eWatchdogDelayedNoSkipWaitMs = () =>
   Math.max(e2eWatchdogNoSkipWaitMs(), E2E_EMBED_MOCK_DELAYED_PLAYING_MS + 2000);
 
 export const e2eWatchdogSkipVisibleTimeoutMs = () =>
-  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS *
-    (1 + PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS) +
+  resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
+    PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+  ) +
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS +
   3000;
 

@@ -1,3 +1,5 @@
+import { someErrorInCauseChain } from "src/utils/errorCauseChain";
+
 const GTM_YOUTUBE_STACK_MARKERS = [
   "googletagmanager.com/gtag/js",
   "gtag/js",
@@ -13,21 +15,20 @@ const errorStackIncludesGtmYoutube = (error: Error): boolean => {
   return GTM_YOUTUBE_STACK_MARKERS.some((marker) => stack.includes(marker));
 };
 
+const BROWSER_SCHEDULER_TERMINATION_MESSAGE =
+  /callback `[^`]+` was terminated$/;
+
+export const isBrowserSchedulerTerminationError = (error: unknown): boolean =>
+  someErrorInCauseChain(error, (current) =>
+    BROWSER_SCHEDULER_TERMINATION_MESSAGE.test(current.message),
+  );
+
 export const isGoogleTagManagerYoutubeIntegrationError = (
   error: unknown,
-): boolean => {
-  let current: unknown = error;
-
-  while (current instanceof Error) {
-    if (
+): boolean =>
+  someErrorInCauseChain(
+    error,
+    (current) =>
       current.message.includes(GTM_YOUTUBE_GET_DURATION_MESSAGE) &&
-      errorStackIncludesGtmYoutube(current)
-    ) {
-      return true;
-    }
-
-    current = current.cause;
-  }
-
-  return false;
-};
+      errorStackIncludesGtmYoutube(current),
+  );

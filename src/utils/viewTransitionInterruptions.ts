@@ -1,3 +1,6 @@
+import { someErrorInCauseChain } from "src/utils/errorCauseChain";
+import { isBrowserSchedulerTerminationError } from "src/utils/sentryThirdPartyIntegrationErrors";
+
 const VIEW_TRANSITION_INTERRUPTION_MESSAGES = [
   "Transition was aborted because of invalid state",
   "View transition was skipped because document visibility state is hidden.",
@@ -6,27 +9,14 @@ const VIEW_TRANSITION_INTERRUPTION_MESSAGES = [
   "Old view transition aborted",
 ] as const;
 
-export const isViewTransitionInterruptionError = (error: unknown): boolean => {
-  let current: unknown = error;
+const isViewTransitionInterruptionErrorFrame = (error: Error): boolean =>
+  (error.name === "InvalidStateError" || error.name === "AbortError") &&
+  VIEW_TRANSITION_INTERRUPTION_MESSAGES.some((prefix) =>
+    error.message.startsWith(prefix),
+  );
 
-  while (current instanceof Error) {
-    const error = current;
-
-    if (error.name === "InvalidStateError" || error.name === "AbortError") {
-      if (
-        VIEW_TRANSITION_INTERRUPTION_MESSAGES.some((prefix) =>
-          error.message.startsWith(prefix),
-        )
-      ) {
-        return true;
-      }
-    }
-
-    current = error.cause;
-  }
-
-  return false;
-};
+export const isViewTransitionInterruptionError = (error: unknown): boolean =>
+  someErrorInCauseChain(error, isViewTransitionInterruptionErrorFrame);
 
 const createSkippedViewTransition = (): ViewTransition => {
   const settled = Promise.resolve();
@@ -60,7 +50,10 @@ export const installViewTransitionRecoverableErrorFilter = (): void => {
   const originalReportError = globalThis.reportError.bind(globalThis);
 
   globalThis.reportError = (error: unknown) => {
-    if (isViewTransitionInterruptionError(error)) {
+    if (
+      isViewTransitionInterruptionError(error) ||
+      isBrowserSchedulerTerminationError(error)
+    ) {
       return;
     }
 

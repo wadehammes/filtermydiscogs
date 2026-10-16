@@ -53,6 +53,7 @@ import {
   getNavigatorNetworkInformation,
   resolvePlaybackEmbedUnavailableWatchdogDelayMs,
   resolvePlaybackEmbedUnavailableWatchdogMs,
+  resolvePlaybackVideoUiLoadingTimeoutMs,
   shouldArmPlaybackEmbedStartWatchdog,
 } from "src/utils/playbackEmbedStartWatchdog";
 import {
@@ -76,8 +77,8 @@ import {
 } from "src/utils/playbackSimilarQueueEmbedGuard";
 import { resolvePlaybackSkipLogDisplay } from "src/utils/playbackSkippedTrackLog";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
+import { requestYoutubeEmbedPlaybackSync } from "src/utils/postYoutubePlayerCommand";
 import {
-  PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS,
   resolveActivePlaybackTitle,
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
@@ -88,7 +89,12 @@ import {
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
-import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
+import {
+  EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+  EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
+  resolveEmbedPlaybackConfirmGateStartedAtMs,
+  shouldConfirmEmbedPlaybackFromAudibleEmbed,
+} from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
 import { resolvePlaybackSkipSentryDetails } from "src/utils/resolvePlaybackSkipSentryDetails";
@@ -158,6 +164,7 @@ export const useReleasePlaybackProvider = (): {
   const playbackVideoUiLoadingEmbedLoadStartedAtMsRef = useRef<number | null>(
     null,
   );
+  const playbackVideoUiLoadingCycleStartedAtMsRef = useRef<number | null>(null);
   const activeVideoIdRef = useRef<string | null>(null);
   const activeTrackPositionRef = useRef<string | null>(null);
   const isReleasePreviewRef = useRef(false);
@@ -201,6 +208,8 @@ export const useReleasePlaybackProvider = (): {
   const embedWatchdogVideoIdRef = useRef<string | null>(null);
   const lastEmbedUnavailableSkipAtMsRef = useRef<number | null>(null);
   const embedWatchdogLoadingRearmCountRef = useRef(0);
+  const embedWatchdogSyncProbeAttemptedRef = useRef(false);
+  const lastInfoDeliveryCurrentTimeRef = useRef<number | undefined>(undefined);
   const markEmbedTrackSwitchGraceRef = useRef<() => void>(() => undefined);
   const armEmbedStartWatchdogRef = useRef<() => void>(() => undefined);
   const clearPlaybackVideoUiLoadingRef = useRef<() => void>(() => undefined);
@@ -545,7 +554,7 @@ export const useReleasePlaybackProvider = (): {
 
   const beginPlaybackVideoUiLoading = useCallback(() => {
     isPlaybackVideoUiLoadingRef.current = true;
-    playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
+    playbackVideoUiLoadingCycleStartedAtMsRef.current = Date.now();
     setIsPlaybackVideoUiLoading(true);
   }, []);
 
@@ -560,6 +569,7 @@ export const useReleasePlaybackProvider = (): {
     isPlaybackVideoUiLoadingRef.current = false;
     playbackVideoUiLoadingTargetVideoIdRef.current = null;
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
+    playbackVideoUiLoadingCycleStartedAtMsRef.current = null;
     setIsPlaybackVideoUiLoading(false);
   }, []);
 
@@ -595,8 +605,9 @@ export const useReleasePlaybackProvider = (): {
       isPlaybackVideoUiLoadingRef.current = false;
       playbackVideoUiLoadingTargetVideoIdRef.current = null;
       playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
+      playbackVideoUiLoadingCycleStartedAtMsRef.current = null;
       setIsPlaybackVideoUiLoading(false);
-    }, PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS);
+    }, resolvePlaybackVideoUiLoadingTimeoutMs());
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -633,8 +644,10 @@ export const useReleasePlaybackProvider = (): {
   const confirmEmbedPlayback = useCallback(() => {
     embedPlaybackConfirmedRef.current = true;
     embedWatchdogLoadingRearmCountRef.current = 0;
+    embedWatchdogSyncProbeAttemptedRef.current = false;
     embedStartWatchdogRef.current.disarm();
-  }, []);
+    clearPlaybackVideoUiLoading();
+  }, [clearPlaybackVideoUiLoading]);
 
   const {
     clearPlayFromGestureRetries,
@@ -664,10 +677,12 @@ export const useReleasePlaybackProvider = (): {
       playbackVideoTransitionTargetIdRef,
       playbackVideoUiLoadingTargetVideoIdRef,
       playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+      playbackVideoUiLoadingCycleStartedAtMsRef,
       embedWatchdogVideoIdRef,
       embedPlaybackConfirmedRef,
       similarQueueFetchInFlightRef,
       playFromGestureRetryTimeoutsRef,
+      lastInfoDeliveryCurrentTimeRef,
       releaseRef,
       tracksRef,
       videosRef,
@@ -676,6 +691,7 @@ export const useReleasePlaybackProvider = (): {
     isPaused,
     isPlaybackReady,
     isPlaybackEmbedMounted,
+    isPlaybackVideoUiLoading,
     activeVideoId,
     matchedActiveVideoId,
     pendingTrackPosition,
@@ -703,7 +719,60 @@ export const useReleasePlaybackProvider = (): {
     playNextRef.current();
   }, []);
 
+  const confirmEmbedPlaybackIfAudible = useCallback(() => {
+    if (embedPlaybackConfirmedRef.current) {
+      return true;
+    }
+
+    const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+      imperativeEmbedLoadStartedAtMs:
+        playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+      videoUiLoadingCycleStartedAtMs:
+        playbackVideoUiLoadingCycleStartedAtMsRef.current,
+    });
+
+    if (
+      shouldConfirmEmbedPlaybackFromAudibleEmbed({
+        gateStartedAtMs,
+        nowMs: Date.now(),
+        isPlaying: isPlayingRef.current,
+        isPaused: isPausedRef.current,
+        ...definedProps({
+          lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
+        }),
+      })
+    ) {
+      confirmEmbedPlayback();
+      return true;
+    }
+
+    return false;
+  }, [confirmEmbedPlayback]);
+
+  const finishEmbedUnavailableSkipIfStillUnconfirmed = useCallback(() => {
+    if (embedPlaybackConfirmedRef.current) {
+      embedWatchdogSyncProbeAttemptedRef.current = false;
+      return;
+    }
+
+    if (confirmEmbedPlaybackIfAudible()) {
+      embedWatchdogSyncProbeAttemptedRef.current = false;
+      return;
+    }
+
+    embedWatchdogSyncProbeAttemptedRef.current = false;
+    embedWatchdogLoadingRearmCountRef.current = 0;
+    embedUnavailableSkipHandlerRef.current.handleFailure(
+      PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
+      advanceQueueAfterSkip,
+    );
+  }, [advanceQueueAfterSkip, confirmEmbedPlaybackIfAudible]);
+
   const runEmbedUnavailableSkipIfUnconfirmed = useCallback(() => {
+    if (confirmEmbedPlaybackIfAudible()) {
+      return;
+    }
+
     const outcome = resolveEmbedUnavailableWatchdogOutcome({
       embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
       watchdogVideoId: embedWatchdogVideoIdRef.current,
@@ -722,12 +791,26 @@ export const useReleasePlaybackProvider = (): {
       return;
     }
 
-    embedWatchdogLoadingRearmCountRef.current = 0;
-    embedUnavailableSkipHandlerRef.current.handleFailure(
-      PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
-      advanceQueueAfterSkip,
-    );
-  }, [advanceQueueAfterSkip]);
+    if (
+      !embedWatchdogSyncProbeAttemptedRef.current &&
+      playbackIframeRef.current &&
+      isPlayingRef.current &&
+      !isPausedRef.current
+    ) {
+      embedWatchdogSyncProbeAttemptedRef.current = true;
+      requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
+      window.setTimeout(
+        finishEmbedUnavailableSkipIfStillUnconfirmed,
+        EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
+      );
+      return;
+    }
+
+    finishEmbedUnavailableSkipIfStillUnconfirmed();
+  }, [
+    confirmEmbedPlaybackIfAudible,
+    finishEmbedUnavailableSkipIfStillUnconfirmed,
+  ]);
 
   const armEmbedStartWatchdog = useCallback(() => {
     if (!shouldArmPlaybackEmbedStartWatchdog(document.visibilityState)) {
@@ -835,6 +918,7 @@ export const useReleasePlaybackProvider = (): {
       embedWatchdogVideoIdRef.current = resolvedVideoId;
       embedPlaybackConfirmedRef.current = false;
       embedWatchdogLoadingRearmCountRef.current = 0;
+      embedWatchdogSyncProbeAttemptedRef.current = false;
 
       const deferWatchdogForPendingOverrideStats =
         activeTrackAwaitingStatsOverrideRef.current &&

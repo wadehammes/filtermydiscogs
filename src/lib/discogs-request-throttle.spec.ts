@@ -86,4 +86,43 @@ describe("discogs-request-throttle", () => {
       runThrottledDiscogsRequest(async () => "queued"),
     ).rejects.toBeInstanceOf(DiscogsThrottleQueueError);
   });
+
+  it("when the throttle queue times out, does not emit an unhandled rejection", async () => {
+    process.env.DISCOGS_THROTTLE_QUEUE_TIMEOUT_MS = "40";
+    process.env.DISCOGS_MIN_REQUEST_INTERVAL_MS = "50";
+    jest.resetModules();
+
+    const unhandledRejections: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", onUnhandledRejection);
+
+    try {
+      const { DiscogsThrottleQueueError } = await import(
+        "./discogsThrottleQueueError"
+      );
+      const { runThrottledDiscogsRequest } = await import(
+        "./discogs-request-throttle"
+      );
+
+      const stuck = runThrottledDiscogsRequest(async () => {
+        await new Promise<void>(() => undefined);
+        return "stuck";
+      });
+      stuck.catch(() => undefined);
+
+      await expect(
+        runThrottledDiscogsRequest(async () => "queued"),
+      ).rejects.toBeInstanceOf(DiscogsThrottleQueueError);
+
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
+  });
 });

@@ -1,6 +1,9 @@
 import { dsnFromString, type ErrorEvent, type EventHint } from "@sentry/core";
 import { normalizeSentryErrorEvent } from "src/lib/sentry/sentryBeforeSendEvent";
-import { isGoogleTagManagerYoutubeIntegrationError } from "src/utils/sentryThirdPartyIntegrationErrors";
+import {
+  isBrowserSchedulerTerminationError,
+  isGoogleTagManagerYoutubeIntegrationError,
+} from "src/utils/sentryThirdPartyIntegrationErrors";
 import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
 
 export const SENTRY_TUNNEL_PATH = "/monitoring";
@@ -106,6 +109,10 @@ export const sentryBeforeSend = (
   }
 
   if (isGoogleTagManagerYoutubeIntegrationError(hint.originalException)) {
+    return null;
+  }
+
+  if (isBrowserSchedulerTerminationError(hint.originalException)) {
     return null;
   }
 

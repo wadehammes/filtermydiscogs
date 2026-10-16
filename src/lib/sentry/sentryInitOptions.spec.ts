@@ -106,6 +106,13 @@ describe("sentryInitOptions", () => {
     expect(resolveSentryReplaySessionSampleRate()).toBe(1);
   });
 
+  it("when browser terminates a timer callback, beforeSend drops the event", () => {
+    const error = new Error("callback `timer callback` was terminated");
+    const event = { message: error.message } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
+  });
+
   it("when GTM YouTube integration throws getDuration, beforeSend drops the event", () => {
     const error = new TypeError("a.getDuration is not a function");
     error.stack = [

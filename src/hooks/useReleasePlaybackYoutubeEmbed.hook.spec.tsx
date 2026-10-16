@@ -27,12 +27,14 @@ const buildHarness = ({
   isPaused = false,
   isPlaying = true,
   isPlaybackEmbedMounted = false,
+  isPlaybackVideoUiLoading = false,
   onYoutubeEmbedPlaybackError,
   onEmbedPlaybackConfirmed,
 }: {
   isPaused?: boolean;
   isPlaying?: boolean;
   isPlaybackEmbedMounted?: boolean;
+  isPlaybackVideoUiLoading?: boolean;
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
   onEmbedPlaybackConfirmed?: () => void;
 } = {}) => {
@@ -44,7 +46,7 @@ const buildHarness = ({
   const isPlayingRef = { current: isPlaying };
   const isPausedRef = { current: isPaused };
   const activeVideoIdRef = { current: null as string | null };
-  const isPlaybackVideoUiLoadingRef = { current: false };
+  const isPlaybackVideoUiLoadingRef = { current: isPlaybackVideoUiLoading };
   const playbackVideoTransitionTargetIdRef = { current: null as string | null };
   const playbackVideoUiLoadingTargetVideoIdRef = {
     current: null as string | null,
@@ -52,11 +54,17 @@ const buildHarness = ({
   const playbackVideoUiLoadingEmbedLoadStartedAtMsRef = {
     current: null as number | null,
   };
+  const playbackVideoUiLoadingCycleStartedAtMsRef = {
+    current: null as number | null,
+  };
   const embedWatchdogVideoIdRef = { current: null as string | null };
   const embedPlaybackConfirmedRef = { current: false };
   const similarQueueFetchInFlightRef = { current: false };
   const pendingPlayFromGestureRef = { current: false };
   const playFromGestureRetryTimeoutsRef = { current: [] as number[] };
+  const lastInfoDeliveryCurrentTimeRef = {
+    current: undefined as number | undefined,
+  };
   const releaseRef = { current: release };
   const tracksRef = { current: [] as never[] };
   const videosRef = { current: [] as never[] };
@@ -89,10 +97,12 @@ const buildHarness = ({
           playbackVideoTransitionTargetIdRef,
           playbackVideoUiLoadingTargetVideoIdRef,
           playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+          playbackVideoUiLoadingCycleStartedAtMsRef,
           embedWatchdogVideoIdRef,
           embedPlaybackConfirmedRef,
           similarQueueFetchInFlightRef,
           playFromGestureRetryTimeoutsRef,
+          lastInfoDeliveryCurrentTimeRef,
           releaseRef,
           tracksRef,
           videosRef,
@@ -101,6 +111,7 @@ const buildHarness = ({
         isPaused,
         isPlaybackReady: true,
         isPlaybackEmbedMounted,
+        isPlaybackVideoUiLoading,
         activeVideoId: null,
         matchedActiveVideoId: null,
         pendingTrackPosition: null,
@@ -129,6 +140,7 @@ const buildHarness = ({
     isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
     playbackIframeRef,
+    playbackVideoUiLoadingCycleStartedAtMsRef,
     playbackVideoUiLoadingTargetVideoIdRef,
     result,
     setEmbedVideoId,
@@ -379,6 +391,38 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
+  it("clears video UI loading on PLAYING when only the video UI loading cycle started without imperative load", () => {
+    jest.useFakeTimers();
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      clearPlaybackVideoUiLoading,
+      embedVideoIdRef,
+      embedWatchdogVideoIdRef,
+      isPlaybackVideoUiLoadingRef,
+      playbackIframeRef,
+      playbackVideoUiLoadingCycleStartedAtMsRef,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    playbackVideoUiLoadingCycleStartedAtMsRef.current = Date.now();
+    embedVideoIdRef.current = "next-video-id";
+    embedWatchdogVideoIdRef.current = "next-video-id";
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
   it("clears video UI loading on PLAYING when embed video id matches the loading target before activeVideoId catches up", () => {
     const onEmbedPlaybackConfirmed = jest.fn();
     const postMessage = jest.fn();
@@ -496,6 +540,22 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
+  it("confirms embed playback immediately on PLAYING when video UI is not loading", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { isPlaybackVideoUiLoadingRef, playbackIframeRef } = buildHarness({
+      onEmbedPlaybackConfirmed,
+      isPlaybackVideoUiLoading: false,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = false;
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
+  });
+
   it("confirms playback from infoDelivery currentTime without onStateChange PLAYING", () => {
     const onEmbedPlaybackConfirmed = jest.fn();
     const postMessage = jest.fn();
@@ -577,10 +637,14 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
             playbackVideoTransitionTargetIdRef: { current: null },
             playbackVideoUiLoadingTargetVideoIdRef: { current: null },
             playbackVideoUiLoadingEmbedLoadStartedAtMsRef: { current: null },
+            playbackVideoUiLoadingCycleStartedAtMsRef: { current: null },
             embedWatchdogVideoIdRef: { current: "video-a" },
             embedPlaybackConfirmedRef,
             similarQueueFetchInFlightRef,
             playFromGestureRetryTimeoutsRef: { current: [] as number[] },
+            lastInfoDeliveryCurrentTimeRef: {
+              current: undefined as number | undefined,
+            },
             releaseRef,
             tracksRef,
             videosRef,
@@ -589,6 +653,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
           isPaused: false,
           isPlaybackReady: true,
           isPlaybackEmbedMounted: false,
+          isPlaybackVideoUiLoading: false,
           activeVideoId,
           matchedActiveVideoId: activeVideoId,
           pendingTrackPosition: null,
