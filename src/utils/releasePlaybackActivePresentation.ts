@@ -172,6 +172,14 @@ export const isEmbedAlignedForLoadingPlaybackConfirm = ({
     return true;
   }
 
+  if (
+    watchdogVideoId !== null &&
+    activeVideoId !== null &&
+    watchdogVideoId === activeVideoId.trim()
+  ) {
+    return true;
+  }
+
   return (
     watchdogVideoId !== null &&
     embedVideoId !== null &&

@@ -148,6 +148,18 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(true);
   });
 
+  it("isEmbedAlignedForLoadingPlaybackConfirm accepts watchdog id matching activeVideoId when embedVideoId still shows the Discogs match", () => {
+    expect(
+      isEmbedAlignedForLoadingPlaybackConfirm({
+        loadingTargetVideoId: "override-id",
+        activeVideoId: "override-id",
+        embedVideoId: "discogs-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: "override-id",
+      }),
+    ).toBe(true);
+  });
+
   it("doesPlaybackVideoUiLoadingTargetMatch accepts embed or transition ids while session activeVideoId lags", () => {
     expect(
       doesPlaybackVideoUiLoadingTargetMatch({
