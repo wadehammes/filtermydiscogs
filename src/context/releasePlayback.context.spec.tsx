@@ -32,6 +32,7 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+  resolvePlaybackVideoUiLoadingTimeoutMs,
   resolvePlaybackVideoUiLoadingTimeoutMsForArmMs,
 } from "src/utils/playbackEmbedStartWatchdog";
 import { createQueueItem } from "src/utils/playbackQueue";
@@ -3129,6 +3130,68 @@ describe("ReleasePlaybackProvider", () => {
     await waitFor(() => {
       expect(result.current.isPlaybackVideoLoading).toBe(false);
     });
+  });
+
+  it("when playNext upload plays after the video UI loading cap, embed watchdog does not skip", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("abc12345678");
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(resolvePlaybackVideoUiLoadingTimeoutMs());
+    });
+
+    expect(result.current.isPlaybackVideoLoading).toBe(false);
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMs());
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
   });
 
   it("does not imperatively loadAndPlay on playNext when the playback iframe stays registered", async () => {

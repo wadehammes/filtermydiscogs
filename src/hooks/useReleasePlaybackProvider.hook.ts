@@ -582,6 +582,12 @@ export const useReleasePlaybackProvider = (): {
     setIsPlaybackVideoUiLoading(false);
   }, []);
 
+  const clearPlaybackVideoUiLoadingSpinnerOnly = useCallback(() => {
+    isPlaybackVideoUiLoadingRef.current = false;
+    playbackVideoUiLoadingTargetVideoIdRef.current = null;
+    setIsPlaybackVideoUiLoading(false);
+  }, []);
+
   clearPlaybackVideoUiLoadingRef.current = clearPlaybackVideoUiLoading;
 
   useEffect(() => {
@@ -604,24 +610,6 @@ export const useReleasePlaybackProvider = (): {
     playbackVideoTransitionTargetId,
     setPlaybackVideoTransitionTargetIdWithRef,
   ]);
-
-  useEffect(() => {
-    if (!isPlaybackVideoUiLoading) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      isPlaybackVideoUiLoadingRef.current = false;
-      playbackVideoUiLoadingTargetVideoIdRef.current = null;
-      playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = null;
-      playbackVideoUiLoadingCycleStartedAtMsRef.current = null;
-      setIsPlaybackVideoUiLoading(false);
-    }, resolvePlaybackVideoUiLoadingTimeoutMs());
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [isPlaybackVideoUiLoading]);
 
   const isPlaybackVideoLoading = isPlaybackVideoUiLoading;
   const isPlaybackVideoTransitionPending =
@@ -776,6 +764,28 @@ export const useReleasePlaybackProvider = (): {
 
     return false;
   }, [confirmEmbedPlayback]);
+
+  useEffect(() => {
+    if (!isPlaybackVideoUiLoading) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (confirmEmbedPlaybackIfAudible()) {
+        return;
+      }
+
+      clearPlaybackVideoUiLoadingSpinnerOnly();
+    }, resolvePlaybackVideoUiLoadingTimeoutMs());
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    clearPlaybackVideoUiLoadingSpinnerOnly,
+    confirmEmbedPlaybackIfAudible,
+    isPlaybackVideoUiLoading,
+  ]);
 
   const finishEmbedUnavailableSkipIfStillUnconfirmed = useCallback(() => {
     if (embedPlaybackConfirmedRef.current) {
