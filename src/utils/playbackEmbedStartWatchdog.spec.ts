@@ -6,21 +6,24 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { setupMockCoarsePointerWithoutNetworkInfo } from "src/tests/mocks/mockMatchMedia.mock";
 import {
   classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
   getNavigatorNetworkInformation,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS,
-  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MOBILE_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MODERATE_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
   resolvePlaybackEmbedUnavailableWatchdogDelayMs,
   resolvePlaybackEmbedUnavailableWatchdogMs,
   resolvePlaybackEmbedUnavailableWatchdogMsForQuality,
+  resolvePlaybackVideoUiLoadingTimeoutMs,
+  resolvePlaybackVideoUiLoadingTimeoutMsForArmMs,
   shouldArmPlaybackEmbedStartWatchdog,
   shouldRearmEmbedStartWatchdogBeforeUnavailableSkip,
 } from "src/utils/playbackEmbedStartWatchdog";
+import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 
 describe("shouldArmPlaybackEmbedStartWatchdog", () => {
   it("returns false while the document is hidden", () => {
@@ -102,6 +105,19 @@ describe("getNavigatorNetworkInformation", () => {
   });
 });
 
+describe("resolvePlaybackVideoUiLoadingTimeoutMsForArmMs", () => {
+  it("when arm ms is given, spans two watchdog arms plus the PLAYING confirm gate", () => {
+    expect(
+      resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+      ),
+    ).toBe(
+      PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS * 2 +
+        EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+    );
+  });
+});
+
 describe("resolvePlaybackEmbedUnavailableWatchdogMsForQuality", () => {
   it("maps connection quality tiers to watchdog delays", () => {
     expect(
@@ -115,7 +131,7 @@ describe("resolvePlaybackEmbedUnavailableWatchdogMsForQuality", () => {
     ).toBe(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     expect(
       resolvePlaybackEmbedUnavailableWatchdogMsForQuality("unknown", true),
-    ).toBe(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MOBILE_MS);
+    ).toBe(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
     expect(
       resolvePlaybackEmbedUnavailableWatchdogMsForQuality("unknown", false),
     ).toBe(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
@@ -168,26 +184,19 @@ describe("resolvePlaybackEmbedUnavailableWatchdogMs", () => {
     );
   });
 
-  it("falls back to the mobile delay when connection quality is unknown on coarse pointers", () => {
-    window.matchMedia = jest.fn((query: string) => ({
-      matches: query === "(pointer: coarse)",
-      media: query,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-      onchange: null,
-    })) as typeof window.matchMedia;
-
-    Object.defineProperty(navigator, "connection", {
-      configurable: true,
-      value: undefined,
-    });
+  it("when coarse pointer and unknown connection, uses mobile watchdog and loading timeout for two arms", () => {
+    const restore = setupMockCoarsePointerWithoutNetworkInfo();
 
     expect(resolvePlaybackEmbedUnavailableWatchdogMs()).toBe(
-      PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MOBILE_MS,
+      PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
     );
+    expect(resolvePlaybackVideoUiLoadingTimeoutMs()).toBe(
+      resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+      ),
+    );
+
+    restore();
   });
 });
 

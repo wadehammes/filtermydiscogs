@@ -1,5 +1,24 @@
 import { describe, expect, it } from "@jest/globals";
-import { isGoogleTagManagerYoutubeIntegrationError } from "src/utils/sentryThirdPartyIntegrationErrors";
+import {
+  isBrowserSchedulerTerminationError,
+  isGoogleTagManagerYoutubeIntegrationError,
+} from "src/utils/sentryThirdPartyIntegrationErrors";
+
+describe("isBrowserSchedulerTerminationError", () => {
+  it("when timer callback was terminated on navigation, matches", () => {
+    expect(
+      isBrowserSchedulerTerminationError(
+        new Error("callback `timer callback` was terminated"),
+      ),
+    ).toBe(true);
+  });
+
+  it("when unrelated timer errors occur, ignores", () => {
+    expect(
+      isBrowserSchedulerTerminationError(new Error("Timeout expired")),
+    ).toBe(false);
+  });
+});
 
 describe("isGoogleTagManagerYoutubeIntegrationError", () => {
   it("when GTM YouTube onStateChange throws getDuration, matches", () => {

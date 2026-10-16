@@ -1,6 +1,6 @@
-export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS = 5000;
+import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 
-export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MOBILE_MS = 12000;
+export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS = 5000;
 
 export const PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MODERATE_MS = 12000;
 
@@ -103,10 +103,21 @@ export const resolvePlaybackEmbedUnavailableWatchdogMsForQuality = (
       return PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS;
     case "unknown":
       return isCoarsePointer
-        ? PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MOBILE_MS
+        ? PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS
         : PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS;
   }
 };
+
+export const resolvePlaybackVideoUiLoadingTimeoutMsForArmMs = (
+  armMs: number,
+): number =>
+  armMs * (PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS + 1) +
+  EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS;
+
+export const resolvePlaybackVideoUiLoadingTimeoutMs = (): number =>
+  resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
+    resolvePlaybackEmbedUnavailableWatchdogMs(),
+  );
 
 export const resolvePlaybackEmbedUnavailableWatchdogMs = (): number => {
   if (typeof window === "undefined") {

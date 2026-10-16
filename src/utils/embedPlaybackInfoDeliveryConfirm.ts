@@ -1,13 +1,15 @@
-import { shouldAcceptEmbedPlayingConfirmation } from "src/utils/releasePlaybackEmbedConfirm";
+import { definedProps } from "src/utils/definedProps";
 import {
-  YOUTUBE_PLAYER_STATE_PLAYING,
-  type YoutubeInfoDelivery,
-} from "src/utils/youtubeIframeEvents";
+  resolveEmbedPlaybackConfirmGateStartedAtMs,
+  shouldConfirmEmbedPlaybackFromAudibleEmbed,
+} from "src/utils/releasePlaybackEmbedConfirm";
+import type { YoutubeInfoDelivery } from "src/utils/youtubeIframeEvents";
 
 export const shouldConfirmEmbedPlaybackFromInfoDelivery = ({
   info,
   previousCurrentTime,
   embedLoadStartedAtMs,
+  videoUiLoadingCycleStartedAtMs = null,
   nowMs,
   isPlaying,
   isPaused,
@@ -15,39 +17,25 @@ export const shouldConfirmEmbedPlaybackFromInfoDelivery = ({
   info: YoutubeInfoDelivery;
   previousCurrentTime?: number;
   embedLoadStartedAtMs: number | null;
+  videoUiLoadingCycleStartedAtMs?: number | null;
   nowMs: number;
   isPlaying: boolean;
   isPaused: boolean;
 }): boolean => {
-  if (!isPlaying || isPaused) {
-    return false;
-  }
+  const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+    imperativeEmbedLoadStartedAtMs: embedLoadStartedAtMs,
+    videoUiLoadingCycleStartedAtMs,
+  });
 
-  if (embedLoadStartedAtMs === null) {
-    return false;
-  }
-
-  if (
-    !shouldAcceptEmbedPlayingConfirmation({
-      embedLoadStartedAtMs,
-      nowMs,
-    })
-  ) {
-    return false;
-  }
-
-  if (info.playerState === YOUTUBE_PLAYER_STATE_PLAYING) {
-    return true;
-  }
-
-  if (
-    info.currentTime !== undefined &&
-    (info.currentTime > 0 ||
-      (previousCurrentTime !== undefined &&
-        info.currentTime > previousCurrentTime))
-  ) {
-    return true;
-  }
-
-  return false;
+  return shouldConfirmEmbedPlaybackFromAudibleEmbed({
+    gateStartedAtMs,
+    nowMs,
+    isPlaying,
+    isPaused,
+    ...definedProps({
+      playerState: info.playerState,
+      infoDeliveryCurrentTime: info.currentTime,
+      previousInfoDeliveryCurrentTime: previousCurrentTime,
+    }),
+  });
 };

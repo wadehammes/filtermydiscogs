@@ -22,6 +22,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ---
 
+## Sentry MCP (issue triage)
+
+Use [`.cursor/skills/sentry/SKILL.md`](./.cursor/skills/sentry/SKILL.md) and [platform.md → Sentry runbook](docs/handbook/platform.md#sentry-runbook). OAuth once in Cursor desktop (**Settings → MCP → sentry**).
+
 <!-- fallow:setup-hooks:start -->
 ## Fallow (ad-hoc analysis)
 

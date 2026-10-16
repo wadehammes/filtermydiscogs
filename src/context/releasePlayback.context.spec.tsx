@@ -20,6 +20,7 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { userTrackStatsResponseFactory } from "src/tests/factories/UserTrackStatsResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupMockCoarsePointerWithoutNetworkInfo } from "src/tests/mocks/mockMatchMedia.mock";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import {
@@ -31,6 +32,7 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import {
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+  resolvePlaybackVideoUiLoadingTimeoutMsForArmMs,
 } from "src/utils/playbackEmbedStartWatchdog";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
@@ -40,7 +42,11 @@ import {
   requestYoutubeEmbedPlaybackSync,
 } from "src/utils/postYoutubePlayerCommand";
 import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
-import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
+import {
+  EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+  EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
+  PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+} from "src/utils/releasePlaybackEmbedConfirm";
 import {
   readPersistedReleasePlayback,
   toPersistedQueueItem,
@@ -92,6 +98,12 @@ const mockAppendPlaybackSkipAndSchedule = jest.mocked(
   appendPlaybackSkipAndSchedule,
 );
 const mockReportPlaybackSkipToSentry = jest.mocked(reportPlaybackSkipToSentry);
+
+const advanceEmbedWatchdogSyncProbeRecheck = () => {
+  act(() => {
+    jest.advanceTimersByTime(EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS);
+  });
+};
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
   Object.defineProperty(document, "visibilityState", {
@@ -1777,6 +1789,7 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -1821,6 +1834,7 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -1980,6 +1994,105 @@ describe("ReleasePlaybackProvider", () => {
     jest.useRealTimers();
   });
 
+  it("before unavailable skip, requests embed playback sync once when transport is still playing", async () => {
+    jest.useFakeTimers();
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
+
+    act(() => {
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS -
+          EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      );
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("polls requestYoutubeEmbedPlaybackSync while playback video UI is loading on a visible tab", async () => {
+    jest.useFakeTimers();
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS);
+    });
+
+    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS);
+    });
+
+    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(2);
+
+    jest.useRealTimers();
+  });
+
   it("silent embed contract: watchdog unavailable skip when the iframe never posts player messages (pairs with E2E mock mode=silent)", async () => {
     jest.useFakeTimers();
 
@@ -2012,6 +2125,7 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2057,6 +2171,7 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2199,9 +2314,131 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
+    jest.useRealTimers();
+  });
+
+  it("when coarse pointer and unknown connection, re-arms embed watchdog after the first mobile delay", async () => {
+    jest.useFakeTimers();
+    const restoreCoarsePointer = setupMockCoarsePointerWithoutNetworkInfo();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    restoreCoarsePointer();
+    jest.useRealTimers();
+  });
+
+  it("when coarse pointer and unknown connection, keeps video UI loading past the fast-tier loading cap before re-arm", async () => {
+    jest.useFakeTimers();
+    const restoreCoarsePointer = setupMockCoarsePointerWithoutNetworkInfo();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    const pastFastTierLoadingCapMs =
+      resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
+      ) + 100;
+
+    act(() => {
+      jest.advanceTimersByTime(pastFastTierLoadingCapMs);
+    });
+
+    expect(result.current.isPlaybackVideoLoading).toBe(true);
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    restoreCoarsePointer();
     jest.useRealTimers();
   });
 
@@ -2257,6 +2494,7 @@ describe("ReleasePlaybackProvider", () => {
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2316,17 +2554,15 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     act(() => {
-      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
     act(() => {
-      jest.advanceTimersByTime(
-        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS -
-          PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
-      );
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS);
     });
+    advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
@@ -2433,6 +2669,54 @@ describe("ReleasePlaybackProvider", () => {
     });
 
     expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it("when video UI loading starts from queue advance without imperative embed load, infoDelivery currentTime confirms and clears loading", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.isPlaybackVideoLoading).toBe(true);
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: { currentTime: 0.8 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackVideoLoading).toBe(false);
+    });
 
     jest.useRealTimers();
   });

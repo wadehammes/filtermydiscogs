@@ -30,10 +30,12 @@ import {
   flattenTracklist,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
-import { doesPlaybackVideoUiLoadingTargetMatch } from "src/utils/releasePlaybackActivePresentation";
+import { isEmbedAlignedForLoadingPlaybackConfirm } from "src/utils/releasePlaybackActivePresentation";
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
-  shouldAcceptEmbedPlayingConfirmation,
+  PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+  resolveEmbedPlaybackConfirmGateStartedAtMs,
+  shouldConfirmEmbedPlaybackFromAudibleEmbed,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
@@ -76,10 +78,12 @@ export interface ReleasePlaybackYoutubeEmbedRefs {
   playbackVideoTransitionTargetIdRef: RefObject<string | null>;
   playbackVideoUiLoadingTargetVideoIdRef: RefObject<string | null>;
   playbackVideoUiLoadingEmbedLoadStartedAtMsRef: RefObject<number | null>;
+  playbackVideoUiLoadingCycleStartedAtMsRef: RefObject<number | null>;
   embedWatchdogVideoIdRef: RefObject<string | null>;
   embedPlaybackConfirmedRef: RefObject<boolean>;
   similarQueueFetchInFlightRef: RefObject<boolean>;
   playFromGestureRetryTimeoutsRef: RefObject<number[]>;
+  lastInfoDeliveryCurrentTimeRef: RefObject<number | undefined>;
   releaseRef: RefObject<import("src/types").DiscogsRelease | null>;
   tracksRef: RefObject<DiscogsTrack[]>;
   videosRef: RefObject<DiscogsVideo[]>;
@@ -93,6 +97,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   isPaused: boolean;
   isPlaybackReady: boolean;
   isPlaybackEmbedMounted: boolean;
+  isPlaybackVideoUiLoading: boolean;
   activeVideoId: string | null;
   matchedActiveVideoId: string | null;
   pendingTrackPosition: string | null;
@@ -118,6 +123,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   isPaused,
   isPlaybackReady,
   isPlaybackEmbedMounted,
+  isPlaybackVideoUiLoading,
   activeVideoId,
   matchedActiveVideoId,
   pendingTrackPosition,
@@ -146,17 +152,18 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playbackVideoTransitionTargetIdRef,
     playbackVideoUiLoadingTargetVideoIdRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+    playbackVideoUiLoadingCycleStartedAtMsRef,
     embedWatchdogVideoIdRef,
     embedPlaybackConfirmedRef,
     similarQueueFetchInFlightRef,
     playFromGestureRetryTimeoutsRef,
+    lastInfoDeliveryCurrentTimeRef,
     releaseRef,
     tracksRef,
     videosRef,
   } = refs;
 
   const embedTrackSwitchGraceUntilRef = useRef(0);
-  const lastInfoDeliveryCurrentTimeRef = useRef<number | undefined>(undefined);
   const embedLoadStateSyncTimeoutRef = useRef<number | null>(null);
   const lastEmbedPlaybackEndedAtRef = useRef(0);
 
@@ -204,6 +211,81 @@ export const useReleasePlaybackYoutubeEmbed = ({
     embedTrackSwitchGraceUntilRef.current = 0;
     onEmbedPlaybackConfirmed?.();
   }, [onEmbedPlaybackConfirmed, pendingPlayFromGestureRef]);
+
+  const tryConfirmAudibleEmbedPlayback = useCallback(
+    ({
+      playerState,
+      infoDeliveryCurrentTime,
+      previousInfoDeliveryCurrentTime,
+    }: {
+      playerState?: number;
+      infoDeliveryCurrentTime?: number;
+      previousInfoDeliveryCurrentTime?: number;
+    }) => {
+      if (!isPlayingRef.current || isPausedRef.current) {
+        return false;
+      }
+
+      const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+        imperativeEmbedLoadStartedAtMs:
+          playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+        videoUiLoadingCycleStartedAtMs:
+          playbackVideoUiLoadingCycleStartedAtMsRef.current,
+      });
+
+      const audible = shouldConfirmEmbedPlaybackFromAudibleEmbed({
+        gateStartedAtMs,
+        nowMs: Date.now(),
+        isPlaying: true,
+        isPaused: false,
+        ...definedProps({
+          playerState,
+          infoDeliveryCurrentTime,
+          previousInfoDeliveryCurrentTime,
+          lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
+        }),
+      });
+
+      if (!audible) {
+        return false;
+      }
+
+      if (isPlaybackVideoUiLoadingRef.current) {
+        if (
+          !isEmbedAlignedForLoadingPlaybackConfirm({
+            loadingTargetVideoId:
+              playbackVideoUiLoadingTargetVideoIdRef.current,
+            activeVideoId: activeVideoIdRef.current,
+            embedVideoId: embedVideoIdRef.current,
+            transitionTargetVideoId: playbackVideoTransitionTargetIdRef.current,
+            watchdogVideoId: embedWatchdogVideoIdRef.current,
+          })
+        ) {
+          return false;
+        }
+
+        clearPlaybackVideoUiLoading();
+      }
+
+      completeEmbedPlaybackHandshake();
+      return true;
+    },
+    [
+      activeVideoIdRef,
+      clearPlaybackVideoUiLoading,
+      completeEmbedPlaybackHandshake,
+      embedVideoIdRef,
+      embedWatchdogVideoIdRef,
+      isPausedRef,
+      isPlaybackVideoUiLoadingRef,
+      isPlayingRef,
+      lastInfoDeliveryCurrentTimeRef,
+      playbackVideoTransitionTargetIdRef,
+      playbackVideoUiLoadingCycleStartedAtMsRef,
+      playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
+      playbackVideoUiLoadingTargetVideoIdRef,
+    ],
+  );
 
   const {
     attemptPlayFromGesture,
@@ -450,47 +532,13 @@ export const useReleasePlaybackYoutubeEmbed = ({
         isPlayingRef.current &&
         !isPausedRef.current
       ) {
-        if (isPlaybackVideoUiLoadingRef.current) {
-          const embedLoadStartedAtMs =
-            playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current;
-
-          if (embedLoadStartedAtMs === null) {
-            return;
-          }
-
-          const loadingTarget = playbackVideoUiLoadingTargetVideoIdRef.current;
-
-          const loadingTargetMatchesSession =
-            doesPlaybackVideoUiLoadingTargetMatch({
-              loadingTargetVideoId: loadingTarget,
-              activeVideoId: activeVideoIdRef.current,
-              embedVideoId: embedVideoIdRef.current,
-              transitionTargetVideoId:
-                playbackVideoTransitionTargetIdRef.current,
-            });
-          const loadingTargetMatchesWatchdogEmbed =
-            embedWatchdogVideoIdRef.current !== null &&
-            embedVideoIdRef.current === embedWatchdogVideoIdRef.current;
-
-          if (
-            !(loadingTargetMatchesSession || loadingTargetMatchesWatchdogEmbed)
-          ) {
-            return;
-          }
-
-          if (
-            !shouldAcceptEmbedPlayingConfirmation({
-              embedLoadStartedAtMs,
-              nowMs: Date.now(),
-            })
-          ) {
-            return;
-          }
-
-          clearPlaybackVideoUiLoading();
+        if (!isPlaybackVideoUiLoadingRef.current) {
+          completeEmbedPlaybackHandshake();
+        } else {
+          tryConfirmAudibleEmbedPlayback({
+            playerState: YOUTUBE_PLAYER_STATE_PLAYING,
+          });
         }
-
-        completeEmbedPlaybackHandshake();
 
         return;
       }
@@ -514,20 +562,50 @@ export const useReleasePlaybackYoutubeEmbed = ({
       isPlayingRef,
       isWithinTrackSwitchGrace,
       notifyEmbedPlaybackEnded,
-      onEmbedTransportPaused,
-      activeVideoIdRef,
-      clearPlaybackVideoUiLoading,
       completeEmbedPlaybackHandshake,
-      embedVideoIdRef,
+      onEmbedTransportPaused,
       isPlaybackVideoUiLoadingRef,
-      pendingPlayFromGestureRef,
-      playbackIframeRef,
-      playbackVideoTransitionTargetIdRef,
-      playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
-      playbackVideoUiLoadingTargetVideoIdRef,
-      embedWatchdogVideoIdRef,
+      tryConfirmAudibleEmbedPlayback,
     ],
   );
+
+  useEffect(() => {
+    if (!isPlaying || isPaused || !isPlaybackVideoUiLoading) {
+      return;
+    }
+
+    if (document.visibilityState !== "visible") {
+      return;
+    }
+
+    const pollAudibleEmbedState = () => {
+      if (
+        !isPlaybackVideoUiLoadingRef.current ||
+        embedPlaybackConfirmedRef.current
+      ) {
+        return;
+      }
+
+      syncEmbedPlaybackState();
+    };
+
+    pollAudibleEmbedState();
+    const intervalId = window.setInterval(
+      pollAudibleEmbedState,
+      PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+    );
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [
+    embedPlaybackConfirmedRef,
+    isPaused,
+    isPlaybackVideoUiLoading,
+    isPlaybackVideoUiLoadingRef,
+    isPlaying,
+    syncEmbedPlaybackState,
+  ]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -745,16 +823,20 @@ export const useReleasePlaybackYoutubeEmbed = ({
             ...definedProps({ previousCurrentTime }),
             embedLoadStartedAtMs:
               playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+            videoUiLoadingCycleStartedAtMs:
+              playbackVideoUiLoadingCycleStartedAtMsRef.current,
             nowMs: Date.now(),
             isPlaying: isPlayingRef.current,
             isPaused: isPausedRef.current,
           })
         ) {
-          if (isPlaybackVideoUiLoadingRef.current) {
-            clearPlaybackVideoUiLoading();
-          }
-
-          completeEmbedPlaybackHandshake();
+          tryConfirmAudibleEmbedPlayback({
+            ...definedProps({
+              playerState: infoDelivery.playerState,
+              infoDeliveryCurrentTime: infoDelivery.currentTime,
+              previousInfoDeliveryCurrentTime: previousCurrentTime,
+            }),
+          });
           return;
         }
       }
@@ -784,11 +866,13 @@ export const useReleasePlaybackYoutubeEmbed = ({
     notifyEmbedPlaybackEnded,
     onYoutubeEmbedPlaybackError,
     playbackIframeRef,
+    playbackVideoUiLoadingCycleStartedAtMsRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
     isPausedRef,
     isPlayingRef,
     isPlaybackVideoUiLoadingRef,
     playbackVideoTransitionTargetIdRef,
+    tryConfirmAudibleEmbedPlayback,
   ]);
 
   const resumePlaybackFromGesture = useCallback(() => {

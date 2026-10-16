@@ -168,12 +168,12 @@ pnpm handbook:check   # handbook sync + spec-pair (TDD) vs origin/staging
 
 pnpm test             # Jest (--runInBand --detectOpenHandles; CI: pnpm test:ci)
 pnpm test:file        # Jest watch for one file
-pnpm test:e2e:install # once: Playwright Chromium
+pnpm test:e2e         # full Playwright suite (auto-installs Chromium if missing; reuses :6767 if running)
+pnpm test:e2e:smoke   # smoke list only (E2E_SMOKE=1; chromium)
+pnpm test:e2e:install # download Chromium only (test:e2e runs this when browsers are missing)
 pnpm build:e2e        # prod build with mock YouTube embed + test OAuth env (CI E2E; DB optional)
 pnpm test:e2e:smoke:ci  # PR-parity smoke: build:e2e + chromium smoke list
 pnpm test:e2e:ci      # full E2E matrix (matches push to staging)
-pnpm test:e2e         # full suite locally (reuses server on :6767 if running; see Testing below)
-pnpm test:e2e:smoke   # smoke list only (set E2E_SMOKE=1; chromium)
 pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
 
 pnpm lint             # Biome check

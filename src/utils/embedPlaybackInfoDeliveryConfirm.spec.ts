@@ -54,4 +54,19 @@ describe("shouldConfirmEmbedPlaybackFromInfoDelivery", () => {
       }),
     ).toBe(false);
   });
+
+  it("when only the video UI loading cycle started, confirms from infoDelivery after the gate", () => {
+    const cycleStartedAt = 5_000;
+
+    expect(
+      shouldConfirmEmbedPlaybackFromInfoDelivery({
+        info: { currentTime: 1.2 },
+        embedLoadStartedAtMs: null,
+        videoUiLoadingCycleStartedAtMs: cycleStartedAt,
+        nowMs: cycleStartedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+        isPlaying: true,
+        isPaused: false,
+      }),
+    ).toBe(true);
+  });
 });

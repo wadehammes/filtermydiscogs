@@ -15,6 +15,7 @@ Short task checklists; **`docs/handbook/`** stays canonical. Load via `@` skill 
 | [scaffold-components](./scaffold-components/SKILL.md) | New components — `pnpm scaffold` |
 | [stacked-prs](./stacked-prs/SKILL.md) | `st` / gh-stack into `staging` |
 | [fallow](./fallow/SKILL.md) | Fallow MCP / CLI |
+| [sentry](./sentry/SKILL.md) | Sentry MCP — issue search, triage, resolve |
 | [filters-and-jotai](./filters-and-jotai/SKILL.md) | Filters, saved views, facet UI |
 | [overlays-and-base-ui](./overlays-and-base-ui/SKILL.md) | Dialogs, Select, menus, portals |
 | [crates-and-membership](./crates-and-membership/SKILL.md) | Crates, drawer, public crate |

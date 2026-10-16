@@ -1,9 +1,12 @@
 import { describe, expect, it } from "@jest/globals";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
+import { resolvePlaybackVideoUiLoadingTimeoutMs } from "src/utils/playbackEmbedStartWatchdog";
 import { buildReleasePlaybackMatchIndex } from "src/utils/releasePlayback";
+import * as releasePlaybackActivePresentation from "src/utils/releasePlaybackActivePresentation";
 import {
   doesPlaybackVideoUiLoadingTargetMatch,
+  isEmbedAlignedForLoadingPlaybackConfirm,
   resolveActivePlaybackTitle,
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
@@ -129,6 +132,18 @@ describe("releasePlaybackActivePresentation", () => {
         hasQueueItem: false,
         preparedEmbedVideoId: null,
         activeVideoId: "prev-id",
+      }),
+    ).toBe(true);
+  });
+
+  it("isEmbedAlignedForLoadingPlaybackConfirm accepts watchdog embed id when session ids lag", () => {
+    expect(
+      isEmbedAlignedForLoadingPlaybackConfirm({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: "next-id",
       }),
     ).toBe(true);
   });
@@ -332,5 +347,13 @@ describe("releasePlaybackActivePresentation", () => {
 
   it("resolveActiveVideoId returns null when there is no active video", () => {
     expect(resolveActiveVideoId(null)).toBeNull();
+  });
+
+  it("when video UI loading timeout is needed, resolvePlaybackVideoUiLoadingTimeoutMs replaces the removed module constant", () => {
+    expect(
+      "PLAYBACK_VIDEO_UI_LOADING_TIMEOUT_MS" in
+        releasePlaybackActivePresentation,
+    ).toBe(false);
+    expect(resolvePlaybackVideoUiLoadingTimeoutMs()).toBeGreaterThan(0);
   });
 });

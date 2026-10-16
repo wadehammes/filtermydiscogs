@@ -1,5 +1,8 @@
-import { describe, expect, it } from "@jest/globals";
-import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
+import { afterEach, describe, expect, it } from "@jest/globals";
+import {
+  installViewTransitionRecoverableErrorFilter,
+  isViewTransitionInterruptionError,
+} from "src/utils/viewTransitionInterruptions";
 
 describe("isViewTransitionInterruptionError", () => {
   it("matches hidden-document InvalidStateError messages", () => {
@@ -26,5 +29,37 @@ describe("isViewTransitionInterruptionError", () => {
     expect(isViewTransitionInterruptionError(new Error("Network failed"))).toBe(
       false,
     );
+  });
+});
+
+describe("installViewTransitionRecoverableErrorFilter", () => {
+  const patchedKey = "__fmdViewTransitionReportErrorPatched";
+
+  afterEach(() => {
+    delete (globalThis as { [patchedKey]?: boolean })[patchedKey];
+  });
+
+  it("when scheduler termination is reported, does not forward to the original reportError", () => {
+    const reported: unknown[] = [];
+    const priorReportError =
+      typeof globalThis.reportError === "function"
+        ? globalThis.reportError.bind(globalThis)
+        : (error: unknown) => {
+            throw error;
+          };
+
+    globalThis.reportError = (error: unknown) => {
+      reported.push(error);
+    };
+
+    installViewTransitionRecoverableErrorFilter();
+
+    globalThis.reportError(
+      new Error("callback `timer callback` was terminated"),
+    );
+
+    expect(reported).toHaveLength(0);
+
+    globalThis.reportError = priorReportError;
   });
 });
