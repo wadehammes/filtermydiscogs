@@ -144,6 +144,20 @@ const dispatchYoutubePlayerError = ({
   );
 };
 
+const dispatchYoutubeEmbedReady = ({
+  contentWindow,
+}: {
+  contentWindow: Window;
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({ event: "onReady", info: 1 }),
+      origin: "https://www.youtube-nocookie.com",
+      source: contentWindow,
+    }),
+  );
+};
+
 const dispatchYoutubePlayerState = ({
   contentWindow,
   playerState,
@@ -2191,6 +2205,46 @@ describe("ReleasePlaybackProvider", () => {
     jest.useRealTimers();
   });
 
+  it("when YouTube posts onReady after load started, confirms embed playback so the watchdog does not skip", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      dispatchYoutubeEmbedReady({ contentWindow });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(resolveFirstSessionEmbedWatchdogArmMs());
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
   it("extends the first embed watchdog arm by initial presentation grace before unavailable skip", async () => {
     jest.useFakeTimers();
 
@@ -2235,6 +2289,70 @@ describe("ReleasePlaybackProvider", () => {
     advanceEmbedWatchdogSyncProbeRecheck();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
+
+    expect(mockReportPlaybackSkipToSentry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: expect.objectContaining({
+          watchdogMs: resolveFirstSessionEmbedWatchdogArmMs(),
+        }),
+      }),
+    );
+
+    jest.useRealTimers();
+  });
+
+  it("re-applies initial presentation watchdog grace when a new embed load resets confirmation", async () => {
+    jest.useFakeTimers();
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      dispatchYoutubeEmbedReady({ contentWindow });
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    act(() => {
+      result.current.notifyPlaybackVideoLoadStarted("abc12345678");
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS);
+    });
+    advanceEmbedWatchdogSyncProbeRecheck();
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
 
     jest.useRealTimers();
   });
@@ -2632,7 +2750,7 @@ describe("ReleasePlaybackProvider", () => {
           trackPosition: "B1",
           trackTitle: "Never Gonna Give You Up (Instrumental)",
           trackKey: `${collectionRelease.instance_id}:B1`,
-          watchdogMs: PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
+          watchdogMs: resolveFirstSessionEmbedWatchdogArmMsForSlow(),
           youtubeVideoId: "abc12345678",
         }),
       }),

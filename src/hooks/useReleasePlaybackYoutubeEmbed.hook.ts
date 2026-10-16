@@ -111,6 +111,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   onPlaybackEnded: () => void;
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
   onEmbedPlaybackConfirmed?: () => void;
+  onYoutubeEmbedPlayerReady?: () => void;
   onEmbedTransportPaused?: () => void;
   userYoutubeOverridesRef: RefObject<Map<string, string>>;
 }
@@ -137,6 +138,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   onPlaybackEnded,
   onYoutubeEmbedPlaybackError,
   onEmbedPlaybackConfirmed,
+  onYoutubeEmbedPlayerReady,
   onEmbedTransportPaused,
   userYoutubeOverridesRef,
 }: UseReleasePlaybackYoutubeEmbedParams) => {
@@ -565,6 +567,9 @@ export const useReleasePlaybackYoutubeEmbed = ({
       completeEmbedPlaybackHandshake,
       onEmbedTransportPaused,
       isPlaybackVideoUiLoadingRef,
+      pendingPlayFromGestureRef,
+      playbackIframeRef,
+      playbackVideoTransitionTargetIdRef,
       tryConfirmAudibleEmbedPlayback,
     ],
   );
@@ -698,6 +703,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     setEmbedVideoId(activeVideoId);
   }, [
     activeVideoId,
+    embedPlaybackConfirmedRef,
     embedVideoIdRef,
     isPlaying,
     setEmbedVideoId,
@@ -708,6 +714,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playbackVideoTransitionTargetIdRef,
     releaseDetailId,
     releaseId,
+    similarQueueFetchInFlightRef,
   ]);
 
   useEffect(() => {
@@ -781,6 +788,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       if (parseYoutubeEmbedReadyFromMessage(event.data)) {
         enableYoutubeIframeListening(iframe);
+        onYoutubeEmbedPlayerReady?.();
         return;
       }
 
@@ -859,12 +867,12 @@ export const useReleasePlaybackYoutubeEmbed = ({
       window.removeEventListener("message", handleMessage);
     };
   }, [
-    clearPlaybackVideoUiLoading,
-    completeEmbedPlaybackHandshake,
     handleYoutubeEmbedPlayerState,
     isWithinTrackSwitchGrace,
+    lastInfoDeliveryCurrentTimeRef,
     notifyEmbedPlaybackEnded,
     onYoutubeEmbedPlaybackError,
+    onYoutubeEmbedPlayerReady,
     playbackIframeRef,
     playbackVideoUiLoadingCycleStartedAtMsRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
@@ -900,6 +908,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
   }, [
     clearEmbedLoadStateSyncTimeout,
+    lastInfoDeliveryCurrentTimeRef,
     markEmbedTrackSwitchGrace,
     playbackIframeRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,

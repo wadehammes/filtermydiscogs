@@ -207,6 +207,7 @@ export const useReleasePlaybackProvider = (): {
   const clearPlayFromGestureRetriesRef = useRef<() => void>(() => undefined);
   const embedPlaybackConfirmedRef = useRef(false);
   const embedInitialWatchdogGracePendingRef = useRef(true);
+  const embedWatchdogArmedDelayMsRef = useRef<number | null>(null);
   const embedWatchdogVideoIdRef = useRef<string | null>(null);
   const lastEmbedUnavailableSkipAtMsRef = useRef<number | null>(null);
   const embedWatchdogLoadingRearmCountRef = useRef(0);
@@ -500,7 +501,9 @@ export const useReleasePlaybackProvider = (): {
           ? userYoutubeOverridesRef.current.get(trackKey)?.trim()
           : undefined,
         discogsMatchedYoutubeId: matchedActiveVideoIdRef.current,
-        watchdogMs: resolvePlaybackEmbedUnavailableWatchdogMs(),
+        watchdogMs:
+          embedWatchdogArmedDelayMsRef.current ??
+          resolveEmbedWatchdogDelayMsRef.current(),
         connectionQuality: classifyNetworkConnectionQuality(
           getNavigatorNetworkInformation(),
         ),
@@ -652,9 +655,26 @@ export const useReleasePlaybackProvider = (): {
     embedPlaybackConfirmedRef.current = true;
     embedWatchdogLoadingRearmCountRef.current = 0;
     embedWatchdogSyncProbeAttemptedRef.current = false;
+    embedWatchdogArmedDelayMsRef.current = null;
     embedStartWatchdogRef.current.disarm();
     clearPlaybackVideoUiLoading();
   }, [clearPlaybackVideoUiLoading]);
+
+  const notifyPlaybackVideoPresentationReady = useCallback(() => {
+    clearPlaybackVideoUiLoading();
+
+    if (awaitingResumeGestureRef.current || isPausedRef.current) {
+      return;
+    }
+
+    if (!isPlayingRef.current) {
+      return;
+    }
+
+    if (!embedPlaybackConfirmedRef.current) {
+      confirmEmbedPlayback();
+    }
+  }, [clearPlaybackVideoUiLoading, confirmEmbedPlayback]);
 
   const {
     clearPlayFromGestureRetries,
@@ -712,6 +732,7 @@ export const useReleasePlaybackProvider = (): {
     onPlaybackEnded: handlePlaybackEnded,
     onYoutubeEmbedPlaybackError: forwardYoutubeEmbedPlaybackError,
     onEmbedPlaybackConfirmed: confirmEmbedPlayback,
+    onYoutubeEmbedPlayerReady: notifyPlaybackVideoPresentationReady,
     onEmbedTransportPaused: () => {
       embedStartWatchdogRef.current.disarm();
     },
@@ -824,6 +845,8 @@ export const useReleasePlaybackProvider = (): {
       return;
     }
 
+    embedWatchdogArmedDelayMsRef.current =
+      resolveEmbedWatchdogDelayMsRef.current();
     embedStartWatchdogRef.current.disarm();
     embedStartWatchdogRef.current.arm(runEmbedUnavailableSkipIfUnconfirmed);
   }, [runEmbedUnavailableSkipIfUnconfirmed]);
@@ -924,6 +947,7 @@ export const useReleasePlaybackProvider = (): {
 
       embedWatchdogVideoIdRef.current = resolvedVideoId;
       embedPlaybackConfirmedRef.current = false;
+      embedInitialWatchdogGracePendingRef.current = true;
       embedWatchdogLoadingRearmCountRef.current = 0;
       embedWatchdogSyncProbeAttemptedRef.current = false;
 
@@ -940,22 +964,6 @@ export const useReleasePlaybackProvider = (): {
     },
     [armEmbedStartWatchdog, notifyImperativeEmbedLoadStarted],
   );
-
-  const notifyPlaybackVideoPresentationReady = useCallback(() => {
-    clearPlaybackVideoUiLoading();
-
-    if (awaitingResumeGestureRef.current || isPausedRef.current) {
-      return;
-    }
-
-    if (!isPlayingRef.current) {
-      return;
-    }
-
-    if (!embedPlaybackConfirmedRef.current) {
-      confirmEmbedPlayback();
-    }
-  }, [clearPlaybackVideoUiLoading, confirmEmbedPlayback]);
 
   const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
 

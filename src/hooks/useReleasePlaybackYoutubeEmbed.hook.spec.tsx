@@ -23,6 +23,20 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
+const dispatchYoutubeEmbedReady = ({
+  contentWindow,
+}: {
+  contentWindow: Window;
+}) => {
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: JSON.stringify({ event: "onReady", info: 1 }),
+      origin: "https://www.youtube-nocookie.com",
+      source: contentWindow,
+    }),
+  );
+};
+
 const buildHarness = ({
   isPaused = false,
   isPlaying = true,
@@ -30,6 +44,7 @@ const buildHarness = ({
   isPlaybackVideoUiLoading = false,
   onYoutubeEmbedPlaybackError,
   onEmbedPlaybackConfirmed,
+  onYoutubeEmbedPlayerReady,
 }: {
   isPaused?: boolean;
   isPlaying?: boolean;
@@ -37,6 +52,7 @@ const buildHarness = ({
   isPlaybackVideoUiLoading?: boolean;
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
   onEmbedPlaybackConfirmed?: () => void;
+  onYoutubeEmbedPlayerReady?: () => void;
 } = {}) => {
   const queryClient = createTestQueryClient();
   const release = releaseFactory.withDisplayDefaults();
@@ -127,6 +143,7 @@ const buildHarness = ({
         ...definedProps({
           onYoutubeEmbedPlaybackError,
           onEmbedPlaybackConfirmed,
+          onYoutubeEmbedPlayerReady,
         }),
       }),
     { wrapper },
@@ -554,6 +571,108 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
 
     expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
+  });
+
+  it("when YouTube posts onReady, invokes onYoutubeEmbedPlayerReady", () => {
+    const onYoutubeEmbedPlayerReady = jest.fn();
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { playbackIframeRef } = buildHarness({
+      onYoutubeEmbedPlayerReady,
+      onEmbedPlaybackConfirmed,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+
+    dispatchYoutubeEmbedReady({ contentWindow });
+
+    expect(onYoutubeEmbedPlayerReady).toHaveBeenCalledTimes(1);
+    expect(onEmbedPlaybackConfirmed).not.toHaveBeenCalled();
+  });
+
+  it("when onYoutubeEmbedPlayerReady changes, onReady invokes the latest callback", () => {
+    const firstReady = jest.fn();
+    const secondReady = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const playbackIframeRef = { current: null as HTMLIFrameElement | null };
+    const queryClient = createTestQueryClient();
+    const release = releaseFactory.withDisplayDefaults();
+    const releaseId = release.basic_information.id ?? 1;
+    const userYoutubeOverridesRef = { current: new Map<string, string>() };
+    const releaseRef = { current: release };
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { rerender } = renderHook(
+      ({
+        onYoutubeEmbedPlayerReady,
+      }: {
+        onYoutubeEmbedPlayerReady: () => void;
+      }) =>
+        useReleasePlaybackYoutubeEmbed({
+          queryClient,
+          dispatchSession: jest.fn(),
+          refs: {
+            playbackIframeRef,
+            embedVideoIdRef: { current: null },
+            lastSyncedActiveVideoIdRef: { current: null },
+            isPlayingRef: { current: true },
+            isPausedRef: { current: false },
+            activeVideoIdRef: { current: null },
+            isPlaybackVideoUiLoadingRef: { current: false },
+            pendingPlayFromGestureRef: { current: false },
+            playbackVideoTransitionTargetIdRef: { current: null },
+            playbackVideoUiLoadingTargetVideoIdRef: { current: null },
+            playbackVideoUiLoadingEmbedLoadStartedAtMsRef: { current: null },
+            playbackVideoUiLoadingCycleStartedAtMsRef: { current: null },
+            embedWatchdogVideoIdRef: { current: null },
+            embedPlaybackConfirmedRef: { current: false },
+            similarQueueFetchInFlightRef: { current: false },
+            playFromGestureRetryTimeoutsRef: { current: [] as number[] },
+            lastInfoDeliveryCurrentTimeRef: { current: undefined },
+            releaseRef,
+            tracksRef: { current: [] as never[] },
+            videosRef: { current: [] as never[] },
+          },
+          isPlaying: true,
+          isPaused: false,
+          isPlaybackReady: true,
+          isPlaybackEmbedMounted: false,
+          isPlaybackVideoUiLoading: false,
+          activeVideoId: null,
+          matchedActiveVideoId: null,
+          pendingTrackPosition: null,
+          pendingPreviewVideoUri: null,
+          releaseId,
+          releaseDetailId: releaseId,
+          setEmbedVideoId: jest.fn(),
+          setShouldAutoplayEmbed: jest.fn(),
+          setIsPlaybackEmbedMounted: jest.fn(),
+          clearPlaybackVideoUiLoading: jest.fn(),
+          onPlaybackEnded: jest.fn(),
+          onYoutubeEmbedPlayerReady,
+          userYoutubeOverridesRef,
+        }),
+      {
+        wrapper,
+        initialProps: { onYoutubeEmbedPlayerReady: firstReady },
+      },
+    );
+
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+
+    dispatchYoutubeEmbedReady({ contentWindow });
+    expect(firstReady).toHaveBeenCalledTimes(1);
+    expect(secondReady).not.toHaveBeenCalled();
+
+    firstReady.mockClear();
+    rerender({ onYoutubeEmbedPlayerReady: secondReady });
+    dispatchYoutubeEmbedReady({ contentWindow });
+    expect(firstReady).not.toHaveBeenCalled();
+    expect(secondReady).toHaveBeenCalledTimes(1);
   });
 
   it("confirms playback from infoDelivery currentTime without onStateChange PLAYING", () => {
