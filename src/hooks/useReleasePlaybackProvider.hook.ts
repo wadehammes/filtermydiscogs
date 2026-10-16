@@ -93,6 +93,7 @@ import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
   resolveEmbedPlaybackConfirmGateStartedAtMs,
+  resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
@@ -205,6 +206,7 @@ export const useReleasePlaybackProvider = (): {
   const previewVideoRef = useRef<DiscogsVideo | null>(null);
   const clearPlayFromGestureRetriesRef = useRef<() => void>(() => undefined);
   const embedPlaybackConfirmedRef = useRef(false);
+  const embedInitialWatchdogGracePendingRef = useRef(true);
   const embedWatchdogVideoIdRef = useRef<string | null>(null);
   const lastEmbedUnavailableSkipAtMsRef = useRef<number | null>(null);
   const embedWatchdogLoadingRearmCountRef = useRef(0);
@@ -217,9 +219,13 @@ export const useReleasePlaybackProvider = (): {
     resolvePlaybackEmbedUnavailableWatchdogMs(),
   );
   resolveEmbedWatchdogDelayMsRef.current = () =>
-    resolvePlaybackEmbedUnavailableWatchdogDelayMs({
-      nowMs: Date.now(),
-      lastUnavailableSkipAtMs: lastEmbedUnavailableSkipAtMsRef.current,
+    resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace({
+      baseDelayMs: resolvePlaybackEmbedUnavailableWatchdogDelayMs({
+        nowMs: Date.now(),
+        lastUnavailableSkipAtMs: lastEmbedUnavailableSkipAtMsRef.current,
+      }),
+      initialPresentationGracePending:
+        embedInitialWatchdogGracePendingRef.current,
     });
   const embedStartWatchdogRef = useRef(
     createEmbedPlaybackStartWatchdog({
@@ -642,6 +648,7 @@ export const useReleasePlaybackProvider = (): {
   }, []);
 
   const confirmEmbedPlayback = useCallback(() => {
+    embedInitialWatchdogGracePendingRef.current = false;
     embedPlaybackConfirmedRef.current = true;
     embedWatchdogLoadingRearmCountRef.current = 0;
     embedWatchdogSyncProbeAttemptedRef.current = false;
@@ -935,23 +942,20 @@ export const useReleasePlaybackProvider = (): {
   );
 
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
-    notifyImperativeEmbedLoadStarted();
     clearPlaybackVideoUiLoading();
 
     if (awaitingResumeGestureRef.current || isPausedRef.current) {
       return;
     }
 
-    if (!embedPlaybackConfirmedRef.current) {
+    if (!isPlayingRef.current) {
       return;
     }
 
-    confirmEmbedPlayback();
-  }, [
-    clearPlaybackVideoUiLoading,
-    confirmEmbedPlayback,
-    notifyImperativeEmbedLoadStarted,
-  ]);
+    if (!embedPlaybackConfirmedRef.current) {
+      confirmEmbedPlayback();
+    }
+  }, [clearPlaybackVideoUiLoading, confirmEmbedPlayback]);
 
   const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
 
@@ -987,6 +991,7 @@ export const useReleasePlaybackProvider = (): {
   const resetPlaybackSkipState = useCallback(() => {
     embedStartWatchdogRef.current.disarm();
     embedUnavailableSkipHandlerRef.current.resetDedupe();
+    embedInitialWatchdogGracePendingRef.current = true;
   }, []);
 
   useEffect(() => {

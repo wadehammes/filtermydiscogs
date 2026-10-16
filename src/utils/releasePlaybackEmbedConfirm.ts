@@ -7,6 +7,19 @@ export const EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS =
 
 export const PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS = 2500;
 
+export const PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS = 3000;
+
+export const resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace = ({
+  baseDelayMs,
+  initialPresentationGracePending,
+}: {
+  baseDelayMs: number;
+  initialPresentationGracePending: boolean;
+}): number =>
+  initialPresentationGracePending
+    ? baseDelayMs + PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS
+    : baseDelayMs;
+
 export const resolveEmbedPlaybackConfirmGateStartedAtMs = ({
   imperativeEmbedLoadStartedAtMs,
   videoUiLoadingCycleStartedAtMs,
