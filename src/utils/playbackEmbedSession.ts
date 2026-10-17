@@ -283,6 +283,9 @@ export type PlaybackEmbedSessionState = {
   loadStartedAtMs: number | null;
   embedConfirmed: boolean;
   videoUiLoading: boolean;
+  imperativeLoadStartedAtMs: number | null;
+  videoUiLoadingCycleStartedAtMs: number | null;
+  loadingTargetVideoId: string | null;
   trackSwitchGraceUntilMs: number | null;
 };
 
@@ -292,6 +295,9 @@ export const initialPlaybackEmbedSessionState: PlaybackEmbedSessionState = {
   loadStartedAtMs: null,
   embedConfirmed: false,
   videoUiLoading: false,
+  imperativeLoadStartedAtMs: null,
+  videoUiLoadingCycleStartedAtMs: null,
+  loadingTargetVideoId: null,
   trackSwitchGraceUntilMs: null,
 };
 
@@ -299,8 +305,13 @@ export type PlaybackEmbedSessionEvent =
   | { type: "embed/session/reset" }
   | { type: "embed/load/started"; videoId: string; nowMs: number }
   | { type: "embed/load/confirmed"; videoId: string }
-  | { type: "embed/ui-loading/began" }
+  | { type: "embed/playback/confirmed" }
+  | { type: "embed/confirm/reset" }
+  | { type: "embed/imperative-load/started"; nowMs: number }
+  | { type: "embed/ui-loading/began"; nowMs: number; targetVideoId?: string }
+  | { type: "embed/ui-loading/target-set"; targetVideoId: string | null }
   | { type: "embed/ui-loading/cleared" }
+  | { type: "embed/ui-loading/spinner-cleared" }
   | { type: "embed/track-switch-grace/marked"; untilMs: number };
 
 export const reducePlaybackEmbedSession = (
@@ -333,7 +344,7 @@ export const reducePlaybackEmbedSession = (
     }
 
     case "embed/load/confirmed": {
-      if (state.loadVideoId !== event.videoId || !state.loadVideoId) {
+      if (!state.loadVideoId || state.loadVideoId !== event.videoId) {
         return state;
       }
 
@@ -343,16 +354,53 @@ export const reducePlaybackEmbedSession = (
       };
     }
 
+    case "embed/playback/confirmed":
+      return {
+        ...state,
+        embedConfirmed: true,
+      };
+
+    case "embed/confirm/reset":
+      return {
+        ...state,
+        embedConfirmed: false,
+      };
+
+    case "embed/imperative-load/started":
+      return {
+        ...state,
+        imperativeLoadStartedAtMs: event.nowMs,
+        embedConfirmed: false,
+      };
+
     case "embed/ui-loading/began":
       return {
         ...state,
         videoUiLoading: true,
+        videoUiLoadingCycleStartedAtMs: event.nowMs,
+        loadingTargetVideoId: event.targetVideoId ?? null,
+      };
+
+    case "embed/ui-loading/target-set":
+      return {
+        ...state,
+        loadingTargetVideoId: event.targetVideoId,
       };
 
     case "embed/ui-loading/cleared":
       return {
         ...state,
         videoUiLoading: false,
+        loadingTargetVideoId: null,
+        imperativeLoadStartedAtMs: null,
+        videoUiLoadingCycleStartedAtMs: null,
+      };
+
+    case "embed/ui-loading/spinner-cleared":
+      return {
+        ...state,
+        videoUiLoading: false,
+        loadingTargetVideoId: null,
       };
 
     case "embed/track-switch-grace/marked":
@@ -361,7 +409,9 @@ export const reducePlaybackEmbedSession = (
         trackSwitchGraceUntilMs: event.untilMs,
       };
 
-    default:
+    default: {
+      const _exhaustive: never = event;
       return state;
+    }
   }
 };
