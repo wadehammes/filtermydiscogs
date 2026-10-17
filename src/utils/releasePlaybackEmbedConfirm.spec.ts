@@ -8,6 +8,7 @@ import {
   shouldAcceptEmbedPlayingConfirmation,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
+  tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
 

@@ -739,7 +739,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
-  it("confirms playback from infoDelivery currentTime without onStateChange PLAYING", () => {
+  it("confirms playback from infoDelivery currentTime through the shared embed confirm gate", () => {
     const onEmbedPlaybackConfirmed = jest.fn();
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;

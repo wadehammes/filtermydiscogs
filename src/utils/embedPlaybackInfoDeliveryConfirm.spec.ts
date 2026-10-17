@@ -18,7 +18,7 @@ describe("shouldConfirmEmbedPlaybackFromInfoDelivery", () => {
     ).toBe(false);
   });
 
-  it("when infoDelivery reports PLAYING after the confirm delay, confirms", () => {
+  it("when infoDelivery reports PLAYING after the confirm delay, confirms via the shared gate", () => {
     expect(
       shouldConfirmEmbedPlaybackFromInfoDelivery({
         info: { playerState: YOUTUBE_PLAYER_STATE_PLAYING },
