@@ -55,8 +55,9 @@ Collection surfaces that open **`ReleaseModal`** should warm **two** things on h
 | [`useReleaseOpenHandler`](../../src/hooks/useReleaseOpenHandler.hook.ts) | Already inside an open modal (e.g. **`ReleaseSimilarReleaseItem`**) — query prefetch only; modal chunk is redundant |
 | [`prefetchReleaseOpenData`](../../src/utils/prefetchReleaseOpenData.ts) | Imperative full warm (both steps); tests mock **`prefetchReleaseModalChunk`**, not the modal loader |
 | [`prefetchDiscogsReleaseQuery`](../../src/utils/prefetchDiscogsReleaseQuery.ts) | Release detail only |
+| [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) | Server-side Discogs **`GET /releases/{id}`** for **`GET /api/release/[id]`** and **`POST /api/release/batch`** — OAuth **404** retries once with consumer credentials ([discogs.md → Release detail](discogs.md#release-detail-and-in-app-playback)) |
 
-Card/table specs and shared timer helpers: [conventions.md → Testing](conventions.md#testing) (**Release open hover prefetch** bullet). UI spread rules: [components.md → ReleaseCard](components.md#feature-example-releasecard-desktop-grid) (**Open detail modal** row).
+Card/table specs and shared timer helpers: [conventions.md → Testing](conventions.md#testing) (**Release open hover prefetch** bullet). Release route contracts: **`release/[id]/route.spec.ts`** (OAuth **404** consumer fallback — search **`when OAuth returns 404 but consumer credentials resolve the release`**). UI spread rules: [components.md → ReleaseCard](components.md#feature-example-releasecard-desktop-grid) (**Open detail modal** row).
 
 ## Authentication flow
 

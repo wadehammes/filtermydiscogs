@@ -166,9 +166,11 @@ class DiscogsOAuthService {
 
     if (inFlightKey) {
       this.inFlightGetRequests.set(inFlightKey, request);
-      void request.finally(() => {
-        this.inFlightGetRequests.delete(inFlightKey);
-      });
+      void request
+        .finally(() => {
+          this.inFlightGetRequests.delete(inFlightKey);
+        })
+        .catch(() => undefined);
     }
 
     return request;

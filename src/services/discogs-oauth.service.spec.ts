@@ -83,4 +83,56 @@ describe("discogsOAuthService", () => {
       discogsOAuthService.getIdentity("token", "secret"),
     ).resolves.toEqual(identity);
   });
+
+  it("when a deduped GET fails, does not emit an unhandled rejection from in-flight cleanup", async () => {
+    const releaseMessage =
+      "That release does not exist or may have been deleted.";
+    mockDiscogsFetch.mockResolvedValue(
+      new Response(JSON.stringify({ message: releaseMessage }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const unhandledRejections: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", onUnhandledRejection);
+
+    try {
+      const releaseUrl = "https://api.discogs.com/releases/7564990";
+      const [first, second] = await Promise.allSettled([
+        discogsOAuthService.makeAuthenticatedRequest(
+          releaseUrl,
+          "GET",
+          "token",
+          "secret",
+        ),
+        discogsOAuthService.makeAuthenticatedRequest(
+          releaseUrl,
+          "GET",
+          "token",
+          "secret",
+        ),
+      ]);
+
+      expect(first.status).toBe("rejected");
+      expect(second.status).toBe("rejected");
+      if (first.status === "rejected") {
+        expect(first.reason).toMatchObject({
+          message: releaseMessage,
+          status: 404,
+        });
+      }
+
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
+  });
 });
