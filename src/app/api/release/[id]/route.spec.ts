@@ -207,6 +207,62 @@ describe("GET /api/release/[id]", () => {
     });
   });
 
+  it("when OAuth returns 404 but consumer credentials resolve the release, returns 200", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
+    const notFoundError = new Error(
+      "That release does not exist or may have been deleted.",
+    ) as Error & { status: number };
+    notFoundError.status = 404;
+    jest
+      .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
+      .mockRejectedValue(notFoundError);
+    jest
+      .spyOn(discogsOAuthService, "makeConsumerRequest")
+      .mockResolvedValue(releaseDetail);
+
+    const response = await GET(createRequest("7564990", authenticatedCookies), {
+      params: Promise.resolve({ id: "7564990" }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(releaseDetail);
+    expect(discogsOAuthService.makeConsumerRequest).toHaveBeenCalledWith(
+      "https://api.discogs.com/releases/7564990",
+      "GET",
+    );
+  });
+
+  it("returns 404 when Discogs reports the release is missing for OAuth and consumer", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
+    const notFoundError = new Error(
+      "That release does not exist or may have been deleted.",
+    ) as Error & { status: number };
+    notFoundError.status = 404;
+    jest
+      .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
+      .mockRejectedValue(notFoundError);
+    jest
+      .spyOn(discogsOAuthService, "makeConsumerRequest")
+      .mockRejectedValue(notFoundError);
+
+    const response = await GET(createRequest("7564990", authenticatedCookies), {
+      params: Promise.resolve({ id: "7564990" }),
+    });
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      error: "Failed to fetch release",
+    });
+  });
+
   it("returns 502 when Discogs returns an upstream 5xx", async () => {
     jest
       .spyOn(discogsOAuthService, "getIdentity")

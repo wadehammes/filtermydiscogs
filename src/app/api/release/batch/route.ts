@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
+import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { releaseBatchBodySchema } from "src/lib/validation/release.schemas";
-import { discogsOAuthService } from "src/services/discogs-oauth.service";
 import type { DiscogsReleaseDetail } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 
 const AUTHENTICATED_RELEASE_CACHE =
   "private, max-age=3600, stale-while-revalidate=7200";
@@ -48,20 +49,11 @@ export async function POST(request: NextRequest) {
       const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
 
       try {
-        if (useAuthenticatedSession && accessToken && accessTokenSecret) {
-          releases[releaseId] =
-            (await discogsOAuthService.makeAuthenticatedRequest(
-              releaseUrl,
-              "GET",
-              accessToken,
-              accessTokenSecret,
-            )) as DiscogsReleaseDetail;
-        } else {
-          releases[releaseId] = (await discogsOAuthService.makeConsumerRequest(
-            releaseUrl,
-            "GET",
-          )) as DiscogsReleaseDetail;
-        }
+        releases[releaseId] = (await fetchDiscogsReleaseRecord({
+          releaseUrl,
+          useAuthenticatedSession,
+          ...definedProps({ accessToken, accessTokenSecret }),
+        })) as DiscogsReleaseDetail;
       } catch {}
     }
 

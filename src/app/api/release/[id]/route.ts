@@ -5,8 +5,9 @@ import {
   discogsThrottleQueueResponseInit,
   isDiscogsThrottleQueueError,
 } from "src/lib/discogs-api-error";
+import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
-import { discogsOAuthService } from "src/services/discogs-oauth.service";
+import { definedProps } from "src/utils/definedProps";
 
 const AUTHENTICATED_RELEASE_CACHE =
   "private, max-age=3600, stale-while-revalidate=7200";
@@ -49,31 +50,25 @@ export async function GET(
       useAuthenticatedSession = !("error" in verified);
     }
 
-    if (useAuthenticatedSession && accessToken && accessTokenSecret) {
-      const release = await discogsOAuthService.makeAuthenticatedRequest(
-        releaseUrl,
-        "GET",
-        accessToken,
-        accessTokenSecret,
-      );
-
-      return NextResponse.json(release, {
-        headers: {
-          "Cache-Control": fresh
-            ? FRESH_RELEASE_CACHE
-            : AUTHENTICATED_RELEASE_CACHE,
-        },
-      });
-    }
-
-    const release = await discogsOAuthService.makeConsumerRequest(
+    const release = await fetchDiscogsReleaseRecord({
       releaseUrl,
-      "GET",
-    );
+      useAuthenticatedSession,
+      ...definedProps({ accessToken, accessTokenSecret }),
+    });
+
+    const hasAuthenticatedReleaseSession =
+      useAuthenticatedSession && accessToken && accessTokenSecret;
+    let cacheControl = PUBLIC_RELEASE_CACHE;
+
+    if (fresh) {
+      cacheControl = FRESH_RELEASE_CACHE;
+    } else if (hasAuthenticatedReleaseSession) {
+      cacheControl = AUTHENTICATED_RELEASE_CACHE;
+    }
 
     return NextResponse.json(release, {
       headers: {
-        "Cache-Control": fresh ? FRESH_RELEASE_CACHE : PUBLIC_RELEASE_CACHE,
+        "Cache-Control": cacheControl,
       },
     });
   } catch (error) {
