@@ -7,6 +7,7 @@ import {
   shouldAcceptEmbedPlayingConfirmation,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
+  tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
 
@@ -132,6 +133,20 @@ describe("releasePlaybackEmbedConfirm", () => {
         lastInfoDeliveryCurrentTime: 3.2,
       }),
     ).toBe(true);
+  });
+
+  it("re-exports tryConfirmPlaybackEmbedFromSignal from playbackEmbedSession", () => {
+    expect(
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: { kind: "watchdog-progress" },
+        imperativeEmbedLoadStartedAtMs: 1000,
+        nowMs: 5000,
+        transportSessionActive: true,
+        transportPaused: false,
+        embedPlaybackConfirmed: true,
+        lastInfoDeliveryCurrentTime: 2,
+      }),
+    ).toBe(false);
   });
 
   it("resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace adds grace only while initial presentation is pending", () => {

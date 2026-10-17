@@ -47,6 +47,7 @@ import {
 } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
 import { resolveEmbedUnavailableWatchdogOutcome } from "src/utils/embedUnavailableWatchdogOutcome";
+import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import {
   classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
@@ -92,9 +93,7 @@ import {
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
-  resolveEmbedPlaybackConfirmGateStartedAtMs,
   resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace,
-  shouldConfirmEmbedPlaybackFromAudibleEmbed,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
@@ -740,19 +739,16 @@ export const useReleasePlaybackProvider = (): {
       return true;
     }
 
-    const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
-      imperativeEmbedLoadStartedAtMs:
-        playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
-      videoUiLoadingCycleStartedAtMs:
-        playbackVideoUiLoadingCycleStartedAtMsRef.current,
-    });
-
     if (
-      shouldConfirmEmbedPlaybackFromAudibleEmbed({
-        gateStartedAtMs,
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: { kind: "audible" },
+        imperativeEmbedLoadStartedAtMs:
+          playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+        videoUiLoadingCycleStartedAtMs:
+          playbackVideoUiLoadingCycleStartedAtMsRef.current,
         nowMs: Date.now(),
-        isPlaying: isPlayingRef.current,
-        isPaused: isPausedRef.current,
+        transportSessionActive: isPlayingRef.current,
+        transportPaused: isPausedRef.current,
         ...definedProps({
           lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
         }),

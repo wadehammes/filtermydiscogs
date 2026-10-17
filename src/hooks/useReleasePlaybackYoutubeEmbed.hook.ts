@@ -13,7 +13,7 @@ import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackP
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { definedProps } from "src/utils/definedProps";
-import { shouldConfirmEmbedPlaybackFromInfoDelivery } from "src/utils/embedPlaybackInfoDeliveryConfirm";
+import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import {
   getQueueItemKey,
   resolveQueueItemYoutubeVideoId,
@@ -34,8 +34,6 @@ import { isEmbedAlignedForLoadingPlaybackConfirm } from "src/utils/releasePlayba
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
-  resolveEmbedPlaybackConfirmGateStartedAtMs,
-  shouldConfirmEmbedPlaybackFromAudibleEmbed,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
@@ -224,31 +222,28 @@ export const useReleasePlaybackYoutubeEmbed = ({
       infoDeliveryCurrentTime?: number;
       previousInfoDeliveryCurrentTime?: number;
     }) => {
-      if (!isPlayingRef.current || isPausedRef.current) {
-        return false;
-      }
-
-      const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+      const confirmed = tryConfirmPlaybackEmbedFromSignal({
+        signal: {
+          kind: "audible",
+          ...definedProps({
+            playerState,
+            infoDeliveryCurrentTime,
+            previousInfoDeliveryCurrentTime,
+          }),
+        },
         imperativeEmbedLoadStartedAtMs:
           playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
         videoUiLoadingCycleStartedAtMs:
           playbackVideoUiLoadingCycleStartedAtMsRef.current,
-      });
-
-      const audible = shouldConfirmEmbedPlaybackFromAudibleEmbed({
-        gateStartedAtMs,
         nowMs: Date.now(),
-        isPlaying: true,
-        isPaused: false,
+        transportSessionActive: isPlayingRef.current,
+        transportPaused: isPausedRef.current,
         ...definedProps({
-          playerState,
-          infoDeliveryCurrentTime,
-          previousInfoDeliveryCurrentTime,
           lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
         }),
       });
 
-      if (!audible) {
+      if (!confirmed) {
         return false;
       }
 
@@ -826,25 +821,14 @@ export const useReleasePlaybackYoutubeEmbed = ({
         }
 
         if (
-          shouldConfirmEmbedPlaybackFromInfoDelivery({
-            info: infoDelivery,
-            ...definedProps({ previousCurrentTime }),
-            embedLoadStartedAtMs:
-              playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
-            videoUiLoadingCycleStartedAtMs:
-              playbackVideoUiLoadingCycleStartedAtMsRef.current,
-            nowMs: Date.now(),
-            isPlaying: isPlayingRef.current,
-            isPaused: isPausedRef.current,
-          })
-        ) {
           tryConfirmAudibleEmbedPlayback({
             ...definedProps({
               playerState: infoDelivery.playerState,
               infoDeliveryCurrentTime: infoDelivery.currentTime,
               previousInfoDeliveryCurrentTime: previousCurrentTime,
             }),
-          });
+          })
+        ) {
           return;
         }
       }
