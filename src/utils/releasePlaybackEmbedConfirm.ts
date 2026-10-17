@@ -10,8 +10,3 @@ export {
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
   tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/playbackEmbedSession";
-
-export type {
-  PlaybackEmbedConfirmSignal,
-  TryConfirmPlaybackEmbedFromSignalInput,
-} from "src/utils/playbackEmbedSession";

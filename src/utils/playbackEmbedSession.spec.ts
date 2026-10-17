@@ -132,11 +132,14 @@ describe("playbackEmbedSession", () => {
   });
 
   it("marks embed confirmed for the active load video id", () => {
-    const loading = reducePlaybackEmbedSession(initialPlaybackEmbedSessionState, {
-      type: "embed/load/started",
-      videoId: "video-a",
-      nowMs: 500,
-    });
+    const loading = reducePlaybackEmbedSession(
+      initialPlaybackEmbedSessionState,
+      {
+        type: "embed/load/started",
+        videoId: "video-a",
+        nowMs: 500,
+      },
+    );
 
     const confirmed = reducePlaybackEmbedSession(loading, {
       type: "embed/load/confirmed",
@@ -180,7 +183,7 @@ describe("playbackEmbedSession", () => {
       tryConfirmPlaybackEmbedFromSignal({
         signal: {
           kind: "info-delivery",
-          info: { currentTime: 0.4, playerState: undefined },
+          info: { currentTime: 0.4 },
           previousCurrentTime: 0.2,
         },
         imperativeEmbedLoadStartedAtMs: startedAt,
@@ -205,11 +208,14 @@ describe("playbackEmbedSession", () => {
   });
 
   it("ignores confirm for a stale video id after load generation moved on", () => {
-    const loading = reducePlaybackEmbedSession(initialPlaybackEmbedSessionState, {
-      type: "embed/load/started",
-      videoId: "video-a",
-      nowMs: 500,
-    });
+    const loading = reducePlaybackEmbedSession(
+      initialPlaybackEmbedSessionState,
+      {
+        type: "embed/load/started",
+        videoId: "video-a",
+        nowMs: 500,
+      },
+    );
 
     const switched = reducePlaybackEmbedSession(loading, {
       type: "embed/load/started",

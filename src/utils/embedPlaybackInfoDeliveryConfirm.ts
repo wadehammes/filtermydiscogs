@@ -1,3 +1,4 @@
+import { definedProps } from "src/utils/definedProps";
 import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import type { YoutubeInfoDelivery } from "src/utils/youtubeIframeEvents";
 
@@ -22,7 +23,7 @@ export const shouldConfirmEmbedPlaybackFromInfoDelivery = ({
     signal: {
       kind: "info-delivery",
       info,
-      previousCurrentTime,
+      ...definedProps({ previousCurrentTime }),
     },
     imperativeEmbedLoadStartedAtMs: embedLoadStartedAtMs,
     videoUiLoadingCycleStartedAtMs,
