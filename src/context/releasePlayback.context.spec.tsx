@@ -55,7 +55,10 @@ import {
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
-import { EMBED_TRACK_SWITCH_PAUSE_GRACE_MS } from "src/utils/youtubeIframeEvents";
+import {
+  EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
+  HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+} from "src/utils/youtubeIframeEvents";
 import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -3386,6 +3389,71 @@ describe("ReleasePlaybackProvider", () => {
       configurable: true,
       value: "visible",
     });
+  });
+
+  it("when the tab is hidden and transport pauses before end, background polling still advances the queue", async () => {
+    jest.useFakeTimers();
+
+    setDocumentVisibilityState("hidden");
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 2,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(true);
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS);
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: {
+          playerState: 2,
+          currentTime: 180,
+          duration: 180,
+        },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+      expect(result.current.queue).toHaveLength(0);
+    });
+
+    setDocumentVisibilityState("visible");
+    jest.useRealTimers();
   });
 
   it("does not run the embed watchdog skip while the tab stays hidden during embed load", async () => {
