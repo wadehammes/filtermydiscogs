@@ -633,7 +633,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   }, [isPlayingRef, recoverPlaybackAfterTabVisible]);
 
   useEffect(() => {
-    if (!isPlaying || isPaused) {
+    if (!isPlaying) {
       return;
     }
 
@@ -644,7 +644,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       syncEmbedPlaybackState();
 
-      if (isWithinTrackSwitchGrace()) {
+      if (isWithinTrackSwitchGrace() && !isPausedRef.current) {
         attemptPlayFromGesture();
       }
     };
@@ -659,7 +659,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     };
   }, [
     attemptPlayFromGesture,
-    isPaused,
+    isPausedRef,
     isPlaying,
     isWithinTrackSwitchGrace,
     syncEmbedPlaybackState,
