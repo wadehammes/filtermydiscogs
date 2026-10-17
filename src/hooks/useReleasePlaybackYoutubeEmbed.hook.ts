@@ -251,7 +251,9 @@ export const useReleasePlaybackYoutubeEmbed = ({
         nowMs: Date.now(),
         transportSessionActive: isPlayingRef.current,
         transportPaused: isPausedRef.current,
-        lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
+        ...definedProps({
+          lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
+        }),
       });
 
       if (!confirmed) {

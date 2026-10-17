@@ -183,7 +183,7 @@ describe("playbackEmbedSession", () => {
       tryConfirmPlaybackEmbedFromSignal({
         signal: {
           kind: "info-delivery",
-          info: { currentTime: 0.4, playerState: undefined },
+          info: { currentTime: 0.4 },
           previousCurrentTime: 0.2,
         },
         imperativeEmbedLoadStartedAtMs: startedAt,

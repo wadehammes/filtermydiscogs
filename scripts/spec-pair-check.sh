@@ -42,8 +42,13 @@ hook_alternate_specs() {
     src/hooks/useReleasePlaybackProvider.hook.ts)
       printf '%s\n' \
         src/context/releasePlayback.context.spec.tsx \
+        src/utils/playbackEmbedSession.spec.ts \
+        src/utils/applyPlaybackEmbedSessionEvent.spec.ts \
+        src/utils/syncPlaybackEmbedSessionRefs.spec.ts \
         src/utils/trackStatsQueryCache.spec.ts \
-        src/utils/releasePlaybackActivePresentation.spec.ts
+        src/utils/releasePlaybackActivePresentation.spec.ts \
+        src/utils/releasePlaybackEmbedConfirm.spec.ts \
+        src/utils/embedPlaybackInfoDeliveryConfirm.spec.ts
       ;;
   esac
 }

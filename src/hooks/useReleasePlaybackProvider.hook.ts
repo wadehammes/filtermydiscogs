@@ -47,6 +47,7 @@ import {
 } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
 import { resolveEmbedUnavailableWatchdogOutcome } from "src/utils/embedUnavailableWatchdogOutcome";
+import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import {
   classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
@@ -89,7 +90,6 @@ import {
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
-import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
