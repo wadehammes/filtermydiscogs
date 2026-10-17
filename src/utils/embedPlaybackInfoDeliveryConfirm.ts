@@ -1,8 +1,4 @@
-import { definedProps } from "src/utils/definedProps";
-import {
-  resolveEmbedPlaybackConfirmGateStartedAtMs,
-  shouldConfirmEmbedPlaybackFromAudibleEmbed,
-} from "src/utils/releasePlaybackEmbedConfirm";
+import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import type { YoutubeInfoDelivery } from "src/utils/youtubeIframeEvents";
 
 export const shouldConfirmEmbedPlaybackFromInfoDelivery = ({
@@ -21,21 +17,16 @@ export const shouldConfirmEmbedPlaybackFromInfoDelivery = ({
   nowMs: number;
   isPlaying: boolean;
   isPaused: boolean;
-}): boolean => {
-  const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+}): boolean =>
+  tryConfirmPlaybackEmbedFromSignal({
+    signal: {
+      kind: "info-delivery",
+      info,
+      previousCurrentTime,
+    },
     imperativeEmbedLoadStartedAtMs: embedLoadStartedAtMs,
     videoUiLoadingCycleStartedAtMs,
-  });
-
-  return shouldConfirmEmbedPlaybackFromAudibleEmbed({
-    gateStartedAtMs,
     nowMs,
-    isPlaying,
-    isPaused,
-    ...definedProps({
-      playerState: info.playerState,
-      infoDeliveryCurrentTime: info.currentTime,
-      previousInfoDeliveryCurrentTime: previousCurrentTime,
-    }),
+    transportSessionActive: isPlaying,
+    transportPaused: isPaused,
   });
-};
