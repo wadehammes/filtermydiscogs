@@ -1,11 +1,15 @@
 import { describe, expect, it } from "@jest/globals";
 import {
+  EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   initialPlaybackEmbedSessionState,
   reducePlaybackEmbedSession,
   selectShouldAttemptPlayFromGestureDuringHiddenPoll,
   selectShouldRunHiddenTabPlayerStatePoll,
   selectShouldRunVisibleTabAudibleSyncPoll,
+  shouldAcceptEmbedPlayingConfirmation,
+  tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/playbackEmbedSession";
+import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
 
 describe("playbackEmbedSession", () => {
   it("runs hidden-tab player-state poll while transport session is active, including when transport is paused", () => {
@@ -144,6 +148,63 @@ describe("playbackEmbedSession", () => {
 
     expect(confirmed.embedConfirmed).toBe(true);
     expect(confirmed.loadVideoId).toBe("video-a");
+  });
+
+  it("rejects audible confirm before the post-load gate elapses", () => {
+    const startedAt = 1000;
+
+    expect(
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: {
+          kind: "audible",
+          playerState: YOUTUBE_PLAYER_STATE_PLAYING,
+        },
+        imperativeEmbedLoadStartedAtMs: startedAt,
+        videoUiLoadingCycleStartedAtMs: null,
+        nowMs: startedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS - 1,
+        transportSessionActive: true,
+        transportPaused: false,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldAcceptEmbedPlayingConfirmation({
+        embedLoadStartedAtMs: startedAt,
+        nowMs: startedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+      }),
+    ).toBe(true);
+  });
+
+  it("confirms from info-delivery and audible signals through the same gate", () => {
+    const startedAt = 2000;
+    const afterGate = startedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS;
+
+    expect(
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: {
+          kind: "info-delivery",
+          info: { currentTime: 0.4, playerState: undefined },
+          previousCurrentTime: 0.2,
+        },
+        imperativeEmbedLoadStartedAtMs: startedAt,
+        videoUiLoadingCycleStartedAtMs: null,
+        nowMs: afterGate,
+        transportSessionActive: true,
+        transportPaused: false,
+      }),
+    ).toBe(true);
+
+    expect(
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: { kind: "watchdog-progress" },
+        imperativeEmbedLoadStartedAtMs: startedAt,
+        nowMs: afterGate,
+        transportSessionActive: true,
+        transportPaused: false,
+        embedPlaybackConfirmed: false,
+        lastInfoDeliveryCurrentTime: 1.5,
+      }),
+    ).toBe(true);
   });
 
   it("ignores confirm for a stale video id after load generation moved on", () => {

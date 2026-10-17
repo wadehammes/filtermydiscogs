@@ -12,7 +12,7 @@ Global **queue + session** logic in [`playbackSessionState.ts`](../../src/utils/
 | Fix in flight | **`10-17-fix_background_queue_advance_regression`** | Hidden-tab poll while transport paused ([PR #1208](https://github.com/wadehammes/filtermydiscogs/pull/1208)) |
 | **Phase 0** | **`10-17-playback_embed_phase_0_invariants`** | Invariants doc + handbook routing (no production changes) |
 | **Phase 1** | **`10-17-playback_embed_phase_1_session_module`** | Pure [`playbackEmbedSession.ts`](../../src/utils/playbackEmbedSession.ts) + [`playbackEmbedSession.spec.ts`](../../src/utils/playbackEmbedSession.spec.ts) — hidden-tab poll selectors, visible audible-sync poll policy, load/confirm reducer (not wired to hooks yet) |
-| **Phase 2** | **`10-17-playback_embed_phase_2_confirm_gate`** | Single confirm gate; migrate pure helpers into session |
+| **Phase 2** | **`10-17-playback_embed_phase_2_confirm_gate`** | **`tryConfirmPlaybackEmbedFromSignal`** + confirm helpers live in [`playbackEmbedSession.ts`](../../src/utils/playbackEmbedSession.ts); embed hook + provider call the gate (legacy [`releasePlaybackEmbedConfirm.ts`](../../src/utils/releasePlaybackEmbedConfirm.ts) re-exports) |
 | **Phase 3** | **`10-17-playback_embed_phase_3_thin_hooks`** | Provider/embed hook call session; delete duplicate refs |
 | **Phase 4** | **`10-17-playback_embed_phase_4_dead_paths`** | Remove legacy branches; full context + E2E green |
 | **Phase 5** (optional) | **`10-17-playback_embed_phase_5_spec_split`** | Split context spec by invariant group (same tests, smaller files) |
