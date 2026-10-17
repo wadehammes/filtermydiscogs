@@ -13,6 +13,7 @@ import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { definedProps } from "src/utils/definedProps";
 import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
+import { HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS } from "src/utils/youtubeIframeEvents";
 import { act, renderHook } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand", () => ({
@@ -713,6 +714,22 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(setEmbedVideoId).toHaveBeenCalledWith("embed-video-id");
     expect(pendingPlayFromGestureRef.current).toBe(false);
+  });
+
+  it("schedules hidden-tab polling while transport is paused when the playback session is active", () => {
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    buildHarness({
+      isPaused: true,
+      isPlaying: true,
+    });
+
+    expect(setIntervalSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+    );
+
+    setIntervalSpy.mockRestore();
   });
 
   it("does not sync activeVideoId to embedVideoId during similar queue fetch when embed playback is confirmed", () => {
