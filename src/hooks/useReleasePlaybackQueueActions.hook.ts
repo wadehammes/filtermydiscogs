@@ -86,6 +86,7 @@ interface QueueActionRefs {
   releaseDetailIdRef: RefObject<number | undefined>;
   tracksRef: RefObject<DiscogsTrack[]>;
   lastSyncedActiveVideoIdRef: RefObject<string | null>;
+  matchedActiveVideoIdRef: RefObject<string | null>;
   activeVideoIdRef: RefObject<string | null>;
   embedVideoIdRef: RefObject<string | null>;
   activeTrackPositionRef: RefObject<string | null>;
@@ -172,6 +173,7 @@ export const useReleasePlaybackQueueActions = ({
     releaseDetailIdRef,
     tracksRef,
     lastSyncedActiveVideoIdRef,
+    matchedActiveVideoIdRef,
     activeVideoIdRef,
     embedVideoIdRef,
     activeTrackPositionRef,
@@ -286,12 +288,12 @@ export const useReleasePlaybackQueueActions = ({
       awaitingResumeGestureRef.current = startPaused;
       const needsPlaybackVideoSwitch = resolveNeedsPlaybackVideoSwitch({
         preparedEmbedVideoId,
-        activeVideoId: activeVideoIdRef.current,
+        activeVideoId: matchedActiveVideoIdRef.current,
         replaySameTrack,
         forceEmbedReload,
       });
       const isVideoSwitchFromPriorUpload =
-        activeVideoIdRef.current !== null &&
+        matchedActiveVideoIdRef.current !== null &&
         preparedEmbedVideoId !== null &&
         needsPlaybackVideoSwitch;
       pendingPlayFromGestureRef.current =

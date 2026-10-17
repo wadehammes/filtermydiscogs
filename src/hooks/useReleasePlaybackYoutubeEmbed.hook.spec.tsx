@@ -140,6 +140,9 @@ const buildHarness = ({
         setIsPlaybackEmbedMounted,
         clearPlaybackVideoUiLoading,
         onPlaybackEnded,
+        onImperativeEmbedLoadStarted: () => {
+          playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = Date.now();
+        },
         userYoutubeOverridesRef,
         ...definedProps({
           onYoutubeEmbedPlaybackError,

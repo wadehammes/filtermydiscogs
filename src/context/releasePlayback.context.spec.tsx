@@ -58,6 +58,7 @@ import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQ
 import {
   EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
   HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+  YOUTUBE_PLAYER_STATE_PLAYING,
 } from "src/utils/youtubeIframeEvents";
 import { act, renderHook, waitFor } from "test-utils";
 
@@ -2192,6 +2193,11 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      dispatchYoutubePlayerState({
+        contentWindow: iframe.contentWindow as Window,
+        playerState: YOUTUBE_PLAYER_STATE_PLAYING,
+      });
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
       result.current.notifyPlaybackVideoPresentationReady();
     });
 
@@ -2232,6 +2238,11 @@ describe("ReleasePlaybackProvider", () => {
 
     act(() => {
       result.current.notifyPlaybackVideoLoadStarted("te2jJncBVG4");
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: YOUTUBE_PLAYER_STATE_PLAYING,
+      });
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
       dispatchYoutubeEmbedReady({ contentWindow });
     });
 

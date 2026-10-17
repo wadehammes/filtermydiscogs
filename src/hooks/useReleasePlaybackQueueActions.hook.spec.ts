@@ -61,6 +61,7 @@ const buildHarness = ({
     ],
   };
   const lastSyncedActiveVideoIdRef = { current: null as string | null };
+  const matchedActiveVideoIdRef = { current: "te2jJncBVG4" as string | null };
   const activeVideoIdRef = { current: "te2jJncBVG4" as string | null };
   const embedVideoIdRef = { current: null as string | null };
   const activeTrackPositionRef = { current: "A1" as string | null };
@@ -131,6 +132,7 @@ const buildHarness = ({
         releaseDetailIdRef,
         tracksRef,
         lastSyncedActiveVideoIdRef,
+        matchedActiveVideoIdRef,
         activeVideoIdRef,
         embedVideoIdRef,
         activeTrackPositionRef,
@@ -272,6 +274,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: "te2jJncBVG4" },
+          matchedActiveVideoIdRef: { current: "te2jJncBVG4" },
           activeVideoIdRef,
           embedVideoIdRef,
           activeTrackPositionRef: { current: "A1" },
@@ -348,6 +351,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          matchedActiveVideoIdRef: { current: sharedVideoId },
           activeVideoIdRef: { current: sharedVideoId },
           embedVideoIdRef: { current: sharedVideoId },
           activeTrackPositionRef: { current: "A1" },
@@ -424,6 +428,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          matchedActiveVideoIdRef: { current: sharedVideoId },
           activeVideoIdRef: { current: sharedVideoId },
           embedVideoIdRef: { current: sharedVideoId },
           activeTrackPositionRef: { current: "A1" },
@@ -501,6 +506,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          matchedActiveVideoIdRef: { current: sharedVideoId },
           activeVideoIdRef: { current: sharedVideoId },
           embedVideoIdRef: { current: sharedVideoId },
           activeTrackPositionRef: { current: "A1" },
@@ -585,6 +591,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: "abc12345678" },
+          matchedActiveVideoIdRef: { current: "abc12345678" },
           activeVideoIdRef: { current: "abc12345678" },
           embedVideoIdRef: { current: "abc12345678" },
           activeTrackPositionRef: { current: "A1" },
@@ -672,6 +679,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: sharedVideoId },
+          matchedActiveVideoIdRef: { current: sharedVideoId },
           activeVideoIdRef: { current: sharedVideoId },
           embedVideoIdRef: { current: sharedVideoId },
           activeTrackPositionRef: { current: "A2" },
@@ -743,6 +751,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: null },
+          matchedActiveVideoIdRef: { current: "te2jJncBVG4" },
           activeVideoIdRef: { current: "te2jJncBVG4" },
           embedVideoIdRef: { current: null },
           activeTrackPositionRef: { current: "A1" },
@@ -814,6 +823,7 @@ describe("useReleasePlaybackQueueActions", () => {
           },
           tracksRef: { current: [] },
           lastSyncedActiveVideoIdRef: { current: null },
+          matchedActiveVideoIdRef: { current: null },
           activeVideoIdRef: { current: null },
           embedVideoIdRef: { current: null },
           activeTrackPositionRef: { current: null },
@@ -1023,6 +1033,7 @@ describe("useReleasePlaybackQueueActions", () => {
           releaseDetailIdRef: { current: release.basic_information.id },
           tracksRef,
           lastSyncedActiveVideoIdRef: { current: null },
+          matchedActiveVideoIdRef: { current: "te2jJncBVG4" },
           activeVideoIdRef: { current: "te2jJncBVG4" },
           embedVideoIdRef: { current: "te2jJncBVG4" },
           activeTrackPositionRef: { current: "A1" },

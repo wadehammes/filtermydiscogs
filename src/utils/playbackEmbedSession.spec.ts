@@ -207,6 +207,35 @@ describe("playbackEmbedSession", () => {
     ).toBe(true);
   });
 
+  it("clears loading timestamps on full ui-loading clear but preserves them on spinner-only clear", () => {
+    const loading = reducePlaybackEmbedSession(
+      initialPlaybackEmbedSessionState,
+      {
+        type: "embed/ui-loading/began",
+        nowMs: 100,
+      },
+    );
+    const withImperative = reducePlaybackEmbedSession(loading, {
+      type: "embed/imperative-load/started",
+      nowMs: 200,
+    });
+
+    const spinnerOnly = reducePlaybackEmbedSession(withImperative, {
+      type: "embed/ui-loading/spinner-cleared",
+    });
+
+    expect(spinnerOnly.videoUiLoading).toBe(false);
+    expect(spinnerOnly.imperativeLoadStartedAtMs).toBe(200);
+    expect(spinnerOnly.videoUiLoadingCycleStartedAtMs).toBe(100);
+
+    const fullyCleared = reducePlaybackEmbedSession(withImperative, {
+      type: "embed/ui-loading/cleared",
+    });
+
+    expect(fullyCleared.imperativeLoadStartedAtMs).toBe(null);
+    expect(fullyCleared.videoUiLoadingCycleStartedAtMs).toBe(null);
+  });
+
   it("ignores confirm for a stale video id after load generation moved on", () => {
     const loading = reducePlaybackEmbedSession(
       initialPlaybackEmbedSessionState,

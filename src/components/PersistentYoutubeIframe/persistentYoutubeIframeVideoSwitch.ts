@@ -7,10 +7,12 @@ export const imperativelySyncPersistentYoutubeIframeToVideoId = ({
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
   enableYoutubeIframeListening,
+  deferPresentationReadyWhenVideoUiLoading = false,
 }: {
   iframe: HTMLIFrameElement | null;
   targetVideoId: string;
   loadedVideoId: string | null;
+  deferPresentationReadyWhenVideoUiLoading?: boolean;
   notifyPlaybackVideoLoadStarted: (videoId: string) => void;
   notifyPlaybackVideoPresentationReady: () => void;
   loadAndPlayYoutubeVideo: (args: {
@@ -27,7 +29,9 @@ export const imperativelySyncPersistentYoutubeIframeToVideoId = ({
   }
 
   if (targetVideoId === loadedVideoId) {
-    notifyPlaybackVideoPresentationReady();
+    if (!deferPresentationReadyWhenVideoUiLoading) {
+      notifyPlaybackVideoPresentationReady();
+    }
     return loadedVideoId;
   }
 

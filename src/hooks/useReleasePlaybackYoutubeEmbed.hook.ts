@@ -13,7 +13,12 @@ import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackP
 import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { definedProps } from "src/utils/definedProps";
-import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
+import {
+  selectShouldAttemptPlayFromGestureDuringHiddenPoll,
+  selectShouldRunHiddenTabPlayerStatePoll,
+  selectShouldRunVisibleTabAudibleSyncPoll,
+  tryConfirmPlaybackEmbedFromSignal,
+} from "src/utils/playbackEmbedSession";
 import {
   getQueueItemKey,
   resolveQueueItemYoutubeVideoId,
@@ -112,6 +117,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   onEmbedPlaybackConfirmed?: () => void;
   onYoutubeEmbedPlayerReady?: () => void;
   onEmbedTransportPaused?: () => void;
+  onImperativeEmbedLoadStarted?: () => void;
   userYoutubeOverridesRef: RefObject<Map<string, string>>;
 }
 
@@ -139,6 +145,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   onEmbedPlaybackConfirmed,
   onYoutubeEmbedPlayerReady,
   onEmbedTransportPaused,
+  onImperativeEmbedLoadStarted,
   userYoutubeOverridesRef,
 }: UseReleasePlaybackYoutubeEmbedParams) => {
   const {
@@ -586,11 +593,15 @@ export const useReleasePlaybackYoutubeEmbed = ({
   );
 
   useEffect(() => {
-    if (!isPlaying || isPaused || !isPlaybackVideoUiLoading) {
-      return;
-    }
-
-    if (document.visibilityState !== "visible") {
+    if (
+      !selectShouldRunVisibleTabAudibleSyncPoll({
+        transportSessionActive: isPlaying,
+        transportPaused: isPaused,
+        videoUiLoading: isPlaybackVideoUiLoading,
+        embedConfirmed: embedPlaybackConfirmedRef.current,
+        documentHidden: document.visibilityState === "hidden",
+      })
+    ) {
       return;
     }
 
@@ -644,7 +655,14 @@ export const useReleasePlaybackYoutubeEmbed = ({
   }, [isPlayingRef, recoverPlaybackAfterTabVisible]);
 
   useEffect(() => {
-    if (!isPlaying) {
+    if (
+      !selectShouldRunHiddenTabPlayerStatePoll({
+        transportSessionActive: isPlaying,
+        documentHidden: document.visibilityState === "hidden",
+        transportPaused: isPaused,
+        withinTrackSwitchGrace: isWithinTrackSwitchGrace(),
+      })
+    ) {
       return;
     }
 
@@ -655,7 +673,14 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
       syncEmbedPlaybackState();
 
-      if (isWithinTrackSwitchGrace() && !isPausedRef.current) {
+      if (
+        selectShouldAttemptPlayFromGestureDuringHiddenPoll({
+          transportSessionActive: isPlayingRef.current,
+          documentHidden: true,
+          transportPaused: isPausedRef.current,
+          withinTrackSwitchGrace: isWithinTrackSwitchGrace(),
+        })
+      ) {
         attemptPlayFromGesture();
       }
     };
@@ -895,7 +920,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   const notifyImperativeEmbedLoadStarted = useCallback(() => {
     markEmbedTrackSwitchGrace();
     lastInfoDeliveryCurrentTimeRef.current = undefined;
-    playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current = Date.now();
+    onImperativeEmbedLoadStarted?.();
     schedulePlayFromGestureAttempts();
     clearEmbedLoadStateSyncTimeout();
     embedLoadStateSyncTimeoutRef.current = window.setTimeout(() => {
@@ -906,8 +931,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
     clearEmbedLoadStateSyncTimeout,
     lastInfoDeliveryCurrentTimeRef,
     markEmbedTrackSwitchGrace,
+    onImperativeEmbedLoadStarted,
     playbackIframeRef,
-    playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
     schedulePlayFromGestureAttempts,
   ]);
 
