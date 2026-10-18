@@ -2,7 +2,18 @@
 
 Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementation today spans [`useReleasePlaybackProvider.hook.ts`](../../src/hooks/useReleasePlaybackProvider.hook.ts), [`useReleasePlaybackYoutubeEmbed.hook.ts`](../../src/hooks/useReleasePlaybackYoutubeEmbed.hook.ts), and utils under **`releasePlayback*`** / **`playbackEmbed*`** / **`embedPlayback*`** — see [playback-embed-simplification.md](playback-embed-simplification.md) for the refactor stack.
 
-**Primary regression suite:** [`releasePlayback.context.spec.tsx`](../../src/context/releasePlayback.context.spec.tsx) (flat **`describe`** — search the **`it`** titles below). **E2E:** [`authenticated-embed-watchdog.spec.ts`](../../e2e/authenticated-embed-watchdog.spec.ts), [`authenticated-release-playback.spec.ts`](../../e2e/authenticated-release-playback.spec.ts), [`authenticated-similar-queue-playback.spec.ts`](../../e2e/authenticated-similar-queue-playback.spec.ts) where noted.
+**Primary regression suite:** [`releasePlayback.context.*.spec.tsx`](../../src/context/) — one flat **`describe`** per invariant group (shared setup in [`releasePlayback.context.spec.harness.tsx`](../../src/context/releasePlayback.context.spec.harness.tsx)). Search the **`it`** titles below across all files. **E2E:** [`authenticated-embed-watchdog.spec.ts`](../../e2e/authenticated-embed-watchdog.spec.ts), [`authenticated-release-playback.spec.ts`](../../e2e/authenticated-release-playback.spec.ts), [`authenticated-similar-queue-playback.spec.ts`](../../e2e/authenticated-similar-queue-playback.spec.ts) where noted.
+
+| Theme | Spec file |
+|-------|-----------|
+| Queue, session, persistence | [`releasePlayback.context.core.spec.tsx`](../../src/context/releasePlayback.context.core.spec.tsx) |
+| **`playNext`** / end detection | [`releasePlayback.context.queueAdvance.spec.tsx`](../../src/context/releasePlayback.context.queueAdvance.spec.tsx) |
+| Hidden tab / visibility | [`releasePlayback.context.hiddenTab.spec.tsx`](../../src/context/releasePlayback.context.hiddenTab.spec.tsx) |
+| Confirm + loading UI | [`releasePlayback.context.embedConfirm.spec.tsx`](../../src/context/releasePlayback.context.embedConfirm.spec.tsx) |
+| Embed start watchdog | [`releasePlayback.context.watchdog.spec.tsx`](../../src/context/releasePlayback.context.watchdog.spec.tsx) |
+| Pause, track switch, restore | [`releasePlayback.context.trackSwitchPauseRestore.spec.tsx`](../../src/context/releasePlayback.context.trackSwitchPauseRestore.spec.tsx) |
+| YouTube overrides | [`releasePlayback.context.overrides.spec.tsx`](../../src/context/releasePlayback.context.overrides.spec.tsx) |
+| Similar queue tail | [`releasePlayback.context.similarQueue.spec.tsx`](../../src/context/releasePlayback.context.similarQueue.spec.tsx) |
 
 ## Queue advance and end detection
 
@@ -21,7 +32,7 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Hidden-tab poll **interval** runs only while **`document.visibilityState === "hidden"`** and transport session is active ([`selectShouldRunHiddenTabPlayerStatePoll`](../../src/utils/playbackEmbedSession.ts) in [`playbackEmbedSession.spec.ts`](../../src/utils/playbackEmbedSession.spec.ts); embed hook effect) | — (unit + context specs above) |
 | Background **PAUSED** before **ENDED** must not stop hidden polling (queue still advances) | **`when the tab is hidden and transport pauses before end, background polling still advances the queue`** |
 | Ignore embed pause → app pause during upload switch / loading / transition while hidden | **`ignores background-tab pause events`**, **`advances in a hidden tab after PiP closes`**, **`when cross-release switch from pause runs while the tab is hidden`** |
-| Tab visible → sync layout + **`requestYoutubeEmbedPlaybackSync`** + gesture retries | **`syncs embed playback when the tab becomes visible again`**, **`requests player state when the document becomes visible during playback`** |
+| Tab visible → sync layout + **`requestYoutubeEmbedPlaybackSync`** + gesture retries; try **`confirmEmbedPlaybackIfAudible`** (incl. after sync) before re-arming the embed watchdog | **`syncs embed playback when the tab becomes visible again`**, **`requests player state when the document becomes visible during playback`**, **`after hidden tab unavailable skip advances queue, refocus does not skip the next playable track`** |
 | Watchdog disarmed while tab hidden; re-arm after visible recovery when unconfirmed | **`does not run the embed watchdog skip while the tab stays hidden during embed load`**, **`does not run the embed watchdog skip after pausing in a hidden tab`** |
 
 ## Embed confirm and loading UI
@@ -32,6 +43,7 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Audible confirm **`transportSessionActive`** follows playback intent when **`isPlayingRef`** lags or **`pendingPlayFromGesture`** is set | **`playback intent transport`** ([`useReleasePlaybackYoutubeEmbed.hook.spec.tsx`](../../src/hooks/useReleasePlaybackYoutubeEmbed.hook.spec.tsx)); unit: **`resolveAudibleEmbedConfirmTransport`** ([`releasePlaybackEmbedConfirm.spec.ts`](../../src/utils/releasePlaybackEmbedConfirm.spec.ts)) |
 | **Presentation-ready** / **onReady** runs **`confirmEmbedPlaybackIfAudible`** when transport is playing (not paused restore) — no blind confirm on same-video re-sync without audible embed signals | **`when presentation is ready while transport is playing`**, **`when YouTube posts onReady after load started`**; E2E **`mode=silent`** ([`authenticated-embed-watchdog.spec.ts`](../../e2e/authenticated-embed-watchdog.spec.ts)) |
 | Loading cap dismisses spinner without breaking confirm gates / watchdog | **`when playNext upload plays after the video UI loading cap, embed watchdog does not skip`** |
+| After **unavailable skip** advances the queue, **infoDelivery** / progress on the next upload confirms and must not unavailable-skip again | **`after unavailable skip advances the queue, does not skip audible playback on the next track`** |
 | Stale **PLAYING** right after **loadVideoById** does not confirm | **`does not treat immediate stale PLAYING as confirmed`** |
 | Initial presentation grace on first load / re-load | **`extends the first embed watchdog arm by initial presentation grace`**, **`re-applies initial presentation watchdog grace when a new embed load resets confirmation`** |
 

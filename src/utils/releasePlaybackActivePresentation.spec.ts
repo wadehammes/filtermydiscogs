@@ -160,6 +160,19 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(true);
   });
 
+  it("isEmbedAlignedForLoadingPlaybackConfirm prefers matchedActiveVideoId over presentation activeVideoId when embedVideoId is ahead", () => {
+    expect(
+      isEmbedAlignedForLoadingPlaybackConfirm({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "stale-presentation-id",
+        matchedActiveVideoId: "next-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: "next-id",
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(true);
+  });
+
   it("doesPlaybackVideoUiLoadingTargetMatch accepts embed or transition ids while session activeVideoId lags", () => {
     expect(
       doesPlaybackVideoUiLoadingTargetMatch({

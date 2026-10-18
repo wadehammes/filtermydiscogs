@@ -154,17 +154,21 @@ export const isEmbedAlignedForLoadingPlaybackConfirm = ({
   embedVideoId,
   transitionTargetVideoId,
   watchdogVideoId,
+  matchedActiveVideoId = null,
 }: {
   loadingTargetVideoId: string | null;
   activeVideoId: string | null;
   embedVideoId: string | null;
   transitionTargetVideoId: string | null;
   watchdogVideoId: string | null;
+  matchedActiveVideoId?: string | null;
 }): boolean => {
+  const sessionVideoId = matchedActiveVideoId ?? activeVideoId;
+
   if (
     doesPlaybackVideoUiLoadingTargetMatch({
       loadingTargetVideoId: loadingTargetVideoId,
-      activeVideoId,
+      activeVideoId: sessionVideoId,
       embedVideoId,
       transitionTargetVideoId,
     })
@@ -174,8 +178,8 @@ export const isEmbedAlignedForLoadingPlaybackConfirm = ({
 
   if (
     watchdogVideoId !== null &&
-    activeVideoId !== null &&
-    watchdogVideoId === activeVideoId.trim()
+    sessionVideoId !== null &&
+    watchdogVideoId === sessionVideoId.trim()
   ) {
     return true;
   }

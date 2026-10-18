@@ -284,6 +284,18 @@ export const useReleasePlaybackProvider = (): {
   );
   const recoverPlaybackAfterTabVisibleRef = useRef<(() => void) | null>(null);
   const embedWatchdogAfterTabVisibleTimeoutRef = useRef<number | null>(null);
+  const embedTabVisibleSyncConfirmTimeoutRef = useRef<number | null>(null);
+  const embedWatchdogSyncProbeTimeoutRef = useRef<number | null>(null);
+  const clearEmbedWatchdogSyncProbeTimeoutRef = useRef<() => void>(
+    () => undefined,
+  );
+  const clearEmbedWatchdogAfterTabVisibleTimeoutRef = useRef<() => void>(
+    () => undefined,
+  );
+  const confirmEmbedPlaybackIfAudibleRef = useRef<() => boolean>(() => false);
+  const clearEmbedTabVisibleSyncConfirmTimeoutRef = useRef<() => void>(
+    () => undefined,
+  );
   const resolveSkipContextRef = useRef<() => PlaybackSkipSentryDetails>(
     () => ({}),
   );
@@ -301,6 +313,10 @@ export const useReleasePlaybackProvider = (): {
       isSkipAllowed: () => isPlayingRef.current && !isPausedRef.current,
       onBeforeSkip: () => {
         embedStartWatchdogRef.current.disarm();
+        clearEmbedWatchdogSyncProbeTimeoutRef.current();
+        clearEmbedWatchdogAfterTabVisibleTimeoutRef.current();
+        clearEmbedTabVisibleSyncConfirmTimeoutRef.current();
+        lastInfoDeliveryCurrentTimeRef.current = undefined;
         dispatchEmbedSessionRef.current({ type: "embed/confirm/reset" });
         dispatchEmbedSessionRef.current({ type: "embed/ui-loading/cleared" });
         embedWatchdogVideoIdRef.current = null;
@@ -681,15 +697,58 @@ export const useReleasePlaybackProvider = (): {
     onYoutubeEmbedPlaybackErrorRef.current(errorCode);
   }, []);
 
+  const clearEmbedWatchdogSyncProbeTimeout = useCallback(() => {
+    if (embedWatchdogSyncProbeTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(embedWatchdogSyncProbeTimeoutRef.current);
+    embedWatchdogSyncProbeTimeoutRef.current = null;
+  }, []);
+
+  const clearEmbedWatchdogAfterTabVisibleTimeout = useCallback(() => {
+    if (embedWatchdogAfterTabVisibleTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(embedWatchdogAfterTabVisibleTimeoutRef.current);
+    embedWatchdogAfterTabVisibleTimeoutRef.current = null;
+  }, []);
+
+  const clearEmbedTabVisibleSyncConfirmTimeout = useCallback(() => {
+    if (embedTabVisibleSyncConfirmTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(embedTabVisibleSyncConfirmTimeoutRef.current);
+    embedTabVisibleSyncConfirmTimeoutRef.current = null;
+  }, []);
+
+  clearEmbedWatchdogSyncProbeTimeoutRef.current =
+    clearEmbedWatchdogSyncProbeTimeout;
+  clearEmbedWatchdogAfterTabVisibleTimeoutRef.current =
+    clearEmbedWatchdogAfterTabVisibleTimeout;
+  clearEmbedTabVisibleSyncConfirmTimeoutRef.current =
+    clearEmbedTabVisibleSyncConfirmTimeout;
+
   const confirmEmbedPlayback = useCallback(() => {
     embedInitialWatchdogGracePendingRef.current = false;
     embedWatchdogLoadingRearmCountRef.current = 0;
     embedWatchdogSyncProbeAttemptedRef.current = false;
     embedWatchdogArmedDelayMsRef.current = null;
+    clearEmbedWatchdogSyncProbeTimeout();
+    clearEmbedWatchdogAfterTabVisibleTimeout();
+    clearEmbedTabVisibleSyncConfirmTimeout();
     embedStartWatchdogRef.current.disarm();
     dispatchEmbedSession({ type: "embed/playback/confirmed" });
     clearPlaybackVideoUiLoading();
-  }, [clearPlaybackVideoUiLoading, dispatchEmbedSession]);
+  }, [
+    clearEmbedTabVisibleSyncConfirmTimeout,
+    clearEmbedWatchdogAfterTabVisibleTimeout,
+    clearEmbedWatchdogSyncProbeTimeout,
+    clearPlaybackVideoUiLoading,
+    dispatchEmbedSession,
+  ]);
 
   const confirmEmbedPlaybackIfAudible = useCallback(() => {
     if (selectEmbedPlaybackConfirmed(embedSessionRef.current)) {
@@ -704,19 +763,28 @@ export const useReleasePlaybackProvider = (): {
       awaitingResumeGesture: awaitingResumeGestureRef.current,
     });
 
+    const confirmInput = {
+      imperativeEmbedLoadStartedAtMs:
+        playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+      videoUiLoadingCycleStartedAtMs:
+        playbackVideoUiLoadingCycleStartedAtMsRef.current,
+      nowMs: Date.now(),
+      transportSessionActive: playbackIntentActive,
+      transportPaused: isPausedRef.current,
+      ...definedProps({
+        lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
+      }),
+    };
+
     if (
       tryConfirmPlaybackEmbedFromSignal({
+        ...confirmInput,
         signal: { kind: "audible" },
-        imperativeEmbedLoadStartedAtMs:
-          playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
-        videoUiLoadingCycleStartedAtMs:
-          playbackVideoUiLoadingCycleStartedAtMsRef.current,
-        nowMs: Date.now(),
-        transportSessionActive: playbackIntentActive,
-        transportPaused: isPausedRef.current,
-        ...definedProps({
-          lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
-        }),
+      }) ||
+      tryConfirmPlaybackEmbedFromSignal({
+        ...confirmInput,
+        signal: { kind: "watchdog-progress" },
+        embedPlaybackConfirmed: false,
       })
     ) {
       confirmEmbedPlayback();
@@ -725,6 +793,8 @@ export const useReleasePlaybackProvider = (): {
 
     return false;
   }, [confirmEmbedPlayback, isPlaying]);
+
+  confirmEmbedPlaybackIfAudibleRef.current = confirmEmbedPlaybackIfAudible;
 
   const notifyPlaybackVideoPresentationReady = useCallback(() => {
     const readyVideoId =
@@ -775,6 +845,7 @@ export const useReleasePlaybackProvider = (): {
       isPlayingRef,
       isPausedRef,
       activeVideoIdRef,
+      matchedActiveVideoIdRef,
       isPlaybackVideoUiLoadingRef,
       pendingPlayFromGestureRef,
       playbackVideoTransitionTargetIdRef,
@@ -907,15 +978,17 @@ export const useReleasePlaybackProvider = (): {
     ) {
       embedWatchdogSyncProbeAttemptedRef.current = true;
       requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
-      window.setTimeout(
-        finishEmbedUnavailableSkipIfStillUnconfirmed,
-        EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
-      );
+      clearEmbedWatchdogSyncProbeTimeout();
+      embedWatchdogSyncProbeTimeoutRef.current = window.setTimeout(() => {
+        embedWatchdogSyncProbeTimeoutRef.current = null;
+        finishEmbedUnavailableSkipIfStillUnconfirmed();
+      }, EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS);
       return;
     }
 
     finishEmbedUnavailableSkipIfStillUnconfirmed();
   }, [
+    clearEmbedWatchdogSyncProbeTimeout,
     confirmEmbedPlaybackIfAudible,
     finishEmbedUnavailableSkipIfStillUnconfirmed,
     isPlaying,
@@ -935,23 +1008,33 @@ export const useReleasePlaybackProvider = (): {
   armEmbedStartWatchdogRef.current = armEmbedStartWatchdog;
 
   useEffect(() => {
-    const clearEmbedWatchdogAfterTabVisibleTimeout = () => {
-      if (embedWatchdogAfterTabVisibleTimeoutRef.current === null) {
-        return;
-      }
-
-      window.clearTimeout(embedWatchdogAfterTabVisibleTimeoutRef.current);
-      embedWatchdogAfterTabVisibleTimeoutRef.current = null;
-    };
-
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         embedStartWatchdogRef.current.disarm();
         clearEmbedWatchdogAfterTabVisibleTimeout();
+        clearEmbedTabVisibleSyncConfirmTimeout();
         return;
       }
 
       recoverPlaybackAfterTabVisibleRef.current?.();
+
+      if (confirmEmbedPlaybackIfAudibleRef.current()) {
+        clearEmbedWatchdogAfterTabVisibleTimeout();
+        return;
+      }
+
+      clearEmbedTabVisibleSyncConfirmTimeout();
+      embedTabVisibleSyncConfirmTimeoutRef.current = window.setTimeout(() => {
+        embedTabVisibleSyncConfirmTimeoutRef.current = null;
+
+        if (document.visibilityState !== "visible") {
+          return;
+        }
+
+        if (confirmEmbedPlaybackIfAudibleRef.current()) {
+          clearEmbedWatchdogAfterTabVisibleTimeout();
+        }
+      }, 250);
 
       if (
         !shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery({
@@ -980,6 +1063,10 @@ export const useReleasePlaybackProvider = (): {
           return;
         }
 
+        if (confirmEmbedPlaybackIfAudibleRef.current()) {
+          return;
+        }
+
         armEmbedStartWatchdog();
       }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
     };
@@ -989,8 +1076,13 @@ export const useReleasePlaybackProvider = (): {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearEmbedWatchdogAfterTabVisibleTimeout();
+      clearEmbedTabVisibleSyncConfirmTimeout();
     };
-  }, [armEmbedStartWatchdog]);
+  }, [
+    armEmbedStartWatchdog,
+    clearEmbedTabVisibleSyncConfirmTimeout,
+    clearEmbedWatchdogAfterTabVisibleTimeout,
+  ]);
 
   onYoutubeEmbedPlaybackErrorRef.current = (errorCode) => {
     embedUnavailableSkipHandlerRef.current.handleFailure(

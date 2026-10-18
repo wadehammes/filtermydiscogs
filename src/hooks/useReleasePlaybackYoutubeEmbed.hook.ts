@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useSyncExternalStore,
 } from "react";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackPlayFromGesture.hook";
@@ -53,6 +54,19 @@ import {
 } from "src/utils/releasePlaybackHiddenTabTransport";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
 import { creditTrackListenOnEmbedEndedForActiveItem } from "src/utils/userTrackRecording";
+
+const subscribeDocumentVisibility = (onStoreChange: () => void) => {
+  document.addEventListener("visibilitychange", onStoreChange);
+
+  return () => {
+    document.removeEventListener("visibilitychange", onStoreChange);
+  };
+};
+
+const getDocumentHidden = (): boolean => document.visibilityState === "hidden";
+
+const getDocumentHiddenServerSnapshot = (): boolean => false;
+
 import {
   EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
   EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
@@ -77,6 +91,7 @@ export interface ReleasePlaybackYoutubeEmbedRefs {
   isPlayingRef: RefObject<boolean>;
   isPausedRef: RefObject<boolean>;
   activeVideoIdRef: RefObject<string | null>;
+  matchedActiveVideoIdRef: RefObject<string | null>;
   isPlaybackVideoUiLoadingRef: RefObject<boolean>;
   pendingPlayFromGestureRef: RefObject<boolean>;
   playbackVideoTransitionTargetIdRef: RefObject<string | null>;
@@ -155,6 +170,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     isPlayingRef,
     isPausedRef,
     activeVideoIdRef,
+    matchedActiveVideoIdRef,
     isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
     playbackVideoTransitionTargetIdRef,
@@ -170,6 +186,12 @@ export const useReleasePlaybackYoutubeEmbed = ({
     tracksRef,
     videosRef,
   } = refs;
+
+  const documentHidden = useSyncExternalStore(
+    subscribeDocumentVisibility,
+    getDocumentHidden,
+    getDocumentHiddenServerSnapshot,
+  );
 
   const embedTrackSwitchGraceUntilRef = useRef(0);
   const embedLoadStateSyncTimeoutRef = useRef<number | null>(null);
@@ -274,6 +296,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
             loadingTargetVideoId:
               playbackVideoUiLoadingTargetVideoIdRef.current,
             activeVideoId: activeVideoIdRef.current,
+            matchedActiveVideoId: matchedActiveVideoIdRef.current,
             embedVideoId: embedVideoIdRef.current,
             transitionTargetVideoId: playbackVideoTransitionTargetIdRef.current,
             watchdogVideoId: embedWatchdogVideoIdRef.current,
@@ -290,6 +313,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     },
     [
       activeVideoIdRef,
+      matchedActiveVideoIdRef,
       clearPlaybackVideoUiLoading,
       completeEmbedPlaybackHandshake,
       embedVideoIdRef,
@@ -599,7 +623,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         transportPaused: isPaused,
         videoUiLoading: isPlaybackVideoUiLoading,
         embedConfirmed: embedPlaybackConfirmedRef.current,
-        documentHidden: document.visibilityState === "hidden",
+        documentHidden,
       })
     ) {
       return;
@@ -626,6 +650,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       window.clearInterval(intervalId);
     };
   }, [
+    documentHidden,
     embedPlaybackConfirmedRef,
     isPaused,
     isPlaybackVideoUiLoading,
@@ -658,7 +683,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     if (
       !selectShouldRunHiddenTabPlayerStatePoll({
         transportSessionActive: isPlaying,
-        documentHidden: document.visibilityState === "hidden",
+        documentHidden,
         transportPaused: isPaused,
         withinTrackSwitchGrace: isWithinTrackSwitchGrace(),
       })
@@ -695,8 +720,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
     };
   }, [
     attemptPlayFromGesture,
+    documentHidden,
+    isPaused,
     isPausedRef,
     isPlaying,
+    isPlayingRef,
     isWithinTrackSwitchGrace,
     syncEmbedPlaybackState,
     isPaused,

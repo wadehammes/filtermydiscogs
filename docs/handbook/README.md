@@ -28,7 +28,7 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 | [database.md](database.md) | Prisma models, crate CRUD, migrations, admin stats. |
 | [components.md](components.md) | Component folder layout, naming, tests. |
 | [patterns.md](patterns.md) | Jotai atoms, context providers, React Query hooks, filters, auth, public crate pages. |
-| [playback-embed-invariants.md](playback-embed-invariants.md) | Embed ↔ queue behavioral contract; maps to `releasePlayback.context.spec.tsx` search strings. |
+| [playback-embed-invariants.md](playback-embed-invariants.md) | Embed ↔ queue behavioral contract; maps to `releasePlayback.context.*.spec.tsx` search strings. |
 | [playback-embed-simplification.md](playback-embed-simplification.md) | Stacked refactor plan (pure embed session → thin hooks). |
 | [platform.md](platform.md) | GitHub CI, **`staging`** / **`main`** rulesets, releases, `pnpm` scripts, `next.config` (env, CSP, images). |
 | [factories.md](factories.md) | Test factories: BaseFactory, Faker, KeysMatch, nullish, nested builds. |

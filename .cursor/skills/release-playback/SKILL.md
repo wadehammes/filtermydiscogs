@@ -24,7 +24,7 @@ Handbook: [patterns.md → Release playback queue](../../docs/handbook/patterns.
 ## Testing
 
 - Sub-hooks: flat **`describe`**, mock **`api.*`** — [`useReleasePlaybackQueueActions.hook.spec.ts`](../../src/hooks/useReleasePlaybackQueueActions.hook.spec.ts), etc.
-- Provider integration: [`releasePlayback.context.spec.tsx`](../../src/context/releasePlayback.context.spec.tsx) — do not duplicate full provider in every sub-hook file.
+- Provider integration: [`releasePlayback.context.*.spec.tsx`](../../src/context/) (theme map in [playback-embed-invariants.md](../../docs/handbook/playback-embed-invariants.md)) — do not duplicate full provider in every sub-hook file.
 
 ## UI entry
 

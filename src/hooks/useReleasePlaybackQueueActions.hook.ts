@@ -365,7 +365,7 @@ export const useReleasePlaybackQueueActions = ({
       activeTrackPositionRef.current,
       isReleasePreviewRef.current,
       isPlayingRef,
-      matchedActiveVideoIdRef.current,
+      matchedActiveVideoIdRef,
     ],
   );
 
