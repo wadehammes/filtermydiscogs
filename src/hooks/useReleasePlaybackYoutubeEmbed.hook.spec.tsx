@@ -24,6 +24,13 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
 
+const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
+  Object.defineProperty(document, "visibilityState", {
+    configurable: true,
+    get: () => state,
+  });
+};
+
 const dispatchYoutubeEmbedReady = ({
   contentWindow,
 }: {
@@ -783,6 +790,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
   });
 
   it("schedules hidden-tab polling while transport is paused when the playback session is active", () => {
+    setDocumentVisibilityState("hidden");
     const setIntervalSpy = jest.spyOn(window, "setInterval");
 
     buildHarness({
@@ -791,6 +799,24 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     });
 
     expect(setIntervalSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+    );
+
+    setIntervalSpy.mockRestore();
+    setDocumentVisibilityState("visible");
+  });
+
+  it("does not schedule hidden-tab polling when the document is visible", () => {
+    setDocumentVisibilityState("visible");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    buildHarness({
+      isPaused: true,
+      isPlaying: true,
+    });
+
+    expect(setIntervalSpy).not.toHaveBeenCalledWith(
       expect.any(Function),
       HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
     );

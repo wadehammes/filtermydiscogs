@@ -51,6 +51,7 @@ import { resolveEmbedUnavailableWatchdogOutcome } from "src/utils/embedUnavailab
 import {
   initialPlaybackEmbedSessionState,
   type PlaybackEmbedSessionEvent,
+  selectEmbedPlaybackConfirmed,
   tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/playbackEmbedSession";
 import {
@@ -241,6 +242,14 @@ export const useReleasePlaybackProvider = (): {
     [embedSessionRefTargets],
   );
   dispatchEmbedSessionRef.current = dispatchEmbedSession;
+  const resetEmbedSession = useCallback(() => {
+    applyPlaybackEmbedSessionEvent(
+      embedSessionRef,
+      { type: "embed/session/reset" },
+      embedSessionRefTargets,
+    );
+    setIsPlaybackVideoUiLoading(false);
+  }, [embedSessionRefTargets]);
   const embedInitialWatchdogGracePendingRef = useRef(true);
   const embedWatchdogArmedDelayMsRef = useRef<number | null>(null);
   const embedWatchdogVideoIdRef = useRef<string | null>(null);
@@ -679,11 +688,11 @@ export const useReleasePlaybackProvider = (): {
     embedWatchdogArmedDelayMsRef.current = null;
     embedStartWatchdogRef.current.disarm();
     dispatchEmbedSession({ type: "embed/playback/confirmed" });
-    dispatchEmbedSession({ type: "embed/ui-loading/cleared" });
-  }, [dispatchEmbedSession]);
+    clearPlaybackVideoUiLoading();
+  }, [clearPlaybackVideoUiLoading, dispatchEmbedSession]);
 
   const confirmEmbedPlaybackIfAudible = useCallback(() => {
-    if (embedPlaybackConfirmedRef.current) {
+    if (selectEmbedPlaybackConfirmed(embedSessionRef.current)) {
       return true;
     }
 
@@ -1018,6 +1027,14 @@ export const useReleasePlaybackProvider = (): {
 
       notifyImperativeEmbedLoadStarted();
 
+      if (resolvedVideoId?.trim()) {
+        dispatchEmbedSession({
+          type: "embed/load/started",
+          videoId: resolvedVideoId.trim(),
+          nowMs: Date.now(),
+        });
+      }
+
       embedWatchdogVideoIdRef.current = resolvedVideoId;
       embedInitialWatchdogGracePendingRef.current = true;
       embedWatchdogLoadingRearmCountRef.current = 0;
@@ -1034,7 +1051,11 @@ export const useReleasePlaybackProvider = (): {
         armEmbedStartWatchdog();
       }
     },
-    [armEmbedStartWatchdog, notifyImperativeEmbedLoadStarted],
+    [
+      armEmbedStartWatchdog,
+      dispatchEmbedSession,
+      notifyImperativeEmbedLoadStarted,
+    ],
   );
 
   const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
@@ -1072,7 +1093,8 @@ export const useReleasePlaybackProvider = (): {
     embedStartWatchdogRef.current.disarm();
     embedUnavailableSkipHandlerRef.current.resetDedupe();
     embedInitialWatchdogGracePendingRef.current = true;
-  }, []);
+    dispatchEmbedSession({ type: "embed/confirm/reset" });
+  }, [dispatchEmbedSession]);
 
   useEffect(() => {
     return () => {
@@ -1102,6 +1124,7 @@ export const useReleasePlaybackProvider = (): {
       setPlaybackVideoTransitionTargetIdWithRef,
     setPlaybackVideoUiLoadingTargetId,
     clearPlaybackVideoUiLoading,
+    resetEmbedSession,
     beginPlaybackVideoUiLoading,
     markEmbedTrackSwitchGrace,
     prepareQueueAdvancePlayback,

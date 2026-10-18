@@ -18,6 +18,7 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Invariant | Context spec search string |
 |-----------|----------------------------|
 | Hidden tab poll detects end and advances | **`polls player state in a hidden tab`**, **`resolves the next playback video id immediately when advancing the queue in a hidden tab`** |
+| Hidden-tab poll **interval** runs only while **`document.visibilityState === "hidden"`** and transport session is active ([`selectShouldRunHiddenTabPlayerStatePoll`](../../src/utils/playbackEmbedSession.ts) in [`playbackEmbedSession.spec.ts`](../../src/utils/playbackEmbedSession.spec.ts); embed hook effect) | — (unit + context specs above) |
 | Background **PAUSED** before **ENDED** must not stop hidden polling (queue still advances) | **`when the tab is hidden and transport pauses before end, background polling still advances the queue`** |
 | Ignore embed pause → app pause during upload switch / loading / transition while hidden | **`ignores background-tab pause events`**, **`advances in a hidden tab after PiP closes`**, **`when cross-release switch from pause runs while the tab is hidden`** |
 | Tab visible → sync layout + **`requestYoutubeEmbedPlaybackSync`** + gesture retries | **`syncs embed playback when the tab becomes visible again`**, **`requests player state when the document becomes visible during playback`** |

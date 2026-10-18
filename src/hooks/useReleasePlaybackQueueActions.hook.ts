@@ -100,6 +100,7 @@ interface UseReleasePlaybackQueueActionsParams {
   setPlaybackVideoTransitionTargetId: (videoId: string | null) => void;
   setPlaybackVideoUiLoadingTargetId: (videoId: string | null) => void;
   clearPlaybackVideoUiLoading: () => void;
+  resetEmbedSession: () => void;
   beginPlaybackVideoUiLoading: () => void;
   markEmbedTrackSwitchGrace: () => void;
   prepareQueueAdvancePlayback: (item: PlaybackQueueItem | null) => void;
@@ -134,6 +135,7 @@ export const useReleasePlaybackQueueActions = ({
   setPlaybackVideoTransitionTargetId,
   setPlaybackVideoUiLoadingTargetId,
   clearPlaybackVideoUiLoading,
+  resetEmbedSession,
   beginPlaybackVideoUiLoading,
   markEmbedTrackSwitchGrace,
   prepareQueueAdvancePlayback,
@@ -713,7 +715,7 @@ export const useReleasePlaybackQueueActions = ({
       setShouldAutoplayEmbed(false);
       setIsPlaybackEmbedMounted(false);
       setPlaybackVideoTransitionTargetId(null);
-      clearPlaybackVideoUiLoading();
+      resetEmbedSession();
       setEmbedVideoId(null);
       embedVideoIdRef.current = null;
       lastSyncedActiveVideoIdRef.current = null;
@@ -721,8 +723,8 @@ export const useReleasePlaybackQueueActions = ({
     },
     [
       clearPlayFromGestureRetries,
-      clearPlaybackVideoUiLoading,
       dispatchSession,
+      resetEmbedSession,
       embedVideoIdRef,
       isPlayingRef,
       lastSyncedActiveVideoIdRef,

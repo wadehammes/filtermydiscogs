@@ -3951,6 +3951,7 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPlaying).toBe(false);
     expect(result.current.release).toBeNull();
     expect(result.current.activeTrackPosition).toBeNull();
+    expect(result.current.isPlaybackVideoLoading).toBe(false);
     expect(readPersistedReleasePlayback()).toBeNull();
   });
 
