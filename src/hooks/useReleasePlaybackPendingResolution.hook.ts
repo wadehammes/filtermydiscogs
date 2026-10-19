@@ -94,6 +94,7 @@ export const useReleasePlaybackPendingResolution = ({
     }
   }, [
     allReleasesLength,
+    extendQueueWithSimilarReleases,
     isPlaying,
     maybeExtendQueueTail,
     previewVideo,
