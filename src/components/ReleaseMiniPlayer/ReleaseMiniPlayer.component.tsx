@@ -204,6 +204,7 @@ export const ReleaseMiniPlayer = ({
                   videoTitle={activePlaybackTitle ?? "Release preview"}
                   autoplay={shouldAutoplayIframe}
                   deferVideoLoad={false}
+                  isPlaybackVideoLoading={isPlaybackVideoLoading}
                   variant={isVideoPanelExpanded ? "visible" : "hidden"}
                 />
               </div>

@@ -4,10 +4,7 @@ import classNames from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { imperativelySyncPersistentYoutubeIframeToVideoId } from "src/components/PersistentYoutubeIframe/persistentYoutubeIframeVideoSwitch";
 import { GTM_YOUTUBE_IFRAME_INSPECTED_ATTR } from "src/constants/analytics";
-import {
-  useReleasePlayback,
-  useReleasePlaybackIframeActions,
-} from "src/context/releasePlayback.context";
+import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
@@ -21,6 +18,7 @@ interface PersistentYoutubeIframeProps {
   videoTitle: string;
   autoplay?: boolean;
   deferVideoLoad?: boolean;
+  isPlaybackVideoLoading?: boolean;
   variant?: "hidden" | "visible";
 }
 
@@ -31,9 +29,9 @@ export const PersistentYoutubeIframe = ({
   videoTitle,
   autoplay = false,
   deferVideoLoad = false,
+  isPlaybackVideoLoading = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
-  const { isPlaybackVideoLoading } = useReleasePlayback();
   const {
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
@@ -47,7 +45,7 @@ export const PersistentYoutubeIframe = ({
   const [bootstrapVideoId] = useState(videoId);
   const loadedVideoIdRef = useRef<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const previousVariantRef = useRef(variant);
+  const previousPlaybackVideoLoadingRef = useRef(isPlaybackVideoLoading);
 
   const embedUrl = useMemo(
     () =>
@@ -101,15 +99,23 @@ export const PersistentYoutubeIframe = ({
   }, [deferVideoLoad, syncIframeToVideoId, videoId]);
 
   useEffect(() => {
-    const previousVariant = previousVariantRef.current;
-    previousVariantRef.current = variant;
-
-    if (previousVariant !== "hidden" || variant !== "visible") {
+    if (variant !== "visible") {
       return;
     }
 
     refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
   }, [variant]);
+
+  useEffect(() => {
+    const wasLoading = previousPlaybackVideoLoadingRef.current;
+    previousPlaybackVideoLoadingRef.current = isPlaybackVideoLoading;
+
+    if (variant !== "visible" || !wasLoading || isPlaybackVideoLoading) {
+      return;
+    }
+
+    refreshYoutubeEmbedPlayerLayout({ iframe: iframeRef.current });
+  }, [isPlaybackVideoLoading, variant]);
 
   useEffect(() => {
     if (variant !== "visible") {
