@@ -135,6 +135,19 @@
   text-decoration: underline;
 }
 
+.tableUserLinkInline {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tableUserMeta.tableTrackAttribution {
+  white-space: nowrap;
+}
+
 .tableMetricCol {
   font-family: var(--font-family-meta);
   font-variant-numeric: tabular-nums;

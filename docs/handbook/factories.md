@@ -196,6 +196,9 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `discogsIdentityFactory` | `forUser()` | Discogs identity API mocks |
 | `discogsSearchResponseFactory` | `empty()` | Search route empty results |
 | `adminUserLookupStatsFactory` | `forUsername()` | Admin user lookup route spec |
+| `adminStatsTopUserFactory` | `build()` | **`AdminStatsTopUser`** admin leaderboard rows |
+| `adminStatsTopUserTrackFactory` | `build()` | **`AdminStatsTopUserTrack`** admin playback leaderboard rows |
+| `fetchAdminUserTrackStatsResultFactory` | `build()`, `mappingFixture()` | **`FetchAdminUserTrackStatsResult`** + aligned **`$queryRaw`** SQL row mocks ([`admin-user-track-stats.server.spec.ts`](../../src/lib/admin-user-track-stats.server.spec.ts)) |
 | `persistedFiltersFactory` | `empty()` | Default filter state in preferences tests |
 | `discogsReleaseJsonFactory` | `forReleaseId()`, `withTracklistAndVideos()` | `api.discogsRelease` URI payload; detail shape with factory-built tracks/videos |
 | `discogsTrackFactory` | `untitled()` | Tracklist rows; **`Untitled`** + **`type_: "track"`** for generic-title playback matching |

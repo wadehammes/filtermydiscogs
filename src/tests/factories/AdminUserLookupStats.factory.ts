@@ -55,6 +55,14 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         last30Days: faker.number.int({ min: 0, max: 200 }),
         total: faker.number.int({ min: 0, max: 500 }),
       },
+      playback: {
+        trackRows: faker.number.int({ min: 0, max: 200 }),
+        totalPlays: faker.number.int({ min: 0, max: 500 }),
+        totalListens: faker.number.int({ min: 0, max: 300 }),
+        tracksWithOverrides: faker.number.int({ min: 0, max: 20 }),
+        lastPlayedAt: null,
+        lastListenedAt: null,
+      },
       crates: [],
     } satisfies AdminUserLookupStats;
 
@@ -108,6 +116,14 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         last7Days: 0,
         last30Days: 0,
         total: 0,
+      },
+      playback: {
+        trackRows: 0,
+        totalPlays: 0,
+        totalListens: 0,
+        tracksWithOverrides: 0,
+        lastPlayedAt: null,
+        lastListenedAt: null,
       },
       crates: [],
       ...attributes,

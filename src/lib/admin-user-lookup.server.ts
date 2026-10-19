@@ -1,5 +1,6 @@
 import { prisma } from "src/lib/db";
 import { parseUserPreferences } from "src/lib/user-preferences.server";
+import { userTrackHasYoutubeOverrideWhere } from "src/lib/user-track.server";
 import type { AdminUserLookupStats } from "src/types/adminUserLookup.types";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
 
@@ -70,6 +71,8 @@ export const getAdminUserLookup = async (
     analyticsTotal,
     lastCrateUpdate,
     lastReleaseAdded,
+    playbackAggregates,
+    tracksWithOverrides,
     crates,
   ] = await Promise.all([
     prisma.crate.count({ where: { user_id: userId } }),
@@ -106,6 +109,15 @@ export const getAdminUserLookup = async (
     prisma.crateRelease.aggregate({
       where: { user_id: userId },
       _max: { added_at: true },
+    }),
+    prisma.userTrack.aggregate({
+      where: { user_id: userId },
+      _count: { _all: true },
+      _sum: { play_count: true, listen_count: true },
+      _max: { last_played_at: true, last_listened_at: true },
+    }),
+    prisma.userTrack.count({
+      where: { user_id: userId, ...userTrackHasYoutubeOverrideWhere },
     }),
     prisma.crate.findMany({
       where: { user_id: userId },
@@ -162,6 +174,14 @@ export const getAdminUserLookup = async (
       last7Days: analyticsLast7Days,
       last30Days: analyticsLast30Days,
       total: analyticsTotal,
+    },
+    playback: {
+      trackRows: playbackAggregates._count._all,
+      totalPlays: playbackAggregates._sum.play_count ?? 0,
+      totalListens: playbackAggregates._sum.listen_count ?? 0,
+      tracksWithOverrides,
+      lastPlayedAt: toIsoString(playbackAggregates._max.last_played_at),
+      lastListenedAt: toIsoString(playbackAggregates._max.last_listened_at),
     },
     crates: crates.map((crate) => ({
       id: crate.id,
