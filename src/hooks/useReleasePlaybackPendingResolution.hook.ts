@@ -104,6 +104,7 @@ export const useReleasePlaybackPendingResolution = ({
     maybeExtendQueueTail,
     previewVideo,
     upcomingQueueLength,
+    extendQueueWithSimilarReleases,
   ]);
 
   useEffect(() => {
