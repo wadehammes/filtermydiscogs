@@ -47,6 +47,7 @@ import {
 } from "src/types/userPreferences.types";
 import { definedProps } from "src/utils/definedProps";
 import { resolveEmbedUnavailableWatchdogOutcome } from "src/utils/embedUnavailableWatchdogOutcome";
+import { tryConfirmPlaybackEmbedFromSignal } from "src/utils/playbackEmbedSession";
 import {
   classifyNetworkConnectionQuality,
   createEmbedPlaybackStartWatchdog,
@@ -92,10 +93,8 @@ import {
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
-  resolveEmbedPlaybackConfirmGateStartedAtMs,
   resolveEmbedPlaybackIntentActive,
   resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace,
-  shouldConfirmEmbedPlaybackFromAudibleEmbed,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
@@ -760,19 +759,16 @@ export const useReleasePlaybackProvider = (): {
       awaitingResumeGesture: awaitingResumeGestureRef.current,
     });
 
-    const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
-      imperativeEmbedLoadStartedAtMs:
-        playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
-      videoUiLoadingCycleStartedAtMs:
-        playbackVideoUiLoadingCycleStartedAtMsRef.current,
-    });
-
     if (
-      shouldConfirmEmbedPlaybackFromAudibleEmbed({
-        gateStartedAtMs,
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: { kind: "audible" },
+        imperativeEmbedLoadStartedAtMs:
+          playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
+        videoUiLoadingCycleStartedAtMs:
+          playbackVideoUiLoadingCycleStartedAtMsRef.current,
         nowMs: Date.now(),
-        isPlaying: playbackIntentActive,
-        isPaused: isPausedRef.current,
+        transportSessionActive: playbackIntentActive,
+        transportPaused: isPausedRef.current,
         ...definedProps({
           lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
         }),

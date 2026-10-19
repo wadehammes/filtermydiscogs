@@ -677,7 +677,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(secondReady).toHaveBeenCalledTimes(1);
   });
 
-  it("when isPlaying is true but isPlayingRef lags, infoDelivery still confirms embed playback", () => {
+  it("when isPlaying is true but isPlayingRef lags, infoDelivery confirms embed playback via playback intent transport", () => {
     const onEmbedPlaybackConfirmed = jest.fn();
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;
@@ -739,7 +739,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
-  it("confirms playback from infoDelivery currentTime without onStateChange PLAYING", () => {
+  it("confirms playback from infoDelivery currentTime through the shared embed confirm gate", () => {
     const onEmbedPlaybackConfirmed = jest.fn();
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;

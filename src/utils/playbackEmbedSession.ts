@@ -1,3 +1,247 @@
+import { definedProps } from "src/utils/definedProps";
+import {
+  YOUTUBE_PLAYER_STATE_PLAYING,
+  type YoutubeInfoDelivery,
+} from "src/utils/youtubeIframeEvents";
+
+export const EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS = 400;
+
+export const EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS =
+  EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS + 100;
+
+export const PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS = 2500;
+
+export const PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS = 3000;
+
+export const resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace = ({
+  baseDelayMs,
+  initialPresentationGracePending,
+}: {
+  baseDelayMs: number;
+  initialPresentationGracePending: boolean;
+}): number =>
+  initialPresentationGracePending
+    ? baseDelayMs + PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS
+    : baseDelayMs;
+
+export const resolveEmbedPlaybackConfirmGateStartedAtMs = ({
+  imperativeEmbedLoadStartedAtMs,
+  videoUiLoadingCycleStartedAtMs,
+}: {
+  imperativeEmbedLoadStartedAtMs: number | null;
+  videoUiLoadingCycleStartedAtMs: number | null;
+}): number | null =>
+  imperativeEmbedLoadStartedAtMs ?? videoUiLoadingCycleStartedAtMs;
+
+export const shouldAcceptEmbedPlayingConfirmation = ({
+  embedLoadStartedAtMs,
+  nowMs,
+  minDelayMs = EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+}: {
+  embedLoadStartedAtMs: number | null;
+  nowMs: number;
+  minDelayMs?: number;
+}): boolean => {
+  if (embedLoadStartedAtMs === null) {
+    return false;
+  }
+
+  return nowMs - embedLoadStartedAtMs >= minDelayMs;
+};
+
+const evaluateAudibleEmbedPlaybackConfirm = ({
+  gateStartedAtMs,
+  nowMs,
+  transportSessionActive,
+  transportPaused,
+  playerState,
+  infoDeliveryCurrentTime,
+  previousInfoDeliveryCurrentTime,
+  lastInfoDeliveryCurrentTime,
+}: {
+  gateStartedAtMs: number | null;
+  nowMs: number;
+  transportSessionActive: boolean;
+  transportPaused: boolean;
+  playerState?: number;
+  infoDeliveryCurrentTime?: number;
+  previousInfoDeliveryCurrentTime?: number;
+  lastInfoDeliveryCurrentTime?: number;
+}): boolean => {
+  if (!transportSessionActive || transportPaused) {
+    return false;
+  }
+
+  if (
+    gateStartedAtMs === null &&
+    typeof lastInfoDeliveryCurrentTime === "number" &&
+    lastInfoDeliveryCurrentTime > 0
+  ) {
+    return true;
+  }
+
+  if (gateStartedAtMs === null) {
+    return false;
+  }
+
+  if (
+    !shouldAcceptEmbedPlayingConfirmation({
+      embedLoadStartedAtMs: gateStartedAtMs,
+      nowMs,
+    })
+  ) {
+    return false;
+  }
+
+  if (playerState === YOUTUBE_PLAYER_STATE_PLAYING) {
+    return true;
+  }
+
+  if (infoDeliveryCurrentTime !== undefined) {
+    if (infoDeliveryCurrentTime > 0) {
+      return true;
+    }
+
+    if (
+      previousInfoDeliveryCurrentTime !== undefined &&
+      infoDeliveryCurrentTime > previousInfoDeliveryCurrentTime
+    ) {
+      return true;
+    }
+  }
+
+  if (
+    typeof lastInfoDeliveryCurrentTime === "number" &&
+    lastInfoDeliveryCurrentTime > 0
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
+  gateStartedAtMs,
+  nowMs,
+  isPlaying,
+  isPaused,
+  playerState,
+  infoDeliveryCurrentTime,
+  previousInfoDeliveryCurrentTime,
+  lastInfoDeliveryCurrentTime,
+}: {
+  gateStartedAtMs: number | null;
+  nowMs: number;
+  isPlaying: boolean;
+  isPaused: boolean;
+  playerState?: number;
+  infoDeliveryCurrentTime?: number;
+  previousInfoDeliveryCurrentTime?: number;
+  lastInfoDeliveryCurrentTime?: number;
+}): boolean =>
+  evaluateAudibleEmbedPlaybackConfirm({
+    gateStartedAtMs,
+    nowMs,
+    transportSessionActive: isPlaying,
+    transportPaused: isPaused,
+    ...definedProps({
+      playerState,
+      infoDeliveryCurrentTime,
+      previousInfoDeliveryCurrentTime,
+      lastInfoDeliveryCurrentTime,
+    }),
+  });
+
+export const shouldConfirmEmbedPlaybackFromWatchdogProgress = ({
+  embedPlaybackConfirmed,
+  lastInfoDeliveryCurrentTime,
+  isPlaying,
+  isPaused,
+}: {
+  embedPlaybackConfirmed: boolean;
+  lastInfoDeliveryCurrentTime: number | undefined;
+  isPlaying: boolean;
+  isPaused: boolean;
+}): boolean =>
+  !embedPlaybackConfirmed &&
+  isPlaying &&
+  !isPaused &&
+  typeof lastInfoDeliveryCurrentTime === "number" &&
+  lastInfoDeliveryCurrentTime > 0;
+
+export type PlaybackEmbedConfirmSignal =
+  | {
+      kind: "audible";
+      playerState?: number;
+      infoDeliveryCurrentTime?: number;
+      previousInfoDeliveryCurrentTime?: number;
+    }
+  | {
+      kind: "info-delivery";
+      info: YoutubeInfoDelivery;
+      previousCurrentTime?: number;
+    }
+  | { kind: "watchdog-progress" };
+
+export type TryConfirmPlaybackEmbedFromSignalInput = {
+  signal: PlaybackEmbedConfirmSignal;
+  imperativeEmbedLoadStartedAtMs: number | null;
+  videoUiLoadingCycleStartedAtMs?: number | null;
+  nowMs: number;
+  transportSessionActive: boolean;
+  transportPaused: boolean;
+  embedPlaybackConfirmed?: boolean;
+  lastInfoDeliveryCurrentTime?: number;
+};
+
+export const tryConfirmPlaybackEmbedFromSignal = (
+  input: TryConfirmPlaybackEmbedFromSignalInput,
+): boolean => {
+  if (input.signal.kind === "watchdog-progress") {
+    return shouldConfirmEmbedPlaybackFromWatchdogProgress({
+      embedPlaybackConfirmed: input.embedPlaybackConfirmed ?? false,
+      lastInfoDeliveryCurrentTime: input.lastInfoDeliveryCurrentTime,
+      isPlaying: input.transportSessionActive,
+      isPaused: input.transportPaused,
+    });
+  }
+
+  const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+    imperativeEmbedLoadStartedAtMs: input.imperativeEmbedLoadStartedAtMs,
+    videoUiLoadingCycleStartedAtMs:
+      input.videoUiLoadingCycleStartedAtMs ?? null,
+  });
+
+  if (input.signal.kind === "info-delivery") {
+    return evaluateAudibleEmbedPlaybackConfirm({
+      gateStartedAtMs,
+      nowMs: input.nowMs,
+      transportSessionActive: input.transportSessionActive,
+      transportPaused: input.transportPaused,
+      ...definedProps({
+        playerState: input.signal.info.playerState,
+        infoDeliveryCurrentTime: input.signal.info.currentTime,
+        previousInfoDeliveryCurrentTime: input.signal.previousCurrentTime,
+        lastInfoDeliveryCurrentTime: input.lastInfoDeliveryCurrentTime,
+      }),
+    });
+  }
+
+  return evaluateAudibleEmbedPlaybackConfirm({
+    gateStartedAtMs,
+    nowMs: input.nowMs,
+    transportSessionActive: input.transportSessionActive,
+    transportPaused: input.transportPaused,
+    ...definedProps({
+      playerState: input.signal.playerState,
+      infoDeliveryCurrentTime: input.signal.infoDeliveryCurrentTime,
+      previousInfoDeliveryCurrentTime:
+        input.signal.previousInfoDeliveryCurrentTime,
+      lastInfoDeliveryCurrentTime: input.lastInfoDeliveryCurrentTime,
+    }),
+  });
+};
+
 export type PlaybackEmbedHiddenPollContext = {
   transportSessionActive: boolean;
   documentHidden: boolean;
