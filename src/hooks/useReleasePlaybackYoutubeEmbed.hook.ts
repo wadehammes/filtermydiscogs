@@ -34,7 +34,7 @@ import { isEmbedAlignedForLoadingPlaybackConfirm } from "src/utils/releasePlayba
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
-  resolveEmbedPlaybackIntentActive,
+  resolveAudibleEmbedConfirmTransport,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
 import {
@@ -223,15 +223,16 @@ export const useReleasePlaybackYoutubeEmbed = ({
       infoDeliveryCurrentTime?: number;
       previousInfoDeliveryCurrentTime?: number;
     }) => {
-      if (
-        !resolveEmbedPlaybackIntentActive({
+      const { playbackIntentActive, transportSessionActive } =
+        resolveAudibleEmbedConfirmTransport({
           isPlaying,
           isPlayingRefValue: isPlayingRef.current,
           isPaused: isPausedRef.current,
           pendingPlayFromGesture: pendingPlayFromGestureRef.current,
           awaitingResumeGesture: false,
-        })
-      ) {
+        });
+
+      if (!playbackIntentActive) {
         return false;
       }
 
@@ -249,7 +250,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         videoUiLoadingCycleStartedAtMs:
           playbackVideoUiLoadingCycleStartedAtMsRef.current,
         nowMs: Date.now(),
-        transportSessionActive: isPlayingRef.current,
+        transportSessionActive,
         transportPaused: isPausedRef.current,
         ...definedProps({
           lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,

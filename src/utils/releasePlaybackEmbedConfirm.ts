@@ -8,12 +8,6 @@ export {
   shouldAcceptEmbedPlayingConfirmation,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
-  tryConfirmPlaybackEmbedFromSignal,
-} from "src/utils/playbackEmbedSession";
-
-export type {
-  PlaybackEmbedConfirmSignal,
-  TryConfirmPlaybackEmbedFromSignalInput,
 } from "src/utils/playbackEmbedSession";
 
 export const resolveEmbedPlaybackIntentActive = ({
@@ -34,4 +28,26 @@ export const resolveEmbedPlaybackIntentActive = ({
   }
 
   return isPlaying || isPlayingRefValue || pendingPlayFromGesture;
+};
+
+export type EmbedPlaybackIntentInput = {
+  isPlaying: boolean;
+  isPlayingRefValue: boolean;
+  isPaused: boolean;
+  pendingPlayFromGesture: boolean;
+  awaitingResumeGesture: boolean;
+};
+
+export const resolveAudibleEmbedConfirmTransport = (
+  input: EmbedPlaybackIntentInput,
+): {
+  playbackIntentActive: boolean;
+  transportSessionActive: boolean;
+} => {
+  const playbackIntentActive = resolveEmbedPlaybackIntentActive(input);
+
+  return {
+    playbackIntentActive,
+    transportSessionActive: playbackIntentActive,
+  };
 };

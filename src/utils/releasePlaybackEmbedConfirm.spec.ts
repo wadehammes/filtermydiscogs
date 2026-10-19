@@ -1,18 +1,46 @@
 import { describe, expect, it } from "@jest/globals";
+import * as releasePlaybackEmbedConfirmModule from "src/utils/releasePlaybackEmbedConfirm";
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
+  EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
   PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
+  resolveAudibleEmbedConfirmTransport,
   resolveEmbedPlaybackConfirmGateStartedAtMs,
   resolveEmbedPlaybackIntentActive,
   resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace,
   shouldAcceptEmbedPlayingConfirmation,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
   shouldConfirmEmbedPlaybackFromWatchdogProgress,
-  tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
 
 describe("releasePlaybackEmbedConfirm", () => {
+  it("exports resolveEmbedPlaybackIntentActive locally but not embed confirm signal types re-exported from playbackEmbedSession", () => {
+    expect(
+      Object.hasOwn(
+        releasePlaybackEmbedConfirmModule,
+        "resolveEmbedPlaybackIntentActive",
+      ),
+    ).toBe(true);
+    expect(
+      Object.hasOwn(
+        releasePlaybackEmbedConfirmModule,
+        "PlaybackEmbedConfirmSignal",
+      ),
+    ).toBe(false);
+    expect(
+      Object.hasOwn(
+        releasePlaybackEmbedConfirmModule,
+        "TryConfirmPlaybackEmbedFromSignalInput",
+      ),
+    ).toBe(false);
+  });
+  it("re-exports EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS from playbackEmbedSession", () => {
+    expect(EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS).toBe(
+      EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS + 100,
+    );
+  });
+
   it("when session isPlaying is true but the ref has not caught up, playback intent is still active", () => {
     expect(
       resolveEmbedPlaybackIntentActive({
@@ -35,6 +63,36 @@ describe("releasePlaybackEmbedConfirm", () => {
         awaitingResumeGesture: false,
       }),
     ).toBe(true);
+  });
+
+  it("when resolveAudibleEmbedConfirmTransport sees session isPlaying before the ref catches up, transportSessionActive stays true", () => {
+    expect(
+      resolveAudibleEmbedConfirmTransport({
+        isPlaying: true,
+        isPlayingRefValue: false,
+        isPaused: false,
+        pendingPlayFromGesture: false,
+        awaitingResumeGesture: false,
+      }),
+    ).toEqual({
+      playbackIntentActive: true,
+      transportSessionActive: true,
+    });
+  });
+
+  it("when resolveAudibleEmbedConfirmTransport sees only pendingPlayFromGesture, transportSessionActive stays true", () => {
+    expect(
+      resolveAudibleEmbedConfirmTransport({
+        isPlaying: false,
+        isPlayingRefValue: false,
+        isPaused: false,
+        pendingPlayFromGesture: true,
+        awaitingResumeGesture: false,
+      }),
+    ).toEqual({
+      playbackIntentActive: true,
+      transportSessionActive: true,
+    });
   });
 
   it("rejects PLAYING confirmation immediately after embed load started", () => {
@@ -158,20 +216,6 @@ describe("releasePlaybackEmbedConfirm", () => {
         lastInfoDeliveryCurrentTime: 3.2,
       }),
     ).toBe(true);
-  });
-
-  it("re-exports tryConfirmPlaybackEmbedFromSignal from playbackEmbedSession", () => {
-    expect(
-      tryConfirmPlaybackEmbedFromSignal({
-        signal: { kind: "watchdog-progress" },
-        imperativeEmbedLoadStartedAtMs: 1000,
-        nowMs: 5000,
-        transportSessionActive: true,
-        transportPaused: false,
-        embedPlaybackConfirmed: true,
-        lastInfoDeliveryCurrentTime: 2,
-      }),
-    ).toBe(false);
   });
 
   it("resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace adds grace only while initial presentation is pending", () => {

@@ -13,7 +13,7 @@ Pull requests targeting **`staging`** run [`.github/workflows/ci.yml`](../../.gi
 
 Pushes to **`staging`** also run [`.github/workflows/e2e-full.yml`](../../.github/workflows/e2e-full.yml): **`pnpm build:e2e`**, then full **`pnpm test:e2e:run`** (every spec × **chromium**, **phone**, **tablet**).
 
-GitHub Actions are **pinned to commit SHAs** with version comments (see workflow files). Workflows set **`permissions: contents: read`** (least privilege for checkout and tests only).
+GitHub Actions are **pinned to commit SHAs** with version comments (see workflow files). Workflows set **`permissions: contents: read`** (least privilege for checkout and tests only). **[`ci.yml`](../../.github/workflows/ci.yml)** and **[`e2e-full.yml`](../../.github/workflows/e2e-full.yml)** use **`concurrency`** with **`cancel-in-progress: true`** so a newer push on the same PR (or **`staging`** for E2E full) cancels the previous run instead of stacking duplicate hosted-runner jobs — CodeQL and other repo workflows are unchanged.
 
 Run the same locally before pushing when possible — with [mise](https://mise.jdx.dev/), prefer **`mise run ci`** (unit + smoke). Before merging playback/responsive work, run **`mise run ci-full`** or wait for **E2E full** on **`staging`**. For a lighter pre-PR pass: **`mise run pr-prep`** (**`pnpm lint:all`**, **`pnpm handbook:check`**, **`pnpm fallow:audit`**).
 

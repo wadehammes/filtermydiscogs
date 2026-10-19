@@ -677,7 +677,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(secondReady).toHaveBeenCalledTimes(1);
   });
 
-  it("when isPlaying is true but isPlayingRef lags, infoDelivery still confirms embed playback", () => {
+  it("when isPlaying is true but isPlayingRef lags, infoDelivery confirms embed playback via playback intent transport", () => {
     const onEmbedPlaybackConfirmed = jest.fn();
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;
