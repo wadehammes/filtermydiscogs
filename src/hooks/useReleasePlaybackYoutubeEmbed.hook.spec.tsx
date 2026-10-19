@@ -29,6 +29,7 @@ const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
     configurable: true,
     get: () => state,
   });
+  document.dispatchEvent(new Event("visibilitychange"));
 };
 
 const dispatchYoutubeEmbedReady = ({
@@ -70,6 +71,7 @@ const buildHarness = ({
   const isPlayingRef = { current: isPlaying };
   const isPausedRef = { current: isPaused };
   const activeVideoIdRef = { current: null as string | null };
+  const matchedActiveVideoIdRef = { current: null as string | null };
   const isPlaybackVideoUiLoadingRef = { current: isPlaybackVideoUiLoading };
   const playbackVideoTransitionTargetIdRef = { current: null as string | null };
   const playbackVideoUiLoadingTargetVideoIdRef = {
@@ -116,6 +118,7 @@ const buildHarness = ({
           isPlayingRef,
           isPausedRef,
           activeVideoIdRef,
+          matchedActiveVideoIdRef,
           isPlaybackVideoUiLoadingRef,
           pendingPlayFromGestureRef,
           playbackVideoTransitionTargetIdRef,
@@ -250,6 +253,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
   });
 
   afterEach(() => {
+    setDocumentVisibilityState("visible");
     jest.useRealTimers();
   });
 
@@ -634,6 +638,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
             isPlayingRef: { current: true },
             isPausedRef: { current: false },
             activeVideoIdRef: { current: null },
+            matchedActiveVideoIdRef: { current: null },
             isPlaybackVideoUiLoadingRef: { current: false },
             pendingPlayFromGestureRef: { current: false },
             playbackVideoTransitionTargetIdRef: { current: null },
@@ -824,6 +829,114 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     setIntervalSpy.mockRestore();
   });
 
+  it("re-subscribes hidden-tab polling when isPaused changes during an active session", () => {
+    setDocumentVisibilityState("hidden");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+    const clearIntervalSpy = jest.spyOn(window, "clearInterval");
+    const queryClient = createTestQueryClient();
+    const release = releaseFactory.withDisplayDefaults();
+    const releaseId = release.basic_information.id ?? 1;
+    const playbackIframeRef = { current: null as HTMLIFrameElement | null };
+    const isPlayingRef = { current: true };
+    const isPausedRef = { current: false };
+    const userYoutubeOverridesRef = { current: new Map<string, string>() };
+    const releaseRef = { current: release };
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { rerender } = renderHook(
+      ({ isPaused }: { isPaused: boolean }) => {
+        isPausedRef.current = isPaused;
+        return useReleasePlaybackYoutubeEmbed({
+          queryClient,
+          dispatchSession: jest.fn(),
+          refs: {
+            playbackIframeRef,
+            embedVideoIdRef: { current: null },
+            lastSyncedActiveVideoIdRef: { current: null },
+            isPlayingRef,
+            isPausedRef,
+            activeVideoIdRef: { current: null },
+            matchedActiveVideoIdRef: { current: null },
+            isPlaybackVideoUiLoadingRef: { current: false },
+            pendingPlayFromGestureRef: { current: false },
+            playbackVideoTransitionTargetIdRef: { current: null },
+            playbackVideoUiLoadingTargetVideoIdRef: { current: null },
+            playbackVideoUiLoadingEmbedLoadStartedAtMsRef: { current: null },
+            playbackVideoUiLoadingCycleStartedAtMsRef: { current: null },
+            embedWatchdogVideoIdRef: { current: null },
+            embedPlaybackConfirmedRef: { current: false },
+            similarQueueFetchInFlightRef: { current: false },
+            playFromGestureRetryTimeoutsRef: { current: [] as number[] },
+            lastInfoDeliveryCurrentTimeRef: { current: undefined },
+            releaseRef,
+            tracksRef: { current: [] as never[] },
+            videosRef: { current: [] as never[] },
+          },
+          isPlaying: true,
+          isPaused,
+          isPlaybackReady: true,
+          isPlaybackEmbedMounted: false,
+          isPlaybackVideoUiLoading: false,
+          activeVideoId: null,
+          matchedActiveVideoId: null,
+          pendingTrackPosition: null,
+          pendingPreviewVideoUri: null,
+          releaseId,
+          releaseDetailId: releaseId,
+          setEmbedVideoId: jest.fn(),
+          setShouldAutoplayEmbed: jest.fn(),
+          setIsPlaybackEmbedMounted: jest.fn(),
+          clearPlaybackVideoUiLoading: jest.fn(),
+          onPlaybackEnded: jest.fn(),
+          userYoutubeOverridesRef,
+        });
+      },
+      { wrapper, initialProps: { isPaused: false } },
+    );
+
+    const intervalCallsAfterMount = setIntervalSpy.mock.calls.length;
+    expect(intervalCallsAfterMount).toBeGreaterThan(0);
+
+    rerender({ isPaused: true });
+
+    expect(clearIntervalSpy).toHaveBeenCalled();
+    expect(setIntervalSpy.mock.calls.length).toBeGreaterThan(
+      intervalCallsAfterMount,
+    );
+
+    setIntervalSpy.mockRestore();
+    clearIntervalSpy.mockRestore();
+  });
+
+  it("schedules hidden-tab polling when the document becomes hidden during an active session", () => {
+    setDocumentVisibilityState("visible");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    buildHarness({
+      isPaused: false,
+      isPlaying: true,
+    });
+
+    expect(setIntervalSpy).not.toHaveBeenCalledWith(
+      expect.any(Function),
+      HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+    );
+
+    act(() => {
+      setDocumentVisibilityState("hidden");
+    });
+
+    expect(setIntervalSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
+    );
+
+    setIntervalSpy.mockRestore();
+  });
+
   it("does not sync activeVideoId to embedVideoId during similar queue fetch when embed playback is confirmed", () => {
     const queryClient = createTestQueryClient();
     const release = releaseFactory.withDisplayDefaults();
@@ -860,6 +973,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
             isPlayingRef,
             isPausedRef,
             activeVideoIdRef,
+            matchedActiveVideoIdRef: { current: null },
             isPlaybackVideoUiLoadingRef: { current: false },
             pendingPlayFromGestureRef: { current: false },
             playbackVideoTransitionTargetIdRef: { current: null },

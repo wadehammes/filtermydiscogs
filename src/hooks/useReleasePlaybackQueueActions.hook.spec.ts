@@ -371,6 +371,93 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(settleSameUploadQueueAdvance).toHaveBeenCalledTimes(1);
   });
 
+  it("when embedVideoId is prefetched ahead of matchedActiveVideoId, playNext begins video UI loading for the track switch", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const priorMatchedVideoId = "te2jJncBVG4";
+    const nextUploadId = "abc12345678";
+    const nextItem = createQueueItem({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Next track",
+    });
+    const beginPlaybackVideoUiLoading = jest.fn();
+    const markEmbedTrackSwitchGrace = jest.fn();
+    const settleSameUploadQueueAdvance = jest.fn();
+    const setPlaybackVideoUiLoadingTargetId = jest.fn();
+    const setPlaybackVideoTransitionTargetId = jest.fn();
+    const queueRef = { current: [nextItem] };
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId,
+        setPlaybackVideoUiLoadingTargetId,
+        clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
+        beginPlaybackVideoUiLoading,
+        markEmbedTrackSwitchGrace,
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance,
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem: jest.fn(() => nextUploadId),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(
+          (updater: (previous: (typeof nextItem)[]) => (typeof nextItem)[]) => {
+            queueRef.current = updater(queueRef.current);
+          },
+        ),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: true },
+          similarQueueTailToastShownRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
+          releaseRef: { current: release },
+          queueRef,
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: true },
+          isPausedRef: { current: false },
+          releaseDetailIdRef: { current: release.basic_information.id },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: priorMatchedVideoId },
+          matchedActiveVideoIdRef: { current: priorMatchedVideoId },
+          activeVideoIdRef: { current: nextUploadId },
+          embedVideoIdRef: { current: nextUploadId },
+          activeTrackPositionRef: { current: "A1" },
+          isReleasePreviewRef: { current: false },
+        },
+      }),
+    );
+
+    result.current.playNext();
+
+    expect(beginPlaybackVideoUiLoading).toHaveBeenCalledTimes(1);
+    expect(markEmbedTrackSwitchGrace).toHaveBeenCalledTimes(1);
+    expect(setPlaybackVideoUiLoadingTargetId).toHaveBeenCalledWith(
+      nextUploadId,
+    );
+    expect(setPlaybackVideoTransitionTargetId).toHaveBeenCalledWith(
+      nextUploadId,
+    );
+    expect(settleSameUploadQueueAdvance).not.toHaveBeenCalled();
+  });
+
   it("playNext reloads embed playback when the next row repeats the active track", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({

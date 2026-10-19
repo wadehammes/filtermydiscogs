@@ -45,11 +45,23 @@ util_alternate_specs() {
   esac
 }
 
+list_release_playback_context_specs() {
+  local f base
+  for f in "$ROOT"/src/context/releasePlayback.context.*.spec.tsx; do
+    [ -e "$f" ] || continue
+    base="$(basename "$f")"
+    case "$base" in
+      releasePlayback.context.spec.harness.tsx) continue ;;
+    esac
+    printf '%s\n' "src/context/${base}"
+  done
+}
+
 hook_alternate_specs() {
   case "$1" in
     src/hooks/useReleasePlaybackProvider.hook.ts)
+      list_release_playback_context_specs
       printf '%s\n' \
-        src/context/releasePlayback.context.spec.tsx \
         src/utils/playbackEmbedSession.spec.ts \
         src/utils/applyPlaybackEmbedSessionEvent.spec.ts \
         src/utils/syncPlaybackEmbedSessionRefs.spec.ts \
@@ -106,7 +118,7 @@ collect_satisfying_specs() {
       done < <(hook_alternate_specs "$prod")
       ;;
     src/context/releasePlayback.context.tsx)
-      printf '%s\n' src/context/releasePlayback.context.spec.tsx
+      list_release_playback_context_specs
       ;;
   esac
 }
