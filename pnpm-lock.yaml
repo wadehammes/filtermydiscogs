@@ -377,8 +377,8 @@ importers:
         specifier: ^7.10.0
         version: 7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2)
       prisma-json-types-generator:
-        specifier: ^5.1.1
-        version: 5.1.1(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))
+        specifier: ^5.2.0
+        version: 5.2.0(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(pg@8.23.1)(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))
       stylelint:
         specifier: ^17.16.0
         version: 17.16.0(supports-color@10.2.2)(typescript@7.0.2)
@@ -2640,17 +2640,17 @@ packages:
   '@prisma/debug@7.10.0':
     resolution: {integrity: sha512-caygJKtltmRIgdJ3jRpkOr7yM4DW6zxo5uOmojKWFb3asnxWoRkQOwZmXBgD8FZp4htrX+nMpcWqDwzlQ1+Y4g==}
 
+  '@prisma/debug@7.10.1':
+    resolution: {integrity: sha512-eFCAkGZ13D/qPg48JBlG5IWi9cSBBOC7oG3abDPcAkYioDWlIjh0YJJLK2J7qo5S+xWWD8I6egAN/8KbCaiMCA==}
+
   '@prisma/debug@7.2.0':
     resolution: {integrity: sha512-YSGTiSlBAVJPzX4ONZmMotL+ozJwQjRmZweQNIq/ER0tQJKJynNkRB3kyvt37eOfsbMCXk3gnLF6J9OJ4QWftw==}
-
-  '@prisma/debug@7.9.0':
-    resolution: {integrity: sha512-i0KdVQuKUE6N9NloHs+sUNAk2c9svR3myBndQbA3BoeoArsSpwtNgTdHZL+wBtCLCcdS2OOC/PKhgTe36jkF5A==}
 
   '@prisma/dev@0.24.17':
     resolution: {integrity: sha512-UvdZzmpFwknnfreh6Jije84ekkYGPYEJhXG1tFzCsCfQyzJifrOo38eZc0qajzvaC6OLUOrN9ML5XfCnEZL9DA==}
 
-  '@prisma/dmmf@7.9.0':
-    resolution: {integrity: sha512-XpS08oSPWAmQFuuvEo6gMXnNCmTHZ4U2uxY9SsxjZ8RUOWJfajVF8wkM9mL2EyWreje9YXNesCbvEYrSLukK6Q==}
+  '@prisma/dmmf@7.10.1':
+    resolution: {integrity: sha512-56mAUF8wlLAqe9jCVBJKwo5UgaAksctB4vGrIK34X6+8UOUU2gDNVz8I+CNra9BeqFrRiCZUWvQJJu88ukPsmA==}
 
   '@prisma/driver-adapter-utils@7.10.0':
     resolution: {integrity: sha512-u8zkcRLlaryO652T4qavBg0HmzNW5tSKdsCn6hc1PhWAp/J6k0vrxLuUs+b9o+HcjsK7Dfa01o4OFSn0frauJA==}
@@ -2664,11 +2664,11 @@ packages:
   '@prisma/fetch-engine@7.10.0':
     resolution: {integrity: sha512-Zqyu8DY14t6W/xwmAxUYWCXtHrvQnSvT644EAZSsdM8NSmCS74vJJbBKdVsK3ucFpnUWkEpbO1a0CxJXrg130g==}
 
-  '@prisma/generator-helper@7.9.0':
-    resolution: {integrity: sha512-iFPTZ5AfP3yjV+u4FunwLGGS1O/GcXLHolXSsTEoAtp6y/cLLBxjnJWrOm2GU/op9K28slFOH3xtvRq3CNZMcA==}
+  '@prisma/generator-helper@7.10.1':
+    resolution: {integrity: sha512-JnejJ/ricWKO+yCrNEkHa0zLo7VyNRvlHtA6O5AmCPgAp8XUcoGdonssdOauNjTgXCUzQ1YOBWNryNM9y6Ivdg==}
 
-  '@prisma/generator@7.9.0':
-    resolution: {integrity: sha512-CzMNeDwfaRr8tt9eKw29iZ0y0TMWrzHfZ0yvzLTJLIuSoZ9qbkVq1KXA3ELVNdLOU3ch8OFU8Ljie5EsyPpH7g==}
+  '@prisma/generator@7.10.1':
+    resolution: {integrity: sha512-SGrXz4CmQgoxQVoT70wzhL5vD5XLEhMYT7keQQL2zMNFE0WYO9hQ2HJHKHAsMYI9LyordFRrjYj/W9EpN/YyQw==}
 
   '@prisma/get-platform@7.10.0':
     resolution: {integrity: sha512-0bra1LFYi8xNw0yqV62bHJNQk4BKleOngZiqPWIQc7a3+9q6rqsnqJ15BuepP8943PFMvtmgnP52juZsyYkA6w==}
@@ -5744,13 +5744,17 @@ packages:
     resolution: {integrity: sha512-byhRAPguVKMQIj4kjJwJ5lAskVhfuiSdiYl/aLTWpgkGEmic2jYhJh1yE9ih8Ox44Xg9ccCT11/S6QrzSJuNrg==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  prisma-json-types-generator@5.1.1:
-    resolution: {integrity: sha512-vtj68YkCla7bEnblC54xzKU3w+H/1uoKxtLU3F2eC9LL8j1Dz8GadVagKhQqQd03KGfHmO7o83Tf3yXxCKQwzQ==}
+  prisma-json-types-generator@5.2.0:
+    resolution: {integrity: sha512-Tc1XzT325dYupjAC3y9wj/7n9uV0/jMS/GJhtyR6zZprjAvF+zUoMGo4log7++Vz8VmRRFQJHkGeJ332MYXb6A==}
     engines: {node: '>=14.0'}
     hasBin: true
     peerDependencies:
       '@prisma/client': ^7.8.0
+      pg: ^8.0.0
       prisma: ^7.8.0
+    peerDependenciesMeta:
+      pg:
+        optional: true
 
   prisma@7.10.0:
     resolution: {integrity: sha512-o0ornyJOWgygVAzGCpr8PdXV8EJLHyVGDDUr/voBQt8Azzw8cYTByzzPGcA/m4tCkPcnJA8raEOv2CslsKhPEw==}
@@ -8745,9 +8749,9 @@ snapshots:
 
   '@prisma/debug@7.10.0': {}
 
-  '@prisma/debug@7.2.0': {}
+  '@prisma/debug@7.10.1': {}
 
-  '@prisma/debug@7.9.0': {}
+  '@prisma/debug@7.2.0': {}
 
   '@prisma/dev@0.24.17(typescript@7.0.2)':
     dependencies:
@@ -8769,7 +8773,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@prisma/dmmf@7.9.0': {}
+  '@prisma/dmmf@7.10.1': {}
 
   '@prisma/driver-adapter-utils@7.10.0':
     dependencies:
@@ -8790,13 +8794,13 @@ snapshots:
       '@prisma/engines-version': 7.10.0-4.0edf323efd1d98336f3f0a68684b56f689b900d3
       '@prisma/get-platform': 7.10.0
 
-  '@prisma/generator-helper@7.9.0':
+  '@prisma/generator-helper@7.10.1':
     dependencies:
-      '@prisma/debug': 7.9.0
-      '@prisma/dmmf': 7.9.0
-      '@prisma/generator': 7.9.0
+      '@prisma/debug': 7.10.1
+      '@prisma/dmmf': 7.10.1
+      '@prisma/generator': 7.10.1
 
-  '@prisma/generator@7.9.0': {}
+  '@prisma/generator@7.10.1': {}
 
   '@prisma/get-platform@7.10.0':
     dependencies:
@@ -11985,15 +11989,17 @@ snapshots:
       '@jest/schemas': 30.5.0
       ansi-styles: 5.2.0
 
-  prisma-json-types-generator@5.1.1(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2)):
+  prisma-json-types-generator@5.2.0(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(pg@8.23.1)(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2)):
     dependencies:
       '@prisma/client': 7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2)
-      '@prisma/generator-helper': 7.9.0
+      '@prisma/generator-helper': 7.10.1
       prisma: 7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2)
       semver: 7.8.5
       try: 1.0.3
       tslib: 2.8.1
       typescript: 6.0.3
+    optionalDependencies:
+      pg: 8.23.1
 
   prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2):
     dependencies:
