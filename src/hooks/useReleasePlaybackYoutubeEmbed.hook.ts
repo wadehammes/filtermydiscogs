@@ -35,6 +35,7 @@ import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
   resolveEmbedPlaybackConfirmGateStartedAtMs,
+  resolveEmbedPlaybackIntentActive,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { shouldPersistentIframeOwnEmbedLoad } from "src/utils/releasePlaybackEmbedLoadOwnership";
@@ -224,7 +225,15 @@ export const useReleasePlaybackYoutubeEmbed = ({
       infoDeliveryCurrentTime?: number;
       previousInfoDeliveryCurrentTime?: number;
     }) => {
-      if (!isPlayingRef.current || isPausedRef.current) {
+      if (
+        !resolveEmbedPlaybackIntentActive({
+          isPlaying,
+          isPlayingRefValue: isPlayingRef.current,
+          isPaused: isPausedRef.current,
+          pendingPlayFromGesture: pendingPlayFromGestureRef.current,
+          awaitingResumeGesture: false,
+        })
+      ) {
         return false;
       }
 
@@ -280,8 +289,10 @@ export const useReleasePlaybackYoutubeEmbed = ({
       embedWatchdogVideoIdRef,
       isPausedRef,
       isPlaybackVideoUiLoadingRef,
+      isPlaying,
       isPlayingRef,
       lastInfoDeliveryCurrentTimeRef,
+      pendingPlayFromGestureRef,
       playbackVideoTransitionTargetIdRef,
       playbackVideoUiLoadingCycleStartedAtMsRef,
       playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
@@ -834,7 +845,13 @@ export const useReleasePlaybackYoutubeEmbed = ({
             videoUiLoadingCycleStartedAtMs:
               playbackVideoUiLoadingCycleStartedAtMsRef.current,
             nowMs: Date.now(),
-            isPlaying: isPlayingRef.current,
+            isPlaying: resolveEmbedPlaybackIntentActive({
+              isPlaying,
+              isPlayingRefValue: isPlayingRef.current,
+              isPaused: isPausedRef.current,
+              pendingPlayFromGesture: pendingPlayFromGestureRef.current,
+              awaitingResumeGesture: false,
+            }),
             isPaused: isPausedRef.current,
           })
         ) {
@@ -868,11 +885,13 @@ export const useReleasePlaybackYoutubeEmbed = ({
     };
   }, [
     handleYoutubeEmbedPlayerState,
+    isPlaying,
     isWithinTrackSwitchGrace,
     lastInfoDeliveryCurrentTimeRef,
     notifyEmbedPlaybackEnded,
     onYoutubeEmbedPlaybackError,
     onYoutubeEmbedPlayerReady,
+    pendingPlayFromGestureRef,
     playbackIframeRef,
     playbackVideoUiLoadingCycleStartedAtMsRef,
     playbackVideoUiLoadingEmbedLoadStartedAtMsRef,

@@ -111,6 +111,27 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     );
   });
 
+  it("stores events when optional identity verification fails", async () => {
+    mockGetOptionalVerifiedUserFromRequest.mockRejectedValue(
+      Object.assign(
+        new Error("You must authenticate to access this resource."),
+        {
+          status: 401,
+        },
+      ),
+    );
+
+    const response = await POST(
+      createPostRequest(JSON.stringify({ events: sampleEvents })),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockInsertProductAnalyticsEvents).toHaveBeenCalledWith(
+      sampleEvents,
+      null,
+    );
+  });
+
   it("returns validation errors without inserting", async () => {
     mockValidateProductAnalyticsBatch.mockReturnValue({
       error: "events must be an array",

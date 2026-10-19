@@ -1820,13 +1820,9 @@ describe("ReleasePlaybackProvider", () => {
       result.current.togglePlayback();
     });
 
-    act(() => {
-      jest.advanceTimersByTime(
-        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS +
-          PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
-      );
-    });
-    advanceEmbedWatchdogSyncProbeRecheck();
+    advanceFirstSessionEmbedWatchdogFire();
+    advanceFirstSessionEmbedWatchdogFire();
+    advanceFirstSessionEmbedWatchdogFire();
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 

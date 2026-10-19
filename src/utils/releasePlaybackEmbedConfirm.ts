@@ -9,6 +9,26 @@ export const PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS = 2500;
 
 export const PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS = 3000;
 
+export const resolveEmbedPlaybackIntentActive = ({
+  isPlaying,
+  isPlayingRefValue,
+  isPaused,
+  pendingPlayFromGesture,
+  awaitingResumeGesture,
+}: {
+  isPlaying: boolean;
+  isPlayingRefValue: boolean;
+  isPaused: boolean;
+  pendingPlayFromGesture: boolean;
+  awaitingResumeGesture: boolean;
+}): boolean => {
+  if (isPaused || awaitingResumeGesture) {
+    return false;
+  }
+
+  return isPlaying || isPlayingRefValue || pendingPlayFromGesture;
+};
+
 export const resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace = ({
   baseDelayMs,
   initialPresentationGracePending,

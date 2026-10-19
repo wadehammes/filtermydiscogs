@@ -59,4 +59,17 @@ describe("resolveEmbedUnavailableWatchdogOutcome", () => {
       }),
     ).toBe("skip");
   });
+
+  it("re-arms when YouTube posted onReady for the watchdog video but playback is not confirmed yet", () => {
+    expect(
+      resolveEmbedUnavailableWatchdogOutcome({
+        embedPlaybackConfirmed: false,
+        watchdogVideoId: "abc",
+        embedVideoId: "abc",
+        isPlaybackVideoUiLoading: false,
+        rearmCount: 0,
+        youtubePlayerReadyVideoId: "abc",
+      }),
+    ).toBe("rearm");
+  });
 });

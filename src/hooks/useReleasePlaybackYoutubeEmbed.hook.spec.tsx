@@ -155,6 +155,7 @@ const buildHarness = ({
     clearPlaybackVideoUiLoading,
     embedVideoIdRef,
     embedWatchdogVideoIdRef,
+    isPlayingRef,
     isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
     playbackIframeRef,
@@ -674,6 +675,68 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     dispatchYoutubeEmbedReady({ contentWindow });
     expect(firstReady).not.toHaveBeenCalled();
     expect(secondReady).toHaveBeenCalledTimes(1);
+  });
+
+  it("when isPlaying is true but isPlayingRef lags, infoDelivery still confirms embed playback", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      clearPlaybackVideoUiLoading,
+      isPlayingRef,
+      isPlaybackVideoUiLoadingRef,
+      playbackIframeRef,
+      result,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+      isPlaying: true,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    isPlayingRef.current = false;
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    dispatchYoutubeInfoDelivery({ contentWindow, currentTime: 0.25 });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
+  });
+
+  it("when pendingPlayFromGesture is set, infoDelivery confirms embed playback after the load gate", () => {
+    const onEmbedPlaybackConfirmed = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const {
+      clearPlaybackVideoUiLoading,
+      isPlayingRef,
+      isPlaybackVideoUiLoadingRef,
+      pendingPlayFromGestureRef,
+      playbackIframeRef,
+      result,
+    } = buildHarness({
+      onEmbedPlaybackConfirmed,
+      isPlaying: false,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+    isPlaybackVideoUiLoadingRef.current = true;
+    isPlayingRef.current = false;
+    pendingPlayFromGestureRef.current = true;
+
+    result.current.notifyImperativeEmbedLoadStarted();
+
+    act(() => {
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+    });
+
+    dispatchYoutubeInfoDelivery({ contentWindow, currentTime: 0.25 });
+
+    expect(clearPlaybackVideoUiLoading).toHaveBeenCalled();
+    expect(onEmbedPlaybackConfirmed).toHaveBeenCalled();
   });
 
   it("confirms playback from infoDelivery currentTime without onStateChange PLAYING", () => {

@@ -3,6 +3,7 @@ import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
   resolveEmbedPlaybackConfirmGateStartedAtMs,
+  resolveEmbedPlaybackIntentActive,
   resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace,
   shouldAcceptEmbedPlayingConfirmation,
   shouldConfirmEmbedPlaybackFromAudibleEmbed,
@@ -11,6 +12,30 @@ import {
 import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
 
 describe("releasePlaybackEmbedConfirm", () => {
+  it("when session isPlaying is true but the ref has not caught up, playback intent is still active", () => {
+    expect(
+      resolveEmbedPlaybackIntentActive({
+        isPlaying: true,
+        isPlayingRefValue: false,
+        isPaused: false,
+        pendingPlayFromGesture: false,
+        awaitingResumeGesture: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("when only pendingPlayFromGesture is set, playback intent is active", () => {
+    expect(
+      resolveEmbedPlaybackIntentActive({
+        isPlaying: false,
+        isPlayingRefValue: false,
+        isPaused: false,
+        pendingPlayFromGesture: true,
+        awaitingResumeGesture: false,
+      }),
+    ).toBe(true);
+  });
+
   it("rejects PLAYING confirmation immediately after embed load started", () => {
     const startedAt = 1000;
 

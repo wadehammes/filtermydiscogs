@@ -6,6 +6,7 @@ import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsU
 import {
   DISCOGS_SESSION_COOKIE,
   getDisplayIdentityFromCookies,
+  getOptionalVerifiedUserFromRequest,
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
   isDiscogsVerificationUnavailable,
@@ -314,6 +315,69 @@ describe("auth-request", () => {
       ).toBe(expected);
     },
   );
+
+  describe("getOptionalVerifiedUserFromRequest", () => {
+    it("returns display cookies without calling Discogs", async () => {
+      const getIdentity = jest.spyOn(discogsOAuthService, "getIdentity");
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+        discogs_user_id: "42",
+        discogs_username: "crate-digger",
+      });
+
+      await expect(
+        getOptionalVerifiedUserFromRequest(request),
+      ).resolves.toEqual(
+        verifiedDiscogsUserFactory.build({
+          userId: 42,
+          username: "crate-digger",
+        }),
+      );
+      expect(getIdentity).not.toHaveBeenCalled();
+    });
+
+    it("returns null when Discogs rejects expired tokens without throwing", async () => {
+      jest.spyOn(discogsOAuthService, "getIdentity").mockRejectedValue(
+        Object.assign(
+          new Error("You must authenticate to access this resource."),
+          {
+            status: 401,
+          },
+        ),
+      );
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      await expect(
+        getOptionalVerifiedUserFromRequest(request),
+      ).resolves.toBeNull();
+    });
+
+    it("returns null when Discogs identity fetch times out", async () => {
+      jest.spyOn(discogsOAuthService, "getIdentity").mockRejectedValue(
+        Object.assign(new Error("The operation was aborted due to timeout"), {
+          name: "TimeoutError",
+        }),
+      );
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      await expect(
+        getOptionalVerifiedUserFromRequest(request),
+      ).resolves.toBeNull();
+    });
+  });
 
   describe("requireAuthenticatedDiscogsUser", () => {
     it("returns 403 when the requested username does not match verified identity", async () => {

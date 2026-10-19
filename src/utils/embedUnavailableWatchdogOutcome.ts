@@ -1,4 +1,7 @@
-import { shouldRearmEmbedStartWatchdogBeforeUnavailableSkip } from "src/utils/playbackEmbedStartWatchdog";
+import {
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS,
+  shouldRearmEmbedStartWatchdogBeforeUnavailableSkip,
+} from "src/utils/playbackEmbedStartWatchdog";
 
 export type EmbedUnavailableWatchdogOutcome = "defer" | "rearm" | "skip";
 
@@ -8,12 +11,14 @@ export const resolveEmbedUnavailableWatchdogOutcome = ({
   embedVideoId,
   isPlaybackVideoUiLoading,
   rearmCount,
+  youtubePlayerReadyVideoId = null,
 }: {
   embedPlaybackConfirmed: boolean;
   watchdogVideoId: string | null;
   embedVideoId: string | null;
   isPlaybackVideoUiLoading: boolean;
   rearmCount: number;
+  youtubePlayerReadyVideoId?: string | null;
 }): EmbedUnavailableWatchdogOutcome => {
   if (embedPlaybackConfirmed) {
     return "defer";
@@ -34,6 +39,15 @@ export const resolveEmbedUnavailableWatchdogOutcome = ({
       embedVideoId,
       rearmCount,
     })
+  ) {
+    return "rearm";
+  }
+
+  if (
+    watchdogVideoId !== null &&
+    youtubePlayerReadyVideoId !== null &&
+    watchdogVideoId === youtubePlayerReadyVideoId &&
+    rearmCount < PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS + 1
   ) {
     return "rearm";
   }

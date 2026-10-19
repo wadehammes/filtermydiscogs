@@ -15,8 +15,10 @@ export {
   discogsThrottleQueueResponseInit,
   getDiscogsApiErrorStatus,
   getDiscogsRateLimitRetryAfterSeconds,
+  isDiscogsFetchTimeoutError,
   isDiscogsThrottleQueueError,
   mapDiscogsUpstreamToProxyStatus,
+  resolveDiscogsVerificationFailureStatus,
 } from "src/lib/discogsApiError";
 
 export const buildDiscogsProxyErrorPayload = ({
