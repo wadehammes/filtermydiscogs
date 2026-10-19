@@ -101,6 +101,10 @@ export const resolveNeedsPlaybackVideoSwitch = ({
   replaySameTrack?: boolean;
   forceEmbedReload?: boolean;
 }): boolean => {
+  if (forceEmbedReload && preparedEmbedVideoId !== null) {
+    return true;
+  }
+
   if (
     !forceEmbedReload &&
     replaySameTrack &&

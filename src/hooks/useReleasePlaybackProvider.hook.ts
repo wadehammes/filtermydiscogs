@@ -695,6 +695,7 @@ export const useReleasePlaybackProvider = (): {
     () =>
       createPlaybackEndedAdvanceHandler({
         isPlayingRef,
+        isPausedRef,
         queueRef,
         extendQueueTailRef,
         playNextRef,

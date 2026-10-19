@@ -263,6 +263,17 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(false);
   });
 
+  it("resolveNeedsPlaybackVideoSwitch is true when force reload is required on the same upload after unavailable skip", () => {
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
+        replaySameTrack: false,
+        forceEmbedReload: true,
+      }),
+    ).toBe(true);
+  });
+
   it("resolveNeedsPlaybackVideoSwitch is false when replaying the active track on the same upload without force reload", () => {
     expect(
       resolveNeedsPlaybackVideoSwitch({

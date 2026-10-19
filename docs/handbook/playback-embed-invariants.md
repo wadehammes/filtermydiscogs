@@ -20,6 +20,7 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Invariant | Context spec search string |
 |-----------|----------------------------|
 | **ENDED** / **infoDelivery** at-or-past-end calls **`playNext`** when upcoming rows exist | **`advances the queue when the YouTube embed reports playback ended`**, **`advances the queue when infoDelivery reports`**, **`advances the queue when embed infoDelivery reports playback ended`** |
+| **ENDED** does not advance on a **visible** tab while transport is **paused** (listener paused from YouTube chrome); hidden-tab **PAUSE** before **ENDED** still advances via poll / ended handler | **`does not advance on ended when the listener paused on a visible tab`**, **`advances on ended when transport is paused in a hidden tab`** ([`releasePlaybackEndedAdvance.spec.ts`](../../src/utils/releasePlaybackEndedAdvance.spec.ts)) |
 | Same-upload advance does not restart the iframe unnecessarily | **`does not imperatively loadAndPlay on playNext when the playback iframe stays registered`** |
 | Stale end signals during transition / grace do not advance or revert track | **`does not advance when a stale embed ended`**, **`when infoDelivery reports the prior upload at end during cross-release switch`**, **`when cross-release switch from pause is confirmed, a later ended on the new track does not revert`** |
 | Empty queue + end → **`stopPlayback`** (or similar tail) | **`stops playback when an unavailable skip advances with an empty queue`** |
@@ -57,7 +58,7 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Override-only row: disarm until stats resolve | **`when override-only playback starts before track stats load`**, **`when the queue grows during user override playback`** |
 | Similar tail fetch: disarm / re-arm policy | **`does not unavailable-skip confirmed playback while similar queue tail is loading`** (E2E similar queue) |
 | **onError** terminal codes skip; grace ignores non-terminal during switch | **`skips and advances when YouTube posts onError`** (E2E **`mode=error`**) |
-| Unavailable skip **`playNext`**: force **`loadVideoById`** when the next row’s YouTube id already matches **`embedVideoId`** (prefetch / same album) so the iframe recovers from error state | **`playNext passes forceReload to syncEmbedForQueueItem after an unavailable skip advance`** ([`useReleasePlaybackQueueActions.hook.spec.ts`](../../src/hooks/useReleasePlaybackQueueActions.hook.spec.ts)) |
+| Unavailable skip **`playNext`**: force **`loadVideoById`** when the next row’s YouTube id already matches **`embedVideoId`** (prefetch / same album) so the iframe recovers from error state; **`resolveNeedsPlaybackVideoSwitch`** treats **`forceEmbedReload`** as an upload switch so loading UI + imperative reload run (not **`settleSameUploadQueueAdvance`**) | **`playNext passes forceReload to syncEmbedForQueueItem after an unavailable skip advance`** ([`useReleasePlaybackQueueActions.hook.spec.ts`](../../src/hooks/useReleasePlaybackQueueActions.hook.spec.ts)); **`resolveNeedsPlaybackVideoSwitch is true when force reload is required on the same upload after unavailable skip`** ([`releasePlaybackActivePresentation.spec.ts`](../../src/utils/releasePlaybackActivePresentation.spec.ts)) |
 
 ## Track switch, pause, and restore
 
