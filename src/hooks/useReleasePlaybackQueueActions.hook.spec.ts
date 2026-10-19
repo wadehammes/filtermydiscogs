@@ -144,6 +144,7 @@ const buildHarness = ({
     queueManuallyExtendedRef,
     queueRef,
     result,
+    shouldRebuildAlbumQueueRef,
     similarQueueModeRef,
     similarQueueSuppressedAfterClearRef,
     clearPlaybackVideoUiLoading,
@@ -905,6 +906,61 @@ describe("useReleasePlaybackQueueActions", () => {
 
     expect(updateUpcomingQueue).toHaveBeenCalled();
     expect(queueRef.current).toHaveLength(2);
+  });
+
+  it("addToQueue marks manual curation and skips deferred album-tail rebuild", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const { result, queueManuallyExtendedRef, shouldRebuildAlbumQueueRef } =
+      buildHarness({
+        sessionQueue: [
+          createQueueItem({
+            release,
+            trackPosition: "A1",
+            trackTitle: "Current",
+          }),
+        ],
+      });
+
+    shouldRebuildAlbumQueueRef.current = true;
+    queueManuallyExtendedRef.current = false;
+
+    result.current.addToQueue({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Next up",
+    });
+
+    expect(queueManuallyExtendedRef.current).toBe(true);
+    expect(shouldRebuildAlbumQueueRef.current).toBe(false);
+  });
+
+  it("reorderQueue marks manual curation and skips deferred album-tail rebuild", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const first = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+    const second = createQueueItem({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Second",
+    });
+    const {
+      result,
+      queueManuallyExtendedRef,
+      setUpcomingQueue,
+      shouldRebuildAlbumQueueRef,
+    } = buildHarness({ sessionQueue: [first, second] });
+
+    shouldRebuildAlbumQueueRef.current = true;
+    queueManuallyExtendedRef.current = false;
+
+    result.current.reorderQueue(0, 1);
+
+    expect(setUpcomingQueue).toHaveBeenCalledWith([second, first]);
+    expect(queueManuallyExtendedRef.current).toBe(true);
+    expect(shouldRebuildAlbumQueueRef.current).toBe(false);
   });
 
   it("PLAY_QUEUE_ITEM includes pending track position when release detail is not ready to resolve the target track", () => {

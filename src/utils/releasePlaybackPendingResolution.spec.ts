@@ -3,6 +3,7 @@ import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import {
   findPendingPreviewVideo,
   isPlaybackReleaseDetailSynced,
+  shouldApplyPendingAlbumQueueRebuild,
   shouldClearTransportForMissingVideo,
   shouldResetActiveTrackIndex,
 } from "src/utils/releasePlaybackPendingResolution";
@@ -124,6 +125,26 @@ describe("releasePlaybackPendingResolution", () => {
           tracksLength: 2,
           activeTrackIndex: 2,
           pendingTrackPosition: "A1",
+        }),
+      ).toBe(false);
+    });
+  });
+
+  describe("shouldApplyPendingAlbumQueueRebuild", () => {
+    it("rebuilds when album tail is pending and the listener has not curated the queue", () => {
+      expect(
+        shouldApplyPendingAlbumQueueRebuild({
+          shouldRebuildAlbumQueue: true,
+          queueManuallyExtended: false,
+        }),
+      ).toBe(true);
+    });
+
+    it("does not rebuild after manual add or reorder while a late pending resolve runs", () => {
+      expect(
+        shouldApplyPendingAlbumQueueRebuild({
+          shouldRebuildAlbumQueue: true,
+          queueManuallyExtended: true,
         }),
       ).toBe(false);
     });

@@ -30,6 +30,7 @@ describe("useReleasePlaybackPendingResolution", () => {
     const maybeExtendQueueTail = jest.fn();
     const awaitingResumeGestureRef = { current: false };
     const shouldRebuildAlbumQueueRef = { current: false };
+    const queueManuallyExtendedRef = { current: false };
     const track = discogsTrackFactory.build({ position: "A1", type_: "track" });
 
     const defaults: Parameters<typeof useReleasePlaybackPendingResolution>[0] =
@@ -55,6 +56,7 @@ describe("useReleasePlaybackPendingResolution", () => {
         releaseId: RELEASE_ID,
         setUpcomingQueue,
         shouldRebuildAlbumQueueRef,
+        queueManuallyExtendedRef,
         tracks: [track],
         videos: [],
         activeTrackHasYoutubeOverride: false,
@@ -70,6 +72,7 @@ describe("useReleasePlaybackPendingResolution", () => {
       dispatchSession,
       maybeExtendQueueTail,
       params,
+      queueManuallyExtendedRef,
       setUpcomingQueue,
       shouldRebuildAlbumQueueRef,
     };
@@ -110,6 +113,7 @@ describe("useReleasePlaybackPendingResolution", () => {
           releaseId: RELEASE_ID,
           setUpcomingQueue: jest.fn(),
           shouldRebuildAlbumQueueRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
           tracks: [
             discogsTrackFactory.build({ position: "A1", type_: "track" }),
           ],
@@ -152,6 +156,7 @@ describe("useReleasePlaybackPendingResolution", () => {
           releaseId: RELEASE_ID,
           setUpcomingQueue: jest.fn(),
           shouldRebuildAlbumQueueRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
           tracks: [
             discogsTrackFactory.build({ position: "A1", type_: "track" }),
           ],
@@ -198,6 +203,7 @@ describe("useReleasePlaybackPendingResolution", () => {
           releaseId: RELEASE_ID,
           setUpcomingQueue: jest.fn(),
           shouldRebuildAlbumQueueRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
           tracks: [
             discogsTrackFactory.build({ position: "A1", type_: "track" }),
           ],
@@ -257,6 +263,7 @@ describe("useReleasePlaybackPendingResolution", () => {
         releaseId: RELEASE_ID,
         setUpcomingQueue,
         shouldRebuildAlbumQueueRef,
+        queueManuallyExtendedRef: { current: false },
         tracks: [track],
         videos: [],
         activeTrackHasYoutubeOverride: false,
@@ -265,6 +272,48 @@ describe("useReleasePlaybackPendingResolution", () => {
 
     expect(setUpcomingQueue).toHaveBeenCalled();
     expect(maybeExtendQueueTail).toHaveBeenCalled();
+  });
+
+  it("when the listener curated the queue, pending resolve does not replace upcoming with the album tail", () => {
+    const maybeExtendQueueTail = jest.fn();
+    const setUpcomingQueue = jest.fn();
+    const shouldRebuildAlbumQueueRef = { current: true };
+    const queueManuallyExtendedRef = { current: true };
+    const track = discogsTrackFactory.build({ position: "A1", type_: "track" });
+    const release = releaseFactory.withDisplayDefaults({ id: RELEASE_ID });
+
+    renderHook(() =>
+      useReleasePlaybackPendingResolution({
+        abortUnresolvedPlayback: jest.fn(),
+        activeTrackIndex: 0,
+        activeVideoId: null,
+        awaitingResumeGestureRef: { current: false },
+        dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        embedVideoId: null,
+        isLoading: false,
+        isPlaying: true,
+        isReleasePreview: false,
+        extendQueueWithSimilarReleases: false,
+        maybeExtendQueueTail,
+        upcomingQueueLength: 2,
+        allReleasesLength: 1,
+        pendingPreviewVideoUri: null,
+        pendingTrackPosition: "A1",
+        previewVideo: null,
+        release,
+        releaseDetailId: RELEASE_ID,
+        releaseId: RELEASE_ID,
+        setUpcomingQueue,
+        shouldRebuildAlbumQueueRef,
+        queueManuallyExtendedRef,
+        tracks: [track],
+        videos: [],
+        activeTrackHasYoutubeOverride: false,
+      }),
+    );
+
+    expect(setUpcomingQueue).not.toHaveBeenCalled();
+    expect(shouldRebuildAlbumQueueRef.current).toBe(true);
   });
 
   it("aborts playback when the pending track position is missing from the tracklist", () => {
@@ -359,6 +408,7 @@ describe("useReleasePlaybackPendingResolution", () => {
           releaseId: RELEASE_ID,
           setUpcomingQueue: jest.fn(),
           shouldRebuildAlbumQueueRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
           tracks: [track],
           videos: [],
           activeTrackHasYoutubeOverride,

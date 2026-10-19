@@ -13,6 +13,7 @@ import { findTrackIndexByPosition } from "src/utils/releasePlayback";
 import {
   findPendingPreviewVideo,
   isPlaybackReleaseDetailSynced,
+  shouldApplyPendingAlbumQueueRebuild,
   shouldClearTransportForMissingVideo,
   shouldResetActiveTrackIndex,
 } from "src/utils/releasePlaybackPendingResolution";
@@ -40,6 +41,7 @@ interface UseReleasePlaybackPendingResolutionParams {
   releaseId: number | null;
   setUpcomingQueue: (nextQueue: PlaybackQueueItem[]) => void;
   shouldRebuildAlbumQueueRef: RefObject<boolean>;
+  queueManuallyExtendedRef: RefObject<boolean>;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
   activeTrackHasYoutubeOverride: boolean;
@@ -67,6 +69,7 @@ export const useReleasePlaybackPendingResolution = ({
   releaseId,
   setUpcomingQueue,
   shouldRebuildAlbumQueueRef,
+  queueManuallyExtendedRef,
   tracks,
   videos,
   activeTrackHasYoutubeOverride,
@@ -85,6 +88,10 @@ export const useReleasePlaybackPendingResolution = ({
     }
 
     maybeExtendQueueTail();
+
+    if (!extendQueueWithSimilarReleases) {
+      return;
+    }
   }, [
     allReleasesLength,
     extendQueueWithSimilarReleases,
@@ -118,7 +125,13 @@ export const useReleasePlaybackPendingResolution = ({
 
     awaitingResumeGestureRef.current = false;
 
-    if (shouldRebuildAlbumQueueRef.current && release) {
+    if (
+      shouldApplyPendingAlbumQueueRebuild({
+        shouldRebuildAlbumQueue: shouldRebuildAlbumQueueRef.current,
+        queueManuallyExtended: queueManuallyExtendedRef.current,
+      }) &&
+      release
+    ) {
       const albumQueue = buildPlayableAlbumQueue({
         release,
         tracks,
@@ -137,6 +150,7 @@ export const useReleasePlaybackPendingResolution = ({
     dispatchSession,
     maybeExtendQueueTail,
     pendingTrackPosition,
+    queueManuallyExtendedRef,
     release,
     releaseDetailId,
     releaseId,

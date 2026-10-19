@@ -39,6 +39,14 @@ export const shouldClearTransportForMissingVideo = ({
   !isReleasePreview &&
   !activeTrackHasYoutubeOverride;
 
+export const shouldApplyPendingAlbumQueueRebuild = ({
+  shouldRebuildAlbumQueue,
+  queueManuallyExtended,
+}: {
+  shouldRebuildAlbumQueue: boolean;
+  queueManuallyExtended: boolean;
+}): boolean => shouldRebuildAlbumQueue && !queueManuallyExtended;
+
 export const shouldResetActiveTrackIndex = ({
   tracksLength,
   activeTrackIndex,

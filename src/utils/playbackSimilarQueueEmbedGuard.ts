@@ -62,11 +62,24 @@ export const shouldIgnoreConfirmedEmbedLoadStarted = ({
   embedPlaybackConfirmed,
   resolvedVideoId,
   watchdogVideoId,
+  committedEmbedVideoId = null,
 }: {
   embedPlaybackConfirmed: boolean;
   resolvedVideoId: string | null;
   watchdogVideoId: string | null;
-}): boolean =>
-  embedPlaybackConfirmed &&
-  resolvedVideoId !== null &&
-  resolvedVideoId === watchdogVideoId;
+  committedEmbedVideoId?: string | null;
+}): boolean => {
+  if (!embedPlaybackConfirmed || resolvedVideoId === null) {
+    return false;
+  }
+
+  const trimmedResolved = resolvedVideoId.trim();
+
+  if (watchdogVideoId !== null && trimmedResolved === watchdogVideoId.trim()) {
+    return true;
+  }
+
+  const trimmedCommitted = committedEmbedVideoId?.trim();
+
+  return trimmedCommitted !== undefined && trimmedResolved === trimmedCommitted;
+};
