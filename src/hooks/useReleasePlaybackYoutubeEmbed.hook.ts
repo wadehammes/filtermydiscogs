@@ -868,18 +868,12 @@ export const useReleasePlaybackYoutubeEmbed = ({
     };
   }, [
     handleYoutubeEmbedPlayerState,
-    isPlaying,
     isWithinTrackSwitchGrace,
     lastInfoDeliveryCurrentTimeRef,
     notifyEmbedPlaybackEnded,
     onYoutubeEmbedPlaybackError,
     onYoutubeEmbedPlayerReady,
-    pendingPlayFromGestureRef,
     playbackIframeRef,
-    playbackVideoUiLoadingCycleStartedAtMsRef,
-    playbackVideoUiLoadingEmbedLoadStartedAtMsRef,
-    isPausedRef,
-    isPlayingRef,
     isPlaybackVideoUiLoadingRef,
     playbackVideoTransitionTargetIdRef,
     tryConfirmAudibleEmbedPlayback,
