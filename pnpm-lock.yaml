@@ -299,8 +299,8 @@ importers:
         specifier: ^16.4.0
         version: 16.4.0
       '@next/playwright':
-        specifier: 16.4.0
-        version: 16.4.0(@playwright/test@1.64.0)
+        specifier: 16.4.2
+        version: 16.4.2(@playwright/test@1.64.0)
       '@playwright/test':
         specifier: 1.64.0
         version: 1.64.0
@@ -2042,8 +2042,8 @@ packages:
   '@next/env@16.4.0':
     resolution: {integrity: sha512-pyLlT5oafGlX8X7xjgGNXz5dNIDSxREm+qD6i9VLSZiZFopA/XWl8NM/KPmLx/8EG/++c49iid3gNWSQW1+2dQ==}
 
-  '@next/playwright@16.4.0':
-    resolution: {integrity: sha512-qK4XHmthlrjZJd6mR5LXgsnwaAM7ZEV1hEt6/l+fRWb43izQEAvR4h1BIgWapFnqm3JVinNAih3G1iBafPWs/Q==}
+  '@next/playwright@16.4.2':
+    resolution: {integrity: sha512-j8hwXGX8ZnEdPSnHbh09QB40Zi5rE/dB5zf/YTArc/izOamG4HVbWBHP17FY6HnLDd8xoj2xurdtycgzCiMwxw==}
     peerDependencies:
       '@playwright/test': '>=1.0.0'
     peerDependenciesMeta:
@@ -8377,7 +8377,7 @@ snapshots:
 
   '@next/env@16.4.0': {}
 
-  '@next/playwright@16.4.0(@playwright/test@1.64.0)':
+  '@next/playwright@16.4.2(@playwright/test@1.64.0)':
     optionalDependencies:
       '@playwright/test': 1.64.0
 
