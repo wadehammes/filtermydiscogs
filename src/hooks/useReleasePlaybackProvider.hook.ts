@@ -741,11 +741,7 @@ export const useReleasePlaybackProvider = (): {
     if (!embedPlaybackConfirmedRef.current) {
       confirmEmbedPlaybackIfAudible();
     }
-  }, [
-    clearPlaybackVideoUiLoading,
-    confirmEmbedPlaybackIfAudible,
-    isPlaying,
-  ]);
+  }, [clearPlaybackVideoUiLoading, confirmEmbedPlaybackIfAudible, isPlaying]);
 
   const {
     clearPlayFromGestureRetries,

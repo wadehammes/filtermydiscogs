@@ -699,6 +699,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
     isPlaying,
     isWithinTrackSwitchGrace,
     syncEmbedPlaybackState,
+    isPaused,
+    isPlayingRef.current,
   ]);
 
   const previousActiveVideoIdRef = useRef<string | null>(null);
