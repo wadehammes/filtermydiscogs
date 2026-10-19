@@ -5290,9 +5290,11 @@ describe("ReleasePlaybackProvider", () => {
     setupCollectionAndShortReleaseApiMock();
 
     let resolveReleaseDetail!: (value: typeof releaseDetail) => void;
-    const releaseDetailPromise = new Promise<typeof releaseDetail>((resolve) => {
-      resolveReleaseDetail = resolve;
-    });
+    const releaseDetailPromise = new Promise<typeof releaseDetail>(
+      (resolve) => {
+        resolveReleaseDetail = resolve;
+      },
+    );
 
     jest
       .mocked(mockApi.discogsRelease)
