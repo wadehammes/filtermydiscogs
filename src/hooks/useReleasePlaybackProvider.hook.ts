@@ -93,6 +93,7 @@ import {
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
   resolvePresentationActiveVideoId,
+  shouldAllowAudibleEmbedPlaybackConfirm,
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
@@ -254,6 +255,10 @@ export const useReleasePlaybackProvider = (): {
   const embedWatchdogArmedDelayMsRef = useRef<number | null>(null);
   const embedWatchdogVideoIdRef = useRef<string | null>(null);
   const lastEmbedUnavailableSkipAtMsRef = useRef<number | null>(null);
+  const forceEmbedReloadAfterUnavailableSkipRef = useRef(false);
+  const setPlaybackVideoTransitionTargetIdRef = useRef<
+    (videoId: string | null) => void
+  >(() => undefined);
   const embedWatchdogLoadingRearmCountRef = useRef(0);
   const embedWatchdogSyncProbeAttemptedRef = useRef(false);
   const embedYoutubePlayerReadyVideoIdRef = useRef<string | null>(null);
@@ -322,6 +327,8 @@ export const useReleasePlaybackProvider = (): {
         embedWatchdogVideoIdRef.current = null;
         embedWatchdogLoadingRearmCountRef.current = 0;
         lastEmbedUnavailableSkipAtMsRef.current = Date.now();
+        forceEmbedReloadAfterUnavailableSkipRef.current = true;
+        setPlaybackVideoTransitionTargetIdRef.current(null);
         markEmbedTrackSwitchGraceRef.current();
         clearPlayFromGestureRetriesRef.current();
         pendingPlayFromGestureRef.current = false;
@@ -621,6 +628,8 @@ export const useReleasePlaybackProvider = (): {
     },
     [],
   );
+  setPlaybackVideoTransitionTargetIdRef.current =
+    setPlaybackVideoTransitionTargetIdWithRef;
 
   const beginPlaybackVideoUiLoading = useCallback(() => {
     dispatchEmbedSession({
@@ -686,6 +695,7 @@ export const useReleasePlaybackProvider = (): {
     () =>
       createPlaybackEndedAdvanceHandler({
         isPlayingRef,
+        isPausedRef,
         queueRef,
         extendQueueTailRef,
         playNextRef,
@@ -776,7 +786,7 @@ export const useReleasePlaybackProvider = (): {
       }),
     };
 
-    if (
+    const signalConfirmed =
       tryConfirmPlaybackEmbedFromSignal({
         ...confirmInput,
         signal: { kind: "audible" },
@@ -785,13 +795,25 @@ export const useReleasePlaybackProvider = (): {
         ...confirmInput,
         signal: { kind: "watchdog-progress" },
         embedPlaybackConfirmed: false,
+      });
+
+    if (
+      !shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed,
+        isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+        loadingTargetVideoId: playbackVideoUiLoadingTargetVideoIdRef.current,
+        activeVideoId: activeVideoIdRef.current,
+        matchedActiveVideoId: matchedActiveVideoIdRef.current,
+        embedVideoId: embedVideoIdRef.current,
+        transitionTargetVideoId: playbackVideoTransitionTargetIdRef.current,
+        watchdogVideoId: embedWatchdogVideoIdRef.current,
       })
     ) {
-      confirmEmbedPlayback();
-      return true;
+      return false;
     }
 
-    return false;
+    confirmEmbedPlayback();
+    return true;
   }, [confirmEmbedPlayback, isPlaying]);
 
   confirmEmbedPlaybackIfAudibleRef.current = confirmEmbedPlaybackIfAudible;
@@ -1153,7 +1175,10 @@ export const useReleasePlaybackProvider = (): {
   const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
 
   const prepareQueueAdvancePlayback = useCallback(
-    (item: PlaybackQueueItem | null) => {
+    (
+      item: PlaybackQueueItem | null,
+      options?: { forceEmbedReloadAfterUnavailableSkip?: boolean },
+    ) => {
       const preparedEmbedVideoId = item
         ? resolveQueueItemEmbedVideoId(item)
         : null;
@@ -1165,6 +1190,9 @@ export const useReleasePlaybackProvider = (): {
           isReleasePreview: isReleasePreviewRef.current,
           activeVideoId: activeVideoIdRef.current,
         });
+      const forceEmbedReload =
+        replaySameTrack ||
+        (options?.forceEmbedReloadAfterUnavailableSkip ?? false);
 
       if (
         shouldBeginPlaybackVideoUiLoading({
@@ -1172,7 +1200,7 @@ export const useReleasePlaybackProvider = (): {
           preparedEmbedVideoId,
           activeVideoId: matchedActiveVideoIdRef.current,
           replaySameTrack,
-          forceEmbedReload: replaySameTrack,
+          forceEmbedReload,
         })
       ) {
         beginPlaybackVideoUiLoading();
@@ -1236,6 +1264,7 @@ export const useReleasePlaybackProvider = (): {
     extendQueueTailRef,
     startPlaybackRef,
     resetPlaybackSkipState,
+    forceEmbedReloadAfterUnavailableSkipRef,
     refs: {
       awaitingResumeGestureRef,
       pendingPlayFromGestureRef,
@@ -1375,8 +1404,7 @@ export const useReleasePlaybackProvider = (): {
   });
 
   const isQueueBuilding =
-    isSimilarQueueLoading ||
-    (queue.length === 0 && pendingTrackPosition !== null);
+    isSimilarQueueLoading || pendingTrackPosition !== null;
 
   const stateValue = useMemo(
     (): ReleasePlaybackState => ({

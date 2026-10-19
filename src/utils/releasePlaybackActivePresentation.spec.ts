@@ -15,6 +15,7 @@ import {
   resolveNeedsPlaybackVideoSwitch,
   resolvePlaybackVideoId,
   resolvePresentationActiveVideoId,
+  shouldAllowAudibleEmbedPlaybackConfirm,
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
@@ -136,6 +137,68 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(true);
   });
 
+  it("shouldAllowAudibleEmbedPlaybackConfirm requires alignment while video UI loading is active", () => {
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "prev-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: null,
+      }),
+    ).toBe(false);
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: "next-id",
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(true);
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: false,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(false);
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: false,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "prev-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("shouldAllowAudibleEmbedPlaybackConfirm aligns via matchedActiveVideoId when presentation activeVideoId is stale", () => {
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "stale-presentation-id",
+        matchedActiveVideoId: "next-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: "next-id",
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(true);
+  });
+
   it("isEmbedAlignedForLoadingPlaybackConfirm accepts watchdog embed id when session ids lag", () => {
     expect(
       isEmbedAlignedForLoadingPlaybackConfirm({
@@ -198,6 +261,17 @@ describe("releasePlaybackActivePresentation", () => {
         transitionTargetVideoId: null,
       }),
     ).toBe(false);
+  });
+
+  it("resolveNeedsPlaybackVideoSwitch is true when force reload is required on the same upload after unavailable skip", () => {
+    expect(
+      resolveNeedsPlaybackVideoSwitch({
+        preparedEmbedVideoId: "abc12345678",
+        activeVideoId: "abc12345678",
+        replaySameTrack: false,
+        forceEmbedReload: true,
+      }),
+    ).toBe(true);
   });
 
   it("resolveNeedsPlaybackVideoSwitch is false when replaying the active track on the same upload without force reload", () => {
