@@ -153,6 +153,53 @@ export interface AdminStatsRecentActivityPeriod {
   newPublicCrates: number;
   newSetMarkers: number;
   newPackedReleases: number;
+  newUserTracks: number;
+  activePlaybackUsers: number;
+}
+
+export interface AdminStatsUserTrackOverview {
+  totalTrackRows: number;
+  usersWithTracks: number;
+  totalPlays: number;
+  totalListens: number;
+  tracksWithOverrides: number;
+  usersWithOverrides: number;
+}
+
+export type AdminStatsUserTrackPlaybackWindow = Pick<
+  AdminStatsRecentActivityPeriod,
+  "newUserTracks" | "activePlaybackUsers"
+>;
+
+export interface AdminStatsTopUserTrack {
+  user_id: number;
+  username: string;
+  track_key: string;
+  track_title: string;
+  artist: string | null;
+  release_title: string | null;
+  count: number;
+}
+
+export interface AdminStatsUserTracks {
+  overview: AdminStatsUserTrackOverview;
+  growth: AdminStatsGrowthDataPoint[];
+  topUsers: {
+    byPlays: AdminStatsTopUser[];
+    byListens: AdminStatsTopUser[];
+  };
+  topTracks: {
+    byPlays: AdminStatsTopUserTrack[];
+    byListens: AdminStatsTopUserTrack[];
+  };
+}
+
+export interface FetchAdminUserTrackStatsResult {
+  userTracks: AdminStatsUserTracks;
+  playbackActivity: {
+    last7Days: AdminStatsUserTrackPlaybackWindow;
+    last30Days: AdminStatsUserTrackPlaybackWindow;
+  };
 }
 
 export interface AdminStatsPreferenceBreakdownRow {
@@ -224,6 +271,7 @@ export interface AdminStats {
     publicCrates: AdminStatsGrowthDataPoint[];
     setMarkers: AdminStatsGrowthDataPoint[];
   };
+  userTracks: AdminStatsUserTracks;
 }
 
 export interface CollectionMilestone {

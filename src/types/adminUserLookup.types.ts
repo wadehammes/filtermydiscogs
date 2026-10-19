@@ -31,6 +31,15 @@ export interface AdminUserLookupAnalytics {
   total: number;
 }
 
+export interface AdminUserLookupPlayback {
+  trackRows: number;
+  totalPlays: number;
+  totalListens: number;
+  tracksWithOverrides: number;
+  lastPlayedAt: string | null;
+  lastListenedAt: string | null;
+}
+
 export interface AdminUserLookupStats {
   user: {
     discogsUserId: number;
@@ -50,5 +59,6 @@ export interface AdminUserLookupStats {
   };
   activity: AdminUserLookupActivity;
   analytics: AdminUserLookupAnalytics;
+  playback: AdminUserLookupPlayback;
   crates: AdminUserLookupCrateSummary[];
 }

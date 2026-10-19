@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "src/lib/db";
 import type {
   UserTrackRecordBody,
@@ -8,6 +9,11 @@ import type {
   TopUserTrack,
   TopUserTracksResponse,
 } from "src/types/dashboard.types";
+
+export const userTrackHasYoutubeOverrideWhere = {
+  youtube_id: { not: null },
+  NOT: { youtube_id: "" },
+} satisfies Prisma.UserTrackWhereInput;
 
 const userTrackWhere = (userId: number, trackKey: string) => ({
   user_id_track_key: { user_id: userId, track_key: trackKey },

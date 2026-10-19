@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import { AdminDashboardSkeleton } from "src/components/AdminDashboard/AdminDashboardSkeleton.component";
 import { AdminHero } from "src/components/AdminDashboard/AdminHero.component";
@@ -19,7 +20,11 @@ import { StatsGrid } from "src/components/StatsGrid/StatsGrid.component";
 import { useAdminStatsQuery } from "src/hooks/queries/useAdminStatsQuery";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
-import type { AdminStatsRecentActivityPeriod } from "src/types/dashboard.types";
+import type {
+  AdminStatsRecentActivityPeriod,
+  AdminStatsTopUser,
+  AdminStatsTopUserTrack,
+} from "src/types/dashboard.types";
 import type { AdminStatsFeatureUsageRow } from "src/types/productAnalytics.types";
 import type { StoredTheme } from "src/types/userPreferences.types";
 import { THEME_LABELS } from "src/utils/themeAppearance";
@@ -93,7 +98,42 @@ const ACTIVITY_ROWS: Array<{
   { key: "newPublicCrates", label: "New public crates" },
   { key: "newSetMarkers", label: "New set markers" },
   { key: "newPackedReleases", label: "Albums packed" },
+  { key: "newUserTracks", label: "New playback track rows" },
+  { key: "activePlaybackUsers", label: "Active playback users" },
 ];
+
+const formatTopUserTrackLabel = (row: AdminStatsTopUserTrack): ReactNode => {
+  const artistRelease = [row.artist, row.release_title]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <>
+      <span>{row.track_title}</span>
+      {artistRelease.length > 0 && (
+        <span className={styles.tableUserMeta}> — {artistRelease}</span>
+      )}
+      <span
+        className={classNames(
+          styles.tableUserMeta,
+          styles.tableTrackAttribution,
+        )}
+      >
+        {" "}
+        (
+        <a
+          className={styles.tableUserLinkInline}
+          href={getDiscogsUserProfileUrl(row.username)}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {row.username}
+        </a>
+        )
+      </span>
+    </>
+  );
+};
 
 const renderRecentActivity = (period: AdminStatsRecentActivityPeriod) => (
   <dl className={styles.activityList}>
@@ -106,6 +146,55 @@ const renderRecentActivity = (period: AdminStatsRecentActivityPeriod) => (
       </div>
     ))}
   </dl>
+);
+
+const renderTopUserLeaderboard = (
+  rows: AdminStatsTopUser[],
+  metricHeader: string,
+) => (
+  <AdminMetricTable
+    columns={[
+      {
+        key: "username",
+        header: "User",
+        align: "name",
+        render: (row) => formatTopUserLabel(row),
+      },
+      {
+        key: "count",
+        header: metricHeader,
+        align: "metric",
+        render: (row) => formatCommunityStatValue(row.count),
+      },
+    ]}
+    getRowKey={(row) => String(row.user_id)}
+    rows={rows}
+  />
+);
+
+const renderTopUserTrackLeaderboard = (
+  rows: AdminStatsTopUserTrack[],
+  metricHeader: string,
+  rowKeySuffix: "plays" | "listens",
+) => (
+  <AdminMetricTable
+    columns={[
+      {
+        key: "track_title",
+        header: "Track",
+        align: "name",
+        render: (row) => formatTopUserTrackLabel(row),
+      },
+      {
+        key: "count",
+        header: metricHeader,
+        align: "metric",
+        render: (row) => formatCommunityStatValue(row.count),
+      },
+    ]}
+    getRowKey={(row) => `${row.user_id}:${row.track_key}:${rowKeySuffix}`}
+    rows={rows}
+  />
 );
 
 const renderFeatureUsageTable = (
@@ -433,6 +522,92 @@ export default function AdminDashboardClient() {
               </DashboardSection>
 
               <DashboardSection
+                lede="In-app playback counters stored per user and track (plays, listens, YouTube overrides)."
+                title="Playback stats"
+              >
+                <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
+                  <StatCard
+                    label="Track rows"
+                    subtext="Distinct user + track records"
+                    value={formatCommunityStatValue(
+                      stats.userTracks.overview.totalTrackRows,
+                    )}
+                  />
+                  <StatCard
+                    label="Users with playback"
+                    subtext={formatPercent(
+                      stats.userTracks.overview.usersWithTracks,
+                      stats.overview.totalUsers,
+                      "of users",
+                    )}
+                    value={formatCommunityStatValue(
+                      stats.userTracks.overview.usersWithTracks,
+                    )}
+                  />
+                  <StatCard
+                    label="Total plays"
+                    value={formatCommunityStatValue(
+                      stats.userTracks.overview.totalPlays,
+                    )}
+                  />
+                  <StatCard
+                    label="Total listens"
+                    subtext="≥ 30s or played through"
+                    value={formatCommunityStatValue(
+                      stats.userTracks.overview.totalListens,
+                    )}
+                  />
+                  <StatCard
+                    label="YouTube overrides"
+                    subtext={`${formatCommunityStatValue(
+                      stats.userTracks.overview.usersWithOverrides,
+                    )} users`}
+                    value={formatCommunityStatValue(
+                      stats.userTracks.overview.tracksWithOverrides,
+                    )}
+                  />
+                </StatsGrid>
+
+                <div className={styles.cardGrid}>
+                  <article className={styles.panelCard}>
+                    <p className={styles.panelEyebrow}>Top users by plays</p>
+                    {renderTopUserLeaderboard(
+                      stats.userTracks.topUsers.byPlays,
+                      "Plays",
+                    )}
+                  </article>
+
+                  <article className={styles.panelCard}>
+                    <p className={styles.panelEyebrow}>Top users by listens</p>
+                    {renderTopUserLeaderboard(
+                      stats.userTracks.topUsers.byListens,
+                      "Listens",
+                    )}
+                  </article>
+                </div>
+
+                <div className={styles.cardGrid}>
+                  <article className={styles.panelCard}>
+                    <p className={styles.panelEyebrow}>Most played tracks</p>
+                    {renderTopUserTrackLeaderboard(
+                      stats.userTracks.topTracks.byPlays,
+                      "Plays",
+                      "plays",
+                    )}
+                  </article>
+
+                  <article className={styles.panelCard}>
+                    <p className={styles.panelEyebrow}>Most listened tracks</p>
+                    {renderTopUserTrackLeaderboard(
+                      stats.userTracks.topTracks.byListens,
+                      "Listens",
+                      "listens",
+                    )}
+                  </article>
+                </div>
+              </DashboardSection>
+
+              <DashboardSection
                 lede="How owners use sharing, gig packing, notes, and set markers."
                 title="Crate features"
               >
@@ -518,46 +693,18 @@ export default function AdminDashboardClient() {
                 <div className={styles.cardGrid}>
                   <article className={styles.panelCard}>
                     <p className={styles.panelEyebrow}>By crates</p>
-                    <AdminMetricTable
-                      columns={[
-                        {
-                          key: "username",
-                          header: "User",
-                          align: "name",
-                          render: (row) => formatTopUserLabel(row),
-                        },
-                        {
-                          key: "count",
-                          header: "Crates",
-                          align: "metric",
-                          render: (row) => formatCommunityStatValue(row.count),
-                        },
-                      ]}
-                      getRowKey={(row) => String(row.user_id)}
-                      rows={stats.topUsers.byCrates}
-                    />
+                    {renderTopUserLeaderboard(
+                      stats.topUsers.byCrates,
+                      "Crates",
+                    )}
                   </article>
 
                   <article className={styles.panelCard}>
                     <p className={styles.panelEyebrow}>By releases</p>
-                    <AdminMetricTable
-                      columns={[
-                        {
-                          key: "username",
-                          header: "User",
-                          align: "name",
-                          render: (row) => formatTopUserLabel(row),
-                        },
-                        {
-                          key: "count",
-                          header: "Releases",
-                          align: "metric",
-                          render: (row) => formatCommunityStatValue(row.count),
-                        },
-                      ]}
-                      getRowKey={(row) => String(row.user_id)}
-                      rows={stats.topUsers.byReleases}
-                    />
+                    {renderTopUserLeaderboard(
+                      stats.topUsers.byReleases,
+                      "Releases",
+                    )}
                   </article>
                 </div>
               </DashboardSection>
@@ -591,6 +738,11 @@ export default function AdminDashboardClient() {
                     data={stats.growth.setMarkers}
                     formatter={growthChartTooltip("Set Markers")}
                     title="Set markers"
+                  />
+                  <GrowthAreaChart
+                    data={stats.userTracks.growth}
+                    formatter={growthChartTooltip("Playback track rows")}
+                    title="Playback track rows"
                   />
                 </div>
               </DashboardSection>

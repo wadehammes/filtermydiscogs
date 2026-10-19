@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
+import { fetchAdminUserTrackStats } from "src/lib/admin-user-track-stats.server";
 import { prisma } from "src/lib/db";
 import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
@@ -10,6 +11,7 @@ import type {
   AdminStatsRecentActivityPeriod,
   AdminStatsReturningUsersTimeSeries,
   AdminStatsTopUser,
+  AdminStatsUserTrackPlaybackWindow,
 } from "src/types/dashboard.types";
 import { addUtcDays, startOfUtcDay } from "src/utils/dateHelpers";
 import { STORED_THEMES } from "src/utils/themeAppearance";
@@ -256,6 +258,7 @@ const buildRecentActivityPeriod = ({
   publicCrates,
   setMarkers,
   packedReleases,
+  userTracksActivity,
   window,
 }: {
   users: UserOverviewRow;
@@ -267,6 +270,7 @@ const buildRecentActivityPeriod = ({
     ReleaseOverviewRow,
     "packed_last_7d" | "packed_last_30d"
   >;
+  userTracksActivity: AdminStatsUserTrackPlaybackWindow;
   window: "last_7d" | "last_30d";
 }): AdminStatsRecentActivityPeriod => ({
   newUsers: users[window],
@@ -275,6 +279,8 @@ const buildRecentActivityPeriod = ({
   newPublicCrates: publicCrates[`public_${window}`],
   newSetMarkers: setMarkers[window],
   newPackedReleases: packedReleases[`packed_${window}`],
+  newUserTracks: userTracksActivity.newUserTracks,
+  activePlaybackUsers: userTracksActivity.activePlaybackUsers,
 });
 
 const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
@@ -413,6 +419,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     setMarkerGrowth,
     featureUsage,
     accountPreferences,
+    userTrackStats,
   ] = await Promise.all([
     prisma.$queryRaw<UserOverviewRow[]>`
       SELECT
@@ -521,6 +528,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       return emptyFeatureUsage();
     }),
     fetchAdminAccountPreferencesStats(),
+    fetchAdminUserTrackStats({ sevenDaysAgo, thirtyDaysAgo }),
   ]);
 
   const users = usersOverview[0];
@@ -564,6 +572,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         publicCrates: crates,
         setMarkers,
         packedReleases: releases,
+        userTracksActivity: userTrackStats.playbackActivity.last7Days,
         window: "last_7d",
       }),
       last30Days: buildRecentActivityPeriod({
@@ -573,9 +582,11 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         publicCrates: crates,
         setMarkers,
         packedReleases: releases,
+        userTracksActivity: userTrackStats.playbackActivity.last30Days,
         window: "last_30d",
       }),
     },
+    userTracks: userTrackStats.userTracks,
     topUsers: {
       byCrates: topUsersByCrates,
       byReleases: topUsersByReleases,

@@ -175,6 +175,24 @@ export const AdminUserLookupPanel = () => {
                   data.activity.releasesAddedLast7Days,
                 )}
               />
+              <StatCard
+                label="Playback track rows"
+                value={formatCommunityStatValue(data.playback.trackRows)}
+              />
+              <StatCard
+                label="Total plays"
+                value={formatCommunityStatValue(data.playback.totalPlays)}
+              />
+              <StatCard
+                label="Total listens"
+                value={formatCommunityStatValue(data.playback.totalListens)}
+              />
+              <StatCard
+                label="YouTube overrides"
+                value={formatCommunityStatValue(
+                  data.playback.tracksWithOverrides,
+                )}
+              />
             </StatsGrid>
 
             <div className={dashboardStyles.cardGrid}>
@@ -235,6 +253,14 @@ export const AdminUserLookupPanel = () => {
                   {renderPreferenceRow(
                     "Analytics events (total)",
                     formatCommunityStatValue(data.analytics.total),
+                  )}
+                  {renderPreferenceRow(
+                    "Last track play",
+                    formatTimestamp(data.playback.lastPlayedAt),
+                  )}
+                  {renderPreferenceRow(
+                    "Last track listen",
+                    formatTimestamp(data.playback.lastListenedAt),
                   )}
                 </dl>
               </article>
