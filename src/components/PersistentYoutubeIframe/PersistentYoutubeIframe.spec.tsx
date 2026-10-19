@@ -93,6 +93,59 @@ describe("PersistentYoutubeIframe", () => {
     });
   });
 
+  it("refreshes embed layout when the iframe mounts visible so YouTube controls render", () => {
+    mockRefreshYoutubeEmbedPlayerLayout.mockClear();
+
+    render(
+      <PersistentYoutubeIframe
+        videoId="te2jJncBVG4"
+        videoTitle="Test video"
+        variant="visible"
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
+  });
+
+  it("refreshes embed layout when dock video loading clears while the panel is visible", async () => {
+    const user = userEvent.setup();
+
+    const LoadingHarness = () => {
+      const [isPlaybackVideoLoading, setIsPlaybackVideoLoading] =
+        useState(true);
+
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => setIsPlaybackVideoLoading(false)}
+          >
+            Clear loading
+          </button>
+          <PersistentYoutubeIframe
+            videoId="te2jJncBVG4"
+            videoTitle="Test video"
+            variant="visible"
+            isPlaybackVideoLoading={isPlaybackVideoLoading}
+          />
+        </>
+      );
+    };
+
+    render(<LoadingHarness />, { wrapper: createWrapper() });
+
+    mockRefreshYoutubeEmbedPlayerLayout.mockClear();
+
+    await user.click(screen.getByRole("button", { name: "Clear loading" }));
+
+    expect(mockRefreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({
+      iframe: expect.any(HTMLIFrameElement),
+    });
+  });
+
   it("does not reload iframe src when opening a hidden panel for the current video", async () => {
     const user = userEvent.setup();
 

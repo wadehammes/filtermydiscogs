@@ -201,9 +201,9 @@ export const useReleasePlaybackSimilarQueue = ({
 
         return true;
       } finally {
+        onSimilarQueueFetchLifecycle?.("end");
         similarQueueFetchInFlightRef.current = false;
         setIsSimilarQueueLoading(false);
-        onSimilarQueueFetchLifecycle?.("end");
       }
     },
     [

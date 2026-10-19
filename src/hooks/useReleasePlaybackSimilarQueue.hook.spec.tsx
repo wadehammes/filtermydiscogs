@@ -129,6 +129,7 @@ const buildHarness = (
   return {
     queueRef,
     result,
+    similarQueueFetchInFlightRef,
     similarQueueGenerationRef,
     similarRelease,
     sourceRelease,
@@ -222,6 +223,24 @@ describe("useReleasePlaybackSimilarQueue", () => {
       ["start"],
       ["end"],
     ]);
+  });
+
+  it("keeps similar queue fetch in flight until fetch lifecycle end runs", async () => {
+    let fetchInFlightAtLifecycleEnd: boolean | undefined;
+    const onSimilarQueueFetchLifecycle = jest.fn((phase: "start" | "end") => {
+      if (phase === "end") {
+        fetchInFlightAtLifecycleEnd = similarQueueFetchInFlightRef.current;
+      }
+    });
+    const { result, similarQueueFetchInFlightRef } = buildHarness({
+      similarQueueMode: { enabled: true },
+      onSimilarQueueFetchLifecycle,
+    });
+
+    await expect(result.current.extendQueueTail()).resolves.toBe(true);
+
+    expect(fetchInFlightAtLifecycleEnd).toBe(true);
+    expect(similarQueueFetchInFlightRef.current).toBe(false);
   });
 
   it("does not stack another similar track while one is already in up next", () => {

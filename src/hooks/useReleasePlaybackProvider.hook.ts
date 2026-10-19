@@ -387,6 +387,10 @@ export const useReleasePlaybackProvider = (): {
         return;
       }
 
+      if (confirmEmbedPlaybackIfAudibleRef.current()) {
+        return;
+      }
+
       const videoId =
         embedWatchdogVideoIdRef.current ?? embedVideoIdRef.current;
 
