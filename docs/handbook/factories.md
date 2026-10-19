@@ -153,7 +153,7 @@ Use **`options`** for **build-time knobs** that are not part of the domain typeâ
 | [`DiscogsTrack.factory.ts`](../../src/tests/factories/DiscogsTrack.factory.ts) | `discogsTrackFactory` | `DiscogsTrack` (release tracklist rows) |
 | [`DiscogsVideo.factory.ts`](../../src/tests/factories/DiscogsVideo.factory.ts) | `discogsVideoFactory` | `DiscogsVideo` (release video links) |
 | [`TrackYoutubeOverrideTarget.factory.ts`](../../src/tests/factories/TrackYoutubeOverrideTarget.factory.ts) | `trackYoutubeOverrideTargetFactory` | `TrackYoutubeOverrideTarget` for [`TrackYoutubeOverrideDialog`](../../src/components/TrackYoutubeOverrideDialog/TrackYoutubeOverrideDialog.component.tsx) specs |
-| [`PlaybackSkipLogEntry.factory.ts`](../../src/tests/factories/PlaybackSkipLogEntry.factory.ts) | `playbackSkipLogEntryFactory` | **`PlaybackSkipLogEntry`** skip toast / report dialog / Sentry skip specs |
+| [`PlaybackSkipLogEntry.factory.ts`](../../src/tests/factories/PlaybackSkipLogEntry.factory.ts) | `playbackSkipLogEntryFactory` | **`PlaybackSkipLogEntry`** skip toast / report dialog / Sentry skip specs. Default **`errorCode`** is random (includes embed-unavailable watchdog fallback) â€” when asserting [`reportPlaybackSkipToSentry`](../../src/lib/sentry/reportPlaybackSkip.ts) **session cap** counts, override with a YouTube **`onError`** code (e.g. **`YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE`**) so watchdog skips are not counted. |
 
 ### Preset methods
 

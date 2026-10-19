@@ -6,6 +6,7 @@ import {
   resetPlaybackSkipSentryReportCountForTests,
 } from "src/lib/sentry/reportPlaybackSkip";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
+import { YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE } from "src/utils/playbackSkippedTrackLog";
 
 describe("reportPlaybackSkipToSentry", () => {
   beforeEach(() => {
@@ -27,6 +28,7 @@ describe("reportPlaybackSkipToSentry", () => {
           trackLabel: `Track ${index}`,
           reason: "Unavailable",
           context: undefined,
+          errorCode: YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE,
         }),
       );
     }
@@ -41,6 +43,7 @@ describe("reportPlaybackSkipToSentry", () => {
           trackLabel: `Track ${index}`,
           reason: "Unavailable",
           context: undefined,
+          errorCode: YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE,
         }),
       );
     }

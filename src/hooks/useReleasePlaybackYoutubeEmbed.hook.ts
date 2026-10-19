@@ -727,7 +727,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
     isPlayingRef,
     isWithinTrackSwitchGrace,
     syncEmbedPlaybackState,
-    isPaused,
     isPlayingRef.current,
   ]);
 

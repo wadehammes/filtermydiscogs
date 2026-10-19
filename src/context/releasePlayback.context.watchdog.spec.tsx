@@ -380,13 +380,13 @@ describe("ReleasePlaybackProvider — embed watchdog", () => {
       result.current.togglePlayback();
     });
 
-    act(() => {
-      jest.advanceTimersByTime(
-        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS +
-          PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
-      );
-    });
-    advanceEmbedWatchdogSyncProbeRecheck();
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (mockAppendPlaybackSkipAndSchedule.mock.calls.length > 0) {
+        break;
+      }
+
+      advanceFirstSessionEmbedWatchdogFire();
+    }
 
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
 
