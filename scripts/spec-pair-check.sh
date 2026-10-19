@@ -37,6 +37,14 @@ is_playback_gated_util() {
   esac
 }
 
+util_alternate_specs() {
+  case "$1" in
+    src/utils/releasePlaybackEmbedConfirm.ts)
+      printf '%s\n' src/utils/playbackEmbedSession.spec.ts
+      ;;
+  esac
+}
+
 hook_alternate_specs() {
   case "$1" in
     src/hooks/useReleasePlaybackProvider.hook.ts)
@@ -78,6 +86,11 @@ collect_satisfying_specs() {
       elif is_playback_gated_util "$prod"; then
         printf '%s\n' "$candidate"
       fi
+
+      while IFS= read -r candidate; do
+        [ -n "$candidate" ] || continue
+        printf '%s\n' "$candidate"
+      done < <(util_alternate_specs "$prod")
       ;;
     src/hooks/*.hook.ts)
       while IFS= read -r candidate; do

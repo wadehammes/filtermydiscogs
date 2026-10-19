@@ -75,6 +75,7 @@ const buildHarness = ({
   const startPlaybackRef = { current: () => {} };
 
   const clearPlaybackVideoUiLoading = jest.fn();
+  const resetEmbedSession = jest.fn();
   const beginPlaybackVideoUiLoading = jest.fn();
   const markEmbedTrackSwitchGrace = jest.fn();
   const prepareQueueAdvancePlayback = jest.fn();
@@ -96,6 +97,7 @@ const buildHarness = ({
       setPlaybackVideoTransitionTargetId: jest.fn(),
       setPlaybackVideoUiLoadingTargetId,
       clearPlaybackVideoUiLoading,
+      resetEmbedSession,
       beginPlaybackVideoUiLoading,
       markEmbedTrackSwitchGrace,
       prepareQueueAdvancePlayback,
@@ -150,6 +152,7 @@ const buildHarness = ({
     similarQueueModeRef,
     similarQueueSuppressedAfterClearRef,
     clearPlaybackVideoUiLoading,
+    resetEmbedSession,
     prepareQueueAdvancePlayback,
     setUpcomingQueue,
     updateUpcomingQueue,
@@ -230,6 +233,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId,
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
@@ -311,6 +315,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
@@ -388,6 +393,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId,
         setPlaybackVideoUiLoadingTargetId,
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
@@ -470,6 +476,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading,
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
@@ -551,6 +558,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
@@ -643,6 +651,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
@@ -715,6 +724,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback,
@@ -785,6 +795,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),
@@ -868,11 +879,12 @@ describe("useReleasePlaybackQueueActions", () => {
       trackPosition: "A1",
     });
 
-    const { result, dispatchSession } = buildHarness();
+    const { result, dispatchSession, resetEmbedSession } = buildHarness();
 
     result.current.stopPlayback();
 
     expect(dispatchSession).toHaveBeenCalledWith({ type: "STOP" });
+    expect(resetEmbedSession).toHaveBeenCalledTimes(1);
     expect(readPersistedReleasePlayback()).toBeNull();
   });
 
@@ -997,6 +1009,7 @@ describe("useReleasePlaybackQueueActions", () => {
         setPlaybackVideoTransitionTargetId: jest.fn(),
         setPlaybackVideoUiLoadingTargetId: jest.fn(),
         clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
         beginPlaybackVideoUiLoading: jest.fn(),
         markEmbedTrackSwitchGrace: jest.fn(),
         prepareQueueAdvancePlayback: jest.fn(),

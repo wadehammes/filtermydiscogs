@@ -3,6 +3,7 @@ import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   initialPlaybackEmbedSessionState,
   reducePlaybackEmbedSession,
+  selectEmbedPlaybackConfirmed,
   selectShouldAttemptPlayFromGestureDuringHiddenPoll,
   selectShouldRunHiddenTabPlayerStatePoll,
   selectShouldRunVisibleTabAudibleSyncPoll,
@@ -37,6 +38,17 @@ describe("playbackEmbedSession", () => {
       selectShouldRunHiddenTabPlayerStatePoll({
         transportSessionActive: false,
         documentHidden: true,
+        transportPaused: false,
+        withinTrackSwitchGrace: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("does not run hidden-tab poll when the document is visible", () => {
+    expect(
+      selectShouldRunHiddenTabPlayerStatePoll({
+        transportSessionActive: true,
+        documentHidden: false,
         transportPaused: false,
         withinTrackSwitchGrace: false,
       }),
@@ -205,6 +217,26 @@ describe("playbackEmbedSession", () => {
         lastInfoDeliveryCurrentTime: 1.5,
       }),
     ).toBe(true);
+  });
+
+  it("selectEmbedPlaybackConfirmed reads embedConfirmed from session state", () => {
+    expect(
+      selectEmbedPlaybackConfirmed({
+        ...initialPlaybackEmbedSessionState,
+        embedConfirmed: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("embed/session/reset returns initial embed session state", () => {
+    const dirty = reducePlaybackEmbedSession(initialPlaybackEmbedSessionState, {
+      type: "embed/playback/confirmed",
+    });
+    const reset = reducePlaybackEmbedSession(dirty, {
+      type: "embed/session/reset",
+    });
+
+    expect(reset).toEqual(initialPlaybackEmbedSessionState);
   });
 
   it("clears loading timestamps on full ui-loading clear but preserves them on spinner-only clear", () => {

@@ -14,7 +14,7 @@ Global **queue + session** logic in [`playbackSessionState.ts`](../../src/utils/
 | **Phase 1** | **`10-17-playback_embed_phase_1_session_module`** | Pure [`playbackEmbedSession.ts`](../../src/utils/playbackEmbedSession.ts) + [`playbackEmbedSession.spec.ts`](../../src/utils/playbackEmbedSession.spec.ts) — hidden-tab poll selectors, visible audible-sync poll policy, load/confirm reducer (not wired to hooks yet) |
 | **Phase 2** | **`10-17-playback_embed_phase_2_confirm_gate`** | **`tryConfirmPlaybackEmbedFromSignal`** + confirm helpers live in [`playbackEmbedSession.ts`](../../src/utils/playbackEmbedSession.ts); embed hook + provider call the gate (legacy [`releasePlaybackEmbedConfirm.ts`](../../src/utils/releasePlaybackEmbedConfirm.ts) re-exports) |
 | **Phase 3** | **`10-17-playback_embed_phase_3_thin_hooks`** | [`applyPlaybackEmbedSessionEvent`](../../src/utils/applyPlaybackEmbedSessionEvent.ts) + [`syncPlaybackEmbedSessionRefs`](../../src/utils/syncPlaybackEmbedSessionRefs.ts) drive legacy refs; provider loading/confirm/imperative-load and embed poll effects use session selectors |
-| **Phase 4** | **`10-17-playback_embed_phase_4_dead_paths`** | Remove legacy branches; full context + E2E green |
+| **Phase 4** | **`10-17-playback_embed_phase_4_dead_paths`** | **`resetEmbedSession`** on **`stopPlayback`**; **`embed/load/started`** on imperative load; confirm reads from session; handbook/patterns updated |
 | **Phase 5** (optional) | **`10-17-playback_embed_phase_5_spec_split`** | Split context spec by invariant group (same tests, smaller files) |
 
 Use **`st add <branch>`** from the layer below, then **`st ss --auto --open`** after each phase. Rebase with **`st sync`** before push.

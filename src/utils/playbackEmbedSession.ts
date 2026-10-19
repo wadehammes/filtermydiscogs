@@ -249,9 +249,13 @@ export type PlaybackEmbedHiddenPollContext = {
   withinTrackSwitchGrace: boolean;
 };
 
+export const selectEmbedPlaybackConfirmed = (
+  session: PlaybackEmbedSessionState,
+): boolean => session.embedConfirmed;
+
 export const selectShouldRunHiddenTabPlayerStatePoll = (
   context: PlaybackEmbedHiddenPollContext,
-): boolean => context.transportSessionActive;
+): boolean => context.transportSessionActive && context.documentHidden;
 
 export const selectShouldAttemptPlayFromGestureDuringHiddenPoll = (
   context: PlaybackEmbedHiddenPollContext,
