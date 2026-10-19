@@ -29,7 +29,10 @@ export const imperativelySyncPersistentYoutubeIframeToVideoId = ({
   }
 
   if (targetVideoId === loadedVideoId) {
-    if (!deferPresentationReadyWhenVideoUiLoading) {
+    if (deferPresentationReadyWhenVideoUiLoading) {
+      notifyPlaybackVideoLoadStarted(targetVideoId);
+      refreshYoutubeEmbedPlayerLayout({ iframe });
+    } else {
       notifyPlaybackVideoPresentationReady();
     }
     return loadedVideoId;

@@ -50,21 +50,26 @@ describe("imperativelySyncPersistentYoutubeIframeToVideoId", () => {
     expect(loadAndPlayYoutubeVideo).not.toHaveBeenCalled();
   });
 
-  it("skips presentation ready when the upload is unchanged but video UI loading is active", () => {
+  it("when the upload is unchanged but video UI loading is active, notifies load started and refreshes embed layout", () => {
+    const notifyPlaybackVideoLoadStarted = jest.fn();
     const notifyPlaybackVideoPresentationReady = jest.fn();
+    const refreshYoutubeEmbedPlayerLayout = jest.fn();
+    const iframe = {} as HTMLIFrameElement;
 
     imperativelySyncPersistentYoutubeIframeToVideoId({
-      iframe: {} as HTMLIFrameElement,
+      iframe,
       targetVideoId: "te2jJncBVG4",
       loadedVideoId: "te2jJncBVG4",
       deferPresentationReadyWhenVideoUiLoading: true,
-      notifyPlaybackVideoLoadStarted: jest.fn(),
+      notifyPlaybackVideoLoadStarted,
       notifyPlaybackVideoPresentationReady,
       loadAndPlayYoutubeVideo: jest.fn(),
-      refreshYoutubeEmbedPlayerLayout: jest.fn(),
+      refreshYoutubeEmbedPlayerLayout,
       enableYoutubeIframeListening: jest.fn(),
     });
 
     expect(notifyPlaybackVideoPresentationReady).not.toHaveBeenCalled();
+    expect(notifyPlaybackVideoLoadStarted).toHaveBeenCalledWith("te2jJncBVG4");
+    expect(refreshYoutubeEmbedPlayerLayout).toHaveBeenCalledWith({ iframe });
   });
 });
