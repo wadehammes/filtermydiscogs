@@ -13,6 +13,7 @@ import {
   resolveActiveVideoId,
   resolveIsPlaybackReady,
   resolveNeedsPlaybackVideoSwitch,
+  shouldAllowAudibleEmbedPlaybackConfirm,
   resolvePlaybackVideoId,
   resolvePresentationActiveVideoId,
   shouldBeginPlaybackVideoUiLoading,
@@ -132,6 +133,53 @@ describe("releasePlaybackActivePresentation", () => {
         hasQueueItem: false,
         preparedEmbedVideoId: null,
         activeVideoId: "prev-id",
+      }),
+    ).toBe(true);
+  });
+
+  it("shouldAllowAudibleEmbedPlaybackConfirm requires alignment while video UI loading is active", () => {
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "prev-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: null,
+      }),
+    ).toBe(false);
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: "next-id",
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(true);
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: false,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(false);
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: false,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "prev-id",
+        embedVideoId: "prev-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: null,
       }),
     ).toBe(true);
   });

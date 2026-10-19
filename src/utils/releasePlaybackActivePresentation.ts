@@ -148,6 +148,43 @@ export const shouldBeginPlaybackVideoUiLoading = ({
   });
 };
 
+export const shouldAllowAudibleEmbedPlaybackConfirm = ({
+  signalConfirmed,
+  isPlaybackVideoUiLoading,
+  loadingTargetVideoId,
+  activeVideoId,
+  embedVideoId,
+  transitionTargetVideoId,
+  watchdogVideoId,
+  matchedActiveVideoId = null,
+}: {
+  signalConfirmed: boolean;
+  isPlaybackVideoUiLoading: boolean;
+  loadingTargetVideoId: string | null;
+  activeVideoId: string | null;
+  embedVideoId: string | null;
+  transitionTargetVideoId: string | null;
+  watchdogVideoId: string | null;
+  matchedActiveVideoId?: string | null;
+}): boolean => {
+  if (!signalConfirmed) {
+    return false;
+  }
+
+  if (!isPlaybackVideoUiLoading) {
+    return true;
+  }
+
+  return isEmbedAlignedForLoadingPlaybackConfirm({
+    loadingTargetVideoId,
+    activeVideoId,
+    embedVideoId,
+    transitionTargetVideoId,
+    watchdogVideoId,
+    matchedActiveVideoId,
+  });
+};
+
 export const isEmbedAlignedForLoadingPlaybackConfirm = ({
   loadingTargetVideoId,
   activeVideoId,

@@ -93,6 +93,7 @@ import {
   resolveIsPlaybackReady,
   resolvePlaybackVideoId,
   resolvePresentationActiveVideoId,
+  shouldAllowAudibleEmbedPlaybackConfirm,
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
@@ -776,7 +777,7 @@ export const useReleasePlaybackProvider = (): {
       }),
     };
 
-    if (
+    const signalConfirmed =
       tryConfirmPlaybackEmbedFromSignal({
         ...confirmInput,
         signal: { kind: "audible" },
@@ -785,13 +786,25 @@ export const useReleasePlaybackProvider = (): {
         ...confirmInput,
         signal: { kind: "watchdog-progress" },
         embedPlaybackConfirmed: false,
+      });
+
+    if (
+      !shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed,
+        isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+        loadingTargetVideoId: playbackVideoUiLoadingTargetVideoIdRef.current,
+        activeVideoId: activeVideoIdRef.current,
+        matchedActiveVideoId: matchedActiveVideoIdRef.current,
+        embedVideoId: embedVideoIdRef.current,
+        transitionTargetVideoId: playbackVideoTransitionTargetIdRef.current,
+        watchdogVideoId: embedWatchdogVideoIdRef.current,
       })
     ) {
-      confirmEmbedPlayback();
-      return true;
+      return false;
     }
 
-    return false;
+    confirmEmbedPlayback();
+    return true;
   }, [confirmEmbedPlayback, isPlaying]);
 
   confirmEmbedPlaybackIfAudibleRef.current = confirmEmbedPlaybackIfAudible;

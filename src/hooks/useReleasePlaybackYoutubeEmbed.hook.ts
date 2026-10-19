@@ -36,7 +36,7 @@ import {
   flattenTracklist,
   postYoutubePlayerCommand,
 } from "src/utils/releasePlayback";
-import { isEmbedAlignedForLoadingPlaybackConfirm } from "src/utils/releasePlaybackActivePresentation";
+import { shouldAllowAudibleEmbedPlaybackConfirm } from "src/utils/releasePlaybackActivePresentation";
 import {
   EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
   PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
@@ -286,25 +286,23 @@ export const useReleasePlaybackYoutubeEmbed = ({
         }),
       });
 
-      if (!confirmed) {
+      if (
+        !shouldAllowAudibleEmbedPlaybackConfirm({
+          signalConfirmed: confirmed,
+          isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+          loadingTargetVideoId:
+            playbackVideoUiLoadingTargetVideoIdRef.current,
+          activeVideoId: activeVideoIdRef.current,
+          matchedActiveVideoId: matchedActiveVideoIdRef.current,
+          embedVideoId: embedVideoIdRef.current,
+          transitionTargetVideoId: playbackVideoTransitionTargetIdRef.current,
+          watchdogVideoId: embedWatchdogVideoIdRef.current,
+        })
+      ) {
         return false;
       }
 
       if (isPlaybackVideoUiLoadingRef.current) {
-        if (
-          !isEmbedAlignedForLoadingPlaybackConfirm({
-            loadingTargetVideoId:
-              playbackVideoUiLoadingTargetVideoIdRef.current,
-            activeVideoId: activeVideoIdRef.current,
-            matchedActiveVideoId: matchedActiveVideoIdRef.current,
-            embedVideoId: embedVideoIdRef.current,
-            transitionTargetVideoId: playbackVideoTransitionTargetIdRef.current,
-            watchdogVideoId: embedWatchdogVideoIdRef.current,
-          })
-        ) {
-          return false;
-        }
-
         clearPlaybackVideoUiLoading();
       }
 
