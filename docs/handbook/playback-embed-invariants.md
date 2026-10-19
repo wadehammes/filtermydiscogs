@@ -28,7 +28,8 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Invariant | Context spec search string |
 |-----------|----------------------------|
 | Confirm from **PLAYING** / **infoDelivery** / advancing **currentTime** after load gate | **`confirms embed playback from infoDelivery`**, **`confirms embed playback after the post-load PLAYING delay`**, **`when video UI loading starts from queue advance without imperative embed load`** |
-| **Presentation-ready** / **onReady** confirms only when transport playing (not paused restore) | **`when presentation is ready while transport is playing`**, **`when YouTube posts onReady after load started`** |
+| Audible confirm **`transportSessionActive`** follows playback intent when **`isPlayingRef`** lags or **`pendingPlayFromGesture`** is set | **`playback intent transport`** ([`useReleasePlaybackYoutubeEmbed.hook.spec.tsx`](../../src/hooks/useReleasePlaybackYoutubeEmbed.hook.spec.tsx)); unit: **`resolveAudibleEmbedConfirmTransport`** ([`releasePlaybackEmbedConfirm.spec.ts`](../../src/utils/releasePlaybackEmbedConfirm.spec.ts)) |
+| **Presentation-ready** / **onReady** runs **`confirmEmbedPlaybackIfAudible`** when transport is playing (not paused restore) — no blind confirm on same-video re-sync without audible embed signals | **`when presentation is ready while transport is playing`**, **`when YouTube posts onReady after load started`**; E2E **`mode=silent`** ([`authenticated-embed-watchdog.spec.ts`](../../e2e/authenticated-embed-watchdog.spec.ts)) |
 | Loading cap dismisses spinner without breaking confirm gates / watchdog | **`when playNext upload plays after the video UI loading cap, embed watchdog does not skip`** |
 | Stale **PLAYING** right after **loadVideoById** does not confirm | **`does not treat immediate stale PLAYING as confirmed`** |
 | Initial presentation grace on first load / re-load | **`extends the first embed watchdog arm by initial presentation grace`**, **`re-applies initial presentation watchdog grace when a new embed load resets confirmation`** |
@@ -49,7 +50,9 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Invariant | Context spec search string |
 |-----------|----------------------------|
 | Pause from dock / embed UI sync | **`toggles paused state`**, **`syncs paused state when the YouTube embed reports pause`** |
-| **playNext** / switch keeps loading until next upload plays | **`playNext keeps video UI loading until the advanced upload reports playing`** |
+| **playNext** / switch keeps loading until next upload plays | **`playNext keeps video UI loading until the advanced upload reports playing`**; **`ReleaseMiniPlayer`** **`loads the next video via postMessage when advancing tracks with the panel visible`** |
+| Queue advance / video-switch detection uses **matched track** YouTube id (Discogs row), not embed-prefetched **`embedVideoId`** in **`activeVideoId`** | **`playNext keeps video UI loading`** + queue-action harness when **`embedVideoIdRef`** is ahead of **`matchedActiveVideoIdRef`** |
+| **`PersistentYoutubeIframe`**: when target upload already loaded, skip **`notifyPlaybackVideoPresentationReady`** while **video UI loading** is active (prefetch + **`playNext`** must not clear the spinner early) | **`persistentYoutubeIframeVideoSwitch.spec.ts`** **`skips presentation ready when the upload is unchanged but video UI loading is active`** |
 | Restore paused: no watchdog until resume | **`does not arm the embed watchdog while transport is paused after refresh restore`**, **`when restore same-video sync runs while paused, resuming still arms the embed watchdog`** |
 | Start another track from pause (cross-release / same album) | **`when transport is paused`** (multiple **`it`** titles — modal / queue / preview / restore) |
 

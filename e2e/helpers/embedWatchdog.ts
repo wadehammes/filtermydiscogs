@@ -6,10 +6,12 @@ import { createE2eReleaseByIdHandler } from "src/tests/msw/e2eReleaseHandlers";
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 import {
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS,
+  PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
   resolvePlaybackVideoUiLoadingTimeoutMsForArmMs,
 } from "src/utils/playbackEmbedStartWatchdog";
+import { PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import {
   closeReleaseModal,
   expectReleaseModalShowsE2eTracklist,
@@ -39,6 +41,8 @@ export const e2eWatchdogSkipVisibleTimeoutMs = () =>
   resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
     PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_SLOW_MS,
   ) +
+  PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS *
+    (PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_LOADING_REARMS + 1) +
   PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_AFTER_SKIP_BONUS_MS +
   3000;
 

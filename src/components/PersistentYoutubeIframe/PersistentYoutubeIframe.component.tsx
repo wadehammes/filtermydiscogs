@@ -4,7 +4,10 @@ import classNames from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { imperativelySyncPersistentYoutubeIframeToVideoId } from "src/components/PersistentYoutubeIframe/persistentYoutubeIframeVideoSwitch";
 import { GTM_YOUTUBE_IFRAME_INSPECTED_ATTR } from "src/constants/analytics";
-import { useReleasePlaybackIframeActions } from "src/context/releasePlayback.context";
+import {
+  useReleasePlayback,
+  useReleasePlaybackIframeActions,
+} from "src/context/releasePlayback.context";
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
@@ -30,6 +33,7 @@ export const PersistentYoutubeIframe = ({
   deferVideoLoad = false,
   variant = "hidden",
 }: PersistentYoutubeIframeProps) => {
+  const { isPlaybackVideoLoading } = useReleasePlayback();
   const {
     registerPlaybackIframe,
     notifyPlaybackIframeLoaded,
@@ -64,6 +68,7 @@ export const PersistentYoutubeIframe = ({
           iframe: iframeRef.current,
           targetVideoId,
           loadedVideoId: loadedVideoIdRef.current,
+          deferPresentationReadyWhenVideoUiLoading: isPlaybackVideoLoading,
           notifyPlaybackVideoLoadStarted,
           notifyPlaybackVideoPresentationReady,
           loadAndPlayYoutubeVideo,
@@ -71,7 +76,11 @@ export const PersistentYoutubeIframe = ({
           enableYoutubeIframeListening,
         });
     },
-    [notifyPlaybackVideoLoadStarted, notifyPlaybackVideoPresentationReady],
+    [
+      isPlaybackVideoLoading,
+      notifyPlaybackVideoLoadStarted,
+      notifyPlaybackVideoPresentationReady,
+    ],
   );
 
   const handleIframeLoad = useCallback(() => {
