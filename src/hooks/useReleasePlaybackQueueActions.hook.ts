@@ -48,6 +48,7 @@ import {
 
 export interface PlayQueueItemOptions {
   autoplay?: boolean;
+  forceEmbedReloadAfterUnavailableSkip?: boolean;
   rebuildAlbumQueue?: boolean;
   startPaused?: boolean;
   youtubeVideoId?: string;
@@ -103,7 +104,10 @@ interface UseReleasePlaybackQueueActionsParams {
   resetEmbedSession: () => void;
   beginPlaybackVideoUiLoading: () => void;
   markEmbedTrackSwitchGrace: () => void;
-  prepareQueueAdvancePlayback: (item: PlaybackQueueItem | null) => void;
+  prepareQueueAdvancePlayback: (
+    item: PlaybackQueueItem | null,
+    options?: { forceEmbedReloadAfterUnavailableSkip?: boolean },
+  ) => void;
   settleSameUploadQueueAdvance: () => void;
   setEmbedVideoId: (videoId: string | null) => void;
   clearPlayFromGestureRetries: () => void;
@@ -125,6 +129,7 @@ interface UseReleasePlaybackQueueActionsParams {
   extendQueueTailRef: RefObject<() => Promise<boolean>>;
   startPlaybackRef: RefObject<(params: StartPlaybackParams) => void>;
   resetPlaybackSkipState?: () => void;
+  forceEmbedReloadAfterUnavailableSkipRef?: RefObject<boolean>;
   refs: QueueActionRefs;
 }
 
@@ -155,6 +160,7 @@ export const useReleasePlaybackQueueActions = ({
   extendQueueTailRef,
   startPlaybackRef,
   resetPlaybackSkipState,
+  forceEmbedReloadAfterUnavailableSkipRef,
   refs,
 }: UseReleasePlaybackQueueActionsParams) => {
   const {
@@ -232,6 +238,7 @@ export const useReleasePlaybackQueueActions = ({
       {
         startPaused = false,
         autoplay = true,
+        forceEmbedReloadAfterUnavailableSkip = false,
         rebuildAlbumQueue = false,
         youtubeVideoId,
       }: PlayQueueItemOptions = {},
@@ -251,10 +258,12 @@ export const useReleasePlaybackQueueActions = ({
         isReleasePreview: isReleasePreviewRef.current,
         activeVideoId: activeVideoIdRef.current,
       });
-      const forceEmbedReload = !youtubeVideoId && replaySameTrack;
+      const forceEmbedReload =
+        !youtubeVideoId &&
+        (replaySameTrack || forceEmbedReloadAfterUnavailableSkip);
       const preparedEmbedVideoId = youtubeVideoId
         ? applyTargetEmbedVideoId(youtubeVideoId)
-        : syncEmbedForQueueItem(item, { forceReload: replaySameTrack });
+        : syncEmbedForQueueItem(item, { forceReload: forceEmbedReload });
 
       if (!preparedEmbedVideoId) {
         prefetchQueueItemEmbed(item);
@@ -744,9 +753,21 @@ export const useReleasePlaybackQueueActions = ({
   );
 
   const playNext = useCallback(() => {
+    const forceEmbedReloadAfterUnavailableSkip =
+      forceEmbedReloadAfterUnavailableSkipRef?.current ?? false;
+
+    if (
+      forceEmbedReloadAfterUnavailableSkip &&
+      forceEmbedReloadAfterUnavailableSkipRef
+    ) {
+      forceEmbedReloadAfterUnavailableSkipRef.current = false;
+    }
+
     const item = queueRef.current[0];
 
-    prepareQueueAdvancePlayback(item ?? null);
+    prepareQueueAdvancePlayback(item ?? null, {
+      forceEmbedReloadAfterUnavailableSkip,
+    });
 
     if (!item) {
       void extendQueueTail().then((extended) => {
@@ -762,9 +783,13 @@ export const useReleasePlaybackQueueActions = ({
 
     maybePushCurrentToHistory();
     setUpcomingQueue(queueRef.current.slice(1));
-    playQueueItem(item, { autoplay: true });
+    playQueueItem(item, {
+      autoplay: true,
+      forceEmbedReloadAfterUnavailableSkip,
+    });
   }, [
     extendQueueTail,
+    forceEmbedReloadAfterUnavailableSkipRef,
     maybePushCurrentToHistory,
     playNextRef,
     playQueueItem,

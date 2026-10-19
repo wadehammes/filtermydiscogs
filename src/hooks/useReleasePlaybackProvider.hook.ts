@@ -255,6 +255,10 @@ export const useReleasePlaybackProvider = (): {
   const embedWatchdogArmedDelayMsRef = useRef<number | null>(null);
   const embedWatchdogVideoIdRef = useRef<string | null>(null);
   const lastEmbedUnavailableSkipAtMsRef = useRef<number | null>(null);
+  const forceEmbedReloadAfterUnavailableSkipRef = useRef(false);
+  const setPlaybackVideoTransitionTargetIdRef = useRef<
+    (videoId: string | null) => void
+  >(() => undefined);
   const embedWatchdogLoadingRearmCountRef = useRef(0);
   const embedWatchdogSyncProbeAttemptedRef = useRef(false);
   const embedYoutubePlayerReadyVideoIdRef = useRef<string | null>(null);
@@ -323,6 +327,8 @@ export const useReleasePlaybackProvider = (): {
         embedWatchdogVideoIdRef.current = null;
         embedWatchdogLoadingRearmCountRef.current = 0;
         lastEmbedUnavailableSkipAtMsRef.current = Date.now();
+        forceEmbedReloadAfterUnavailableSkipRef.current = true;
+        setPlaybackVideoTransitionTargetIdRef.current(null);
         markEmbedTrackSwitchGraceRef.current();
         clearPlayFromGestureRetriesRef.current();
         pendingPlayFromGestureRef.current = false;
@@ -622,6 +628,8 @@ export const useReleasePlaybackProvider = (): {
     },
     [],
   );
+  setPlaybackVideoTransitionTargetIdRef.current =
+    setPlaybackVideoTransitionTargetIdWithRef;
 
   const beginPlaybackVideoUiLoading = useCallback(() => {
     dispatchEmbedSession({
@@ -1166,7 +1174,10 @@ export const useReleasePlaybackProvider = (): {
   const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
 
   const prepareQueueAdvancePlayback = useCallback(
-    (item: PlaybackQueueItem | null) => {
+    (
+      item: PlaybackQueueItem | null,
+      options?: { forceEmbedReloadAfterUnavailableSkip?: boolean },
+    ) => {
       const preparedEmbedVideoId = item
         ? resolveQueueItemEmbedVideoId(item)
         : null;
@@ -1178,6 +1189,9 @@ export const useReleasePlaybackProvider = (): {
           isReleasePreview: isReleasePreviewRef.current,
           activeVideoId: activeVideoIdRef.current,
         });
+      const forceEmbedReload =
+        replaySameTrack ||
+        (options?.forceEmbedReloadAfterUnavailableSkip ?? false);
 
       if (
         shouldBeginPlaybackVideoUiLoading({
@@ -1185,7 +1199,7 @@ export const useReleasePlaybackProvider = (): {
           preparedEmbedVideoId,
           activeVideoId: matchedActiveVideoIdRef.current,
           replaySameTrack,
-          forceEmbedReload: replaySameTrack,
+          forceEmbedReload,
         })
       ) {
         beginPlaybackVideoUiLoading();
@@ -1249,6 +1263,7 @@ export const useReleasePlaybackProvider = (): {
     extendQueueTailRef,
     startPlaybackRef,
     resetPlaybackSkipState,
+    forceEmbedReloadAfterUnavailableSkipRef,
     refs: {
       awaitingResumeGestureRef,
       pendingPlayFromGestureRef,

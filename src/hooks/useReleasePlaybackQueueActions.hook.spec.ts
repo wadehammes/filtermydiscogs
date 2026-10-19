@@ -367,7 +367,9 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.playNext();
 
-    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(nextItem);
+    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(nextItem, {
+      forceEmbedReloadAfterUnavailableSkip: false,
+    });
     expect(settleSameUploadQueueAdvance).toHaveBeenCalledTimes(1);
   });
 
@@ -622,6 +624,86 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(beginPlaybackVideoUiLoading).not.toHaveBeenCalled();
   });
 
+  it("playNext passes forceReload to syncEmbedForQueueItem after an unavailable skip advance", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const nextItem = createQueueItem({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Side B",
+    });
+    const queueRef = { current: [nextItem] };
+    const forceEmbedReloadAfterUnavailableSkipRef = { current: true };
+    const embedVideoIdRef = { current: "abc12345678" as string | null };
+    const syncEmbedForQueueItem = jest.fn<
+      (
+        item: ReturnType<typeof createQueueItem>,
+        options?: { forceReload?: boolean },
+      ) => string | null
+    >(() => "abc12345678");
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession: jest.fn(),
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance: jest.fn(),
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem,
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        forceEmbedReloadAfterUnavailableSkipRef,
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: false },
+          similarQueueTailToastShownRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
+          releaseRef: { current: release },
+          queueRef,
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: true },
+          isPausedRef: { current: false },
+          releaseDetailIdRef: { current: release.basic_information.id },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: null },
+          matchedActiveVideoIdRef: { current: "te2jJncBVG4" },
+          activeVideoIdRef: { current: "te2jJncBVG4" },
+          embedVideoIdRef,
+          activeTrackPositionRef: { current: "A1" },
+          isReleasePreviewRef: { current: false },
+        },
+      }),
+    );
+
+    result.current.playNext();
+
+    expect(forceEmbedReloadAfterUnavailableSkipRef.current).toBe(false);
+    expect(syncEmbedForQueueItem).toHaveBeenCalledWith(nextItem, {
+      forceReload: true,
+    });
+  });
+
   it("playNext passes forceReload to syncEmbedForQueueItem when repeating the active track", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({
@@ -715,7 +797,9 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.playNext();
 
-    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(nextItem);
+    expect(prepareQueueAdvancePlayback).toHaveBeenCalledWith(nextItem, {
+      forceEmbedReloadAfterUnavailableSkip: false,
+    });
   });
 
   it("playPrevious confirms embed playback when history reuses the same YouTube upload", () => {

@@ -57,6 +57,7 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Override-only row: disarm until stats resolve | **`when override-only playback starts before track stats load`**, **`when the queue grows during user override playback`** |
 | Similar tail fetch: disarm / re-arm policy | **`does not unavailable-skip confirmed playback while similar queue tail is loading`** (E2E similar queue) |
 | **onError** terminal codes skip; grace ignores non-terminal during switch | **`skips and advances when YouTube posts onError`** (E2E **`mode=error`**) |
+| Unavailable skip **`playNext`**: force **`loadVideoById`** when the next row’s YouTube id already matches **`embedVideoId`** (prefetch / same album) so the iframe recovers from error state | **`playNext passes forceReload to syncEmbedForQueueItem after an unavailable skip advance`** ([`useReleasePlaybackQueueActions.hook.spec.ts`](../../src/hooks/useReleasePlaybackQueueActions.hook.spec.ts)) |
 
 ## Track switch, pause, and restore
 
