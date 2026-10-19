@@ -73,7 +73,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "@sentry/core": "^11.7.0",
+    "@sentry/core": "^11.8.0",
     "@sentry/nextjs": "^11.7.0",
     "@sentry/react": "^11.7.0",
     "@svgr/webpack": "^8.1.0",
