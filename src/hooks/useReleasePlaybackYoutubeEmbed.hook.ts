@@ -290,8 +290,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
         !shouldAllowAudibleEmbedPlaybackConfirm({
           signalConfirmed: confirmed,
           isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
-          loadingTargetVideoId:
-            playbackVideoUiLoadingTargetVideoIdRef.current,
+          loadingTargetVideoId: playbackVideoUiLoadingTargetVideoIdRef.current,
           activeVideoId: activeVideoIdRef.current,
           matchedActiveVideoId: matchedActiveVideoIdRef.current,
           embedVideoId: embedVideoIdRef.current,

@@ -1064,12 +1064,18 @@ describe("ReleasePlaybackProvider — queue and session", () => {
       result.current.reorderQueue(0, 1);
     });
 
+    expect(result.current.isQueueBuilding).toBe(true);
+
     const curatedQueueOrder = result.current.queue.map(
       (item) => item.trackPosition,
     );
 
     await act(async () => {
       resolveReleaseDetail(releaseDetail);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isQueueBuilding).toBe(false);
     });
 
     await waitFor(() => {

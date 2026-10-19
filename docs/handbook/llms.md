@@ -16,6 +16,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Collection notes (read/write, card UI, search) | [discogs.md](discogs.md) (API) + [patterns.md](patterns.md) (provider) + [components.md](components.md) (`ReleaseNotes/`) |
 | Release detail / tracklist / in-app playback | [discogs.md](discogs.md) (API) + [components.md](components.md) (`ReleaseModal/`, `ReleaseTracklist/`, `GlobalPlaybackDock/`, …) + [patterns.md](patterns.md) (`ReleasePlaybackProvider`) + [source-layout.md](source-layout.md) |
 | Playback embed refactor / watchdog / hidden tab invariants | [playback-embed-simplification.md](playback-embed-simplification.md) + [playback-embed-invariants.md](playback-embed-invariants.md) + [patterns.md → Release playback queue](patterns.md#release-playback-queue) |
+| Manual queue curation / pending album rebuild / drawer reorder | [playback-manual-queue.md](playback-manual-queue.md) + [patterns.md → Release playback queue](patterns.md#release-playback-queue) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
 | Owner crate layout DnD, section groups, packed hide, layout lib tests | [database.md](database.md) (`CrateSetMarker` / layout lib) + [source-layout.md](source-layout.md) (layout helpers) + [conventions.md](conventions.md) (Testing → `@dnd-kit` / lib specs) + [factories.md](factories.md) (`crateLayoutItemFactory`) |
 | API route request validation (Zod) | [database.md](database.md) (Request validation) |

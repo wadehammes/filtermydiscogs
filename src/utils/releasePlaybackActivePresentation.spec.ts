@@ -13,9 +13,9 @@ import {
   resolveActiveVideoId,
   resolveIsPlaybackReady,
   resolveNeedsPlaybackVideoSwitch,
-  shouldAllowAudibleEmbedPlaybackConfirm,
   resolvePlaybackVideoId,
   resolvePresentationActiveVideoId,
+  shouldAllowAudibleEmbedPlaybackConfirm,
   shouldBeginPlaybackVideoUiLoading,
   shouldClearPlaybackVideoTransition,
 } from "src/utils/releasePlaybackActivePresentation";
@@ -180,6 +180,21 @@ describe("releasePlaybackActivePresentation", () => {
         embedVideoId: "prev-id",
         transitionTargetVideoId: null,
         watchdogVideoId: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("shouldAllowAudibleEmbedPlaybackConfirm aligns via matchedActiveVideoId when presentation activeVideoId is stale", () => {
+    expect(
+      shouldAllowAudibleEmbedPlaybackConfirm({
+        signalConfirmed: true,
+        isPlaybackVideoUiLoading: true,
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "stale-presentation-id",
+        matchedActiveVideoId: "next-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: "next-id",
+        watchdogVideoId: "next-id",
       }),
     ).toBe(true);
   });

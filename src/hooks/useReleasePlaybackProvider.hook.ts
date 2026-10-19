@@ -1388,8 +1388,7 @@ export const useReleasePlaybackProvider = (): {
   });
 
   const isQueueBuilding =
-    isSimilarQueueLoading ||
-    (queue.length === 0 && pendingTrackPosition !== null);
+    isSimilarQueueLoading || pendingTrackPosition !== null;
 
   const stateValue = useMemo(
     (): ReleasePlaybackState => ({

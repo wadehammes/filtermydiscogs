@@ -22,7 +22,10 @@ import { memo, useCallback, useMemo } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PLAYBACK_QUEUE_LIST_LABEL } from "src/constants/accessibilityLabels.constants";
-import { useReleasePlaybackQueue } from "src/context/releasePlayback.context";
+import {
+  useReleasePlaybackQueue,
+  useReleasePlaybackState,
+} from "src/context/releasePlayback.context";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -142,6 +145,7 @@ export const PlaybackQueueDrawer = ({
 }: PlaybackQueueDrawerProps) => {
   const { queue, playQueueAtIndex, removeFromQueue, reorderQueue, clearQueue } =
     useReleasePlaybackQueue();
+  const { isQueueBuilding } = useReleasePlaybackState();
 
   const sortableIds = useMemo(
     () => queue.map((item, index) => getQueueItemListId(item, index)),
@@ -223,37 +227,49 @@ export const PlaybackQueueDrawer = ({
           Queue is empty. Hover a track and choose Add to queue.
         </p>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={sortableIds}
-            strategy={verticalListSortingStrategy}
-          >
-            <ol
-              className={styles.queueList}
-              data-testid="fmdPlaybackQueueList"
-              aria-label={PLAYBACK_QUEUE_LIST_LABEL}
+        <>
+          {isQueueBuilding ? (
+            <p
+              className={styles.buildingStatus}
+              data-testid="fmdPlaybackQueueBuildingStatus"
+              role="status"
             >
-              {queue.map((item, index) => {
-                const listId = getQueueItemListId(item, index);
+              Finishing album tracklist… You can still reorder upcoming tracks.
+            </p>
+          ) : null}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sortableIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <ol
+                className={styles.queueList}
+                data-testid="fmdPlaybackQueueList"
+                aria-busy={isQueueBuilding}
+                aria-label={PLAYBACK_QUEUE_LIST_LABEL}
+              >
+                {queue.map((item, index) => {
+                  const listId = getQueueItemListId(item, index);
 
-                return (
-                  <SortableQueueItem
-                    key={listId}
-                    listId={listId}
-                    index={index}
-                    item={item}
-                    onPlay={playQueueAtIndex}
-                    onRemove={removeFromQueue}
-                  />
-                );
-              })}
-            </ol>
-          </SortableContext>
-        </DndContext>
+                  return (
+                    <SortableQueueItem
+                      key={listId}
+                      listId={listId}
+                      index={index}
+                      item={item}
+                      onPlay={playQueueAtIndex}
+                      onRemove={removeFromQueue}
+                    />
+                  );
+                })}
+              </ol>
+            </SortableContext>
+          </DndContext>
+        </>
       )}
     </BottomDrawer>
   );

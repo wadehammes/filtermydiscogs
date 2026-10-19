@@ -87,6 +87,11 @@ export const useReleasePlaybackPendingResolution = ({
       return;
     }
 
+    if (!extendQueueWithSimilarReleases) {
+      maybeExtendQueueTail();
+      return;
+    }
+
     maybeExtendQueueTail();
 
     if (!extendQueueWithSimilarReleases) {

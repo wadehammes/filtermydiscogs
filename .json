@@ -1,0 +1,132 @@
+{
+  "trunk": "staging",
+  "currentBranch": "10-17-playback_embed_phase_3_thin_hooks",
+  "branches": [
+    {
+      "name": "10-17-fix_background_queue_advance_regression",
+      "head": "c1e9d436355fba838a4d1a87932405fa77daed3c",
+      "base": "ea8996bf67371359dc0d2d348b92644667bce742",
+      "isCurrent": false,
+      "isMerged": true,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1208,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1208",
+        "state": "MERGED"
+      }
+    },
+    {
+      "name": "10-17-playback_embed_phase_0_invariants",
+      "head": "9c294af8b0948bf3e3963b0d830d19e9407393b0",
+      "base": "b91bf5fe706044256479c4e17276cd07dff72766",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1209,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1209",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-17-playback_embed_phase_1_session_module",
+      "head": "ba1ed36b5b754e237375438cb850a4f58d602ae3",
+      "base": "9c294af8b0948bf3e3963b0d830d19e9407393b0",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1210,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1210",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-17-playback_embed_phase_2_confirm_gate",
+      "head": "75bdcc4e1a3632bd5099429ef2badccc1d679388",
+      "base": "ba1ed36b5b754e237375438cb850a4f58d602ae3",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1212,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1212",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-17-playback_embed_phase_3_thin_hooks",
+      "head": "56f94754a9dee0fb2e22b9c8c976cbe077a4ff08",
+      "base": "75bdcc4e1a3632bd5099429ef2badccc1d679388",
+      "isCurrent": true,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": true,
+      "pr": {
+        "number": 1213,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1213",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-17-playback_embed_phase_4_dead_paths",
+      "head": "014cc0af33c4f6d8447b7462c041e77453270673",
+      "base": "56f94754a9dee0fb2e22b9c8c976cbe077a4ff08",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": true,
+      "pr": {
+        "number": 1214,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1214",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-17-playback_embed_phase_5_spec_split",
+      "head": "de6dbe835ca9bbef2d7e6b932a5b7a865f07560b",
+      "base": "014cc0af33c4f6d8447b7462c041e77453270673",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1215,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1215",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-19-playback_embed_iframe_loaded_switch",
+      "head": "1ae126110265b5fb2450c5fb9c870e3103be4e17",
+      "base": "de6dbe835ca9bbef2d7e6b932a5b7a865f07560b",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1217,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1217",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "10-19-playback_embed_unified_confirm",
+      "head": "37ac73025259bdd85cef51c9db4ca92dd0110882",
+      "base": "1ae126110265b5fb2450c5fb9c870e3103be4e17",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1218,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1218",
+        "state": "OPEN"
+      }
+    }
+  ]
+}

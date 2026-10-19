@@ -87,6 +87,17 @@ describe("useReleasePlaybackPendingResolution", () => {
     expect(maybeExtendQueueTail).toHaveBeenCalledTimes(1);
   });
 
+  it("when extendQueueWithSimilarReleases is enabled on mount, still calls maybeExtendQueueTail with a short queue", () => {
+    const { maybeExtendQueueTail } = buildHarness({
+      extendQueueWithSimilarReleases: true,
+      isPlaying: true,
+      upcomingQueueLength: 0,
+      allReleasesLength: 1,
+    });
+
+    expect(maybeExtendQueueTail).toHaveBeenCalledTimes(1);
+  });
+
   it("retries tail extension when the upcoming queue length changes", () => {
     const maybeExtendQueueTail = jest.fn();
     const { rerender } = renderHook(

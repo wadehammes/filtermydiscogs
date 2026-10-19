@@ -5,6 +5,15 @@
   padding: var(--space-4);
 }
 
+.buildingStatus {
+  border-bottom: 1px dotted var(--border);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
 .queueDrawerOverVideo.queueDrawerShell.queueLayer.queueElevated {
   z-index: 2;
 }

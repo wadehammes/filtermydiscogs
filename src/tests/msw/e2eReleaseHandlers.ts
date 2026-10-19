@@ -32,6 +32,38 @@ export const buildE2eReleaseBatchResponseBody = (
   return { releases };
 };
 
+const buildE2eReleaseByIdResponse = (
+  releaseId: string,
+  options: E2eReleaseByIdHandlerOptions,
+  releaseDetails: ReadonlyMap<string, DiscogsReleaseDetail>,
+  notFoundReleaseIds: ReadonlySet<string>,
+) => {
+  if (notFoundReleaseIds.has(releaseId)) {
+    return HttpResponse.json({ error: "Release not found" }, { status: 404 });
+  }
+
+  if (
+    releaseId === String(E2E_DISCOGS_RELEASE_ID_ONE) &&
+    options.albumOneYoutubeVideoId
+  ) {
+    return HttpResponse.json(
+      buildE2eReleaseDetailWithYoutubeVideoId(
+        E2E_DISCOGS_RELEASE_ID_ONE,
+        E2E_ALBUM_ONE,
+        options.albumOneYoutubeVideoId,
+      ),
+    );
+  }
+
+  const detail = releaseDetails.get(releaseId);
+
+  if (!detail) {
+    return HttpResponse.json({ error: "Release not found" }, { status: 404 });
+  }
+
+  return HttpResponse.json(detail);
+};
+
 export const createE2eReleaseByIdHandler = (
   options: E2eReleaseByIdHandlerOptions = {},
 ): RequestHandler => {
@@ -41,30 +73,40 @@ export const createE2eReleaseByIdHandler = (
   return http.get("/api/release/:id", ({ params }) => {
     const releaseId = String(params.id);
 
-    if (notFoundReleaseIds.has(releaseId)) {
-      return HttpResponse.json({ error: "Release not found" }, { status: 404 });
+    return buildE2eReleaseByIdResponse(
+      releaseId,
+      options,
+      releaseDetails,
+      notFoundReleaseIds,
+    );
+  });
+};
+
+export type E2eDelayedReleaseByIdOptions = E2eReleaseByIdHandlerOptions & {
+  delayMs: number;
+  delayedReleaseIds: ReadonlySet<string>;
+};
+
+export const createE2eDelayedReleaseByIdHandler = (
+  options: E2eDelayedReleaseByIdOptions,
+): RequestHandler => {
+  const releaseDetails = buildE2eReleaseDetailByDiscogsId();
+  const notFoundReleaseIds = options.notFoundReleaseIds ?? new Set<string>();
+  const { delayMs, delayedReleaseIds } = options;
+
+  return http.get("/api/release/:id", async ({ params }) => {
+    const releaseId = String(params.id);
+
+    if (delayedReleaseIds.has(releaseId)) {
+      await delay(delayMs);
     }
 
-    if (
-      releaseId === String(E2E_DISCOGS_RELEASE_ID_ONE) &&
-      options.albumOneYoutubeVideoId
-    ) {
-      return HttpResponse.json(
-        buildE2eReleaseDetailWithYoutubeVideoId(
-          E2E_DISCOGS_RELEASE_ID_ONE,
-          E2E_ALBUM_ONE,
-          options.albumOneYoutubeVideoId,
-        ),
-      );
-    }
-
-    const detail = releaseDetails.get(releaseId);
-
-    if (!detail) {
-      return HttpResponse.json({ error: "Release not found" }, { status: 404 });
-    }
-
-    return HttpResponse.json(detail);
+    return buildE2eReleaseByIdResponse(
+      releaseId,
+      options,
+      releaseDetails,
+      notFoundReleaseIds,
+    );
   });
 };
 
