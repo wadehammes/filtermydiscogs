@@ -4,6 +4,7 @@ import {
   type PlaybackSkipCapturePayload,
 } from "src/lib/sentry/buildPlaybackSkipCaptureOptions";
 import { captureAppMessage } from "src/lib/sentry/captureAppMessage.client";
+import { resolvePlaybackSkipSource } from "src/lib/sentry/playbackSkipSentrySource";
 import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 
 const MAX_PLAYBACK_SKIP_SENTRY_REPORTS = 15;
@@ -32,6 +33,10 @@ const capturePlaybackSkipReport = (
 export const reportPlaybackSkipToSentry = (
   payload: PlaybackSkipCapturePayload,
 ) => {
+  if (resolvePlaybackSkipSource(payload.errorCode) === "watchdog") {
+    return;
+  }
+
   if (playbackSkipSentryReportCount >= MAX_PLAYBACK_SKIP_SENTRY_REPORTS) {
     return;
   }

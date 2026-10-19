@@ -20,6 +20,33 @@ export const asDiscogsApiError = (error: unknown): DiscogsApiError | null => {
 export const getDiscogsApiErrorStatus = (error: unknown): number | undefined =>
   asDiscogsApiError(error)?.status;
 
+export const isDiscogsFetchTimeoutError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  if (error.name === "TimeoutError" || error.name === "AbortError") {
+    return true;
+  }
+
+  return error.message.includes("aborted due to timeout");
+};
+
+export const resolveDiscogsVerificationFailureStatus = (
+  error: unknown,
+): number | undefined => {
+  const upstreamStatus = getDiscogsApiErrorStatus(error);
+  if (upstreamStatus !== undefined) {
+    return upstreamStatus;
+  }
+
+  if (isDiscogsFetchTimeoutError(error)) {
+    return 504;
+  }
+
+  return undefined;
+};
+
 export const getDiscogsRateLimitRetryAfterSeconds = (
   error: unknown,
 ): number => {

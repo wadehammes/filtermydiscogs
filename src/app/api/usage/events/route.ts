@@ -55,8 +55,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const user = await getOptionalVerifiedUserFromRequest(request);
-  const userId = user?.userId ?? null;
+  let userId: number | null = null;
+  try {
+    const user = await getOptionalVerifiedUserFromRequest(request);
+    userId = user?.userId ?? null;
+  } catch {
+    userId = null;
+  }
 
   try {
     await insertProductAnalyticsEvents(validation.events, userId);

@@ -102,8 +102,30 @@ export const setInFlightIdentityRequest = ({
 }: SetInFlightIdentityRequestParams): void => {
   inFlightIdentityRequests.set(cacheKey, request);
   request.finally(() => {
-    inFlightIdentityRequests.delete(cacheKey);
+    if (inFlightIdentityRequests.get(cacheKey) === request) {
+      inFlightIdentityRequests.delete(cacheKey);
+    }
   });
+};
+
+export const coalesceInFlightIdentityRequest = (
+  cacheKey: string,
+  factory: () => Promise<CachedDiscogsIdentity>,
+): Promise<CachedDiscogsIdentity> => {
+  const existing = inFlightIdentityRequests.get(cacheKey);
+  if (existing) {
+    return existing;
+  }
+
+  const request = factory();
+  inFlightIdentityRequests.set(cacheKey, request);
+  void request.finally(() => {
+    if (inFlightIdentityRequests.get(cacheKey) === request) {
+      inFlightIdentityRequests.delete(cacheKey);
+    }
+  });
+
+  return request;
 };
 
 const pruneIdentityCache = (): void => {

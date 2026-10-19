@@ -2,16 +2,15 @@ import type { NextRequest, NextResponse } from "next/server";
 import {
   DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS,
   DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
-  getDiscogsApiErrorStatus,
+  isDiscogsFetchTimeoutError,
+  resolveDiscogsVerificationFailureStatus,
 } from "src/lib/discogs-api-error";
 import {
-  type CachedDiscogsIdentity,
   clearCachedIdentity,
+  coalesceInFlightIdentityRequest,
   getCachedIdentity,
   getIdentityCacheKey,
-  getInFlightIdentityRequest,
   setCachedIdentity,
-  setInFlightIdentityRequest,
 } from "src/lib/identity-cache";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { reportApiRouteFailure } from "src/lib/sentry/reportApiRouteFailure";
@@ -29,6 +28,7 @@ export type VerifiedUserResult =
 
 export interface VerifiedUserOptions {
   allowStale?: boolean;
+  reportVerificationFailures?: boolean;
 }
 
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -218,17 +218,8 @@ async function fetchVerifiedIdentity(
     };
   }
 
-  const inFlight = getInFlightIdentityRequest(cacheKey);
-  if (inFlight) {
-    const identity = await inFlight;
-    return {
-      userId: identity.userId,
-      username: identity.username,
-    };
-  }
-
-  const requestPromise = (async (): Promise<CachedDiscogsIdentity> => {
-    const identity = await discogsOAuthService.getIdentity(
+  const identity = await coalesceInFlightIdentityRequest(cacheKey, async () => {
+    const discogsIdentity = await discogsOAuthService.getIdentity(
       accessToken,
       accessTokenSecret,
     );
@@ -236,15 +227,12 @@ async function fetchVerifiedIdentity(
     return setCachedIdentity({
       cacheKey,
       identity: {
-        userId: identity.id,
-        username: identity.username,
+        userId: discogsIdentity.id,
+        username: discogsIdentity.username,
       },
     });
-  })();
+  });
 
-  setInFlightIdentityRequest({ cacheKey, request: requestPromise });
-
-  const identity = await requestPromise;
   return {
     userId: identity.userId,
     username: identity.username,
@@ -293,9 +281,12 @@ async function getVerifiedUserFromOAuthCookies(
     );
     return { user };
   } catch (error) {
-    const status = getDiscogsApiErrorStatus(error);
+    const status = resolveDiscogsVerificationFailureStatus(error);
     const isRateLimited = status === 429;
     const isUpstreamUnavailable = status !== undefined && status >= 500;
+    const shouldReportVerificationFailure =
+      options.reportVerificationFailures !== false &&
+      !isDiscogsFetchTimeoutError(error);
 
     if (isRateLimited || isUpstreamUnavailable) {
       const stale = getCachedIdentity({ cacheKey, allowStale: true });
@@ -313,10 +304,12 @@ async function getVerifiedUserFromOAuthCookies(
       return { error: getDiscogsRateLimitResponse() };
     }
 
-    console.error("OAuth identity verification failed:", error);
-    reportApiRouteFailure("auth/oauth-identity", error, {
-      status: status ?? 500,
-    });
+    if (shouldReportVerificationFailure) {
+      console.error("OAuth identity verification failed:", error);
+      reportApiRouteFailure("auth/oauth-identity", error, {
+        status: status ?? 500,
+      });
+    }
 
     if (isUpstreamUnavailable) {
       return { error: getDiscogsUnavailableResponse() };
@@ -364,12 +357,28 @@ export async function getVerifiedUserFromStoredTokens(
 export async function getOptionalVerifiedUserFromRequest(
   request: NextRequest,
 ): Promise<VerifiedDiscogsUser | null> {
-  const result = await getVerifiedUserFromRequest(request);
-  if ("error" in result) {
+  if (!hasActiveDiscogsSession(request)) {
     return null;
   }
 
-  return result.user;
+  const displayIdentity = getDisplayIdentityFromCookies(request);
+  if (displayIdentity) {
+    return displayIdentity;
+  }
+
+  try {
+    const result = await getVerifiedUserFromRequest(request, {
+      allowStale: true,
+      reportVerificationFailures: false,
+    });
+    if ("error" in result) {
+      return null;
+    }
+
+    return result.user;
+  } catch {
+    return null;
+  }
 }
 
 export type AuthenticatedDiscogsSession =

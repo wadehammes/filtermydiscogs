@@ -12,6 +12,14 @@ describe("reportPlaybackSkipToSentry", () => {
     resetPlaybackSkipSentryReportCountForTests();
   });
 
+  it("does not send embed watchdog skips to Sentry", () => {
+    reportPlaybackSkipToSentry(
+      playbackSkipLogEntryFactory.watchdogFallbackReport(),
+    );
+
+    expect(getPlaybackSkipSentryReportCountForTests()).toBe(0);
+  });
+
   it("caps Sentry playback skip reports per session", () => {
     for (let index = 0; index < 20; index += 1) {
       reportPlaybackSkipToSentry(

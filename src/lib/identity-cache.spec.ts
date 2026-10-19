@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "@jest/globals";
 import {
   type CachedDiscogsIdentity,
   clearCachedIdentity,
+  coalesceInFlightIdentityRequest,
   getCachedIdentity,
   getIdentityCacheKey,
   getInFlightIdentityRequest,
@@ -57,6 +58,34 @@ describe("identity-cache", () => {
     expect(getCachedIdentity({ cacheKey, allowStale: true })?.username).toBe(
       "crate-digger",
     );
+  });
+
+  it("coalesces parallel identity fetches into one factory call", async () => {
+    let factoryCalls = 0;
+    let resolveRequest: ((value: CachedDiscogsIdentity) => void) | undefined;
+    const pending = new Promise<CachedDiscogsIdentity>((resolve) => {
+      resolveRequest = resolve;
+    });
+
+    const first = coalesceInFlightIdentityRequest(cacheKey, () => {
+      factoryCalls += 1;
+      return pending;
+    });
+    const second = coalesceInFlightIdentityRequest(cacheKey, () => {
+      factoryCalls += 1;
+      return pending;
+    });
+
+    expect(factoryCalls).toBe(1);
+    expect(first).toBe(second);
+
+    resolveRequest?.({
+      userId: 7,
+      username: "dj",
+      verifiedAt: Date.now(),
+    });
+    await expect(first).resolves.toMatchObject({ username: "dj" });
+    expect(getInFlightIdentityRequest(cacheKey)).toBeUndefined();
   });
 
   it("deduplicates in-flight identity requests by cache key", async () => {
