@@ -227,14 +227,11 @@ describe("useReleasePlaybackSimilarQueue", () => {
 
   it("keeps similar queue fetch in flight until fetch lifecycle end runs", async () => {
     let fetchInFlightAtLifecycleEnd: boolean | undefined;
-    const onSimilarQueueFetchLifecycle = jest.fn(
-      (phase: "start" | "end") => {
-        if (phase === "end") {
-          fetchInFlightAtLifecycleEnd =
-            similarQueueFetchInFlightRef.current;
-        }
-      },
-    );
+    const onSimilarQueueFetchLifecycle = jest.fn((phase: "start" | "end") => {
+      if (phase === "end") {
+        fetchInFlightAtLifecycleEnd = similarQueueFetchInFlightRef.current;
+      }
+    });
     const { result, similarQueueFetchInFlightRef } = buildHarness({
       similarQueueMode: { enabled: true },
       onSimilarQueueFetchLifecycle,
