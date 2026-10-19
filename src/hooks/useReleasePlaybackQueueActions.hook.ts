@@ -394,6 +394,7 @@ export const useReleasePlaybackQueueActions = ({
     (item: PlaybackQueueItem) => {
       similarQueueSuppressedAfterClearRef.current = false;
       queueManuallyExtendedRef.current = true;
+      shouldRebuildAlbumQueueRef.current = false;
       similarQueueModeRef.current = createSimilarQueueMode(false);
       trackPlaybackQueued(item.release.instance_id);
       updateUpcomingQueue((previousQueue) =>
@@ -402,6 +403,7 @@ export const useReleasePlaybackQueueActions = ({
     },
     [
       queueManuallyExtendedRef,
+      shouldRebuildAlbumQueueRef,
       similarQueueModeRef,
       similarQueueSuppressedAfterClearRef,
       updateUpcomingQueue,
@@ -676,9 +678,16 @@ export const useReleasePlaybackQueueActions = ({
         return;
       }
 
+      queueManuallyExtendedRef.current = true;
+      shouldRebuildAlbumQueueRef.current = false;
       setUpcomingQueue(nextQueue);
     },
-    [queueRef, setUpcomingQueue],
+    [
+      queueManuallyExtendedRef,
+      queueRef,
+      setUpcomingQueue,
+      shouldRebuildAlbumQueueRef,
+    ],
   );
 
   const stopPlayback = useCallback(

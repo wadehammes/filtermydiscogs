@@ -5286,6 +5286,99 @@ describe("ReleasePlaybackProvider", () => {
     expect(result.current.isPlaying).toBe(true);
   });
 
+  it("when release detail resolves after manual queue curation, keeps the active track and does not unavailable-skip", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    let resolveReleaseDetail!: (value: typeof releaseDetail) => void;
+    const releaseDetailPromise = new Promise<typeof releaseDetail>((resolve) => {
+      resolveReleaseDetail = resolve;
+    });
+
+    jest
+      .mocked(mockApi.discogsRelease)
+      .mockImplementation(() => releaseDetailPromise);
+
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+      result.current.addToQueue({
+        release: shortCollectionRelease,
+        trackPosition: "1",
+        trackTitle: "Short A",
+      });
+    });
+
+    expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+      "B1",
+      "1",
+    ]);
+
+    act(() => {
+      result.current.reorderQueue(0, 1);
+    });
+
+    const curatedQueueOrder = result.current.queue.map(
+      (item) => item.trackPosition,
+    );
+
+    await act(async () => {
+      resolveReleaseDetail(releaseDetail);
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue.map((item) => item.trackPosition)).toEqual(
+        curatedQueueOrder,
+      );
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow: iframe.contentWindow as Window,
+        playerState: 1,
+      });
+    });
+
+    mockAppendPlaybackSkipAndSchedule.mockClear();
+
+    jest.useFakeTimers();
+
+    act(() => {
+      jest.advanceTimersByTime(
+        PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS +
+          PLAYBACK_EMBED_INITIAL_PRESENTATION_WATCHDOG_GRACE_MS,
+      );
+    });
+
+    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
+    expect(result.current.activeTrackPosition).toBe("A1");
+    expect(result.current.isPlaying).toBe(true);
+
+    jest.useRealTimers();
+  });
+
   it("preserves a manually built queue when play is clicked in another release modal", async () => {
     mockUserPreferencesResponse(
       userPreferencesFactory.build({ autoPlayOnQueueAdd: false }),

@@ -971,6 +971,7 @@ export const useReleasePlaybackProvider = (): {
           embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
           resolvedVideoId,
           watchdogVideoId: embedWatchdogVideoIdRef.current,
+          committedEmbedVideoId: embedVideoIdRef.current,
         })
       ) {
         return;
@@ -1136,6 +1137,7 @@ export const useReleasePlaybackProvider = (): {
     releaseId,
     setUpcomingQueue,
     shouldRebuildAlbumQueueRef,
+    queueManuallyExtendedRef,
     tracks,
     videos,
     activeTrackHasYoutubeOverride,

@@ -110,4 +110,15 @@ describe("playbackSimilarQueueEmbedGuard", () => {
       }),
     ).toBe(false);
   });
+
+  it("ignores load started when confirmed playback already committed the same embed upload", () => {
+    expect(
+      shouldIgnoreConfirmedEmbedLoadStarted({
+        embedPlaybackConfirmed: true,
+        resolvedVideoId: "currentVideo1",
+        watchdogVideoId: null,
+        committedEmbedVideoId: "currentVideo1",
+      }),
+    ).toBe(true);
+  });
 });
