@@ -125,6 +125,16 @@ describe("sentryInitOptions", () => {
     expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
   });
 
+  it("when a script DOM error event is rejected, beforeSend drops the event", () => {
+    const domError = new Event("error");
+    const event = {
+      message:
+        "Event: Event `Event` (type=error) captured as promise rejection",
+    } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: domError })).toBeNull();
+  });
+
   it("reads replay sample rates from NEXT_PUBLIC env overrides", () => {
     const env = process.env as Record<string, string | undefined>;
 

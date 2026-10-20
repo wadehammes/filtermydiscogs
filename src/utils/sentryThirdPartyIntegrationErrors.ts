@@ -32,3 +32,18 @@ export const isGoogleTagManagerYoutubeIntegrationError = (
       current.message.includes(GTM_YOUTUBE_GET_DURATION_MESSAGE) &&
       errorStackIncludesGtmYoutube(current),
   );
+
+const SENTRY_DOM_ERROR_EVENT_REJECTION_MESSAGE =
+  /^Event: Event `Event` \(type=error\) captured as promise rejection$/;
+
+export const isDomErrorEventPromiseRejection = (error: unknown): boolean => {
+  if (typeof Event !== "undefined" && error instanceof Event) {
+    return error.type === "error";
+  }
+
+  return false;
+};
+
+export const isSentryDomErrorEventRejectionMessage = (
+  message: string,
+): boolean => SENTRY_DOM_ERROR_EVENT_REJECTION_MESSAGE.test(message);
