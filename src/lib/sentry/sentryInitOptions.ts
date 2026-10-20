@@ -2,7 +2,9 @@ import { dsnFromString, type ErrorEvent, type EventHint } from "@sentry/core";
 import { normalizeSentryErrorEvent } from "src/lib/sentry/sentryBeforeSendEvent";
 import {
   isBrowserSchedulerTerminationError,
+  isDomErrorEventPromiseRejection,
   isGoogleTagManagerYoutubeIntegrationError,
+  isSentryDomErrorEventRejectionMessage,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
 
@@ -113,6 +115,17 @@ export const sentryBeforeSend = (
   }
 
   if (isBrowserSchedulerTerminationError(hint.originalException)) {
+    return null;
+  }
+
+  if (isDomErrorEventPromiseRejection(hint.originalException)) {
+    return null;
+  }
+
+  if (
+    typeof event.message === "string" &&
+    isSentryDomErrorEventRejectionMessage(event.message)
+  ) {
     return null;
   }
 

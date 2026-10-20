@@ -1,7 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   isBrowserSchedulerTerminationError,
+  isDomErrorEventPromiseRejection,
   isGoogleTagManagerYoutubeIntegrationError,
+  isSentryDomErrorEventRejectionMessage,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 
 describe("isBrowserSchedulerTerminationError", () => {
@@ -46,5 +48,33 @@ describe("isGoogleTagManagerYoutubeIntegrationError", () => {
       "Error: Unexpected token\n    at https://www.googletagmanager.com/gtag/js?id=GTM-XXX:1:1";
 
     expect(isGoogleTagManagerYoutubeIntegrationError(error)).toBe(false);
+  });
+});
+
+describe("isDomErrorEventPromiseRejection", () => {
+  it("when unhandled rejection reason is a DOM error event, matches", () => {
+    const domError = new Event("error");
+
+    expect(isDomErrorEventPromiseRejection(domError)).toBe(true);
+  });
+
+  it("when rejection reason is a normal Error, ignores", () => {
+    expect(isDomErrorEventPromiseRejection(new Error("fail"))).toBe(false);
+  });
+});
+
+describe("isSentryDomErrorEventRejectionMessage", () => {
+  it("when Sentry titles a DOM error event rejection, matches", () => {
+    expect(
+      isSentryDomErrorEventRejectionMessage(
+        "Event: Event `Event` (type=error) captured as promise rejection",
+      ),
+    ).toBe(true);
+  });
+
+  it("when message is unrelated, ignores", () => {
+    expect(
+      isSentryDomErrorEventRejectionMessage("Network request failed"),
+    ).toBe(false);
   });
 });
