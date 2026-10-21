@@ -3,6 +3,12 @@ import {
   getVerifiedUserFromRequest,
   type VerifiedDiscogsUser,
 } from "src/lib/auth-request";
+import {
+  databaseConnectionErrorSanitized,
+  isDatabaseConnectionErrorMessage,
+  isTransientNodeConnectionError,
+} from "src/lib/databaseConnectionErrorMessage";
+import { sanitizePrismaKnownRequestError } from "src/lib/prismaKnownRequestError.server";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { getPublicCrateMetadataForPage } from "src/lib/public-crate.server";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
@@ -48,32 +54,14 @@ export function sanitizeError(error: unknown): {
   code?: string;
   status: number;
 } {
+  const prismaSanitized = sanitizePrismaKnownRequestError(error);
+  if (prismaSanitized) {
+    return prismaSanitized;
+  }
+
   if (error && typeof error === "object" && "code" in error) {
-    const code = String(error.code);
-
-    // Prisma error codes
-    if (code === "P1001") {
-      return {
-        message: "Database connection failed",
-        code: "DB_CONNECTION_ERROR",
-        status: 503,
-      };
-    }
-
-    if (code === "P2025") {
-      return {
-        message: "Record not found",
-        code: "NOT_FOUND",
-        status: 404,
-      };
-    }
-
-    if (code === "P2002") {
-      return {
-        message: "Duplicate entry",
-        code: "DUPLICATE_ENTRY",
-        status: 409,
-      };
+    if (isTransientNodeConnectionError(error)) {
+      return databaseConnectionErrorSanitized();
     }
   }
 
@@ -91,18 +79,8 @@ export function sanitizeError(error: unknown): {
     .replace(/connection string[^;]*/gi, "connection string=***");
 
   // Check for connection/resource errors
-  if (
-    sanitized.includes("Can't reach database") ||
-    sanitized.includes("INSUFFICIENT RESOURCES") ||
-    sanitized.includes("connection") ||
-    sanitized.includes("timeout") ||
-    sanitized.includes("P1001")
-  ) {
-    return {
-      message: "Database connection error. Please try again in a moment",
-      code: "DB_CONNECTION_ERROR",
-      status: 503,
-    };
+  if (isDatabaseConnectionErrorMessage(sanitized)) {
+    return databaseConnectionErrorSanitized();
   }
 
   // Check for Prisma initialization errors

@@ -1,7 +1,4 @@
 import * as Sentry from "@sentry/nextjs";
-import { buildSharedSentryInitOptions } from "src/lib/sentry/sentryInitOptions";
+import { buildServerSentryInitOptions } from "src/lib/buildServerSentryInitOptions.server";
 
-Sentry.init({
-  ...buildSharedSentryInitOptions(),
-  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.05 : 0,
-});
+Sentry.init(buildServerSentryInitOptions());
