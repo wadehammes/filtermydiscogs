@@ -66,4 +66,16 @@ describe("shouldCaptureInfrastructureFailure", () => {
       }),
     ).toBe(true);
   });
+
+  it("skips pool message-only transient connection errors outside production", () => {
+    process.env.VERCEL_ENV = "preview";
+
+    expect(
+      shouldCaptureInfrastructureFailure(
+        "database",
+        new Error("Connection terminated unexpectedly"),
+        { source: "pool" },
+      ),
+    ).toBe(false);
+  });
 });
